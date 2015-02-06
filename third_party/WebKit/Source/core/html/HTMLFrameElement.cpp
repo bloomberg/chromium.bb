@@ -48,7 +48,7 @@ bool HTMLFrameElement::rendererIsNeeded(const RenderStyle&)
     return isURLAllowed();
 }
 
-RenderObject* HTMLFrameElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLFrameElement::createRenderer(const RenderStyle&)
 {
     return new RenderFrame(this);
 }

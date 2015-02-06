@@ -38,12 +38,12 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderFrame"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFrame || RenderPart::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || RenderPart::isOfType(type); }
 
     virtual void updateFromElement() override;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFrame, isFrame());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFrame, isFrame());
 
 } // namespace blink
 

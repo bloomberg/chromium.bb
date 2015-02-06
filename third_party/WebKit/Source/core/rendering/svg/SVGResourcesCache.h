@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class RenderSVGResourceContainer;
 class SVGResources;
@@ -39,31 +39,31 @@ public:
     SVGResourcesCache();
     ~SVGResourcesCache();
 
-    static SVGResources* cachedResourcesForRenderObject(const RenderObject*);
+    static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
 
     // Called from all SVG renderers addChild() methods.
-    static void clientWasAddedToTree(RenderObject*, const RenderStyle* newStyle);
+    static void clientWasAddedToTree(LayoutObject*, const RenderStyle* newStyle);
 
     // Called from all SVG renderers removeChild() methods.
-    static void clientWillBeRemovedFromTree(RenderObject*);
+    static void clientWillBeRemovedFromTree(LayoutObject*);
 
     // Called from all SVG renderers destroy() methods - except for RenderSVGResourceContainer.
-    static void clientDestroyed(RenderObject*);
+    static void clientDestroyed(LayoutObject*);
 
     // Called from all SVG renderers layout() methods.
-    static void clientLayoutChanged(RenderObject*);
+    static void clientLayoutChanged(LayoutObject*);
 
     // Called from all SVG renderers styleDidChange() methods.
-    static void clientStyleChanged(RenderObject*, StyleDifference, const RenderStyle* newStyle);
+    static void clientStyleChanged(LayoutObject*, StyleDifference, const RenderStyle* newStyle);
 
     // Called from RenderSVGResourceContainer::willBeDestroyed().
     static void resourceDestroyed(RenderSVGResourceContainer*);
 
 private:
-    void addResourcesFromRenderObject(RenderObject*, const RenderStyle*);
-    void removeResourcesFromRenderObject(RenderObject*);
+    void addResourcesFromLayoutObject(LayoutObject*, const RenderStyle*);
+    void removeResourcesFromLayoutObject(LayoutObject*);
 
-    typedef HashMap<const RenderObject*, OwnPtr<SVGResources> > CacheMap;
+    typedef HashMap<const LayoutObject*, OwnPtr<SVGResources>> CacheMap;
     CacheMap m_cache;
 };
 

@@ -46,7 +46,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLSpanElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderText.h"
 #include "platform/heap/Handle.h"
 #include "wtf/StdLibExtras.h"

@@ -1187,7 +1187,7 @@ void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d)
 
 void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
 {
-    RenderObject* renderer = canvas()->renderer();
+    LayoutObject* renderer = canvas()->renderer();
     RenderBox* renderBox = canvas()->renderBox();
     if (!renderer || !renderBox || !state().m_invertibleCTM || path.isEmpty())
         return;

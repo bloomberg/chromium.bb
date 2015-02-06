@@ -56,20 +56,20 @@ public:
 
     void clearImageSetValue() { m_imageSetValue = 0; }
 
-    virtual bool canRender(const RenderObject&, float multiplier) const override;
+    virtual bool canRender(const LayoutObject&, float multiplier) const override;
     virtual bool isLoaded() const override;
     virtual bool errorOccurred() const override;
-    virtual LayoutSize imageSize(const RenderObject*, float multiplier) const override;
+    virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
     virtual bool imageHasRelativeWidth() const override;
     virtual bool imageHasRelativeHeight() const override;
-    virtual void computeIntrinsicDimensions(const RenderObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    virtual void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
     virtual bool usesImageContainerSize() const override;
-    virtual void setContainerSizeForRenderer(const RenderObject*, const IntSize&, float) override;
-    virtual void addClient(RenderObject*) override;
-    virtual void removeClient(RenderObject*) override;
-    virtual PassRefPtr<Image> image(RenderObject*, const IntSize&) const override;
+    virtual void setContainerSizeForRenderer(const LayoutObject*, const IntSize&, float) override;
+    virtual void addClient(LayoutObject*) override;
+    virtual void removeClient(LayoutObject*) override;
+    virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
     virtual float imageScaleFactor() const override { return m_imageScaleFactor; }
-    virtual bool knownToBeOpaque(const RenderObject*) const override;
+    virtual bool knownToBeOpaque(const LayoutObject*) const override;
     virtual ImageResource* cachedImage() const override { return m_bestFitImage.get(); }
 
 private:

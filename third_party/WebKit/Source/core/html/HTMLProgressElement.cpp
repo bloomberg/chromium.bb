@@ -58,11 +58,10 @@ PassRefPtrWillBeRawPtr<HTMLProgressElement> HTMLProgressElement::create(Document
     return progress.release();
 }
 
-RenderObject* HTMLProgressElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLProgressElement::createRenderer(const RenderStyle& style)
 {
     if (!style.hasAppearance() || hasAuthorShadowRoot())
-        return RenderObject::createObject(this, style);
-
+        return LayoutObject::createObject(this, style);
     return new RenderProgress(this);
 }
 
@@ -71,9 +70,9 @@ RenderProgress* HTMLProgressElement::renderProgress() const
     if (renderer() && renderer()->isProgress())
         return toRenderProgress(renderer());
 
-    RenderObject* renderObject = userAgentShadowRoot()->firstChild()->renderer();
-    ASSERT_WITH_SECURITY_IMPLICATION(!renderObject || renderObject->isProgress());
-    return toRenderProgress(renderObject);
+    LayoutObject* layoutObject = userAgentShadowRoot()->firstChild()->renderer();
+    ASSERT_WITH_SECURITY_IMPLICATION(!layoutObject || layoutObject->isProgress());
+    return toRenderProgress(layoutObject);
 }
 
 void HTMLProgressElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

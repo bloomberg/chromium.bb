@@ -15,7 +15,7 @@ class FloatRoundedRect;
 class LayoutPoint;
 struct PaintInfo;
 class RenderBox;
-class RenderObject;
+class LayoutObject;
 
 class BoxPainter {
 public:
@@ -25,11 +25,11 @@ public:
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
     void paintMask(const PaintInfo&, const LayoutPoint&);
     void paintClippingMask(const PaintInfo&, const LayoutPoint&);
-    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RenderObject* backgroundObject = 0);
+    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, LayoutObject* backgroundObject = 0);
     void paintMaskImages(const PaintInfo&, const LayoutRect&);
     void paintBoxDecorationBackgroundWithRect(const PaintInfo&, const LayoutPoint&, const LayoutRect&);
-    static void paintFillLayerExtended(RenderBoxModelObject&, const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox* = 0, const LayoutSize& = LayoutSize(), SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RenderObject* backgroundObject = 0, bool skipBaseColor = false);
-    static void calculateBackgroundImageGeometry(RenderBoxModelObject&, const LayoutLayerModelObject* paintContainer, const FillLayer&, const LayoutRect& paintRect, BackgroundImageGeometry&, RenderObject* = 0);
+    static void paintFillLayerExtended(RenderBoxModelObject&, const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox* = 0, const LayoutSize& = LayoutSize(), SkXfermode::Mode = SkXfermode::kSrcOver_Mode, LayoutObject* backgroundObject = 0, bool skipBaseColor = false);
+    static void calculateBackgroundImageGeometry(RenderBoxModelObject&, const LayoutLayerModelObject* paintContainer, const FillLayer&, const LayoutRect& paintRect, BackgroundImageGeometry&, LayoutObject* = 0);
     static InterpolationQuality chooseInterpolationQuality(RenderBoxModelObject&, GraphicsContext*, Image*, const void*, const LayoutSize&);
     static bool paintNinePieceImage(RenderBoxModelObject&, GraphicsContext*, const LayoutRect&, const RenderStyle&, const NinePieceImage&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
     static void paintBorder(RenderBoxModelObject&, const PaintInfo&, const LayoutRect&, const RenderStyle&, BackgroundBleedAvoidance = BackgroundBleedNone, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
@@ -39,14 +39,14 @@ public:
 private:
     void paintBackground(const PaintInfo&, const LayoutRect&, const Color& backgroundColor, BackgroundBleedAvoidance = BackgroundBleedNone);
     void paintRootBoxFillLayers(const PaintInfo&);
-    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, SkXfermode::Mode, RenderObject* backgroundObject, bool skipBaseColor = false);
-    static void paintRootBackgroundColor(RenderObject&, const PaintInfo&, const LayoutRect&, const Color&);
-    static FloatRoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(RenderObject&, GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox*, const LayoutSize&, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
-    static FloatRoundedRect getBackgroundRoundedRect(RenderObject&, const LayoutRect&, InlineFlowBox*, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
+    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, SkXfermode::Mode, LayoutObject* backgroundObject, bool skipBaseColor = false);
+    static void paintRootBackgroundColor(LayoutObject&, const PaintInfo&, const LayoutRect&, const Color&);
+    static FloatRoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(LayoutObject&, GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox*, const LayoutSize&, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
+    static FloatRoundedRect getBackgroundRoundedRect(LayoutObject&, const LayoutRect&, InlineFlowBox*, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
         bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
-    static bool isDocumentElementWithOpaqueBackground(RenderObject&);
-    static void applyBoxShadowForBackground(GraphicsContext*, RenderObject&);
-    static bool fixedBackgroundPaintsInLocalCoordinates(const RenderObject&);
+    static bool isDocumentElementWithOpaqueBackground(LayoutObject&);
+    static void applyBoxShadowForBackground(GraphicsContext*, LayoutObject&);
+    static bool fixedBackgroundPaintsInLocalCoordinates(const LayoutObject&);
     static IntSize calculateFillTileSize(const RenderBoxModelObject&, const FillLayer&, const IntSize& scaledPositioningAreaSize);
     static void paintTranslucentBorderSides(GraphicsContext*, const RenderStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
         const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false);

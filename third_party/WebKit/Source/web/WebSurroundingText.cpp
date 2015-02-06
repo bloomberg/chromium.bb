@@ -31,7 +31,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/SurroundingText.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "public/platform/WebPoint.h"
 #include "public/web/WebHitTestResult.h"
 

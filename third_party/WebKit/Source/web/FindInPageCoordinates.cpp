@@ -34,9 +34,9 @@
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -46,7 +46,7 @@
 
 namespace blink {
 
-static const RenderBlock* enclosingScrollableAncestor(const RenderObject* renderer)
+static const RenderBlock* enclosingScrollableAncestor(const LayoutObject* renderer)
 {
     ASSERT(!renderer->isRenderView());
 
@@ -57,7 +57,7 @@ static const RenderBlock* enclosingScrollableAncestor(const RenderObject* render
     return container;
 }
 
-static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const RenderObject* renderer, const RenderBlock* container)
+static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const LayoutObject* renderer, const RenderBlock* container)
 {
     ASSERT(renderer);
 
@@ -93,7 +93,7 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const RenderObj
     return normalizedRect;
 }
 
-FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const RenderObject* baseRenderer)
+FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const LayoutObject* baseRenderer)
 {
     if (!baseRenderer || inputRect.isEmpty())
         return FloatRect();
@@ -131,7 +131,7 @@ FloatRect findInPageRectFromRange(Range* range)
     if (!range || !range->firstNode())
         return FloatRect();
 
-    return findInPageRectFromAbsoluteRect(RenderObject::absoluteBoundingBoxRectForRange(range), range->firstNode()->renderer());
+    return findInPageRectFromAbsoluteRect(LayoutObject::absoluteBoundingBoxRectForRange(range), range->firstNode()->renderer());
 }
 
 } // namespace blink

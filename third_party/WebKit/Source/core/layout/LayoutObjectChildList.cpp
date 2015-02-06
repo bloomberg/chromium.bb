@@ -25,18 +25,18 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderObjectChildList.h"
+#include "core/layout/LayoutObjectChildList.h"
 
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
 
-void RenderObjectChildList::destroyLeftoverChildren()
+void LayoutObjectChildList::destroyLeftoverChildren()
 {
     while (firstChild()) {
         // List markers are owned by their enclosing list and so don't get destroyed by this container.
@@ -52,7 +52,7 @@ void RenderObjectChildList::destroyLeftoverChildren()
     }
 }
 
-RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, RenderObject* oldChild, bool notifyRenderer)
+LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, LayoutObject* oldChild, bool notifyRenderer)
 {
     ASSERT(oldChild->parent() == owner);
     ASSERT(this == owner->virtualChildren());
@@ -116,7 +116,7 @@ RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, Render
     return oldChild;
 }
 
-void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* newChild, RenderObject* beforeChild, bool notifyRenderer)
+void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* newChild, LayoutObject* beforeChild, bool notifyRenderer)
 {
     ASSERT(!newChild->parent());
     ASSERT(this == owner->virtualChildren());
@@ -139,7 +139,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
         setFirstChild(newChild);
 
     if (beforeChild) {
-        RenderObject* previousSibling = beforeChild->previousSibling();
+        LayoutObject* previousSibling = beforeChild->previousSibling();
         if (previousSibling)
             previousSibling->setNextSibling(newChild);
         newChild->setPreviousSibling(previousSibling);
@@ -168,7 +168,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
         cache->childrenChanged(owner);
 }
 
-void RenderObjectChildList::invalidatePaintOnRemoval(const RenderObject& oldChild)
+void LayoutObjectChildList::invalidatePaintOnRemoval(const LayoutObject& oldChild)
 {
     if (!oldChild.isRooted())
         return;

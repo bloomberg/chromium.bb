@@ -45,7 +45,7 @@ inline HTMLWBRElement::HTMLWBRElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLWBRElement)
 
-RenderObject* HTMLWBRElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLWBRElement::createRenderer(const RenderStyle& style)
 {
     return new RenderWordBreak(this);
 }

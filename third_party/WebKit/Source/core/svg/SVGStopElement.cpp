@@ -58,7 +58,7 @@ void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::svgAttributeChanged(attrName);
 }
 
-RenderObject* SVGStopElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGStopElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGGradientStop(this);
 }

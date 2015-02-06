@@ -136,7 +136,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return;
 
@@ -162,7 +162,7 @@ bool SVGImageElement::selfHasRelativeLengths() const
         || m_height->currentValue()->isRelative();
 }
 
-RenderObject* SVGImageElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGImageElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGImage(this);
 }

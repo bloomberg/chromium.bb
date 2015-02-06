@@ -43,7 +43,7 @@ private:
     Element* cancelButtonElement() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSearchField, isTextField());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSearchField, isTextField());
 
 }
 

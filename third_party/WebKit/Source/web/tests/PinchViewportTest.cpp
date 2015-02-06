@@ -11,10 +11,10 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -902,7 +902,7 @@ TEST_F(PinchViewportTest, TestWebViewResizeCausesViewportConstrainedLayout)
     registerMockedHttpURLLoad("pinch-viewport-fixed-pos.html");
     navigateTo(m_baseURL + "pinch-viewport-fixed-pos.html");
 
-    RenderObject* navbar = frame()->document()->getElementById("navbar")->renderer();
+    LayoutObject* navbar = frame()->document()->getElementById("navbar")->renderer();
 
     EXPECT_FALSE(navbar->needsLayout());
 

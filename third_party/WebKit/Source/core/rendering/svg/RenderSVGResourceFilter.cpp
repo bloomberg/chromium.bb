@@ -57,7 +57,7 @@ void RenderSVGResourceFilter::destroy()
     RenderSVGResourceContainer::destroy();
 }
 
-bool RenderSVGResourceFilter::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool RenderSVGResourceFilter::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     return child->isSVGResourceFilterPrimitive();
 }
@@ -68,7 +68,7 @@ void RenderSVGResourceFilter::removeAllClientsFromCache(bool markForInvalidation
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceFilter::removeClientFromCache(RenderObject* client, bool markForInvalidation)
+void RenderSVGResourceFilter::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
 
@@ -205,7 +205,7 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-GraphicsContext* RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContext* context)
+GraphicsContext* RenderSVGResourceFilter::prepareEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -251,7 +251,7 @@ GraphicsContext* RenderSVGResourceFilter::prepareEffect(RenderObject* object, Gr
     return beginRecordingContent(context, data);
 }
 
-void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext* context)
+void RenderSVGResourceFilter::finishEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -277,7 +277,7 @@ void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext
         paintFilteredContent(context, filterData, toSVGFilterElement(element()));
 }
 
-FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* object)
+FloatRect RenderSVGResourceFilter::resourceBoundingBox(const LayoutObject* object)
 {
     if (SVGFilterElement* element = toSVGFilterElement(this->element()))
         return SVGLengthContext::resolveRectangle<SVGFilterElement>(element, element->filterUnits()->currentValue()->enumValue(), object->objectBoundingBox());
@@ -285,7 +285,7 @@ FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* objec
     return FloatRect();
 }
 
-void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, const QualifiedName& attribute)
+void RenderSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, const QualifiedName& attribute)
 {
     FilterMap::iterator it = m_filter.begin();
     FilterMap::iterator end = m_filter.end();

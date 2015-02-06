@@ -177,7 +177,7 @@ RenderBlockFlow* RenderBlockFlow::createAnonymous(Document* document)
     return renderer;
 }
 
-RenderObject* RenderBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+LayoutObject* RenderBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();
     if (!flowThread)
@@ -470,7 +470,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     LayoutUnit newHeight = logicalHeight();
     if (oldHeight > newHeight && !childrenInline()) {
         // One of our children's floats may have become an overhanging float for us.
-        for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
+        for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
             if (child->isRenderBlockFlow() && !child->isFloatingOrOutOfFlowPositioned()) {
                 RenderBlockFlow* block = toRenderBlockFlow(child);
                 if (block->lowestFloatLogicalBottom() + block->logicalTop() <= newHeight)
@@ -927,7 +927,7 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     // outside it (i.e. objects that create a new block formatting context).
     RenderBlockFlow* parentBlockFlow = toRenderBlockFlow(parent());
     bool parentHasFloats = false;
-    RenderObject* prev = previousSibling();
+    LayoutObject* prev = previousSibling();
     while (prev && (!prev->isBox() || !prev->isRenderBlock() || toRenderBlock(prev)->avoidsFloats() || toRenderBlock(prev)->createsNewFormattingContext())) {
         if (prev->isFloating())
             parentHasFloats = true;
@@ -1026,7 +1026,7 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
     // Fieldsets need to find their legend and position it inside the border of the object.
     // The legend then gets skipped during normal layout. The same is true for ruby text.
     // It doesn't get included in the normal layout process but is instead skipped.
-    RenderObject* childToExclude = layoutSpecialExcludedChild(relayoutChildren, layoutScope);
+    LayoutObject* childToExclude = layoutSpecialExcludedChild(relayoutChildren, layoutScope);
 
     LayoutUnit previousFloatLogicalBottom = 0;
 
@@ -1239,7 +1239,7 @@ LayoutUnit RenderBlockFlow::collapseMargins(RenderBox& child, MarginInfo& margin
     LayoutUnit logicalTop = beforeCollapseLogicalTop;
 
     LayoutUnit clearanceForSelfCollapsingBlock;
-    RenderObject* prev = child.previousSibling();
+    LayoutObject* prev = child.previousSibling();
     RenderBlockFlow* previousBlockFlow =  prev && prev->isRenderBlockFlow() && !prev->isFloatingOrOutOfFlowPositioned() ? toRenderBlockFlow(prev) : 0;
     // If the child's previous sibling is a self-collapsing block that cleared a float then its top border edge has been set at the bottom border edge
     // of the float. Since we want to collapse the child's top margin with the self-collapsing block's top and bottom margins we need to adjust our parent's height to match the
@@ -1828,7 +1828,7 @@ void RenderBlockFlow::markAllDescendantsWithFloatsForLayout(RenderBox* floatToRe
 
     // Iterate over our children and mark them as needed.
     if (!childrenInline() || floatToRemove) {
-        for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+        for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
             if ((!floatToRemove && child->isFloatingOrOutOfFlowPositioned()) || !child->isRenderBlock())
                 continue;
             if (!child->isRenderBlockFlow()) {
@@ -1852,7 +1852,7 @@ void RenderBlockFlow::markSiblingsWithFloatsForLayout(RenderBox* floatToRemove)
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
 
-    for (RenderObject* next = nextSibling(); next; next = next->nextSibling()) {
+    for (LayoutObject* next = nextSibling(); next; next = next->nextSibling()) {
         if (!next->isRenderBlockFlow() || next->isFloatingOrOutOfFlowPositioned() || toRenderBlockFlow(next)->avoidsFloats())
             continue;
 
@@ -1955,7 +1955,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
         FloatingObjectSetIterator end = floatingObjectSet.end();
 
-        for (RenderObject* curr = parent(); curr && !curr->isRenderView(); curr = curr->parent()) {
+        for (LayoutObject* curr = parent(); curr && !curr->isRenderView(); curr = curr->parent()) {
             if (curr->isRenderBlockFlow()) {
                 RenderBlockFlow* currBlock = toRenderBlockFlow(curr);
 
@@ -2011,7 +2011,7 @@ void RenderBlockFlow::setStaticInlinePositionForChild(RenderBox& child, LayoutUn
     child.layer()->setStaticInlinePosition(inlinePosition);
 }
 
-void RenderBlockFlow::addChild(RenderObject* newChild, RenderObject* beforeChild)
+void RenderBlockFlow::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
         if (beforeChild == flowThread)
@@ -2930,7 +2930,7 @@ GapRects RenderBlockFlow::blockSelectionGaps(const RenderBlock* rootBlock, const
 }
 
 LayoutRect RenderBlockFlow::logicalLeftSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-    const RenderObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
+    const LayoutObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
 {
     LayoutUnit rootBlockLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalTop;
     LayoutUnit rootBlockLogicalLeft = std::max(logicalLeftSelectionOffset(rootBlock, logicalTop), logicalLeftSelectionOffset(rootBlock, logicalTop + logicalHeight));
@@ -2950,7 +2950,7 @@ LayoutRect RenderBlockFlow::logicalLeftSelectionGap(const RenderBlock* rootBlock
 }
 
 LayoutRect RenderBlockFlow::logicalRightSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-    const RenderObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
+    const LayoutObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
 {
     LayoutUnit rootBlockLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalTop;
     LayoutUnit rootBlockLogicalLeft = std::max(rootBlock->inlineDirectionOffset(offsetFromRootBlock) + logicalRight, max(logicalLeftSelectionOffset(rootBlock, logicalTop), logicalLeftSelectionOffset(rootBlock, logicalTop + logicalHeight)));
@@ -2972,12 +2972,12 @@ LayoutRect RenderBlockFlow::logicalRightSelectionGap(const RenderBlock* rootBloc
 void RenderBlockFlow::getSelectionGapInfo(SelectionState state, bool& leftGap, bool& rightGap) const
 {
     bool ltr = style()->isLeftToRightDirection();
-    leftGap = (state == RenderObject::SelectionInside)
-        || (state == RenderObject::SelectionEnd && ltr)
-        || (state == RenderObject::SelectionStart && !ltr);
-    rightGap = (state == RenderObject::SelectionInside)
-        || (state == RenderObject::SelectionStart && ltr)
-        || (state == RenderObject::SelectionEnd && !ltr);
+    leftGap = (state == LayoutObject::SelectionInside)
+        || (state == LayoutObject::SelectionEnd && ltr)
+        || (state == LayoutObject::SelectionStart && !ltr);
+    rightGap = (state == LayoutObject::SelectionInside)
+        || (state == LayoutObject::SelectionStart && ltr)
+        || (state == LayoutObject::SelectionEnd && !ltr);
 }
 
 void RenderBlockFlow::setPaginationStrut(LayoutUnit strut)
@@ -3006,7 +3006,7 @@ bool RenderBlockFlow::avoidsFloats() const
     return RenderBox::avoidsFloats() || !style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth();
 }
 
-void RenderBlockFlow::moveChildrenTo(RenderBoxModelObject* toBoxModelObject, RenderObject* startChild, RenderObject* endChild, RenderObject* beforeChild, bool fullRemoveInsert)
+void RenderBlockFlow::moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert)
 {
     if (childrenInline())
         deleteLineBoxTree();

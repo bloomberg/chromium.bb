@@ -26,6 +26,7 @@
 #include "core/layout/BidiRunForLine.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/line/BreakingContextInlineHeaders.h"
 #include "core/layout/line/LayoutTextInfo.h"
@@ -36,7 +37,6 @@
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextRunConstructor.h"
@@ -52,7 +52,7 @@ namespace blink {
 
 using namespace WTF::Unicode;
 
-static inline InlineBox* createInlineBoxForRenderer(RenderObject* obj, bool isRootLineBox, bool isOnlyRun = false)
+static inline InlineBox* createInlineBoxForRenderer(LayoutObject* obj, bool isRootLineBox, bool isOnlyRun = false)
 {
     // Callers should handle text themselves.
     ASSERT(!obj->isText());
@@ -81,7 +81,7 @@ static inline InlineTextBox* createInlineBoxForText(BidiRun& run, bool isOnlyRun
     return textBox;
 }
 
-static inline void dirtyLineBoxesForRenderer(RenderObject* o, bool fullLayout)
+static inline void dirtyLineBoxesForRenderer(LayoutObject* o, bool fullLayout)
 {
     if (o->isText()) {
         RenderText* renderText = toRenderText(o);
@@ -100,7 +100,7 @@ static bool parentIsConstructedOrHaveNext(InlineFlowBox* parentBox)
     return false;
 }
 
-InlineFlowBox* RenderBlockFlow::createLineBoxes(RenderObject* obj, const LineInfo& lineInfo, InlineBox* childBox)
+InlineFlowBox* RenderBlockFlow::createLineBoxes(LayoutObject* obj, const LineInfo& lineInfo, InlineBox* childBox)
 {
     // See if we have an unconstructed line box for this object that is also
     // the last item on the line.
@@ -179,7 +179,7 @@ static bool reachedEndOfTextRenderer(const BidiRunList<BidiRun>& bidiRuns)
     if (!run)
         return true;
     unsigned pos = run->stop();
-    RenderObject* r = run->m_object;
+    LayoutObject* r = run->m_object;
     if (!r->isText() || r->isBR())
         return false;
     RenderText* renderText = toRenderText(r);
@@ -219,7 +219,7 @@ RootInlineBox* RenderBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
         if (!box)
             continue;
 
-        if (!rootHasSelectedChildren && box->renderer().selectionState() != RenderObject::SelectionNone)
+        if (!rootHasSelectedChildren && box->renderer().selectionState() != LayoutObject::SelectionNone)
             rootHasSelectedChildren = true;
 
         // If we have no parent box yet, or if the run is not simply a sibling,
@@ -349,11 +349,11 @@ static void updateLogicalWidthForCenterAlignedBlock(bool isLeftToRightDirection,
         logicalLeft += totalLogicalWidth > availableLogicalWidth ? (availableLogicalWidth - totalLogicalWidth) : (availableLogicalWidth - totalLogicalWidth) / 2 - trailingSpaceWidth;
 }
 
-void RenderBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* renderer, RenderObject* previousObject, const LineInfo& lineInfo)
+void RenderBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* renderer, LayoutObject* previousObject, const LineInfo& lineInfo)
 {
     int startOverhang;
     int endOverhang;
-    RenderObject* nextObject = 0;
+    LayoutObject* nextObject = 0;
     for (BidiRun* runWithNextObject = run->next(); runWithNextObject; runWithNextObject = runWithNextObject->next()) {
         if (!runWithNextObject->m_object->isOutOfFlowPositioned() && !runWithNextObject->m_box->isLineBreak()) {
             nextObject = runWithNextObject->m_object;
@@ -583,7 +583,7 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
     unsigned expansionOpportunityCount = 0;
     bool isAfterExpansion = true;
     Vector<unsigned, 16> expansionOpportunities;
-    RenderObject* previousObject = 0;
+    LayoutObject* previousObject = 0;
     TextJustify textJustify = style()->textJustify();
 
     BidiRun* r = firstRun;
@@ -756,7 +756,7 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         // adjust the height accordingly.
         // A line break can be either the first or the last object on a line, depending on its direction.
         if (InlineBox* lastLeafChild = lastRootBox()->lastLeafChild()) {
-            RenderObject* lastObject = &lastLeafChild->renderer();
+            LayoutObject* lastObject = &lastLeafChild->renderer();
             if (!lastObject->isBR())
                 lastObject = &lastRootBox()->firstLeafChild()->renderer();
             if (lastObject->isBR()) {
@@ -1088,22 +1088,22 @@ struct InlineMinMaxIterator {
    (3) Inline flows (e.g., <a>, <span>, <i>) are walked twice, since each side can have
        distinct borders/margin/padding that contribute to the min/max width.
 */
-    RenderObject* parent;
-    RenderObject* current;
+    LayoutObject* parent;
+    LayoutObject* current;
     bool endOfInline;
 
-    InlineMinMaxIterator(RenderObject* p, bool end = false)
+    InlineMinMaxIterator(LayoutObject* p, bool end = false)
         : parent(p), current(p), endOfInline(end)
     {
 
     }
 
-    RenderObject* next();
+    LayoutObject* next();
 };
 
-RenderObject* InlineMinMaxIterator::next()
+LayoutObject* InlineMinMaxIterator::next()
 {
-    RenderObject* result = 0;
+    LayoutObject* result = 0;
     bool oldEndOfInline = endOfInline;
     endOfInline = false;
     while (current || current == parent) {
@@ -1167,7 +1167,7 @@ static LayoutUnit getBorderPaddingMargin(RenderBoxModelObject* child, bool endOf
 }
 
 static inline void stripTrailingSpace(FloatWillBeLayoutUnit& inlineMax, FloatWillBeLayoutUnit& inlineMin,
-    RenderObject* trailingSpaceChild)
+    LayoutObject* trailingSpaceChild)
 {
     if (trailingSpaceChild && trailingSpaceChild->isText()) {
         // Collapse away the trailing space at the end of a block by finding
@@ -1220,7 +1220,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     // If we are at the start of a line, we want to ignore all white-space.
     // Also strip spaces if we previously had text that ended in a trailing space.
     bool stripFrontSpaces = true;
-    RenderObject* trailingSpaceChild = 0;
+    LayoutObject* trailingSpaceChild = 0;
 
     // Firefox and Opera will allow a table cell to grow to fit an image inside it under
     // very specific cirucumstances (in order to match common WinIE renderings).
@@ -1238,10 +1238,10 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     bool hasRemainingNegativeTextIndent = false;
 
     LayoutUnit textIndent = minimumValueForLength(styleToUse->textIndent(), cw);
-    RenderObject* prevFloat = 0;
+    LayoutObject* prevFloat = 0;
     bool isPrevChildInlineFlow = false;
     bool shouldBreakLineAfterText = false;
-    while (RenderObject* child = childIterator.next()) {
+    while (LayoutObject* child = childIterator.next()) {
         autoWrap = child->isReplaced() ? child->parent()->style()->autoWrap() :
             child->style()->autoWrap();
 
@@ -1555,7 +1555,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         // elements at the same time.
         Vector<RenderBox*> replacedChildren;
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
-            RenderObject* o = walker.current();
+            LayoutObject* o = walker.current();
 
             if (!layoutState.hasInlineChild() && o->isInline())
                 layoutState.setHasInlineChild(true);
@@ -1888,7 +1888,7 @@ bool RenderBlockFlow::matchedEndLine(LineLayoutState& layoutState, const InlineB
     return false;
 }
 
-bool RenderBlockFlow::generatesLineBoxesForInlineChild(RenderObject* inlineObj)
+bool RenderBlockFlow::generatesLineBoxesForInlineChild(LayoutObject* inlineObj)
 
 {
     ASSERT(inlineObj->parent() == this);

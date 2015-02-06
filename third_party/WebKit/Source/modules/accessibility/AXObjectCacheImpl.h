@@ -63,18 +63,18 @@ public:
 
     virtual void selectionChanged(Node*) override;
     virtual void childrenChanged(Node*) override;
-    virtual void childrenChanged(RenderObject*) override;
+    virtual void childrenChanged(LayoutObject*) override;
     virtual void checkedStateChanged(Node*) override;
     virtual void selectedChildrenChanged(Node*) override;
 
-    virtual void remove(RenderObject*) override;
+    virtual void remove(LayoutObject*) override;
     virtual void remove(Node*) override;
     virtual void remove(Widget*) override;
 
     virtual const Element* rootAXEditableElement(const Node*) override;
 
     // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
-    virtual void textChanged(RenderObject*) override;
+    virtual void textChanged(LayoutObject*) override;
     // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
     virtual void updateCacheAfterNodeIsAttached(Node*) override;
 
@@ -92,15 +92,15 @@ public:
 
     virtual void clearWeakMembers(Visitor*) override;
 
-    virtual void inlineTextBoxesUpdated(RenderObject* renderer) override;
+    virtual void inlineTextBoxesUpdated(LayoutObject* renderer) override;
 
     // Called when the scroll offset changes.
     virtual void handleScrollPositionChanged(FrameView*) override;
-    virtual void handleScrollPositionChanged(RenderObject*) override;
+    virtual void handleScrollPositionChanged(LayoutObject*) override;
 
     // Called when scroll bars are added / removed (as the view resizes).
     void handleScrollbarUpdate(FrameView*) override;
-    void handleLayoutComplete(RenderObject*) override;
+    void handleLayoutComplete(LayoutObject*) override;
     void handleScrolledToAnchor(const Node* anchorNode) override;
 
     virtual const AtomicString& computedRoleForNode(Node*) override;
@@ -114,14 +114,14 @@ public:
 
     // used for objects without backing elements
     AXObject* getOrCreate(AccessibilityRole);
-    AXObject* getOrCreate(RenderObject*);
+    AXObject* getOrCreate(LayoutObject*);
     AXObject* getOrCreate(Widget*);
     AXObject* getOrCreate(Node*);
     AXObject* getOrCreate(AbstractInlineTextBox*);
 
     // will only return the AXObject if it already exists
     AXObject* get(Node*);
-    AXObject* get(RenderObject*);
+    AXObject* get(LayoutObject*);
     AXObject* get(Widget*);
     AXObject* get(AbstractInlineTextBox*);
 
@@ -131,13 +131,13 @@ public:
     void remove(AbstractInlineTextBox*);
 
     void childrenChanged(AXObject*);
-    void selectedChildrenChanged(RenderObject*);
+    void selectedChildrenChanged(LayoutObject*);
 
     void handleActiveDescendantChanged(Node*);
     void handleAriaRoleChanged(Node*);
     void handleAriaExpandedChange(Node*);
 
-    void recomputeIsIgnored(RenderObject* renderer);
+    void recomputeIsIgnored(LayoutObject* renderer);
 
     bool accessibilityEnabled();
     bool inlineTextBoxAccessibilityEnabled();
@@ -151,7 +151,7 @@ public:
     // as long as the modification count hasn't changed.
     int modificationCount() const { return m_modificationCount; }
 
-    void postNotification(RenderObject*, AXNotification, bool postToElement);
+    void postNotification(LayoutObject*, AXNotification, bool postToElement);
     void postNotification(Node*, AXNotification, bool postToElement);
     void postNotification(AXObject*, Document*, AXNotification, bool postToElement);
 
@@ -165,14 +165,14 @@ protected:
     void removeNodeForUse(Node* n) { m_textMarkerNodes.remove(n); }
     bool isNodeInUse(Node* n) { return m_textMarkerNodes.contains(n); }
 
-    PassRefPtr<AXObject> createFromRenderer(RenderObject*);
+    PassRefPtr<AXObject> createFromRenderer(LayoutObject*);
     PassRefPtr<AXObject> createFromNode(Node*);
     PassRefPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox*);
 
 private:
     Document& m_document;
     HashMap<AXID, RefPtr<AXObject>> m_objects;
-    HashMap<RenderObject*, AXID> m_renderObjectMapping;
+    HashMap<LayoutObject*, AXID> m_layoutObjectMapping;
     HashMap<Widget*, AXID> m_widgetObjectMapping;
     HashMap<Node*, AXID> m_nodeObjectMapping;
     HashMap<AbstractInlineTextBox*, AXID> m_inlineTextBoxObjectMapping;

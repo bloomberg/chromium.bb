@@ -31,8 +31,8 @@
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/DocumentResourceReference.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
@@ -80,7 +80,7 @@ void FilterEffectRenderer::trace(Visitor* visitor)
     visitor->trace(m_referenceFilters);
 }
 
-bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations& operations)
+bool FilterEffectRenderer::build(LayoutObject* renderer, const FilterOperations& operations)
 {
     const RenderStyle* style = renderer->style();
     float zoom = style ? style->effectiveZoom() : 1.0f;

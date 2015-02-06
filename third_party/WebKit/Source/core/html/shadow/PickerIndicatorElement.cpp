@@ -69,7 +69,7 @@ PickerIndicatorElement::~PickerIndicatorElement()
     ASSERT(!m_chooser);
 }
 
-RenderObject* PickerIndicatorElement::createRenderer(const RenderStyle&)
+LayoutObject* PickerIndicatorElement::createRenderer(const RenderStyle&)
 {
     return new RenderDetailsMarker(this);
 }

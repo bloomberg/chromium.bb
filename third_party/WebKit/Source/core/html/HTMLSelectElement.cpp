@@ -385,7 +385,7 @@ bool HTMLSelectElement::canSelectAll() const
     return !usesMenuList();
 }
 
-RenderObject* HTMLSelectElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLSelectElement::createRenderer(const RenderStyle&)
 {
     if (usesMenuList())
         return new RenderMenuList(this);
@@ -742,7 +742,7 @@ void HTMLSelectElement::scrollToSelection()
 
 void HTMLSelectElement::setOptionsChangedOnRenderer()
 {
-    if (RenderObject* renderer = this->renderer()) {
+    if (LayoutObject* renderer = this->renderer()) {
         if (usesMenuList())
             toRenderMenuList(renderer)->setOptionsChanged(true);
     }
@@ -884,7 +884,7 @@ void HTMLSelectElement::setSuggestedIndex(int suggestedIndex)
 {
     m_suggestedIndex = suggestedIndex;
 
-    if (RenderObject* renderer = this->renderer())  {
+    if (LayoutObject* renderer = this->renderer())  {
         renderer->updateFromElement();
         scrollToIndex(suggestedIndex);
     }
@@ -964,7 +964,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         deselectItemsWithoutValidation(element);
 
     // For the menu list case, this is what makes the selected element appear.
-    if (RenderObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->renderer())
         renderer->updateFromElement();
 
     scrollToSelection();
@@ -974,7 +974,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         m_isProcessingUserDrivenChange = flags & UserDriven;
         if (flags & DispatchInputAndChangeEvent)
             dispatchInputAndChangeEventForMenuList();
-        if (RenderObject* renderer = this->renderer()) {
+        if (LayoutObject* renderer = this->renderer()) {
             if (usesMenuList()) {
                 toRenderMenuList(renderer)->didSetSelectedIndex(listIndex);
             } else if (renderer->isListBox()) {

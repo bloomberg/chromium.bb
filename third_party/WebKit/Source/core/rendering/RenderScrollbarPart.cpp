@@ -199,7 +199,7 @@ void RenderScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rec
     }
 }
 
-RenderObject* RenderScrollbarPart::rendererOwningScrollbar() const
+LayoutObject* RenderScrollbarPart::rendererOwningScrollbar() const
 {
     if (!m_scrollbar)
         return 0;

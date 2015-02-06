@@ -45,7 +45,7 @@ private:
     virtual FormControlState saveFormControlState() const override;
     virtual void restoreFormControlState(const FormControlState&) override;
     virtual bool supportsValidation() const override;
-    virtual RenderObject* createRenderer(const RenderStyle&) const override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) const override;
     virtual void accessKeyAction(bool sendMouseEvents) override;
     virtual bool rendererIsNeeded() override;
     virtual bool storesValueSeparateFromAttribute() override;

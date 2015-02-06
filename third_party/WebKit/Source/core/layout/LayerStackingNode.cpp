@@ -156,7 +156,7 @@ void LayerStackingNode::rebuildZOrderLists()
     // The renderers of top layer elements are children of the view, sorted in top layer stacking order.
     if (layer()->isRootLayer()) {
         RenderView* view = renderer()->view();
-        for (RenderObject* child = view->firstChild(); child; child = child->nextSibling()) {
+        for (LayoutObject* child = view->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {
                 Layer* layer = toLayoutLayerModelObject(child)->layer();

@@ -105,7 +105,7 @@ InstrumentingAgents* instrumentingAgentsFor(EventTarget*);
 InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
 InstrumentingAgents* instrumentingAgentsFor(Document&);
 InstrumentingAgents* instrumentingAgentsFor(Document*);
-InstrumentingAgents* instrumentingAgentsFor(RenderObject*);
+InstrumentingAgents* instrumentingAgentsFor(LayoutObject*);
 InstrumentingAgents* instrumentingAgentsFor(Node*);
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 

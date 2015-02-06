@@ -33,7 +33,7 @@ public:
     virtual LayoutUnit containingBlockLogicalWidthForContent() const override;
 
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableCaption || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCaption || RenderBlockFlow::isOfType(type); }
 
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;
@@ -41,7 +41,7 @@ private:
     LayoutTable* table() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableCaption, isTableCaption());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCaption, isTableCaption());
 
 } // namespace blink
 

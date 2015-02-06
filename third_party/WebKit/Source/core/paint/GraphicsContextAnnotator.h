@@ -41,7 +41,7 @@ namespace blink {
 
 class GraphicsContext;
 struct PaintInfo;
-class RenderObject;
+class LayoutObject;
 
 class GraphicsContextAnnotator {
 public:
@@ -55,7 +55,7 @@ public:
             finishAnnotation();
     }
 
-    void annotate(const PaintInfo&, const RenderObject*);
+    void annotate(const PaintInfo&, const LayoutObject*);
 
 private:
     void finishAnnotation();

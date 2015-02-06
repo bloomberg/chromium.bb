@@ -90,10 +90,10 @@ bool HTMLAppletElement::rendererIsNeeded(const RenderStyle& style)
     return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
-RenderObject* HTMLAppletElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLAppletElement::createRenderer(const RenderStyle& style)
 {
     if (!canEmbedJava() || hasAuthorShadowRoot())
-        return RenderObject::createObject(this, style);
+        return LayoutObject::createObject(this, style);
 
     if (usePlaceholderContent())
         return new RenderBlockFlow(this);

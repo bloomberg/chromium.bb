@@ -38,10 +38,10 @@ class AXObjectCacheImpl;
 class AXTableRow : public AXRenderObject {
 
 protected:
-    AXTableRow(RenderObject*, AXObjectCacheImpl*);
+    AXTableRow(LayoutObject*, AXObjectCacheImpl*);
 
 public:
-    static PassRefPtr<AXTableRow> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXTableRow> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXTableRow();
 
     virtual bool isTableRow() const override final;

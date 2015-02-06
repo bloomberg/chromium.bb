@@ -428,7 +428,7 @@ void ImageLoader::notifyFinished(Resource* resource)
 
 RenderImageResource* ImageLoader::renderImageResource()
 {
-    RenderObject* renderer = m_element->renderer();
+    LayoutObject* renderer = m_element->renderer();
 
     if (!renderer)
         return 0;

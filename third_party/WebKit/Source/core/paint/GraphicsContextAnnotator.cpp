@@ -33,8 +33,8 @@
 #include "core/paint/GraphicsContextAnnotator.h"
 
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -86,7 +86,7 @@ static const char* paintPhaseName(blink::PaintPhase phase)
 
 namespace blink {
 
-void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const RenderObject* object)
+void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const LayoutObject* object)
 {
     ASSERT(!m_context);
 

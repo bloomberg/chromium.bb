@@ -43,7 +43,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderProgress"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectProgress || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || RenderBlockFlow::isOfType(type); }
 
     void animationTimerFired(Timer<RenderProgress>*);
     void updateAnimationState();
@@ -56,7 +56,7 @@ private:
     Timer<RenderProgress> m_animationTimer;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderProgress, isProgress());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderProgress, isProgress());
 
 } // namespace blink
 

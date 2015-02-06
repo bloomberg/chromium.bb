@@ -41,7 +41,7 @@ namespace blink {
 
 // === generic helper functions to avoid excessive code duplication ===
 
-static inline bool isAnonymousRubyInlineBlock(const RenderObject* object)
+static inline bool isAnonymousRubyInlineBlock(const LayoutObject* object)
 {
     ASSERT(!object
         || !object->parent()->isRuby()
@@ -55,7 +55,7 @@ static inline bool isAnonymousRubyInlineBlock(const RenderObject* object)
         && !object->isRubyRun();
 }
 
-static inline bool isRubyBeforeBlock(const RenderObject* object)
+static inline bool isRubyBeforeBlock(const LayoutObject* object)
 {
     return isAnonymousRubyInlineBlock(object)
         && !object->previousSibling()
@@ -63,7 +63,7 @@ static inline bool isRubyBeforeBlock(const RenderObject* object)
         && toRenderBlock(object)->firstChild()->style()->styleType() == BEFORE;
 }
 
-static inline bool isRubyAfterBlock(const RenderObject* object)
+static inline bool isRubyAfterBlock(const LayoutObject* object)
 {
     return isAnonymousRubyInlineBlock(object)
         && !object->nextSibling()
@@ -71,19 +71,19 @@ static inline bool isRubyAfterBlock(const RenderObject* object)
         && toRenderBlock(object)->firstChild()->style()->styleType() == AFTER;
 }
 
-static inline RenderBlock* rubyBeforeBlock(const RenderObject* ruby)
+static inline RenderBlock* rubyBeforeBlock(const LayoutObject* ruby)
 {
-    RenderObject* child = ruby->slowFirstChild();
+    LayoutObject* child = ruby->slowFirstChild();
     return isRubyBeforeBlock(child) ? toRenderBlock(child) : 0;
 }
 
-static inline RenderBlock* rubyAfterBlock(const RenderObject* ruby)
+static inline RenderBlock* rubyAfterBlock(const LayoutObject* ruby)
 {
-    RenderObject* child = ruby->slowLastChild();
+    LayoutObject* child = ruby->slowLastChild();
     return isRubyAfterBlock(child) ? toRenderBlock(child) : 0;
 }
 
-static RenderBlockFlow* createAnonymousRubyInlineBlock(RenderObject* ruby)
+static RenderBlockFlow* createAnonymousRubyInlineBlock(LayoutObject* ruby)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(ruby->style(), INLINE_BLOCK);
     RenderBlockFlow* newBlock = RenderBlockFlow::createAnonymous(&ruby->document());
@@ -91,16 +91,16 @@ static RenderBlockFlow* createAnonymousRubyInlineBlock(RenderObject* ruby)
     return newBlock;
 }
 
-static LayoutRubyRun* lastRubyRun(const RenderObject* ruby)
+static LayoutRubyRun* lastRubyRun(const LayoutObject* ruby)
 {
-    RenderObject* child = ruby->slowLastChild();
+    LayoutObject* child = ruby->slowLastChild();
     if (child && !child->isRubyRun())
         child = child->previousSibling();
     ASSERT(!child || child->isRubyRun() || child->isBeforeContent() || child == rubyBeforeBlock(ruby));
     return child && child->isRubyRun() ? toLayoutRubyRun(child) : 0;
 }
 
-static inline LayoutRubyRun* findRubyRunParent(RenderObject* child)
+static inline LayoutRubyRun* findRubyRunParent(LayoutObject* child)
 {
     while (child && !child->isRubyRun())
         child = child->parent();
@@ -125,7 +125,7 @@ void LayoutRubyAsInline::styleDidChange(StyleDifference diff, const RenderStyle*
     propagateStyleToAnonymousChildren();
 }
 
-void LayoutRubyAsInline::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutRubyAsInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     // Insert :before and :after content before/after the LayoutRubyRun(s)
     if (child->isBeforeContent()) {
@@ -167,7 +167,7 @@ void LayoutRubyAsInline::addChild(RenderObject* child, RenderObject* beforeChild
 
     if (beforeChild && !isAfterContent(beforeChild)) {
         // insert child into run
-        RenderObject* run = beforeChild;
+        LayoutObject* run = beforeChild;
         while (run && !run->isRubyRun())
             run = run->parent();
         if (run) {
@@ -192,7 +192,7 @@ void LayoutRubyAsInline::addChild(RenderObject* child, RenderObject* beforeChild
     lastRun->addChild(child);
 }
 
-void LayoutRubyAsInline::removeChild(RenderObject* child)
+void LayoutRubyAsInline::removeChild(LayoutObject* child)
 {
     // If the child's parent is *this (must be a ruby run or generated content or anonymous block),
     // just use the normal remove method.
@@ -234,7 +234,7 @@ void LayoutRubyAsBlock::styleDidChange(StyleDifference diff, const RenderStyle* 
     propagateStyleToAnonymousChildren();
 }
 
-void LayoutRubyAsBlock::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutRubyAsBlock::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     // Insert :before and :after content before/after the LayoutRubyRun(s)
     if (child->isBeforeContent()) {
@@ -276,7 +276,7 @@ void LayoutRubyAsBlock::addChild(RenderObject* child, RenderObject* beforeChild)
 
     if (beforeChild && !isAfterContent(beforeChild)) {
         // insert child into run
-        RenderObject* run = beforeChild;
+        LayoutObject* run = beforeChild;
         while (run && !run->isRubyRun())
             run = run->parent();
         if (run) {
@@ -301,7 +301,7 @@ void LayoutRubyAsBlock::addChild(RenderObject* child, RenderObject* beforeChild)
     lastRun->addChild(child);
 }
 
-void LayoutRubyAsBlock::removeChild(RenderObject* child)
+void LayoutRubyAsBlock::removeChild(LayoutObject* child)
 {
     // If the child's parent is *this (must be a ruby run or generated content or anonymous block),
     // just use the normal remove method.

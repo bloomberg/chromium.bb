@@ -47,7 +47,7 @@ struct SVGTextQuery::Data {
     const SVGInlineTextBox* textBox;
 };
 
-static inline InlineFlowBox* flowBoxForRenderer(RenderObject* renderer)
+static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
 {
     if (!renderer)
         return 0;
@@ -77,7 +77,7 @@ static inline InlineFlowBox* flowBoxForRenderer(RenderObject* renderer)
     return 0;
 }
 
-SVGTextQuery::SVGTextQuery(RenderObject* renderer)
+SVGTextQuery::SVGTextQuery(LayoutObject* renderer)
 {
     collectTextBoxesInFlowBox(flowBoxForRenderer(renderer));
 }

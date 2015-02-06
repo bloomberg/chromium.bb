@@ -52,9 +52,9 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/TimelineRecordFactory.h"
 #include "core/inspector/TraceEventDispatcher.h"
+#include "core/layout/LayoutObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/TraceEvent.h"
@@ -538,7 +538,7 @@ bool InspectorTimelineAgent::willLayout(LocalFrame* frame)
     return true;
 }
 
-void InspectorTimelineAgent::didLayout(RenderObject* root)
+void InspectorTimelineAgent::didLayout(LayoutObject* root)
 {
     if (m_recordStack.isEmpty())
         return;
@@ -596,7 +596,7 @@ void InspectorTimelineAgent::didRecalculateStyle(int elementCount)
     didCompleteCurrentRecord(TimelineRecordType::RecalculateStyles);
 }
 
-void InspectorTimelineAgent::willPaint(RenderObject* renderer, const GraphicsLayer* graphicsLayer)
+void InspectorTimelineAgent::willPaint(LayoutObject* renderer, const GraphicsLayer* graphicsLayer)
 {
     LocalFrame* frame = renderer->frame();
 
@@ -617,7 +617,7 @@ void InspectorTimelineAgent::willPaint(RenderObject* renderer, const GraphicsLay
     pushCurrentRecord(JSONObject::create(), TimelineRecordType::Paint, true, frame, true);
 }
 
-void InspectorTimelineAgent::didPaint(RenderObject* renderer, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& clipRect)
+void InspectorTimelineAgent::didPaint(LayoutObject* renderer, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& clipRect)
 {
     TimelineRecordEntry& entry = m_recordStack.last();
     ASSERT(entry.type == TimelineRecordType::Paint);
@@ -643,7 +643,7 @@ void InspectorTimelineAgent::didPaintImage()
     m_imageBeingPainted = 0;
 }
 
-void InspectorTimelineAgent::willScrollLayer(RenderObject* renderer)
+void InspectorTimelineAgent::willScrollLayer(LayoutObject* renderer)
 {
     pushCurrentRecord(TimelineRecordFactory::createLayerData(nodeId(renderer)), TimelineRecordType::ScrollLayer, false, renderer->frame());
 }
@@ -1258,7 +1258,7 @@ void InspectorTimelineAgent::clearRecordStack()
     m_id++;
 }
 
-void InspectorTimelineAgent::localToPageQuad(const RenderObject& renderer, const LayoutRect& rect, FloatQuad* quad)
+void InspectorTimelineAgent::localToPageQuad(const LayoutObject& renderer, const LayoutRect& rect, FloatQuad* quad)
 {
     LocalFrame* frame = renderer.frame();
     FrameView* view = frame->view();
@@ -1274,7 +1274,7 @@ long long InspectorTimelineAgent::nodeId(Node* node)
     return node ? InspectorNodeIds::idForNode(node)  : 0;
 }
 
-long long InspectorTimelineAgent::nodeId(RenderObject* renderer)
+long long InspectorTimelineAgent::nodeId(LayoutObject* renderer)
 {
     return InspectorNodeIds::idForNode(renderer->generatingNode());
 }

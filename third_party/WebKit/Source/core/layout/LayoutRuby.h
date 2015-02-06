@@ -56,14 +56,14 @@ public:
     LayoutRubyAsInline(Element*);
     virtual ~LayoutRubyAsInline();
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject* child) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject* child) override;
 
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRuby || RenderInline::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || RenderInline::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutRuby (inline)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
 };
@@ -74,14 +74,14 @@ public:
     LayoutRubyAsBlock(Element*);
     virtual ~LayoutRubyAsBlock();
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject* child) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject* child) override;
 
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRuby || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || RenderBlockFlow::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutRuby (block)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { ASSERT_NOT_REACHED(); }

@@ -66,7 +66,7 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     }
 
     if (renderer.isOutOfFlowPositioned() && !fixed) {
-        if (RenderObject* container = renderer.container()) {
+        if (LayoutObject* container = renderer.container()) {
             if (container->style()->hasInFlowPosition() && container->isRenderInline())
                 m_layoutOffset += toRenderInline(container)->offsetForInFlowPositionedInline(renderer);
         }
@@ -102,7 +102,7 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
-LayoutState::LayoutState(RenderObject& root)
+LayoutState::LayoutState(LayoutObject& root)
     : m_isPaginated(false)
     , m_pageLogicalHeightChanged(false)
     , m_containingBlockLogicalWidthChanged(false)
@@ -119,7 +119,7 @@ LayoutState::LayoutState(RenderObject& root)
 
     root.view()->pushLayoutState(*this);
 
-    RenderObject* container = root.container();
+    LayoutObject* container = root.container();
     FloatPoint absContentPoint = container->localToAbsolute(FloatPoint(), UseTransforms);
     m_layoutOffset = LayoutSize(absContentPoint.x(), absContentPoint.y());
 }

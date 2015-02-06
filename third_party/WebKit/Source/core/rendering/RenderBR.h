@@ -44,7 +44,7 @@ public:
     int lineHeight(bool firstLine) const;
 
     // overrides
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectBr || RenderText::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectBr || RenderText::isOfType(type); }
 
     virtual int caretMinOffset() const override;
     virtual int caretMaxOffset() const override;
@@ -55,7 +55,7 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBR, isBR());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBR, isBR());
 
 } // namespace blink
 

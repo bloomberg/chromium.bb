@@ -30,13 +30,13 @@
 #include "core/HTMLNames.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
 namespace NodeRenderingTraversal {
 
-static bool isRendererReparented(const RenderObject* renderer)
+static bool isRendererReparented(const LayoutObject* renderer)
 {
     if (!renderer->node()->isElementNode())
         return false;
@@ -225,27 +225,27 @@ Node* next(const Node& node, const Node* stayWithin)
     return nextSkippingChildren(node, stayWithin);
 }
 
-RenderObject* nextSiblingRenderer(const Node& node)
+LayoutObject* nextSiblingRenderer(const Node& node)
 {
     for (Node* sibling = NodeRenderingTraversal::nextSibling(node); sibling; sibling = NodeRenderingTraversal::nextSibling(*sibling)) {
-        RenderObject* renderer = sibling->renderer();
+        LayoutObject* renderer = sibling->renderer();
         if (renderer && !isRendererReparented(renderer))
             return renderer;
     }
     return 0;
 }
 
-RenderObject* previousSiblingRenderer(const Node& node)
+LayoutObject* previousSiblingRenderer(const Node& node)
 {
     for (Node* sibling = NodeRenderingTraversal::previousSibling(node); sibling; sibling = NodeRenderingTraversal::previousSibling(*sibling)) {
-        RenderObject* renderer = sibling->renderer();
+        LayoutObject* renderer = sibling->renderer();
         if (renderer && !isRendererReparented(renderer))
             return renderer;
     }
     return 0;
 }
 
-RenderObject* nextInTopLayer(const Element& element)
+LayoutObject* nextInTopLayer(const Element& element)
 {
     if (!element.isInTopLayer())
         return 0;
@@ -253,7 +253,7 @@ RenderObject* nextInTopLayer(const Element& element)
     size_t position = topLayerElements.find(&element);
     ASSERT(position != kNotFound);
     for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
-        if (RenderObject* renderer = topLayerElements[i]->renderer())
+        if (LayoutObject* renderer = topLayerElements[i]->renderer())
             return renderer;
     }
     return 0;

@@ -128,7 +128,7 @@ RenderBlock* CaretBase::caretRenderer(Node* node)
     if (!node)
         return 0;
 
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer)
         return 0;
 
@@ -137,7 +137,7 @@ RenderBlock* CaretBase::caretRenderer(Node* node)
     return paintedByBlock ? toRenderBlock(renderer) : renderer->containingBlock();
 }
 
-static void mapCaretRectToCaretPainter(RenderObject* caretRenderer, RenderBlock* caretPainter, LayoutRect& caretRect)
+static void mapCaretRectToCaretPainter(LayoutObject* caretRenderer, RenderBlock* caretPainter, LayoutRect& caretRect)
 {
     // FIXME: This shouldn't be called on un-rooted subtrees.
     // FIXME: This should probably just use mapLocalToContainer.
@@ -147,7 +147,7 @@ static void mapCaretRectToCaretPainter(RenderObject* caretRenderer, RenderBlock*
 
     bool unrooted = false;
     while (caretRenderer != caretPainter) {
-        RenderObject* containerObject = caretRenderer->container();
+        LayoutObject* containerObject = caretRenderer->container();
         if (!containerObject) {
             unrooted = true;
             break;
@@ -170,7 +170,7 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
     ASSERT(caretPosition.position().deprecatedNode()->renderer());
 
     // First compute a rect local to the renderer at the selection start.
-    RenderObject* renderer;
+    LayoutObject* renderer;
     m_caretLocalRect = localCaretRectOfPosition(caretPosition, renderer);
 
     // Get the renderer that will be responsible for painting the caret

@@ -43,7 +43,7 @@ LayoutTableRow::LayoutTableRow(Element* element)
     : RenderBox(element)
     , m_rowIndex(unsetRowIndex)
 {
-    // init RenderObject attributes
+    // init LayoutObject attributes
     setInline(false); // our object is not Inline
 }
 
@@ -105,10 +105,10 @@ const BorderValue& LayoutTableRow::borderAdjoiningEndCell(const LayoutTableCell*
     return style()->borderEnd();
 }
 
-void LayoutTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     if (!child->isTableCell()) {
-        RenderObject* last = beforeChild;
+        LayoutObject* last = beforeChild;
         if (!last)
             last = lastCell();
         if (last && last->isAnonymous() && last->isTableCell() && !last->isBeforeOrAfterContent()) {
@@ -120,7 +120,7 @@ void LayoutTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
         }
 
         if (beforeChild && !beforeChild->isAnonymous() && beforeChild->parent() == this) {
-            RenderObject* cell = beforeChild->previousSibling();
+            LayoutObject* cell = beforeChild->previousSibling();
             if (cell && cell->isTableCell() && cell->isAnonymous()) {
                 cell->addChild(child);
                 return;
@@ -231,7 +231,7 @@ LayoutTableRow* LayoutTableRow::createAnonymous(Document* document)
     return renderer;
 }
 
-LayoutTableRow* LayoutTableRow::createAnonymousWithParentRenderer(const RenderObject* parent)
+LayoutTableRow* LayoutTableRow::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     LayoutTableRow* newRow = LayoutTableRow::createAnonymous(&parent->document());
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE_ROW);

@@ -51,16 +51,16 @@ public:
     LayoutRubyBase* rubyBase() const;
     LayoutRubyBase* rubyBaseSafe(); // creates the base if it doesn't already exist
 
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
+    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
     virtual void layout() override;
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject* child) override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject* child) override;
 
-    void getOverhang(bool firstLine, RenderObject* startRenderer, RenderObject* endRenderer, int& startOverhang, int& endOverhang) const;
+    void getOverhang(bool firstLine, LayoutObject* startRenderer, LayoutObject* endRenderer, int& startOverhang, int& endOverhang) const;
 
-    static LayoutRubyRun* staticCreateRubyRun(const RenderObject* parentRuby);
+    static LayoutRubyRun* staticCreateRubyRun(const LayoutObject* parentRuby);
 
 protected:
     LayoutRubyBase* createRubyBase() const;
@@ -68,13 +68,13 @@ protected:
 private:
     LayoutRubyRun();
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyRun || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyRun || RenderBlockFlow::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutRubyRun (anonymous)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutRubyRun, isRubyRun());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyRun, isRubyRun());
 
 } // namespace blink
 

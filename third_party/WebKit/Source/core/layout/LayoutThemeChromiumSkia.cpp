@@ -24,11 +24,11 @@
 #include "config.h"
 #include "core/layout/LayoutThemeChromiumSkia.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutThemeChromiumFontProvider.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderMediaControls.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
@@ -182,7 +182,7 @@ void LayoutThemeChromiumSkia::adjustButtonStyle(RenderStyle& style, Element*) co
     }
 }
 
-bool LayoutThemeChromiumSkia::paintTextArea(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutThemeChromiumSkia::paintTextArea(LayoutObject* o, const PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
 }
@@ -193,7 +193,7 @@ void LayoutThemeChromiumSkia::adjustSearchFieldStyle(RenderStyle& style, Element
     style.setLineHeight(RenderStyle::initialLineHeight());
 }
 
-bool LayoutThemeChromiumSkia::paintSearchField(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutThemeChromiumSkia::paintSearchField(LayoutObject* o, const PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
 }
@@ -207,7 +207,7 @@ void LayoutThemeChromiumSkia::adjustSearchFieldCancelButtonStyle(RenderStyle& st
     style.setHeight(Length(cancelButtonSize, Fixed));
 }
 
-IntRect LayoutThemeChromiumSkia::convertToPaintingRect(RenderObject* inputRenderer, const RenderObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const
+IntRect LayoutThemeChromiumSkia::convertToPaintingRect(LayoutObject* inputRenderer, const LayoutObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const
 {
     // Compute an offset between the part renderer and the input renderer.
     LayoutSize offsetFromInputRenderer = -partRenderer->offsetFromAncestorContainer(inputRenderer);
@@ -219,13 +219,13 @@ IntRect LayoutThemeChromiumSkia::convertToPaintingRect(RenderObject* inputRender
     return pixelSnappedIntRect(partRect);
 }
 
-bool LayoutThemeChromiumSkia::paintSearchFieldCancelButton(RenderObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeChromiumSkia::paintSearchFieldCancelButton(LayoutObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the renderer of <input> element.
     if (!cancelButtonObject->node())
         return false;
     Node* input = cancelButtonObject->node()->shadowHost();
-    RenderObject* baseRenderer = input ? input->renderer() : cancelButtonObject;
+    LayoutObject* baseRenderer = input ? input->renderer() : cancelButtonObject;
     if (!baseRenderer->isBox())
         return false;
     RenderBox* inputRenderBox = toRenderBox(baseRenderer);
@@ -264,13 +264,13 @@ void LayoutThemeChromiumSkia::adjustSearchFieldResultsDecorationStyle(RenderStyl
     style.setHeight(Length(magnifierSize, Fixed));
 }
 
-bool LayoutThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeChromiumSkia::paintSearchFieldResultsDecoration(LayoutObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the renderer of <input> element.
     if (!magnifierObject->node())
         return false;
     Node* input = magnifierObject->node()->shadowHost();
-    RenderObject* baseRenderer = input ? input->renderer() : magnifierObject;
+    LayoutObject* baseRenderer = input ? input->renderer() : magnifierObject;
     if (!baseRenderer->isBox())
         return false;
     RenderBox* inputRenderBox = toRenderBox(baseRenderer);
@@ -291,12 +291,12 @@ bool LayoutThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* ma
     return false;
 }
 
-bool LayoutThemeChromiumSkia::paintMediaSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaVolumeSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
@@ -306,37 +306,37 @@ void LayoutThemeChromiumSkia::adjustSliderThumbSize(RenderStyle& style, Element*
     RenderMediaControls::adjustMediaSliderThumbSize(style);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaCastButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeChromiumSkia::paintMediaCastButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaCastOffButton, o, paintInfo, r);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaOverlayPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaMuteButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
 }
@@ -351,7 +351,7 @@ String LayoutThemeChromiumSkia::formatMediaControlsCurrentTime(float currentTime
     return RenderMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
-bool LayoutThemeChromiumSkia::paintMediaFullscreenButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
@@ -368,7 +368,7 @@ void LayoutThemeChromiumSkia::adjustMenuListButtonStyle(RenderStyle& style, Elem
 }
 
 // Used to paint styled menulists (i.e. with a non-default border)
-bool LayoutThemeChromiumSkia::paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumSkia::paintMenuListButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     return paintMenuList(o, i, rect);
 }
@@ -474,7 +474,7 @@ IntRect LayoutThemeChromiumSkia::progressValueRectFor(RenderProgress* renderProg
     return renderProgress->isDeterminate() ? determinateProgressValueRectFor(renderProgress, rect) : indeterminateProgressValueRectFor(renderProgress, rect);
 }
 
-LayoutThemeChromiumSkia::DirectionFlippingScope::DirectionFlippingScope(RenderObject* renderer, const PaintInfo& paintInfo, const IntRect& rect)
+LayoutThemeChromiumSkia::DirectionFlippingScope::DirectionFlippingScope(LayoutObject* renderer, const PaintInfo& paintInfo, const IntRect& rect)
     : m_needsFlipping(!renderer->style()->isLeftToRightDirection())
     , m_paintInfo(paintInfo)
 {

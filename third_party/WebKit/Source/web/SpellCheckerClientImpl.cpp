@@ -74,7 +74,7 @@ bool SpellCheckerClientImpl::shouldSpellcheckByDefault()
     // cause any problems to the LocalFrame's behavior.
     if (!element)
         return true;
-    const RenderObject* renderer = element->renderer();
+    const LayoutObject* renderer = element->renderer();
     if (!renderer)
         return false;
 

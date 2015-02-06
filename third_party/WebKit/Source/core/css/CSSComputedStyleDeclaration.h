@@ -37,7 +37,7 @@ class CSSValueList;
 class ExceptionState;
 class MutableStylePropertySet;
 class Node;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class ShadowData;
 class ShadowList;

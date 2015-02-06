@@ -79,9 +79,9 @@ public:
 
     virtual RenderLineBoxList* rendererLineBoxes() const override final;
 
-    RenderObject* lineBreakObj() const { return m_lineBreakObj; }
+    LayoutObject* lineBreakObj() const { return m_lineBreakObj; }
     BidiStatus lineBreakBidiStatus() const;
-    void setLineBreakInfo(RenderObject*, unsigned breakPos, const BidiStatus&);
+    void setLineBreakInfo(LayoutObject*, unsigned breakPos, const BidiStatus&);
 
     unsigned lineBreakPos() const { return m_lineBreakPos; }
     void setLineBreakPos(unsigned p) { m_lineBreakPos = p; }
@@ -111,7 +111,7 @@ public:
     using InlineBox::hasSelectedChildren;
     using InlineBox::setHasSelectedChildren;
 
-    virtual RenderObject::SelectionState selectionState() const override final;
+    virtual LayoutObject::SelectionState selectionState() const override final;
     InlineBox* firstSelectedBox() const;
     InlineBox* lastSelectedBox() const;
 
@@ -133,9 +133,9 @@ public:
 
     Vector<RenderBox*>* floatsPtr() { ASSERT(!isDirty()); return m_floats.get(); }
 
-    virtual void extractLineBoxFromRenderObject() override final;
-    virtual void attachLineBoxToRenderObject() override final;
-    virtual void removeLineBoxFromRenderObject() override final;
+    virtual void extractLineBoxFromLayoutObject() override final;
+    virtual void attachLineBoxToLayoutObject() override final;
+    virtual void removeLineBoxFromLayoutObject() override final;
 
     FontBaseline baselineType() const { return static_cast<FontBaseline>(m_baselineType); }
 
@@ -187,7 +187,7 @@ private:
 
     // Where this line ended.  The exact object and the position within that object are stored so that
     // we can create an InlineIterator beginning just after the end of this line.
-    RenderObject* m_lineBreakObj;
+    LayoutObject* m_lineBreakObj;
     RefPtr<BidiContext> m_lineBreakContext;
 
     // Floats hanging off the line are pushed into this vector during layout. It is only

@@ -21,9 +21,9 @@
 #ifndef InlineFlowBox_h
 #define InlineFlowBox_h
 
+#include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/layout/line/InlineBox.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderOverflow.h"
 #include "core/rendering/style/ShadowData.h"
 
@@ -42,7 +42,7 @@ typedef HashMap<const InlineTextBox*, pair<Vector<const SimpleFontData*>, GlyphO
 
 class InlineFlowBox : public InlineBox {
 public:
-    InlineFlowBox(RenderObject& obj)
+    InlineFlowBox(LayoutObject& obj)
         : InlineBox(obj)
         , m_firstChild(0)
         , m_lastChild(0)
@@ -76,7 +76,7 @@ public:
 #endif
 
 #ifndef NDEBUG
-    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0, int = 0) const override;
+    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0, int = 0) const override;
     virtual const char* boxName() const override;
 #endif
 
@@ -109,9 +109,9 @@ public:
     virtual void attachLine() override final;
     virtual void adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit dy) override;
 
-    virtual void extractLineBoxFromRenderObject();
-    virtual void attachLineBoxToRenderObject();
-    virtual void removeLineBoxFromRenderObject();
+    virtual void extractLineBoxFromLayoutObject();
+    virtual void attachLineBoxToLayoutObject();
+    virtual void removeLineBoxFromLayoutObject();
 
     virtual void clearTruncation() override;
 
@@ -173,7 +173,7 @@ public:
     }
 
     // Helper functions used during line construction and placement.
-    void determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, RenderObject* logicallyLastRunRenderer);
+    void determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LayoutObject* logicallyLastRunRenderer);
     LayoutUnit getFlowSpacingLogicalWidth();
     FloatWillBeLayoutUnit placeBoxesInInlineDirection(FloatWillBeLayoutUnit logicalLeft, bool& needsWordSpacing);
     FloatWillBeLayoutUnit placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
@@ -199,7 +199,7 @@ public:
 
     void removeChild(InlineBox* child, MarkLineBoxes);
 
-    virtual RenderObject::SelectionState selectionState() const override;
+    virtual LayoutObject::SelectionState selectionState() const override;
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const override final;
     virtual FloatWillBeLayoutUnit placeEllipsisBox(bool ltr, FloatWillBeLayoutUnit blockLeftEdge, FloatWillBeLayoutUnit blockRightEdge, FloatWillBeLayoutUnit ellipsisWidth, FloatWillBeLayoutUnit &truncatedWidth, bool&) override;
@@ -311,8 +311,8 @@ protected:
     InlineBox* m_firstChild;
     InlineBox* m_lastChild;
 
-    InlineFlowBox* m_prevLineBox; // The previous box that also uses our RenderObject
-    InlineFlowBox* m_nextLineBox; // The next box that also uses our RenderObject
+    InlineFlowBox* m_prevLineBox; // The previous box that also uses our LayoutObject
+    InlineFlowBox* m_nextLineBox; // The next box that also uses our LayoutObject
 
     // Maximum logicalTop among all children of an InlineFlowBox. Used to
     // calculate the offset for TextUnderlinePositionUnder.

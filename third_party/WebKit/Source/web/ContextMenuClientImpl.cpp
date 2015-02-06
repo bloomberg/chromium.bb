@@ -271,7 +271,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         if (mediaElement->shouldShowControls())
             data.mediaFlags |= WebContextMenuData::MediaControls;
     } else if (isHTMLObjectElement(*r.innerNonSharedNode()) || isHTMLEmbedElement(*r.innerNonSharedNode())) {
-        RenderObject* object = r.innerNonSharedNode()->renderer();
+        LayoutObject* object = r.innerNonSharedNode()->renderer();
         if (object && object->isRenderPart()) {
             Widget* widget = toRenderPart(object)->widget();
             if (widget && widget->isPluginContainer()) {

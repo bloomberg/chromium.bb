@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 // Values for vertical alignment.
 const int PositionUndefined = 0x80000000;
@@ -42,16 +42,16 @@ public:
     VerticalPositionCache()
     { }
 
-    int get(RenderObject* renderer, FontBaseline baselineType) const
+    int get(LayoutObject* renderer, FontBaseline baselineType) const
     {
-        const HashMap<RenderObject*, int>& mapToCheck = baselineType == AlphabeticBaseline ? m_alphabeticPositions : m_ideographicPositions;
-        const HashMap<RenderObject*, int>::const_iterator it = mapToCheck.find(renderer);
+        const HashMap<LayoutObject*, int>& mapToCheck = baselineType == AlphabeticBaseline ? m_alphabeticPositions : m_ideographicPositions;
+        const HashMap<LayoutObject*, int>::const_iterator it = mapToCheck.find(renderer);
         if (it == mapToCheck.end())
             return PositionUndefined;
         return it->value;
     }
 
-    void set(RenderObject* renderer, FontBaseline baselineType, int position)
+    void set(LayoutObject* renderer, FontBaseline baselineType, int position)
     {
         if (baselineType == AlphabeticBaseline)
             m_alphabeticPositions.set(renderer, position);
@@ -60,8 +60,8 @@ public:
     }
 
 private:
-    HashMap<RenderObject*, int> m_alphabeticPositions;
-    HashMap<RenderObject*, int> m_ideographicPositions;
+    HashMap<LayoutObject*, int> m_alphabeticPositions;
+    HashMap<LayoutObject*, int> m_ideographicPositions;
 };
 
 } // namespace blink

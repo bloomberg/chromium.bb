@@ -181,7 +181,7 @@ void PrintContext::end()
     m_linkAndLinkedDestinationsValid = false;
 }
 
-static RenderBoxModelObject* enclosingBoxModelObject(RenderObject* object)
+static RenderBoxModelObject* enclosingBoxModelObject(LayoutObject* object)
 {
 
     while (object && !object->isBoxModelObject())
@@ -256,7 +256,7 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
     }
 
     for (const auto& entry : m_linkDestinations) {
-        RenderObject* renderer = entry.key->renderer();
+        LayoutObject* renderer = entry.key->renderer();
         if (!renderer)
             continue;
         KURL url = entry.value;
@@ -273,7 +273,7 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
     }
 
     for (const auto& entry : m_linkedDestinations) {
-        RenderObject* renderer = entry.value->renderer();
+        LayoutObject* renderer = entry.value->renderer();
         if (!renderer)
             continue;
         IntRect boundingBox = renderer->absoluteBoundingBoxRect();

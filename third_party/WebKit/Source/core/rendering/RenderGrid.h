@@ -62,12 +62,12 @@ public:
 
     typedef void (GridTrack::* AccumulatorGrowFunction)(LayoutUnit);
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderGrid || RenderBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderGrid || RenderBlock::isOfType(type); }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject*) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject*) override;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
 
@@ -171,7 +171,7 @@ private:
     HashMap<const RenderBox*, size_t> m_gridItemsIndexesMap;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderGrid, isRenderGrid());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderGrid, isRenderGrid());
 
 } // namespace blink
 

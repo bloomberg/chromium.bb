@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/CSSCanvasValue.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -52,13 +52,13 @@ void CSSCanvasValue::canvasChanged(HTMLCanvasElement*, const FloatRect& changedR
 {
     IntRect imageChangeRect = enclosingIntRect(changedRect);
     for (const auto& curr : clients())
-        const_cast<RenderObject*>(curr.key)->imageChanged(static_cast<WrappedImagePtr>(this), &imageChangeRect);
+        const_cast<LayoutObject*>(curr.key)->imageChanged(static_cast<WrappedImagePtr>(this), &imageChangeRect);
 }
 
 void CSSCanvasValue::canvasResized(HTMLCanvasElement*)
 {
     for (const auto& curr : clients())
-        const_cast<RenderObject*>(curr.key)->imageChanged(static_cast<WrappedImagePtr>(this));
+        const_cast<LayoutObject*>(curr.key)->imageChanged(static_cast<WrappedImagePtr>(this));
 }
 
 #if !ENABLE(OILPAN)
@@ -69,7 +69,7 @@ void CSSCanvasValue::canvasDestroyed(HTMLCanvasElement* element)
 }
 #endif
 
-IntSize CSSCanvasValue::fixedSize(const RenderObject* renderer)
+IntSize CSSCanvasValue::fixedSize(const LayoutObject* renderer)
 {
     if (HTMLCanvasElement* elt = element(&renderer->document()))
         return IntSize(elt->width(), elt->height());
@@ -85,7 +85,7 @@ HTMLCanvasElement* CSSCanvasValue::element(Document* document)
     return m_element;
 }
 
-PassRefPtr<Image> CSSCanvasValue::image(RenderObject* renderer, const IntSize& /*size*/)
+PassRefPtr<Image> CSSCanvasValue::image(LayoutObject* renderer, const IntSize& /*size*/)
 {
     ASSERT(clients().contains(renderer));
     HTMLCanvasElement* elt = element(&renderer->document());

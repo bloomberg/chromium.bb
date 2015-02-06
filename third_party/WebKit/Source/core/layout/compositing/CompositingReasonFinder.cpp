@@ -74,7 +74,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
     return m_renderView.frameView()->isScrollable();
 }
 
-CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle(RenderObject* renderer) const
+CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle(LayoutObject* renderer) const
 {
     if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
         return CompositingReasonNone;
@@ -136,7 +136,7 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     return reasons;
 }
 
-bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* renderer) const
+bool CompositingReasonFinder::requiresCompositingForTransform(LayoutObject* renderer) const
 {
     // Note that we ask the renderer if it has a transform, because the style may have transforms,
     // but the renderer may be an inline that doesn't support them.
@@ -146,7 +146,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* rend
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const Layer* layer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
-    RenderObject* renderer = layer->renderer();
+    LayoutObject* renderer = layer->renderer();
 
     if (hasOverflowScrollTrigger()) {
         if (layer->clipParent())
@@ -187,9 +187,9 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(const Layer* l
     return layer->scrollsWithViewport() && m_renderView.frameView()->isScrollable();
 }
 
-bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const RenderObject* renderer) const
+bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutObject* renderer) const
 {
-    // Note that the other requires* functions run at RenderObject::styleDidChange time and so can rely
+    // Note that the other requires* functions run at LayoutObject::styleDidChange time and so can rely
     // only on the style of their object.  This function runs at CompositingRequirementsUpdater::update
     // time, and so can consider the style of other objects.
     RenderStyle* style = renderer->style();

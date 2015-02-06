@@ -47,7 +47,7 @@ class CSSValue;
 class Document;
 class LocalFrame;
 class Page;
-class RenderObject;
+class LayoutObject;
 class Resource;
 class SharedBuffer;
 class StylePropertySet;
@@ -78,7 +78,7 @@ private:
     bool shouldAddURL(const KURL&);
 
     void addToResources(Resource *, PassRefPtr<SharedBuffer>, const KURL&);
-    void addImageToResources(ImageResource*, RenderObject*, const KURL&);
+    void addImageToResources(ImageResource*, LayoutObject*, const KURL&);
     void addFontToResources(FontResource*);
 
     void retrieveResourcesForProperties(const StylePropertySet*, Document&);

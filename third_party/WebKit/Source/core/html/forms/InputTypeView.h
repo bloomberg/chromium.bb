@@ -51,7 +51,7 @@ class HTMLFormElement;
 class HTMLInputElement;
 class KeyboardEvent;
 class MouseEvent;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class TouchEvent;
 
@@ -98,7 +98,7 @@ public:
     virtual void subtreeHasChanged();
     virtual bool hasTouchEventHandler() const;
     virtual void blur();
-    virtual RenderObject* createRenderer(const RenderStyle&) const;
+    virtual LayoutObject* createRenderer(const RenderStyle&) const;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
     virtual void startResourceLoading();
     virtual void closePopupView();

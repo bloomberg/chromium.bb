@@ -52,7 +52,7 @@
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/animation/TimingFunction.h"
 #include "public/platform/Platform.h"
@@ -519,7 +519,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
     BitArray<numCSSProperties> listedProperties;
     bool anyTransitionHadTransitionAll = false;
-    const RenderObject* renderer = animatingElement->renderer();
+    const LayoutObject* renderer = animatingElement->renderer();
     if (!animationStyleRecalc && style.display() != NONE && renderer && renderer->style() && transitionData) {
         const RenderStyle& oldStyle = *renderer->style();
 

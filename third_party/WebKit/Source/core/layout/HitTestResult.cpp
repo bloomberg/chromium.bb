@@ -124,7 +124,7 @@ PositionWithAffinity HitTestResult::position() const
 {
     if (!m_innerPossiblyPseudoNode)
         return PositionWithAffinity();
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return PositionWithAffinity();
     if (m_innerPossiblyPseudoNode->isPseudoElement() && m_innerPossiblyPseudoNode->pseudoId() == BEFORE)
@@ -132,7 +132,7 @@ PositionWithAffinity HitTestResult::position() const
     return renderer->positionForPoint(localPoint());
 }
 
-RenderObject* HitTestResult::renderer() const
+LayoutObject* HitTestResult::renderer() const
 {
     return m_innerNode ? m_innerNode->renderer() : 0;
 }
@@ -210,7 +210,7 @@ String HitTestResult::spellingToolTip(TextDirection& dir) const
     if (!marker)
         return String();
 
-    if (RenderObject* renderer = m_innerNonSharedNode->renderer())
+    if (LayoutObject* renderer = m_innerNonSharedNode->renderer())
         dir = renderer->style()->direction();
     return marker->description();
 }
@@ -224,7 +224,7 @@ String HitTestResult::title(TextDirection& dir) const
         if (titleNode->isElementNode()) {
             String title = toElement(titleNode)->title();
             if (!title.isNull()) {
-                if (RenderObject* renderer = titleNode->renderer())
+                if (LayoutObject* renderer = titleNode->renderer())
                     dir = renderer->style()->direction();
                 return title;
             }
@@ -256,7 +256,7 @@ Image* HitTestResult::image() const
     if (!m_innerNonSharedNode)
         return 0;
 
-    RenderObject* renderer = m_innerNonSharedNode->renderer();
+    LayoutObject* renderer = m_innerNonSharedNode->renderer();
     if (renderer && renderer->isImage()) {
         RenderImage* image = toRenderImage(renderer);
         if (image->cachedImage() && !image->cachedImage()->errorOccurred())
@@ -278,7 +278,7 @@ KURL HitTestResult::absoluteImageURL() const
     if (!m_innerNonSharedNode)
         return KURL();
 
-    RenderObject* renderer = m_innerNonSharedNode->renderer();
+    LayoutObject* renderer = m_innerNonSharedNode->renderer();
     if (!(renderer && renderer->isImage()))
         return KURL();
 

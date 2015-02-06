@@ -35,7 +35,7 @@ public:
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
 
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
-    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
 
     virtual AffineTransform localTransform() const override final { return m_localTransform; }
 
@@ -52,7 +52,7 @@ protected:
 
     AffineTransform m_localTransform;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || RenderBlockFlow::isOfType(type); }
 private:
     virtual void updateFromStyle() override final;
 

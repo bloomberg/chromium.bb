@@ -23,49 +23,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderObjectChildList_h
-#define RenderObjectChildList_h
+#ifndef LayoutObjectChildList_h
+#define LayoutObjectChildList_h
 
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
-class RenderObjectChildList {
+class LayoutObjectChildList {
     DISALLOW_ALLOCATION();
 public:
-    RenderObjectChildList()
+    LayoutObjectChildList()
         : m_firstChild(nullptr)
         , m_lastChild(nullptr)
     {
     }
 
-    RenderObject* firstChild() const { return m_firstChild; }
-    RenderObject* lastChild() const { return m_lastChild; }
+    LayoutObject* firstChild() const { return m_firstChild; }
+    LayoutObject* lastChild() const { return m_lastChild; }
 
     // FIXME: Temporary while RenderBox still exists. Eventually this will just happen during insert/append/remove methods on the child list, and nobody
     // will need to manipulate firstChild or lastChild directly.
-    void setFirstChild(RenderObject* child) { m_firstChild = child; }
-    void setLastChild(RenderObject* child) { m_lastChild = child; }
+    void setFirstChild(LayoutObject* child) { m_firstChild = child; }
+    void setLastChild(LayoutObject* child) { m_lastChild = child; }
 
     void destroyLeftoverChildren();
 
-    RenderObject* removeChildNode(RenderObject* owner, RenderObject*, bool notifyRenderer = true);
-    void insertChildNode(RenderObject* owner, RenderObject* newChild, RenderObject* beforeChild, bool notifyRenderer = true);
-    void appendChildNode(RenderObject* owner, RenderObject* newChild, bool notifyRenderer = true)
+    LayoutObject* removeChildNode(LayoutObject* owner, LayoutObject*, bool notifyRenderer = true);
+    void insertChildNode(LayoutObject* owner, LayoutObject* newChild, LayoutObject* beforeChild, bool notifyRenderer = true);
+    void appendChildNode(LayoutObject* owner, LayoutObject* newChild, bool notifyRenderer = true)
     {
         insertChildNode(owner, newChild, 0, notifyRenderer);
     }
 
 private:
-    void invalidatePaintOnRemoval(const RenderObject& oldChild);
+    void invalidatePaintOnRemoval(const LayoutObject& oldChild);
 
-    RenderObject* m_firstChild;
-    RenderObject* m_lastChild;
+    LayoutObject* m_firstChild;
+    LayoutObject* m_lastChild;
 };
 
 } // namespace blink
 
-#endif // RenderObjectChildList_h
+#endif // LayoutObjectChildList_h

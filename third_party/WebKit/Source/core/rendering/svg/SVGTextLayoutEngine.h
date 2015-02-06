@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class RenderSVGInlineText;
 class SVGInlineTextBox;
@@ -49,7 +49,7 @@ public:
 
     Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
 
-    void beginTextPathLayout(RenderObject*, SVGTextLayoutEngine& lineLayout);
+    void beginTextPathLayout(LayoutObject*, SVGTextLayoutEngine& lineLayout);
     void endTextPathLayout();
 
     void layoutInlineTextBox(SVGInlineTextBox*);
@@ -61,7 +61,7 @@ private:
     void updateRelativePositionAdjustmentsIfNeeded(float dx, float dy);
 
     void recordTextFragment(SVGInlineTextBox*, const Vector<SVGTextMetrics>&);
-    bool parentDefinesTextLength(RenderObject*) const;
+    bool parentDefinesTextLength(LayoutObject*) const;
 
     void layoutTextOnLineOrPath(SVGInlineTextBox*, const RenderSVGInlineText&, const RenderStyle&);
     void finalizeTransformMatrices(Vector<SVGInlineTextBox*>&);

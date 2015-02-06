@@ -47,7 +47,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
 
         if (continueRendering) {
             renderingContext.paintInfo().updatePaintingRootForChildren(&m_renderSVGContainer);
-            for (RenderObject* child = m_renderSVGContainer.firstChild(); child; child = child->nextSibling())
+            for (LayoutObject* child = m_renderSVGContainer.firstChild(); child; child = child->nextSibling())
                 child->paint(renderingContext.paintInfo(), IntPoint());
         }
     }

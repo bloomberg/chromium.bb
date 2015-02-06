@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/paint/ObjectPainter.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -18,26 +18,26 @@ namespace blink {
 void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const RenderStyle& style)
 {
     Vector<LayoutRect> focusRingRects;
-    m_renderObject.addFocusRingRects(focusRingRects, paintOffset);
+    m_layoutObject.addFocusRingRects(focusRingRects, paintOffset);
     ASSERT(style.outlineStyleIsAuto());
     Vector<IntRect> focusRingIntRects;
     for (size_t i = 0; i < focusRingRects.size(); ++i)
         focusRingIntRects.append(pixelSnappedIntRect(focusRingRects[i]));
-    paintInfo.context->drawFocusRing(focusRingIntRects, style.outlineWidth(), style.outlineOffset(), m_renderObject.resolveColor(style, CSSPropertyOutlineColor));
+    paintInfo.context->drawFocusRing(focusRingIntRects, style.outlineWidth(), style.outlineOffset(), m_layoutObject.resolveColor(style, CSSPropertyOutlineColor));
 }
 
 void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& paintRect)
 {
-    const RenderStyle& styleToUse = m_renderObject.styleRef();
+    const RenderStyle& styleToUse = m_layoutObject.styleRef();
     if (!styleToUse.hasOutline())
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, m_renderObject, paintInfo.phase, paintRect);
+    RenderDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, paintRect);
     if (recorder.canUseCachedDrawing())
         return;
 
     if (styleToUse.outlineStyleIsAuto()) {
-        if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_renderObject)) {
+        if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             paintFocusRing(paintInfo, paintRect.location(), styleToUse);
         }
@@ -59,7 +59,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& p
         return;
 
     EBorderStyle outlineStyle = styleToUse.outlineStyle();
-    Color outlineColor = m_renderObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
+    Color outlineColor = m_layoutObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
 
     GraphicsContext* graphicsContext = paintInfo.context;
     bool useTransparencyLayer = outlineColor.hasAlpha();

@@ -67,7 +67,7 @@ bool AutoscrollController::autoscrollInProgress(const RenderBox* renderer) const
     return m_autoscrollRenderer == renderer;
 }
 
-void AutoscrollController::startAutoscrollForSelection(RenderObject* renderer)
+void AutoscrollController::startAutoscrollForSelection(LayoutObject* renderer)
 {
     // We don't want to trigger the autoscroll or the panScroll if it's already active
     if (m_autoscrollType != NoAutoscroll)
@@ -103,7 +103,7 @@ void AutoscrollController::stopAutoscroll()
     m_autoscrollType = NoAutoscroll;
 }
 
-void AutoscrollController::stopAutoscrollIfNeeded(RenderObject* renderer)
+void AutoscrollController::stopAutoscrollIfNeeded(LayoutObject* renderer)
 {
     if (m_autoscrollRenderer != renderer)
         return;
@@ -116,7 +116,7 @@ void AutoscrollController::updateAutoscrollRenderer()
     if (!m_autoscrollRenderer)
         return;
 
-    RenderObject* renderer = m_autoscrollRenderer;
+    LayoutObject* renderer = m_autoscrollRenderer;
 
 #if OS(WIN)
     HitTestResult hitTest = renderer->frame()->eventHandler().hitTestResultAtPoint(m_panScrollStartPos, HitTestRequest::ReadOnly | HitTestRequest::Active);

@@ -49,7 +49,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     if (m_renderListMarker.isImage()) {
         context->drawImage(m_renderListMarker.image()->image(&m_renderListMarker, marker.size()).get(), marker);
-        if (m_renderListMarker.selectionState() != RenderObject::SelectionNone) {
+        if (m_renderListMarker.selectionState() != LayoutObject::SelectionNone) {
             LayoutRect selRect = m_renderListMarker.localSelectionRect();
             selRect.moveBy(boxOrigin);
             context->fillRect(pixelSnappedIntRect(selRect), m_renderListMarker.selectionBackgroundColor());
@@ -57,7 +57,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         return;
     }
 
-    if (m_renderListMarker.selectionState() != RenderObject::SelectionNone) {
+    if (m_renderListMarker.selectionState() != LayoutObject::SelectionNone) {
         LayoutRect selRect = m_renderListMarker.localSelectionRect();
         selRect.moveBy(boxOrigin);
         context->fillRect(pixelSnappedIntRect(selRect), m_renderListMarker.selectionBackgroundColor());

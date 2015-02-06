@@ -37,7 +37,7 @@ class LayoutRect;
 class LocalFrame;
 class Node;
 class Layer;
-class RenderObject;
+class LayoutObject;
 class TextStream;
 
 enum LayoutAsTextBehaviorFlags {
@@ -56,14 +56,14 @@ typedef unsigned LayoutAsTextBehavior;
 // You don't need pageWidthInPixels if you don't specify LayoutAsTextInPrintingMode.
 String externalRepresentation(LocalFrame*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 String externalRepresentation(Element*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
-void write(TextStream&, const RenderObject&, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+void write(TextStream&, const LayoutObject&, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 
 class LayoutTreeAsText {
 // FIXME: This is a cheesy hack to allow easy access to RenderStyle colors.  It won't be needed if we convert
 // it to use visitedDependentColor instead. (This just involves rebaselining many results though, so for now it's
 // not being done).
 public:
-static void writeRenderObject(TextStream&, const RenderObject&, LayoutAsTextBehavior);
+static void writeLayoutObject(TextStream&, const LayoutObject&, LayoutAsTextBehavior);
 static void writeLayers(TextStream&, const Layer* rootLayer, Layer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 };
 

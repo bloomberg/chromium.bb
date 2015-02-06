@@ -224,16 +224,16 @@ void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const Ren
     // We may have set the width and the height in the old style in layout().
     // Reset them now to avoid getting a spurious layout hint.
     Element* viewPort = editingViewPortElement();
-    if (RenderObject* viewPortRenderer = viewPort ? viewPort->renderer() : 0) {
+    if (LayoutObject* viewPortRenderer = viewPort ? viewPort->renderer() : 0) {
         viewPortRenderer->style()->setHeight(Length());
         viewPortRenderer->style()->setWidth(Length());
     }
     Element* container = containerElement();
-    if (RenderObject* containerRenderer = container ? container->renderer() : 0) {
+    if (LayoutObject* containerRenderer = container ? container->renderer() : 0) {
         containerRenderer->style()->setHeight(Length());
         containerRenderer->style()->setWidth(Length());
     }
-    RenderObject* innerEditorRenderer = innerEditorElement()->renderer();
+    LayoutObject* innerEditorRenderer = innerEditorElement()->renderer();
     if (innerEditorRenderer && diff.needsFullLayout())
         innerEditorRenderer->setNeedsLayoutAndFullPaintInvalidation();
     if (HTMLElement* placeholder = inputElement()->placeholderElement())

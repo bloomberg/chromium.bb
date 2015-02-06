@@ -23,7 +23,7 @@
 #ifndef LayoutLayerModelObject_h
 #define LayoutLayerModelObject_h
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ enum LayerType {
     ForcedLayer
 };
 
-class LayoutLayerModelObject : public RenderObject {
+class LayoutLayerModelObject : public LayoutObject {
 public:
     explicit LayoutLayerModelObject(ContainerNode*);
     virtual ~LayoutLayerModelObject();
@@ -62,7 +62,7 @@ public:
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const { return false; }
 
     // This is null for anonymous renderers.
-    ContainerNode* node() const { return toContainerNode(RenderObject::node()); }
+    ContainerNode* node() const { return toContainerNode(LayoutObject::node()); }
 
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
@@ -87,7 +87,7 @@ private:
     static bool s_wasFloating;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutLayerModelObject, isLayoutLayerModelObject());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutLayerModelObject, isLayoutLayerModelObject());
 
 } // namespace blink
 

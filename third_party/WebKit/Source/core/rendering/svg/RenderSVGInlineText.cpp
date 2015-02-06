@@ -208,7 +208,7 @@ void RenderSVGInlineText::updateScaledFont()
     computeNewScaledFontForStyle(this, style(), m_scalingFactor, m_scaledFont);
 }
 
-void RenderSVGInlineText::computeNewScaledFontForStyle(RenderObject* renderer, const RenderStyle* style, float& scalingFactor, Font& scaledFont)
+void RenderSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, const RenderStyle* style, float& scalingFactor, Font& scaledFont)
 {
     ASSERT(style);
     ASSERT(renderer);

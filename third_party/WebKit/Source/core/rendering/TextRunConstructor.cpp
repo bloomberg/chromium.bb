@@ -38,7 +38,7 @@
 namespace blink {
 
 template <typename CharacterType>
-static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, const RenderStyle& style, TextDirection direction)
+static inline TextRun constructTextRunInternal(LayoutObject* context, const Font& font, const CharacterType* characters, int length, const RenderStyle& style, TextDirection direction)
 {
     TextRun::ExpansionBehavior expansion = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion;
     bool directionalOverride = style.rtlOrdering() == VisualOrder;
@@ -47,7 +47,7 @@ static inline TextRun constructTextRunInternal(RenderObject* context, const Font
 }
 
 template <typename CharacterType>
-static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, const RenderStyle& style, TextDirection direction, TextRunFlags flags)
+static inline TextRun constructTextRunInternal(LayoutObject* context, const Font& font, const CharacterType* characters, int length, const RenderStyle& style, TextDirection direction, TextRunFlags flags)
 {
     TextDirection textDirection = direction;
     bool directionalOverride = style.rtlOrdering() == VisualOrder;
@@ -63,24 +63,24 @@ static inline TextRun constructTextRunInternal(RenderObject* context, const Font
     return run;
 }
 
-TextRun constructTextRun(RenderObject* context, const Font& font, const LChar* characters, int length, const RenderStyle& style, TextDirection direction)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const LChar* characters, int length, const RenderStyle& style, TextDirection direction)
 {
     return constructTextRunInternal(context, font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(RenderObject* context, const Font& font, const UChar* characters, int length, const RenderStyle& style, TextDirection direction)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const UChar* characters, int length, const RenderStyle& style, TextDirection direction)
 {
     return constructTextRunInternal(context, font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(RenderObject* context, const Font& font, const RenderText* text, const RenderStyle& style, TextDirection direction)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const RenderText* text, const RenderStyle& style, TextDirection direction)
 {
     if (text->is8Bit())
         return constructTextRunInternal(context, font, text->characters8(), text->textLength(), style, direction);
     return constructTextRunInternal(context, font, text->characters16(), text->textLength(), style, direction);
 }
 
-TextRun constructTextRun(RenderObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, const RenderStyle& style, TextDirection direction)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, const RenderStyle& style, TextDirection direction)
 {
     ASSERT(offset + length <= text->textLength());
     if (text->is8Bit())
@@ -88,7 +88,7 @@ TextRun constructTextRun(RenderObject* context, const Font& font, const RenderTe
     return constructTextRunInternal(context, font, text->characters16() + offset, length, style, direction);
 }
 
-TextRun constructTextRun(RenderObject* context, const Font& font, const String& string, const RenderStyle& style, TextDirection direction, TextRunFlags flags)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const String& string, const RenderStyle& style, TextDirection direction, TextRunFlags flags)
 {
     unsigned length = string.length();
     if (!length)
@@ -98,13 +98,13 @@ TextRun constructTextRun(RenderObject* context, const Font& font, const String& 
     return constructTextRunInternal(context, font, string.characters16(), length, style, direction, flags);
 }
 
-TextRun constructTextRun(RenderObject* context, const Font& font, const String& string, const RenderStyle& style, TextRunFlags flags)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const String& string, const RenderStyle& style, TextRunFlags flags)
 {
     bool hasStrongDirectionality;
     return constructTextRun(context, font, string, style, determineDirectionality(string, hasStrongDirectionality), flags);
 }
 
-TextRun constructTextRun(RenderObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, const RenderStyle& style)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, const RenderStyle& style)
 {
     ASSERT(offset + length <= text->textLength());
     TextRun run = text->is8Bit()

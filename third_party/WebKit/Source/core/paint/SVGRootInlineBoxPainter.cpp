@@ -21,7 +21,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
     bool isPrinting = m_svgRootInlineBox.renderer().document().printing();
-    bool hasSelection = !isPrinting && m_svgRootInlineBox.selectionState() != RenderObject::SelectionNone;
+    bool hasSelection = !isPrinting && m_svgRootInlineBox.selectionState() != LayoutObject::SelectionNone;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     if (hasSelection) {

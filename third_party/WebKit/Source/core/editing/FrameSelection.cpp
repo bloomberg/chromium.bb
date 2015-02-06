@@ -1248,7 +1248,7 @@ IntRect FrameSelection::absoluteCaretBounds()
     return absoluteBoundsForLocalRect(m_selection.start().deprecatedNode(), localCaretRectWithoutUpdate());
 }
 
-static LayoutRect localCaretRect(const VisibleSelection& m_selection, const PositionWithAffinity& caretPosition, RenderObject*& renderer)
+static LayoutRect localCaretRect(const VisibleSelection& m_selection, const PositionWithAffinity& caretPosition, LayoutObject*& renderer)
 {
     renderer = nullptr;
     if (!isNonOrphanedCaret(m_selection))
@@ -1263,7 +1263,7 @@ void FrameSelection::invalidateCaretRect()
         return;
     m_caretRectDirty = false;
 
-    RenderObject* renderer = nullptr;
+    LayoutObject* renderer = nullptr;
     LayoutRect newRect = localCaretRect(m_selection, PositionWithAffinity(m_selection.start(), m_selection.affinity()), renderer);
     Node* newNode = renderer ? renderer->node() : nullptr;
 
@@ -1472,8 +1472,8 @@ void FrameSelection::focusedOrActiveStateChanged()
     RefPtrWillBeRawPtr<Document> document = m_frame->document();
     document->updateRenderTreeIfNeeded();
 
-    // Because RenderObject::selectionBackgroundColor() and
-    // RenderObject::selectionForegroundColor() check if the frame is active,
+    // Because LayoutObject::selectionBackgroundColor() and
+    // LayoutObject::selectionForegroundColor() check if the frame is active,
     // we have to update places those colors were painted.
     if (RenderView* view = document->renderView())
         view->invalidatePaintForSelection();
@@ -1624,7 +1624,7 @@ static bool isFrameElement(const Node* n)
 {
     if (!n)
         return false;
-    RenderObject* renderer = n->renderer();
+    LayoutObject* renderer = n->renderer();
     if (!renderer || !renderer->isRenderPart())
         return false;
     Widget* widget = toRenderPart(renderer)->widget();

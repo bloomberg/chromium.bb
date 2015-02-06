@@ -45,7 +45,7 @@ public:
         setDocumentForAnonymous(&owner->document());
     }
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderFullScreenPlaceholder || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderFullScreenPlaceholder || RenderBlockFlow::isOfType(type); }
     virtual void willBeDestroyed() override;
     RenderFullScreen* m_owner;
 };
@@ -79,7 +79,7 @@ void RenderFullScreen::willBeDestroyed()
         ASSERT(!m_placeholder);
     }
 
-    // RenderObjects are unretained, so notify the document (which holds a pointer to a RenderFullScreen)
+    // LayoutObjects are unretained, so notify the document (which holds a pointer to a RenderFullScreen)
     // if its RenderFullScreen is destroyed.
     Fullscreen& fullscreen = Fullscreen::from(document());
     if (fullscreen.fullScreenRenderer() == this)
@@ -120,7 +120,7 @@ void RenderFullScreen::updateStyle()
     setStyle(fullscreenStyle);
 }
 
-RenderObject* RenderFullScreen::wrapRenderer(RenderObject* object, RenderObject* parent, Document* document)
+LayoutObject* RenderFullScreen::wrapRenderer(LayoutObject* object, LayoutObject* parent, Document* document)
 {
     // FIXME: We should not modify the structure of the render tree during
     // layout. crbug.com/370459
@@ -135,7 +135,7 @@ RenderObject* RenderFullScreen::wrapRenderer(RenderObject* object, RenderObject*
     if (object) {
         // |object->parent()| can be null if the object is not yet attached
         // to |parent|.
-        if (RenderObject* parent = object->parent()) {
+        if (LayoutObject* parent = object->parent()) {
             RenderBlock* containingBlock = object->containingBlock();
             ASSERT(containingBlock);
             // Since we are moving the |object| to a new parent |fullscreenRenderer|,
@@ -167,7 +167,7 @@ void RenderFullScreen::unwrapRenderer()
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
 
     if (parent()) {
-        for (RenderObject* child = firstChild(); child; child = firstChild()) {
+        for (LayoutObject* child = firstChild(); child; child = firstChild()) {
             // We have to clear the override size, because as a flexbox, we
             // may have set one on the child, and we don't want to leave that
             // lying around on the child.

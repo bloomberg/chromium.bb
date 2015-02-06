@@ -71,7 +71,7 @@ using namespace HTMLNames;
 
 static IntRect clipBox(RenderBox* renderer);
 
-static IntRect contentsRect(const RenderObject* renderer)
+static IntRect contentsRect(const LayoutObject* renderer)
 {
     if (!renderer->isBox())
         return IntRect();
@@ -81,7 +81,7 @@ static IntRect contentsRect(const RenderObject* renderer)
         pixelSnappedIntRect(toRenderBox(renderer)->contentBoxRect());
 }
 
-static IntRect backgroundRect(const RenderObject* renderer)
+static IntRect backgroundRect(const LayoutObject* renderer)
 {
     if (!renderer->isBox())
         return IntRect();
@@ -106,7 +106,7 @@ static IntRect backgroundRect(const RenderObject* renderer)
     return pixelSnappedIntRect(rect);
 }
 
-static inline bool isAcceleratedCanvas(const RenderObject* renderer)
+static inline bool isAcceleratedCanvas(const LayoutObject* renderer)
 {
     if (renderer->isCanvas()) {
         HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
@@ -121,7 +121,7 @@ static bool hasBoxDecorationsOrBackgroundImage(const RenderStyle* style)
     return style->hasBoxDecorations() || style->hasBackgroundImage();
 }
 
-static bool contentLayerSupportsDirectBackgroundComposition(const RenderObject* renderer)
+static bool contentLayerSupportsDirectBackgroundComposition(const LayoutObject* renderer)
 {
     // No support for decorations - border, border-radius or outline.
     // Only simple background - solid color or transparent.
@@ -136,7 +136,7 @@ static bool contentLayerSupportsDirectBackgroundComposition(const RenderObject* 
     return contentsRect(renderer).contains(backgroundRect(renderer));
 }
 
-static WebLayer* platformLayerForPlugin(RenderObject* renderer)
+static WebLayer* platformLayerForPlugin(LayoutObject* renderer)
 {
     if (!renderer->isEmbeddedObject())
         return 0;
@@ -147,7 +147,7 @@ static WebLayer* platformLayerForPlugin(RenderObject* renderer)
 
 }
 
-static inline bool isAcceleratedContents(RenderObject* renderer)
+static inline bool isAcceleratedContents(LayoutObject* renderer)
 {
     return isAcceleratedCanvas(renderer)
         || (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing())
@@ -366,7 +366,7 @@ bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor
     if (!compositingAncestor)
         return false;
 
-    const RenderObject* clippingContainer = m_owningLayer.clippingContainer();
+    const LayoutObject* clippingContainer = m_owningLayer.clippingContainer();
     if (!clippingContainer)
         return false;
 
@@ -401,7 +401,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     }
 
     LayerCompositor* compositor = this->compositor();
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
 
     bool layerConfigChanged = false;
     setBackgroundLayerPaintsFixedRootBackground(compositor->needsFixedRootBackgroundLayer(&m_owningLayer));
@@ -1728,7 +1728,7 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
 
 Color CompositedLayerMapping::rendererBackgroundColor() const
 {
-    RenderObject* backgroundRenderer = renderer();
+    LayoutObject* backgroundRenderer = renderer();
     if (backgroundRenderer->isDocumentElement())
         backgroundRenderer = backgroundRenderer->rendererForRootBackground();
 
@@ -1751,7 +1751,7 @@ bool CompositedLayerMapping::paintsChildren() const
     return false;
 }
 
-static bool isCompositedPlugin(RenderObject* renderer)
+static bool isCompositedPlugin(LayoutObject* renderer)
 {
     return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing();
 }
@@ -1788,35 +1788,35 @@ bool CompositedLayerMapping::containsPaintedContent() const
     if (renderer()->isImage() && isDirectlyCompositedImage())
         return false;
 
-    RenderObject* renderObject = renderer();
+    LayoutObject* layoutObject = renderer();
     // FIXME: we could optimize cases where the image, video or canvas is known to fill the border box entirely,
     // and set background color on the layer in that case, instead of allocating backing store and painting.
-    if (renderObject->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
+    if (layoutObject->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
         return m_owningLayer.hasBoxDecorationsOrBackground();
 
     if (m_owningLayer.hasVisibleBoxDecorations())
         return true;
 
-    if (renderObject->hasMask()) // masks require special treatment
+    if (layoutObject->hasMask()) // masks require special treatment
         return true;
 
-    if (renderObject->isReplaced() && !isCompositedPlugin(renderObject))
+    if (layoutObject->isReplaced() && !isCompositedPlugin(layoutObject))
         return true;
 
-    if (renderObject->isRenderRegion())
+    if (layoutObject->isRenderRegion())
         return true;
 
-    if (renderObject->node() && renderObject->node()->isDocumentNode()) {
+    if (layoutObject->node() && layoutObject->node()->isDocumentNode()) {
         // Look to see if the root object has a non-simple background
-        RenderObject* rootObject = renderObject->document().documentElement() ? renderObject->document().documentElement()->renderer() : 0;
+        LayoutObject* rootObject = layoutObject->document().documentElement() ? layoutObject->document().documentElement()->renderer() : 0;
         // Reject anything that has a border, a border-radius or outline,
         // or is not a simple background (no background, or solid color).
         if (rootObject && hasBoxDecorationsOrBackgroundImage(rootObject->style()))
             return true;
 
         // Now look at the body's renderer.
-        HTMLElement* body = renderObject->document().body();
-        RenderObject* bodyObject = isHTMLBodyElement(body) ? body->renderer() : 0;
+        HTMLElement* body = layoutObject->document().body();
+        LayoutObject* bodyObject = isHTMLBodyElement(body) ? body->renderer() : 0;
         if (bodyObject && hasBoxDecorationsOrBackgroundImage(bodyObject->style()))
             return true;
     }
@@ -1831,11 +1831,11 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
 {
     ASSERT(renderer()->isImage());
 
-    RenderObject* renderObject = renderer();
-    if (m_owningLayer.hasBoxDecorationsOrBackground() || renderObject->hasClip() || renderObject->hasClipPath())
+    LayoutObject* layoutObject = renderer();
+    if (m_owningLayer.hasBoxDecorationsOrBackground() || layoutObject->hasClip() || layoutObject->hasClipPath())
         return false;
 
-    RenderImage* imageRenderer = toRenderImage(renderObject);
+    RenderImage* imageRenderer = toRenderImage(layoutObject);
     if (ImageResource* cachedImage = imageRenderer->cachedImage()) {
         if (!cachedImage->hasImage())
             return false;
@@ -2032,23 +2032,23 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, P
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)
+const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const LayoutObject* layoutObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)
 {
     for (size_t i = 0; i < layers.size() && i < maxSquashedLayerIndex; ++i) {
-        if (renderObject->isDescendantOf(layers[i].renderLayer->renderer()))
+        if (layoutObject->isDescendantOf(layers[i].renderLayer->renderer()))
             return &layers[i];
     }
     return 0;
 }
 
-const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, unsigned maxSquashedLayerIndex)
+const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const LayoutObject* layoutObject, unsigned maxSquashedLayerIndex)
 {
-    return CompositedLayerMapping::containingSquashedLayer(renderObject, m_squashedLayers, maxSquashedLayerIndex);
+    return CompositedLayerMapping::containingSquashedLayer(layoutObject, m_squashedLayers, maxSquashedLayerIndex);
 }
 
 IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const Layer& referenceLayer, const GraphicsLayerPaintInfo& paintInfo, const Vector<GraphicsLayerPaintInfo>& layers)
 {
-    const RenderObject* clippingContainer = paintInfo.renderLayer->clippingContainer();
+    const LayoutObject* clippingContainer = paintInfo.renderLayer->clippingContainer();
     if (clippingContainer == referenceLayer.clippingContainer())
         return LayoutRect::infiniteIntRect();
 

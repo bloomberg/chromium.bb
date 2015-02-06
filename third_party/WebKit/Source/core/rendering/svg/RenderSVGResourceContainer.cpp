@@ -110,9 +110,9 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
     bool needsLayout = mode == LayoutAndBoundariesInvalidation;
     bool markForInvalidation = mode != ParentOnlyInvalidation;
 
-    HashSet<RenderObject*>::iterator end = m_clients.end();
-    for (HashSet<RenderObject*>::iterator it = m_clients.begin(); it != end; ++it) {
-        RenderObject* client = *it;
+    HashSet<LayoutObject*>::iterator end = m_clients.end();
+    for (HashSet<LayoutObject*>::iterator it = m_clients.begin(); it != end; ++it) {
+        LayoutObject* client = *it;
         if (client->isSVGResourceContainer()) {
             toRenderSVGResourceContainer(client)->removeAllClientsFromCache(markForInvalidation);
             continue;
@@ -136,7 +136,7 @@ void RenderSVGResourceContainer::markAllClientLayersForInvalidation()
         (*it)->filterNeedsPaintInvalidation();
 }
 
-void RenderSVGResourceContainer::markClientForInvalidation(RenderObject* client, InvalidationMode mode)
+void RenderSVGResourceContainer::markClientForInvalidation(LayoutObject* client, InvalidationMode mode)
 {
     ASSERT(client);
     ASSERT(!m_clients.isEmpty());
@@ -154,14 +154,14 @@ void RenderSVGResourceContainer::markClientForInvalidation(RenderObject* client,
     }
 }
 
-void RenderSVGResourceContainer::addClient(RenderObject* client)
+void RenderSVGResourceContainer::addClient(LayoutObject* client)
 {
     ASSERT(client);
     m_clients.add(client);
     clearInvalidationMask();
 }
 
-void RenderSVGResourceContainer::removeClient(RenderObject* client)
+void RenderSVGResourceContainer::removeClient(LayoutObject* client)
 {
     ASSERT(client);
     removeClientFromCache(client, false);
@@ -219,7 +219,7 @@ void RenderSVGResourceContainer::registerResource()
     for (SVGDocumentExtensions::SVGPendingElements::const_iterator it = clients->begin(); it != end; ++it) {
         ASSERT((*it)->hasPendingResources());
         extensions.clearHasPendingResourcesIfPossible(*it);
-        RenderObject* renderer = (*it)->renderer();
+        LayoutObject* renderer = (*it)->renderer();
         if (!renderer)
             continue;
 
@@ -230,10 +230,10 @@ void RenderSVGResourceContainer::registerResource()
     }
 }
 
-static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object, bool needsLayout)
+static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object, bool needsLayout)
 {
     ASSERT(object);
-    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object)) {
+    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object)) {
         if (RenderSVGResourceFilter* filter = resources->filter())
             filter->removeClientFromCache(object);
 
@@ -259,7 +259,7 @@ static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object
 
     SVGElementSet::iterator end = dependencies->end();
     for (SVGElementSet::iterator it = dependencies->begin(); it != end; ++it) {
-        if (RenderObject* renderer = (*it)->renderer()) {
+        if (LayoutObject* renderer = (*it)->renderer()) {
             if (UNLIKELY(!invalidatingDependencies->add(*it).isNewEntry)) {
                 // Reference cycle: we are in process of invalidating this dependant.
                 continue;
@@ -271,7 +271,7 @@ static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object
     }
 }
 
-void RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(RenderObject* object, bool needsLayout)
+void RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(LayoutObject* object, bool needsLayout)
 {
     ASSERT(object);
     ASSERT(object->node());
@@ -282,7 +282,7 @@ void RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(Rend
     removeFromCacheAndInvalidateDependencies(object, needsLayout);
 
     // Invalidate resources in ancestor chain, if needed.
-    RenderObject* current = object->parent();
+    LayoutObject* current = object->parent();
     while (current) {
         removeFromCacheAndInvalidateDependencies(current, needsLayout);
 

@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/accessibility/AXARIAGrid.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableRow.h"
@@ -37,7 +37,7 @@
 
 namespace blink {
 
-AXARIAGrid::AXARIAGrid(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXARIAGrid::AXARIAGrid(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXTable(renderer, axObjectCache)
 {
 }
@@ -46,7 +46,7 @@ AXARIAGrid::~AXARIAGrid()
 {
 }
 
-PassRefPtr<AXARIAGrid> AXARIAGrid::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AXARIAGrid(renderer, axObjectCache));
 }

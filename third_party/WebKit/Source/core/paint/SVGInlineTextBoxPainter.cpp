@@ -33,7 +33,7 @@ static inline bool textShouldBePainted(RenderSVGInlineText& textRenderer)
 bool SVGInlineTextBoxPainter::shouldPaintSelection() const
 {
     bool isPrinting = m_svgInlineTextBox.renderer().document().printing();
-    return !isPrinting && m_svgInlineTextBox.selectionState() != RenderObject::SelectionNone;
+    return !isPrinting && m_svgInlineTextBox.selectionState() != LayoutObject::SelectionNone;
 }
 
 void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -55,7 +55,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     if (!textShouldBePainted(textRenderer))
         return;
 
-    RenderObject& parentRenderer = m_svgInlineTextBox.parent()->renderer();
+    LayoutObject& parentRenderer = m_svgInlineTextBox.parent()->renderer();
     const RenderStyle& style = parentRenderer.styleRef();
 
     InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
@@ -72,7 +72,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         InlinePainter(toRenderInline(parentRenderer)).paintOutline(paintInfo, paintOffset);
 }
 
-void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, RenderObject& parentRenderer)
+void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, LayoutObject& parentRenderer)
 {
     const RenderStyle& style = parentRenderer.styleRef();
     const SVGRenderStyle& svgStyle = style.svgStyle();
@@ -190,10 +190,10 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     }
 }
 
-static inline RenderObject* findRenderObjectDefininingTextDecoration(InlineFlowBox* parentBox)
+static inline LayoutObject* findLayoutObjectDefininingTextDecoration(InlineFlowBox* parentBox)
 {
     // Lookup first render object in parent hierarchy which has text-decoration set.
-    RenderObject* renderer = 0;
+    LayoutObject* renderer = 0;
     while (parentBox) {
         renderer = &parentBox->renderer();
 
@@ -239,7 +239,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
         return;
 
     // Find out which render style defined the text-decoration, as its fill/stroke properties have to be used for drawing instead of ours.
-    RenderObject* decorationRenderer = findRenderObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
+    LayoutObject* decorationRenderer = findLayoutObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
     const RenderStyle& decorationStyle = decorationRenderer->styleRef();
 
     if (decorationStyle.visibility() == HIDDEN)

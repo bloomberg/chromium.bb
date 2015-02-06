@@ -40,7 +40,7 @@ class CSSComputedStyleDeclaration;
 class Element;
 class InlineBox;
 class Node;
-class RenderObject;
+class LayoutObject;
 class Text;
 class TreeScope;
 
@@ -187,7 +187,7 @@ public:
 
     TextDirection primaryDirection() const;
 
-    static bool hasRenderedNonAnonymousDescendantsWithHeight(RenderObject*);
+    static bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
     static bool nodeIsUserSelectNone(Node*);
     static bool nodeIsUserSelectAll(const Node*);
     static Node* rootUserSelectAllForNode(Node*);

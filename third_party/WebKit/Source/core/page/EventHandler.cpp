@@ -674,7 +674,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
     if (!targetNode)
         return false;
 
-    RenderObject* renderer = targetNode->renderer();
+    LayoutObject* renderer = targetNode->renderer();
     if (!renderer) {
         Node* parent = NodeRenderingTraversal::parent(*targetNode);
         if (!parent)
@@ -741,7 +741,7 @@ void EventHandler::updateSelectionForMouseDrag(const HitTestResult& hitTestResul
     // Special case to limit selection to the containing block for SVG text.
     // FIXME: Isn't there a better non-SVG-specific way to do this?
     if (Node* selectionBaseNode = newSelection.base().deprecatedNode())
-        if (RenderObject* selectionBaseRenderer = selectionBaseNode->renderer())
+        if (LayoutObject* selectionBaseRenderer = selectionBaseNode->renderer())
             if (selectionBaseRenderer->isSVGText())
                 if (target->renderer()->containingBlock() != selectionBaseRenderer->containingBlock())
                     return;
@@ -835,7 +835,7 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
 
 #if OS(WIN)
 
-void EventHandler::startPanScrolling(RenderObject* renderer)
+void EventHandler::startPanScrolling(LayoutObject* renderer)
 {
     if (!renderer->isBox())
         return;
@@ -977,7 +977,7 @@ static LocalFrame* subframeForTargetNode(Node* node)
     if (!node)
         return nullptr;
 
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer || !renderer->isRenderPart())
         return nullptr;
 
@@ -1063,7 +1063,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
     if (!node)
         return selectAutoCursor(result, node, iBeamCursor());
 
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     RenderStyle* style = renderer ? renderer->style() : nullptr;
 
     if (renderer) {
@@ -1197,7 +1197,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
         return handCursor();
 
     bool inResizer = false;
-    RenderObject* renderer = node ? node->renderer() : nullptr;
+    LayoutObject* renderer = node ? node->renderer() : nullptr;
     if (renderer && m_frame->view()) {
         Layer* layer = renderer->enclosingLayer();
         inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
@@ -1349,7 +1349,7 @@ static Layer* layerForNode(Node* node)
     if (!node)
         return nullptr;
 
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer)
         return nullptr;
 
@@ -2026,7 +2026,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 
     if (node) {
         // Figure out which view to send the event to.
-        RenderObject* target = node->renderer();
+        LayoutObject* target = node->renderer();
 
         if (isOverWidget && target && target->isRenderPart()) {
             Widget* widget = toRenderPart(target)->widget();
@@ -2439,7 +2439,7 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
     return false;
 }
 
-bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& gestureEvent, RenderObject* renderer)
+bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& gestureEvent, LayoutObject* renderer)
 {
     ASSERT(gestureEvent.isScrollEvent());
 
@@ -2507,7 +2507,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     Node* node = m_scrollGestureHandlingNode.get();
     if (node) {
-        RenderObject* renderer = node->renderer();
+        LayoutObject* renderer = node->renderer();
         if (!renderer)
             return false;
 
@@ -3310,7 +3310,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     // Check to see if this a DOM based drag, if it is get the DOM specified drag
     // image and offset
     if (dragState().m_dragType == DragSourceActionDHTML) {
-        if (RenderObject* renderer = dragState().m_dragSrc->renderer()) {
+        if (LayoutObject* renderer = dragState().m_dragSrc->renderer()) {
             FloatPoint absPos = renderer->localToAbsolute(FloatPoint(), UseTransforms);
             IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
             dragState().m_dragDataTransfer->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
@@ -3477,7 +3477,7 @@ void EventHandler::defaultEscapeEventHandler(KeyboardEvent* event)
 void EventHandler::capsLockStateMayHaveChanged()
 {
     if (Element* element = m_frame->document()->focusedElement()) {
-        if (RenderObject* r = element->renderer()) {
+        if (LayoutObject* r = element->renderer()) {
             if (r->isTextField())
                 toRenderTextControlSingleLine(r)->capsLockStateMayHaveChanged();
         }
@@ -3817,7 +3817,7 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
     // and exclude any prohibited actions.
     TouchAction effectiveTouchAction = TouchActionAuto;
     for (const Node* curNode = &node; curNode; curNode = NodeRenderingTraversal::parent(*curNode)) {
-        if (RenderObject* renderer = curNode->renderer()) {
+        if (LayoutObject* renderer = curNode->renderer()) {
             if (renderer->supportsTouchAction()) {
                 TouchAction action = renderer->style()->touchAction();
                 effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);

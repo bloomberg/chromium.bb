@@ -71,7 +71,7 @@ private:
     AtomicString m_value;
 };
 
-static void writeDebugInfo(RenderObject* renderer, const AtomicString& output)
+static void writeDebugInfo(LayoutObject* renderer, const AtomicString& output)
 {
     Node* node = renderer->node();
     if (!node)
@@ -115,7 +115,7 @@ void TextAutosizer::writeClusterDebugInfo(Cluster* cluster)
 }
 #endif
 
-static const RenderObject* parentElementRenderer(const RenderObject* renderer)
+static const LayoutObject* parentElementRenderer(const LayoutObject* renderer)
 {
     // At style recalc, the renderer's parent may not be attached,
     // so we need to obtain this from the DOM tree.
@@ -129,7 +129,7 @@ static const RenderObject* parentElementRenderer(const RenderObject* renderer)
     return 0;
 }
 
-static bool isNonTextAreaFormControl(const RenderObject* renderer)
+static bool isNonTextAreaFormControl(const LayoutObject* renderer)
 {
     const Node* node = renderer ? renderer->node() : 0;
     if (!node || !node->isElementNode())
@@ -139,7 +139,7 @@ static bool isNonTextAreaFormControl(const RenderObject* renderer)
     return (element->isFormControlElement() && !isHTMLTextAreaElement(element));
 }
 
-static bool isPotentialClusterRoot(const RenderObject* renderer)
+static bool isPotentialClusterRoot(const LayoutObject* renderer)
 {
     // "Potential cluster roots" are the smallest unit for which we can
     // enable/disable text autosizing.
@@ -189,7 +189,7 @@ static bool blockIsRowOfLinks(const RenderBlock* block)
     //  4. It should contain only inline elements unless they are containers,
     //     children of link elements or children of sub-containers.
     int linkCount = 0;
-    RenderObject* renderer = block->firstChild();
+    LayoutObject* renderer = block->firstChild();
     float matchingFontSize = -1;
 
     while (renderer) {
@@ -240,7 +240,7 @@ static bool blockOrImmediateChildrenAreFormControls(const RenderBlock* block)
 {
     if (isNonTextAreaFormControl(block))
         return true;
-    const RenderObject* renderer = block->firstChild();
+    const LayoutObject* renderer = block->firstChild();
     while (renderer) {
         if (isNonTextAreaFormControl(renderer))
             return true;
@@ -340,7 +340,7 @@ TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(const RenderB
     return ContinueLayout;
 }
 
-void TextAutosizer::prepareClusterStack(const RenderObject* renderer)
+void TextAutosizer::prepareClusterStack(const LayoutObject* renderer)
 {
     if (!renderer)
         return;
@@ -402,7 +402,7 @@ void TextAutosizer::inflateAutoTable(LayoutTable* table)
 
     // Pre-inflate cells that have enough text so that their inflated preferred widths will be used
     // for column sizing.
-    for (RenderObject* section = table->firstChild(); section; section = section->nextSibling()) {
+    for (LayoutObject* section = table->firstChild(); section; section = section->nextSibling()) {
         if (!section->isTableSection())
             continue;
         for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
@@ -437,12 +437,12 @@ void TextAutosizer::endLayout(RenderBlock* block)
     }
 }
 
-float TextAutosizer::inflate(RenderObject* parent, InflateBehavior behavior, float multiplier)
+float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, float multiplier)
 {
     Cluster* cluster = currentCluster();
     bool hasTextChild = false;
 
-    RenderObject* child = 0;
+    LayoutObject* child = 0;
     if (parent->isRenderBlock() && (parent->childrenInline() || behavior == DescendToInnerBlocks))
         child = toRenderBlock(parent)->firstChild();
     else if (parent->isRenderInline())
@@ -569,7 +569,7 @@ IntSize TextAutosizer::windowSize() const
 
 void TextAutosizer::resetMultipliers()
 {
-    RenderObject* renderer = m_document->renderView();
+    LayoutObject* renderer = m_document->renderView();
     while (renderer) {
         if (RenderStyle* style = renderer->style()) {
             if (style->textAutosizingMultiplier() != 1)
@@ -581,7 +581,7 @@ void TextAutosizer::resetMultipliers()
 
 void TextAutosizer::setAllTextNeedsLayout()
 {
-    RenderObject* renderer = m_document->renderView();
+    LayoutObject* renderer = m_document->renderView();
     while (renderer) {
         if (renderer->isText())
             renderer->setNeedsLayoutAndFullPaintInvalidation();
@@ -589,7 +589,7 @@ void TextAutosizer::setAllTextNeedsLayout()
     }
 }
 
-TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const RenderObject* renderer, BlockFlags mask) const
+TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const LayoutObject* renderer, BlockFlags mask) const
 {
     if (!renderer->isRenderBlock())
         return 0;
@@ -643,7 +643,7 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const Rende
     float minimumTextLengthToAutosize = widthFromBlock(widthProvider) * 4;
 
     float length = 0;
-    RenderObject* descendant = root->firstChild();
+    LayoutObject* descendant = root->firstChild();
     while (descendant) {
         if (descendant->isRenderBlock()) {
             if (classifyBlock(descendant, INDEPENDENT | SUPPRESSING)) {
@@ -668,7 +668,7 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const Rende
     return false;
 }
 
-TextAutosizer::Fingerprint TextAutosizer::getFingerprint(const RenderObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::getFingerprint(const LayoutObject* renderer)
 {
     Fingerprint result = m_fingerprintMapper.get(renderer);
     if (!result) {
@@ -678,14 +678,14 @@ TextAutosizer::Fingerprint TextAutosizer::getFingerprint(const RenderObject* ren
     return result;
 }
 
-TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const RenderObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const LayoutObject* renderer)
 {
     Node* node = renderer->generatingNode();
     if (!node || !node->isElementNode())
         return 0;
 
     FingerprintSourceData data;
-    if (const RenderObject* parent = parentElementRenderer(renderer))
+    if (const LayoutObject* parent = parentElementRenderer(renderer))
         data.m_parentHash = getFingerprint(parent);
 
     data.m_qualifiedNameHash = QualifiedNameHash::hash(toElement(node)->tagQName());
@@ -899,17 +899,17 @@ const RenderBlock* TextAutosizer::deepestBlockContainingAllText(Cluster* cluster
 const RenderBlock* TextAutosizer::deepestBlockContainingAllText(const RenderBlock* root) const
 {
     size_t firstDepth = 0;
-    const RenderObject* firstTextLeaf = findTextLeaf(root, firstDepth, First);
+    const LayoutObject* firstTextLeaf = findTextLeaf(root, firstDepth, First);
     if (!firstTextLeaf)
         return root;
 
     size_t lastDepth = 0;
-    const RenderObject* lastTextLeaf = findTextLeaf(root, lastDepth, Last);
+    const LayoutObject* lastTextLeaf = findTextLeaf(root, lastDepth, Last);
     ASSERT(lastTextLeaf);
 
     // Equalize the depths if necessary. Only one of the while loops below will get executed.
-    const RenderObject* firstNode = firstTextLeaf;
-    const RenderObject* lastNode = lastTextLeaf;
+    const LayoutObject* firstNode = firstTextLeaf;
+    const LayoutObject* lastNode = lastTextLeaf;
     while (firstDepth > lastDepth) {
         firstNode = firstNode->parent();
         --firstDepth;
@@ -940,7 +940,7 @@ const RenderBlock* TextAutosizer::deepestBlockContainingAllText(const RenderBloc
     return containingBlock;
 }
 
-const RenderObject* TextAutosizer::findTextLeaf(const RenderObject* parent, size_t& depth, TextLeafSearch firstOrLast) const
+const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size_t& depth, TextLeafSearch firstOrLast) const
 {
     // List items are treated as text due to the marker.
     // The actual renderer for the marker (RenderListMarker) may not be in the tree yet since it is added during layout.
@@ -951,12 +951,12 @@ const RenderObject* TextAutosizer::findTextLeaf(const RenderObject* parent, size
         return parent;
 
     ++depth;
-    const RenderObject* child = (firstOrLast == First) ? parent->slowFirstChild() : parent->slowLastChild();
+    const LayoutObject* child = (firstOrLast == First) ? parent->slowFirstChild() : parent->slowLastChild();
     while (child) {
         // Note: At this point clusters may not have been created for these blocks so we cannot rely
         //       on m_clusters. Instead, we use a best-guess about whether the block will become a cluster.
         if (!classifyBlock(child, INDEPENDENT)) {
-            if (const RenderObject* leaf = findTextLeaf(child, depth, firstOrLast))
+            if (const LayoutObject* leaf = findTextLeaf(child, depth, firstOrLast))
                 return leaf;
         }
         child = (firstOrLast == First) ? child->nextSibling() : child->previousSibling();
@@ -966,7 +966,7 @@ const RenderObject* TextAutosizer::findTextLeaf(const RenderObject* parent, size
     return 0;
 }
 
-void TextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
+void TextAutosizer::applyMultiplier(LayoutObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
 {
     ASSERT(renderer && renderer->style());
     RenderStyle* currentStyle = renderer->style();
@@ -1047,7 +1047,7 @@ void TextAutosizer::FingerprintMapper::assertMapsAreConsistent()
 }
 #endif
 
-void TextAutosizer::FingerprintMapper::add(const RenderObject* renderer, Fingerprint fingerprint)
+void TextAutosizer::FingerprintMapper::add(const LayoutObject* renderer, Fingerprint fingerprint)
 {
     remove(renderer);
 
@@ -1070,7 +1070,7 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderBlock
 #endif
 }
 
-bool TextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
+bool TextAutosizer::FingerprintMapper::remove(const LayoutObject* renderer)
 {
     Fingerprint fingerprint = m_fingerprints.take(renderer);
     if (!fingerprint || !renderer->isRenderBlock())
@@ -1090,7 +1090,7 @@ bool TextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
     return true;
 }
 
-TextAutosizer::Fingerprint TextAutosizer::FingerprintMapper::get(const RenderObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::FingerprintMapper::get(const LayoutObject* renderer)
 {
     return m_fingerprints.get(renderer);
 }

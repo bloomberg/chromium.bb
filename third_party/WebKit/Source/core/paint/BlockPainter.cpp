@@ -130,7 +130,7 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintIn
     paintAsInlineBlock(inlineBox.renderer(), paintInfo, childPoint);
 }
 
-void BlockPainter::paintAsInlineBlock(RenderObject& renderer, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
+void BlockPainter::paintAsInlineBlock(LayoutObject& renderer, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;

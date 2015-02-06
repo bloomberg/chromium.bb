@@ -18,7 +18,7 @@ class RenderPartTest : public RenderingTest {
 TEST_F(RenderPartTest, DestroyUpdatesImageQualityController)
 {
     RefPtrWillBeRawPtr<Element> element = HTMLElement::create(HTMLNames::divTag, document());
-    RenderObject* part = new RenderPart(element.get());
+    LayoutObject* part = new RenderPart(element.get());
     // The third and forth arguments are not important in this test.
     ImageQualityController::imageQualityController()->set(part, 0, this, LayoutSize(1, 1));
     EXPECT_TRUE(ImageQualityController::has(part));

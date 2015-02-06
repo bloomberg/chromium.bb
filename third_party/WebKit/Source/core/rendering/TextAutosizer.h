@@ -31,8 +31,8 @@
 #ifndef TextAutosizer_h
 #define TextAutosizer_h
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTable.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -211,15 +211,15 @@ private:
     // blocks that will become cluster roots.
     class FingerprintMapper {
     public:
-        void add(const RenderObject*, Fingerprint);
+        void add(const LayoutObject*, Fingerprint);
         void addTentativeClusterRoot(const RenderBlock*, Fingerprint);
         // Returns true if any BlockSet was modified or freed by the removal.
-        bool remove(const RenderObject*);
-        Fingerprint get(const RenderObject*);
+        bool remove(const LayoutObject*);
+        Fingerprint get(const LayoutObject*);
         BlockSet* getTentativeClusterRoots(Fingerprint);
         bool hasFingerprints() const { return !m_fingerprints.isEmpty(); }
     private:
-        typedef HashMap<const RenderObject*, Fingerprint> FingerprintMap;
+        typedef HashMap<const LayoutObject*, Fingerprint> FingerprintMap;
         typedef HashMap<Fingerprint, OwnPtr<BlockSet> > ReverseFingerprintMap;
 
         FingerprintMap m_fingerprints;
@@ -253,18 +253,18 @@ private:
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
     void inflateAutoTable(LayoutTable*);
-    float inflate(RenderObject*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
+    float inflate(LayoutObject*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
     bool shouldHandleLayout() const;
     IntSize windowSize() const;
     void setAllTextNeedsLayout();
     void resetMultipliers();
     BeginLayoutBehavior prepareForLayout(const RenderBlock*);
-    void prepareClusterStack(const RenderObject*);
+    void prepareClusterStack(const LayoutObject*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
     bool superclusterHasEnoughTextToAutosize(Supercluster*, const RenderBlock* widthProvider = 0);
     bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
-    Fingerprint getFingerprint(const RenderObject*);
-    Fingerprint computeFingerprint(const RenderObject*);
+    Fingerprint getFingerprint(const LayoutObject*);
+    Fingerprint computeFingerprint(const LayoutObject*);
     Cluster* maybeCreateCluster(const RenderBlock*);
     Supercluster* getSupercluster(const RenderBlock*);
     float clusterMultiplier(Cluster*);
@@ -278,7 +278,7 @@ private:
     // block's width otherwise.
     float widthFromBlock(const RenderBlock*) const;
     float multiplierFromBlock(const RenderBlock*);
-    void applyMultiplier(RenderObject*, float, RelayoutBehavior = AlreadyInLayout);
+    void applyMultiplier(LayoutObject*, float, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
     Cluster* currentCluster() const;
     const RenderBlock* deepestBlockContainingAllText(Cluster*);
@@ -286,8 +286,8 @@ private:
     // Returns the first text leaf that is in the current cluster. We attempt to not include text
     // from descendant clusters but because descendant clusters may not exist, this is only an approximation.
     // The TraversalDirection controls whether we return the first or the last text leaf.
-    const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch) const;
-    BlockFlags classifyBlock(const RenderObject*, BlockFlags mask = UINT_MAX) const;
+    const LayoutObject* findTextLeaf(const LayoutObject*, size_t&, TextLeafSearch) const;
+    BlockFlags classifyBlock(const LayoutObject*, BlockFlags mask = UINT_MAX) const;
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
     void writeClusterDebugInfo(Cluster*);
 #endif

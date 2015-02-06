@@ -21,7 +21,7 @@
 #ifndef RenderSVGGradientStop_h
 #define RenderSVGGradientStop_h
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -29,18 +29,18 @@ class SVGGradientElement;
 class SVGStopElement;
 
 // This class exists mostly so we can hear about gradient stop style changes
-class RenderSVGGradientStop final : public RenderObject {
+class RenderSVGGradientStop final : public LayoutObject {
 public:
     explicit RenderSVGGradientStop(SVGStopElement*);
     virtual ~RenderSVGGradientStop();
 
     virtual const char* renderName() const override { return "RenderSVGGradientStop"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGGradientStop || RenderObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGGradientStop || LayoutObject::isOfType(type); }
 
     virtual void layout() override;
 
     // This overrides are needed to prevent ASSERTs on <svg><stop /></svg>
-    // RenderObject's default implementations ASSERT_NOT_REACHED()
+    // LayoutObject's default implementations ASSERT_NOT_REACHED()
     // https://bugs.webkit.org/show_bug.cgi?id=20400
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject*, const PaintInvalidationState* = 0) const override { return LayoutRect(); }
     virtual FloatRect objectBoundingBox() const override { return FloatRect(); }
@@ -54,7 +54,7 @@ private:
     SVGGradientElement* gradientElement() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGGradientStop, isSVGGradientStop());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGGradientStop, isSVGGradientStop());
 
 }
 

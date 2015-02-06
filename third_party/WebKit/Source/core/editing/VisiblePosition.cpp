@@ -135,7 +135,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
         if (!box)
             return primaryDirection == LTR ? previousVisuallyDistinctCandidate(m_deepPosition) : nextVisuallyDistinctCandidate(m_deepPosition);
 
-        RenderObject* renderer = &box->renderer();
+        LayoutObject* renderer = &box->renderer();
 
         while (true) {
             if ((renderer->isReplaced() || renderer->isBR()) && offset == box->caretRightmostOffset())
@@ -299,7 +299,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
         if (!box)
             return primaryDirection == LTR ? nextVisuallyDistinctCandidate(m_deepPosition) : previousVisuallyDistinctCandidate(m_deepPosition);
 
-        RenderObject* renderer = &box->renderer();
+        LayoutObject* renderer = &box->renderer();
 
         while (true) {
             if ((renderer->isReplaced() || renderer->isBR()) && offset == box->caretLeftmostOffset())
@@ -645,7 +645,7 @@ UChar32 VisiblePosition::characterAfter() const
     return textNode->data().characterStartingAt(offset);
 }
 
-LayoutRect VisiblePosition::localCaretRect(RenderObject*& renderer) const
+LayoutRect VisiblePosition::localCaretRect(LayoutObject*& renderer) const
 {
     PositionWithAffinity positionWithAffinity(m_deepPosition, m_affinity);
     return localCaretRectOfPosition(positionWithAffinity, renderer);
@@ -653,7 +653,7 @@ LayoutRect VisiblePosition::localCaretRect(RenderObject*& renderer) const
 
 IntRect VisiblePosition::absoluteCaretBounds() const
 {
-    RenderObject* renderer;
+    LayoutObject* renderer;
     LayoutRect localRect = localCaretRect(renderer);
     if (localRect.isEmpty() || !renderer)
         return IntRect();
@@ -663,7 +663,7 @@ IntRect VisiblePosition::absoluteCaretBounds() const
 
 int VisiblePosition::lineDirectionPointForBlockDirectionNavigation() const
 {
-    RenderObject* renderer;
+    LayoutObject* renderer;
     LayoutRect localRect = localCaretRect(renderer);
     if (localRect.isEmpty() || !renderer)
         return 0;
@@ -672,7 +672,7 @@ int VisiblePosition::lineDirectionPointForBlockDirectionNavigation() const
     // without consulting transforms, so that 'up' in transformed text is 'up'
     // relative to the text, not absolute 'up'.
     FloatPoint caretPoint = renderer->localToAbsolute(FloatPoint(localRect.location()));
-    RenderObject* containingBlock = renderer->containingBlock();
+    LayoutObject* containingBlock = renderer->containingBlock();
     if (!containingBlock)
         containingBlock = renderer; // Just use ourselves to determine the writing mode if we have no containing block.
     return containingBlock->isHorizontalWritingMode() ? caretPoint.x() : caretPoint.y();

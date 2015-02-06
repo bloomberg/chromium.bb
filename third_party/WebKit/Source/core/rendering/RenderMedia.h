@@ -37,26 +37,26 @@ public:
     explicit RenderMedia(HTMLMediaElement*);
     virtual ~RenderMedia();
 
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+    LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     // If you have a RenderMedia, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
     HTMLMediaElement* mediaElement() const;
 
 protected:
     virtual void layout() override;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectMedia || RenderImage::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMedia || RenderImage::isOfType(type); }
 
 private:
-    virtual RenderObjectChildList* virtualChildren() override final { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override final { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 
@@ -64,7 +64,7 @@ private:
     // so we can't support generated content.
     virtual bool canHaveGeneratedChildren() const override final { return false; }
     virtual bool canHaveChildren() const override final { return true; }
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override final;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override final;
 
     virtual const char* renderName() const override { return "RenderMedia"; }
     virtual bool isImage() const override final { return false; }
@@ -72,10 +72,10 @@ private:
 
     virtual bool backgroundShouldAlwaysBeClipped() const override final { return false; }
 
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMedia, isMedia());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMedia, isMedia());
 
 } // namespace blink
 

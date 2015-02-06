@@ -40,11 +40,11 @@ class HTMLInputElement;
 class AXSlider : public AXRenderObject {
 
 public:
-    static PassRefPtr<AXSlider> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXSlider> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXSlider() { }
 
 protected:
-    AXSlider(RenderObject*, AXObjectCacheImpl*);
+    AXSlider(LayoutObject*, AXObjectCacheImpl*);
 
 private:
     HTMLInputElement* element() const;

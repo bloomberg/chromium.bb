@@ -46,7 +46,7 @@ class Element;
 class FrameView;
 class IntPoint;
 class Node;
-class RenderObject;
+class LayoutObject;
 class ScrollableArea;
 class Widget;
 
@@ -556,7 +556,7 @@ public:
 
     // DOM and Render tree access.
     virtual Node* node() const { return 0; }
-    virtual RenderObject* renderer() const { return 0; }
+    virtual LayoutObject* renderer() const { return 0; }
     virtual Document* document() const;
     virtual FrameView* documentFrameView() const;
     virtual Element* anchorElement() const { return 0; }
@@ -606,7 +606,7 @@ public:
     static bool isARIAControl(AccessibilityRole);
     static bool isARIAInput(AccessibilityRole);
     static AccessibilityRole ariaRoleToWebCoreRole(const String&);
-    static IntRect boundingBoxForQuads(RenderObject*, const Vector<FloatQuad>&);
+    static IntRect boundingBoxForQuads(LayoutObject*, const Vector<FloatQuad>&);
     static const AtomicString& roleName(AccessibilityRole);
 
 protected:

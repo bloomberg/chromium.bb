@@ -31,9 +31,9 @@ public:
 
     virtual const char* renderName() const override { return "RenderSVGInline"; }
     virtual LayerType layerTypeRequired() const override final { return NoLayer; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGInline || RenderInline::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInline || RenderInline::isOfType(type); }
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
     // Chapter 10.4 of the SVG Specification say that we should use the
     // object bounding box of the parent text element.
@@ -46,7 +46,7 @@ public:
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
-    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override final;
 
 private:
@@ -55,11 +55,11 @@ private:
     virtual void willBeDestroyed() override final;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override final;
-    virtual void removeChild(RenderObject*) override final;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override final;
+    virtual void removeChild(LayoutObject*) override final;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGInline, isSVGInline());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGInline, isSVGInline());
 
 }
 

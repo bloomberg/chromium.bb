@@ -87,7 +87,7 @@ private:
     FirstLetterPseudoElement* m_firstLetterPseudoElement;
 };
 
-DEFINE_TYPE_CASTS(RenderTextFragment, RenderObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());
+DEFINE_TYPE_CASTS(RenderTextFragment, LayoutObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());
 
 } // namespace blink
 

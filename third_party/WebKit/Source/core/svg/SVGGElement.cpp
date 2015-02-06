@@ -34,7 +34,7 @@ inline SVGGElement::SVGGElement(Document& document, ConstructionType constructio
 
 DEFINE_NODE_FACTORY(SVGGElement)
 
-RenderObject* SVGGElement::createRenderer(const RenderStyle& style)
+LayoutObject* SVGGElement::createRenderer(const RenderStyle& style)
 {
     // SVG 1.1 testsuite explicitely uses constructs like <g display="none"><linearGradient>
     // We still have to create renderers for the <g> & <linearGradient> element, though the

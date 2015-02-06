@@ -79,7 +79,7 @@ protected:
     virtual void layout() override;
     virtual bool updateImageLoadingPriorities() override final;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderImage || RenderReplaced::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderImage || RenderReplaced::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "RenderImage"; }
@@ -114,7 +114,7 @@ private:
     friend class RenderImageScaleObserver;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderImage, isRenderImage());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderImage, isRenderImage());
 
 } // namespace blink
 

@@ -45,10 +45,10 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderGrid.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/PathStyleMotionPath.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -144,7 +144,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSourceType(EMaskSourceType t
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const RenderStyle& style, CSSPropertyID propertyID, const RenderObject* renderer)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const RenderStyle& style, CSSPropertyID propertyID, const LayoutObject* renderer)
 {
     Length offset;
     switch (propertyID) {
@@ -390,7 +390,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlig
     return result.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand& shorthand, const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand& shorthand, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
@@ -401,7 +401,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePr
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand& shorthand, const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand& shorthand, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
@@ -412,7 +412,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const Sty
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
     const FillLayer* currLayer = &style.backgroundLayers();
@@ -569,7 +569,7 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
     list.append(lineNames.release());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, const RenderObject* renderer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, const LayoutObject* renderer, const RenderStyle& style)
 {
     const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridTemplateColumns() : style.gridTemplateRows();
     const OrderedNamedGridLines& orderedNamedGridLines = direction == ForColumns ? style.orderedNamedGridColumnLines() : style.orderedNamedGridRowLines();
@@ -632,7 +632,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridPosition(const GridPosition&
     return list;
 }
 
-static LayoutRect sizingBox(const RenderObject* renderer)
+static LayoutRect sizingBox(const LayoutObject* renderer)
 {
     if (!renderer->isBox())
         return LayoutRect();
@@ -922,7 +922,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const T
     return transformValue.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const RenderObject* renderer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* renderer, const RenderStyle& style)
 {
     if (!renderer || !renderer->hasTransformRelatedProperty() || !style.hasTransform())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1035,7 +1035,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, 
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand& shorthand, const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand& shorthand, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     // Assume the properties are in the usual order top, right, bottom, left.
@@ -1278,7 +1278,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(cons
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID propertyID, const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
+PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID propertyID, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGRenderStyle& svgStyle = style.svgStyle();
     propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.writingMode());

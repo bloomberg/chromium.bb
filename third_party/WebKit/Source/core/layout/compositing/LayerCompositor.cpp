@@ -178,7 +178,7 @@ static RenderVideo* findFullscreenVideoRenderer(Document& document)
     fullscreenElement = Fullscreen::currentFullScreenElementFrom(*contentDocument);
     if (!isHTMLVideoElement(fullscreenElement))
         return 0;
-    RenderObject* renderer = fullscreenElement->renderer();
+    LayoutObject* renderer = fullscreenElement->renderer();
     if (!renderer)
         return 0;
     return toRenderVideo(renderer);
@@ -303,7 +303,7 @@ void LayerCompositor::updateWithoutAcceleratedCompositing(CompositingUpdateType 
 #endif
 }
 
-static void forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(RenderObject* renderer)
+static void forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(LayoutObject* renderer)
 {
     // We clear the previous paint invalidation rect as it's wrong (paint invaliation container
     // changed, ...). Forcing a full invalidation will make us recompute it. Also we are not
@@ -312,7 +312,7 @@ static void forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendan
     renderer->setPreviousPaintInvalidationRect(LayoutRect());
     renderer->setShouldDoFullPaintInvalidation();
 
-    for (RenderObject* child = renderer->slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = renderer->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isPaintInvalidationContainer())
             forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(child);
     }

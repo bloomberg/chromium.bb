@@ -267,7 +267,7 @@ static void writeSVGPaintingResource(TextStream& ts, const SVGPaintDescription& 
     ts << " [id=\"" << element->getIdAttribute() << "\"]";
 }
 
-static void writeStyle(TextStream& ts, const RenderObject& object)
+static void writeStyle(TextStream& ts, const LayoutObject& object)
 {
     const RenderStyle* style = object.style();
     const SVGRenderStyle& svgStyle = style->svgStyle();
@@ -327,9 +327,9 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
     writeIfNotEmpty(ts, "end marker", svgStyle.markerEndResource());
 }
 
-static TextStream& writePositionAndStyle(TextStream& ts, const RenderObject& object)
+static TextStream& writePositionAndStyle(TextStream& ts, const LayoutObject& object)
 {
-    ts << " " << enclosingIntRect(const_cast<RenderObject&>(object).absoluteClippedOverflowRect());
+    ts << " " << enclosingIntRect(const_cast<LayoutObject&>(object).absoluteClippedOverflowRect());
     writeStyle(ts, object);
     return ts;
 }
@@ -463,7 +463,7 @@ static inline void writeSVGInlineTextBoxes(TextStream& ts, const RenderText& tex
     }
 }
 
-static void writeStandardPrefix(TextStream& ts, const RenderObject& object, int indent)
+static void writeStandardPrefix(TextStream& ts, const LayoutObject& object, int indent)
 {
     writeIndent(ts, indent);
     ts << object.renderName();
@@ -472,9 +472,9 @@ static void writeStandardPrefix(TextStream& ts, const RenderObject& object, int 
         ts << " {" << object.node()->nodeName() << "}";
 }
 
-static void writeChildren(TextStream& ts, const RenderObject& object, int indent)
+static void writeChildren(TextStream& ts, const LayoutObject& object, int indent)
 {
-    for (RenderObject* child = object.slowFirstChild(); child; child = child->nextSibling())
+    for (LayoutObject* child = object.slowFirstChild(); child; child = child->nextSibling())
         write(ts, *child, indent + 1);
 }
 
@@ -489,7 +489,7 @@ static inline void writeCommonGradientProperties(TextStream& ts, SVGSpreadMethod
         ts << " [gradientTransform=" << gradientTransform << "]";
 }
 
-void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int indent)
+void writeSVGResourceContainer(TextStream& ts, const LayoutObject& object, int indent)
 {
     writeStandardPrefix(ts, object, indent);
 
@@ -497,7 +497,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
     const AtomicString& id = element->getIdAttribute();
     writeNameAndQuotedValue(ts, "id", id);
 
-    RenderSVGResourceContainer* resource = toRenderSVGResourceContainer(const_cast<RenderObject*>(&object));
+    RenderSVGResourceContainer* resource = toRenderSVGResourceContainer(const_cast<LayoutObject*>(&object));
     ASSERT(resource);
 
     if (resource->resourceType() == MaskerResourceType) {
@@ -575,7 +575,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
     writeChildren(ts, object, indent);
 }
 
-void writeSVGContainer(TextStream& ts, const RenderObject& container, int indent)
+void writeSVGContainer(TextStream& ts, const LayoutObject& container, int indent)
 {
     // Currently RenderSVGResourceFilterPrimitive has no meaningful output.
     if (container.isSVGResourceFilterPrimitive())
@@ -640,14 +640,14 @@ void writeSVGGradientStop(TextStream& ts, const RenderSVGGradientStop& stop, int
     ts << " [offset=" << stopElement->offset()->currentValue()->value() << "] [color=" << stopElement->stopColorIncludingOpacity() << "]\n";
 }
 
-void writeResources(TextStream& ts, const RenderObject& object, int indent)
+void writeResources(TextStream& ts, const LayoutObject& object, int indent)
 {
     const RenderStyle* style = object.style();
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
     // FIXME: We want to use SVGResourcesCache to determine which resources are present, instead of quering the resource <-> id cache.
     // For now leave the DRT output as is, but later on we should change this so cycles are properly ignored in the DRT output.
-    RenderObject& renderer = const_cast<RenderObject&>(object);
+    LayoutObject& renderer = const_cast<LayoutObject&>(object);
     if (!svgStyle.maskerResource().isEmpty()) {
         if (RenderSVGResourceMasker* masker = getRenderSVGResourceById<RenderSVGResourceMasker>(object.document(), svgStyle.maskerResource())) {
             writeIndent(ts, indent);

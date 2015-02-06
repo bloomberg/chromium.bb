@@ -121,7 +121,7 @@ void ImageInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-RenderObject* ImageInputType::createRenderer(const RenderStyle& style) const
+LayoutObject* ImageInputType::createRenderer(const RenderStyle& style) const
 {
     if (m_useFallbackContent)
         return new RenderBlockFlow(&element());
@@ -161,7 +161,7 @@ void ImageInputType::startResourceLoading()
     HTMLImageLoader& imageLoader = element().ensureImageLoader();
     imageLoader.updateFromElement();
 
-    RenderObject* renderer = element().renderer();
+    LayoutObject* renderer = element().renderer();
     if (!renderer || !renderer->isRenderImage())
         return;
 

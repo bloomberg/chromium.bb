@@ -38,7 +38,7 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/Timer.h"
 #include "public/web/WebDocument.h"
@@ -131,7 +131,8 @@ void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
     result.numberOfLiveAudioNodes = AudioNode::instanceCount();
     result.numberOfLiveDocuments = InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
     result.numberOfLiveNodes = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
-    result.numberOfLiveRenderObjects = RenderObject::instanceCount();
+    result.numberOfLiveLayoutObjects = LayoutObject::instanceCount();
+    result.numberOfLiveRenderObjects = result.numberOfLiveLayoutObjects;
     result.numberOfLiveResources = Resource::instanceCount();
 
     m_client->onLeakDetectionComplete(result);

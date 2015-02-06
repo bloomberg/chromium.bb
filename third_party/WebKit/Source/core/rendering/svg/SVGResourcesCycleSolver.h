@@ -25,14 +25,14 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class RenderSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCycleSolver {
     WTF_MAKE_NONCOPYABLE(SVGResourcesCycleSolver);
 public:
-    SVGResourcesCycleSolver(RenderObject*, SVGResources*);
+    SVGResourcesCycleSolver(LayoutObject*, SVGResources*);
     ~SVGResourcesCycleSolver();
 
     void resolveCycles();
@@ -43,7 +43,7 @@ private:
     bool resourceContainsCycles(RenderSVGResourceContainer*);
     void breakCycle(RenderSVGResourceContainer*);
 
-    RenderObject* m_renderer;
+    LayoutObject* m_renderer;
     SVGResources* m_resources;
 
     ResourceSet m_activeResources;

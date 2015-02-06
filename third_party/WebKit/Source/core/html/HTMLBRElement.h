@@ -41,7 +41,7 @@ private:
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
 };
 
 } // namespace blink

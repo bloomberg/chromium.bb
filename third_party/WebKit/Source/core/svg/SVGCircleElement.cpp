@@ -99,7 +99,7 @@ bool SVGCircleElement::selfHasRelativeLengths() const
         || m_r->currentValue()->isRelative();
 }
 
-RenderObject* SVGCircleElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGCircleElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGEllipse(this);
 }

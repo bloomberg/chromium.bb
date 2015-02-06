@@ -34,7 +34,7 @@ class RenderFullScreen final : public RenderFlexibleBox {
 public:
     static RenderFullScreen* createAnonymous(Document*);
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderFullScreen || RenderFlexibleBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderFullScreen || RenderFlexibleBox::isOfType(type); }
     virtual const char* renderName() const override { return "RenderFullScreen"; }
 
     void setPlaceholder(RenderBlock*);
@@ -42,7 +42,7 @@ public:
     void createPlaceholder(PassRefPtr<RenderStyle>, const LayoutRect& frameRect);
 
 
-    static RenderObject* wrapRenderer(RenderObject*, RenderObject*, Document*);
+    static LayoutObject* wrapRenderer(LayoutObject*, LayoutObject*, Document*);
     void unwrapRenderer();
 
     void updateStyle();
@@ -55,7 +55,7 @@ protected:
     RenderBlock* m_placeholder;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFullScreen, isRenderFullScreen());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFullScreen, isRenderFullScreen());
 
 }
 

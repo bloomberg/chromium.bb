@@ -100,7 +100,7 @@ private:
 
     virtual const AffineTransform& localToParentTransform() const override final { return m_localTransform ? *m_localTransform : RenderSVGModelObject::localToParentTransform(); }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGShape || RenderSVGModelObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGShape || RenderSVGModelObject::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGShape"; }
 
     virtual void layout() override final;
@@ -124,7 +124,7 @@ private:
     bool m_needsTransformUpdate : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGShape, isSVGShape());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGShape, isSVGShape());
 
 }
 

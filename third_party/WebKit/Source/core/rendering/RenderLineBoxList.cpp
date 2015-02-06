@@ -228,7 +228,7 @@ bool RenderLineBoxList::hitTest(RenderBoxModelObject* renderer, const HitTestReq
     return false;
 }
 
-void RenderLineBoxList::dirtyLinesFromChangedChild(RenderObject* container, RenderObject* child)
+void RenderLineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObject* child)
 {
     if (!container->parent() || (container->isRenderBlock() && (container->selfNeedsLayout() || !container->isRenderBlockFlow())))
         return;
@@ -251,8 +251,8 @@ void RenderLineBoxList::dirtyLinesFromChangedChild(RenderObject* container, Rend
     // line box by examining our siblings.  If we didn't find a line box, then use our
     // parent's first line box.
     RootInlineBox* box = 0;
-    RenderObject* curr = 0;
-    ListHashSet<RenderObject*, 16> potentialLineBreakObjects;
+    LayoutObject* curr = 0;
+    ListHashSet<LayoutObject*, 16> potentialLineBreakObjects;
     potentialLineBreakObjects.add(child);
     for (curr = child->previousSibling(); curr; curr = curr->previousSibling()) {
         potentialLineBreakObjects.add(curr);
@@ -303,7 +303,7 @@ void RenderLineBoxList::dirtyLinesFromChangedChild(RenderObject* container, Rend
         // the address of the first object on the next line after a BR, which we may be
         // invalidating here.  For more info, see how RenderBlock::layoutInlineChildren
         // calls setLineBreakInfo with the result of findNextLineBreak.  findNextLineBreak,
-        // despite the name, actually returns the first RenderObject after the BR.
+        // despite the name, actually returns the first LayoutObject after the BR.
         // <rdar://problem/3849947> "Typing after pasting line does not appear until after window resize."
         adjacentBox = box->prevRootBox();
         if (adjacentBox)

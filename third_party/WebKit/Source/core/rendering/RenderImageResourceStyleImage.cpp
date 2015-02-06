@@ -29,7 +29,7 @@
 #include "core/rendering/RenderImageResourceStyleImage.h"
 
 #include "core/fetch/ImageResource.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/StyleFetchedImage.h"
 
 namespace blink {
@@ -44,7 +44,7 @@ RenderImageResourceStyleImage::~RenderImageResourceStyleImage()
 {
 }
 
-void RenderImageResourceStyleImage::initialize(RenderObject* renderer)
+void RenderImageResourceStyleImage::initialize(LayoutObject* renderer)
 {
     RenderImageResource::initialize(renderer);
 

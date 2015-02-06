@@ -44,24 +44,24 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 class SubtreeLayoutScope {
 public:
-    SubtreeLayoutScope(RenderObject& root);
+    SubtreeLayoutScope(LayoutObject& root);
     ~SubtreeLayoutScope();
 
-    void setNeedsLayout(RenderObject* descendant);
-    void setChildNeedsLayout(RenderObject* descendant);
+    void setNeedsLayout(LayoutObject* descendant);
+    void setChildNeedsLayout(LayoutObject* descendant);
 
-    RenderObject& root() { return m_root; }
-    void addRendererToLayout(RenderObject* renderer);
+    LayoutObject& root() { return m_root; }
+    void addRendererToLayout(LayoutObject* renderer);
 
 private:
-    RenderObject& m_root;
+    LayoutObject& m_root;
 
 #if ENABLE(ASSERT)
-    HashSet<RenderObject*> m_renderersToLayout;
+    HashSet<LayoutObject*> m_renderersToLayout;
 #endif
 };
 

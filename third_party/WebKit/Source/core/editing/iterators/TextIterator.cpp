@@ -204,7 +204,7 @@ bool TextIterator::isInsideReplacedElement() const
     if (atEnd() || length() != 1 || !m_node)
         return false;
 
-    RenderObject* renderer = m_node->renderer();
+    LayoutObject* renderer = m_node->renderer();
     return renderer && renderer->isReplaced();
 }
 
@@ -260,7 +260,7 @@ void TextIterator::advance()
             return;
         }
 
-        RenderObject* renderer = m_node->renderer();
+        LayoutObject* renderer = m_node->renderer();
         if (!renderer) {
             if (m_node->isShadowRoot()) {
                 // A shadow root doesn't have a renderer, but we want to visit children anyway.
@@ -624,11 +624,11 @@ void TextIterator::handleTextNodeFirstLetter(RenderTextFragment* renderer)
     if (!firstLetterElement)
         return;
 
-    RenderObject* pseudoRenderer = firstLetterElement->renderer();
+    LayoutObject* pseudoRenderer = firstLetterElement->renderer();
     if (pseudoRenderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
         return;
 
-    RenderObject* firstLetter = pseudoRenderer->slowFirstChild();
+    LayoutObject* firstLetter = pseudoRenderer->slowFirstChild();
     ASSERT(firstLetter);
 
     m_remainingTextBox = m_textBox;
@@ -656,7 +656,7 @@ bool TextIterator::handleReplacedElement()
     if (m_fullyClippedStack.top())
         return false;
 
-    RenderObject* renderer = m_node->renderer();
+    LayoutObject* renderer = m_node->renderer();
     if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
         return false;
 
@@ -719,13 +719,13 @@ bool TextIterator::hasVisibleTextNode(RenderText* renderer)
         return false;
 
     ASSERT(fragment->firstLetterPseudoElement());
-    RenderObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
+    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
     return pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE;
 }
 
 bool TextIterator::shouldEmitTabBeforeNode(Node* node)
 {
-    RenderObject* r = node->renderer();
+    LayoutObject* r = node->renderer();
 
     // Table cells are delimited by tabs.
     if (!r || !isTableCell(node))
@@ -739,7 +739,7 @@ bool TextIterator::shouldEmitTabBeforeNode(Node* node)
 
 bool TextIterator::shouldEmitNewlineForNode(Node* node, bool emitsOriginalText)
 {
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
 
     if (renderer ? !renderer->isBR() : !isHTMLBRElement(node))
         return false;
@@ -750,7 +750,7 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)
 {
     // Block flow (versus inline flow) is represented by having
     // a newline both before and after the element.
-    RenderObject* r = node.renderer();
+    LayoutObject* r = node.renderer();
     if (!r) {
         return (node.hasTagName(blockquoteTag)
             || node.hasTagName(ddTag)
@@ -822,7 +822,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
     // newline for a more realistic result. We end up getting the right
     // result even without margin collapsing. For example: <div><p>text</p></div>
     // will work right even if both the <div> and the <p> have bottom margins.
-    RenderObject* r = node->renderer();
+    LayoutObject* r = node->renderer();
     if (!r || !r->isBox())
         return false;
 

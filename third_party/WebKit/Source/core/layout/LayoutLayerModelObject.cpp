@@ -35,7 +35,7 @@ namespace blink {
 bool LayoutLayerModelObject::s_wasFloating = false;
 
 LayoutLayerModelObject::LayoutLayerModelObject(ContainerNode* node)
-    : RenderObject(node)
+    : LayoutObject(node)
 {
 }
 
@@ -82,7 +82,7 @@ void LayoutLayerModelObject::willBeDestroyed()
         }
     }
 
-    RenderObject::willBeDestroyed();
+    LayoutObject::willBeDestroyed();
 
     destroyLayer();
 }
@@ -99,7 +99,7 @@ void LayoutLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
         }
     }
 
-    RenderObject::styleWillChange(diff, newStyle);
+    LayoutObject::styleWillChange(diff, newStyle);
 }
 
 void LayoutLayerModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
@@ -108,7 +108,7 @@ void LayoutLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
     bool hadLayer = hasLayer();
     bool layerWasSelfPainting = hadLayer && layer()->isSelfPaintingLayer();
 
-    RenderObject::styleDidChange(diff, oldStyle);
+    LayoutObject::styleDidChange(diff, oldStyle);
     updateFromStyle();
 
     LayerType type = layerTypeRequired();
@@ -159,16 +159,16 @@ void LayoutLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, cons
     if (hasLayer()) {
         if (isRenderView()) {
             // RenderView is handled with a special fast-path, but it needs to know the current layer.
-            RenderObject::addLayerHitTestRects(rects, layer(), LayoutPoint(), LayoutRect());
+            LayoutObject::addLayerHitTestRects(rects, layer(), LayoutPoint(), LayoutRect());
         } else {
-            // Since a RenderObject never lives outside it's container Layer, we can switch
+            // Since a LayoutObject never lives outside it's container Layer, we can switch
             // to marking entire layers instead. This may sometimes mark more than necessary (when
             // a layer is made of disjoint objects) but in practice is a significant performance
             // savings.
             layer()->addLayerHitTestRects(rects);
         }
     } else {
-        RenderObject::addLayerHitTestRects(rects, currentLayer, layerOffset, containerRect);
+        LayoutObject::addLayerHitTestRects(rects, currentLayer, layerOffset, containerRect);
     }
 }
 
@@ -213,7 +213,7 @@ void LayoutLayerModelObject::setBackingNeedsPaintInvalidationInRect(const Layout
 
 void LayoutLayerModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
-    for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling()) {
+    for (LayoutObject* current = slowFirstChild(); current; current = current->nextSibling()) {
         if (current->isText() || current->isListMarker())
             continue;
 

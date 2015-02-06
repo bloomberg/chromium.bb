@@ -62,7 +62,7 @@ public:
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
 
     virtual bool isValid() const override final { return SVGTests::isValid(document()); }
 

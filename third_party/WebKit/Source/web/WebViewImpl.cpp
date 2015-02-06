@@ -3503,7 +3503,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
     if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
 
-    RenderObject* object = node->renderer();
+    LayoutObject* object = node->renderer();
     if (object && object->isRenderPart()) {
         Widget* widget = toRenderPart(object)->widget();
         if (widget && widget->isPluginContainer()) {

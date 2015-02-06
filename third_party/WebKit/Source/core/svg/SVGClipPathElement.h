@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 class SVGClipPathElement final : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
@@ -51,7 +51,7 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
 
     RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
 };

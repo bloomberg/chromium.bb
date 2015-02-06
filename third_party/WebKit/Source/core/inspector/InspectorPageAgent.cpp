@@ -1183,7 +1183,7 @@ void InspectorPageAgent::didRunJavaScriptDialog()
     m_frontend->javascriptDialogClosed();
 }
 
-void InspectorPageAgent::didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext* context, const LayoutRect& rect)
+void InspectorPageAgent::didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext* context, const LayoutRect& rect)
 {
     if (!m_enabled || m_client->overridesShowPaintRects() || !m_state->getBoolean(PageAgentState::pageAgentShowPaintRects))
         return;
@@ -1200,7 +1200,7 @@ void InspectorPageAgent::didPaint(RenderObject*, const GraphicsLayer*, GraphicsC
     m_overlay->drawOutline(context, inflatedRect, colors[colorSelector++ % WTF_ARRAY_LENGTH(colors)]);
 }
 
-void InspectorPageAgent::didLayout(RenderObject*)
+void InspectorPageAgent::didLayout(LayoutObject*)
 {
     if (!m_enabled)
         return;

@@ -166,7 +166,7 @@ bool RenderReplaced::needsPreferredWidthsRecalculation() const
     return hasRelativeLogicalHeight() && style()->logicalWidth().isAuto() && !hasAutoHeightOrContainingBlockWithAutoHeight();
 }
 
-static inline bool rendererHasAspectRatio(const RenderObject* renderer)
+static inline bool rendererHasAspectRatio(const LayoutObject* renderer)
 {
     ASSERT(renderer);
     return renderer->isImage() || renderer->isCanvas() || renderer->isVideo();

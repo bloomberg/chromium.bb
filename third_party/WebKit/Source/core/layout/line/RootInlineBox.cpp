@@ -282,7 +282,7 @@ LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const
 
 GapRects RootInlineBox::lineSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo* paintInfo) const
 {
-    RenderObject::SelectionState lineState = selectionState();
+    LayoutObject::SelectionState lineState = selectionState();
 
     bool leftGap, rightGap;
     block().getSelectionGapInfo(lineState, leftGap, rightGap);
@@ -310,9 +310,9 @@ GapRects RootInlineBox::lineSelectionGap(const RenderBlock* rootBlock, const Lay
     if (firstBox && firstBox != lastBox) {
         // Now fill in any gaps on the line that occurred between two selected elements.
         LayoutUnit lastLogicalLeft = firstBox->logicalRight();
-        bool isPreviousBoxSelected = firstBox->selectionState() != RenderObject::SelectionNone;
+        bool isPreviousBoxSelected = firstBox->selectionState() != LayoutObject::SelectionNone;
         for (InlineBox* box = firstBox->nextLeafChild(); box; box = box->nextLeafChild()) {
-            if (box->selectionState() != RenderObject::SelectionNone) {
+            if (box->selectionState() != LayoutObject::SelectionNone) {
                 LayoutRect logicalRect(lastLogicalLeft, selTop, box->logicalLeft() - lastLogicalLeft, selHeight);
                 logicalRect.move(renderer().isHorizontalWritingMode() ? offsetFromRootBlock : LayoutSize(offsetFromRootBlock.height(), offsetFromRootBlock.width()));
                 LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, logicalRect);
@@ -326,29 +326,29 @@ GapRects RootInlineBox::lineSelectionGap(const RenderBlock* rootBlock, const Lay
             }
             if (box == lastBox)
                 break;
-            isPreviousBoxSelected = box->selectionState() != RenderObject::SelectionNone;
+            isPreviousBoxSelected = box->selectionState() != LayoutObject::SelectionNone;
         }
     }
 
     return result;
 }
 
-RenderObject::SelectionState RootInlineBox::selectionState() const
+LayoutObject::SelectionState RootInlineBox::selectionState() const
 {
     // Walk over all of the selected boxes.
-    RenderObject::SelectionState state = RenderObject::SelectionNone;
+    LayoutObject::SelectionState state = LayoutObject::SelectionNone;
     for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
-        RenderObject::SelectionState boxState = box->selectionState();
-        if ((boxState == RenderObject::SelectionStart && state == RenderObject::SelectionEnd)
-            || (boxState == RenderObject::SelectionEnd && state == RenderObject::SelectionStart)) {
-            state = RenderObject::SelectionBoth;
-        } else if (state == RenderObject::SelectionNone || ((boxState == RenderObject::SelectionStart || boxState == RenderObject::SelectionEnd) && (state == RenderObject::SelectionNone || state == RenderObject::SelectionInside))) {
+        LayoutObject::SelectionState boxState = box->selectionState();
+        if ((boxState == LayoutObject::SelectionStart && state == LayoutObject::SelectionEnd)
+            || (boxState == LayoutObject::SelectionEnd && state == LayoutObject::SelectionStart)) {
+            state = LayoutObject::SelectionBoth;
+        } else if (state == LayoutObject::SelectionNone || ((boxState == LayoutObject::SelectionStart || boxState == LayoutObject::SelectionEnd) && (state == LayoutObject::SelectionNone || state == LayoutObject::SelectionInside))) {
             state = boxState;
-        } else if (boxState == RenderObject::SelectionNone && state == RenderObject::SelectionStart) {
+        } else if (boxState == LayoutObject::SelectionNone && state == LayoutObject::SelectionStart) {
             // We are past the end of the selection.
-            state = RenderObject::SelectionBoth;
+            state = LayoutObject::SelectionBoth;
         }
-        if (state == RenderObject::SelectionBoth)
+        if (state == LayoutObject::SelectionBoth)
             break;
     }
 
@@ -358,7 +358,7 @@ RenderObject::SelectionState RootInlineBox::selectionState() const
 InlineBox* RootInlineBox::firstSelectedBox() const
 {
     for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
-        if (box->selectionState() != RenderObject::SelectionNone)
+        if (box->selectionState() != LayoutObject::SelectionNone)
             return box;
     }
 
@@ -368,7 +368,7 @@ InlineBox* RootInlineBox::firstSelectedBox() const
 InlineBox* RootInlineBox::lastSelectedBox() const
 {
     for (InlineBox* box = lastLeafChild(); box; box = box->prevLeafChild()) {
-        if (box->selectionState() != RenderObject::SelectionNone)
+        if (box->selectionState() != LayoutObject::SelectionNone)
             return box;
     }
 
@@ -405,16 +405,16 @@ LayoutUnit RootInlineBox::selectionTopAdjustedForPrecedingBlock() const
 {
     LayoutUnit top = selectionTop();
 
-    RenderObject::SelectionState blockSelectionState = root().block().selectionState();
-    if (blockSelectionState != RenderObject::SelectionInside && blockSelectionState != RenderObject::SelectionEnd)
+    LayoutObject::SelectionState blockSelectionState = root().block().selectionState();
+    if (blockSelectionState != LayoutObject::SelectionInside && blockSelectionState != LayoutObject::SelectionEnd)
         return top;
 
     LayoutSize offsetToBlockBefore;
     if (RenderBlock* block = root().block().blockBeforeWithinSelectionRoot(offsetToBlockBefore)) {
         if (block->isRenderBlockFlow()) {
             if (RootInlineBox* lastLine = toRenderBlockFlow(block)->lastRootBox()) {
-                RenderObject::SelectionState lastLineSelectionState = lastLine->selectionState();
-                if (lastLineSelectionState != RenderObject::SelectionInside && lastLineSelectionState != RenderObject::SelectionStart)
+                LayoutObject::SelectionState lastLineSelectionState = lastLine->selectionState();
+                if (lastLineSelectionState != LayoutObject::SelectionInside && lastLineSelectionState != LayoutObject::SelectionStart)
                     return top;
 
                 LayoutUnit lastLineSelectionBottom = lastLine->selectionBottom() + offsetToBlockBefore.height();
@@ -520,11 +520,11 @@ BidiStatus RootInlineBox::lineBreakBidiStatus() const
     return BidiStatus(static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusEor), static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusLastStrong), static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusLast), m_lineBreakContext);
 }
 
-void RootInlineBox::setLineBreakInfo(RenderObject* obj, unsigned breakPos, const BidiStatus& status)
+void RootInlineBox::setLineBreakInfo(LayoutObject* obj, unsigned breakPos, const BidiStatus& status)
 {
-    // When setting lineBreakObj, the RenderObject must not be a RenderInline
+    // When setting lineBreakObj, the LayoutObject must not be a RenderInline
     // with no line boxes, otherwise all sorts of invariants are broken later.
-    // This has security implications because if the RenderObject does not
+    // This has security implications because if the LayoutObject does not
     // point to at least one line box, then that RenderInline can be deleted
     // later without resetting the lineBreakObj, leading to use-after-free.
     ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj->isText() || !(obj->isRenderInline() && obj->isBox() && !toRenderBox(obj)->inlineBoxWrapper()));
@@ -544,17 +544,17 @@ EllipsisBox* RootInlineBox::ellipsisBox() const
     return gEllipsisBoxMap->get(this);
 }
 
-void RootInlineBox::removeLineBoxFromRenderObject()
+void RootInlineBox::removeLineBoxFromLayoutObject()
 {
     block().lineBoxes()->removeLineBox(this);
 }
 
-void RootInlineBox::extractLineBoxFromRenderObject()
+void RootInlineBox::extractLineBoxFromLayoutObject()
 {
     block().lineBoxes()->extractLineBox(this);
 }
 
-void RootInlineBox::attachLineBoxToRenderObject()
+void RootInlineBox::attachLineBoxToLayoutObject()
 {
     block().lineBoxes()->attachLineBox(this);
 }
@@ -719,7 +719,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     if (verticalAlign == TOP || verticalAlign == BOTTOM)
         return 0;
 
-    RenderObject* parent = renderer->parent();
+    LayoutObject* parent = renderer->parent();
     if (parent->isRenderInline() && parent->style()->verticalAlign() != TOP && parent->style()->verticalAlign() != BOTTOM)
         verticalPosition = box->parent()->logicalTop();
 

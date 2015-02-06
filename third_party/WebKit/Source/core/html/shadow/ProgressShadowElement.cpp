@@ -52,7 +52,7 @@ HTMLProgressElement* ProgressShadowElement::progressElement() const
 
 bool ProgressShadowElement::rendererIsNeeded(const RenderStyle& style)
 {
-    RenderObject* progressRenderer = progressElement()->renderer();
+    LayoutObject* progressRenderer = progressElement()->renderer();
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::rendererIsNeeded(style);
 }
 
@@ -63,7 +63,7 @@ inline ProgressInnerElement::ProgressInnerElement(Document& document)
 
 DEFINE_NODE_FACTORY(ProgressInnerElement)
 
-RenderObject* ProgressInnerElement::createRenderer(const RenderStyle&)
+LayoutObject* ProgressInnerElement::createRenderer(const RenderStyle&)
 {
     return new RenderProgress(this);
 }
@@ -73,7 +73,7 @@ bool ProgressInnerElement::rendererIsNeeded(const RenderStyle& style)
     if (progressElement()->hasAuthorShadowRoot())
         return HTMLDivElement::rendererIsNeeded(style);
 
-    RenderObject* progressRenderer = progressElement()->renderer();
+    LayoutObject* progressRenderer = progressElement()->renderer();
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::rendererIsNeeded(style);
 }
 

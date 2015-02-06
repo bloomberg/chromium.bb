@@ -179,7 +179,7 @@ bool hasOffscreenRect(Node* node, WebFocusType type)
         break;
     }
 
-    RenderObject* render = node->renderer();
+    LayoutObject* render = node->renderer();
     if (!render)
         return true;
 
@@ -282,7 +282,7 @@ bool isScrollableNode(const Node* node)
     if (!node)
         return false;
 
-    if (RenderObject* renderer = node->renderer())
+    if (LayoutObject* renderer = node->renderer())
         return renderer->isBox() && toRenderBox(renderer)->canBeScrolledAndHasScrollableArea() && node->hasChildren();
 
     return false;

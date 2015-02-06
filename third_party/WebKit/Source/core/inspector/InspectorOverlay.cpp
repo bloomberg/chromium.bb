@@ -41,6 +41,7 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -50,7 +51,6 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/JSONValues.h"
 #include "platform/PlatformMouseEvent.h"
@@ -95,12 +95,12 @@ private:
 
 class ShapePathBuilder : public PathBuilder {
 public:
-    ShapePathBuilder(FrameView& view, RenderObject& renderer, const ShapeOutsideInfo& shapeOutsideInfo)
+    ShapePathBuilder(FrameView& view, LayoutObject& renderer, const ShapeOutsideInfo& shapeOutsideInfo)
         : m_view(view)
         , m_renderer(renderer)
         , m_shapeOutsideInfo(shapeOutsideInfo) { }
 
-    static PassRefPtr<TypeBuilder::Array<JSONValue> > buildPath(FrameView& view, RenderObject& renderer, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
+    static PassRefPtr<TypeBuilder::Array<JSONValue>> buildPath(FrameView& view, LayoutObject& renderer, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
     {
         ShapePathBuilder builder(view, renderer, shapeOutsideInfo);
         builder.appendPath(path);
@@ -116,7 +116,7 @@ protected:
 
 private:
     FrameView& m_view;
-    RenderObject& m_renderer;
+    LayoutObject& m_renderer;
     const ShapeOutsideInfo& m_shapeOutsideInfo;
 };
 
@@ -245,7 +245,7 @@ static void contentsQuadToScreen(const FrameView* view, FloatQuad& quad)
     quad.setP4(view->contentsToRootView(roundedIntPoint(quad.p4())));
 }
 
-static bool buildNodeQuads(RenderObject* renderer, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin)
+static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin)
 {
     FrameView* containingView = renderer->frameView();
     if (!containingView)
@@ -305,7 +305,7 @@ static bool buildNodeQuads(RenderObject* renderer, FloatQuad* content, FloatQuad
 
 static void buildNodeHighlight(Node& node, const HighlightConfig& highlightConfig, Highlight* highlight)
 {
-    RenderObject* renderer = node.renderer();
+    LayoutObject* renderer = node.renderer();
     if (!renderer)
         return;
 
@@ -593,7 +593,7 @@ static RefPtr<TypeBuilder::Array<double> > buildArrayForQuad(const FloatQuad& qu
 
 static const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths* paths, FloatQuad* bounds)
 {
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer || !renderer->isBox() || !toRenderBox(renderer)->shapeOutsideInfo())
         return nullptr;
 
@@ -663,7 +663,7 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
     if (!classNames.isEmpty())
         elementInfo->setString("className", classNames.toString());
 
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     FrameView* containingView = element->document().view();
     if (!renderer || !containingView)
         return elementInfo;
@@ -821,7 +821,7 @@ void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
 
 bool InspectorOverlay::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel>& model)
 {
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     FrameView* view = node->document().view();
     if (!renderer || !view)
         return false;

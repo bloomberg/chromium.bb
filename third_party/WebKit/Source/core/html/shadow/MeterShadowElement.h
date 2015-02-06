@@ -54,7 +54,7 @@ public:
 private:
     explicit MeterInnerElement(Document&);
     virtual bool rendererIsNeeded(const RenderStyle&) override;
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
 };
 
 class MeterBarElement final : public MeterShadowElement {

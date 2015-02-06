@@ -32,7 +32,7 @@
 #include "core/css/Pair.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/TextLinkColors.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GradientGeneratedImage.h"
@@ -49,7 +49,7 @@ void CSSGradientColorStop::trace(Visitor* visitor)
     visitor->trace(m_color);
 }
 
-PassRefPtr<Image> CSSGradientValue::image(RenderObject* renderer, const IntSize& size)
+PassRefPtr<Image> CSSGradientValue::image(LayoutObject* renderer, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;
@@ -202,12 +202,12 @@ void replaceColorHintsWithColorStops(WillBeHeapVector<GradientStop>& stops, cons
     }
 }
 
-static Color resolveStopColor(CSSPrimitiveValue* stopColor, const RenderObject& object)
+static Color resolveStopColor(CSSPrimitiveValue* stopColor, const LayoutObject& object)
 {
     return object.document().textLinkColors().colorFromPrimitiveValue(stopColor, object.resolveColor(CSSPropertyColor));
 }
 
-void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionData& conversionData, float maxLengthForRepeat, const RenderObject& object)
+void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionData& conversionData, float maxLengthForRepeat, const LayoutObject& object)
 {
     if (m_gradientType == CSSDeprecatedLinearGradient || m_gradientType == CSSDeprecatedRadialGradient) {
         sortStopsIfNeeded();
@@ -548,7 +548,7 @@ bool CSSGradientValue::isCacheable() const
     return true;
 }
 
-bool CSSGradientValue::knownToBeOpaque(const RenderObject* object) const
+bool CSSGradientValue::knownToBeOpaque(const LayoutObject* object) const
 {
     ASSERT(object);
     for (auto& stop : m_stops) {
@@ -725,7 +725,7 @@ static void endPointsFromAngle(float angleDeg, const IntSize& size, FloatPoint& 
     firstPoint.set(halfWidth - endX, halfHeight + endY);
 }
 
-PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size, const RenderObject& object)
+PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size, const LayoutObject& object)
 {
     ASSERT(!size.isEmpty());
 
@@ -1073,7 +1073,7 @@ static inline float horizontalEllipseRadius(const FloatSize& p, float aspectRati
 }
 
 // FIXME: share code with the linear version
-PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size, const RenderObject& object)
+PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size, const LayoutObject& object)
 {
     ASSERT(!size.isEmpty());
 

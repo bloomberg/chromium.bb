@@ -162,7 +162,7 @@ TextStream& operator<<(TextStream& ts, const Color& c)
     return ts << c.nameForLayoutTreeAsText();
 }
 
-void LayoutTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, LayoutAsTextBehavior behavior)
+void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, LayoutAsTextBehavior behavior)
 {
     ts << o.renderName();
 
@@ -430,7 +430,7 @@ static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBo
     ts << "\n";
 }
 
-void write(TextStream& ts, const RenderObject& o, int indent, LayoutAsTextBehavior behavior)
+void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavior behavior)
 {
     if (o.isSVGShape()) {
         write(ts, toRenderSVGShape(o), indent);
@@ -467,7 +467,7 @@ void write(TextStream& ts, const RenderObject& o, int indent, LayoutAsTextBehavi
 
     writeIndent(ts, indent);
 
-    LayoutTreeAsText::writeRenderObject(ts, o, behavior);
+    LayoutTreeAsText::writeLayoutObject(ts, o, behavior);
     ts << "\n";
 
     if (o.isText() && !o.isBR()) {
@@ -478,7 +478,7 @@ void write(TextStream& ts, const RenderObject& o, int indent, LayoutAsTextBehavi
         }
     }
 
-    for (RenderObject* child = o.slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = o.slowFirstChild(); child; child = child->nextSibling()) {
         if (child->hasLayer())
             continue;
         write(ts, *child, indent + 1, behavior);
@@ -681,7 +681,7 @@ String nodePositionAsStringForTesting(Node* node)
     return result.toString();
 }
 
-static void writeSelection(TextStream& ts, const RenderObject* o)
+static void writeSelection(TextStream& ts, const LayoutObject* o)
 {
     Node* n = o->node();
     if (!n || !n->isDocumentNode())
@@ -721,7 +721,7 @@ String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior)
     if (!(behavior & LayoutAsTextDontUpdateLayout))
         frame->document()->updateLayout();
 
-    RenderObject* renderer = frame->contentRenderer();
+    LayoutObject* renderer = frame->contentRenderer();
     if (!renderer || !renderer->isBox())
         return String();
 
@@ -739,16 +739,16 @@ String externalRepresentation(Element* element, LayoutAsTextBehavior behavior)
     if (!(behavior & LayoutAsTextDontUpdateLayout))
         element->document().updateLayout();
 
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox())
         return String();
 
     return externalRepresentation(toRenderBox(renderer), behavior | LayoutAsTextShowAllLayers);
 }
 
-static void writeCounterValuesFromChildren(TextStream& stream, RenderObject* parent, bool& isFirstCounter)
+static void writeCounterValuesFromChildren(TextStream& stream, LayoutObject* parent, bool& isFirstCounter)
 {
-    for (RenderObject* child = parent->slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = parent->slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isCounter()) {
             if (!isFirstCounter)
                 stream << " ";
@@ -767,9 +767,9 @@ String counterValueForElement(Element* element)
     TextStream stream;
     bool isFirstCounter = true;
     // The counter renderers should be children of :before or :after pseudo-elements.
-    if (RenderObject* before = element->pseudoElementRenderer(BEFORE))
+    if (LayoutObject* before = element->pseudoElementRenderer(BEFORE))
         writeCounterValuesFromChildren(stream, before, isFirstCounter);
-    if (RenderObject* after = element->pseudoElementRenderer(AFTER))
+    if (LayoutObject* after = element->pseudoElementRenderer(AFTER))
         writeCounterValuesFromChildren(stream, after, isFirstCounter);
     return stream.release();
 }
@@ -780,7 +780,7 @@ String markerTextForListItem(Element* element)
     RefPtrWillBeRawPtr<Element> protector(element);
     element->document().updateLayout();
 
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isListItem())
         return String();
 

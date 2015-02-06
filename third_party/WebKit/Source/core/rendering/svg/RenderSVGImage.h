@@ -49,7 +49,7 @@ public:
     RefPtr<const SkPicture>& bufferedForeground() { return m_bufferedForeground; }
 
     virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGImage || RenderSVGModelObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || RenderSVGModelObject::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "RenderSVGImage"; }
@@ -78,7 +78,7 @@ private:
     RefPtr<const SkPicture> m_bufferedForeground;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGImage, isSVGImage());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGImage, isSVGImage());
 
 } // namespace blink
 

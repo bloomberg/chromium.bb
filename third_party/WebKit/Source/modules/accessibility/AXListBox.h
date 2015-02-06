@@ -38,10 +38,10 @@ class AXObjectCacheImpl;
 class AXListBox final : public AXRenderObject {
 
 private:
-    AXListBox(RenderObject*, AXObjectCacheImpl*);
+    AXListBox(LayoutObject*, AXObjectCacheImpl*);
 
 public:
-    static PassRefPtr<AXListBox> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXListBox> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXListBox();
 
     virtual AccessibilityRole roleValue() const override { return ListBoxRole; }

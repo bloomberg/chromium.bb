@@ -25,6 +25,7 @@
 #define BreakingContextInlineHeaders_h
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -37,7 +38,6 @@
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "platform/text/TextBreakIterator.h"
@@ -83,7 +83,7 @@ public:
         m_lineInfo.setPreviousLineBrokeCleanly(false);
     }
 
-    RenderObject* currentObject() { return m_current.object(); }
+    LayoutObject* currentObject() { return m_current.object(); }
     InlineIterator lineBreak() { return m_lineBreak; }
     bool atEnd() { return m_atEnd; }
 
@@ -116,8 +116,8 @@ private:
     InlineIterator m_startOfIgnoredSpaces;
 
     RenderBlockFlow* m_block;
-    RenderObject* m_lastObject;
-    RenderObject* m_nextObject;
+    LayoutObject* m_lastObject;
+    LayoutObject* m_nextObject;
 
     RenderStyle* m_currentStyle;
     RenderStyle* m_blockStyle;
@@ -165,7 +165,7 @@ inline bool shouldCollapseWhiteSpace(const RenderStyle* style, const LineInfo& l
 
 inline bool requiresLineBoxForContent(RenderInline* flow, const LineInfo& lineInfo)
 {
-    RenderObject* parent = flow->parent();
+    LayoutObject* parent = flow->parent();
     if (flow->document().inNoQuirksMode()
         && (flow->style(lineInfo.isFirstLine())->lineHeight() != parent->style(lineInfo.isFirstLine())->lineHeight()
         || flow->style()->verticalAlign() != parent->style()->verticalAlign()
@@ -174,7 +174,7 @@ inline bool requiresLineBoxForContent(RenderInline* flow, const LineInfo& lineIn
     return false;
 }
 
-inline bool alwaysRequiresLineBox(RenderObject* flow)
+inline bool alwaysRequiresLineBox(LayoutObject* flow)
 {
     // FIXME: Right now, we only allow line boxes for inlines that are truly empty.
     // We need to fix this, though, because at the very least, inlines containing only
@@ -203,7 +203,7 @@ inline void setStaticPositions(RenderBlockFlow* block, RenderBox* child)
     ASSERT(child->isOutOfFlowPositioned());
     // FIXME: The math here is actually not really right. It's a best-guess approximation that
     // will work for the common cases
-    RenderObject* containerBlock = child->container();
+    LayoutObject* containerBlock = child->container();
     LayoutUnit blockHeight = block->logicalHeight();
     if (containerBlock->isRenderInline()) {
         // A relative positioned inline encloses us. In this case, we also have to determine our
@@ -229,7 +229,7 @@ inline void setStaticPositions(RenderBlockFlow* block, RenderBox* child)
 inline void BreakingContext::skipTrailingWhitespace(InlineIterator& iterator, const LineInfo& lineInfo)
 {
     while (!iterator.atEnd() && !requiresLineBox(iterator, lineInfo, TrailingWhitespace)) {
-        RenderObject* object = iterator.object();
+        LayoutObject* object = iterator.object();
         if (object->isOutOfFlowPositioned())
             setStaticPositions(m_block, toRenderBox(object));
         else if (object->isFloating())
@@ -270,7 +270,7 @@ inline void BreakingContext::increment()
 inline void BreakingContext::handleBR(EClear& clear)
 {
     if (m_width.fitsOnLine()) {
-        RenderObject* br = m_current.object();
+        LayoutObject* br = m_current.object();
         m_lineBreak.moveToStartOf(br);
         m_lineBreak.increment();
 
@@ -306,7 +306,7 @@ inline LayoutUnit borderPaddingMarginEnd(RenderInline* child)
     return child->marginEnd() + child->paddingEnd() + child->borderEnd();
 }
 
-inline bool shouldAddBorderPaddingMargin(RenderObject* child, bool &checkSide)
+inline bool shouldAddBorderPaddingMargin(LayoutObject* child, bool &checkSide)
 {
     if (!child || (child->isText() && !toRenderText(child)->textLength()))
         return true;
@@ -314,11 +314,11 @@ inline bool shouldAddBorderPaddingMargin(RenderObject* child, bool &checkSide)
     return checkSide;
 }
 
-inline LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, bool end = true)
+inline LayoutUnit inlineLogicalWidth(LayoutObject* child, bool start = true, bool end = true)
 {
     unsigned lineDepth = 1;
     LayoutUnit extraWidth = 0;
-    RenderObject* parent = child->parent();
+    LayoutObject* parent = child->parent();
     while (parent->isRenderInline() && lineDepth++ < cMaxLineDepth) {
         RenderInline* parentAsRenderInline = toRenderInline(parent);
         if (!isEmptyInline(parentAsRenderInline)) {
@@ -386,9 +386,9 @@ inline void BreakingContext::handleFloat()
 
 // This is currently just used for list markers and inline flows that have line boxes. Neither should
 // have an effect on whitespace at the start of the line.
-inline bool shouldSkipWhitespaceAfterStartObject(RenderBlockFlow* block, RenderObject* o, LineMidpointState& lineMidpointState)
+inline bool shouldSkipWhitespaceAfterStartObject(RenderBlockFlow* block, LayoutObject* o, LineMidpointState& lineMidpointState)
 {
-    RenderObject* next = bidiNextSkippingEmptyInlines(block, o);
+    LayoutObject* next = bidiNextSkippingEmptyInlines(block, o);
     while (next && next->isFloatingOrOutOfFlowPositioned())
         next = bidiNextSkippingEmptyInlines(block, next);
 

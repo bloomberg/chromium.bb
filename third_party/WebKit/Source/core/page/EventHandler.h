@@ -71,7 +71,7 @@ class PlatformTouchEvent;
 class PlatformWheelEvent;
 class Layer;
 class LayerScrollableArea;
-class RenderObject;
+class LayoutObject;
 class ScrollableArea;
 class Scrollbar;
 class TextEvent;
@@ -97,7 +97,7 @@ public:
     Node* mousePressNode() const;
 
 #if OS(WIN)
-    void startPanScrolling(RenderObject*);
+    void startPanScrolling(LayoutObject*);
 #endif
 
     void stopAutoscroll();
@@ -310,7 +310,7 @@ private:
 
     bool handleScrollGestureOnResizer(Node*, const PlatformGestureEvent&);
 
-    bool passScrollGestureEventToWidget(const PlatformGestureEvent&, RenderObject*);
+    bool passScrollGestureEventToWidget(const PlatformGestureEvent&, LayoutObject*);
 
     AutoscrollController* autoscrollController() const;
     bool panScrollInProgress() const;

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/accessibility/AXSpinButton.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {

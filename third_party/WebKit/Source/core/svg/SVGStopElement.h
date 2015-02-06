@@ -45,7 +45,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
     virtual bool rendererIsNeeded(const RenderStyle&) override;
 
     RefPtrWillBeMember<SVGAnimatedNumber> m_offset;

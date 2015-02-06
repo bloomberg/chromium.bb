@@ -43,9 +43,9 @@ public:
 
     String customCSSText() const;
 
-    PassRefPtr<Image> image(RenderObject*, const IntSize&);
+    PassRefPtr<Image> image(LayoutObject*, const IntSize&);
     bool isFixedSize() const { return true; }
-    IntSize fixedSize(const RenderObject*);
+    IntSize fixedSize(const LayoutObject*);
 
     bool isPending() const { return false; }
     void loadSubimages(ResourceFetcher*) { }

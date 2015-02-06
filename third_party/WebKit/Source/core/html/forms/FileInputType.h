@@ -58,7 +58,7 @@ private:
     virtual bool valueMissing(const String&) const override;
     virtual String valueMissingText() const override;
     virtual void handleDOMActivateEvent(Event*) override;
-    virtual RenderObject* createRenderer(const RenderStyle&) const override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) const override;
     virtual bool canSetStringValue() const override;
     virtual FileList* files() override;
     virtual void setFiles(FileList*) override;

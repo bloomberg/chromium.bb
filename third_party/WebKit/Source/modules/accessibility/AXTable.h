@@ -40,10 +40,10 @@ class AXTableCell;
 class AXTable : public AXRenderObject {
 
 protected:
-    AXTable(RenderObject*, AXObjectCacheImpl*);
+    AXTable(LayoutObject*, AXObjectCacheImpl*);
 
 public:
-    static PassRefPtr<AXTable> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXTable> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXTable();
 
     virtual void init() override final;

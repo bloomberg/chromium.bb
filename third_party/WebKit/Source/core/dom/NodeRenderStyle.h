@@ -28,14 +28,14 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOptGroupElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
 
 inline RenderStyle* Node::renderStyle() const
 {
-    if (RenderObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->renderer())
         return renderer->style();
     // <option> and <optgroup> can be styled even if they don't get renderers,
     // so they store their style internally and return it through nonRendererStyle().

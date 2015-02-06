@@ -55,11 +55,10 @@ PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& docu
     return meter.release();
 }
 
-RenderObject* HTMLMeterElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLMeterElement::createRenderer(const RenderStyle& style)
 {
     if (hasAuthorShadowRoot() || !LayoutTheme::theme().supportsMeter(style.appearance()))
-        return RenderObject::createObject(this, style);
-
+        return LayoutObject::createObject(this, style);
     return new RenderMeter(this);
 }
 
@@ -192,8 +191,8 @@ RenderMeter* HTMLMeterElement::renderMeter() const
     if (renderer() && renderer()->isMeter())
         return toRenderMeter(renderer());
 
-    RenderObject* renderObject = userAgentShadowRoot()->firstChild()->renderer();
-    return toRenderMeter(renderObject);
+    LayoutObject* layoutObject = userAgentShadowRoot()->firstChild()->renderer();
+    return toRenderMeter(layoutObject);
 }
 
 void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)

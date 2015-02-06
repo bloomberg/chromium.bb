@@ -36,7 +36,7 @@ class RenderHTMLCanvas final : public RenderReplaced {
 public:
     explicit RenderHTMLCanvas(HTMLCanvasElement*);
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectCanvas || RenderReplaced::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || RenderReplaced::isOfType(type); }
     virtual LayerType layerTypeRequired() const override;
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutLayerModelObject&) override final;
 
@@ -50,7 +50,7 @@ private:
     virtual CompositingReasons additionalCompositingReasons() const override;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderHTMLCanvas, isCanvas());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderHTMLCanvas, isCanvas());
 
 } // namespace blink
 

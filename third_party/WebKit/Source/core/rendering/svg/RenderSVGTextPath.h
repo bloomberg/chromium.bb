@@ -32,9 +32,9 @@ public:
     Path layoutPath() const;
     float startOffset() const;
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGTextPath || RenderSVGInline::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTextPath || RenderSVGInline::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "RenderSVGTextPath"; }
@@ -42,7 +42,7 @@ private:
     Path m_layoutPath;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGTextPath, isSVGTextPath());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGTextPath, isSVGTextPath());
 
 }
 

@@ -41,7 +41,7 @@
 #include "core/events/Event.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderPart.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -231,7 +231,7 @@ WebPluginContainer* WebNode::pluginContainer() const
         return 0;
     const Node& coreNode = *constUnwrap<Node>();
     if (isHTMLObjectElement(coreNode) || isHTMLEmbedElement(coreNode)) {
-        RenderObject* object = coreNode.renderer();
+        LayoutObject* object = coreNode.renderer();
         if (object && object->isRenderPart()) {
             Widget* widget = toRenderPart(object)->widget();
             if (widget && widget->isPluginContainer())

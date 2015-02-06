@@ -51,7 +51,7 @@ private:
     virtual void layout() override final;
 
     virtual const char* renderName() const override { return "RenderEmbeddedObject"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectEmbeddedObject || RenderPart::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || RenderPart::isOfType(type); }
     virtual RenderBox* embeddedContentBox() const override final;
 
     virtual LayerType layerTypeRequired() const override final;
@@ -67,7 +67,7 @@ private:
     String m_unavailablePluginReplacementText;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderEmbeddedObject, isEmbeddedObject());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderEmbeddedObject, isEmbeddedObject());
 
 } // namespace blink
 

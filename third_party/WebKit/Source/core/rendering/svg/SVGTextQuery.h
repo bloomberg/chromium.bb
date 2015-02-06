@@ -28,12 +28,12 @@
 namespace blink {
 
 class InlineFlowBox;
-class RenderObject;
+class LayoutObject;
 class SVGInlineTextBox;
 
 class SVGTextQuery {
 public:
-    SVGTextQuery(RenderObject*);
+    SVGTextQuery(LayoutObject*);
 
     unsigned numberOfCharacters() const;
     float textLength() const;

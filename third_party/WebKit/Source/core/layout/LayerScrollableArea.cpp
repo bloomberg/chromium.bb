@@ -891,7 +891,7 @@ IntSize LayerScrollableArea::scrollbarOffset(const Scrollbar* scrollbar) const
     return IntSize();
 }
 
-static inline RenderObject* rendererForScrollbar(RenderObject& renderer)
+static inline LayoutObject* rendererForScrollbar(LayoutObject& renderer)
 {
     if (Node* node = renderer.node()) {
         if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
@@ -906,7 +906,7 @@ static inline RenderObject* rendererForScrollbar(RenderObject& renderer)
 PassRefPtrWillBeRawPtr<Scrollbar> LayerScrollableArea::createScrollbar(ScrollbarOrientation orientation)
 {
     RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
-    RenderObject* actualRenderer = rendererForScrollbar(box());
+    LayoutObject* actualRenderer = rendererForScrollbar(box());
     bool hasCustomScrollbarStyle = actualRenderer->isBox() && actualRenderer->style()->hasPseudoStyle(SCROLLBAR);
     if (hasCustomScrollbarStyle) {
         widget = RenderScrollbar::createCustomScrollbar(this, orientation, actualRenderer->node());
@@ -1048,7 +1048,7 @@ void LayerScrollableArea::updateScrollCornerStyle()
     if (!m_scrollCorner && hasOverlayScrollbars())
         return;
 
-    RenderObject* actualRenderer = rendererForScrollbar(box());
+    LayoutObject* actualRenderer = rendererForScrollbar(box());
     RefPtr<RenderStyle> corner = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<RenderStyle>(nullptr);
     if (corner) {
         if (!m_scrollCorner) {
@@ -1176,7 +1176,7 @@ void LayerScrollableArea::updateResizerStyle()
     if (!m_resizer && !box().canResize())
         return;
 
-    RenderObject* actualRenderer = rendererForScrollbar(box());
+    LayoutObject* actualRenderer = rendererForScrollbar(box());
     RefPtr<RenderStyle> resizer = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<RenderStyle>(nullptr);
     if (resizer) {
         if (!m_resizer) {

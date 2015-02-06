@@ -129,7 +129,7 @@ bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
     ContainerNode* node = parentNode();
     if (!node || !node->renderer())
         return HTMLElement::rendererIsNeeded(style);
-    RenderObject* parentRenderer = node->renderer();
+    LayoutObject* parentRenderer = node->renderer();
     // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
     // FIXME: This check is not correct for Shadow DOM.
     bool parentIsTableElementPart = (parentRenderer->isTable() && isHTMLTableElement(*node))

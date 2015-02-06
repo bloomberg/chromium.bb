@@ -24,7 +24,7 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/svg/SVGFEDiffuseLightingElement.h"
 #include "core/svg/SVGFESpecularLightingElement.h"
 
@@ -131,7 +131,7 @@ void SVGFELightElement::svgAttributeChanged(const QualifiedName& attrName)
         if (!parent)
             return;
 
-        RenderObject* renderer = parent->renderer();
+        LayoutObject* renderer = parent->renderer();
         if (!renderer || !renderer->isSVGResourceFilterPrimitive())
             return;
 
@@ -154,7 +154,7 @@ void SVGFELightElement::childrenChanged(const ChildrenChange& change)
 
     if (!change.byParser) {
         if (ContainerNode* parent = parentNode()) {
-            RenderObject* renderer = parent->renderer();
+            LayoutObject* renderer = parent->renderer();
             if (renderer && renderer->isSVGResourceFilterPrimitive())
                 markForLayoutAndParentResourceInvalidation(renderer);
         }

@@ -47,9 +47,9 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     if (!paintInfo.shouldPaintWithinRoot(&m_renderReplaced))
         return;
 
-    bool drawSelectionTint = m_renderReplaced.selectionState() != RenderObject::SelectionNone && !m_renderReplaced.document().printing();
+    bool drawSelectionTint = m_renderReplaced.selectionState() != LayoutObject::SelectionNone && !m_renderReplaced.document().printing();
     if (paintInfo.phase == PaintPhaseSelection) {
-        if (m_renderReplaced.selectionState() == RenderObject::SelectionNone)
+        if (m_renderReplaced.selectionState() == LayoutObject::SelectionNone)
             return;
         drawSelectionTint = false;
     }

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/ActiveAnimations.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 

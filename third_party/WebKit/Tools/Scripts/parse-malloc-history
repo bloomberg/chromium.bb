@@ -96,7 +96,7 @@ sub main()
         # Then try LeakFinder format
         # --------------- Key: 213813, 84 bytes ---------
         # c:\cygwin\home\buildbot\webkit\opensource\webcore\rendering\renderarena.cpp(78): WebCore::RenderArena::allocate
-        # c:\cygwin\home\buildbot\webkit\opensource\webcore\rendering\renderobject.cpp(82): WebCore::RenderObject::operator new
+        # c:\cygwin\home\buildbot\webkit\opensource\webcore\rendering\layoutobject.cpp(82): WebCore::LayoutObject::operator new
         if (!$callCount || !$byteCount) {
             $callCount = 1;
             ($byteCount) = ($line =~ /Key: (?:\d+), (\d+) bytes/);

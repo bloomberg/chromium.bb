@@ -35,7 +35,7 @@ namespace blink {
 
 class ResourceFetcher;
 class Image;
-class RenderObject;
+class LayoutObject;
 
 struct SizeAndCount {
     SizeAndCount(IntSize newSize = IntSize(), int newCount = 0)
@@ -48,21 +48,21 @@ struct SizeAndCount {
     int count;
 };
 
-typedef HashMap<const RenderObject*, SizeAndCount> RenderObjectSizeCountMap;
+typedef HashMap<const LayoutObject*, SizeAndCount> LayoutObjectSizeCountMap;
 
 class CSSImageGeneratorValue : public CSSValue {
 public:
     ~CSSImageGeneratorValue();
 
-    void addClient(RenderObject*, const IntSize&);
-    void removeClient(RenderObject*);
-    PassRefPtr<Image> image(RenderObject*, const IntSize&);
+    void addClient(LayoutObject*, const IntSize&);
+    void removeClient(LayoutObject*);
+    PassRefPtr<Image> image(LayoutObject*, const IntSize&);
 
     bool isFixedSize() const;
-    IntSize fixedSize(const RenderObject*);
+    IntSize fixedSize(const LayoutObject*);
 
     bool isPending() const;
-    bool knownToBeOpaque(const RenderObject*) const;
+    bool knownToBeOpaque(const LayoutObject*) const;
 
     void loadSubimages(ResourceFetcher*);
 
@@ -71,18 +71,18 @@ public:
 protected:
     explicit CSSImageGeneratorValue(ClassType);
 
-    Image* getImage(RenderObject*, const IntSize&);
+    Image* getImage(LayoutObject*, const IntSize&);
     void putImage(const IntSize&, PassRefPtr<Image>);
-    const RenderObjectSizeCountMap& clients() const { return m_clients; }
+    const LayoutObjectSizeCountMap& clients() const { return m_clients; }
 
     HashCountedSet<IntSize> m_sizes; // A count of how many times a given image size is in use.
-    RenderObjectSizeCountMap m_clients; // A map from RenderObjects (with entry count) to image sizes.
+    LayoutObjectSizeCountMap m_clients; // A map from LayoutObjects (with entry count) to image sizes.
     HashMap<IntSize, RefPtr<Image> > m_images; // A cache of Image objects by image size.
 
 #if ENABLE(OILPAN)
     // FIXME: Oilpan: when/if we can make the renderer point directly to the CSSImageGenerator value using
     // a member we don't need to have this hack where we keep a persistent to the instance as long as
-    // there are clients in the RenderObjectSizeCountMap.
+    // there are clients in the LayoutObjectSizeCountMap.
     GC_PLUGIN_IGNORE("366546")
     OwnPtr<Persistent<CSSImageGeneratorValue> > m_keepAlive;
 #endif

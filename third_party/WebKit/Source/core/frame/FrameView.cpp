@@ -575,7 +575,7 @@ void FrameView::adjustViewSize()
     setContentsSize(size);
 }
 
-void FrameView::applyOverflowToViewportAndSetRenderer(RenderObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
+void FrameView::applyOverflowToViewportAndSetRenderer(LayoutObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
 {
     // Handle the overflow:hidden/scroll case for the body/html elements.  WinIE treats
     // overflow:hidden and overflow:scroll on <body> as applying to the document's
@@ -664,7 +664,7 @@ void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(Scrollbar
             vMode = ScrollbarAlwaysOff;
             hMode = ScrollbarAlwaysOff;
         } else if (Element* viewportElement = document->viewportDefiningElement()) {
-            if (RenderObject* viewportRenderer = viewportElement->renderer()) {
+            if (LayoutObject* viewportRenderer = viewportElement->renderer()) {
                 if (viewportRenderer->style())
                     applyOverflowToViewportAndSetRenderer(viewportRenderer, hMode, vMode);
             }
@@ -759,11 +759,11 @@ bool FrameView::isEnclosedInCompositingLayer() const
     // FIXME: It's a bug that compositing state isn't always up to date when this is called. crbug.com/366314
     DisableCompositingQueryAsserts disabler;
 
-    RenderObject* frameOwnerRenderer = m_frame->ownerRenderer();
+    LayoutObject* frameOwnerRenderer = m_frame->ownerRenderer();
     return frameOwnerRenderer && frameOwnerRenderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
 }
 
-RenderObject* FrameView::layoutRoot(bool onlyDuringLayout) const
+LayoutObject* FrameView::layoutRoot(bool onlyDuringLayout) const
 {
     return onlyDuringLayout && layoutPending() ? nullptr : m_layoutSubtreeRoot;
 }
@@ -835,7 +835,7 @@ void FrameView::lineLayoutTime(double ms)
     m_lineLayoutMs += ms;
 }
 
-void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
+void FrameView::performLayout(LayoutObject* rootForThisLayout, bool inSubtreeLayout)
 {
     m_lineLayoutMs = 0;
     TRACE_EVENT0("blink,benchmark", "FrameView::performLayout");
@@ -940,7 +940,7 @@ void FrameView::layout(bool allowSubtree)
 
     Document* document = m_frame->document();
     bool inSubtreeLayout = isSubtreeLayout();
-    RenderObject* rootForThisLayout = inSubtreeLayout ? m_layoutSubtreeRoot : document->renderView();
+    LayoutObject* rootForThisLayout = inSubtreeLayout ? m_layoutSubtreeRoot : document->renderView();
     if (!rootForThisLayout) {
         // FIXME: Do we need to set m_size here?
         ASSERT_NOT_REACHED();
@@ -1011,7 +1011,7 @@ void FrameView::layout(bool allowSubtree)
                     rootRenderer->setChildNeedsLayout();
             }
 
-            // We need to set m_doFullPaintInvalidation before triggering layout as RenderObject::checkForPaintInvalidation
+            // We need to set m_doFullPaintInvalidation before triggering layout as LayoutObject::checkForPaintInvalidation
             // checks the boolean to disable local paint invalidations.
             m_doFullPaintInvalidation |= renderView()->shouldDoFullPaintInvalidationForNextLayout();
         }
@@ -1024,7 +1024,7 @@ void FrameView::layout(bool allowSubtree)
         // We need to ensure that we mark up all renderers up to the RenderView
         // for paint invalidation. This simplifies our code as we just always
         // do a full tree walk.
-        if (RenderObject* container = rootForThisLayout->container())
+        if (LayoutObject* container = rootForThisLayout->container())
             container->setMayNeedPaintInvalidation();
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
@@ -1114,7 +1114,7 @@ DocumentLifecycle& FrameView::lifecycle() const
     return m_frame->document()->lifecycle();
 }
 
-void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
+void FrameView::gatherDebugLayoutRects(LayoutObject* layoutRoot)
 {
     bool isTracing;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
@@ -1131,7 +1131,7 @@ void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
     GraphicsLayerDebugInfo& debugInfo = graphicsLayer->debugInfo();
 
     debugInfo.currentLayoutRects().clear();
-    for (RenderObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
+    for (LayoutObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->layoutDidGetCalledSinceLastFrame()) {
             FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->previousPaintInvalidationRect()));
             LayoutRect rect = quad.enclosingBoundingBox();
@@ -1146,7 +1146,7 @@ RenderBox* FrameView::embeddedContentBox() const
     if (!renderView)
         return nullptr;
 
-    RenderObject* firstChild = renderView->firstChild();
+    LayoutObject* firstChild = renderView->firstChild();
     if (!firstChild || !firstChild->isBox())
         return nullptr;
 
@@ -1254,7 +1254,7 @@ void FrameView::removeSlowRepaintObject()
     }
 }
 
-void FrameView::addViewportConstrainedObject(RenderObject* object)
+void FrameView::addViewportConstrainedObject(LayoutObject* object)
 {
     if (!m_viewportConstrainedObjects)
         m_viewportConstrainedObjects = adoptPtr(new ViewportConstrainedObjectSet);
@@ -1267,7 +1267,7 @@ void FrameView::addViewportConstrainedObject(RenderObject* object)
     }
 }
 
-void FrameView::removeViewportConstrainedObject(RenderObject* object)
+void FrameView::removeViewportConstrainedObject(LayoutObject* object)
 {
     if (m_viewportConstrainedObjects && m_viewportConstrainedObjects->contains(object)) {
         m_viewportConstrainedObjects->remove(object);
@@ -1301,7 +1301,7 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
         return;
 
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
-        RenderObject* renderer = viewportConstrainedObject;
+        LayoutObject* renderer = viewportConstrainedObject;
         RenderStyle* style = renderer->style();
         if (widthChanged) {
             if (style->width().isFixed() && (style->left().isAuto() || style->right().isAuto()))
@@ -1371,7 +1371,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
     }
 
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
-        RenderObject* renderer = viewportConstrainedObject;
+        LayoutObject* renderer = viewportConstrainedObject;
         ASSERT(renderer->style()->hasViewportConstrainedPosition());
         ASSERT(renderer->hasLayer());
         Layer* layer = toRenderBoxModelObject(renderer)->layer();
@@ -1558,7 +1558,7 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
 
     if (scrollBehavior == ScrollBehaviorAuto) {
         Element* scrollElement = RuntimeEnabledFeatures::scrollTopLeftInteropEnabled() ? m_frame->document()->documentElement() : m_frame->document()->body();
-        RenderObject* renderer = scrollElement ? scrollElement->renderer() : nullptr;
+        LayoutObject* renderer = scrollElement ? scrollElement->renderer() : nullptr;
         if (renderer && renderer->style()->scrollBehavior() == ScrollBehaviorSmooth)
             scrollBehavior = ScrollBehaviorSmooth;
         else
@@ -1839,16 +1839,16 @@ void FrameView::scheduleRelayout()
     lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
 }
 
-static bool isObjectAncestorContainerOf(RenderObject* ancestor, RenderObject* descendant)
+static bool isObjectAncestorContainerOf(LayoutObject* ancestor, LayoutObject* descendant)
 {
-    for (RenderObject* r = descendant; r; r = r->container()) {
+    for (LayoutObject* r = descendant; r; r = r->container()) {
         if (r == ancestor)
             return true;
     }
     return false;
 }
 
-void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
+void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
 {
     ASSERT(m_frame->view() == this);
 
@@ -2169,7 +2169,7 @@ void FrameView::updateCounters()
     if (!view->hasLayoutCounters())
         return;
 
-    for (RenderObject* renderer = view; renderer; renderer = renderer->nextInPreOrder()) {
+    for (LayoutObject* renderer = view; renderer; renderer = renderer->nextInPreOrder()) {
         if (!renderer->isCounter())
             continue;
 
@@ -2464,14 +2464,14 @@ void FrameView::updateScrollCorner()
     if (doc && !cornerRect.isEmpty()) {
         // Try the <body> element first as a scroll corner source.
         if (Element* body = doc->body()) {
-            if (RenderObject* renderer = body->renderer())
+            if (LayoutObject* renderer = body->renderer())
                 cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }
 
         if (!cornerStyle) {
             // If the <body> didn't have a custom style, then the root element might.
             if (Element* docElement = doc->documentElement()) {
-                if (RenderObject* renderer = docElement->renderer())
+                if (LayoutObject* renderer = docElement->renderer())
                     cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
             }
         }
@@ -2762,7 +2762,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
     adjustViewSize();
 }
 
-IntRect FrameView::convertFromRenderer(const RenderObject& renderer, const IntRect& rendererRect) const
+IntRect FrameView::convertFromRenderer(const LayoutObject& renderer, const IntRect& rendererRect) const
 {
     IntRect rect = pixelSnappedIntRect(enclosingLayoutRect(renderer.localToAbsoluteQuad(FloatRect(rendererRect)).boundingBox()));
 
@@ -2772,7 +2772,7 @@ IntRect FrameView::convertFromRenderer(const RenderObject& renderer, const IntRe
     return rect;
 }
 
-IntRect FrameView::convertToRenderer(const RenderObject& renderer, const IntRect& viewRect) const
+IntRect FrameView::convertToRenderer(const LayoutObject& renderer, const IntRect& viewRect) const
 {
     IntRect rect = viewRect;
 
@@ -2785,7 +2785,7 @@ IntRect FrameView::convertToRenderer(const RenderObject& renderer, const IntRect
     return rect;
 }
 
-IntPoint FrameView::convertFromRenderer(const RenderObject& renderer, const IntPoint& rendererPoint) const
+IntPoint FrameView::convertFromRenderer(const LayoutObject& renderer, const IntPoint& rendererPoint) const
 {
     IntPoint point = roundedIntPoint(renderer.localToAbsolute(rendererPoint, UseTransforms));
 
@@ -2794,7 +2794,7 @@ IntPoint FrameView::convertFromRenderer(const RenderObject& renderer, const IntP
     return point;
 }
 
-IntPoint FrameView::convertToRenderer(const RenderObject& renderer, const IntPoint& viewPoint) const
+IntPoint FrameView::convertToRenderer(const LayoutObject& renderer, const IntPoint& viewPoint) const
 {
     IntPoint point = viewPoint;
 

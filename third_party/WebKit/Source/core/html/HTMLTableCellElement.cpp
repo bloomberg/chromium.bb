@@ -178,7 +178,7 @@ const AtomicString& HTMLTableCellElement::scope() const
 
 HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
 {
-    RenderObject* cellRenderer = renderer();
+    LayoutObject* cellRenderer = renderer();
     if (!cellRenderer)
         return nullptr;
     if (!cellRenderer->isTableCell())

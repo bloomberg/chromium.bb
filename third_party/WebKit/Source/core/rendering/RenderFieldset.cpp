@@ -62,7 +62,7 @@ void RenderFieldset::computePreferredLogicalWidths()
     }
 }
 
-RenderObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&)
+LayoutObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&)
 {
     RenderBox* legend = findLegend();
     if (legend) {
@@ -128,7 +128,7 @@ RenderObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
 
 RenderBox* RenderFieldset::findLegend(FindLegendOption option) const
 {
-    for (RenderObject* legend = firstChild(); legend; legend = legend->nextSibling()) {
+    for (LayoutObject* legend = firstChild(); legend; legend = legend->nextSibling()) {
         if (option == IgnoreFloatingOrOutOfFlow && legend->isFloatingOrOutOfFlowPositioned())
             continue;
 

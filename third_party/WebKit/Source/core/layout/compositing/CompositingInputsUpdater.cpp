@@ -31,7 +31,7 @@ void CompositingInputsUpdater::update()
 
 static const Layer* findParentLayerOnClippingContainerChain(const Layer* layer)
 {
-    RenderObject* current = layer->renderer();
+    LayoutObject* current = layer->renderer();
     while (current) {
         if (current->style()->position() == FixedPosition) {
             for (current = current->parent(); current && !current->canContainFixedPositionObjects(); current = current->parent()) {
@@ -55,16 +55,16 @@ static const Layer* findParentLayerOnClippingContainerChain(const Layer* layer)
 
         if (current->hasLayer())
             return static_cast<const LayoutLayerModelObject*>(current)->layer();
-        // Having clip or overflow clip forces the RenderObject to become a layer.
+        // Having clip or overflow clip forces the LayoutObject to become a layer.
         ASSERT(!current->hasClipOrOverflowClip());
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-static const Layer* findParentLayerOnContainingBlockChain(const RenderObject* object)
+static const Layer* findParentLayerOnContainingBlockChain(const LayoutObject* object)
 {
-    for (const RenderObject* current = object; current; current = current->containingBlock()) {
+    for (const LayoutObject* current = object; current; current = current->containingBlock()) {
         if (current->hasLayer())
             return static_cast<const LayoutLayerModelObject*>(current)->layer();
     }
@@ -76,12 +76,12 @@ static bool hasClippedStackingAncestor(const Layer* layer, const Layer* clipping
 {
     if (layer == clippingLayer)
         return false;
-    const RenderObject* clippingRenderer = clippingLayer->renderer();
+    const LayoutObject* clippingRenderer = clippingLayer->renderer();
     for (const Layer* current = layer->compositingContainer(); current && current != clippingLayer; current = current->compositingContainer()) {
         if (current->renderer()->hasClipOrOverflowClip() && !clippingRenderer->isDescendantOf(current->renderer()))
             return true;
 
-        if (const RenderObject* container = current->clippingContainer()) {
+        if (const LayoutObject* container = current->clippingContainer()) {
             if (clippingRenderer != container && !clippingRenderer->isDescendantOf(container))
                 return true;
         }
@@ -131,7 +131,7 @@ void CompositingInputsUpdater::updateRecursive(Layer* layer, UpdateType updateTy
             }
 
             if (info.lastScrollingAncestor) {
-                const RenderObject* containingBlock = layer->renderer()->containingBlock();
+                const LayoutObject* containingBlock = layer->renderer()->containingBlock();
                 const Layer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
 
                 properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->ancestorScrollingLayer();

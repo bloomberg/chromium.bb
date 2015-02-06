@@ -33,7 +33,7 @@
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -573,7 +573,7 @@ void DocumentMarkerController::removeMarkersFromList(MarkerMap::iterator iterato
     }
 
     if (needsRepainting) {
-        if (RenderObject* renderer = iterator->key->renderer())
+        if (LayoutObject* renderer = iterator->key->renderer())
             renderer->setShouldDoFullPaintInvalidation();
     }
 
@@ -603,7 +603,7 @@ void DocumentMarkerController::repaintMarkers(DocumentMarker::MarkerTypes marker
                 continue;
 
             // cause the node to be redrawn
-            if (RenderObject* renderer = node->renderer()) {
+            if (LayoutObject* renderer = node->renderer()) {
                 renderer->setShouldDoFullPaintInvalidation();
                 break;
             }

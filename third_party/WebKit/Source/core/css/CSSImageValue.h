@@ -32,7 +32,7 @@ class Document;
 class KURL;
 class StyleFetchedImage;
 class StyleImage;
-class RenderObject;
+class LayoutObject;
 
 class CSSImageValue : public CSSValue {
 public:
@@ -64,7 +64,7 @@ public:
 
     bool equals(const CSSImageValue&) const;
 
-    bool knownToBeOpaque(const RenderObject*) const;
+    bool knownToBeOpaque(const LayoutObject*) const;
 
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 

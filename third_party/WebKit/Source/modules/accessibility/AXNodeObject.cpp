@@ -45,7 +45,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/text/StringBuilder.h"
@@ -1299,7 +1299,7 @@ static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)
 
 // Returns true if |r1| and |r2| are both non-null and are contained within the
 // same RenderBox.
-static bool isSameRenderBox(RenderObject* r1, RenderObject* r2)
+static bool isSameRenderBox(LayoutObject* r1, LayoutObject* r2)
 {
     if (!r1 || !r2)
         return false;

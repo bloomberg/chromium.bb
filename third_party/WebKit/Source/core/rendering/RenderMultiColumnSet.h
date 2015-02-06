@@ -35,7 +35,7 @@ namespace blink {
 
 // RenderMultiColumnSet represents a set of columns that all have the same width and height. By
 // combining runs of same-size columns into a single object, we significantly reduce the number of
-// unique RenderObjects required to represent columns.
+// unique LayoutObjects required to represent columns.
 //
 // Column sets are inserted as anonymous children of the actual multicol container (i.e. the
 // renderer whose style computes to non-auto column-count and/or column-width).
@@ -56,7 +56,7 @@ public:
 
     static RenderMultiColumnSet* createAnonymous(RenderFlowThread*, RenderStyle* parentStyle);
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderMultiColumnSet || RenderRegion::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderMultiColumnSet || RenderRegion::isOfType(type); }
 
     virtual LayoutUnit pageLogicalWidth() const override final { return flowThread()->logicalWidth(); }
     virtual LayoutUnit pageLogicalHeight() const override final { return m_columnHeight; }
@@ -233,7 +233,7 @@ inline void RenderMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
     setLogicalBottomInFlowThread(offsetInFlowThread);
 }
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMultiColumnSet, isRenderMultiColumnSet());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMultiColumnSet, isRenderMultiColumnSet());
 
 } // namespace blink
 

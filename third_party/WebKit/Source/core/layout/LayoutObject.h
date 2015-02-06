@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef RenderObject_h
-#define RenderObject_h
+#ifndef LayoutObject_h
+#define LayoutObject_h
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
@@ -34,11 +34,11 @@
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/HitTestRequest.h"
+#include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/compositing/CompositingState.h"
 #include "core/layout/compositing/CompositingTriggers.h"
 #include "core/rendering/PaintInvalidationState.h"
 #include "core/rendering/PaintPhase.h"
-#include "core/rendering/RenderObjectChildList.h"
 #include "core/rendering/ScrollAlignment.h"
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -126,54 +126,54 @@ const int showTreeCharacterOffset = 39;
 #endif
 
 // Base class for all rendering tree objects.
-class RenderObject : public ImageResourceClient {
+class LayoutObject : public ImageResourceClient {
     friend class RenderBlock;
     friend class RenderBlockFlow;
     friend class LayerReflectionInfo; // For setParent
     friend class LayerScrollableArea; // For setParent.
-    friend class RenderObjectChildList;
-    WTF_MAKE_NONCOPYABLE(RenderObject);
+    friend class LayoutObjectChildList;
+    WTF_MAKE_NONCOPYABLE(LayoutObject);
 public:
     // Anonymous objects should pass the document as their node, and they will then automatically be
     // marked as anonymous in the constructor.
-    explicit RenderObject(Node*);
-    virtual ~RenderObject();
+    explicit LayoutObject(Node*);
+    virtual ~LayoutObject();
 
     virtual const char* renderName() const = 0;
 
     String debugName() const;
 
-    RenderObject* parent() const { return m_parent; }
-    bool isDescendantOf(const RenderObject*) const;
+    LayoutObject* parent() const { return m_parent; }
+    bool isDescendantOf(const LayoutObject*) const;
 
-    RenderObject* previousSibling() const { return m_previous; }
-    RenderObject* nextSibling() const { return m_next; }
+    LayoutObject* previousSibling() const { return m_previous; }
+    LayoutObject* nextSibling() const { return m_next; }
 
-    RenderObject* slowFirstChild() const
+    LayoutObject* slowFirstChild() const
     {
-        if (const RenderObjectChildList* children = virtualChildren())
+        if (const LayoutObjectChildList* children = virtualChildren())
             return children->firstChild();
         return 0;
     }
-    RenderObject* slowLastChild() const
+    LayoutObject* slowLastChild() const
     {
-        if (const RenderObjectChildList* children = virtualChildren())
+        if (const LayoutObjectChildList* children = virtualChildren())
             return children->lastChild();
         return 0;
     }
 
-    virtual RenderObjectChildList* virtualChildren() { return 0; }
-    virtual const RenderObjectChildList* virtualChildren() const { return 0; }
+    virtual LayoutObjectChildList* virtualChildren() { return 0; }
+    virtual const LayoutObjectChildList* virtualChildren() const { return 0; }
 
-    RenderObject* nextInPreOrder() const;
-    RenderObject* nextInPreOrder(const RenderObject* stayWithin) const;
-    RenderObject* nextInPreOrderAfterChildren() const;
-    RenderObject* nextInPreOrderAfterChildren(const RenderObject* stayWithin) const;
-    RenderObject* previousInPreOrder() const;
-    RenderObject* previousInPreOrder(const RenderObject* stayWithin) const;
-    RenderObject* childAt(unsigned) const;
+    LayoutObject* nextInPreOrder() const;
+    LayoutObject* nextInPreOrder(const LayoutObject* stayWithin) const;
+    LayoutObject* nextInPreOrderAfterChildren() const;
+    LayoutObject* nextInPreOrderAfterChildren(const LayoutObject* stayWithin) const;
+    LayoutObject* previousInPreOrder() const;
+    LayoutObject* previousInPreOrder(const LayoutObject* stayWithin) const;
+    LayoutObject* childAt(unsigned) const;
 
-    RenderObject* lastLeafChild() const;
+    LayoutObject* lastLeafChild() const;
 
     // The following six functions are used when the render tree hierarchy changes to make sure layers get
     // properly added and removed.  Since containership can be implemented by any subclass, and since a hierarchy
@@ -182,12 +182,12 @@ public:
     void addLayers(Layer* parentLayer);
     void removeLayers(Layer* parentLayer);
     void moveLayers(Layer* oldParent, Layer* newParent);
-    Layer* findNextLayer(Layer* parentLayer, RenderObject* startPoint, bool checkParent = true);
+    Layer* findNextLayer(Layer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
 
     // Scrolling is a RenderBox concept, however some code just cares about recursively scrolling our enclosing ScrollableArea(s).
     bool scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX = ScrollAlignment::alignCenterIfNeeded, const ScrollAlignment& alignY = ScrollAlignment::alignCenterIfNeeded);
 
-    // Convenience function for getting to the nearest enclosing box of a RenderObject.
+    // Convenience function for getting to the nearest enclosing box of a LayoutObject.
     RenderBox* enclosingBox() const;
     RenderBoxModelObject* enclosingBoxModelObject() const;
 
@@ -209,10 +209,10 @@ public:
     // Helper class forbidding calls to setNeedsLayout() during its lifetime.
     class SetLayoutNeededForbiddenScope {
     public:
-        explicit SetLayoutNeededForbiddenScope(RenderObject&);
+        explicit SetLayoutNeededForbiddenScope(LayoutObject&);
         ~SetLayoutNeededForbiddenScope();
     private:
-        RenderObject& m_renderObject;
+        LayoutObject& m_layoutObject;
         bool m_preexistingForbidden;
     };
 
@@ -227,7 +227,7 @@ public:
 
     void assertSubtreeIsLaidOut() const
     {
-        for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
+        for (const LayoutObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
             renderer->assertRendererLaidOut();
     }
 
@@ -243,7 +243,7 @@ public:
 
     void assertSubtreeClearedPaintInvalidationState() const
     {
-        for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
+        for (const LayoutObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
             renderer->assertRendererClearedPaintInvalidationState();
     }
 
@@ -264,23 +264,23 @@ public:
     // normal flow object.
     void handleDynamicFloatPositionChange();
 
-    // RenderObject tree manipulation
+    // LayoutObject tree manipulation
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
     virtual bool canHaveGeneratedChildren() const;
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const { return true; }
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0);
-    virtual void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild = 0) { return addChild(newChild, beforeChild); }
-    virtual void removeChild(RenderObject*);
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const { return true; }
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0);
+    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) { return addChild(newChild, beforeChild); }
+    virtual void removeChild(LayoutObject*);
     virtual bool createsAnonymousWrapper() const { return false; }
     //////////////////////////////////////////
 
 protected:
     //////////////////////////////////////////
     // Helper functions. Dangerous to use!
-    void setPreviousSibling(RenderObject* previous) { m_previous = previous; }
-    void setNextSibling(RenderObject* next) { m_next = next; }
-    void setParent(RenderObject* parent)
+    void setPreviousSibling(LayoutObject* previous) { m_previous = previous; }
+    void setNextSibling(LayoutObject* next) { m_next = next; }
+    void setParent(LayoutObject* parent)
     {
         m_parent = parent;
 
@@ -300,7 +300,7 @@ private:
 #endif
 
     void addAbsoluteRectForLayer(LayoutRect& result);
-    bool requiresAnonymousTableWrappers(const RenderObject*) const;
+    bool requiresAnonymousTableWrappers(const LayoutObject*) const;
 
     // Gets pseudoStyle from Shadow host(in case of input elements)
     // or from Parent element.
@@ -314,17 +314,17 @@ public:
     void showRenderTreeForThis() const;
     void showLineTreeForThis() const;
 
-    void showRenderObject() const;
+    void showLayoutObject() const;
     // We don't make printedCharacters an optional parameter so that
-    // showRenderObject can be called from gdb easily.
-    void showRenderObject(int printedCharacters) const;
-    void showRenderTreeAndMark(const RenderObject* markedObject1 = 0, const char* markedLabel1 = 0, const RenderObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
+    // showLayoutObject can be called from gdb easily.
+    void showLayoutObject(int printedCharacters) const;
+    void showRenderTreeAndMark(const LayoutObject* markedObject1 = 0, const char* markedLabel1 = 0, const LayoutObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
 #endif
 
-    static RenderObject* createObject(Element*, const RenderStyle&);
+    static LayoutObject* createObject(Element*, const RenderStyle&);
     static unsigned instanceCount() { return s_instanceCount; }
 
-    // RenderObjects are allocated out of the rendering partition.
+    // LayoutObjects are allocated out of the rendering partition.
     void* operator new(size_t);
     void operator delete(void*);
 
@@ -332,52 +332,52 @@ public:
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
 
     virtual bool isBoxModelObject() const { return false; }
-    bool isBR() const { return isOfType(RenderObjectBr); }
-    bool isCanvas() const { return isOfType(RenderObjectCanvas); }
-    bool isCounter() const { return isOfType(RenderObjectCounter); }
-    bool isDetailsMarker() const { return isOfType(RenderObjectDetailsMarker); }
-    bool isEmbeddedObject() const { return isOfType(RenderObjectEmbeddedObject); }
-    bool isFieldset() const { return isOfType(RenderObjectFieldset); }
-    bool isFileUploadControl() const { return isOfType(RenderObjectFileUploadControl); }
-    bool isFrame() const { return isOfType(RenderObjectFrame); }
-    bool isFrameSet() const { return isOfType(RenderObjectFrameSet); }
-    bool isLayoutTableCol() const { return isOfType(RenderObjectLayoutTableCol); }
-    bool isListBox() const { return isOfType(RenderObjectListBox); }
-    bool isListItem() const { return isOfType(RenderObjectListItem); }
-    bool isListMarker() const { return isOfType(RenderObjectListMarker); }
-    bool isMedia() const { return isOfType(RenderObjectMedia); }
-    bool isMenuList() const { return isOfType(RenderObjectMenuList); }
-    bool isMeter() const { return isOfType(RenderObjectMeter); }
-    bool isProgress() const { return isOfType(RenderObjectProgress); }
-    bool isQuote() const { return isOfType(RenderObjectQuote); }
-    bool isRenderButton() const { return isOfType(RenderObjectRenderButton); }
-    bool isRenderFullScreen() const { return isOfType(RenderObjectRenderFullScreen); }
-    bool isRenderFullScreenPlaceholder() const { return isOfType(RenderObjectRenderFullScreenPlaceholder); }
-    bool isRenderGrid() const { return isOfType(RenderObjectRenderGrid); }
-    bool isRenderIFrame() const { return isOfType(RenderObjectRenderIFrame); }
-    bool isRenderImage() const { return isOfType(RenderObjectRenderImage); }
-    bool isRenderMultiColumnSet() const { return isOfType(RenderObjectRenderMultiColumnSet); }
-    bool isRenderMultiColumnSpannerPlaceholder() const { return isOfType(RenderObjectRenderMultiColumnSpannerPlaceholder); }
-    bool isRenderRegion() const { return isOfType(RenderObjectRenderRegion); }
-    bool isRenderScrollbarPart() const { return isOfType(RenderObjectRenderScrollbarPart); }
-    bool isRenderView() const { return isOfType(RenderObjectRenderView); }
-    bool isReplica() const { return isOfType(RenderObjectReplica); }
-    bool isRuby() const { return isOfType(RenderObjectRuby); }
-    bool isRubyBase() const { return isOfType(RenderObjectRubyBase); }
-    bool isRubyRun() const { return isOfType(RenderObjectRubyRun); }
-    bool isRubyText() const { return isOfType(RenderObjectRubyText); }
-    bool isSlider() const { return isOfType(RenderObjectSlider); }
-    bool isSliderThumb() const { return isOfType(RenderObjectSliderThumb); }
-    bool isTable() const { return isOfType(RenderObjectTable); }
-    bool isTableCaption() const { return isOfType(RenderObjectTableCaption); }
-    bool isTableCell() const { return isOfType(RenderObjectTableCell); }
-    bool isTableRow() const { return isOfType(RenderObjectTableRow); }
-    bool isTableSection() const { return isOfType(RenderObjectTableSection); }
-    bool isTextArea() const { return isOfType(RenderObjectTextArea); }
-    bool isTextControl() const { return isOfType(RenderObjectTextControl); }
-    bool isTextField() const { return isOfType(RenderObjectTextField); }
-    bool isVideo() const { return isOfType(RenderObjectVideo); }
-    bool isWidget() const { return isOfType(RenderObjectWidget); }
+    bool isBR() const { return isOfType(LayoutObjectBr); }
+    bool isCanvas() const { return isOfType(LayoutObjectCanvas); }
+    bool isCounter() const { return isOfType(LayoutObjectCounter); }
+    bool isDetailsMarker() const { return isOfType(LayoutObjectDetailsMarker); }
+    bool isEmbeddedObject() const { return isOfType(LayoutObjectEmbeddedObject); }
+    bool isFieldset() const { return isOfType(LayoutObjectFieldset); }
+    bool isFileUploadControl() const { return isOfType(LayoutObjectFileUploadControl); }
+    bool isFrame() const { return isOfType(LayoutObjectFrame); }
+    bool isFrameSet() const { return isOfType(LayoutObjectFrameSet); }
+    bool isLayoutTableCol() const { return isOfType(LayoutObjectLayoutTableCol); }
+    bool isListBox() const { return isOfType(LayoutObjectListBox); }
+    bool isListItem() const { return isOfType(LayoutObjectListItem); }
+    bool isListMarker() const { return isOfType(LayoutObjectListMarker); }
+    bool isMedia() const { return isOfType(LayoutObjectMedia); }
+    bool isMenuList() const { return isOfType(LayoutObjectMenuList); }
+    bool isMeter() const { return isOfType(LayoutObjectMeter); }
+    bool isProgress() const { return isOfType(LayoutObjectProgress); }
+    bool isQuote() const { return isOfType(LayoutObjectQuote); }
+    bool isRenderButton() const { return isOfType(LayoutObjectRenderButton); }
+    bool isRenderFullScreen() const { return isOfType(LayoutObjectRenderFullScreen); }
+    bool isRenderFullScreenPlaceholder() const { return isOfType(LayoutObjectRenderFullScreenPlaceholder); }
+    bool isRenderGrid() const { return isOfType(LayoutObjectRenderGrid); }
+    bool isRenderIFrame() const { return isOfType(LayoutObjectRenderIFrame); }
+    bool isRenderImage() const { return isOfType(LayoutObjectRenderImage); }
+    bool isRenderMultiColumnSet() const { return isOfType(LayoutObjectRenderMultiColumnSet); }
+    bool isRenderMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectRenderMultiColumnSpannerPlaceholder); }
+    bool isRenderRegion() const { return isOfType(LayoutObjectRenderRegion); }
+    bool isRenderScrollbarPart() const { return isOfType(LayoutObjectRenderScrollbarPart); }
+    bool isRenderView() const { return isOfType(LayoutObjectRenderView); }
+    bool isReplica() const { return isOfType(LayoutObjectReplica); }
+    bool isRuby() const { return isOfType(LayoutObjectRuby); }
+    bool isRubyBase() const { return isOfType(LayoutObjectRubyBase); }
+    bool isRubyRun() const { return isOfType(LayoutObjectRubyRun); }
+    bool isRubyText() const { return isOfType(LayoutObjectRubyText); }
+    bool isSlider() const { return isOfType(LayoutObjectSlider); }
+    bool isSliderThumb() const { return isOfType(LayoutObjectSliderThumb); }
+    bool isTable() const { return isOfType(LayoutObjectTable); }
+    bool isTableCaption() const { return isOfType(LayoutObjectTableCaption); }
+    bool isTableCell() const { return isOfType(LayoutObjectTableCell); }
+    bool isTableRow() const { return isOfType(LayoutObjectTableRow); }
+    bool isTableSection() const { return isOfType(LayoutObjectTableSection); }
+    bool isTextArea() const { return isOfType(LayoutObjectTextArea); }
+    bool isTextControl() const { return isOfType(LayoutObjectTextControl); }
+    bool isTextField() const { return isOfType(LayoutObjectTextField); }
+    bool isVideo() const { return isOfType(LayoutObjectVideo); }
+    bool isWidget() const { return isOfType(LayoutObjectWidget); }
 
     virtual bool isImage() const { return false; }
 
@@ -400,7 +400,7 @@ public:
     inline bool isBeforeContent() const;
     inline bool isAfterContent() const;
     inline bool isBeforeOrAfterContent() const;
-    static inline bool isAfterContent(const RenderObject* obj) { return obj && obj->isAfterContent(); }
+    static inline bool isAfterContent(const LayoutObject* obj) { return obj && obj->isAfterContent(); }
 
     bool hasCounterNodeMap() const { return m_bitfields.hasCounterNodeMap(); }
     void setHasCounterNodeMap(bool hasCounterNodeMap) { m_bitfields.setHasCounterNodeMap(hasCounterNodeMap); }
@@ -442,28 +442,28 @@ public:
     void setFlowThreadState(FlowThreadState state) { m_bitfields.setFlowThreadState(state); }
 
     // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
-    // to add SVG renderer methods to RenderObject with an ASSERT_NOT_REACHED() default implementation.
-    bool isSVG() const { return isOfType(RenderObjectSVG); }
-    bool isSVGRoot() const { return isOfType(RenderObjectSVGRoot); }
-    bool isSVGContainer() const { return isOfType(RenderObjectSVGContainer); }
-    bool isSVGTransformableContainer() const { return isOfType(RenderObjectSVGTransformableContainer); }
-    bool isSVGViewportContainer() const { return isOfType(RenderObjectSVGViewportContainer); }
-    bool isSVGGradientStop() const { return isOfType(RenderObjectSVGGradientStop); }
-    bool isSVGHiddenContainer() const { return isOfType(RenderObjectSVGHiddenContainer); }
-    bool isSVGShape() const { return isOfType(RenderObjectSVGShape); }
-    bool isSVGText() const { return isOfType(RenderObjectSVGText); }
-    bool isSVGTextPath() const { return isOfType(RenderObjectSVGTextPath); }
-    bool isSVGInline() const { return isOfType(RenderObjectSVGInline); }
-    bool isSVGInlineText() const { return isOfType(RenderObjectSVGInlineText); }
-    bool isSVGImage() const { return isOfType(RenderObjectSVGImage); }
-    bool isSVGForeignObject() const { return isOfType(RenderObjectSVGForeignObject); }
-    bool isSVGResourceContainer() const { return isOfType(RenderObjectSVGResourceContainer); }
-    bool isSVGResourceFilter() const { return isOfType(RenderObjectSVGResourceFilter); }
-    bool isSVGResourceFilterPrimitive() const { return isOfType(RenderObjectSVGResourceFilterPrimitive); }
+    // to add SVG renderer methods to LayoutObject with an ASSERT_NOT_REACHED() default implementation.
+    bool isSVG() const { return isOfType(LayoutObjectSVG); }
+    bool isSVGRoot() const { return isOfType(LayoutObjectSVGRoot); }
+    bool isSVGContainer() const { return isOfType(LayoutObjectSVGContainer); }
+    bool isSVGTransformableContainer() const { return isOfType(LayoutObjectSVGTransformableContainer); }
+    bool isSVGViewportContainer() const { return isOfType(LayoutObjectSVGViewportContainer); }
+    bool isSVGGradientStop() const { return isOfType(LayoutObjectSVGGradientStop); }
+    bool isSVGHiddenContainer() const { return isOfType(LayoutObjectSVGHiddenContainer); }
+    bool isSVGShape() const { return isOfType(LayoutObjectSVGShape); }
+    bool isSVGText() const { return isOfType(LayoutObjectSVGText); }
+    bool isSVGTextPath() const { return isOfType(LayoutObjectSVGTextPath); }
+    bool isSVGInline() const { return isOfType(LayoutObjectSVGInline); }
+    bool isSVGInlineText() const { return isOfType(LayoutObjectSVGInlineText); }
+    bool isSVGImage() const { return isOfType(LayoutObjectSVGImage); }
+    bool isSVGForeignObject() const { return isOfType(LayoutObjectSVGForeignObject); }
+    bool isSVGResourceContainer() const { return isOfType(LayoutObjectSVGResourceContainer); }
+    bool isSVGResourceFilter() const { return isOfType(LayoutObjectSVGResourceFilter); }
+    bool isSVGResourceFilterPrimitive() const { return isOfType(LayoutObjectSVGResourceFilterPrimitive); }
 
     // FIXME: Those belong into a SVG specific base-class for all renderers (see above)
     // Unfortunately we don't have such a class yet, because it's not possible for all renderers
-    // to inherit from RenderSVGObject -> RenderObject (some need RenderBlock inheritance for instance)
+    // to inherit from RenderSVGObject -> LayoutObject (some need RenderBlock inheritance for instance)
     virtual void setNeedsTransformUpdate() { }
     virtual void setNeedsBoundariesUpdate();
 
@@ -638,14 +638,14 @@ public:
     // Returns the object containing this one. Can be different from parent for positioned elements.
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
     // is true if the renderer returned is an ancestor of paintInvalidationContainer.
-    RenderObject* container(const LayoutLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
+    LayoutObject* container(const LayoutLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
     RenderBlock* containerForFixedPosition(const LayoutLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
-    virtual RenderObject* hoverAncestor() const { return parent(); }
+    virtual LayoutObject* hoverAncestor() const { return parent(); }
 
     Element* offsetParent() const;
 
-    void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0, SubtreeLayoutScope* = 0);
+    void markContainingBlocksForLayout(bool scheduleRelayout = true, LayoutObject* newRoot = 0, SubtreeLayoutScope* = 0);
     void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void clearNeedsLayout();
@@ -706,7 +706,11 @@ public:
     bool hasPendingResourceUpdate() const { return m_bitfields.hasPendingResourceUpdate(); }
 
     /* This function performs a layout only if one is needed. */
-    void layoutIfNeeded() { if (needsLayout()) layout(); }
+    void layoutIfNeeded()
+    {
+        if (needsLayout())
+            layout();
+    }
 
     void forceLayout();
     void forceChildLayout();
@@ -729,7 +733,7 @@ public:
     PositionWithAffinity createPositionWithAffinity(int offset, EAffinity);
     PositionWithAffinity createPositionWithAffinity(const Position&);
 
-    virtual void dirtyLinesFromChangedChild(RenderObject*);
+    virtual void dirtyLinesFromChangedChild(LayoutObject*);
 
     // Set the style of the object and update the state of the object accordingly.
     void setStyle(PassRefPtr<RenderStyle>);
@@ -771,9 +775,9 @@ public:
 
     // Return the offset from the container() renderer (excluding transforms). In multi-column layout,
     // different offsets apply at different points, so return the offset that applies to the given point.
-    virtual LayoutSize offsetFromContainer(const RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const;
+    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const;
     // Return the offset from an object up the container() chain. Asserts that none of the intermediate objects have transforms.
-    LayoutSize offsetFromAncestorContainer(const RenderObject*) const;
+    LayoutSize offsetFromAncestorContainer(const LayoutObject*) const;
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
 
@@ -802,7 +806,7 @@ public:
     const RenderStyle& styleRef() const { return mutableStyleRef(); }
     RenderStyle& mutableStyleRef() const { ASSERT(m_style); return *m_style; }
 
-    /* The following methods are inlined in RenderObjectInlines.h */
+    /* The following methods are inlined in LayoutObjectInlines.h */
     RenderStyle* firstLineStyle() const;
     RenderStyle* style(bool firstLine) const;
     const RenderStyle& styleRef(bool firstLine) const;
@@ -843,7 +847,7 @@ public:
         return computePaintInvalidationRect(containerForPaintInvalidation());
     }
 
-    // Returns the paint invalidation rect for this RenderObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
+    // Returns the paint invalidation rect for this LayoutObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
     LayoutRect computePaintInvalidationRect(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
 
     // Returns the rect bounds needed to invalidate the paint of this object, in the coordinate space of the rendering backing of |paintInvalidationContainer|
@@ -965,7 +969,11 @@ public:
 
     void selectionStartEnd(int& spos, int& epos) const;
 
-    void remove() { if (parent()) parent()->removeChild(this); }
+    void remove()
+    {
+        if (parent())
+            parent()->removeChild(this);
+    }
 
     bool isInert() const;
 
@@ -982,10 +990,10 @@ public:
 
     // Pushes state onto RenderGeometryMap about how to map coordinates from this renderer to its container, or ancestorToStopAt (whichever is encountered first).
     // Returns the renderer which was mapped to (container or ancestorToStopAt).
-    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const;
 
-    bool shouldUseTransformFromContainer(const RenderObject* container) const;
-    void getTransformFromContainer(const RenderObject* container, const LayoutSize& offsetInContainer, TransformationMatrix&) const;
+    bool shouldUseTransformFromContainer(const LayoutObject* container) const;
+    void getTransformFromContainer(const LayoutObject* container, const LayoutSize& offsetInContainer, TransformationMatrix&) const;
 
     bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || style()->hasBlendMode(); }
 
@@ -995,7 +1003,7 @@ public:
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
 
     // Return the renderer whose background style is used to paint the root background. Should only be called on the renderer for which isDocumentElement() is true.
-    RenderObject* rendererForRootBackground();
+    LayoutObject* rendererForRootBackground();
 
     RespectImageOrientationEnum shouldRespectImageOrientation() const;
 
@@ -1059,76 +1067,76 @@ public:
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
 protected:
-    enum RenderObjectType {
-        RenderObjectBr,
-        RenderObjectCanvas,
-        RenderObjectFieldset,
-        RenderObjectCounter,
-        RenderObjectDetailsMarker,
-        RenderObjectEmbeddedObject,
-        RenderObjectFileUploadControl,
-        RenderObjectFrame,
-        RenderObjectFrameSet,
-        RenderObjectLayoutTableCol,
-        RenderObjectListBox,
-        RenderObjectListItem,
-        RenderObjectListMarker,
-        RenderObjectMedia,
-        RenderObjectMenuList,
-        RenderObjectMeter,
-        RenderObjectProgress,
-        RenderObjectQuote,
-        RenderObjectRenderButton,
-        RenderObjectRenderFlowThread,
-        RenderObjectRenderFullScreen,
-        RenderObjectRenderFullScreenPlaceholder,
-        RenderObjectRenderGrid,
-        RenderObjectRenderIFrame,
-        RenderObjectRenderImage,
-        RenderObjectRenderInline,
-        RenderObjectRenderMultiColumnSet,
-        RenderObjectRenderMultiColumnSpannerPlaceholder,
-        RenderObjectRenderPart,
-        RenderObjectRenderRegion,
-        RenderObjectRenderScrollbarPart,
-        RenderObjectRenderView,
-        RenderObjectReplica,
-        RenderObjectRuby,
-        RenderObjectRubyBase,
-        RenderObjectRubyRun,
-        RenderObjectRubyText,
-        RenderObjectSlider,
-        RenderObjectSliderThumb,
-        RenderObjectTable,
-        RenderObjectTableCaption,
-        RenderObjectTableCell,
-        RenderObjectTableRow,
-        RenderObjectTableSection,
-        RenderObjectTextArea,
-        RenderObjectTextControl,
-        RenderObjectTextField,
-        RenderObjectVideo,
-        RenderObjectWidget,
+    enum LayoutObjectType {
+        LayoutObjectBr,
+        LayoutObjectCanvas,
+        LayoutObjectFieldset,
+        LayoutObjectCounter,
+        LayoutObjectDetailsMarker,
+        LayoutObjectEmbeddedObject,
+        LayoutObjectFileUploadControl,
+        LayoutObjectFrame,
+        LayoutObjectFrameSet,
+        LayoutObjectLayoutTableCol,
+        LayoutObjectListBox,
+        LayoutObjectListItem,
+        LayoutObjectListMarker,
+        LayoutObjectMedia,
+        LayoutObjectMenuList,
+        LayoutObjectMeter,
+        LayoutObjectProgress,
+        LayoutObjectQuote,
+        LayoutObjectRenderButton,
+        LayoutObjectRenderFlowThread,
+        LayoutObjectRenderFullScreen,
+        LayoutObjectRenderFullScreenPlaceholder,
+        LayoutObjectRenderGrid,
+        LayoutObjectRenderIFrame,
+        LayoutObjectRenderImage,
+        LayoutObjectRenderInline,
+        LayoutObjectRenderMultiColumnSet,
+        LayoutObjectRenderMultiColumnSpannerPlaceholder,
+        LayoutObjectRenderPart,
+        LayoutObjectRenderRegion,
+        LayoutObjectRenderScrollbarPart,
+        LayoutObjectRenderView,
+        LayoutObjectReplica,
+        LayoutObjectRuby,
+        LayoutObjectRubyBase,
+        LayoutObjectRubyRun,
+        LayoutObjectRubyText,
+        LayoutObjectSlider,
+        LayoutObjectSliderThumb,
+        LayoutObjectTable,
+        LayoutObjectTableCaption,
+        LayoutObjectTableCell,
+        LayoutObjectTableRow,
+        LayoutObjectTableSection,
+        LayoutObjectTextArea,
+        LayoutObjectTextControl,
+        LayoutObjectTextField,
+        LayoutObjectVideo,
+        LayoutObjectWidget,
 
-        RenderObjectSVG, /* Keep by itself? */
-        RenderObjectSVGRoot,
-        RenderObjectSVGContainer,
-        RenderObjectSVGTransformableContainer,
-        RenderObjectSVGViewportContainer,
-        RenderObjectSVGHiddenContainer,
-        RenderObjectSVGGradientStop,
-        RenderObjectSVGShape,
-        RenderObjectSVGText,
-        RenderObjectSVGTextPath,
-        RenderObjectSVGInline,
-        RenderObjectSVGInlineText,
-        RenderObjectSVGImage,
-        RenderObjectSVGForeignObject,
-        RenderObjectSVGResourceContainer,
-        RenderObjectSVGResourceFilter,
-        RenderObjectSVGResourceFilterPrimitive,
+        LayoutObjectSVG, /* Keep by itself? */
+        LayoutObjectSVGRoot,
+        LayoutObjectSVGContainer,
+        LayoutObjectSVGTransformableContainer,
+        LayoutObjectSVGViewportContainer,
+        LayoutObjectSVGHiddenContainer,
+        LayoutObjectSVGGradientStop,
+        LayoutObjectSVGShape,
+        LayoutObjectSVGText,
+        LayoutObjectSVGTextPath,
+        LayoutObjectSVGInline,
+        LayoutObjectSVGInlineText,
+        LayoutObjectSVGImage,
+        LayoutObjectSVGForeignObject,
+        LayoutObjectSVGResourceContainer,
+        LayoutObjectSVGResourceFilter,
+        LayoutObjectSVGResourceFilterPrimitive,
     };
-    virtual bool isOfType(RenderObjectType type) const { return false; }
+    virtual bool isOfType(LayoutObjectType type) const { return false; }
 
     inline bool layerCreationAllowedForSubtree() const;
 
@@ -1139,7 +1147,7 @@ protected:
     // time this function is called.
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
-    virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* style) const { }
+    virtual void updateAnonymousChildStyle(const LayoutObject* child, RenderStyle* style) const { }
 
 protected:
     void setSelfMayNeedPaintInvalidation();
@@ -1230,9 +1238,9 @@ private:
     // Oilpan: raw pointer back to the owning Node is considered safe.
     Node* m_node;
 
-    RenderObject* m_parent;
-    RenderObject* m_previous;
-    RenderObject* m_next;
+    LayoutObject* m_parent;
+    LayoutObject* m_previous;
+    LayoutObject* m_next;
 
 #if ENABLE(ASSERT)
     unsigned m_hasAXObject             : 1;
@@ -1246,7 +1254,7 @@ private:
         bool name() const { return m_##name; }\
         void set##Name(bool name) { m_##name = name; }\
 
-    class RenderObjectBitfields {
+    class LayoutObjectBitfields {
         enum PositionedState {
             IsStaticallyPositioned = 0,
             IsRelativelyPositioned = 1,
@@ -1254,7 +1262,7 @@ private:
         };
 
     public:
-        RenderObjectBitfields(Node* node)
+        LayoutObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
             , m_shouldInvalidateOverflowForPaint(false)
             // FIXME: We should remove mayNeedPaintInvalidation once we are able to
@@ -1374,7 +1382,7 @@ private:
 
 #undef ADD_BOOLEAN_BITFIELD
 
-    RenderObjectBitfields m_bitfields;
+    LayoutObjectBitfields m_bitfields;
 
     void setSelfNeedsLayout(bool b) { m_bitfields.setSelfNeedsLayout(b); }
     void setNeedsPositionedMovementLayout(bool b) { m_bitfields.setNeedsPositionedMovementLayout(b); }
@@ -1413,15 +1421,15 @@ private:
     TemporaryChange<bool> m_disabler;
 };
 
-// Allow equality comparisons of RenderObjects by reference or pointer, interchangeably.
-DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(RenderObject)
+// Allow equality comparisons of LayoutObjects by reference or pointer, interchangeably.
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(LayoutObject)
 
-inline bool RenderObject::documentBeingDestroyed() const
+inline bool LayoutObject::documentBeingDestroyed() const
 {
     return document().lifecycle().state() >= DocumentLifecycle::Stopping;
 }
 
-inline bool RenderObject::isBeforeContent() const
+inline bool LayoutObject::isBeforeContent() const
 {
     if (style()->styleType() != BEFORE)
         return false;
@@ -1431,7 +1439,7 @@ inline bool RenderObject::isBeforeContent() const
     return true;
 }
 
-inline bool RenderObject::isAfterContent() const
+inline bool LayoutObject::isAfterContent() const
 {
     if (style()->styleType() != AFTER)
         return false;
@@ -1441,14 +1449,14 @@ inline bool RenderObject::isAfterContent() const
     return true;
 }
 
-inline bool RenderObject::isBeforeOrAfterContent() const
+inline bool LayoutObject::isBeforeOrAfterContent() const
 {
     return isBeforeContent() || isAfterContent();
 }
 
 // setNeedsLayout() won't cause full paint invalidations as
 // setNeedsLayoutAndFullPaintInvalidation() does. Otherwise the two methods are identical.
-inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+inline void LayoutObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
@@ -1464,13 +1472,13 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
     }
 }
 
-inline void RenderObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+inline void LayoutObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     setNeedsLayout(markParents, layouter);
     setShouldDoFullPaintInvalidation();
 }
 
-inline void RenderObject::clearNeedsLayout()
+inline void LayoutObject::clearNeedsLayout()
 {
     setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
     setLayoutDidGetCalledSinceLastFrame();
@@ -1486,7 +1494,7 @@ inline void RenderObject::clearNeedsLayout()
 #endif
 }
 
-inline void RenderObject::setChildNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = normalChildNeedsLayout();
@@ -1496,7 +1504,7 @@ inline void RenderObject::setChildNeedsLayout(MarkingBehavior markParents, Subtr
         markContainingBlocksForLayout(true, 0, layouter);
 }
 
-inline void RenderObject::setNeedsPositionedMovementLayout()
+inline void LayoutObject::setNeedsPositionedMovementLayout()
 {
     bool alreadyNeededLayout = needsPositionedMovementLayout();
     setNeedsPositionedMovementLayout(true);
@@ -1505,7 +1513,7 @@ inline void RenderObject::setNeedsPositionedMovementLayout()
         markContainingBlocksForLayout();
 }
 
-inline bool RenderObject::preservesNewline() const
+inline bool LayoutObject::preservesNewline() const
 {
     if (isSVGInlineText())
         return false;
@@ -1513,9 +1521,9 @@ inline bool RenderObject::preservesNewline() const
     return style()->preserveNewline();
 }
 
-inline bool RenderObject::layerCreationAllowedForSubtree() const
+inline bool LayoutObject::layerCreationAllowedForSubtree() const
 {
-    RenderObject* parentRenderer = parent();
+    LayoutObject* parentRenderer = parent();
     while (parentRenderer) {
         if (parentRenderer->isSVGHiddenContainer())
             return false;
@@ -1525,7 +1533,7 @@ inline bool RenderObject::layerCreationAllowedForSubtree() const
     return true;
 }
 
-inline void RenderObject::setSelectionStateIfNeeded(SelectionState state)
+inline void LayoutObject::setSelectionStateIfNeeded(SelectionState state)
 {
     if (selectionState() == state)
         return;
@@ -1533,7 +1541,7 @@ inline void RenderObject::setSelectionStateIfNeeded(SelectionState state)
     setSelectionState(state);
 }
 
-inline void RenderObject::setHasBoxDecorationBackground(bool b)
+inline void LayoutObject::setHasBoxDecorationBackground(bool b)
 {
     if (!b) {
         m_bitfields.setBoxDecorationBackgroundState(NoBoxDecorationBackground);
@@ -1544,14 +1552,14 @@ inline void RenderObject::setHasBoxDecorationBackground(bool b)
     m_bitfields.setBoxDecorationBackgroundState(HasBoxDecorationBackgroundObscurationStatusInvalid);
 }
 
-inline void RenderObject::invalidateBackgroundObscurationStatus()
+inline void LayoutObject::invalidateBackgroundObscurationStatus()
 {
     if (!hasBoxDecorationBackground())
         return;
     m_bitfields.setBoxDecorationBackgroundState(HasBoxDecorationBackgroundObscurationStatusInvalid);
 }
 
-inline bool RenderObject::boxDecorationBackgroundIsKnownToBeObscured()
+inline bool LayoutObject::boxDecorationBackgroundIsKnownToBeObscured()
 {
     if (m_bitfields.boxDecorationBackgroundState() == HasBoxDecorationBackgroundObscurationStatusInvalid) {
         BoxDecorationBackgroundState state = computeBackgroundIsKnownToBeObscured() ? HasBoxDecorationBackgroundKnownToBeObscured : HasBoxDecorationBackgroundMayBeVisible;
@@ -1566,57 +1574,57 @@ inline void makeMatrixRenderable(TransformationMatrix& matrix, bool has3DRenderi
         matrix.makeAffine();
 }
 
-inline int adjustForAbsoluteZoom(int value, RenderObject* renderer)
+inline int adjustForAbsoluteZoom(int value, LayoutObject* renderer)
 {
     return adjustForAbsoluteZoom(value, renderer->style());
 }
 
-inline double adjustDoubleForAbsoluteZoom(double value, RenderObject& renderer)
+inline double adjustDoubleForAbsoluteZoom(double value, LayoutObject& renderer)
 {
     ASSERT(renderer.style());
     return adjustDoubleForAbsoluteZoom(value, *renderer.style());
 }
 
-inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, RenderObject& renderer)
+inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, LayoutObject& renderer)
 {
     ASSERT(renderer.style());
     return adjustLayoutUnitForAbsoluteZoom(value, *renderer.style());
 }
 
-inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject& renderer)
+inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, LayoutObject& renderer)
 {
     float zoom = renderer.style()->effectiveZoom();
     if (zoom != 1)
         quad.scale(1 / zoom, 1 / zoom);
 }
 
-inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, RenderObject& renderer)
+inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, LayoutObject& renderer)
 {
     float zoom = renderer.style()->effectiveZoom();
     if (zoom != 1)
         rect.scale(1 / zoom, 1 / zoom);
 }
 
-inline double adjustScrollForAbsoluteZoom(double value, RenderObject& renderer)
+inline double adjustScrollForAbsoluteZoom(double value, LayoutObject& renderer)
 {
     ASSERT(renderer.style());
     return adjustScrollForAbsoluteZoom(value, *renderer.style());
 }
 
-#define DEFINE_RENDER_OBJECT_TYPE_CASTS(thisType, predicate) \
-    DEFINE_TYPE_CASTS(thisType, RenderObject, object, object->predicate, object.predicate)
+#define DEFINE_LAYOUT_OBJECT_TYPE_CASTS(thisType, predicate) \
+    DEFINE_TYPE_CASTS(thisType, LayoutObject, object, object->predicate, object.predicate)
 
 } // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const blink::RenderObject*);
-void showLineTree(const blink::RenderObject*);
-void showRenderTree(const blink::RenderObject* object1);
+void showTree(const blink::LayoutObject*);
+void showLineTree(const blink::LayoutObject*);
+void showRenderTree(const blink::LayoutObject* object1);
 // We don't make object2 an optional parameter so that showRenderTree
 // can be called from gdb easily.
-void showRenderTree(const blink::RenderObject* object1, const blink::RenderObject* object2);
+void showRenderTree(const blink::LayoutObject* object1, const blink::LayoutObject* object2);
 
 #endif
 
-#endif // RenderObject_h
+#endif // LayoutObject_h

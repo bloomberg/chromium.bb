@@ -35,7 +35,7 @@ RenderButton::~RenderButton()
 {
 }
 
-void RenderButton::addChild(RenderObject* newChild, RenderObject* beforeChild)
+void RenderButton::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (!m_inner) {
         // Create an anonymous block.
@@ -47,7 +47,7 @@ void RenderButton::addChild(RenderObject* newChild, RenderObject* beforeChild)
     m_inner->addChild(newChild, beforeChild);
 }
 
-void RenderButton::removeChild(RenderObject* oldChild)
+void RenderButton::removeChild(LayoutObject* oldChild)
 {
     // m_inner should be the only child, but checking for direct children who
     // are not m_inner prevents security problems when that assumption is
@@ -60,7 +60,7 @@ void RenderButton::removeChild(RenderObject* oldChild)
         m_inner->removeChild(oldChild);
 }
 
-void RenderButton::updateAnonymousChildStyle(const RenderObject* child, RenderStyle* childStyle) const
+void RenderButton::updateAnonymousChildStyle(const LayoutObject* child, RenderStyle* childStyle) const
 {
     ASSERT(!m_inner || child == m_inner);
 

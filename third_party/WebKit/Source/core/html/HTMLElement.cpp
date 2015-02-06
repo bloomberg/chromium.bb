@@ -53,8 +53,8 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutObject.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/Language.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/BidiTextRun.h"
@@ -427,7 +427,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionStat
     // FIXME: Do we need to be able to detect preserveNewline style even when there's no renderer?
     // FIXME: Can the renderer be out of date here? Do we need to call updateStyleIfNeeded?
     // For example, for the contents of textarea elements that are display:none?
-    RenderObject* r = renderer();
+    LayoutObject* r = renderer();
     if (r && r->style()->preserveNewline()) {
         if (!text.contains('\r')) {
             replaceChildrenWithText(this, text, exceptionState);

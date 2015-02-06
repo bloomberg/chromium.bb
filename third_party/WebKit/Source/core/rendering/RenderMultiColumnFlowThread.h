@@ -140,11 +140,11 @@ public:
     }
 
     // Find the first set inside which the specified renderer would be rendered.
-    RenderMultiColumnSet* findSetRendering(RenderObject*) const;
+    RenderMultiColumnSet* findSetRendering(LayoutObject*) const;
 
     // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
     // any. This includes the renderer for the element that actually establishes the spanner too.
-    RenderMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const RenderObject* descendant) const;
+    RenderMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const LayoutObject* descendant) const;
 
     // Populate the flow thread with what's currently its siblings. Called when a regular block
     // becomes a multicol container.
@@ -183,20 +183,20 @@ private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
     void createAndInsertMultiColumnSet(RenderBox* insertBefore = 0);
     void createAndInsertSpannerPlaceholder(RenderBox* spanner, RenderBox* insertBefore = 0);
-    virtual bool descendantIsValidColumnSpanner(RenderObject* descendant) const;
+    virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
     virtual const char* renderName() const override;
     virtual void addRegionToThread(RenderMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
     virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) override;
-    virtual void flowThreadDescendantWasInserted(RenderObject*) override;
-    virtual void flowThreadDescendantWillBeRemoved(RenderObject*) override;
+    virtual void flowThreadDescendantWasInserted(LayoutObject*) override;
+    virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) override;
     virtual void computePreferredLogicalWidths() override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void updateLogicalWidth() override;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
-    virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
+    virtual bool addForcedRegionBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
     virtual bool isPageLogicalHeightKnown() const override;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a

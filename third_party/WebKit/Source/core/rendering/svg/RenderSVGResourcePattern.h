@@ -45,17 +45,17 @@ public:
     virtual const char* renderName() const override { return "RenderSVGResourcePattern"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
-    virtual SVGPaintServer preparePaintServer(const RenderObject&) override;
+    virtual SVGPaintServer preparePaintServer(const LayoutObject&) override;
 
     static const RenderSVGResourceType s_resourceType = PatternResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
-    PassOwnPtr<PatternData> buildPatternData(const RenderObject&);
+    PassOwnPtr<PatternData> buildPatternData(const LayoutObject&);
     PassRefPtr<const SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
-    PatternData* patternForRenderer(const RenderObject&);
+    PatternData* patternForRenderer(const LayoutObject&);
 
     bool m_shouldCollectPatternAttributes : 1;
 #if ENABLE(OILPAN)
@@ -76,7 +76,7 @@ private:
     // should be able to cache a single display list per RenderSVGResourcePattern + one
     // Pattern(shader) for each client -- this would avoid re-recording when multiple clients
     // share the same pattern.
-    HashMap<const RenderObject*, OwnPtr<PatternData>> m_patternMap;
+    HashMap<const LayoutObject*, OwnPtr<PatternData>> m_patternMap;
 };
 
 }

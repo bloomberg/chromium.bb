@@ -89,7 +89,7 @@ LayoutTableSection::LayoutTableSection(Element* element)
     , m_forceSlowPaintPathWithOverflowingCell(false)
     , m_hasMultipleCellLevels(false)
 {
-    // init RenderObject attributes
+    // init LayoutObject attributes
     setInline(false); // our object is not Inline
 }
 
@@ -117,10 +117,10 @@ void LayoutTableSection::willBeRemovedFromTree()
     setNeedsCellRecalc();
 }
 
-void LayoutTableSection::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutTableSection::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     if (!child->isTableRow()) {
-        RenderObject* last = beforeChild;
+        LayoutObject* last = beforeChild;
         if (!last)
             last = lastRow();
         if (last && last->isAnonymous() && !last->isBeforeOrAfterContent()) {
@@ -131,7 +131,7 @@ void LayoutTableSection::addChild(RenderObject* child, RenderObject* beforeChild
         }
 
         if (beforeChild && !beforeChild->isAnonymous() && beforeChild->parent() == this) {
-            RenderObject* row = beforeChild->previousSibling();
+            LayoutObject* row = beforeChild->previousSibling();
             if (row && row->isTableRow() && row->isAnonymous()) {
                 row->addChild(child);
                 return;
@@ -140,7 +140,7 @@ void LayoutTableSection::addChild(RenderObject* child, RenderObject* beforeChild
 
         // If beforeChild is inside an anonymous cell/row, insert into the cell or into
         // the anonymous row containing it, if there is one.
-        RenderObject* lastBox = last;
+        LayoutObject* lastBox = last;
         while (lastBox && lastBox->parent()->isAnonymous() && !lastBox->isTableRow())
             lastBox = lastBox->parent();
         if (lastBox && lastBox->isAnonymous() && !lastBox->isBeforeOrAfterContent()) {
@@ -148,7 +148,7 @@ void LayoutTableSection::addChild(RenderObject* child, RenderObject* beforeChild
             return;
         }
 
-        RenderObject* row = LayoutTableRow::createAnonymousWithParentRenderer(this);
+        LayoutObject* row = LayoutTableRow::createAnonymousWithParentRenderer(this);
         addChild(row, beforeChild);
         row->addChild(child);
         return;
@@ -915,7 +915,7 @@ int LayoutTableSection::distributeExtraLogicalHeightToRows(int extraLogicalHeigh
     return extraLogicalHeight - remainingExtraLogicalHeight;
 }
 
-static bool shouldFlexCellChild(RenderObject* cellDescendant)
+static bool shouldFlexCellChild(LayoutObject* cellDescendant)
 {
     return cellDescendant->isReplaced() || (cellDescendant->isBox() && toRenderBox(cellDescendant)->scrollsOverflow());
 }
@@ -984,7 +984,7 @@ void LayoutTableSection::layoutRows()
             bool flexAllChildren = cell->style()->logicalHeight().isFixed()
                 || (!table()->style()->logicalHeight().isAuto() && rHeight != cell->logicalHeight());
 
-            for (RenderObject* child = cell->firstChild(); child; child = child->nextSibling()) {
+            for (LayoutObject* child = cell->firstChild(); child; child = child->nextSibling()) {
                 if (!child->isText() && child->style()->logicalHeight().isPercent()
                     && (flexAllChildren || shouldFlexCellChild(child))
                     && (!child->isTable() || toLayoutTable(child)->hasSections())) {
@@ -1549,7 +1549,7 @@ bool LayoutTableSection::nodeAtPoint(const HitTestRequest& request, HitTestResul
                 --i;
                 LayoutTableCell* cell = current.cells[i];
                 LayoutPoint cellPoint = flipForWritingModeForChild(cell, adjustedLocation);
-                if (static_cast<RenderObject*>(cell)->nodeAtPoint(request, result, locationInContainer, cellPoint, action)) {
+                if (static_cast<LayoutObject*>(cell)->nodeAtPoint(request, result, locationInContainer, cellPoint, action)) {
                     updateHitTestResult(result, locationInContainer.point() - toLayoutSize(cellPoint));
                     return true;
                 }
@@ -1587,7 +1587,7 @@ CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const LayoutTabl
     return it->value;
 }
 
-LayoutTableSection* LayoutTableSection::createAnonymousWithParentRenderer(const RenderObject* parent)
+LayoutTableSection* LayoutTableSection::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE_ROW_GROUP);
     LayoutTableSection* newSection = new LayoutTableSection(0);

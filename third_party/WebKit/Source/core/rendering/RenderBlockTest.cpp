@@ -16,7 +16,7 @@ class RenderBlockTest : public RenderingTest {
 
 TEST_F(RenderBlockTest, RenderNameCalledWithNullStyle)
 {
-    RenderObject* obj = RenderBlockFlow::createAnonymous(&document());
+    LayoutObject* obj = RenderBlockFlow::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
     EXPECT_STREQ("RenderBlock (generated)", obj->renderName());
     obj->destroy();

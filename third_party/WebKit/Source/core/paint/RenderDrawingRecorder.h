@@ -13,12 +13,12 @@
 namespace blink {
 
 class GraphicsContext;
-class RenderObject;
+class LayoutObject;
 
 class RenderDrawingRecorder {
 public:
-    RenderDrawingRecorder(GraphicsContext*, const RenderObject&, PaintPhase, const FloatRect&);
-    RenderDrawingRecorder(GraphicsContext*, const RenderObject&, DisplayItem::Type, const FloatRect&);
+    RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, PaintPhase, const FloatRect&);
+    RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const FloatRect&);
 
     ~RenderDrawingRecorder();
 
@@ -27,7 +27,7 @@ public:
 private:
     DrawingRecorder m_drawingRecorder;
 #ifndef NDEBUG
-    const RenderObject& m_renderer;
+    const LayoutObject& m_renderer;
 #endif
 };
 

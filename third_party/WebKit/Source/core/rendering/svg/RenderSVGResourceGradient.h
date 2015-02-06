@@ -43,11 +43,11 @@ public:
     explicit RenderSVGResourceGradient(SVGGradientElement*);
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override final;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override final;
+    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override final;
 
-    virtual SVGPaintServer preparePaintServer(const RenderObject&) override final;
+    virtual SVGPaintServer preparePaintServer(const LayoutObject&) override final;
 
-    virtual bool isChildAllowed(RenderObject* child, const RenderStyle&) const override final;
+    virtual bool isChildAllowed(LayoutObject* child, const RenderStyle&) const override final;
 
 protected:
     void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;
@@ -61,7 +61,7 @@ protected:
 
 private:
     bool m_shouldCollectGradientAttributes : 1;
-    HashMap<const RenderObject*, OwnPtr<GradientData> > m_gradientMap;
+    HashMap<const LayoutObject*, OwnPtr<GradientData>> m_gradientMap;
 };
 
 }

@@ -204,7 +204,7 @@ static inline SVGResources& ensureResources(OwnPtr<SVGResources>& resources)
     return *resources.get();
 }
 
-PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object, const SVGRenderStyle& style)
+PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object, const SVGRenderStyle& style)
 {
     ASSERT(object);
 
@@ -316,7 +316,7 @@ void SVGResources::layoutIfNeeded()
         m_linkedResource->layoutIfNeeded();
 }
 
-void SVGResources::removeClientFromCache(RenderObject* object, bool markForInvalidation) const
+void SVGResources::removeClientFromCache(LayoutObject* object, bool markForInvalidation) const
 {
     if (!hasResourceData())
         return;
@@ -649,7 +649,7 @@ void SVGResources::resetLinkedResource()
 }
 
 #ifndef NDEBUG
-void SVGResources::dump(const RenderObject* object)
+void SVGResources::dump(const LayoutObject* object)
 {
     ASSERT(object);
     ASSERT(object->node());

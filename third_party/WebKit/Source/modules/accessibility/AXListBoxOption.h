@@ -41,10 +41,10 @@ class HTMLSelectElement;
 class AXListBoxOption final : public AXRenderObject {
 
 private:
-    AXListBoxOption(RenderObject*, AXObjectCacheImpl*);
+    AXListBoxOption(LayoutObject*, AXObjectCacheImpl*);
 
 public:
-    static PassRefPtr<AXListBoxOption> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXListBoxOption();
 
     virtual AccessibilityRole roleValue() const override { return ListBoxOptionRole; }

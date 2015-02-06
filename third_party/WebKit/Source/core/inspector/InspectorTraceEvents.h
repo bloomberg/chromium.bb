@@ -31,7 +31,7 @@ class Node;
 class QualifiedName;
 class Page;
 class RenderImage;
-class RenderObject;
+class LayoutObject;
 class ResourceRequest;
 class ResourceResponse;
 class StyleChangeReasonForTracing;
@@ -43,7 +43,7 @@ class XMLHttpRequest;
 class InspectorLayoutEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(FrameView*);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(RenderObject* rootForThisLayout);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(LayoutObject* rootForThisLayout);
 };
 
 class InspectorScheduleStyleInvalidationTrackingEvent {
@@ -110,12 +110,12 @@ private:
 
 class InspectorLayoutInvalidationTrackingEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject*);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*);
 };
 
 class InspectorPaintInvalidationTrackingEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject* renderer, const RenderObject* paintContainer);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject* renderer, const LayoutObject* paintContainer);
 };
 
 class InspectorSendRequestEvent {
@@ -207,14 +207,14 @@ public:
 
 class InspectorPaintEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*, const LayoutRect& clipRect, const GraphicsLayer*);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*, const LayoutRect& clipRect, const GraphicsLayer*);
 };
 
 class InspectorPaintImageEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderImage&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject&, const StyleImage&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject*, const ImageResource&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&, const StyleImage&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const ImageResource&);
 };
 
 class InspectorCommitLoadEvent {
@@ -229,7 +229,7 @@ public:
 
 class InspectorScrollLayerEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*);
 };
 
 class InspectorUpdateLayerTreeEvent {

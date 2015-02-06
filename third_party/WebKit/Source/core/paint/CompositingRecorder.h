@@ -12,7 +12,7 @@
 namespace blink {
 
 class GraphicsContext;
-class RenderObject;
+class LayoutObject;
 
 class CompositingRecorder {
 public:

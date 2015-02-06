@@ -26,8 +26,8 @@
 #ifndef RenderGeometryMap_h
 #define RenderGeometryMap_h
 
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderGeometryMapStep.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
@@ -64,15 +64,15 @@ public:
     // Called by code walking the renderer or layer trees.
     void pushMappingsToAncestor(const Layer*, const Layer* ancestorLayer);
     void popMappingsToAncestor(const Layer*);
-    void pushMappingsToAncestor(const RenderObject*, const LayoutLayerModelObject* ancestorRenderer);
+    void pushMappingsToAncestor(const LayoutObject*, const LayoutLayerModelObject* ancestorRenderer);
     void popMappingsToAncestor(const LayoutLayerModelObject*);
 
     // The following methods should only be called by renderers inside a call to pushMappingsToAncestor().
 
     // Push geometry info between this renderer and some ancestor. The ancestor must be its container() or some
     // stacking context between the renderer and its container.
-    void push(const RenderObject*, const LayoutSize&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
-    void push(const RenderObject*, const TransformationMatrix&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
+    void push(const LayoutObject*, const LayoutSize&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
+    void push(const LayoutObject*, const TransformationMatrix&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
 
 private:
     void mapToContainer(TransformState&, const LayoutLayerModelObject* container = 0) const;
@@ -89,7 +89,7 @@ private:
 #endif
 
 #if ENABLE(ASSERT)
-    bool isTopmostRenderView(const RenderObject* renderer) const;
+    bool isTopmostRenderView(const LayoutObject* renderer) const;
 #endif
 
     typedef Vector<RenderGeometryMapStep, 32> RenderGeometryMapSteps;

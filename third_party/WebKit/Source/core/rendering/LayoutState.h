@@ -36,7 +36,7 @@ namespace blink {
 class ForceHorriblySlowRectMapping;
 class RenderBox;
 class RenderFlowThread;
-class RenderObject;
+class LayoutObject;
 class RenderView;
 
 class LayoutState {
@@ -45,7 +45,7 @@ public:
     // Constructor for root LayoutState created by RenderView
     LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, RenderView&);
     // Constructor for sub-tree layout
-    explicit LayoutState(RenderObject& root);
+    explicit LayoutState(LayoutObject& root);
 
     LayoutState(RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0, bool containingBlockLogicalWidthChanged = false);
 
@@ -77,7 +77,7 @@ public:
 
     ColumnInfo* columnInfo() const { return m_columnInfo; }
 
-    RenderObject& renderer() const { return m_renderer; }
+    LayoutObject& renderer() const { return m_renderer; }
 
 private:
     friend class ForceHorriblySlowRectMapping;
@@ -102,7 +102,7 @@ private:
     // The offset of the start of the first page in the nearest enclosing pagination model.
     LayoutSize m_pageOffset;
 
-    RenderObject& m_renderer;
+    LayoutObject& m_renderer;
 };
 
 } // namespace blink

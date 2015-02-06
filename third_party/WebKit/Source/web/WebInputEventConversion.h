@@ -43,7 +43,7 @@ namespace blink {
 class GestureEvent;
 class KeyboardEvent;
 class MouseEvent;
-class RenderObject;
+class LayoutObject;
 class TouchEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -96,8 +96,8 @@ public:
     // NOTE: This is only implemented for mousemove, mouseover, mouseout,
     // mousedown and mouseup. If the event mapping fails, the event type will
     // be set to Undefined.
-    WebMouseEventBuilder(const Widget*, const RenderObject*, const MouseEvent&);
-    WebMouseEventBuilder(const Widget*, const RenderObject*, const TouchEvent&);
+    WebMouseEventBuilder(const Widget*, const LayoutObject*, const MouseEvent&);
+    WebMouseEventBuilder(const Widget*, const LayoutObject*, const TouchEvent&);
 
     // Converts a PlatformMouseEvent to a corresponding WebMouseEvent.
     // NOTE: This is only implemented for mousepressed, mousereleased, and
@@ -110,7 +110,7 @@ public:
 // If the event mapping fails, the event type will be set to Undefined.
 class WebMouseWheelEventBuilder : public WebMouseWheelEvent {
 public:
-    WebMouseWheelEventBuilder(const Widget*, const RenderObject*, const WheelEvent&);
+    WebMouseWheelEventBuilder(const Widget*, const LayoutObject*, const WheelEvent&);
 };
 
 // Converts a KeyboardEvent or PlatformKeyboardEvent to a
@@ -129,14 +129,14 @@ public:
 // exceeding that cap will be dropped.
 class WebTouchEventBuilder : public WebTouchEvent {
 public:
-    WebTouchEventBuilder(const Widget*, const RenderObject*, const TouchEvent&);
+    WebTouchEventBuilder(const Widget*, const LayoutObject*, const TouchEvent&);
 };
 
 // Converts GestureEvent to a corresponding WebGestureEvent.
 // NOTE: If event mapping fails, the type will be set to Undefined.
 class WebGestureEventBuilder : public WebGestureEvent {
 public:
-    WebGestureEventBuilder(const Widget*, const RenderObject*, const GestureEvent&);
+    WebGestureEventBuilder(const Widget*, const LayoutObject*, const GestureEvent&);
 };
 
 } // namespace blink

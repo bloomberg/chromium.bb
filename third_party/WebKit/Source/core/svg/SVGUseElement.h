@@ -44,7 +44,7 @@ public:
 
     void invalidateShadowTree();
 
-    RenderObject* rendererClipChild() const;
+    LayoutObject* rendererClipChild() const;
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
@@ -67,7 +67,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
     virtual void toClipPath(Path&) override;
 
     void clearResourceReferences();

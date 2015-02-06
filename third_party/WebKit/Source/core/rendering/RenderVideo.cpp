@@ -201,9 +201,9 @@ bool RenderVideo::supportsAcceleratedRendering() const
     return !!mediaElement()->platformLayer();
 }
 
-static const RenderBlock* rendererPlaceholder(const RenderObject* renderer)
+static const RenderBlock* rendererPlaceholder(const LayoutObject* renderer)
 {
-    RenderObject* parent = renderer->parent();
+    LayoutObject* parent = renderer->parent();
     if (!parent)
         return 0;
 

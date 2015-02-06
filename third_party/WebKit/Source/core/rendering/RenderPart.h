@@ -76,7 +76,7 @@ private:
     int m_refCount;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderPart, isRenderPart());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderPart, isRenderPart());
 
 } // namespace blink
 

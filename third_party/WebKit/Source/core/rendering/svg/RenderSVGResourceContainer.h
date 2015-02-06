@@ -43,11 +43,11 @@ public:
     virtual ~RenderSVGResourceContainer();
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) = 0;
+    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) = 0;
 
     virtual void layout() override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceContainer || RenderSVGHiddenContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || RenderSVGHiddenContainer::isOfType(type); }
 
     virtual RenderSVGResourceType resourceType() const = 0;
 
@@ -66,7 +66,7 @@ public:
 
     void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = 0);
 
-    static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
+    static void markForLayoutAndParentResourceInvalidation(LayoutObject*, bool needsLayout = true);
 
 protected:
     // When adding modes, make sure we don't overflow m_invalidationMask below.
@@ -80,7 +80,7 @@ protected:
     // Used from the invalidateClient/invalidateClients methods from classes, inheriting from us.
     void markAllClientsForInvalidation(InvalidationMode);
     void markAllClientLayersForInvalidation();
-    void markClientForInvalidation(RenderObject*, InvalidationMode);
+    void markClientForInvalidation(LayoutObject*, InvalidationMode);
 
     void clearInvalidationMask() { m_invalidationMask = 0; }
 
@@ -88,8 +88,8 @@ protected:
 
 private:
     friend class SVGResourcesCache;
-    void addClient(RenderObject*);
-    void removeClient(RenderObject*);
+    void addClient(LayoutObject*);
+    void removeClient(LayoutObject*);
 
     virtual void willBeDestroyed() override final;
     void registerResource();
@@ -102,7 +102,7 @@ private:
     unsigned m_isInvalidating : 1;
     // 22 padding bits available
 
-    HashSet<RenderObject*> m_clients;
+    HashSet<LayoutObject*> m_clients;
     HashSet<Layer*> m_clientLayers;
 };
 
@@ -127,7 +127,7 @@ Renderer* getRenderSVGResourceById(TreeScope& treeScope, const AtomicString& id)
     return 0;
 }
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGResourceContainer, isSVGResourceContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGResourceContainer, isSVGResourceContainer());
 
 #define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
     DEFINE_TYPE_CASTS(thisType, RenderSVGResourceContainer, resource, resource->resourceType() == typeName, resource.resourceType() == typeName)

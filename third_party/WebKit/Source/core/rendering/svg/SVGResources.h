@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class RenderSVGResourceClipper;
 class RenderSVGResourceContainer;
 class RenderSVGResourceFilter;
@@ -38,13 +38,13 @@ class RenderSVGResourcePaintServer;
 class SVGElement;
 class SVGRenderStyle;
 
-// Holds a set of resources associated with a RenderObject
+// Holds a set of resources associated with a LayoutObject
 class SVGResources {
     WTF_MAKE_NONCOPYABLE(SVGResources); WTF_MAKE_FAST_ALLOCATED;
 public:
     SVGResources();
 
-    static PassOwnPtr<SVGResources> buildResources(const RenderObject*, const SVGRenderStyle&);
+    static PassOwnPtr<SVGResources> buildResources(const LayoutObject*, const SVGRenderStyle&);
     void layoutIfNeeded();
 
     static bool supportsMarkers(const SVGElement&);
@@ -73,11 +73,11 @@ public:
     void buildSetOfResources(HashSet<RenderSVGResourceContainer*>&);
 
     // Methods operating on all cached resources
-    void removeClientFromCache(RenderObject*, bool markForInvalidation = true) const;
+    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) const;
     void resourceDestroyed(RenderSVGResourceContainer*);
 
 #ifndef NDEBUG
-    void dump(const RenderObject*);
+    void dump(const LayoutObject*);
 #endif
 
 private:

@@ -28,7 +28,7 @@
 #else
 #include "platform/ThemeTypes.h"
 #endif
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/CachedUAStyle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassRefPtr.h"
@@ -64,12 +64,12 @@ public:
     // "border" are set, or if the appearance is not supported by the theme.
     void adjustStyle(RenderStyle&, Element*, const CachedUAStyle*);
 
-    // This method is called to paint the widget as a background of the RenderObject.  A widget's foreground, e.g., the
+    // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates
     // whether the CSS border/background should also be painted.
-    bool paint(RenderObject*, const PaintInfo&, const IntRect&);
-    bool paintBorderOnly(RenderObject*, const PaintInfo&, const IntRect&);
-    bool paintDecorations(RenderObject*, const PaintInfo&, const IntRect&);
+    bool paint(LayoutObject*, const PaintInfo&, const IntRect&);
+    bool paintBorderOnly(LayoutObject*, const PaintInfo&, const IntRect&);
+    bool paintDecorations(LayoutObject*, const PaintInfo&, const IntRect&);
 
     // The remaining methods should be implemented by the platform-specific portion of the theme, e.g.,
     // LayoutThemeMac.cpp for Mac OS X.
@@ -84,7 +84,7 @@ public:
     // A method to obtain the baseline position for a "leaf" control.  This will only be used if a baseline
     // position cannot be determined by examining child content. Checkboxes and radio buttons are examples of
     // controls that need to do this.
-    virtual int baselinePosition(const RenderObject*) const;
+    virtual int baselinePosition(const LayoutObject*) const;
 
     // A method for asking if a control is a container or not.  Leaf controls have to have some special behavior (like
     // the baseline position API above).
@@ -95,13 +95,13 @@ public:
 
     // Some controls may spill out of their containers (e.g., the check on an OS X checkbox). When these controls issues paint invalidations,
     // the theme needs to communicate this inflated rect to the engine so that it can invalidate the whole control.
-    virtual void adjustPaintInvalidationRect(const RenderObject*, IntRect&);
+    virtual void adjustPaintInvalidationRect(const LayoutObject*, IntRect&);
 
     // This method is called whenever a relevant state changes on a particular themed object, e.g., the mouse becomes pressed
     // or a control becomes disabled.
-    virtual bool stateChanged(RenderObject*, ControlState) const;
+    virtual bool stateChanged(LayoutObject*, ControlState) const;
 
-    bool shouldDrawDefaultFocusRing(RenderObject*) const;
+    bool shouldDrawDefaultFocusRing(LayoutObject*) const;
 
     // A method asking if the theme's controls actually care about redrawing when hovered.
     virtual bool supportsHover(const RenderStyle&) const { return false; }
@@ -155,7 +155,7 @@ public:
     virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) { return RegularScrollbar; }
 
     // Method for painting the caps lock indicator
-    virtual bool paintCapsLockIndicator(RenderObject*, const PaintInfo&, const IntRect&) { return 0; };
+    virtual bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) { return 0; };
 
     // Returns the repeat interval of the animation for the progress bar.
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const;
@@ -174,7 +174,7 @@ public:
     virtual IntSize sliderTickSize() const = 0;
     // Returns the distance of slider tick origin from the slider track center.
     virtual int sliderTickOffsetFromTrackCenter() const = 0;
-    void paintSliderTicks(RenderObject*, const PaintInfo&, const IntRect&);
+    void paintSliderTicks(LayoutObject*, const PaintInfo&, const IntRect&);
 
     virtual bool shouldShowPlaceholderWhenFocused() const { return false; }
     virtual bool shouldHaveSpinButton(HTMLInputElement*) const;
@@ -212,89 +212,89 @@ protected:
 #if !USE(NEW_THEME)
     // Methods for each appearance value.
     virtual void adjustCheckboxStyle(RenderStyle&, Element*) const;
-    virtual bool paintCheckbox(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintCheckbox(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual void setCheckboxSize(RenderStyle&) const { }
 
     virtual void adjustRadioStyle(RenderStyle&, Element*) const;
-    virtual bool paintRadio(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintRadio(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual void setRadioSize(RenderStyle&) const { }
 
     virtual void adjustButtonStyle(RenderStyle&, Element*) const;
-    virtual bool paintButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustInnerSpinButtonStyle(RenderStyle&, Element*) const;
-    virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintInnerSpinButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 #endif
 
-    virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustMenuListStyle(RenderStyle&, Element*) const;
-    virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustMenuListButtonStyle(RenderStyle&, Element*) const;
-    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual bool paintMeter(RenderObject*, const PaintInfo&, const IntRect&);
+    virtual bool paintMeter(LayoutObject*, const PaintInfo&, const IntRect&);
 
-    virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintProgressBar(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustSliderThumbStyle(RenderStyle&, Element*) const;
-    virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustSearchFieldStyle(RenderStyle&, Element*) const;
-    virtual bool paintSearchField(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustSearchFieldCancelButtonStyle(RenderStyle&, Element*) const;
-    virtual bool paintSearchFieldCancelButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustSearchFieldDecorationStyle(RenderStyle&, Element*) const;
-    virtual bool paintSearchFieldDecoration(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle&, Element*) const;
-    virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual bool paintMediaFullscreenButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaMuteButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaVolumeSliderContainer(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaToggleClosedCaptionsButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaCastButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; };
-    virtual bool paintMediaControlsBackground(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaCurrentTime(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaTimeRemaining(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaFullScreenVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaFullScreenVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaFullscreenButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaOverlayPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaMuteButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaVolumeSliderContainer(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaToggleClosedCaptionsButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; };
+    virtual bool paintMediaControlsBackground(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaCurrentTime(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaTimeRemaining(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaFullScreenVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaFullScreenVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual bool shouldUseFallbackTheme(const RenderStyle&) const;
     void adjustStyleUsingFallbackTheme(RenderStyle&, Element*);
-    bool paintUsingFallbackTheme(RenderObject*, const PaintInfo&, const IntRect&);
+    bool paintUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
     void adjustCheckboxStyleUsingFallbackTheme(RenderStyle&, Element*) const;
-    bool paintCheckboxUsingFallbackTheme(RenderObject*, const PaintInfo&, const IntRect&);
+    bool paintCheckboxUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
     void adjustRadioStyleUsingFallbackTheme(RenderStyle&, Element*) const;
-    bool paintRadioUsingFallbackTheme(RenderObject*, const PaintInfo&, const IntRect&);
+    bool paintRadioUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
 
 public:
     // Methods for state querying
-    ControlStates controlStatesForRenderer(const RenderObject*) const;
-    bool isActive(const RenderObject*) const;
-    bool isChecked(const RenderObject*) const;
-    bool isIndeterminate(const RenderObject*) const;
-    bool isEnabled(const RenderObject*) const;
-    bool isFocused(const RenderObject*) const;
-    bool isPressed(const RenderObject*) const;
-    bool isSpinUpButtonPartPressed(const RenderObject*) const;
-    bool isHovered(const RenderObject*) const;
-    bool isSpinUpButtonPartHovered(const RenderObject*) const;
-    bool isReadOnlyControl(const RenderObject*) const;
+    ControlStates controlStatesForRenderer(const LayoutObject*) const;
+    bool isActive(const LayoutObject*) const;
+    bool isChecked(const LayoutObject*) const;
+    bool isIndeterminate(const LayoutObject*) const;
+    bool isEnabled(const LayoutObject*) const;
+    bool isFocused(const LayoutObject*) const;
+    bool isPressed(const LayoutObject*) const;
+    bool isSpinUpButtonPartPressed(const LayoutObject*) const;
+    bool isHovered(const LayoutObject*) const;
+    bool isSpinUpButtonPartHovered(const LayoutObject*) const;
+    bool isReadOnlyControl(const LayoutObject*) const;
 
 private:
     Color m_customFocusRingColor;

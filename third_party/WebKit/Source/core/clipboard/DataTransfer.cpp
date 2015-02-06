@@ -36,8 +36,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/DragImage.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
@@ -264,7 +264,7 @@ static ImageResource* getImageResource(Element* element)
 {
     // Attempt to pull ImageResource from element
     ASSERT(element);
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isImage())
         return 0;
 

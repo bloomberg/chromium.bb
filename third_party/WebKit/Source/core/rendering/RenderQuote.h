@@ -43,7 +43,7 @@ private:
 
     virtual void willBeDestroyed() override;
     virtual const char* renderName() const override { return "RenderQuote"; };
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectQuote || RenderInline::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || RenderInline::isOfType(type); }
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
     virtual void willBeRemovedFromTree() override;
 
@@ -63,7 +63,7 @@ private:
     String m_text;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderQuote, isQuote());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderQuote, isQuote());
 
 } // namespace blink
 

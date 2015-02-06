@@ -57,7 +57,7 @@
 #include "core/html/HTMLQuoteElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLSpanElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"

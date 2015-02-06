@@ -34,7 +34,7 @@ inline SVGTSpanElement::SVGTSpanElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGTSpanElement)
 
-RenderObject* SVGTSpanElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGTSpanElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGTSpan(this);
 }

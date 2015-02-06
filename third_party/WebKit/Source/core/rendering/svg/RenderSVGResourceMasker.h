@@ -44,12 +44,12 @@ public:
     virtual const char* renderName() const override { return "RenderSVGResourceMasker"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
-    bool prepareEffect(RenderObject*, GraphicsContext*);
-    void finishEffect(RenderObject*, GraphicsContext*);
+    bool prepareEffect(LayoutObject*, GraphicsContext*);
+    void finishEffect(LayoutObject*, GraphicsContext*);
 
-    FloatRect resourceBoundingBox(const RenderObject*);
+    FloatRect resourceBoundingBox(const LayoutObject*);
 
     SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(element())->maskUnits()->currentValue()->enumValue(); }
     SVGUnitTypes::SVGUnitType maskContentUnits() const { return toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue(); }

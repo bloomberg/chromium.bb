@@ -6,19 +6,19 @@
 #include "core/paint/RenderDrawingRecorder.h"
 
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
-RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const RenderObject& renderer, PaintPhase phase, const FloatRect& clip)
+RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const LayoutObject& renderer, PaintPhase phase, const FloatRect& clip)
     : m_drawingRecorder(context, renderer.displayItemClient(), DisplayItem::paintPhaseToDrawingType(phase), clip)
 #ifndef NDEBUG
     , m_renderer(renderer)
 #endif
 { }
 
-RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const RenderObject& renderer, DisplayItem::Type displayItemType, const FloatRect& clip)
+RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const LayoutObject& renderer, DisplayItem::Type displayItemType, const FloatRect& clip)
     : m_drawingRecorder(context, renderer.displayItemClient(), displayItemType, clip)
 #ifndef NDEBUG
     , m_renderer(renderer)

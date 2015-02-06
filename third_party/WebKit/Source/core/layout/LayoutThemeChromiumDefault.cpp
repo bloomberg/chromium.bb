@@ -26,8 +26,8 @@
 #include "core/layout/LayoutThemeChromiumDefault.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
@@ -59,7 +59,7 @@ double LayoutThemeChromiumDefault::m_caretBlinkInterval;
 
 static const unsigned defaultButtonBackgroundColor = 0xffdddddd;
 
-static WebThemeEngine::State getWebThemeState(const LayoutTheme* theme, const RenderObject* o)
+static WebThemeEngine::State getWebThemeState(const LayoutTheme* theme, const LayoutObject* o)
 {
     if (!theme->isEnabled(o))
         return WebThemeEngine::StateDisabled;
@@ -222,7 +222,7 @@ void LayoutThemeChromiumDefault::setSelectionColors(
     m_inactiveSelectionForegroundColor = inactiveForegroundColor;
 }
 
-bool LayoutThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintCheckbox(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -258,7 +258,7 @@ void LayoutThemeChromiumDefault::setCheckboxSize(RenderStyle& style) const
     setSizeIfAuto(style, size);
 }
 
-bool LayoutThemeChromiumDefault::paintRadio(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintRadio(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -281,7 +281,7 @@ void LayoutThemeChromiumDefault::setRadioSize(RenderStyle& style) const
     setSizeIfAuto(style, size);
 }
 
-bool LayoutThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -294,7 +294,7 @@ bool LayoutThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintTextField(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     // WebThemeEngine does not handle border rounded corner and background image
     // so return true to draw CSS border and background.
@@ -316,7 +316,7 @@ bool LayoutThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isBox())
         return false;
@@ -361,7 +361,7 @@ bool LayoutThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isBox())
         return false;
@@ -395,7 +395,7 @@ bool LayoutThemeChromiumDefault::paintMenuListButton(RenderObject* o, const Pain
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintSliderTrack(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -421,7 +421,7 @@ bool LayoutThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintSliderThumb(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -453,7 +453,7 @@ void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle& style, 
     style.setMinWidth(Length(size.width(), Fixed));
 }
 
-bool LayoutThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintInnerSpinButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -464,7 +464,7 @@ bool LayoutThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const Pai
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isProgress())
         return true;

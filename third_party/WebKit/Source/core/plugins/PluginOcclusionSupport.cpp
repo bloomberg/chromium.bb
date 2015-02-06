@@ -37,8 +37,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/Widget.h"
 #include "wtf/HashSet.h"
 
@@ -46,7 +46,7 @@
 
 namespace blink {
 
-static void getObjectStack(const RenderObject* ro, Vector<const RenderObject*>* roStack)
+static void getObjectStack(const LayoutObject* ro, Vector<const LayoutObject*>* roStack)
 {
     roStack->clear();
     while (ro) {
@@ -56,13 +56,13 @@ static void getObjectStack(const RenderObject* ro, Vector<const RenderObject*>* 
 }
 
 // Returns true if stack1 is at or above stack2
-static bool iframeIsAbovePlugin(const Vector<const RenderObject*>& iframeZstack, const Vector<const RenderObject*>& pluginZstack)
+static bool iframeIsAbovePlugin(const Vector<const LayoutObject*>& iframeZstack, const Vector<const LayoutObject*>& pluginZstack)
 {
     for (size_t i = 0; i < iframeZstack.size() && i < pluginZstack.size(); i++) {
         // The root is at the end of these stacks. We want to iterate
         // root-downwards so we index backwards from the end.
-        const RenderObject* ro1 = iframeZstack[iframeZstack.size() - 1 - i];
-        const RenderObject* ro2 = pluginZstack[pluginZstack.size() - 1 - i];
+        const LayoutObject* ro1 = iframeZstack[iframeZstack.size() - 1 - i];
+        const LayoutObject* ro2 = pluginZstack[pluginZstack.size() - 1 - i];
 
         if (ro1 != ro2) {
             // When we find nodes in the stack that are not the same, then
@@ -82,25 +82,25 @@ static bool iframeIsAbovePlugin(const Vector<const RenderObject*>& iframeZstack,
             // If the plugin does not have an explicit z-index it stacks behind the iframe.
             // This is for maintaining compatibility with IE.
             if (ro2->style()->position() == StaticPosition) {
-                // The 0'th elements of these RenderObject arrays represent the plugin node and
+                // The 0'th elements of these LayoutObject arrays represent the plugin node and
                 // the iframe.
-                const RenderObject* pluginRenderObject = pluginZstack[0];
-                const RenderObject* iframeRenderObject = iframeZstack[0];
+                const LayoutObject* pluginLayoutObject = pluginZstack[0];
+                const LayoutObject* iframeLayoutObject = iframeZstack[0];
 
-                if (pluginRenderObject->style() && iframeRenderObject->style()) {
-                    if (pluginRenderObject->style()->zIndex() > iframeRenderObject->style()->zIndex())
+                if (pluginLayoutObject->style() && iframeLayoutObject->style()) {
+                    if (pluginLayoutObject->style()->zIndex() > iframeLayoutObject->style()->zIndex())
                         return false;
                 }
                 return true;
             }
 
             // Inspect the document order. Later order means higher stacking.
-            const RenderObject* parent = ro1->parent();
+            const LayoutObject* parent = ro1->parent();
             if (!parent)
                 return false;
             ASSERT(parent == ro2->parent());
 
-            for (const RenderObject* ro = parent->slowFirstChild(); ro; ro = ro->nextSibling()) {
+            for (const LayoutObject* ro = parent->slowFirstChild(); ro; ro = ro->nextSibling()) {
                 if (ro == ro1)
                     return false;
                 if (ro == ro2)
@@ -113,7 +113,7 @@ static bool iframeIsAbovePlugin(const Vector<const RenderObject*>& iframeZstack,
     return true;
 }
 
-static bool intersectsRect(const RenderObject* renderer, const IntRect& rect)
+static bool intersectsRect(const LayoutObject* renderer, const IntRect& rect)
 {
     return renderer->absoluteBoundingBoxRectIgnoringTransforms().intersects(rect)
         && (!renderer->style() || renderer->style()->visibility() == VISIBLE);
@@ -126,13 +126,13 @@ static void addToOcclusions(const RenderBox* renderer, Vector<IntRect>& occlusio
         flooredIntSize(renderer->size())));
 }
 
-static void addTreeToOcclusions(const RenderObject* renderer, const IntRect& frameRect, Vector<IntRect>& occlusions)
+static void addTreeToOcclusions(const LayoutObject* renderer, const IntRect& frameRect, Vector<IntRect>& occlusions)
 {
     if (!renderer)
         return;
     if (renderer->isBox() && intersectsRect(renderer, frameRect))
         addToOcclusions(toRenderBox(renderer), occlusions);
-    for (RenderObject* child = renderer->slowFirstChild(); child; child = child->nextSibling())
+    for (LayoutObject* child = renderer->slowFirstChild(); child; child = child->nextSibling())
         addTreeToOcclusions(child, frameRect, occlusions);
 }
 
@@ -150,12 +150,12 @@ static const Element* topLayerAncestor(const Element* element)
 // they occur higher in the stacking order.
 void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& frameRect, Vector<IntRect>& occlusions)
 {
-    RenderObject* pluginNode = element->renderer();
+    LayoutObject* pluginNode = element->renderer();
     ASSERT(pluginNode);
     if (!pluginNode->style())
         return;
-    Vector<const RenderObject*> pluginZstack;
-    Vector<const RenderObject*> iframeZstack;
+    Vector<const LayoutObject*> pluginZstack;
+    Vector<const LayoutObject*> iframeZstack;
     getObjectStack(pluginNode, &pluginZstack);
 
     if (!parentWidget->isFrameView())
@@ -171,14 +171,14 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
             continue;
 
         const FrameView* frameView = toFrameView(it->get());
-        // Check to make sure we can get both the element and the RenderObject
+        // Check to make sure we can get both the element and the LayoutObject
         // for this FrameView, if we can't just move on to the next object.
         // FIXME: Plugin occlusion by remote frames is probably broken.
         HTMLElement* element = frameView->frame().deprecatedLocalOwner();
         if (!element || !element->renderer())
             continue;
 
-        RenderObject* iframeRenderer = element->renderer();
+        LayoutObject* iframeRenderer = element->renderer();
 
         if (isHTMLIFrameElement(*element) && intersectsRect(iframeRenderer, frameRect)) {
             getObjectStack(iframeRenderer, &iframeZstack);

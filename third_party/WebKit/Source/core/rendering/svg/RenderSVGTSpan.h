@@ -29,7 +29,7 @@ class RenderSVGTSpan final : public RenderSVGInline {
 public:
     explicit RenderSVGTSpan(Element*);
 
-    virtual bool isChildAllowed(RenderObject* child, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
     virtual const char* renderName() const override { return "RenderSVGTSpan"; }
 };

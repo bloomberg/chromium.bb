@@ -59,27 +59,27 @@ public:
     static void setCaretBlinkInterval(double);
     virtual double caretBlinkIntervalInternal() const override;
 
-    virtual bool paintCheckbox(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintCheckbox(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void setCheckboxSize(RenderStyle&) const override;
 
-    virtual bool paintRadio(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintRadio(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void setRadioSize(RenderStyle&) const override;
 
-    virtual bool paintButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual void adjustInnerSpinButtonStyle(RenderStyle&, Element*) const override;
-    virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintInnerSpinButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual bool popsMenuBySpaceKey() const override final { return true; }
     virtual bool popsMenuByReturnKey() const override final { return true; }
     virtual bool popsMenuByAltDownUpOrF4Key() const override { return true; }
 
-    virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintProgressBar(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual bool shouldOpenPickerWithF4Key() const override;
 

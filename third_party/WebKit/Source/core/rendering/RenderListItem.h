@@ -57,7 +57,7 @@ public:
 private:
     virtual const char* renderName() const override { return "RenderListItem"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectListItem || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListItem || RenderBlockFlow::isOfType(type); }
 
     virtual void willBeDestroyed() override;
 
@@ -91,7 +91,7 @@ private:
     bool m_notInList : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderListItem, isListItem());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderListItem, isListItem());
 
 } // namespace blink
 

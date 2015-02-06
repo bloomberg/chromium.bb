@@ -117,12 +117,12 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute) {
         updateRelativeLengthsInformation();
-        if (RenderObject* renderer = this->renderer())
+        if (LayoutObject* renderer = this->renderer())
             markForLayoutAndParentResourceInvalidation(renderer);
     }
 }
 
-RenderObject* SVGForeignObjectElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGForeignObjectElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGForeignObject(this);
 }

@@ -45,13 +45,13 @@ void RenderSVGResourceMasker::removeAllClientsFromCache(bool markForInvalidation
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceMasker::removeClientFromCache(RenderObject* client, bool markForInvalidation)
+void RenderSVGResourceMasker::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceMasker::prepareEffect(RenderObject* object, GraphicsContext* context)
+bool RenderSVGResourceMasker::prepareEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -70,7 +70,7 @@ bool RenderSVGResourceMasker::prepareEffect(RenderObject* object, GraphicsContex
     return true;
 }
 
-void RenderSVGResourceMasker::finishEffect(RenderObject* object, GraphicsContext* context)
+void RenderSVGResourceMasker::finishEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -131,7 +131,7 @@ void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
     FloatRect bounds = strokeBoundingBox();
     context->beginRecording(bounds);
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        RenderObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
         RenderStyle* style = renderer->style();
@@ -146,7 +146,7 @@ void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
 void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
 {
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        RenderObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
         RenderStyle* style = renderer->style();
@@ -156,7 +156,7 @@ void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
     }
 }
 
-FloatRect RenderSVGResourceMasker::resourceBoundingBox(const RenderObject* object)
+FloatRect RenderSVGResourceMasker::resourceBoundingBox(const LayoutObject* object)
 {
     SVGMaskElement* maskElement = toSVGMaskElement(element());
     ASSERT(maskElement);

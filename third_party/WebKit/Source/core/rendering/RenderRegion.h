@@ -40,7 +40,7 @@ class RenderRegion : public RenderBlockFlow {
 public:
     explicit RenderRegion(Element*, RenderFlowThread*);
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderRegion || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderRegion || RenderBlockFlow::isOfType(type); }
 
     void setFlowThreadPortionRect(const LayoutRect& rect) { m_flowThreadPortionRect = rect; }
     LayoutRect flowThreadPortionRect() const { return m_flowThreadPortionRect; }
@@ -82,7 +82,7 @@ private:
     bool m_isValid : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderRegion, isRenderRegion());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderRegion, isRenderRegion());
 
 } // namespace blink
 

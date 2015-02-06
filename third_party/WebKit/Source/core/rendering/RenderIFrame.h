@@ -40,14 +40,14 @@ private:
 
     virtual void layout() override;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderIFrame || RenderPart::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderIFrame || RenderPart::isOfType(type); }
 
     virtual const char* renderName() const override { return "RenderPartObject"; } // Lying for now to avoid breaking tests
 
     virtual LayerType layerTypeRequired() const override;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderIFrame, isRenderIFrame());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderIFrame, isRenderIFrame());
 
 } // namespace blink
 

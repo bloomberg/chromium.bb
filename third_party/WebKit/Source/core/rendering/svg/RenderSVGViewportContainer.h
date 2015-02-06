@@ -43,7 +43,7 @@ public:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGViewportContainer || RenderSVGContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || RenderSVGContainer::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGViewportContainer"; }
 
     AffineTransform viewportTransform() const;
@@ -61,7 +61,7 @@ private:
     bool m_needsTransformUpdate : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGViewportContainer, isSVGViewportContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGViewportContainer, isSVGViewportContainer());
 
 } // namespace blink
 

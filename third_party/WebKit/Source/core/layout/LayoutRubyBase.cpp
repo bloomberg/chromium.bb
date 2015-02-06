@@ -53,12 +53,12 @@ LayoutRubyBase* LayoutRubyBase::createAnonymous(Document* document)
     return layoutObject;
 }
 
-bool LayoutRubyBase::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool LayoutRubyBase::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     return child->isInline();
 }
 
-void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, RenderObject* beforeChild)
+void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
 {
     // This function removes all children that are before (!) beforeChild
     // and appends them to toBase.
@@ -76,7 +76,7 @@ void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, RenderObject* beforeCh
     toBase->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
-void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, RenderObject* beforeChild)
+void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
 {
     ASSERT(childrenInline());
     ASSERT_ARG(toBase, toBase);
@@ -91,7 +91,7 @@ void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, RenderObject* be
     } else {
         // We need to wrap the inline objects into an anonymous block.
         // If toBase has a suitable block, we re-use it, otherwise create a new one.
-        RenderObject* lastChild = toBase->lastChild();
+        LayoutObject* lastChild = toBase->lastChild();
         if (lastChild && lastChild->isAnonymousBlock() && lastChild->childrenInline()) {
             toBlock = toRenderBlock(lastChild);
         } else {
@@ -103,7 +103,7 @@ void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, RenderObject* be
     moveChildrenTo(toBlock, firstChild(), beforeChild);
 }
 
-void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase, RenderObject* beforeChild)
+void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
 {
     ASSERT(!childrenInline());
     ASSERT_ARG(toBase, toBase);
@@ -115,8 +115,8 @@ void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase, RenderObject* bef
         toBase->makeChildrenNonInline();
 
     // If an anonymous block would be put next to another such block, then merge those.
-    RenderObject* firstChildHere = firstChild();
-    RenderObject* lastChildThere = toBase->lastChild();
+    LayoutObject* firstChildHere = firstChild();
+    LayoutObject* lastChildThere = toBase->lastChild();
     if (firstChildHere->isAnonymousBlock() && firstChildHere->childrenInline()
         && lastChildThere && lastChildThere->isAnonymousBlock() && lastChildThere->childrenInline()) {
         RenderBlock* anonBlockHere = toRenderBlock(firstChildHere);

@@ -79,18 +79,18 @@ public:
 
     virtual void selectionChanged(Node*) = 0;
     virtual void childrenChanged(Node*) = 0;
-    virtual void childrenChanged(RenderObject*) = 0;
+    virtual void childrenChanged(LayoutObject*) = 0;
     virtual void checkedStateChanged(Node*) = 0;
     virtual void selectedChildrenChanged(Node*) = 0;
 
-    virtual void remove(RenderObject*) = 0;
+    virtual void remove(LayoutObject*) = 0;
     virtual void remove(Node*) = 0;
     virtual void remove(Widget*) = 0;
 
     virtual const Element* rootAXEditableElement(const Node*) = 0;
 
     // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
-    virtual void textChanged(RenderObject*) = 0;
+    virtual void textChanged(LayoutObject*) = 0;
     // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
     virtual void updateCacheAfterNodeIsAttached(Node*) = 0;
 
@@ -108,15 +108,15 @@ public:
 
     virtual void clearWeakMembers(Visitor*) = 0;
 
-    virtual void inlineTextBoxesUpdated(RenderObject* renderer) = 0;
+    virtual void inlineTextBoxesUpdated(LayoutObject* renderer) = 0;
 
     // Called when the scroll offset changes.
     virtual void handleScrollPositionChanged(FrameView*) = 0;
-    virtual void handleScrollPositionChanged(RenderObject*) = 0;
+    virtual void handleScrollPositionChanged(LayoutObject*) = 0;
 
     // Called when scroll bars are added / removed (as the view resizes).
     virtual void handleScrollbarUpdate(FrameView*) = 0;
-    virtual void handleLayoutComplete(RenderObject*) = 0;
+    virtual void handleLayoutComplete(LayoutObject*) = 0;
     virtual void handleScrolledToAnchor(const Node* anchorNode) = 0;
 
     virtual const AtomicString& computedRoleForNode(Node*) = 0;

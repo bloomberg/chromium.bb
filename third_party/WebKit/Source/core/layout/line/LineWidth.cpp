@@ -105,7 +105,7 @@ void LineWidth::commit()
     m_uncommittedWidth = 0;
 }
 
-void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, RenderObject* startRenderer, RenderObject* endRenderer)
+void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, LayoutObject* startRenderer, LayoutObject* endRenderer)
 {
     int startOverhang;
     int endOverhang;

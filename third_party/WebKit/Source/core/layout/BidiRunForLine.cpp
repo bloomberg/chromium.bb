@@ -33,10 +33,10 @@ namespace blink {
 
 using namespace WTF::Unicode;
 
-static RenderObject* firstRenderObjectForDirectionalityDetermination(
-    RenderObject* root, RenderObject* current = 0)
+static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
+    LayoutObject* root, LayoutObject* current = 0)
 {
-    RenderObject* next = current;
+    LayoutObject* next = current;
     while (current) {
         if (isIsolated(current->style()->unicodeBidi())
             && (current->isRenderInline() || current->isRenderBlock())) {
@@ -80,11 +80,11 @@ static RenderObject* firstRenderObjectForDirectionalityDetermination(
     return current;
 }
 
-TextDirection determinePlaintextDirectionality(RenderObject* root,
-    RenderObject* current = 0, unsigned pos = 0)
+TextDirection determinePlaintextDirectionality(LayoutObject* root,
+    LayoutObject* current = 0, unsigned pos = 0)
 {
-    RenderObject* firstRenderObject = firstRenderObjectForDirectionalityDetermination(root, current);
-    InlineIterator iter(root, firstRenderObject, firstRenderObject == current ? pos : 0);
+    LayoutObject* firstLayoutObject = firstLayoutObjectForDirectionalityDetermination(root, current);
+    InlineIterator iter(root, firstLayoutObject, firstLayoutObject == current ? pos : 0);
     InlineBidiResolver observer;
     observer.setStatus(BidiStatus(root->style()->direction(),
         isOverride(root->style()->unicodeBidi())));
@@ -108,10 +108,10 @@ static inline BidiStatus statusWithDirection(TextDirection textDirection,
 }
 
 static inline void setupResolverToResumeInIsolate(InlineBidiResolver& resolver,
-    RenderObject* root, RenderObject* startObject)
+    LayoutObject* root, LayoutObject* startObject)
 {
     if (root != startObject) {
-        RenderObject* parent = startObject->parent();
+        LayoutObject* parent = startObject->parent();
         setupResolverToResumeInIsolate(resolver, root, parent);
         notifyObserverEnteredObject(&resolver, startObject);
     }
@@ -137,7 +137,7 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
     // of the resolver owning the runs.
     ASSERT(&topResolver.runs() == &bidiRuns);
     ASSERT(topResolver.position() != endOfLine);
-    RenderObject* currentRoot = topResolver.position().root();
+    LayoutObject* currentRoot = topResolver.position().root();
     topResolver.createBidiRunsForLine(endOfLine, override,
         previousLineBrokeCleanly);
 
@@ -147,15 +147,15 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
         BidiRun* isolatedRun = topResolver.isolatedRuns().last();
         topResolver.isolatedRuns().removeLast();
 
-        RenderObject* startObj = isolatedRun->object();
+        LayoutObject* startObj = isolatedRun->object();
 
         // Only inlines make sense with unicode-bidi: isolate (blocks are
         // already isolated).
-        // FIXME: Because enterIsolate is not passed a RenderObject, we have to
+        // FIXME: Because enterIsolate is not passed a LayoutObject, we have to
         // crawl up the tree to see which parent inline is the isolate. We could
-        // change enterIsolate to take a RenderObject and do this logic there,
+        // change enterIsolate to take a LayoutObject and do this logic there,
         // but that would be a layering violation for BidiResolver (which knows
-        // nothing about RenderObject).
+        // nothing about LayoutObject).
         RenderInline* isolatedInline = toRenderInline(
             highestContainingIsolateWithinRoot(startObj, currentRoot));
         ASSERT(isolatedInline);

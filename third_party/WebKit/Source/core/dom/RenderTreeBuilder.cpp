@@ -34,8 +34,8 @@
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderFullScreen.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGElement.h"
@@ -48,14 +48,14 @@ RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element& element, Rende
     , m_style(style)
 {
     if (element.isFirstLetterPseudoElement()) {
-        if (RenderObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(element))
+        if (LayoutObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(element))
             m_renderingParent = nextRenderer->parent();
     } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(element)) {
         m_renderingParent = containerNode->renderer();
     }
 }
 
-RenderObject* RenderTreeBuilderForElement::nextRenderer() const
+LayoutObject* RenderTreeBuilderForElement::nextRenderer() const
 {
     ASSERT(m_renderingParent);
 
@@ -68,9 +68,9 @@ RenderObject* RenderTreeBuilderForElement::nextRenderer() const
     return RenderTreeBuilder::nextRenderer();
 }
 
-RenderObject* RenderTreeBuilderForElement::parentRenderer() const
+LayoutObject* RenderTreeBuilderForElement::parentRenderer() const
 {
-    RenderObject* parentRenderer = RenderTreeBuilder::parentRenderer();
+    LayoutObject* parentRenderer = RenderTreeBuilder::parentRenderer();
 
     if (parentRenderer) {
         // FIXME: Guarding this by parentRenderer isn't quite right as the spec for
@@ -97,7 +97,7 @@ bool RenderTreeBuilderForElement::shouldCreateRenderer() const
             return false;
     }
 
-    RenderObject* parentRenderer = this->parentRenderer();
+    LayoutObject* parentRenderer = this->parentRenderer();
     if (!parentRenderer)
         return false;
     if (!parentRenderer->canHaveChildren())
@@ -117,22 +117,22 @@ void RenderTreeBuilderForElement::createRenderer()
 {
     RenderStyle& style = this->style();
 
-    RenderObject* newRenderer = m_node->createRenderer(style);
+    LayoutObject* newRenderer = m_node->createRenderer(style);
     if (!newRenderer)
         return;
 
-    RenderObject* parentRenderer = this->parentRenderer();
+    LayoutObject* parentRenderer = this->parentRenderer();
 
     if (!parentRenderer->isChildAllowed(newRenderer, style)) {
         newRenderer->destroy();
         return;
     }
 
-    // Make sure the RenderObject already knows it is going to be added to a RenderFlowThread before we set the style
+    // Make sure the LayoutObject already knows it is going to be added to a RenderFlowThread before we set the style
     // for the first time. Otherwise code using inRenderFlowThread() in the styleWillChange and styleDidChange will fail.
     newRenderer->setFlowThreadState(parentRenderer->flowThreadState());
 
-    RenderObject* nextRenderer = this->nextRenderer();
+    LayoutObject* nextRenderer = this->nextRenderer();
     m_node->setRenderer(newRenderer);
     newRenderer->setStyle(&style); // setStyle() can depend on renderer() already being set.
 
@@ -148,7 +148,7 @@ void RenderTreeBuilderForElement::createRenderer()
 
 void RenderTreeBuilderForText::createRenderer()
 {
-    RenderObject* parentRenderer = this->parentRenderer();
+    LayoutObject* parentRenderer = this->parentRenderer();
     RenderStyle* style = parentRenderer->style();
 
     ASSERT(m_node->textRendererIsNeeded(*style, *parentRenderer));
@@ -159,11 +159,11 @@ void RenderTreeBuilderForText::createRenderer()
         return;
     }
 
-    // Make sure the RenderObject already knows it is going to be added to a RenderFlowThread before we set the style
+    // Make sure the LayoutObject already knows it is going to be added to a RenderFlowThread before we set the style
     // for the first time. Otherwise code using inRenderFlowThread() in the styleWillChange and styleDidChange will fail.
     newRenderer->setFlowThreadState(parentRenderer->flowThreadState());
 
-    RenderObject* nextRenderer = this->nextRenderer();
+    LayoutObject* nextRenderer = this->nextRenderer();
     m_node->setRenderer(newRenderer);
     // Parent takes care of the animations, no need to call setAnimatableStyle.
     newRenderer->setStyle(style);

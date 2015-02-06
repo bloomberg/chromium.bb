@@ -28,7 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -51,7 +51,7 @@ void SplitTextNodeContainingElementCommand::doApply()
     if (!parent || !parent->parentElement() || !parent->parentElement()->hasEditableStyle())
         return;
 
-    RenderObject* parentRenderer = parent->renderer();
+    LayoutObject* parentRenderer = parent->renderer();
     if (!parentRenderer || !parentRenderer->isInline()) {
         wrapContentsInDummySpan(parent);
         Node* firstChild = parent->firstChild();

@@ -30,7 +30,7 @@ public:
 
 private:
     bool shouldPaintSelection() const;
-    void paintTextFragments(const PaintInfo&, RenderObject&);
+    void paintTextFragments(const PaintInfo&, LayoutObject&);
     void paintDecoration(const PaintInfo&, TextDecoration, const SVGTextFragment&);
     void paintTextWithShadows(const PaintInfo&, const RenderStyle&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, RenderSVGResourceMode);
     void paintText(const PaintInfo&, const RenderStyle&, const RenderStyle& selectionStyle, const SVGTextFragment&, RenderSVGResourceMode, bool shouldPaintSelection);

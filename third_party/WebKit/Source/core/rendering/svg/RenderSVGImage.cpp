@@ -77,7 +77,7 @@ FloatSize RenderSVGImage::computeImageViewportSize(ImageResource& cachedImage) c
     return intrinsicRatio;
 }
 
-static bool containerSizeIsSetForRenderer(ImageResource& cachedImage, const RenderObject* renderer)
+static bool containerSizeIsSetForRenderer(ImageResource& cachedImage, const LayoutObject* renderer)
 {
     const Image* image = cachedImage.image();
     // If a container size has been specified for this renderer, then
@@ -175,7 +175,7 @@ void RenderSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // The image resource defaults to nullImage until the resource arrives.
     // This empty image may be cached by SVG resources which must be invalidated.
-    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this))
+    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this))
         resources->removeClientFromCache(this);
 
     // Eventually notify parent resources, that we've changed.

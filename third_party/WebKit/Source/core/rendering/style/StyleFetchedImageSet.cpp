@@ -28,7 +28,7 @@
 
 #include "core/css/CSSImageSetValue.h"
 #include "core/fetch/ImageResource.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::cssValue() const
     return m_imageSetValue;
 }
 
-bool StyleFetchedImageSet::canRender(const RenderObject& renderer, float multiplier) const
+bool StyleFetchedImageSet::canRender(const LayoutObject& renderer, float multiplier) const
 {
     return m_bestFitImage->canRender(renderer, multiplier);
 }
@@ -67,7 +67,7 @@ bool StyleFetchedImageSet::errorOccurred() const
     return m_bestFitImage->errorOccurred();
 }
 
-LayoutSize StyleFetchedImageSet::imageSize(const RenderObject* renderer, float multiplier) const
+LayoutSize StyleFetchedImageSet::imageSize(const LayoutObject* renderer, float multiplier) const
 {
     LayoutSize scaledImageSize = m_bestFitImage->imageSizeForRenderer(renderer, multiplier);
     scaledImageSize.scale(1 / m_imageScaleFactor);
@@ -84,7 +84,7 @@ bool StyleFetchedImageSet::imageHasRelativeHeight() const
     return m_bestFitImage->imageHasRelativeHeight();
 }
 
-void StyleFetchedImageSet::computeIntrinsicDimensions(const RenderObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void StyleFetchedImageSet::computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
 {
     m_bestFitImage->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
 }
@@ -94,27 +94,27 @@ bool StyleFetchedImageSet::usesImageContainerSize() const
     return m_bestFitImage->usesImageContainerSize();
 }
 
-void StyleFetchedImageSet::setContainerSizeForRenderer(const RenderObject* renderer, const IntSize& imageContainerSize, float imageContainerZoomFactor)
+void StyleFetchedImageSet::setContainerSizeForRenderer(const LayoutObject* renderer, const IntSize& imageContainerSize, float imageContainerZoomFactor)
 {
     m_bestFitImage->setContainerSizeForRenderer(renderer, imageContainerSize, imageContainerZoomFactor);
 }
 
-void StyleFetchedImageSet::addClient(RenderObject* renderer)
+void StyleFetchedImageSet::addClient(LayoutObject* renderer)
 {
     m_bestFitImage->addClient(renderer);
 }
 
-void StyleFetchedImageSet::removeClient(RenderObject* renderer)
+void StyleFetchedImageSet::removeClient(LayoutObject* renderer)
 {
     m_bestFitImage->removeClient(renderer);
 }
 
-PassRefPtr<Image> StyleFetchedImageSet::image(RenderObject* renderer, const IntSize&) const
+PassRefPtr<Image> StyleFetchedImageSet::image(LayoutObject* renderer, const IntSize&) const
 {
     return m_bestFitImage->imageForRenderer(renderer);
 }
 
-bool StyleFetchedImageSet::knownToBeOpaque(const RenderObject* renderer) const
+bool StyleFetchedImageSet::knownToBeOpaque(const LayoutObject* renderer) const
 {
     return m_bestFitImage->currentFrameKnownToBeOpaque(renderer);
 }

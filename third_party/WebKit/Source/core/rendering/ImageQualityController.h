@@ -31,7 +31,7 @@
 #ifndef ImageQualityController_h
 #define ImageQualityController_h
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/Image.h"
@@ -42,7 +42,7 @@
 namespace blink {
 
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
-typedef HashMap<RenderObject*, LayerSizeMap> ObjectLayerSizeMap;
+typedef HashMap<LayoutObject*, LayerSizeMap> ObjectLayerSizeMap;
 
 class ImageQualityController final {
     WTF_MAKE_NONCOPYABLE(ImageQualityController); WTF_MAKE_FAST_ALLOCATED;
@@ -51,21 +51,21 @@ public:
 
     static ImageQualityController* imageQualityController();
 
-    static void remove(RenderObject*);
+    static void remove(LayoutObject*);
 
-    InterpolationQuality chooseInterpolationQuality(GraphicsContext*, RenderObject*, Image*, const void* layer, const LayoutSize&);
+    InterpolationQuality chooseInterpolationQuality(GraphicsContext*, LayoutObject*, Image*, const void* layer, const LayoutSize&);
 
     // For testing.
-    static bool has(RenderObject*);
+    static bool has(LayoutObject*);
     // This is public for testing. Do not call this from other classes.
-    void set(RenderObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
+    void set(LayoutObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
 
 private:
     ImageQualityController();
 
-    bool shouldPaintAtLowQuality(GraphicsContext*, RenderObject*, Image*, const void* layer, const LayoutSize&);
-    void removeLayer(RenderObject*, LayerSizeMap* innerMap, const void* layer);
-    void objectDestroyed(RenderObject*);
+    bool shouldPaintAtLowQuality(GraphicsContext*, LayoutObject*, Image*, const void* layer, const LayoutSize&);
+    void removeLayer(LayoutObject*, LayerSizeMap* innerMap, const void* layer);
+    void objectDestroyed(LayoutObject*);
     bool isEmpty() { return m_objectLayerSizeMap.isEmpty(); }
 
     void highQualityRepaintTimerFired(Timer<ImageQualityController>*);

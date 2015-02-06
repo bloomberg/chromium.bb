@@ -62,7 +62,7 @@ private:
     virtual const char* renderName() const override { return "RenderListMarker"; }
     virtual void computePreferredLogicalWidths() override;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectListMarker || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListMarker || RenderBox::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
@@ -92,7 +92,7 @@ private:
     RenderListItem* m_listItem;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderListMarker, isListMarker());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderListMarker, isListMarker());
 
 } // namespace blink
 

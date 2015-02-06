@@ -31,7 +31,7 @@
 namespace blink {
 
 class Element;
-class RenderObject;
+class LayoutObject;
 class RenderTextFragment;
 
 class FirstLetterPseudoElement final : public PseudoElement {
@@ -44,7 +44,7 @@ public:
 
     virtual ~FirstLetterPseudoElement();
 
-    static RenderObject* firstLetterTextRenderer(const Element&);
+    static LayoutObject* firstLetterTextRenderer(const Element&);
     static unsigned firstLetterLength(const String&);
 
     void setRemainingTextRenderer(RenderTextFragment*);
@@ -61,7 +61,7 @@ private:
     virtual void didRecalcStyle(StyleRecalcChange) override;
 
     void attachFirstLetterTextRenderers();
-    RenderStyle* styleForFirstLetter(RenderObject*);
+    RenderStyle* styleForFirstLetter(LayoutObject*);
 
     RenderTextFragment* m_remainingTextRenderer;
 };

@@ -21,7 +21,7 @@
 
 #include "core/rendering/svg/SVGTextLayoutEngineBaseline.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
 #include "core/svg/SVGLengthContext.h"
@@ -59,7 +59,7 @@ float SVGTextLayoutEngineBaseline::calculateBaselineShift(const SVGRenderStyle& 
     }
 }
 
-EAlignmentBaseline SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(bool isVerticalText, const RenderObject* textRenderer) const
+EAlignmentBaseline SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(bool isVerticalText, const LayoutObject* textRenderer) const
 {
     ASSERT(textRenderer);
     ASSERT(textRenderer->style());
@@ -106,13 +106,13 @@ EAlignmentBaseline SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBasel
     }
 }
 
-float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVerticalText, const RenderObject* textRenderer) const
+float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVerticalText, const LayoutObject* textRenderer) const
 {
     ASSERT(textRenderer);
     ASSERT(textRenderer->style());
     ASSERT(textRenderer->parent());
 
-    const RenderObject* textRendererParent = textRenderer->parent();
+    const LayoutObject* textRendererParent = textRenderer->parent();
     ASSERT(textRendererParent);
 
     EAlignmentBaseline baseline = textRenderer->style()->svgStyle().alignmentBaseline();

@@ -56,7 +56,7 @@ using namespace Unicode;
 
 namespace blink {
 
-struct SameSizeAsRenderText : public RenderObject {
+struct SameSizeAsRenderText : public LayoutObject {
     uint32_t bitfields : 16;
     float widths[4];
     String text;
@@ -138,7 +138,7 @@ static void makeCapitalized(String* string, UChar previous)
 }
 
 RenderText::RenderText(Node* node, PassRefPtr<StringImpl> str)
-    : RenderObject(!node || node->isDocumentNode() ? 0 : node)
+    : LayoutObject(!node || node->isDocumentNode() ? 0 : node)
     , m_hasTab(false)
     , m_linesDirty(false)
     , m_containsReversedText(false)
@@ -236,7 +236,7 @@ void RenderText::willBeDestroyed()
         delete secureTextTimer;
 
     removeAndDestroyTextBoxes();
-    RenderObject::willBeDestroyed();
+    LayoutObject::willBeDestroyed();
 }
 
 void RenderText::extractTextBox(InlineTextBox* box)
@@ -1198,7 +1198,7 @@ float RenderText::firstRunY() const
 
 void RenderText::setSelectionState(SelectionState state)
 {
-    RenderObject::setSelectionState(state);
+    LayoutObject::setSelectionState(state);
 
     if (canUpdateSelectionOnRootLineBoxes()) {
         if (state == SelectionStart || state == SelectionEnd || state == SelectionBoth) {
@@ -1315,7 +1315,7 @@ void RenderText::transformText()
         setText(textToTransform.release(), true);
 }
 
-static inline bool isInlineFlowOrEmptyText(const RenderObject* o)
+static inline bool isInlineFlowOrEmptyText(const LayoutObject* o)
 {
     if (o->isRenderInline())
         return true;
@@ -1327,7 +1327,7 @@ static inline bool isInlineFlowOrEmptyText(const RenderObject* o)
 UChar RenderText::previousCharacter() const
 {
     // find previous text renderer if one exists
-    const RenderObject* previousText = previousInPreOrder();
+    const LayoutObject* previousText = previousInPreOrder();
     for (; previousText; previousText = previousText->previousInPreOrder())
         if (!isInlineFlowOrEmptyText(previousText))
             break;
@@ -1424,7 +1424,7 @@ void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
         return;
 
     setTextInternal(text);
-    // If preferredLogicalWidthsDirty() of an orphan child is true, RenderObjectChildList::
+    // If preferredLogicalWidthsDirty() of an orphan child is true, LayoutObjectChildList::
     // insertChildNode() fails to set true to owner. To avoid that, we call
     // setNeedsLayoutAndPrefWidthsRecalc() only if this RenderText has parent.
     if (parent())
@@ -1890,7 +1890,7 @@ PassRefPtr<AbstractInlineTextBox> RenderText::firstAbstractInlineTextBox()
 
 void RenderText::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
 {
-    RenderObject::invalidateDisplayItemClients(displayItemList);
+    LayoutObject::invalidateDisplayItemClients(displayItemList);
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
         displayItemList->invalidate(box->displayItemClient());
 }

@@ -28,7 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/HostWindow.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"

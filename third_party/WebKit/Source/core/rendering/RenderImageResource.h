@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 class RenderImageResource {
     WTF_MAKE_NONCOPYABLE(RenderImageResource); WTF_MAKE_FAST_ALLOCATED;
@@ -44,7 +44,7 @@ public:
         return adoptPtr(new RenderImageResource);
     }
 
-    virtual void initialize(RenderObject*);
+    virtual void initialize(LayoutObject*);
     virtual void shutdown();
 
     void setImageResource(ImageResource*);
@@ -70,7 +70,7 @@ public:
 
 protected:
     RenderImageResource();
-    RenderObject* m_renderer;
+    LayoutObject* m_renderer;
     ResourcePtr<ImageResource> m_cachedImage;
 
 private:

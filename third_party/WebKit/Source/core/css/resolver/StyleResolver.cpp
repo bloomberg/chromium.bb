@@ -727,7 +727,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElement(Element
 
 PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
-    RenderObject* parentRenderer = parent.renderer();
+    LayoutObject* parentRenderer = parent.renderer();
     if (!parentRenderer)
         return nullptr;
 

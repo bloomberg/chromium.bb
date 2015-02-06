@@ -45,7 +45,7 @@ public:
 private:
     SearchInputType(HTMLInputElement&);
     virtual void countUsage() override;
-    virtual RenderObject* createRenderer(const RenderStyle&) const override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) const override;
     virtual const AtomicString& formControlType() const override;
     virtual bool shouldRespectSpeechAttribute() override;
     virtual bool needsContainer() const override;

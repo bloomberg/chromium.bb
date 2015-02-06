@@ -12,7 +12,7 @@ namespace blink {
 
 class FloatRoundedRect;
 class LayoutRect;
-class RenderObject;
+class LayoutObject;
 struct PaintInfo;
 
 enum RoundedInnerRectClipperBehavior {
@@ -22,11 +22,11 @@ enum RoundedInnerRectClipperBehavior {
 
 class RoundedInnerRectClipper {
 public:
-    RoundedInnerRectClipper(RenderObject&, const PaintInfo&, const LayoutRect&, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior);
+    RoundedInnerRectClipper(LayoutObject&, const PaintInfo&, const LayoutRect&, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior);
     ~RoundedInnerRectClipper();
 
 private:
-    RenderObject& m_renderer;
+    LayoutObject& m_renderer;
     const PaintInfo& m_paintInfo;
     bool m_useDisplayItemList;
     DisplayItem::Type m_clipType;

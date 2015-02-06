@@ -20,9 +20,9 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderObject.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
@@ -295,7 +295,7 @@ static void createQuad(TracedValue* value, const char* name, const FloatQuad& qu
     value->endArray();
 }
 
-static void setGeneratingNodeInfo(TracedValue* value, const RenderObject* renderer, const char* idFieldName, const char* nameFieldName = nullptr)
+static void setGeneratingNodeInfo(TracedValue* value, const LayoutObject* renderer, const char* idFieldName, const char* nameFieldName = nullptr)
 {
     Node* node = nullptr;
     for (; renderer && !node; renderer = renderer->parent())
@@ -306,7 +306,7 @@ static void setGeneratingNodeInfo(TracedValue* value, const RenderObject* render
     setNodeInfo(value, node, idFieldName, nameFieldName);
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(RenderObject* rootForThisLayout)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(LayoutObject* rootForThisLayout)
 {
     Vector<FloatQuad> quads;
     rootForThisLayout->absoluteQuads(quads);
@@ -321,7 +321,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(R
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrackingEvent::data(const RenderObject* renderer)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrackingEvent::data(const LayoutObject* renderer)
 {
     ASSERT(renderer);
     RefPtr<TracedValue> value = TracedValue::create();
@@ -332,7 +332,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrac
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintInvalidationTrackingEvent::data(const RenderObject* renderer, const RenderObject* paintContainer)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintInvalidationTrackingEvent::data(const LayoutObject* renderer, const LayoutObject* paintContainer)
 {
     ASSERT(renderer);
     RefPtr<TracedValue> value = TracedValue::create();
@@ -493,7 +493,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrLoadEvent::data(Exe
     return value.release();
 }
 
-static void localToPageQuad(const RenderObject& renderer, const LayoutRect& rect, FloatQuad* quad)
+static void localToPageQuad(const LayoutObject& renderer, const LayoutRect& rect, FloatQuad* quad)
 {
     LocalFrame* frame = renderer.frame();
     FrameView* view = frame->view();
@@ -512,7 +512,7 @@ const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assi
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrackingEvent::data(const Layer* layer, const char* reason)
 {
-    const RenderObject* paintInvalidationContainer = layer->renderer()->containerForPaintInvalidation();
+    const LayoutObject* paintInvalidationContainer = layer->renderer()->containerForPaintInvalidation();
 
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(paintInvalidationContainer->frame()));
@@ -521,7 +521,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrack
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(RenderObject* renderer, const LayoutRect& clipRect, const GraphicsLayer* graphicsLayer)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(LayoutObject* renderer, const LayoutRect& clipRect, const GraphicsLayer* graphicsLayer)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(renderer->frame()));
@@ -556,7 +556,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorMarkLoadEvent::data(Lo
     return frameEventData(frame);
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data(RenderObject* renderer)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data(LayoutObject* renderer)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(renderer->frame()));
@@ -602,7 +602,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderObject& owningRenderer, const StyleImage& styleImage)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const LayoutObject& owningRenderer, const StyleImage& styleImage)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), &owningRenderer, "nodeId");
@@ -611,7 +611,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderObject* owningRenderer, const ImageResource& imageResource)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const LayoutObject* owningRenderer, const ImageResource& imageResource)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), owningRenderer, "nodeId");

@@ -509,7 +509,7 @@ IntPoint AXObject::clickPoint()
     return roundedIntPoint(LayoutPoint(rect.x() + rect.width() / 2, rect.y() + rect.height() / 2));
 }
 
-IntRect AXObject::boundingBoxForQuads(RenderObject* obj, const Vector<FloatQuad>& quads)
+IntRect AXObject::boundingBoxForQuads(LayoutObject* obj, const Vector<FloatQuad>& quads)
 {
     ASSERT(obj);
     if (!obj)

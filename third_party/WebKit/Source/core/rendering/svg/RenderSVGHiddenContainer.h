@@ -37,7 +37,7 @@ public:
 protected:
     virtual void layout() override;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGHiddenContainer || RenderSVGContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || RenderSVGContainer::isOfType(type); }
 
 private:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override final;

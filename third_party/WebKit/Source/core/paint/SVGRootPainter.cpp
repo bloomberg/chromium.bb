@@ -36,7 +36,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
     // Don't paint if we don't have kids, except if we have filters we should paint those.
     if (!m_renderSVGRoot.firstChild()) {
-        SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(&m_renderSVGRoot);
+        SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_renderSVGRoot);
         if (!resources || !resources->filter())
             return;
     }

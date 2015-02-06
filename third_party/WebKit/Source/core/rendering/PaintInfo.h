@@ -41,12 +41,12 @@ namespace blink {
 
 class RenderInline;
 class LayoutLayerModelObject;
-class RenderObject;
+class LayoutObject;
 class RenderPart;
 
 struct PaintInfo {
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior,
-        RenderObject* newPaintingRoot = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
+        LayoutObject* newPaintingRoot = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
         const LayoutLayerModelObject* newPaintContainer = 0)
         : context(newContext)
         , rect(newRect)
@@ -58,7 +58,7 @@ struct PaintInfo {
     {
     }
 
-    void updatePaintingRootForChildren(const RenderObject* renderer)
+    void updatePaintingRootForChildren(const LayoutObject* renderer)
     {
         if (!paintingRoot)
             return;
@@ -70,7 +70,7 @@ struct PaintInfo {
         }
     }
 
-    bool shouldPaintWithinRoot(const RenderObject* renderer) const
+    bool shouldPaintWithinRoot(const LayoutObject* renderer) const
     {
         return !paintingRoot || paintingRoot == renderer;
     }
@@ -93,7 +93,7 @@ struct PaintInfo {
     IntRect rect; // dirty rect used for culling non-intersecting renderers
     PaintPhase phase;
     PaintBehavior paintBehavior;
-    RenderObject* paintingRoot; // used to draw just one element and its visual kids
+    LayoutObject* paintingRoot; // used to draw just one element and its visual kids
 
 private:
     const LayoutLayerModelObject* m_paintContainer; // the layer object that originates the current painting

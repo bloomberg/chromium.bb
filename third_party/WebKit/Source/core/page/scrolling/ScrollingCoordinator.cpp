@@ -215,7 +215,7 @@ static WebLayerPositionConstraint computePositionConstraint(const Layer* layer)
     ASSERT(layer->hasCompositedLayerMapping());
     do {
         if (layer->renderer()->style()->position() == FixedPosition) {
-            const RenderObject* fixedPositionObject = layer->renderer();
+            const LayoutObject* fixedPositionObject = layer->renderer();
             bool fixedToRight = !fixedPositionObject->style()->right().isAuto();
             bool fixedToBottom = !fixedPositionObject->style()->bottom().isAuto();
             return WebLayerPositionConstraint::fixedPosition(fixedToRight, fixedToBottom);
@@ -224,7 +224,7 @@ static WebLayerPositionConstraint computePositionConstraint(const Layer* layer)
         layer = layer->parent();
 
         // Composited layers that inherit a fixed position state will be positioned with respect to the nearest compositedLayerMapping's GraphicsLayer.
-        // So, once we find a layer that has its own compositedLayerMapping, we can stop searching for a fixed position RenderObject.
+        // So, once we find a layer that has its own compositedLayerMapping, we can stop searching for a fixed position LayoutObject.
     } while (layer && !layer->hasCompositedLayerMapping());
     return WebLayerPositionConstraint();
 }
@@ -442,7 +442,7 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
     for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
-        const RenderObject* ownerRenderer = toLocalFrame(child)->ownerRenderer();
+        const LayoutObject* ownerRenderer = toLocalFrame(child)->ownerRenderer();
         if (!ownerRenderer)
             continue;
         const Layer* containingLayer = ownerRenderer->enclosingLayer();
@@ -540,7 +540,7 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
 
             if (layer->parent()) {
                 layer = layer->parent();
-            } else if (RenderObject* parentDocRenderer = layer->renderer()->frame()->ownerRenderer()) {
+            } else if (LayoutObject* parentDocRenderer = layer->renderer()->frame()->ownerRenderer()) {
                 layer = parentDocRenderer->enclosingLayer();
                 touchHandlerInChildFrame = true;
             }
@@ -831,7 +831,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
 
         if (node->isDocumentNode() && node != document) {
             accumulateDocumentTouchEventTargetRects(rects, toDocument(node));
-        } else if (RenderObject* renderer = node->renderer()) {
+        } else if (LayoutObject* renderer = node->renderer()) {
             // If the set also contains one of our ancestor nodes then processing
             // this node would be redundant.
             bool hasTouchEventTargetAncestor = false;
@@ -958,14 +958,14 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
     if (!viewportConstrainedObjects)
         return false;
 
-    for (const RenderObject* renderer : *viewportConstrainedObjects) {
+    for (const LayoutObject* renderer : *viewportConstrainedObjects) {
         ASSERT(renderer->isBoxModelObject() && renderer->hasLayer());
         ASSERT(renderer->style()->position() == FixedPosition);
         Layer* layer = toRenderBoxModelObject(renderer)->layer();
 
         // Whether the Layer scrolls with the viewport is a tree-depenent
         // property and our viewportConstrainedObjects collection is maintained
-        // with only RenderObject-level information.
+        // with only LayoutObject-level information.
         if (!layer->scrollsWithViewport())
             continue;
 

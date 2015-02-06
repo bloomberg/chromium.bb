@@ -38,16 +38,16 @@ public:
     {
     }
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override { return false; }
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override { return false; }
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
 
     virtual const char* renderName() const override { return "RenderSVGResourceFilterPrimitive"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceFilterPrimitive || RenderSVGHiddenContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || RenderSVGHiddenContainer::isOfType(type); }
 
     inline void primitiveAttributeChanged(const QualifiedName& attribute)
     {
-        RenderObject* filter = parent();
+        LayoutObject* filter = parent();
         if (!filter || !filter->isSVGResourceFilter())
             return;
         toRenderSVGResourceFilter(filter)->primitiveAttributeChanged(this, attribute);

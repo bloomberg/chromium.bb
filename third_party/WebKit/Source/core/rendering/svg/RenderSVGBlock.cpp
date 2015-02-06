@@ -97,7 +97,7 @@ void RenderSVGBlock::mapLocalToContainer(const LayoutLayerModelObject* paintInva
     SVGRenderSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
-const RenderObject* RenderSVGBlock::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderSVGBlock::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     return SVGRenderSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
@@ -130,7 +130,7 @@ void RenderSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintI
         m_cachedPaintInvalidationTransform = paintInvalidationState.svgTransform();
     } else {
         m_cachedPaintInvalidationTransform.makeIdentity();
-        RenderObject* next = parent();
+        LayoutObject* next = parent();
         while (!next->isSVGRoot()) {
             m_cachedPaintInvalidationTransform = next->localToParentTransform() * m_cachedPaintInvalidationTransform;
             next = next->parent();

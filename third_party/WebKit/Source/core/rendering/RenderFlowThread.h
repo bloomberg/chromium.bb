@@ -71,8 +71,8 @@ public:
     // completely filled columns in the preceding column set. Return this adjustment, if any.
     virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) { return LayoutUnit(); }
 
-    virtual void flowThreadDescendantWasInserted(RenderObject*) { }
-    virtual void flowThreadDescendantWillBeRemoved(RenderObject*) { }
+    virtual void flowThreadDescendantWasInserted(LayoutObject*) { }
+    virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) { }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
@@ -101,7 +101,7 @@ public:
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
 
-    virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
+    virtual bool addForcedRegionBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
 
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
@@ -155,7 +155,7 @@ protected:
     bool m_pageLogicalSizeChanged : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFlowThread, isRenderFlowThread());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFlowThread, isRenderFlowThread());
 
 // These structures are used by PODIntervalTree for debugging.
 #ifndef NDEBUG

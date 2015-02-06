@@ -66,7 +66,7 @@ static bool paintMediaButton(GraphicsContext* context, const IntRect& rect, Imag
     return true;
 }
 
-static bool paintMediaMuteButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -93,7 +93,7 @@ static bool paintMediaMuteButton(RenderObject* object, const PaintInfo& paintInf
     return paintMediaButton(paintInfo.context, rect, soundLevel3);
 }
 
-static bool paintMediaPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -110,7 +110,7 @@ static bool paintMediaPlayButton(RenderObject* object, const PaintInfo& paintInf
     return paintMediaButton(paintInfo.context, rect, image);
 }
 
-static bool paintMediaOverlayPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -193,7 +193,7 @@ static void paintSliderRangeHighlight(const IntRect& rect, const RenderStyle& st
 
 const int mediaSliderThumbWidth = 32;
 
-static bool paintMediaSlider(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -245,7 +245,7 @@ static bool paintMediaSlider(RenderObject* object, const PaintInfo& paintInfo, c
     return true;
 }
 
-static bool paintMediaSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     if (!object->node())
         return false;
@@ -263,7 +263,7 @@ static bool paintMediaSliderThumb(RenderObject* object, const PaintInfo& paintIn
 
 const int mediaVolumeSliderThumbWidth = 24;
 
-static bool paintMediaVolumeSlider(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaVolumeSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -300,7 +300,7 @@ static bool paintMediaVolumeSlider(RenderObject* object, const PaintInfo& paintI
     return true;
 }
 
-static bool paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     if (!object->node())
         return false;
@@ -316,7 +316,7 @@ static bool paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& p
     return paintMediaButton(paintInfo.context, rect, mediaVolumeSliderThumb);
 }
 
-static bool paintMediaFullscreenButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -326,7 +326,7 @@ static bool paintMediaFullscreenButton(RenderObject* object, const PaintInfo& pa
     return paintMediaButton(paintInfo.context, rect, mediaFullscreenButton);
 }
 
-static bool paintMediaToggleClosedCaptionsButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -340,7 +340,7 @@ static bool paintMediaToggleClosedCaptionsButton(RenderObject* object, const Pai
 
     return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled);
 }
-static bool paintMediaCastButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+static bool paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -366,7 +366,7 @@ static bool paintMediaCastButton(RenderObject* object, const PaintInfo& paintInf
     }
 }
 
-bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     switch (part) {
     case MediaMuteButton:

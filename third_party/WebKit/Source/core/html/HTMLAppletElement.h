@@ -45,7 +45,7 @@ private:
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
 
     virtual bool rendererIsNeeded(const RenderStyle&) override;
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
 
     virtual RenderPart* existingRenderPart() const override;
     virtual void updateWidgetInternal() override;

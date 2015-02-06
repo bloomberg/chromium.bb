@@ -31,7 +31,7 @@
 
 namespace blink {
 
-bool RenderSVGInline::isChildAllowed(RenderObject* child, const RenderStyle& style) const
+bool RenderSVGInline::isChildAllowed(LayoutObject* child, const RenderStyle& style) const
 {
     if (child->isText())
         return SVGRenderSupport::isRenderableTextNode(child);
@@ -63,7 +63,7 @@ InlineFlowBox* RenderSVGInline::createInlineFlowBox()
 
 FloatRect RenderSVGInline::objectBoundingBox() const
 {
-    if (const RenderObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
         return object->objectBoundingBox();
 
     return FloatRect();
@@ -71,7 +71,7 @@ FloatRect RenderSVGInline::objectBoundingBox() const
 
 FloatRect RenderSVGInline::strokeBoundingBox() const
 {
-    if (const RenderObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
         return object->strokeBoundingBox();
 
     return FloatRect();
@@ -79,7 +79,7 @@ FloatRect RenderSVGInline::strokeBoundingBox() const
 
 FloatRect RenderSVGInline::paintInvalidationRectInLocalCoordinates() const
 {
-    if (const RenderObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
         return object->paintInvalidationRectInLocalCoordinates();
 
     return FloatRect();
@@ -95,14 +95,14 @@ void RenderSVGInline::mapLocalToContainer(const LayoutLayerModelObject* paintInv
     SVGRenderSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
-const RenderObject* RenderSVGInline::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderSVGInline::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     return SVGRenderSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
 void RenderSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
-    const RenderObject* object = RenderSVGText::locateRenderSVGTextAncestor(this);
+    const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this);
     if (!object)
         return;
 
@@ -126,7 +126,7 @@ void RenderSVGInline::styleDidChange(StyleDifference diff, const RenderStyle* ol
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }
 
-void RenderSVGInline::addChild(RenderObject* child, RenderObject* beforeChild)
+void RenderSVGInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderInline::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->style());
@@ -135,7 +135,7 @@ void RenderSVGInline::addChild(RenderObject* child, RenderObject* beforeChild)
         textRenderer->subtreeChildWasAdded(child);
 }
 
-void RenderSVGInline::removeChild(RenderObject* child)
+void RenderSVGInline::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
 

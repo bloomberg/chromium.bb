@@ -24,7 +24,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/css/StylePropertySet.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 

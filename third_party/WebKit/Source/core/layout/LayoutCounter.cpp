@@ -42,9 +42,9 @@ namespace blink {
 using namespace HTMLNames;
 
 typedef HashMap<AtomicString, RefPtr<CounterNode> > CounterMap;
-typedef HashMap<const RenderObject*, OwnPtr<CounterMap> > CounterMaps;
+typedef HashMap<const LayoutObject*, OwnPtr<CounterMap>> CounterMaps;
 
-static CounterNode* makeCounterNode(RenderObject&, const AtomicString& identifier, bool alwaysCreateCounter);
+static CounterNode* makeCounterNode(LayoutObject&, const AtomicString& identifier, bool alwaysCreateCounter);
 
 static CounterMaps& counterMaps()
 {
@@ -54,7 +54,7 @@ static CounterMaps& counterMaps()
 
 // This function processes the renderer tree in the order of the DOM tree
 // including pseudo elements as defined in CSS 2.1.
-static RenderObject* previousInPreOrder(const RenderObject& object)
+static LayoutObject* previousInPreOrder(const LayoutObject& object)
 {
     Element* self = toElement(object.node());
     ASSERT(self);
@@ -66,7 +66,7 @@ static RenderObject* previousInPreOrder(const RenderObject& object)
 
 // This function processes the renderer tree in the order of the DOM tree
 // including pseudo elements as defined in CSS 2.1.
-static RenderObject* previousSiblingOrParent(const RenderObject& object)
+static LayoutObject* previousSiblingOrParent(const LayoutObject& object)
 {
     Element* self = toElement(object.node());
     ASSERT(self);
@@ -79,19 +79,19 @@ static RenderObject* previousSiblingOrParent(const RenderObject& object)
     return previous ? previous->renderer() : 0;
 }
 
-static inline Element* parentElement(RenderObject& object)
+static inline Element* parentElement(LayoutObject& object)
 {
     return toElement(object.node())->parentElement();
 }
 
-static inline bool areRenderersElementsSiblings(RenderObject& first, RenderObject& second)
+static inline bool areRenderersElementsSiblings(LayoutObject& first, LayoutObject& second)
 {
     return parentElement(first) == parentElement(second);
 }
 
 // This function processes the renderer tree in the order of the DOM tree
 // including pseudo elements as defined in CSS 2.1.
-static RenderObject* nextInPreOrder(const RenderObject& object, const Element* stayWithin, bool skipDescendants = false)
+static LayoutObject* nextInPreOrder(const LayoutObject& object, const Element* stayWithin, bool skipDescendants = false)
 {
     Element* self = toElement(object.node());
     ASSERT(self);
@@ -101,7 +101,7 @@ static RenderObject* nextInPreOrder(const RenderObject& object, const Element* s
     return next ? next->renderer() : 0;
 }
 
-static bool planCounter(RenderObject& object, const AtomicString& identifier, bool& isReset, int& value)
+static bool planCounter(LayoutObject& object, const AtomicString& identifier, bool& isReset, int& value)
 {
     // Real text nodes don't have their own style so they can't have counters.
     // We can't even look at their styles or we'll see extra resets and increments!
@@ -179,15 +179,15 @@ static bool planCounter(RenderObject& object, const AtomicString& identifier, bo
 // reset node.
 // - Non-reset CounterNodes cannot have descendants.
 
-static bool findPlaceForCounter(RenderObject& counterOwner, const AtomicString& identifier, bool isReset, RefPtr<CounterNode>& parent, RefPtr<CounterNode>& previousSibling)
+static bool findPlaceForCounter(LayoutObject& counterOwner, const AtomicString& identifier, bool isReset, RefPtr<CounterNode>& parent, RefPtr<CounterNode>& previousSibling)
 {
     // We cannot stop searching for counters with the same identifier before we also
     // check this renderer, because it may affect the positioning in the tree of our counter.
-    RenderObject* searchEndRenderer = previousSiblingOrParent(counterOwner);
+    LayoutObject* searchEndRenderer = previousSiblingOrParent(counterOwner);
     // We check renderers in preOrder from the renderer that our counter is attached to
     // towards the begining of the document for counters with the same identifier as the one
     // we are trying to find a place for. This is the next renderer to be checked.
-    RenderObject* currentRenderer = previousInPreOrder(counterOwner);
+    LayoutObject* currentRenderer = previousInPreOrder(counterOwner);
     previousSibling = nullptr;
     RefPtr<CounterNode> previousSiblingProtector = nullptr;
 
@@ -293,7 +293,7 @@ static bool findPlaceForCounter(RenderObject& counterOwner, const AtomicString& 
     return false;
 }
 
-static CounterNode* makeCounterNode(RenderObject& object, const AtomicString& identifier, bool alwaysCreateCounter)
+static CounterNode* makeCounterNode(LayoutObject& object, const AtomicString& identifier, bool alwaysCreateCounter)
 {
     if (object.hasCounterNodeMap()) {
         if (CounterMap* nodeMap = counterMaps().get(&object)) {
@@ -328,7 +328,7 @@ static CounterNode* makeCounterNode(RenderObject& object, const AtomicString& id
     CounterMaps& maps = counterMaps();
     Element* stayWithin = parentElement(object);
     bool skipDescendants;
-    for (RenderObject* currentRenderer = nextInPreOrder(object, stayWithin); currentRenderer; currentRenderer = nextInPreOrder(*currentRenderer, stayWithin, skipDescendants)) {
+    for (LayoutObject* currentRenderer = nextInPreOrder(object, stayWithin); currentRenderer; currentRenderer = nextInPreOrder(*currentRenderer, stayWithin, skipDescendants)) {
         skipDescendants = false;
         if (!currentRenderer->hasCounterNodeMap())
             continue;
@@ -382,7 +382,7 @@ const char* LayoutCounter::renderName() const
 PassRefPtr<StringImpl> LayoutCounter::originalText() const
 {
     if (!m_counterNode) {
-        RenderObject* beforeAfterContainer = parent();
+        LayoutObject* beforeAfterContainer = parent();
         while (true) {
             if (!beforeAfterContainer)
                 return nullptr;
@@ -441,7 +441,7 @@ static void destroyCounterNodeWithoutMapRemoval(const AtomicString& identifier, 
         parent->removeChild(node);
 }
 
-void LayoutCounter::destroyCounterNodes(RenderObject& owner)
+void LayoutCounter::destroyCounterNodes(LayoutObject& owner)
 {
     CounterMaps& maps = counterMaps();
     CounterMaps::iterator mapsIterator = maps.find(&owner);
@@ -456,7 +456,7 @@ void LayoutCounter::destroyCounterNodes(RenderObject& owner)
     owner.setHasCounterNodeMap(false);
 }
 
-void LayoutCounter::destroyCounterNode(RenderObject& owner, const AtomicString& identifier)
+void LayoutCounter::destroyCounterNode(LayoutObject& owner, const AtomicString& identifier)
 {
     CounterMap* map = counterMaps().get(&owner);
     if (!map)
@@ -479,12 +479,12 @@ void LayoutCounter::destroyCounterNode(RenderObject& owner, const AtomicString& 
     // map associated with a renderer, so there is no risk in leaking the map.
 }
 
-void LayoutCounter::rendererRemovedFromTree(RenderObject* renderer)
+void LayoutCounter::rendererRemovedFromTree(LayoutObject* renderer)
 {
     ASSERT(renderer->view());
     if (!renderer->view()->hasLayoutCounters())
         return;
-    RenderObject* currentRenderer = renderer->lastLeafChild();
+    LayoutObject* currentRenderer = renderer->lastLeafChild();
     if (!currentRenderer)
         currentRenderer = renderer;
     while (true) {
@@ -495,7 +495,7 @@ void LayoutCounter::rendererRemovedFromTree(RenderObject* renderer)
     }
 }
 
-static void updateCounters(RenderObject& renderer)
+static void updateCounters(LayoutObject& renderer)
 {
     ASSERT(renderer.style());
     const CounterDirectiveMap* directiveMap = renderer.style()->counterDirectives();
@@ -531,7 +531,7 @@ static void updateCounters(RenderObject& renderer)
     }
 }
 
-void LayoutCounter::rendererSubtreeAttached(RenderObject* renderer)
+void LayoutCounter::rendererSubtreeAttached(LayoutObject* renderer)
 {
     ASSERT(renderer->view());
     if (!renderer->view()->hasLayoutCounters())
@@ -543,11 +543,11 @@ void LayoutCounter::rendererSubtreeAttached(RenderObject* renderer)
         node = renderer->generatingNode();
     if (node && node->needsAttach())
         return; // No need to update if the parent is not attached yet
-    for (RenderObject* descendant = renderer; descendant; descendant = descendant->nextInPreOrder(renderer))
+    for (LayoutObject* descendant = renderer; descendant; descendant = descendant->nextInPreOrder(renderer))
         updateCounters(*descendant);
 }
 
-void LayoutCounter::rendererStyleChanged(RenderObject& renderer, const RenderStyle* oldStyle, const RenderStyle* newStyle)
+void LayoutCounter::rendererStyleChanged(LayoutObject& renderer, const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     Node* node = renderer.generatingNode();
     if (!node || node->needsAttach())
@@ -594,18 +594,18 @@ void LayoutCounter::rendererStyleChanged(RenderObject& renderer, const RenderSty
 
 #ifndef NDEBUG
 
-void showCounterRendererTree(const blink::RenderObject* renderer, const char* counterName)
+void showCounterRendererTree(const blink::LayoutObject* renderer, const char* counterName)
 {
     if (!renderer)
         return;
-    const blink::RenderObject* root = renderer;
+    const blink::LayoutObject* root = renderer;
     while (root->parent())
         root = root->parent();
 
     AtomicString identifier(counterName);
-    for (const blink::RenderObject* current = root; current; current = current->nextInPreOrder()) {
+    for (const blink::LayoutObject* current = root; current; current = current->nextInPreOrder()) {
         fprintf(stderr, "%c", (current == renderer) ? '*' : ' ');
-        for (const blink::RenderObject* parent = current; parent && parent != root; parent = parent->parent())
+        for (const blink::LayoutObject* parent = current; parent && parent != root; parent = parent->parent())
             fprintf(stderr, "    ");
         fprintf(stderr, "%p N:%p P:%p PS:%p NS:%p C:%p\n",
             current, current->node(), current->parent(), current->previousSibling(),

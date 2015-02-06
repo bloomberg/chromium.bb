@@ -33,7 +33,7 @@
 
 namespace blink {
 
-SVGResourcesCycleSolver::SVGResourcesCycleSolver(RenderObject* renderer, SVGResources* resources)
+SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* renderer, SVGResources* resources)
     : m_renderer(renderer)
     , m_resources(resources)
 {
@@ -72,7 +72,7 @@ bool SVGResourcesCycleSolver::resourceContainsCycles(RenderSVGResourceContainer*
 
     ActiveFrame frame(m_activeResources, resource);
 
-    RenderObject* node = resource;
+    LayoutObject* node = resource;
     while (node) {
         // Skip subtrees which are themselves resources. (They will be
         // processed - if needed - when they are actually referenced.)
@@ -80,7 +80,7 @@ bool SVGResourcesCycleSolver::resourceContainsCycles(RenderSVGResourceContainer*
             node = node->nextInPreOrderAfterChildren(resource);
             continue;
         }
-        if (SVGResources* nodeResources = SVGResourcesCache::cachedResourcesForRenderObject(node)) {
+        if (SVGResources* nodeResources = SVGResourcesCache::cachedResourcesForLayoutObject(node)) {
             // Fetch all the resources referenced by |node|.
             ResourceSet nodeSet;
             nodeResources->buildSetOfResources(nodeSet);
@@ -104,7 +104,7 @@ void SVGResourcesCycleSolver::resolveCycles()
 {
     ASSERT(m_activeResources.isEmpty());
 
-    // If the starting RenderObject is a resource container itself, then add it
+    // If the starting LayoutObject is a resource container itself, then add it
     // to the active set (to break direct self-references.)
     if (m_renderer->isSVGResourceContainer())
         m_activeResources.add(toRenderSVGResourceContainer(m_renderer));

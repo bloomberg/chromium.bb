@@ -52,7 +52,7 @@ private:
 
     virtual const char* renderName() const override { return "RenderListBox"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectListBox || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListBox || RenderBlockFlow::isOfType(type); }
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
@@ -63,7 +63,7 @@ private:
     LayoutUnit itemHeight() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderListBox, isListBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderListBox, isListBox());
 
 } // namepace blink
 

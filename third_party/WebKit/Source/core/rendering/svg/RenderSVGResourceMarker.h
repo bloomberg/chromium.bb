@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 class RenderSVGResourceMarker final : public RenderSVGResourceContainer {
 public:
@@ -38,7 +38,7 @@ public:
     virtual const char* renderName() const override { return "RenderSVGResourceMarker"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     // Calculates marker boundaries, mapped to the target element's coordinate space
     FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;

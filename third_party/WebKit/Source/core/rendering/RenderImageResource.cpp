@@ -28,8 +28,8 @@
 #include "config.h"
 #include "core/rendering/RenderImageResource.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderObject.h"
 
 namespace blink {
 
@@ -43,7 +43,7 @@ RenderImageResource::~RenderImageResource()
 {
 }
 
-void RenderImageResource::initialize(RenderObject* renderer)
+void RenderImageResource::initialize(LayoutObject* renderer)
 {
     ASSERT(!m_renderer);
     ASSERT(renderer);

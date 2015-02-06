@@ -116,7 +116,7 @@ const AtomicString& HTMLFieldSetElement::formControlType() const
     return fieldset;
 }
 
-RenderObject* HTMLFieldSetElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLFieldSetElement::createRenderer(const RenderStyle&)
 {
     return new RenderFieldset(this);
 }

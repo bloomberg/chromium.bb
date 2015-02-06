@@ -38,7 +38,7 @@ namespace blink {
 
 class LayoutUnit;
 class Position;
-class RenderObject;
+class LayoutObject;
 class VisiblePosition;
 struct CompositedSelectionBound;
 
@@ -73,7 +73,7 @@ public:
 
 private:
     bool operator==(const RenderedPosition&) const { return false; }
-    explicit RenderedPosition(RenderObject*, InlineBox*, int offset);
+    explicit RenderedPosition(LayoutObject*, InlineBox*, int offset);
 
     InlineBox* prevLeafChild() const;
     InlineBox* nextLeafChild() const;
@@ -82,7 +82,7 @@ private:
     bool atLeftBoundaryOfBidiRun(ShouldMatchBidiLevel, unsigned char bidiLevelOfRun) const;
     bool atRightBoundaryOfBidiRun(ShouldMatchBidiLevel, unsigned char bidiLevelOfRun) const;
 
-    RenderObject* m_renderer;
+    LayoutObject* m_renderer;
     InlineBox* m_inlineBox;
     int m_offset;
 
@@ -102,7 +102,7 @@ inline RenderedPosition::RenderedPosition()
 {
 }
 
-inline RenderedPosition::RenderedPosition(RenderObject* renderer, InlineBox* box, int offset)
+inline RenderedPosition::RenderedPosition(LayoutObject* renderer, InlineBox* box, int offset)
     : m_renderer(renderer)
     , m_inlineBox(box)
     , m_offset(offset)
@@ -111,7 +111,7 @@ inline RenderedPosition::RenderedPosition(RenderObject* renderer, InlineBox* box
 {
 }
 
-bool renderObjectContainsPosition(RenderObject*, const Position&);
+bool layoutObjectContainsPosition(LayoutObject*, const Position&);
 
 };
 

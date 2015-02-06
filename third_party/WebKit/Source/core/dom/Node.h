@@ -77,7 +77,7 @@ class RadioNodeList;
 class RegisteredEventListener;
 class RenderBox;
 class RenderBoxModelObject;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class SVGQualifiedName;
 class ShadowRoot;
@@ -99,11 +99,11 @@ enum StyleChangeType {
 
 class NodeRareDataBase {
 public:
-    RenderObject* renderer() const { return m_renderer; }
-    void setRenderer(RenderObject* renderer) { m_renderer = renderer; }
+    LayoutObject* renderer() const { return m_renderer; }
+    void setRenderer(LayoutObject* renderer) { m_renderer = renderer; }
 
 protected:
-    NodeRareDataBase(RenderObject* renderer)
+    NodeRareDataBase(LayoutObject* renderer)
         : m_renderer(renderer)
     { }
 
@@ -111,7 +111,7 @@ protected:
     // Oilpan: This member is traced in NodeRareData.
     // FIXME: Can we add traceAfterDispatch and finalizeGarbageCollectedObject
     // to NodeRareDataBase, and make m_renderer Member<>?
-    RenderObject* m_renderer;
+    LayoutObject* m_renderer;
 };
 
 class Node;
@@ -504,8 +504,8 @@ public:
 
     // As renderer() includes a branch you should avoid calling it repeatedly in hot code paths.
     // Note that if a Node has a renderer, it's parentNode is guaranteed to have one as well.
-    RenderObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
-    void setRenderer(RenderObject* renderer)
+    LayoutObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
+    void setRenderer(LayoutObject* renderer)
     {
         if (hasRareData())
             m_data.m_rareData->setRenderer(renderer);
@@ -525,7 +525,7 @@ public:
     };
 
     // Attaches this node to the rendering tree. This calculates the style to be applied to the node and creates an
-    // appropriate RenderObject which will be inserted into the tree (except when the style has display: none). This
+    // appropriate LayoutObject which will be inserted into the tree (except when the style has display: none). This
     // makes the node visible in the FrameView.
     virtual void attach(const AttachContext& = AttachContext());
 
@@ -821,7 +821,7 @@ private:
     // When a node has rare data we move the renderer into the rare data.
     union DataUnion {
         DataUnion() : m_renderer(nullptr) { }
-        RenderObject* m_renderer;
+        LayoutObject* m_renderer;
         NodeRareDataBase* m_rareData;
     } m_data;
 };

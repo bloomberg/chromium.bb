@@ -63,7 +63,7 @@ private:
     bool m_stretchingChildren;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderDeprecatedFlexibleBox, isDeprecatedFlexibleBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderDeprecatedFlexibleBox, isDeprecatedFlexibleBox());
 
 } // namespace blink
 

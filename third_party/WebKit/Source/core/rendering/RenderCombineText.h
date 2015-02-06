@@ -52,7 +52,7 @@ private:
     bool m_needsFontUpdate : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderCombineText, isCombineText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderCombineText, isCombineText());
 
 } // namespace blink
 

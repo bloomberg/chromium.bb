@@ -43,7 +43,7 @@
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 #include "core/dom/Document.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
@@ -254,14 +254,14 @@ public:
     }
 };
 
-class RenderObjectProxy : public RenderObject {
+class LayoutObjectProxy : public LayoutObject {
 public:
-    static RenderObjectProxy* create(Node* node)
+    static LayoutObjectProxy* create(Node* node)
     {
-        return new RenderObjectProxy(node);
+        return new LayoutObjectProxy(node);
     }
 
-    static void dispose(RenderObjectProxy* proxy)
+    static void dispose(LayoutObjectProxy* proxy)
     {
         proxy->destroy();
     }
@@ -270,8 +270,8 @@ public:
     void layout() override { }
 
 private:
-    explicit RenderObjectProxy(Node* node)
-        : RenderObject(node)
+    explicit LayoutObjectProxy(Node* node)
+        : LayoutObject(node)
     {
     }
 };
@@ -1203,7 +1203,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
 
     RefPtrWillBePersistent<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
 
-    RenderObjectProxy* renderer = RenderObjectProxy::create(element.get());
+    LayoutObjectProxy* renderer = LayoutObjectProxy::create(element.get());
     element->setRenderer(renderer);
 
     AnimatableValueKeyframeVector keyFrames;
@@ -1243,7 +1243,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     simulateFrame(1.);
 
     element->setRenderer(nullptr);
-    RenderObjectProxy::dispose(renderer);
+    LayoutObjectProxy::dispose(renderer);
 
     player1.release();
     player2.release();

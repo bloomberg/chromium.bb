@@ -634,7 +634,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
 
     Node* node = nullptr;
     DragSourceAction candidateDragType = DragSourceActionNone;
-    for (const RenderObject* renderer = startNode->renderer(); renderer; renderer = renderer->parent()) {
+    for (const LayoutObject* renderer = startNode->renderer(); renderer; renderer = renderer->parent()) {
         node = renderer->nonPseudoNode();
         if (!node) {
             // Anonymous render blocks don't correspond to actual DOM nodes, so we skip over them
@@ -697,7 +697,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
 static ImageResource* getImageResource(Element* element)
 {
     ASSERT(element);
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isImage())
         return nullptr;
     RenderImage* image = toRenderImage(renderer);

@@ -278,7 +278,7 @@ RenderTextFragment* RenderQuote::findFragmentChild() const
 {
     // We walk from the end of the child list because, if we've had a first-letter
     // renderer inserted then the remaining text will be at the end.
-    while (RenderObject* child = lastChild()) {
+    while (LayoutObject* child = lastChild()) {
         if (child->isText() && toRenderText(child)->isTextFragment())
             return toRenderTextFragment(child);
     }
@@ -325,7 +325,7 @@ void RenderQuote::attachQuote()
         return;
     }
 
-    for (RenderObject* predecessor = previousInPreOrder(); predecessor; predecessor = predecessor->previousInPreOrder()) {
+    for (LayoutObject* predecessor = previousInPreOrder(); predecessor; predecessor = predecessor->previousInPreOrder()) {
         // Skip unattached predecessors to avoid having stale m_previous pointers
         // if the previous node is never attached and is then destroyed.
         if (!predecessor->isQuote() || !toRenderQuote(predecessor)->isAttached())

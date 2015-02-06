@@ -27,6 +27,7 @@
 #include "core/rendering/RenderBoxModelObject.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
@@ -35,7 +36,6 @@
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
@@ -67,9 +67,9 @@ void RenderBoxModelObject::setSelectionState(SelectionState state)
 
     if ((state == SelectionStart && selectionState() == SelectionEnd)
         || (state == SelectionEnd && selectionState() == SelectionStart))
-        RenderObject::setSelectionState(SelectionBoth);
+        LayoutObject::setSelectionState(SelectionBoth);
     else
-        RenderObject::setSelectionState(state);
+        LayoutObject::setSelectionState(state);
 
     // FIXME: We should consider whether it is OK propagating to ancestor RenderInlines.
     // This is a workaround for http://webkit.org/b/32123
@@ -105,7 +105,7 @@ void RenderBoxModelObject::willBeDestroyed()
 {
     ImageQualityController::remove(this);
 
-    // A continuation of this RenderObject should be destroyed at subclasses.
+    // A continuation of this LayoutObject should be destroyed at subclasses.
     ASSERT(!continuation());
 
     LayoutLayerModelObject::willBeDestroyed();
@@ -129,12 +129,12 @@ void RenderBoxModelObject::updateFromStyle()
     setHorizontalWritingMode(styleToUse->isHorizontalWritingMode());
 }
 
-static LayoutSize accumulateInFlowPositionOffsets(const RenderObject* child)
+static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
 {
     if (!child->isAnonymousBlock() || !child->isRelPositioned())
         return LayoutSize();
     LayoutSize offset;
-    RenderObject* p = toRenderBlock(child)->inlineElementContinuation();
+    LayoutObject* p = toRenderBlock(child)->inlineElementContinuation();
     while (p && p->isRenderInline()) {
         if (p->isRelPositioned()) {
             RenderInline* renderInline = toRenderInline(p);
@@ -256,7 +256,7 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
             if (isRelPositioned())
                 referencePoint.move(relativePositionOffset());
 
-            RenderObject* current;
+            LayoutObject* current;
             for (current = parent(); current != offsetParent && current->parent(); current = current->parent()) {
                 // FIXME: What are we supposed to do inside SVG content?
                 if (!isOutOfFlowPositioned()) {
@@ -560,7 +560,7 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
 
 void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
-    RenderObject* o = container();
+    LayoutObject* o = container();
     if (!o)
         return;
 
@@ -587,12 +587,12 @@ void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 }
 
-const RenderObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     ASSERT(ancestorToStopAt != this);
 
     bool ancestorSkipped;
-    RenderObject* container = this->container(ancestorToStopAt, &ancestorSkipped);
+    LayoutObject* container = this->container(ancestorToStopAt, &ancestorSkipped);
     if (!container)
         return 0;
 
@@ -624,7 +624,7 @@ const RenderObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLay
     return ancestorSkipped ? ancestorToStopAt : container;
 }
 
-void RenderBoxModelObject::moveChildTo(RenderBoxModelObject* toBoxModelObject, RenderObject* child, RenderObject* beforeChild, bool fullRemoveInsert)
+void RenderBoxModelObject::moveChildTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* child, LayoutObject* beforeChild, bool fullRemoveInsert)
 {
     // We assume that callers have cleared their positioned objects list for child moves (!fullRemoveInsert) so the
     // positioned renderer maps don't become stale. It would be too slow to do the map lookup on each call.
@@ -640,7 +640,7 @@ void RenderBoxModelObject::moveChildTo(RenderBoxModelObject* toBoxModelObject, R
         toBoxModelObject->virtualChildren()->insertChildNode(toBoxModelObject, virtualChildren()->removeChildNode(this, child, fullRemoveInsert), beforeChild, fullRemoveInsert);
 }
 
-void RenderBoxModelObject::moveChildrenTo(RenderBoxModelObject* toBoxModelObject, RenderObject* startChild, RenderObject* endChild, RenderObject* beforeChild, bool fullRemoveInsert)
+void RenderBoxModelObject::moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert)
 {
     // This condition is rarely hit since this function is usually called on
     // anonymous blocks which can no longer carry positioned objects (see r120761)
@@ -653,9 +653,9 @@ void RenderBoxModelObject::moveChildrenTo(RenderBoxModelObject* toBoxModelObject
     }
 
     ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
-    for (RenderObject* child = startChild; child && child != endChild; ) {
+    for (LayoutObject* child = startChild; child && child != endChild; ) {
         // Save our next sibling as moveChildTo will clear it.
-        RenderObject* nextSibling = child->nextSibling();
+        LayoutObject* nextSibling = child->nextSibling();
         moveChildTo(toBoxModelObject, child, beforeChild, fullRemoveInsert);
         child = nextSibling;
     }

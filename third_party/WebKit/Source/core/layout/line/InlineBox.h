@@ -21,9 +21,9 @@
 #ifndef InlineBox_h
 #define InlineBox_h
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/rendering/RenderBoxModelObject.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/text/TextDirection.h"
 
@@ -36,11 +36,11 @@ class RootInlineBox;
 enum MarkLineBoxes { MarkLineBoxesDirty, DontMarkLineBoxes };
 
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
-// some RenderObject (i.e., it represents a portion of that RenderObject).
+// some LayoutObject (i.e., it represents a portion of that LayoutObject).
 class InlineBox {
     WTF_MAKE_NONCOPYABLE(InlineBox);
 public:
-    InlineBox(RenderObject& obj)
+    InlineBox(LayoutObject& obj)
         : m_next(0)
         , m_prev(0)
         , m_parent(0)
@@ -52,7 +52,8 @@ public:
     {
     }
 
-    InlineBox(RenderObject& obj, FloatPointWillBeLayoutPoint topLeft, FloatWillBeLayoutUnit logicalWidth, bool firstLine, bool constructed, bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
+    InlineBox(LayoutObject& obj, FloatPointWillBeLayoutPoint topLeft, FloatWillBeLayoutUnit logicalWidth, bool firstLine, bool constructed,
+        bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
         : m_next(next)
         , m_prev(prev)
         , m_parent(parent)
@@ -111,7 +112,7 @@ public:
     void showLineTreeForThis() const;
 
     virtual void showBox(int = 0) const;
-    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0, int = 0) const;
+    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0, int = 0) const;
     virtual const char* boxName() const;
 #endif
 
@@ -178,7 +179,7 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
-    RenderObject& renderer() const { return m_renderer; }
+    LayoutObject& renderer() const { return m_renderer; }
 
     InlineFlowBox* parent() const
     {
@@ -263,7 +264,7 @@ public:
 
     virtual void dirtyLineBoxes();
 
-    virtual RenderObject::SelectionState selectionState() const;
+    virtual LayoutObject::SelectionState selectionState() const;
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const;
     // visibleLeftEdge, visibleRightEdge are in the parent's coordinate system.
@@ -384,7 +385,7 @@ private:
     InlineBox* m_prev; // The previous element on the same line as us.
 
     InlineFlowBox* m_parent; // The box that contains us.
-    RenderObject& m_renderer;
+    LayoutObject& m_renderer;
 
 protected:
     // For RootInlineBox

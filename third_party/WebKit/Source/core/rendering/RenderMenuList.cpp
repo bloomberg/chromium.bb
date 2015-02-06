@@ -78,7 +78,7 @@ void RenderMenuList::destroy()
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
 // to prevent children from rendering.
-bool RenderMenuList::isChildAllowed(RenderObject* object, const RenderStyle&) const
+bool RenderMenuList::isChildAllowed(LayoutObject* object, const RenderStyle&) const
 {
     return object->isAnonymous() && !object->isRenderFullScreen();
 }
@@ -131,7 +131,7 @@ inline HTMLSelectElement* RenderMenuList::selectElement() const
     return toHTMLSelectElement(node());
 }
 
-void RenderMenuList::addChild(RenderObject* newChild, RenderObject* beforeChild)
+void RenderMenuList::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     createInnerBlock();
     m_innerBlock->addChild(newChild, beforeChild);
@@ -141,7 +141,7 @@ void RenderMenuList::addChild(RenderObject* newChild, RenderObject* beforeChild)
         cache->childrenChanged(this);
 }
 
-void RenderMenuList::removeChild(RenderObject* oldChild)
+void RenderMenuList::removeChild(LayoutObject* oldChild)
 {
     if (oldChild == m_innerBlock || !m_innerBlock) {
         RenderFlexibleBox::removeChild(oldChild);
@@ -528,7 +528,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
 
 PopupMenuStyle RenderMenuList::menuStyle() const
 {
-    const RenderObject* o = m_innerBlock ? m_innerBlock : this;
+    const LayoutObject* o = m_innerBlock ? m_innerBlock : this;
     const RenderStyle* s = o->style();
     return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), s->font(), s->visibility() == VISIBLE,
         s->display() == NONE, s->textIndent(), style()->direction(), isOverride(style()->unicodeBidi()));

@@ -45,10 +45,10 @@ public:
     void updateAppearance(const RenderStyle& parentStyle);
 
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSliderThumb || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSliderThumb || RenderBlockFlow::isOfType(type); }
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutSliderThumb, isSliderThumb());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSliderThumb, isSliderThumb());
 
 } // namespace blink
 

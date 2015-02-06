@@ -33,7 +33,7 @@
 namespace blink {
 
 class Document;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 
 class ContentData {
@@ -51,7 +51,7 @@ public:
     virtual bool isQuote() const { return false; }
     virtual bool isText() const { return false; }
 
-    virtual RenderObject* createRenderer(Document&, RenderStyle*) const = 0;
+    virtual LayoutObject* createRenderer(Document&, RenderStyle*) const = 0;
 
     virtual PassOwnPtr<ContentData> clone() const;
 
@@ -77,7 +77,7 @@ public:
     void setImage(PassRefPtr<StyleImage> image) { m_image = image; }
 
     virtual bool isImage() const override { return true; }
-    virtual RenderObject* createRenderer(Document&, RenderStyle*) const override;
+    virtual LayoutObject* createRenderer(Document&, RenderStyle*) const override;
 
     virtual bool equals(const ContentData& data) const override
     {
@@ -110,7 +110,7 @@ public:
     void setText(const String& text) { m_text = text; }
 
     virtual bool isText() const override { return true; }
-    virtual RenderObject* createRenderer(Document&, RenderStyle*) const override;
+    virtual LayoutObject* createRenderer(Document&, RenderStyle*) const override;
 
     virtual bool equals(const ContentData& data) const override
     {
@@ -139,7 +139,7 @@ public:
     void setCounter(PassOwnPtr<CounterContent> counter) { m_counter = counter; }
 
     virtual bool isCounter() const override { return true; }
-    virtual RenderObject* createRenderer(Document&, RenderStyle*) const override;
+    virtual LayoutObject* createRenderer(Document&, RenderStyle*) const override;
 
 private:
     CounterContentData(PassOwnPtr<CounterContent> counter)
@@ -172,7 +172,7 @@ public:
     void setQuote(QuoteType quote) { m_quote = quote; }
 
     virtual bool isQuote() const override { return true; }
-    virtual RenderObject* createRenderer(Document&, RenderStyle*) const override;
+    virtual LayoutObject* createRenderer(Document&, RenderStyle*) const override;
 
     virtual bool equals(const ContentData& data) const override
     {

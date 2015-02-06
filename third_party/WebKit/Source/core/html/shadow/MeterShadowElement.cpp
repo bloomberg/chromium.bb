@@ -54,7 +54,7 @@ HTMLMeterElement* MeterShadowElement::meterElement() const
 
 bool MeterShadowElement::rendererIsNeeded(const RenderStyle& style)
 {
-    RenderObject* renderer = meterElement()->renderer();
+    LayoutObject* renderer = meterElement()->renderer();
     return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
 }
 
@@ -75,11 +75,11 @@ bool MeterInnerElement::rendererIsNeeded(const RenderStyle& style)
     if (meterElement()->hasAuthorShadowRoot())
         return HTMLDivElement::rendererIsNeeded(style);
 
-    RenderObject* renderer = meterElement()->renderer();
+    LayoutObject* renderer = meterElement()->renderer();
     return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
 }
 
-RenderObject* MeterInnerElement::createRenderer(const RenderStyle&)
+LayoutObject* MeterInnerElement::createRenderer(const RenderStyle&)
 {
     return new RenderMeter(this);
 }

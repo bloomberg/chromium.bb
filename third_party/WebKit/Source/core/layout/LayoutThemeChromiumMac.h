@@ -36,7 +36,7 @@ class LayoutThemeChromiumMac final : public LayoutTheme {
 public:
     static PassRefPtr<LayoutTheme> create();
 
-    virtual void adjustPaintInvalidationRect(const RenderObject*, IntRect&) override;
+    virtual void adjustPaintInvalidationRect(const LayoutObject*, IntRect&) override;
 
     virtual bool isControlStyled(const RenderStyle&, const CachedUAStyle*) const override;
 
@@ -68,13 +68,13 @@ public:
     virtual int popupInternalPaddingTop(const RenderStyle&) const override;
     virtual int popupInternalPaddingBottom(const RenderStyle&) const override;
 
-    virtual bool paintCapsLockIndicator(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual bool popsMenuByArrowKeys() const override { return true; }
     virtual bool popsMenuBySpaceKey() const override final { return true; }
 
     virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const override;
-    virtual bool paintMeter(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMeter(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual bool supportsMeter(ControlPart) const override;
 
     // Returns the repeat interval of the animation for the progress bar.
@@ -92,38 +92,38 @@ protected:
     LayoutThemeChromiumMac();
     virtual ~LayoutThemeChromiumMac();
 
-    virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void adjustMenuListStyle(RenderStyle&, Element*) const override;
 
-    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void adjustMenuListButtonStyle(RenderStyle&, Element*) const override;
 
-    virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintProgressBar(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool paintSearchField(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void adjustSearchFieldStyle(RenderStyle&, Element*) const override;
 
     virtual void adjustSearchFieldCancelButtonStyle(RenderStyle&, Element*) const override;
-    virtual bool paintSearchFieldCancelButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual void adjustSearchFieldDecorationStyle(RenderStyle&, Element*) const override;
-    virtual bool paintSearchFieldDecoration(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle&, Element*) const override;
-    virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
 private:
     virtual String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
 
-    FloatRect convertToPaintingRect(const RenderObject* inputRenderer, const RenderObject* partRenderer, const FloatRect& inputRect, const IntRect&) const;
+    FloatRect convertToPaintingRect(const LayoutObject* inputRenderer, const LayoutObject* partRenderer, const FloatRect& inputRect, const IntRect&) const;
 
     // Get the control size based off the font. Used by some of the controls (like buttons).
     NSControlSize controlSizeForFont(const RenderStyle&) const;
@@ -134,14 +134,14 @@ private:
     IntSize sizeForSystemFont(const RenderStyle&, const IntSize* sizes) const;
     void setFontFromControlSize(RenderStyle&, NSControlSize) const;
 
-    void updateCheckedState(NSCell*, const RenderObject*);
-    void updateEnabledState(NSCell*, const RenderObject*);
-    void updateFocusedState(NSCell*, const RenderObject*);
-    void updatePressedState(NSCell*, const RenderObject*);
+    void updateCheckedState(NSCell*, const LayoutObject*);
+    void updateEnabledState(NSCell*, const LayoutObject*);
+    void updateFocusedState(NSCell*, const LayoutObject*);
+    void updatePressedState(NSCell*, const LayoutObject*);
 
     // Helpers for adjusting appearance and for painting
 
-    void setPopupButtonCellState(const RenderObject*, const IntRect&);
+    void setPopupButtonCellState(const LayoutObject*, const IntRect&);
     const IntSize* popupButtonSizes() const;
     const int* popupButtonMargins() const;
     const int* popupButtonPadding(NSControlSize) const;
@@ -150,7 +150,7 @@ private:
     const IntSize* searchFieldSizes() const;
     const IntSize* cancelButtonSizes() const;
     const IntSize* resultsButtonSizes() const;
-    void setSearchCellState(RenderObject*, const IntRect&);
+    void setSearchCellState(LayoutObject*, const IntRect&);
     void setSearchFieldSize(RenderStyle&) const;
 
     NSPopUpButtonCell* popupButton() const;
@@ -166,30 +166,30 @@ private:
 
 protected:
     virtual void adjustMediaSliderThumbSize(RenderStyle&) const;
-    virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaMuteButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaOverlayPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaMuteButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual String extraFullScreenStyleSheet() override;
 
-    virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderContainer(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaVolumeSliderContainer(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual String formatMediaControlsTime(float time) const override;
     virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const override;
-    virtual bool paintMediaFullscreenButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaToggleClosedCaptionsButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaFullscreenButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaToggleClosedCaptionsButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
     bool usesTestModeFocusRingColor() const;
     // A view associated to the contained document. Subclasses may not have such a view and return a fake.
-    NSView* documentViewFor(RenderObject*) const;
+    NSView* documentViewFor(LayoutObject*) const;
 
     virtual bool shouldUseFallbackTheme(const RenderStyle&) const override;
 
 private:
-    virtual void updateActiveState(NSCell*, const RenderObject*);
+    virtual void updateActiveState(NSCell*, const LayoutObject*);
     virtual String extraDefaultStyleSheet() override;
     virtual bool shouldShowPlaceholderWhenFocused() const override;
 

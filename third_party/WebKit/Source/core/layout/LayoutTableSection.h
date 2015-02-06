@@ -71,10 +71,10 @@ public:
     LayoutTableRow* firstRow() const;
     LayoutTableRow* lastRow() const;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
 
     virtual int firstLineBoxBaseline() const override;
 
@@ -214,8 +214,8 @@ public:
     // FIXME: We may want to introduce a structure holding the in-flux layout information.
     int distributeExtraLogicalHeightToRows(int extraLogicalHeight);
 
-    static LayoutTableSection* createAnonymousWithParentRenderer(const RenderObject*);
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
+    static LayoutTableSection* createAnonymousWithParentRenderer(const LayoutObject*);
+    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
@@ -235,12 +235,12 @@ protected:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
 private:
-    virtual RenderObjectChildList* virtualChildren() override { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableSection (anonymous)" : "LayoutTableSection"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableSection || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableSection || RenderBox::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 
@@ -285,7 +285,7 @@ private:
 
     void setLogicalPositionForCell(LayoutTableCell*, unsigned effectiveColumn) const;
 
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
 
     Vector<RowStruct> m_grid;
     Vector<int> m_rowPos;
@@ -314,7 +314,7 @@ private:
     HashMap<pair<const LayoutTableCell*, int>, CollapsedBorderValue> m_cellsCollapsedBorders;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());
 
 } // namespace blink
 

@@ -37,7 +37,7 @@
 #include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/UseCounter.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
@@ -204,7 +204,7 @@ void SVGSVGElement::setCurrentTranslate(const FloatPoint& point)
 
 void SVGSVGElement::updateCurrentTranslate()
 {
-    if (RenderObject* object = renderer())
+    if (LayoutObject* object = renderer())
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
@@ -283,8 +283,8 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
         // roots, there is an attribute synchronization missing. See
         // http://crbug.com/364807
         if (widthChanged || heightChanged) {
-            RenderObject* renderObject = renderer();
-            if (renderObject && renderObject->isSVGRoot()) {
+            LayoutObject* layoutObject = renderer();
+            if (layoutObject && layoutObject->isSVGRoot()) {
                 invalidateSVGPresentationAttributeStyle();
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange));
             }
@@ -293,7 +293,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGFitToViewBox::isKnownAttribute(attrName)) {
         updateRelativeLengthsOrViewBox = true;
-        if (RenderObject* object = renderer())
+        if (LayoutObject* object = renderer())
             object->setNeedsTransformUpdate();
     }
 
@@ -321,7 +321,7 @@ static bool intersectsAllowingEmpty(const FloatRect& r1, const FloatRect& r2)
 
 // One of the element types that can cause graphics to be drawn onto the target canvas.
 // Specifically: circle, ellipse, image, line, path, polygon, polyline, rect, text and use.
-static bool isIntersectionOrEnclosureTarget(RenderObject* renderer)
+static bool isIntersectionOrEnclosureTarget(LayoutObject* renderer)
 {
     return renderer->isSVGShape()
         || renderer->isSVGText()
@@ -332,7 +332,7 @@ static bool isIntersectionOrEnclosureTarget(RenderObject* renderer)
 bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, const FloatRect& rect,
     CheckIntersectionOrEnclosure mode) const
 {
-    RenderObject* renderer = element.renderer();
+    LayoutObject* renderer = element.renderer();
     ASSERT(!renderer || renderer->style());
     if (!renderer || renderer->style()->pointerEvents() == PE_NONE)
         return false;
@@ -472,7 +472,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
         SVGLengthContext lengthContext(this);
         transform.translate(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext));
     } else if (mode == SVGElement::ScreenScope) {
-        if (RenderObject* renderer = this->renderer()) {
+        if (LayoutObject* renderer = this->renderer()) {
             FloatPoint location;
             float zoomFactor = 1;
 
@@ -517,7 +517,7 @@ bool SVGSVGElement::rendererIsNeeded(const RenderStyle& style)
     return Element::rendererIsNeeded(style);
 }
 
-RenderObject* SVGSVGElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGSVGElement::createRenderer(const RenderStyle&)
 {
     if (isOutermostSVGSVGElement())
         return new RenderSVGRoot(this);
@@ -672,7 +672,7 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
 
 void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* anchorNode)
 {
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     SVGViewSpec* view = m_viewSpec.get();
     if (view)
         view->reset();
@@ -711,7 +711,7 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         if (SVGSVGElement* svg = viewElement.ownerSVGElement()) {
             svg->inheritViewAttributes(&viewElement);
 
-            if (RenderObject* renderer = svg->renderer())
+            if (LayoutObject* renderer = svg->renderer())
                 markForLayoutAndParentResourceInvalidation(renderer);
 
             return;

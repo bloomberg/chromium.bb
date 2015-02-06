@@ -111,11 +111,11 @@ public:
 
     void removeFloatingObjects();
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
 
     void moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert);
 
-    bool generatesLineBoxesForInlineChild(RenderObject*);
+    bool generatesLineBoxesForInlineChild(LayoutObject*);
 
     LayoutUnit logicalTopForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->y() : floatingObject->x(); }
     LayoutUnit logicalBottomForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->maxY() : floatingObject->maxX(); }
@@ -164,7 +164,7 @@ public:
     void setStaticInlinePositionForChild(RenderBox&, LayoutUnit inlinePosition);
     void updateStaticInlinePositionForChild(RenderBox&, LayoutUnit logicalTop);
 
-    static bool shouldSkipCreatingRunsForObject(RenderObject* obj)
+    static bool shouldSkipCreatingRunsForObject(LayoutObject* obj)
     {
         return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isRenderInline());
     }
@@ -183,9 +183,9 @@ public:
 
     virtual bool shouldPaintSelectionGaps() const override final;
     LayoutRect logicalLeftSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-        const RenderObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
+        const LayoutObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
     LayoutRect logicalRightSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-        const RenderObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
+        const LayoutObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
     void getSelectionGapInfo(SelectionState, bool& leftGap, bool& rightGap) const;
 
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const override final;
@@ -207,7 +207,7 @@ public:
     virtual bool avoidsFloats() const override;
 
     using RenderBoxModelObject::moveChildrenTo;
-    virtual void moveChildrenTo(RenderBoxModelObject* toBoxModelObject, RenderObject* startChild, RenderObject* endChild, RenderObject* beforeChild, bool fullRemoveInsert = false) override;
+    virtual void moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert = false) override;
 
     LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
@@ -260,7 +260,7 @@ protected:
         return adjustLogicalLeftOffsetForLine(logicalLeftFloatOffsetForLine(logicalTop, fixedOffset, logicalHeight), applyTextIndent);
     }
 
-    virtual RenderObject* layoutSpecialExcludedChild(bool /*relayoutChildren*/, SubtreeLayoutScope&);
+    virtual LayoutObject* layoutSpecialExcludedChild(bool /*relayoutChildren*/, SubtreeLayoutScope&);
     virtual bool updateLogicalWidthAndColumnWidth() override;
 
     void setLogicalLeftForChild(RenderBox& child, LayoutUnit logicalLeft);
@@ -507,9 +507,9 @@ protected:
 // line layout code is separated from RenderBlock and RenderBlockFlow.
 // START METHODS DEFINED IN RenderBlockLineLayout
 private:
-    InlineFlowBox* createLineBoxes(RenderObject*, const LineInfo&, InlineBox* childBox);
+    InlineFlowBox* createLineBoxes(LayoutObject*, const LineInfo&, InlineBox* childBox);
     RootInlineBox* constructLine(BidiRunList<BidiRun>&, const LineInfo&);
-    void setMarginsForRubyRun(BidiRun*, LayoutRubyRun*, RenderObject*, const LineInfo&);
+    void setMarginsForRubyRun(BidiRun*, LayoutRubyRun*, LayoutObject*, const LineInfo&);
     void computeInlineDirectionPositionsForLine(RootInlineBox*, const LineInfo&, BidiRun* firstRun, BidiRun* trailingSpaceRun, bool reachedEnd, GlyphOverflowAndFallbackFontsMap&, VerticalPositionCache&, WordMeasurements&);
     BidiRun* computeInlineDirectionPositionsForSegment(RootInlineBox*, const LineInfo&, ETextAlign, float& logicalLeft,
         float& availableLogicalWidth, BidiRun* firstRun, BidiRun* trailingSpaceRun, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache&, WordMeasurements&);
@@ -539,7 +539,7 @@ private:
 
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlockFlow, isRenderBlockFlow());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBlockFlow, isRenderBlockFlow());
 
 } // namespace blink
 

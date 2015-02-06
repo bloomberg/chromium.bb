@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/svg/SVGFEDiffuseLightingElement.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
@@ -76,7 +76,7 @@ bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect,
     FEDiffuseLighting* diffuseLighting = static_cast<FEDiffuseLighting*>(effect);
 
     if (attrName == SVGNames::lighting_colorAttr) {
-        RenderObject* renderer = this->renderer();
+        LayoutObject* renderer = this->renderer();
         ASSERT(renderer);
         ASSERT(renderer->style());
         return diffuseLighting->setLightingColor(renderer->style()->svgStyle().lightingColor());
@@ -159,7 +159,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilte
     if (!lightNode)
         return nullptr;
 
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return nullptr;
 

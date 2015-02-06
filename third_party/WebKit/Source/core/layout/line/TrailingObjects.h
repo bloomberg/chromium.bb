@@ -29,7 +29,7 @@
 namespace blink {
 
 class InlineIterator;
-class RenderObject;
+class LayoutObject;
 class RenderText;
 
 struct BidiRun;
@@ -74,7 +74,7 @@ public:
         m_objects.resize(0);
     }
 
-    void appendObjectIfNeeded(RenderObject* object)
+    void appendObjectIfNeeded(LayoutObject* object)
     {
         if (m_whitespace)
             m_objects.append(object);
@@ -86,7 +86,7 @@ public:
 
 private:
     RenderText* m_whitespace;
-    Vector<RenderObject*, 4> m_objects;
+    Vector<LayoutObject*, 4> m_objects;
 };
 
 }

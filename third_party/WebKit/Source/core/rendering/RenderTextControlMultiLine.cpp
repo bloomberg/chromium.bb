@@ -86,9 +86,9 @@ PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerEditorStyle(const
     return textBlockStyle.release();
 }
 
-RenderObject* RenderTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+LayoutObject* RenderTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    RenderObject* placeholderRenderer = RenderTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
+    LayoutObject* placeholderRenderer = RenderTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
     if (!placeholderRenderer)
         return 0;
     if (!placeholderRenderer->isBox())

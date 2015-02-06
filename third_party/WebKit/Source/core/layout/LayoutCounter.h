@@ -35,11 +35,11 @@ public:
     virtual ~LayoutCounter();
     virtual void destroy() override;
 
-    static void destroyCounterNodes(RenderObject&);
-    static void destroyCounterNode(RenderObject&, const AtomicString& identifier);
-    static void rendererSubtreeAttached(RenderObject*);
-    static void rendererRemovedFromTree(RenderObject*);
-    static void rendererStyleChanged(RenderObject&, const RenderStyle* oldStyle, const RenderStyle* newStyle);
+    static void destroyCounterNodes(LayoutObject&);
+    static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);
+    static void rendererSubtreeAttached(LayoutObject*);
+    static void rendererRemovedFromTree(LayoutObject*);
+    static void rendererStyleChanged(LayoutObject&, const RenderStyle* oldStyle, const RenderStyle* newStyle);
 
     void updateCounter();
 
@@ -48,7 +48,7 @@ protected:
 
 private:
     virtual const char* renderName() const override;
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectCounter || RenderText::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCounter || RenderText::isOfType(type); }
     virtual PassRefPtr<StringImpl> originalText() const override;
 
     // Removes the reference to the CounterNode associated with this renderer.
@@ -61,13 +61,13 @@ private:
     friend class CounterNode;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutCounter, isCounter());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCounter, isCounter());
 
 } // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showCounterRendererTree(const blink::RenderObject*, const char* counterName = 0);
+void showCounterRendererTree(const blink::LayoutObject*, const char* counterName = 0);
 #endif
 
 #endif // LayoutCounter_h

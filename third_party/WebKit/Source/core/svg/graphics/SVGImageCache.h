@@ -32,7 +32,7 @@ namespace blink {
 class ImageResourceClient;
 class SVGImage;
 class SVGImageForContainer;
-class RenderObject;
+class LayoutObject;
 
 class SVGImageCache {
     WTF_MAKE_FAST_ALLOCATED;
@@ -47,9 +47,9 @@ public:
     void removeClientFromCache(const ImageResourceClient*);
 
     void setContainerSizeForRenderer(const ImageResourceClient*, const IntSize&, float);
-    IntSize imageSizeForRenderer(const RenderObject*) const;
+    IntSize imageSizeForRenderer(const LayoutObject*) const;
 
-    Image* imageForRenderer(const RenderObject*);
+    Image* imageForRenderer(const LayoutObject*);
 
 private:
     SVGImageCache(SVGImage*);

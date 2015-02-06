@@ -30,14 +30,14 @@
 #include "modules/accessibility/AXList.h"
 
 #include "core/html/HTMLUListElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
 
 using namespace HTMLNames;
 
-AXList::AXList(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXList::AXList(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXRenderObject(renderer, axObjectCache)
 {
 }
@@ -46,7 +46,7 @@ AXList::~AXList()
 {
 }
 
-PassRefPtr<AXList> AXList::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXList> AXList::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AXList(renderer, axObjectCache));
 }

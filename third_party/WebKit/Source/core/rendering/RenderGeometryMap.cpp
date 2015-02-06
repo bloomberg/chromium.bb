@@ -118,7 +118,7 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const LayoutLa
 
 #if ENABLE(ASSERT)
     if (m_mapping.size() > 0) {
-        const RenderObject* lastRenderer = m_mapping.last().m_renderer;
+        const LayoutObject* lastRenderer = m_mapping.last().m_renderer;
         const Layer* layer = lastRenderer->enclosingLayer();
 
         // Bounds for invisible layers are intentionally not calculated, and are
@@ -164,7 +164,7 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const LayoutL
 
 #if ENABLE(ASSERT)
     if (m_mapping.size() > 0) {
-        const RenderObject* lastRenderer = m_mapping.last().m_renderer;
+        const LayoutObject* lastRenderer = m_mapping.last().m_renderer;
         const Layer* layer = lastRenderer->enclosingLayer();
 
         // Bounds for invisible layers are intentionally not calculated, and are
@@ -183,7 +183,7 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const LayoutL
     return result;
 }
 
-void RenderGeometryMap::pushMappingsToAncestor(const RenderObject* renderer, const LayoutLayerModelObject* ancestorRenderer)
+void RenderGeometryMap::pushMappingsToAncestor(const LayoutObject* renderer, const LayoutLayerModelObject* ancestorRenderer)
 {
     // We need to push mappings in reverse order here, so do insertions rather than appends.
     TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
@@ -194,9 +194,9 @@ void RenderGeometryMap::pushMappingsToAncestor(const RenderObject* renderer, con
     ASSERT(m_mapping.isEmpty() || isTopmostRenderView(m_mapping[0].m_renderer));
 }
 
-static bool canMapBetweenRenderers(const RenderObject* renderer, const RenderObject* ancestor)
+static bool canMapBetweenRenderers(const LayoutObject* renderer, const LayoutObject* ancestor)
 {
-    for (const RenderObject* current = renderer; ; current = current->parent()) {
+    for (const LayoutObject* current = renderer; ; current = current->parent()) {
         const RenderStyle* style = current->style();
         if (style->position() == FixedPosition || style->isFlippedBlocksWritingMode())
             return false;
@@ -213,7 +213,7 @@ static bool canMapBetweenRenderers(const RenderObject* renderer, const RenderObj
 
 void RenderGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* ancestorLayer)
 {
-    const RenderObject* renderer = layer->renderer();
+    const LayoutObject* renderer = layer->renderer();
 
     bool crossDocument = ancestorLayer && layer->renderer()->frame() != ancestorLayer->renderer()->frame();
     ASSERT(!crossDocument || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
@@ -243,7 +243,7 @@ void RenderGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* 
     pushMappingsToAncestor(renderer, ancestorRenderer);
 }
 
-void RenderGeometryMap::push(const RenderObject* renderer, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
+void RenderGeometryMap::push(const LayoutObject* renderer, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
 //    fprintf(stderr, "RenderGeometryMap::push %p %d,%d isNonUniform=%d\n", renderer, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
 
@@ -260,7 +260,7 @@ void RenderGeometryMap::push(const RenderObject* renderer, const LayoutSize& off
     stepInserted(step);
 }
 
-void RenderGeometryMap::push(const RenderObject* renderer, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
+void RenderGeometryMap::push(const LayoutObject* renderer, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
     ASSERT(m_insertionPosition != kNotFound);
     ASSERT(!renderer->isRenderView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
@@ -330,7 +330,7 @@ void RenderGeometryMap::stepRemoved(const RenderGeometryMapStep& step)
 }
 
 #if ENABLE(ASSERT)
-bool RenderGeometryMap::isTopmostRenderView(const RenderObject* renderer) const
+bool RenderGeometryMap::isTopmostRenderView(const LayoutObject* renderer) const
 {
     if (!renderer->isRenderView())
         return false;

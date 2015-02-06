@@ -65,7 +65,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     bool isPrinting = m_inlineTextBox.renderer().document().printing();
 
     // Determine whether or not we're selected.
-    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_inlineTextBox.selectionState() != RenderObject::SelectionNone;
+    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_inlineTextBox.selectionState() != LayoutObject::SelectionNone;
     if (!haveSelection && paintInfo.phase == PaintPhaseSelection) {
         // When only painting the selection, don't bother to paint if there is none.
         return;
@@ -665,7 +665,7 @@ static void strokeWavyTextDecoration(GraphicsContext* context, FloatPoint p1, Fl
 }
 
 static void paintAppliedDecoration(GraphicsContext* context, FloatPoint start, float width, float doubleOffset, int wavyOffsetFactor,
-    RenderObject::AppliedTextDecoration decoration, float thickness, bool antialiasDecoration, bool isPrinting)
+    LayoutObject::AppliedTextDecoration decoration, float thickness, bool antialiasDecoration, bool isPrinting)
 {
     context->setStrokeStyle(textDecorationStyleToStrokeStyle(decoration.style));
     context->setStrokeColor(decoration.color);
@@ -703,7 +703,7 @@ void InlineTextBoxPainter::paintDecoration(GraphicsContext* context, const Float
     }
 
     // Get the text decoration colors.
-    RenderObject::AppliedTextDecoration underline, overline, linethrough;
+    LayoutObject::AppliedTextDecoration underline, overline, linethrough;
     m_inlineTextBox.renderer().getTextDecorations(deco, underline, overline, linethrough, true);
     if (m_inlineTextBox.isFirstLineStyle())
         m_inlineTextBox.renderer().getTextDecorations(deco, underline, overline, linethrough, true, true);

@@ -332,10 +332,10 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
     return ImageCandidate();
 }
 
-RenderObject* HTMLImageElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLImageElement::createRenderer(const RenderStyle& style)
 {
     if (style.hasContent())
-        return RenderObject::createObject(this, style);
+        return LayoutObject::createObject(this, style);
 
     if (m_useFallbackContent)
         return new RenderBlockFlow(this);
@@ -523,7 +523,7 @@ void HTMLImageElement::setWidth(int value)
 int HTMLImageElement::x() const
 {
     document().updateLayoutIgnorePendingStylesheets();
-    RenderObject* r = renderer();
+    LayoutObject* r = renderer();
     if (!r)
         return 0;
 
@@ -535,7 +535,7 @@ int HTMLImageElement::x() const
 int HTMLImageElement::y() const
 {
     document().updateLayoutIgnorePendingStylesheets();
-    RenderObject* r = renderer();
+    LayoutObject* r = renderer();
     if (!r)
         return 0;
 

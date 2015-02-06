@@ -197,7 +197,7 @@ int RenderFlexibleBox::inlineBlockBaseline(LineDirectionMode direction) const
     return synthesizedBaselineFromContentBox(*this, direction) + marginAscent;
 }
 
-void RenderFlexibleBox::removeChild(RenderObject* child)
+void RenderFlexibleBox::removeChild(LayoutObject* child)
 {
     RenderBlock::removeChild(child);
     m_intrinsicSizeAlongMainAxis.remove(child);

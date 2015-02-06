@@ -201,7 +201,7 @@ void InspectorLayerTreeAgent::layerTreeDidChange()
     m_frontend->layerTreeDidChange(buildLayerTree());
 }
 
-void InspectorLayerTreeAgent::didPaint(RenderObject*, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& rect)
+void InspectorLayerTreeAgent::didPaint(LayoutObject*, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& rect)
 {
     // Should only happen for FrameView paints when compositing is off. Consider different instrumentation method for that.
     if (!graphicsLayer)

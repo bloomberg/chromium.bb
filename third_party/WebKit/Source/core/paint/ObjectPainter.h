@@ -14,12 +14,12 @@ class GraphicsContext;
 class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 
 class ObjectPainter {
 public:
-    ObjectPainter(RenderObject& renderObject) : m_renderObject(renderObject) { }
+    ObjectPainter(LayoutObject& layoutObject) : m_layoutObject(layoutObject) { }
 
     void paintOutline(const PaintInfo&, const LayoutRect& paintRect);
     void paintFocusRing(const PaintInfo&, const LayoutPoint& paintOffset, const RenderStyle&);
@@ -35,7 +35,7 @@ private:
     static void drawSolidBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
         BoxSide, Color, int adjacentWidth1, int adjacentWidth2, bool antialias);
 
-    RenderObject& m_renderObject;
+    LayoutObject& m_layoutObject;
 };
 
 } // namespace blink

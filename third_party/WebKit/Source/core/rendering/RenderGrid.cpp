@@ -264,7 +264,7 @@ RenderGrid::~RenderGrid()
 {
 }
 
-void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
+void RenderGrid::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     RenderBlock::addChild(newChild, beforeChild);
 
@@ -276,7 +276,7 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
     return;
 }
 
-void RenderGrid::removeChild(RenderObject* child)
+void RenderGrid::removeChild(LayoutObject* child)
 {
     RenderBlock::removeChild(child);
 

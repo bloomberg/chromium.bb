@@ -154,7 +154,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
 
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
     virtual bool appendFormData(FormDataList&, bool) override;
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
 

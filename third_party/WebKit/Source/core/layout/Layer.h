@@ -208,7 +208,7 @@ public:
 
     bool canUseConvertToLayerCoords() const
     {
-        // These RenderObjects have an impact on their layers without the renderers knowing about it.
+        // These LayoutObjects have an impact on their layers without the renderers knowing about it.
         return !renderer()->hasColumns() && !renderer()->hasTransformRelatedProperty() && !renderer()->isSVGRoot();
     }
 
@@ -312,16 +312,16 @@ public:
     // Computes the position of the given render object in the space of |paintInvalidationContainer|.
     // FIXME: invert the logic to have paint invalidation containers take care of painting objects into them, rather than the reverse.
     // This will allow us to clean up this static method messiness.
-    static LayoutPoint positionFromPaintInvalidationBacking(const RenderObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
+    static LayoutPoint positionFromPaintInvalidationBacking(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
 
     static void mapPointToPaintBackingCoordinates(const LayoutLayerModelObject* paintInvalidationContainer, FloatPoint&);
     static void mapRectToPaintBackingCoordinates(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&);
 
-    // Adjusts the given rect (in the coordinate space of the RenderObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-    static void mapRectToPaintInvalidationBacking(const RenderObject*, const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState* = 0);
+    // Adjusts the given rect (in the coordinate space of the LayoutObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
+    static void mapRectToPaintInvalidationBacking(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState* = 0);
 
-    // Computes the bounding paint invalidation rect for |renderObject|, in the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-    static LayoutRect computePaintInvalidationRect(const RenderObject*, const Layer* paintInvalidationContainer, const PaintInvalidationState* = 0);
+    // Computes the bounding paint invalidation rect for |layoutObject|, in the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
+    static LayoutRect computePaintInvalidationRect(const LayoutObject*, const Layer* paintInvalidationContainer, const PaintInvalidationState* = 0);
 
     bool paintsWithTransparency(PaintBehavior paintBehavior) const
     {
@@ -378,7 +378,7 @@ public:
     inline bool isPositionedContainer() const
     {
         // FIXME: This is not in sync with containingBlock.
-        // RenderObject::canContainFixedPositionedObject() should probably be used
+        // LayoutObject::canContainFixedPositionedObject() should probably be used
         // instead.
         LayoutLayerModelObject* layerRenderer = renderer();
         return isRootLayer() || layerRenderer->isPositioned() || hasTransformRelatedProperty();
@@ -408,7 +408,7 @@ public:
         const Layer* opacityAncestor;
         const Layer* transformAncestor;
         const Layer* filterAncestor;
-        const RenderObject* clippingContainer;
+        const LayoutObject* clippingContainer;
         const Layer* ancestorScrollingLayer;
 
         // A scroll parent is a compositor concept. It's only needed in blink
@@ -461,7 +461,7 @@ public:
     const Layer* opacityAncestor() const { return ancestorDependentCompositingInputs().opacityAncestor; }
     const Layer* transformAncestor() const { return ancestorDependentCompositingInputs().transformAncestor; }
     const Layer* filterAncestor() const { return ancestorDependentCompositingInputs().filterAncestor; }
-    const RenderObject* clippingContainer() const { return ancestorDependentCompositingInputs().clippingContainer; }
+    const LayoutObject* clippingContainer() const { return ancestorDependentCompositingInputs().clippingContainer; }
     const Layer* ancestorScrollingLayer() const { return ancestorDependentCompositingInputs().ancestorScrollingLayer; }
     Layer* scrollParent() const { return const_cast<Layer*>(ancestorDependentCompositingInputs().scrollParent); }
     Layer* clipParent() const { return const_cast<Layer*>(ancestorDependentCompositingInputs().clipParent); }
@@ -719,7 +719,7 @@ private:
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
 void showLayerTree(const blink::Layer*);
-void showLayerTree(const blink::RenderObject*);
+void showLayerTree(const blink::LayoutObject*);
 #endif
 
 #endif // Layer_h

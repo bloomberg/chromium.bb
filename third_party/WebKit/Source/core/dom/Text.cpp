@@ -237,7 +237,7 @@ PassRefPtrWillBeRawPtr<Node> Text::cloneNode(bool /*deep*/)
     return cloneWithData(data());
 }
 
-static inline bool canHaveWhitespaceChildren(const RenderObject& parent)
+static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
 {
     // <button> should allow whitespace even though RenderFlexibleBox doesn't.
     if (parent.isRenderButton())
@@ -254,7 +254,7 @@ static inline bool canHaveWhitespaceChildren(const RenderObject& parent)
     return true;
 }
 
-bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& parent)
+bool Text::textRendererIsNeeded(const RenderStyle& style, const LayoutObject& parent)
 {
     if (!parent.canHaveChildren())
         return false;
@@ -281,7 +281,7 @@ bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& pa
     if (document().childNeedsDistributionRecalc())
         return true;
 
-    const RenderObject* prev = NodeRenderingTraversal::previousSiblingRenderer(*this);
+    const LayoutObject* prev = NodeRenderingTraversal::previousSiblingRenderer(*this);
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
 
@@ -297,7 +297,7 @@ bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& pa
         // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
         unsigned maxSiblingsToVisit = 50;
 
-        RenderObject* first = parent.slowFirstChild();
+        LayoutObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
         if (!first || first == renderer() || NodeRenderingTraversal::nextSiblingRenderer(*this) == first)
@@ -329,7 +329,7 @@ RenderText* Text::createTextRenderer(RenderStyle* style)
 void Text::attach(const AttachContext& context)
 {
     if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this)) {
-        if (RenderObject* parentRenderer = renderingParent->renderer()) {
+        if (LayoutObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
                 RenderTreeBuilderForText(*this, parentRenderer).createRenderer();
         }
@@ -342,7 +342,7 @@ void Text::reattachIfNeeded(const AttachContext& context)
     bool rendererIsNeeded = false;
     ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this);
     if (renderingParent) {
-        if (RenderObject* parentRenderer = renderingParent->renderer()) {
+        if (LayoutObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
                 rendererIsNeeded = true;
         }

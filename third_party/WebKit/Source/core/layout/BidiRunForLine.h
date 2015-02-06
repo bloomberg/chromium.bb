@@ -29,8 +29,8 @@
 
 namespace blink {
 
-TextDirection determinePlaintextDirectionality(RenderObject* root,
-    RenderObject* current = 0, unsigned pos = 0);
+TextDirection determinePlaintextDirectionality(LayoutObject* root,
+    LayoutObject* current = 0, unsigned pos = 0);
 
 void constructBidiRunsForLine(InlineBidiResolver&, BidiRunList<BidiRun>&,
     const InlineIterator& endOfLine, VisualDirectionOverride,

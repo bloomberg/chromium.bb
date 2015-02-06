@@ -35,13 +35,13 @@ public:
     virtual ~RenderButton();
 
     virtual const char* renderName() const override { return "RenderButton"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderButton || RenderFlexibleBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderButton || RenderFlexibleBox::isOfType(type); }
 
     virtual bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
     virtual bool canCollapseAnonymousBlockChild() const override { return true; }
 
-    virtual void addChild(RenderObject* newChild, RenderObject *beforeChild = 0) override;
-    virtual void removeChild(RenderObject*) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject *beforeChild = 0) override;
+    virtual void removeChild(LayoutObject*) override;
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }
     virtual bool createsAnonymousWrapper() const override { return true; }
 
@@ -52,14 +52,14 @@ public:
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode) const override;
 
 private:
-    virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* childStyle) const override;
+    virtual void updateAnonymousChildStyle(const LayoutObject* child, RenderStyle* childStyle) const override;
 
     virtual bool hasLineIfEmpty() const override { return isHTMLInputElement(node()); }
 
     RenderBlock* m_inner;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderButton, isRenderButton());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderButton, isRenderButton());
 
 } // namespace blink
 

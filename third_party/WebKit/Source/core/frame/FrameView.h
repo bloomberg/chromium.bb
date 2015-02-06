@@ -56,7 +56,7 @@ class Node;
 class Page;
 class RenderBox;
 class RenderEmbeddedObject;
-class RenderObject;
+class LayoutObject;
 class RenderPart;
 class RenderScrollbarPart;
 class RenderView;
@@ -98,14 +98,14 @@ public:
     void layout(bool allowSubtree = true);
     bool didFirstLayout() const;
     void scheduleRelayout();
-    void scheduleRelayoutOfSubtree(RenderObject*);
+    void scheduleRelayoutOfSubtree(LayoutObject*);
     bool layoutPending() const;
     bool isInPerformLayout() const;
 
     void setCanInvalidatePaintDuringPerformLayout(bool b) { m_canInvalidatePaintDuringPerformLayout = b; }
     bool canInvalidatePaintDuringPerformLayout() const { return m_canInvalidatePaintDuringPerformLayout; }
 
-    RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
+    LayoutObject* layoutRoot(bool onlyDuringLayout = false) const;
     void clearLayoutSubtreeRoot() { m_layoutSubtreeRoot = nullptr; }
     int layoutCount() const { return m_layoutCount; }
 
@@ -189,9 +189,9 @@ public:
     bool hasSlowRepaintObjects() const { return m_slowRepaintObjectCount; }
 
     // Fixed-position objects.
-    typedef HashSet<RenderObject*> ViewportConstrainedObjectSet;
-    void addViewportConstrainedObject(RenderObject*);
-    void removeViewportConstrainedObject(RenderObject*);
+    typedef HashSet<LayoutObject*> ViewportConstrainedObjectSet;
+    void addViewportConstrainedObject(LayoutObject*);
+    void removeViewportConstrainedObject(LayoutObject*);
     const ViewportConstrainedObjectSet* viewportConstrainedObjects() const { return m_viewportConstrainedObjects.get(); }
     bool hasViewportConstrainedObjects() const { return m_viewportConstrainedObjects && m_viewportConstrainedObjects->size() > 0; }
 
@@ -251,10 +251,10 @@ public:
     void scrollContentsIfNeededRecursive();
 
     // Methods to convert points and rects between the coordinate space of the renderer, and this view.
-    IntRect convertFromRenderer(const RenderObject&, const IntRect&) const;
-    IntRect convertToRenderer(const RenderObject&, const IntRect&) const;
-    IntPoint convertFromRenderer(const RenderObject&, const IntPoint&) const;
-    IntPoint convertToRenderer(const RenderObject&, const IntPoint&) const;
+    IntRect convertFromRenderer(const LayoutObject&, const IntRect&) const;
+    IntRect convertToRenderer(const LayoutObject&, const IntRect&) const;
+    IntPoint convertFromRenderer(const LayoutObject&, const IntPoint&) const;
+    IntPoint convertToRenderer(const LayoutObject&, const IntPoint&) const;
 
     bool isFrameViewScrollCorner(RenderScrollbarPart* scrollCorner) const { return m_scrollCorner == scrollCorner; }
 
@@ -613,19 +613,19 @@ private:
 
     bool contentsInCompositedLayer() const;
 
-    void applyOverflowToViewportAndSetRenderer(RenderObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
+    void applyOverflowToViewportAndSetRenderer(LayoutObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
     void updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow);
 
     void updateCounters();
     void forceLayoutParentViewIfNeeded();
     void performPreLayoutTasks();
-    void performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout);
+    void performLayout(LayoutObject* rootForThisLayout, bool inSubtreeLayout);
     void scheduleOrPerformPostLayoutTasks();
     void performPostLayoutTasks();
 
     void invalidateTreeIfNeeded();
 
-    void gatherDebugLayoutRects(RenderObject* layoutRoot);
+    void gatherDebugLayoutRects(LayoutObject* layoutRoot);
 
     DocumentLifecycle& lifecycle() const;
 
@@ -725,7 +725,7 @@ private:
     unsigned m_slowRepaintObjectCount;
 
     bool m_hasPendingLayout;
-    RenderObject* m_layoutSubtreeRoot;
+    LayoutObject* m_layoutSubtreeRoot;
 
     bool m_layoutSchedulingEnabled;
     bool m_inPerformLayout;
@@ -749,7 +749,7 @@ private:
     bool m_overflowStatusDirty;
     bool m_horizontalOverflow;
     bool m_verticalOverflow;
-    RenderObject* m_viewportRenderer;
+    LayoutObject* m_viewportRenderer;
 
     bool m_wasScrolledByUser;
     bool m_inProgrammaticScroll;

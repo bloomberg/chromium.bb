@@ -76,7 +76,7 @@ bool HTMLVideoElement::rendererIsNeeded(const RenderStyle& style)
     return HTMLElement::rendererIsNeeded(style);
 }
 
-RenderObject* HTMLVideoElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLVideoElement::createRenderer(const RenderStyle&)
 {
     return new RenderVideo(this);
 }

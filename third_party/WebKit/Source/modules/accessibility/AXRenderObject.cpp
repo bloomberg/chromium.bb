@@ -80,14 +80,14 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static inline RenderObject* firstChildInContinuation(const RenderInline& renderer)
+static inline LayoutObject* firstChildInContinuation(const RenderInline& renderer)
 {
     RenderBoxModelObject* r = renderer.continuation();
 
     while (r) {
         if (r->isRenderBlock())
             return r;
-        if (RenderObject* child = r->slowFirstChild())
+        if (LayoutObject* child = r->slowFirstChild())
             return child;
         r = toRenderInline(r)->continuation();
     }
@@ -95,7 +95,7 @@ static inline RenderObject* firstChildInContinuation(const RenderInline& rendere
     return 0;
 }
 
-static inline bool isInlineWithContinuation(RenderObject* object)
+static inline bool isInlineWithContinuation(LayoutObject* object)
 {
     if (!object->isBoxModelObject())
         return false;
@@ -107,9 +107,9 @@ static inline bool isInlineWithContinuation(RenderObject* object)
     return toRenderInline(renderer)->continuation();
 }
 
-static inline RenderObject* firstChildConsideringContinuation(RenderObject* renderer)
+static inline LayoutObject* firstChildConsideringContinuation(LayoutObject* renderer)
 {
-    RenderObject* firstChild = renderer->slowFirstChild();
+    LayoutObject* firstChild = renderer->slowFirstChild();
 
     if (!firstChild && isInlineWithContinuation(renderer))
         firstChild = firstChildInContinuation(toRenderInline(*renderer));
@@ -117,7 +117,7 @@ static inline RenderObject* firstChildConsideringContinuation(RenderObject* rend
     return firstChild;
 }
 
-static inline RenderInline* startOfContinuations(RenderObject* r)
+static inline RenderInline* startOfContinuations(LayoutObject* r)
 {
     if (r->isInlineElementContinuation()) {
         return toRenderInline(r->node()->renderer());
@@ -130,10 +130,10 @@ static inline RenderInline* startOfContinuations(RenderObject* r)
     return 0;
 }
 
-static inline RenderObject* endOfContinuations(RenderObject* renderer)
+static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
 {
-    RenderObject* prev = renderer;
-    RenderObject* cur = renderer;
+    LayoutObject* prev = renderer;
+    LayoutObject* cur = renderer;
 
     if (!cur->isRenderInline() && !cur->isRenderBlock())
         return renderer;
@@ -151,13 +151,13 @@ static inline RenderObject* endOfContinuations(RenderObject* renderer)
     return prev;
 }
 
-static inline bool lastChildHasContinuation(RenderObject* renderer)
+static inline bool lastChildHasContinuation(LayoutObject* renderer)
 {
-    RenderObject* lastChild = renderer->slowLastChild();
+    LayoutObject* lastChild = renderer->slowLastChild();
     return lastChild && isInlineWithContinuation(lastChild);
 }
 
-static RenderBoxModelObject* nextContinuation(RenderObject* renderer)
+static RenderBoxModelObject* nextContinuation(LayoutObject* renderer)
 {
     ASSERT(renderer);
     if (renderer->isRenderInline() && !renderer->isReplaced())
@@ -167,7 +167,7 @@ static RenderBoxModelObject* nextContinuation(RenderObject* renderer)
     return 0;
 }
 
-AXRenderObject::AXRenderObject(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXRenderObject::AXRenderObject(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXNodeObject(renderer->node(), axObjectCache)
     , m_renderer(renderer)
     , m_cachedElementRectDirty(true)
@@ -177,7 +177,7 @@ AXRenderObject::AXRenderObject(RenderObject* renderer, AXObjectCacheImpl* axObje
 #endif
 }
 
-PassRefPtr<AXRenderObject> AXRenderObject::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXRenderObject> AXRenderObject::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AXRenderObject(renderer, axObjectCache));
 }
@@ -208,7 +208,7 @@ LayoutRect AXRenderObject::elementRect() const
     return m_cachedElementRect;
 }
 
-void AXRenderObject::setRenderer(RenderObject* renderer)
+void AXRenderObject::setRenderer(LayoutObject* renderer)
 {
     m_renderer = renderer;
     setNode(renderer->node());
@@ -576,7 +576,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         return false;
 
     // ignore popup menu items because AppKit does
-    for (RenderObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
+    for (LayoutObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
         if (parent->isBoxModelObject() && toRenderBoxModelObject(parent)->isMenuList())
             return true;
     }
@@ -1226,7 +1226,7 @@ String AXRenderObject::helpText() const
         return describedBy;
 
     String description = accessibilityDescription();
-    for (RenderObject* curr = m_renderer; curr; curr = curr->parent()) {
+    for (LayoutObject* curr = m_renderer; curr; curr = curr->parent()) {
         if (curr->node() && curr->node()->isHTMLElement()) {
             const AtomicString& summary = toElement(curr->node())->getAttribute(summaryAttr);
             if (!summary.isEmpty())
@@ -1359,7 +1359,7 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     if (isHTMLOptionElement(node))
         node = toHTMLOptionElement(*node).ownerSelectElement();
 
-    RenderObject* obj = node->renderer();
+    LayoutObject* obj = node->renderer();
     if (!obj)
         return 0;
 
@@ -1410,7 +1410,7 @@ AXObject* AXRenderObject::computeParent() const
             return parent;
     }
 
-    RenderObject* parentObj = renderParentObject();
+    LayoutObject* parentObj = renderParentObject();
     if (parentObj)
         return axObjectCache()->getOrCreate(parentObj);
 
@@ -1436,7 +1436,7 @@ AXObject* AXRenderObject::computeParentIfExists() const
             return parent;
     }
 
-    RenderObject* parentObj = renderParentObject();
+    LayoutObject* parentObj = renderParentObject();
     if (parentObj)
         return axObjectCache()->get(parentObj);
 
@@ -1456,7 +1456,7 @@ AXObject* AXRenderObject::firstChild() const
     if (!m_renderer)
         return 0;
 
-    RenderObject* firstChild = firstChildConsideringContinuation(m_renderer);
+    LayoutObject* firstChild = firstChildConsideringContinuation(m_renderer);
 
     if (!firstChild)
         return 0;
@@ -1469,7 +1469,7 @@ AXObject* AXRenderObject::nextSibling() const
     if (!m_renderer)
         return 0;
 
-    RenderObject* nextSibling = 0;
+    LayoutObject* nextSibling = 0;
 
     RenderInline* inlineContinuation = m_renderer->isRenderBlock() ? toRenderBlock(m_renderer)->inlineElementContinuation() : 0;
     if (inlineContinuation) {
@@ -1478,11 +1478,11 @@ AXObject* AXRenderObject::nextSibling() const
     } else if (m_renderer->isAnonymousBlock() && lastChildHasContinuation(m_renderer)) {
         // Case 2: Anonymous block parent of the start of a continuation - skip all the way to
         // after the parent of the end, since everything in between will be linked up via the continuation.
-        RenderObject* lastParent = endOfContinuations(toRenderBlock(m_renderer)->lastChild())->parent();
+        LayoutObject* lastParent = endOfContinuations(toRenderBlock(m_renderer)->lastChild())->parent();
         while (lastChildHasContinuation(lastParent))
             lastParent = endOfContinuations(lastParent->slowLastChild())->parent();
         nextSibling = lastParent->nextSibling();
-    } else if (RenderObject* ns = m_renderer->nextSibling()) {
+    } else if (LayoutObject* ns = m_renderer->nextSibling()) {
         // Case 3: node has an actual next sibling
         nextSibling = ns;
     } else if (isInlineWithContinuation(m_renderer)) {
@@ -1491,7 +1491,7 @@ AXObject* AXRenderObject::nextSibling() const
         nextSibling = endOfContinuations(m_renderer)->nextSibling();
     } else if (isInlineWithContinuation(m_renderer->parent())) {
         // Case 5: node has no next sibling, and its parent is an inline with a continuation.
-        RenderObject* continuation = toRenderInline(m_renderer->parent())->continuation();
+        LayoutObject* continuation = toRenderInline(m_renderer->parent())->continuation();
 
         if (continuation->isRenderBlock()) {
             // Case 5a: continuation is a block - in this case the block itself is the next sibling.
@@ -1562,8 +1562,8 @@ void AXRenderObject::clearChildren()
 AXObject* AXRenderObject::observableObject() const
 {
     // Find the object going up the parent chain that is used in accessibility to monitor certain notifications.
-    for (RenderObject* renderer = m_renderer; renderer && renderer->node(); renderer = renderer->parent()) {
-        if (renderObjectIsObservable(renderer))
+    for (LayoutObject* renderer = m_renderer; renderer && renderer->node(); renderer = renderer->parent()) {
+        if (layoutObjectIsObservable(renderer))
             return axObjectCache()->getOrCreate(renderer);
     }
 
@@ -1608,7 +1608,7 @@ FrameView* AXRenderObject::documentFrameView() const
     if (!m_renderer)
         return 0;
 
-    // this is the RenderObject's Document's LocalFrame's FrameView
+    // this is the LayoutObject's Document's LocalFrame's FrameView
     return m_renderer->document().view();
 }
 
@@ -1618,12 +1618,12 @@ Element* AXRenderObject::anchorElement() const
         return 0;
 
     AXObjectCacheImpl* cache = axObjectCache();
-    RenderObject* currRenderer;
+    LayoutObject* currRenderer;
 
-    // Search up the render tree for a RenderObject with a DOM node. Defer to an earlier continuation, though.
+    // Search up the render tree for a LayoutObject with a DOM node. Defer to an earlier continuation, though.
     for (currRenderer = m_renderer; currRenderer && !currRenderer->node(); currRenderer = currRenderer->parent()) {
         if (currRenderer->isAnonymousBlock()) {
-            RenderObject* continuation = toRenderBlock(currRenderer)->continuation();
+            LayoutObject* continuation = toRenderBlock(currRenderer)->continuation();
             if (continuation)
                 return cache->getOrCreate(continuation)->anchorElement();
         }
@@ -1812,7 +1812,7 @@ int AXRenderObject::index(const VisiblePosition& position) const
     if (position.isNull() || !isTextControl())
         return -1;
 
-    if (renderObjectContainsPosition(m_renderer, position.deepEquivalent()))
+    if (layoutObjectContainsPosition(m_renderer, position.deepEquivalent()))
         return indexForVisiblePosition(position);
 
     return -1;
@@ -2041,7 +2041,7 @@ AXObject* AXRenderObject::accessibilityImageMapHitTest(HTMLAreaElement* area, co
     return 0;
 }
 
-bool AXRenderObject::renderObjectIsObservable(RenderObject* renderer) const
+bool AXRenderObject::layoutObjectIsObservable(LayoutObject* renderer) const
 {
     // AX clients will listen for AXValueChange on a text control.
     if (renderer->isTextControl())
@@ -2059,19 +2059,19 @@ bool AXRenderObject::renderObjectIsObservable(RenderObject* renderer) const
     return false;
 }
 
-RenderObject* AXRenderObject::renderParentObject() const
+LayoutObject* AXRenderObject::renderParentObject() const
 {
     if (!m_renderer)
         return 0;
 
-    RenderObject* startOfConts = m_renderer->isRenderBlock() ? startOfContinuations(m_renderer) : 0;
+    LayoutObject* startOfConts = m_renderer->isRenderBlock() ? startOfContinuations(m_renderer) : 0;
     if (startOfConts) {
         // Case 1: node is a block and is an inline's continuation. Parent
         // is the start of the continuation chain.
         return startOfConts;
     }
 
-    RenderObject* parent = m_renderer->parent();
+    LayoutObject* parent = m_renderer->parent();
     startOfConts = parent && parent->isRenderInline() ? startOfContinuations(parent) : 0;
     if (startOfConts) {
         // Case 2: node's parent is an inline which is some node's continuation; parent is
@@ -2079,18 +2079,18 @@ RenderObject* AXRenderObject::renderParentObject() const
         return startOfConts;
     }
 
-    RenderObject* firstChild = parent ? parent->slowFirstChild() : 0;
+    LayoutObject* firstChild = parent ? parent->slowFirstChild() : 0;
     if (firstChild && firstChild->node()) {
         // Case 3: The first sibling is the beginning of a continuation chain. Find the origin of that continuation.
         // Get the node's renderer and follow that continuation chain until the first child is found.
-        for (RenderObject* nodeRenderFirstChild = firstChild->node()->renderer(); nodeRenderFirstChild != firstChild; nodeRenderFirstChild = firstChild->node()->renderer()) {
-            for (RenderObject* contsTest = nodeRenderFirstChild; contsTest; contsTest = nextContinuation(contsTest)) {
+        for (LayoutObject* nodeRenderFirstChild = firstChild->node()->renderer(); nodeRenderFirstChild != firstChild; nodeRenderFirstChild = firstChild->node()->renderer()) {
+            for (LayoutObject* contsTest = nodeRenderFirstChild; contsTest; contsTest = nextContinuation(contsTest)) {
                 if (contsTest == firstChild) {
                     parent = nodeRenderFirstChild->parent();
                     break;
                 }
             }
-            RenderObject* newFirstChild = parent->slowFirstChild();
+            LayoutObject* newFirstChild = parent->slowFirstChild();
             if (firstChild == newFirstChild)
                 break;
             firstChild = newFirstChild;
@@ -2104,7 +2104,7 @@ RenderObject* AXRenderObject::renderParentObject() const
 
 bool AXRenderObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) const
 {
-    for (RenderObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
+    for (LayoutObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
         if (parent->node() && parent->node()->hasTagName(tagName))
             return true;
     }
@@ -2369,7 +2369,7 @@ bool AXRenderObject::inheritsPresentationalRole() const
 
 LayoutRect AXRenderObject::computeElementRect() const
 {
-    RenderObject* obj = m_renderer;
+    LayoutObject* obj = m_renderer;
 
     if (!obj)
         return LayoutRect();

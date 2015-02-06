@@ -47,17 +47,17 @@ class Widget;
 
 class AXRenderObject : public AXNodeObject {
 protected:
-    AXRenderObject(RenderObject*, AXObjectCacheImpl*);
+    AXRenderObject(LayoutObject*, AXObjectCacheImpl*);
 
 public:
-    static PassRefPtr<AXRenderObject> create(RenderObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXRenderObject> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXRenderObject();
 
     // Public, overridden from AXObject.
-    virtual RenderObject* renderer() const override final { return m_renderer; }
+    virtual LayoutObject* renderer() const override final { return m_renderer; }
     virtual LayoutRect elementRect() const override;
 
-    void setRenderer(RenderObject*);
+    void setRenderer(LayoutObject*);
     RenderBoxModelObject* renderBoxModelObject() const;
     Document* topDocument() const;
     bool shouldNotifyActiveDescendant() const;
@@ -67,7 +67,7 @@ public:
     void updateCachedElementRect() const;
 
 protected:
-    RenderObject* m_renderer;
+    LayoutObject* m_renderer;
     mutable LayoutRect m_cachedElementRect;
     mutable LayoutRect m_cachedFrameRect;
     mutable IntPoint m_cachedScrollPosition;
@@ -199,8 +199,8 @@ private:
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
-    bool renderObjectIsObservable(RenderObject*) const;
-    RenderObject* renderParentObject() const;
+    bool layoutObjectIsObservable(LayoutObject*) const;
+    LayoutObject* renderParentObject() const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
     bool isSVGImage() const;
     void detachRemoteSVGRoot();

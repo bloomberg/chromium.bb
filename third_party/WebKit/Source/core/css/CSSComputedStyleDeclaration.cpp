@@ -37,7 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -455,7 +455,7 @@ static void logUnimplementedPropertyID(CSSPropertyID propertyID)
     WTF_LOG_ERROR("WebKit does not yet implement getComputedStyle for '%s'.", getPropertyName(propertyID));
 }
 
-static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> style, RenderObject* renderer)
+static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> style, LayoutObject* renderer)
 {
     // Some properties only depend on layout in certain conditions which
     // are specified in the main switch statement below. So we can avoid
@@ -530,7 +530,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     Node* styledNode = this->styledNode();
     if (!styledNode)
         return nullptr;
-    RenderObject* renderer = styledNode->renderer();
+    LayoutObject* renderer = styledNode->renderer();
     RefPtr<RenderStyle> style;
 
     if (updateLayout) {

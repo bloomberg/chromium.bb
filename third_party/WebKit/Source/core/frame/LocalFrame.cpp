@@ -451,7 +451,7 @@ bool LocalFrame::inScope(TreeScope* scope) const
 
 void LocalFrame::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects, bool& isPartial)
 {
-    RenderObject* root = view()->layoutRoot();
+    LayoutObject* root = view()->layoutRoot();
     isPartial = true;
     if (!root) {
         isPartial = false;
@@ -461,7 +461,7 @@ void LocalFrame::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigne
     needsLayoutObjects = 0;
     totalObjects = 0;
 
-    for (RenderObject* o = root; o; o = o->nextInPreOrder(root)) {
+    for (LayoutObject* o = root; o; o = o->nextInPreOrder(root)) {
         ++totalObjects;
         if (o->needsLayout())
             ++needsLayoutObjects;
@@ -664,8 +664,8 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 
     m_view->setNodeToDraw(&node); // Enable special sub-tree drawing mode.
 
-    // Document::updateLayout may have blown away the original RenderObject.
-    RenderObject* renderer = node.renderer();
+    // Document::updateLayout may have blown away the original LayoutObject.
+    LayoutObject* renderer = node.renderer();
     if (!renderer)
         return nullptr;
 
@@ -704,7 +704,7 @@ VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint)
     Node* node = result.innerNonSharedNode();
     if (!node)
         return VisiblePosition();
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer)
         return VisiblePosition();
     VisiblePosition visiblePos = VisiblePosition(renderer->positionForPoint(result.localPoint()));

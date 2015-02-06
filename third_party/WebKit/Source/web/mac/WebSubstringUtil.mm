@@ -46,7 +46,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
@@ -72,7 +72,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
             continue;
 
         Node* container = it.startContainer();
-        RenderObject* renderer = container->renderer();
+        LayoutObject* renderer = container->renderer();
         ASSERT(renderer);
         if (!renderer)
             continue;

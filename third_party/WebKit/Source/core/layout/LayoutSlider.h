@@ -39,7 +39,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "LayoutSlider"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSlider || RenderFlexibleBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSlider || RenderFlexibleBox::isOfType(type); }
 
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
@@ -48,7 +48,7 @@ private:
     SliderThumbElement* sliderThumbElement() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutSlider, isSlider());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSlider, isSlider());
 
 } // namespace blink
 

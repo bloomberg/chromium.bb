@@ -74,32 +74,32 @@ public:
 
     virtual void adjustButtonStyle(RenderStyle&, Element*) const override;
 
-    virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual void adjustSearchFieldStyle(RenderStyle&, Element*) const override;
-    virtual bool paintSearchField(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual void adjustSearchFieldCancelButtonStyle(RenderStyle&, Element*) const override;
-    virtual bool paintSearchFieldCancelButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual void adjustSearchFieldDecorationStyle(RenderStyle&, Element*) const override;
 
     virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle&, Element*) const override;
-    virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void adjustSliderThumbSize(RenderStyle&, Element*) const override;
-    virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaToggleClosedCaptionsButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaCastButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaMuteButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaToggleClosedCaptionsButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaOverlayPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaMuteButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual String formatMediaControlsTime(float time) const override;
     virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const override;
-    virtual bool paintMediaFullscreenButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaFullscreenButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     // MenuList refers to an unstyled menulist (meaning a menulist without
     // background-color or border set) and MenuListButton refers to a styled
@@ -112,7 +112,7 @@ public:
     // entire menulist.
     virtual void adjustMenuListStyle(RenderStyle&, Element*) const override;
     virtual void adjustMenuListButtonStyle(RenderStyle&, Element*) const override;
-    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const override;
     virtual double animationDurationForProgressBar(RenderProgress*) const override;
@@ -141,7 +141,7 @@ protected:
 
     class DirectionFlippingScope {
     public:
-        DirectionFlippingScope(RenderObject*, const PaintInfo&, const IntRect&);
+        DirectionFlippingScope(LayoutObject*, const PaintInfo&, const IntRect&);
         ~DirectionFlippingScope();
 
     private:
@@ -154,7 +154,7 @@ private:
 
     int menuListInternalPadding(const RenderStyle&, int paddingType) const;
     bool paintMediaButtonInternal(GraphicsContext*, const IntRect&, Image*);
-    IntRect convertToPaintingRect(RenderObject* inputRenderer, const RenderObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const;
+    IntRect convertToPaintingRect(LayoutObject* inputRenderer, const LayoutObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const;
 
     static const RGBA32 defaultTapHighlightColor = 0x2e000000; // 18% black.
 };

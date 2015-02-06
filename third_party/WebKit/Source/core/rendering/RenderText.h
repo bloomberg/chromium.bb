@@ -24,8 +24,8 @@
 #define RenderText_h
 
 #include "core/dom/Text.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/LengthFunctions.h"
 #include "platform/text/TextPath.h"
 #include "wtf/Forward.h"
@@ -36,7 +36,7 @@ namespace blink {
 class AbstractInlineTextBox;
 class InlineTextBox;
 
-class RenderText : public RenderObject {
+class RenderText : public LayoutObject {
 public:
     // FIXME: If the node argument is not a Text node or the string argument is
     // not the content of the Text node, updating text-transform property
@@ -164,7 +164,7 @@ private:
 
     // Make length() private so that callers that have a RenderText*
     // will use the more efficient textLength() instead, while
-    // callers with a RenderObject* can continue to use length().
+    // callers with a LayoutObject* can continue to use length().
     virtual unsigned length() const override final { return textLength(); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override final { ASSERT_NOT_REACHED(); }
@@ -225,7 +225,7 @@ inline UChar RenderText::characterAt(unsigned i) const
     return uncheckedCharacterAt(i);
 }
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderText, isText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderText, isText());
 
 #if !ENABLE(ASSERT)
 inline void RenderText::checkConsistency() const

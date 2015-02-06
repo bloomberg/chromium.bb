@@ -32,7 +32,7 @@ RenderSVGTSpan::RenderSVGTSpan(Element* element)
 {
 }
 
-bool RenderSVGTSpan::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool RenderSVGTSpan::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     // Always allow text (except empty textnodes and <br>).
     if (child->isText())

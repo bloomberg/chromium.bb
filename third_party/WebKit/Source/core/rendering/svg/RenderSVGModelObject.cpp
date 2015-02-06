@@ -42,11 +42,11 @@
 namespace blink {
 
 RenderSVGModelObject::RenderSVGModelObject(SVGElement* node)
-    : RenderObject(node)
+    : LayoutObject(node)
 {
 }
 
-bool RenderSVGModelObject::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool RenderSVGModelObject::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
 }
@@ -61,7 +61,7 @@ void RenderSVGModelObject::mapLocalToContainer(const LayoutLayerModelObject* pai
     SVGRenderSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
-const RenderObject* RenderSVGModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderSVGModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     return SVGRenderSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
@@ -81,7 +81,7 @@ void RenderSVGModelObject::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixe
 void RenderSVGModelObject::willBeDestroyed()
 {
     SVGResourcesCache::clientDestroyed(this);
-    RenderObject::willBeDestroyed();
+    LayoutObject::willBeDestroyed();
 }
 
 void RenderSVGModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) const
@@ -109,7 +109,7 @@ void RenderSVGModelObject::styleDidChange(StyleDifference diff, const RenderStyl
             parent()->descendantIsolationRequirementsChanged(style()->hasBlendMode() ? DescendantIsolationRequired : DescendantIsolationNeedsUpdate);
     }
 
-    RenderObject::styleDidChange(diff, oldStyle);
+    LayoutObject::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }
 

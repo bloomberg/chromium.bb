@@ -29,7 +29,7 @@
 
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/style/ContentData.h"
 
@@ -116,7 +116,7 @@ void PseudoElement::attach(const AttachContext& context)
 
     Element::attach(context);
 
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return;
 
@@ -126,7 +126,7 @@ void PseudoElement::attach(const AttachContext& context)
     ASSERT(style->contentData());
 
     for (const ContentData* content = style->contentData(); content; content = content->next()) {
-        RenderObject* child = content->createRenderer(document(), style);
+        LayoutObject* child = content->createRenderer(document(), style);
         if (renderer->isChildAllowed(child, *style)) {
             renderer->addChild(child);
             if (child->isQuote())
@@ -147,9 +147,9 @@ void PseudoElement::didRecalcStyle(StyleRecalcChange)
         return;
 
     // The renderers inside pseudo elements are anonymous so they don't get notified of recalcStyle and must have
-    // the style propagated downward manually similar to RenderObject::propagateStyleToAnonymousChildren.
-    RenderObject* renderer = this->renderer();
-    for (RenderObject* child = renderer->nextInPreOrder(renderer); child; child = child->nextInPreOrder(renderer)) {
+    // the style propagated downward manually similar to LayoutObject::propagateStyleToAnonymousChildren.
+    LayoutObject* renderer = this->renderer();
+    for (LayoutObject* child = renderer->nextInPreOrder(renderer); child; child = child->nextInPreOrder(renderer)) {
         // We only manage the style for the generated content items.
         if (!child->isText() && !child->isQuote() && !child->isImage())
             continue;

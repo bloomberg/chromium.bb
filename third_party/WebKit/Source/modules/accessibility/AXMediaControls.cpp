@@ -43,12 +43,12 @@ static inline String queryString(WebLocalizedString::Name name)
     return Locale::defaultLocale().queryString(name);
 }
 
-AccessibilityMediaControl::AccessibilityMediaControl(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AccessibilityMediaControl::AccessibilityMediaControl(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXRenderObject(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaControl::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AccessibilityMediaControl::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     ASSERT(renderer->node());
 
@@ -193,12 +193,12 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const
 //
 // AXMediaControlsContainer
 
-AXMediaControlsContainer::AXMediaControlsContainer(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXMediaControlsContainer::AXMediaControlsContainer(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AccessibilityMediaControl(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AXMediaControlsContainer::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AXMediaControlsContainer::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AXMediaControlsContainer(renderer, axObjectCache));
 }
@@ -228,12 +228,12 @@ static String localizedMediaTimeDescription(float /*time*/)
     return String();
 }
 
-AccessibilityMediaTimeline::AccessibilityMediaTimeline(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AccessibilityMediaTimeline::AccessibilityMediaTimeline(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXSlider(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeline::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AccessibilityMediaTimeline::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AccessibilityMediaTimeline(renderer, axObjectCache));
 }
@@ -256,12 +256,12 @@ String AccessibilityMediaTimeline::helpText() const
 //
 // AccessibilityMediaTimeDisplay
 
-AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AccessibilityMediaControl(renderer, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AccessibilityMediaTimeDisplay(renderer, axObjectCache));
 }

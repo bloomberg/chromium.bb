@@ -28,10 +28,10 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMediaControls.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"

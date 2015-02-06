@@ -35,7 +35,7 @@
 
 namespace blink {
 
-AXARIAGridRow::AXARIAGridRow(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXARIAGridRow::AXARIAGridRow(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXTableRow(renderer, axObjectCache)
 {
 }
@@ -44,7 +44,7 @@ AXARIAGridRow::~AXARIAGridRow()
 {
 }
 
-PassRefPtr<AXARIAGridRow> AXARIAGridRow::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXARIAGridRow> AXARIAGridRow::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AXARIAGridRow(renderer, axObjectCache));
 }

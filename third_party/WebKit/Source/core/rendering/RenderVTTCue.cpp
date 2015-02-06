@@ -116,7 +116,7 @@ bool SnapToLinesLayouter::isOutside() const
 
 bool SnapToLinesLayouter::isOverlapping() const
 {
-    for (RenderObject* box = m_cueBox.previousSibling(); box; box = box->previousSibling()) {
+    for (LayoutObject* box = m_cueBox.previousSibling(); box; box = box->previousSibling()) {
         IntRect boxRect = box->absoluteBoundingBoxRect();
 
         if (m_cueBox.absoluteBoundingBoxRect().intersects(boxRect))

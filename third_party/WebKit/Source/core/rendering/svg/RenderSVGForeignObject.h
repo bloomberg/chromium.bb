@@ -34,7 +34,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderSVGForeignObject"; }
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
@@ -45,7 +45,7 @@ public:
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGForeignObject || RenderSVGBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGForeignObject || RenderSVGBlock::isOfType(type); }
 
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 

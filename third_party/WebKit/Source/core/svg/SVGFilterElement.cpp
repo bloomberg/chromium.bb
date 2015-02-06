@@ -134,11 +134,11 @@ void SVGFilterElement::childrenChanged(const ChildrenChange& change)
     if (change.byParser)
         return;
 
-    if (RenderObject* object = renderer())
+    if (LayoutObject* object = renderer())
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-RenderObject* SVGFilterElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGFilterElement::createRenderer(const RenderStyle&)
 {
     RenderSVGResourceFilter* renderer = new RenderSVGResourceFilter(this);
 

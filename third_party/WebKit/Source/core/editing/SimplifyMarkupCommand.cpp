@@ -28,8 +28,8 @@
 
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace blink {

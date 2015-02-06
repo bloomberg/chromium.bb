@@ -95,7 +95,7 @@ void RenderTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
     // If we're the remaining text from a first letter then we have to tell the
     // first letter pseudo element to reattach itself so it can re-calculate the
     // correct first-letter settings.
-    if (RenderObject* previous = previousSibling()) {
+    if (LayoutObject* previous = previousSibling()) {
         if (!previous->isPseudoElement() || !previous->node()->isFirstLetterPseudoElement())
             return;
 
@@ -143,7 +143,7 @@ Text* RenderTextFragment::associatedTextNode() const
 
     if (node->isFirstLetterPseudoElement()) {
         FirstLetterPseudoElement* pseudo = toFirstLetterPseudoElement(node);
-        RenderObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*pseudo);
+        LayoutObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*pseudo);
         if (!nextRenderer)
             return nullptr;
         node = nextRenderer->node();

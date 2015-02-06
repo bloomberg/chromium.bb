@@ -9,6 +9,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -20,7 +21,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderBoxModelObject.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/BorderEdge.h"
 #include "core/rendering/style/ShadowList.h"
@@ -37,7 +37,7 @@ void BoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffse
     // default implementation. Just pass paint through to the children
     PaintInfo childInfo(paintInfo);
     childInfo.updatePaintingRootForChildren(&m_renderBox);
-    for (RenderObject* child = m_renderBox.slowFirstChild(); child; child = child->nextSibling())
+    for (LayoutObject* child = m_renderBox.slowFirstChild(); child; child = child->nextSibling())
         child->paint(childInfo, adjustedPaintOffset);
 }
 
@@ -123,7 +123,7 @@ static bool skipBodyBackground(const RenderBox* bodyElementRenderer)
     ASSERT(bodyElementRenderer->isBody());
     // The <body> only paints its background if the root element has defined a background independent of the body,
     // or if the <body>'s parent is not the document element's renderer (e.g. inside SVG foreignObject).
-    RenderObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->renderer();
+    LayoutObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->renderer();
     return documentElementRenderer
         && !documentElementRenderer->hasBackground()
         && (documentElementRenderer == bodyElementRenderer->parent());
@@ -147,7 +147,7 @@ void BoxPainter::paintRootBoxFillLayers(const PaintInfo& paintInfo)
     if (paintInfo.skipRootBackground())
         return;
 
-    RenderObject* rootBackgroundRenderer = m_renderBox.rendererForRootBackground();
+    LayoutObject* rootBackgroundRenderer = m_renderBox.rendererForRootBackground();
 
     const FillLayer& bgLayer = rootBackgroundRenderer->style()->backgroundLayers();
     Color bgColor = rootBackgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
@@ -156,7 +156,7 @@ void BoxPainter::paintRootBoxFillLayers(const PaintInfo& paintInfo)
 }
 
 void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, RenderObject* backgroundObject)
+    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, LayoutObject* backgroundObject)
 {
     Vector<const FillLayer*, 8> layers;
     const FillLayer* curLayer = &fillLayer;
@@ -215,12 +215,12 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
 }
 
 void BoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, RenderObject* backgroundObject, bool skipBaseColor)
+    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, LayoutObject* backgroundObject, bool skipBaseColor)
 {
     BoxPainter::paintFillLayerExtended(m_renderBox, paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject, skipBaseColor);
 }
 
-void BoxPainter::applyBoxShadowForBackground(GraphicsContext* context, RenderObject& obj)
+void BoxPainter::applyBoxShadowForBackground(GraphicsContext* context, LayoutObject& obj)
 {
     const ShadowList* shadowList = obj.style()->boxShadow();
     ASSERT(shadowList);
@@ -247,7 +247,7 @@ static LayoutRect shrinkRectByOnePixel(GraphicsContext* context, const LayoutRec
     return shrunkRect;
 }
 
-FloatRoundedRect BoxPainter::getBackgroundRoundedRect(RenderObject& obj, const LayoutRect& borderRect, InlineFlowBox* box, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
+FloatRoundedRect BoxPainter::getBackgroundRoundedRect(LayoutObject& obj, const LayoutRect& borderRect, InlineFlowBox* box, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     FloatRoundedRect border = obj.style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
@@ -259,7 +259,7 @@ FloatRoundedRect BoxPainter::getBackgroundRoundedRect(RenderObject& obj, const L
     return border;
 }
 
-FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(RenderObject& obj, GraphicsContext* context, const LayoutRect& borderRect, BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(LayoutObject& obj, GraphicsContext* context, const LayoutRect& borderRect, BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     if (bleedAvoidance == BackgroundBleedShrinkBackground) {
         // We shrink the rectangle by one pixel on each side because the bleed is one pixel maximum.
@@ -272,7 +272,7 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(Rend
 }
 
 void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, RenderObject* backgroundObject, bool skipBaseColor)
+    BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, LayoutObject* backgroundObject, bool skipBaseColor)
 {
     GraphicsContext* context = paintInfo.context;
     if (rect.isEmpty())
@@ -451,7 +451,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             SkXfermode::Mode bgOp = WebCoreCompositeToSkiaComposite(bgLayer.composite(), bgLayer.blendMode());
             // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
             SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
-            RenderObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
+            LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
             InterpolationQuality interpolationQuality = chooseInterpolationQuality(obj, context, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
             if (bgLayer.maskSourceType() == MaskLuminance)
@@ -549,7 +549,7 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint
     paintInfo.context->fillRect(pixelSnappedIntRect(paintRect), Color::black);
 }
 
-void BoxPainter::paintRootBackgroundColor(RenderObject& obj, const PaintInfo& paintInfo, const LayoutRect& rect, const Color& bgColor)
+void BoxPainter::paintRootBackgroundColor(LayoutObject& obj, const PaintInfo& paintInfo, const LayoutRect& rect, const Color& bgColor)
 {
     GraphicsContext* context = paintInfo.context;
     if (rect.isEmpty())
@@ -576,7 +576,7 @@ void BoxPainter::paintRootBackgroundColor(RenderObject& obj, const PaintInfo& pa
     }
 }
 
-bool BoxPainter::isDocumentElementWithOpaqueBackground(RenderObject& obj)
+bool BoxPainter::isDocumentElementWithOpaqueBackground(LayoutObject& obj)
 {
     if (!obj.isDocumentElement())
         return false;
@@ -623,7 +623,7 @@ static inline int getSpaceBetweenImageTiles(int areaSize, int tileSize)
 }
 
 void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, const LayoutLayerModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
-    BackgroundImageGeometry& geometry, RenderObject* backgroundObject)
+    BackgroundImageGeometry& geometry, LayoutObject* backgroundObject)
 {
     LayoutUnit left = 0;
     LayoutUnit top = 0;
@@ -690,7 +690,7 @@ void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, con
         positioningAreaSize = geometry.destRect().size();
     }
 
-    const RenderObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
+    const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
     IntSize fillTileSize = calculateFillTileSize(obj, fillLayer, positioningAreaSize);
     fillLayer.image()->setContainerSizeForRenderer(clientForBackgroundImage, fillTileSize, obj.style()->effectiveZoom());
     geometry.setTileSize(fillTileSize);
@@ -787,7 +787,7 @@ InterpolationQuality BoxPainter::chooseInterpolationQuality(RenderBoxModelObject
     return ImageQualityController::imageQualityController()->chooseInterpolationQuality(context, &obj, image, layer, size);
 }
 
-bool BoxPainter::fixedBackgroundPaintsInLocalCoordinates(const RenderObject& obj)
+bool BoxPainter::fixedBackgroundPaintsInLocalCoordinates(const LayoutObject& obj)
 {
     if (!obj.isDocumentElement())
         return false;

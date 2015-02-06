@@ -129,7 +129,7 @@ void SVGMarkerElement::childrenChanged(const ChildrenChange& change)
     if (change.byParser)
         return;
 
-    if (RenderObject* object = renderer())
+    if (LayoutObject* object = renderer())
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
@@ -149,7 +149,7 @@ void SVGMarkerElement::setOrientToAngle(PassRefPtrWillBeRawPtr<SVGAngleTearOff> 
     svgAttributeChanged(SVGNames::orientAttr);
 }
 
-RenderObject* SVGMarkerElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGMarkerElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGResourceMarker(this);
 }

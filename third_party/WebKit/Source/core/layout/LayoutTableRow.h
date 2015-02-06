@@ -42,15 +42,15 @@ public:
     LayoutTableRow* previousRow() const;
     LayoutTableRow* nextRow() const;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
     LayoutTableSection* section() const { return toLayoutTableSection(parent()); }
     LayoutTable* table() const { return toLayoutTable(parent()->parent()); }
 
     static LayoutTableRow* createAnonymous(Document*);
-    static LayoutTableRow* createAnonymousWithParentRenderer(const RenderObject*);
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
+    static LayoutTableRow* createAnonymousWithParentRenderer(const LayoutObject*);
+    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
@@ -95,16 +95,16 @@ public:
     void addOverflowFromCell(const LayoutTableCell*);
 
 private:
-    virtual RenderObjectChildList* virtualChildren() override { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableRow (anonymous)" : "LayoutTableRow"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableRow || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || RenderBox::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
     virtual void layout() override;
 
     virtual LayerType layerTypeRequired() const override
@@ -127,20 +127,20 @@ private:
     void nextSibling() const = delete;
     void previousSibling() const = delete;
 
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
     unsigned m_rowIndex : 31;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableRow, isTableRow());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableRow, isTableRow());
 
 inline LayoutTableRow* LayoutTableRow::previousRow() const
 {
-    return toLayoutTableRow(RenderObject::previousSibling());
+    return toLayoutTableRow(LayoutObject::previousSibling());
 }
 
 inline LayoutTableRow* LayoutTableRow::nextRow() const
 {
-    return toLayoutTableRow(RenderObject::nextSibling());
+    return toLayoutTableRow(LayoutObject::nextSibling());
 }
 
 inline LayoutTableRow* LayoutTableSection::firstRow() const

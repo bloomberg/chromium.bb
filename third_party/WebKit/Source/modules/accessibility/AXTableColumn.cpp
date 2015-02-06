@@ -71,7 +71,7 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
     if (!m_parent)
         return;
 
-    RenderObject* renderer = m_parent->renderer();
+    LayoutObject* renderer = m_parent->renderer();
     if (!renderer)
         return;
 
@@ -121,7 +121,7 @@ AXObject* AXTableColumn::headerObject()
     if (!m_parent)
         return 0;
 
-    RenderObject* renderer = m_parent->renderer();
+    LayoutObject* renderer = m_parent->renderer();
     if (!renderer)
         return 0;
 

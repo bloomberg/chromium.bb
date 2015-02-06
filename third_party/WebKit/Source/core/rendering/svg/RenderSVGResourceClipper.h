@@ -41,20 +41,20 @@ public:
     virtual const char* renderName() const override { return "RenderSVGResourceClipper"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     // FIXME: Filters are also stateful resources that could benefit from having their state managed
     //        on the caller stack instead of the current hashmap. We should look at refactoring these
     //        into a general interface that can be shared.
-    bool applyStatefulResource(RenderObject*, GraphicsContext*&, ClipperState&);
-    void postApplyStatefulResource(RenderObject*, GraphicsContext*&, ClipperState&);
+    bool applyStatefulResource(LayoutObject*, GraphicsContext*&, ClipperState&);
+    void postApplyStatefulResource(LayoutObject*, GraphicsContext*&, ClipperState&);
 
     // clipPath can be clipped too, but don't have a boundingBox or paintInvalidationRect. So we can't call
     // applyResource directly and use the rects from the object, since they are empty for RenderSVGResources
-    // FIXME: We made applyClippingToContext public because we cannot call applyResource on HTML elements (it asserts on RenderObject::objectBoundingBox)
-    bool applyClippingToContext(RenderObject*, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
+    // FIXME: We made applyClippingToContext public because we cannot call applyResource on HTML elements (it asserts on LayoutObject::objectBoundingBox)
+    bool applyClippingToContext(LayoutObject*, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
 
-    FloatRect resourceBoundingBox(const RenderObject*);
+    FloatRect resourceBoundingBox(const LayoutObject*);
 
     static const RenderSVGResourceType s_resourceType = ClipperResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }

@@ -33,7 +33,7 @@
 
 namespace blink {
 
-AXSVGRoot::AXSVGRoot(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXSVGRoot::AXSVGRoot(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXRenderObject(renderer, axObjectCache)
 {
 }
@@ -42,7 +42,7 @@ AXSVGRoot::~AXSVGRoot()
 {
 }
 
-PassRefPtr<AXSVGRoot> AXSVGRoot::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSVGRoot> AXSVGRoot::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AXSVGRoot(renderer, axObjectCache));
 }

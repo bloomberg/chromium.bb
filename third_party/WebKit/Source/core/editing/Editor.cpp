@@ -419,7 +419,7 @@ void Editor::writeSelectionToPasteboard(Pasteboard* pasteboard, Range* selectedR
 static PassRefPtr<Image> imageFromNode(const Node& node)
 {
     node.document().updateLayoutIgnorePendingStylesheets();
-    RenderObject* renderer = node.renderer();
+    LayoutObject* renderer = node.renderer();
     if (!renderer)
         return nullptr;
 

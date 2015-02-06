@@ -861,7 +861,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         return false;
 
     // FIXME: What is this code really trying to do?
-    RenderObject* o = renderer();
+    LayoutObject* o = renderer();
     if (!o->isInline() || o->isReplaced()) {
         point = o->localToAbsolute(FloatPoint(), UseTransforms);
         return true;
@@ -869,13 +869,13 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
 
     // Find the next text/image child, to get a position.
     while (o) {
-        RenderObject* p = o;
-        if (RenderObject* oFirstChild = o->slowFirstChild()) {
+        LayoutObject* p = o;
+        if (LayoutObject* oFirstChild = o->slowFirstChild()) {
             o = oFirstChild;
         } else if (o->nextSibling()) {
             o = o->nextSibling();
         } else {
-            RenderObject* next = nullptr;
+            LayoutObject* next = nullptr;
             while (!next && o->parent()) {
                 o = o->parent();
                 next = o->nextSibling();
@@ -916,10 +916,10 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
     return false;
 }
 
-static inline RenderObject* endOfContinuations(RenderObject* renderer)
+static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
 {
-    RenderObject* prev = nullptr;
-    RenderObject* cur = renderer;
+    LayoutObject* prev = nullptr;
+    LayoutObject* cur = renderer;
 
     if (!cur->isRenderInline() && !cur->isRenderBlock())
         return nullptr;
@@ -940,22 +940,22 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
     if (!renderer())
         return false;
 
-    RenderObject* o = renderer();
+    LayoutObject* o = renderer();
     if (!o->isInline() || o->isReplaced()) {
         RenderBox* box = toRenderBox(o);
         point = o->localToAbsolute(FloatPoint(box->size()), UseTransforms);
         return true;
     }
 
-    RenderObject* startContinuation = nullptr;
+    LayoutObject* startContinuation = nullptr;
     // Find the last text/image child, to get a position.
     while (o) {
-        if (RenderObject* oLastChild = o->slowLastChild()) {
+        if (LayoutObject* oLastChild = o->slowLastChild()) {
             o = oLastChild;
         } else if (o != renderer() && o->previousSibling()) {
             o = o->previousSibling();
         } else {
-            RenderObject* prev = nullptr;
+            LayoutObject* prev = nullptr;
             while (!prev) {
                 // Check if the current renderer has contiunation and move the location for finding the renderer
                 // to the end of continuations if there is the continuation.
@@ -963,7 +963,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
                 if (startContinuation == o) {
                     startContinuation = nullptr;
                 } else if (!startContinuation) {
-                    if (RenderObject* continuation = endOfContinuations(o)) {
+                    if (LayoutObject* continuation = endOfContinuations(o)) {
                         startContinuation = o;
                         prev = continuation;
                         break;

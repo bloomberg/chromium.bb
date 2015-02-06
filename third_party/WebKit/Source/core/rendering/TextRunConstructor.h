@@ -44,7 +44,7 @@
 namespace blink {
 
 class Font;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class RenderText;
 
@@ -57,15 +57,15 @@ enum TextRunFlag {
 typedef unsigned TextRunFlags;
 
 // Direction resolved from string value.
-TextRun constructTextRun(RenderObject* context, const Font&, const String&, const RenderStyle&, TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, const RenderStyle&);
+TextRun constructTextRun(LayoutObject* context, const Font&, const String&, const RenderStyle&, TextRunFlags = DefaultTextRunFlags);
+TextRun constructTextRun(LayoutObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, const RenderStyle&);
 
 // Explicit direction.
-TextRun constructTextRun(RenderObject*, const Font&, const String&, const RenderStyle&, TextDirection, TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(RenderObject*, const Font&, const RenderText*, const RenderStyle&, TextDirection);
-TextRun constructTextRun(RenderObject*, const Font&, const RenderText*, unsigned offset, unsigned length, const RenderStyle&, TextDirection);
-TextRun constructTextRun(RenderObject*, const Font&, const LChar*, int length, const RenderStyle&, TextDirection);
-TextRun constructTextRun(RenderObject*, const Font&, const UChar*, int length, const RenderStyle&, TextDirection);
+TextRun constructTextRun(LayoutObject*, const Font&, const String&, const RenderStyle&, TextDirection, TextRunFlags = DefaultTextRunFlags);
+TextRun constructTextRun(LayoutObject*, const Font&, const RenderText*, const RenderStyle&, TextDirection);
+TextRun constructTextRun(LayoutObject*, const Font&, const RenderText*, unsigned offset, unsigned length, const RenderStyle&, TextDirection);
+TextRun constructTextRun(LayoutObject*, const Font&, const LChar*, int length, const RenderStyle&, TextDirection);
+TextRun constructTextRun(LayoutObject*, const Font&, const UChar*, int length, const RenderStyle&, TextDirection);
 
 } // namespace blink
 

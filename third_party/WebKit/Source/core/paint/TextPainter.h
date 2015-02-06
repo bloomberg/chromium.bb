@@ -20,7 +20,7 @@ class Font;
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class RenderCombineText;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class ShadowList;
 class TextRun;
@@ -57,8 +57,8 @@ public:
         }
         bool operator!=(const Style& other) { return !(*this == other); }
     };
-    static Style textPaintingStyle(RenderObject&, const RenderStyle&, bool forceBlackText, bool isPrinting);
-    static Style selectionPaintingStyle(RenderObject&, bool haveSelection, bool forceBlackText, bool isPrinting, const Style& textStyle);
+    static Style textPaintingStyle(LayoutObject&, const RenderStyle&, bool forceBlackText, bool isPrinting);
+    static Style selectionPaintingStyle(LayoutObject&, bool haveSelection, bool forceBlackText, bool isPrinting, const Style& textStyle);
 
     enum RotationDirection { Counterclockwise, Clockwise };
     static AffineTransform rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection);

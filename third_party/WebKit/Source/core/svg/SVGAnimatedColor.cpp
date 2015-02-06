@@ -21,7 +21,7 @@
 
 #include "core/svg/SVGAnimatedColor.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/svg/ColorDistance.h"
 #include "core/svg/SVGAnimateElement.h"
 
@@ -42,10 +42,9 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGColorProperty::cloneForAnimation(cons
 static inline Color fallbackColorForCurrentColor(SVGElement* targetElement)
 {
     ASSERT(targetElement);
-    if (RenderObject* targetRenderer = targetElement->renderer())
+    if (LayoutObject* targetRenderer = targetElement->renderer())
         return targetRenderer->resolveColor(CSSPropertyColor);
-    else
-        return Color::transparent;
+    return Color::transparent;
 }
 
 void SVGColorProperty::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)

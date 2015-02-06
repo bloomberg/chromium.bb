@@ -62,15 +62,15 @@ protected:
     virtual ~RenderBlock();
 
 public:
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+    LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     // If you have a RenderBlock, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
     bool beingDestroyed() const { return m_beingDestroyed; }
 
@@ -93,8 +93,8 @@ public:
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
     virtual void deleteLineBoxTree();
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject*) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject*) override;
 
     virtual void layoutBlock(bool relayoutChildren);
 
@@ -181,14 +181,14 @@ public:
     using RenderBoxModelObject::continuation;
     using RenderBoxModelObject::setContinuation;
 
-    static RenderBlock* createAnonymousWithParentRendererAndDisplay(const RenderObject*, EDisplay = BLOCK);
-    static RenderBlockFlow* createAnonymousColumnsWithParentRenderer(const RenderObject*);
-    static RenderBlockFlow* createAnonymousColumnSpanWithParentRenderer(const RenderObject*);
+    static RenderBlock* createAnonymousWithParentRendererAndDisplay(const LayoutObject*, EDisplay = BLOCK);
+    static RenderBlockFlow* createAnonymousColumnsWithParentRenderer(const LayoutObject*);
+    static RenderBlockFlow* createAnonymousColumnSpanWithParentRenderer(const LayoutObject*);
     RenderBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentRendererAndDisplay(this, display); }
     RenderBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParentRenderer(this); }
     RenderBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParentRenderer(this); }
 
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override;
+    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
 
     ColumnInfo* columnInfo() const;
     int columnGap() const;
@@ -236,7 +236,7 @@ public:
     bool paintsContinuationOutline(RenderInline* flow);
 #endif
 #ifndef NDEBUG
-    void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0) const;
+    void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0) const;
 #endif
 
     bool recalcChildOverflowAfterStyleChange();
@@ -257,7 +257,7 @@ protected:
     };
 
     void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
-    void markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, SubtreeLayoutScope&);
+    void markFixedPositionObjectForLayoutIfNeeded(LayoutObject* child, SubtreeLayoutScope&);
 
     LayoutUnit marginIntrinsicLogicalWidthForChild(RenderBox& child) const;
 
@@ -324,25 +324,25 @@ protected:
     virtual void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState) override;
 
 private:
-    virtual RenderObjectChildList* virtualChildren() override final { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override final { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
 
     virtual const char* renderName() const override;
 
     virtual bool isRenderBlock() const override final { return true; }
 
-    void makeChildrenNonInline(RenderObject* insertionPoint = 0);
+    void makeChildrenNonInline(LayoutObject* insertionPoint = 0);
     virtual void removeLeftoverAnonymousBlock(RenderBlock* child);
 
     static void collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* child);
 
-    virtual void dirtyLinesFromChangedChild(RenderObject* child) override final { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
+    virtual void dirtyLinesFromChangedChild(LayoutObject* child) override final { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
 
-    void addChildToContinuation(RenderObject* newChild, RenderObject* beforeChild);
-    virtual void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild) override;
-    void addChildToAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild);
+    void addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild);
+    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild) override;
+    void addChildToAnonymousColumnBlocks(LayoutObject* newChild, LayoutObject* beforeChild);
 
-    void addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild = 0);
+    void addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, LayoutObject* beforeChild = 0);
 
     virtual bool isSelfCollapsingBlock() const override;
 
@@ -372,9 +372,9 @@ private:
 
     virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const override final;
 
-    virtual RenderObject* hoverAncestor() const override final;
+    virtual LayoutObject* hoverAncestor() const override final;
     virtual void updateDragState(bool dragOn) override final;
-    virtual void childBecameNonInline(RenderObject* child) override final;
+    virtual void childBecameNonInline(LayoutObject* child) override final;
 
     bool isSelectionRoot() const;
 
@@ -398,16 +398,16 @@ private:
     PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);
 
     void calcColumnWidth();
-    void makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlockFlow* newBlockBox, RenderObject* newChild);
+    void makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, RenderBlockFlow* newBlockBox, LayoutObject* newChild);
 
     void splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock, RenderBlock* middleBlock,
-                     RenderObject* beforeChild, RenderBoxModelObject* oldCont);
-    void splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox,
-                   RenderObject* newChild, RenderBoxModelObject* oldCont);
+        LayoutObject* beforeChild, RenderBoxModelObject* oldCont);
+    void splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
+        LayoutObject* newChild, RenderBoxModelObject* oldCont);
     RenderBlock* clone() const;
-    RenderBlock* continuationBefore(RenderObject* beforeChild);
+    RenderBlock* continuationBefore(LayoutObject* beforeChild);
     RenderBlockFlow* containingColumnsBlock(bool allowAnonymousColumnBlock = true);
-    RenderBlockFlow* columnsBlockForSpanningElement(RenderObject* newChild);
+    RenderBlockFlow* columnsBlockForSpanningElement(LayoutObject* newChild);
 
     // End helper functions and structs used by layoutBlockChildren.
 
@@ -451,7 +451,7 @@ public:
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const override final;
 
 protected:
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
     RenderLineBoxList m_lineBoxes;   // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
     LayoutUnit m_pageLogicalOffset;
@@ -475,7 +475,7 @@ protected:
     friend class RenderBlockFlow;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlock, isRenderBlock());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBlock, isRenderBlock());
 
 } // namespace blink
 

@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class RenderSVGResourceFilter;
 class RenderSVGResourceMasker;
 class SVGResources;
@@ -51,7 +51,7 @@ private:
 class SVGRenderingContext {
     STACK_ALLOCATED();
 public:
-    SVGRenderingContext(RenderObject& object, const PaintInfo& paintInfo)
+    SVGRenderingContext(LayoutObject& object, const PaintInfo& paintInfo)
         : m_object(&object)
         , m_paintInfo(paintInfo)
         , m_originalPaintInfo(&paintInfo)
@@ -71,9 +71,9 @@ public:
     // Return true if these operations aren't necessary or if they are successfully applied.
     bool applyClipMaskAndFilterIfNecessary();
 
-    static void renderSubtree(GraphicsContext*, RenderObject*);
+    static void renderSubtree(GraphicsContext*, LayoutObject*);
 
-    static float calculateScreenFontSizeScalingFactor(const RenderObject*);
+    static float calculateScreenFontSizeScalingFactor(const LayoutObject*);
 
 private:
     void applyCompositingIfNecessary();
@@ -89,7 +89,7 @@ private:
 
     bool isIsolationInstalled() const;
 
-    RawPtrWillBeMember<RenderObject> m_object;
+    RawPtrWillBeMember<LayoutObject> m_object;
     PaintInfo m_paintInfo;
     const PaintInfo* m_originalPaintInfo;
     RawPtrWillBeMember<RenderSVGResourceFilter> m_filter;

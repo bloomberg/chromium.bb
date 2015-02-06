@@ -45,9 +45,9 @@ public:
 
     virtual const char* renderName() const override { return "LayoutRubyBase (anonymous)"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyBase || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyBase || RenderBlockFlow::isOfType(type); }
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
 private:
     LayoutRubyBase();
@@ -55,9 +55,9 @@ private:
     virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
     virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const override;
 
-    void moveChildren(LayoutRubyBase* toBase, RenderObject* beforeChild = 0);
-    void moveInlineChildren(LayoutRubyBase* toBase, RenderObject* beforeChild = 0);
-    void moveBlockChildren(LayoutRubyBase* toBase, RenderObject* beforeChild = 0);
+    void moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = 0);
+    void moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = 0);
+    void moveBlockChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = 0);
 
     // Allow LayoutRubyRun to manipulate the children within ruby bases.
     friend class LayoutRubyRun;

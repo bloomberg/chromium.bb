@@ -19,11 +19,11 @@ inline HTMLRTElement::HTMLRTElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLRTElement)
 
-RenderObject* HTMLRTElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLRTElement::createRenderer(const RenderStyle& style)
 {
     if (style.display() == BLOCK)
         return new LayoutRubyText(this);
-    return RenderObject::createObject(this, style);
+    return LayoutObject::createObject(this, style);
 }
 
 }

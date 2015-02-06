@@ -55,11 +55,11 @@ public:
 
     virtual const char* renderName() const override { return "RenderView"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderView || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderView || RenderBlockFlow::isOfType(type); }
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
     virtual void layout() override;
     virtual void updateLogicalWidth() override;
@@ -99,13 +99,13 @@ public:
     virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
 
     enum SelectionPaintInvalidationMode { PaintInvalidationNewXOROld, PaintInvalidationNewMinusOld };
-    void setSelection(RenderObject* start, int startPos, RenderObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
+    void setSelection(LayoutObject* start, int startPos, LayoutObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
     void clearSelection();
     void setSelection(const FrameSelection&);
     bool hasPendingSelection() const { return m_pendingSelection.m_hasPendingSelection; }
     void commitPendingSelection();
-    RenderObject* selectionStart();
-    RenderObject* selectionEnd();
+    LayoutObject* selectionStart();
+    LayoutObject* selectionEnd();
     IntRect selectionBounds();
     void selectionStartEnd(int& startPos, int& endPos);
     void invalidatePaintForSelection();
@@ -170,7 +170,7 @@ public:
 
 private:
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
-    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
@@ -183,14 +183,14 @@ private:
 
     bool shouldUsePrintingLayout() const;
 
-    RenderObject* backgroundRenderer() const;
+    LayoutObject* backgroundRenderer() const;
 
     virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
 
     FrameView* m_frameView;
 
-    RenderObject* m_selectionStart;
-    RenderObject* m_selectionEnd;
+    LayoutObject* m_selectionStart;
+    LayoutObject* m_selectionEnd;
 
     int m_selectionStartPos;
     int m_selectionEndPos;
@@ -229,7 +229,7 @@ private:
     } m_pendingSelection;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderView, isRenderView());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderView, isRenderView());
 
 // Suspends the LayoutState cached offset and clipRect optimization. Used under transforms
 // that cannot be represented by LayoutState (common in SVG) and when manipulating the render

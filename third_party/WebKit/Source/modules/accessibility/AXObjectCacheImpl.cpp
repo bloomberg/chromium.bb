@@ -188,12 +188,12 @@ AXObject* AXObjectCacheImpl::get(Widget* widget)
     return m_objects.get(axID);
 }
 
-AXObject* AXObjectCacheImpl::get(RenderObject* renderer)
+AXObject* AXObjectCacheImpl::get(LayoutObject* renderer)
 {
     if (!renderer)
         return 0;
 
-    AXID axID = m_renderObjectMapping.get(renderer);
+    AXID axID = m_layoutObjectMapping.get(renderer);
     ASSERT(!HashTraits<AXID>::isDeletedValue(axID));
     if (!axID)
         return 0;
@@ -206,7 +206,7 @@ AXObject* AXObjectCacheImpl::get(Node* node)
     if (!node)
         return 0;
 
-    AXID renderID = node->renderer() ? m_renderObjectMapping.get(node->renderer()) : 0;
+    AXID renderID = node->renderer() ? m_layoutObjectMapping.get(node->renderer()) : 0;
     ASSERT(!HashTraits<AXID>::isDeletedValue(renderID));
 
     AXID nodeID = m_nodeObjectMapping.get(node);
@@ -252,7 +252,7 @@ bool nodeHasRole(Node* node, const String& role)
     return equalIgnoringCase(toElement(node)->getAttribute(roleAttr), role);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(RenderObject* renderer)
+PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* renderer)
 {
     // FIXME: How could renderer->node() ever not be an Element?
     Node* node = renderer->node();
@@ -384,7 +384,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     return newObj.get();
 }
 
-AXObject* AXObjectCacheImpl::getOrCreate(RenderObject* renderer)
+AXObject* AXObjectCacheImpl::getOrCreate(LayoutObject* renderer)
 {
     if (!renderer)
         return 0;
@@ -399,7 +399,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(RenderObject* renderer)
 
     getAXID(newObj.get());
 
-    m_renderObjectMapping.set(renderer, newObj->axObjectID());
+    m_layoutObjectMapping.set(renderer, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
     newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
@@ -502,14 +502,14 @@ void AXObjectCacheImpl::remove(AXID axID)
     ASSERT(m_objects.size() >= m_idsInUse.size());
 }
 
-void AXObjectCacheImpl::remove(RenderObject* renderer)
+void AXObjectCacheImpl::remove(LayoutObject* renderer)
 {
     if (!renderer)
         return;
 
-    AXID axID = m_renderObjectMapping.get(renderer);
+    AXID axID = m_layoutObjectMapping.get(renderer);
     remove(axID);
-    m_renderObjectMapping.remove(renderer);
+    m_layoutObjectMapping.remove(renderer);
 }
 
 void AXObjectCacheImpl::remove(Node* node)
@@ -635,7 +635,7 @@ void AXObjectCacheImpl::textChanged(Node* node)
     textChanged(getOrCreate(node));
 }
 
-void AXObjectCacheImpl::textChanged(RenderObject* renderer)
+void AXObjectCacheImpl::textChanged(LayoutObject* renderer)
 {
     textChanged(getOrCreate(renderer));
 }
@@ -664,7 +664,7 @@ void AXObjectCacheImpl::childrenChanged(Node* node)
     childrenChanged(get(node));
 }
 
-void AXObjectCacheImpl::childrenChanged(RenderObject* renderer)
+void AXObjectCacheImpl::childrenChanged(LayoutObject* renderer)
 {
     childrenChanged(get(renderer));
 }
@@ -697,7 +697,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
         // Notifications should only be sent after the renderer has finished
         if (obj->isAXRenderObject()) {
             AXRenderObject* renderObj = toAXRenderObject(obj);
-            RenderObject* renderer = renderObj->renderer();
+            LayoutObject* renderer = renderObj->renderer();
             if (renderer && renderer->view())
                 ASSERT(!renderer->view()->layoutState());
         }
@@ -713,7 +713,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
     m_notificationsToPost.clear();
 }
 
-void AXObjectCacheImpl::postNotification(RenderObject* renderer, AXNotification notification, bool postToElement)
+void AXObjectCacheImpl::postNotification(LayoutObject* renderer, AXNotification notification, bool postToElement)
 {
     if (!renderer)
         return;
@@ -785,7 +785,7 @@ void AXObjectCacheImpl::selectedChildrenChanged(Node* node)
     postNotification(node, AXSelectedChildrenChanged, false);
 }
 
-void AXObjectCacheImpl::selectedChildrenChanged(RenderObject* renderer)
+void AXObjectCacheImpl::selectedChildrenChanged(LayoutObject* renderer)
 {
     // postToElement is false so that you can pass in any child of an element and it will go up the parent tree
     // to find the container which should send out the notification.
@@ -804,7 +804,7 @@ void AXObjectCacheImpl::handleScrollbarUpdate(FrameView* view)
     }
 }
 
-void AXObjectCacheImpl::handleLayoutComplete(RenderObject* renderer)
+void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* renderer)
 {
     if (!renderer)
         return;
@@ -876,13 +876,13 @@ void AXObjectCacheImpl::labelChanged(Element* element)
     textChanged(toHTMLLabelElement(element)->control());
 }
 
-void AXObjectCacheImpl::recomputeIsIgnored(RenderObject* renderer)
+void AXObjectCacheImpl::recomputeIsIgnored(LayoutObject* renderer)
 {
     if (AXObject* obj = get(renderer))
         obj->notifyIfIgnoredValueChanged();
 }
 
-void AXObjectCacheImpl::inlineTextBoxesUpdated(RenderObject* renderer)
+void AXObjectCacheImpl::inlineTextBoxesUpdated(LayoutObject* renderer)
 {
     if (!inlineTextBoxAccessibilityEnabled())
         return;
@@ -1069,9 +1069,9 @@ void AXObjectCacheImpl::handleScrollPositionChanged(FrameView* frameView)
     postPlatformNotification(targetAXObject, AXScrollPositionChanged);
 }
 
-void AXObjectCacheImpl::handleScrollPositionChanged(RenderObject* renderObject)
+void AXObjectCacheImpl::handleScrollPositionChanged(LayoutObject* layoutObject)
 {
-    postPlatformNotification(getOrCreate(renderObject), AXScrollPositionChanged);
+    postPlatformNotification(getOrCreate(layoutObject), AXScrollPositionChanged);
 }
 
 const AtomicString& AXObjectCacheImpl::computedRoleForNode(Node* node)

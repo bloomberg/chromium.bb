@@ -50,7 +50,7 @@
 
 namespace blink {
 
-static void adjustClipRectsForChildren(const RenderObject& renderer, ClipRects& clipRects)
+static void adjustClipRectsForChildren(const LayoutObject& renderer, ClipRects& clipRects)
 {
     EPosition position = renderer.style()->position();
     // A fixed object is essentially the root of its containing block hierarchy, so when
@@ -66,7 +66,7 @@ static void adjustClipRectsForChildren(const RenderObject& renderer, ClipRects& 
     }
 }
 
-static void applyClipRects(const ClipRectsContext& context, RenderObject& renderer, LayoutPoint offset, ClipRects& clipRects)
+static void applyClipRects(const ClipRectsContext& context, LayoutObject& renderer, LayoutPoint offset, ClipRects& clipRects)
 {
     ASSERT(renderer.hasOverflowClip() || renderer.hasClip());
 

@@ -39,7 +39,7 @@ const unsigned short cFullTruncation = USHRT_MAX - 1;
 
 class InlineTextBox : public InlineBox {
 public:
-    InlineTextBox(RenderObject& obj, int start, unsigned short length)
+    InlineTextBox(LayoutObject& obj, int start, unsigned short length)
         : InlineBox(obj)
         , m_prevTextBox(0)
         , m_nextTextBox(0)
@@ -118,7 +118,7 @@ private:
     virtual void attachLine() override final;
 
 public:
-    virtual RenderObject::SelectionState selectionState() const override final;
+    virtual LayoutObject::SelectionState selectionState() const override final;
 
 private:
     virtual void clearTruncation() override final { m_truncation = cNoTruncation; }
@@ -153,8 +153,8 @@ public:
     void characterWidths(Vector<FloatWillBeLayoutUnit>&) const;
 
 private:
-    InlineTextBox* m_prevTextBox; // The previous box that also uses our RenderObject
-    InlineTextBox* m_nextTextBox; // The next box that also uses our RenderObject
+    InlineTextBox* m_prevTextBox; // The previous box that also uses our LayoutObject
+    InlineTextBox* m_nextTextBox; // The next box that also uses our LayoutObject
 
     int m_start;
     unsigned short m_len;

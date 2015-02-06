@@ -207,7 +207,7 @@ InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
     return instrumentingAgentsFor(eventTarget->executionContext());
 }
 
-InstrumentingAgents* instrumentingAgentsFor(RenderObject* renderer)
+InstrumentingAgents* instrumentingAgentsFor(LayoutObject* renderer)
 {
     return instrumentingAgentsFor(renderer->frame());
 }

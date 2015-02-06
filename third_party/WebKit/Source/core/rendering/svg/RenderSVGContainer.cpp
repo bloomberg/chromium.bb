@@ -74,7 +74,7 @@ void RenderSVGContainer::layout()
     clearNeedsLayout();
 }
 
-void RenderSVGContainer::addChild(RenderObject* child, RenderObject* beforeChild)
+void RenderSVGContainer::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderSVGModelObject::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->style());
@@ -84,7 +84,7 @@ void RenderSVGContainer::addChild(RenderObject* child, RenderObject* beforeChild
         descendantIsolationRequirementsChanged(DescendantIsolationRequired);
 }
 
-void RenderSVGContainer::removeChild(RenderObject* child)
+void RenderSVGContainer::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
     RenderSVGModelObject::removeChild(child);
@@ -96,7 +96,7 @@ void RenderSVGContainer::removeChild(RenderObject* child)
 
 bool RenderSVGContainer::selfWillPaint()
 {
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
     return resources && resources->filter();
 }
 
@@ -170,7 +170,7 @@ bool RenderSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTest
     if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
         return false;
 
-    for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
+    for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
         if (child->nodeAtFloatPoint(request, result, localPoint, hitTestAction)) {
             updateHitTestResult(result, roundedLayoutPoint(localPoint));
             return true;

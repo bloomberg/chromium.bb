@@ -72,7 +72,7 @@ void FrameSetPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     if (paintInfo.phase != PaintPhaseForeground)
         return;
 
-    RenderObject* child = m_renderFrameSet.firstChild();
+    LayoutObject* child = m_renderFrameSet.firstChild();
     if (!child)
         return;
 

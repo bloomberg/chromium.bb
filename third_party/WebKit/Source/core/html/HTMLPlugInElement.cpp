@@ -140,7 +140,7 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
 {
     if (isDisabledFormControl())
         return false;
-    RenderObject* r = renderer();
+    LayoutObject* r = renderer();
     return r && (r->isEmbeddedObject() || r->isRenderPart());
 }
 
@@ -263,13 +263,13 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     HTMLFrameOwnerElement::detach(context);
 }
 
-RenderObject* HTMLPlugInElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLPlugInElement::createRenderer(const RenderStyle& style)
 {
     // Fallback content breaks the DOM->Renderer class relationship of this
     // class and all superclasses because createObject won't necessarily return
     // a RenderEmbeddedObject or RenderPart.
     if (useFallbackContent())
-        return RenderObject::createObject(this, style);
+        return LayoutObject::createObject(this, style);
 
     if (isImageType()) {
         RenderImage* image = new RenderImage(this);
@@ -374,7 +374,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     // FIXME: Mouse down and scroll events are passed down to plug-in via custom
     // code in EventHandler; these code paths should be united.
 
-    RenderObject* r = renderer();
+    LayoutObject* r = renderer();
     if (!r || !r->isRenderPart())
         return;
     if (r->isEmbeddedObject()) {

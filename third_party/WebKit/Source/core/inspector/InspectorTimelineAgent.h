@@ -73,7 +73,7 @@ class KURL;
 class ScriptState;
 class Node;
 class RenderImage;
-class RenderObject;
+class LayoutObject;
 class ResourceError;
 class ResourceLoader;
 class ResourceRequest;
@@ -147,7 +147,7 @@ public:
 
     void didInvalidateLayout(LocalFrame*);
     bool willLayout(LocalFrame*);
-    void didLayout(RenderObject*);
+    void didLayout(LayoutObject*);
 
     void willUpdateLayerTree();
     void layerTreeDidChange();
@@ -157,13 +157,13 @@ public:
     bool willRecalculateStyle(Document*);
     void didRecalculateStyle(int elementCount);
 
-    void willPaint(RenderObject*, const GraphicsLayer*);
-    void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
+    void willPaint(LayoutObject*, const GraphicsLayer*);
+    void didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     void willPaintImage(RenderImage*);
     void didPaintImage();
 
-    void willScrollLayer(RenderObject*);
+    void willScrollLayer(LayoutObject*);
     void didScrollLayer();
 
     void willComposite();
@@ -268,9 +268,9 @@ private:
     void clearRecordStack();
     PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createRecordForEvent(const TraceEventDispatcher::TraceEvent&, const String& type, PassRefPtr<JSONObject> data);
 
-    void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
+    void localToPageQuad(const LayoutObject& renderer, const LayoutRect&, FloatQuad*);
     long long nodeId(Node*);
-    long long nodeId(RenderObject*);
+    long long nodeId(LayoutObject*);
 
     double timestamp();
 

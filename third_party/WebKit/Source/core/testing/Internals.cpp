@@ -103,6 +103,7 @@
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
@@ -118,7 +119,6 @@
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
@@ -685,7 +685,7 @@ PassRefPtrWillBeRawPtr<ClientRect> Internals::boundingBox(Element* element)
     ASSERT(element);
 
     element->document().updateLayoutIgnorePendingStylesheets();
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     if (!renderer)
         return ClientRect::create();
     return ClientRect::create(renderer->absoluteBoundingBoxRectIgnoringTransforms());
@@ -1522,8 +1522,8 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
     ASSERT(element1 && element2);
     element1->document().view()->updateLayoutAndStyleForPainting();
 
-    RenderObject* renderer1 = element1->renderer();
-    RenderObject* renderer2 = element2->renderer();
+    LayoutObject* renderer1 = element1->renderer();
+    LayoutObject* renderer2 = element2->renderer();
     if (!renderer1 || !renderer1->isBox()) {
         exceptionState.throwDOMException(InvalidAccessError, renderer1 ? "The first provided element's renderer is not a box." : "The first provided element has no renderer.");
         return 0;
@@ -1561,7 +1561,7 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
     ASSERT(element);
     element->document().updateLayout();
 
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox()) {
         exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
         return String();
@@ -2015,7 +2015,7 @@ bool Internals::isSelectPopupVisible(Node* node)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    RenderObject* renderer = select.renderer();
+    LayoutObject* renderer = select.renderer();
     if (!renderer || !renderer->isMenuList())
         return false;
 
@@ -2030,7 +2030,7 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    RenderObject* renderer = select.renderer();
+    LayoutObject* renderer = select.renderer();
     if (!renderer || !renderer->isMenuList())
         return false;
 
@@ -2046,7 +2046,7 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    RenderObject* renderer = select.renderer();
+    LayoutObject* renderer = select.renderer();
     if (!renderer || !renderer->isMenuList())
         return false;
 

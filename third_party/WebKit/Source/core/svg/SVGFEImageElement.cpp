@@ -176,7 +176,7 @@ void SVGFEImageElement::notifyFinished(Resource*)
     if (!isSVGFilterElement(*parent) || !parent->renderer())
         return;
 
-    if (RenderObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->renderer())
         markForLayoutAndParentResourceInvalidation(renderer);
 }
 

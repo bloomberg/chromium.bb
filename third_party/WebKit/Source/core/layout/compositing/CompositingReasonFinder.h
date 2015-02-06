@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class RenderView;
 
 class CompositingReasonFinder {
@@ -19,7 +19,7 @@ class CompositingReasonFinder {
 public:
     explicit CompositingReasonFinder(RenderView&);
 
-    CompositingReasons potentialCompositingReasonsFromStyle(RenderObject*) const;
+    CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject*) const;
     CompositingReasons directReasons(const Layer*) const;
 
     void updateTriggers();
@@ -32,10 +32,10 @@ private:
 
     CompositingReasons nonStyleDeterminedDirectReasons(const Layer*) const;
 
-    bool requiresCompositingForTransform(RenderObject*) const;
+    bool requiresCompositingForTransform(LayoutObject*) const;
     bool requiresCompositingForAnimation(RenderStyle*) const;
     bool requiresCompositingForPositionFixed(const Layer*) const;
-    bool requiresCompositingForScrollBlocksOn(const RenderObject*) const;
+    bool requiresCompositingForScrollBlocksOn(const LayoutObject*) const;
 
     RenderView& m_renderView;
     CompositingTriggerFlags m_compositingTriggers;

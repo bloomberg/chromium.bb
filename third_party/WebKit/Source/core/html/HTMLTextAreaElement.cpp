@@ -198,7 +198,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
         HTMLTextFormControlElement::parseAttribute(name, value);
 }
 
-RenderObject* HTMLTextAreaElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLTextAreaElement::createRenderer(const RenderStyle&)
 {
     return new RenderTextControlMultiLine(this);
 }

@@ -152,7 +152,7 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo)
     if (!markerPositions || markerPositions->isEmpty())
         return;
 
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(&m_renderSVGShape);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_renderSVGShape);
     if (!resources)
         return;
 

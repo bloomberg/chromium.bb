@@ -26,7 +26,7 @@ public:
     virtual void layout();
 
 private:
-    virtual bool descendantIsValidColumnSpanner(RenderObject* /*descendant*/) const override { return false; }
+    virtual bool descendantIsValidColumnSpanner(LayoutObject* /*descendant*/) const override { return false; }
 };
 
 } // namespace blink

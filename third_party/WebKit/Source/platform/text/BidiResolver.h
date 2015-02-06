@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 template <class Iterator> class MidpointState {
 public:
@@ -63,7 +63,7 @@ public:
 
     // When ignoring spaces, this needs to be called for objects that need line boxes such as RenderInlines or
     // hard line breaks to ensure that they're not ignored.
-    void ensureLineBoxInsideIgnoredSpaces(RenderObject* renderer)
+    void ensureLineBoxInsideIgnoredSpaces(LayoutObject* renderer)
     {
         Iterator midpoint(0, renderer, 0);
         stopIgnoringSpaces(midpoint);

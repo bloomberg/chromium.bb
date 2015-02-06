@@ -2247,7 +2247,7 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer) {
         *errorString = "No renderer for node, perhaps orphan or hidden node";
         return;

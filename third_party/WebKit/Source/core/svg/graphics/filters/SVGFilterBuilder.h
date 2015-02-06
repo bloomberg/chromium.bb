@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 class SVGFilterBuilder final : public RefCountedWillBeGarbageCollectedFinalized<SVGFilterBuilder> {
 public:
@@ -47,7 +47,7 @@ public:
     FilterEffect* getEffectById(const AtomicString& id) const;
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }
 
-    void appendEffectToEffectReferences(PassRefPtrWillBeRawPtr<FilterEffect>, RenderObject*);
+    void appendEffectToEffectReferences(PassRefPtrWillBeRawPtr<FilterEffect>, LayoutObject*);
 
     inline FilterEffectSet& effectReferences(FilterEffect* effect)
     {
@@ -57,7 +57,7 @@ public:
     }
 
     // Required to change the attributes of a filter during an svgAttributeChanged.
-    inline FilterEffect* effectByRenderer(RenderObject* object) { return m_effectRenderer.get(object); }
+    inline FilterEffect* effectByRenderer(LayoutObject* object) { return m_effectRenderer.get(object); }
 
     void clearEffects();
     void clearResultsRecursive(FilterEffect*);
@@ -80,7 +80,7 @@ private:
     // The value is a list, which contains those filter effects,
     // which depends on the key filter effect.
     WillBeHeapHashMap<RefPtrWillBeMember<FilterEffect>, FilterEffectSet> m_effectReferences;
-    WillBeHeapHashMap<RenderObject*, RawPtrWillBeMember<FilterEffect> > m_effectRenderer;
+    WillBeHeapHashMap<LayoutObject*, RawPtrWillBeMember<FilterEffect>> m_effectRenderer;
 
     RefPtrWillBeMember<FilterEffect> m_lastEffect;
 };

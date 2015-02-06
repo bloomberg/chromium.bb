@@ -234,12 +234,12 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldS
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }
 
-bool RenderSVGRoot::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool RenderSVGRoot::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
 }
 
-void RenderSVGRoot::addChild(RenderObject* child, RenderObject* beforeChild)
+void RenderSVGRoot::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderReplaced::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->style());
@@ -249,7 +249,7 @@ void RenderSVGRoot::addChild(RenderObject* child, RenderObject* beforeChild)
         descendantIsolationRequirementsChanged(DescendantIsolationRequired);
 }
 
-void RenderSVGRoot::removeChild(RenderObject* child)
+void RenderSVGRoot::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
     RenderReplaced::removeChild(child);
@@ -379,7 +379,7 @@ void RenderSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInval
     RenderReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
-const RenderObject* RenderSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     return RenderReplaced::pushMappingToContainer(ancestorToStopAt, geometryMap);
 }
@@ -403,7 +403,7 @@ bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
         if (localToParentTransform.isInvertible()) {
             FloatPoint localPoint = localToParentTransform.inverse().mapPoint(FloatPoint(pointInParent));
 
-            for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
+            for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
                 // FIXME: nodeAtFloatPoint() doesn't handle rect-based hit tests yet.
                 if (child->nodeAtFloatPoint(request, result, localPoint, hitTestAction)) {
                     updateHitTestResult(result, pointInBorderBox);

@@ -48,7 +48,7 @@ void LayoutTableAlgorithmAuto::recalcColumn(unsigned effCol)
     LayoutTableCell* fixedContributor = 0;
     LayoutTableCell* maxContributor = 0;
 
-    for (RenderObject* child = m_table->children()->firstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = m_table->children()->firstChild(); child; child = child->nextSibling()) {
         if (child->isLayoutTableCol()) {
             // LayoutTableCols don't have the concept of preferred logical width, but we need to clear their dirty bits
             // so that if we call setPreferredWidthsDirty(true) on a col or one of its descendants, we'll mark it's

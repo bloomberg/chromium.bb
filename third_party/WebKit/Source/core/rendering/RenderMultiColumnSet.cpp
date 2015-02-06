@@ -51,7 +51,7 @@ RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread* fl
 
 RenderMultiColumnSet* RenderMultiColumnSet::nextSiblingMultiColumnSet() const
 {
-    for (RenderObject* sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
+    for (LayoutObject* sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
         if (sibling->isRenderMultiColumnSet())
             return toRenderMultiColumnSet(sibling);
     }
@@ -60,7 +60,7 @@ RenderMultiColumnSet* RenderMultiColumnSet::nextSiblingMultiColumnSet() const
 
 RenderMultiColumnSet* RenderMultiColumnSet::previousSiblingMultiColumnSet() const
 {
-    for (RenderObject* sibling = previousSibling(); sibling; sibling = sibling->previousSibling()) {
+    for (LayoutObject* sibling = previousSibling(); sibling; sibling = sibling->previousSibling()) {
         if (sibling->isRenderMultiColumnSet())
             return toRenderMultiColumnSet(sibling);
     }

@@ -35,11 +35,11 @@ namespace blink {
 struct PaintInfo;
 
 class IntRect;
-class RenderObject;
+class LayoutObject;
 
 class RenderMediaControls {
 public:
-    static bool paintMediaControlsPart(MediaControlElementType, RenderObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaControlsPart(MediaControlElementType, LayoutObject*, const PaintInfo&, const IntRect&);
     static void adjustMediaSliderThumbSize(RenderStyle&);
     static String formatMediaControlsTime(float time);
     static String formatMediaControlsCurrentTime(float currentTime, float duration);

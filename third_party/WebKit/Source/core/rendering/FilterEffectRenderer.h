@@ -37,7 +37,7 @@ namespace blink {
 
 class FilterOperations;
 class ReferenceFilter;
-class RenderObject;
+class LayoutObject;
 
 class FilterEffectRenderer final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectRenderer> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
@@ -50,7 +50,7 @@ public:
     virtual ~FilterEffectRenderer();
     void trace(Visitor*);
 
-    bool build(RenderObject* renderer, const FilterOperations&);
+    bool build(LayoutObject* renderer, const FilterOperations&);
     void clearIntermediateResults();
 
     PassRefPtrWillBeRawPtr<FilterEffect> lastEffect() const

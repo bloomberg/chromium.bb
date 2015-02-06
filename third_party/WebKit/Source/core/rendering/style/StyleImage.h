@@ -36,7 +36,7 @@ namespace blink {
 
 class ImageResource;
 class CSSValue;
-class RenderObject;
+class LayoutObject;
 
 typedef void* WrappedImagePtr;
 
@@ -51,21 +51,21 @@ public:
 
     virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const = 0;
 
-    virtual bool canRender(const RenderObject&, float /*multiplier*/) const { return true; }
+    virtual bool canRender(const LayoutObject&, float /*multiplier*/) const { return true; }
     virtual bool isLoaded() const { return true; }
     virtual bool errorOccurred() const { return false; }
-    virtual LayoutSize imageSize(const RenderObject*, float multiplier) const = 0;
-    virtual void computeIntrinsicDimensions(const RenderObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) = 0;
+    virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const = 0;
+    virtual void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) = 0;
     virtual bool imageHasRelativeWidth() const = 0;
     virtual bool imageHasRelativeHeight() const = 0;
     virtual bool usesImageContainerSize() const = 0;
-    virtual void setContainerSizeForRenderer(const RenderObject*, const IntSize&, float) = 0;
-    virtual void addClient(RenderObject*) = 0;
-    virtual void removeClient(RenderObject*) = 0;
-    virtual PassRefPtr<Image> image(RenderObject*, const IntSize&) const = 0;
+    virtual void setContainerSizeForRenderer(const LayoutObject*, const IntSize&, float) = 0;
+    virtual void addClient(LayoutObject*) = 0;
+    virtual void removeClient(LayoutObject*) = 0;
+    virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const = 0;
     virtual WrappedImagePtr data() const = 0;
     virtual float imageScaleFactor() const { return 1; }
-    virtual bool knownToBeOpaque(const RenderObject*) const = 0;
+    virtual bool knownToBeOpaque(const LayoutObject*) const = 0;
     virtual ImageResource* cachedImage() const { return 0; }
 
     ALWAYS_INLINE bool isImageResource() const { return m_isImageResource; }

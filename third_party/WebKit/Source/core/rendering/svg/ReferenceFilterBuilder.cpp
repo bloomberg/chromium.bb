@@ -74,7 +74,7 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
     if (!svgElement)
         return false;
 
-    const RenderObject* renderer = svgElement->renderer();
+    const LayoutObject* renderer = svgElement->renderer();
     const RenderStyle* style = renderer ? renderer->style() : 0;
     const SVGRenderStyle* svgStyle = style ? &style->svgStyle() : 0;
     EColorInterpolation eColorInterpolation = CI_AUTO;
@@ -109,7 +109,7 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, RenderObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation* filterOperation)
+PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, LayoutObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation* filterOperation)
 {
     if (!renderer)
         return nullptr;

@@ -122,8 +122,8 @@ public:
     int calcBorderEnd() const;
     void recalcBordersInRowDirection();
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
-    virtual void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
 
     struct ColumnStruct {
         explicit ColumnStruct(unsigned initialSpan = 1)
@@ -256,8 +256,8 @@ public:
             recalcSections();
     }
 
-    static LayoutTable* createAnonymousWithParentRenderer(const RenderObject*);
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
+    static LayoutTable* createAnonymousWithParentRenderer(const LayoutObject*);
+    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
@@ -285,7 +285,7 @@ protected:
 private:
     virtual const char* renderName() const override { return "LayoutTable"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTable || RenderBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || RenderBlock::isOfType(type); }
 
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;
@@ -362,7 +362,7 @@ inline LayoutTableSection* LayoutTable::topSection() const
     return m_foot;
 }
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTable, isTable());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTable, isTable());
 
 } // namespace blink
 

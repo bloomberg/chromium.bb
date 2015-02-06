@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
               text run at (51,0) width 350: "http://bugzilla.opendarwin.org/show_bug.cgi?id=3560"
           RenderText {#text} at (401,0) size 732x39
             text run at (401,0) width 331: " page with use of first-letter crashes reproducibly in"
-            text run at (0,20) width 189: "RenderObject::renderArena()"
+            text run at (0,20) width 189: "LayoutObject::renderArena()"
         RenderText {#text} at (189,20) size 4x19
           text run at (189,20) width 4: "."
       RenderBlock {P} at (0,56) size 784x20

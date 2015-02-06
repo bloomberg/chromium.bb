@@ -27,7 +27,7 @@
 #include "core/css/CSSCrossfadeValue.h"
 
 #include "core/css/CSSImageValue.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/StyleFetchedImage.h"
 #include "platform/graphics/CrossfadeGeneratedImage.h"
 #include "wtf/text/StringBuilder.h"
@@ -47,7 +47,7 @@ static bool subimageIsPending(CSSValue* value)
     return false;
 }
 
-static bool subimageKnownToBeOpaque(CSSValue* value, const RenderObject* renderer)
+static bool subimageKnownToBeOpaque(CSSValue* value, const LayoutObject* renderer)
 {
     if (value->isImageValue())
         return toCSSImageValue(value)->knownToBeOpaque(renderer);
@@ -105,7 +105,7 @@ String CSSCrossfadeValue::customCSSText() const
     return result.toString();
 }
 
-IntSize CSSCrossfadeValue::fixedSize(const RenderObject* renderer)
+IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* renderer)
 {
     float percentage = m_percentageValue->getFloatValue();
     float inversePercentage = 1 - percentage;
@@ -134,7 +134,7 @@ bool CSSCrossfadeValue::isPending() const
     return subimageIsPending(m_fromValue.get()) || subimageIsPending(m_toValue.get());
 }
 
-bool CSSCrossfadeValue::knownToBeOpaque(const RenderObject* renderer) const
+bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject* renderer) const
 {
     return subimageKnownToBeOpaque(m_fromValue.get(), renderer) && subimageKnownToBeOpaque(m_toValue.get(), renderer);
 }
@@ -164,7 +164,7 @@ void CSSCrossfadeValue::loadSubimages(ResourceFetcher* fetcher)
     m_crossfadeSubimageObserver.setReady(true);
 }
 
-PassRefPtr<Image> CSSCrossfadeValue::image(RenderObject* renderer, const IntSize& size)
+PassRefPtr<Image> CSSCrossfadeValue::image(LayoutObject* renderer, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;
@@ -190,7 +190,7 @@ PassRefPtr<Image> CSSCrossfadeValue::image(RenderObject* renderer, const IntSize
 void CSSCrossfadeValue::crossfadeChanged(const IntRect&)
 {
     for (const auto& curr : clients()) {
-        RenderObject* client = const_cast<RenderObject*>(curr.key);
+        LayoutObject* client = const_cast<LayoutObject*>(curr.key);
         client->imageChanged(static_cast<WrappedImagePtr>(this));
     }
 }

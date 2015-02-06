@@ -48,7 +48,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTable::AXTable(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXTable::AXTable(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXRenderObject(renderer, axObjectCache)
     , m_headerContainer(nullptr)
     , m_isAXTable(true)
@@ -65,7 +65,7 @@ void AXTable::init()
     m_isAXTable = isTableExposableThroughAccessibility();
 }
 
-PassRefPtr<AXTable> AXTable::create(RenderObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTable> AXTable::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
     return adoptRef(new AXTable(renderer, axObjectCache));
 }
@@ -274,7 +274,7 @@ bool AXTable::isDataTable() const
 
             // For the first 5 rows, cache the background color so we can check if this table has zebra-striped rows.
             if (row < 5 && row == alternatingRowColorCount) {
-                RenderObject* layoutRow = cell->parent();
+                LayoutObject* layoutRow = cell->parent();
                 if (!layoutRow || !layoutRow->isBoxModelObject() || !toRenderBoxModelObject(layoutRow)->isTableRow())
                     continue;
                 RenderStyle* rowRenderStyle = layoutRow->style();

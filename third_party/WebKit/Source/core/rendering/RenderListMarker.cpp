@@ -1051,7 +1051,7 @@ RenderListMarker::RenderListMarker(RenderListItem* item)
     : RenderBox(0)
     , m_listItem(item)
 {
-    // init RenderObject attributes
+    // init LayoutObject attributes
     setInline(true);   // our object is Inline
     setReplaced(true); // pretend to be replaced
 }

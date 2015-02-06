@@ -37,9 +37,9 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderFieldSet"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFieldset || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFieldset || RenderBlockFlow::isOfType(type); }
 
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
+    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 
     virtual void computePreferredLogicalWidths() override;
     virtual bool avoidsFloats() const override { return true; }
@@ -48,7 +48,7 @@ private:
     virtual void paintMask(const PaintInfo&, const LayoutPoint&) override;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFieldset, isFieldset());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFieldset, isFieldset());
 
 } // namespace blink
 

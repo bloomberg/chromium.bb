@@ -38,7 +38,7 @@
 
 namespace blink {
 
-static inline RenderObject* rendererFromPosition(const Position& position)
+static inline LayoutObject* rendererFromPosition(const Position& position)
 {
     ASSERT(position.isNotNull());
     Node* rendererNode = nullptr;
@@ -248,9 +248,9 @@ void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& 
     bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;
 }
 
-bool renderObjectContainsPosition(RenderObject* target, const Position& position)
+bool layoutObjectContainsPosition(LayoutObject* target, const Position& position)
 {
-    for (RenderObject* renderer = rendererFromPosition(position); renderer && renderer->node(); renderer = renderer->parent()) {
+    for (LayoutObject* renderer = rendererFromPosition(position); renderer && renderer->node(); renderer = renderer->parent()) {
         if (renderer == target)
             return true;
     }

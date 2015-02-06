@@ -301,7 +301,7 @@ void LayoutTableCell::setOverrideLogicalContentHeightFromRowHeight(LayoutUnit ro
     setOverrideLogicalContentHeight(std::max<LayoutUnit>(0, rowHeight - borderAndPaddingLogicalHeight()));
 }
 
-LayoutSize LayoutTableCell::offsetFromContainer(const RenderObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
 {
     ASSERT(o == container());
 
@@ -721,7 +721,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
 
     // (4) The previous row's after border.
     if (prevCell) {
-        RenderObject* prevRow = 0;
+        LayoutObject* prevRow = 0;
         if (prevCell->section() == section())
             prevRow = parent()->previousSibling();
         else
@@ -1046,7 +1046,7 @@ LayoutTableCell* LayoutTableCell::createAnonymous(Document* document)
     return renderer;
 }
 
-LayoutTableCell* LayoutTableCell::createAnonymousWithParentRenderer(const RenderObject* parent)
+LayoutTableCell* LayoutTableCell::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     LayoutTableCell* newCell = LayoutTableCell::createAnonymous(&parent->document());
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE_CELL);

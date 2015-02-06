@@ -30,7 +30,7 @@
 
 namespace blink {
 
-CounterNode::CounterNode(RenderObject& o, bool hasResetType, int value)
+CounterNode::CounterNode(LayoutObject& o, bool hasResetType, int value)
     : m_hasResetType(hasResetType)
     , m_value(value)
     , m_countInParent(0)
@@ -92,7 +92,7 @@ CounterNode::~CounterNode()
     resetRenderers();
 }
 
-PassRefPtr<CounterNode> CounterNode::create(RenderObject& owner, bool hasResetType, int value)
+PassRefPtr<CounterNode> CounterNode::create(LayoutObject& owner, bool hasResetType, int value)
 {
     return adoptRef(new CounterNode(owner, hasResetType, value));
 }

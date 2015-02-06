@@ -30,7 +30,7 @@
 #ifndef RenderLineBoxList_h
 #define RenderLineBoxList_h
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -62,7 +62,7 @@ public:
     void removeLineBox(InlineFlowBox*);
 
     void dirtyLineBoxes();
-    void dirtyLinesFromChangedChild(RenderObject* parent, RenderObject* child);
+    void dirtyLinesFromChangedChild(LayoutObject* parent, LayoutObject* child);
 
     bool hitTest(RenderBoxModelObject*, const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
     bool anyLineIntersectsRect(RenderBoxModelObject*, const LayoutRect&, const LayoutPoint&) const;

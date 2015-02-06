@@ -312,7 +312,7 @@ void PageSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer>
     m_resourceURLs.add(url);
 }
 
-void PageSerializer::addImageToResources(ImageResource* image, RenderObject* imageRenderer, const KURL& url)
+void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* imageRenderer, const KURL& url)
 {
     if (!shouldAddURL(url))
         return;

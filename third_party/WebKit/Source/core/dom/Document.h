@@ -439,7 +439,7 @@ public:
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);
 
     // FIXME: SVG filters should change to store the filter on the RenderStyle
-    // instead of the RenderObject so we can get rid of this hack.
+    // instead of the LayoutObject so we can get rid of this hack.
     void scheduleSVGFilterLayerUpdateHack(Element&);
     void unscheduleSVGFilterLayerUpdateHack(Element&);
 
@@ -976,8 +976,8 @@ public:
     bool haveImportsLoaded() const;
     void didLoadAllImports();
 
-    void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&, RenderObject&);
-    void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, RenderObject&);
+    void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&, LayoutObject&);
+    void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, LayoutObject&);
 
     bool hasActiveParser();
     unsigned activeParserCount() { return m_activeParserCount; }

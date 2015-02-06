@@ -362,7 +362,7 @@ public:
     void setExtraBlockOffset(LayoutUnit blockOffest);
     void clearExtraInlineAndBlockOffests();
 
-    virtual LayoutSize offsetFromContainer(const RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const override;
+    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const override;
 
     LayoutUnit adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit width) const;
     LayoutUnit adjustBorderBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
@@ -401,7 +401,7 @@ public:
     void dirtyLineBoxes(bool fullLayout);
 
     // For inline replaced elements, this function returns the inline box that owns us.  Enables
-    // the replaced RenderObject to quickly determine what line it is contained on and to easily
+    // the replaced LayoutObject to quickly determine what line it is contained on and to easily
     // iterate over structures on the line.
     InlineBox* inlineBoxWrapper() const { return m_rareData ? m_rareData->m_inlineBoxWrapper : 0; }
     void setInlineBoxWrapper(InlineBox*);
@@ -479,7 +479,7 @@ public:
     virtual void autoscroll(const IntPoint&);
     bool canAutoscroll() const;
     IntSize calculateAutoscrollDirection(const IntPoint& windowPoint) const;
-    static RenderBox* findAutoscrollable(RenderObject*);
+    static RenderBox* findAutoscrollable(LayoutObject*);
     virtual void stopAutoscroll() { }
     virtual void panScroll(const IntPoint&);
 
@@ -628,7 +628,7 @@ public:
         return layoutOverflowRect.y() < noOverflowRect.y() || layoutOverflowRect.maxY() > noOverflowRect.maxY();
     }
 
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject*) const
+    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject*) const
     {
         ASSERT_NOT_REACHED();
         return 0;
@@ -673,7 +673,7 @@ protected:
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
 
-    RenderObject* splitAnonymousBoxesAroundChild(RenderObject* beforeChild);
+    LayoutObject* splitAnonymousBoxesAroundChild(LayoutObject* beforeChild);
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
@@ -771,7 +771,7 @@ private:
     OwnPtr<RenderBoxRareData> m_rareData;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBox, isBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBox, isBox());
 
 inline RenderBox* RenderBox::previousSiblingBox() const
 {

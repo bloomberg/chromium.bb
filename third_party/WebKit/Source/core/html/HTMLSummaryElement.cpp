@@ -48,7 +48,7 @@ HTMLSummaryElement::HTMLSummaryElement(Document& document)
 {
 }
 
-RenderObject* HTMLSummaryElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLSummaryElement::createRenderer(const RenderStyle&)
 {
     return new RenderBlockFlow(this);
 }

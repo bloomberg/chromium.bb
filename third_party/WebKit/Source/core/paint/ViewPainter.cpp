@@ -52,7 +52,7 @@ static inline bool rendererObscuresBackground(RenderBox* rootBox)
     if (rootBox->compositingState() == PaintsIntoOwnBacking)
         return false;
 
-    const RenderObject* rootRenderer = rootBox->rendererForRootBackground();
+    const LayoutObject* rootRenderer = rootBox->rendererForRootBackground();
     if (rootRenderer->style()->backgroundClip() == TextFillBox)
         return false;
 

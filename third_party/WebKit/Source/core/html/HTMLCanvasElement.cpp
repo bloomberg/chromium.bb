@@ -137,7 +137,7 @@ void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLElement::parseAttribute(name, value);
 }
 
-RenderObject* HTMLCanvasElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLCanvasElement::createRenderer(const RenderStyle& style)
 {
     LocalFrame* frame = document().frame();
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
@@ -359,7 +359,7 @@ void HTMLCanvasElement::reset()
     if (m_context && m_context->is3d() && oldSize != size())
         toWebGLRenderingContext(m_context.get())->reshape(width(), height());
 
-    if (RenderObject* renderer = this->renderer()) {
+    if (LayoutObject* renderer = this->renderer()) {
         if (renderer->isCanvas()) {
             if (oldSize != size()) {
                 toRenderHTMLCanvas(renderer)->canvasSizeChanged();

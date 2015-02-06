@@ -25,7 +25,7 @@
 
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -72,7 +72,7 @@ PassRefPtrWillBeRawPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, 
     return adoptRefWillBeNoop(new FEImage(filter, treeScope, href, preserveAspectRatio));
 }
 
-static FloatRect getRendererRepaintRect(RenderObject* renderer)
+static FloatRect getRendererRepaintRect(LayoutObject* renderer)
 {
     return renderer->localToParentTransform().mapRect(
         renderer->paintInvalidationRectInLocalCoordinates());
@@ -88,7 +88,7 @@ AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& de
 
 FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
 {
-    RenderObject* renderer = referencedRenderer();
+    LayoutObject* renderer = referencedRenderer();
     if (!m_image && !renderer)
         return FloatRect();
 
@@ -124,7 +124,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
     return destRect;
 }
 
-RenderObject* FEImage::referencedRenderer() const
+LayoutObject* FEImage::referencedRenderer() const
 {
     if (!m_treeScope)
         return 0;
@@ -139,7 +139,7 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
     IntSize imageSize;
     if (m_image)
         imageSize = m_image->size();
-    else if (RenderObject* renderer = referencedRenderer())
+    else if (LayoutObject* renderer = referencedRenderer())
         imageSize = enclosingIntRect(getRendererRepaintRect(renderer)).size();
     writeIndent(ts, indent);
     ts << "[feImage";
@@ -149,7 +149,7 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* renderer, SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(LayoutObject* renderer, SkiaImageFilterBuilder* builder)
 {
     FloatRect dstRect = filterPrimitiveSubregion();
 
@@ -184,7 +184,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
 
 PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    RenderObject* renderer = referencedRenderer();
+    LayoutObject* renderer = referencedRenderer();
     if (!m_image && !renderer)
         return adoptRef(SkBitmapSource::Create(SkBitmap()));
 

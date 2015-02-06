@@ -185,7 +185,7 @@ void SimplifiedBackwardsTextIterator::advance()
     while (m_node && !m_havePassedStartNode) {
         // Don't handle node if we start iterating at [node, 0].
         if (!m_handledNode && !(m_node == m_endNode && !m_endOffset)) {
-            RenderObject* renderer = m_node->renderer();
+            LayoutObject* renderer = m_node->renderer();
             if (renderer && renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) {
                 // FIXME: What about CDATA_SECTION_NODE?
                 if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
@@ -309,7 +309,7 @@ RenderText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset,
     ASSERT(fragment->isRemainingTextRenderer());
     ASSERT(fragment->firstLetterPseudoElement());
 
-    RenderObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
+    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
     ASSERT(pseudoElementRenderer);
     ASSERT(pseudoElementRenderer->slowFirstChild());
     RenderText* firstLetterRenderer = toRenderText(pseudoElementRenderer->slowFirstChild());

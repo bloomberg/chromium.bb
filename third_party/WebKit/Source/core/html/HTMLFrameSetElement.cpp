@@ -154,11 +154,10 @@ bool HTMLFrameSetElement::rendererIsNeeded(const RenderStyle& style)
     return style.isStyleAvailable();
 }
 
-RenderObject* HTMLFrameSetElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLFrameSetElement::createRenderer(const RenderStyle& style)
 {
     if (style.hasContent())
-        return RenderObject::createObject(this, style);
-
+        return LayoutObject::createObject(this, style);
     return new RenderFrameSet(this);
 }
 

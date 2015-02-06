@@ -66,7 +66,7 @@ void RenderDetailsMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& p
 
 bool RenderDetailsMarker::isOpen() const
 {
-    for (RenderObject* renderer = parent(); renderer; renderer = renderer->parent()) {
+    for (LayoutObject* renderer = parent(); renderer; renderer = renderer->parent()) {
         if (!renderer->node())
             continue;
         if (isHTMLDetailsElement(*renderer->node()))

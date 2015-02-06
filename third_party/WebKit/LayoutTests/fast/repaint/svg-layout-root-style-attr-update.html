@@ -43,7 +43,7 @@ function test() {
     greenRect.setAttribute("width", "50%");
     // dirty a normal DOM attribute in a separate part of the DOM.  this is where things go awry since
     // FrameView::scheduleRelayoutOfSubtree will clear out its m_layoutRoot and call
-    // RenderObject::markContainingBlocksForLayout() on the RenderSVGRoot.  Since the RenderSVGRoot's
+    // LayoutObject::markContainingBlocksForLayout() on the RenderSVGRoot.  Since the RenderSVGRoot's
     // container already has m_posChildNeedsLayout set, the RenderSVGRoot's container's container
     // (corresponding to the DIV#grandparent) will not have any needs layout flags set on it.
     document.getElementById('other').style.width="500px";

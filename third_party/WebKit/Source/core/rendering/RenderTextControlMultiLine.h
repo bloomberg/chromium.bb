@@ -34,7 +34,7 @@ public:
     virtual ~RenderTextControlMultiLine();
 
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTextArea || RenderTextControl::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextArea || RenderTextControl::isOfType(type); }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
@@ -46,10 +46,10 @@ private:
     virtual int inlineBlockBaseline(LineDirectionMode) const override { return -1; }
 
     virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const override;
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
+    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControlMultiLine, isTextArea());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderTextControlMultiLine, isTextArea());
 
 }
 

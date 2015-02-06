@@ -31,7 +31,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
     FloatingObject* lastFloatFromPreviousLine, LineWidth& width)
 {
     while (!resolver.position().atEnd() && !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
-        RenderObject* object = resolver.position().object();
+        LayoutObject* object = resolver.position().object();
         if (object->isOutOfFlowPositioned()) {
             RenderBox* box = toRenderBox(object);
             setStaticPositions(m_block, box);

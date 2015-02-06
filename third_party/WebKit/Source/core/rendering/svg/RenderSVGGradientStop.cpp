@@ -28,7 +28,7 @@
 namespace blink {
 
 RenderSVGGradientStop::RenderSVGGradientStop(SVGStopElement* element)
-    : RenderObject(element)
+    : LayoutObject(element)
 {
 }
 
@@ -38,7 +38,7 @@ RenderSVGGradientStop::~RenderSVGGradientStop()
 
 void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    RenderObject::styleDidChange(diff, oldStyle);
+    LayoutObject::styleDidChange(diff, oldStyle);
     if (!diff.hasDifference())
         return;
 
@@ -48,7 +48,7 @@ void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const RenderSty
     if (!gradient)
         return;
 
-    RenderObject* renderer = gradient->renderer();
+    LayoutObject* renderer = gradient->renderer();
     if (!renderer)
         return;
 

@@ -38,7 +38,7 @@ class LayoutRect;
 struct PaintInfo;
 class RenderGeometryMap;
 class LayoutLayerModelObject;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class RenderSVGRoot;
 class StrokeData;
@@ -47,71 +47,71 @@ class TransformState;
 class SVGRenderSupport {
 public:
     // Shares child layouting code between RenderSVGRoot/RenderSVG(Hidden)Container
-    static void layoutChildren(RenderObject*, bool selfNeedsLayout);
+    static void layoutChildren(LayoutObject*, bool selfNeedsLayout);
 
     // Layout resources used by this node.
-    static void layoutResourcesIfNeeded(const RenderObject*);
+    static void layoutResourcesIfNeeded(const LayoutObject*);
 
     // Helper function determining whether overflow is hidden.
-    static bool isOverflowHidden(const RenderObject*);
+    static bool isOverflowHidden(const LayoutObject*);
 
     // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
-    static void intersectPaintInvalidationRectWithResources(const RenderObject*, FloatRect&);
+    static void intersectPaintInvalidationRectWithResources(const LayoutObject*, FloatRect&);
 
     // Determines whether a container needs to be laid out because it's filtered and a child is being laid out.
-    static bool filtersForceContainerLayout(RenderObject*);
+    static bool filtersForceContainerLayout(LayoutObject*);
 
     // Determines whether the passed point lies in a clipping area
-    static bool pointInClippingArea(RenderObject*, const FloatPoint&);
+    static bool pointInClippingArea(LayoutObject*, const FloatPoint&);
 
     // Transform |pointInParent| to |object|'s user-space and check if it is
     // within the clipping area. Returns false if the transform is singular or
     // the point is outside the clipping area.
-    static bool transformToUserSpaceAndCheckClipping(RenderObject*, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint);
+    static bool transformToUserSpaceAndCheckClipping(LayoutObject*, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint);
 
-    static void computeContainerBoundingBoxes(const RenderObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
+    static void computeContainerBoundingBoxes(const LayoutObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
 
     // Important functions used by nearly all SVG renderers centralizing coordinate transformations / paint invalidation rect calculations
-    static LayoutRect clippedOverflowRectForPaintInvalidation(const RenderObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
-    static const RenderSVGRoot& mapRectToSVGRootForPaintInvalidation(const RenderObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);
-    static void mapLocalToContainer(const RenderObject*, const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
-    static const RenderObject* pushMappingToContainer(const RenderObject*, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
+    static LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
+    static const RenderSVGRoot& mapRectToSVGRootForPaintInvalidation(const LayoutObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);
+    static void mapLocalToContainer(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
+    static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
 
     // Shared between SVG renderers and resources.
-    static void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle&, const RenderObject*);
-    static void applyStrokeStyleToStrokeData(StrokeData*, const RenderStyle*, const RenderObject*);
+    static void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle&, const LayoutObject*);
+    static void applyStrokeStyleToStrokeData(StrokeData*, const RenderStyle*, const LayoutObject*);
 
     // Update the GC state (on |paintInfo.context|) for painting |renderer|
     // using |style|. |resourceMode| is used to decide between fill/stroke.
     // Previous state will be saved (if needed) using |stateSaver|.
-    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const RenderStyle&, RenderObject&, RenderSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
+    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const RenderStyle&, LayoutObject&, RenderSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
 
     // Determines if any ancestor's transform has changed.
-    static bool transformToRootChanged(RenderObject*);
+    static bool transformToRootChanged(LayoutObject*);
 
     // FIXME: These methods do not belong here.
-    static const RenderSVGRoot* findTreeRootObject(const RenderObject*);
+    static const RenderSVGRoot* findTreeRootObject(const LayoutObject*);
 
-    // Helper method for determining if a RenderObject marked as text (isText()== true)
+    // Helper method for determining if a LayoutObject marked as text (isText()== true)
     // can/will be rendered as part of a <text>.
-    static bool isRenderableTextNode(const RenderObject*);
+    static bool isRenderableTextNode(const LayoutObject*);
 
     // Determines whether a svg node should isolate or not based on RenderStyle.
     static bool willIsolateBlendingDescendantsForStyle(const RenderStyle*);
-    static bool willIsolateBlendingDescendantsForObject(const RenderObject*);
-    template<typename RenderObjectType>
-    static bool computeHasNonIsolatedBlendingDescendants(const RenderObjectType*);
-    static bool isIsolationRequired(const RenderObject*);
+    static bool willIsolateBlendingDescendantsForObject(const LayoutObject*);
+    template<typename LayoutObjectType>
+    static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);
+    static bool isIsolationRequired(const LayoutObject*);
 
 private:
-    static void updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, RenderObject* other, FloatRect otherBoundingBox);
-    static bool layoutSizeOfNearestViewportChanged(const RenderObject* start);
+    static void updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, LayoutObject* other, FloatRect otherBoundingBox);
+    static bool layoutSizeOfNearestViewportChanged(const LayoutObject* start);
 };
 
-template <typename RenderObjectType>
-bool SVGRenderSupport::computeHasNonIsolatedBlendingDescendants(const RenderObjectType* object)
+template <typename LayoutObjectType>
+bool SVGRenderSupport::computeHasNonIsolatedBlendingDescendants(const LayoutObjectType* object)
 {
-    for (RenderObject* child = object->firstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = object->firstChild(); child; child = child->nextSibling()) {
         if (child->isBlendingAllowed() && child->style()->hasBlendMode())
             return true;
         if (child->hasNonIsolatedBlendingDescendants() && !willIsolateBlendingDescendantsForObject(child))

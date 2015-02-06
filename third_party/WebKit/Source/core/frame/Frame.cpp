@@ -252,7 +252,7 @@ RenderPart* Frame::ownerRenderer() const
 {
     if (!deprecatedLocalOwner())
         return nullptr;
-    RenderObject* object = deprecatedLocalOwner()->renderer();
+    LayoutObject* object = deprecatedLocalOwner()->renderer();
     if (!object)
         return nullptr;
     // FIXME: If <object> is ever fixed to disassociate itself from frames

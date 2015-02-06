@@ -39,7 +39,7 @@ LayoutTableCol::LayoutTableCol(Element* element)
     : RenderBox(element)
     , m_span(1)
 {
-    // init RenderObject attributes
+    // init LayoutObject attributes
     setInline(true); // our object is not Inline
     updateFromElement();
 }
@@ -57,7 +57,7 @@ void LayoutTableCol::styleDidChange(StyleDifference diff, const RenderStyle* old
             // FIXME : setPreferredLogicalWidthsDirty is done for all cells as of now.
             // Need to find a better way so that only the cells which are changed by
             // the col width should have preferred logical widths recomputed.
-            for (RenderObject* child = table->children()->firstChild(); child; child = child->nextSibling()) {
+            for (LayoutObject* child = table->children()->firstChild(); child; child = child->nextSibling()) {
                 if (!child->isTableSection())
                     continue;
                 LayoutTableSection* section = toLayoutTableSection(child);
@@ -96,7 +96,7 @@ void LayoutTableCol::willBeRemovedFromTree()
     table()->removeColumn(this);
 }
 
-bool LayoutTableCol::isChildAllowed(RenderObject* child, const RenderStyle& style) const
+bool LayoutTableCol::isChildAllowed(LayoutObject* child, const RenderStyle& style) const
 {
     // We cannot use isTableColumn here as style() may return 0.
     return child->isLayoutTableCol() && style.display() == TABLE_COLUMN;
@@ -132,13 +132,13 @@ void LayoutTableCol::clearPreferredLogicalWidthsDirtyBits()
 {
     clearPreferredLogicalWidthsDirty();
 
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling())
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling())
         child->clearPreferredLogicalWidthsDirty();
 }
 
 LayoutTable* LayoutTableCol::table() const
 {
-    RenderObject* table = parent();
+    LayoutObject* table = parent();
     if (table && !table->isTable())
         table = table->parent();
     return table && table->isTable() ? toLayoutTable(table) : 0;
@@ -158,11 +158,11 @@ LayoutTableCol* LayoutTableCol::enclosingColumnGroup() const
 LayoutTableCol* LayoutTableCol::nextColumn() const
 {
     // If |this| is a column-group, the next column is the colgroup's first child column.
-    if (RenderObject* firstChild = this->firstChild())
+    if (LayoutObject* firstChild = this->firstChild())
         return toLayoutTableCol(firstChild);
 
     // Otherwise it's the next column along.
-    RenderObject* next = nextSibling();
+    LayoutObject* next = nextSibling();
 
     // Failing that, the child is the last column in a column-group, so the next column is the next column/column-group after its column-group.
     if (!next && parent()->isLayoutTableCol())

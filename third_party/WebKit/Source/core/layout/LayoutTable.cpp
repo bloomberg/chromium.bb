@@ -103,18 +103,18 @@ void LayoutTable::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         invalidateCollapsedBorders();
 }
 
-static inline void resetSectionPointerIfNotBefore(LayoutTableSection*& ptr, RenderObject* before)
+static inline void resetSectionPointerIfNotBefore(LayoutTableSection*& ptr, LayoutObject* before)
 {
     if (!before || !ptr)
         return;
-    RenderObject* o = before->previousSibling();
+    LayoutObject* o = before->previousSibling();
     while (o && o != ptr)
         o = o->previousSibling();
     if (!o)
         ptr = 0;
 }
 
-static inline bool needsTableSection(RenderObject* object)
+static inline bool needsTableSection(LayoutObject* object)
 {
     // Return true if 'object' can't exist in an anonymous table without being
     // wrapped in a table section box.
@@ -122,7 +122,7 @@ static inline bool needsTableSection(RenderObject* object)
     return display != TABLE_CAPTION && display != TABLE_COLUMN_GROUP && display != TABLE_COLUMN;
 }
 
-void LayoutTable::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     bool wrapInAnonymousSection = !child->isOutOfFlowPositioned();
 
@@ -182,14 +182,14 @@ void LayoutTable::addChild(RenderObject* child, RenderObject* beforeChild)
     }
 
     if (beforeChild && !beforeChild->isAnonymous() && beforeChild->parent() == this) {
-        RenderObject* section = beforeChild->previousSibling();
+        LayoutObject* section = beforeChild->previousSibling();
         if (section && section->isTableSection() && section->isAnonymous()) {
             section->addChild(child);
             return;
         }
     }
 
-    RenderObject* lastBox = beforeChild;
+    LayoutObject* lastBox = beforeChild;
     while (lastBox && lastBox->parent()->isAnonymous() && !lastBox->isTableSection() && needsTableSection(lastBox))
         lastBox = lastBox->parent();
     if (lastBox && lastBox->isAnonymous() && !isAfterContent(lastBox)) {
@@ -207,7 +207,7 @@ void LayoutTable::addChild(RenderObject* child, RenderObject* beforeChild)
     section->addChild(child);
 }
 
-void LayoutTable::addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild)
+void LayoutTable::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     // We need to bypass the RenderBlock implementation and instead do a normal addChild() (or we
     // won't get there at all), so that any missing anonymous table part renderers are
@@ -459,7 +459,7 @@ void LayoutTable::layout()
 
         bool collapsing = collapseBorders();
 
-        for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+        for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
             if (child->isTableSection()) {
                 LayoutTableSection* section = toLayoutTableSection(child);
                 if (m_columnLogicalWidthChanged)
@@ -589,7 +589,7 @@ void LayoutTable::recalcCollapsedBorders()
         return;
     m_collapsedBordersValid = true;
     m_collapsedBorders.clear();
-    for (RenderObject* section = firstChild(); section; section = section->nextSibling()) {
+    for (LayoutObject* section = firstChild(); section; section = section->nextSibling()) {
         if (!section->isTableSection())
             continue;
         for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
@@ -724,7 +724,7 @@ void LayoutTable::splitColumn(unsigned position, unsigned firstSpan)
 
     // Propagate the change in our columns representation to the sections that don't need
     // cell recalc. If they do, they will be synced up directly with m_columns later.
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
         if (!child->isTableSection())
             continue;
 
@@ -749,7 +749,7 @@ void LayoutTable::appendColumn(unsigned span)
 
     // Propagate the change in our columns representation to the sections that don't need
     // cell recalc. If they do, they will be synced up directly with m_columns later.
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
         if (!child->isTableSection())
             continue;
 
@@ -765,7 +765,7 @@ void LayoutTable::appendColumn(unsigned span)
 
 LayoutTableCol* LayoutTable::firstColumn() const
 {
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isLayoutTableCol())
             return toLayoutTableCol(child);
     }
@@ -824,8 +824,8 @@ void LayoutTable::recalcSections() const
     m_hasCellColspanThatDeterminesTableWidth = hasCellColspanThatDeterminesTableWidth();
 
     // We need to get valid pointers to caption, head, foot and first body again
-    RenderObject* nextSibling;
-    for (RenderObject* child = firstChild(); child; child = nextSibling) {
+    LayoutObject* nextSibling;
+    for (LayoutObject* child = firstChild(); child; child = nextSibling) {
         nextSibling = child->nextSibling();
         switch (child->style()->display()) {
         case TABLE_COLUMN:
@@ -867,7 +867,7 @@ void LayoutTable::recalcSections() const
 
     // repair column count (addChild can grow it too much, because it always adds elements to the last row of a section)
     unsigned maxCols = 0;
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isTableSection()) {
             LayoutTableSection* section = toLayoutTableSection(child);
             unsigned sectionCols = section->numColumns();
@@ -1116,7 +1116,7 @@ LayoutTableSection* LayoutTable::sectionAbove(const LayoutTableSection* section,
     if (section == m_head)
         return 0;
 
-    RenderObject* prevSection = section == m_foot ? lastChild() : section->previousSibling();
+    LayoutObject* prevSection = section == m_foot ? lastChild() : section->previousSibling();
     while (prevSection) {
         if (prevSection->isTableSection() && prevSection != m_head && prevSection != m_foot && (skipEmptySections == DoNotSkipEmptySections || toLayoutTableSection(prevSection)->numRows()))
             break;
@@ -1134,7 +1134,7 @@ LayoutTableSection* LayoutTable::sectionBelow(const LayoutTableSection* section,
     if (section == m_foot)
         return 0;
 
-    RenderObject* nextSection = section == m_head ? firstChild() : section->nextSibling();
+    LayoutObject* nextSection = section == m_head ? firstChild() : section->nextSibling();
     while (nextSection) {
         if (nextSection->isTableSection() && nextSection != m_head && nextSection != m_foot && (skipEmptySections  == DoNotSkipEmptySections || toLayoutTableSection(nextSection)->numRows()))
             break;
@@ -1152,7 +1152,7 @@ LayoutTableSection* LayoutTable::bottomSection() const
     if (m_foot)
         return m_foot;
 
-    for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
+    for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
         if (child->isTableSection())
             return toLayoutTableSection(child);
     }
@@ -1311,7 +1311,7 @@ bool LayoutTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
     // Check kids first.
     if (!hasOverflowClip() || locationInContainer.intersects(overflowClipRect(adjustedLocation))) {
-        for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
+        for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
             if (child->isBox() && !toRenderBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
                 LayoutPoint childPoint = flipForWritingModeForChild(toRenderBox(child), adjustedLocation);
                 if (child->nodeAtPoint(request, result, locationInContainer, childPoint, action)) {
@@ -1333,7 +1333,7 @@ bool LayoutTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     return false;
 }
 
-LayoutTable* LayoutTable::createAnonymousWithParentRenderer(const RenderObject* parent)
+LayoutTable* LayoutTable::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE);
     LayoutTable* newTable = new LayoutTable(0);

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 class RenderImageResourceStyleImage final : public RenderImageResource {
 public:
@@ -42,7 +42,7 @@ public:
     {
         return adoptPtr(new RenderImageResourceStyleImage(styleImage));
     }
-    virtual void initialize(RenderObject*) override;
+    virtual void initialize(LayoutObject*) override;
     virtual void shutdown() override;
 
     virtual bool hasImage() const override { return true; }

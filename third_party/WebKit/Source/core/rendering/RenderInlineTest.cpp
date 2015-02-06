@@ -15,7 +15,7 @@ class RenderInlineTest : public RenderingTest {
 
 TEST_F(RenderInlineTest, RenderNameCalledWithNullStyle)
 {
-    RenderObject* obj = RenderInline::createAnonymous(&document());
+    LayoutObject* obj = RenderInline::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
     EXPECT_STREQ("RenderInline (generated)", obj->renderName());
     obj->destroy();

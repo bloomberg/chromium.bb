@@ -168,7 +168,7 @@ TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv)
     scrollableElement->setScrollLeft(1.2);
     forceFullCompositingUpdate();
 
-    RenderObject* renderer = scrollableElement->renderer();
+    LayoutObject* renderer = scrollableElement->renderer();
     ASSERT_TRUE(renderer->isBox());
     RenderBox* box = toRenderBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
@@ -185,7 +185,7 @@ static WebLayer* webLayerFromElement(Element* element)
 {
     if (!element)
         return 0;
-    RenderObject* renderer = element->renderer();
+    LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isBoxModelObject())
         return 0;
     Layer* layer = toRenderBoxModelObject(renderer)->layer();
@@ -353,12 +353,12 @@ TEST_F(ScrollingCoordinatorTest, overflowScrolling)
     navigateTo(m_baseURL + "overflow-scrolling.html");
     forceFullCompositingUpdate();
 
-    // Verify the properties of the accelerated scrolling element starting from the RenderObject
+    // Verify the properties of the accelerated scrolling element starting from the LayoutObject
     // all the way to the WebLayer.
     Element* scrollableElement = frame()->document()->getElementById("scrollable");
     ASSERT(scrollableElement);
 
-    RenderObject* renderer = scrollableElement->renderer();
+    LayoutObject* renderer = scrollableElement->renderer();
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
@@ -393,12 +393,12 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     navigateTo(m_baseURL + "overflow-hidden.html");
     forceFullCompositingUpdate();
 
-    // Verify the properties of the accelerated scrolling element starting from the RenderObject
+    // Verify the properties of the accelerated scrolling element starting from the LayoutObject
     // all the way to the WebLayer.
     Element* overflowElement = frame()->document()->getElementById("unscrollable-y");
     ASSERT(overflowElement);
 
-    RenderObject* renderer = overflowElement->renderer();
+    LayoutObject* renderer = overflowElement->renderer();
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
@@ -449,12 +449,12 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling)
     navigateTo(m_baseURL + "iframe-scrolling.html");
     forceFullCompositingUpdate();
 
-    // Verify the properties of the accelerated scrolling element starting from the RenderObject
+    // Verify the properties of the accelerated scrolling element starting from the LayoutObject
     // all the way to the WebLayer.
     Element* scrollableFrame = frame()->document()->getElementById("scrollable");
     ASSERT_TRUE(scrollableFrame);
 
-    RenderObject* renderer = scrollableFrame->renderer();
+    LayoutObject* renderer = scrollableFrame->renderer();
     ASSERT_TRUE(renderer);
     ASSERT_TRUE(renderer->isRenderPart());
 
@@ -493,12 +493,12 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe)
     navigateTo(m_baseURL + "rtl-iframe.html");
     forceFullCompositingUpdate();
 
-    // Verify the properties of the accelerated scrolling element starting from the RenderObject
+    // Verify the properties of the accelerated scrolling element starting from the LayoutObject
     // all the way to the WebLayer.
     Element* scrollableFrame = frame()->document()->getElementById("scrollable");
     ASSERT_TRUE(scrollableFrame);
 
-    RenderObject* renderer = scrollableFrame->renderer();
+    LayoutObject* renderer = scrollableFrame->renderer();
     ASSERT_TRUE(renderer);
     ASSERT_TRUE(renderer->isRenderPart());
 
@@ -546,7 +546,7 @@ TEST_F(ScrollingCoordinatorTest, scrollbarsForceMainThreadOrHaveWebScrollbarLaye
     Element* scrollableElement = document->getElementById("scroller");
     ASSERT(scrollableElement);
 
-    RenderObject* renderer = scrollableElement->renderer();
+    LayoutObject* renderer = scrollableElement->renderer();
     ASSERT_TRUE(renderer->isBox());
     RenderBox* box = toRenderBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());

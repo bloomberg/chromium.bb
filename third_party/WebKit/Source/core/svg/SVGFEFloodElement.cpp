@@ -22,7 +22,7 @@
 #include "core/svg/SVGFEFloodElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 
@@ -37,7 +37,7 @@ DEFINE_NODE_FACTORY(SVGFEFloodElement)
 
 bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     ASSERT(renderer);
     RenderStyle* style = renderer->style();
     ASSERT(style);
@@ -54,7 +54,7 @@ bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter)
 {
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return nullptr;
 

@@ -364,7 +364,7 @@ void Layer::updateTransform(const RenderStyle* oldStyle, RenderStyle* newStyle)
 
 static Layer* enclosingLayerForContainingBlock(Layer* layer)
 {
-    if (RenderObject* containingBlock = layer->renderer()->containingBlock())
+    if (LayoutObject* containingBlock = layer->renderer()->containingBlock())
         return containingBlock->enclosingLayer();
     return 0;
 }
@@ -558,9 +558,9 @@ void Layer::clearPaginationRecursive()
         child->clearPaginationRecursive();
 }
 
-LayoutPoint Layer::positionFromPaintInvalidationBacking(const RenderObject* renderObject, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutPoint Layer::positionFromPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
-    FloatPoint point = renderObject->localToContainerPoint(FloatPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState);
+    FloatPoint point = layoutObject->localToContainerPoint(FloatPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState);
 
     // FIXME: Eventually we are going to unify coordinates in GraphicsLayer space.
     if (paintInvalidationContainer && paintInvalidationContainer->layer()->groupedMapping())
@@ -607,10 +607,10 @@ void Layer::mapRectToPaintBackingCoordinates(const LayoutLayerModelObject* paint
     rect.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void Layer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
+void Layer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer->layer()->groupedMapping()) {
-        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+        layoutObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
         return;
     }
 
@@ -618,17 +618,17 @@ void Layer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, 
     // layer. This is because all layers that squash together need to issue paint invalidations w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the paint invalidation code structure.
-    renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    layoutObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 
     mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
 }
 
-LayoutRect Layer::computePaintInvalidationRect(const RenderObject* renderObject, const Layer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect Layer::computePaintInvalidationRect(const LayoutObject* layoutObject, const Layer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer->groupedMapping())
-        return renderObject->computePaintInvalidationRect(paintInvalidationContainer->renderer(), paintInvalidationState);
+        return layoutObject->computePaintInvalidationRect(paintInvalidationContainer->renderer(), paintInvalidationState);
 
-    LayoutRect rect = renderObject->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->renderer(), paintInvalidationState);
+    LayoutRect rect = layoutObject->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->renderer(), paintInvalidationState);
     mapRectToPaintBackingCoordinates(paintInvalidationContainer->renderer(), rect);
     return rect;
 }
@@ -665,7 +665,7 @@ void Layer::updateScrollingStateAfterCompositingChange()
 {
     TRACE_EVENT0("blink", "Layer::updateScrollingStateAfterCompositingChange");
     m_hasVisibleNonLayerContent = false;
-    for (RenderObject* r = renderer()->slowFirstChild(); r; r = r->nextSibling()) {
+    for (LayoutObject* r = renderer()->slowFirstChild(); r; r = r->nextSibling()) {
         if (!r->hasLayer()) {
             m_hasVisibleNonLayerContent = true;
             break;
@@ -721,13 +721,13 @@ void Layer::updateDescendantDependentFlags()
         } else {
             // layer may be hidden but still have some visible content, check for this
             m_hasVisibleContent = false;
-            RenderObject* r = renderer()->slowFirstChild();
+            LayoutObject* r = renderer()->slowFirstChild();
             while (r) {
                 if (r->style()->visibility() == VISIBLE && !r->hasLayer()) {
                     m_hasVisibleContent = true;
                     break;
                 }
-                RenderObject* rendererFirstChild = r->slowFirstChild();
+                LayoutObject* rendererFirstChild = r->slowFirstChild();
                 if (rendererFirstChild && !r->hasLayer()) {
                     r = rendererFirstChild;
                 } else if (r->nextSibling()) {
@@ -748,9 +748,9 @@ void Layer::updateDescendantDependentFlags()
         if (hasVisibleContent() != previouslyHasVisibleContent) {
             setNeedsCompositingInputsUpdate();
             // We need to tell m_renderer to recheck its rect because we
-            // pretend that invisible RenderObjects have 0x0 rects. Changing
+            // pretend that invisible LayoutObjects have 0x0 rects. Changing
             // visibility therefore changes our rect and we need to visit
-            // this RenderObject during the invalidateTreeIfNeeded walk.
+            // this LayoutObject during the invalidateTreeIfNeeded walk.
             m_renderer->setMayNeedPaintInvalidation();
         }
     }
@@ -816,7 +816,7 @@ bool Layer::updateLayerPosition()
     if (!renderer()->isOutOfFlowPositioned() && !renderer()->isColumnSpanAll() && renderer()->parent()) {
         // We must adjust our position by walking up the render tree looking for the
         // nearest enclosing object with a layer.
-        RenderObject* curr = renderer()->parent();
+        LayoutObject* curr = renderer()->parent();
         while (curr && !curr->hasLayer()) {
             if (curr->isBox() && !curr->isTableRow()) {
                 // Rows and cells share the same coordinate space (that of the section).
@@ -1003,7 +1003,7 @@ Layer* Layer::enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const
     while (!compositedLayer) {
         compositedLayer = layer->enclosingLayerForPaintInvalidation();
         if (!compositedLayer) {
-            RenderObject* owner = layer->renderer()->frame()->ownerRenderer();
+            LayoutObject* owner = layer->renderer()->frame()->ownerRenderer();
             if (!owner)
                 break;
             layer = owner->enclosingLayer();
@@ -1332,7 +1332,7 @@ void Layer::insertOnlyThisLayer()
     }
 
     // Remove all descendant layers from the hierarchy and add them to the new position.
-    for (RenderObject* curr = renderer()->slowFirstChild(); curr; curr = curr->nextSibling())
+    for (LayoutObject* curr = renderer()->slowFirstChild(); curr; curr = curr->nextSibling())
         curr->moveLayers(m_parent, this);
 
     // Clear out all the clip rects.
@@ -1633,7 +1633,7 @@ void Layer::collectFragments(LayerFragments& fragments, const Layer* rootLayer, 
     }
 }
 
-static inline LayoutRect frameVisibleRect(RenderObject* renderer)
+static inline LayoutRect frameVisibleRect(LayoutObject* renderer)
 {
     FrameView* frameView = renderer->document().view();
     if (!frameView)
@@ -1686,7 +1686,7 @@ bool Layer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTes
 
 Node* Layer::enclosingElement() const
 {
-    for (RenderObject* r = renderer(); r; r = r->parent()) {
+    for (LayoutObject* r = renderer(); r; r = r->parent()) {
         if (Node* e = r->node())
             return e;
     }
@@ -1736,7 +1736,7 @@ PassRefPtr<HitTestingTransformState> Layer::createLocalTransformState(Layer* roo
     }
     offset.moveBy(translationOffset);
 
-    RenderObject* containerRenderer = containerLayer ? containerLayer->renderer() : 0;
+    LayoutObject* containerRenderer = containerLayer ? containerLayer->renderer() : 0;
     if (renderer()->shouldUseTransformFromContainer(containerRenderer)) {
         TransformationMatrix containerTransform;
         renderer()->getTransformFromContainer(containerRenderer, toLayoutSize(offset), containerTransform);
@@ -1884,7 +1884,7 @@ Layer* Layer::hitTestLayer(Layer* rootLayer, Layer* containerLayer, const HitTes
         return this;
     }
 
-    // Next we want to see if the mouse pos is inside the child RenderObjects of the layer. Check
+    // Next we want to see if the mouse pos is inside the child LayoutObjects of the layer. Check
     // every fragment in reverse order.
     if (isSelfPaintingLayer()) {
         // Hit test with a temporary HitTestResult, because we only want to commit to 'result' if we know we're frontmost.
@@ -2308,7 +2308,7 @@ LayoutRect Layer::logicalBoundingBox() const
         result = toRenderInline(renderer())->linesVisualOverflowBoundingBox();
     } else if (renderer()->isTableRow()) {
         // Our bounding box is just the union of all of our cells' border/overflow rects.
-        for (RenderObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
+        for (LayoutObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
             if (child->isTableCell()) {
                 LayoutRect bbox = toRenderBox(child)->borderBoxRect();
                 result.unite(bbox);
@@ -2328,7 +2328,7 @@ LayoutRect Layer::logicalBoundingBox() const
     return result;
 }
 
-static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, RenderObject* renderer)
+static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, LayoutObject* renderer)
 {
     LayoutRect result = boundingBox;
     if (renderer->isBox())
@@ -2660,7 +2660,7 @@ bool Layer::hasNonEmptyChildRenderers() const
     // <img src=...>
     // </div>
     // so test for 0x0 RenderTexts here
-    for (RenderObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->hasLayer()) {
             if (child->isRenderInline() || !child->isBox())
                 return true;
@@ -2929,7 +2929,7 @@ void showLayerTree(const blink::Layer* layer)
     }
 }
 
-void showLayerTree(const blink::RenderObject* renderer)
+void showLayerTree(const blink::LayoutObject* renderer)
 {
     if (!renderer)
         return;

@@ -35,13 +35,13 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderDetailsMarker"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectDetailsMarker || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectDetailsMarker || RenderBlockFlow::isOfType(type); }
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     bool isOpen() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderDetailsMarker, isDetailsMarker());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderDetailsMarker, isDetailsMarker());
 
 }
 

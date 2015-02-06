@@ -29,8 +29,8 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderObject.h"
 
 namespace blink {
 
@@ -49,7 +49,7 @@ static unsigned depthCrossingShadowBoundaries(Node* node)
 
 static inline bool fullyClipsContents(Node* node)
 {
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer || !renderer->isBox() || !renderer->hasOverflowClip())
         return false;
     return toRenderBox(renderer)->size().isEmpty();
@@ -57,7 +57,7 @@ static inline bool fullyClipsContents(Node* node)
 
 static inline bool ignoresContainerClip(Node* node)
 {
-    RenderObject* renderer = node->renderer();
+    LayoutObject* renderer = node->renderer();
     if (!renderer || renderer->isText())
         return false;
     return renderer->style()->hasOutOfFlowPosition();

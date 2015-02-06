@@ -86,7 +86,7 @@ bool HTMLAreaElement::mapMouseEvent(LayoutPoint location, const LayoutSize& size
     return true;
 }
 
-Path HTMLAreaElement::computePath(RenderObject* obj) const
+Path HTMLAreaElement::computePath(LayoutObject* obj) const
 {
     if (!obj)
         return Path();
@@ -111,7 +111,7 @@ Path HTMLAreaElement::computePath(RenderObject* obj) const
     return p;
 }
 
-LayoutRect HTMLAreaElement::computeRect(RenderObject* obj) const
+LayoutRect HTMLAreaElement::computeRect(LayoutObject* obj) const
 {
     return enclosingLayoutRect(computePath(obj).boundingRect());
 }
@@ -209,7 +209,7 @@ void HTMLAreaElement::setFocus(bool shouldBeFocused)
     if (!imageElement)
         return;
 
-    RenderObject* renderer = imageElement->renderer();
+    LayoutObject* renderer = imageElement->renderer();
     if (!renderer || !renderer->isImage())
         return;
 

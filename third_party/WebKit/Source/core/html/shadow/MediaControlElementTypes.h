@@ -70,7 +70,7 @@ enum MediaControlElementType {
 };
 
 HTMLMediaElement* toParentMediaElement(Node*);
-inline HTMLMediaElement* toParentMediaElement(RenderObject* renderer) { return toParentMediaElement(renderer->node()); }
+inline HTMLMediaElement* toParentMediaElement(LayoutObject* renderer) { return toParentMediaElement(renderer->node()); }
 
 MediaControlElementType mediaControlElementType(Node*);
 

@@ -62,7 +62,7 @@ void SVGImageCache::setContainerSizeForRenderer(const ImageResourceClient* clien
     m_imageForContainerMap.set(client, SVGImageForContainer::create(m_svgImage, containerSizeWithoutZoom, containerZoom));
 }
 
-IntSize SVGImageCache::imageSizeForRenderer(const RenderObject* renderer) const
+IntSize SVGImageCache::imageSizeForRenderer(const LayoutObject* renderer) const
 {
     IntSize imageSize = m_svgImage->size();
     if (!renderer)
@@ -79,7 +79,7 @@ IntSize SVGImageCache::imageSizeForRenderer(const RenderObject* renderer) const
 
 // FIXME: This doesn't take into account the animation timeline so animations will not
 // restart on page load, nor will two animations in different pages have different timelines.
-Image* SVGImageCache::imageForRenderer(const RenderObject* renderer)
+Image* SVGImageCache::imageForRenderer(const LayoutObject* renderer)
 {
     if (!renderer)
         return Image::nullImage();

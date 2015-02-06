@@ -65,7 +65,7 @@ bool LayoutRubyRun::hasRubyBase() const
 
 LayoutRubyText* LayoutRubyRun::rubyText() const
 {
-    RenderObject* child = firstChild();
+    LayoutObject* child = firstChild();
     // If in future it becomes necessary to support floating or positioned ruby text,
     // layout will have to be changed to handle them properly.
     ASSERT(!child || !child->isRubyText() || !child->isFloatingOrOutOfFlowPositioned());
@@ -74,7 +74,7 @@ LayoutRubyText* LayoutRubyRun::rubyText() const
 
 LayoutRubyBase* LayoutRubyRun::rubyBase() const
 {
-    RenderObject* child = lastChild();
+    LayoutObject* child = lastChild();
     return child && child->isRubyBase() ? static_cast<LayoutRubyBase*>(child) : 0;
 }
 
@@ -88,12 +88,12 @@ LayoutRubyBase* LayoutRubyRun::rubyBaseSafe()
     return base;
 }
 
-bool LayoutRubyRun::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool LayoutRubyRun::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     return child->isRubyText() || child->isInline();
 }
 
-void LayoutRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     ASSERT(child);
 
@@ -108,7 +108,7 @@ void LayoutRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
             // In this case the new text takes the place of the old one, and
             // the old text goes into a new run that is inserted as next sibling.
             ASSERT(beforeChild->parent() == this);
-            RenderObject* ruby = parent();
+            LayoutObject* ruby = parent();
             ASSERT(ruby->isRuby());
             RenderBlock* newRun = staticCreateRubyRun(ruby);
             ruby->addChild(newRun, nextSibling());
@@ -122,7 +122,7 @@ void LayoutRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
         } else if (hasRubyBase()) {
             // Insertion before a ruby base object.
             // In this case we need insert a new run before the current one and split the base.
-            RenderObject* ruby = parent();
+            LayoutObject* ruby = parent();
             LayoutRubyRun* newRun = staticCreateRubyRun(ruby);
             ruby->addChild(newRun, this);
             newRun->addChild(child);
@@ -141,13 +141,13 @@ void LayoutRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
     }
 }
 
-void LayoutRubyRun::removeChild(RenderObject* child)
+void LayoutRubyRun::removeChild(LayoutObject* child)
 {
     // If the child is a ruby text, then merge the ruby base with the base of
     // the right sibling run, if possible.
     if (!beingDestroyed() && !documentBeingDestroyed() && child->isRubyText()) {
         LayoutRubyBase* base = rubyBase();
-        RenderObject* rightNeighbour = nextSibling();
+        LayoutObject* rightNeighbour = nextSibling();
         if (base && rightNeighbour && rightNeighbour->isRubyRun()) {
             // Ruby run without a base can happen only at the first run.
             LayoutRubyRun* rightRun = toLayoutRubyRun(rightNeighbour);
@@ -191,7 +191,7 @@ LayoutRubyBase* LayoutRubyRun::createRubyBase() const
     return layoutObject;
 }
 
-LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(const RenderObject* parentRuby)
+LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(const LayoutObject* parentRuby)
 {
     ASSERT(parentRuby && parentRuby->isRuby());
     LayoutRubyRun* rr = new LayoutRubyRun();
@@ -201,7 +201,7 @@ LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(const RenderObject* parentRuby
     return rr;
 }
 
-RenderObject* LayoutRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+LayoutObject* LayoutRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     // Don't bother positioning the LayoutRubyRun yet.
     LayoutRubyText* rt = rubyText();
@@ -259,7 +259,7 @@ void LayoutRubyRun::layout()
     computeOverflow(clientLogicalBottom());
 }
 
-void LayoutRubyRun::getOverhang(bool firstLine, RenderObject* startRenderer, RenderObject* endRenderer, int& startOverhang, int& endOverhang) const
+void LayoutRubyRun::getOverhang(bool firstLine, LayoutObject* startRenderer, LayoutObject* endRenderer, int& startOverhang, int& endOverhang) const
 {
     ASSERT(!needsLayout());
 

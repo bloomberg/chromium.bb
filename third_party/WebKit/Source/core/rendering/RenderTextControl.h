@@ -62,14 +62,14 @@ protected:
 
     virtual void updateFromElement() override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
+    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 
     // We need to override this function because we don't want overflow:hidden on an <input>
     // to affect the baseline calculation. This is necessary because we are an inline-block
     // element as an implementation detail which would normally be affected by this.
     virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTextControl || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextControl || RenderBlockFlow::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "RenderTextControl"; }
@@ -79,14 +79,14 @@ private:
     virtual bool avoidsFloats() const override final { return true; }
     virtual bool canHaveGeneratedChildren() const override final { return false; }
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override final;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override final;
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 
     virtual bool canBeProgramaticallyScrolled() const override final { return true; }
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControl, isTextControl());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderTextControl, isTextControl());
 
 // Renderer for our inner container, for <search> and others.
 // We can't use RenderFlexibleBox directly, because flexboxes have a different

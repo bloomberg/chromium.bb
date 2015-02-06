@@ -72,7 +72,7 @@ bool HiddenInputType::supportsValidation() const
     return false;
 }
 
-RenderObject* HiddenInputType::createRenderer(const RenderStyle&) const
+LayoutObject* HiddenInputType::createRenderer(const RenderStyle&) const
 {
     ASSERT_NOT_REACHED();
     return nullptr;

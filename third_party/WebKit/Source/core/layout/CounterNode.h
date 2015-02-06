@@ -37,18 +37,18 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class LayoutCounter;
 
 class CounterNode : public RefCounted<CounterNode> {
 public:
-    static PassRefPtr<CounterNode> create(RenderObject&, bool isReset, int value);
+    static PassRefPtr<CounterNode> create(LayoutObject&, bool isReset, int value);
     ~CounterNode();
     bool actsAsReset() const { return m_hasResetType || !m_parent; }
     bool hasResetType() const { return m_hasResetType; }
     int value() const { return m_value; }
     int countInParent() const { return m_countInParent; }
-    RenderObject& owner() const { return m_owner; }
+    LayoutObject& owner() const { return m_owner; }
     void addRenderer(LayoutCounter*);
     void removeRenderer(LayoutCounter*);
 
@@ -71,7 +71,7 @@ public:
     void removeChild(CounterNode*);
 
 private:
-    CounterNode(RenderObject&, bool isReset, int value);
+    CounterNode(LayoutObject&, bool isReset, int value);
     int computeCountInParent() const;
     // Invalidates the text in the renderer of this counter, if any,
     // and in the renderers of all descendants of this counter, if any.
@@ -81,7 +81,7 @@ private:
     bool m_hasResetType;
     int m_value;
     int m_countInParent;
-    RenderObject& m_owner;
+    LayoutObject& m_owner;
     LayoutCounter* m_rootRenderer;
 
     CounterNode* m_parent;

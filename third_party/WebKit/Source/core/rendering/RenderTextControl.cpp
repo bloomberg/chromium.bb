@@ -51,7 +51,7 @@ HTMLElement* RenderTextControl::innerEditorElement() const
     return textFormControlElement()->innerEditorElement();
 }
 
-void RenderTextControl::addChild(RenderObject* newChild, RenderObject* beforeChild)
+void RenderTextControl::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     // FIXME: This is a terrible hack to get the caret over the placeholder text since it'll
     // make us paint the placeholder first. (See https://trac.webkit.org/changeset/118733)
@@ -289,10 +289,10 @@ void RenderTextControl::addFocusRingRects(Vector<LayoutRect>& rects, const Layou
         rects.append(LayoutRect(additionalOffset, size()));
 }
 
-RenderObject* RenderTextControl::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+LayoutObject* RenderTextControl::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     HTMLElement* placeholder = toHTMLTextFormControlElement(node())->placeholderElement();
-    RenderObject* placeholderRenderer = placeholder ? placeholder->renderer() : 0;
+    LayoutObject* placeholderRenderer = placeholder ? placeholder->renderer() : 0;
     if (!placeholderRenderer)
         return 0;
     if (relayoutChildren)

@@ -59,11 +59,11 @@
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/fonts/Font.h"
@@ -846,7 +846,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
 
         // If we're the remaining text from a first-letter then our previous
         // sibling has to be the first-letter renderer.
-        RenderObject* previous = renderer->previousSibling();
+        LayoutObject* previous = renderer->previousSibling();
         if (!previous)
             continue;
 

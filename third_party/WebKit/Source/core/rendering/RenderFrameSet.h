@@ -58,15 +58,15 @@ public:
     RenderFrameSet(HTMLFrameSetElement*);
     virtual ~RenderFrameSet();
 
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+    LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     // If you have a RenderFrameSet, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
     FrameEdgeInfo edgeInfo() const;
 
@@ -98,16 +98,16 @@ public:
 private:
     static const int noSplit = -1;
 
-    virtual RenderObjectChildList* virtualChildren() override { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "RenderFrameSet"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFrameSet || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrameSet || RenderBox::isOfType(type); }
 
     virtual void layout() override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void computePreferredLogicalWidths() override;
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override;
 
     void setIsResizing(bool);
@@ -123,7 +123,7 @@ private:
     void startResizing(GridAxis&, int position);
     void continueResizing(GridAxis&, int position);
 
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
 
     GridAxis m_rows;
     GridAxis m_cols;
@@ -132,7 +132,7 @@ private:
     bool m_isChildResizing;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFrameSet, isFrameSet());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFrameSet, isFrameSet());
 
 } // namespace blink
 

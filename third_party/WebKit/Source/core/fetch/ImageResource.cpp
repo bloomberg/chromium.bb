@@ -30,7 +30,7 @@
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -194,7 +194,7 @@ blink::Image* ImageResource::image()
     return blink::Image::nullImage();
 }
 
-blink::Image* ImageResource::imageForRenderer(const RenderObject* renderer)
+blink::Image* ImageResource::imageForRenderer(const LayoutObject* renderer)
 {
     ASSERT(!isPurgeable());
 
@@ -259,7 +259,7 @@ bool ImageResource::imageHasRelativeHeight() const
     return false;
 }
 
-LayoutSize ImageResource::imageSizeForRenderer(const RenderObject* renderer, float multiplier, SizeType sizeType)
+LayoutSize ImageResource::imageSizeForRenderer(const LayoutObject* renderer, float multiplier, SizeType sizeType)
 {
     ASSERT(!isPurgeable());
 
@@ -498,7 +498,7 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
     notifyObservers(&rect);
 }
 
-bool ImageResource::currentFrameKnownToBeOpaque(const RenderObject* renderer)
+bool ImageResource::currentFrameKnownToBeOpaque(const LayoutObject* renderer)
 {
     blink::Image* image = imageForRenderer(renderer);
     if (image->isBitmapImage()) {

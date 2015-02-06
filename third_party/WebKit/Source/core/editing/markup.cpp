@@ -62,7 +62,7 @@
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -819,12 +819,12 @@ bool isPlainTextMarkup(Node* node)
 static bool shouldPreserveNewline(const Range& range)
 {
     if (Node* node = range.firstNode()) {
-        if (RenderObject* renderer = node->renderer())
+        if (LayoutObject* renderer = node->renderer())
             return renderer->style()->preserveNewline();
     }
 
     if (Node* node = range.startPosition().anchorNode()) {
-        if (RenderObject* renderer = node->renderer())
+        if (LayoutObject* renderer = node->renderer())
             return renderer->style()->preserveNewline();
     }
 

@@ -44,8 +44,8 @@ public:
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+    LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
     virtual void setNeedsBoundariesUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
@@ -69,14 +69,14 @@ public:
     virtual bool hasNonIsolatedBlendingDescendants() const override final;
 
 private:
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
-    virtual RenderObjectChildList* virtualChildren() override { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "RenderSVGRoot"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGRoot || RenderReplaced::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGRoot || RenderReplaced::isOfType(type); }
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
     virtual LayoutUnit computeReplacedLogicalHeight() const override;
@@ -85,9 +85,9 @@ private:
 
     virtual void willBeDestroyed() override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject*) override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject*) override;
 
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;
@@ -103,7 +103,7 @@ private:
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
 
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
-    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
 
     virtual bool canBeSelectionLeaf() const override { return false; }
     virtual bool canHaveChildren() const override { return true; }
@@ -113,7 +113,7 @@ private:
     void updateCachedBoundaries();
     void buildLocalToBorderBoxTransform();
 
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
     IntSize m_containerSize;
     FloatRect m_objectBoundingBox;
     bool m_objectBoundingBoxValid;
@@ -128,7 +128,7 @@ private:
     mutable bool m_hasNonIsolatedBlendingDescendantsDirty : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGRoot, isSVGRoot());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGRoot, isSVGRoot());
 
 } // namespace blink
 

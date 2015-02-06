@@ -109,7 +109,7 @@ String CSSImageValue::customCSSText() const
     return "url(" + quoteCSSURLIfNeeded(m_absoluteURL) + ")";
 }
 
-bool CSSImageValue::knownToBeOpaque(const RenderObject* renderer) const
+bool CSSImageValue::knownToBeOpaque(const LayoutObject* renderer) const
 {
     return m_image ? m_image->knownToBeOpaque(renderer) : false;
 }

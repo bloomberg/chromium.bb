@@ -13,7 +13,7 @@ enum PaintInvalidationReason {
     PaintInvalidationNone,
     PaintInvalidationIncremental,
     PaintInvalidationRectangle,
-    // The following reasons will all cause full invalidation of the RenderObject.
+    // The following reasons will all cause full invalidation of the LayoutObject.
     PaintInvalidationFull, // Any unspecified reason of full invalidation.
     PaintInvalidationStyleChange,
     PaintInvalidationForcedByLayout,

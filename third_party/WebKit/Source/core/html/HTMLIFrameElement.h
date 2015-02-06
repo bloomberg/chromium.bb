@@ -45,7 +45,7 @@ private:
     virtual void removedFrom(ContainerNode*) override;
 
     virtual bool rendererIsNeeded(const RenderStyle&) override;
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
 
     virtual bool loadedNonEmptyDocument() const override { return m_didLoadNonEmptyDocument; }
     virtual void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }

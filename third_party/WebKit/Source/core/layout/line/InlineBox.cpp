@@ -20,12 +20,12 @@
 #include "config.h"
 #include "core/layout/line/InlineBox.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BlockPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "platform/Partitions.h"
 #include "platform/fonts/FontMetrics.h"
 
@@ -90,7 +90,7 @@ void InlineBox::showLineTreeForThis() const
     renderer().containingBlock()->showLineTreeAndMark(this, "*");
 }
 
-void InlineBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const RenderObject* obj, int depth) const
+void InlineBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const LayoutObject* obj, int depth) const
 {
     int printedCharacters = 0;
     if (this == markedBox1)
@@ -278,7 +278,7 @@ InlineBox* InlineBox::prevLeafChildIgnoringLineBreak() const
     return leaf;
 }
 
-RenderObject::SelectionState InlineBox::selectionState() const
+LayoutObject::SelectionState InlineBox::selectionState() const
 {
     return renderer().selectionState();
 }

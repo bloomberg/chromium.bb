@@ -237,7 +237,7 @@ static void measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data
 
 static void walkTree(RenderSVGText* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
 {
-    RenderObject* child = start->firstChild();
+    LayoutObject* child = start->firstChild();
     while (child) {
         if (child->isSVGInlineText()) {
             RenderSVGInlineText* text = toRenderSVGInlineText(child);
@@ -246,7 +246,7 @@ static void walkTree(RenderSVGText* start, RenderSVGInlineText* stopAtLeaf, Meas
                 return;
         } else if (child->isSVGInline()) {
             // Visit children of text content elements.
-            if (RenderObject* inlineChild = toRenderSVGInline(child)->firstChild()) {
+            if (LayoutObject* inlineChild = toRenderSVGInline(child)->firstChild()) {
                 child = inlineChild;
                 continue;
             }

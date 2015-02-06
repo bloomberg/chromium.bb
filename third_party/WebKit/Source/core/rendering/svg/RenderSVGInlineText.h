@@ -38,7 +38,7 @@ public:
     float scalingFactor() const { return m_scalingFactor; }
     const Font& scaledFont() const { return m_scaledFont; }
     void updateScaledFont();
-    static void computeNewScaledFontForStyle(RenderObject*, const RenderStyle*, float& scalingFactor, Font& scaledFont);
+    static void computeNewScaledFontForStyle(LayoutObject*, const RenderStyle*, float& scalingFactor, Font& scaledFont);
 
     // Preserves floating point precision for the use in DRT. It knows how to round and does a better job than enclosingIntRect.
     FloatRect floatLinesBoundingBox() const;
@@ -53,7 +53,7 @@ private:
 
     virtual FloatRect objectBoundingBox() const override { return floatLinesBoundingBox(); }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGInlineText || RenderText::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInlineText || RenderText::isOfType(type); }
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override;
@@ -67,7 +67,7 @@ private:
     SVGTextLayoutAttributes m_layoutAttributes;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGInlineText, isSVGInlineText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGInlineText, isSVGInlineText());
 
 }
 

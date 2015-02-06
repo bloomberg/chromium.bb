@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/svg/SVGFESpecularLightingElement.h"
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
@@ -100,7 +100,7 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
     FESpecularLighting* specularLighting = static_cast<FESpecularLighting*>(effect);
 
     if (attrName == SVGNames::lighting_colorAttr) {
-        RenderObject* renderer = this->renderer();
+        LayoutObject* renderer = this->renderer();
         ASSERT(renderer);
         ASSERT(renderer->style());
         return specularLighting->setLightingColor(renderer->style()->svgStyle().lightingColor());
@@ -185,7 +185,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilt
     if (!lightNode)
         return nullptr;
 
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return nullptr;
 

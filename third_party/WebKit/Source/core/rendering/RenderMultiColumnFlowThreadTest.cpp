@@ -345,7 +345,7 @@ class MultiColumnTreeModifyingTest : public MultiColumnRenderingTest {
 public:
     void setMulticolHTML(const char*);
     void reparentRenderer(const char* newParentId, const char* childId, const char* insertBeforeId = 0);
-    void destroyRenderer(RenderObject* child);
+    void destroyRenderer(LayoutObject* child);
     void destroyRenderer(const char* childId);
 };
 
@@ -358,14 +358,14 @@ void MultiColumnTreeModifyingTest::setMulticolHTML(const char* html)
 
 void MultiColumnTreeModifyingTest::reparentRenderer(const char* newParentId, const char* childId, const char* insertBeforeId)
 {
-    RenderObject* newParent = document().getElementById(newParentId)->renderer();
-    RenderObject* child = document().getElementById(childId)->renderer();
-    RenderObject* insertBefore = insertBeforeId ? document().getElementById(insertBeforeId)->renderer() : 0;
+    LayoutObject* newParent = document().getElementById(newParentId)->renderer();
+    LayoutObject* child = document().getElementById(childId)->renderer();
+    LayoutObject* insertBefore = insertBeforeId ? document().getElementById(insertBeforeId)->renderer() : 0;
     child->remove();
     newParent->addChild(child, insertBefore);
 }
 
-void MultiColumnTreeModifyingTest::destroyRenderer(RenderObject* child)
+void MultiColumnTreeModifyingTest::destroyRenderer(LayoutObject* child)
 {
     // Remove and destroy in separate steps, so that we get to test removal of subtrees.
     child->remove();

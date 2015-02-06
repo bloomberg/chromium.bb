@@ -355,7 +355,7 @@ bool FillLayer::imagesAreLoaded() const
     return true;
 }
 
-bool FillLayer::hasOpaqueImage(const RenderObject* renderer) const
+bool FillLayer::hasOpaqueImage(const LayoutObject* renderer) const
 {
     if (!m_image)
         return false;

@@ -73,7 +73,7 @@ FilterEffect* SVGFilterBuilder::getEffectById(const AtomicString& id) const
     return m_builtinEffects.get(SourceGraphic::effectName());
 }
 
-void SVGFilterBuilder::appendEffectToEffectReferences(PassRefPtrWillBeRawPtr<FilterEffect> prpEffect, RenderObject* object)
+void SVGFilterBuilder::appendEffectToEffectReferences(PassRefPtrWillBeRawPtr<FilterEffect> prpEffect, LayoutObject* object)
 {
     RefPtrWillBeRawPtr<FilterEffect> effect = prpEffect;
 

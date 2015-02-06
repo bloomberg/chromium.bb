@@ -154,7 +154,7 @@ static LayoutUnit marginWidthForChild(RenderBox* child)
     return margin;
 }
 
-static bool childDoesNotAffectWidthOrFlexing(RenderObject* child)
+static bool childDoesNotAffectWidthOrFlexing(LayoutObject* child)
 {
     // Positioned children and collapsed children don't affect the min/max width.
     return child->isOutOfFlowPositioned() || child->style()->visibility() == COLLAPSE;

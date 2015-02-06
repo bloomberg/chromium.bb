@@ -315,7 +315,7 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
 
 static Widget* widgetForElement(const Element& focusedElement)
 {
-    RenderObject* renderer = focusedElement.renderer();
+    LayoutObject* renderer = focusedElement.renderer();
     if (!renderer || !renderer->isRenderPart())
         return 0;
     return toRenderPart(renderer)->widget();
@@ -1253,7 +1253,7 @@ PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
     if (!renderView())
         return nullptr;
     HitTestResult result = hitTestInDocument(this, x, y);
-    RenderObject* renderer = result.renderer();
+    LayoutObject* renderer = result.renderer();
     if (!renderer)
         return nullptr;
 
@@ -5198,7 +5198,7 @@ Node* eventTargetNodeForDocument(Document* doc)
     return node;
 }
 
-void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, RenderObject& renderer)
+void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, LayoutObject& renderer)
 {
     if (!view())
         return;
@@ -5210,7 +5210,7 @@ void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads
     }
 }
 
-void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, RenderObject& renderer)
+void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, LayoutObject& renderer)
 {
     if (!view())
         return;
@@ -5230,13 +5230,13 @@ void Document::setContextFeatures(ContextFeatures& features)
     m_contextFeatures = PassRefPtrWillBeRawPtr<ContextFeatures>(features);
 }
 
-static RenderObject* nearestCommonHoverAncestor(RenderObject* obj1, RenderObject* obj2)
+static LayoutObject* nearestCommonHoverAncestor(LayoutObject* obj1, LayoutObject* obj2)
 {
     if (!obj1 || !obj2)
         return 0;
 
-    for (RenderObject* currObj1 = obj1; currObj1; currObj1 = currObj1->hoverAncestor()) {
-        for (RenderObject* currObj2 = obj2; currObj2; currObj2 = currObj2->hoverAncestor()) {
+    for (LayoutObject* currObj1 = obj1; currObj1; currObj1 = currObj1->hoverAncestor()) {
+        for (LayoutObject* currObj2 = obj2; currObj2; currObj2 = currObj2->hoverAncestor()) {
             if (currObj1 == currObj2)
                 return currObj1;
         }
@@ -5301,11 +5301,11 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     setHoverNode(newHoverNode);
 
     // We have two different objects. Fetch their renderers.
-    RenderObject* oldHoverObj = oldHoverNode ? oldHoverNode->renderer() : 0;
-    RenderObject* newHoverObj = newHoverNode ? newHoverNode->renderer() : 0;
+    LayoutObject* oldHoverObj = oldHoverNode ? oldHoverNode->renderer() : 0;
+    LayoutObject* newHoverObj = newHoverNode ? newHoverNode->renderer() : 0;
 
     // Locate the common ancestor render object for the two renderers.
-    RenderObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
+    LayoutObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
     RefPtrWillBeRawPtr<Node> ancestorNode(ancestor ? ancestor->node() : 0);
 
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> nodesToRemoveFromChain;
@@ -5324,14 +5324,14 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         }
 
         // The old hover path only needs to be cleared up to (and not including) the common ancestor;
-        for (RenderObject* curr = oldHoverObj; curr && curr != ancestor; curr = curr->hoverAncestor()) {
+        for (LayoutObject* curr = oldHoverObj; curr && curr != ancestor; curr = curr->hoverAncestor()) {
             if (curr->node() && !curr->isText() && (!mustBeInActiveChain || curr->node()->inActiveChain()))
                 nodesToRemoveFromChain.append(curr->node());
         }
     }
 
     // Now set the hover state for our new object up to the root.
-    for (RenderObject* curr = newHoverObj; curr; curr = curr->hoverAncestor()) {
+    for (LayoutObject* curr = newHoverObj; curr; curr = curr->hoverAncestor()) {
         if (curr->node() && !curr->isText() && (!mustBeInActiveChain || curr->node()->inActiveChain()))
             nodesToAddToChain.append(curr->node());
     }

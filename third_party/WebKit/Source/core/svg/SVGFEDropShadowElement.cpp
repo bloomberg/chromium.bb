@@ -21,7 +21,7 @@
 #include "core/svg/SVGFEDropShadowElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/svg/SVGParserUtilities.h"
@@ -99,7 +99,7 @@ void SVGFEDropShadowElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return nullptr;
 

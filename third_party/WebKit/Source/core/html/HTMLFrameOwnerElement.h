@@ -52,7 +52,7 @@ public:
 
     // Most subclasses use RenderPart (either RenderEmbeddedObject or RenderIFrame)
     // except for HTMLObjectElement and HTMLEmbedElement which may return any
-    // RenderObject when using fallback content.
+    // LayoutObject when using fallback content.
     RenderPart* renderPart() const;
 
     Document* getSVGDocument(ExceptionState&) const;

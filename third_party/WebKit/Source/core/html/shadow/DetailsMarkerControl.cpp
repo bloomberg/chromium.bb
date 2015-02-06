@@ -44,7 +44,7 @@ DetailsMarkerControl::DetailsMarkerControl(Document& document)
 {
 }
 
-RenderObject* DetailsMarkerControl::createRenderer(const RenderStyle&)
+LayoutObject* DetailsMarkerControl::createRenderer(const RenderStyle&)
 {
     return new RenderDetailsMarker(this);
 }

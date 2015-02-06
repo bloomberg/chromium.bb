@@ -89,7 +89,7 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     if (updateRelativeLengths)
         updateRelativeLengthsInformation();
 
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (!renderer)
         return;
 
@@ -100,7 +100,7 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     markForLayoutAndParentResourceInvalidation(renderer);
 }
 
-SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(RenderObject& renderer)
+SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(LayoutObject& renderer)
 {
     if (!renderer.isSVGText() && !renderer.isSVGInline())
         return 0;

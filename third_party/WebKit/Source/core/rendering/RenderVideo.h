@@ -58,7 +58,7 @@ private:
 
     virtual const char* renderName() const override { return "RenderVideo"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectVideo || RenderMedia::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || RenderMedia::isOfType(type); }
 
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
@@ -81,7 +81,7 @@ private:
     LayoutSize m_cachedImageSize;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderVideo, isVideo());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderVideo, isVideo());
 
 } // namespace blink
 

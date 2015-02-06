@@ -871,7 +871,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderI
 
     document().updateLayoutIgnorePendingStylesheets();
 
-    RenderObject* renderer = container->renderer();
+    LayoutObject* renderer = container->renderer();
     if (!renderer || !renderer->isRenderBlockFlow())
         return nullptr;
 

@@ -30,7 +30,7 @@
 
 #include "config.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/TraceEvent.h"
 
 #include "wtf/Vector.h"
@@ -62,13 +62,13 @@ ResourceLoadPriorityOptimizer::~ResourceLoadPriorityOptimizer()
 {
 }
 
-void ResourceLoadPriorityOptimizer::addRenderObject(RenderObject* renderer)
+void ResourceLoadPriorityOptimizer::addLayoutObject(LayoutObject* renderer)
 {
     m_objects.add(renderer);
     renderer->setHasPendingResourceUpdate(true);
 }
 
-void ResourceLoadPriorityOptimizer::removeRenderObject(RenderObject* renderer)
+void ResourceLoadPriorityOptimizer::removeLayoutObject(LayoutObject* renderer)
 {
     if (!renderer->hasPendingResourceUpdate())
         return;
@@ -82,10 +82,10 @@ void ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities()
 
     m_imageResources.clear();
 
-    Vector<RenderObject*> objectsToRemove;
-    for (const auto& renderObject : m_objects) {
-        if (!renderObject->updateImageLoadingPriorities())
-            objectsToRemove.append(renderObject);
+    Vector<LayoutObject*> objectsToRemove;
+    for (const auto& layoutObject : m_objects) {
+        if (!layoutObject->updateImageLoadingPriorities())
+            objectsToRemove.append(layoutObject);
     }
     m_objects.removeAll(objectsToRemove);
 

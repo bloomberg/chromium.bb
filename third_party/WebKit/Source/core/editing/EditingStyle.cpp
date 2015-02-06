@@ -54,8 +54,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLSpanElement.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
@@ -1234,7 +1234,7 @@ void EditingStyle::removePropertiesInElementDefaultStyle(Element* element)
 void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
 {
     LayoutRect rect = element.boundingBox();
-    RenderObject* renderer = element.renderer();
+    LayoutObject* renderer = element.renderer();
 
     LayoutUnit x = rect.x();
     LayoutUnit y = rect.y();

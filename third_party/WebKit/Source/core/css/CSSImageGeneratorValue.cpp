@@ -42,7 +42,7 @@ CSSImageGeneratorValue::~CSSImageGeneratorValue()
 {
 }
 
-void CSSImageGeneratorValue::addClient(RenderObject* renderer, const IntSize& size)
+void CSSImageGeneratorValue::addClient(LayoutObject* renderer, const IntSize& size)
 {
     ASSERT(renderer);
 #if !ENABLE(OILPAN)
@@ -57,7 +57,7 @@ void CSSImageGeneratorValue::addClient(RenderObject* renderer, const IntSize& si
     if (!size.isEmpty())
         m_sizes.add(size);
 
-    RenderObjectSizeCountMap::iterator it = m_clients.find(renderer);
+    LayoutObjectSizeCountMap::iterator it = m_clients.find(renderer);
     if (it == m_clients.end())
         m_clients.add(renderer, SizeAndCount(size, 1));
     else {
@@ -66,10 +66,10 @@ void CSSImageGeneratorValue::addClient(RenderObject* renderer, const IntSize& si
     }
 }
 
-void CSSImageGeneratorValue::removeClient(RenderObject* renderer)
+void CSSImageGeneratorValue::removeClient(LayoutObject* renderer)
 {
     ASSERT(renderer);
-    RenderObjectSizeCountMap::iterator it = m_clients.find(renderer);
+    LayoutObjectSizeCountMap::iterator it = m_clients.find(renderer);
     ASSERT_WITH_SECURITY_IMPLICATION(it != m_clients.end());
 
     IntSize removedImageSize;
@@ -94,9 +94,9 @@ void CSSImageGeneratorValue::removeClient(RenderObject* renderer)
 #endif
 }
 
-Image* CSSImageGeneratorValue::getImage(RenderObject* renderer, const IntSize& size)
+Image* CSSImageGeneratorValue::getImage(LayoutObject* renderer, const IntSize& size)
 {
-    RenderObjectSizeCountMap::iterator it = m_clients.find(renderer);
+    LayoutObjectSizeCountMap::iterator it = m_clients.find(renderer);
     if (it != m_clients.end()) {
         SizeAndCount& sizeCount = it->value;
         IntSize oldSize = sizeCount.size;
@@ -122,7 +122,7 @@ void CSSImageGeneratorValue::putImage(const IntSize& size, PassRefPtr<Image> ima
     m_images.add(size, image);
 }
 
-PassRefPtr<Image> CSSImageGeneratorValue::image(RenderObject* renderer, const IntSize& size)
+PassRefPtr<Image> CSSImageGeneratorValue::image(LayoutObject* renderer, const IntSize& size)
 {
     switch (classType()) {
     case CanvasClass:
@@ -156,7 +156,7 @@ bool CSSImageGeneratorValue::isFixedSize() const
     return false;
 }
 
-IntSize CSSImageGeneratorValue::fixedSize(const RenderObject* renderer)
+IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* renderer)
 {
     switch (classType()) {
     case CanvasClass:
@@ -190,7 +190,7 @@ bool CSSImageGeneratorValue::isPending() const
     return false;
 }
 
-bool CSSImageGeneratorValue::knownToBeOpaque(const RenderObject* renderer) const
+bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject* renderer) const
 {
     switch (classType()) {
     case CrossfadeClass:

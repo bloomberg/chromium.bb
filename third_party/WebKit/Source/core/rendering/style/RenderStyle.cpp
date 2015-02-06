@@ -407,7 +407,7 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) co
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
     // so they don't need to cause any paint invalidation or layout.
 
-    // Animations don't need to be checked either. We always set the new style on the RenderObject, so we will get a chance to fire off
+    // Animations don't need to be checked either. We always set the new style on the LayoutObject, so we will get a chance to fire off
     // the resulting transition properly.
 
     return diff;

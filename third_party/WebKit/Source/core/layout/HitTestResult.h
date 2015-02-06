@@ -42,7 +42,7 @@ class HTMLMediaElement;
 class Image;
 class KURL;
 class Node;
-class RenderObject;
+class LayoutObject;
 class PositionWithAffinity;
 class Scrollbar;
 
@@ -90,7 +90,7 @@ public:
     void setLocalPoint(const LayoutPoint& p) { m_localPoint = p; }
 
     PositionWithAffinity position() const;
-    RenderObject* renderer() const;
+    LayoutObject* renderer() const;
 
     void setToShadowHostIfInUserAgentShadowRoot();
 

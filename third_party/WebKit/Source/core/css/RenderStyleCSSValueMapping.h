@@ -10,7 +10,7 @@
 namespace blink {
 
 class CSSPrimitiveValue;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 class ShadowData;
 class ShadowList;
@@ -20,7 +20,7 @@ class Node;
 class RenderStyleCSSValueMapping {
 public:
     // FIXME: Resolve computed auto alignment in applyProperty/RenderStyle and remove this non-const styledNode parameter.
-    static PassRefPtrWillBeRawPtr<CSSValue> get(CSSPropertyID, const RenderStyle&, const RenderObject* renderer = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);
+    static PassRefPtrWillBeRawPtr<CSSValue> get(CSSPropertyID, const RenderStyle&, const LayoutObject* renderer = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);
 private:
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const StyleColor&);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread);

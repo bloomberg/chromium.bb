@@ -13,7 +13,7 @@ struct PaintInfo;
 class LayoutPoint;
 class LayoutRect;
 class LayoutTableCell;
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 
 class TableCellPainter {
@@ -23,7 +23,7 @@ public:
     void paint(const PaintInfo&, const LayoutPoint&);
 
     void paintCollapsedBorders(const PaintInfo&, const LayoutPoint&);
-    void paintBackgroundsBehindCell(const PaintInfo&, const LayoutPoint&, RenderObject* backgroundObject);
+    void paintBackgroundsBehindCell(const PaintInfo&, const LayoutPoint&, LayoutObject* backgroundObject);
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
 

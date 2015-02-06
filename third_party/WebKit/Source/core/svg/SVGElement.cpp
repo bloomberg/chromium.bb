@@ -39,7 +39,7 @@
 #include "core/events/Event.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -418,7 +418,7 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
     TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
 #endif
 
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (renderer && selfHasRelativeLengths()) {
         if (renderer->isSVGResourceContainer())
             toRenderSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
@@ -872,7 +872,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (isIdAttributeName(attrName)) {
-        RenderObject* object = renderer();
+        LayoutObject* object = renderer();
         // Notify resources about id changes, this is important as we cache resources by id in SVGDocumentExtensions
         if (object && object->isSVGResourceContainer())
             toRenderSVGResourceContainer(object)->idChanged();
@@ -911,7 +911,7 @@ PassRefPtr<RenderStyle> SVGElement::customStyleForRenderer()
 
     RenderStyle* style = 0;
     if (Element* parent = parentOrShadowHostElement()) {
-        if (RenderObject* renderer = parent->renderer())
+        if (LayoutObject* renderer = parent->renderer())
             style = renderer->style();
     }
 
@@ -943,7 +943,7 @@ RenderStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
 
     RenderStyle* parentStyle = 0;
     if (Element* parent = parentOrShadowHostElement()) {
-        if (RenderObject* renderer = parent->renderer())
+        if (LayoutObject* renderer = parent->renderer())
             parentStyle = renderer->style();
     }
 
@@ -956,7 +956,7 @@ bool SVGElement::hasFocusEventListeners() const
         || hasEventListeners(EventTypeNames::focus) || hasEventListeners(EventTypeNames::blur);
 }
 
-void SVGElement::markForLayoutAndParentResourceInvalidation(RenderObject* renderer)
+void SVGElement::markForLayoutAndParentResourceInvalidation(LayoutObject* renderer)
 {
     ASSERT(renderer);
     RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, true);

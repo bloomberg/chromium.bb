@@ -374,7 +374,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
 
         // Make sure empty cell has some height, if a placeholder can be inserted.
         document().updateLayoutIgnorePendingStylesheets();
-        RenderObject *r = node->renderer();
+        LayoutObject* r = node->renderer();
         if (r && r->isTableCell() && toLayoutTableCell(r)->contentHeight() <= 0) {
             Position firstEditablePosition = firstEditablePositionInNode(node.get());
             if (firstEditablePosition.isNotNull())

@@ -76,37 +76,37 @@ public:
     virtual ~RenderSVGResourceFilter();
     virtual void destroy() override;
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
     virtual const char* renderName() const override { return "RenderSVGResourceFilter"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceFilter || RenderSVGResourceContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilter || RenderSVGResourceContainer::isOfType(type); }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     // Returns the context that should be used to paint the filter contents, or
     // null if the content should not be recorded.
-    GraphicsContext* prepareEffect(RenderObject*, GraphicsContext*);
-    void finishEffect(RenderObject*, GraphicsContext*);
+    GraphicsContext* prepareEffect(LayoutObject*, GraphicsContext*);
+    void finishEffect(LayoutObject*, GraphicsContext*);
 
-    FloatRect resourceBoundingBox(const RenderObject*);
+    FloatRect resourceBoundingBox(const LayoutObject*);
 
     PassRefPtrWillBeRawPtr<SVGFilterBuilder> buildPrimitives(SVGFilter*);
 
     SVGUnitTypes::SVGUnitType filterUnits() const { return toSVGFilterElement(element())->filterUnits()->currentValue()->enumValue(); }
     SVGUnitTypes::SVGUnitType primitiveUnits() const { return toSVGFilterElement(element())->primitiveUnits()->currentValue()->enumValue(); }
 
-    void primitiveAttributeChanged(RenderObject*, const QualifiedName&);
+    void primitiveAttributeChanged(LayoutObject*, const QualifiedName&);
 
     static const RenderSVGResourceType s_resourceType = FilterResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
-    typedef WillBePersistentHeapHashMap<RenderObject*, OwnPtrWillBeMember<FilterData>> FilterMap;
+    typedef WillBePersistentHeapHashMap<LayoutObject*, OwnPtrWillBeMember<FilterData>> FilterMap;
     FilterMap m_filter;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGResourceFilter, isSVGResourceFilter());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGResourceFilter, isSVGResourceFilter());
 
 }
 

@@ -38,14 +38,14 @@ void RenderSVGResourceGradient::removeAllClientsFromCache(bool markForInvalidati
     markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceGradient::removeClientFromCache(RenderObject* client, bool markForInvalidation)
+void RenderSVGResourceGradient::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     m_gradientMap.remove(client);
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-SVGPaintServer RenderSVGResourceGradient::preparePaintServer(const RenderObject& object)
+SVGPaintServer RenderSVGResourceGradient::preparePaintServer(const LayoutObject& object)
 {
     clearInvalidationMask();
 
@@ -99,7 +99,7 @@ SVGPaintServer RenderSVGResourceGradient::preparePaintServer(const RenderObject&
     return SVGPaintServer(gradientData->gradient);
 }
 
-bool RenderSVGResourceGradient::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool RenderSVGResourceGradient::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     if (child->isSVGGradientStop())
         return true;

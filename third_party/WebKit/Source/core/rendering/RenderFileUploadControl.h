@@ -36,7 +36,7 @@ public:
     RenderFileUploadControl(HTMLInputElement*);
     virtual ~RenderFileUploadControl();
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFileUploadControl || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFileUploadControl || RenderBlockFlow::isOfType(type); }
 
     String buttonValue();
     String fileTextValue() const;
@@ -61,7 +61,7 @@ private:
     bool m_canReceiveDroppedFiles;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFileUploadControl, isFileUploadControl());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFileUploadControl, isFileUploadControl());
 
 } // namespace blink
 

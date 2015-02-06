@@ -231,7 +231,7 @@ interface InspectorInstrumentation {
     InspectorInstrumentationCookie willLayout([Keep] LocalFrame*);
 
     [Timeline, Page, Inline=FastReturn]
-    void didLayout(const InspectorInstrumentationCookie&, RenderObject* root);
+    void didLayout(const InspectorInstrumentationCookie&, LayoutObject* root);
 
     [Page, Inline=FastReturn]
     void didScroll(LocalFrame*);
@@ -249,16 +249,16 @@ interface InspectorInstrumentation {
     void didDispatchXHRLoadendEvent(ExecutionContext*, XMLHttpRequest*);
 
     [Timeline, Inline=FastReturn]
-    void willScrollLayer([Keep] RenderObject*);
+    void willScrollLayer([Keep] LayoutObject*);
 
     [Timeline, Inline=FastReturn]
-    void didScrollLayer(RenderObject*);
+    void didScrollLayer(LayoutObject*);
 
     [Timeline, Inline=FastReturn]
-    void willPaint([Keep] RenderObject*, const GraphicsLayer*);
+    void willPaint([Keep] LayoutObject*, const GraphicsLayer*);
 
     [Timeline, Page, LayerTree, Inline=FastReturn]
-    void didPaint([Keep] RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
+    void didPaint([Keep] LayoutObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     [Timeline, Inline=FastReturn]
     void willPaintImage([Keep] RenderImage*);

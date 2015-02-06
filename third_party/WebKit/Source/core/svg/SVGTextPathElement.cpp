@@ -112,11 +112,11 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
     if (attrName == SVGNames::startOffsetAttr)
         updateRelativeLengthsInformation();
 
-    if (RenderObject* object = renderer())
+    if (LayoutObject* object = renderer())
         markForLayoutAndParentResourceInvalidation(object);
 }
 
-RenderObject* SVGTextPathElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGTextPathElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGTextPath(this);
 }

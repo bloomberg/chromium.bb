@@ -32,11 +32,11 @@
 #include "core/rendering/SubtreeLayoutScope.h"
 
 #include "core/frame/FrameView.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
-SubtreeLayoutScope::SubtreeLayoutScope(RenderObject& root)
+SubtreeLayoutScope::SubtreeLayoutScope(LayoutObject& root)
     : m_root(root)
 {
     RELEASE_ASSERT(m_root.document().view()->isInPerformLayout());
@@ -47,24 +47,24 @@ SubtreeLayoutScope::~SubtreeLayoutScope()
     RELEASE_ASSERT(!m_root.needsLayout());
 
 #if ENABLE(ASSERT)
-    for (HashSet<RenderObject*>::iterator it = m_renderersToLayout.begin(); it != m_renderersToLayout.end(); ++it)
+    for (HashSet<LayoutObject*>::iterator it = m_renderersToLayout.begin(); it != m_renderersToLayout.end(); ++it)
         (*it)->assertRendererLaidOut();
 #endif
 }
 
-void SubtreeLayoutScope::setNeedsLayout(RenderObject* descendant)
+void SubtreeLayoutScope::setNeedsLayout(LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(&m_root));
     descendant->setNeedsLayout(MarkContainingBlockChain, this);
 }
 
-void SubtreeLayoutScope::setChildNeedsLayout(RenderObject* descendant)
+void SubtreeLayoutScope::setChildNeedsLayout(LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(&m_root));
     descendant->setChildNeedsLayout(MarkContainingBlockChain, this);
 }
 
-void SubtreeLayoutScope::addRendererToLayout(RenderObject* renderer)
+void SubtreeLayoutScope::addRendererToLayout(LayoutObject* renderer)
 {
 #if ENABLE(ASSERT)
     m_renderersToLayout.add(renderer);

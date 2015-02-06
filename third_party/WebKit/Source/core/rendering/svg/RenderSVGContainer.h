@@ -38,8 +38,8 @@ public:
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+    LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
@@ -51,16 +51,16 @@ public:
 
     virtual bool hasNonIsolatedBlendingDescendants() const override final;
 protected:
-    virtual RenderObjectChildList* virtualChildren() override final { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override final { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGContainer || RenderSVGModelObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || RenderSVGModelObject::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGContainer"; }
 
     virtual void layout() override;
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override final;
-    virtual void removeChild(RenderObject*) override final;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override final;
+    virtual void removeChild(LayoutObject*) override final;
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 
     virtual FloatRect objectBoundingBox() const override final { return m_objectBoundingBox; }
@@ -82,10 +82,10 @@ protected:
     virtual void descendantIsolationRequirementsChanged(DescendantIsolationState) override final;
 
 private:
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
     FloatRect m_objectBoundingBox;
     FloatRect m_strokeBoundingBox;
     bool m_objectBoundingBoxValid;
@@ -94,7 +94,7 @@ private:
     mutable bool m_hasNonIsolatedBlendingDescendantsDirty : 1;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGContainer, isSVGContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGContainer, isSVGContainer());
 
 } // namespace blink
 

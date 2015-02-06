@@ -15,7 +15,7 @@ namespace blink {
 // are siblings of RenderMultiColumnSet objects, i.e. direct children of the multicol container.
 class RenderMultiColumnSpannerPlaceholder final : public RenderBox {
 public:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderMultiColumnSpannerPlaceholder || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderMultiColumnSpannerPlaceholder || RenderBox::isOfType(type); }
 
     static RenderMultiColumnSpannerPlaceholder* createAnonymous(RenderStyle* parentStyle, RenderBox*);
 
@@ -42,7 +42,7 @@ private:
     RenderBox* m_rendererInFlowThread; // The actual column-span:all renderer inside the flow thread.
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMultiColumnSpannerPlaceholder, isRenderMultiColumnSpannerPlaceholder());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMultiColumnSpannerPlaceholder, isRenderMultiColumnSpannerPlaceholder());
 
 } // namespace blink
 

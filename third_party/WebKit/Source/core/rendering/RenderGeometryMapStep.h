@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 
 // Stores data about how to map from one renderer to its container.
 struct RenderGeometryMapStep {
@@ -48,7 +48,7 @@ struct RenderGeometryMapStep {
     {
         ASSERT(!o.m_transform);
     }
-    RenderGeometryMapStep(const RenderObject* renderer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
+    RenderGeometryMapStep(const LayoutObject* renderer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
         : m_renderer(renderer)
         , m_accumulatingTransform(accumulatingTransform)
         , m_isNonUniform(isNonUniform)
@@ -56,7 +56,7 @@ struct RenderGeometryMapStep {
         , m_hasTransform(hasTransform)
     {
     }
-    const RenderObject* m_renderer;
+    const LayoutObject* m_renderer;
     LayoutSize m_offset;
     OwnPtr<TransformationMatrix> m_transform; // Includes offset if non-null.
     LayoutSize m_offsetForFixedPosition;

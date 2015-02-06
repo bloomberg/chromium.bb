@@ -123,7 +123,7 @@ void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* f
         filterEffect->setHasHeight(true);
 }
 
-RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(const RenderStyle&)
+LayoutObject* SVGFilterPrimitiveStandardAttributes::createRenderer(const RenderStyle&)
 {
     return new RenderSVGResourceFilterPrimitive(this);
 }
@@ -138,13 +138,13 @@ bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const RenderStyle& s
 
 void SVGFilterPrimitiveStandardAttributes::invalidate()
 {
-    if (RenderObject* primitiveRenderer = renderer())
+    if (LayoutObject* primitiveRenderer = renderer())
         markForLayoutAndParentResourceInvalidation(primitiveRenderer);
 }
 
 void SVGFilterPrimitiveStandardAttributes::primitiveAttributeChanged(const QualifiedName& attribute)
 {
-    if (RenderObject* primitiveRenderer = renderer())
+    if (LayoutObject* primitiveRenderer = renderer())
         static_cast<RenderSVGResourceFilterPrimitive*>(primitiveRenderer)->primitiveAttributeChanged(attribute);
 }
 
@@ -158,7 +158,7 @@ void invalidateFilterPrimitiveParent(SVGElement* element)
     if (!parent)
         return;
 
-    RenderObject* renderer = parent->renderer();
+    LayoutObject* renderer = parent->renderer();
     if (!renderer || !renderer->isSVGResourceFilterPrimitive())
         return;
 

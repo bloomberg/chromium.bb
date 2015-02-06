@@ -62,7 +62,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
             }
 
             if (renderer.isOutOfFlowPositioned() && !fixed) {
-                if (RenderObject* container = renderer.container()) {
+                if (LayoutObject* container = renderer.container()) {
                     if (container->style()->hasInFlowPosition() && container->isRenderInline())
                         m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(toRenderBox(renderer));
                 }
@@ -114,7 +114,7 @@ void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutSize& 
     }
 }
 
-void PaintInvalidationState::applyClipIfNeeded(const RenderObject& renderer)
+void PaintInvalidationState::applyClipIfNeeded(const LayoutObject& renderer)
 {
     if (!renderer.hasOverflowClip())
         return;

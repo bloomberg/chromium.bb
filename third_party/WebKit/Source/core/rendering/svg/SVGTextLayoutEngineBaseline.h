@@ -26,7 +26,7 @@
 namespace blink {
 
 class Font;
-class RenderObject;
+class LayoutObject;
 class SVGElement;
 class SVGRenderStyle;
 class SVGTextMetrics;
@@ -38,12 +38,12 @@ public:
     SVGTextLayoutEngineBaseline(const Font&);
 
     float calculateBaselineShift(const SVGRenderStyle&, SVGElement* lengthContext) const;
-    float calculateAlignmentBaselineShift(bool isVerticalText, const RenderObject* textRenderer) const;
+    float calculateAlignmentBaselineShift(bool isVerticalText, const LayoutObject* textRenderer) const;
     float calculateGlyphOrientationAngle(bool isVerticalText, const SVGRenderStyle&, const UChar& character) const;
     float calculateGlyphAdvanceAndOrientation(bool isVerticalText, const SVGTextMetrics&, float angle, float& xOrientationShift, float& yOrientationShift) const;
 
 private:
-    EAlignmentBaseline dominantBaselineToAlignmentBaseline(bool isVerticalText, const RenderObject* textRenderer) const;
+    EAlignmentBaseline dominantBaselineToAlignmentBaseline(bool isVerticalText, const LayoutObject* textRenderer) const;
 
     const Font& m_font;
 };

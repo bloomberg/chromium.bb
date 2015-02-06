@@ -35,7 +35,7 @@ void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, cons
 {
     RenderSVGHiddenContainer::styleDidChange(diff, oldStyle);
 
-    RenderObject* filter = parent();
+    LayoutObject* filter = parent();
     if (!filter)
         return;
     ASSERT(filter->isSVGResourceFilter());

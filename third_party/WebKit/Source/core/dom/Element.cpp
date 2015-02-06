@@ -481,17 +481,17 @@ void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
         renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-static float localZoomForRenderer(RenderObject& renderer)
+static float localZoomForRenderer(LayoutObject& renderer)
 {
     // FIXME: This does the wrong thing if two opposing zooms are in effect and canceled each
     // other out, but the alternative is that we'd have to crawl up the whole render tree every
     // time (or store an additional bit in the RenderStyle to indicate that a zoom was specified).
     float zoomFactor = 1;
     if (renderer.style()->effectiveZoom() != 1) {
-        // Need to find the nearest enclosing RenderObject that set up
+        // Need to find the nearest enclosing LayoutObject that set up
         // a differing zoom, and then we divide our result by it to eliminate the zoom.
-        RenderObject* prev = &renderer;
-        for (RenderObject* curr = prev->parent(); curr; curr = curr->parent()) {
+        LayoutObject* prev = &renderer;
+        for (LayoutObject* curr = prev->parent(); curr; curr = curr->parent()) {
             if (curr->style()->effectiveZoom() != prev->style()->effectiveZoom()) {
                 zoomFactor = prev->style()->zoom();
                 break;
@@ -504,7 +504,7 @@ static float localZoomForRenderer(RenderObject& renderer)
     return zoomFactor;
 }
 
-static double adjustForLocalZoom(LayoutUnit value, RenderObject& renderer)
+static double adjustForLocalZoom(LayoutUnit value, LayoutObject& renderer)
 {
     float zoomFactor = localZoomForRenderer(renderer);
     if (zoomFactor == 1)
@@ -555,7 +555,7 @@ Element* Element::offsetParentForBindings()
 Element* Element::offsetParent()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (RenderObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->renderer())
         return renderer->offsetParent();
     return nullptr;
 }
@@ -902,7 +902,7 @@ PassRefPtrWillBeRawPtr<ClientRectList> Element::getClientRects()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    RenderObject* elementRenderer = renderer();
+    LayoutObject* elementRenderer = renderer();
     if (!elementRenderer || (!elementRenderer->isBoxModelObject() && !elementRenderer->isBR()))
         return ClientRectList::create();
 
@@ -920,7 +920,7 @@ PassRefPtrWillBeRawPtr<ClientRect> Element::getBoundingClientRect()
     document().updateLayoutIgnorePendingStylesheets();
 
     Vector<FloatQuad> quads;
-    RenderObject* elementRenderer = renderer();
+    LayoutObject* elementRenderer = renderer();
     if (elementRenderer) {
         if (isSVGElement() && !elementRenderer->isSVGRoot()) {
             // Get the bounding rectangle from the SVG model.
@@ -1322,9 +1322,9 @@ bool Element::rendererIsNeeded(const RenderStyle& style)
     return style.display() != NONE;
 }
 
-RenderObject* Element::createRenderer(const RenderStyle& style)
+LayoutObject* Element::createRenderer(const RenderStyle& style)
 {
-    return RenderObject::createObject(this, style);
+    return LayoutObject::createObject(this, style);
 }
 
 Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertionPoint)
@@ -1523,7 +1523,7 @@ bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderS
             if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED) {
                 // FIXME: We should do an actual diff to determine whether a repaint vs. layout
                 // is needed, but for now just assume a layout will be required. The diff code
-                // in RenderObject::setStyle would need to be factored out so that it could be reused.
+                // in LayoutObject::setStyle would need to be factored out so that it could be reused.
                 renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             }
             return true;
@@ -1655,7 +1655,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (localChange != NoChange)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
-    if (RenderObject* renderer = this->renderer()) {
+    if (LayoutObject* renderer = this->renderer()) {
         if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || svgFilterNeedsLayerUpdate()) {
             renderer->setStyle(newStyle.get());
         } else {
@@ -2614,7 +2614,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 
         // Wait until our parent is not displayed or pseudoElementRendererIsNeeded
         // is false, otherwise we could continuously create and destroy PseudoElements
-        // when RenderObject::isChildAllowed on our parent returns false for the
+        // when LayoutObject::isChildAllowed on our parent returns false for the
         // PseudoElement's renderer for each style recalc.
         if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
             elementRareData()->setPseudoElement(pseudoId, nullptr);
@@ -2634,7 +2634,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 // the first letter renderer.
 bool Element::updateFirstLetter(Element* element)
 {
-    RenderObject* remainingTextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element);
+    LayoutObject* remainingTextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element);
     if (!remainingTextRenderer || remainingTextRenderer != toFirstLetterPseudoElement(element)->remainingTextRenderer()) {
         // We have to clear out the old first letter here because when it is
         // disposed it will set the original text back on the remaining text
@@ -2675,7 +2675,7 @@ PseudoElement* Element::pseudoElement(PseudoId pseudoId) const
     return hasRareData() ? elementRareData()->pseudoElement(pseudoId) : nullptr;
 }
 
-RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
+LayoutObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
 {
     if (PseudoElement* element = pseudoElement(pseudoId))
         return element->renderer();
@@ -3357,7 +3357,7 @@ bool Element::supportsStyleSharing() const
     if (hasActiveAnimations())
         return false;
     // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
-    // See comments in RenderObject::setStyle().
+    // See comments in LayoutObject::setStyle().
     // FIXME: Why does gaining a layer from outside the style system require disabling sharing?
     if (isHTMLFrameElementBase(*this) || isHTMLPlugInElement(*this) || isHTMLCanvasElement(*this))
         return false;

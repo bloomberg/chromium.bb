@@ -210,7 +210,7 @@ protected:
     static CSSPropertyID cssPropertyIdForSVGAttributeName(const QualifiedName&);
     void updateRelativeLengthsInformation() { updateRelativeLengthsInformation(selfHasRelativeLengths(), this); }
     void updateRelativeLengthsInformation(bool hasRelativeLengths, SVGElement*);
-    static void markForLayoutAndParentResourceInvalidation(RenderObject*);
+    static void markForLayoutAndParentResourceInvalidation(LayoutObject*);
 
     virtual bool selfHasRelativeLengths() const { return false; }
 

@@ -191,7 +191,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     if (attrName == SVGNames::xAttr
         || attrName == SVGNames::yAttr
         || attrName == SVGNames::widthAttr
@@ -412,7 +412,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     updateRelativeLengthsInformation();
 }
 
-RenderObject* SVGUseElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGUseElement::createRenderer(const RenderStyle&)
 {
     return new RenderSVGTransformableContainer(this);
 }
@@ -451,7 +451,7 @@ void SVGUseElement::toClipPath(Path& path)
     }
 }
 
-RenderObject* SVGUseElement::rendererClipChild() const
+LayoutObject* SVGUseElement::rendererClipChild() const
 {
     if (Node* n = userAgentShadowRoot()->firstChild()) {
         if (n->isSVGElement() && isDirectReference(toSVGElement(*n)))

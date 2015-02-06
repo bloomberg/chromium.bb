@@ -50,7 +50,7 @@ private:
     virtual bool appendFormData(FormDataList&, bool) const override;
     virtual String resultForDialogSubmit() const override;
     virtual bool supportsValidation() const override;
-    virtual RenderObject* createRenderer(const RenderStyle&) const override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) const override;
     virtual void handleDOMActivateEvent(Event*) override;
     virtual void altAttributeChanged() override;
     virtual void srcAttributeChanged() override;

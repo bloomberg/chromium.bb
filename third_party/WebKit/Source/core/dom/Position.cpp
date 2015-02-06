@@ -54,7 +54,7 @@ using namespace HTMLNames;
 static Node* nextRenderedEditable(Node* node)
 {
     for (node = node->nextLeafNode(); node; node = node->nextLeafNode()) {
-        RenderObject* renderer = node->renderer();
+        LayoutObject* renderer = node->renderer();
         if (!renderer)
             continue;
         if (!node->hasEditableStyle())
@@ -68,7 +68,7 @@ static Node* nextRenderedEditable(Node* node)
 static Node* previousRenderedEditable(Node* node)
 {
     for (node = node->previousLeafNode(); node; node = node->previousLeafNode()) {
-        RenderObject* renderer = node->renderer();
+        LayoutObject* renderer = node->renderer();
         if (!renderer)
             continue;
         if (!node->hasEditableStyle())
@@ -570,7 +570,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
             return lastVisible;
 
         // skip position in unrendered or invisible node
-        RenderObject* renderer = currentNode->renderer();
+        LayoutObject* renderer = currentNode->renderer();
         if (!renderer || renderer->style()->visibility() != VISIBLE)
             continue;
 
@@ -703,7 +703,7 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
             return lastVisible;
 
         // skip position in unrendered or invisible node
-        RenderObject* renderer = currentNode->renderer();
+        LayoutObject* renderer = currentNode->renderer();
         if (!renderer || renderer->style()->visibility() != VISIBLE)
             continue;
 
@@ -774,15 +774,15 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
     return lastVisible;
 }
 
-static int boundingBoxLogicalHeight(RenderObject *o, const IntRect &rect)
+static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
 {
     return o->style()->isHorizontalWritingMode() ? rect.height() : rect.width();
 }
 
-bool Position::hasRenderedNonAnonymousDescendantsWithHeight(RenderObject* renderer)
+bool Position::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* renderer)
 {
-    RenderObject* stop = renderer->nextInPreOrderAfterChildren();
-    for (RenderObject *o = renderer->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
+    LayoutObject* stop = renderer->nextInPreOrderAfterChildren();
+    for (LayoutObject *o = renderer->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
         if (o->nonPseudoNode()) {
             if ((o->isText() && boundingBoxLogicalHeight(o, toRenderText(o)->linesBoundingBox()))
                 || (o->isBox() && toRenderBox(o)->pixelSnappedLogicalHeight())
@@ -829,7 +829,7 @@ bool Position::isCandidate() const
     if (isNull())
         return false;
 
-    RenderObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->renderer();
     if (!renderer)
         return false;
 
@@ -875,7 +875,7 @@ bool Position::inRenderedText() const
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
 
-    RenderObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->renderer();
     if (!renderer)
         return false;
 
@@ -900,7 +900,7 @@ bool Position::isRenderedCharacter() const
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
 
-    RenderObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->renderer();
     if (!renderer)
         return false;
 
@@ -924,11 +924,11 @@ bool Position::rendersInDifferentPosition(const Position &pos) const
     if (isNull() || pos.isNull())
         return false;
 
-    RenderObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->renderer();
     if (!renderer)
         return false;
 
-    RenderObject* posRenderer = pos.deprecatedNode()->renderer();
+    LayoutObject* posRenderer = pos.deprecatedNode()->renderer();
     if (!posRenderer)
         return false;
 
@@ -1010,7 +1010,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, InlineBox*& inlineBox, 
     getInlineBoxAndOffset(affinity, primaryDirection(), inlineBox, caretOffset);
 }
 
-static bool isNonTextLeafChild(RenderObject* object)
+static bool isNonTextLeafChild(LayoutObject* object)
 {
     if (object->slowFirstChild())
         return false;
@@ -1019,10 +1019,10 @@ static bool isNonTextLeafChild(RenderObject* object)
     return true;
 }
 
-static InlineTextBox* searchAheadForBetterMatch(RenderObject* renderer)
+static InlineTextBox* searchAheadForBetterMatch(LayoutObject* renderer)
 {
     RenderBlock* container = renderer->containingBlock();
-    for (RenderObject* next = renderer->nextInPreOrder(container); next; next = next->nextInPreOrder(container)) {
+    for (LayoutObject* next = renderer->nextInPreOrder(container); next; next = next->nextInPreOrder(container)) {
         if (next->isRenderBlock())
             return 0;
         if (next->isBR())
@@ -1069,14 +1069,14 @@ static Position upstreamIgnoringEditingBoundaries(Position position)
 void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
 {
     caretOffset = deprecatedEditingOffset();
-    RenderObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->renderer();
 
     if (!renderer->isText()) {
         inlineBox = 0;
         if (canHaveChildrenForEditing(deprecatedNode()) && renderer->isRenderBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(renderer)) {
             // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
             // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
-            // of RenderObject::createVisiblePosition().
+            // of LayoutObject::createVisiblePosition().
             Position equivalent = downstreamIgnoringEditingBoundaries(*this);
             if (equivalent == *this) {
                 equivalent = upstreamIgnoringEditingBoundaries(*this);
@@ -1225,7 +1225,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
 TextDirection Position::primaryDirection() const
 {
     TextDirection primaryDirection = LTR;
-    for (const RenderObject* r = m_anchorNode->renderer(); r; r = r->parent()) {
+    for (const LayoutObject* r = m_anchorNode->renderer(); r; r = r->parent()) {
         if (r->isRenderBlockFlow()) {
             primaryDirection = r->style()->direction();
             break;

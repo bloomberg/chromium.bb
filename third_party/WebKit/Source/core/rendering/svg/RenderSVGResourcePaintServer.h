@@ -34,7 +34,7 @@ enum RenderSVGResourceMode {
 
 class GraphicsContext;
 class GraphicsContextStateSaver;
-class RenderObject;
+class LayoutObject;
 class RenderSVGResourcePaintServer;
 class RenderStyle;
 
@@ -44,8 +44,8 @@ public:
     explicit SVGPaintServer(PassRefPtr<Gradient>);
     explicit SVGPaintServer(PassRefPtr<Pattern>);
 
-    static SVGPaintServer requestForRenderer(const RenderObject&, const RenderStyle&, RenderSVGResourceMode);
-    static bool existsForRenderer(const RenderObject&, const RenderStyle&, RenderSVGResourceMode);
+    static SVGPaintServer requestForRenderer(const LayoutObject&, const RenderStyle&, RenderSVGResourceMode);
+    static bool existsForRenderer(const LayoutObject&, const RenderStyle&, RenderSVGResourceMode);
 
     void apply(GraphicsContext&, RenderSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
 
@@ -79,10 +79,10 @@ public:
     RenderSVGResourcePaintServer(SVGElement*);
     virtual ~RenderSVGResourcePaintServer();
 
-    virtual SVGPaintServer preparePaintServer(const RenderObject&) = 0;
+    virtual SVGPaintServer preparePaintServer(const LayoutObject&) = 0;
 
     // Helper utilities used in to access the underlying resources for DRT.
-    static SVGPaintDescription requestPaintDescription(const RenderObject&, const RenderStyle&, RenderSVGResourceMode);
+    static SVGPaintDescription requestPaintDescription(const LayoutObject&, const RenderStyle&, RenderSVGResourceMode);
 };
 
 DEFINE_TYPE_CASTS(RenderSVGResourcePaintServer, RenderSVGResourceContainer, resource, resource->isSVGPaintServer(), resource.isSVGPaintServer());

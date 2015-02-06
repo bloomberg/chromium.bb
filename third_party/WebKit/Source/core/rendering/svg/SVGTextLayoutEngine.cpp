@@ -143,9 +143,9 @@ void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox, const Ve
     m_currentTextFragment = SVGTextFragment();
 }
 
-bool SVGTextLayoutEngine::parentDefinesTextLength(RenderObject* parent) const
+bool SVGTextLayoutEngine::parentDefinesTextLength(LayoutObject* parent) const
 {
-    RenderObject* currentParent = parent;
+    LayoutObject* currentParent = parent;
     while (currentParent) {
         if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromRenderer(currentParent)) {
             SVGLengthContext lengthContext(textContentElement);
@@ -163,7 +163,7 @@ bool SVGTextLayoutEngine::parentDefinesTextLength(RenderObject* parent) const
     return false;
 }
 
-void SVGTextLayoutEngine::beginTextPathLayout(RenderObject* object, SVGTextLayoutEngine& lineLayout)
+void SVGTextLayoutEngine::beginTextPathLayout(LayoutObject* object, SVGTextLayoutEngine& lineLayout)
 {
     ASSERT(object);
 
@@ -430,7 +430,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
 
     SVGElement* lengthContext = toSVGElement(text.parent()->node());
 
-    RenderObject* textParent = text.parent();
+    LayoutObject* textParent = text.parent();
     bool definesTextLength = textParent ? parentDefinesTextLength(textParent) : false;
 
     const SVGRenderStyle& svgStyle = style.svgStyle();

@@ -3367,7 +3367,7 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
             break
 
     # Declarations of local variables can be in condition expressions
-    # of control flow statements (e.g., "if (RenderObject* p = o->parent())").
+    # of control flow statements (e.g., "if (LayoutObject* p = o->parent())").
     # We remove the keywords and the first parenthesis.
     #
     # Declarations in "while", "if", and "switch" are different from

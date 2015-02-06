@@ -4921,13 +4921,13 @@ class WebKitStyleTest(CppStyleTestBase):
                          'UNDER_SCORE' + name_underscore_error_message)
         self.assert_lint('static inline const char const& const under_score;',
                          'under_score' + name_underscore_error_message)
-        self.assert_lint('WebCore::RenderObject* under_score;',
+        self.assert_lint('WebCore::LayoutObject* under_score;',
                          'under_score' + name_underscore_error_message)
         self.assert_lint('int func_name();',
                          'func_name' + name_underscore_error_message)
-        self.assert_lint('RefPtr<RenderObject*> under_score;',
+        self.assert_lint('RefPtr<LayoutObject*> under_score;',
                          'under_score' + name_underscore_error_message)
-        self.assert_lint('WTF::Vector<WTF::RefPtr<const RenderObject* const>> under_score;',
+        self.assert_lint('WTF::Vector<WTF::RefPtr<const LayoutObject* const>> under_score;',
                          'under_score' + name_underscore_error_message)
         self.assert_lint('int under_score[];',
                          'under_score' + name_underscore_error_message)

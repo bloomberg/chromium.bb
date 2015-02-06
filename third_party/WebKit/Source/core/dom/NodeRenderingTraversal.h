@@ -32,7 +32,7 @@
 namespace blink {
 
 class InsertionPoint;
-class RenderObject;
+class LayoutObject;
 
 namespace NodeRenderingTraversal {
 
@@ -64,9 +64,9 @@ Node* previousSibling(const Node&);
 Node* previous(const Node&, const Node* stayWithin);
 Node* next(const Node&, const Node* stayWithin);
 Node* nextSkippingChildren(const Node&, const Node* stayWithin);
-RenderObject* nextSiblingRenderer(const Node&);
-RenderObject* previousSiblingRenderer(const Node&);
-RenderObject* nextInTopLayer(const Element&);
+LayoutObject* nextSiblingRenderer(const Node&);
+LayoutObject* previousSiblingRenderer(const Node&);
+LayoutObject* nextInTopLayer(const Element&);
 
 inline Element* parentElement(const Node& node)
 {

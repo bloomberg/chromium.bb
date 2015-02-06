@@ -31,21 +31,21 @@
 #ifndef RenderSVGModelObject_h
 #define RenderSVGModelObject_h
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {
 
 // Most renderers in the SVG rendering tree will inherit from this class
 // but not all. (e.g. RenderSVGForeignObject, RenderSVGBlock) thus methods
-// required by SVG renders need to be declared on RenderObject, but shared
+// required by SVG renders need to be declared on LayoutObject, but shared
 // logic can go in this class or in SVGRenderSupport.
 
-class RenderSVGModelObject : public RenderObject {
+class RenderSVGModelObject : public LayoutObject {
 public:
     explicit RenderSVGModelObject(SVGElement*);
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
 
@@ -55,14 +55,14 @@ public:
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
-    virtual const RenderObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const override final;
 
-    SVGElement* element() const { return toSVGElement(RenderObject::node()); }
+    SVGElement* element() const { return toSVGElement(LayoutObject::node()); }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || RenderObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || LayoutObject::isOfType(type); }
 
 protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override final;

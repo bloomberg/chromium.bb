@@ -5,7 +5,7 @@
 #ifndef FloatClipRecorder_h
 #define FloatClipRecorder_h
 
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 

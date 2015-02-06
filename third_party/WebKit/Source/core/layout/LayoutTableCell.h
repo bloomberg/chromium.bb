@@ -160,8 +160,8 @@ public:
     void setCellWidthChanged(bool b = true) { m_cellWidthChanged = b; }
 
     static LayoutTableCell* createAnonymous(Document*);
-    static LayoutTableCell* createAnonymousWithParentRenderer(const RenderObject*);
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
+    static LayoutTableCell* createAnonymousWithParentRenderer(const LayoutObject*);
+    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
@@ -223,7 +223,7 @@ protected:
 private:
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableCell || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCell || RenderBlockFlow::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 
@@ -234,7 +234,7 @@ private:
 
     virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const override;
 
-    virtual LayoutSize offsetFromContainer(const RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const override;
+    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const override;
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
     virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
@@ -284,16 +284,16 @@ private:
     int m_intrinsicPaddingAfter;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableCell, isTableCell());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCell, isTableCell());
 
 inline LayoutTableCell* LayoutTableCell::previousCell() const
 {
-    return toLayoutTableCell(RenderObject::previousSibling());
+    return toLayoutTableCell(LayoutObject::previousSibling());
 }
 
 inline LayoutTableCell* LayoutTableCell::nextCell() const
 {
-    return toLayoutTableCell(RenderObject::nextSibling());
+    return toLayoutTableCell(LayoutObject::nextSibling());
 }
 
 inline LayoutTableCell* LayoutTableRow::firstCell() const

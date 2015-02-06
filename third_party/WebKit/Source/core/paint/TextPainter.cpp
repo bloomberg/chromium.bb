@@ -7,9 +7,9 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
@@ -115,7 +115,7 @@ static Color textColorForWhiteBackground(Color textColor)
 }
 
 // static
-TextPainter::Style TextPainter::textPaintingStyle(RenderObject& renderer, const RenderStyle& style, bool forceBlackText, bool isPrinting)
+TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& renderer, const RenderStyle& style, bool forceBlackText, bool isPrinting)
 {
     TextPainter::Style textStyle;
 
@@ -154,7 +154,7 @@ TextPainter::Style TextPainter::textPaintingStyle(RenderObject& renderer, const 
     return textStyle;
 }
 
-TextPainter::Style TextPainter::selectionPaintingStyle(RenderObject& renderer, bool haveSelection, bool forceBlackText, bool isPrinting, const TextPainter::Style& textStyle)
+TextPainter::Style TextPainter::selectionPaintingStyle(LayoutObject& renderer, bool haveSelection, bool forceBlackText, bool isPrinting, const TextPainter::Style& textStyle)
 {
     TextPainter::Style selectionStyle = textStyle;
 

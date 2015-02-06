@@ -63,7 +63,7 @@ protected:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
-    virtual void removeChild(RenderObject*) override;
+    virtual void removeChild(LayoutObject*) override;
 
 private:
     enum FlexSign {
@@ -160,13 +160,13 @@ private:
     void flipForWrapReverse(const Vector<LineContext>&, LayoutUnit crossAxisStartEdge);
 
     // This is used to cache the preferred size for orthogonal flow children so we don't have to relayout to get it
-    HashMap<const RenderObject*, LayoutUnit> m_intrinsicSizeAlongMainAxis;
+    HashMap<const LayoutObject*, LayoutUnit> m_intrinsicSizeAlongMainAxis;
 
     mutable OrderIterator m_orderIterator;
     int m_numberOfInFlowChildrenOnFirstLine;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFlexibleBox, isFlexibleBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFlexibleBox, isFlexibleBox());
 
 } // namespace blink
 

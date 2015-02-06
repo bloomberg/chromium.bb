@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class RenderObject;
+class LayoutObject;
 class RenderStyle;
 
 class KeyframeValue {
@@ -63,7 +63,7 @@ private:
 
 class KeyframeList {
 public:
-    KeyframeList(RenderObject&, const AtomicString& animationName)
+    KeyframeList(LayoutObject&, const AtomicString& animationName)
         : m_animationName(animationName)
     {
         insert(KeyframeValue(0, nullptr));

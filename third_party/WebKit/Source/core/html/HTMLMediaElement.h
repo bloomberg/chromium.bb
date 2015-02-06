@@ -337,7 +337,7 @@ private:
     virtual bool supportsFocus() const override final;
     virtual bool isMouseFocusable() const override final;
     virtual bool rendererIsNeeded(const RenderStyle&) override;
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override final;
     virtual void didNotifySubtreeInsertionsToDocument() override;
     virtual void removedFrom(ContainerNode*) override final;

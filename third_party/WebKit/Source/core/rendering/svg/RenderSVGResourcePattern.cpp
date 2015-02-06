@@ -56,14 +56,14 @@ void RenderSVGResourcePattern::removeAllClientsFromCache(bool markForInvalidatio
     markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourcePattern::removeClientFromCache(RenderObject* client, bool markForInvalidation)
+void RenderSVGResourcePattern::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     m_patternMap.remove(client);
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-PatternData* RenderSVGResourcePattern::patternForRenderer(const RenderObject& object)
+PatternData* RenderSVGResourcePattern::patternForRenderer(const LayoutObject& object)
 {
     ASSERT(!m_shouldCollectPatternAttributes);
 
@@ -76,7 +76,7 @@ PatternData* RenderSVGResourcePattern::patternForRenderer(const RenderObject& ob
     return m_patternMap.set(&object, buildPatternData(object)).storedValue->value.get();
 }
 
-PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const RenderObject& object)
+PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const LayoutObject& object)
 {
     // If we couldn't determine the pattern content element root, stop here.
     const PatternAttributes& attributes = this->attributes();
@@ -120,7 +120,7 @@ PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const RenderO
     return patternData.release();
 }
 
-SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const RenderObject& object)
+SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const LayoutObject& object)
 {
     clearInvalidationMask();
 
@@ -181,7 +181,7 @@ PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect&
 
     {
         TransformRecorder transformRecorder(recordingContext, patternRenderer->displayItemClient(), tileTransform);
-        for (RenderObject* child = patternRenderer->firstChild(); child; child = child->nextSibling())
+        for (LayoutObject* child = patternRenderer->firstChild(); child; child = child->nextSibling())
             SVGRenderingContext::renderSubtree(&recordingContext, child);
     }
 

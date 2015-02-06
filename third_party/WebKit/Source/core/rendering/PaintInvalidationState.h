@@ -12,7 +12,7 @@
 namespace blink {
 
 class LayoutLayerModelObject;
-class RenderObject;
+class LayoutObject;
 class RenderSVGModelObject;
 class RenderView;
 
@@ -41,7 +41,7 @@ public:
         return m_cachedOffsetsEnabled && container == &m_paintInvalidationContainer;
     }
 private:
-    void applyClipIfNeeded(const RenderObject&);
+    void applyClipIfNeeded(const LayoutObject&);
     void addClipRectRelativeToPaintOffset(const LayoutSize& clipSize);
 
     friend class ForceHorriblySlowRectMapping;

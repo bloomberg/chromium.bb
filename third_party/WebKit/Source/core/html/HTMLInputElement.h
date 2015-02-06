@@ -146,7 +146,7 @@ public:
     void setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState&);
 
     virtual bool rendererIsNeeded(const RenderStyle&) override final;
-    virtual RenderObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const RenderStyle&) override;
     virtual void detach(const AttachContext& = AttachContext()) override final;
     virtual void updateFocusAppearance(bool restorePreviousSelection) override final;
 

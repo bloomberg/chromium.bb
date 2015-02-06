@@ -59,7 +59,7 @@ class NodeRareData : public NoBaseWillBeGarbageCollectedFinalized<NodeRareData>,
     WTF_MAKE_NONCOPYABLE(NodeRareData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static NodeRareData* create(RenderObject* renderer)
+    static NodeRareData* create(LayoutObject* renderer)
     {
         return new NodeRareData(renderer);
     }
@@ -112,7 +112,7 @@ public:
     void finalizeGarbageCollectedObject();
 
 protected:
-    explicit NodeRareData(RenderObject* renderer)
+    explicit NodeRareData(LayoutObject* renderer)
         : NodeRareDataBase(renderer)
         , m_connectedFrameCount(0)
         , m_elementFlags(0)

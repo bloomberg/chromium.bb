@@ -314,7 +314,7 @@ void RenderFrameSet::computeEdgeInfo()
     m_cols.m_preventResize.fill(frameSet()->noResize());
     m_cols.m_allowBorder.fill(false);
 
-    RenderObject* child = firstChild();
+    LayoutObject* child = firstChild();
     if (!child)
         return;
 
@@ -494,7 +494,7 @@ bool RenderFrameSet::userResize(MouseEvent* evt)
 void RenderFrameSet::setIsResizing(bool isResizing)
 {
     m_isResizing = isResizing;
-    for (RenderObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
+    for (LayoutObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
         if (ancestor->isFrameSet())
             toRenderFrameSet(ancestor)->m_isChildResizing = isResizing;
     }
@@ -553,7 +553,7 @@ int RenderFrameSet::hitTestSplit(const GridAxis& axis, int position) const
     return noSplit;
 }
 
-bool RenderFrameSet::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool RenderFrameSet::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     return child->isFrame() || child->isFrameSet();
 }

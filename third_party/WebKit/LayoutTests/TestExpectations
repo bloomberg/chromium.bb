@@ -600,6 +600,11 @@ crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyo
 # Pixel captures are currently totally broken on Android Nexus4's at the moment.
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
 
+crbug.com/450612 fast/borders/border-radius-huge-assert.html [ NeedsRebaseline ]
+crbug.com/450612 fast/css/first-letter-detach.html [ NeedsRebaseline ]
+crbug.com/450612 virtual/slimmingpaint/fast/borders/border-radius-huge-assert.html [ NeedsRebaseline ]
+crbug.com/450612 virtual/slimmingpaint/fast/css/first-letter-detach.html [ NeedsRebaseline ]
+
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]

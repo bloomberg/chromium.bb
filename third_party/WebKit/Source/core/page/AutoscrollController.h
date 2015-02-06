@@ -37,7 +37,7 @@ class Node;
 class Page;
 class PlatformMouseEvent;
 class RenderBox;
-class RenderObject;
+class LayoutObject;
 
 enum AutoscrollType {
     NoAutoscroll,
@@ -58,9 +58,9 @@ public:
     bool autoscrollInProgress() const;
     bool autoscrollInProgress(const RenderBox*) const;
     bool panScrollInProgress() const;
-    void startAutoscrollForSelection(RenderObject*);
+    void startAutoscrollForSelection(LayoutObject*);
     void stopAutoscroll();
-    void stopAutoscrollIfNeeded(RenderObject*);
+    void stopAutoscrollIfNeeded(LayoutObject*);
     void updateAutoscrollRenderer();
     void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
 #if OS(WIN)

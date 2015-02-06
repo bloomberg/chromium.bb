@@ -49,7 +49,7 @@ protected:
 private:
     virtual bool hasControlClip() const override final;
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override final;
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTextField || RenderTextControl::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextField || RenderTextControl::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;
@@ -81,7 +81,7 @@ private:
     LayoutUnit m_desiredInnerEditorLogicalHeight;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControlSingleLine, isTextField());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderTextControlSingleLine, isTextField());
 
 // ----------------------------
 

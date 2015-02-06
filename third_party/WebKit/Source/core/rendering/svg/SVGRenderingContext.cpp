@@ -41,8 +41,8 @@ namespace blink {
 SVGRenderingContext::~SVGRenderingContext()
 {
     if (m_filter) {
-        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
-        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
+        ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
+        ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->filter() == m_filter);
 
         RenderDrawingRecorder recorder(m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteRect());
         if (!recorder.canUseCachedDrawing())
@@ -56,14 +56,14 @@ SVGRenderingContext::~SVGRenderingContext()
     }
 
     if (m_masker) {
-        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
-        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->masker() == m_masker);
+        ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
+        ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->masker() == m_masker);
         m_masker->finishEffect(m_object, m_paintInfo.context);
     }
 
     if (m_clipper) {
-        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
-        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
+        ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
+        ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->clipper() == m_clipper);
         m_clipper->postApplyStatefulResource(m_object, m_paintInfo.context, m_clipperState);
     }
 }
@@ -75,7 +75,7 @@ bool SVGRenderingContext::applyClipMaskAndFilterIfNecessary()
     m_applyClipMaskAndFilterIfNecessaryCalled = true;
 #endif
 
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(m_object);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(m_object);
 
     // When rendering clip paths as masks, only geometric operations should be included so skip
     // non-geometric operations such as compositing, masking, and filtering.
@@ -205,7 +205,7 @@ SubtreeContentTransformScope::~SubtreeContentTransformScope()
     currentContentTransformation() = m_savedContentTransformation;
 }
 
-float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const RenderObject* renderer)
+float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const LayoutObject* renderer)
 {
     // FIXME: trying to compute a device space transform at record time is wrong. All clients
     // should be updated to avoid relying on this information, and the method should be removed.
@@ -247,7 +247,7 @@ float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const RenderObje
     return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
 }
 
-void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* item)
+void SVGRenderingContext::renderSubtree(GraphicsContext* context, LayoutObject* item)
 {
     ASSERT(context);
     ASSERT(item);

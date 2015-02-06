@@ -42,7 +42,7 @@ class HTMLElement;
 
 class ElementRareData : public NodeRareData {
 public:
-    static ElementRareData* create(RenderObject* renderer)
+    static ElementRareData* create(LayoutObject* renderer)
     {
         return new ElementRareData(renderer);
     }
@@ -151,7 +151,7 @@ private:
     RefPtrWillBeMember<PseudoElement> m_generatedFirstLetter;
     RefPtrWillBeMember<PseudoElement> m_backdrop;
 
-    explicit ElementRareData(RenderObject*);
+    explicit ElementRareData(LayoutObject*);
 };
 
 inline LayoutSize defaultMinimumSizeForResizing()
@@ -159,7 +159,7 @@ inline LayoutSize defaultMinimumSizeForResizing()
     return LayoutSize(LayoutUnit::max(), LayoutUnit::max());
 }
 
-inline ElementRareData::ElementRareData(RenderObject* renderer)
+inline ElementRareData::ElementRareData(LayoutObject* renderer)
     : NodeRareData(renderer)
     , m_tabindex(0)
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())

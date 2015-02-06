@@ -366,7 +366,7 @@ void Node::clearRareData()
     ASSERT(hasRareData());
     ASSERT(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
 
-    RenderObject* renderer = m_data.m_rareData->renderer();
+    LayoutObject* renderer = m_data.m_rareData->renderer();
     if (isElementNode())
         delete static_cast<ElementRareData*>(m_data.m_rareData);
     else
@@ -598,13 +598,13 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
 
 RenderBox* Node::renderBox() const
 {
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     return renderer && renderer->isBox() ? toRenderBox(renderer) : nullptr;
 }
 
 RenderBoxModelObject* Node::renderBoxModelObject() const
 {
-    RenderObject* renderer = this->renderer();
+    LayoutObject* renderer = this->renderer();
     return renderer && renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : nullptr;
 }
 
@@ -2138,7 +2138,7 @@ void Node::defaultEventHandler(Event* event)
             // remove this synchronous layout if we avoid synchronous layout in
             // RenderTextControlSingleLine::scrollHeight
             document().updateLayoutIgnorePendingStylesheets();
-            RenderObject* renderer = this->renderer();
+            LayoutObject* renderer = this->renderer();
             while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea()))
                 renderer = renderer->parent();
 

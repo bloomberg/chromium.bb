@@ -34,8 +34,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutLayerModelObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ShadowData.h"
@@ -126,7 +126,7 @@ void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutLayerModel
     }
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, const LayoutLayerModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
+static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, LayoutObject* targetRenderer, const LayoutLayerModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
 {
     ASSERT(targetRenderer);
     ASSERT(paintInvalidationContainer);
@@ -169,7 +169,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     if (!node.renderer())
         return;
 
-    RenderObject* renderer = node.renderer();
+    LayoutObject* renderer = node.renderer();
 
     // For inline elements, absoluteQuads will return a line box based on the line-height
     // and font metrics, which is technically incorrect as replaced elements like images

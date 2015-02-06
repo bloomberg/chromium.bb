@@ -24,7 +24,7 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/rendering/svg/SVGPathData.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGParserUtilities.h"
@@ -185,7 +185,7 @@ void SVGAnimateMotionElement::clearAnimatedType(SVGElement* targetElement)
 
     transform->makeIdentity();
 
-    if (RenderObject* targetRenderer = targetElement->renderer()) {
+    if (LayoutObject* targetRenderer = targetElement->renderer()) {
         targetRenderer->setNeedsTransformUpdate();
         markForLayoutAndParentResourceInvalidation(targetRenderer);
     }
@@ -227,7 +227,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
     if (!transform)
         return;
 
-    if (RenderObject* targetRenderer = targetElement->renderer())
+    if (LayoutObject* targetRenderer = targetElement->renderer())
         targetRenderer->setNeedsTransformUpdate();
 
     if (!isAdditive())
@@ -280,7 +280,7 @@ void SVGAnimateMotionElement::applyResultsToTarget()
     if (!targetElement)
         return;
 
-    if (RenderObject* renderer = targetElement->renderer())
+    if (LayoutObject* renderer = targetElement->renderer())
         markForLayoutAndParentResourceInvalidation(renderer);
 
     AffineTransform* t = targetElement->animateMotionTransform();
@@ -295,7 +295,7 @@ void SVGAnimateMotionElement::applyResultsToTarget()
         if (!transform)
             continue;
         transform->setMatrix(t->a(), t->b(), t->c(), t->d(), t->e(), t->f());
-        if (RenderObject* renderer = shadowTreeElement->renderer()) {
+        if (LayoutObject* renderer = shadowTreeElement->renderer()) {
             renderer->setNeedsTransformUpdate();
             markForLayoutAndParentResourceInvalidation(renderer);
         }

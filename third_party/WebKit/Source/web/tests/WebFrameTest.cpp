@@ -703,7 +703,7 @@ static void enableViewportSettings(WebSettings* settings)
 static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierSet = false;
-    for (RenderObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+    for (LayoutObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->style()) {
             renderer->style()->setTextAutosizingMultiplier(multiplier);
 
@@ -718,7 +718,7 @@ static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 static bool checkTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierChecked = false;
-    for (RenderObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+    for (LayoutObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->style() && renderer->isText()) {
             EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
             multiplierChecked = true;
@@ -802,7 +802,7 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
         if (!frame->isLocalFrame())
             continue;
         EXPECT_TRUE(setTextAutosizingMultiplier(toLocalFrame(frame)->document(), 2));
-        for (RenderObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+        for (LayoutObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_FALSE(renderer->needsLayout());
         }
@@ -812,7 +812,7 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
     for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        for (RenderObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+        for (LayoutObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_TRUE(renderer->needsLayout());
         }
@@ -4223,7 +4223,7 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtentScollsInputField)
     EXPECT_EQ("Lengthy text goes here.", selectionAsString(frame));
 }
 
-static int computeOffset(RenderObject* renderer, int x, int y)
+static int computeOffset(LayoutObject* renderer, int x, int y)
 {
     return VisiblePosition(renderer->positionForPoint(LayoutPoint(x, y))).deepEquivalent().computeOffsetInContainerNode();
 }
@@ -4236,7 +4236,7 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     initializeTextSelectionWebView(m_baseURL + "select_range_span_editable.html", &webViewHelper);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    RenderObject* renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
+    LayoutObject* renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 

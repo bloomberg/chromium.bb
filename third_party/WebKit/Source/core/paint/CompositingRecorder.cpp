@@ -6,7 +6,7 @@
 #include "core/paint/CompositingRecorder.h"
 
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"

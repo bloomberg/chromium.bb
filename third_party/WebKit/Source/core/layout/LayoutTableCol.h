@@ -37,14 +37,14 @@ class LayoutTableCol final : public RenderBox {
 public:
     explicit LayoutTableCol(Element*);
 
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
 
     // If you have a LayoutTableCol, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
+    const LayoutObjectChildList* children() const { return &m_children; }
+    LayoutObjectChildList* children() { return &m_children; }
 
     void clearPreferredLogicalWidthsDirtyBits();
 
@@ -79,18 +79,18 @@ public:
     const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell*) const;
 
 private:
-    virtual RenderObjectChildList* virtualChildren() override { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
+    virtual LayoutObjectChildList* virtualChildren() override { return children(); }
+    virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "LayoutTableCol"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectLayoutTableCol || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutTableCol || RenderBox::isOfType(type); }
     virtual void updateFromElement() override;
     virtual void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
 
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
     virtual bool canHaveChildren() const override;
     virtual LayerType layerTypeRequired() const override { return NoLayer; }
 
@@ -101,11 +101,11 @@ private:
 
     LayoutTable* table() const;
 
-    RenderObjectChildList m_children;
+    LayoutObjectChildList m_children;
     unsigned m_span;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableCol, isLayoutTableCol());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCol, isLayoutTableCol());
 
 }
 

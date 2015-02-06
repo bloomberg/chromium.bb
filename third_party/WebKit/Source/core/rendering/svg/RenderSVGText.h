@@ -37,21 +37,21 @@ public:
     explicit RenderSVGText(SVGTextElement*);
     virtual ~RenderSVGText();
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
     void setNeedsPositioningValuesUpdate() { m_needsPositioningValuesUpdate = true; }
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
     void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override;
 
-    static RenderSVGText* locateRenderSVGTextAncestor(RenderObject*);
-    static const RenderSVGText* locateRenderSVGTextAncestor(const RenderObject*);
+    static RenderSVGText* locateRenderSVGTextAncestor(LayoutObject*);
+    static const RenderSVGText* locateRenderSVGTextAncestor(const LayoutObject*);
 
     bool needsReordering() const { return m_needsReordering; }
     Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
 
-    void subtreeChildWasAdded(RenderObject*);
-    void subtreeChildWillBeRemoved(RenderObject*, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
+    void subtreeChildWasAdded(LayoutObject*);
+    void subtreeChildWillBeRemoved(LayoutObject*, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
     void subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
     void subtreeStyleDidChange();
     void subtreeTextDidChange(RenderSVGInlineText*);
@@ -60,7 +60,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderSVGText"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGText || RenderSVGBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGText || RenderSVGBlock::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
@@ -70,8 +70,8 @@ private:
 
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject*) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject*) override;
     virtual void willBeDestroyed() override;
 
     virtual FloatRect objectBoundingBox() const override { return frameRect(); }
@@ -89,7 +89,7 @@ private:
     Vector<SVGTextLayoutAttributes*> m_layoutAttributes;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGText, isSVGText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGText, isSVGText());
 
 }
 

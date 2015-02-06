@@ -188,15 +188,15 @@ public:
         return m_squashingLayerOffsetFromTransformedAncestor;
     }
 
-    // If there is a squashed layer painting into this CLM that is an ancestor of the given RenderObject, return it. Otherwise return 0.
-    const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*, unsigned maxSquashedLayerIndex);
+    // If there is a squashed layer painting into this CLM that is an ancestor of the given LayoutObject, return it. Otherwise return 0.
+    const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*, unsigned maxSquashedLayerIndex);
 
     void updateScrollingBlockSelection();
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
 private:
-    static const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
+    static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
 
     // Helper methods to updateGraphicsLayerGeometry:
     void computeGraphicsLayerParentLocation(const Layer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);

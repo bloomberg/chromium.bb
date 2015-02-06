@@ -67,7 +67,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static WebFallbackThemeEngine::State getWebFallbackThemeState(const LayoutTheme* theme, const RenderObject* o)
+static WebFallbackThemeEngine::State getWebFallbackThemeState(const LayoutTheme* theme, const LayoutObject* o)
 {
     if (!theme->isEnabled(o))
         return WebFallbackThemeEngine::StateDisabled;
@@ -229,7 +229,7 @@ void LayoutTheme::adjustStyle(RenderStyle& style, Element* e, const CachedUAStyl
     }
 }
 
-bool LayoutTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutTheme::paint(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     ControlPart part = o->styleRef().appearance();
 
@@ -335,7 +335,7 @@ bool LayoutTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
     return true; // We don't support the appearance, so let the normal background/border paint.
 }
 
-bool LayoutTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutTheme::paintBorderOnly(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Call the appropriate paint method based off the appearance value.
     switch (o->style()->appearance()) {
@@ -373,7 +373,7 @@ bool LayoutTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
     return false;
 }
 
-bool LayoutTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutTheme::paintDecorations(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Call the appropriate paint method based off the appearance value.
     switch (o->style()->appearance()) {
@@ -524,7 +524,7 @@ Color LayoutTheme::platformInactiveListBoxSelectionForegroundColor() const
     return platformInactiveSelectionForegroundColor();
 }
 
-int LayoutTheme::baselinePosition(const RenderObject* o) const
+int LayoutTheme::baselinePosition(const LayoutObject* o) const
 {
     if (!o->isBox())
         return 0;
@@ -591,14 +591,14 @@ bool LayoutTheme::isControlStyled(const RenderStyle& style, const CachedUAStyle*
     }
 }
 
-void LayoutTheme::adjustPaintInvalidationRect(const RenderObject* o, IntRect& r)
+void LayoutTheme::adjustPaintInvalidationRect(const LayoutObject* o, IntRect& r)
 {
 #if USE(NEW_THEME)
     m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForRenderer(o), r, o->style()->effectiveZoom());
 #endif
 }
 
-bool LayoutTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
+bool LayoutTheme::shouldDrawDefaultFocusRing(LayoutObject* renderer) const
 {
     if (supportsFocusRing(renderer->styleRef()))
         return false;
@@ -619,7 +619,7 @@ bool LayoutTheme::supportsFocusRing(const RenderStyle& style) const
     return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart);
 }
 
-bool LayoutTheme::stateChanged(RenderObject* o, ControlState state) const
+bool LayoutTheme::stateChanged(LayoutObject* o, ControlState state) const
 {
     // Default implementation assumes the controls don't respond to changes in :hover state
     if (state == HoverControlState && !supportsHover(o->styleRef()))
@@ -633,7 +633,7 @@ bool LayoutTheme::stateChanged(RenderObject* o, ControlState state) const
     return true;
 }
 
-ControlStates LayoutTheme::controlStatesForRenderer(const RenderObject* o) const
+ControlStates LayoutTheme::controlStatesForRenderer(const LayoutObject* o) const
 {
     ControlStates result = 0;
     if (isHovered(o)) {
@@ -661,7 +661,7 @@ ControlStates LayoutTheme::controlStatesForRenderer(const RenderObject* o) const
     return result;
 }
 
-bool LayoutTheme::isActive(const RenderObject* o) const
+bool LayoutTheme::isActive(const LayoutObject* o) const
 {
     Node* node = o->node();
     if (!node)
@@ -674,21 +674,21 @@ bool LayoutTheme::isActive(const RenderObject* o) const
     return page->focusController().isActive();
 }
 
-bool LayoutTheme::isChecked(const RenderObject* o) const
+bool LayoutTheme::isChecked(const LayoutObject* o) const
 {
     if (!isHTMLInputElement(o->node()))
         return false;
     return toHTMLInputElement(o->node())->shouldAppearChecked();
 }
 
-bool LayoutTheme::isIndeterminate(const RenderObject* o) const
+bool LayoutTheme::isIndeterminate(const LayoutObject* o) const
 {
     if (!isHTMLInputElement(o->node()))
         return false;
     return toHTMLInputElement(o->node())->shouldAppearIndeterminate();
 }
 
-bool LayoutTheme::isEnabled(const RenderObject* o) const
+bool LayoutTheme::isEnabled(const LayoutObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->isElementNode())
@@ -696,7 +696,7 @@ bool LayoutTheme::isEnabled(const RenderObject* o) const
     return !toElement(node)->isDisabledFormControl();
 }
 
-bool LayoutTheme::isFocused(const RenderObject* o) const
+bool LayoutTheme::isFocused(const LayoutObject* o) const
 {
     Node* node = o->node();
     if (!node)
@@ -708,14 +708,14 @@ bool LayoutTheme::isFocused(const RenderObject* o) const
     return node == document.focusedElement() && node->focused() && node->shouldHaveFocusAppearance() && frame && frame->selection().isFocusedAndActive();
 }
 
-bool LayoutTheme::isPressed(const RenderObject* o) const
+bool LayoutTheme::isPressed(const LayoutObject* o) const
 {
     if (!o->node())
         return false;
     return o->node()->active();
 }
 
-bool LayoutTheme::isSpinUpButtonPartPressed(const RenderObject* o) const
+bool LayoutTheme::isSpinUpButtonPartPressed(const LayoutObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->active() || !node->isElementNode()
@@ -725,7 +725,7 @@ bool LayoutTheme::isSpinUpButtonPartPressed(const RenderObject* o) const
     return element->upDownState() == SpinButtonElement::Up;
 }
 
-bool LayoutTheme::isReadOnlyControl(const RenderObject* o) const
+bool LayoutTheme::isReadOnlyControl(const LayoutObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->isElementNode() || !toElement(node)->isFormControlElement())
@@ -734,7 +734,7 @@ bool LayoutTheme::isReadOnlyControl(const RenderObject* o) const
     return element->isReadOnly();
 }
 
-bool LayoutTheme::isHovered(const RenderObject* o) const
+bool LayoutTheme::isHovered(const LayoutObject* o) const
 {
     Node* node = o->node();
     if (!node)
@@ -745,7 +745,7 @@ bool LayoutTheme::isHovered(const RenderObject* o) const
     return element->hovered() && element->upDownState() != SpinButtonElement::Indeterminate;
 }
 
-bool LayoutTheme::isSpinUpButtonPartHovered(const RenderObject* o) const
+bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->isElementNode() || !toElement(node)->isSpinButtonElement())
@@ -809,12 +809,12 @@ bool LayoutTheme::supportsMeter(ControlPart) const
     return false;
 }
 
-bool LayoutTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
+bool LayoutTheme::paintMeter(LayoutObject*, const PaintInfo&, const IntRect&)
 {
     return true;
 }
 
-void LayoutTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, const IntRect& rect)
+void LayoutTheme::paintSliderTicks(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& rect)
 {
     Node* node = o->node();
     if (!isHTMLInputElement(node))
@@ -837,7 +837,7 @@ void LayoutTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     bool isHorizontal = part ==  SliderHorizontalPart;
 
     IntSize thumbSize;
-    RenderObject* thumbRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->renderer();
+    LayoutObject* thumbRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->renderer();
     if (thumbRenderer) {
         const RenderStyle& thumbStyle = thumbRenderer->styleRef();
         int thumbWidth = thumbStyle.width().intValue();
@@ -852,7 +852,7 @@ void LayoutTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     int tickRegionSideMargin = 0;
     int tickRegionWidth = 0;
     IntRect trackBounds;
-    RenderObject* trackRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack())->renderer();
+    LayoutObject* trackRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack())->renderer();
     // We can ignoring transforms because transform is handled by the graphics context.
     if (trackRenderer)
         trackBounds = trackRenderer->absoluteBoundingBoxRectIgnoringTransforms();
@@ -1157,7 +1157,7 @@ void LayoutTheme::adjustStyleUsingFallbackTheme(RenderStyle& style, Element* e)
     }
 }
 
-bool LayoutTheme::paintUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutTheme::paintUsingFallbackTheme(LayoutObject* o, const PaintInfo& i, const IntRect& r)
 {
     ControlPart part = o->style()->appearance();
     switch (part) {
@@ -1180,7 +1180,7 @@ void LayoutTheme::setSizeIfAuto(RenderStyle& style, const IntSize& size)
         style.setHeight(Length(size.height(), Fixed));
 }
 
-bool LayoutTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutTheme::paintCheckboxUsingFallbackTheme(LayoutObject* o, const PaintInfo& i, const IntRect& r)
 {
     WebFallbackThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -1222,7 +1222,7 @@ void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle& style, Elem
     style.resetBorder();
 }
 
-bool LayoutTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutTheme::paintRadioUsingFallbackTheme(LayoutObject* o, const PaintInfo& i, const IntRect& r)
 {
     WebFallbackThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();

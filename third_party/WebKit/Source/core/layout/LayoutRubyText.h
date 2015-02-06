@@ -42,9 +42,9 @@ public:
 
     virtual const char* renderName() const override { return "LayoutRubyText"; }
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyText || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyText || RenderBlockFlow::isOfType(type); }
 
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
 private:
     virtual bool avoidsFloats() const override;

@@ -26,7 +26,7 @@
 
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::cssValue() const
     return m_imageGeneratorValue.get();
 }
 
-LayoutSize StyleGeneratedImage::imageSize(const RenderObject* renderer, float multiplier) const
+LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* renderer, float multiplier) const
 {
     if (m_fixedSize) {
         LayoutSize fixedSize(m_imageGeneratorValue->fixedSize(renderer));
@@ -65,7 +65,7 @@ LayoutSize StyleGeneratedImage::imageSize(const RenderObject* renderer, float mu
     return LayoutSize(m_containerSize);
 }
 
-void StyleGeneratedImage::computeIntrinsicDimensions(const RenderObject* renderer, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void StyleGeneratedImage::computeIntrinsicDimensions(const LayoutObject* renderer, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
 {
     // At a zoom level of 1 the image is guaranteed to have an integer size.
     IntSize size = flooredIntSize(imageSize(renderer, 1));
@@ -74,22 +74,22 @@ void StyleGeneratedImage::computeIntrinsicDimensions(const RenderObject* rendere
     intrinsicRatio = size;
 }
 
-void StyleGeneratedImage::addClient(RenderObject* renderer)
+void StyleGeneratedImage::addClient(LayoutObject* renderer)
 {
     m_imageGeneratorValue->addClient(renderer, IntSize());
 }
 
-void StyleGeneratedImage::removeClient(RenderObject* renderer)
+void StyleGeneratedImage::removeClient(LayoutObject* renderer)
 {
     m_imageGeneratorValue->removeClient(renderer);
 }
 
-PassRefPtr<Image> StyleGeneratedImage::image(RenderObject* renderer, const IntSize& size) const
+PassRefPtr<Image> StyleGeneratedImage::image(LayoutObject* renderer, const IntSize& size) const
 {
     return m_imageGeneratorValue->image(renderer, size);
 }
 
-bool StyleGeneratedImage::knownToBeOpaque(const RenderObject* renderer) const
+bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject* renderer) const
 {
     return m_imageGeneratorValue->knownToBeOpaque(renderer);
 }

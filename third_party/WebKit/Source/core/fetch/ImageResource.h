@@ -38,7 +38,7 @@ class ResourceFetcher;
 class FloatSize;
 class Length;
 class MemoryCache;
-class RenderObject;
+class LayoutObject;
 class SecurityOrigin;
 
 class ImageResource final : public Resource, public ImageObserver {
@@ -56,17 +56,17 @@ public:
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
 
     blink::Image* image(); // Returns the nullImage() if the image is not available yet.
-    blink::Image* imageForRenderer(const RenderObject*); // Returns the nullImage() if the image is not available yet.
+    blink::Image* imageForRenderer(const LayoutObject*); // Returns the nullImage() if the image is not available yet.
     bool hasImage() const { return m_image.get(); }
     // Side effect: ensures decoded image is in cache, therefore should only be called when about to draw the image.
     // FIXME: Decoding image on the main thread is expensive, so rather than forcing decode, consider returning false
     // when image is not decoded yet, as we do in case of deferred decoding.
-    bool currentFrameKnownToBeOpaque(const RenderObject*);
+    bool currentFrameKnownToBeOpaque(const LayoutObject*);
 
     static std::pair<blink::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
-    bool canRender(const RenderObject& renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(&renderer, multiplier).isEmpty(); }
+    bool canRender(const LayoutObject& renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(&renderer, multiplier).isEmpty(); }
 
     void setContainerSizeForRenderer(const ImageResourceClient*, const IntSize&, float);
     bool usesImageContainerSize() const;
@@ -81,7 +81,7 @@ public:
         IntrinsicSize // Report the intrinsic size, i.e. ignore whatever has been set extrinsically.
     };
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
-    LayoutSize imageSizeForRenderer(const RenderObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
+    LayoutSize imageSizeForRenderer(const LayoutObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
     static void updateBitmapImages(HashSet<ImageResource*>&, bool redecodeImages = false);

@@ -57,11 +57,11 @@ public:
 private:
     HTMLSelectElement* selectElement() const;
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectMenuList || RenderFlexibleBox::isOfType(type); }
-    virtual bool isChildAllowed(RenderObject*, const RenderStyle&) const override;
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || RenderFlexibleBox::isOfType(type); }
+    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject*) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void removeChild(LayoutObject*) override;
     virtual bool createsAnonymousWrapper() const override { return true; }
 
     virtual void updateFromElement() override;
@@ -135,7 +135,7 @@ private:
     bool m_popupIsVisible;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMenuList, isMenuList());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMenuList, isMenuList());
 
 }
 

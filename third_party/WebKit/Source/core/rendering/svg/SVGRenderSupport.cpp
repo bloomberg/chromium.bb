@@ -51,7 +51,7 @@ static inline LayoutRect enclosingIntRectIfNotEmpty(const FloatRect& rect)
     return enclosingIntRect(rect);
 }
 
-LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const RenderObject* object, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject* object, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     // Return early for any cases where we don't actually paint
     if (object->style()->visibility() != VISIBLE && !object->enclosingLayer()->hasVisibleContent())
@@ -81,7 +81,7 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const Rende
     return rect;
 }
 
-const RenderSVGRoot& SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(const RenderObject* object, const FloatRect& localPaintInvalidationRect, LayoutRect& rect)
+const RenderSVGRoot& SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(const LayoutObject* object, const FloatRect& localPaintInvalidationRect, LayoutRect& rect)
 {
     ASSERT(object && object->isSVG() && !object->isSVGRoot());
 
@@ -90,7 +90,7 @@ const RenderSVGRoot& SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(cons
     // mapRect() with that would be slightly more efficient, but requires some
     // additions to AffineTransform (preMultiply, preTranslate) to avoid
     // excessive copying and to get a similar fast-path for translations.
-    const RenderObject* parent = object;
+    const LayoutObject* parent = object;
     do {
         paintInvalidationRect = parent->localToParentTransform().mapRect(paintInvalidationRect);
         parent = parent->parent();
@@ -103,7 +103,7 @@ const RenderSVGRoot& SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(cons
     return svgRoot;
 }
 
-void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
+void SVGRenderSupport::mapLocalToContainer(const LayoutObject* object, const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
 {
     transformState.applyTransform(object->localToParentTransform());
 
@@ -114,7 +114,7 @@ void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const Lay
         return;
     }
 
-    RenderObject* parent = object->parent();
+    LayoutObject* parent = object->parent();
 
     // At the SVG/HTML boundary (aka RenderSVGRoot), we apply the localToBorderBoxTransform
     // to map an element from SVG viewport coordinates to CSS box coordinates.
@@ -126,11 +126,11 @@ void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const Lay
     parent->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
 
-const RenderObject* SVGRenderSupport::pushMappingToContainer(const RenderObject* object, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap)
+const LayoutObject* SVGRenderSupport::pushMappingToContainer(const LayoutObject* object, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap)
 {
     ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != object);
 
-    RenderObject* parent = object->parent();
+    LayoutObject* parent = object->parent();
 
     // At the SVG/HTML boundary (aka RenderSVGRoot), we apply the localToBorderBoxTransform
     // to map an element from SVG viewport coordinates to CSS box coordinates.
@@ -146,7 +146,7 @@ const RenderObject* SVGRenderSupport::pushMappingToContainer(const RenderObject*
 }
 
 // Update a bounding box taking into account the validity of the other bounding box.
-inline void SVGRenderSupport::updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, RenderObject* other, FloatRect otherBoundingBox)
+inline void SVGRenderSupport::updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, LayoutObject* other, FloatRect otherBoundingBox)
 {
     bool otherValid = other->isSVGContainer() ? toRenderSVGContainer(other)->isObjectBoundingBoxValid() : true;
     if (!otherValid)
@@ -161,7 +161,7 @@ inline void SVGRenderSupport::updateObjectBoundingBox(FloatRect& objectBoundingB
     objectBoundingBox.uniteEvenIfEmpty(otherBoundingBox);
 }
 
-void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox)
+void SVGRenderSupport::computeContainerBoundingBoxes(const LayoutObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox)
 {
     objectBoundingBox = FloatRect();
     objectBoundingBoxValid = false;
@@ -170,7 +170,7 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
     // When computing the strokeBoundingBox, we use the paintInvalidationRects of the container's children so that the container's stroke includes
     // the resources applied to the children (such as clips and filters). This allows filters applied to containers to correctly bound
     // the children, and also improves inlining of SVG content, as the stroke bound is used in that situation also.
-    for (RenderObject* current = container->slowFirstChild(); current; current = current->nextSibling()) {
+    for (LayoutObject* current = container->slowFirstChild(); current; current = current->nextSibling()) {
         if (current->isSVGHiddenContainer())
             continue;
 
@@ -187,7 +187,7 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
     paintInvalidationBoundingBox = strokeBoundingBox;
 }
 
-const RenderSVGRoot* SVGRenderSupport::findTreeRootObject(const RenderObject* start)
+const RenderSVGRoot* SVGRenderSupport::findTreeRootObject(const LayoutObject* start)
 {
     while (start && !start->isSVGRoot())
         start = start->parent();
@@ -197,7 +197,7 @@ const RenderSVGRoot* SVGRenderSupport::findTreeRootObject(const RenderObject* st
     return toRenderSVGRoot(start);
 }
 
-inline bool SVGRenderSupport::layoutSizeOfNearestViewportChanged(const RenderObject* start)
+inline bool SVGRenderSupport::layoutSizeOfNearestViewportChanged(const LayoutObject* start)
 {
     while (start && !start->isSVGRoot() && !start->isSVGViewportContainer())
         start = start->parent();
@@ -210,7 +210,7 @@ inline bool SVGRenderSupport::layoutSizeOfNearestViewportChanged(const RenderObj
     return toRenderSVGRoot(start)->isLayoutSizeChanged();
 }
 
-bool SVGRenderSupport::transformToRootChanged(RenderObject* ancestor)
+bool SVGRenderSupport::transformToRootChanged(LayoutObject* ancestor)
 {
     while (ancestor && !ancestor->isSVGRoot()) {
         if (ancestor->isSVGTransformableContainer())
@@ -223,7 +223,7 @@ bool SVGRenderSupport::transformToRootChanged(RenderObject* ancestor)
     return false;
 }
 
-void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
+void SVGRenderSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
 {
     // When hasRelativeLengths() is false, no descendants have relative lengths
     // (hence no one is interested in viewport size changes).
@@ -231,7 +231,7 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
         && layoutSizeOfNearestViewportChanged(start);
     bool transformChanged = transformToRootChanged(start);
 
-    for (RenderObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
         bool forceLayout = selfNeedsLayout;
 
         if (transformChanged) {
@@ -273,16 +273,16 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
     }
 }
 
-void SVGRenderSupport::layoutResourcesIfNeeded(const RenderObject* object)
+void SVGRenderSupport::layoutResourcesIfNeeded(const LayoutObject* object)
 {
     ASSERT(object);
 
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object);
     if (resources)
         resources->layoutIfNeeded();
 }
 
-bool SVGRenderSupport::isOverflowHidden(const RenderObject* object)
+bool SVGRenderSupport::isOverflowHidden(const LayoutObject* object)
 {
     // RenderSVGRoot should never query for overflow state - it should always clip itself to the initial viewport size.
     ASSERT(!object->isDocumentElement());
@@ -290,11 +290,11 @@ bool SVGRenderSupport::isOverflowHidden(const RenderObject* object)
     return object->style()->overflowX() == OHIDDEN || object->style()->overflowX() == OSCROLL;
 }
 
-void SVGRenderSupport::intersectPaintInvalidationRectWithResources(const RenderObject* renderer, FloatRect& paintInvalidationRect)
+void SVGRenderSupport::intersectPaintInvalidationRectWithResources(const LayoutObject* renderer, FloatRect& paintInvalidationRect)
 {
     ASSERT(renderer);
 
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(renderer);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(renderer);
     if (!resources)
         return;
 
@@ -308,27 +308,27 @@ void SVGRenderSupport::intersectPaintInvalidationRectWithResources(const RenderO
         paintInvalidationRect.intersect(masker->resourceBoundingBox(renderer));
 }
 
-bool SVGRenderSupport::filtersForceContainerLayout(RenderObject* object)
+bool SVGRenderSupport::filtersForceContainerLayout(LayoutObject* object)
 {
     // If any of this container's children need to be laid out, and a filter is applied
     // to the container, we need to issue paint invalidations the entire container.
     if (!object->normalChildNeedsLayout())
         return false;
 
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object);
     if (!resources || !resources->filter())
         return false;
 
     return true;
 }
 
-bool SVGRenderSupport::pointInClippingArea(RenderObject* object, const FloatPoint& point)
+bool SVGRenderSupport::pointInClippingArea(LayoutObject* object, const FloatPoint& point)
 {
     ASSERT(object);
 
     // We just take clippers into account to determine if a point is on the node. The Specification may
     // change later and we also need to check maskers.
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object);
     if (!resources)
         return true;
 
@@ -338,7 +338,7 @@ bool SVGRenderSupport::pointInClippingArea(RenderObject* object, const FloatPoin
     return true;
 }
 
-bool SVGRenderSupport::transformToUserSpaceAndCheckClipping(RenderObject* object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
+bool SVGRenderSupport::transformToUserSpaceAndCheckClipping(LayoutObject* object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
 {
     if (!localTransform.isInvertible())
         return false;
@@ -346,7 +346,7 @@ bool SVGRenderSupport::transformToUserSpaceAndCheckClipping(RenderObject* object
     return pointInClippingArea(object, localPoint);
 }
 
-void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const RenderStyle& style, const RenderObject* object)
+void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const RenderStyle& style, const LayoutObject* object)
 {
     ASSERT(context);
     ASSERT(object);
@@ -372,7 +372,7 @@ void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const
     context->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, const RenderStyle* style, const RenderObject* object)
+void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, const RenderStyle* style, const LayoutObject* object)
 {
     ASSERT(strokeData);
     ASSERT(style);
@@ -399,7 +399,7 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const RenderStyle& style, RenderObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
+bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const RenderStyle& style, LayoutObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
 {
     ASSERT(paintInfo.context == stateSaver.context());
 
@@ -430,7 +430,7 @@ bool SVGRenderSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     return true;
 }
 
-bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)
+bool SVGRenderSupport::isRenderableTextNode(const LayoutObject* object)
 {
     ASSERT(object->isText());
     // <br> is marked as text, but is not handled by the SVG rendering code-path.
@@ -446,7 +446,7 @@ bool SVGRenderSupport::willIsolateBlendingDescendantsForStyle(const RenderStyle*
         || svgStyle.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();
 }
 
-bool SVGRenderSupport::willIsolateBlendingDescendantsForObject(const RenderObject* object)
+bool SVGRenderSupport::willIsolateBlendingDescendantsForObject(const LayoutObject* object)
 {
     if (object->isSVGHiddenContainer())
         return false;
@@ -455,7 +455,7 @@ bool SVGRenderSupport::willIsolateBlendingDescendantsForObject(const RenderObjec
     return willIsolateBlendingDescendantsForStyle(object->style());
 }
 
-bool SVGRenderSupport::isIsolationRequired(const RenderObject* object)
+bool SVGRenderSupport::isIsolationRequired(const LayoutObject* object)
 {
     return willIsolateBlendingDescendantsForObject(object) && object->hasNonIsolatedBlendingDescendants();
 }

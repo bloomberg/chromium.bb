@@ -51,7 +51,7 @@ public:
     PassRefPtrWillBeRawPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
-    bool textRendererIsNeeded(const RenderStyle&, const RenderObject& parent);
+    bool textRendererIsNeeded(const RenderStyle&, const LayoutObject& parent);
     RenderText* createTextRenderer(RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 

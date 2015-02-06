@@ -52,7 +52,7 @@ private:
 
 class TestDisplayItem : public DisplayItem {
 public:
-    TestDisplayItem(const RenderObject* renderer, Type type) : DisplayItem(renderer->displayItemClient(), type) { }
+    TestDisplayItem(const LayoutObject* renderer, Type type) : DisplayItem(renderer->displayItemClient(), type) { }
     TestDisplayItem(DisplayItemClient displayItemClient, Type type) : DisplayItem(displayItemClient, type) { }
 
     virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }
@@ -77,7 +77,7 @@ public:
     } \
 }
 
-void drawRect(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& bound)
+void drawRect(GraphicsContext* context, LayoutObject* renderer, PaintPhase phase, const FloatRect& bound)
 {
     RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
     if (drawingRecorder.canUseCachedDrawing())
@@ -111,8 +111,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_NestedRecorders)
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
@@ -138,9 +138,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='unaffected'></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
-    RenderObject* unaffected = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* unaffected = document().body()->firstChild()->nextSibling()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -168,9 +168,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
 {
     setBodyInnerHTML("<div id='first'><div id='second'><div id='third'></div></div></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
-    RenderObject* third = document().body()->firstChild()->firstChild()->firstChild()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* third = document().body()->firstChild()->firstChild()->firstChild()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -196,9 +196,9 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='third'></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
-    RenderObject* third = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* third = document().body()->firstChild()->nextSibling()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -264,8 +264,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
 TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstNoOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
@@ -296,8 +296,8 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstNoOverlap
 TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
@@ -333,8 +333,8 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
 TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastNoOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 50));
@@ -365,8 +365,8 @@ TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastNoOverlap)
 TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    RenderObject* first = document().body()->firstChild()->renderer();
-    RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->renderer();
+    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
@@ -494,9 +494,9 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     setBodyInnerHTML("<div id='div' contentEditable='true'>XYZ</div>");
     RenderView* renderView = document().renderView();
     Layer* rootLayer = renderView->layer();
-    RenderObject* htmlRenderer = document().documentElement()->renderer();
+    LayoutObject* htmlRenderer = document().documentElement()->renderer();
     Element* div = toElement(document().body()->firstChild());
-    RenderObject* divRenderer = document().body()->firstChild()->renderer();
+    LayoutObject* divRenderer = document().body()->firstChild()->renderer();
     InlineTextBox* textInlineBox = toRenderText(div->firstChild()->renderer())->firstTextBox();
 
     SkCanvas canvas(800, 600);

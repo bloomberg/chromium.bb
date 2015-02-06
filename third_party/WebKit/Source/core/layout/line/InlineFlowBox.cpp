@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutRubyBase.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
@@ -34,7 +35,6 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
@@ -220,11 +220,11 @@ void InlineFlowBox::deleteLine()
     m_lastChild = 0;
 #endif
 
-    removeLineBoxFromRenderObject();
+    removeLineBoxFromLayoutObject();
     destroy();
 }
 
-void InlineFlowBox::removeLineBoxFromRenderObject()
+void InlineFlowBox::removeLineBoxFromLayoutObject()
 {
     rendererLineBoxes()->removeLineBox(this);
 }
@@ -232,12 +232,12 @@ void InlineFlowBox::removeLineBoxFromRenderObject()
 void InlineFlowBox::extractLine()
 {
     if (!extracted())
-        extractLineBoxFromRenderObject();
+        extractLineBoxFromLayoutObject();
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
         child->extractLine();
 }
 
-void InlineFlowBox::extractLineBoxFromRenderObject()
+void InlineFlowBox::extractLineBoxFromLayoutObject()
 {
     rendererLineBoxes()->extractLineBox(this);
 }
@@ -245,12 +245,12 @@ void InlineFlowBox::extractLineBoxFromRenderObject()
 void InlineFlowBox::attachLine()
 {
     if (extracted())
-        attachLineBoxToRenderObject();
+        attachLineBoxToLayoutObject();
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
         child->attachLine();
 }
 
-void InlineFlowBox::attachLineBoxToRenderObject()
+void InlineFlowBox::attachLineBoxToLayoutObject()
 {
     rendererLineBoxes()->attachLineBox(this);
 }
@@ -269,7 +269,7 @@ RenderLineBoxList* InlineFlowBox::rendererLineBoxes() const
     return toRenderInline(renderer()).lineBoxes();
 }
 
-static inline bool isLastChildForRenderer(RenderObject* ancestor, RenderObject* child)
+static inline bool isLastChildForRenderer(LayoutObject* ancestor, LayoutObject* child)
 {
     if (!child)
         return false;
@@ -277,8 +277,8 @@ static inline bool isLastChildForRenderer(RenderObject* ancestor, RenderObject* 
     if (child == ancestor)
         return true;
 
-    RenderObject* curr = child;
-    RenderObject* parent = curr->parent();
+    LayoutObject* curr = child;
+    LayoutObject* parent = curr->parent();
     while (parent && (!parent->isRenderBlock() || parent->isInline())) {
         if (parent->slowLastChild() != curr)
             return false;
@@ -292,9 +292,9 @@ static inline bool isLastChildForRenderer(RenderObject* ancestor, RenderObject* 
     return true;
 }
 
-static bool isAnsectorAndWithinBlock(RenderObject* ancestor, RenderObject* child)
+static bool isAnsectorAndWithinBlock(LayoutObject* ancestor, LayoutObject* child)
 {
-    RenderObject* object = child;
+    LayoutObject* object = child;
     while (object && (!object->isRenderBlock() || object->isInline())) {
         if (object == ancestor)
             return true;
@@ -303,7 +303,7 @@ static bool isAnsectorAndWithinBlock(RenderObject* ancestor, RenderObject* child
     return false;
 }
 
-void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, RenderObject* logicallyLastRunRenderer)
+void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LayoutObject* logicallyLastRunRenderer)
 {
     // All boxes start off open.  They will not apply any margins/border/padding on
     // any side.
@@ -1010,7 +1010,7 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
         return false;
 
     // We need to hit test both our inline children (InlineBoxes) and culled inlines
-    // (RenderObjects). We check our inlines in the same order as line layout but
+    // (LayoutObjects). We check our inlines in the same order as line layout but
     // for each inline we additionally need to hit test its culled inline parents.
     // While hit testing culled inline parents, we can stop once we reach
     // a non-inline parent or a culled inline associated with a different inline box.
@@ -1032,9 +1032,9 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
         if (prev && curr->renderer() == prev->renderer())
             continue;
 
-        RenderObject* culledParent = &curr->renderer();
+        LayoutObject* culledParent = &curr->renderer();
         while (true) {
-            RenderObject* sibling = culledParent->style()->isLeftToRightDirection() ? culledParent->previousSibling() : culledParent->nextSibling();
+            LayoutObject* sibling = culledParent->style()->isLeftToRightDirection() ? culledParent->previousSibling() : culledParent->nextSibling();
             culledParent = culledParent->parent();
             ASSERT(culledParent);
 
@@ -1108,9 +1108,9 @@ InlineBox* InlineFlowBox::lastLeafChild() const
     return leaf;
 }
 
-RenderObject::SelectionState InlineFlowBox::selectionState() const
+LayoutObject::SelectionState InlineFlowBox::selectionState() const
 {
-    return RenderObject::SelectionNone;
+    return LayoutObject::SelectionNone;
 }
 
 bool InlineFlowBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const
@@ -1313,7 +1313,7 @@ const char* InlineFlowBox::boxName() const
     return "InlineFlowBox";
 }
 
-void InlineFlowBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const RenderObject* obj, int depth) const
+void InlineFlowBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const LayoutObject* obj, int depth) const
 {
     InlineBox::showLineTreeAndMark(markedBox1, markedLabel1, markedBox2, markedLabel2, obj, depth);
     for (const InlineBox* box = firstChild(); box; box = box->nextOnLine())

@@ -33,7 +33,7 @@ RenderSVGTextPath::RenderSVGTextPath(Element* element)
 {
 }
 
-bool RenderSVGTextPath::isChildAllowed(RenderObject* child, const RenderStyle&) const
+bool RenderSVGTextPath::isChildAllowed(LayoutObject* child, const RenderStyle&) const
 {
     if (child->isText())
         return SVGRenderSupport::isRenderableTextNode(child);

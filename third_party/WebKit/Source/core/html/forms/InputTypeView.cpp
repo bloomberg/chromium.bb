@@ -31,7 +31,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/rendering/RenderObject.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -97,9 +97,9 @@ PassRefPtrWillBeRawPtr<HTMLFormElement> InputTypeView::formForSubmission() const
     return element().form();
 }
 
-RenderObject* InputTypeView::createRenderer(const RenderStyle& style) const
+LayoutObject* InputTypeView::createRenderer(const RenderStyle& style) const
 {
-    return RenderObject::createObject(&element(), style);
+    return LayoutObject::createObject(&element(), style);
 }
 
 PassRefPtr<RenderStyle> InputTypeView::customStyleForRenderer(PassRefPtr<RenderStyle> originalStyle)
