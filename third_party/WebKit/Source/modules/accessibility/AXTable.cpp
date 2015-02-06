@@ -380,7 +380,7 @@ void AXTable::addChildren()
     // Add caption
     if (HTMLTableCaptionElement* caption  = toHTMLTableElement(tableNode)->caption()) {
         AXObject* captionObject = axCache->getOrCreate(caption);
-        if (!captionObject->accessibilityIsIgnored())
+        if (captionObject && !captionObject->accessibilityIsIgnored())
             m_children.append(captionObject);
     }
 
@@ -402,7 +402,7 @@ void AXTable::addChildren()
                 continue;
 
             AXObject* rowObject = axCache->getOrCreate(layoutRow);
-            if (!rowObject->isTableRow())
+            if (!rowObject || !rowObject->isTableRow())
                 continue;
 
             AXTableRow* row = toAXTableRow(rowObject);
