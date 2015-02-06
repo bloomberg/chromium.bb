@@ -77,10 +77,9 @@ CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, c
     : m_style(style)
     , m_fontSizes(fontSizes)
     , m_viewportSize(viewportSize)
-    , m_zoom(zoom)
+    , m_zoom(clampTo<float>(zoom, std::numeric_limits<float>::denorm_min()))
 {
     ASSERT(m_style);
-    ASSERT(zoom > 0);
 }
 
 CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, const RenderView* renderView, float zoom)

@@ -32,7 +32,9 @@
 #define CSSToLengthConversionData_h
 
 #include "wtf/Assertions.h"
+#include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
+#include <limits>
 
 namespace blink {
 
@@ -90,7 +92,7 @@ public:
     double viewportMaxPercent() const;
 
     void setFontSizes(const FontSizes& fontSizes) { m_fontSizes = fontSizes; }
-    void setZoom(float zoom) { m_zoom = zoom; }
+    void setZoom(float zoom) { m_zoom = clampTo<float>(zoom, std::numeric_limits<float>::denorm_min()); }
 
     CSSToLengthConversionData copyWithAdjustedZoom(float newZoom) const
     {
