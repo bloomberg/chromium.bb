@@ -263,6 +263,8 @@ function PDFCreateOutOfProcessPlugin(src) {
   iframe.setAttribute(
       'src',
       'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?' + src);
+  // Prevent the frame from being tab-focusable.
+  iframe.setAttribute('tabindex', '-1');
   var client = new PDFScriptingAPI(window);
   iframe.onload = function() {
     client.setPlugin(iframe.contentWindow);
