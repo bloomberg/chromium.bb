@@ -206,9 +206,10 @@ class VideoImageGenerator : public SkImageGenerator {
                        SkYUVColorSpace* color_space) override {
     if (!frame_.get() || !IsYUV(frame_->format()) ||
         // TODO(rileya): Skia currently doesn't support Rec709 YUV conversion,
-        // Remove this case once it does. As-is we will fall back on the
-        // pure-software path in this case.
-        frame_->format() == VideoFrame::YV12HD) {
+        // or YUVA conversion. Remove this case once it does. As-is we will
+        // fall back on the pure-software path in this case.
+        frame_->format() == VideoFrame::YV12HD ||
+        frame_->format() == VideoFrame::YV12A) {
       return false;
     }
 
