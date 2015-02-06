@@ -26,6 +26,7 @@ android_webview_aapt_flags += --extra-packages org.chromium.android_webview
 android_webview_aapt_flags += --extra-packages org.chromium.content
 android_webview_aapt_flags += --extra-packages org.chromium.ui
 android_webview_aapt_flags += -0 pak
+android_webview_aapt_flags += --ignore-assets '!OWNERS:!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~'
 
 android_webview_system_pak_targets := \
         webviewchromium_pak \
