@@ -547,6 +547,8 @@ public:
     RenderStyle* renderStyle() const;
     RenderStyle* parentRenderStyle() const;
 
+    const RenderStyle& renderStyleRef() const;
+
     RenderStyle* computedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualComputedStyle(pseudoElementSpecifier); }
 
     // -----------------------------------------------------------------------------

@@ -64,7 +64,7 @@ bool CachedMatchedPropertiesHashTraits::traceInCollection(Visitor* visitor, Memb
 }
 #endif
 
-void CachedMatchedProperties::set(const RenderStyle* style, const RenderStyle* parentStyle, const MatchResult& matchResult)
+void CachedMatchedProperties::set(const RenderStyle& style, const RenderStyle& parentStyle, const MatchResult& matchResult)
 {
     matchedProperties.appendVector(matchResult.matchedProperties);
     ranges = matchResult.ranges;
@@ -114,7 +114,7 @@ const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const
     return cacheItem;
 }
 
-void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* parentStyle, unsigned hash, const MatchResult& matchResult)
+void MatchedPropertiesCache::add(const RenderStyle& style, const RenderStyle& parentStyle, unsigned hash, const MatchResult& matchResult)
 {
 #if !ENABLE(OILPAN)
     static const unsigned maxAdditionsBetweenSweeps = 100;
@@ -175,18 +175,18 @@ void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
 }
 #endif
 
-bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderStyle* style, const RenderStyle* parentStyle)
+bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderStyle& style, const RenderStyle& parentStyle)
 {
-    if (style->unique() || (style->styleType() != NOPSEUDO && parentStyle->unique()))
+    if (style.unique() || (style.styleType() != NOPSEUDO && parentStyle.unique()))
         return false;
-    if (style->hasAppearance())
+    if (style.hasAppearance())
         return false;
-    if (style->zoom() != RenderStyle::initialZoom())
+    if (style.zoom() != RenderStyle::initialZoom())
         return false;
-    if (style->writingMode() != RenderStyle::initialWritingMode())
+    if (style.writingMode() != RenderStyle::initialWritingMode())
         return false;
     // The cache assumes static knowledge about which properties are inherited.
-    if (parentStyle->hasExplicitlyInheritedProperties())
+    if (parentStyle.hasExplicitlyInheritedProperties())
         return false;
     return true;
 }

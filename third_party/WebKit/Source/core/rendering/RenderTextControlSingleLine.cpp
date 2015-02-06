@@ -332,7 +332,7 @@ LayoutUnit RenderTextControlSingleLine::computeControlLogicalHeight(LayoutUnit l
     return lineHeight + nonContentHeight;
 }
 
-PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerEditorStyle(const RenderStyle* startStyle) const
+PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerEditorStyle(const RenderStyle& startStyle) const
 {
     RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();
     textBlockStyle->inheritFrom(startStyle);

@@ -74,7 +74,7 @@ void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* 
         // Reset them now to avoid getting a spurious layout hint.
         innerEditorRenderer->style()->setHeight(Length());
         innerEditorRenderer->style()->setWidth(Length());
-        innerEditorRenderer->setStyle(createInnerEditorStyle(style()));
+        innerEditorRenderer->setStyle(createInnerEditorStyle(styleRef()));
         innerEditor->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Control));
     }
     textFormControlElement()->updatePlaceholderVisibility(false);

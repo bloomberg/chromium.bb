@@ -40,10 +40,10 @@ RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
 {
 }
 
-RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread* flowThread, RenderStyle* parentStyle)
+RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread& flowThread, const RenderStyle& parentStyle)
 {
-    Document& document = flowThread->document();
-    RenderMultiColumnSet* renderer = new RenderMultiColumnSet(flowThread);
+    Document& document = flowThread.document();
+    RenderMultiColumnSet* renderer = new RenderMultiColumnSet(&flowThread);
     renderer->setDocumentForAnonymous(&document);
     renderer->setStyle(RenderStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;

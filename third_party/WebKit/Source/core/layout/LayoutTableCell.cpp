@@ -1049,7 +1049,7 @@ LayoutTableCell* LayoutTableCell::createAnonymous(Document* document)
 LayoutTableCell* LayoutTableCell::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     LayoutTableCell* newCell = LayoutTableCell::createAnonymous(&parent->document());
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE_CELL);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_CELL);
     newCell->setStyle(newStyle.release());
     return newCell;
 }

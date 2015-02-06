@@ -578,17 +578,17 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     const RenderStyle* baseRenderStyle = activeAnimations ? activeAnimations->baseRenderStyle() : nullptr;
 
     if (baseRenderStyle) {
-        state.setStyle(RenderStyle::clone(baseRenderStyle));
+        state.setStyle(RenderStyle::clone(*baseRenderStyle));
         if (!state.parentStyle())
             state.setParentStyle(defaultStyleForElement());
     } else {
         if (state.parentStyle()) {
             RefPtr<RenderStyle> style = RenderStyle::create();
-            style->inheritFrom(state.parentStyle(), isAtShadowBoundary(element) ? RenderStyle::AtShadowBoundary : RenderStyle::NotAtShadowBoundary);
+            style->inheritFrom(*state.parentStyle(), isAtShadowBoundary(element) ? RenderStyle::AtShadowBoundary : RenderStyle::NotAtShadowBoundary);
             state.setStyle(style.release());
         } else {
             state.setStyle(defaultStyleForElement());
-            state.setParentStyle(RenderStyle::clone(state.style()));
+            state.setParentStyle(RenderStyle::clone(*state.style()));
         }
     }
 
@@ -674,7 +674,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const 
     ASSERT(!state.style());
 
     // Create the style
-    state.setStyle(RenderStyle::clone(&elementStyle));
+    state.setStyle(RenderStyle::clone(elementStyle));
 
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
@@ -702,8 +702,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const 
 PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue& value)
 {
     RefPtr<RenderStyle> style;
-    if (element.renderStyle())
-        style = RenderStyle::clone(element.renderStyle());
+    if (RenderStyle* elementStyle = element.renderStyle())
+        style = RenderStyle::clone(*elementStyle);
     else
         style = RenderStyle::create();
     StyleResolverState state(element.document(), &element);
@@ -785,14 +785,14 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     const RenderStyle* baseRenderStyle = activeAnimations ? activeAnimations->baseRenderStyle() : nullptr;
 
     if (baseRenderStyle) {
-        state.setStyle(RenderStyle::clone(baseRenderStyle));
+        state.setStyle(RenderStyle::clone(*baseRenderStyle));
     } else if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         RefPtr<RenderStyle> style = RenderStyle::create();
-        style->inheritFrom(state.parentStyle());
+        style->inheritFrom(*state.parentStyle());
         state.setStyle(style.release());
     } else {
         state.setStyle(defaultStyleForElement());
-        state.setParentStyle(RenderStyle::clone(state.style()));
+        state.setParentStyle(RenderStyle::clone(*state.style()));
     }
 
     state.style()->setStyleType(pseudoStyleRequest.pseudoId);
@@ -867,7 +867,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     RefPtr<RenderStyle> style = RenderStyle::create();
     const RenderStyle* rootElementStyle = state.rootElementStyle() ? state.rootElementStyle() : document().renderStyle();
     ASSERT(rootElementStyle);
-    style->inheritFrom(rootElementStyle);
+    style->inheritFrom(*rootElementStyle);
     state.setStyle(style.release());
 
     PageRuleCollector collector(rootElementStyle, pageIndex);
@@ -1345,20 +1345,20 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     bool applyInheritedOnly = false;
     const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult) : 0;
 
-    if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
+    if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(element, *state.style(), *state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheHit);
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
-        state.style()->copyNonInheritedFrom(cachedMatchedProperties->renderStyle.get());
-        if (state.parentStyle()->inheritedDataShared(cachedMatchedProperties->parentRenderStyle.get()) && !isAtShadowBoundary(element)
+        state.style()->copyNonInheritedFrom(*cachedMatchedProperties->renderStyle);
+        if (state.parentStyle()->inheritedDataShared(*cachedMatchedProperties->parentRenderStyle) && !isAtShadowBoundary(element)
             && (!state.distributedToInsertionPoint() || state.style()->userModify() == READ_ONLY)) {
             INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheInheritedHit);
 
             EInsideLink linkStatus = state.style()->insideLink();
             // If the cache item parent style has identical inherited properties to the current parent style then the
             // resulting style will be identical too. We copy the inherited properties over from the cache and are done.
-            state.style()->inheritFrom(cachedMatchedProperties->renderStyle.get());
+            state.style()->inheritFrom(*cachedMatchedProperties->renderStyle);
 
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
@@ -1414,9 +1414,9 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     loadPendingResources(state);
 
-    if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
+    if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, *state.style(), *state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);
-        m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
+        m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(), cacheHash, matchResult);
     }
 
     ASSERT(!state.fontBuilder().fontDirty());

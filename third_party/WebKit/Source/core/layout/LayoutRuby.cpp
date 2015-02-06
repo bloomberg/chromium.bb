@@ -85,7 +85,7 @@ static inline RenderBlock* rubyAfterBlock(const LayoutObject* ruby)
 
 static RenderBlockFlow* createAnonymousRubyInlineBlock(LayoutObject* ruby)
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(ruby->style(), INLINE_BLOCK);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(ruby->styleRef(), INLINE_BLOCK);
     RenderBlockFlow* newBlock = RenderBlockFlow::createAnonymous(&ruby->document());
     newBlock->setStyle(newStyle.release());
     return newBlock;

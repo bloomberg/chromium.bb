@@ -85,7 +85,7 @@ PassRefPtr<RenderStyle> RenderStyle::createDefaultStyle()
     return adoptRef(new RenderStyle(DefaultStyle));
 }
 
-PassRefPtr<RenderStyle> RenderStyle::createAnonymousStyleWithDisplay(const RenderStyle* parentStyle, EDisplay display)
+PassRefPtr<RenderStyle> RenderStyle::createAnonymousStyleWithDisplay(const RenderStyle& parentStyle, EDisplay display)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::create();
     newStyle->inheritFrom(parentStyle);
@@ -94,9 +94,9 @@ PassRefPtr<RenderStyle> RenderStyle::createAnonymousStyleWithDisplay(const Rende
     return newStyle;
 }
 
-PassRefPtr<RenderStyle> RenderStyle::clone(const RenderStyle* other)
+PassRefPtr<RenderStyle> RenderStyle::clone(const RenderStyle& other)
 {
-    return adoptRef(new RenderStyle(*other));
+    return adoptRef(new RenderStyle(other));
 }
 
 ALWAYS_INLINE RenderStyle::RenderStyle()
@@ -187,7 +187,7 @@ StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle,
         || oldStyle->alignItems() != newStyle->alignItems())
         return Reattach;
 
-    if (oldStyle->inheritedNotEqual(newStyle)
+    if (oldStyle->inheritedNotEqual(*newStyle)
         || oldStyle->hasExplicitlyInheritedProperties()
         || newStyle->hasExplicitlyInheritedProperties())
         return Inherit;
@@ -198,61 +198,62 @@ StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle,
     return NoInherit;
 }
 
-ItemPosition RenderStyle::resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer)
+ItemPosition RenderStyle::resolveAlignment(const RenderStyle& parentStyle, const RenderStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer)
 {
     // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
-    if (childStyle->alignSelf() == ItemPositionAuto)
-        return (parentStyle->alignItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle->alignItems();
-    return childStyle->alignSelf();
+    if (childStyle.alignSelf() == ItemPositionAuto)
+        return (parentStyle.alignItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle.alignItems();
+    return childStyle.alignSelf();
 }
 
-ItemPosition RenderStyle::resolveJustification(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer)
+ItemPosition RenderStyle::resolveJustification(const RenderStyle& parentStyle, const RenderStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer)
 {
-    if (childStyle->justifySelf() == ItemPositionAuto)
-        return (parentStyle->justifyItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle->justifyItems();
-    return childStyle->justifySelf();
+    if (childStyle.justifySelf() == ItemPositionAuto)
+        return (parentStyle.justifyItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle.justifyItems();
+    return childStyle.justifySelf();
 }
 
-void RenderStyle::inheritFrom(const RenderStyle* inheritParent, IsAtShadowBoundary isAtShadowBoundary)
+void RenderStyle::inheritFrom(const RenderStyle& inheritParent, IsAtShadowBoundary isAtShadowBoundary)
 {
     if (isAtShadowBoundary == AtShadowBoundary) {
         // Even if surrounding content is user-editable, shadow DOM should act as a single unit, and not necessarily be editable
         EUserModify currentUserModify = userModify();
-        rareInheritedData = inheritParent->rareInheritedData;
+        rareInheritedData = inheritParent.rareInheritedData;
         setUserModify(currentUserModify);
-    } else
-        rareInheritedData = inheritParent->rareInheritedData;
-    inherited = inheritParent->inherited;
-    inherited_flags = inheritParent->inherited_flags;
-    if (m_svgStyle != inheritParent->m_svgStyle)
-        m_svgStyle.access()->inheritFrom(inheritParent->m_svgStyle.get());
+    } else {
+        rareInheritedData = inheritParent.rareInheritedData;
+    }
+    inherited = inheritParent.inherited;
+    inherited_flags = inheritParent.inherited_flags;
+    if (m_svgStyle != inheritParent.m_svgStyle)
+        m_svgStyle.access()->inheritFrom(inheritParent.m_svgStyle.get());
 }
 
-void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
+void RenderStyle::copyNonInheritedFrom(const RenderStyle& other)
 {
-    m_box = other->m_box;
-    visual = other->visual;
-    m_background = other->m_background;
-    surround = other->surround;
-    rareNonInheritedData = other->rareNonInheritedData;
+    m_box = other.m_box;
+    visual = other.visual;
+    m_background = other.m_background;
+    surround = other.surround;
+    rareNonInheritedData = other.rareNonInheritedData;
     // The flags are copied one-by-one because noninherited_flags contains a bunch of stuff other than real style data.
-    noninherited_flags.effectiveDisplay = other->noninherited_flags.effectiveDisplay;
-    noninherited_flags.originalDisplay = other->noninherited_flags.originalDisplay;
-    noninherited_flags.overflowX = other->noninherited_flags.overflowX;
-    noninherited_flags.overflowY = other->noninherited_flags.overflowY;
-    noninherited_flags.verticalAlign = other->noninherited_flags.verticalAlign;
-    noninherited_flags.clear = other->noninherited_flags.clear;
-    noninherited_flags.position = other->noninherited_flags.position;
-    noninherited_flags.floating = other->noninherited_flags.floating;
-    noninherited_flags.tableLayout = other->noninherited_flags.tableLayout;
-    noninherited_flags.unicodeBidi = other->noninherited_flags.unicodeBidi;
-    noninherited_flags.pageBreakBefore = other->noninherited_flags.pageBreakBefore;
-    noninherited_flags.pageBreakAfter = other->noninherited_flags.pageBreakAfter;
-    noninherited_flags.pageBreakInside = other->noninherited_flags.pageBreakInside;
-    noninherited_flags.explicitInheritance = other->noninherited_flags.explicitInheritance;
-    noninherited_flags.hasViewportUnits = other->noninherited_flags.hasViewportUnits;
-    if (m_svgStyle != other->m_svgStyle)
-        m_svgStyle.access()->copyNonInheritedFrom(other->m_svgStyle.get());
+    noninherited_flags.effectiveDisplay = other.noninherited_flags.effectiveDisplay;
+    noninherited_flags.originalDisplay = other.noninherited_flags.originalDisplay;
+    noninherited_flags.overflowX = other.noninherited_flags.overflowX;
+    noninherited_flags.overflowY = other.noninherited_flags.overflowY;
+    noninherited_flags.verticalAlign = other.noninherited_flags.verticalAlign;
+    noninherited_flags.clear = other.noninherited_flags.clear;
+    noninherited_flags.position = other.noninherited_flags.position;
+    noninherited_flags.floating = other.noninherited_flags.floating;
+    noninherited_flags.tableLayout = other.noninherited_flags.tableLayout;
+    noninherited_flags.unicodeBidi = other.noninherited_flags.unicodeBidi;
+    noninherited_flags.pageBreakBefore = other.noninherited_flags.pageBreakBefore;
+    noninherited_flags.pageBreakAfter = other.noninherited_flags.pageBreakAfter;
+    noninherited_flags.pageBreakInside = other.noninherited_flags.pageBreakInside;
+    noninherited_flags.explicitInheritance = other.noninherited_flags.explicitInheritance;
+    noninherited_flags.hasViewportUnits = other.noninherited_flags.hasViewportUnits;
+    if (m_svgStyle != other.m_svgStyle)
+        m_svgStyle.access()->copyNonInheritedFrom(other.m_svgStyle.get());
     ASSERT(zoom() == initialZoom());
 }
 
@@ -337,22 +338,22 @@ void RenderStyle::removeCachedPseudoStyle(PseudoId pid)
     }
 }
 
-bool RenderStyle::inheritedNotEqual(const RenderStyle* other) const
+bool RenderStyle::inheritedNotEqual(const RenderStyle& other) const
 {
-    return inherited_flags != other->inherited_flags
-        || inherited != other->inherited
-        || font().loadingCustomFonts() != other->font().loadingCustomFonts()
-        || m_svgStyle->inheritedNotEqual(other->m_svgStyle.get())
-        || rareInheritedData != other->rareInheritedData;
+    return inherited_flags != other.inherited_flags
+        || inherited != other.inherited
+        || font().loadingCustomFonts() != other.font().loadingCustomFonts()
+        || m_svgStyle->inheritedNotEqual(other.m_svgStyle.get())
+        || rareInheritedData != other.rareInheritedData;
 }
 
-bool RenderStyle::inheritedDataShared(const RenderStyle* other) const
+bool RenderStyle::inheritedDataShared(const RenderStyle& other) const
 {
     // This is a fast check that only looks if the data structures are shared.
-    return inherited_flags == other->inherited_flags
-        && inherited.get() == other->inherited.get()
-        && m_svgStyle.get() == other->m_svgStyle.get()
-        && rareInheritedData.get() == other->rareInheritedData.get();
+    return inherited_flags == other.inherited_flags
+        && inherited.get() == other.inherited.get()
+        && m_svgStyle.get() == other.m_svgStyle.get()
+        && rareInheritedData.get() == other.rareInheritedData.get();
 }
 
 static bool dependenceOnContentHeightHasChanged(const RenderStyle& a, const RenderStyle& b)

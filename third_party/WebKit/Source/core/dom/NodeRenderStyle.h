@@ -51,5 +51,12 @@ inline RenderStyle* Node::parentRenderStyle() const
     return parent ? parent->renderStyle() : 0;
 }
 
+inline const RenderStyle& Node::renderStyleRef() const
+{
+    const RenderStyle* style = renderStyle();
+    ASSERT(style);
+    return *style;
+}
+
 }
 #endif

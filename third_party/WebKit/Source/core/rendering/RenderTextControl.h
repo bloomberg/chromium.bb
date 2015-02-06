@@ -34,7 +34,7 @@ public:
     virtual ~RenderTextControl();
 
     HTMLTextFormControlElement* textFormControlElement() const;
-    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const = 0;
+    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle& startStyle) const = 0;
 
 protected:
     RenderTextControl(HTMLTextFormControlElement*);

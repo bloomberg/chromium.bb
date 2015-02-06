@@ -211,8 +211,8 @@ void RenderFlexibleBox::styleDidChange(StyleDifference diff, const RenderStyle* 
         // Flex items that were previously stretching need to be relayed out so we can compute new available cross axis space.
         // This is only necessary for stretching since other alignment values don't change the size of the box.
         for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-            ItemPosition previousAlignment = RenderStyle::resolveAlignment(oldStyle, child->style(), ItemPositionStretch);
-            if (previousAlignment == ItemPositionStretch && previousAlignment != RenderStyle::resolveAlignment(style(), child->style(), ItemPositionStretch))
+            ItemPosition previousAlignment = RenderStyle::resolveAlignment(*oldStyle, child->styleRef(), ItemPositionStretch);
+            if (previousAlignment == ItemPositionStretch && previousAlignment != RenderStyle::resolveAlignment(styleRef(), child->styleRef(), ItemPositionStretch))
                 child->setChildNeedsLayout(MarkOnlyThis);
         }
     }
@@ -1006,7 +1006,7 @@ void RenderFlexibleBox::prepareChildForPositionedLayout(RenderBox& child, Layout
 
 ItemPosition RenderFlexibleBox::alignmentForChild(RenderBox& child) const
 {
-    ItemPosition align = RenderStyle::resolveAlignment(style(), child.style(), ItemPositionStretch);
+    ItemPosition align = RenderStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch);
 
     if (align == ItemPositionBaseline && hasOrthogonalFlow(child))
         align = ItemPositionFlexStart;

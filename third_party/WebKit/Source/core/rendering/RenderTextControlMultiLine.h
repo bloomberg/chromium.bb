@@ -45,7 +45,7 @@ private:
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
     virtual int inlineBlockBaseline(LineDirectionMode) const override { return -1; }
 
-    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const override;
+    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle& startStyle) const override;
     virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 };
 

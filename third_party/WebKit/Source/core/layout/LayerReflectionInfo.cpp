@@ -84,7 +84,7 @@ Layer* LayerReflectionInfo::reflectionLayer() const
 void LayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldStyle)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::create();
-    newStyle->inheritFrom(box().style());
+    newStyle->inheritFrom(box().styleRef());
 
     // Map in our transform.
     TransformOperations transform;

@@ -161,7 +161,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
         RefPtr<RenderStyle> newBlockStyle;
 
         if (!block->style()->isOutlineEquivalent(newStyle)) {
-            newBlockStyle = RenderStyle::clone(block->style());
+            newBlockStyle = RenderStyle::clone(block->styleRef());
             newBlockStyle->setOutlineFromStyle(*newStyle);
         }
 
@@ -172,7 +172,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
                 && inFlowPositionedInlineAncestor(toRenderBlock(block)->inlineElementContinuation()))
                 continue;
             if (!newBlockStyle)
-                newBlockStyle = RenderStyle::clone(block->style());
+                newBlockStyle = RenderStyle::clone(block->styleRef());
             newBlockStyle->setPosition(newStyle->position());
         }
 
@@ -331,7 +331,7 @@ void RenderInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
         // inline into continuations.  This involves creating an anonymous block box to hold
         // |newChild|.  We then make that block box a continuation of this inline.  We take all of
         // the children after |beforeChild| and put them in a clone of this object.
-        RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(style(), BLOCK);
+        RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
 
         // If inside an inline affected by in-flow positioning the block needs to be affected by it too.
         // Giving the block a layer like this allows it to collect the x/y offsets from inline parents later.

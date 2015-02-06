@@ -505,7 +505,7 @@ PassRefPtr<RenderStyle> DateTimeEditElement::customStyleForRenderer()
 {
     // FIXME: This is a kind of layout. We might want to introduce new renderer.
     RefPtr<RenderStyle> originalStyle = originalStyleForRenderer();
-    RefPtr<RenderStyle> style = RenderStyle::clone(originalStyle.get());
+    RefPtr<RenderStyle> style = RenderStyle::clone(*originalStyle);
     float width = 0;
     for (Node* child = fieldsWrapperElement()->firstChild(); child; child = child->nextSibling()) {
         if (!child->isElementNode())

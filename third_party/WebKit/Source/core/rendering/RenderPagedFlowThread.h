@@ -15,7 +15,7 @@ namespace blink {
 // inherit from that one.
 class RenderPagedFlowThread : public RenderMultiColumnFlowThread {
 public:
-    static RenderPagedFlowThread* createAnonymous(Document&, RenderStyle* parentStyle);
+    static RenderPagedFlowThread* createAnonymous(Document&, const RenderStyle& parentStyle);
 
     RenderBlockFlow* pagedBlockFlow() const { return toRenderBlockFlow(parent()); }
 

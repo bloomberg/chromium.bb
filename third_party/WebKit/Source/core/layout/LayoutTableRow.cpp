@@ -234,7 +234,7 @@ LayoutTableRow* LayoutTableRow::createAnonymous(Document* document)
 LayoutTableRow* LayoutTableRow::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     LayoutTableRow* newRow = LayoutTableRow::createAnonymous(&parent->document());
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE_ROW);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW);
     newRow->setStyle(newStyle.release());
     return newRow;
 }

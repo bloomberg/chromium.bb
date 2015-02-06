@@ -7,7 +7,7 @@
 
 namespace blink {
 
-RenderPagedFlowThread* RenderPagedFlowThread::createAnonymous(Document& document, RenderStyle* parentStyle)
+RenderPagedFlowThread* RenderPagedFlowThread::createAnonymous(Document& document, const RenderStyle& parentStyle)
 {
     RenderPagedFlowThread* renderer = new RenderPagedFlowThread();
     renderer->setDocumentForAnonymous(&document);

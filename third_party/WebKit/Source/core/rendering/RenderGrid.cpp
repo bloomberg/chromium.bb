@@ -1338,7 +1338,7 @@ LayoutUnit RenderGrid::columnPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
 
-    switch (RenderStyle::resolveJustification(style(), child.style(), ItemPositionStretch)) {
+    switch (RenderStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // For orthogonal writing-modes, this computes to 'start'
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
@@ -1443,7 +1443,7 @@ bool RenderGrid::allowedToStretchLogicalHeightForChild(const RenderBox& child) c
 // FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
 bool RenderGrid::needToStretchChildLogicalHeight(const RenderBox& child) const
 {
-    if (RenderStyle::resolveAlignment(style(), child.style(), ItemPositionStretch) != ItemPositionStretch)
+    if (RenderStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
         return false;
 
     return isHorizontalWritingMode() && child.style()->height().isAuto();
@@ -1505,7 +1505,7 @@ LayoutUnit RenderGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
 // FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
 void RenderGrid::applyStretchAlignmentToChildIfNeeded(RenderBox& child, LayoutUnit gridAreaBreadthForChild)
 {
-    if (RenderStyle::resolveAlignment(style(), child.style(), ItemPositionStretch) != ItemPositionStretch)
+    if (RenderStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
         return;
 
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
@@ -1531,7 +1531,7 @@ void RenderGrid::applyStretchAlignmentToChildIfNeeded(RenderBox& child, LayoutUn
 LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    switch (RenderStyle::resolveAlignment(style(), child.style(), ItemPositionStretch)) {
+    switch (RenderStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // If orthogonal writing-modes, this computes to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.

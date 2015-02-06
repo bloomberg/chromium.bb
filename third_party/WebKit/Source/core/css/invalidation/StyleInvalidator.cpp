@@ -176,7 +176,7 @@ bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionD
     } else if (recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
         // Clone the RenderStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
         if (LayoutObject* renderer = element.renderer()) {
-            renderer->setStyleInternal(RenderStyle::clone(renderer->style()));
+            renderer->setStyleInternal(RenderStyle::clone(renderer->styleRef()));
         } else {
             TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element, PreventStyleSharingForParent);
             element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));

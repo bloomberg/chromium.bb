@@ -54,7 +54,7 @@ class RenderMultiColumnSet : public RenderRegion {
 public:
     enum BalancedHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
 
-    static RenderMultiColumnSet* createAnonymous(RenderFlowThread*, RenderStyle* parentStyle);
+    static RenderMultiColumnSet* createAnonymous(RenderFlowThread&, const RenderStyle& parentStyle);
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderMultiColumnSet || RenderRegion::isOfType(type); }
 

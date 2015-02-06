@@ -109,7 +109,7 @@ void ActiveAnimations::updateBaseRenderStyle(const RenderStyle* renderStyle)
     if (m_baseRenderStyle && renderStyle)
         ASSERT(*m_baseRenderStyle == *renderStyle);
 #endif
-    m_baseRenderStyle = RenderStyle::clone(renderStyle);
+    m_baseRenderStyle = RenderStyle::clone(*renderStyle);
 }
 
 void ActiveAnimations::clearBaseRenderStyle()

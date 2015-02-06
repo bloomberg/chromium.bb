@@ -336,7 +336,7 @@ PassRefPtr<RenderStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForRe
     if (originalStyle->direction() == contentDirection && originalDisplay == newDisplay)
         return originalStyle;
 
-    RefPtr<RenderStyle> style = RenderStyle::clone(originalStyle.get());
+    RefPtr<RenderStyle> style = RenderStyle::clone(*originalStyle);
     style->setDirection(contentDirection);
     style->setDisplay(newDisplay);
     style->setUnique();

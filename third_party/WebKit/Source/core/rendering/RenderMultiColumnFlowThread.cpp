@@ -47,7 +47,7 @@ RenderMultiColumnFlowThread::~RenderMultiColumnFlowThread()
 {
 }
 
-RenderMultiColumnFlowThread* RenderMultiColumnFlowThread::createAnonymous(Document& document, RenderStyle* parentStyle)
+RenderMultiColumnFlowThread* RenderMultiColumnFlowThread::createAnonymous(Document& document, const RenderStyle& parentStyle)
 {
     RenderMultiColumnFlowThread* renderer = new RenderMultiColumnFlowThread();
     renderer->setDocumentForAnonymous(&document);
@@ -324,7 +324,7 @@ void RenderMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width
 void RenderMultiColumnFlowThread::createAndInsertMultiColumnSet(RenderBox* insertBefore)
 {
     RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
-    RenderMultiColumnSet* newSet = RenderMultiColumnSet::createAnonymous(this, multicolContainer->style());
+    RenderMultiColumnSet* newSet = RenderMultiColumnSet::createAnonymous(*this, multicolContainer->styleRef());
     multicolContainer->RenderBlock::addChild(newSet, insertBefore);
     invalidateRegions();
 
@@ -337,7 +337,7 @@ void RenderMultiColumnFlowThread::createAndInsertMultiColumnSet(RenderBox* inser
 void RenderMultiColumnFlowThread::createAndInsertSpannerPlaceholder(RenderBox* spanner, RenderBox* insertBefore)
 {
     RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
-    RenderMultiColumnSpannerPlaceholder* newPlaceholder = RenderMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->style(), spanner);
+    RenderMultiColumnSpannerPlaceholder* newPlaceholder = RenderMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->styleRef(), *spanner);
     multicolContainer->RenderBlock::addChild(newPlaceholder, insertBefore);
     spanner->setSpannerPlaceholder(*newPlaceholder);
 }

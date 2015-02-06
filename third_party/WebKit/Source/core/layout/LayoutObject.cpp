@@ -1590,7 +1590,7 @@ void LayoutObject::setPseudoStyle(PassRefPtr<RenderStyle> pseudoStyle)
     //
     if (isImage() || isQuote()) {
         RefPtr<RenderStyle> style = RenderStyle::create();
-        style->inheritFrom(pseudoStyle.get());
+        style->inheritFrom(*pseudoStyle);
         setStyle(style.release());
         return;
     }
@@ -1834,7 +1834,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (child->isRenderFullScreen() || child->isRenderFullScreenPlaceholder())
             continue;
 
-        RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(style(), child->style()->display());
+        RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
         if (!document().regionBasedColumnsEnabled()) {
             if (style()->specifiesColumns()) {
                 if (child->style()->specifiesColumns())

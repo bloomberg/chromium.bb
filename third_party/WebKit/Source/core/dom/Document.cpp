@@ -1699,7 +1699,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         || documentStyle->overflowY() != overflowY
         || documentStyle->columnGap() != columnGap
         || documentStyle->scrollBlocksOn() != scrollBlocksOn) {
-        RefPtr<RenderStyle> newStyle = RenderStyle::clone(documentStyle.get());
+        RefPtr<RenderStyle> newStyle = RenderStyle::clone(*documentStyle);
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
         newStyle->setColumnGap(columnGap);

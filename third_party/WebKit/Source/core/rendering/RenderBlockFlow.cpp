@@ -3064,10 +3064,10 @@ RenderMultiColumnFlowThread* RenderBlockFlow::createMultiColumnFlowThread(FlowTh
 {
     switch (type) {
     case MultiColumnFlowThread:
-        return RenderMultiColumnFlowThread::createAnonymous(document(), style());
+        return RenderMultiColumnFlowThread::createAnonymous(document(), styleRef());
     case PagedFlowThread:
         // Paged overflow is currently done using the multicol implementation.
-        return RenderPagedFlowThread::createAnonymous(document(), style());
+        return RenderPagedFlowThread::createAnonymous(document(), styleRef());
     default:
         ASSERT_NOT_REACHED();
         return nullptr;

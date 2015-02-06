@@ -1589,7 +1589,7 @@ CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const LayoutTabl
 
 LayoutTableSection* LayoutTableSection::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE_ROW_GROUP);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW_GROUP);
     LayoutTableSection* newSection = new LayoutTableSection(0);
     newSection->setDocumentForAnonymous(&parent->document());
     newSection->setStyle(newStyle.release());

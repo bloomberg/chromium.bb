@@ -712,7 +712,7 @@ PassRefPtr<RenderStyle> HTMLImageElement::customStyleForRenderer()
     if (!m_useFallbackContent)
         return newStyle;
 
-    RefPtr<RenderStyle> style = RenderStyle::clone(newStyle.get());
+    RefPtr<RenderStyle> style = RenderStyle::clone(*newStyle);
     return HTMLImageFallbackHelper::customStyleForAltText(*this, style);
 }
 

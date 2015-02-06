@@ -35,7 +35,7 @@ public:
     RenderTextControlSingleLine(HTMLInputElement*);
     virtual ~RenderTextControlSingleLine();
     // FIXME: Move createInnerEditorStyle() to TextControlInnerEditorElement.
-    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const override final;
+    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle& startStyle) const override final;
 
     void capsLockStateMayHaveChanged();
 

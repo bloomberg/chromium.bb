@@ -17,7 +17,7 @@ class RenderMultiColumnSpannerPlaceholder final : public RenderBox {
 public:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderMultiColumnSpannerPlaceholder || RenderBox::isOfType(type); }
 
-    static RenderMultiColumnSpannerPlaceholder* createAnonymous(RenderStyle* parentStyle, RenderBox*);
+    static RenderMultiColumnSpannerPlaceholder* createAnonymous(const RenderStyle& parentStyle, RenderBox&);
 
     RenderFlowThread* flowThread() const { return toRenderBlockFlow(parent())->multiColumnFlowThread(); }
 

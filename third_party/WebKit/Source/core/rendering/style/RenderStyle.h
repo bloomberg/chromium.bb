@@ -334,14 +334,14 @@ private:
 public:
     static PassRefPtr<RenderStyle> create();
     static PassRefPtr<RenderStyle> createDefaultStyle();
-    static PassRefPtr<RenderStyle> createAnonymousStyleWithDisplay(const RenderStyle* parentStyle, EDisplay);
-    static PassRefPtr<RenderStyle> clone(const RenderStyle*);
+    static PassRefPtr<RenderStyle> createAnonymousStyleWithDisplay(const RenderStyle& parentStyle, EDisplay);
+    static PassRefPtr<RenderStyle> clone(const RenderStyle&);
 
     // Computes how the style change should be propagated down the tree.
     static StyleRecalcChange stylePropagationDiff(const RenderStyle* oldStyle, const RenderStyle* newStyle);
 
-    static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer);
-    static ItemPosition resolveJustification(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer);
+    static ItemPosition resolveAlignment(const RenderStyle& parentStyle, const RenderStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer);
+    static ItemPosition resolveJustification(const RenderStyle& parentStyle, const RenderStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer);
 
     StyleDifference visualInvalidationDiff(const RenderStyle&) const;
 
@@ -350,8 +350,8 @@ public:
         NotAtShadowBoundary,
     };
 
-    void inheritFrom(const RenderStyle* inheritParent, IsAtShadowBoundary = NotAtShadowBoundary);
-    void copyNonInheritedFrom(const RenderStyle*);
+    void inheritFrom(const RenderStyle& inheritParent, IsAtShadowBoundary = NotAtShadowBoundary);
+    void copyNonInheritedFrom(const RenderStyle&);
 
     PseudoId styleType() const { return static_cast<PseudoId>(noninherited_flags.styleType); }
     void setStyleType(PseudoId styleType) { noninherited_flags.styleType = styleType; }
@@ -1436,8 +1436,8 @@ public:
 
     const AtomicString& hyphenString() const;
 
-    bool inheritedNotEqual(const RenderStyle*) const;
-    bool inheritedDataShared(const RenderStyle*) const;
+    bool inheritedNotEqual(const RenderStyle&) const;
+    bool inheritedDataShared(const RenderStyle&) const;
 
     bool isDisplayReplacedType() const { return isDisplayReplacedType(display()); }
     bool isDisplayInlineType() const { return isDisplayInlineType(display()); }
@@ -1680,7 +1680,7 @@ private:
     void setVisitedLinkTextFillColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextFillColor, setVisitedLinkTextFillColor, v); }
     void setVisitedLinkTextStrokeColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextStrokeColor, setVisitedLinkTextStrokeColor, v); }
 
-    void inheritUnicodeBidiFrom(const RenderStyle* parent) { noninherited_flags.unicodeBidi = parent->noninherited_flags.unicodeBidi; }
+    void inheritUnicodeBidiFrom(const RenderStyle& parent) { noninherited_flags.unicodeBidi = parent.noninherited_flags.unicodeBidi; }
 
     bool isDisplayFlexibleBox(EDisplay display) const
     {

@@ -1180,7 +1180,7 @@ void RenderBlock::removeChild(LayoutObject* oldChild)
             // to clear out inherited column properties by just making a new style, and to also clear the
             // column span flag if it is set.
             ASSERT(!inlineChildrenBlock->continuation());
-            RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(style(), BLOCK);
+            RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
             // Cache this value as it might get changed in setStyle() call.
             bool inlineChildrenBlockHasLayer = inlineChildrenBlock->hasLayer();
             inlineChildrenBlock->setStyle(newStyle);
@@ -3777,7 +3777,7 @@ RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const Layo
         newDisplay = BLOCK;
     }
 
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), newDisplay);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), newDisplay);
     parent->updateAnonymousChildStyle(newBox, newStyle.get());
     newBox->setStyle(newStyle.release());
     return newBox;
@@ -3785,7 +3785,7 @@ RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const Layo
 
 RenderBlockFlow* RenderBlock::createAnonymousColumnsWithParentRenderer(const LayoutObject* parent)
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), BLOCK);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
     newStyle->inheritColumnPropertiesFrom(parent->style());
 
     RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
@@ -3796,7 +3796,7 @@ RenderBlockFlow* RenderBlock::createAnonymousColumnsWithParentRenderer(const Lay
 
 RenderBlockFlow* RenderBlock::createAnonymousColumnSpanWithParentRenderer(const LayoutObject* parent)
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), BLOCK);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
     newStyle->setColumnSpan(ColumnSpanAll);
 
     RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());

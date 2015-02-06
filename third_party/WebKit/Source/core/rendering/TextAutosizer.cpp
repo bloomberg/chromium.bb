@@ -968,9 +968,9 @@ const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size
 
 void TextAutosizer::applyMultiplier(LayoutObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
 {
-    ASSERT(renderer && renderer->style());
-    RenderStyle* currentStyle = renderer->style();
-    if (currentStyle->textAutosizingMultiplier() == multiplier)
+    ASSERT(renderer);
+    RenderStyle& currentStyle = renderer->mutableStyleRef();
+    if (currentStyle.textAutosizingMultiplier() == multiplier)
         return;
 
     // We need to clone the render style to avoid breaking style sharing.
@@ -982,7 +982,7 @@ void TextAutosizer::applyMultiplier(LayoutObject* renderer, float multiplier, Re
     case AlreadyInLayout:
         // Don't free currentStyle until the end of the layout pass. This allows other parts of the system
         // to safely hold raw RenderStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
-        m_stylesRetainedDuringLayout.append(currentStyle);
+        m_stylesRetainedDuringLayout.append(&currentStyle);
 
         renderer->setStyleInternal(style.release());
         renderer->setNeedsLayoutAndFullPaintInvalidation();

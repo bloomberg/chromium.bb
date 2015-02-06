@@ -1335,7 +1335,7 @@ bool LayoutTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
 LayoutTable* LayoutTable::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE);
+    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE);
     LayoutTable* newTable = new LayoutTable(0);
     newTable->setDocumentForAnonymous(&parent->document());
     newTable->setStyle(newStyle.release());

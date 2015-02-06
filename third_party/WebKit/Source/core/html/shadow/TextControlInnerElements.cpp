@@ -82,7 +82,7 @@ PassRefPtr<RenderStyle> EditingViewPortElement::customStyleForRenderer()
     // FXIME: Move these styles to html.css.
 
     RefPtr<RenderStyle> style = RenderStyle::create();
-    style->inheritFrom(shadowHost()->renderStyle());
+    style->inheritFrom(shadowHost()->renderStyleRef());
 
     style->setFlexGrow(1);
     style->setDisplay(BLOCK);
@@ -141,7 +141,7 @@ PassRefPtr<RenderStyle> TextControlInnerEditorElement::customStyleForRenderer()
     if (!parentRenderer || !parentRenderer->isTextControl())
         return originalStyleForRenderer();
     RenderTextControl* textControlRenderer = toRenderTextControl(parentRenderer);
-    return textControlRenderer->createInnerEditorStyle(textControlRenderer->style());
+    return textControlRenderer->createInnerEditorStyle(textControlRenderer->styleRef());
 }
 
 // ----------------------------
