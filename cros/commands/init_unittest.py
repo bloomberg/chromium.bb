@@ -7,10 +7,10 @@
 from __future__ import print_function
 
 import glob
-import imp
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_import
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
 from chromite.cros import commands
@@ -60,14 +60,21 @@ class CommandTest(cros_test_lib.MockTestCase):
 
   def testLoadCommands(self):
     """Tests import commands correctly."""
-    fake_command_file = 'cros_command_test.py'
     fake_module = 'cros_command_test'
-    module_tuple = 'file', 'pathname', 'description'
+    fake_command_file = '%s.py' % fake_module
+    module_path = ('chromite', 'cros', 'commands', fake_module)
 
     self.PatchObject(commands, '_FindModules', return_value=[fake_command_file])
-    self.PatchObject(imp, 'find_module', return_value=module_tuple)
-    load_mock = self.PatchObject(imp, 'load_module')
+    # The code doesn't use the return value, so stub it out lazy-like.
+    load_mock = self.PatchObject(cros_import, 'ImportModule', return_value=None)
 
     commands._ImportCommands()
 
-    load_mock.assert_called_with(fake_module, *module_tuple)
+    load_mock.assert_called_with(module_path)
+
+  def testListCommands(self):
+    """Tests we get a sane list back."""
+    cros_commands = commands.ListCommands()
+    # Pick some commands that are likely to not go away.
+    self.assertIn('chrome-sdk', cros_commands)
+    self.assertIn('flash', cros_commands)

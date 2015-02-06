@@ -73,6 +73,7 @@ class ChromiteImporter(object):
 sys.meta_path.insert(0, ChromiteImporter())
 
 from chromite.lib import commandline
+from chromite.lib import cros_import
 
 
 def FindTarget(target):
@@ -120,10 +121,7 @@ def FindTarget(target):
   if target[1] == 'bin':
     target[1] = 'scripts'
 
-  module = __import__('.'.join(target))
-  # __import__ gets us the root of the namespace import; walk our way up.
-  for attr in target[1:]:
-    module = getattr(module, attr)
+  module = cros_import.ImportModule(target)
 
   # Run the module's main func if it has one.
   main = getattr(module, 'main', None)

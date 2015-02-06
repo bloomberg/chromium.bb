@@ -12,10 +12,10 @@ command names -> command classes e.g. image->cros_image.ImageCommand.
 from __future__ import print_function
 
 import glob
-import imp
 import os
 
 from chromite import cros
+from chromite.lib import cros_import
 
 
 def _FindModules(subdir_path):
@@ -40,14 +40,11 @@ def _ImportCommands():
   for file_path in _FindModules(subdir_path):
     file_name = os.path.basename(file_path)
     mod_name = os.path.splitext(file_name)[0]
-    imp.load_module(mod_name, *imp.find_module(mod_name, [subdir_path]))
+    cros_import.ImportModule(('chromite', 'cros', 'commands', mod_name))
 
 
 def ListCommands():
   """Return a dictionary mapping command names to classes."""
-  # pylint: disable=W0212
+  _ImportCommands()
+  # pylint: disable=protected-access
   return cros._commands.copy()
-
-
-_ImportCommands()
-
