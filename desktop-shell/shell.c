@@ -3978,6 +3978,14 @@ xdg_get_xdg_surface(struct wl_client *client,
 	struct desktop_shell *shell = sc->shell;
 	struct shell_surface *shsurf;
 
+	shsurf = get_shell_surface(surface);
+	if (shsurf && shell_surface_is_xdg_surface(shsurf)) {
+		wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
+				       "This wl_surface is already an "
+				       "xdg_surface");
+		return;
+	}
+
 	if (weston_surface_set_role(surface, "xdg_surface",
 				    resource, XDG_SHELL_ERROR_ROLE) < 0)
 		return;
@@ -4070,6 +4078,14 @@ xdg_get_xdg_popup(struct wl_client *client,
 	struct shell_surface *shsurf;
 	struct weston_surface *parent;
 	struct shell_seat *seat;
+
+	shsurf = get_shell_surface(surface);
+	if (shsurf && shell_surface_is_xdg_popup(shsurf)) {
+		wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
+				       "This wl_surface is already an "
+				       "xdg_popup");
+		return;
+	}
 
 	if (weston_surface_set_role(surface, "xdg_popup",
 				    resource, XDG_SHELL_ERROR_ROLE) < 0)
