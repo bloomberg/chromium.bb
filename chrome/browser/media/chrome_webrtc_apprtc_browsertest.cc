@@ -27,8 +27,8 @@ const char kAdviseOnGclientSolution[] =
     "You need to add this solution to your .gclient to run this test:\n"
     "{\n"
     "  \"name\"        : \"webrtc.DEPS\",\n"
-    "  \"url\"         : \"svn://svn.chromium.org/chrome/trunk/deps/"
-    "third_party/webrtc/webrtc.DEPS\",\n"
+    "  \"url\"         : \"https://chromium.googlesource.com/chromium/deps/"
+    "webrtc/webrtc.DEPS\",\n"
     "}";
 const char kTitlePageOfAppEngineAdminPage[] = "Instances";
 
@@ -86,11 +86,17 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     }
 
     base::FilePath apprtc_dir =
-        GetSourceDir().Append(FILE_PATH_LITERAL(
-            "out/webrtc-samples/samples/web/content/apprtc"));
+        GetSourceDir().Append(FILE_PATH_LITERAL("out/apprtc/out/app_engine"));
     if (!base::PathExists(apprtc_dir)) {
-      LOG(ERROR) << "Missing AppRTC code at " <<
+      LOG(ERROR) << "Missing AppRTC AppEngine app at " <<
           apprtc_dir.value() << ". " << kAdviseOnGclientSolution;
+      return false;
+    }
+    if (!base::PathExists(apprtc_dir.Append(FILE_PATH_LITERAL("app.yaml")))) {
+      LOG(ERROR) << "The AppRTC AppEngine app at " <<
+          apprtc_dir.value() << " appears to have not been built." <<
+          "This should have been done by webrtc.DEPS scripts which invoke " <<
+          "'grunt build' on AppRTC.";
       return false;
     }
 
