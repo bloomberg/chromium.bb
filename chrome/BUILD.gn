@@ -51,8 +51,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         "app/chrome_watcher_command_line_win.h",
         "app/client_util.cc",
         "app/client_util.h",
-        "app/chrome_watcher_command_line_win.cc",
-        "app/chrome_watcher_command_line_win.h",
         "app/signature_validator_win.cc",
         "app/signature_validator_win.h",
         "common/crash_keys.cc",
@@ -154,7 +152,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       # TODO(GYP) some stuff from GYP including chrome_multiple_dll.
     }
 
-    if (enable_plugins) {
+    if (is_linux && enable_plugins) {
       deps += [ "//pdf" ]
     }
   }
