@@ -19,7 +19,6 @@
 namespace blink {
 
 class BodyStreamBuffer;
-class ExclusiveStreamReader;
 class ScriptState;
 
 class Body
@@ -102,7 +101,6 @@ private:
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     Member<ReadableStreamSource> m_streamSource;
     Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
-    Member<ExclusiveStreamReader> m_streamReader;
 };
 
 } // namespace blink

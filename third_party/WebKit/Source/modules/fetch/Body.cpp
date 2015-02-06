@@ -15,7 +15,6 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/UseCounter.h"
-#include "core/streams/ExclusiveStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 
@@ -234,7 +233,7 @@ private:
 
 ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
 {
-    if (bodyUsed())
+    if (m_bodyUsed)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
 
     // When the main thread sends a V8::TerminateExecution() signal to a worker
@@ -247,7 +246,7 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     if (!executionContext)
         return ScriptPromise();
 
-    setBodyUsed();
+    m_bodyUsed = true;
     m_responseType = type;
 
     ASSERT(!m_resolver);
@@ -347,20 +346,11 @@ ReadableStream* Body::body()
 
 bool Body::bodyUsed() const
 {
-    return m_bodyUsed || (m_stream && m_stream->isLocked());
+    return m_bodyUsed;
 }
 
 void Body::setBodyUsed()
 {
-    ASSERT(!m_bodyUsed);
-    ASSERT(!m_stream || !m_stream->isLocked());
-    // Note that technically we can set BodyUsed even when the stream is
-    // closed or errored, but getReader doesn't work then.
-    if (m_stream && m_stream->stateInternal() != ReadableStream::Closed && m_stream->stateInternal() != ReadableStream::Errored) {
-        TrackExceptionState exceptionState;
-        m_streamReader = m_stream->getReader(exceptionState);
-        ASSERT(!exceptionState.hadException());
-    }
     m_bodyUsed = true;
 }
 
@@ -401,7 +391,6 @@ void Body::trace(Visitor* visitor)
     visitor->trace(m_resolver);
     visitor->trace(m_stream);
     visitor->trace(m_streamSource);
-    visitor->trace(m_streamReader);
     ActiveDOMObject::trace(visitor);
 }
 
