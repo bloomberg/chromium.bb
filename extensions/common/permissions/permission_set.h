@@ -5,16 +5,11 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_SET_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_SET_H_
 
-#include <map>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
-#include "base/strings/string16.h"
-#include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission.h"
@@ -22,7 +17,6 @@
 #include "extensions/common/url_pattern_set.h"
 
 namespace extensions {
-class Extension;
 
 // The PermissionSet is an immutable class that encapsulates an
 // extension's permissions. The class exposes set operations for combining and

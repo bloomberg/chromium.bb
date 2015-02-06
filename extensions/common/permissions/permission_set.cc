@@ -4,13 +4,8 @@
 
 #include "extensions/common/permissions/permission_set.h"
 
-#include <algorithm>
-#include <iterator>
-#include <string>
-
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
-#include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
 
 namespace extensions {

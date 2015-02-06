@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "content/public/browser/media_capture_devices.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 using content::MediaCaptureDevices;

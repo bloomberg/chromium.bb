@@ -10,10 +10,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message.h"
@@ -22,17 +20,11 @@
 class GURL;
 
 namespace extensions {
-
-class PermissionSet;
 class Extension;
 class URLPatternSet;
-class UserScript;
 
-// A container for the active permissions of an extension.
-// TODO(rdevlin.cronin): For the love of everything good, rename this class to
-// ActivePermissions. We do *not* need PermissionsParser, PermissionSet,
-// PermissionInfo, and PermissionsData. No one will be able to keep them
-// straight.
+// A container for the permissions state of an extension, including active,
+// withheld, and tab-specific permissions.
 class PermissionsData {
  public:
   // The possible types of access for a given frame.
