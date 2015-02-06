@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -479,7 +480,7 @@ TEST_F(CloudPolicyClientTest, UnregisterFailure) {
 TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
   Register();
 
-  // Setup the |expected_responses| and |policy_response_|.
+  // Set up the |expected_responses| and |policy_response_|.
   static const char* kExtensions[] = {
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
@@ -603,6 +604,76 @@ TEST_F(CloudPolicyClientTest, UploadStatus) {
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
+TEST_F(CloudPolicyClientTest, UploadStatusWhilePolicyFetchActive) {
+  Register();
+  MockDeviceManagementJob* upload_status_job = nullptr;
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_STATUS,
+                        request_context_))
+      .WillOnce(service_.CreateAsyncJob(&upload_status_job));
+  EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _));
+  EXPECT_CALL(upload_observer_, OnUploadComplete(true)).Times(1);
+  CloudPolicyClient::StatusCallback callback = base::Bind(
+      &MockUploadObserver::OnUploadComplete,
+      base::Unretained(&upload_observer_));
+  em::DeviceStatusReportRequest device_status;
+  em::SessionStatusReportRequest session_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+
+  // Now initiate a policy fetch - this should not cancel the upload job.
+  ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  client_->FetchPolicy();
+  CheckPolicyResponse();
+
+  upload_status_job->SendResponse(DM_STATUS_SUCCESS, upload_status_response_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, MultipleActiveRequests) {
+  Register();
+
+  // Set up pending upload status job.
+  MockDeviceManagementJob* upload_status_job = nullptr;
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_STATUS,
+                        request_context_))
+      .WillOnce(service_.CreateAsyncJob(&upload_status_job));
+  EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _));
+  CloudPolicyClient::StatusCallback callback = base::Bind(
+      &MockUploadObserver::OnUploadComplete,
+      base::Unretained(&upload_observer_));
+  em::DeviceStatusReportRequest device_status;
+  em::SessionStatusReportRequest session_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+
+  // Set up pending upload certificate job.
+  MockDeviceManagementJob* upload_certificate_job = nullptr;
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE,
+                        request_context_))
+      .WillOnce(service_.CreateAsyncJob(&upload_certificate_job));
+  EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _));
+
+  // Expect two calls on our upload observer, one for the status upload and
+  // one for the certificate upload.
+  CloudPolicyClient::StatusCallback callback2 = base::Bind(
+      &MockUploadObserver::OnUploadComplete,
+      base::Unretained(&upload_observer_));
+  client_->UploadCertificate(kDeviceCertificate, callback2);
+  EXPECT_EQ(2, client_->GetActiveRequestCountForTest());
+
+  // Now satisfy both active jobs.
+  EXPECT_CALL(upload_observer_, OnUploadComplete(true)).Times(2);
+  upload_status_job->SendResponse(DM_STATUS_SUCCESS, upload_status_response_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+  upload_certificate_job->SendResponse(DM_STATUS_SUCCESS,
+                                       upload_certificate_response_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
+}
+
 TEST_F(CloudPolicyClientTest, UploadStatusFailure) {
   Register();
 
@@ -621,6 +692,29 @@ TEST_F(CloudPolicyClientTest, UploadStatusFailure) {
   em::SessionStatusReportRequest session_status;
   client_->UploadDeviceStatus(&device_status, &session_status, callback);
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, RequestCancelOnUnregister) {
+  Register();
+
+  // Set up pending upload status job.
+  MockDeviceManagementJob* upload_status_job = nullptr;
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_STATUS,
+                        request_context_))
+      .WillOnce(service_.CreateAsyncJob(&upload_status_job));
+  EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _));
+  CloudPolicyClient::StatusCallback callback = base::Bind(
+      &MockUploadObserver::OnUploadComplete,
+      base::Unretained(&upload_observer_));
+  em::DeviceStatusReportRequest device_status;
+  em::SessionStatusReportRequest session_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+  EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
+  ExpectUnregistration(kDMToken);
+  client_->Unregister();
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
 }
 
 }  // namespace policy

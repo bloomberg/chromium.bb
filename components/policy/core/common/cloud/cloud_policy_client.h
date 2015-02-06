@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -216,6 +217,9 @@ class POLICY_EXPORT CloudPolicyClient {
 
   scoped_refptr<net::URLRequestContextGetter> GetRequestContext();
 
+  // Returns the number of active requests.
+  int GetActiveRequestCountForTest() const;
+
  protected:
   // A set of (policy type, settings entity ID) pairs to fetch.
   typedef std::set<std::pair<std::string, std::string>> PolicyTypeSet;
@@ -249,6 +253,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Callback for certificate upload requests.
   void OnCertificateUploadCompleted(
+      const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
       DeviceManagementStatus status,
       int net_error,
@@ -256,10 +261,14 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Callback for status upload requests.
   void OnStatusUploadCompleted(
+      const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
+
+  // Helper to remove a job from request_jobs_.
+  void RemoveJob(const DeviceManagementRequestJob* job);
 
   // Observer notification helpers.
   void NotifyPolicyFetched();
@@ -293,7 +302,14 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_;
-  scoped_ptr<DeviceManagementRequestJob> request_job_;
+
+  // Only one outstanding policy fetch is allowed, so this is tracked in
+  // its own member variable.
+  scoped_ptr<DeviceManagementRequestJob> policy_fetch_request_job_;
+
+  // All of the outstanding non-policy-fetch request jobs. These jobs are
+  // silently cancelled if Unregister() is called.
+  ScopedVector<DeviceManagementRequestJob> request_jobs_;
 
   // The policy responses returned by the last policy fetch operation.
   ResponseMap responses_;
