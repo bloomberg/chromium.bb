@@ -431,31 +431,45 @@ const char* kFalse[] = {"off", "false", "no"};
 
 // Check if a device falls into one device type category.
 bool IsDeviceOfType(const ui::GesturePropertyProvider::DevicePtr device,
-                    const ui::EventDeviceType type) {
+                    const ui::EventDeviceType type,
+                    const GesturesProp* device_mouse_property,
+                    const GesturesProp* device_touchpad_property) {
+  // Get the device type info from gesture properties if they are available.
+  // Otherwise, fallback to the libevdev device info.
+  bool is_mouse = false, is_touchpad = false;
   EvdevClass evdev_class = device->info.evdev_class;
+  if (device_mouse_property) {
+    is_mouse = device_mouse_property->GetBoolValue()[0];
+  } else {
+    is_mouse = (evdev_class == EvdevClassMouse ||
+                evdev_class == EvdevClassMultitouchMouse);
+  }
+  if (device_touchpad_property) {
+    is_touchpad = device_touchpad_property->GetBoolValue()[0];
+  } else {
+    is_touchpad = (evdev_class == EvdevClassTouchpad ||
+                   evdev_class == EvdevClassTouchscreen ||
+                   evdev_class == EvdevClassMultitouchMouse);
+  }
+
   switch (type) {
     case ui::DT_KEYBOARD:
       return (evdev_class == EvdevClassKeyboard);
       break;
     case ui::DT_MOUSE:
-      return (evdev_class == EvdevClassMouse ||
-              evdev_class == EvdevClassMultitouchMouse);
+      return is_mouse;
       break;
     case ui::DT_TOUCHPAD:
-      // Note that the behavior here is different from the inputcontrol script
-      // which actually returns touchscreen devices as well.
-      return (evdev_class == EvdevClassTouchpad);
+      return (!is_mouse) && is_touchpad;
       break;
     case ui::DT_TOUCHSCREEN:
       return (evdev_class == EvdevClassTouchscreen);
       break;
     case ui::DT_MULTITOUCH:
-      return (evdev_class == EvdevClassTouchpad ||
-              evdev_class == EvdevClassTouchscreen ||
-              evdev_class == EvdevClassMultitouchMouse);
+      return is_touchpad;
       break;
     case ui::DT_MULTITOUCH_MOUSE:
-      return (evdev_class == EvdevClassMultitouchMouse);
+      return is_mouse && is_touchpad;
       break;
     case ui::DT_ALL:
       return true;
@@ -855,7 +869,7 @@ bool GesturePropertyProvider::GetDeviceIdsByType(
   bool exists = false;
   DeviceMap::const_iterator it = device_map_.begin();
   for (; it != device_map_.end(); ++it) {
-    if (IsDeviceOfType(it->second, type)) {
+    if (IsDeviceIdOfType(it->first, type)) {
       exists = true;
       if (device_ids)
         device_ids->push_back(it->first);
@@ -869,7 +883,9 @@ bool GesturePropertyProvider::IsDeviceIdOfType(const DeviceId device_id,
   DeviceMap::const_iterator it = device_map_.find(device_id);
   if (it == device_map_.end())
     return false;
-  return IsDeviceOfType(it->second, type);
+  return IsDeviceOfType(it->second, type,
+                        GetProperty(device_id, "Device Mouse"),
+                        GetProperty(device_id, "Device Touchpad"));
 }
 
 GesturesProp* GesturePropertyProvider::GetProperty(const DeviceId device_id,
