@@ -729,3 +729,24 @@ KERNELBASE.dll!ReadFile
 KERNEL32.dll!ReadFile
 *!net::FileStream::Context::ReadAsync
 *!base::internal::RunnableAdapter<>::Run
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/455994
+drmemorylib.dll!replace_operator_delete
+*!IPC::Listener::`vector deleting destructor'
+*!content::RenderFrameImpl::~RenderFrameImpl
+*!content::RenderFrameImpl::`vector deleting destructor'
+*!content::RenderViewImpl::~RenderViewImpl
+*!content::RenderViewImpl::`vector deleting destructor'
+*!scoped_refptr<>::Release
+*!base::internal::BindState<>::`scalar deleting destructor'
+*!scoped_refptr<>::Release
+*!base::internal::CallbackBase::~CallbackBase
+*!base::MessagePumpDefault::Run
+*!base::MessageLoop::RunHandler
+*!base::MessageLoop::Run
+*!content::RendererMain
+*!content::RunNamedProcessTypeMain
+*!content::ContentMainRunnerImpl::Run
+*!content::ContentMain
+*!content::LaunchTests
