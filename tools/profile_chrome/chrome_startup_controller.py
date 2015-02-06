@@ -7,6 +7,7 @@ import re
 import time
 
 from pylib import flag_changer
+from pylib.device import intent
 from pylib.perf import cache_control
 
 from profile_chrome import controllers
@@ -39,7 +40,7 @@ class ChromeStartupTracingController(controllers.BaseController):
             package=self._package_info.package,
             activity=self._package_info.activity,
             data=self._url,
-            extras={'create_new_tab' : True}))
+            extras={'create_new_tab' : True}), blocking=True)
 
   def _TearDownTracing(self):
     changer = flag_changer.FlagChanger(
