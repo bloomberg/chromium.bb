@@ -84,3 +84,4 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
+
