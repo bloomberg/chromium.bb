@@ -246,6 +246,8 @@ component("gfx") {
   } else {
     # Mac doesn't use RenderTextHarfBuzz by default yet.
     sources += [
+      "harfbuzz_font_skia.cc",
+      "harfbuzz_font_skia.h",
       "render_text.cc",
       "render_text.h",
       "render_text_harfbuzz.cc",

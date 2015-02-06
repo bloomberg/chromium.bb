@@ -182,6 +182,8 @@
         'gfx_paths.h',
         'gpu_memory_buffer.cc',
         'gpu_memory_buffer.h',
+        'harfbuzz_font_skia.cc',
+        'harfbuzz_font_skia.h',
         'hud_font.cc',
         'hud_font.h',
         'image/canvas_image_source.cc',
@@ -385,6 +387,8 @@
         }],
         ['OS=="android" or OS=="ios"', {
           'sources!': [
+            'harfbuzz_font_skia.cc',
+            'harfbuzz_font_skia.h',
             'render_text.cc',
             'render_text.h',
             'render_text_harfbuzz.cc',
