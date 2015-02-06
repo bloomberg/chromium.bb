@@ -43,19 +43,6 @@ bool FrameTreeNodeForId(int64 frame_tree_node_id,
   return true;
 }
 
-// Iterate over the FrameTree to reset any node affected by the loss of the
-// given RenderViewHost's process.
-bool ResetNodesForNewProcess(RenderViewHost* render_view_host,
-                             FrameTreeNode* node) {
-  if (render_view_host == node->current_frame_host()->render_view_host()) {
-    // Ensure that if the frame host is reused for a new RenderFrame, it will
-    // set up the Mojo connection with that frame.
-    node->current_frame_host()->InvalidateMojoConnection();
-    node->ResetForNewProcess();
-  }
-  return true;
-}
-
 bool CreateProxyForSiteInstance(const scoped_refptr<SiteInstance>& instance,
                                 FrameTreeNode* node) {
   // If a new frame is created in the current SiteInstance, other frames in
@@ -225,16 +212,6 @@ void FrameTree::CreateProxiesForSiteInstance(
 void FrameTree::ResetForMainFrameSwap() {
   root_->ResetForNewProcess();
   focused_frame_tree_node_id_ = -1;
-}
-
-void FrameTree::RenderProcessGone(RenderViewHost* render_view_host) {
-  // Walk the full tree looking for nodes that may be affected.  Once a frame
-  // crashes, all of its child FrameTreeNodes go away.
-  // Note that the helper function may call ResetForNewProcess on a node, which
-  // clears its children before we iterate over them.  That's ok, because
-  // ForEach does not add a node's children to the queue until after visiting
-  // the node itself.
-  ForEach(base::Bind(&ResetNodesForNewProcess, render_view_host));
 }
 
 RenderFrameHostImpl* FrameTree::GetMainFrame() const {

@@ -48,6 +48,7 @@
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
@@ -445,12 +446,12 @@ bool RenderWidgetHostImpl::IsRenderView() const {
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(InputHostMsg_QueueSyntheticGesture,
                         OnQueueSyntheticGesture)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)

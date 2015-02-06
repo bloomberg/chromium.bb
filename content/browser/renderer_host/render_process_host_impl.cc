@@ -107,6 +107,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/mojo/mojo_messages.h"
@@ -2081,9 +2082,9 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->OnMessageReceived(
-        ViewHostMsg_RenderProcessGone(iter.GetCurrentKey(),
-                                      static_cast<int>(status),
-                                      exit_code));
+        FrameHostMsg_RenderProcessGone(iter.GetCurrentKey(),
+                                       static_cast<int>(status),
+                                       exit_code));
     iter.Advance();
   }
 

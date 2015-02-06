@@ -1070,12 +1070,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_RunModal,
 // a ViewMsg_CreatingNew_ACK.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_RenderViewReady)
 
-// Indicates the renderer process is gone.  This actually is sent by the
-// browser process to itself, but keeps the interface cleaner.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_RenderProcessGone,
-                    int, /* this really is base::TerminationStatus */
-                    int /* exit_code */)
-
 // Sent by the renderer process to request that the browser close the view.
 // This corresponds to the window.close() API, and the browser may ignore
 // this message.  Otherwise, the browser will generates a ViewMsg_Close

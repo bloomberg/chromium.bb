@@ -11,7 +11,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -229,7 +229,7 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   EXPECT_EQ("RenderFrameCreated(23) -> 1: [22: [], 23: []]", activity.GetLog());
 
   // Crash the renderer
-  test_rvh()->OnMessageReceived(ViewHostMsg_RenderProcessGone(
+  main_rfh()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
       0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
   EXPECT_EQ(
       "RenderFrameDeleted(22) -> 1: []\n"

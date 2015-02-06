@@ -890,13 +890,13 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewHostImpl, msg)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnShowView)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunModal, OnRunModal)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
@@ -1061,22 +1061,10 @@ void RenderViewHostImpl::OnRenderViewReady() {
 }
 
 void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
-  // Keep the termination status so we can get at it later when we
-  // need to know why it died.
-  render_view_termination_status_ =
-      static_cast<base::TerminationStatus>(status);
-
-  // Reset frame tree state associated with this process.  This must happen
-  // before RenderViewTerminated because observers expect the subframes of any
-  // affected frames to be cleared first.
-  delegate_->GetFrameTree()->RenderProcessGone(this);
-
-  // Our base class RenderWidgetHost needs to reset some stuff.
-  RendererExited(render_view_termination_status_, exit_code);
-
-  delegate_->RenderViewTerminated(this,
-                                  static_cast<base::TerminationStatus>(status),
-                                  exit_code);
+  // Do nothing, otherwise RenderWidgetHostImpl will assume it is not a
+  // RenderViewHostImpl and destroy itself.
+  // TODO(nasko): Remove this hack once RenderViewHost and RenderWidgetHost are
+  // decoupled.
 }
 
 void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {

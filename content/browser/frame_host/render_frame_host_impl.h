@@ -476,6 +476,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time);
   void OnSwapOutACK();
+  void OnRenderProcessGone(int status, int error_code);
   void OnContextMenu(const ContextMenuParams& params);
   void OnJavaScriptExecuteResponse(int id, const base::ListValue& result);
   void OnFlushVisualStateResponse(uint64 id);

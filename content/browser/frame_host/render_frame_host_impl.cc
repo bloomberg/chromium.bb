@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/process/kill.h"
 #include "base/time/time.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -380,6 +381,9 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
                         OnAccessibilityFindInPageResult)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ToggleFullscreen, OnToggleFullscreen)
+    // The following message is synthetic and doesn't come from RenderFrame, but
+    // from RenderProcessHost.
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -1029,6 +1033,37 @@ bool RenderFrameHostImpl::SuddenTerminationAllowed() const {
 
 void RenderFrameHostImpl::OnSwapOutACK() {
   OnSwappedOut();
+}
+
+void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
+  if (frame_tree_node_->IsMainFrame()) {
+    // Keep the termination status so we can get at it later when we
+    // need to know why it died.
+    render_view_host_->render_view_termination_status_ =
+        static_cast<base::TerminationStatus>(status);
+  }
+
+  SetRenderFrameCreated(false);
+  InvalidateMojoConnection();
+
+  // Reset frame tree state associated with this process.  This must happen
+  // before RenderViewTerminated because observers expect the subframes of any
+  // affected frames to be cleared first.
+  // Note: When a RenderFrameHost is swapped out there is a different one
+  // which is the current host. In this case, the FrameTreeNode state must
+  // not be reset.
+  if (!is_swapped_out())
+    frame_tree_node_->ResetForNewProcess();
+
+  if (frame_tree_node_->IsMainFrame()) {
+    // RenderViewHost/RenderWidgetHost needs to reset some stuff.
+    render_view_host_->RendererExited(
+        render_view_host_->render_view_termination_status_, exit_code);
+
+    render_view_host_->delegate_->RenderViewTerminated(
+        render_view_host_, static_cast<base::TerminationStatus>(status),
+        exit_code);
+  }
 }
 
 void RenderFrameHostImpl::OnSwappedOut() {

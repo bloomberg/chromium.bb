@@ -24,7 +24,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_OpenURL::ID:
     case ViewHostMsg_Focus::ID:
     // Handled by RenderViewHost.
-    case ViewHostMsg_RenderProcessGone::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
     // Handled by WorkerMessageFilter (or by SharedWorkerMessageFilter when
@@ -36,6 +35,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // Handled by RenderFrameHost.
     case FrameHostMsg_BeforeUnload_ACK::ID:
     case FrameHostMsg_SwapOut_ACK::ID:
+    case FrameHostMsg_RenderProcessGone::ID:
     // Frame detach must occur after the RenderView has swapped out.
     case FrameHostMsg_Detach::ID:
     case FrameHostMsg_DomOperationResponse::ID:

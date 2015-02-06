@@ -1426,8 +1426,8 @@ TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
   EXPECT_FALSE(fake_delegate.hide_validation_message_was_called());
 
   // Crash the renderer.
-  contents()->GetMainFrame()->GetRenderViewHost()->OnMessageReceived(
-      ViewHostMsg_RenderProcessGone(
+  contents()->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_RenderProcessGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   // Confirm HideValidationMessage was called.
@@ -1460,8 +1460,8 @@ TEST_F(WebContentsImplTest, CrashExitsFullscreen) {
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
   // Crash the renderer.
-  test_rvh()->OnMessageReceived(
-      ViewHostMsg_RenderProcessGone(
+  main_rfh()->OnMessageReceived(
+      FrameHostMsg_RenderProcessGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   // Confirm fullscreen has exited.
@@ -1866,8 +1866,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
   interstitial->TestDidNavigate(2, interstitial_url);
 
   // Crash the renderer
-  test_rvh()->OnMessageReceived(
-      ViewHostMsg_RenderProcessGone(
+  main_rfh()->OnMessageReceived(
+      FrameHostMsg_RenderProcessGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   // While the interstitial is showing, go back.
@@ -1905,8 +1905,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenNavigate) {
   interstitial->Show();
 
   // Crash the renderer
-  test_rvh()->OnMessageReceived(
-      ViewHostMsg_RenderProcessGone(
+  main_rfh()->OnMessageReceived(
+      FrameHostMsg_RenderProcessGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   interstitial->TestDidNavigate(2, interstitial_url);
@@ -1957,8 +1957,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
   // Before the interstitial has a chance to process its shutdown task,
   // simulate quitting the browser.  This goes through all processes and
   // tells them to destruct.
-  rvh->OnMessageReceived(
-        ViewHostMsg_RenderProcessGone(0, 0, 0));
+  rvh->GetMainFrame()->OnMessageReceived(
+        FrameHostMsg_RenderProcessGone(0, 0, 0));
 
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted);
@@ -2988,8 +2988,8 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
             !AudioStreamMonitor::monitoring_available());
 
   // Crash the renderer.
-  contents()->GetMainFrame()->GetRenderViewHost()->OnMessageReceived(
-      ViewHostMsg_RenderProcessGone(
+  contents()->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_RenderProcessGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   // Verify that all the power save blockers have been released.

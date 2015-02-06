@@ -577,6 +577,12 @@ IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CreateChildFrame,
 // detached from the DOM.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 
+// Indicates the renderer process is gone.  This actually is sent by the
+// browser process to itself, but keeps the interface cleaner.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_RenderProcessGone,
+                    int, /* this really is base::TerminationStatus */
+                    int /* exit_code */)
+
 // Sent by the renderer when the frame becomes focused.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 

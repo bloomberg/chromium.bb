@@ -91,13 +91,6 @@ class CONTENT_EXPORT FrameTree {
   // TODO(creis): Look into how we can remove the need for this method.
   void ResetForMainFrameSwap();
 
-  // Update the frame tree after a process exits.  Any nodes currently using the
-  // given |render_view_host| will lose all their children.
-  // TODO(creis): This should take a RenderProcessHost once RenderFrameHost
-  // knows its process.  Until then, we would just be asking the RenderViewHost
-  // for its process, so we'll skip that step.
-  void RenderProcessGone(RenderViewHost* render_view_host);
-
   // Convenience accessor for the main frame's RenderFrameHostImpl.
   RenderFrameHostImpl* GetMainFrame() const;
 
