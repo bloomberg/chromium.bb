@@ -59,6 +59,8 @@ crbug.com/364417 imported/web-platform-tests/shadow-dom/elements-and-dom-objects
 crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak ]
 crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak ]
 
+crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak ]
+
 crbug.com/366042 fast/history/history-traversal-is-asynchronous.html [ Leak ]
 
 crbug.com/364391 http/tests/misc/acid3.html [ Leak Pass ]
