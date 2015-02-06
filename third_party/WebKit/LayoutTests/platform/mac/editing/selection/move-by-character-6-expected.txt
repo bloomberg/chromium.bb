@@ -26,9 +26,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x24
-        RenderInline {SPAN} at (0,0) size 108x24
-          RenderText {#text} at (0,0) size 108x24
+      RenderBlock {DIV} at (0,0) size 784x28
+        RenderInline {SPAN} at (0,0) size 108x28
+          RenderText {#text} at (0,0) size 108x28
             text run at (0,0) width 38: "foo "
             text run at (37,0) width 38: "bar "
             text run at (74,0) width 34: "baz"
