@@ -900,7 +900,7 @@ bool isLogicalEndOfLine(const VisiblePosition &p)
     return p.isNotNull() && p == logicalEndOfLine(p);
 }
 
-static inline IntPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, int lineDirectionPoint)
+static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, LayoutUnit lineDirectionPoint)
 {
     ASSERT(root);
     RenderBlockFlow& containingBlock = root->block();
@@ -909,12 +909,12 @@ static inline IntPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineB
         absoluteBlockPoint -= containingBlock.scrolledContentOffset();
 
     if (root->block().isHorizontalWritingMode())
-        return IntPoint(lineDirectionPoint - absoluteBlockPoint.x(), root->blockDirectionPointInLine());
+        return LayoutPoint(lineDirectionPoint - absoluteBlockPoint.x(), root->blockDirectionPointInLine());
 
-    return IntPoint(root->blockDirectionPointInLine(), lineDirectionPoint - absoluteBlockPoint.y());
+    return LayoutPoint(root->blockDirectionPointInLine(), lineDirectionPoint - absoluteBlockPoint.y());
 }
 
-VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, int lineDirectionPoint, EditableType editableType)
+VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.deprecatedNode();
@@ -952,7 +952,7 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, int
 
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
-        IntPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
+        LayoutPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
         LayoutObject& renderer = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->renderer();
         Node* node = renderer.node();
         if (node && editingIgnoresContent(node))
@@ -969,7 +969,7 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, int
     return VisiblePosition(firstPositionInNode(rootElement), DOWNSTREAM);
 }
 
-VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, int lineDirectionPoint, EditableType editableType)
+VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.deprecatedNode();
@@ -1010,7 +1010,7 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, int lin
 
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
-        IntPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
+        LayoutPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
         LayoutObject& renderer = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->renderer();
         Node* node = renderer.node();
         if (node && editingIgnoresContent(node))
@@ -1261,7 +1261,7 @@ bool isEndOfParagraph(const VisiblePosition &pos, EditingBoundaryCrossingRule bo
     return pos.isNotNull() && pos == endOfParagraph(pos, boundaryCrossingRule);
 }
 
-VisiblePosition previousParagraphPosition(const VisiblePosition& p, int x)
+VisiblePosition previousParagraphPosition(const VisiblePosition& p, LayoutUnit x)
 {
     VisiblePosition pos = p;
     do {
@@ -1273,7 +1273,7 @@ VisiblePosition previousParagraphPosition(const VisiblePosition& p, int x)
     return pos;
 }
 
-VisiblePosition nextParagraphPosition(const VisiblePosition& p, int x)
+VisiblePosition nextParagraphPosition(const VisiblePosition& p, LayoutUnit x)
 {
     VisiblePosition pos = p;
     do {

@@ -65,7 +65,7 @@ public:
     LayoutUnit selectionTopAdjustedForPrecedingBlock() const;
     LayoutUnit selectionHeightAdjustedForPrecedingBlock() const { return max<LayoutUnit>(0, selectionBottom() - selectionTopAdjustedForPrecedingBlock()); }
 
-    int blockDirectionPointInLine() const;
+    LayoutUnit blockDirectionPointInLine() const;
 
     LayoutUnit alignBoxesInBlockDirection(LayoutUnit heightOfBlock, GlyphOverflowAndFallbackFontsMap&, VerticalPositionCache&);
     void setLineTopBottomPositions(LayoutUnit top, LayoutUnit bottom, LayoutUnit topWithLeading, LayoutUnit bottomWithLeading, LayoutUnit selectionBottom = LayoutUnit::min())
@@ -119,8 +119,8 @@ public:
 
     RenderBlockFlow& block() const;
 
-    InlineBox* closestLeafChildForPoint(const IntPoint&, bool onlyEditableLeaves);
-    InlineBox* closestLeafChildForLogicalLeftPosition(int, bool onlyEditableLeaves = false);
+    InlineBox* closestLeafChildForPoint(const LayoutPoint&, bool onlyEditableLeaves);
+    InlineBox* closestLeafChildForLogicalLeftPosition(LayoutUnit, bool onlyEditableLeaves = false);
 
     void appendFloat(RenderBox* floatingBox)
     {

@@ -452,7 +452,7 @@ LayoutUnit RootInlineBox::selectionBottom() const
     return nextTop;
 }
 
-int RootInlineBox::blockDirectionPointInLine() const
+LayoutUnit RootInlineBox::blockDirectionPointInLine() const
 {
     return !block().style()->isFlippedBlocksWritingMode() ? std::max(lineTop(), selectionTop()) : std::min(lineBottom(), selectionBottom());
 }
@@ -467,12 +467,12 @@ static bool isEditableLeaf(InlineBox* leaf)
     return leaf && leaf->renderer().node() && leaf->renderer().node()->hasEditableStyle();
 }
 
-InlineBox* RootInlineBox::closestLeafChildForPoint(const IntPoint& pointInContents, bool onlyEditableLeaves)
+InlineBox* RootInlineBox::closestLeafChildForPoint(const LayoutPoint& pointInContents, bool onlyEditableLeaves)
 {
     return closestLeafChildForLogicalLeftPosition(block().isHorizontalWritingMode() ? pointInContents.x() : pointInContents.y(), onlyEditableLeaves);
 }
 
-InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(int leftPosition, bool onlyEditableLeaves)
+InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(LayoutUnit leftPosition, bool onlyEditableLeaves)
 {
     InlineBox* firstLeaf = firstLeafChild();
     InlineBox* lastLeaf = lastLeafChild();

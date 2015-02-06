@@ -32,6 +32,7 @@
 namespace blink {
 
 class LayoutRect;
+class LayoutUnit;
 class PositionWithAffinity;
 class LayoutObject;
 class Node;
@@ -56,8 +57,8 @@ VisiblePosition nextSentencePosition(const VisiblePosition &);
 // lines
 VisiblePosition startOfLine(const VisiblePosition &);
 VisiblePosition endOfLine(const VisiblePosition &);
-VisiblePosition previousLinePosition(const VisiblePosition&, int lineDirectionPoint, EditableType = ContentIsEditable);
-VisiblePosition nextLinePosition(const VisiblePosition&, int lineDirectionPoint, EditableType = ContentIsEditable);
+VisiblePosition previousLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
+VisiblePosition nextLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
 bool inSameLine(const VisiblePosition &, const VisiblePosition &);
 bool isStartOfLine(const VisiblePosition &);
 bool isEndOfLine(const VisiblePosition &);
@@ -71,8 +72,8 @@ VisiblePosition rightBoundaryOfLine(const VisiblePosition&, TextDirection);
 VisiblePosition startOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 VisiblePosition endOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 VisiblePosition startOfNextParagraph(const VisiblePosition&);
-VisiblePosition previousParagraphPosition(const VisiblePosition &, int x);
-VisiblePosition nextParagraphPosition(const VisiblePosition &, int x);
+VisiblePosition previousParagraphPosition(const VisiblePosition &, LayoutUnit x);
+VisiblePosition nextParagraphPosition(const VisiblePosition &, LayoutUnit x);
 bool isStartOfParagraph(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 bool isEndOfParagraph(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 bool inSameParagraph(const VisiblePosition &, const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
