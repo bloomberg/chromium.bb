@@ -64,64 +64,6 @@ TEST_F(HyperlinkTextViewTest, TestViewConfiguration) {
   EXPECT_FALSE([view_ isVerticallyResizable]);
 }
 
-TEST_F(HyperlinkTextViewTest, LinkInsertion) {
-  // Test that setMessage:withLink:... inserts the link text.
-  [view_ setMessageAndLink:@"This is a short text message"
-                  withLink:@"alarmingly "
-                  atOffset:10
-                      font:GetDefaultFont()
-              messageColor:[NSColor blackColor]
-                 linkColor:[NSColor blueColor]];
-  EXPECT_NSEQ(@"This is a alarmingly short text message",
-              [[view_ textStorage] string]);
-
-  // Test insertion at end - most common use case.
-  NSString* message=@"This is another test message ";
-  [view_ setMessageAndLink:message
-                  withLink:@"with link"
-                  atOffset:[message length]
-                      font:GetDefaultFont()
-              messageColor:[NSColor blackColor]
-                 linkColor:[NSColor blueColor]];
-  EXPECT_NSEQ(@"This is another test message with link",
-              [[view_ textStorage] string]);
-}
-
-TEST_F(HyperlinkTextViewTest, AttributesForMessageWithLink) {
-  // Verifies text attributes are set as expected for setMessageWithLink:...
-  [view_ setMessageAndLink:@"aaabbbbb"
-                  withLink:@"xxxx"
-                  atOffset:3
-                      font:GetDefaultFont()
-              messageColor:[NSColor blackColor]
-                 linkColor:[NSColor blueColor]];
-
-  NSDictionary* attributes;
-  NSRange rangeLimit = NSMakeRange(0, 12);
-  NSRange range;
-  attributes = [[view_ textStorage] attributesAtIndex:0
-                                longestEffectiveRange:&range
-                                              inRange:rangeLimit];
-  EXPECT_EQ(0U, range.location);
-  EXPECT_EQ(3U, range.length);
-  EXPECT_NSEQ(GetDefaultTextAttributes(), attributes);
-
-  attributes = [[view_ textStorage] attributesAtIndex:3
-                                longestEffectiveRange:&range
-                                              inRange:rangeLimit];
-  EXPECT_EQ(3U, range.location);
-  EXPECT_EQ(4U, range.length);
-  EXPECT_NSEQ(GetDefaultLinkAttributes(), attributes);
-
-  attributes = [[view_ textStorage] attributesAtIndex:7
-                                longestEffectiveRange:&range
-                                              inRange:rangeLimit];
-  EXPECT_EQ(7U, range.location);
-  EXPECT_EQ(5U, range.length);
-  EXPECT_NSEQ(GetDefaultTextAttributes(), attributes);
-
-}
-
 TEST_F(HyperlinkTextViewTest, TestSetMessage) {
   // Verifies setMessage sets text and attributes properly.
   NSString* message = @"Test message";

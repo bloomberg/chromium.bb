@@ -101,22 +101,6 @@ const float kTextBaselineShift = -1.0;
     [[NSCursor arrowCursor] set];
 }
 
-- (void)setMessageAndLink:(NSString*)message
-                 withLink:(NSString*)link
-                 atOffset:(NSUInteger)linkOffset
-                     font:(NSFont*)font
-             messageColor:(NSColor*)messageColor
-                linkColor:(NSColor*)linkColor {
-  NSMutableString* finalMessage = [NSMutableString stringWithString:message];
-  [finalMessage insertString:link atIndex:linkOffset];
-  [self setMessage:finalMessage withFont:font messageColor:messageColor];
-  if ([link length] != 0) {
-    [self addLinkRange:NSMakeRange(linkOffset, [link length])
-              withName:@""
-             linkColor:linkColor];
-  }
-}
-
 - (void)setMessage:(NSString*)message
           withFont:(NSFont*)font
       messageColor:(NSColor*)messageColor {

@@ -92,12 +92,17 @@ NSTextView* AddTextView(
       font_style).GetNativeFont();
   NSColor* linkColor = gfx::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor());
-  [textView setMessageAndLink:base::SysUTF16ToNSString(message)
-                     withLink:base::SysUTF16ToNSString(link)
-                     atOffset:offset
-                         font:font
-                 messageColor:[NSColor blackColor]
-                    linkColor:linkColor];
+  NSMutableString* finalMessage = [NSMutableString stringWithString:
+                                             base::SysUTF16ToNSString(message)];
+  NSString* linkString = base::SysUTF16ToNSString(link);
+
+  [finalMessage insertString:linkString atIndex:offset];
+  [textView setMessage:finalMessage
+              withFont:font
+          messageColor:[NSColor blackColor]];
+  [textView addLinkRange:NSMakeRange(offset, [linkString length])
+                withName:@""
+               linkColor:linkColor];
   RemoveUnderlining(textView, offset, link.size());
   [textView setDelegate:delegate];
   [parent addSubview:textView];

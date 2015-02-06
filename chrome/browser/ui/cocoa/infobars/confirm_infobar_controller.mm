@@ -108,20 +108,22 @@
 
   // Set the text and link.
   NSString* message = base::SysUTF16ToNSString(delegate->GetMessageText());
-  base::string16 link = delegate->GetLinkText();
-  if (!link.empty()) {
+  NSString* link = base::SysUTF16ToNSString(delegate->GetLinkText());
+  NSUInteger linkOffset = [message length];
+  NSUInteger linkLength = [link length];
+  if (linkLength != 0) {
     // Add spacing between the label and the link.
-    message = [message stringByAppendingString:@"   "];
+    message = [message stringByAppendingFormat:@"   %@", link];
   }
   NSFont* font = [NSFont labelFontOfSize:
       [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
   HyperlinkTextView* view = (HyperlinkTextView*)label_.get();
-  [view setMessageAndLink:message
-                 withLink:base::SysUTF16ToNSString(link)
-                 atOffset:[message length]
-                     font:font
-             messageColor:[NSColor blackColor]
-                linkColor:[NSColor blueColor]];
+  [view setMessage:message withFont:font messageColor:[NSColor blackColor]];
+  if (linkLength != 0) {
+    [view addLinkRange:NSMakeRange(linkOffset, linkLength)
+              withName:@""
+             linkColor:[NSColor blueColor]];
+  }
 }
 
 // Called when someone clicks on the link in the infobar.  This method

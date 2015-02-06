@@ -166,14 +166,17 @@ NSTextView* BuildFixedWidthTextViewWithLink(
       [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
   NSColor* link_color = gfx::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor());
+  NSMutableString* finalMessage =
+      [NSMutableString stringWithFormat:@"%@\n", message];
+  [finalMessage insertString:link atIndex:link_offset];
   // Adds a padding row at the bottom, because |boundingRectWithSize| below cuts
   // off the last row sometimes.
-  [text_view setMessageAndLink:[NSString stringWithFormat:@"%@\n", message]
-                      withLink:link
-                      atOffset:link_offset
-                          font:[NSFont labelFontOfSize:kTextFontSize]
-                  messageColor:[NSColor blackColor]
-                     linkColor:link_color];
+  [text_view setMessage:finalMessage
+               withFont:[NSFont labelFontOfSize:kTextFontSize]
+           messageColor:[NSColor blackColor]];
+  [text_view addLinkRange:NSMakeRange(link_offset, [link length])
+                 withName:@""
+                linkColor:link_color];
 
   // Removes the underlining from the link.
   [text_view setLinkTextAttributes:nil];

@@ -20,16 +20,6 @@ UI_BASE_EXPORT
 
 @property(nonatomic, assign) BOOL drawsBackgroundUsingSuperview;
 
-// Convenience function that sets the |HyperlinkTextView| contents to the
-// specified |message| with a hypertext style |link| inserted at |linkOffset|.
-// Uses the supplied |font|, |messageColor|, and |linkColor|.
-- (void)setMessageAndLink:(NSString*)message
-                 withLink:(NSString*)link
-                 atOffset:(NSUInteger)linkOffset
-                     font:(NSFont*)font
-             messageColor:(NSColor*)messageColor
-                linkColor:(NSColor*)linkColor;
-
 // Set the |message| displayed by the HyperlinkTextView, using |font| and
 // |messageColor|.
 - (void)setMessage:(NSString*)message

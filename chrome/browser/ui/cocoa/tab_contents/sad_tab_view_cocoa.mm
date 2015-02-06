@@ -176,16 +176,17 @@ static const CGFloat kTabHorzMargin = 13;
 
   // Get the help text and link.
   size_t linkOffset = 0;
+  const base::string16 helpLink =
+      l10n_util::GetStringUTF16(IDS_SAD_TAB_HELP_LINK);
   NSString* helpMessage(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-      IDS_SAD_TAB_HELP_MESSAGE, base::string16(), &linkOffset)));
-  NSString* helpLink = l10n_util::GetNSString(IDS_SAD_TAB_HELP_LINK);
+      IDS_SAD_TAB_HELP_MESSAGE, helpLink, &linkOffset)));
   NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-  [help_ setMessageAndLink:helpMessage
-                  withLink:helpLink
-                  atOffset:linkOffset
-                      font:font
-              messageColor:[NSColor whiteColor]
-                 linkColor:[NSColor whiteColor]];
+  [help_ setMessage:helpMessage
+           withFont:font
+       messageColor:[NSColor whiteColor]];
+  [help_ addLinkRange:NSMakeRange(linkOffset, helpLink.length())
+             withName:@""
+            linkColor:[NSColor whiteColor]];
   [help_ setAlignment:NSCenterTextAlignment];
 }
 

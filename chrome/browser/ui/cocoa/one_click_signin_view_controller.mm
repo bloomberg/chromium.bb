@@ -232,6 +232,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   // Set the text.
   NSString* learnMoreText = l10n_util::GetNSStringWithFixup(IDS_LEARN_MORE);
   NSString* messageText;
+  NSUInteger learnMoreOffset = 0;
 
   ui::ResourceBundle::FontStyle fontStyle = isSyncDialog_ ?
       chrome_style::kTextFontStyle : ui::ResourceBundle::SmallFont;
@@ -243,20 +244,21 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   if (isSyncDialog_) {
     messageText = l10n_util::GetNSStringFWithFixup(
         IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW, email_);
-    messageText = [messageText stringByAppendingString:@" "];
+    learnMoreOffset = [messageText length];
+    messageText = [messageText stringByAppendingFormat:@" %@", learnMoreText];
   } else {
-    messageText = @"";
+    messageText = learnMoreText;
   }
 
   NSColor* linkColor =
       gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-  [informativeTextView_ setMessageAndLink:messageText
-                                 withLink:learnMoreText
-                                 atOffset:[messageText length]
-                                     font:font
-                             messageColor:[NSColor blackColor]
-                                linkColor:linkColor];
-
+  [informativeTextView_ setMessage:messageText
+                          withFont:font
+                      messageColor:[NSColor blackColor]];
+  [informativeTextView_ addLinkRange:NSMakeRange(learnMoreOffset,
+                                                 [learnMoreText length])
+                            withName:@""
+                           linkColor:linkColor];
 
   // Make the "Advanced" link font as large as the "Learn More" link.
   [[advancedLink_ cell] setFont:font];
