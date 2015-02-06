@@ -123,6 +123,7 @@ public:
     void setImageColorProfilesEnabled(bool);
     void setImageAnimationPolicy(const String&, ExceptionState&);
     void setScrollTopLeftInteropEnabled(bool);
+    void setLinkHeaderEnabled(bool);
 
     virtual void trace(Visitor*) override;
 

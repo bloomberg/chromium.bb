@@ -48,6 +48,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/LinkLoader.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/FrameTree.h"
@@ -409,6 +410,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT_UNUSED(handle, !handle);
     RefPtr<DocumentLoader> protect(this);
+    ASSERT(frame());
 
     m_applicationCacheHost->didReceiveResponseForMainResource(response);
 
@@ -440,6 +442,9 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         cancelLoadAfterXFrameOptionsOrCSPDenied(response);
         return;
     }
+
+    if (resource && resource->type() == Resource::MainResource)
+        LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), frame()->document());
 
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 

@@ -73,6 +73,7 @@ InputModeAttribute status=experimental
 KeyboardEventCode status=experimental
 LangAttributeAwareFormControlUI
 LinkPreconnect status=experimental
+LinkHeader
 LocalStorage status=stable
 FractionalScrollOffsets status=stable
 GlobalFetch status=experimental

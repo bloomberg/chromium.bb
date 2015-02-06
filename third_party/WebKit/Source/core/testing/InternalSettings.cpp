@@ -474,6 +474,11 @@ void InternalSettings::setScrollTopLeftInteropEnabled(bool enabled)
     RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(enabled);
 }
 
+void InternalSettings::setLinkHeaderEnabled(bool enabled)
+{
+    RuntimeEnabledFeatures::setLinkHeaderEnabled(enabled);
+}
+
 void InternalSettings::setDnsPrefetchLogging(bool enabled, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();

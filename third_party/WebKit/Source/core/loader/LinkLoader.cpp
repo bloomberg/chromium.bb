@@ -113,7 +113,7 @@ void LinkLoader::didSendDOMContentLoadedForPrerender()
     m_client->didSendDOMContentLoadedForLinkPrerender();
 }
 
-bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicString& crossOriginMode, const String& type, const KURL& href, Document& document)
+static void dnsPrefetchIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document)
 {
     if (relAttribute.isDNSPrefetch()) {
         Settings* settings = document.settings();
@@ -125,6 +125,28 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
             prefetchDNS(href.host());
         }
     }
+}
+
+bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* document)
+{
+    if (!document)
+        return false;
+    LinkHeaderSet headerSet(headerValue);
+    for (auto& header : headerSet) {
+        if (!header.valid() || header.url().isEmpty() || header.rel().isEmpty())
+            return false;
+        LinkRelAttribute relAttribute(header.rel());
+        KURL url = document->completeURL(header.url());
+        dnsPrefetchIfNeeded(relAttribute, url, *document);
+
+        // FIXME: Add more supported headers as needed.
+    }
+    return true;
+}
+
+bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicString& crossOriginMode, const String& type, const KURL& href, Document& document)
+{
+    dnsPrefetchIfNeeded(relAttribute, href, document);
 
     if (relAttribute.isPreconnect() && href.isValid()) {
         preconnect(href);
