@@ -19,7 +19,7 @@ namespace printing {
 class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
  public:
   explicit PrintingContextAndroid(Delegate* delegate);
-  virtual ~PrintingContextAndroid();
+  ~PrintingContextAndroid() override;
 
   // Called when the page is successfully written to a PDF using the file
   // descriptor specified, or when the printing operation failed.
@@ -33,23 +33,22 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   void ShowSystemDialogDone(JNIEnv* env, jobject obj);
 
   // PrintingContext implementation.
-  virtual void AskUserForSettings(
-      int max_pages,
-      bool has_selection,
-      bool is_scripted,
-      const PrintSettingsCallback& callback) override;
-  virtual Result UseDefaultSettings() override;
-  virtual gfx::Size GetPdfPaperSizeDeviceUnits() override;
-  virtual Result UpdatePrinterSettings(bool external_preview,
-                                       bool show_system_dialog) override;
-  virtual Result InitWithSettings(const PrintSettings& settings) override;
-  virtual Result NewDocument(const base::string16& document_name) override;
-  virtual Result NewPage() override;
-  virtual Result PageDone() override;
-  virtual Result DocumentDone() override;
-  virtual void Cancel() override;
-  virtual void ReleaseContext() override;
-  virtual gfx::NativeDrawingContext context() const override;
+  void AskUserForSettings(int max_pages,
+                          bool has_selection,
+                          bool is_scripted,
+                          const PrintSettingsCallback& callback) override;
+  Result UseDefaultSettings() override;
+  gfx::Size GetPdfPaperSizeDeviceUnits() override;
+  Result UpdatePrinterSettings(bool external_preview,
+                               bool show_system_dialog) override;
+  Result InitWithSettings(const PrintSettings& settings) override;
+  Result NewDocument(const base::string16& document_name) override;
+  Result NewPage() override;
+  Result PageDone() override;
+  Result DocumentDone() override;
+  void Cancel() override;
+  void ReleaseContext() override;
+  gfx::NativeDrawingContext context() const override;
 
   // Registers JNI bindings for RegisterContext.
   static bool RegisterPrintingContext(JNIEnv* env);

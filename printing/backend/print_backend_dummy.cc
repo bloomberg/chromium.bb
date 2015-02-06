@@ -48,7 +48,7 @@ class DummyPrintBackend : public PrintBackend {
   }
 
  private:
-  ~DummyPrintBackend() {}
+  ~DummyPrintBackend() override {}
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrintBackend);
 };
