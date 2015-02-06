@@ -113,6 +113,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
  private:
   friend class RenderTextTest;
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_RunDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByEmoji);
@@ -120,6 +121,13 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemePartition);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_NonExistentFont);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
+
+  // Specify the width of a glyph for test. The width of glyphs is very
+  // platform-dependent and environment-dependent. Otherwise multiline test
+  // will become really flaky.
+  void set_glyph_width_for_test(uint8 test_width) {
+    glyph_width_for_test_ = test_width;
+  }
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
@@ -167,6 +175,12 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // ICU grapheme iterator for the layout text. Valid when |!needs_layout_|. Can
   // be NULL in case of an error.
   scoped_ptr<base::i18n::BreakIterator> grapheme_iterator_;
+
+  // The total size of the layouted text.
+  SizeF total_size_;
+
+  // Fixed width of glyphs. This should only be set in test environments.
+  uint8 glyph_width_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzz);
 };
