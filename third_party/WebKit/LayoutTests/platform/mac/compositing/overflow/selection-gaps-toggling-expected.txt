@@ -22,7 +22,7 @@ Lorem Ipsum
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 56],
+          "position": [8, 62],
           "bounds": [300, 500],
           "drawsContent": true,
           "children": [
@@ -60,70 +60,70 @@ Lorem Ipsum
           ]
         },
         {
-          "position": [23, 71],
+          "position": [23, 77],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 136],
+          "position": [23, 142],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 201],
+          "position": [23, 207],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 266],
+          "position": [23, 272],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 331],
+          "position": [23, 337],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 396],
+          "position": [23, 402],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 461],
+          "position": [23, 467],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 526],
+          "position": [23, 532],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 591],
+          "position": [23, 597],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 656],
+          "position": [23, 662],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
@@ -138,15 +138,15 @@ Lorem Ipsum
 *** iteration 2: ***
 
 {
-  "bounds": [785, 2194],
+  "bounds": [785, 2448],
   "children": [
     {
-      "bounds": [785, 2194],
+      "bounds": [785, 2448],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 56],
+          "position": [8, 62],
           "bounds": [300, 500],
           "drawsContent": true,
           "children": [
@@ -187,70 +187,70 @@ Lorem Ipsum
           ]
         },
         {
-          "position": [23, 71],
+          "position": [23, 77],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 136],
+          "position": [23, 142],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 201],
+          "position": [23, 207],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 266],
+          "position": [23, 272],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 331],
+          "position": [23, 337],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 396],
+          "position": [23, 402],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 461],
+          "position": [23, 467],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 526],
+          "position": [23, 532],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 591],
+          "position": [23, 597],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 656],
+          "position": [23, 662],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
@@ -265,15 +265,15 @@ Lorem Ipsum
 *** iteration 3: ***
 
 {
-  "bounds": [785, 3845],
+  "bounds": [785, 4353],
   "children": [
     {
-      "bounds": [785, 3845],
+      "bounds": [785, 4353],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 56],
+          "position": [8, 62],
           "bounds": [300, 500],
           "drawsContent": true,
           "children": [
@@ -313,70 +313,70 @@ Lorem Ipsum
           ]
         },
         {
-          "position": [23, 71],
+          "position": [23, 77],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 136],
+          "position": [23, 142],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 201],
+          "position": [23, 207],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 266],
+          "position": [23, 272],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 331],
+          "position": [23, 337],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 396],
+          "position": [23, 402],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 461],
+          "position": [23, 467],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 526],
+          "position": [23, 532],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 591],
+          "position": [23, 597],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FFA500"
         },
         {
-          "position": [23, 656],
+          "position": [23, 662],
           "bounds": [100, 50],
           "contentsOpaque": true,
           "drawsContent": true,

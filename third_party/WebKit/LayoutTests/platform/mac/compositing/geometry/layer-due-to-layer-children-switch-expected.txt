@@ -28,7 +28,7 @@ Second dump layer tree:
           "drawsContent": true,
           "children": [
             {
-              "position": [121, 37],
+              "position": [121, 39],
               "bounds": [250, 100],
               "contentsOpaque": true,
               "drawsContent": true,
@@ -49,10 +49,10 @@ Second dump layer tree:
 
 Third dump layer tree:
 {
-  "bounds": [785, 824],
+  "bounds": [785, 916],
   "children": [
     {
-      "bounds": [785, 824],
+      "bounds": [785, 916],
       "contentsOpaque": true,
       "drawsContent": true
     }

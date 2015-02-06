@@ -2,22 +2,22 @@ This layer should not be composited.
 This layer should not be composited.
 This layer should be composited.
 {
-  "bounds": [785, 603],
+  "bounds": [785, 611],
   "children": [
     {
-      "bounds": [785, 603],
+      "bounds": [785, 611],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
-          "position": [18, 386],
-          "bounds": [342, 178],
+          "position": [18, 390],
+          "bounds": [342, 180],
           "shouldFlattenTransform": false,
           "3dRenderingContext": 1,
           "drawsContent": true,
           "children": [
             {
-              "position": [31, 47],
+              "position": [31, 49],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "3dRenderingContext": 1,
