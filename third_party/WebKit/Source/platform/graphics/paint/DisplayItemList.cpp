@@ -15,7 +15,7 @@
 
 namespace blink {
 
-const PaintList& DisplayItemList::paintList()
+const PaintList& DisplayItemList::paintList() const
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     ASSERT(m_newPaints.isEmpty());
@@ -30,11 +30,27 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
         ASSERT(!m_newPaints.isEmpty());
         if (m_newPaints.last()->isBegin()) {
             ASSERT(displayItem->isEndAndPairedWith(*m_newPaints.last()));
-            // Remove empty pairs.
+            // Remove the beginning display item of this empty pair.
             m_newPaints.removeLast();
+#if ENABLE(ASSERT)
+            if (RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
+                // Also remove the index pointing to the removed display item.
+                Vector<size_t>& indices = m_newDisplayItemIndicesByClient.find(displayItem->client())->value;
+                if (!indices.isEmpty() && indices.last() == m_newPaints.size())
+                    indices.removeLast();
+            }
+#endif
             return;
         }
     }
+
+#if ENABLE(ASSERT)
+    if (RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
+        // This will check for duplicated display item ids.
+        appendDisplayItem(m_newPaints, m_newDisplayItemIndicesByClient, displayItem);
+        return;
+    }
+#endif
     m_newPaints.append(displayItem);
 }
 
@@ -60,41 +76,50 @@ bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
     return RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled() && m_cachedDisplayItemIndicesByClient.contains(client);
 }
 
-size_t DisplayItemList::findMatchingCachedItem(const DisplayItem& displayItem)
+size_t DisplayItemList::findMatchingItem(const DisplayItem& displayItem, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const PaintList& list)
 {
-    ASSERT(displayItem.isCached() || displayItem.isSubtreeCached());
-    ASSERT(clientCacheIsValid(displayItem.client()));
+    DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(displayItem.client());
+    if (it == displayItemIndicesByClient.end())
+        return kNotFound;
 
-    Vector<size_t>& indices = m_cachedDisplayItemIndicesByClient.find(displayItem.client())->value;
-    DisplayItem::Type matchingType = displayItem.isCached()
-        ? DisplayItem::cachedTypeToDrawingType(displayItem.type())
-        : DisplayItem::subtreeCachedTypeToBeginSubtreeType(displayItem.type());
-
+    const Vector<size_t>& indices = it->value;
     for (size_t index : indices) {
-        OwnPtr<DisplayItem>& existingItem = m_paintList[index];
+        const OwnPtr<DisplayItem>& existingItem = list[index];
         ASSERT(!existingItem || existingItem->client() == displayItem.client());
         if (existingItem && existingItem->type() == matchingType)
             return index;
     }
 
-    // Previously the client generated a empty picture or an empty subtree
-    // which is not stored in the cache.
     return kNotFound;
 }
 
 void DisplayItemList::appendDisplayItem(PaintList& list, DisplayItemIndicesByClientMap& displayItemIndicesByClient, WTF::PassOwnPtr<DisplayItem> displayItem)
 {
+    // Our updatePaintList() algorithm requires unique display item ids.
+    ASSERT(findMatchingItem(*displayItem, displayItem->type(), displayItemIndicesByClient, list) == kNotFound);
+
     DisplayItemIndicesByClientMap::iterator it = displayItemIndicesByClient.find(displayItem->client());
     Vector<size_t>& indices = it == displayItemIndicesByClient.end() ?
         displayItemIndicesByClient.add(displayItem->client(), Vector<size_t>()).storedValue->value : it->value;
-    indices.append(list.size());
+
+    // Only need to index DrawingDisplayItems and BeginSubtreeDisplayItems.
+    if (displayItem->isDrawing() || displayItem->isBeginSubtree())
+        indices.append(list.size());
 
     list.append(displayItem);
 }
 
 void DisplayItemList::copyCachedItems(const DisplayItem& displayItem, PaintList& list, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
-    size_t index = findMatchingCachedItem(displayItem);
+    ASSERT(displayItem.isCached() || displayItem.isSubtreeCached());
+    ASSERT(clientCacheIsValid(displayItem.client()));
+
+    DisplayItem::Type matchingType = displayItem.isCached()
+        ? DisplayItem::cachedTypeToDrawingType(displayItem.type())
+        : DisplayItem::subtreeCachedTypeToBeginSubtreeType(displayItem.type());
+    size_t index = findMatchingItem(displayItem, matchingType, m_cachedDisplayItemIndicesByClient, m_paintList);
+    // Previously the client generated a empty picture or an empty subtree
+    // which is not stored in the cache.
     if (index == kNotFound)
         return;
 
@@ -125,6 +150,10 @@ void DisplayItemList::copyCachedItems(const DisplayItem& displayItem, PaintList&
 // and the average number of (Drawing|BeginSubtree)DisplayItems per client.
 void DisplayItemList::updatePaintList()
 {
+#if ENABLE(ASSERT)
+    m_newDisplayItemIndicesByClient.clear();
+#endif
+
     if (!RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
         m_paintList.clear();
         m_paintList.swap(m_newPaints);

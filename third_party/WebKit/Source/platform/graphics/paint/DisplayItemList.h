@@ -25,7 +25,8 @@ public:
 
     void endNewPaints() { updatePaintList(); }
 
-    const PaintList& paintList();
+    const PaintList& paintList() const;
+
     void add(WTF::PassOwnPtr<DisplayItem>);
 
     void invalidate(DisplayItemClient);
@@ -55,13 +56,19 @@ private:
     // Indices into PaintList of all DrawingDisplayItems and BeginSubtreeDisplayItems of each client.
     typedef HashMap<DisplayItemClient, Vector<size_t>> DisplayItemIndicesByClientMap;
 
-    size_t findMatchingCachedItem(const DisplayItem&);
+    static size_t findMatchingItem(const DisplayItem&, DisplayItem::Type, const DisplayItemIndicesByClientMap&, const PaintList&);
     static void appendDisplayItem(PaintList&, DisplayItemIndicesByClientMap&, WTF::PassOwnPtr<DisplayItem>);
     void copyCachedItems(const DisplayItem&, PaintList&, DisplayItemIndicesByClientMap&);
 
     PaintList m_paintList;
     DisplayItemIndicesByClientMap m_cachedDisplayItemIndicesByClient;
     PaintList m_newPaints;
+#if ENABLE(ASSERT)
+    // This is used to check duplicated ids during add(). We could also check during
+    // updatePaintList(), but checking during add() helps developer easily find where
+    // the duplicated ids are from.
+    DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
+#endif
 };
 
 } // namespace blink
