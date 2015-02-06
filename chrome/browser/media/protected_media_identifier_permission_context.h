@@ -9,6 +9,8 @@
 #include "components/content_settings/core/common/permission_request_id.h"
 
 #if defined(OS_CHROMEOS)
+#include <map>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
@@ -58,6 +60,7 @@ class ProtectedMediaIdentifierPermissionContext
 
 #if defined(OS_CHROMEOS)
   void OnPlatformVerificationResult(
+      content::WebContents* web_contents,
       const PermissionRequestID& id,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
@@ -65,11 +68,13 @@ class ProtectedMediaIdentifierPermissionContext
       chromeos::attestation::PlatformVerificationFlow::ConsentResponse
           response);
 
-  // ID for the pending permission request. Invalid when no request is pending,
-  // or the request has been canceled.
-  PermissionRequestID pending_id_;
-
-  views::Widget* widget_;
+  // |this| is shared among multiple WebContents, so we could receive multiple
+  // permission requests. This map tracks all pending requests. Note that we
+  // only allow one request per WebContents.
+  typedef std::map<content::WebContents*,
+                   std::pair<views::Widget*, PermissionRequestID>>
+      PendingRequestMap;
+  PendingRequestMap pending_requests_;
 
   // Must be the last member, to ensure that it will be
   // destroyed first, which will invalidate weak pointers

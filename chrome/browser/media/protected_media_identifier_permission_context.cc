@@ -13,6 +13,8 @@
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_CHROMEOS)
+#include <utility>
+
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -22,22 +24,12 @@ using chromeos::attestation::PlatformVerificationDialog;
 using chromeos::attestation::PlatformVerificationFlow;
 #endif
 
-#if defined(OS_CHROMEOS)
-namespace {
-PermissionRequestID GetInvalidPendingId() {
-  return PermissionRequestID(-1, -1, -1, GURL());
-}
-}
-#endif
-
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER)
 #if defined(OS_CHROMEOS)
       ,
-      pending_id_(GetInvalidPendingId()),
-      widget_(nullptr),
       weak_factory_(this)
 #endif
 {
@@ -86,21 +78,22 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
       break;
   }
 
-  // We only support one prompt and one pending permission request.
+  // Since the dialog is modal, we only support one prompt per |web_contents|.
   // Reject the new one if there is already one pending. See
   // http://crbug.com/447005
-  if (!pending_id_.Equals(GetInvalidPendingId())) {
+  if (pending_requests_.count(web_contents)) {
     callback.Run(false);
     return;
   }
 
-  pending_id_ = id;
-  widget_ = PlatformVerificationDialog::ShowDialog(
+  views::Widget* widget = PlatformVerificationDialog::ShowDialog(
       web_contents, requesting_origin,
       base::Bind(&ProtectedMediaIdentifierPermissionContext::
                      OnPlatformVerificationResult,
-                 weak_factory_.GetWeakPtr(), id, requesting_origin,
-                 embedding_origin, callback));
+                 weak_factory_.GetWeakPtr(), web_contents, id,
+                 requesting_origin, embedding_origin, callback));
+  pending_requests_.insert(
+      std::make_pair(web_contents, std::make_pair(widget, id)));
 #else
   PermissionContextBase::RequestPermission(web_contents, id, requesting_origin,
                                            user_gesture, callback);
@@ -123,15 +116,16 @@ void ProtectedMediaIdentifierPermissionContext::CancelPermissionRequest(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
-  if (!widget_ || !pending_id_.Equals(id))
+  PendingRequestMap::iterator request = pending_requests_.find(web_contents);
+  if (request == pending_requests_.end() || !request->second.second.Equals(id))
     return;
 
   // Close the |widget_|. OnPlatformVerificationResult() will be fired
-  // during this process, but since |pending_id_| is cleared, the callback will
-  // be dropped.
-  pending_id_ = GetInvalidPendingId();
-  widget_->Close();
-  return;
+  // during this process, but since |web_contents| is removed from
+  // |pending_requests_|, the callback will simply be dropped.
+  views::Widget* widget = request->second.first;
+  pending_requests_.erase(request);
+  widget->Close();
 #else
   PermissionContextBase::CancelPermissionRequest(web_contents, id);
 #endif
@@ -181,19 +175,19 @@ bool ProtectedMediaIdentifierPermissionContext::
 
 #if defined(OS_CHROMEOS)
 void ProtectedMediaIdentifierPermissionContext::OnPlatformVerificationResult(
+    content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const BrowserPermissionCallback& callback,
     chromeos::attestation::PlatformVerificationFlow::ConsentResponse response) {
-  DCHECK(widget_);
-  widget_ = nullptr;
-
-  // The request may have been canceled. Drop the callback here.
-  if (!pending_id_.Equals(id))
+  // The request may have been canceled. Drop the callback in that case.
+  PendingRequestMap::iterator request = pending_requests_.find(web_contents);
+  if (request == pending_requests_.end())
     return;
 
-  pending_id_ = GetInvalidPendingId();
+  DCHECK(request->second.second.Equals(id));
+  pending_requests_.erase(request);
 
   if (response == PlatformVerificationFlow::CONSENT_RESPONSE_NONE) {
     // Deny request and do not save to content settings.
