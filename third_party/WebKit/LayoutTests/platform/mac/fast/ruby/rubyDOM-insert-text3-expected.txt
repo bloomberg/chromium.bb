@@ -3,52 +3,52 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 750x16
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 750x18
           text run at (0,0) width 750: "The following is a test for DOM manipulation within <ruby>: Inserting a new text before another text of a ruby base."
-      RenderBlock {P} at (0,32) size 784x16
-        RenderText {#text} at (0,0) size 448x16
+      RenderBlock {P} at (0,34) size 784x18
+        RenderText {#text} at (0,0) size 448x18
           text run at (0,0) width 448: "Both lines should look identical (the first line is the one manipulated)."
-      RenderBlock (anonymous) at (0,64) size 784x32
-        RenderBR {BR} at (0,0) size 0x16
-        RenderBR {BR} at (0,16) size 0x16
-      RenderBlock {P} at (0,112) size 784x25
-        RenderText {#text} at (0,9) size 159x16
-          text run at (0,9) width 159: "<ruby> is defined in the "
-        LayoutRuby (inline) {RUBY} at (0,0) size 112x16
-          LayoutRubyRun (anonymous) at (154.02,9) size 107.45x16
-            LayoutRubyText {RT} at (0,-9) size 107.45x9
-              RenderText {#text} at (0,0) size 108x9
+      RenderBlock (anonymous) at (0,68) size 784x36
+        RenderBR {BR} at (0,0) size 0x18
+        RenderBR {BR} at (0,18) size 0x18
+      RenderBlock {P} at (0,120) size 784x28
+        RenderText {#text} at (0,10) size 159x18
+          text run at (0,10) width 159: "<ruby> is defined in the "
+        LayoutRuby (inline) {RUBY} at (0,0) size 112x18
+          LayoutRubyRun (anonymous) at (154.02,10) size 107.45x18
+            LayoutRubyText {RT} at (0,-10) size 107.45x10
+              RenderText {#text} at (0,0) size 108x10
                 text run at (0,0) width 108: "Hyper-text Markup Language"
-            LayoutRubyBase (anonymous) at (0,0) size 107.45x16
-              RenderText {#text} at (31,0) size 22x16
+            LayoutRubyBase (anonymous) at (0,0) size 107.45x18
+              RenderText {#text} at (31,0) size 22x18
                 text run at (31,0) width 22: "HT"
-              RenderInline {SPAN} at (0,0) size 25x16
-                RenderText {#text} at (52,0) size 25x16
+              RenderInline {SPAN} at (0,0) size 25x18
+                RenderText {#text} at (52,0) size 25x18
                   text run at (52,0) width 25: "ML"
-          LayoutRubyRun (anonymous) at (261.47,9) size 8x16
-            LayoutRubyBase (anonymous) at (0,0) size 8x16
-              RenderText {#text} at (0,0) size 8x16
+          LayoutRubyRun (anonymous) at (261.47,10) size 8x18
+            LayoutRubyBase (anonymous) at (0,0) size 8x18
+              RenderText {#text} at (0,0) size 8x18
                 text run at (0,0) width 8: "5"
-        RenderText {#text} at (269,9) size 37x16
-          text run at (269,9) width 37: " spec."
-      RenderBlock {P} at (0,153) size 784x25
-        RenderText {#text} at (0,9) size 159x16
-          text run at (0,9) width 159: "<ruby> is defined in the "
-        LayoutRuby (inline) {RUBY} at (0,0) size 112x16
-          LayoutRubyRun (anonymous) at (154.02,9) size 107.45x16
-            LayoutRubyText {RT} at (0,-9) size 107.45x9
-              RenderText {#text} at (0,0) size 108x9
+        RenderText {#text} at (269,10) size 37x18
+          text run at (269,10) width 37: " spec."
+      RenderBlock {P} at (0,164) size 784x28
+        RenderText {#text} at (0,10) size 159x18
+          text run at (0,10) width 159: "<ruby> is defined in the "
+        LayoutRuby (inline) {RUBY} at (0,0) size 112x18
+          LayoutRubyRun (anonymous) at (154.02,10) size 107.45x18
+            LayoutRubyText {RT} at (0,-10) size 107.45x10
+              RenderText {#text} at (0,0) size 108x10
                 text run at (0,0) width 108: "Hyper-text Markup Language"
-            LayoutRubyBase (anonymous) at (0,0) size 107.45x16
-              RenderText {#text} at (31,0) size 22x16
+            LayoutRubyBase (anonymous) at (0,0) size 107.45x18
+              RenderText {#text} at (31,0) size 22x18
                 text run at (31,0) width 22: "HT"
-              RenderInline {SPAN} at (0,0) size 25x16
-                RenderText {#text} at (52,0) size 25x16
+              RenderInline {SPAN} at (0,0) size 25x18
+                RenderText {#text} at (52,0) size 25x18
                   text run at (52,0) width 25: "ML"
-          LayoutRubyRun (anonymous) at (261.47,9) size 8x16
-            LayoutRubyBase (anonymous) at (0,0) size 8x16
-              RenderText {#text} at (0,0) size 8x16
+          LayoutRubyRun (anonymous) at (261.47,10) size 8x18
+            LayoutRubyBase (anonymous) at (0,0) size 8x18
+              RenderText {#text} at (0,0) size 8x18
                 text run at (0,0) width 8: "5"
-        RenderText {#text} at (269,9) size 37x16
-          text run at (269,9) width 37: " spec."
+        RenderText {#text} at (269,10) size 37x18
+          text run at (269,10) width 37: " spec."

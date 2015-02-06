@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {DIV} at (0,0) size 784x312
-        RenderText {#text} at (159,142) size 162x16
-          text run at (159,142) width 162: "This should be centered. "
+        RenderText {#text} at (159,140) size 162x18
+          text run at (159,140) width 162: "This should be centered. "
         RenderBR {BR} at (624,154) size 1x0
-        RenderText {#text} at (161,296) size 162x16
-          text run at (161,296) width 162: "This should be centered. "
+        RenderText {#text} at (161,294) size 162x18
+          text run at (161,294) width 162: "This should be centered. "
         RenderBR {BR} at (622,308) size 1x0
 layer at (328,8) size 304x154
   RenderPartObject {IFRAME} at (320.19,0) size 304x154 [border: (2px inset #EEEEEE)]
