@@ -3,220 +3,220 @@ layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 64.00 scrollHeigh
 layer at (0,0) size 785x1029 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1029.27
     RenderBody {BODY} at (8,21.27) size 769x1000
-      RenderBlock {H4} at (0,0) size 769x16
-        RenderText {#text} at (0,0) size 291x16
+      RenderBlock {H4} at (0,0) size 769x18
+        RenderText {#text} at (0,0) size 291x18
           text run at (0,0) width 291: "Safari Fixed / Overflow Hidden Scroll Bug"
-      RenderBlock {PRE} at (0,37.27) size 769x0
-      RenderBlock {PRE} at (0,37.27) size 769x429
-        RenderText {#text} at (0,0) size 258x429
+      RenderBlock {PRE} at (0,39.27) size 769x0
+      RenderBlock {PRE} at (0,39.27) size 769x495
+        RenderText {#text} at (0,0) size 258x495
           text run at (0,0) width 71: "#fixed1 {"
           text run at (70,0) width 1: " "
-          text run at (0,13) width 188: "\x{9}position: fixed;"
-          text run at (187,13) width 1: " "
-          text run at (0,26) width 141: "\x{9}top: 80px;"
-          text run at (140,26) width 1: " "
-          text run at (0,39) width 157: "\x{9}left: 300px;"
-          text run at (156,39) width 1: " "
-          text run at (0,52) width 180: "\x{9}width: 150px; }"
-          text run at (179,52) width 1: " "
-          text run at (0,65) width 71: "#fixed2 {"
-          text run at (70,65) width 1: " "
-          text run at (0,78) width 188: "\x{9}position: fixed;"
-          text run at (187,78) width 1: " "
-          text run at (0,91) width 141: "\x{9}top: 80px;"
-          text run at (140,91) width 1: " "
-          text run at (0,104) width 157: "\x{9}left: 500px;"
-          text run at (156,104) width 1: " "
-          text run at (0,117) width 180: "\x{9}width: 150px; }"
-          text run at (179,117) width 1: " "
-          text run at (0,130) width 71: "#fixed3 {"
-          text run at (70,130) width 1: " "
-          text run at (0,143) width 188: "\x{9}position: fixed;"
-          text run at (187,143) width 1: " "
-          text run at (0,156) width 141: "\x{9}top: 80px;"
-          text run at (140,156) width 1: " "
-          text run at (0,169) width 157: "\x{9}left: 700px;"
-          text run at (156,169) width 1: " "
-          text run at (0,182) width 180: "\x{9}width: 150px; }"
-          text run at (179,182) width 1: " "
-          text run at (0,195) width 133: ".overflowHidden {"
-          text run at (132,195) width 1: " "
-          text run at (0,208) width 211: "\x{9}overflow: hidden; }"
-          text run at (210,208) width 1: " "
-          text run at (0,221) width 86: ".relative {"
-          text run at (85,221) width 1: " "
-          text run at (0,234) width 227: "\x{9}position: relative; }"
-          text run at (226,234) width 1: " "
-          text run at (0,247) width 86: ".absolute {"
-          text run at (85,247) width 1: " "
-          text run at (0,260) width 211: "\x{9}position: absolute;"
-          text run at (210,260) width 1: " "
-          text run at (0,273) width 118: "\x{9}top: 0;"
-          text run at (117,273) width 1: " "
-          text run at (0,286) width 149: "\x{9}right: 0; }"
-          text run at (148,286) width 1: " "
-          text run at (0,299) width 40: "div {"
-          text run at (39,299) width 1: " "
-          text run at (0,312) width 164: "\x{9}padding: 5px;"
-          text run at (163,312) width 1: " "
-          text run at (0,325) width 157: "\x{9}margin: 5px;"
-          text run at (156,325) width 1: " "
-          text run at (0,338) width 258: "\x{9}border: solid 1px #999; }"
-          text run at (257,338) width 1: " "
-          text run at (0,351) width 94: "#veryLarge {"
-          text run at (93,351) width 1: " "
-          text run at (0,364) width 211: "\x{9}position: relative;"
-          text run at (210,364) width 1: " "
-          text run at (0,377) width 172: "\x{9}height:1000px;"
-          text run at (171,377) width 1: " "
-          text run at (0,390) width 180: "\x{9}width:1500px; }"
-          text run at (179,390) width 1: " "
-          text run at (0,403) width 63: "\x{9}"
-          text run at (62,403) width 1: " "
-          text run at (0,416) width 0: " "
-      RenderBlock {P} at (0,482.27) size 769x16
-        RenderText {#text} at (0,0) size 410x16
+          text run at (0,15) width 188: "\x{9}position: fixed;"
+          text run at (187,15) width 1: " "
+          text run at (0,30) width 141: "\x{9}top: 80px;"
+          text run at (140,30) width 1: " "
+          text run at (0,45) width 157: "\x{9}left: 300px;"
+          text run at (156,45) width 1: " "
+          text run at (0,60) width 180: "\x{9}width: 150px; }"
+          text run at (179,60) width 1: " "
+          text run at (0,75) width 71: "#fixed2 {"
+          text run at (70,75) width 1: " "
+          text run at (0,90) width 188: "\x{9}position: fixed;"
+          text run at (187,90) width 1: " "
+          text run at (0,105) width 141: "\x{9}top: 80px;"
+          text run at (140,105) width 1: " "
+          text run at (0,120) width 157: "\x{9}left: 500px;"
+          text run at (156,120) width 1: " "
+          text run at (0,135) width 180: "\x{9}width: 150px; }"
+          text run at (179,135) width 1: " "
+          text run at (0,150) width 71: "#fixed3 {"
+          text run at (70,150) width 1: " "
+          text run at (0,165) width 188: "\x{9}position: fixed;"
+          text run at (187,165) width 1: " "
+          text run at (0,180) width 141: "\x{9}top: 80px;"
+          text run at (140,180) width 1: " "
+          text run at (0,195) width 157: "\x{9}left: 700px;"
+          text run at (156,195) width 1: " "
+          text run at (0,210) width 180: "\x{9}width: 150px; }"
+          text run at (179,210) width 1: " "
+          text run at (0,225) width 133: ".overflowHidden {"
+          text run at (132,225) width 1: " "
+          text run at (0,240) width 211: "\x{9}overflow: hidden; }"
+          text run at (210,240) width 1: " "
+          text run at (0,255) width 86: ".relative {"
+          text run at (85,255) width 1: " "
+          text run at (0,270) width 227: "\x{9}position: relative; }"
+          text run at (226,270) width 1: " "
+          text run at (0,285) width 86: ".absolute {"
+          text run at (85,285) width 1: " "
+          text run at (0,300) width 211: "\x{9}position: absolute;"
+          text run at (210,300) width 1: " "
+          text run at (0,315) width 118: "\x{9}top: 0;"
+          text run at (117,315) width 1: " "
+          text run at (0,330) width 149: "\x{9}right: 0; }"
+          text run at (148,330) width 1: " "
+          text run at (0,345) width 40: "div {"
+          text run at (39,345) width 1: " "
+          text run at (0,360) width 164: "\x{9}padding: 5px;"
+          text run at (163,360) width 1: " "
+          text run at (0,375) width 157: "\x{9}margin: 5px;"
+          text run at (156,375) width 1: " "
+          text run at (0,390) width 258: "\x{9}border: solid 1px #999; }"
+          text run at (257,390) width 1: " "
+          text run at (0,405) width 94: "#veryLarge {"
+          text run at (93,405) width 1: " "
+          text run at (0,420) width 211: "\x{9}position: relative;"
+          text run at (210,420) width 1: " "
+          text run at (0,435) width 172: "\x{9}height:1000px;"
+          text run at (171,435) width 1: " "
+          text run at (0,450) width 180: "\x{9}width:1500px; }"
+          text run at (179,450) width 1: " "
+          text run at (0,465) width 63: "\x{9}"
+          text run at (62,465) width 1: " "
+          text run at (0,480) width 0: " "
+      RenderBlock {P} at (0,550.27) size 769x18
+        RenderText {#text} at (0,0) size 410x18
           text run at (0,0) width 410: "When you scroll this page the following objects will be clipped:"
-      RenderBlock {P} at (0,514.27) size 769x16
-        RenderText {#text} at (0,0) size 757x16
+      RenderBlock {P} at (0,584.27) size 769x18
+        RenderText {#text} at (0,0) size 757x18
           text run at (0,0) width 757: "- (relative objects and overflowHidden objects) inside (overflowHidden objects) inside (fixed objects) will be clipped;"
-      RenderBlock {P} at (0,546.27) size 769x32
-        RenderText {#text} at (0,0) size 733x32
+      RenderBlock {P} at (0,618.27) size 769x36
+        RenderText {#text} at (0,0) size 733x36
           text run at (0,0) width 733: "- (relative objects and overflowHidden objects and absolute objects) inside (fixed/overflowHidden objects) will be"
-          text run at (0,16) width 52: "clipped;"
-      RenderBlock {P} at (0,594.27) size 769x32
-        RenderText {#text} at (0,0) size 731x32
+          text run at (0,18) width 52: "clipped;"
+      RenderBlock {P} at (0,670.27) size 769x36
+        RenderText {#text} at (0,0) size 731x36
           text run at (0,0) width 731: "Nice effect, but not what we want. Tested in Safari Version 2.0.4 (419.3), and WebKit Nightly Build Mon Nov 20"
-          text run at (0,16) width 129: "5:18:23 GMT 2006."
-layer at (305,149) size 162x312
-  RenderBlock (positioned) {DIV} at (305,85) size 162x312 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 150x16
-      RenderText {#text} at (0,0) size 49x16
+          text run at (0,18) width 129: "5:18:23 GMT 2006."
+layer at (305,149) size 162x330
+  RenderBlock (positioned) {DIV} at (305,85) size 162x330 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 150x18
+      RenderText {#text} at (0,0) size 49x18
         text run at (0,0) width 49: "#fixed1"
-    RenderBlock {DIV} at (11,27) size 140x28 [border: (1px solid #999999)]
-      RenderText {#text} at (6,6) size 51x16
+    RenderBlock {DIV} at (11,29) size 140x30 [border: (1px solid #999999)]
+      RenderText {#text} at (6,6) size 51x18
         text run at (6,6) width 51: "no style"
-layer at (316,242) size 140x66 clip at (317,243) size 138x64
-  RenderBlock {DIV} at (11,93) size 140x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 128x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (316,248) size 140x70 clip at (317,249) size 138x68
+  RenderBlock {DIV} at (11,99) size 140x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 128x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-    RenderBlock {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
-      RenderText {#text} at (6,6) size 51x16
+    RenderBlock {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
+      RenderText {#text} at (6,6) size 51x18
         text run at (6,6) width 51: "no style"
-layer at (316,313) size 140x66 clip at (317,314) size 138x64
-  RenderBlock {DIV} at (11,164) size 140x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 128x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (316,323) size 140x70 clip at (317,324) size 138x68
+  RenderBlock {DIV} at (11,174) size 140x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 128x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-layer at (316,384) size 140x66 clip at (317,385) size 138x64
-  RenderBlock {DIV} at (11,235) size 140x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 128x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (316,398) size 140x70 clip at (317,399) size 138x68
+  RenderBlock {DIV} at (11,249) size 140x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 128x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-layer at (327,411) size 118x28 clip at (328,412) size 116x26 scrollWidth 119
-  RenderBlock {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 109x16
+layer at (327,427) size 118x30 clip at (328,428) size 116x28 scrollWidth 119
+  RenderBlock {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 109x18
       text run at (6,6) width 109: ".overflowHidden"
-layer at (316,209) size 140x28
-  RenderBlock (relative positioned) {DIV} at (11,60) size 140x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 52x16
+layer at (316,213) size 140x30
+  RenderBlock (relative positioned) {DIV} at (11,64) size 140x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 52x18
       text run at (6,6) width 52: ".relative"
-layer at (392,155) size 69x28
-  RenderBlock (positioned) {DIV} at (86.69,6) size 69.31x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 58x16
+layer at (392,155) size 69x30
+  RenderBlock (positioned) {DIV} at (86.69,6) size 69.31x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 58x18
       text run at (6,6) width 58: ".absolute"
-layer at (327,340) size 118x28
-  RenderBlock (relative positioned) {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 52x16
+layer at (327,352) size 118x30
+  RenderBlock (relative positioned) {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 52x18
       text run at (6,6) width 52: ".relative"
-layer at (505,149) size 162x312 clip at (506,150) size 160x310 scrollWidth 163
-  RenderBlock (positioned) {DIV} at (505,85) size 162x312 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 150x16
-      RenderText {#text} at (0,0) size 158x16
+layer at (505,149) size 162x330 clip at (506,150) size 160x328 scrollWidth 163
+  RenderBlock (positioned) {DIV} at (505,85) size 162x330 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 150x18
+      RenderText {#text} at (0,0) size 158x18
         text run at (0,0) width 158: "#fixed2.overflowHidden"
-    RenderBlock {DIV} at (11,27) size 140x28 [border: (1px solid #999999)]
-      RenderText {#text} at (6,6) size 51x16
+    RenderBlock {DIV} at (11,29) size 140x30 [border: (1px solid #999999)]
+      RenderText {#text} at (6,6) size 51x18
         text run at (6,6) width 51: "no style"
-layer at (516,242) size 140x66 clip at (517,243) size 138x64
-  RenderBlock {DIV} at (11,93) size 140x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 128x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (516,248) size 140x70 clip at (517,249) size 138x68
+  RenderBlock {DIV} at (11,99) size 140x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 128x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-    RenderBlock {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
-      RenderText {#text} at (6,6) size 51x16
+    RenderBlock {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
+      RenderText {#text} at (6,6) size 51x18
         text run at (6,6) width 51: "no style"
-layer at (516,313) size 140x66 clip at (517,314) size 138x64
-  RenderBlock {DIV} at (11,164) size 140x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 128x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (516,323) size 140x70 clip at (517,324) size 138x68
+  RenderBlock {DIV} at (11,174) size 140x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 128x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-layer at (516,384) size 140x66 clip at (517,385) size 138x64
-  RenderBlock {DIV} at (11,235) size 140x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 128x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (516,398) size 140x70 clip at (517,399) size 138x68
+  RenderBlock {DIV} at (11,249) size 140x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 128x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-layer at (527,411) size 118x28 clip at (528,412) size 116x26 scrollWidth 119
-  RenderBlock {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 109x16
+layer at (527,427) size 118x30 clip at (528,428) size 116x28 scrollWidth 119
+  RenderBlock {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 109x18
       text run at (6,6) width 109: ".overflowHidden"
-layer at (516,209) size 140x28
-  RenderBlock (relative positioned) {DIV} at (11,60) size 140x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 52x16
+layer at (516,213) size 140x30
+  RenderBlock (relative positioned) {DIV} at (11,64) size 140x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 52x18
       text run at (6,6) width 52: ".relative"
-layer at (592,155) size 69x28
-  RenderBlock (positioned) {DIV} at (86.69,6) size 69.31x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 58x16
+layer at (592,155) size 69x30
+  RenderBlock (positioned) {DIV} at (86.69,6) size 69.31x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 58x18
       text run at (6,6) width 58: ".absolute"
-layer at (527,340) size 118x28
-  RenderBlock (relative positioned) {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 52x16
+layer at (527,352) size 118x30
+  RenderBlock (relative positioned) {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 52x18
       text run at (6,6) width 52: ".relative"
-layer at (705,149) size 162x350 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (positioned) {DIV} at (705,85) size 162x350 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 150x16
-      RenderText {#text} at (0,0) size 49x16
+layer at (705,149) size 162x370 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+  RenderBlock (positioned) {DIV} at (705,85) size 162x370 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 150x18
+      RenderText {#text} at (0,0) size 49x18
         text run at (0,0) width 49: "#fixed3"
-layer at (716,176) size 140x312 backgroundClip at (716,176) size 69x312 clip at (717,177) size 68x310 outlineClip at (0,0) size 785x600
-  RenderBlock {DIV} at (11,27) size 140x312 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 128x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (716,178) size 140x330 backgroundClip at (716,178) size 69x330 clip at (717,179) size 68x328 outlineClip at (0,0) size 785x600
+  RenderBlock {DIV} at (11,29) size 140x330 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 128x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-    RenderBlock {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
-      RenderText {#text} at (6,6) size 51x16
+    RenderBlock {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
+      RenderText {#text} at (6,6) size 51x18
         text run at (6,6) width 51: "no style"
-layer at (727,269) size 118x66 backgroundClip at (727,269) size 58x66 clip at (728,270) size 57x64 outlineClip at (717,177) size 68x310
-  RenderBlock {DIV} at (11,93) size 118x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 106x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (727,277) size 118x70 backgroundClip at (727,277) size 58x70 clip at (728,278) size 57x68 outlineClip at (717,179) size 68x328
+  RenderBlock {DIV} at (11,99) size 118x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 106x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-    RenderBlock {DIV} at (11,27) size 96x28 [border: (1px solid #999999)]
-      RenderText {#text} at (6,6) size 51x16
+    RenderBlock {DIV} at (11,29) size 96x30 [border: (1px solid #999999)]
+      RenderText {#text} at (6,6) size 51x18
         text run at (6,6) width 51: "no style"
-layer at (727,340) size 118x66 backgroundClip at (727,340) size 58x66 clip at (728,341) size 57x64 outlineClip at (717,177) size 68x310
-  RenderBlock {DIV} at (11,164) size 118x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 106x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (727,352) size 118x70 backgroundClip at (727,352) size 58x70 clip at (728,353) size 57x68 outlineClip at (717,179) size 68x328
+  RenderBlock {DIV} at (11,174) size 118x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 106x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-layer at (727,411) size 118x66 backgroundClip at (727,411) size 58x66 clip at (728,412) size 57x64 outlineClip at (717,177) size 68x310
-  RenderBlock {DIV} at (11,235) size 118x66 [border: (1px solid #999999)]
-    RenderBlock (anonymous) at (6,6) size 106x16
-      RenderText {#text} at (0,0) size 109x16
+layer at (727,427) size 118x70 backgroundClip at (727,427) size 58x70 clip at (728,428) size 57x68 outlineClip at (717,179) size 68x328
+  RenderBlock {DIV} at (11,249) size 118x70 [border: (1px solid #999999)]
+    RenderBlock (anonymous) at (6,6) size 106x18
+      RenderText {#text} at (0,0) size 109x18
         text run at (0,0) width 109: ".overflowHidden"
-layer at (738,438) size 96x28 backgroundClip at (738,438) size 47x28 clip at (739,439) size 46x26 outlineClip at (728,412) size 57x64 scrollWidth 119
-  RenderBlock {DIV} at (11,27) size 96x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 109x16
+layer at (738,456) size 96x30 backgroundClip at (738,456) size 47x30 clip at (739,457) size 46x28 outlineClip at (728,428) size 57x68 scrollWidth 119
+  RenderBlock {DIV} at (11,29) size 96x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 109x18
       text run at (6,6) width 109: ".overflowHidden"
-layer at (727,236) size 118x28 backgroundClip at (717,177) size 68x310 clip at (717,177) size 68x310 outlineClip at (717,177) size 68x310
-  RenderBlock (relative positioned) {DIV} at (11,60) size 118x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 52x16
+layer at (727,242) size 118x30 backgroundClip at (717,179) size 68x328 clip at (717,179) size 68x328 outlineClip at (717,179) size 68x328
+  RenderBlock (relative positioned) {DIV} at (11,64) size 118x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 52x18
       text run at (6,6) width 52: ".relative"
-layer at (792,155) size 69x28 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (positioned) {DIV} at (86.69,6) size 69.31x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 58x16
+layer at (792,155) size 69x30 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+  RenderBlock (positioned) {DIV} at (86.69,6) size 69.31x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 58x18
       text run at (6,6) width 58: ".absolute"
-layer at (738,367) size 96x28 backgroundClip at (728,341) size 57x64 clip at (728,341) size 57x64 outlineClip at (728,341) size 57x64
-  RenderBlock (relative positioned) {DIV} at (11,27) size 96x28 [border: (1px solid #999999)]
-    RenderText {#text} at (6,6) size 52x16
+layer at (738,381) size 96x30 backgroundClip at (728,353) size 57x68 clip at (728,353) size 57x68 outlineClip at (728,353) size 57x68
+  RenderBlock (relative positioned) {DIV} at (11,29) size 96x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 52x18
       text run at (6,6) width 52: ".relative"
 scrolled to 0,64
