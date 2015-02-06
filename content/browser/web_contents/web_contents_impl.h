@@ -542,7 +542,6 @@ class CONTENT_EXPORT WebContentsImpl
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override;
   bool PreHandleGestureEvent(const blink::WebGestureEvent& event) override;
-  bool HandleGestureEvent(const blink::WebGestureEvent& event) override;
   void DidSendScreenRects(RenderWidgetHostImpl* rwh) override;
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager()
@@ -1136,11 +1135,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Minimum/maximum zoom percent.
   int minimum_zoom_percent_;
   int maximum_zoom_percent_;
-
-  // The raw accumulated zoom value and the actual zoom increments made for an
-  // an in-progress pinch gesture.
-  float totalPinchGestureAmount_;
-  int currentPinchZoomStepDelta_;
 
   // The intrinsic size of the page.
   gfx::Size preferred_size_;

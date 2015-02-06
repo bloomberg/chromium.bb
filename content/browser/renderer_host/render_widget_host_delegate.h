@@ -61,10 +61,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns true if the |event| was handled.
   virtual bool PreHandleGestureEvent(const blink::WebGestureEvent& event);
 
-  // Callback to inform the browser that the renderer did not process the
-  // specified gesture event.  Returns true if the |event| was handled.
-  virtual bool HandleGestureEvent(const blink::WebGestureEvent& event);
-
   // Notifies that screen rects were sent to renderer process.
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) {}
 

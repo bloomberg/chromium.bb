@@ -23,11 +23,6 @@ bool RenderWidgetHostDelegate::PreHandleGestureEvent(
   return false;
 }
 
-bool RenderWidgetHostDelegate::HandleGestureEvent(
-    const blink::WebGestureEvent& event) {
-  return false;
-}
-
 BrowserAccessibilityManager*
     RenderWidgetHostDelegate::GetRootBrowserAccessibilityManager() {
   return NULL;

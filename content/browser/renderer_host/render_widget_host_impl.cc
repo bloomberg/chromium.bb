@@ -1867,11 +1867,6 @@ void RenderWidgetHostImpl::OnGestureEventAck(
     InputEventAckState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency);
 
-  if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED) {
-    if (delegate_->HandleGestureEvent(event.event))
-      ack_result = INPUT_EVENT_ACK_STATE_CONSUMED;
-  }
-
   if (view_)
     view_->GestureEventAck(event.event, ack_result);
 }

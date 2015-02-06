@@ -350,8 +350,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(static_cast<int>(kMinimumZoomFactor * 100)),
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
-      totalPinchGestureAmount_(0),
-      currentPinchZoomStepDelta_(0),
       render_view_message_source_(NULL),
       render_frame_message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
@@ -1425,46 +1423,6 @@ bool WebContentsImpl::HandleWheelEvent(
 bool WebContentsImpl::PreHandleGestureEvent(
     const blink::WebGestureEvent& event) {
   return delegate_ && delegate_->PreHandleGestureEvent(this, event);
-}
-
-bool WebContentsImpl::HandleGestureEvent(
-    const blink::WebGestureEvent& event) {
-  // Some platforms (eg. Mac) send GesturePinch events for trackpad pinch-zoom.
-  // Use them to implement browser zoom, as for HandleWheelEvent above.
-  if (event.type == blink::WebInputEvent::GesturePinchUpdate &&
-      event.sourceDevice == blink::WebGestureDeviceTouchpad) {
-    // The scale difference necessary to trigger a zoom action. Derived from
-    // experimentation to find a value that feels reasonable.
-    const float kZoomStepValue = 0.6f;
-
-    // Find the (absolute) thresholds on either side of the current zoom factor,
-    // then convert those to actual numbers to trigger a zoom in or out.
-    // This logic deliberately makes the range around the starting zoom value
-    // for the gesture twice as large as the other ranges (i.e., the notches are
-    // at ..., -3*step, -2*step, -step, step, 2*step, 3*step, ... but not at 0)
-    // so that it's easier to get back to your starting point than it is to
-    // overshoot.
-    float nextStep = (abs(currentPinchZoomStepDelta_) + 1) * kZoomStepValue;
-    float backStep = abs(currentPinchZoomStepDelta_) * kZoomStepValue;
-    float zoomInThreshold = (currentPinchZoomStepDelta_ >= 0) ? nextStep
-        : -backStep;
-    float zoomOutThreshold = (currentPinchZoomStepDelta_ <= 0) ? -nextStep
-        : backStep;
-
-    totalPinchGestureAmount_ += (event.data.pinchUpdate.scale - 1.0);
-    if (totalPinchGestureAmount_ > zoomInThreshold) {
-      currentPinchZoomStepDelta_++;
-      if (delegate_)
-        delegate_->ContentsZoomChange(true);
-    } else if (totalPinchGestureAmount_ < zoomOutThreshold) {
-      currentPinchZoomStepDelta_--;
-      if (delegate_)
-        delegate_->ContentsZoomChange(false);
-    }
-    return true;
-  }
-
-  return false;
 }
 
 void WebContentsImpl::HandleMouseDown() {

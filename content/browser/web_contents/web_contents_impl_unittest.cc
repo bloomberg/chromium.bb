@@ -2633,56 +2633,6 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   contents()->SetDelegate(NULL);
 }
 
-// Tests that trackpad GesturePinchUpdate events get turned into browser zoom.
-TEST_F(WebContentsImplTest, HandleGestureEvent) {
-  using blink::WebGestureEvent;
-  using blink::WebInputEvent;
-
-  scoped_ptr<ContentsZoomChangedDelegate> delegate(
-      new ContentsZoomChangedDelegate());
-  contents()->SetDelegate(delegate.get());
-
-  const float kZoomStepValue = 0.6f;
-  blink::WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GesturePinchUpdate, blink::WebGestureDeviceTouchpad);
-
-  // A pinch less than the step value doesn't change the zoom level.
-  event.data.pinchUpdate.scale = 1.0f + kZoomStepValue * 0.8f;
-  EXPECT_TRUE(contents()->HandleGestureEvent(event));
-  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
-
-  // But repeating the event so the combined scale is greater does.
-  EXPECT_TRUE(contents()->HandleGestureEvent(event));
-  EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
-  EXPECT_TRUE(delegate->last_zoom_in());
-
-  // Pinching back out one step goes back to 100%.
-  event.data.pinchUpdate.scale = 1.0f - kZoomStepValue;
-  EXPECT_TRUE(contents()->HandleGestureEvent(event));
-  EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
-  EXPECT_FALSE(delegate->last_zoom_in());
-
-  // Pinching out again doesn't zoom (step is twice as large around 100%).
-  EXPECT_TRUE(contents()->HandleGestureEvent(event));
-  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
-
-  // And again now it zooms once per step.
-  EXPECT_TRUE(contents()->HandleGestureEvent(event));
-  EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
-  EXPECT_FALSE(delegate->last_zoom_in());
-
-  // No other type of gesture event is handled by WebContentsImpl (for example
-  // a touchscreen pinch gesture).
-  event = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GesturePinchUpdate, blink::WebGestureDeviceTouchscreen);
-  event.data.pinchUpdate.scale = 1.0f + kZoomStepValue * 3;
-  EXPECT_FALSE(contents()->HandleGestureEvent(event));
-  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
-
-  // Ensure pointers to the delegate aren't kept beyond it's lifetime.
-  contents()->SetDelegate(NULL);
-}
-
 // Tests that GetRelatedActiveContentsCount is shared between related
 // SiteInstances and includes WebContents that have not navigated yet.
 TEST_F(WebContentsImplTest, ActiveContentsCountBasic) {
