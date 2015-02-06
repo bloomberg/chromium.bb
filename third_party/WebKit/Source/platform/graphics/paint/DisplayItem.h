@@ -144,7 +144,19 @@ public:
 
     DisplayItemClient client() const { return m_id.client; }
     Type type() const { return m_id.type; }
-    bool idsEqual(const DisplayItem& other) const { return m_id.client == other.m_id.client && m_id.type == other.m_id.type; }
+    bool idsEqual(const DisplayItem& other, Type overrideType) const
+    {
+        return m_id.client == other.m_id.client
+            && m_id.type == overrideType
+            && m_id.scopeContainer == other.m_id.scopeContainer
+            && m_id.scopeId == other.m_id.scopeId;
+    }
+
+    void setScope(DisplayItemClient scopeContainer, int scopeId)
+    {
+        m_id.scopeContainer = scopeContainer;
+        m_id.scopeId = scopeId;
+    }
 
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const { }
 
@@ -232,16 +244,14 @@ protected:
 
 private:
     struct Id {
-        Id(DisplayItemClient c, Type t)
-            : client(c)
-            , type(t)
-        {
-            ASSERT(client);
-        }
+        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeContainer(nullptr), scopeId(0) { }
 
         const DisplayItemClient client;
         const Type type;
+        DisplayItemClient scopeContainer;
+        int scopeId;
     } m_id;
+
 #ifndef NDEBUG
     WTF::String m_clientDebugString;
 #endif

@@ -11,6 +11,7 @@
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
+#include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
 #include "core/rendering/ClipPathOperation.h"
@@ -367,6 +368,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
     }
 
     for (const auto& fragment: fragments) {
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
         OwnPtr<LayerClipRecorder> clipRecorder;
         if (parentLayer) {
             ClipRect clipRectForFragment(clipRect);
@@ -456,6 +458,7 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
 
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
         OwnPtr<LayerClipRecorder> clipRecorder;
 
         if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
@@ -632,6 +635,7 @@ void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragme
     LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
     for (const auto& fragment: layerFragments) {
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
         paintFragmentWithPhase(PaintPhaseBlockBackground, fragment, context, fragment.backgroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }
@@ -665,8 +669,10 @@ void LayerPainter::paintForegroundForFragmentsWithPhase(PaintPhase phase, const 
     const LayerPaintingInfo& localPaintingInfo, PaintBehavior paintBehavior, LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags, ClipState clipState)
 {
     for (const auto& fragment: layerFragments) {
-        if (!fragment.foregroundRect.isEmpty())
+        if (!fragment.foregroundRect.isEmpty()) {
+            ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
             paintFragmentWithPhase(phase, fragment, context, fragment.foregroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
+        }
     }
 }
 
@@ -674,23 +680,29 @@ void LayerPainter::paintOutlineForFragments(const LayerFragments& layerFragments
     PaintBehavior paintBehavior, LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
     for (const auto& fragment: layerFragments) {
-        if (!fragment.outlineRect.isEmpty())
+        if (!fragment.outlineRect.isEmpty()) {
+            ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
             paintFragmentWithPhase(PaintPhaseSelfOutline, fragment, context, fragment.outlineRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
+        }
     }
 }
 
 void LayerPainter::paintMaskForFragments(const LayerFragments& layerFragments, GraphicsContext* context, const LayerPaintingInfo& localPaintingInfo,
     LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
-    for (const auto& fragment: layerFragments)
+    for (const auto& fragment: layerFragments) {
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
         paintFragmentWithPhase(PaintPhaseMask, fragment, context, fragment.backgroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
+    }
 }
 
 void LayerPainter::paintChildClippingMaskForFragments(const LayerFragments& layerFragments, GraphicsContext* context, const LayerPaintingInfo& localPaintingInfo,
     LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
-    for (const auto& fragment: layerFragments)
+    for (const auto& fragment: layerFragments) {
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
         paintFragmentWithPhase(PaintPhaseClippingMask, fragment, context, fragment.foregroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
+    }
 }
 
 void LayerPainter::paintOverlayScrollbars(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, LayoutObject* paintingRoot)

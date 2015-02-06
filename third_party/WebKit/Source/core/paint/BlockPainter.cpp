@@ -17,6 +17,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/SubtreeRecorder.h"
@@ -403,7 +404,10 @@ void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutP
         return;
     LayoutUnit currLogicalTopOffset = 0;
     LayoutUnit colGap = m_renderBlock.columnGap();
+
     for (unsigned i = 0; i < colCount; i++) {
+        ScopeRecorder scopeRecorder(paintInfo.context, m_renderBlock);
+
         // For each rect, we clip to the rect, and then we adjust our coords.
         LayoutRect colRect = m_renderBlock.columnRectAt(colInfo, i);
         m_renderBlock.flipForWritingMode(colRect);

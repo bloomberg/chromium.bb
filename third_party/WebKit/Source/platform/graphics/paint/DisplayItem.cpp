@@ -144,6 +144,8 @@ void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder)
     stringBuilder.append("type: \"");
     stringBuilder.append(typeAsDebugString(type()));
     stringBuilder.append('"');
+    if (m_id.scopeContainer)
+        stringBuilder.append(String::format(", scope: \"%p,%d\"", m_id.scopeContainer, m_id.scopeId));
 }
 
 #endif

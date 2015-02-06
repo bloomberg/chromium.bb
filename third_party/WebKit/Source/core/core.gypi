@@ -1696,6 +1696,8 @@
             'paint/SVGShapePainter.h',
             'paint/SVGTextPainter.cpp',
             'paint/SVGTextPainter.h',
+            'paint/ScopeRecorder.cpp',
+            'paint/ScopeRecorder.h',
             'paint/ScrollableAreaPainter.cpp',
             'paint/ScrollableAreaPainter.h',
             'paint/ScrollbarPainter.cpp',

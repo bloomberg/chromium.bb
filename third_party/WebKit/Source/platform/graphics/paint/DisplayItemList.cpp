@@ -44,6 +44,9 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
         }
     }
 
+    if (!m_scopeStack.isEmpty())
+        displayItem->setScope(m_scopeStack.last().client, m_scopeStack.last().id);
+
 #if ENABLE(ASSERT)
     if (RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
         // This will check for duplicated display item ids.
@@ -52,6 +55,26 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
     }
 #endif
     m_newPaints.append(displayItem);
+}
+
+void DisplayItemList::beginScope(DisplayItemClient client)
+{
+    ClientScopeIdMap::iterator it = m_clientScopeIdMap.find(client);
+    int scopeId;
+    if (it == m_clientScopeIdMap.end()) {
+        m_clientScopeIdMap.add(client, 0);
+        scopeId = 0;
+    } else {
+        scopeId = ++it->value;
+    }
+    // We treat a scope as invalid if the containing scope is invalid.
+    bool scopeCacheIsValid = (m_scopeStack.isEmpty() || m_scopeStack.last().cacheIsValid) && clientCacheIsValid(client);
+    m_scopeStack.append(Scope(client, scopeId, scopeCacheIsValid));
+}
+
+void DisplayItemList::endScope(DisplayItemClient client)
+{
+    m_scopeStack.removeLast();
 }
 
 void DisplayItemList::invalidate(DisplayItemClient client)
@@ -73,7 +96,10 @@ void DisplayItemList::invalidateAll()
 
 bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
 {
-    return RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled() && m_cachedDisplayItemIndicesByClient.contains(client);
+    return RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()
+        && m_cachedDisplayItemIndicesByClient.contains(client)
+        // If the scope is invalid, the client is treated invalid even if it's not invalidated explicitly.
+        && (m_scopeStack.isEmpty() || m_scopeStack.last().cacheIsValid);
 }
 
 size_t DisplayItemList::findMatchingItem(const DisplayItem& displayItem, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const PaintList& list)
@@ -86,7 +112,7 @@ size_t DisplayItemList::findMatchingItem(const DisplayItem& displayItem, Display
     for (size_t index : indices) {
         const OwnPtr<DisplayItem>& existingItem = list[index];
         ASSERT(!existingItem || existingItem->client() == displayItem.client());
-        if (existingItem && existingItem->type() == matchingType)
+        if (existingItem && existingItem->idsEqual(displayItem, matchingType))
             return index;
     }
 
@@ -150,9 +176,13 @@ void DisplayItemList::copyCachedItems(const DisplayItem& displayItem, PaintList&
 // and the average number of (Drawing|BeginSubtree)DisplayItems per client.
 void DisplayItemList::updatePaintList()
 {
+    // These data structures are used during painting only.
 #if ENABLE(ASSERT)
     m_newDisplayItemIndicesByClient.clear();
 #endif
+    m_clientScopeIdMap.clear();
+    ASSERT(m_scopeStack.isEmpty());
+    m_scopeStack.clear();
 
     if (!RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
         m_paintList.clear();

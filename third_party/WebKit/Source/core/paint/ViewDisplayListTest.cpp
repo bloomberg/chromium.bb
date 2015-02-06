@@ -10,6 +10,7 @@
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/ScopeRecorder.h"
 #include "core/paint/SubtreeRecorder.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
@@ -17,6 +18,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include <gtest/gtest.h>
 
@@ -665,6 +667,88 @@ TEST_F(ViewDisplayListTest, CachedSubtreeSwapOrder)
         TestDisplayItem(content1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+}
+
+TEST_F(ViewDisplayListTest, Scope)
+{
+    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
+
+    setBodyInnerHTML("<div id='multicol'><div id='content'></div></div>");
+
+    LayoutObject* multicol = document().body()->firstChild()->renderer();
+    LayoutObject* content = document().body()->firstChild()->firstChild()->renderer();
+    GraphicsContext context(nullptr, &rootDisplayItemList());
+
+    FloatRect rect1(100, 100, 50, 50);
+    FloatRect rect2(150, 100, 50, 50);
+    FloatRect rect3(200, 100, 50, 50);
+    drawRect(&context, multicol, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+    {
+        ScopeRecorder r(&context, *multicol);
+        drawRect(&context, content, PaintPhaseForeground, rect1);
+    }
+    {
+        ScopeRecorder r(&context, *multicol);
+        drawRect(&context, content, PaintPhaseForeground, rect2);
+    }
+    rootDisplayItemList().endNewPaints();
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
+        TestDisplayItem(multicol, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+    RefPtr<const SkPicture> picture1 = static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[1].get())->picture();
+    RefPtr<const SkPicture> picture2 = static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[2].get())->picture();
+    EXPECT_NE(picture1, picture2);
+
+    // Draw again with nothing invalidated.
+    drawRect(&context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    {
+        ScopeRecorder r(&context, *multicol);
+        drawRect(&context, content, PaintPhaseForeground, rect1);
+    }
+    {
+        ScopeRecorder r(&context, *multicol);
+        drawRect(&context, content, PaintPhaseForeground, rect2);
+    }
+    EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isCached());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isCached());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[2]->isCached());
+    rootDisplayItemList().endNewPaints();
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
+        TestDisplayItem(multicol, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+    EXPECT_EQ(picture1, static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[1].get())->picture());
+    EXPECT_EQ(picture2, static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[2].get())->picture());
+
+    // Now the multicol becomes 3 columns and repaints.
+    rootDisplayItemList().invalidate(multicol->displayItemClient());
+    drawRect(&context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    {
+        ScopeRecorder r(&context, *multicol);
+        drawRect(&context, content, PaintPhaseForeground, rect1);
+    }
+    {
+        ScopeRecorder r(&context, *multicol);
+        drawRect(&context, content, PaintPhaseForeground, rect2);
+    }
+    {
+        ScopeRecorder r(&context, *multicol);
+        drawRect(&context, content, PaintPhaseForeground, rect3);
+    }
+    // We should repaint everything on invalidation of the scope container.
+    EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[2]->isDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[3]->isDrawing());
+    rootDisplayItemList().endNewPaints();
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
+        TestDisplayItem(multicol, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+    EXPECT_NE(picture1, static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[1].get())->picture());
+    EXPECT_NE(picture2, static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[2].get())->picture());
 }
 
 } // namespace blink
