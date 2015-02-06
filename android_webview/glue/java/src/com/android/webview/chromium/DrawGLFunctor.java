@@ -24,10 +24,13 @@ class DrawGLFunctor {
     // Pointer to native side instance
     private CleanupReference mCleanupReference;
     private DestroyRunnable mDestroyRunnable;
+    private final long mNativeDrawGLFunctor;
     private WebViewDelegate mWebViewDelegate;
+    View mContainerView;
 
     public DrawGLFunctor(long viewContext, WebViewDelegate webViewDelegate) {
-        mDestroyRunnable = new DestroyRunnable(nativeCreateGLFunctor(viewContext), webViewDelegate);
+        mNativeDrawGLFunctor = nativeCreateGLFunctor(viewContext);
+        mDestroyRunnable = new DestroyRunnable(mNativeDrawGLFunctor);
         mCleanupReference = new CleanupReference(this, mDestroyRunnable);
         mWebViewDelegate = webViewDelegate;
     }
@@ -39,11 +42,14 @@ class DrawGLFunctor {
             mCleanupReference = null;
             mDestroyRunnable = null;
             mWebViewDelegate = null;
+            mContainerView = null;
         }
     }
 
     public void detach() {
-        mDestroyRunnable.detachNativeFunctor();
+        if (mWebViewDelegate != null && mContainerView != null) {
+            mWebViewDelegate.detachDrawGlFunctor(mContainerView, mNativeDrawGLFunctor);
+        }
     }
 
     public boolean requestDrawGL(Canvas canvas, View containerView, boolean waitForCompletion) {
@@ -60,7 +66,7 @@ class DrawGLFunctor {
             return false;
         }
 
-        mDestroyRunnable.mContainerView = containerView;
+        mContainerView = containerView;
 
         if (canvas == null) {
             mWebViewDelegate.invokeDrawGlFunctor(
@@ -80,28 +86,18 @@ class DrawGLFunctor {
     // IMPORTANT: this class must not hold any reference back to the outer DrawGLFunctor
     // instance, as that will defeat GC of that object.
     private static final class DestroyRunnable implements Runnable {
-        private WebViewDelegate mWebViewDelegate;
-        View mContainerView;
-        long mNativeDrawGLFunctor;
-        DestroyRunnable(long nativeDrawGLFunctor, WebViewDelegate webViewDelegate) {
+        private long mNativeDrawGLFunctor;
+        DestroyRunnable(long nativeDrawGLFunctor) {
             mNativeDrawGLFunctor = nativeDrawGLFunctor;
-            mWebViewDelegate = webViewDelegate;
+            assert mNativeDrawGLFunctor != 0;
         }
 
         // Called when the outer DrawGLFunctor instance has been GC'ed, i.e this is its finalizer.
         @Override
         public void run() {
-            detachNativeFunctor();
+            assert mNativeDrawGLFunctor != 0;
             nativeDestroyGLFunctor(mNativeDrawGLFunctor);
             mNativeDrawGLFunctor = 0;
-        }
-
-        void detachNativeFunctor() {
-            if (mNativeDrawGLFunctor != 0 && mContainerView != null && mWebViewDelegate != null) {
-                mWebViewDelegate.detachDrawGlFunctor(mContainerView, mNativeDrawGLFunctor);
-            }
-            mContainerView = null;
-            mWebViewDelegate = null;
         }
     }
 
