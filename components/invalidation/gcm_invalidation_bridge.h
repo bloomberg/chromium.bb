@@ -86,6 +86,10 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
       const std::string& registration_id,
       gcm::GCMClient::Result result);
 
+  void Unregister();
+
+  static void UnregisterFinishedNoOp(gcm::GCMClient::Result result);
+
  private:
   gcm::GCMDriver* const gcm_driver_;
   IdentityProvider* const identity_provider_;

@@ -262,6 +262,9 @@ void TiclInvalidationService::OnActiveAccountLogout() {
   access_token_request_.reset();
   request_access_token_retry_timer_.Stop();
 
+  if (gcm_invalidation_bridge_)
+    gcm_invalidation_bridge_->Unregister();
+
   if (IsStarted()) {
     StopInvalidator();
   }

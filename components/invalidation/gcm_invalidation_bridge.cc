@@ -280,6 +280,23 @@ void GCMInvalidationBridge::RegisterFinished(
                  result));
 }
 
+void GCMInvalidationBridge::Unregister() {
+  DCHECK(CalledOnValidThread());
+  // No-op if GCMClient is disabled.
+  if (gcm_driver_ == NULL)
+    return;
+
+  gcm_driver_->Unregister(
+      kInvalidationsAppId,
+      base::Bind(&GCMInvalidationBridge::UnregisterFinishedNoOp));
+}
+
+// static
+void GCMInvalidationBridge::UnregisterFinishedNoOp(
+    gcm::GCMClient::Result result) {
+  // No-op.
+}
+
 void GCMInvalidationBridge::SubscribeForIncomingMessages() {
   // No-op if GCMClient is disabled.
   if (gcm_driver_ == NULL)
@@ -356,6 +373,5 @@ void GCMInvalidationBridge::OnDisconnected() {
                  core_,
                  false));
 }
-
 
 }  // namespace invalidation
