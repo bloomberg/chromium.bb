@@ -3,75 +3,75 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 63x16
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 63x18
           text run at (0,0) width 63: "auto table"
-      LayoutTable {TABLE} at (0,16) size 88x26 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 86x24
-          LayoutTableRow {TR} at (0,2) size 86x20
-            LayoutTableCell {TD} at (2,2) size 48x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 44x16
+      LayoutTable {TABLE} at (0,18) size 88x28 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 86x26
+          LayoutTableRow {TR} at (0,2) size 86x22
+            LayoutTableCell {TD} at (2,2) size 48x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 44x18
                 text run at (2,2) width 44: "0 0 0 0"
-            LayoutTableCell {TD} at (52,2) size 32x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 28x16
+            LayoutTableCell {TD} at (52,2) size 32x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "auto"
-      RenderBlock (anonymous) at (0,42) size 784x32
-        RenderBR {BR} at (0,0) size 0x16
-        RenderText {#text} at (0,16) size 199x16
-          text run at (0,16) width 199: "auto table - fixed cells honored"
-      LayoutTable {TABLE} at (0,74) size 144x26 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 142x24
-          LayoutTableRow {TR} at (0,2) size 142x20
-            LayoutTableCell {TD} at (2,2) size 104x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 84x16
+      RenderBlock (anonymous) at (0,46) size 784x36
+        RenderBR {BR} at (0,0) size 0x18
+        RenderText {#text} at (0,18) size 199x18
+          text run at (0,18) width 199: "auto table - fixed cells honored"
+      LayoutTable {TABLE} at (0,82) size 144x28 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 142x26
+          LayoutTableRow {TR} at (0,2) size 142x22
+            LayoutTableCell {TD} at (2,2) size 104x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 84x18
                 text run at (2,2) width 84: "100px 100px"
-            LayoutTableCell {TD} at (108,2) size 32x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 28x16
+            LayoutTableCell {TD} at (108,2) size 32x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "auto"
-      RenderBlock (anonymous) at (0,100) size 784x32
-        RenderBR {BR} at (0,0) size 0x16
-        RenderText {#text} at (0,16) size 86x16
-          text run at (0,16) width 86: "COLSPANS "
-        RenderBR {BR} at (85,28) size 1x0
-      LayoutTable {TABLE} at (0,132) size 638x132 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 636x130
+      RenderBlock (anonymous) at (0,110) size 784x36
+        RenderBR {BR} at (0,0) size 0x18
+        RenderText {#text} at (0,18) size 86x18
+          text run at (0,18) width 86: "COLSPANS "
+        RenderBR {BR} at (85,32) size 1x0
+      LayoutTable {TABLE} at (0,146) size 638x134 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 636x132
           LayoutTableRow {TR} at (0,2) size 636x104
             LayoutTableCell {TD} at (2,2) size 604x104 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=3]
               RenderImage {IMG} at (2,2) size 600x100
-            LayoutTableCell {TD} at (608,44) size 26x20 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 22x16
+            LayoutTableCell {TD} at (608,43) size 26x22 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 22x18
                 text run at (2,2) width 22: "foo"
-          LayoutTableRow {TR} at (0,108) size 636x20
-            LayoutTableCell {TD} at (2,108) size 26x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 22x16
+          LayoutTableRow {TR} at (0,108) size 636x22
+            LayoutTableCell {TD} at (2,108) size 26x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 22x18
                 text run at (2,2) width 22: "foo"
-            LayoutTableCell {TD} at (30,108) size 25x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 21x16
+            LayoutTableCell {TD} at (30,108) size 25x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 21x18
                 text run at (2,2) width 21: "bar"
-            LayoutTableCell {TD} at (57,108) size 549x20 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 22x16
+            LayoutTableCell {TD} at (57,108) size 549x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 22x18
                 text run at (2,2) width 22: "foo"
-            LayoutTableCell {TD} at (608,108) size 26x20 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 21x16
+            LayoutTableCell {TD} at (608,108) size 26x22 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 21x18
                 text run at (2,2) width 21: "bar"
-      RenderBlock (anonymous) at (0,264) size 784x16
-        RenderBR {BR} at (0,0) size 0x16
-      LayoutTable {TABLE} at (0,280) size 534x57 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 532x55
-          LayoutTableRow {TR} at (0,5) size 532x20
-            LayoutTableCell {TD} at (5,5) size 413x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderText {#text} at (2,2) size 28x16
+      RenderBlock (anonymous) at (0,280) size 784x18
+        RenderBR {BR} at (0,0) size 0x18
+      LayoutTable {TABLE} at (0,298) size 534x61 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 532x59
+          LayoutTableRow {TR} at (0,5) size 532x22
+            LayoutTableCell {TD} at (5,5) size 413x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              RenderText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "auto"
-            LayoutTableCell {TD} at (423,5) size 104x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x16
+            LayoutTableCell {TD} at (423,5) size 104x22 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x18
                 text run at (2,2) width 24: "100"
-          LayoutTableRow {TR} at (0,30) size 532x20
-            LayoutTableCell {TD} at (5,30) size 104x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x16
+          LayoutTableRow {TR} at (0,32) size 532x22
+            LayoutTableCell {TD} at (5,32) size 104x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x18
                 text run at (2,2) width 24: "100"
-            LayoutTableCell {TD} at (114,30) size 304x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x16
+            LayoutTableCell {TD} at (114,32) size 304x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x18
                 text run at (2,2) width 24: "300"
-            LayoutTableCell {TD} at (423,30) size 104x20 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 28x16
+            LayoutTableCell {TD} at (423,32) size 104x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "auto"
