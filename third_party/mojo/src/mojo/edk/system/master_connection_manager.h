@@ -30,9 +30,6 @@ class SlaveInfo;
 
 namespace system {
 
-// The master process will always have this "process identifier".
-const ProcessIdentifier kMasterProcessIdentifier = 1;
-
 // The |ConnectionManager| implementation for the master process.
 //
 // Objects of this class must be created, initialized (via |Init()|), shut down

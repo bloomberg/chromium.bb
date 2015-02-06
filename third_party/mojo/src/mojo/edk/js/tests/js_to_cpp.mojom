@@ -44,9 +44,8 @@ interface CppSide {
   BackPointerResponse(EchoArgsList arg);
 };
 
+[Client=CppSide]
 interface JsSide {
-  SetCppSide(CppSide cpp);
-
   Ping();
   Echo(int32 numIterations, EchoArgs arg);
   BitFlip(EchoArgs arg);

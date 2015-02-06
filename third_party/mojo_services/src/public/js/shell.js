@@ -8,12 +8,12 @@ define("mojo/services/public/js/shell", [
   "mojo/public/js/connection",
   "mojo/public/interfaces/application/shell.mojom",
   "mojo/public/interfaces/application/service_provider.mojom",
-  "mojo/services/public/js/service_exchange",
-], function(bindings, core, connection, shellMojom, spMojom, serviceExchange) {
+  "mojo/services/public/js/service_provider","console",
+], function(bindings, core, connection, shellMojom, spMojom, sp, console) {
 
   const ProxyBindings = bindings.ProxyBindings;
   const StubBindings = bindings.StubBindings;
-  const ServiceExchange = serviceExchange.ServiceExchange;
+  const ServiceProvider = sp.ServiceProvider;
   const ServiceProviderInterface = spMojom.ServiceProvider;
   const ShellInterface = shellMojom.Shell;
 
@@ -28,7 +28,7 @@ define("mojo/services/public/js/shell", [
       if (application)
         return application;
 
-      var application = new ServiceExchange();
+      var application = new ServiceProvider();
       this.shellProxy.connectToApplication(url,
           function(services) {
             application.proxy = services;

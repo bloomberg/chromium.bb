@@ -9,6 +9,7 @@ mojom("interfaces") {
   sources = [
     "quads.mojom",
     "surfaces.mojom",
+    "surfaces_service.mojom",
   ]
 
   import_dirs = [ get_path_info("../../../", "abspath") ]

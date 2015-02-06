@@ -39,9 +39,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // ---------------------------------------------------------------------------
 
   // These methods are only to be used by via the embedder API (and internally):
-
-  // |*platform_support| must outlive this object.
-  explicit Core(embedder::PlatformSupport* platform_support);
+  explicit Core(scoped_ptr<embedder::PlatformSupport> platform_support);
   virtual ~Core();
 
   // Adds |dispatcher| to the handle table, returning the handle for it. Returns
@@ -61,19 +59,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                        base::Callback<void(MojoResult)> callback);
 
   embedder::PlatformSupport* platform_support() const {
-    return platform_support_;
+    return platform_support_.get();
   }
 
   // ---------------------------------------------------------------------------
 
-  // The following methods are essentially implementations of the Mojo Core
-  // functions of the Mojo API, with the C interface translated to C++ by
-  // "mojo/edk/embedder/entrypoints.cc". The best way to understand the contract
-  // of these methods is to look at the header files defining the corresponding
-  // API functions, referenced below.
-
-  // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/functions.h":
+  // System calls implementation:
   MojoTimeTicks GetTimeTicksNow();
   MojoResult Close(MojoHandle handle);
   MojoResult Wait(MojoHandle handle,
@@ -86,9 +77,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       MojoDeadline deadline,
                       UserPointer<uint32_t> result_index,
                       UserPointer<MojoHandleSignalsState> signals_states);
-
-  // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/message_pipe.h":
   MojoResult CreateMessagePipe(
       UserPointer<const MojoCreateMessagePipeOptions> options,
       UserPointer<MojoHandle> message_pipe_handle0,
@@ -105,9 +93,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          UserPointer<MojoHandle> handles,
                          UserPointer<uint32_t> num_handles,
                          MojoReadMessageFlags flags);
-
-  // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/data_pipe.h":
   MojoResult CreateDataPipe(
       UserPointer<const MojoCreateDataPipeOptions> options,
       UserPointer<MojoHandle> data_pipe_producer_handle,
@@ -132,9 +117,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                            MojoReadDataFlags flags);
   MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
                          uint32_t num_bytes_read);
-
-  // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/buffer.h":
   MojoResult CreateSharedBuffer(
       UserPointer<const MojoCreateSharedBufferOptions> options,
       uint64_t num_bytes,
@@ -164,7 +146,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                               uint32_t* result_index,
                               HandleSignalsState* signals_states);
 
-  embedder::PlatformSupport* const platform_support_;
+  const scoped_ptr<embedder::PlatformSupport> platform_support_;
 
   // TODO(vtl): |handle_table_lock_| should be a reader-writer lock (if only we
   // had them).

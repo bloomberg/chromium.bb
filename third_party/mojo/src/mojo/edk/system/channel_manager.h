@@ -11,71 +11,35 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "base/task_runner.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_info.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace mojo {
-
-namespace embedder {
-class PlatformSupport;
-}
-
 namespace system {
 
 // IDs for |Channel|s managed by a |ChannelManager|. (IDs should be thought of
 // as specific to a given |ChannelManager|.) 0 is never a valid ID.
-typedef uint64_t ChannelId;
-
-const ChannelId kInvalidChannelId = 0;
+//
+// Note: We currently just use the pointer of the |Channel| casted to a
+// |uintptr_t|, but we reserve the right to change this.
+typedef uintptr_t ChannelId;
 
 // This class manages and "owns" |Channel|s (which typically connect to other
-// processes) for a given process. This class is thread-safe, except as
-// specifically noted.
+// processes) for a given process. This class is thread-safe.
 class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
  public:
-  // |*platform_support| must remain alive longer than this object.
-  explicit ChannelManager(embedder::PlatformSupport* platform_support);
+  ChannelManager();
   ~ChannelManager();
 
-  // Creates a |Channel| and adds it to the set of channels managed by this
-  // |ChannelManager|. |channel_id| should be a valid |ChannelId| (i.e.,
-  // nonzero) not "assigned" to any other |Channel| being managed by this
-  // |ChannelManager|.
-  // TODO(vtl): Currently, this should be called on any I/O thread (which will
-  // become the new channel's "channel thread"). Eventually, the channel manager
-  // will have an assigned I/O thread, on which this must be called.
-  // TODO(vtl): Probably this should return a message pipe dispatcher (for the
-  // bootstrap message pipe) instead.
-  void CreateChannelOnIOThread(
-      ChannelId channel_id,
-      embedder::ScopedPlatformHandle platform_handle,
-      scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint);
-
-  // Like |CreateChannelOnIOThread()|, but may be called from any thread. On
-  // completion, will call |callback| ("on" |io_thread_task_runner| if
-  // |callback_thread_task_runner| is null else by posting to using
-  // |callback_thread_task_runner|). Note: This will always post a task to the
-  // I/O thread, even if |io_thread_task_runner| is the task runner for the
-  // current thread.
-  // TODO(vtl): The |io_thread_task_runner| argument is temporary (we should use
-  // the channel manager's I/O thread).
-  // TODO(vtl): Probably this should return a message pipe dispatcher (for the
-  // bootstrap message pipe) instead.
-  void CreateChannel(
-      ChannelId channel_id,
-      embedder::ScopedPlatformHandle platform_handle,
-      scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner,
-      base::Closure callback,
-      scoped_refptr<base::TaskRunner> callback_thread_task_runner);
-
-  // Gets the |Channel| with the given ID (which must exist).
-  scoped_refptr<Channel> GetChannel(ChannelId channel_id) const;
+  // Adds |channel| to the set of |Channel|s managed by this |ChannelManager|;
+  // |channel_thread_task_runner| should be the task runner for |channel|'s
+  // creation (a.k.a. I/O) thread. |channel| should either already be
+  // initialized. It should not be managed by any |ChannelManager| yet. Returns
+  // the ID for the added channel.
+  ChannelId AddChannel(
+      scoped_refptr<Channel> channel,
+      scoped_refptr<base::TaskRunner> channel_thread_task_runner);
 
   // Informs the channel manager (and thus channel) that it will be shutdown
   // soon (by calling |ShutdownChannel()|). Calling this is optional (and may in
@@ -86,26 +50,28 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
 
   // Shuts down the channel specified by the given ID. It is up to the caller to
   // guarantee that this is only called once per channel (that was added using
-  // |CreateChannelOnIOThread()|). If called from the channel's creation thread
-  // (i.e., |base::MessageLoopProxy::current()| is the channel thread's
-  // |TaskRunner|), this will complete synchronously.
+  // |AddChannel()|). If called from the chanel's creation thread (i.e.,
+  // |base::MessageLoopProxy::current()| is the channel thread's |TaskRunner|),
+  // this will complete synchronously.
   void ShutdownChannel(ChannelId channel_id);
 
  private:
-  void CreateChannelHelper(
-      ChannelId channel_id,
-      embedder::ScopedPlatformHandle platform_handle,
-      scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint,
-      base::Closure callback,
-      scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+  // Gets the ID for a given channel.
+  //
+  // Note: This is currently a static method and thus may be called under
+  // |lock_|. If this is ever made non-static (i.e., made specific to a given
+  // |ChannelManager|), those call sites may have to changed.
+  static ChannelId GetChannelId(const Channel* channel) {
+    return reinterpret_cast<ChannelId>(channel);
+  }
 
-  embedder::PlatformSupport* const platform_support_;
+  // Gets the |ChannelInfo| for the channel specified by the given ID. (This
+  // should *not* be called under lock.)
+  ChannelInfo GetChannelInfo(ChannelId channel_id);
 
   // Note: |Channel| methods should not be called under |lock_|.
-  mutable base::Lock lock_;  // Protects the members below.
+  base::Lock lock_;  // Protects the members below.
 
-  // TODO(vtl): Once we give the |ChannelManager| one single I/O thread, we can
-  // get rid of |ChannelInfo| (and just have ref pointers to |Channel|s).
   base::hash_map<ChannelId, ChannelInfo> channel_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelManager);

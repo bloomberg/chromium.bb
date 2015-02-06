@@ -26,7 +26,8 @@ class ApplicationImpl::ShellPtrWatcher : public ErrorHandler {
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  InterfaceRequest<Application> request)
-    : delegate_(delegate),
+    : initialized_(false),
+      delegate_(delegate),
       binding_(this, request.Pass()),
       shell_watch_(nullptr) {
 }

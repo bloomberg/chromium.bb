@@ -13,9 +13,6 @@
 
 namespace mojo {
 
-// A UTF-8 encoded character string that can be null. Provides functions that
-// are similar to std::string, along with access to the underlying std::string
-// object.
 class String {
  public:
   typedef internal::String_Data Data_;

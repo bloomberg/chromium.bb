@@ -54,11 +54,6 @@ bool Shutdown() {
   bool rv = system::internal::ShutdownCheckNoLeaks(internal::g_core);
   delete internal::g_core;
   internal::g_core = nullptr;
-
-  CHECK(internal::g_platform_support);
-  delete internal::g_platform_support;
-  internal::g_platform_support = nullptr;
-
   return rv;
 }
 

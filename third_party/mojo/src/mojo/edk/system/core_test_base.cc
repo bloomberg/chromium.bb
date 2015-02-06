@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/dispatcher.h"
@@ -172,7 +173,7 @@ CoreTestBase::~CoreTestBase() {
 }
 
 void CoreTestBase::SetUp() {
-  core_ = new Core(&platform_support_);
+  core_ = new Core(make_scoped_ptr(new embedder::SimplePlatformSupport()));
 }
 
 void CoreTestBase::TearDown() {

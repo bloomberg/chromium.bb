@@ -28,7 +28,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelInit {
   ~ChannelInit();
 
   // Initializes the channel. This takes ownership of |file|. Returns the
-  // primordial |MessagePipe| for the channel.
+  // primordial MessagePipe for the channel.
   mojo::ScopedMessagePipeHandle Init(
       base::PlatformFile file,
       scoped_refptr<base::TaskRunner> io_thread_task_runner);
@@ -41,7 +41,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelInit {
   // established. (This is a static method that takes a weak pointer to self,
   // since we want to destroy the channel even if we're destroyed.)
   static void OnCreatedChannel(base::WeakPtr<ChannelInit> self,
+                               scoped_refptr<base::TaskRunner> io_thread,
                                ChannelInfo* channel);
+
+  scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
   // If non-null the channel has been established.
   ChannelInfo* channel_info_;

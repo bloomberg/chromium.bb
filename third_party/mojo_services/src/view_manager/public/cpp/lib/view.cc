@@ -387,7 +387,7 @@ namespace {
 ViewportMetricsPtr CreateEmptyViewportMetrics() {
   ViewportMetricsPtr metrics = ViewportMetrics::New();
   metrics->size = Size::New();
-  return metrics;
+  return metrics.Pass();
 }
 }
 

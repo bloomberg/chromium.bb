@@ -19,7 +19,7 @@ class OutputSurfaceMojoClient {
   virtual void DidCreateSurface(cc::SurfaceId id) = 0;
 };
 
-class OutputSurfaceMojo : public cc::OutputSurface {
+class OutputSurfaceMojo : public cc::OutputSurface, public SurfaceClient {
  public:
   OutputSurfaceMojo(OutputSurfaceMojoClient* client,
                     const scoped_refptr<cc::ContextProvider>& context_provider,
@@ -33,7 +33,9 @@ class OutputSurfaceMojo : public cc::OutputSurface {
   ~OutputSurfaceMojo() override;
 
  private:
-  void SetIdNamespace(uint32_t id_namespace);
+  // SurfaceClient implementation.
+  void SetIdNamespace(uint32_t id_namespace) override;
+  void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
   OutputSurfaceMojoClient* output_surface_mojo_client_;
   SurfacePtr surface_;

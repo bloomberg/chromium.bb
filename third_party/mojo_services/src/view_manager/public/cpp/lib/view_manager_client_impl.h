@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_CLIENT_IMPL_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_CLIENT_IMPL_H_
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -24,7 +25,7 @@ class ViewManagerTransaction;
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
                               public ViewManagerClient,
-                              public WindowManagerObserver,
+                              public WindowManagerClient,
                               public ErrorHandler {
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate,
@@ -121,10 +122,12 @@ class ViewManagerClientImpl : public ViewManager,
                         EventPtr event,
                         const Callback<void()>& callback) override;
 
-  // Overridden from WindowManagerObserver:
-  void OnCaptureChanged(Id capture_view_id) override;
-  void OnFocusChanged(Id focused_view_id) override;
-  void OnActiveWindowChanged(Id focused_view_id) override;
+  // Overridden from WindowManagerClient:
+  void OnCaptureChanged(Id old_capture_view_id,
+                        Id new_capture_view_id) override;
+  void OnFocusChanged(Id old_focused_view_id, Id new_focused_view_id) override;
+  void OnActiveWindowChanged(Id old_focused_view_id,
+                             Id new_focused_view_id) override;
 
   // ErrorHandler implementation.
   void OnConnectionError() override;
@@ -137,10 +140,9 @@ class ViewManagerClientImpl : public ViewManager,
   base::Callback<void(bool)> ActionCompletedCallback();
   base::Callback<void(ErrorCode)> ActionCompletedCallbackWithErrorCode();
 
-  // Callback from server for initial request of capture/focused/active views.
-  void OnGotFocusedAndActiveViews(uint32_t capture_view_id,
-                                  uint32_t focused_view_id,
-                                  uint32_t active_view_id);
+  // Callback from server for initial request of focused/active views.
+  void OnGotFocusedAndActiveViews(uint32 focused_view_id,
+                                  uint32 active_view_id);
 
   bool connected_;
   ConnectionSpecificId connection_id_;
@@ -161,7 +163,6 @@ class ViewManagerClientImpl : public ViewManager,
   View* activated_view_;
 
   WindowManagerPtr window_manager_;
-  Binding<WindowManagerObserver> wm_observer_binding_;
 
   Binding<ViewManagerClient> binding_;
   ViewManagerService* service_;

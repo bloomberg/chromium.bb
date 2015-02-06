@@ -17,8 +17,7 @@
 // TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
 // (typically they'll be ignored), not necessarily an error.
 
-// |MojoTimeTicks|: A time delta, in microseconds, the meaning of which is
-// source-dependent.
+// |MojoTimeTicks|: Used to specify time ticks. Value is in microseconds.
 
 typedef int64_t MojoTimeTicks;
 

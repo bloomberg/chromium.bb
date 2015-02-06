@@ -15,7 +15,6 @@ import zipfile
 
 from jinja2 import contextfilter
 
-import mojom.fileutil as fileutil
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
@@ -213,7 +212,7 @@ def EncodeMethod(context, kind, variable, offset, bit):
   return 'encode(%s)' % ', '.join(params)
 
 def GetPackage(module):
-  if module.attributes and 'JavaPackage' in module.attributes:
+  if 'JavaPackage' in module.attributes:
     return ParseStringAttribute(module.attributes['JavaPackage'])
   # Default package.
   if module.namespace:
@@ -357,7 +356,7 @@ def GetStructFromMethod(method):
       False, generator.GetStructFromMethod(method))
 
 def GetConstantsMainEntityName(module):
-  if module.attributes and 'JavaConstantsClassName' in module.attributes:
+  if 'JavaConstantsClassName' in module.attributes:
     return ParseStringAttribute(module.attributes['JavaConstantsClassName'])
   # This constructs the name of the embedding classes for module level constants
   # by extracting the mojom's filename and prepending it to Constants.
@@ -472,7 +471,12 @@ class Generator(generator.Generator):
     return exports
 
   def DoGenerateFiles(self):
-    fileutil.EnsureDirectoryExists(self.output_dir)
+    if not os.path.exists(self.output_dir):
+      try:
+        os.makedirs(self.output_dir)
+      except:
+        # Ignore errors on directory creation.
+        pass
 
     # Keep this above the others as .GetStructs() changes the state of the
     # module, annotating structs with required information.

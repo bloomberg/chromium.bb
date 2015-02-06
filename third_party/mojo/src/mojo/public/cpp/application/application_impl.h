@@ -79,14 +79,19 @@ class ApplicationImpl : public Application {
   // Block until the Application is initialized, if it is not already.
   void WaitForInitialize();
 
-  // Unbinds the Shell and Application connections. Can be used to re-bind the
-  // handles to another implementation of ApplicationImpl, for instance when
-  // running apptests.
+  // Unbinds the Shell and Application connections. Must be called after
+  // Initialize.
   void UnbindConnections(InterfaceRequest<Application>* application_request,
                          ShellPtr* shell);
 
   // Quits the main run loop for this application.
   static void Terminate();
+
+ protected:
+  // Application implementation.
+  void AcceptConnection(const String& requestor_url,
+                        InterfaceRequest<ServiceProvider> services,
+                        ServiceProviderPtr exposed_services) override;
 
  private:
   class ShellPtrWatcher;
@@ -98,15 +103,11 @@ class ApplicationImpl : public Application {
     Terminate();
   }
 
-  // Application implementation.
-  void AcceptConnection(const String& requestor_url,
-                        InterfaceRequest<ServiceProvider> services,
-                        ServiceProviderPtr exposed_services) override;
-
   void RequestQuit() override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
 
+  bool initialized_;
   ServiceRegistryList incoming_service_registries_;
   ServiceRegistryList outgoing_service_registries_;
   ApplicationDelegate* delegate_;

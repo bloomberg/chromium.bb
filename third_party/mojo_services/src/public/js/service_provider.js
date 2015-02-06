@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define("mojo/services/public/js/service_exchange", [
+define("mojo/services/public/js/service_provider", [
   "mojo/public/js/bindings",
   "mojo/public/interfaces/application/service_provider.mojom",
   "mojo/public/js/connection",
@@ -12,12 +12,12 @@ define("mojo/services/public/js/service_exchange", [
   const StubBindings = bindings.StubBindings;
   const ServiceProviderInterface = spMojom.ServiceProvider;
 
-  function checkServiceExchange(exch) {
-    if (!exch.providers_)
+  function checkServiceProvider(sp) {
+    if (!sp.providers_)
       throw new Error("Service was closed");
   }
 
-  class ServiceExchange {
+  class ServiceProvider {
     constructor(servicesRequest, exposedServicesProxy) {
       this.proxy = exposedServicesProxy;
       this.providers_ = new Map(); // serviceName => see provideService() below
@@ -43,7 +43,7 @@ define("mojo/services/public/js/service_exchange", [
     }
 
     provideService(service, factory) {
-      checkServiceExchange(this);
+      checkServiceProvider(this);
 
       var provider = {
         service: service, // A JS bindings interface object.
@@ -61,7 +61,7 @@ define("mojo/services/public/js/service_exchange", [
 
     // Outgoing requests
     requestService(interfaceObject, clientImpl) {
-      checkServiceExchange(this);
+      checkServiceProvider(this);
       if (!interfaceObject.name)
         throw new Error("Invalid service parameter");
       if (!clientImpl && interfaceObject.client)
@@ -81,6 +81,6 @@ define("mojo/services/public/js/service_exchange", [
   }
 
   var exports = {};
-  exports.ServiceExchange = ServiceExchange;
+  exports.ServiceProvider = ServiceProvider;
   return exports;
 });

@@ -130,10 +130,6 @@ PRIMITIVES = (
 )
 
 
-ATTRIBUTE_MIN_VERSION = 'MinVersion'
-ATTRIBUTE_CLIENT = 'Client'
-
-
 class NamedValue(object):
   def __init__(self, module, parent_kind, name):
     self.module = module
@@ -178,18 +174,11 @@ class Constant(object):
 
 
 class Field(object):
-  def __init__(self, name=None, kind=None, ordinal=None, default=None,
-               attributes=None):
+  def __init__(self, name=None, kind=None, ordinal=None, default=None):
     self.name = name
     self.kind = kind
     self.ordinal = ordinal
     self.default = default
-    self.attributes = attributes
-
-  @property
-  def min_version(self):
-    return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
-        if self.attributes else None
 
 
 class Struct(ReferenceKind):
@@ -197,9 +186,8 @@ class Struct(ReferenceKind):
   ReferenceKind.AddSharedProperty('module')
   ReferenceKind.AddSharedProperty('imported_from')
   ReferenceKind.AddSharedProperty('fields')
-  ReferenceKind.AddSharedProperty('attributes')
 
-  def __init__(self, name=None, module=None, attributes=None):
+  def __init__(self, name=None, module=None):
     if name is not None:
       spec = 'x:' + name
     else:
@@ -209,10 +197,9 @@ class Struct(ReferenceKind):
     self.module = module
     self.imported_from = None
     self.fields = []
-    self.attributes = attributes
 
-  def AddField(self, name, kind, ordinal=None, default=None, attributes=None):
-    field = Field(name, kind, ordinal, default, attributes)
+  def AddField(self, name, kind, ordinal=None, default=None):
+    field = Field(name, kind, ordinal, default)
     self.fields.append(field)
     return field
 
@@ -222,9 +209,8 @@ class Union(ReferenceKind):
   ReferenceKind.AddSharedProperty('module')
   ReferenceKind.AddSharedProperty('imported_from')
   ReferenceKind.AddSharedProperty('fields')
-  ReferenceKind.AddSharedProperty('attributes')
 
-  def __init__(self, name=None, module=None, attributes=None):
+  def __init__(self, name=None, module=None):
     if name is not None:
       spec = 'x:' + name
     else:
@@ -234,10 +220,9 @@ class Union(ReferenceKind):
     self.module = module
     self.imported_from = None
     self.fields = []
-    self.attributes = attributes
 
-  def AddField(self, name, kind, ordinal=None, attributes=None):
-    field = Field(name, kind, ordinal, None, attributes)
+  def AddField(self, name, kind, ordinal=None):
+    field = Field(name, kind, ordinal, default=None)
     self.fields.append(field)
     return field
 
@@ -302,57 +287,42 @@ class InterfaceRequest(ReferenceKind):
 
 
 class Parameter(object):
-  def __init__(self, name=None, kind=None, ordinal=None, default=None,
-               attributes=None):
+  def __init__(self, name=None, kind=None, ordinal=None, default=None):
     self.name = name
     self.ordinal = ordinal
     self.kind = kind
     self.default = default
-    self.attributes = attributes
-
-  @property
-  def min_version(self):
-    return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
-        if self.attributes else None
 
 
 class Method(object):
-  def __init__(self, interface, name, ordinal=None, attributes=None):
+  def __init__(self, interface, name, ordinal=None):
     self.interface = interface
     self.name = name
     self.ordinal = ordinal
     self.parameters = []
     self.response_parameters = None
-    self.attributes = attributes
 
-  def AddParameter(self, name, kind, ordinal=None, default=None,
-                   attributes=None):
-    parameter = Parameter(name, kind, ordinal, default, attributes)
+  def AddParameter(self, name, kind, ordinal=None, default=None):
+    parameter = Parameter(name, kind, ordinal, default)
     self.parameters.append(parameter)
     return parameter
 
-  def AddResponseParameter(self, name, kind, ordinal=None, default=None,
-                           attributes=None):
+  def AddResponseParameter(self, name, kind, ordinal=None, default=None):
     if self.response_parameters == None:
       self.response_parameters = []
-    parameter = Parameter(name, kind, ordinal, default, attributes)
+    parameter = Parameter(name, kind, ordinal, default)
     self.response_parameters.append(parameter)
     return parameter
-
-  @property
-  def min_version(self):
-    return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
-        if self.attributes else None
 
 
 class Interface(ReferenceKind):
   ReferenceKind.AddSharedProperty('module')
   ReferenceKind.AddSharedProperty('name')
   ReferenceKind.AddSharedProperty('imported_from')
+  ReferenceKind.AddSharedProperty('client')
   ReferenceKind.AddSharedProperty('methods')
-  ReferenceKind.AddSharedProperty('attributes')
 
-  def __init__(self, name=None, module=None, attributes=None):
+  def __init__(self, name=None, client=None, module=None):
     if name is not None:
       spec = 'x:' + name
     else:
@@ -361,33 +331,23 @@ class Interface(ReferenceKind):
     self.module = module
     self.name = name
     self.imported_from = None
+    self.client = client
     self.methods = []
-    self.attributes = attributes
 
-  def AddMethod(self, name, ordinal=None, attributes=None):
-    method = Method(self, name, ordinal, attributes)
+  def AddMethod(self, name, ordinal=None):
+    method = Method(self, name, ordinal=ordinal)
     self.methods.append(method)
     return method
 
-  @property
-  def client(self):
-    return self.attributes.get(ATTRIBUTE_CLIENT) if self.attributes else None
-
 
 class EnumField(object):
-  def __init__(self, name=None, value=None, attributes=None):
+  def __init__(self, name=None, value=None):
     self.name = name
     self.value = value
-    self.attributes = attributes
-
-  @property
-  def min_version(self):
-    return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
-        if self.attributes else None
 
 
 class Enum(Kind):
-  def __init__(self, name=None, module=None, attributes=None):
+  def __init__(self, name=None, module=None):
     self.module = module
     self.name = name
     self.imported_from = None
@@ -397,11 +357,10 @@ class Enum(Kind):
       spec = None
     Kind.__init__(self, spec)
     self.fields = []
-    self.attributes = attributes
 
 
 class Module(object):
-  def __init__(self, name=None, namespace=None, attributes=None):
+  def __init__(self, name=None, namespace=None):
     self.name = name
     self.path = name
     self.namespace = namespace
@@ -409,20 +368,19 @@ class Module(object):
     self.unions = []
     self.interfaces = []
     self.kinds = {}
-    self.attributes = attributes
 
-  def AddInterface(self, name, attributes=None):
-    interface = Interface(name, self, attributes)
+  def AddInterface(self, name):
+    interface = Interface(name, module=self)
     self.interfaces.append(interface)
     return interface
 
-  def AddStruct(self, name, attributes=None):
-    struct = Struct(name, self, attributes)
+  def AddStruct(self, name):
+    struct = Struct(name, module=self)
     self.structs.append(struct)
     return struct
 
-  def AddUnion(self, name, attributes=None):
-    union = Union(name, self, attributes)
+  def AddUnion(self, name):
+    union = Union(name, module=self)
     self.unions.append(union)
     return union
 

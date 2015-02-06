@@ -76,20 +76,6 @@ mojo_edk_source_set("test_support_impl") {
 
 # Public SDK test targets follow. These targets are not defined within the
 # public SDK itself as running the unittests requires the EDK.
-# TODO(vtl): These don't really belong here. (They should be converted to
-# apptests, but even apart from that these targets belong somewhere else.)
-
-group("public_tests") {
-  testonly = true
-  deps = [
-    ":mojo_public_application_unittests",
-    ":mojo_public_bindings_unittests",
-    ":mojo_public_environment_unittests",
-    ":mojo_public_system_perftests",
-    ":mojo_public_system_unittests",
-    ":mojo_public_utility_unittests",
-  ]
-}
 
 test("mojo_public_application_unittests") {
   deps = [

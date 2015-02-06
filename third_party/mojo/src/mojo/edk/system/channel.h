@@ -54,7 +54,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     : public base::RefCountedThreadSafe<Channel>,
       public RawChannel::Delegate {
  public:
-  // |platform_support| must remain alive until after |Shutdown()| is called.
+  // |platform_support| (typically owned by |Core|) must remain alive until
+  // after |Shutdown()| is called.
   explicit Channel(embedder::PlatformSupport* platform_support);
 
   // This must be called on the creation thread before any other methods are
@@ -64,9 +65,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // Sets the channel manager associated with this channel. This should be set
   // at most once and only called before |WillShutdownSoon()| (and
-  // |Shutdown()|). (This is called by the channel manager when adding a
-  // channel; this should not be called before the channel is managed by the
-  // channel manager.)
+  // |Shutdown()|).
   void SetChannelManager(ChannelManager* channel_manager);
 
   // This must be called on the creation thread before destruction (which can

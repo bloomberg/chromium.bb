@@ -20,9 +20,6 @@ abstract class Stub extends core.MojoEventStreamListener {
     // Query how many bytes are available.
     var result = endpoint.query();
     assert(result.status.isOk || result.status.isResourceExhausted);
-    if (result.bytesRead == 0) {
-      throw new MojoCodecError('Unexpected empty message.');
-    }
 
     // Read the data and view as a message.
     var bytes = new ByteData(result.bytesRead);
@@ -44,7 +41,7 @@ abstract class Stub extends core.MojoEventStreamListener {
                          response.buffer.lengthInBytes,
                          response.handles);
           if (!endpoint.status.isOk) {
-            throw 'message pipe write failed: ${endpoint.status}';
+            throw "message pipe write failed: ${endpoint.status}";
           }
           if (_isClosing && (_outstandingResponseFutures == 0)) {
             // This was the final response future for which we needed to send
@@ -66,12 +63,9 @@ abstract class Stub extends core.MojoEventStreamListener {
     throw 'Unexpected write signal in client.';
   }
 
-  // NB: |nodefer| should only be true when calling close() while handling an
-  // exception thrown from handleRead(), e.g. when we receive a malformed
-  // message.
-  void close({bool nodefer : false}) {
+  void close() {
     if (!isOpen) return;
-    if (!nodefer && (isInHandler || (_outstandingResponseFutures > 0))) {
+    if (isInHandler || (_outstandingResponseFutures > 0)) {
       // Either close() is being called from within handleRead() or
       // handleWrite(), or close() is being called while there are outstanding
       // response futures. Defer the actual close until all response futures

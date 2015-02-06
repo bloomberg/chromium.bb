@@ -5,9 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_CORE_TEST_BASE_H_
 #define MOJO_EDK_SYSTEM_CORE_TEST_BASE_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/public/c/system/types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +38,6 @@ class CoreTestBase : public testing::Test {
   Core* core() { return core_; }
 
  private:
-  embedder::SimplePlatformSupport platform_support_;
   Core* core_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreTestBase);

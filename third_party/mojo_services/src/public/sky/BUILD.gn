@@ -6,7 +6,7 @@ action_foreach("sky") {
   script = "../../../public/sky/convert_amd_modules_to_sky.py"
   sources = [
     "../js/application.js",
-    "../js/service_exchange.js",
+    "../js/service_provider.js",
     "../js/shell.js",
   ]
   outputs = [

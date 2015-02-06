@@ -18,12 +18,6 @@ const int kElementNullable = (1 << 1);
 bool isArrayNullable(int nullability) => (nullability & kArrayNullable) > 0;
 bool isElementNullable(int nullability) => (nullability & kElementNullable) > 0;
 
-class MojoCodecError {
-  final String message;
-  MojoCodecError(this.message);
-  String toString() => message;
-}
-
 class _EncoderBuffer {
   ByteData buffer;
   List<core.MojoHandle> handles;
@@ -94,7 +88,7 @@ class Encoder {
 
   void encodeUint8(int value, int offset) {
     if (value < 0) {
-      throw new MojoCodecError('$kErrorUnsigned: $val');
+      throw '$kErrorUnsigned: $val';
     }
     _buffer.buffer.setUint8(_base + offset, value);
   }
@@ -104,7 +98,7 @@ class Encoder {
 
   void encodeUint16(int value, int offset) {
     if (value < 0) {
-      throw new MojoCodecError('$kErrorUnsigned: $val');
+      throw '$kErrorUnsigned: $val';
     }
     _buffer.buffer.setUint16(_base + offset, value, Endianness.LITTLE_ENDIAN);
   }
@@ -114,7 +108,7 @@ class Encoder {
 
   void encodeUint32(int value, int offset) {
     if (value < 0) {
-      throw new MojoCodecError('$kErrorUnsigned: $val');
+      throw '$kErrorUnsigned: $val';
     }
     _buffer.buffer.setUint32(_base + offset, value, Endianness.LITTLE_ENDIAN);
   }
@@ -124,7 +118,7 @@ class Encoder {
 
   void encodeUint64(int value, int offset) {
     if (value < 0) {
-      throw new MojoCodecError('$kErrorUnsigned: $val');
+      throw '$kErrorUnsigned: $val';
     }
     _buffer.buffer.setUint64(_base + offset, value, Endianness.LITTLE_ENDIAN);
   }
@@ -182,16 +176,14 @@ class Encoder {
 
   void encodeNullPointer(int offset, bool nullable) {
     if (!nullable) {
-      throw new MojoCodecError(
-          'Trying to encode a null pointer for a non-nullable type');
+      throw 'Trying to encode a null pointer for a non-nullable type';
     }
     _buffer.buffer.setUint64(_base + offset, 0, Endianness.LITTLE_ENDIAN);
   }
 
   void encodeInvalideHandle(int offset, bool nullable) {
     if (!nullable) {
-      throw new MojoCodecError(
-          'Trying to encode a null pointer for a non-nullable type');
+      throw 'Trying to encode a null pointer for a non-nullable type';
     }
     _buffer.buffer.setInt32(_base + offset, -1, Endianness.LITTLE_ENDIAN);
   }
@@ -215,8 +207,7 @@ class Encoder {
       int elementSize, int length, int offset, int expectedLength) {
     if ((expectedLength != kUnspecifiedArrayLength) &&
         (expectedLength != length)) {
-      throw new MojoCodecError(
-          'Trying to encode a fixed array of incorrect length');
+      throw 'Trying to encode a fixed array of incorrect length';
     }
     return encoderForArrayByTotalSize(length * elementSize, length, offset);
   }
@@ -235,8 +226,7 @@ class Encoder {
     }
     if ((expectedLength != kUnspecifiedArrayLength) &&
         (expectedLength != value.length)) {
-      throw new MojoCodecError(
-          'Trying to encode a fixed array of incorrect size.');
+      throw 'Trying to encode a fixed array of incorrect size.';
     }
     var bytes = new Uint8List((value.length + 7) ~/ kAlignment);
     for (int i = 0; i < bytes.length; ++i) {
@@ -421,34 +411,34 @@ class Encoder {
   }
 
   void appendInt8Array(List<int> value) =>
-      appendBytes(new Uint8List.view(new Int8List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Int8List.fromList(value)));
 
   void appendUint8Array(List<int> value) =>
       appendBytes(new Uint8List.fromList(value));
 
   void appendInt16Array(List<int> value) =>
-      appendBytes(new Uint8List.view(new Int16List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Int16List.fromList(value)));
 
   void appendUint16Array(List<int> value) =>
-      appendBytes(new Uint8List.view(new Uint16List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Uint16List.fromList(value)));
 
   void appendInt32Array(List<int> value) =>
-      appendBytes(new Uint8List.view(new Int32List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Int32List.fromList(value)));
 
   void appendUint32Array(List<int> value) =>
-      appendBytes(new Uint8List.view(new Uint32List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Uint32List.fromList(value)));
 
   void appendInt64Array(List<int> value) =>
-      appendBytes(new Uint8List.view(new Int64List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Int64List.fromList(value)));
 
   void appendUint64Array(List<int> value) =>
-      appendBytes(new Uint8List.view(new Uint64List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Uint64List.fromList(value)));
 
   void appendFloatArray(List<int> value) =>
-      appendBytes(new Uint8List.view(new Float32List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Float32List.fromList(value)));
 
   void appendDoubleArray(List<int> value) =>
-      appendBytes(new Uint8List.view(new Float64List.fromList(value).buffer));
+      appendBytes(new Uint8List.view(new Float64List.fromList(value)));
 
   Encoder encoderForMap(int offset) {
     encodePointerToNextUnclaimed(offset);
@@ -457,59 +447,16 @@ class Encoder {
 }
 
 
-class _Validator {
-  final int _maxMemory;
-  final int _numberOfHandles;
-  int _minNextClaimedHandle = 0;
-  int _minNextMemory = 0;
-
-  _Validator(this._maxMemory, this._numberOfHandles);
-
-  void claimHandle(int handle) {
-    if (handle < _minNextClaimedHandle) {
-      throw new MojoCodecError('Trying to access handle out of order.');
-    }
-    if (handle >= _numberOfHandles) {
-      throw new MojoCodecError('Trying to access non present handle.');
-    }
-    _minNextClaimedHandle = handle + 1;
-  }
-
-  void claimMemory(int start, int end) {
-    if ((start % kAlignment) != 0) {
-      throw new MojoCodecError('Incorrect starting alignment: $start.');
-    }
-    if (start < _minNextMemory) {
-      throw new MojoCodecError('Trying to access memory out of order.');
-    }
-    if (end < start) {
-      throw new MojoCodecError('Incorrect memory range.');
-    }
-    if (end > _maxMemory) {
-      throw new MojoCodecError('Trying to access out of range memory.');
-    }
-    _minNextMemory = align(end);
-  }
-}
-
-
 class Decoder {
-  _Validator _validator;
   Message _message;
   int _base = 0;
 
-  Decoder(this._message, [this._base = 0, this._validator = null]) {
-    if (_validator == null) {
-      _validator = new _Validator(
-          _message.buffer.lengthInBytes, _message.handles.length);
-    }
-  }
+  Decoder(this._message, [this._base = 0]);
 
-  Decoder getDecoderAtPosition(int offset) =>
-      new Decoder(_message, offset, _validator);
+  Decoder getDecoderAtPosition(int offset) => new Decoder(_message, offset);
 
-  factory Decoder.atOffset(Decoder d, int offset, _Validator validator) =>
-      new Decoder(d._message, offset, validator);
+  factory Decoder.atOffset(Decoder d, int offset) =>
+      new Decoder(d._message, offset);
 
   ByteData get _buffer => _message.buffer;
   List<core.MojoHandle> get _handles => _message.handles;
@@ -540,12 +487,10 @@ class Decoder {
     int index = decodeInt32(offset);
     if (index == -1) {
       if (!nullable) {
-        throw new MojoCodecError(
-            'Trying to decode an invalid handle from a non-nullable type.');
+        throw 'Trying to decode an invalid handle from a non-nullable type.';
       }
       return new core.MojoHandle(core.MojoHandle.INVALID);
     }
-    _validator.claimHandle(index);
     return _handles[index];
   }
 
@@ -579,26 +524,17 @@ class Decoder {
     int pointerOffset = decodeUint64(offset);
     if (pointerOffset == 0) {
       if (!nullable) {
-        throw new MojoCodecError(
-            'Trying to decode a null pointer for a non-nullable type');
+        throw 'Trying to decode a null pointer for a non-nullable type';
       }
       return null;
     }
     int newPosition = (basePosition + pointerOffset);
-    return new Decoder.atOffset(this, newPosition, _validator);
+    return new Decoder.atOffset(this, newPosition);
   }
 
   DataHeader decodeDataHeader() {
-    _validator.claimMemory(_base, _base + DataHeader.kHeaderSize);
     int size = decodeUint32(DataHeader.kSizeOffset);
     int numFields = decodeUint32(DataHeader.kNumFieldsOffset);
-    if (size < 0) {
-      throw new MojoCodecError('Negative size.');
-    }
-    if (numFields < 0) {
-      throw new MojoCodecError('Negative number of fields.');
-    }
-    _validator.claimMemory(_base + DataHeader.kHeaderSize, _base + size);
     return new DataHeader(size, numFields);
   }
 
@@ -606,13 +542,11 @@ class Decoder {
   DataHeader decodeDataHeaderForBoolArray(int expectedLength) {
     var header = decodeDataHeader();
     if (header.size < DataHeader.kHeaderSize + (header.numFields + 7) ~/ 8) {
-      throw new MojoCodecError('Array header is incorrect');
+      throw 'Array header is incorrect';
     }
     if ((expectedLength != kUnspecifiedArrayLength) &&
         (header.numFields != expectedLength)) {
-      throw new MojoCodecError(
-          'Incorrect array length. Expected $expectedLength, but got '
-          '${header.numFields}.');
+      throw 'Incorrect array length';
     }
     return header;
   }
@@ -642,14 +576,11 @@ class Decoder {
   DataHeader decodeDataHeaderForArray(int elementSize, int expectedLength) {
     var header = decodeDataHeader();
     if (header.size < DataHeader.kHeaderSize + header.numFields * elementSize) {
-      throw new MojoCodecError(
-          'Array header is incorrect: $header, elementSize = $elementSize');
+      throw 'Array header is incorrect: $header, elementSize = $elementSize';
     }
     if ((expectedLength != kUnspecifiedArrayLength) &&
         (header.numFields != expectedLength)) {
-      throw new MojoCodecError(
-          'Incorrect array length. Expected $expectedLength, but got '
-          '${header.numFields}');
+      throw 'Incorrect array length.';
     }
     return header;
   }
@@ -657,11 +588,11 @@ class Decoder {
   DataHeader decodeDataHeaderForPointerArray(int expectedLength) =>
       decodeDataHeaderForArray(kPointerSize, expectedLength);
 
-  List decodeArray(Function arrayViewer,
-                   int elementSize,
-                   int offset,
-                   int nullability,
-                   int expectedLength) {
+  List<int> decodeArray(Function arrayViewer,
+                        int elementSize,
+                        int offset,
+                        int nullability,
+                        int expectedLength) {
     Decoder d = decodePointer(offset, isArrayNullable(nullability));
     if (d == null) {
       return null;
@@ -796,18 +727,5 @@ class Decoder {
       return null;
     }
     return _stringOfUtf8(bytes);
-  }
-
-  DataHeader decodeDataHeaderForMap() {
-    var header = decodeDataHeader();
-    if (header.size != kMapStructHeader.size) {
-      throw new MojoCodecError(
-          'Incorrect header for map. The size is incorrect.');
-    }
-    if (header.numFields != kMapStructHeader.numFields) {
-      throw new MojoCodecError(
-          'Incorrect header for map. The number of fields is incorrect.');
-    }
-    return header;
   }
 }

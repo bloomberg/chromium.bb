@@ -20,14 +20,9 @@
 namespace mojo {
 namespace system {
 
-const ProcessIdentifier kFirstSlaveProcessIdentifier = 2;
-
-static_assert(kMasterProcessIdentifier != kInvalidProcessIdentifier,
-              "Bad master process identifier");
-static_assert(kFirstSlaveProcessIdentifier != kInvalidProcessIdentifier,
-              "Bad first slave process identifier");
-static_assert(kMasterProcessIdentifier != kFirstSlaveProcessIdentifier,
-              "Master and first slave process identifiers are the same");
+const ProcessIdentifier kFirstProcessIdentifier = 1;
+const ProcessIdentifier kMasterProcessIdentifier =
+    static_cast<ProcessIdentifier>(-1);
 
 // MasterConnectionManager::Helper ---------------------------------------------
 
@@ -223,7 +218,7 @@ MasterConnectionManager::MasterConnectionManager()
     : creation_thread_task_runner_(base::MessageLoop::current()->task_runner()),
       master_process_delegate_(),
       private_thread_("MasterConnectionManagerPrivateThread"),
-      next_process_identifier_(kFirstSlaveProcessIdentifier) {
+      next_process_identifier_(kFirstProcessIdentifier) {
   DCHECK(creation_thread_task_runner_);
   AssertOnCreationThread();  // Just make sure this assertion works correctly.
 }

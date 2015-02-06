@@ -42,7 +42,7 @@ class ShellAndArgumentGrabber : public Application {
 
   void WaitForInitialize() {
     // Initialize is always the first call made on Application.
-    MOJO_CHECK(binding_.WaitForIncomingMethodCall());
+    binding_.WaitForIncomingMethodCall();
   }
 
  private:

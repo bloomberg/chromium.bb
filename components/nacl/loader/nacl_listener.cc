@@ -35,7 +35,6 @@
 #include "native_client/src/public/nacl_file_info.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
-#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -434,8 +433,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #if !defined(OS_MACOSX)
     // Don't call mojo::embedder::Init on Mac; it's already been called from
     // ChromeMain() (see chrome/app/chrome_exe_main_mac.cc).
-    mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
-        new mojo::embedder::SimplePlatformSupport()));
+    mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>());
 #endif
     // InjectMojo adds a file descriptor to the process that allows Mojo calls
     // to use an implementation defined outside the NaCl sandbox. See
