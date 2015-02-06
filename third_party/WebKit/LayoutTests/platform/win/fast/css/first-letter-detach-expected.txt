@@ -12,9 +12,9 @@ layer at (0,0) size 800x600
               text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=3560"
           RenderText {#text} at (407,0) size 741x35
             text run at (407,0) width 334: " page with use of first-letter crashes reproducibly in"
-            text run at (0,18) width 192: "LayoutObject::renderArena()"
-        RenderText {#text} at (191,18) size 5x17
-          text run at (191,18) width 5: "."
+            text run at (0,18) width 191: "LayoutObject::renderArena()"
+        RenderText {#text} at (190,18) size 5x17
+          text run at (190,18) width 5: "."
       RenderBlock {P} at (0,52) size 784x18
         RenderText {#text} at (0,0) size 236x17
           text run at (0,0) width 236: "The next three lines should all read \x{201C}"
