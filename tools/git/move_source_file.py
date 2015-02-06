@@ -119,6 +119,48 @@ def UpdatePostMove(from_path, to_path):
       r'\1%s\2' % PathMinusFirstComponent(to_path),
       ['*.gyp*'])
 
+  # Update references in BUILD.gn files.
+  #
+  # Unlike .gyp(i) files, BUILD.gn files can be placed in any directories,
+  # and paths in a BUILD.gn file are relative to the directory where the
+  # BUILD.gn file is placed.
+  #
+  # For instance, "chrome/browser/chromeos/device_uma.h" is listed as
+  # "browser/chromeos/device_uma.h" in "chrome/chrome_browser_chromeos.gypi",
+  # but it's listed as "device_uma.h" in "chrome/browser/chromeos/BUILD.gn".
+  #
+  # To handle this, the code here will visit directories from the top level
+  # src directory to the directory of |from_path| and try to update BUILD.gn
+  # in each directory.
+  #
+  # The code only handles files moved/renamed within the same BUILD.gn
+  # file. If files are moved beyond the same BUILD.gn file, the affected
+  # BUILD.gn files should be fixed manually.
+  def SplitByFirstComponent(path):
+    """'foo/bar/baz' -> ('foo', 'bar/baz')
+       'bar' -> ('bar', '')
+       '' -> ('', '')
+    """
+    parts = re.split(r"[/\\]", path, 1)
+    if len(parts) == 2:
+      return (parts[0], parts[1])
+    else:
+      return (parts[0], '')
+
+  visiting_directory = ''
+  from_rest = from_path
+  to_rest = to_path
+  while True:
+    mffr.MultiFileFindReplace(
+        r'([\'"])%s([\'"])' % from_rest,
+        r'\1%s\2' % to_rest,
+        [os.path.join(visiting_directory, 'BUILD.gn')])
+    from_first, from_rest = SplitByFirstComponent(from_rest)
+    to_first, to_rest = SplitByFirstComponent(to_rest)
+    visiting_directory = os.path.join(visiting_directory, from_first)
+    if not from_rest or not to_rest:
+        break
+
 
 def MakeIncludeGuardName(path_from_root):
   """Returns an include guard name given a path from root."""
