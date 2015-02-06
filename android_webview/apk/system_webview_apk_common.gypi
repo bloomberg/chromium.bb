@@ -23,8 +23,8 @@
     'proguard_flags_paths': ['<(DEPTH)/android_webview/apk/java/proguard.flags'],
     # TODO: crbug.com/405035 Find a better solution for WebView .pak files.
     'additional_input_paths': [
+      '<@(webview_locales_output_paks)',
       '<(asset_location)/webviewchromium.pak',
-      '<(asset_location)/en-US.pak',
       '<(asset_location)/webview_licenses.notice',
     ],
     'conditions': [
@@ -45,8 +45,8 @@
     {
       'destination': '<(asset_location)',
       'files': [
+        '<@(webview_locales_input_paks)',
         '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
-        '<(PRODUCT_DIR)/android_webview_assets/en-US.pak',
       ],
       'conditions': [
         ['icu_use_data_file_flag==1', {
@@ -83,5 +83,8 @@
       'message': 'Generating WebView license notice',
     },
   ],
-  'includes': [ '../../build/java_apk.gypi' ],
+  'includes': [
+    'system_webview_locales_paks.gypi',
+    '../../build/java_apk.gypi',
+  ],
 }

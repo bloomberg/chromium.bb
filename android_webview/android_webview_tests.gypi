@@ -50,7 +50,7 @@
           'destination': '<(PRODUCT_DIR)/android_webview_apk/assets',
           'files': [
             '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
-            '<(PRODUCT_DIR)/android_webview_assets/en-US.pak',
+            '<(PRODUCT_DIR)/android_webview_assets/locales/en-US.pak',
             '<(java_in_dir)/assets/asset_file.html',
             '<(java_in_dir)/assets/asset_icon.png',
             '<(java_in_dir)/assets/cookie_test.html',

@@ -31,12 +31,24 @@
          'includes': [ '../build/repack_action.gypi' ],
         },
         {
-          'action_name': 'add_en_US_pak_locale',
+          'action_name': 'android_webview_locales_rename_paks',
           'variables': {
-            'pak_inputs': ['<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak'],
-            'pak_output': '<(PRODUCT_DIR)/android_webview_assets/en-US.pak',
+            'rename_locales': 'tools/webview_locales_rename_paks.py',
           },
-         'includes': [ '../build/repack_action.gypi' ],
+          'inputs': [
+            '<(rename_locales)',
+            '<!@pymod_do_main(webview_locales_rename_paks -i -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
+          ],
+          'outputs': [
+            '<!@pymod_do_main(webview_locales_rename_paks -o -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
+          ],
+          'action': [
+            'python',
+            '<(rename_locales)',
+            '-p', '<(PRODUCT_DIR)',
+            '-s', '<(SHARED_INTERMEDIATE_DIR)',
+            '<@(locales)',
+          ],
         }
       ],
     },
@@ -124,7 +136,6 @@
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-        'android_webview_pak',
         'android_webview_version',
       ],
       'include_dirs': [
@@ -264,6 +275,11 @@
         'renderer/aw_render_view_ext.h',
         'renderer/print_render_frame_observer.cc',
         'renderer/print_render_frame_observer.h',
+      ],
+      'conditions': [
+        ['android_webview_build==0', {
+          'dependencies': [ 'android_webview_pak', ],
+        }],
       ],
     },
     {
