@@ -844,6 +844,12 @@ bool RenderFrameHostManager::ResetProxiesInSiteInstance(int32 site_instance_id,
 }
 
 bool RenderFrameHostManager::ShouldTransitionCrossSite() {
+  // True for --site-per-process, which overrides both kSingleProcess and
+  // kProcessPerTab.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return true;
+
   // False in the single-process mode, as it makes RVHs to accumulate
   // in swapped_out_hosts_.
   // True if we are using process-per-site-instance (default) or
