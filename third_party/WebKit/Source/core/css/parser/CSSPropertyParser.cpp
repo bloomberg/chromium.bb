@@ -1673,7 +1673,7 @@ bool CSSPropertyParser::parseFillShorthand(CSSPropertyID propId, const CSSProper
                 CSSParserValue* parserValue = m_valueList->current();
                 // parseFillProperty() may modify m_implicitShorthand, so we MUST reset it
                 // before EACH return below.
-                if (parseFillProperty(properties[i], propId1, propId2, val1, val2)) {
+                if (parserValue && parseFillProperty(properties[i], propId1, propId2, val1, val2)) {
                     parsedProperty[i] = found = true;
                     addFillValue(values[i], val1.release());
                     if (properties[i] == CSSPropertyBackgroundPosition || properties[i] == CSSPropertyWebkitMaskPosition)
@@ -2694,10 +2694,10 @@ void CSSPropertyParser::parseFillRepeat(RefPtrWillBeRawPtr<CSSValue>& value1, Re
     value2 = cssValuePool().createIdentifierValue(toCSSPrimitiveValue(value1.get())->getValueID());
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID propId, bool& allowComma)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID propId)
 {
-    allowComma = true;
     CSSParserValue* value = m_valueList->current();
+    m_valueList->next();
 
     if (value->id == CSSValueContain || value->id == CSSValueCover)
         return cssValuePool().createIdentifierValue(value->id);
@@ -2713,20 +2713,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID 
     }
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2 = nullptr;
-    value = m_valueList->next();
+    value = m_valueList->current();
     if (value) {
-        if (value->unit == CSSParserValue::Operator && value->iValue == ',')
-            allowComma = false;
-        else if (value->id != CSSValueAuto) {
-            if (!validUnit(value, FLength | FPercent)) {
-                if (!inShorthand())
-                    return nullptr;
-                // We need to rewind the value list, so that when it is advanced we'll end up back at this value.
-                m_valueList->previous();
-            } else
-                parsedValue2 = createPrimitiveNumericValue(value);
+        if (value->id == CSSValueAuto) {
+            // `auto' is the default
+            m_valueList->next();
+        } else if (validUnit(value, FLength | FPercent)) {
+            parsedValue2 = createPrimitiveNumericValue(value);
+            m_valueList->next();
         }
-    } else if (!parsedValue2 && propId == CSSPropertyWebkitBackgroundSize) {
+    } else if (propId == CSSPropertyWebkitBackgroundSize) {
         // For backwards compatibility we set the second value to the first if it is omitted.
         // We only need to do this for -webkit-background-size. It should be safe to let masks match
         // the real property.
@@ -2745,12 +2741,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID 
 bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,
     RefPtrWillBeRawPtr<CSSValue>& retValue1, RefPtrWillBeRawPtr<CSSValue>& retValue2)
 {
+    // We initially store the first value in value/value2, and only create
+    // CSSValueLists if we have more values.
     RefPtrWillBeRawPtr<CSSValueList> values = nullptr;
     RefPtrWillBeRawPtr<CSSValueList> values2 = nullptr;
     RefPtrWillBeRawPtr<CSSValue> value = nullptr;
     RefPtrWillBeRawPtr<CSSValue> value2 = nullptr;
-
-    bool allowComma = false;
 
     retValue1 = retValue2 = nullptr;
     propId1 = propId;
@@ -2769,167 +2765,168 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
         propId2 = CSSPropertyWebkitMaskRepeatY;
     }
 
-    for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->current()) {
+    while (true) {
         RefPtrWillBeRawPtr<CSSValue> currValue = nullptr;
         RefPtrWillBeRawPtr<CSSValue> currValue2 = nullptr;
+
         Units unitless = FUnknown;
-        if (allowComma) {
-            if (!isComma(val))
-                return false;
-            m_valueList->next();
-            allowComma = false;
-        } else {
-            allowComma = true;
-            switch (propId) {
-                case CSSPropertyBackgroundColor:
-                    currValue = parseBackgroundColor();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyBackgroundAttachment:
-                    if (val->id == CSSValueScroll || val->id == CSSValueFixed || val->id == CSSValueLocal) {
-                        currValue = cssValuePool().createIdentifierValue(val->id);
-                        m_valueList->next();
-                    }
-                    break;
-                case CSSPropertyBackgroundImage:
-                case CSSPropertyWebkitMaskImage:
-                    if (parseFillImage(m_valueList, currValue))
-                        m_valueList->next();
-                    break;
-                case CSSPropertyWebkitBackgroundClip:
-                case CSSPropertyWebkitBackgroundOrigin:
-                case CSSPropertyWebkitMaskClip:
-                case CSSPropertyWebkitMaskOrigin:
-                    // The first three values here are deprecated and do not apply to the version of the property that has
-                    // the -webkit- prefix removed.
-                    if (val->id == CSSValueBorder || val->id == CSSValuePadding || val->id == CSSValueContent ||
-                        val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueContentBox ||
-                        ((propId == CSSPropertyWebkitBackgroundClip || propId == CSSPropertyWebkitMaskClip) &&
-                         (val->id == CSSValueText || val->id == CSSValueWebkitText))) {
-                        currValue = cssValuePool().createIdentifierValue(val->id);
-                        m_valueList->next();
-                    }
-                    break;
-                case CSSPropertyBackgroundClip:
-                    if (parseBackgroundClip(val, currValue))
-                        m_valueList->next();
-                    break;
-                case CSSPropertyBackgroundOrigin:
-                    if (val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueContentBox) {
-                        currValue = cssValuePool().createIdentifierValue(val->id);
-                        m_valueList->next();
-                    }
-                    break;
-                case CSSPropertyBackgroundPosition:
-                    if (!inShorthand())
-                        unitless = FUnitlessQuirk;
-                    // fall-through
-                case CSSPropertyWebkitMaskPosition:
-                    parseFillPosition(m_valueList, currValue, currValue2, unitless);
-                    // parseFillPosition advances the m_valueList pointer.
-                    break;
-                case CSSPropertyBackgroundPositionX:
-                case CSSPropertyWebkitMaskPositionX: {
-                    currValue = parseFillPositionX(m_valueList);
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                }
-                case CSSPropertyBackgroundPositionY:
-                case CSSPropertyWebkitMaskPositionY: {
-                    currValue = parseFillPositionY(m_valueList);
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                }
-                case CSSPropertyWebkitBackgroundComposite:
-                case CSSPropertyWebkitMaskComposite:
-                    if (val->id >= CSSValueClear && val->id <= CSSValuePlusLighter) {
-                        currValue = cssValuePool().createIdentifierValue(val->id);
-                        m_valueList->next();
-                    }
-                    break;
-                case CSSPropertyBackgroundBlendMode:
-                    if (val->id == CSSValueNormal || val->id == CSSValueMultiply
-                        || val->id == CSSValueScreen || val->id == CSSValueOverlay || val->id == CSSValueDarken
-                        || val->id == CSSValueLighten ||  val->id == CSSValueColorDodge || val->id == CSSValueColorBurn
-                        || val->id == CSSValueHardLight || val->id == CSSValueSoftLight || val->id == CSSValueDifference
-                        || val->id == CSSValueExclusion || val->id == CSSValueHue || val->id == CSSValueSaturation
-                        || val->id == CSSValueColor || val->id == CSSValueLuminosity) {
-                        currValue = cssValuePool().createIdentifierValue(val->id);
-                        m_valueList->next();
-                    }
-                    break;
-                case CSSPropertyBackgroundRepeat:
-                case CSSPropertyWebkitMaskRepeat:
-                    parseFillRepeat(currValue, currValue2);
-                    // parseFillRepeat advances the m_valueList pointer
-                    break;
-                case CSSPropertyBackgroundSize:
-                case CSSPropertyWebkitBackgroundSize:
-                case CSSPropertyWebkitMaskSize: {
-                    currValue = parseFillSize(propId, allowComma);
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                }
-                case CSSPropertyMaskSourceType: {
-                    ASSERT(RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
-                    if (val->id == CSSValueAuto || val->id == CSSValueAlpha || val->id == CSSValueLuminance) {
-                        currValue = cssValuePool().createIdentifierValue(val->id);
-                        m_valueList->next();
-                    } else {
-                        currValue = nullptr;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-            if (!currValue)
-                return false;
+        CSSParserValue* val = m_valueList->current();
+        ASSERT(val);
 
-            if (value && !values) {
-                values = CSSValueList::createCommaSeparated();
-                values->append(value.release());
+        switch (propId) {
+        case CSSPropertyBackgroundColor:
+            currValue = parseBackgroundColor();
+            if (currValue)
+                m_valueList->next();
+            break;
+        case CSSPropertyBackgroundAttachment:
+            if (val->id == CSSValueScroll || val->id == CSSValueFixed || val->id == CSSValueLocal) {
+                currValue = cssValuePool().createIdentifierValue(val->id);
+                m_valueList->next();
             }
-
-            if (value2 && !values2) {
-                values2 = CSSValueList::createCommaSeparated();
-                values2->append(value2.release());
+            break;
+        case CSSPropertyBackgroundImage:
+        case CSSPropertyWebkitMaskImage:
+            if (parseFillImage(m_valueList, currValue))
+                m_valueList->next();
+            break;
+        case CSSPropertyWebkitBackgroundClip:
+        case CSSPropertyWebkitBackgroundOrigin:
+        case CSSPropertyWebkitMaskClip:
+        case CSSPropertyWebkitMaskOrigin:
+            // The first three values here are deprecated and do not apply to the version of the property that has
+            // the -webkit- prefix removed.
+            if (val->id == CSSValueBorder || val->id == CSSValuePadding || val->id == CSSValueContent
+                || val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueContentBox
+                || ((propId == CSSPropertyWebkitBackgroundClip || propId == CSSPropertyWebkitMaskClip)
+                    && (val->id == CSSValueText || val->id == CSSValueWebkitText))) {
+                currValue = cssValuePool().createIdentifierValue(val->id);
+                m_valueList->next();
             }
+            break;
+        case CSSPropertyBackgroundClip:
+            if (parseBackgroundClip(val, currValue))
+                m_valueList->next();
+            break;
+        case CSSPropertyBackgroundOrigin:
+            if (val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueContentBox) {
+                currValue = cssValuePool().createIdentifierValue(val->id);
+                m_valueList->next();
+            }
+            break;
+        case CSSPropertyBackgroundPosition:
+            if (!inShorthand())
+                unitless = FUnitlessQuirk;
+            // fall-through
+        case CSSPropertyWebkitMaskPosition:
+            parseFillPosition(m_valueList, currValue, currValue2, unitless);
+            // parseFillPosition advances the m_valueList pointer.
+            break;
+        case CSSPropertyBackgroundPositionX:
+        case CSSPropertyWebkitMaskPositionX: {
+            currValue = parseFillPositionX(m_valueList);
+            if (currValue)
+                m_valueList->next();
+            break;
+        }
+        case CSSPropertyBackgroundPositionY:
+        case CSSPropertyWebkitMaskPositionY: {
+            currValue = parseFillPositionY(m_valueList);
+            if (currValue)
+                m_valueList->next();
+            break;
+        }
+        case CSSPropertyWebkitBackgroundComposite:
+        case CSSPropertyWebkitMaskComposite:
+            if (val->id >= CSSValueClear && val->id <= CSSValuePlusLighter) {
+                currValue = cssValuePool().createIdentifierValue(val->id);
+                m_valueList->next();
+            }
+            break;
+        case CSSPropertyBackgroundBlendMode:
+            if (val->id == CSSValueNormal || val->id == CSSValueMultiply
+                || val->id == CSSValueScreen || val->id == CSSValueOverlay || val->id == CSSValueDarken
+                || val->id == CSSValueLighten ||  val->id == CSSValueColorDodge || val->id == CSSValueColorBurn
+                || val->id == CSSValueHardLight || val->id == CSSValueSoftLight || val->id == CSSValueDifference
+                || val->id == CSSValueExclusion || val->id == CSSValueHue || val->id == CSSValueSaturation
+                || val->id == CSSValueColor || val->id == CSSValueLuminosity) {
+                currValue = cssValuePool().createIdentifierValue(val->id);
+                m_valueList->next();
+            }
+            break;
+        case CSSPropertyBackgroundRepeat:
+        case CSSPropertyWebkitMaskRepeat:
+            parseFillRepeat(currValue, currValue2);
+            // parseFillRepeat advances the m_valueList pointer
+            break;
+        case CSSPropertyBackgroundSize:
+        case CSSPropertyWebkitBackgroundSize:
+        case CSSPropertyWebkitMaskSize: {
+            currValue = parseFillSize(propId);
+            break;
+        }
+        case CSSPropertyMaskSourceType: {
+            ASSERT(RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
+            if (val->id == CSSValueAuto || val->id == CSSValueAlpha || val->id == CSSValueLuminance) {
+                currValue = cssValuePool().createIdentifierValue(val->id);
+                m_valueList->next();
+            } else {
+                currValue = nullptr;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        if (!currValue)
+            return false;
 
-            if (values)
-                values->append(currValue.release());
+        if (value && !values) {
+            values = CSSValueList::createCommaSeparated();
+            values->append(value.release());
+        }
+
+        if (value2 && !values2) {
+            values2 = CSSValueList::createCommaSeparated();
+            values2->append(value2.release());
+        }
+
+        if (values)
+            values->append(currValue.release());
+        else
+            value = currValue.release();
+        if (currValue2) {
+            if (values2)
+                values2->append(currValue2.release());
             else
-                value = currValue.release();
-            if (currValue2) {
-                if (values2)
-                    values2->append(currValue2.release());
-                else
-                    value2 = currValue2.release();
-            }
+                value2 = currValue2.release();
         }
 
         // When parsing any fill shorthand property, we let it handle building up the lists for all
         // properties.
         if (inShorthand())
             break;
+
+        if (!m_valueList->current())
+            break;
+        if (!consumeComma(m_valueList) || !m_valueList->current())
+            return false;
     }
 
-    if (values && values->length()) {
+    if (values) {
+        ASSERT(values->length());
         retValue1 = values.release();
-        if (values2 && values2->length())
+        if (values2) {
+            ASSERT(values2->length());
             retValue2 = values2.release();
-        return true;
-    }
-    if (value) {
+        }
+    } else {
+        ASSERT(value);
         retValue1 = value.release();
         retValue2 = value2.release();
-        return true;
     }
-    return false;
+
+    return true;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationDelay()

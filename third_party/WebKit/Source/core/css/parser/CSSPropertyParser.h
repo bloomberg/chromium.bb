@@ -129,7 +129,7 @@ private:
     void parse4ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>);
 
     void parseFillRepeat(RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
-    PassRefPtrWillBeRawPtr<CSSValue> parseFillSize(CSSPropertyID, bool &allowComma);
+    PassRefPtrWillBeRawPtr<CSSValue> parseFillSize(CSSPropertyID);
 
     bool parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
     bool parseFillShorthand(CSSPropertyID, const CSSPropertyID* properties, int numProperties, bool important);
