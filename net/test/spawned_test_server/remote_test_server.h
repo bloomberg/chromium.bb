@@ -29,7 +29,7 @@ class RemoteTestServer : public BaseTestServer {
                    const SSLOptions& ssl_options,
                    const base::FilePath& document_root);
 
-  virtual ~RemoteTestServer();
+  ~RemoteTestServer() override;
 
   // Starts the Python test server on the host, instead of on the device, and
   // blocks until the server is ready.

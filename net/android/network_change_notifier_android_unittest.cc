@@ -25,11 +25,9 @@ class NetworkChangeNotifierDelegateAndroidObserver
       : type_notifications_count_(0), max_bandwidth_notifications_count_(0) {}
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
-  virtual void OnConnectionTypeChanged() override {
-    type_notifications_count_++;
-  }
+  void OnConnectionTypeChanged() override { type_notifications_count_++; }
 
-  virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps) override {
+  void OnMaxBandwidthChanged(double max_bandwidth_mbps) override {
     max_bandwidth_notifications_count_++;
   }
 
@@ -49,7 +47,7 @@ class NetworkChangeNotifierObserver
   NetworkChangeNotifierObserver() : notifications_count_(0) {}
 
   // NetworkChangeNotifier::Observer:
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType connection_type) override {
     notifications_count_++;
   }
@@ -68,7 +66,7 @@ class BaseNetworkChangeNotifierAndroidTest : public testing::Test {
  protected:
   typedef NetworkChangeNotifier::ConnectionType ConnectionType;
 
-  virtual ~BaseNetworkChangeNotifierAndroidTest() {}
+  ~BaseNetworkChangeNotifierAndroidTest() override {}
 
   void RunTest(
       const base::Callback<int(void)>& notifications_count_getter,
@@ -148,7 +146,7 @@ class NetworkChangeNotifierDelegateAndroidTest
     delegate_.AddObserver(&other_delegate_observer_);
   }
 
-  virtual ~NetworkChangeNotifierDelegateAndroidTest() {
+  ~NetworkChangeNotifierDelegateAndroidTest() override {
     delegate_.RemoveObserver(&delegate_observer_);
     delegate_.RemoveObserver(&other_delegate_observer_);
   }

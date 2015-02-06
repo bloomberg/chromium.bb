@@ -26,10 +26,10 @@ class NET_EXPORT NetworkChangeNotifierFactoryAndroid :
   NetworkChangeNotifierFactoryAndroid();
 
   // Must be called on the JNI thread.
-  virtual ~NetworkChangeNotifierFactoryAndroid();
+  ~NetworkChangeNotifierFactoryAndroid() override;
 
   // NetworkChangeNotifierFactory:
-  virtual NetworkChangeNotifier* CreateInstance() override;
+  NetworkChangeNotifier* CreateInstance() override;
 
  private:
   // Delegate passed to the instances created by this class.

@@ -42,17 +42,17 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
     : public NetworkChangeNotifier,
       public NetworkChangeNotifierDelegateAndroid::Observer {
  public:
-  virtual ~NetworkChangeNotifierAndroid();
+  ~NetworkChangeNotifierAndroid() override;
 
   // NetworkChangeNotifier:
-  virtual ConnectionType GetCurrentConnectionType() const override;
+  ConnectionType GetCurrentConnectionType() const override;
   // Requires ACCESS_WIFI_STATE permission in order to provide precise WiFi link
   // speed.
-  virtual double GetCurrentMaxBandwidth() const override;
+  double GetCurrentMaxBandwidth() const override;
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
-  virtual void OnConnectionTypeChanged() override;
-  virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps) override;
+  void OnConnectionTypeChanged() override;
+  void OnMaxBandwidthChanged(double max_bandwidth_mbps) override;
 
   static bool Register(JNIEnv* env);
 

@@ -47,7 +47,7 @@ class SpawnerRequestData : public base::SupportsUserData::Data {
     data_received_->clear();
   }
 
-  virtual ~SpawnerRequestData() {}
+  ~SpawnerRequestData() override {}
 
   bool DoesRequestIdMatch(int request_id) const {
     return request_id_ == request_id;

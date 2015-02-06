@@ -59,7 +59,7 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
       const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner);
 
-  virtual ~ProxyConfigServiceAndroid();
+  ~ProxyConfigServiceAndroid() override;
 
   // Register JNI bindings.
   static bool Register(JNIEnv* env);
@@ -71,9 +71,9 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
 
   // ProxyConfigService:
   // Called only on the network thread.
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
 
  private:
   friend class ProxyConfigServiceAndroidTestBase;

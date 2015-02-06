@@ -64,7 +64,7 @@ class DnsConfigWatcher : public NetworkChangeNotifier::NetworkChangeObserver {
     NetworkChangeNotifier::AddNetworkChangeObserver(this);
   }
 
-  virtual ~DnsConfigWatcher() {
+  ~DnsConfigWatcher() override {
     NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   }
 
@@ -73,8 +73,7 @@ class DnsConfigWatcher : public NetworkChangeNotifier::NetworkChangeObserver {
     return true;
   }
 
-  virtual void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type)
-      override {
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override {
     if (!callback_.is_null() && type != NetworkChangeNotifier::CONNECTION_NONE)
       callback_.Run(true);
   }
