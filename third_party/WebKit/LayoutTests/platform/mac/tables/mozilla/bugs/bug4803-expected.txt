@@ -3,16 +3,16 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 283x16
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 283x18
           text run at (0,0) width 283: "The vertical grey bar should be 1 pixel wide"
-      LayoutTable {TABLE} at (0,16) size 140x32
-        LayoutTableSection {TBODY} at (0,0) size 140x32
-          LayoutTableRow {TR} at (0,0) size 140x32
-            LayoutTableCell {TD} at (0,15) size 1x2 [bgcolor=#999999] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,18) size 140x36
+        LayoutTableSection {TBODY} at (0,0) size 140x36
+          LayoutTableRow {TR} at (0,0) size 140x36
+            LayoutTableCell {TD} at (0,17) size 1x2 [bgcolor=#999999] [r=0 c=0 rs=1 cs=1]
               RenderImage {IMG} at (0,0) size 1x2
               RenderText {#text} at (0,0) size 0x0
-            LayoutTableCell {TD} at (1,0) size 139x32 [bgcolor=#FFFFCC] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 129x32
+            LayoutTableCell {TD} at (1,0) size 139x36 [bgcolor=#FFFFCC] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 129x36
                 text run at (0,0) width 129: " D A I LY  C H E C"
-                text run at (0,16) width 12: "K"
+                text run at (0,18) width 12: "K"

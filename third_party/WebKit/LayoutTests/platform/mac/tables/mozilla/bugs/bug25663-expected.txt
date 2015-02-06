@@ -3,30 +3,30 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
-      LayoutTable {TABLE} at (0,0) size 610x90 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 608x88
-          LayoutTableRow {TR} at (0,2) size 608x84
-            LayoutTableCell {TD} at (2,15) size 479x58 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutTable {TABLE} at (2,2) size 475x54 [bgcolor=#BBBBBB]
-                LayoutTableSection {TBODY} at (0,0) size 475x54
-                  LayoutTableRow {TR} at (0,2) size 475x50
-                    LayoutTableCell {TD} at (2,26) size 2x2 [r=0 c=0 rs=1 cs=1]
-                    LayoutTableCell {TD} at (6,2) size 467x50 [r=0 c=1 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 223x16
+      LayoutTable {TABLE} at (0,0) size 610x100 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 608x98
+          LayoutTableRow {TR} at (0,2) size 608x94
+            LayoutTableCell {TD} at (2,17) size 479x64 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 475x60 [bgcolor=#BBBBBB]
+                LayoutTableSection {TBODY} at (0,0) size 475x60
+                  LayoutTableRow {TR} at (0,2) size 475x56
+                    LayoutTableCell {TD} at (2,29) size 2x2 [r=0 c=0 rs=1 cs=1]
+                    LayoutTableCell {TD} at (6,2) size 467x56 [r=0 c=1 rs=1 cs=1]
+                      RenderText {#text} at (1,1) size 223x18
                         text run at (1,1) width 223: "Welcome to the new DaveCentral!"
-                      RenderBR {BR} at (223,13) size 1x0
-                      RenderText {#text} at (1,17) size 440x32
-                        text run at (1,17) width 86: "I have a new "
-                        text run at (86,17) width 355: "Linux software archive as well as the Windows archive"
-                        text run at (1,33) width 216: "you have come to know and love."
-            LayoutTableCell {TD} at (483,2) size 123x84 [bgcolor=#99CCCC] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 114x16
+                      RenderBR {BR} at (223,15) size 1x0
+                      RenderText {#text} at (1,19) size 440x36
+                        text run at (1,19) width 86: "I have a new "
+                        text run at (86,19) width 355: "Linux software archive as well as the Windows archive"
+                        text run at (1,37) width 216: "you have come to know and love."
+            LayoutTableCell {TD} at (483,2) size 123x94 [bgcolor=#99CCCC] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 114x18
                 text run at (2,2) width 114: "ANDOVER.NET"
-              RenderBR {BR} at (115,14) size 1x0
-              RenderText {#text} at (2,18) size 107x16
-                text run at (2,18) width 107: "E-COMMERCE"
-              RenderBR {BR} at (108,30) size 1x0
-              RenderText {#text} at (2,34) size 104x48
-                text run at (2,34) width 104: "Buy some smart"
-                text run at (2,50) width 65: "stuff from"
-                text run at (2,66) width 84: "Andover.Net"
+              RenderBR {BR} at (115,16) size 1x0
+              RenderText {#text} at (2,20) size 107x18
+                text run at (2,20) width 107: "E-COMMERCE"
+              RenderBR {BR} at (108,34) size 1x0
+              RenderText {#text} at (2,38) size 104x54
+                text run at (2,38) width 104: "Buy some smart"
+                text run at (2,56) width 65: "stuff from"
+                text run at (2,74) width 84: "Andover.Net"

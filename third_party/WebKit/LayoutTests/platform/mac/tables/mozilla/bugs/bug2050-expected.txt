@@ -3,25 +3,25 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 324x16
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 324x18
           text run at (0,0) width 324: "If the text is too low, then it is probably Bug 6920."
         RenderText {#text} at (0,0) size 0x0
-      LayoutTable {TABLE} at (0,16) size 274x58 [bgcolor=#FFCC00] [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 272x56
-          LayoutTableRow {TR} at (0,2) size 272x52
-            LayoutTableCell {TD} at (2,2) size 268x52 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DL} at (2,2) size 264x32
+      LayoutTable {TABLE} at (0,18) size 274x62 [bgcolor=#FFCC00] [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 272x60
+          LayoutTableRow {TR} at (0,2) size 272x56
+            LayoutTableCell {TD} at (2,2) size 268x56 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderBlock {DL} at (2,2) size 264x36
                 RenderBlock (anonymous) at (0,0) size 264x0
                   RenderInline {FONT} at (0,0) size 0x0
                     RenderText {#text} at (0,0) size 0x0
-                RenderBlock (anonymous) at (0,0) size 264x16
-                  RenderBlock {DT} at (0,0) size 264x16
-                    RenderText {#text} at (0,0) size 25x16
+                RenderBlock (anonymous) at (0,0) size 264x18
+                  RenderBlock {DT} at (0,0) size 264x18
+                    RenderText {#text} at (0,0) size 25x18
                       text run at (0,0) width 25: "Baz"
-                RenderBlock (anonymous) at (0,16) size 264x0
+                RenderBlock (anonymous) at (0,18) size 264x0
                   RenderInline {FONT} at (0,0) size 0x0
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {DD} at (40,16) size 224x16
-                  RenderText {#text} at (0,0) size 224x16
+                RenderBlock {DD} at (40,18) size 224x18
+                  RenderText {#text} at (0,0) size 224x18
                     text run at (0,0) width 224: "foo foo foo foo foo foo foo foo foo"

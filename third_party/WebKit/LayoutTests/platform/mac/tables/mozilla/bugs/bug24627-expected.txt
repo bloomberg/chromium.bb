@@ -3,115 +3,115 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
-      LayoutTable {TABLE} at (0,0) size 705x70 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 703x68
-          LayoutTableRow {TR} at (0,2) size 703x20
-            LayoutTableCell {TH} at (2,10) size 264x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (268,2) size 151x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 69x16
+      LayoutTable {TABLE} at (0,0) size 705x76 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 703x74
+          LayoutTableRow {TR} at (0,2) size 703x22
+            LayoutTableCell {TH} at (2,11) size 264x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (268,2) size 151x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 69x18
                 text run at (2,2) width 69: "Host name"
-            LayoutTableCell {TD} at (421,2) size 174x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 80x16
+            LayoutTableCell {TD} at (421,2) size 174x22 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 80x18
                 text run at (2,2) width 80: "Architecture"
-            LayoutTableCell {TD} at (597,2) size 104x20 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 46x16
+            LayoutTableCell {TD} at (597,2) size 104x22 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 46x18
                 text run at (2,2) width 46: "Access"
-          LayoutTableRow {TR} at (0,24) size 703x20
-            LayoutTableCell {TD} at (2,24) size 264x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 124x16
+          LayoutTableRow {TR} at (0,26) size 703x22
+            LayoutTableCell {TD} at (2,26) size 264x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 124x18
                 text run at (2,2) width 124: "debussy.debian.org"
-            LayoutTableCell {TD} at (268,24) size 151x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 37x16
+            LayoutTableCell {TD} at (268,26) size 151x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 37x18
                 text run at (2,2) width 37: "ARM"
-            LayoutTableCell {TD} at (421,24) size 174x20 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 16x16
+            LayoutTableCell {TD} at (421,26) size 174x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 16x18
                 text run at (2,2) width 16: "all"
-          LayoutTableRow {TR} at (0,46) size 703x20
-            LayoutTableCell {TD} at (2,46) size 264x20 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 105x16
+          LayoutTableRow {TR} at (0,50) size 703x22
+            LayoutTableCell {TD} at (2,50) size 264x22 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x18
                 text run at (2,2) width 105: "faure.debian.org"
-            LayoutTableCell {TD} at (268,46) size 151x20 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 35x16
+            LayoutTableCell {TD} at (268,50) size 151x22 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 35x18
                 text run at (2,2) width 35: "alpha"
-            LayoutTableCell {TD} at (421,46) size 174x20 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 16x16
+            LayoutTableCell {TD} at (421,50) size 174x22 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 16x18
                 text run at (2,2) width 16: "all"
-      RenderBlock {P} at (0,86) size 784x16
-        RenderText {#text} at (0,0) size 133x16
+      RenderBlock {P} at (0,92) size 784x18
+        RenderText {#text} at (0,0) size 133x18
           text run at (0,0) width 133: "Table nested in table"
-      LayoutTable {TABLE} at (0,118) size 353x92
-        LayoutTableSection {TBODY} at (0,0) size 353x92
-          LayoutTableRow {TR} at (0,2) size 353x88
-            LayoutTableCell {TD} at (2,2) size 349x88 [r=0 c=0 rs=1 cs=1]
-              LayoutTable {TABLE} at (1,1) size 315x86 [border: (1px outset #808080)]
-                LayoutTableSection {TBODY} at (1,1) size 313x84
-                  LayoutTableRow {TR} at (0,2) size 313x36
-                    LayoutTableCell {TH} at (2,18) size 128x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                    LayoutTableCell {TD} at (132,2) size 41x36 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 35x32
+      LayoutTable {TABLE} at (0,126) size 353x100
+        LayoutTableSection {TBODY} at (0,0) size 353x100
+          LayoutTableRow {TR} at (0,2) size 353x96
+            LayoutTableCell {TD} at (2,2) size 349x96 [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (1,1) size 315x94 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 313x92
+                  LayoutTableRow {TR} at (0,2) size 313x40
+                    LayoutTableCell {TH} at (2,20) size 128x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                    LayoutTableCell {TD} at (132,2) size 41x40 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 35x36
                         text run at (2,2) width 31: "Host"
-                        text run at (2,18) width 35: "name"
-                    LayoutTableCell {TD} at (175,10) size 84x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 80x16
+                        text run at (2,20) width 35: "name"
+                    LayoutTableCell {TD} at (175,11) size 84x22 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 80x18
                         text run at (2,2) width 80: "Architecture"
-                    LayoutTableCell {TD} at (261,10) size 50x20 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 46x16
+                    LayoutTableCell {TD} at (261,11) size 50x22 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 46x18
                         text run at (2,2) width 46: "Access"
-                  LayoutTableRow {TR} at (0,40) size 313x20
-                    LayoutTableCell {TD} at (2,40) size 128x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 124x16
+                  LayoutTableRow {TR} at (0,44) size 313x22
+                    LayoutTableCell {TD} at (2,44) size 128x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 124x18
                         text run at (2,2) width 124: "debussy.debian.org"
-                    LayoutTableCell {TD} at (132,40) size 41x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 37x16
+                    LayoutTableCell {TD} at (132,44) size 41x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 37x18
                         text run at (2,2) width 37: "ARM"
-                    LayoutTableCell {TD} at (175,40) size 84x20 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 16x16
+                    LayoutTableCell {TD} at (175,44) size 84x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 16x18
                         text run at (2,2) width 16: "all"
-                  LayoutTableRow {TR} at (0,62) size 313x20
-                    LayoutTableCell {TD} at (2,62) size 128x20 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 105x16
+                  LayoutTableRow {TR} at (0,68) size 313x22
+                    LayoutTableCell {TD} at (2,68) size 128x22 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 105x18
                         text run at (2,2) width 105: "faure.debian.org"
-                    LayoutTableCell {TD} at (132,62) size 41x20 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 35x16
+                    LayoutTableCell {TD} at (132,68) size 41x22 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 35x18
                         text run at (2,2) width 35: "alpha"
-                    LayoutTableCell {TD} at (175,62) size 84x20 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 16x16
+                    LayoutTableCell {TD} at (175,68) size 84x22 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 16x18
                         text run at (2,2) width 16: "all"
-      RenderBlock (anonymous) at (0,210) size 784x16
-        RenderBR {BR} at (0,0) size 0x16
-      RenderBlock {P} at (0,242) size 784x16
-        RenderText {#text} at (0,0) size 116x16
+      RenderBlock (anonymous) at (0,226) size 784x18
+        RenderBR {BR} at (0,0) size 0x18
+      RenderBlock {P} at (0,260) size 784x18
+        RenderText {#text} at (0,0) size 116x18
           text run at (0,0) width 116: "Table - no nesting"
-      LayoutTable {TABLE} at (0,274) size 705x70 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 703x68
-          LayoutTableRow {TR} at (0,2) size 703x20
-            LayoutTableCell {TH} at (2,10) size 264x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (268,2) size 151x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 69x16
+      LayoutTable {TABLE} at (0,294) size 705x76 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 703x74
+          LayoutTableRow {TR} at (0,2) size 703x22
+            LayoutTableCell {TH} at (2,11) size 264x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (268,2) size 151x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 69x18
                 text run at (2,2) width 69: "Host name"
-            LayoutTableCell {TD} at (421,2) size 174x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 80x16
+            LayoutTableCell {TD} at (421,2) size 174x22 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 80x18
                 text run at (2,2) width 80: "Architecture"
-            LayoutTableCell {TD} at (597,2) size 104x20 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 46x16
+            LayoutTableCell {TD} at (597,2) size 104x22 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 46x18
                 text run at (2,2) width 46: "Access"
-          LayoutTableRow {TR} at (0,24) size 703x20
-            LayoutTableCell {TD} at (2,24) size 264x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 124x16
+          LayoutTableRow {TR} at (0,26) size 703x22
+            LayoutTableCell {TD} at (2,26) size 264x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 124x18
                 text run at (2,2) width 124: "debussy.debian.org"
-            LayoutTableCell {TD} at (268,24) size 151x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 37x16
+            LayoutTableCell {TD} at (268,26) size 151x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 37x18
                 text run at (2,2) width 37: "ARM"
-            LayoutTableCell {TD} at (421,24) size 174x20 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 16x16
+            LayoutTableCell {TD} at (421,26) size 174x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 16x18
                 text run at (2,2) width 16: "all"
-          LayoutTableRow {TR} at (0,46) size 703x20
-            LayoutTableCell {TD} at (2,46) size 264x20 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 105x16
+          LayoutTableRow {TR} at (0,50) size 703x22
+            LayoutTableCell {TD} at (2,50) size 264x22 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x18
                 text run at (2,2) width 105: "faure.debian.org"
-            LayoutTableCell {TD} at (268,46) size 151x20 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 35x16
+            LayoutTableCell {TD} at (268,50) size 151x22 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 35x18
                 text run at (2,2) width 35: "alpha"
-            LayoutTableCell {TD} at (421,46) size 174x20 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 16x16
+            LayoutTableCell {TD} at (421,50) size 174x22 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 16x18
                 text run at (2,2) width 16: "all"

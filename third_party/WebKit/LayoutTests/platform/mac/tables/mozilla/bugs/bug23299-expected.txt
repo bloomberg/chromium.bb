@@ -3,37 +3,37 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (0,0) size 800x600
-      LayoutTable {TABLE} at (0,0) size 111x32 [bgcolor=#0000FF]
-        LayoutTableSection {TBODY} at (0,0) size 111x32
-          LayoutTableRow {TR} at (0,0) size 111x32
-            LayoutTableCell {TD} at (0,0) size 111x32 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 68x16
+      LayoutTable {TABLE} at (0,0) size 111x36 [bgcolor=#0000FF]
+        LayoutTableSection {TBODY} at (0,0) size 111x36
+          LayoutTableRow {TR} at (0,0) size 111x36
+            LayoutTableCell {TD} at (0,0) size 111x36 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 68x18
                 text run at (0,0) width 68: "Left Table"
-              RenderBR {BR} at (67,12) size 1x0
-              RenderText {#text} at (0,16) size 111x16
-                text run at (0,16) width 111: "ALIGN=\"LEFT\""
-              RenderBR {BR} at (110,28) size 1x0
-      LayoutTable {TABLE} at (111,0) size 111x32 [bgcolor=#0000FF]
-        LayoutTableSection {TBODY} at (0,0) size 111x32
-          LayoutTableRow {TR} at (0,0) size 111x32
-            LayoutTableCell {TD} at (0,0) size 111x32 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 84x16
+              RenderBR {BR} at (67,14) size 1x0
+              RenderText {#text} at (0,18) size 111x18
+                text run at (0,18) width 111: "ALIGN=\"LEFT\""
+              RenderBR {BR} at (110,32) size 1x0
+      LayoutTable {TABLE} at (111,0) size 111x36 [bgcolor=#0000FF]
+        LayoutTableSection {TBODY} at (0,0) size 111x36
+          LayoutTableRow {TR} at (0,0) size 111x36
+            LayoutTableCell {TD} at (0,0) size 111x36 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 84x18
                 text run at (0,0) width 84: "Center Table"
-              RenderBR {BR} at (83,12) size 1x0
-              RenderText {#text} at (0,16) size 111x16
-                text run at (0,16) width 111: "ALIGN=\"LEFT\""
-              RenderBR {BR} at (110,28) size 1x0
-      LayoutTable {TABLE} at (222,0) size 111x32 [bgcolor=#0000FF]
-        LayoutTableSection {TBODY} at (0,0) size 111x32
-          LayoutTableRow {TR} at (0,0) size 111x32
-            LayoutTableCell {TD} at (0,0) size 111x32 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 76x16
+              RenderBR {BR} at (83,14) size 1x0
+              RenderText {#text} at (0,18) size 111x18
+                text run at (0,18) width 111: "ALIGN=\"LEFT\""
+              RenderBR {BR} at (110,32) size 1x0
+      LayoutTable {TABLE} at (222,0) size 111x36 [bgcolor=#0000FF]
+        LayoutTableSection {TBODY} at (0,0) size 111x36
+          LayoutTableRow {TR} at (0,0) size 111x36
+            LayoutTableCell {TD} at (0,0) size 111x36 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 76x18
                 text run at (0,0) width 76: "Right Table"
-              RenderBR {BR} at (75,12) size 1x0
-              RenderText {#text} at (0,16) size 111x16
-                text run at (0,16) width 111: "ALIGN=\"LEFT\""
-              RenderBR {BR} at (110,28) size 1x0
-      RenderBR {BR} at (333,0) size 0x16
-      RenderBR {BR} at (0,32) size 0x16
-      RenderText {#text} at (0,48) size 494x16
-        text run at (0,48) width 494: "The three tables above should abut each other. (in NN3/4 and IE4/5 they do)."
+              RenderBR {BR} at (75,14) size 1x0
+              RenderText {#text} at (0,18) size 111x18
+                text run at (0,18) width 111: "ALIGN=\"LEFT\""
+              RenderBR {BR} at (110,32) size 1x0
+      RenderBR {BR} at (333,0) size 0x18
+      RenderBR {BR} at (0,36) size 0x18
+      RenderText {#text} at (0,54) size 494x18
+        text run at (0,54) width 494: "The three tables above should abut each other. (in NN3/4 and IE4/5 they do)."

@@ -3,18 +3,18 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      LayoutTable {TABLE} at (0,0) size 66x42
-        LayoutTableSection {THEAD} at (0,0) size 66x22
-          LayoutTableRow {TR} at (0,2) size 66x18
-            LayoutTableCell {TD} at (2,2) size 62x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 60x16
+      LayoutTable {TABLE} at (0,0) size 66x46
+        LayoutTableSection {THEAD} at (0,0) size 66x24
+          LayoutTableRow {TR} at (0,2) size 66x20
+            LayoutTableCell {TD} at (2,2) size 62x20 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 60x18
                 text run at (1,1) width 60: "The head"
-        LayoutTableSection {TBODY} at (0,22) size 66x20
-          LayoutTableRow {TR} at (0,0) size 66x18
-            LayoutTableCell {TD} at (2,0) size 62x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 59x16
+        LayoutTableSection {TBODY} at (0,24) size 66x22
+          LayoutTableRow {TR} at (0,0) size 66x20
+            LayoutTableCell {TD} at (2,0) size 62x20 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 59x18
                 text run at (1,1) width 59: "First row"
-      RenderBlock {FORM} at (0,42) size 784x18
+      RenderBlock {FORM} at (0,46) size 784x18
         RenderButton {INPUT} at (0,0) size 46.34x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2) size 30.34x13
             RenderText {#text} at (0,0) size 31x13

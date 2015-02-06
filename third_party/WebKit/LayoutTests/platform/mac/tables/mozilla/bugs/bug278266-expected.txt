@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 234x16
+      RenderBlock (anonymous) at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 234x18
           text run at (0,0) width 234: "There should be text below this line:"
-      LayoutTable at (0,16) size 121x16
-        LayoutTableSection (anonymous) at (0,0) size 121x16
-          LayoutTableRow {DIV} at (0,0) size 121x16
-            LayoutTableCell (anonymous) at (0,0) size 121x16 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 121x16
+      LayoutTable at (0,18) size 121x18
+        LayoutTableSection (anonymous) at (0,0) size 121x18
+          LayoutTableRow {DIV} at (0,0) size 121x18
+            LayoutTableCell (anonymous) at (0,0) size 121x18 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 121x18
                 text run at (0,0) width 121: "Second line of text"

@@ -3,66 +3,66 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 336x34 [border: (5px outset #808080)]
-        LayoutTableSection {TBODY} at (5,5) size 326x24
-          LayoutTableRow {TR} at (0,2) size 326x20
-            LayoutTableCell {TD} at (2,2) size 160x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 156x16
+      LayoutTable {TABLE} at (0,0) size 336x36 [border: (5px outset #808080)]
+        LayoutTableSection {TBODY} at (5,5) size 326x26
+          LayoutTableRow {TR} at (0,2) size 326x22
+            LayoutTableCell {TD} at (2,2) size 160x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 156x18
                 text run at (2,2) width 156: "almaalmaalmaalmaalma"
-            LayoutTableCell {TD} at (164,2) size 160x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 8x16
+            LayoutTableCell {TD} at (164,2) size 160x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"
-      RenderBlock (anonymous) at (0,34) size 784x16
-        RenderBR {BR} at (0,0) size 0x16
-      LayoutTable {TABLE} at (0,50) size 336x34 [border: (5px outset #808080)]
-        LayoutTableSection {TBODY} at (5,5) size 326x24
-          LayoutTableRow {TR} at (0,2) size 326x20
-            LayoutTableCell {TD} at (2,2) size 160x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 156x16
+      RenderBlock (anonymous) at (0,36) size 784x18
+        RenderBR {BR} at (0,0) size 0x18
+      LayoutTable {TABLE} at (0,54) size 336x36 [border: (5px outset #808080)]
+        LayoutTableSection {TBODY} at (5,5) size 326x26
+          LayoutTableRow {TR} at (0,2) size 326x22
+            LayoutTableCell {TD} at (2,2) size 160x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 156x18
                 text run at (2,2) width 156: "almaalmaalmaalmaalma"
-            LayoutTableCell {TD} at (164,2) size 160x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 8x16
+            LayoutTableCell {TD} at (164,2) size 160x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"
-      RenderBlock (anonymous) at (0,84) size 784x16
-        RenderBR {BR} at (0,0) size 0x16
-      RenderBlock {P} at (0,116) size 784x32
-        RenderText {#text} at (0,0) size 360x16
+      RenderBlock (anonymous) at (0,90) size 784x18
+        RenderBR {BR} at (0,0) size 0x18
+      RenderBlock {P} at (0,124) size 784x36
+        RenderText {#text} at (0,0) size 360x18
           text run at (0,0) width 360: "In this table, the second and the third cell are given 40%"
-        RenderBR {BR} at (359,12) size 1x0
-        RenderText {#text} at (0,16) size 260x16
-          text run at (0,16) width 260: "The cells are competing with each other."
-        RenderBR {BR} at (259,28) size 1x0
-      LayoutTable {TABLE} at (0,164) size 348x34 [border: (5px outset #808080)]
-        LayoutTableSection {TBODY} at (5,5) size 338x24
-          LayoutTableRow {TR} at (0,2) size 338x20
-            LayoutTableCell {TD} at (2,2) size 66x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 62x16
+        RenderBR {BR} at (359,14) size 1x0
+        RenderText {#text} at (0,18) size 260x18
+          text run at (0,18) width 260: "The cells are competing with each other."
+        RenderBR {BR} at (259,32) size 1x0
+      LayoutTable {TABLE} at (0,176) size 348x36 [border: (5px outset #808080)]
+        LayoutTableSection {TBODY} at (5,5) size 338x26
+          LayoutTableRow {TR} at (0,2) size 338x22
+            LayoutTableCell {TD} at (2,2) size 66x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 62x18
                 text run at (2,2) width 62: "some text"
-            LayoutTableCell {TD} at (70,2) size 132x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 8x16
+            LayoutTableCell {TD} at (70,2) size 132x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"
-            LayoutTableCell {TD} at (204,2) size 132x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 8x16
+            LayoutTableCell {TD} at (204,2) size 132x22 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"
-      RenderBlock {P} at (0,214) size 784x48
-        RenderText {#text} at (0,0) size 360x16
+      RenderBlock {P} at (0,228) size 784x54
+        RenderText {#text} at (0,0) size 360x18
           text run at (0,0) width 360: "In this table, the second and the third cell are given 50%"
-        RenderBR {BR} at (359,12) size 1x0
-        RenderText {#text} at (0,16) size 455x16
-          text run at (0,16) width 455: "The cells are competing again but their percentage can not be satisfied."
-        RenderBR {BR} at (454,28) size 1x0
-        RenderText {#text} at (0,32) size 488x16
-          text run at (0,32) width 488: "The table grows as large as it can and the first cell gets to its minimal width."
-      LayoutTable {TABLE} at (0,278) size 784x50 [border: (5px outset #808080)]
-        LayoutTableSection {TBODY} at (5,5) size 774x40
-          LayoutTableRow {TR} at (0,2) size 774x36
-            LayoutTableCell {TD} at (2,2) size 38x36 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 34x32
+        RenderBR {BR} at (359,14) size 1x0
+        RenderText {#text} at (0,18) size 455x18
+          text run at (0,18) width 455: "The cells are competing again but their percentage can not be satisfied."
+        RenderBR {BR} at (454,32) size 1x0
+        RenderText {#text} at (0,36) size 488x18
+          text run at (0,36) width 488: "The table grows as large as it can and the first cell gets to its minimal width."
+      LayoutTable {TABLE} at (0,298) size 784x54 [border: (5px outset #808080)]
+        LayoutTableSection {TBODY} at (5,5) size 774x44
+          LayoutTableRow {TR} at (0,2) size 774x40
+            LayoutTableCell {TD} at (2,2) size 38x40 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 34x36
                 text run at (2,2) width 34: "some"
-                text run at (2,18) width 24: "text"
-            LayoutTableCell {TD} at (42,10) size 364x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 8x16
+                text run at (2,20) width 24: "text"
+            LayoutTableCell {TD} at (42,11) size 364x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"
-            LayoutTableCell {TD} at (408,10) size 364x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 8x16
+            LayoutTableCell {TD} at (408,11) size 364x22 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"

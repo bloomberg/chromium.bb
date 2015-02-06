@@ -3,28 +3,28 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 226x70 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 224x68
-          LayoutTableRow {TR} at (0,2) size 224x20
-            LayoutTableCell {TD} at (2,2) size 186x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 28x16
+      LayoutTable {TABLE} at (0,0) size 226x76 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 224x74
+          LayoutTableRow {TR} at (0,2) size 224x22
+            LayoutTableCell {TD} at (2,2) size 186x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "Test"
-            LayoutTableCell {TD} at (190,24) size 32x20 [border: (1px inset #808080)] [r=0 c=1 rs=3 cs=1]
-              RenderText {#text} at (2,2) size 28x16
+            LayoutTableCell {TD} at (190,26) size 32x22 [border: (1px inset #808080)] [r=0 c=1 rs=3 cs=1]
+              RenderText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "Test"
-          LayoutTableRow {TR} at (0,24) size 224x42
-            LayoutTableCell {TD} at (2,24) size 186x42 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderBlock (anonymous) at (2,2) size 182x16
-                RenderInline {SPAN} at (0,0) size 168x16
-                  RenderText {#text} at (0,0) size 168x16
+          LayoutTableRow {TR} at (0,26) size 224x46
+            LayoutTableCell {TD} at (2,26) size 186x46 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderBlock (anonymous) at (2,2) size 182x18
+                RenderInline {SPAN} at (0,0) size 168x18
+                  RenderText {#text} at (0,0) size 168x18
                     text run at (0,0) width 168: "This cell should be visible"
-              RenderBlock (anonymous) at (2,18) size 182x22
-                LayoutTable {TABLE} at (0,0) size 182x22
-                  LayoutTableSection {TBODY} at (0,0) size 182x22
-                    LayoutTableRow {TR} at (0,2) size 182x18
-                      LayoutTableCell {TD} at (2,2) size 178x18 [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 176x16
+              RenderBlock (anonymous) at (2,20) size 182x24
+                LayoutTable {TABLE} at (0,0) size 182x24
+                  LayoutTableSection {TBODY} at (0,0) size 182x24
+                    LayoutTableRow {TR} at (0,2) size 182x20
+                      LayoutTableCell {TD} at (2,2) size 178x20 [r=0 c=0 rs=1 cs=1]
+                        RenderText {#text} at (1,1) size 176x18
                           text run at (1,1) width 176: "This table should be visible"
-              RenderBlock (anonymous) at (2,40) size 182x0
+              RenderBlock (anonymous) at (2,44) size 182x0
                 RenderInline {SPAN} at (0,0) size 0x0
                 RenderText {#text} at (0,0) size 0x0
