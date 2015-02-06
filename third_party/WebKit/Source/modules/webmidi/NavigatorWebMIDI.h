@@ -50,7 +50,7 @@ public:
     static ScriptPromise requestMIDIAccess(ScriptState*, Navigator&, const MIDIOptions&);
     ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     NavigatorWebMIDI(LocalFrame*);

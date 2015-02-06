@@ -50,7 +50,7 @@ NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorWebMIDI);
 
-void NavigatorWebMIDI::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorWebMIDI)
 {
     WillBeHeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);

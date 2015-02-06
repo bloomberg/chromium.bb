@@ -174,7 +174,7 @@ void MIDIAccess::stop()
     m_accessor.clear();
 }
 
-void MIDIAccess::trace(Visitor* visitor)
+DEFINE_TRACE(MIDIAccess)
 {
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);

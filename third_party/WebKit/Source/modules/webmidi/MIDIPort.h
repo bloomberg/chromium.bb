@@ -59,7 +59,7 @@ public:
     bool isActive() const { return m_isActive; }
     void setActiveState(bool isActive) { m_isActive = isActive; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 

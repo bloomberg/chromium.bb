@@ -27,7 +27,7 @@ public:
     T* get(const String& key) const;
     bool has(const String& key) const { return m_entries.contains(key); }
 
-    virtual void trace(Visitor* visitor)
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_entries);
     }
@@ -62,7 +62,7 @@ private:
             return true;
         }
 
-        void trace(Visitor* visitor) override
+        DEFINE_INLINE_VIRTUAL_TRACE()
         {
             visitor->trace(m_map);
             PairIterable<String, T*>::IterationSource::trace(visitor);

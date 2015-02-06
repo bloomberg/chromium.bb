@@ -52,7 +52,7 @@ public:
     void send(DOMUint8Array*, ExceptionState&);
     void send(Vector<unsigned>, ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MIDIOutput(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);

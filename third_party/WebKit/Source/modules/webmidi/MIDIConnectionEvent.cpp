@@ -67,7 +67,7 @@ PassRefPtrWillBeRawPtr<MIDIConnectionEvent> MIDIConnectionEvent::create(const At
     return adoptRefWillBeNoop(new MIDIConnectionEvent(type, initializer));
 }
 
-void MIDIConnectionEvent::trace(Visitor* visitor)
+DEFINE_TRACE(MIDIConnectionEvent)
 {
     visitor->trace(m_port);
     Event::trace(visitor);

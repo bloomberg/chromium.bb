@@ -66,7 +66,7 @@ ExecutionContext* MIDIPort::executionContext() const
     return m_access->executionContext();
 }
 
-void MIDIPort::trace(Visitor* visitor)
+DEFINE_TRACE(MIDIPort)
 {
     visitor->trace(m_access);
     RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>::trace(visitor);

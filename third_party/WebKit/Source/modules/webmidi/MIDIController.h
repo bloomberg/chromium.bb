@@ -51,7 +51,7 @@ public:
     static const char* supplementName();
     static MIDIController* from(LocalFrame* frame) { return static_cast<MIDIController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
-    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
 
 protected:
     explicit MIDIController(PassOwnPtr<MIDIClient>);

@@ -52,7 +52,7 @@ public:
     // |timeStamp| is a DOMHighResTimeStamp in the time coordinate system of performance.now().
     void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);

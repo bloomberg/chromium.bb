@@ -41,7 +41,7 @@ class MIDIAccess;
 class MIDISuccessCallback : public GarbageCollectedFinalized<MIDISuccessCallback> {
 public:
     virtual ~MIDISuccessCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(MIDIAccess*, bool) = 0;
 };
 

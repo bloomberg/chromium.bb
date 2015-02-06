@@ -40,7 +40,7 @@ class DOMError;
 class MIDIErrorCallback : public GarbageCollectedFinalized<MIDIErrorCallback> {
 public:
     virtual ~MIDIErrorCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(DOMError*) = 0;
 };
 

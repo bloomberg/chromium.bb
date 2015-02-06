@@ -232,26 +232,27 @@ template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
 #if ENABLE(INLINED_TRACE)
 
-#define DECLARE_TRACE(maybevirtual, maybeoverride)                           \
+#define DECLARE_TRACE_IMPL(maybevirtual)                                     \
 public:                                                                      \
     typedef int HasInlinedTraceMethodMarker;                                 \
-    maybevirtual void trace(Visitor*) maybeoverride;                         \
-    maybevirtual void trace(InlinedGlobalMarkingVisitor) maybeoverride;      \
+    maybevirtual void trace(Visitor*);                                       \
+    maybevirtual void trace(InlinedGlobalMarkingVisitor);                    \
+                                                                             \
 private:                                                                     \
     template <typename VisitorDispatcher> void traceImpl(VisitorDispatcher); \
+                                                                             \
 public:
-
 #define DEFINE_TRACE(T)                                                        \
     void T::trace(Visitor* visitor) { traceImpl(visitor); }                    \
     void T::trace(InlinedGlobalMarkingVisitor visitor) { traceImpl(visitor); } \
     template <typename VisitorDispatcher>                                      \
     ALWAYS_INLINE void T::traceImpl(VisitorDispatcher visitor)
 
-#define DEFINE_INLINE_TRACE(maybevirtual, maybeoverride)                                               \
-    typedef int HasInlinedTraceMethodMarker;                                                           \
-    maybevirtual void trace(Visitor* visitor) maybeoverride { traceImpl(visitor); }                    \
-    maybevirtual void trace(InlinedGlobalMarkingVisitor visitor) maybeoverride { traceImpl(visitor); } \
-    template <typename VisitorDispatcher>                                                              \
+#define DEFINE_INLINE_TRACE_IMPL(maybevirtual)                                           \
+    typedef int HasInlinedTraceMethodMarker;                                             \
+    maybevirtual void trace(Visitor* visitor) { traceImpl(visitor); }                    \
+    maybevirtual void trace(InlinedGlobalMarkingVisitor visitor) { traceImpl(visitor); } \
+    template <typename VisitorDispatcher>                                                \
     inline void traceImpl(VisitorDispatcher visitor)
 
 #define DECLARE_TRACE_AFTER_DISPATCH()                                                    \
@@ -278,14 +279,14 @@ public:
 
 #else // !ENABLE(INLINED_TRACE)
 
-#define DECLARE_TRACE(maybevirtual, maybeoverride)   \
-public:                                              \
-    maybevirtual void trace(Visitor*) maybeoverride;
+#define DECLARE_TRACE_IMPL(maybevirtual) \
+public:                                  \
+    maybevirtual void trace(Visitor*);
 
 #define DEFINE_TRACE(T) void T::trace(Visitor* visitor)
 
-#define DEFINE_INLINE_TRACE(maybevirtual, maybeoverride)    \
-    maybevirtual void trace(Visitor* visitor) maybeoverride
+#define DEFINE_INLINE_TRACE_IMPL(maybevirtual) \
+    maybevirtual void trace(Visitor* visitor)
 
 #define DECLARE_TRACE_AFTER_DISPATCH() void traceAfterDispatch(Visitor*);
 
@@ -296,6 +297,11 @@ public:                                              \
     void traceAfterDispatch(Visitor* visitor)
 
 #endif
+
+#define DECLARE_TRACE() DECLARE_TRACE_IMPL()
+#define DECLARE_VIRTUAL_TRACE() DECLARE_TRACE_IMPL(virtual)
+#define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL()
+#define DEFINE_INLINE_VIRTUAL_TRACE() DEFINE_INLINE_TRACE_IMPL(virtual)
 
 // If MARKER_EAGER_TRACING is set to 1, a marker thread is allowed
 // to directly invoke the trace() method of not-as-yet marked objects upon

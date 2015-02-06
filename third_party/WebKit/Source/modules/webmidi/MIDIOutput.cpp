@@ -232,7 +232,7 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, ExceptionState& exceptionSt
     send(unsignedData, 0.0, exceptionState);
 }
 
-void MIDIOutput::trace(Visitor* visitor)
+DEFINE_TRACE(MIDIOutput)
 {
     MIDIPort::trace(visitor);
 }

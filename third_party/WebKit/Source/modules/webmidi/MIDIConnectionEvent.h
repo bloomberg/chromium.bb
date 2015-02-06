@@ -49,7 +49,7 @@ public:
 
     virtual const AtomicString& interfaceName() const override { return EventNames::MIDIConnectionEvent; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MIDIConnectionEvent();
