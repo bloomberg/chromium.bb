@@ -9,14 +9,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/wifi_sync/wifi_credential.h"
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/wifi_sync/wifi_credential_syncable_service.h"
+#include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/sync/test/integration/wifi_credentials_helper_chromeos.h"
 #endif
 
 using wifi_sync::WifiCredential;
+using wifi_sync::WifiCredentialSyncableService;
+using wifi_sync::WifiCredentialSyncableServiceFactory;
+using wifi_sync::WifiSecurityClass;
 using sync_datatype_helper::test;
 
 using WifiCredentialSet = wifi_sync::WifiCredential::CredentialSet;
@@ -25,12 +28,31 @@ namespace wifi_credentials_helper {
 
 namespace {
 
-WifiCredentialSet GetWifiCredentialsForProfile(const Profile* profile) {
+void SetupClientForProfile(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  return GetWifiCredentialsForProfileChromeOs(profile);
+  wifi_credentials_helper::chromeos::SetupClientForProfileChromeOs(profile);
 #else
-  NOTIMPLEMENTED();
-  return WifiCredential::MakeSet();
+  NOTREACHED();
+#endif
+}
+
+WifiCredentialSyncableService* GetServiceForBrowserContext(
+    content::BrowserContext* context) {
+  return WifiCredentialSyncableServiceFactory::GetForBrowserContext(
+      context);
+}
+
+WifiCredentialSyncableService* GetServiceForProfile(int profile_index) {
+  return GetServiceForBrowserContext(test()->GetProfile(profile_index));
+}
+
+void AddWifiCredentialToProfile(
+    Profile* profile, const WifiCredential& credential) {
+#if defined(OS_CHROMEOS)
+  wifi_credentials_helper::chromeos::AddWifiCredentialToProfileChromeOs(
+      profile, credential);
+#else
+  NOTREACHED();
 #endif
 }
 
@@ -43,7 +65,7 @@ bool CredentialsMatch(const WifiCredentialSet& a_credentials,
     return false;
   }
 
-  for (const auto &credential : a_credentials) {
+  for (const WifiCredential& credential : a_credentials) {
     if (b_credentials.find(credential) == b_credentials.end()) {
       LOG(ERROR)
           << "Network from a not found in b. "
@@ -60,6 +82,20 @@ bool CredentialsMatch(const WifiCredentialSet& a_credentials,
 }
 
 }  // namespace
+
+void SetUp() {
+#if defined(OS_CHROMEOS)
+  wifi_credentials_helper::chromeos::SetUpChromeOs();
+#else
+  NOTREACHED();
+#endif
+}
+
+void SetupClients() {
+  SetupClientForProfile(test()->verifier());
+  for (int i = 0; i < test()->num_clients(); ++i)
+    SetupClientForProfile(test()->GetProfile(i));
+}
 
 bool VerifierIsEmpty() {
   return GetWifiCredentialsForProfile(test()->verifier()).empty();
@@ -90,6 +126,38 @@ bool AllProfilesMatch() {
     }
   }
   return true;
+}
+
+scoped_ptr<WifiCredential> MakeWifiCredential(const std::string& ssid,
+                                              WifiSecurityClass security_class,
+                                              const std::string& passphrase) {
+  return WifiCredential::Create(WifiCredential::MakeSsidBytesForTest(ssid),
+                                security_class,
+                                passphrase);
+}
+
+void AddWifiCredential(int profile_index,
+                       const std::string& sync_id,
+                       const WifiCredential& credential) {
+  AddWifiCredentialToProfile(test()->GetProfile(profile_index), credential);
+  if (test()->use_verifier())
+    AddWifiCredentialToProfile(test()->verifier(), credential);
+
+  // TODO(quiche): Remove this, once we have plumbing to route
+  // NetworkConfigurationObserver events to
+  // WifiCredentialSyncableService instances.
+  GetServiceForProfile(profile_index)
+      ->AddToSyncedNetworks(sync_id, credential);
+}
+
+WifiCredentialSet GetWifiCredentialsForProfile(const Profile* profile) {
+#if defined(OS_CHROMEOS)
+  return wifi_credentials_helper::chromeos::
+      GetWifiCredentialsForProfileChromeOs(profile);
+#else
+  NOTREACHED();
+  return WifiCredential::MakeSet();
+#endif
 }
 
 }  // namespace wifi_credentials_helper

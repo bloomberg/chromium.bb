@@ -7,13 +7,34 @@
 
 #include "components/wifi_sync/wifi_credential.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace wifi_credentials_helper {
 
-// Returns the ChromeOS WiFi credentials associated with |profile|.
+namespace chromeos {
+
+// Performs ChromeOS-specific setup.
+void SetUpChromeOs();
+
+// Performs ChromeOS-specific setup for a given sync client, given
+// that client's BrowserContext. Should be called only after SetUpChromeOs.
+void SetupClientForProfileChromeOs(
+    const content::BrowserContext* browser_context);
+
+// Adds a WiFi credential to the ChromeOS networking backend,
+// associating the credential with the ChromeOS networking state that
+// corresponds to |browser_context|.
+void AddWifiCredentialToProfileChromeOs(
+    const content::BrowserContext* browser_context,
+    const wifi_sync::WifiCredential& credential);
+
+// Returns the ChromeOS WiFi credentials associated with |browser_context|.
 wifi_sync::WifiCredential::CredentialSet GetWifiCredentialsForProfileChromeOs(
-    const Profile* profile);
+    const content::BrowserContext* profile);
+
+}  // namespace chromeos
 
 }  // namespace wifi_credentials_helper
 
