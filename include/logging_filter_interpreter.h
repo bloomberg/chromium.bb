@@ -38,6 +38,7 @@ class LoggingFilterInterpreter : public FilterInterpreter,
   IntProperty logging_notify_;
   // Reset the log by setting the property value.
   IntProperty logging_reset_;
+  StringProperty log_location_;
 
   // This property is unused by this library, but we need a place to stick it.
   // If true, this device is an integrated touchpad, as opposed to an external

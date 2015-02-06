@@ -19,6 +19,8 @@ LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
     : FilterInterpreter(prop_reg, next, tracer, true),
       logging_notify_(prop_reg, "Logging Notify", 0, this),
       logging_reset_(prop_reg, "Logging Reset", 0, this),
+      log_location_(prop_reg, "Log Path",
+                    "/var/log/xorg/touchpad_activity_log.txt"),
       integrated_touchpad_(prop_reg, "Integrated Touchpad", 0) {
   InitName();
   if (prop_reg && log_.get())
@@ -27,7 +29,7 @@ LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
 
 void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {
   if (prop == &logging_notify_)
-    Dump("/var/log/xorg/touchpad_activity_log.txt");
+    Dump(log_location_.val_);
   if (prop == &logging_reset_)
     Clear();
 };
