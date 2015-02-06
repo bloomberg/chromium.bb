@@ -254,6 +254,7 @@ IsolateHolder::~IsolateHolder() {
 #endif
   isolate_data_.reset();
   isolate_->Dispose();
+  isolate_ = NULL;
 }
 
 // static
