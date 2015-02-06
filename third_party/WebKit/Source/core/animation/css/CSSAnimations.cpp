@@ -643,18 +643,23 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
     update->adoptActiveInterpolationsForTransitions(activeInterpolationsForTransitions);
 }
 
+EventTarget* CSSAnimations::AnimationEventDelegate::eventTarget() const
+{
+    return EventPath::eventTargetRespectingTargetRules(*m_animationTarget);
+}
+
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)
 {
-    if (m_target->document().hasListenerType(listenerType)) {
+    if (m_animationTarget->document().hasListenerType(listenerType)) {
         RefPtrWillBeRawPtr<WebKitAnimationEvent> event = WebKitAnimationEvent::create(eventName, m_name, elapsedTime);
-        event->setTarget(m_target);
-        m_target->document().enqueueAnimationFrameEvent(event);
+        event->setTarget(eventTarget());
+        document().enqueueAnimationFrameEvent(event);
     }
 }
 
 bool CSSAnimations::AnimationEventDelegate::requiresIterationEvents(const AnimationNode& animationNode)
 {
-    return m_target->document().hasListenerType(Document::ANIMATIONITERATION_LISTENER);
+    return document().hasListenerType(Document::ANIMATIONITERATION_LISTENER);
 }
 
 void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode& animationNode)
@@ -689,22 +694,27 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode
 
 void CSSAnimations::AnimationEventDelegate::trace(Visitor* visitor)
 {
-    visitor->trace(m_target);
+    visitor->trace(m_animationTarget);
     AnimationNode::EventDelegate::trace(visitor);
+}
+
+EventTarget* CSSAnimations::TransitionEventDelegate::eventTarget() const
+{
+    return EventPath::eventTargetRespectingTargetRules(*m_transitionTarget);
 }
 
 void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationNode& animationNode)
 {
     const AnimationNode::Phase currentPhase = animationNode.phase();
-    if (currentPhase == AnimationNode::PhaseAfter && currentPhase != m_previousPhase && m_target->document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
+    if (currentPhase == AnimationNode::PhaseAfter && currentPhase != m_previousPhase && document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
         String propertyName = getPropertyNameString(m_property);
         const Timing& timing = animationNode.specifiedTiming();
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
-        String pseudoElement = PseudoElement::pseudoElementNameForEvents(m_target->pseudoId());
+        String pseudoElement = PseudoElement::pseudoElementNameForEvents(pseudoId());
         RefPtrWillBeRawPtr<TransitionEvent> event = TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement);
-        event->setTarget(m_target);
-        m_target->document().enqueueAnimationFrameEvent(event);
+        event->setTarget(eventTarget());
+        document().enqueueAnimationFrameEvent(event);
     }
 
     m_previousPhase = currentPhase;
@@ -712,7 +722,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationNod
 
 void CSSAnimations::TransitionEventDelegate::trace(Visitor* visitor)
 {
-    visitor->trace(m_target);
+    visitor->trace(m_transitionTarget);
     AnimationNode::EventDelegate::trace(visitor);
 }
 

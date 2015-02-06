@@ -86,6 +86,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
     , m_pseudoId(pseudoId)
 {
     ASSERT(pseudoId != NOPSEUDO);
+    parent->treeScope().adoptIfNeeded(*this);
     setParentOrShadowHostNode(parent);
     setHasCustomStyleCallbacks();
 }
@@ -106,6 +107,7 @@ void PseudoElement::dispose()
 
     detach();
     RefPtrWillBeRawPtr<Element> parent = parentOrShadowHostElement();
+    document().adoptIfNeeded(*this);
     setParentOrShadowHostNode(0);
     removedFrom(parent.get());
 }

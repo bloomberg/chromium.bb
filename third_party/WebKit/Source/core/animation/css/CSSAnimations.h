@@ -38,6 +38,7 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"
 
@@ -132,8 +133,8 @@ private:
 
     class AnimationEventDelegate final : public AnimationNode::EventDelegate {
     public:
-        AnimationEventDelegate(Element* target, const AtomicString& name)
-            : m_target(target)
+        AnimationEventDelegate(Element* animationTarget, const AtomicString& name)
+            : m_animationTarget(animationTarget)
             , m_name(name)
             , m_previousPhase(AnimationNode::PhaseNone)
             , m_previousIteration(nullValue())
@@ -144,8 +145,12 @@ private:
         virtual void trace(Visitor*) override;
 
     private:
+        const Element& animationTarget() const { return *m_animationTarget; }
+        EventTarget* eventTarget() const;
+        Document& document() const { return m_animationTarget->document(); }
+
         void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
-        RawPtrWillBeMember<Element> m_target;
+        RawPtrWillBeMember<Element> m_animationTarget;
         const AtomicString m_name;
         AnimationNode::Phase m_previousPhase;
         double m_previousIteration;
@@ -153,8 +158,8 @@ private:
 
     class TransitionEventDelegate final : public AnimationNode::EventDelegate {
     public:
-        TransitionEventDelegate(Element* target, CSSPropertyID property)
-            : m_target(target)
+        TransitionEventDelegate(Element* transitionTarget, CSSPropertyID property)
+            : m_transitionTarget(transitionTarget)
             , m_property(property)
             , m_previousPhase(AnimationNode::PhaseNone)
         {
@@ -164,7 +169,12 @@ private:
         virtual void trace(Visitor*) override;
 
     private:
-        RawPtrWillBeMember<Element> m_target;
+        const Element& transitionTarget() const { return *m_transitionTarget; }
+        EventTarget* eventTarget() const;
+        PseudoId pseudoId() const { return m_transitionTarget->pseudoId(); }
+        Document& document() const { return m_transitionTarget->document(); }
+
+        RawPtrWillBeMember<Element> m_transitionTarget;
         const CSSPropertyID m_property;
         AnimationNode::Phase m_previousPhase;
     };
