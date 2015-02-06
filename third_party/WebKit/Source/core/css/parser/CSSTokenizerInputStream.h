@@ -35,7 +35,6 @@ public:
 
     }
 
-    unsigned long long getUInt(unsigned start, unsigned end);
     double getDouble(unsigned start, unsigned end);
 
     template<bool characterPredicate(UChar)>

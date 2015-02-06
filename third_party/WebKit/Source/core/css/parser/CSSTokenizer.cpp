@@ -355,12 +355,12 @@ static NumericSign getSign(CSSTokenizerInputStream& input, unsigned& offset)
     return NoSign;
 }
 
-static unsigned long long getInteger(CSSTokenizerInputStream& input, unsigned& offset)
+static double getInteger(CSSTokenizerInputStream& input, unsigned& offset)
 {
     unsigned intStartPos = offset;
     offset = input.skipWhilePredicate<isASCIIDigit>(offset);
     unsigned intEndPos = offset;
-    return input.getUInt(intStartPos, intEndPos);
+    return input.getDouble(intStartPos, intEndPos);
 }
 
 static double getFraction(CSSTokenizerInputStream& input, unsigned& offset)
@@ -372,7 +372,7 @@ static double getFraction(CSSTokenizerInputStream& input, unsigned& offset)
     return input.getDouble(startOffset, offset);
 }
 
-static unsigned long long getExponent(CSSTokenizerInputStream& input, unsigned& offset, int& sign)
+static double getExponent(CSSTokenizerInputStream& input, unsigned& offset, int& sign)
 {
     unsigned exponentStartPos = 0;
     unsigned exponentEndPos = 0;
@@ -391,7 +391,7 @@ static unsigned long long getExponent(CSSTokenizerInputStream& input, unsigned& 
         if (exponentEndPos == exponentStartPos)
             offset = offsetBeforeExponent;
     }
-    return input.getUInt(exponentStartPos, exponentEndPos);
+    return input.getDouble(exponentStartPos, exponentEndPos);
 }
 
 // This method merges the following spec sections for efficiency
@@ -405,11 +405,11 @@ CSSParserToken CSSTokenizer::consumeNumber()
     unsigned offset = 0;
     int exponentSign = 1;
     NumericSign sign = getSign(m_input, offset);
-    unsigned long long integerPart = getInteger(m_input, offset);
+    double integerPart = getInteger(m_input, offset);
     unsigned integerPartEndOffset = offset;
 
     double fractionPart = getFraction(m_input, offset);
-    unsigned long long exponentPart = getExponent(m_input, offset, exponentSign);
+    double exponentPart = getExponent(m_input, offset, exponentSign);
     double exponent = pow(10, (float)exponentSign * (double)exponentPart);
     value = ((double)integerPart + fractionPart) * exponent;
     if (sign == MinusSign)

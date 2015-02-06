@@ -35,20 +35,6 @@ void CSSTokenizerInputStream::pushBack(UChar cc)
     ASSERT(nextInputChar() == cc);
 }
 
-unsigned long long CSSTokenizerInputStream::getUInt(unsigned start, unsigned end)
-{
-    ASSERT(start <= end && ((m_offset + end) <= m_string.length()));
-    bool isResultOK = false;
-    unsigned long long result = 0;
-    if (start < end) {
-        if (m_string.is8Bit())
-            result = charactersToUInt64Strict(m_string.characters8() + m_offset + start, end - start, &isResultOK);
-        else
-            result = charactersToUInt64Strict(m_string.characters16() + m_offset + start, end - start, &isResultOK);
-    }
-    return isResultOK ? result : 0;
-}
-
 double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
 {
     ASSERT(start <= end && ((m_offset + end) <= m_string.length()));
@@ -60,6 +46,7 @@ double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
         else
             result = charactersToDouble(m_string.characters16() + m_offset + start, end - start, &isResultOK);
     }
+    // FIXME: It looks like callers ensure we have a valid number
     return isResultOK ? result : 0.0;
 }
 

@@ -349,6 +349,7 @@ TEST(CSSTokenizerTest, NumberToken)
     TEST_TOKENS("1.e2", number(IntegerValueType, 1, NoSign), delim('.'), ident("e2"));
     TEST_TOKENS("2e3.5", number(NumberValueType, 2000, NoSign), number(NumberValueType, 0.5, NoSign));
     TEST_TOKENS("2e3.", number(NumberValueType, 2000, NoSign), delim('.'));
+    TEST_TOKENS("1000000000000000000000000", number(IntegerValueType, 1e24, NoSign));
 }
 
 TEST(CSSTokenizerTest, DimensionToken)
