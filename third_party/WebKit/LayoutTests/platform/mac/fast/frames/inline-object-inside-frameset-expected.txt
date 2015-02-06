@@ -1,10 +1,10 @@
-layer at (0,0) size 800x600 scrollWidth 808 scrollHeight 632
+layer at (0,0) size 800x600 scrollWidth 808 scrollHeight 634
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x632 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x632
-    RenderBody {BODY} at (8,8) size 784x616
-      RenderBlock {DIV} at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 710x16
+layer at (0,0) size 800x634 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x634
+    RenderBody {BODY} at (8,8) size 784x618
+      RenderBlock {DIV} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 710x18
           text run at (0,0) width 710: "This tests that putting an inline element (such as a span) inside of an element doesn't cause an assertion failure."
-      RenderBlock {DIV} at (0,16) size 784x600
+      RenderBlock {DIV} at (0,18) size 784x600
         RenderFrameSet {FRAMESET} at (0,0) size 800x600
