@@ -554,6 +554,7 @@ source_set("browser") {
     deps += [
       "//components/onc",
       "//components/storage_monitor",
+      "//components/update_client",
       "//crypto:platform",
       "//device/bluetooth",
       "//device/core",

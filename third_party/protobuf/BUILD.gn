@@ -30,10 +30,13 @@ if (component_mode == "shared_library") {
   }
 }
 
-# This condif should be applied to targets using generated code from the proto
+# This config should be applied to targets using generated code from the proto
 # compiler. It sets up the include directories properly.
 config("using_proto") {
-  include_dirs = [ "$root_gen_dir/protoc_out" ]
+  include_dirs = [
+    "src",
+    "$root_gen_dir/protoc_out",
+  ]
 }
 
 protobuf_lite_sources = [

@@ -5,7 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
-#include "extensions/browser/api/mime_handler_private/mime_handler_private.cc"
+#include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

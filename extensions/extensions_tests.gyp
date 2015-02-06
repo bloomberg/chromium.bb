@@ -29,6 +29,7 @@
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../third_party/mojo/mojo_public.gyp:mojo_application_bindings',
         'common/api/api.gyp:cast_channel_proto',
+        'extensions.gyp:extensions_browser',
         'extensions.gyp:extensions_common',
         'extensions.gyp:extensions_renderer',
         'extensions.gyp:extensions_shell_and_test_pak',

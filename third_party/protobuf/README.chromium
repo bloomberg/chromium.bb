@@ -38,3 +38,5 @@ and unknown_field_set.h
 
 GetEmptyString() and GoogleOnceInit() have been uninlined, for a large savings
 in binary size.
+
+A BUILD.gn file has been added for building with GN.
