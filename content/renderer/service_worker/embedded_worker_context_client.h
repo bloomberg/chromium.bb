@@ -118,7 +118,7 @@ class EmbeddedWorkerContextClient
       const blink::WebString& message,
       blink::WebMessagePortChannelArray* channels);
   virtual void focus(int client_id,
-                     blink::WebServiceWorkerClientFocusCallback*);
+                     blink::WebServiceWorkerClientCallbacks*);
   virtual void skipWaiting(
       blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
   virtual void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);

@@ -461,7 +461,7 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_OpenWindowError,
 // Sent via EmbeddedWorker as a response of FocusClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,
                      int /* request_id */,
-                     bool /* result */)
+                     content::ServiceWorkerClientInfo /* client */)
 
 // Sent via EmbeddedWorker at successful completion of CacheStorage operations.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageHasSuccess,

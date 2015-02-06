@@ -1247,7 +1247,7 @@ void ServiceWorkerVersion::OnPostMessageToDocument(
 
 void ServiceWorkerVersion::OnFocusClient(int request_id, int client_id) {
   TRACE_EVENT2("ServiceWorker",
-               "ServiceWorkerVersion::OnFocusDocument",
+               "ServiceWorkerVersion::OnFocusClient",
                "Request id", request_id,
                "Client id", client_id);
   ServiceWorkerProviderHost* provider_host =
@@ -1260,17 +1260,24 @@ void ServiceWorkerVersion::OnFocusClient(int request_id, int client_id) {
   provider_host->Focus(
       base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
                  weak_factory_.GetWeakPtr(),
-                 request_id));
+                 request_id,
+                 client_id));
 }
 
-void ServiceWorkerVersion::OnFocusClientFinished(int request_id, bool result) {
+void ServiceWorkerVersion::OnFocusClientFinished(
+    int request_id,
+    int cliend_id,
+    const ServiceWorkerClientInfo& client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != RUNNING)
     return;
 
+  ServiceWorkerClientInfo client_info(client);
+  client_info.client_id = cliend_id;
+
   embedded_worker_->SendMessage(ServiceWorkerMsg_FocusClientResponse(
-      request_id, result));
+      request_id, client_info));
 }
 
 void ServiceWorkerVersion::OnSkipWaiting(int request_id) {

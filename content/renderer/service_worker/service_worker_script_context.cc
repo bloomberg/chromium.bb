@@ -264,9 +264,9 @@ void ServiceWorkerScriptContext::PostCrossOriginMessageToClient(
 }
 
 void ServiceWorkerScriptContext::FocusClient(
-    int client_id, blink::WebServiceWorkerClientFocusCallback* callback) {
+    int client_id, blink::WebServiceWorkerClientCallbacks* callback) {
   DCHECK(callback);
-  int request_id = pending_focus_client_callbacks_.Add(callback);
+  int request_id = pending_client_callbacks_.Add(callback);
   Send(new ServiceWorkerHostMsg_FocusClient(
       GetRoutingID(), request_id, client_id));
 }
@@ -500,18 +500,31 @@ void ServiceWorkerScriptContext::OnOpenWindowError(int request_id) {
   pending_client_callbacks_.Remove(request_id);
 }
 
-void ServiceWorkerScriptContext::OnFocusClientResponse(int request_id,
-                                                       bool result) {
+void ServiceWorkerScriptContext::OnFocusClientResponse(
+    int request_id, const ServiceWorkerClientInfo& client) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnFocusClientResponse");
-  blink::WebServiceWorkerClientFocusCallback* callback =
-      pending_focus_client_callbacks_.Lookup(request_id);
+  blink::WebServiceWorkerClientCallbacks* callback =
+      pending_client_callbacks_.Lookup(request_id);
   if (!callback) {
     NOTREACHED() << "Got stray response: " << request_id;
     return;
   }
-  callback->onSuccess(&result);
-  pending_focus_client_callbacks_.Remove(request_id);
+  if (!client.IsEmpty()) {
+    DCHECK(client.IsValid());
+    scoped_ptr<blink::WebServiceWorkerClientInfo> web_client (
+        new blink::WebServiceWorkerClientInfo(
+            ToWebServiceWorkerClientInfo(client)));
+    callback->onSuccess(web_client.release());
+  } else {
+    scoped_ptr<blink::WebServiceWorkerError> error(
+        new blink::WebServiceWorkerError(
+            blink::WebServiceWorkerError::ErrorTypeNotFound,
+            "The WindowClient was not found."));
+    callback->onError(error.release());
+  }
+
+  pending_client_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerScriptContext::OnDidSkipWaiting(int request_id) {

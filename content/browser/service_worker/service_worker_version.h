@@ -373,7 +373,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnSkipWaiting(int request_id);
   void OnClaimClients(int request_id);
 
-  void OnFocusClientFinished(int request_id, bool result);
+  void OnFocusClientFinished(int request_id,
+                             int client_id,
+                             const ServiceWorkerClientInfo& client);
 
   void DidSkipWaiting(int request_id);
   void DidClaimClients(int request_id, ServiceWorkerStatusCode status);

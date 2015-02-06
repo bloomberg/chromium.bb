@@ -45,7 +45,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
-  using FocusCallback = base::Callback<void(bool)>;
   using GetClientInfoCallback =
       base::Callback<void(const ServiceWorkerClientInfo&)>;
 
@@ -143,9 +142,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Activates the WebContents associated with
   // { render_process_id_, render_frame_id_ }.
-  // Runs the |callback| with the result in parameter describing whether the
-  // focusing action was successful.
-  void Focus(const FocusCallback& callback);
+  // Runs the |callback| with the updated ServiceWorkerClientInfo in parameter.
+  void Focus(const GetClientInfoCallback& callback);
 
   // Asks the renderer to send back the document information.
   void GetClientInfo(const GetClientInfoCallback& callback) const;

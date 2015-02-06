@@ -19,7 +19,6 @@
 #include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerClientFocusCallback.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsClaimCallbacks.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
@@ -86,7 +85,7 @@ class ServiceWorkerScriptContext {
       const base::string16& message,
       scoped_ptr<blink::WebMessagePortChannelArray> channels);
   void FocusClient(int client_id,
-                   blink::WebServiceWorkerClientFocusCallback* callback);
+                   blink::WebServiceWorkerClientCallbacks* callback);
   void SkipWaiting(blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
   void ClaimClients(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);
 
@@ -108,8 +107,6 @@ class ServiceWorkerScriptContext {
       ClaimClientsCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerClientCallbacks, IDMapOwnPointer>
       ClientCallbacksMap;
-  typedef IDMap<blink::WebServiceWorkerClientFocusCallback, IDMapOwnPointer>
-      FocusClientCallbacksMap;
   typedef IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>
       SkipWaitingCallbacksMap;
 
@@ -141,7 +138,8 @@ class ServiceWorkerScriptContext {
   void OnOpenWindowResponse(int request_id,
                             const ServiceWorkerClientInfo& client);
   void OnOpenWindowError(int request_id);
-  void OnFocusClientResponse(int request_id, bool result);
+  void OnFocusClientResponse(int request_id,
+                             const ServiceWorkerClientInfo& client);
   void OnDidSkipWaiting(int request_id);
   void OnDidClaimClients(int request_id);
   void OnClaimClientsError(int request_id,
@@ -164,11 +162,8 @@ class ServiceWorkerScriptContext {
   // Pending callbacks for GetClientDocuments().
   ClientsCallbacksMap pending_clients_callbacks_;
 
-  // Pending callbacks for OpenWindow().
+  // Pending callbacks for OpenWindow() and FocusClient().
   ClientCallbacksMap pending_client_callbacks_;
-
-  // Pending callbacks for FocusClient().
-  FocusClientCallbacksMap pending_focus_client_callbacks_;
 
   // Pending callbacks for SkipWaiting().
   SkipWaitingCallbacksMap pending_skip_waiting_callbacks_;

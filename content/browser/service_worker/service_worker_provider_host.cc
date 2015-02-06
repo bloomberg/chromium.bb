@@ -5,6 +5,8 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
 #include "base/stl_util.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -15,34 +17,18 @@
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/child_process_host.h"
 
 namespace content {
 
 namespace {
-
-void FocusOnUIThread(int render_process_id,
-                     int render_frame_id,
-                     const ServiceWorkerProviderHost::FocusCallback& callback) {
-  WebContents* web_contents = WebContents::FromRenderFrameHost(
-      RenderFrameHost::FromID(render_process_id, render_frame_id));
-
-  bool result = false;
-
-  if (web_contents && web_contents->GetDelegate()) {
-    result = true;
-    web_contents->GetDelegate()->ActivateContents(web_contents);
-  }
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, result));
-}
 
 void GetClientInfoOnUIThread(
     int render_process_id,
@@ -68,6 +54,35 @@ void GetClientInfoOnUIThread(
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, client_info));
+}
+
+void FocusOnUIThread(
+    int render_process_id,
+    int render_frame_id,
+    const ServiceWorkerProviderHost::GetClientInfoCallback& callback) {
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host));
+
+  if (!render_frame_host || !web_contents) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, ServiceWorkerClientInfo()));
+    return;
+  }
+
+  FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
+
+  // Focus the frame in the frame tree node, in case it has changed.
+  frame_tree_node->frame_tree()->SetFocusedFrame(frame_tree_node);
+
+  // Focus the frame's view to make sure the frame is now considered as focused.
+  render_frame_host->GetView()->Focus();
+
+  // Move the web contents to the foreground.
+  web_contents->Activate();
+
+  GetClientInfoOnUIThread(render_process_id, render_frame_id, callback);
 }
 
 }  // anonymous namespace
@@ -285,7 +300,7 @@ void ServiceWorkerProviderHost::PostMessage(
       new_routing_ids));
 }
 
-void ServiceWorkerProviderHost::Focus(const FocusCallback& callback) {
+void ServiceWorkerProviderHost::Focus(const GetClientInfoCallback& callback) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&FocusOnUIThread,

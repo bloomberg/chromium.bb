@@ -398,7 +398,7 @@ void EmbeddedWorkerContextClient::postMessageToCrossOriginClient(
 }
 
 void EmbeddedWorkerContextClient::focus(
-    int client_id, blink::WebServiceWorkerClientFocusCallback* callback) {
+    int client_id, blink::WebServiceWorkerClientCallbacks* callback) {
   DCHECK(script_context_);
   script_context_->FocusClient(client_id, callback);
 }
