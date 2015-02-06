@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_DELEGATE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_DELEGATE_H_
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "net/base/proxy_delegate.h"
 #include "url/gurl.h"
 
@@ -21,14 +21,14 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyRequestOptions;
+class DataReductionProxyAuthRequestHandler;
 
 class DataReductionProxyDelegate : public net::ProxyDelegate {
  public:
   // ProxyDelegate instance is owned by io_thread. |auth_handler| and |params|
   // outlives this class instance.
   explicit DataReductionProxyDelegate(
-      DataReductionProxyRequestOptions* request_options,
+      DataReductionProxyAuthRequestHandler* auth_handler,
       DataReductionProxyParams* params);
 
   ~DataReductionProxyDelegate() override;
@@ -57,7 +57,7 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
       const net::HttpResponseHeaders& response_headers) override;
 
  private:
-  DataReductionProxyRequestOptions* request_options_;
+  DataReductionProxyAuthRequestHandler* auth_handler_;
   const DataReductionProxyParams* params_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyDelegate);

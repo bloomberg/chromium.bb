@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
@@ -21,6 +21,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
+using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
 
 namespace android_webview {
 
@@ -59,13 +60,13 @@ void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
   // The following call to GetRequestContext() could possibly be the first such
   // call, which means AwURLRequestContextGetter::InitializeURLRequestContext
   // will be called on IO thread as a result. InitializeURLRequestContext()
-  // will initialize DataReductionProxyRequestOptions.
+  // will initialize DataReductionProxyAuthRequestHandler.
   AwURLRequestContextGetter* aw_url_request_context_getter =
       static_cast<AwURLRequestContextGetter*>(
           browser_context->GetRequestContext());
 
   // This PostTask has to be called after GetRequestContext, because SetKeyOnIO
-  // needs a valid DataReductionProxyRequestOptions object.
+  // needs a valid DataReductionProxyAuthRequestHandler object.
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&AwURLRequestContextGetter::SetKeyOnIO,

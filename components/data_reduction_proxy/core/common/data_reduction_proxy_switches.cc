@@ -51,9 +51,5 @@ const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
 // Enable the alternative data reduction proxy.
 const char kEnableDataReductionProxyAlt[] = "enable-data-reduction-proxy-alt";
 
-// Enable Data Reduction Proxy Lo-Fi mode.
-const char kEnableDataReductionProxyLoFi[] =
-    "enable-data-reduction-proxy-lo-fi";
-
 }  // namespace switches
 }  // namespace data_reduction_proxy

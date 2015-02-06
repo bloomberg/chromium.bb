@@ -10,8 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "net/base/load_flags.h"
@@ -74,7 +74,7 @@ namespace data_reduction_proxy {
 DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     scoped_ptr<net::NetworkDelegate> network_delegate,
     DataReductionProxyParams* params,
-    DataReductionProxyRequestOptions* request_options,
+    DataReductionProxyAuthRequestHandler* handler,
     const DataReductionProxyConfigurator* configurator)
     : LayeredNetworkDelegate(network_delegate.Pass()),
       ui_task_runner_(NULL),
@@ -83,11 +83,11 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_enabled_(NULL),
       data_reduction_proxy_params_(params),
       data_reduction_proxy_usage_stats_(NULL),
-      data_reduction_proxy_request_options_(request_options),
+      data_reduction_proxy_auth_request_handler_(handler),
       data_reduction_proxy_statistics_prefs_(NULL),
       configurator_(configurator) {
   DCHECK(data_reduction_proxy_params_);
-  DCHECK(data_reduction_proxy_request_options_);
+  DCHECK(data_reduction_proxy_auth_request_handler_);
 }
 
 DataReductionProxyNetworkDelegate::~DataReductionProxyNetworkDelegate() {
@@ -162,8 +162,8 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     net::URLRequest* request,
     const net::ProxyInfo& proxy_info,
     net::HttpRequestHeaders* headers) {
-  if (data_reduction_proxy_request_options_) {
-    data_reduction_proxy_request_options_->MaybeAddRequestHeader(
+  if (data_reduction_proxy_auth_request_handler_) {
+    data_reduction_proxy_auth_request_handler_->MaybeAddRequestHeader(
         request, proxy_info.proxy_server(), headers);
   }
 }
