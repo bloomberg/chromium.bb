@@ -64,8 +64,11 @@ void RendererStartupHelper::Observe(
       for (ExtensionSet::const_iterator iter = extensions.begin();
            iter != extensions.end(); ++iter) {
         // Renderers don't need to know about themes.
-        if (!(*iter)->is_theme())
-          loaded_extensions.push_back(ExtensionMsg_Loaded_Params(iter->get()));
+        if (!(*iter)->is_theme()) {
+          // Don't need to include tab permissions for new tabs.
+          loaded_extensions.push_back(ExtensionMsg_Loaded_Params(
+              iter->get(), false /* no tab permissions */));
+        }
       }
       process->Send(new ExtensionMsg_Loaded(loaded_extensions));
       break;

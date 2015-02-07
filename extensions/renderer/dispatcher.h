@@ -189,6 +189,15 @@ class Dispatcher : public content::RenderProcessObserver,
   void OnTransferBlobs(const std::vector<std::string>& blob_uuids);
   void OnUnloaded(const std::string& id);
   void OnUpdatePermissions(const ExtensionMsg_UpdatePermissions_Params& params);
+  void OnUpdateTabSpecificPermissions(const GURL& visible_url,
+                                      const std::string& extension_id,
+                                      const URLPatternSet& new_hosts,
+                                      bool update_origin_whitelist,
+                                      int tab_id);
+  void OnClearTabSpecificPermissions(
+      const std::vector<std::string>& extension_ids,
+      bool update_origin_whitelist,
+      int tab_id);
   void OnUsingWebRequestAPI(bool webrequest_used);
 
   // UserScriptSetManager::Observer implementation.
@@ -200,9 +209,9 @@ class Dispatcher : public content::RenderProcessObserver,
   // Sets up the host permissions for |extension|.
   void InitOriginPermissions(const Extension* extension);
 
-  // Updates the host permissions for extension to include only those in
+  // Updates the host permissions for the extension url to include only those in
   // |new_patterns|, and remove from |old_patterns| that are no longer allowed.
-  void UpdateOriginPermissions(const Extension* extension,
+  void UpdateOriginPermissions(const GURL& extension_url,
                                const URLPatternSet& old_patterns,
                                const URLPatternSet& new_patterns);
 

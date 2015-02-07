@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/tab_finder.h"
+#include "extensions/renderer/tab_finder.h"
 
 #include "content/public/renderer/render_view.h"
 #include "extensions/renderer/extension_helper.h"

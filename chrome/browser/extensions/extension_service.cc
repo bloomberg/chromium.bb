@@ -1031,8 +1031,11 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
           Profile::FromBrowserContext(host->GetBrowserContext());
       if (host_profile->GetOriginalProfile() ==
           profile_->GetOriginalProfile()) {
+        // We don't need to include tab permisisons here, since the extension
+        // was just loaded.
         std::vector<ExtensionMsg_Loaded_Params> loaded_extensions(
-            1, ExtensionMsg_Loaded_Params(extension));
+            1, ExtensionMsg_Loaded_Params(extension,
+                                          false /* no tab permissions */));
         host->Send(
             new ExtensionMsg_Loaded(loaded_extensions));
       }

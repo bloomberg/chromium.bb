@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_TAB_FINDER_H_
-#define CHROME_RENDERER_EXTENSIONS_TAB_FINDER_H_
+#ifndef EXTENSIONS_RENDERER_TAB_FINDER_H_
+#define EXTENSIONS_RENDERER_TAB_FINDER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -36,4 +36,4 @@ class TabFinder : public content::RenderViewVisitor {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_TAB_FINDER_H_
+#endif  // EXTENSIONS_RENDERER_TAB_FINDER_H_

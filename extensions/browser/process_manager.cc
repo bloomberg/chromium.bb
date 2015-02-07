@@ -378,9 +378,9 @@ std::set<RenderViewHost*> ProcessManager::GetRenderViewHostsForExtension(
     const std::string& extension_id) {
   std::set<RenderViewHost*> result;
 
-  SiteInstance* site_instance = GetSiteInstanceForURL(
-      Extension::GetBaseURLFromExtensionId(extension_id));
-  if (!site_instance)
+  scoped_refptr<SiteInstance> site_instance(GetSiteInstanceForURL(
+      Extension::GetBaseURLFromExtensionId(extension_id)));
+  if (!site_instance.get())
     return result;
 
   // Gather up all the views for that site.

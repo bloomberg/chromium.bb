@@ -79,6 +79,7 @@
 #include "extensions/renderer/script_injection_manager.h"
 #include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
+#include "extensions/renderer/tab_finder.h"
 #include "extensions/renderer/test_features_native_handler.h"
 #include "extensions/renderer/user_gestures_native_handler.h"
 #include "extensions/renderer/utils_native_handler.h"
@@ -804,6 +805,10 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_TransferBlobs, OnTransferBlobs)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateTabSpecificPermissions,
+                      OnUpdateTabSpecificPermissions)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
+                      OnClearTabSpecificPermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
   IPC_MESSAGE_FORWARD(ExtensionMsg_WatchPages,
                       content_watcher_.get(),
@@ -1065,13 +1070,69 @@ void Dispatcher::OnUpdatePermissions(
 
   if (is_webkit_initialized_) {
     UpdateOriginPermissions(
-        extension,
+        extension->url(),
         extension->permissions_data()->GetEffectiveHostPermissions(),
         active->effective_hosts());
   }
 
   extension->permissions_data()->SetPermissions(active, withheld);
   UpdateBindings(extension->id());
+}
+
+void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
+                                                const std::string& extension_id,
+                                                const URLPatternSet& new_hosts,
+                                                bool update_origin_whitelist,
+                                                int tab_id) {
+  // Check against the URL to avoid races. If we can't find the tab, it's
+  // because this is an extension's background page (run in a different
+  // process) - in this case, we can't perform the security check. However,
+  // since activeTab is only granted via user action, this isn't a huge concern.
+  content::RenderView* render_view = TabFinder::Find(tab_id);
+  if (render_view &&
+      render_view->GetWebView()->mainFrame()->document().url() != visible_url) {
+    return;
+  }
+
+  const Extension* extension = extensions_.GetByID(extension_id);
+  if (!extension)
+    return;
+
+  URLPatternSet old_effective =
+      extension->permissions_data()->GetEffectiveHostPermissions();
+  extension->permissions_data()->UpdateTabSpecificPermissions(
+      tab_id,
+      new extensions::PermissionSet(extensions::APIPermissionSet(),
+                                    extensions::ManifestPermissionSet(),
+                                    new_hosts,
+                                    extensions::URLPatternSet()));
+
+  if (is_webkit_initialized_ && update_origin_whitelist) {
+    UpdateOriginPermissions(
+        extension->url(),
+        old_effective,
+        extension->permissions_data()->GetEffectiveHostPermissions());
+  }
+}
+
+void Dispatcher::OnClearTabSpecificPermissions(
+    const std::vector<std::string>& extension_ids,
+    bool update_origin_whitelist,
+    int tab_id) {
+  for (const std::string& id : extension_ids) {
+    const Extension* extension = extensions_.GetByID(id);
+    if (extension) {
+      URLPatternSet old_effective =
+          extension->permissions_data()->GetEffectiveHostPermissions();
+      extension->permissions_data()->ClearTabSpecificPermissions(tab_id);
+      if (is_webkit_initialized_ && update_origin_whitelist) {
+        UpdateOriginPermissions(
+            extension->url(),
+            old_effective,
+            extension->permissions_data()->GetEffectiveHostPermissions());
+      }
+    }
+  }
 }
 
 void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {
@@ -1094,15 +1155,14 @@ void Dispatcher::InitOriginPermissions(const Extension* extension) {
   delegate_->InitOriginPermissions(extension,
                                    IsExtensionActive(extension->id()));
   UpdateOriginPermissions(
-      extension,
+      extension->url(),
       URLPatternSet(),  // No old permissions.
       extension->permissions_data()->GetEffectiveHostPermissions());
 }
 
-void Dispatcher::UpdateOriginPermissions(
-    const Extension* extension,
-    const URLPatternSet& old_patterns,
-    const URLPatternSet& new_patterns) {
+void Dispatcher::UpdateOriginPermissions(const GURL& extension_url,
+                                         const URLPatternSet& old_patterns,
+                                         const URLPatternSet& new_patterns) {
   static const char* kSchemes[] = {
       url::kHttpScheme,
       url::kHttpsScheme,
@@ -1117,7 +1177,7 @@ void Dispatcher::UpdateOriginPermissions(
          pattern != old_patterns.end(); ++pattern) {
       if (pattern->MatchesScheme(scheme)) {
         WebSecurityPolicy::removeOriginAccessWhitelistEntry(
-            extension->url(),
+            extension_url,
             WebString::fromUTF8(scheme),
             WebString::fromUTF8(pattern->host()),
             pattern->match_subdomains());
@@ -1128,7 +1188,7 @@ void Dispatcher::UpdateOriginPermissions(
          pattern != new_patterns.end(); ++pattern) {
       if (pattern->MatchesScheme(scheme)) {
         WebSecurityPolicy::addOriginAccessWhitelistEntry(
-            extension->url(),
+            extension_url,
             WebString::fromUTF8(scheme),
             WebString::fromUTF8(pattern->host()),
             pattern->match_subdomains());

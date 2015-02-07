@@ -258,7 +258,8 @@ struct ExtensionMsg_PermissionSetStruct {
 struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
-  explicit ExtensionMsg_Loaded_Params(const extensions::Extension* extension);
+  ExtensionMsg_Loaded_Params(const extensions::Extension* extension,
+                             bool include_tab_permissions);
 
   // Creates a new extension from the data in this object.
   scoped_refptr<extensions::Extension> ConvertToExtension(
@@ -277,6 +278,7 @@ struct ExtensionMsg_Loaded_Params {
   // The extension's active and withheld permissions.
   ExtensionMsg_PermissionSetStruct active_permissions;
   ExtensionMsg_PermissionSetStruct withheld_permissions;
+  std::map<int, ExtensionMsg_PermissionSetStruct> tab_specific_permissions;
 
   // We keep this separate so that it can be used in logging.
   std::string id;
@@ -469,14 +471,18 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdatePermissions,
                      ExtensionMsg_UpdatePermissions_Params)
 
 // Tell the render view about new tab-specific permissions for an extension.
-IPC_MESSAGE_ROUTED3(ExtensionMsg_UpdateTabSpecificPermissions,
-                    GURL /* url */,
-                    std::string /* extension_id */,
-                    extensions::URLPatternSet /* hosts */)
+IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdateTabSpecificPermissions,
+                     GURL /* url */,
+                     std::string /* extension_id */,
+                     extensions::URLPatternSet /* hosts */,
+                     bool /* update origin whitelist */,
+                     int /* tab_id */)
 
 // Tell the render view to clear tab-specific permissions for some extensions.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_ClearTabSpecificPermissions,
-                    std::vector<std::string> /* extension_ids */)
+IPC_MESSAGE_CONTROL3(ExtensionMsg_ClearTabSpecificPermissions,
+                     std::vector<std::string> /* extension_ids */,
+                     bool /* update origin whitelist */,
+                     int /* tab_id */)
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,

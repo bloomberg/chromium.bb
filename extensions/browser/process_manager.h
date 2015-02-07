@@ -73,6 +73,10 @@ class ProcessManager : public KeyedService,
   ExtensionHost* GetBackgroundHostForExtension(const std::string& extension_id);
 
   // Returns the SiteInstance that the given URL belongs to.
+  // Callers should wrap the result in a scoped_refptr to ensure the
+  // SiteInstance becomes refcounted.
+  // TODO(devlin): The above comment clearly indicates that this should just
+  // return a refptr. Update callers.
   // TODO(aa): This only returns correct results for extensions and packaged
   // apps, not hosted apps.
   virtual content::SiteInstance* GetSiteInstanceForURL(const GURL& url);

@@ -215,6 +215,22 @@ TEST(PermissionsDataTest, EffectiveHostPermissions) {
   EXPECT_TRUE(hosts.MatchesURL(GURL("https://test/")));
   EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.google.com")));
   EXPECT_TRUE(extension->permissions_data()->HasEffectiveAccessToAllHosts());
+
+  // Tab-specific permissions should be included in the effective hosts.
+  GURL tab_url("http://www.example.com/");
+  URLPatternSet new_hosts;
+  new_hosts.AddOrigin(URLPattern::SCHEME_ALL, tab_url);
+  extension->permissions_data()->UpdateTabSpecificPermissions(
+      1,
+      new PermissionSet(APIPermissionSet(),
+                        ManifestPermissionSet(),
+                        new_hosts,
+                        URLPatternSet()));
+  EXPECT_TRUE(extension->permissions_data()->GetEffectiveHostPermissions().
+      MatchesURL(tab_url));
+  extension->permissions_data()->ClearTabSpecificPermissions(1);
+  EXPECT_FALSE(extension->permissions_data()->GetEffectiveHostPermissions().
+      MatchesURL(tab_url));
 }
 
 TEST(PermissionsDataTest, SocketPermissions) {

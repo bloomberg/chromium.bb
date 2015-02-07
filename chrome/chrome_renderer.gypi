@@ -116,8 +116,6 @@
       'renderer/extensions/resource_request_policy.h',
       'renderer/extensions/sync_file_system_custom_bindings.cc',
       'renderer/extensions/sync_file_system_custom_bindings.h',
-      'renderer/extensions/tab_finder.cc',
-      'renderer/extensions/tab_finder.h',
       'renderer/extensions/tabs_custom_bindings.cc',
       'renderer/extensions/tabs_custom_bindings.h',
       'renderer/extensions/webstore_bindings.cc',

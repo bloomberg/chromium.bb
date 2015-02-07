@@ -75,9 +75,12 @@ void ExtensionWebContentsObserver::RenderViewCreated(
       // ExtensionDispatcher knows what Extension is active, not just its ID.
       // This is important for classifying the Extension's JavaScript context
       // correctly (see ExtensionDispatcher::ClassifyJavaScriptContext).
+      // We also have to include the tab-specific permissions here, since it's
+      // an extension process.
       render_view_host->Send(
           new ExtensionMsg_Loaded(std::vector<ExtensionMsg_Loaded_Params>(
-              1, ExtensionMsg_Loaded_Params(extension))));
+              1, ExtensionMsg_Loaded_Params(
+                     extension, true /* include tab permissions */))));
       render_view_host->Send(
           new ExtensionMsg_ActivateExtension(extension->id()));
       break;

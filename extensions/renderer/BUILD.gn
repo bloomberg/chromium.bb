@@ -145,6 +145,8 @@ source_set("renderer") {
     "set_icon_natives.h",
     "static_v8_external_one_byte_string_resource.cc",
     "static_v8_external_one_byte_string_resource.h",
+    "tab_finder.cc",
+    "tab_finder.h",
     "test_features_native_handler.cc",
     "test_features_native_handler.h",
     "user_gestures_native_handler.cc",

@@ -49,7 +49,8 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
 ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
-    const Extension* extension)
+    const Extension* extension,
+    bool include_tab_permissions)
     : manifest(extension->manifest()->value()->DeepCopy()),
       location(extension->location()),
       path(extension->path()),
@@ -58,6 +59,14 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
           *extension->permissions_data()->withheld_permissions()),
       id(extension->id()),
       creation_flags(extension->creation_flags()) {
+  if (include_tab_permissions) {
+    const extensions::PermissionsData::TabPermissionsMap& tab_permissions =
+        extension->permissions_data()->tab_specific_permissions();
+    for (const auto& pair : tab_permissions) {
+      tab_specific_permissions[pair.first] =
+          ExtensionMsg_PermissionSetStruct(*pair.second);
+    }
+  }
 }
 
 scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
@@ -65,9 +74,14 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
   scoped_refptr<Extension> extension =
       Extension::Create(path, location, *manifest, creation_flags, error);
   if (extension.get()) {
-    extension->permissions_data()->SetPermissions(
-        active_permissions.ToPermissionSet(),
-        withheld_permissions.ToPermissionSet());
+    const extensions::PermissionsData* permissions_data =
+        extension->permissions_data();
+    permissions_data->SetPermissions(active_permissions.ToPermissionSet(),
+                                     withheld_permissions.ToPermissionSet());
+    for (const auto& pair : tab_specific_permissions) {
+      permissions_data->UpdateTabSpecificPermissions(
+          pair.first, pair.second.ToPermissionSet());
+    }
   }
   return extension;
 }

@@ -35,6 +35,8 @@ class PermissionsData {
                      // the given page.
   };
 
+  using TabPermissionsMap = std::map<int, scoped_refptr<const PermissionSet>>;
+
   // Delegate class to allow different contexts (e.g. browser vs renderer) to
   // have control over policy decisions.
   class PolicyDelegate {
@@ -107,14 +109,16 @@ class PermissionsData {
       APIPermission::ID permission,
       const APIPermission::CheckParam* param) const;
 
-  // TODO(rdevlin.cronin): GetEffectiveHostPermissions(), HasHostPermission(),
-  // and HasEffectiveAccessToAllHosts() are just forwards for the active
+  // Returns the hosts this extension effectively has access to, including
+  // explicit and scriptable hosts, and any hosts on tabs the extension has
+  // active tab permissions for.
+  URLPatternSet GetEffectiveHostPermissions() const;
+
+  // TODO(rdevlin.cronin): HasHostPermission() and
+  // HasEffectiveAccessToAllHosts() are just forwards for the active
   // permissions. We should either get rid of these, and have callers use
   // active_permissions(), or should get rid of active_permissions(), and make
   // callers use PermissionsData for everything. We should not do both.
-
-  // Returns the effective hosts associated with the active permissions.
-  const URLPatternSet& GetEffectiveHostPermissions() const;
 
   // Whether the extension has access to the given |url|.
   bool HasHostPermission(const GURL& url) const;
@@ -193,14 +197,21 @@ class PermissionsData {
   bool CanCaptureVisiblePage(int tab_id, std::string* error) const;
 
   const scoped_refptr<const PermissionSet>& active_permissions() const {
-    // TODO(dcheng): What is the point of this lock?
+    // We lock so that we can't also be setting the permissions while returning.
     base::AutoLock auto_lock(runtime_lock_);
     return active_permissions_unsafe_;
   }
 
   const scoped_refptr<const PermissionSet>& withheld_permissions() const {
-    // TODO(dcheng): What is the point of this lock?
+    // We lock so that we can't also be setting the permissions while returning.
+    base::AutoLock auto_lock(runtime_lock_);
     return withheld_permissions_unsafe_;
+  }
+
+  const TabPermissionsMap& tab_specific_permissions() const {
+    // We lock so that we can't also be setting the permissions while returning.
+    base::AutoLock auto_lock(runtime_lock_);
+    return tab_specific_permissions_;
   }
 
 #if defined(UNIT_TEST)
@@ -211,8 +222,6 @@ class PermissionsData {
 #endif
 
  private:
-  typedef std::map<int, scoped_refptr<const PermissionSet> > TabPermissionsMap;
-
   // Gets the tab-specific host permissions of |tab_id|, or NULL if there
   // aren't any.
   scoped_refptr<const PermissionSet> GetTabSpecificPermissions(
