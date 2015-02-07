@@ -63,7 +63,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         textRenderer.scaledFont(), true);
 
     if (!m_svgInlineTextBox.textFragments().isEmpty()) {
-        RenderDrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox.renderer(), paintInfo.phase, paintInfo.rect);
+        DrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox.displayItemClient(), DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintInfo.rect);
         if (!recorder.canUseCachedDrawing())
             paintTextFragments(paintInfo, parentRenderer);
     }

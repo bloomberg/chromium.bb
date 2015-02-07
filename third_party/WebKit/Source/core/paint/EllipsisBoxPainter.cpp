@@ -31,7 +31,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
         boxOrigin.move(0, -m_ellipsisBox.virtualLogicalHeight());
     FloatRect boxRect(boxOrigin, FloatSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
 
-    RenderDrawingRecorder recorder(context, m_ellipsisBox.renderer(), paintInfo.phase, boxRect);
+    DrawingRecorder recorder(context, m_ellipsisBox.displayItemClient(), DisplayItem::paintPhaseToDrawingType(paintInfo.phase), boxRect);
     if (recorder.canUseCachedDrawing())
         return;
 
