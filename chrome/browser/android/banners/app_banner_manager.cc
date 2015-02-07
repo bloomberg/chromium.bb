@@ -229,10 +229,6 @@ void AppBannerManager::OnDidCheckHasServiceWorker(bool has_service_worker) {
     if (icon_url.is_empty())
       return;
 
-    RecordCouldShowBanner(web_app_data_.start_url.spec());
-    if (!CheckIfShouldShow(web_app_data_.start_url.spec()))
-      return;
-
     FetchIcon(icon_url);
   }
 }
@@ -285,11 +281,19 @@ void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
 
   weak_infobar_ptr_ = nullptr;
   if (!native_app_data_.is_null()) {
+    RecordCouldShowBanner(native_app_package_);
+    if (!CheckIfShouldShow(native_app_package_))
+      return;
+
     weak_infobar_ptr_ = AppBannerInfoBarDelegate::CreateForNativeApp(
         service,
         this,
         native_app_data_);
   } else if (!web_app_data_.IsEmpty()){
+    RecordCouldShowBanner(web_app_data_.start_url.spec());
+    if (!CheckIfShouldShow(web_app_data_.start_url.spec()))
+      return;
+
     weak_infobar_ptr_ = AppBannerInfoBarDelegate::CreateForWebApp(
         service,
         this,
@@ -312,10 +316,6 @@ void AppBannerManager::OnDidRetrieveMetaTagContent(
   }
 
   banners::TrackDisplayEvent(DISPLAY_BANNER_REQUESTED);
-
-  RecordCouldShowBanner(tag_content);
-  if (!CheckIfShouldShow(tag_content))
-    return;
 
   // Send the info to the Java side to get info about the app.
   JNIEnv* env = base::android::AttachCurrentThread();
