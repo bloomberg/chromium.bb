@@ -129,11 +129,6 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
                 ASSERT(m_sourceSampleRate == sampleRate());
                 provider->provideInput(outputBus, numberOfFrames);
             }
-            // Output silence if we don't have access to the element.
-            if (!(mediaElement()->webMediaPlayer()->didPassCORSAccessCheck()
-                || context()->securityOrigin()->canRequest(mediaElement()->currentSrc()))) {
-                outputBus->zero();
-            }
         } else {
             // Either this port doesn't yet support HTMLMediaElement audio stream access,
             // or the stream is not yet available.
