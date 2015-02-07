@@ -52,7 +52,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
  protected:
   void SetUp() override {
     video_decoder_.reset(new VideoDecoder(cast_environment_, GetParam()));
-    CHECK_EQ(STATUS_VIDEO_INITIALIZED, video_decoder_->InitializationResult());
+    CHECK_EQ(STATUS_INITIALIZED, video_decoder_->InitializationResult());
 
     next_frame_size_ = gfx::Size(kStartingWidth, kStartingHeight);
     next_frame_timestamp_ = base::TimeDelta();

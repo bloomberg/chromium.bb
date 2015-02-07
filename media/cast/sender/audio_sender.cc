@@ -16,6 +16,7 @@ namespace cast {
 
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
+                         const StatusChangeCallback& status_change_cb,
                          CastTransportSender* const transport_sender)
     : FrameSender(cast_environment,
                   true,
@@ -29,8 +30,6 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                   NewFixedCongestionControl(audio_config.bitrate)),
       samples_in_encoder_(0),
       weak_factory_(this) {
-  cast_initialization_status_ = STATUS_AUDIO_UNINITIALIZED;
-
   if (!audio_config.use_external_encoder) {
     audio_encoder_.reset(
         new AudioEncoder(cast_environment,
@@ -41,11 +40,17 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          base::Bind(&AudioSender::OnEncodedAudioFrame,
                                     weak_factory_.GetWeakPtr(),
                                     audio_config.bitrate)));
-    cast_initialization_status_ = audio_encoder_->InitializationResult();
-  } else {
-    NOTREACHED();  // No support for external audio encoding.
-    cast_initialization_status_ = STATUS_AUDIO_UNINITIALIZED;
   }
+
+  // AudioEncoder provides no operational status changes during normal use.
+  // Post a task now with its initialization result status to allow the client
+  // to start sending frames.
+  cast_environment_->PostTask(
+      CastEnvironment::MAIN,
+      FROM_HERE,
+      base::Bind(status_change_cb,
+                 audio_encoder_ ? audio_encoder_->InitializationResult() :
+                     STATUS_INVALID_CONFIGURATION));
 
   // The number of samples per encoded audio frame depends on the codec and its
   // initialization parameters. Now that we have an encoder, we can calculate
@@ -73,11 +78,11 @@ AudioSender::~AudioSender() {}
 void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
                               const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (cast_initialization_status_ != STATUS_AUDIO_INITIALIZED) {
+
+  if (!audio_encoder_) {
     NOTREACHED();
     return;
   }
-  DCHECK(audio_encoder_.get()) << "Invalid internal state";
 
   const base::TimeDelta next_frame_duration =
       RtpDeltaToTimeDelta(audio_bus->frames(), rtp_timebase());

@@ -40,7 +40,7 @@ class VideoSender : public FrameSender,
  public:
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
-              const CastInitializationCallback& initialization_cb,
+              const StatusChangeCallback& status_change_cb,
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
               const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
               CastTransportSender* const transport_sender,
@@ -51,9 +51,6 @@ class VideoSender : public FrameSender,
   // Note: It is not guaranteed that |video_frame| will actually be encoded and
   // sent, if VideoSender detects too many frames in flight.  Therefore, clients
   // should be careful about the rate at which this method is called.
-  //
-  // Note: It is invalid to call this method if InitializationResult() returns
-  // anything but STATUS_VIDEO_INITIALIZED.
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& reference_time);
 
@@ -68,11 +65,6 @@ class VideoSender : public FrameSender,
   void OnAck(uint32 frame_id) override;
 
  private:
-  // Called when the encoder is initialized or has failed to initialize.
-  void OnEncoderInitialized(
-      const CastInitializationCallback& initialization_cb,
-      CastInitializationStatus status);
-
   // Called by the |video_encoder_| with the next EncodedFrame to send.
   void OnEncodedVideoFrame(int encoder_bitrate,
                            scoped_ptr<EncodedFrame> encoded_frame);

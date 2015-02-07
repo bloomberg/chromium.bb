@@ -30,6 +30,7 @@ class VideoEncoderImplTest : public ::testing::TestWithParam<Codec> {
             task_runner_,
             task_runner_)),
         video_config_(GetDefaultVideoSenderConfig()),
+        operational_status_(STATUS_UNINITIALIZED),
         count_frames_delivered_(0) {
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     first_frame_time_ = testing_clock_->NowTicks();
@@ -47,13 +48,16 @@ class VideoEncoderImplTest : public ::testing::TestWithParam<Codec> {
   }
 
   void CreateEncoder(bool three_buffer_mode) {
+    ASSERT_EQ(STATUS_UNINITIALIZED, operational_status_);
     video_config_.max_number_of_video_buffers_used =
         (three_buffer_mode ? 3 : 1);
     video_encoder_.reset(new VideoEncoderImpl(
         cast_environment_,
         video_config_,
-        CastInitializationCallback()));
+        base::Bind(&VideoEncoderImplTest::OnOperationalStatusChange,
+                   base::Unretained(this))));
     task_runner_->RunTasks();
+    ASSERT_EQ(STATUS_INITIALIZED, operational_status_);
   }
 
   VideoEncoder* video_encoder() const {
@@ -103,6 +107,10 @@ class VideoEncoderImplTest : public ::testing::TestWithParam<Codec> {
   }
 
  private:
+  void OnOperationalStatusChange(OperationalStatus status) {
+    operational_status_ = status;
+  }
+
   // Checks that |encoded_frame| matches expected values.  This is the method
   // bound in the callback returned from CreateFrameDeliverCallback().
   void DeliverEncodedVideoFrame(
@@ -131,6 +139,7 @@ class VideoEncoderImplTest : public ::testing::TestWithParam<Codec> {
   const scoped_refptr<CastEnvironment> cast_environment_;
   VideoSenderConfig video_config_;
   base::TimeTicks first_frame_time_;
+  OperationalStatus operational_status_;
   scoped_ptr<VideoEncoder> video_encoder_;
 
   int count_frames_delivered_;

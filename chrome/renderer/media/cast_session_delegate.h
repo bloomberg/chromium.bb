@@ -86,12 +86,17 @@ class CastSessionDelegate {
   void GetStatsAndReset(bool is_audio, const StatsCallback& callback);
 
  protected:
-  // Callback with the result of the initialization.
-  // If this callback is called with STATUS_INITIALIZED it will report back
-  // to the sinks that it's ready to accept incoming audio / video frames.
-  void InitializationResultCB(
+  // Called to report back operational status changes.  The first time this is
+  // called with STATUS_INITIALIZED will result in running the "frame input
+  // available" callback, to indicate the session is ready to accept incoming
+  // audio/video frames.  If this is called with an error that has halted the
+  // session, the |error_callback| provided to StartXXX() will be run.  This
+  // method may be called multiple times during the session to indicate codec
+  // re-initializations are taking place and/or runtime errors have occurred.
+  void OnOperationalStatusChange(
+      bool is_for_audio,
       const ErrorCallback& error_callback,
-      media::cast::CastInitializationStatus result) const;
+      media::cast::OperationalStatus result);
 
  private:
   void StatusNotificationCB(

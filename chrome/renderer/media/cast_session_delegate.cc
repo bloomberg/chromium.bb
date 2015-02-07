@@ -4,9 +4,11 @@
 
 #include "chrome/renderer/media/cast_session_delegate.h"
 
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/renderer/media/cast_threads.h"
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
@@ -54,8 +56,8 @@ void CastSessionDelegate::StartAudio(
   audio_frame_input_available_callback_ = callback;
   cast_sender_->InitializeAudio(
       config,
-      base::Bind(&CastSessionDelegate::InitializationResultCB,
-                 weak_factory_.GetWeakPtr(), error_callback));
+      base::Bind(&CastSessionDelegate::OnOperationalStatusChange,
+                 weak_factory_.GetWeakPtr(), true, error_callback));
 }
 
 void CastSessionDelegate::StartVideo(
@@ -76,8 +78,8 @@ void CastSessionDelegate::StartVideo(
 
   cast_sender_->InitializeVideo(
       config,
-      base::Bind(&CastSessionDelegate::InitializationResultCB,
-                 weak_factory_.GetWeakPtr(), error_callback),
+      base::Bind(&CastSessionDelegate::OnOperationalStatusChange,
+                 weak_factory_.GetWeakPtr(), false, error_callback),
       create_vea_cb,
       create_video_encode_mem_cb);
 }
@@ -206,44 +208,51 @@ void CastSessionDelegate::StatusNotificationCB(
   // TODO(hubbe): Call javascript UDPTransport error function.
 }
 
-void CastSessionDelegate::InitializationResultCB(
+void CastSessionDelegate::OnOperationalStatusChange(
+    bool is_for_audio,
     const ErrorCallback& error_callback,
-    media::cast::CastInitializationStatus result) const {
+    media::cast::OperationalStatus status) {
   DCHECK(cast_sender_);
 
-  switch (result) {
-    case media::cast::STATUS_AUDIO_INITIALIZED:
-      audio_frame_input_available_callback_.Run(
-          cast_sender_->audio_frame_input());
+  switch (status) {
+    case media::cast::STATUS_UNINITIALIZED:
+    case media::cast::STATUS_CODEC_REINIT_PENDING:
+      // Not an error.
+      // TODO(miu): As an optimization, signal the client to pause sending more
+      // frames until the state becomes STATUS_INITIALIZED again.
       break;
-    case media::cast::STATUS_VIDEO_INITIALIZED:
-      video_frame_input_available_callback_.Run(
-          cast_sender_->video_frame_input());
+    case media::cast::STATUS_INITIALIZED:
+      // Once initialized, run the "frame input available" callback to allow the
+      // client to begin sending frames.  If STATUS_INITIALIZED is encountered
+      // again, do nothing since this is only an indication that the codec has
+      // successfully re-initialized.
+      if (is_for_audio) {
+        if (!audio_frame_input_available_callback_.is_null()) {
+          base::ResetAndReturn(&audio_frame_input_available_callback_).Run(
+              cast_sender_->audio_frame_input());
+        }
+      } else {
+        if (!video_frame_input_available_callback_.is_null()) {
+          base::ResetAndReturn(&video_frame_input_available_callback_).Run(
+              cast_sender_->video_frame_input());
+        }
+      }
       break;
-    case media::cast::STATUS_INVALID_CAST_ENVIRONMENT:
-      error_callback.Run("Invalid cast environment.");
+    case media::cast::STATUS_INVALID_CONFIGURATION:
+      error_callback.Run(base::StringPrintf("Invalid %s configuration.",
+                                            is_for_audio ? "audio" : "video"));
       break;
-    case media::cast::STATUS_INVALID_CRYPTO_CONFIGURATION:
-      error_callback.Run("Invalid encryption keys.");
+    case media::cast::STATUS_UNSUPPORTED_CODEC:
+      error_callback.Run(base::StringPrintf("%s codec not supported.",
+                                            is_for_audio ? "Audio" : "Video"));
       break;
-    case media::cast::STATUS_UNSUPPORTED_AUDIO_CODEC:
-      error_callback.Run("Audio codec not supported.");
+    case media::cast::STATUS_CODEC_INIT_FAILED:
+      error_callback.Run(base::StringPrintf("%s codec initialization failed.",
+                                            is_for_audio ? "Audio" : "Video"));
       break;
-    case media::cast::STATUS_UNSUPPORTED_VIDEO_CODEC:
-      error_callback.Run("Video codec not supported.");
-      break;
-    case media::cast::STATUS_INVALID_AUDIO_CONFIGURATION:
-      error_callback.Run("Invalid audio configuration.");
-      break;
-    case media::cast::STATUS_INVALID_VIDEO_CONFIGURATION:
-      error_callback.Run("Invalid video configuration.");
-      break;
-    case media::cast::STATUS_HW_VIDEO_ENCODER_NOT_SUPPORTED:
-      error_callback.Run("Hardware video encoder not supported.");
-      break;
-    case media::cast::STATUS_AUDIO_UNINITIALIZED:
-    case media::cast::STATUS_VIDEO_UNINITIALIZED:
-      NOTREACHED() << "Not an error.";
+    case media::cast::STATUS_CODEC_RUNTIME_ERROR:
+      error_callback.Run(base::StringPrintf("%s codec runtime error.",
+                                            is_for_audio ? "Audio" : "Video"));
       break;
   }
 }

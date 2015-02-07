@@ -46,7 +46,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
                                           GetParam().num_channels,
                                           GetParam().sampling_rate,
                                           GetParam().codec));
-    CHECK_EQ(STATUS_AUDIO_INITIALIZED, audio_decoder_->InitializationResult());
+    CHECK_EQ(STATUS_INITIALIZED, audio_decoder_->InitializationResult());
 
     audio_bus_factory_.reset(
         new TestAudioBusFactory(GetParam().num_channels,

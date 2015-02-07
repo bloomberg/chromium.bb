@@ -63,10 +63,12 @@ class ExternalVideoEncoder::VEAClientImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& encoder_task_runner,
       scoped_ptr<media::VideoEncodeAccelerator> vea,
       int max_frame_rate,
+      const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
       : cast_environment_(cast_environment),
         task_runner_(encoder_task_runner),
         max_frame_rate_(max_frame_rate),
+        status_change_cb_(status_change_cb),
         create_video_encode_memory_cb_(create_video_encode_memory_cb),
         video_encode_accelerator_(vea.Pass()),
         encoder_active_(false),
@@ -80,8 +82,7 @@ class ExternalVideoEncoder::VEAClientImpl
 
   void Initialize(const gfx::Size& frame_size,
                   VideoCodecProfile codec_profile,
-                  int start_bit_rate,
-                  const CastInitializationCallback& initialization_cb) {
+                  int start_bit_rate) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     DCHECK(!frame_size.IsEmpty());
 
@@ -95,14 +96,12 @@ class ExternalVideoEncoder::VEAClientImpl
     UMA_HISTOGRAM_BOOLEAN("Cast.Sender.VideoEncodeAcceleratorInitializeSuccess",
                           encoder_active_);
 
-    if (!initialization_cb.is_null()) {
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN,
-          FROM_HERE,
-          base::Bind(initialization_cb,
-                     encoder_active_ ? STATUS_VIDEO_INITIALIZED :
-                         STATUS_HW_VIDEO_ENCODER_NOT_SUPPORTED));
-    }
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(status_change_cb_,
+                   encoder_active_ ? STATUS_INITIALIZED :
+                       STATUS_CODEC_INIT_FAILED));
   }
 
   void SetBitRate(int bit_rate) {
@@ -134,11 +133,17 @@ class ExternalVideoEncoder::VEAClientImpl
  protected:
   void NotifyError(VideoEncodeAccelerator::Error error) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    VLOG(1) << "ExternalVideoEncoder NotifyError: " << error;
+
+    DCHECK(error != VideoEncodeAccelerator::kInvalidArgumentError &&
+           error != VideoEncodeAccelerator::kIllegalStateError);
 
     encoder_active_ = false;
-    // TODO(miu): Plumbing is required to bubble this up to the CastSession and
-    // beyond.
+
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(status_change_cb_, STATUS_CODEC_RUNTIME_ERROR));
+
     // TODO(miu): Force-flush all |in_progress_frame_encodes_| immediately so
     // pending frames do not become stuck, freezing VideoSender.
   }
@@ -281,6 +286,7 @@ class ExternalVideoEncoder::VEAClientImpl
   const scoped_refptr<CastEnvironment> cast_environment_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const int max_frame_rate_;
+  const StatusChangeCallback status_change_cb_;  // Must be run on MAIN thread.
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
   scoped_ptr<media::VideoEncodeAccelerator> video_encode_accelerator_;
   bool encoder_active_;
@@ -301,7 +307,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoSenderConfig& video_config,
     const gfx::Size& frame_size,
-    const CastInitializationCallback& initialization_cb,
+    const StatusChangeCallback& status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
     : cast_environment_(cast_environment),
@@ -312,6 +318,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK_GT(video_config.max_frame_rate, 0);
   DCHECK(!frame_size.IsEmpty());
+  DCHECK(!status_change_cb.is_null());
   DCHECK(!create_vea_cb.is_null());
   DCHECK(!create_video_encode_memory_cb_.is_null());
   DCHECK_GT(bit_rate_, 0);
@@ -331,7 +338,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
       cast_environment_->PostTask(
           CastEnvironment::MAIN,
           FROM_HERE,
-          base::Bind(initialization_cb, STATUS_HW_VIDEO_ENCODER_NOT_SUPPORTED));
+          base::Bind(status_change_cb, STATUS_UNSUPPORTED_CODEC));
       return;
   }
 
@@ -341,7 +348,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
                  frame_size,
                  codec_profile,
                  video_config.max_frame_rate,
-                 initialization_cb));
+                 status_change_cb));
 }
 
 ExternalVideoEncoder::~ExternalVideoEncoder() {
@@ -397,7 +404,7 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
     const gfx::Size& frame_size,
     VideoCodecProfile codec_profile,
     int max_frame_rate,
-    const CastInitializationCallback& initialization_cb,
+    const StatusChangeCallback& status_change_cb,
     scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
     scoped_ptr<media::VideoEncodeAccelerator> vea) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -406,12 +413,10 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
   // system does not support or lacks the resources to provide GPU-accelerated
   // video encoding.
   if (!encoder_task_runner || !vea) {
-    if (!initialization_cb.is_null()) {
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN,
-          FROM_HERE,
-          base::Bind(initialization_cb, STATUS_INVALID_VIDEO_CONFIGURATION));
-    }
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(status_change_cb, STATUS_CODEC_INIT_FAILED));
     return;
   }
 
@@ -420,14 +425,14 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
                               encoder_task_runner,
                               vea.Pass(),
                               max_frame_rate,
+                              status_change_cb,
                               create_video_encode_memory_cb_);
   client_->task_runner()->PostTask(FROM_HERE,
                                    base::Bind(&VEAClientImpl::Initialize,
                                               client_,
                                               frame_size,
                                               codec_profile,
-                                              bit_rate_,
-                                              initialization_cb));
+                                              bit_rate_));
 }
 
 }  //  namespace cast

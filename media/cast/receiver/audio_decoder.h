@@ -32,10 +32,10 @@ class AudioDecoder {
                Codec codec);
   virtual ~AudioDecoder();
 
-  // Returns STATUS_AUDIO_INITIALIZED if the decoder was successfully
-  // constructed from the given FrameReceiverConfig.  If this method returns any
-  // other value, calls to DecodeFrame() will not succeed.
-  CastInitializationStatus InitializationResult() const;
+  // Returns STATUS_INITIALIZED if the decoder was successfully constructed from
+  // the given FrameReceiverConfig.  If this method returns any other value,
+  // calls to DecodeFrame() will not succeed.
+  OperationalStatus InitializationResult() const;
 
   // Decode the payload in |encoded_frame| asynchronously.  |callback| will be
   // invoked on the CastEnvironment::MAIN thread with the result.

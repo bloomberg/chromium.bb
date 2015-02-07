@@ -150,10 +150,6 @@ class FrameSender {
   // case, VideoSender will trigger a re-send of the next frame.
   int duplicate_ack_counter_;
 
-  // If this sender is ready for use, this is STATUS_AUDIO_INITIALIZED or
-  // STATUS_VIDEO_INITIALIZED.
-  CastInitializationStatus cast_initialization_status_;
-
   // This object controls how we change the bitrate to make sure the
   // buffer doesn't overflow.
   scoped_ptr<CongestionControl> congestion_control_;

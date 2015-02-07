@@ -80,7 +80,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
             task_runner_,
             task_runner_)),
         vea_factory_(task_runner_),
-        init_status_(STATUS_VIDEO_UNINITIALIZED),
+        operational_status_(STATUS_UNINITIALIZED),
         test_video_encoder_callback_(new TestVideoEncoderCallback()) {
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
 
@@ -105,7 +105,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
         cast_environment_,
         video_config_,
         size,
-        base::Bind(&ExternalVideoEncoderTest::SaveInitializationStatus,
+        base::Bind(&ExternalVideoEncoderTest::SaveOperationalStatus,
                    base::Unretained(this)),
         base::Bind(
             &FakeVideoEncodeAcceleratorFactory::CreateVideoEncodeAccelerator,
@@ -122,16 +122,16 @@ class ExternalVideoEncoderTest : public ::testing::Test {
         video_frame_->timestamp() + base::TimeDelta::FromMilliseconds(33));
   }
 
-  void SaveInitializationStatus(CastInitializationStatus result) {
-    EXPECT_EQ(STATUS_VIDEO_UNINITIALIZED, init_status_);
-    init_status_ = result;
+  void SaveOperationalStatus(OperationalStatus result) {
+    EXPECT_EQ(STATUS_UNINITIALIZED, operational_status_);
+    operational_status_ = result;
   }
 
   base::SimpleTestTickClock* const testing_clock_;  // Owned by CastEnvironment.
   const scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   const scoped_refptr<CastEnvironment> cast_environment_;
   FakeVideoEncodeAcceleratorFactory vea_factory_;
-  CastInitializationStatus init_status_;
+  OperationalStatus operational_status_;
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
   scoped_ptr<VideoEncoder> video_encoder_;
@@ -143,7 +143,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
 TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
   vea_factory_.SetAutoRespond(true);
   task_runner_->RunTasks();  // Run the initializer on the correct thread.
-  EXPECT_EQ(STATUS_VIDEO_INITIALIZED, init_status_);
+  EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
 
   VideoEncoder::FrameEncodedCallback frame_encoded_callback =
       base::Bind(&TestVideoEncoderCallback::DeliverEncodedVideoFrame,
@@ -183,7 +183,7 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
 TEST_F(ExternalVideoEncoderTest, StreamHeader) {
   vea_factory_.SetAutoRespond(true);
   task_runner_->RunTasks();  // Run the initializer on the correct thread.
-  EXPECT_EQ(STATUS_VIDEO_INITIALIZED, init_status_);
+  EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
 
   VideoEncoder::FrameEncodedCallback frame_encoded_callback =
       base::Bind(&TestVideoEncoderCallback::DeliverEncodedVideoFrame,
@@ -216,7 +216,7 @@ TEST_F(ExternalVideoEncoderTest, DestroyBeforeVEACreatedCallback) {
   vea_factory_.SetAutoRespond(true);
   task_runner_->RunTasks();
   EXPECT_EQ(1, vea_factory_.vea_response_count());
-  EXPECT_EQ(STATUS_VIDEO_UNINITIALIZED, init_status_);
+  EXPECT_EQ(STATUS_UNINITIALIZED, operational_status_);
 }
 
 }  // namespace cast

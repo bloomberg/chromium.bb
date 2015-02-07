@@ -55,9 +55,11 @@ void EncodeVideoFrameOnEncoderThread(
 VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
-    const CastInitializationCallback& initialization_cb)
+    const StatusChangeCallback& status_change_cb)
     : cast_environment_(cast_environment) {
   CHECK(cast_environment_->HasVideoThread());
+  DCHECK(!status_change_cb.is_null());
+
   if (video_config.codec == CODEC_VIDEO_VP8) {
     encoder_.reset(new Vp8Encoder(video_config));
     cast_environment_->PostTask(CastEnvironment::VIDEO,
@@ -77,14 +79,12 @@ VideoEncoderImpl::VideoEncoderImpl(
   dynamic_config_.latest_frame_id_to_reference = kStartFrameId;
   dynamic_config_.bit_rate = video_config.start_bitrate;
 
-  if (!initialization_cb.is_null()) {
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(initialization_cb,
-                   encoder_.get() ? STATUS_VIDEO_INITIALIZED :
-                                    STATUS_UNSUPPORTED_VIDEO_CODEC));
-  }
+  cast_environment_->PostTask(
+      CastEnvironment::MAIN,
+      FROM_HERE,
+      base::Bind(status_change_cb,
+                 encoder_.get() ? STATUS_INITIALIZED :
+                                  STATUS_UNSUPPORTED_CODEC));
 }
 
 VideoEncoderImpl::~VideoEncoderImpl() {

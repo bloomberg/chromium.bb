@@ -33,20 +33,14 @@ class AudioSender : public FrameSender,
  public:
   AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               const AudioSenderConfig& audio_config,
+              const StatusChangeCallback& status_change_cb,
               CastTransportSender* const transport_sender);
 
   ~AudioSender() override;
 
-  CastInitializationStatus InitializationResult() const {
-    return cast_initialization_status_;
-  }
-
   // Note: It is not guaranteed that |audio_frame| will actually be encoded and
   // sent, if AudioSender detects too many frames in flight.  Therefore, clients
   // should be careful about the rate at which this method is called.
-  //
-  // Note: It is invalid to call this method if InitializationResult() returns
-  // anything but STATUS_AUDIO_INITIALIZED.
   void InsertAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time);
 

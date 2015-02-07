@@ -87,16 +87,18 @@ class CastSender {
   virtual scoped_refptr<AudioFrameInput> audio_frame_input() = 0;
 
   // Initialize the audio stack. Must be called in order to send audio frames.
-  // Status of the initialization will be returned on cast_initialization_cb.
+  // |status_change_cb| will be run as operational status changes.
   virtual void InitializeAudio(
       const AudioSenderConfig& audio_config,
-      const CastInitializationCallback& cast_initialization_cb) = 0;
+      const StatusChangeCallback& status_change_cb) = 0;
 
   // Initialize the video stack. Must be called in order to send video frames.
-  // Status of the initialization will be returned on cast_initialization_cb.
+  // |status_change_cb| will be run as operational status changes.
+  //
+  // TODO(miu): Remove the VEA-specific callbacks.  http://crbug.com/454029
   virtual void InitializeVideo(
       const VideoSenderConfig& video_config,
-      const CastInitializationCallback& cast_initialization_cb,
+      const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb) = 0;
 

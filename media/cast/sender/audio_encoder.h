@@ -33,7 +33,7 @@ class AudioEncoder {
                const FrameEncodedCallback& frame_encoded_callback);
   virtual ~AudioEncoder();
 
-  CastInitializationStatus InitializationResult() const;
+  OperationalStatus InitializationResult() const;
 
   int GetSamplesPerFrame() const;
   base::TimeDelta GetFrameDuration() const;

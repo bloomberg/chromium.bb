@@ -176,8 +176,11 @@ struct FrameReceiverConfig {
 typedef Packet Packet;
 typedef PacketList PacketList;
 
-typedef base::Callback<void(CastInitializationStatus)>
-    CastInitializationCallback;
+// Callback that is run to update the client with current status.  This is used
+// to allow the client to wait for asynchronous initialization to complete
+// before sending frames, and also to be notified of any runtime errors that
+// have halted the session.
+typedef base::Callback<void(OperationalStatus)> StatusChangeCallback;
 
 typedef base::Callback<void(scoped_refptr<base::SingleThreadTaskRunner>,
                             scoped_ptr<media::VideoEncodeAccelerator>)>

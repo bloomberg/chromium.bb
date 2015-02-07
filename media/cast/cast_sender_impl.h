@@ -27,12 +27,11 @@ class CastSenderImpl : public CastSender {
   CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
                  CastTransportSender* const transport_sender);
 
-  void InitializeAudio(
-      const AudioSenderConfig& audio_config,
-      const CastInitializationCallback& cast_initialization_cb) override;
+  void InitializeAudio(const AudioSenderConfig& audio_config,
+                       const StatusChangeCallback& status_change_cb) override;
   void InitializeVideo(
       const VideoSenderConfig& video_config,
-      const CastInitializationCallback& cast_initialization_cb,
+      const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb)
       override;
@@ -46,11 +45,11 @@ class CastSenderImpl : public CastSender {
 
  private:
   void ReceivedPacket(scoped_ptr<Packet> packet);
-  void OnVideoInitialized(
-      const CastInitializationCallback& initialization_cb,
-      media::cast::CastInitializationStatus result);
+  void OnAudioStatusChange(const StatusChangeCallback& status_change_cb,
+                           OperationalStatus status);
+  void OnVideoStatusChange(const StatusChangeCallback& status_change_cb,
+                           OperationalStatus status);
 
-  CastInitializationCallback initialization_callback_;
   scoped_ptr<AudioSender> audio_sender_;
   scoped_ptr<VideoSender> video_sender_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;

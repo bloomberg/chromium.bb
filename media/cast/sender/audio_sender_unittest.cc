@@ -21,6 +21,17 @@
 namespace media {
 namespace cast {
 
+namespace {
+
+void SaveOperationalStatus(OperationalStatus* out_status,
+                           OperationalStatus in_status) {
+  DVLOG(1) << "OperationalStatus transitioning from " << *out_status << " to "
+           << in_status;
+  *out_status = in_status;
+}
+
+}  // namespace
+
 class TestPacketSender : public PacketSender {
  public:
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
@@ -86,9 +97,14 @@ class AudioSenderTest : public ::testing::Test {
         task_runner_,
         PacketReceiverCallback(),
         &transport_));
+    OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_.reset(new AudioSender(
-        cast_environment_, audio_config_, transport_sender_.get()));
+        cast_environment_,
+        audio_config_,
+        base::Bind(&SaveOperationalStatus, &operational_status),
+        transport_sender_.get()));
     task_runner_->RunTasks();
+    CHECK_EQ(STATUS_INITIALIZED, operational_status);
   }
 
   ~AudioSenderTest() override {}

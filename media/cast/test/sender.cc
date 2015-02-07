@@ -101,10 +101,8 @@ void LogRawEvents(
   }
 }
 
-void QuitLoopOnInitializationResult(
-    media::cast::CastInitializationStatus result) {
-  CHECK(result == media::cast::STATUS_AUDIO_INITIALIZED ||
-        result == media::cast::STATUS_VIDEO_INITIALIZED)
+void QuitLoopOnInitializationResult(media::cast::OperationalStatus result) {
+  CHECK(result == media::cast::STATUS_INITIALIZED)
       << "Cast sender uninitialized";
   base::MessageLoop::current()->Quit();
 }

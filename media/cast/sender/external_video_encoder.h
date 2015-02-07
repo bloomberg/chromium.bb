@@ -25,7 +25,7 @@ class ExternalVideoEncoder : public VideoEncoder {
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
       const gfx::Size& frame_size,
-      const CastInitializationCallback& initialization_cb,
+      const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 
@@ -51,7 +51,7 @@ class ExternalVideoEncoder : public VideoEncoder {
       const gfx::Size& frame_size,
       VideoCodecProfile codec_profile,
       int max_frame_rate,
-      const CastInitializationCallback& initialization_cb,
+      const StatusChangeCallback& status_change_cb,
       scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
       scoped_ptr<media::VideoEncodeAccelerator> vea);
 

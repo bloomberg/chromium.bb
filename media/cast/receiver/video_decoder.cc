@@ -33,16 +33,16 @@ class VideoDecoder::ImplBase
            Codec codec)
       : cast_environment_(cast_environment),
         codec_(codec),
-        cast_initialization_status_(STATUS_VIDEO_UNINITIALIZED),
+        operational_status_(STATUS_UNINITIALIZED),
         seen_first_frame_(false) {}
 
-  CastInitializationStatus InitializationResult() const {
-    return cast_initialization_status_;
+  OperationalStatus InitializationResult() const {
+    return operational_status_;
   }
 
   void DecodeFrame(scoped_ptr<EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback) {
-    DCHECK_EQ(cast_initialization_status_, STATUS_VIDEO_INITIALIZED);
+    DCHECK_EQ(operational_status_, STATUS_INITIALIZED);
 
     static_assert(sizeof(encoded_frame->frame_id) == sizeof(last_frame_id_),
                   "size of frame_id types do not match");
@@ -79,8 +79,8 @@ class VideoDecoder::ImplBase
   const scoped_refptr<CastEnvironment> cast_environment_;
   const Codec codec_;
 
-  // Subclass' ctor is expected to set this to STATUS_VIDEO_INITIALIZED.
-  CastInitializationStatus cast_initialization_status_;
+  // Subclass' ctor is expected to set this to STATUS_INITIALIZED.
+  OperationalStatus operational_status_;
 
  private:
   bool seen_first_frame_;
@@ -93,7 +93,7 @@ class VideoDecoder::Vp8Impl : public VideoDecoder::ImplBase {
  public:
   explicit Vp8Impl(const scoped_refptr<CastEnvironment>& cast_environment)
       : ImplBase(cast_environment, CODEC_VIDEO_VP8) {
-    if (ImplBase::cast_initialization_status_ != STATUS_VIDEO_UNINITIALIZED)
+    if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
       return;
 
     vpx_codec_dec_cfg_t cfg = {0};
@@ -106,16 +106,15 @@ class VideoDecoder::Vp8Impl : public VideoDecoder::ImplBase {
                            vpx_codec_vp8_dx(),
                            &cfg,
                            VPX_CODEC_USE_POSTPROC) != VPX_CODEC_OK) {
-      ImplBase::cast_initialization_status_ =
-          STATUS_INVALID_VIDEO_CONFIGURATION;
+      ImplBase::operational_status_ = STATUS_INVALID_CONFIGURATION;
       return;
     }
-    ImplBase::cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
+    ImplBase::operational_status_ = STATUS_INITIALIZED;
   }
 
  private:
   ~Vp8Impl() override {
-    if (ImplBase::cast_initialization_status_ == STATUS_VIDEO_INITIALIZED)
+    if (ImplBase::operational_status_ == STATUS_INITIALIZED)
       CHECK_EQ(VPX_CODEC_OK, vpx_codec_destroy(&context_));
   }
 
@@ -175,9 +174,9 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
   explicit FakeImpl(const scoped_refptr<CastEnvironment>& cast_environment)
       : ImplBase(cast_environment, CODEC_VIDEO_FAKE),
         last_decoded_id_(-1) {
-    if (ImplBase::cast_initialization_status_ != STATUS_VIDEO_UNINITIALIZED)
+    if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
       return;
-    ImplBase::cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
+    ImplBase::operational_status_ = STATUS_INITIALIZED;
   }
 
  private:
@@ -237,10 +236,10 @@ VideoDecoder::VideoDecoder(
 
 VideoDecoder::~VideoDecoder() {}
 
-CastInitializationStatus VideoDecoder::InitializationResult() const {
+OperationalStatus VideoDecoder::InitializationResult() const {
   if (impl_.get())
     return impl_->InitializationResult();
-  return STATUS_UNSUPPORTED_VIDEO_CODEC;
+  return STATUS_UNSUPPORTED_CODEC;
 }
 
 void VideoDecoder::DecodeFrame(
@@ -248,8 +247,7 @@ void VideoDecoder::DecodeFrame(
     const DecodeFrameCallback& callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());
-  if (!impl_.get() ||
-      impl_->InitializationResult() != STATUS_VIDEO_INITIALIZED) {
+  if (!impl_.get() || impl_->InitializationResult() != STATUS_INITIALIZED) {
     callback.Run(make_scoped_refptr<VideoFrame>(NULL), false);
     return;
   }

@@ -31,7 +31,7 @@ class VideoEncoderImpl : public VideoEncoder {
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const VideoSenderConfig& video_config,
-                   const CastInitializationCallback& initialization_cb);
+                   const StatusChangeCallback& status_change_cb);
 
   ~VideoEncoderImpl() override;
 

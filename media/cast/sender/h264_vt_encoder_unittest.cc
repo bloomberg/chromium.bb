@@ -67,8 +67,8 @@ void SavePipelineStatus(PipelineStatus* out_status, PipelineStatus in_status) {
   *out_status = in_status;
 }
 
-void SaveInitializationStatus(CastInitializationStatus* out_status,
-                              CastInitializationStatus in_status) {
+void SaveOperationalStatus(OperationalStatus* out_status,
+                           OperationalStatus in_status) {
   *out_status = in_status;
 }
 
@@ -190,8 +190,8 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
 
 class H264VideoToolboxEncoderTest : public ::testing::Test {
  protected:
-  H264VideoToolboxEncoderTest() {
-    cast_initialization_status_ = STATUS_VIDEO_UNINITIALIZED;
+  H264VideoToolboxEncoderTest()
+      : operational_status_(STATUS_UNINITIALIZED) {
     frame_->set_timestamp(base::TimeDelta());
   }
 
@@ -207,9 +207,9 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
         cast_environment_,
         video_sender_config_,
         gfx::Size(kVideoWidth, kVideoHeight),
-        base::Bind(&SaveInitializationStatus, &cast_initialization_status_)));
+        base::Bind(&SaveOperationalStatus, &operational_status_)));
     message_loop_.RunUntilIdle();
-    EXPECT_EQ(STATUS_VIDEO_INITIALIZED, cast_initialization_status_);
+    EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
   }
 
   void TearDown() override {
@@ -242,7 +242,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<VideoEncoder> encoder_;
-  CastInitializationStatus cast_initialization_status_;
+  OperationalStatus operational_status_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(H264VideoToolboxEncoderTest);

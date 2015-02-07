@@ -29,19 +29,19 @@ class AudioDecoder::ImplBase
       : cast_environment_(cast_environment),
         codec_(codec),
         num_channels_(num_channels),
-        cast_initialization_status_(STATUS_AUDIO_UNINITIALIZED),
+        operational_status_(STATUS_UNINITIALIZED),
         seen_first_frame_(false) {
     if (num_channels_ <= 0 || sampling_rate <= 0 || sampling_rate % 100 != 0)
-      cast_initialization_status_ = STATUS_INVALID_AUDIO_CONFIGURATION;
+      operational_status_ = STATUS_INVALID_CONFIGURATION;
   }
 
-  CastInitializationStatus InitializationResult() const {
-    return cast_initialization_status_;
+  OperationalStatus InitializationResult() const {
+    return operational_status_;
   }
 
   void DecodeFrame(scoped_ptr<EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback) {
-    DCHECK_EQ(cast_initialization_status_, STATUS_AUDIO_INITIALIZED);
+    DCHECK_EQ(operational_status_, STATUS_INITIALIZED);
 
     static_assert(sizeof(encoded_frame->frame_id) == sizeof(last_frame_id_),
                   "size of frame_id types do not match");
@@ -80,8 +80,8 @@ class AudioDecoder::ImplBase
   const Codec codec_;
   const int num_channels_;
 
-  // Subclass' ctor is expected to set this to STATUS_AUDIO_INITIALIZED.
-  CastInitializationStatus cast_initialization_status_;
+  // Subclass' ctor is expected to set this to STATUS_INITIALIZED.
+  OperationalStatus operational_status_;
 
  private:
   bool seen_first_frame_;
@@ -104,15 +104,14 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
         max_samples_per_frame_(
             kOpusMaxFrameDurationMillis * sampling_rate / 1000),
         buffer_(new float[max_samples_per_frame_ * num_channels]) {
-    if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
+    if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
       return;
     if (opus_decoder_init(opus_decoder_, sampling_rate, num_channels) !=
             OPUS_OK) {
-      ImplBase::cast_initialization_status_ =
-          STATUS_INVALID_AUDIO_CONFIGURATION;
+      ImplBase::operational_status_ = STATUS_INVALID_CONFIGURATION;
       return;
     }
-    ImplBase::cast_initialization_status_ = STATUS_AUDIO_INITIALIZED;
+    ImplBase::operational_status_ = STATUS_INITIALIZED;
   }
 
  private:
@@ -169,9 +168,9 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
                  CODEC_AUDIO_PCM16,
                  num_channels,
                  sampling_rate) {
-    if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
+    if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
       return;
-    ImplBase::cast_initialization_status_ = STATUS_AUDIO_INITIALIZED;
+    ImplBase::operational_status_ = STATUS_INITIALIZED;
   }
 
  private:
@@ -219,10 +218,10 @@ AudioDecoder::AudioDecoder(
 
 AudioDecoder::~AudioDecoder() {}
 
-CastInitializationStatus AudioDecoder::InitializationResult() const {
+OperationalStatus AudioDecoder::InitializationResult() const {
   if (impl_.get())
     return impl_->InitializationResult();
-  return STATUS_UNSUPPORTED_AUDIO_CODEC;
+  return STATUS_UNSUPPORTED_CODEC;
 }
 
 void AudioDecoder::DecodeFrame(
@@ -230,8 +229,7 @@ void AudioDecoder::DecodeFrame(
     const DecodeFrameCallback& callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());
-  if (!impl_.get() ||
-      impl_->InitializationResult() != STATUS_AUDIO_INITIALIZED) {
+  if (!impl_.get() || impl_->InitializationResult() != STATUS_INITIALIZED) {
     callback.Run(make_scoped_ptr<AudioBus>(NULL), false);
     return;
   }

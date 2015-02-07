@@ -32,6 +32,8 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/profiler.h"
+#include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -81,12 +83,10 @@ void UpdateCastTransportStatus(CastTransportStatus status) {
   EXPECT_TRUE(result);
 }
 
-void AudioInitializationStatus(CastInitializationStatus status) {
-  EXPECT_EQ(STATUS_AUDIO_INITIALIZED, status);
-}
-
-void VideoInitializationStatus(CastInitializationStatus status) {
-  EXPECT_EQ(STATUS_VIDEO_INITIALIZED, status);
+void ExpectSuccessAndRunCallback(const base::Closure& done_cb,
+                                 OperationalStatus status) {
+  EXPECT_EQ(STATUS_INITIALIZED, status);
+  done_cb.Run();
 }
 
 void IgnoreRawEvents(const std::vector<PacketEvent>& packet_events,
@@ -346,13 +346,22 @@ class RunOneBenchmark {
     cast_sender_ =
         CastSender::Create(cast_environment_sender_, &transport_sender_);
 
-    // Initializing audio and video senders.
-    cast_sender_->InitializeAudio(audio_sender_config_,
-                                  base::Bind(&AudioInitializationStatus));
-    cast_sender_->InitializeVideo(video_sender_config_,
-                                  base::Bind(&VideoInitializationStatus),
-                                  CreateDefaultVideoEncodeAcceleratorCallback(),
-                                  CreateDefaultVideoEncodeMemoryCallback());
+    // Initializing audio and video senders.  The funny dance here is to
+    // synchronize on the asynchronous initialization process.
+    base::RunLoop run_loop;
+    base::WeakPtrFactory<RunOneBenchmark> weak_factory(this);
+    cast_sender_->InitializeAudio(
+        audio_sender_config_,
+        base::Bind(&ExpectSuccessAndRunCallback, run_loop.QuitClosure()));
+    run_loop.Run();  // Wait for quit closure to run.
+    weak_factory.InvalidateWeakPtrs();
+    cast_sender_->InitializeVideo(
+        video_sender_config_,
+        base::Bind(&ExpectSuccessAndRunCallback, run_loop.QuitClosure()),
+        CreateDefaultVideoEncodeAcceleratorCallback(),
+        CreateDefaultVideoEncodeMemoryCallback());
+    run_loop.Run();  // Wait for quit closure to run.
+    weak_factory.InvalidateWeakPtrs();
 
     receiver_to_sender_.Initialize(
         CreateSimplePipe(p).Pass(),

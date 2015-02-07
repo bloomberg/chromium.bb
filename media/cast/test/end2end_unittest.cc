@@ -103,12 +103,8 @@ void UpdateCastTransportStatus(CastTransportStatus status) {
   EXPECT_TRUE(result);
 }
 
-void AudioInitializationStatus(CastInitializationStatus status) {
-  EXPECT_EQ(STATUS_AUDIO_INITIALIZED, status);
-}
-
-void VideoInitializationStatus(CastInitializationStatus status) {
-  EXPECT_EQ(STATUS_VIDEO_INITIALIZED, status);
+void ExpectSuccessOperationalStatus(OperationalStatus status) {
+  EXPECT_EQ(STATUS_INITIALIZED, status);
 }
 
 // This is wrapped in a struct because it needs to be put into a std::map.
@@ -624,12 +620,14 @@ class End2EndTest : public ::testing::Test {
         CastSender::Create(cast_environment_sender_, transport_sender_.get());
 
     // Initializing audio and video senders.
-    cast_sender_->InitializeAudio(audio_sender_config_,
-                                  base::Bind(&AudioInitializationStatus));
-    cast_sender_->InitializeVideo(video_sender_config_,
-                                  base::Bind(&VideoInitializationStatus),
-                                  CreateDefaultVideoEncodeAcceleratorCallback(),
-                                  CreateDefaultVideoEncodeMemoryCallback());
+    cast_sender_->InitializeAudio(
+        audio_sender_config_,
+        base::Bind(&ExpectSuccessOperationalStatus));
+    cast_sender_->InitializeVideo(
+        video_sender_config_,
+        base::Bind(&ExpectSuccessOperationalStatus),
+        CreateDefaultVideoEncodeAcceleratorCallback(),
+        CreateDefaultVideoEncodeMemoryCallback());
     task_runner_->RunTasks();
 
     receiver_to_sender_.SetPacketReceiver(
