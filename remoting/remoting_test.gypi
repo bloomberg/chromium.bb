@@ -265,20 +265,13 @@
           'dependencies!': [
             'remoting_host',
             'remoting_host_setup_base',
+            'remoting_it2me_host_static',
             'remoting_native_messaging_base',
           ],
           'sources/': [
             ['exclude', '^codec/'],
             ['exclude', '^host/'],
             ['exclude', '^base/resources_unittest\\.cc$'],
-          ]
-        }],
-        ['enable_it2me_host == 0', {
-          'dependencies!': [
-            'remoting_it2me_host_static',
-          ],
-          'sources/': [
-            ['exclude', '^host/it2me/'],
           ]
         }],
         [ 'OS == "linux" and use_allocator!="none"', {
@@ -299,7 +292,7 @@
               '<@(remoting_webapp_js_browser_test_files)',
             ],
         },
-      ], #end of copies
+      ], # end of copies
     },  # end of target 'remoting_browser_test_resources'
     {
       'target_name': 'remoting_webapp_unittest',
@@ -373,7 +366,7 @@
            ],
         },
       ],
-    },  # end of target 'remoting_webapp_js_unittest'
+    },  # end of target 'remoting_webapp_unittest'
   ],  # end of targets
 
   'conditions': [
