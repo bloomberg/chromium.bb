@@ -82,6 +82,9 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
 
   ssize_t ReadReply(void* buf, size_t buflen);
 
+  // Whether we should use the namespace sandbox instead of the setuid sandbox.
+  bool ShouldUseNamespaceSandbox();
+
   int control_fd_;  // the socket to the zygote
   // A lock protecting all communication with the zygote. This lock must be
   // acquired before sending a command and released after the result has been
@@ -89,7 +92,7 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   base::Lock control_lock_;
   pid_t pid_;
   bool init_;
-  bool using_suid_sandbox_;
+  bool use_suid_sandbox_for_adj_oom_score_;
   std::string sandbox_binary_;
   bool have_read_sandbox_status_word_;
   int sandbox_status_;

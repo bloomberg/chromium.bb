@@ -11,6 +11,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -59,6 +60,13 @@ const char kSandboxNETNSEnvironmentVarName[] = "SBX_NET_NS";
 base::Process NamespaceSandbox::LaunchProcess(
     const base::CommandLine& cmdline,
     const base::LaunchOptions& options) {
+  return LaunchProcess(cmdline.argv(), options);
+}
+
+// static
+base::Process NamespaceSandbox::LaunchProcess(
+    const std::vector<std::string>& argv,
+    const base::LaunchOptions& options) {
   int clone_flags = 0;
   int ns_types[] = {CLONE_NEWUSER, CLONE_NEWPID, CLONE_NEWNET};
   for (const int ns_type : ns_types) {
@@ -91,7 +99,7 @@ base::Process NamespaceSandbox::LaunchProcess(
     SetEnvironForNamespaceType(environ, environ_name, clone_flags & flag);
   }
 
-  return base::LaunchProcess(cmdline, launch_options);
+  return base::LaunchProcess(argv, launch_options);
 }
 
 // static

@@ -147,6 +147,7 @@
               'dependencies': [
                 # Required by nacl_fork_delegate_linux.cc.
                 '../sandbox/sandbox.gyp:suid_sandbox_client',
+                '../sandbox/sandbox.gyp:sandbox_services',
               ]
             }],
           ],

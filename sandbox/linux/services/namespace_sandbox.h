@@ -5,6 +5,9 @@
 #ifndef SANDBOX_LINUX_SERVICES_NAMESPACE_SANDBOX_H_
 #define SANDBOX_LINUX_SERVICES_NAMESPACE_SANDBOX_H_
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/process/launch.h"
@@ -40,6 +43,8 @@ class SANDBOX_EXPORT NamespaceSandbox {
   // and 0, respectively, since this function makes a copy of options and
   // overrides them.
   static base::Process LaunchProcess(const base::CommandLine& cmdline,
+                                     const base::LaunchOptions& options);
+  static base::Process LaunchProcess(const std::vector<std::string>& argv,
                                      const base::LaunchOptions& options);
 
   // Returns whether the namespace sandbox created a new user, PID, and network

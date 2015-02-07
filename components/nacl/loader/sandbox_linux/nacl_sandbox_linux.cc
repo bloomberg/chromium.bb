@@ -25,6 +25,8 @@
 #include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/services/credentials.h"
+#include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
@@ -111,25 +113,34 @@ void NaClSandbox::InitializeLayerOneSandbox() {
     CHECK(MaybeSetProcessNonDumpable());
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;
+  } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
+    CHECK(sandbox::Credentials::MoveToNewUserNS());
+    CHECK(sandbox::Credentials::DropFileSystemAccess());
+    CHECK(sandbox::Credentials::DropAllCapabilities());
+    CHECK(IsSandboxed());
+    layer_one_enabled_ = true;
   }
 }
 
 void NaClSandbox::CheckForExpectedNumberOfOpenFds() {
+  // We expect to have the following FDs open:
+  //  1-3) stdin, stdout, stderr.
+  //  4) The /dev/urandom FD used by base::GetUrandomFD().
+  //  5) A dummy pipe FD used to overwrite kSandboxIPCChannel.
+  //  6) The socket for the Chrome IPC channel that's connected to the
+  //     browser process, kPrimaryIPCChannel.
+  // We also have an fd for /proc (proc_fd_), but CountOpenFds excludes this.
+  //
+  // This sanity check ensures that dynamically loaded libraries don't
+  // leave any FDs open before we enable the sandbox.
+  int expected_num_fds = 6;
   if (setuid_sandbox_client_->IsSuidSandboxChild()) {
-    // We expect to have the following FDs open:
-    //  1-3) stdin, stdout, stderr.
-    //  4) The /dev/urandom FD used by base::GetUrandomFD().
-    //  5) A dummy pipe FD used to overwrite kSandboxIPCChannel.
-    //  6) The socket created by the SUID sandbox helper, used by ChrootMe().
-    //     After ChrootMe(), this is no longer connected to anything.
-    //     (Only present when running under the SUID sandbox.)
-    //  7) The socket for the Chrome IPC channel that's connected to the
-    //     browser process, kPrimaryIPCChannel.
-    //
-    // This sanity check ensures that dynamically loaded libraries don't
-    // leave any FDs open before we enable the sandbox.
-    CHECK_EQ(7, sandbox::ProcUtil::CountOpenFds(proc_fd_.get()));
+    // When using the setuid sandbox, there is one additional socket used for
+    // ChrootMe(). After ChrootMe(), it is no longer connected to anything.
+    ++expected_num_fds;
   }
+
+  CHECK_EQ(expected_num_fds, sandbox::ProcUtil::CountOpenFds(proc_fd_.get()));
 }
 
 void NaClSandbox::InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {

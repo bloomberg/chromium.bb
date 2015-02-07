@@ -110,6 +110,7 @@ CONTENT_EXPORT extern const char kEnableImageColorProfiles[];
 CONTENT_EXPORT extern const char kEnableLCDText[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
+CONTENT_EXPORT extern const char kEnableNamespaceSandbox[];
 CONTENT_EXPORT extern const char kEnableNetworkInformation[];
 CONTENT_EXPORT extern const char kEnableOneCopy[];
 CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];

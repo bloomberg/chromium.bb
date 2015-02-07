@@ -38,6 +38,9 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "sandbox/linux/services/credentials.h"
+#include "sandbox/linux/services/namespace_sandbox.h"
+#include "sandbox/linux/services/namespace_utils.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "ui/base/ui_base_switches.h"
@@ -49,12 +52,14 @@
 
 namespace content {
 
+namespace {
+
 // Receive a fixed message on fd and return the sender's PID.
 // Returns true if the message received matches the expected message.
-static bool ReceiveFixedMessage(int fd,
-                                const char* expect_msg,
-                                size_t expect_len,
-                                base::ProcessId* sender_pid) {
+bool ReceiveFixedMessage(int fd,
+                         const char* expect_msg,
+                         size_t expect_len,
+                         base::ProcessId* sender_pid) {
   char buf[expect_len + 1];
   ScopedVector<base::ScopedFD> fds_vec;
 
@@ -69,6 +74,8 @@ static bool ReceiveFixedMessage(int fd,
   return true;
 }
 
+}  // namespace
+
 // static
 ZygoteHost* ZygoteHost::GetInstance() {
   return ZygoteHostImpl::GetInstance();
@@ -79,7 +86,7 @@ ZygoteHostImpl::ZygoteHostImpl()
       control_lock_(),
       pid_(-1),
       init_(false),
-      using_suid_sandbox_(false),
+      use_suid_sandbox_for_adj_oom_score_(false),
       sandbox_binary_(),
       have_read_sandbox_status_word_(false),
       sandbox_status_(0),
@@ -141,8 +148,16 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   sandbox_binary_ = sandbox_cmd.c_str();
 
+  const bool using_namespace_sandbox = ShouldUseNamespaceSandbox();
   // A non empty sandbox_cmd means we want a SUID sandbox.
-  using_suid_sandbox_ = !sandbox_cmd.empty();
+  const bool using_suid_sandbox =
+      !sandbox_cmd.empty() && !using_namespace_sandbox;
+
+  // Use the SUID sandbox for adjusting OOM scores when we are using the setuid
+  // or namespace sandbox. This is needed beacuse the processes are
+  // non-dumpable, so /proc/pid/oom_score_adj can only be written by root.
+  use_suid_sandbox_for_adj_oom_score_ =
+      using_namespace_sandbox || using_suid_sandbox;
 
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
@@ -150,7 +165,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   fds_to_map.push_back(std::make_pair(sfd, GetSandboxFD()));
 
   base::ScopedFD dummy_fd;
-  if (using_suid_sandbox_) {
+  if (using_suid_sandbox) {
     scoped_ptr<sandbox::SetuidSandboxHost> sandbox_host(
         sandbox::SetuidSandboxHost::Create());
     sandbox_host->PrependWrapper(&cmd_line);
@@ -159,11 +174,15 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   }
 
   options.fds_to_remap = &fds_to_map;
-  base::Process process = base::LaunchProcess(cmd_line.argv(), options);
+  base::Process process =
+      using_namespace_sandbox
+          ? sandbox::NamespaceSandbox::LaunchProcess(cmd_line, options)
+          : base::LaunchProcess(cmd_line, options);
   CHECK(process.IsValid()) << "Failed to launch zygote process";
+
   dummy_fd.reset();
 
-  if (using_suid_sandbox_) {
+  if (using_suid_sandbox) {
     // The SUID sandbox will execute the zygote in a new PID namespace, and
     // the main zygote process will then fork from there.  Watch now our
     // elaborate dance to find and validate the zygote's PID.
@@ -458,7 +477,7 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
     selinux_valid = true;
   }
 
-  if (using_suid_sandbox_ && !selinux) {
+  if (use_suid_sandbox_for_adj_oom_score_ && !selinux) {
 #if defined(USE_TCMALLOC)
     // If heap profiling is running, these processes are not exiting, at least
     // on ChromeOS. The easiest thing to do is not launch them when profiling.
@@ -482,7 +501,7 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
         base::LaunchProcess(adj_oom_score_cmdline, options);
     if (sandbox_helper_process.IsValid())
       base::EnsureProcessGetsReaped(sandbox_helper_process.Pid());
-  } else if (!using_suid_sandbox_) {
+  } else if (!use_suid_sandbox_for_adj_oom_score_) {
     if (!base::AdjustOOMScore(pid, score))
       PLOG(ERROR) << "Failed to adjust OOM score of renderer with pid " << pid;
   }
@@ -557,6 +576,24 @@ int ZygoteHostImpl::GetSandboxStatus() const {
   if (have_read_sandbox_status_word_)
     return sandbox_status_;
   return 0;
+}
+
+bool ZygoteHostImpl::ShouldUseNamespaceSandbox() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kNoSandbox)) {
+    return false;
+  }
+
+  if (!command_line.HasSwitch(switches::kEnableNamespaceSandbox)) {
+    return false;
+  }
+
+  if (!sandbox::Credentials::CanCreateProcessInNewUserNS()) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

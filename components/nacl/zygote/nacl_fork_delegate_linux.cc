@@ -35,6 +35,8 @@
 #include "components/nacl/loader/nacl_helper_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/linux/services/namespace_sandbox.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 
@@ -146,11 +148,23 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     return;
   }
 
+  // TODO(rickyz): Make IsSuidSandboxChild a static function.
+  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
+      sandbox::SetuidSandboxClient::Create());
+  const bool using_setuid_sandbox = setuid_sandbox_client->IsSuidSandboxChild();
+  const bool using_namespace_sandbox =
+      sandbox::NamespaceSandbox::InNewUserNamespace();
+
+  CHECK(!(using_setuid_sandbox && using_namespace_sandbox));
+  if (enable_layer1_sandbox) {
+    CHECK(using_setuid_sandbox || using_namespace_sandbox);
+  }
+
   scoped_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
       sandbox::SetuidSandboxHost::Create());
 
   // For communications between the NaCl loader process and
-  // the SUID sandbox.
+  // the browser process.
   int nacl_sandbox_descriptor =
       base::GlobalDescriptors::kBaseDescriptor + kSandboxIPCChannel;
   // Confirm a hard-wired assumption.
@@ -240,7 +254,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     base::LaunchOptions options;
 
     base::ScopedFD dummy_fd;
-    if (enable_layer1_sandbox) {
+    if (using_setuid_sandbox) {
       // NaCl needs to keep tight control of the cmd_line, so prepend the
       // setuid sandbox wrapper manually.
       base::FilePath sandbox_path = setuid_sandbox_host->GetSandboxBinaryPath();
@@ -266,11 +280,16 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     options.clear_environ = true;
     AddPassthroughEnvToOptions(&options);
 
-    if (!base::LaunchProcess(argv_to_launch, options).IsValid())
+    base::Process process =
+        using_namespace_sandbox
+            ? sandbox::NamespaceSandbox::LaunchProcess(argv_to_launch, options)
+            : base::LaunchProcess(argv_to_launch, options);
+
+    if (!process.IsValid())
       status_ = kNaClHelperLaunchFailed;
     // parent and error cases are handled below
 
-    if (enable_layer1_sandbox) {
+    if (using_setuid_sandbox) {
       // Sanity check that dummy_fd was kept alive for LaunchProcess.
       DCHECK(dummy_fd.is_valid());
     }

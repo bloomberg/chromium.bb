@@ -357,6 +357,9 @@ const char kEnableLogging[]                 = "enable-logging";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
+// Prefer the namespace sandbox over the setuid sandbox when possible.
+const char kEnableNamespaceSandbox[]        = "enable-namespace-sandbox";
+
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
