@@ -38,8 +38,10 @@ class CC_EXPORT TopControlsManager
       float top_controls_hide_threshold);
   virtual ~TopControlsManager();
 
-  float ControlsTopOffset();
-  float ContentTopOffset();
+  float ControlsTopOffset() const;
+  float ContentTopOffset() const;
+  float TopControlsShownRatio() const;
+  float TopControlsHeight() const;
 
   KeyframedFloatAnimationCurve* animation() {
     return top_controls_animation_.get();
@@ -60,9 +62,6 @@ class CC_EXPORT TopControlsManager
   void PinchEnd();
 
   gfx::Vector2dF Animate(base::TimeTicks monotonic_time);
-  void SetControlsTopOffset(float offset);
-  void SetTopControlsHeight(float top_controls_height);
-  float top_controls_height() { return top_controls_height_; }
 
  protected:
   TopControlsManager(TopControlsManagerClient* client,
@@ -81,7 +80,6 @@ class CC_EXPORT TopControlsManager
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
   TopControlsState permitted_state_;
-  float top_controls_height_;
 
   float current_scroll_delta_;
   float controls_scroll_begin_offset_;

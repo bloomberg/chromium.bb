@@ -753,7 +753,11 @@ void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
 }
 
 void RenderWidgetCompositor::setTopControlsContentOffset(float offset) {
-  layer_tree_host_->SetTopControlsContentOffset(offset);
+  setTopControlsShownRatio(offset);
+}
+
+void RenderWidgetCompositor::setTopControlsShownRatio(float ratio) {
+  layer_tree_host_->SetTopControlsShownRatio(ratio);
 }
 
 void RenderWidgetCompositor::WillBeginMainFrame() {

@@ -4,6 +4,7 @@
 
 #include "cc/trees/layer_tree_impl.h"
 
+#include <algorithm>
 #include <limits>
 #include <set>
 
@@ -76,6 +77,7 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
 LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* layer_tree_host_impl,
     scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
+    scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
     scoped_refptr<SyncedElasticOverscroll> elastic_overscroll)
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
@@ -102,9 +104,7 @@ LayerTreeImpl::LayerTreeImpl(
       render_surface_layer_list_id_(0),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0),
-      top_controls_content_offset_(0),
-      top_controls_delta_(0),
-      sent_top_controls_delta_(0) {
+      top_controls_shown_ratio_(top_controls_shown_ratio) {
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
@@ -210,20 +210,10 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->PassSwapPromises(&swap_promise_list_);
 
-  // Track the change in top controls height to offset the top_controls_delta
-  // properly.  This is so that the top controls offset will be maintained
-  // across height changes.
-  float top_controls_height_delta =
-      target_tree->top_controls_height_ - top_controls_height_;
-
-  target_tree->top_controls_shrink_blink_size_ =
-      top_controls_shrink_blink_size_;
-  target_tree->top_controls_height_ = top_controls_height_;
-  target_tree->top_controls_content_offset_ = top_controls_content_offset_;
-  target_tree->top_controls_delta_ = target_tree->top_controls_delta_ -
-                                     target_tree->sent_top_controls_delta_ -
-                                     top_controls_height_delta;
-  target_tree->sent_top_controls_delta_ = 0.f;
+  target_tree->set_top_controls_shrink_blink_size(
+      top_controls_shrink_blink_size_);
+  target_tree->set_top_controls_height(top_controls_height_);
+  target_tree->PushTopControls(nullptr);
 
   // Active tree already shares the page_scale_factor object with pending
   // tree so only the limits need to be provided.
@@ -364,6 +354,48 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
     DidUpdatePageScale();
 }
 
+void LayerTreeImpl::set_top_controls_shrink_blink_size(bool shrink) {
+  if (top_controls_shrink_blink_size_ == shrink)
+    return;
+
+  top_controls_shrink_blink_size_ = shrink;
+  if (IsActiveTree())
+    layer_tree_host_impl_->UpdateViewportContainerSizes();
+}
+
+void LayerTreeImpl::set_top_controls_height(float top_controls_height) {
+  if (top_controls_height_ == top_controls_height)
+    return;
+
+  top_controls_height_ = top_controls_height;
+  if (IsActiveTree())
+    layer_tree_host_impl_->UpdateViewportContainerSizes();
+}
+
+bool LayerTreeImpl::SetCurrentTopControlsShownRatio(float ratio) {
+  ratio = std::max(ratio, 0.f);
+  ratio = std::min(ratio, 1.f);
+  return top_controls_shown_ratio_->SetCurrent(ratio);
+}
+
+void LayerTreeImpl::PushTopControlsFromMainThread(
+    float top_controls_shown_ratio) {
+  PushTopControls(&top_controls_shown_ratio);
+}
+
+void LayerTreeImpl::PushTopControls(const float* top_controls_shown_ratio) {
+  DCHECK(top_controls_shown_ratio || IsActiveTree());
+
+  if (top_controls_shown_ratio) {
+    DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
+    top_controls_shown_ratio_->PushFromMainThread(*top_controls_shown_ratio);
+  }
+  if (IsActiveTree()) {
+    if (top_controls_shown_ratio_->PushPendingToActive())
+      layer_tree_host_impl_->DidChangeTopControlsPosition();
+  }
+}
+
 bool LayerTreeImpl::SetPageScaleFactorLimits(float min_page_scale_factor,
                                              float max_page_scale_factor) {
   if (min_page_scale_factor == min_page_scale_factor_ &&
@@ -451,11 +483,8 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   DCHECK(IsActiveTree());
 
   page_scale_factor()->AbortCommit();
+  top_controls_shown_ratio()->AbortCommit();
   elastic_overscroll()->AbortCommit();
-
-  top_controls_content_offset_ += sent_top_controls_delta_;
-  top_controls_delta_ -= sent_top_controls_delta_;
-  sent_top_controls_delta_ = 0.f;
 
   if (!root_layer())
     return;

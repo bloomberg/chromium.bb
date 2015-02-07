@@ -129,6 +129,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual void setShowDebugBorders(bool show);
   virtual void setContinuousPaintingEnabled(bool enabled);
   virtual void setShowScrollBottleneckRects(bool show);
+  virtual void setTopControlsShownRatio(float);
+
+  // TODO(aelias): Delete after Blink roll
   virtual void setTopControlsContentOffset(float);
 
   // cc::LayerTreeHostClient implementation.

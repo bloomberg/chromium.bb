@@ -212,7 +212,7 @@ class CC_EXPORT LayerTreeHost {
   void SetViewportSize(const gfx::Size& device_viewport_size);
   void SetTopControlsShrinkBlinkSize(bool shrink);
   void SetTopControlsHeight(float height);
-  void SetTopControlsContentOffset(float offset);
+  void SetTopControlsShownRatio(float ratio);
 
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
@@ -416,7 +416,7 @@ class CC_EXPORT LayerTreeHost {
   gfx::Size device_viewport_size_;
   bool top_controls_shrink_blink_size_;
   float top_controls_height_;
-  float top_controls_content_offset_;
+  float top_controls_shown_ratio_;
   float device_scale_factor_;
 
   bool visible_;

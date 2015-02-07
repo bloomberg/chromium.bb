@@ -174,10 +174,13 @@ class CC_EXPORT LayerTreeHostImpl
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;
 
   // TopControlsManagerClient implementation.
-  void SetControlsTopOffset(float offset) override;
-  float ControlsTopOffset() const override;
+  float TopControlsHeight() const override;
+  void SetCurrentTopControlsShownRatio(float offset) override;
+  float CurrentTopControlsShownRatio() const override;
   void DidChangeTopControlsPosition() override;
   bool HaveRootScrollLayer() const override;
+
+  void UpdateViewportContainerSizes();
 
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
@@ -530,7 +533,6 @@ class CC_EXPORT LayerTreeHostImpl
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int id);
 
-  void UpdateViewportContainerSizes();
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time);

@@ -235,8 +235,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   SetDebugState(settings.initial_debug_state);
 
   // LTHI always has an active tree.
-  active_tree_ = LayerTreeImpl::create(this, new SyncedProperty<ScaleGroup>(),
-                                       new SyncedElasticOverscroll);
+  active_tree_ =
+      LayerTreeImpl::create(this, new SyncedProperty<ScaleGroup>(),
+                            new SyncedTopControls, new SyncedElasticOverscroll);
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
@@ -1113,8 +1114,10 @@ void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
 void LayerTreeHostImpl::ResetTreesForTesting() {
   if (active_tree_)
     active_tree_->DetachLayerTree();
-  active_tree_ = LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
-                                       active_tree()->elastic_overscroll());
+  active_tree_ =
+      LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
+                            active_tree()->top_controls_shown_ratio(),
+                            active_tree()->elastic_overscroll());
   if (pending_tree_)
     pending_tree_->DetachLayerTree();
   pending_tree_ = nullptr;
@@ -1678,9 +1681,9 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
       active_tree_->top_controls_shrink_blink_size()
           ? active_tree_->top_controls_height()
           : 0.f;
-  inner_container->SetBoundsDelta(
-      gfx::Vector2dF(0, top_controls_layout_height -
-                            active_tree_->total_top_controls_content_offset()));
+  inner_container->SetBoundsDelta(gfx::Vector2dF(
+      0,
+      top_controls_layout_height - top_controls_manager_->ContentTopOffset()));
 
   if (!outer_container || outer_container->BoundsForScrolling().IsEmpty())
     return;
@@ -1768,15 +1771,8 @@ void LayerTreeHostImpl::CreatePendingTree() {
   else
     pending_tree_ =
         LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
+                              active_tree()->top_controls_shown_ratio(),
                               active_tree()->elastic_overscroll());
-
-  // Update the delta from the active tree, which may have
-  // adjusted its delta prior to the pending tree being created.
-  DCHECK_EQ(0.f, pending_tree_->sent_top_controls_delta());
-  pending_tree_->set_top_controls_delta(
-      active_tree_->top_controls_delta() -
-      active_tree_->sent_top_controls_delta());
-  pending_tree_->set_top_controls_height(active_tree_->top_controls_height());
 
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
@@ -1811,14 +1807,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
     active_tree_->SetRootLayerScrollOffsetDelegate(
         root_layer_scroll_offset_delegate_);
-
-    if (top_controls_manager_) {
-      top_controls_manager_->SetTopControlsHeight(
-          active_tree_->top_controls_height());
-      top_controls_manager_->SetControlsTopOffset(
-          active_tree_->total_top_controls_content_offset() -
-          active_tree_->top_controls_height());
-    }
 
     UpdateViewportContainerSizes();
   } else {
@@ -2298,15 +2286,17 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
   SetFullRootLayerDamage();
 }
 
-void LayerTreeHostImpl::SetControlsTopOffset(float offset) {
-  float current_top_offset = active_tree_->top_controls_content_offset() -
-                             active_tree_->top_controls_height();
-  active_tree_->set_top_controls_delta(offset - current_top_offset);
+float LayerTreeHostImpl::TopControlsHeight() const {
+  return active_tree_->top_controls_height();
 }
 
-float LayerTreeHostImpl::ControlsTopOffset() const {
-  return active_tree_->total_top_controls_content_offset() -
-         active_tree_->top_controls_height();
+void LayerTreeHostImpl::SetCurrentTopControlsShownRatio(float ratio) {
+  if (active_tree_->SetCurrentTopControlsShownRatio(ratio))
+    DidChangeTopControlsPosition();
+}
+
+float LayerTreeHostImpl::CurrentTopControlsShownRatio() const {
+  return active_tree_->CurrentTopControlsShownRatio();
 }
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
@@ -3059,11 +3049,11 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   CollectScrollDeltas(scroll_info.get(), active_tree_->root_layer());
   scroll_info->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
+  scroll_info->top_controls_delta =
+      active_tree()->top_controls_shown_ratio()->PullDeltaForMainThread();
   scroll_info->elastic_overscroll_delta =
       active_tree_->elastic_overscroll()->PullDeltaForMainThread();
   scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
-  scroll_info->top_controls_delta = active_tree()->top_controls_delta();
-  active_tree_->set_sent_top_controls_delta(scroll_info->top_controls_delta);
 
   return scroll_info.Pass();
 }

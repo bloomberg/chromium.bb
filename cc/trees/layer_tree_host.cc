@@ -119,7 +119,7 @@ LayerTreeHost::LayerTreeHost(
       debug_state_(settings.initial_debug_state),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
-      top_controls_content_offset_(0.f),
+      top_controls_shown_ratio_(0.f),
       device_scale_factor_(1.f),
       visible_(true),
       page_scale_factor_(1.f),
@@ -335,20 +335,10 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
-  // Track the change in top controls height to offset the top_controls_delta
-  // properly.  This is so that the top controls offset will be maintained
-  // across height changes.
-  float top_controls_height_delta =
-      sync_tree->top_controls_height() - top_controls_height_;
-
   sync_tree->set_top_controls_shrink_blink_size(
       top_controls_shrink_blink_size_);
   sync_tree->set_top_controls_height(top_controls_height_);
-  sync_tree->set_top_controls_content_offset(top_controls_content_offset_);
-  sync_tree->set_top_controls_delta(sync_tree->top_controls_delta() -
-                                    sync_tree->sent_top_controls_delta() -
-                                    top_controls_height_delta);
-  sync_tree->set_sent_top_controls_delta(0.f);
+  sync_tree->PushTopControlsFromMainThread(top_controls_shown_ratio_);
 
   host_impl->SetUseGpuRasterization(UseGpuRasterization());
   host_impl->set_gpu_rasterization_status(GetGpuRasterizationStatus());
@@ -691,11 +681,11 @@ void LayerTreeHost::SetTopControlsHeight(float height) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetTopControlsContentOffset(float offset) {
-  if (top_controls_content_offset_ == offset)
+void LayerTreeHost::SetTopControlsShownRatio(float ratio) {
+  if (top_controls_shown_ratio_ == ratio)
     return;
 
-  top_controls_content_offset_ = offset;
+  top_controls_shown_ratio_ = ratio;
   SetNeedsCommit();
 }
 

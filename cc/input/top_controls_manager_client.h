@@ -11,8 +11,9 @@ class LayerTreeImpl;
 
 class CC_EXPORT TopControlsManagerClient {
  public:
-  virtual void SetControlsTopOffset(float offset) = 0;
-  virtual float ControlsTopOffset() const = 0;
+  virtual float TopControlsHeight() const = 0;
+  virtual void SetCurrentTopControlsShownRatio(float ratio) = 0;
+  virtual float CurrentTopControlsShownRatio() const = 0;
   virtual void DidChangeTopControlsPosition() = 0;
   virtual bool HaveRootScrollLayer() const = 0;
 
