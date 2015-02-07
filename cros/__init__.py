@@ -71,8 +71,8 @@ class CrosCommand(object):
 
   def __init__(self, options):
     self.options = options
-    project_json = project.GetProjectJson()
-    self.current_project = project_json.get('name') if project_json else None
+    p = project.FindProjectInPath()
+    self.current_project = p.config.get('name') if p else None
 
   @classmethod
   def AddParser(cls, parser):

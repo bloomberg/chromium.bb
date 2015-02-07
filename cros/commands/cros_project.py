@@ -58,7 +58,7 @@ To create a project based on gizmo:
       conf = {'name': self.project_name,
               'dependencies': [{'name': d} for d in self.dependencies]}
 
-      project.WriteProjectJson(conf, temp_project_dir)
+      project.Project(temp_project_dir, initial_config=conf)
       shutil.move(temp_project_dir, project_dir)
 
   def Run(self):
