@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/bookmark_app_bubble_view.h"
 
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -178,6 +179,7 @@ void BookmarkAppBubbleView::Init() {
 
   title_tf_ = new views::Textfield();
   title_tf_->SetText(web_app_info_.title);
+  title_tf_->set_controller(this);
   layout->AddView(title_tf_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
@@ -191,6 +193,7 @@ void BookmarkAppBubbleView::Init() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  UpdateAddButtonState();
 }
 
 views::View* BookmarkAppBubbleView::GetInitiallyFocusedView() {
@@ -221,12 +224,29 @@ void BookmarkAppBubbleView::ButtonPressed(views::Button* sender,
   HandleButtonPressed(sender);
 }
 
+void BookmarkAppBubbleView::ContentsChanged(
+    views::Textfield* sender,
+    const base::string16& new_contents) {
+  DCHECK_EQ(title_tf_, sender);
+  UpdateAddButtonState();
+}
+
 void BookmarkAppBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == add_button_) {
     user_accepted_ = true;
-    web_app_info_.title = title_tf_->text();
+    web_app_info_.title = GetTrimmedTitle();
     web_app_info_.open_as_window = open_as_window_checkbox_->checked();
   }
 
   GetWidget()->Close();
+}
+
+void BookmarkAppBubbleView::UpdateAddButtonState() {
+  add_button_->SetEnabled(!GetTrimmedTitle().empty());
+}
+
+base::string16 BookmarkAppBubbleView::GetTrimmedTitle() {
+  base::string16 title(title_tf_->text());
+  base::TrimWhitespace(title, base::TRIM_ALL, &title);
+  return title;
 }

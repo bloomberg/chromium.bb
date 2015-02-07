@@ -501,12 +501,6 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   bool bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
   load_time_data.SetBoolean("enableNewBookmarkApps", bookmark_apps_enabled);
-  // Use a different string for launching as a regular tab when bookmark apps
-  // are enabled.
-  if (bookmark_apps_enabled) {
-    load_time_data.SetString("applaunchtypetab",
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_TAB));
-  }
 
 #if defined(OS_CHROMEOS)
   load_time_data.SetString("expandMenu",

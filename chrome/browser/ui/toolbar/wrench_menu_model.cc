@@ -240,7 +240,18 @@ void ToolsMenuModel::Build(Browser* browser) {
 #endif
 
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
-    AddItemWithStringId(IDC_CREATE_HOSTED_APP, IDS_CREATE_HOSTED_APP);
+#if defined(OS_MACOSX)
+    int string_id = IDS_ADD_TO_DOCK;
+#elif defined(OS_WIN)
+    int string_id = IDS_ADD_TO_TASKBAR;
+#else
+    int string_id = IDS_ADD_TO_DESKTOP;
+#endif
+#if defined(USE_ASH)
+    if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+      string_id = IDS_ADD_TO_SHELF;
+#endif
+    AddItemWithStringId(IDC_CREATE_HOSTED_APP, string_id);
     AddSeparator(ui::NORMAL_SEPARATOR);
   } else if (show_create_shortcuts) {
     AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
@@ -419,16 +420,29 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     return;
   }
 
-  // Pin the app to the shelf on Ash.
+  // Pin the app to the relevant launcher depending on the OS.
+  Profile* current_profile = profile_->GetOriginalProfile();
   chrome::HostDesktopType desktop = browser->host_desktop_type();
+  if (desktop != chrome::HOST_DESKTOP_TYPE_ASH) {
+    web_app::ShortcutLocations creation_locations;
+#if defined(OS_LINUX)
+    creation_locations.on_desktop = true;
+#else
+    creation_locations.on_desktop = false;
+#endif
+    creation_locations.applications_menu_location =
+        web_app::APP_MENU_LOCATION_HIDDEN;
+    creation_locations.in_quick_launch_bar = true;
+    web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
+                             creation_locations, current_profile, extension);
 #if defined(USE_ASH)
-  if (desktop == chrome::HOST_DESKTOP_TYPE_ASH)
+  } else {
     ChromeLauncherController::instance()->PinAppWithID(extension->id());
 #endif
+  }
 
   // Show the newly installed app in the app launcher, in finder (on Mac) or
   // chrome://apps.
-  Profile* current_profile = profile_->GetOriginalProfile();
   if (IsAppLauncherEnabled()) {
     AppListService::Get(desktop)
         ->ShowForAppInstall(current_profile, extension->id(), false);

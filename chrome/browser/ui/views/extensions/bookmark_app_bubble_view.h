@@ -11,6 +11,7 @@
 #include "chrome/common/web_application_info.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace gfx {
 class ImageSkia;
@@ -28,7 +29,8 @@ class Textfield;
 // create a bookmark app with. Don't create a BookmarkAppBubbleView directly,
 // instead use the static ShowBubble method.
 class BookmarkAppBubbleView : public views::BubbleDelegateView,
-                              public views::ButtonListener {
+                              public views::ButtonListener,
+                              public views::TextfieldController {
  public:
   ~BookmarkAppBubbleView() override;
 
@@ -59,8 +61,18 @@ class BookmarkAppBubbleView : public views::BubbleDelegateView,
   // Closes the bubble or opens the edit dialog.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Overridden from views::TextfieldController:
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);
+
+  // Update the state of the Add button.
+  void UpdateAddButtonState();
+
+  // Get the trimmed contents of the title text field.
+  base::string16 GetTrimmedTitle();
 
   // The WebApplicationInfo that the user is editing.
   WebApplicationInfo web_app_info_;

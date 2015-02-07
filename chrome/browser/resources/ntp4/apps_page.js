@@ -49,10 +49,7 @@ cr.define('ntp', function() {
       this.launch_.addEventListener('activate', this.onLaunch_.bind(this));
 
       menu.appendChild(cr.ui.MenuItem.createSeparator());
-      if (loadTimeData.getBoolean('enableNewBookmarkApps'))
-        this.launchRegularTab_ = this.appendMenuItem_('applaunchtypetab');
-      else
-        this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
+      this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
       if (loadTimeData.getBoolean('enableNewBookmarkApps') || !cr.isMac)
         this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
@@ -131,14 +128,14 @@ cr.define('ntp', function() {
 
       this.launch_.textContent = app.appData.title;
 
-      var launchTypeRegularTab = this.launchRegularTab_;
+      var launchTypeWindow = this.launchNewWindow_;
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
-        // If bookmark apps are enabled, only show the "Open as tab" button.
+        // If bookmark apps are enabled, only show the "Open as window" button.
         launchTypeButton.hidden = app.appData.packagedApp ||
             (loadTimeData.getBoolean('enableNewBookmarkApps') &&
-             launchTypeButton != launchTypeRegularTab);
+             launchTypeButton != launchTypeWindow);
       });
 
       this.launchTypeMenuSeparator_.hidden = app.appData.packagedApp;
@@ -171,8 +168,8 @@ cr.define('ntp', function() {
       // When bookmark apps are enabled, hosted apps can only toggle between
       // open as window and open as tab.
       if (loadTimeData.getBoolean('enableNewBookmarkApps')) {
-        targetLaunchType = this.launchRegularTab_.checked ?
-            this.launchNewWindow_ : this.launchRegularTab_;
+        targetLaunchType = this.launchNewWindow_.checked ?
+            this.launchRegularTab_ : this.launchNewWindow_;
       }
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         if (launchTypeButton == targetLaunchType) {

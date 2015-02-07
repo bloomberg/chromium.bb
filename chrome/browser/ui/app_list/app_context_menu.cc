@@ -118,9 +118,8 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
       // When bookmark apps are enabled, hosted apps can only toggle between
       // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR.
       if (extensions::util::IsNewBookmarkAppsEnabled()) {
-        menu_model_->AddCheckItemWithStringId(
-            USE_LAUNCH_TYPE_REGULAR,
-            IDS_APP_CONTEXT_MENU_OPEN_TAB);
+        menu_model_->AddCheckItemWithStringId(USE_LAUNCH_TYPE_WINDOW,
+                                              IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
       } else {
         menu_model_->AddCheckItemWithStringId(
             USE_LAUNCH_TYPE_REGULAR,
@@ -195,9 +194,9 @@ base::string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
   // USE_LAUNCH_TYPE_REGULAR is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
   // as pinned tab) and fullscreen-by-default windows do not exist.
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
-    return IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR) ?
-        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB) :
-        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
+    return IsCommandIdChecked(USE_LAUNCH_TYPE_WINDOW)
+               ? l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)
+               : l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB);
   }
 
 #if defined(OS_MACOSX)
@@ -274,9 +273,9 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     // LAUNCH_TYPE_WINDOW and LAUNCH_TYPE_REGULAR.
     if (extensions::util::IsNewBookmarkAppsEnabled()) {
       launch_type = (controller_->GetExtensionLaunchType(profile_, app_id_) ==
-                     extensions::LAUNCH_TYPE_REGULAR) ?
-                    extensions::LAUNCH_TYPE_WINDOW :
-                    extensions::LAUNCH_TYPE_REGULAR;
+                     extensions::LAUNCH_TYPE_WINDOW)
+                        ? extensions::LAUNCH_TYPE_REGULAR
+                        : extensions::LAUNCH_TYPE_WINDOW;
     }
     controller_->SetExtensionLaunchType(profile_, app_id_, launch_type);
   } else if (command_id == OPTIONS) {

@@ -2215,20 +2215,35 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- "Create application shortcuts" menu item -->
+      <if expr="is_win">
+        <message name="IDS_ADD_TO_TASKBAR" desc="Button text for adding a bookmark app to the taskbar.">
+          Add to taskbar...
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_ADD_TO_DOCK" desc="Button text for adding a bookmark app to the dock.">
+          Add to Dock...
+        </message>
+      </if>
+      <if expr="use_ash">
+        <message name="IDS_ADD_TO_SHELF" desc="Button text for adding a bookmark app to the shelf.">
+          Add to shelf...
+        </message>
+      </if>
       <if expr="not use_titlecase">
         <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
           Create application &amp;shortcuts...
         </message>
-        <message name="IDS_CREATE_HOSTED_APP" desc="Button text for creating a hosted app from the current website">
-          Add shortcut to this website...
+        <message name="IDS_ADD_TO_DESKTOP" desc="Button text for adding a bookmark app to the desktop.">
+          Add to desktop...
         </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_CREATE_SHORTCUTS" desc="In Title Case: Default installation menu label">
           Create Application &amp;Shortcuts...
         </message>
-        <message name="IDS_CREATE_HOSTED_APP" desc="In Title Case: Button text for creating a hosted app from the current website">
-          Add Shortcut to this Website...
+        <message name="IDS_ADD_TO_DESKTOP" desc="Button text for adding a bookmark app to the desktop.">
+          Add to Desktop...
         </message>
       </if>
 
