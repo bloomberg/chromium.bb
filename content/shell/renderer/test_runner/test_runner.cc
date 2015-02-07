@@ -204,6 +204,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                               double dischargingTime,
                               double level);
   void ResetBatteryStatus();
+  void SetMockScreenAvailability(bool available);
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();
@@ -410,6 +411,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("didChangeBatteryStatus",
                  &TestRunnerBindings::DidChangeBatteryStatus)
       .SetMethod("resetBatteryStatus", &TestRunnerBindings::ResetBatteryStatus)
+      .SetMethod("setMockScreenAvailability",
+                 &TestRunnerBindings::SetMockScreenAvailability)
       .SetMethod("didAcquirePointerLock",
                  &TestRunnerBindings::DidAcquirePointerLock)
       .SetMethod("didNotAcquirePointerLock",
@@ -962,6 +965,11 @@ void TestRunnerBindings::DidChangeBatteryStatus(bool charging,
 void TestRunnerBindings::ResetBatteryStatus() {
   if (runner_)
     runner_->ResetBatteryStatus();
+}
+
+void TestRunnerBindings::SetMockScreenAvailability(bool available) {
+  if (runner_)
+    runner_->SetMockScreenAvailability(available);
 }
 
 void TestRunnerBindings::DidAcquirePointerLock() {
@@ -2445,6 +2453,10 @@ void TestRunner::DidChangeBatteryStatus(bool charging,
 void TestRunner::ResetBatteryStatus() {
   blink::WebBatteryStatus status;
   delegate_->DidChangeBatteryStatus(status);
+}
+
+void TestRunner::SetMockScreenAvailability(bool available) {
+  delegate_->SetScreenAvailability(available);
 }
 
 void TestRunner::DidAcquirePointerLock() {

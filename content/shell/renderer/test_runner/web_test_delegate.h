@@ -70,6 +70,9 @@ class WebTestDelegate {
   virtual void DidChangeBatteryStatus(
       const blink::WebBatteryStatus& status) = 0;
 
+  // Sets second screen availability for the Presentation API.
+  virtual void SetScreenAvailability(bool available) = 0;
+
   // Add a message to the text dump for the layout test.
   virtual void PrintMessage(const std::string& message) = 0;
 

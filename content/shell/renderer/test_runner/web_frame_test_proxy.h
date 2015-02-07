@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 
 #include "base/basictypes.h"
+#include "content/shell/renderer/test_runner/mock_presentation_client.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
@@ -38,6 +39,10 @@ class WebFrameTestProxy : public Base {
 
   virtual blink::WebScreenOrientationClient* webScreenOrientationClient() {
     return base_proxy_->GetScreenOrientationClientMock();
+  }
+
+  virtual blink::WebPresentationClient* presentationClient() {
+    return base_proxy_->GetPresentationClientMock();
   }
 
   virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
