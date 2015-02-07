@@ -1283,11 +1283,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
 }
 
 // This fails on multiple android bots crbug.com/456065.
-#if OS(ANDROID)
-TEST_F(WebFrameTest, DISABLED_SetForceZeroLayoutHeightWorksWithWrapContentsMode)
-#else
 TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentsMode)
-#endif
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("0-by-0.html");
@@ -1302,20 +1298,26 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentsMode)
     webViewHelper.initializeAndLoad(m_baseURL + "0-by-0.html", true, 0, &client, configurePinchVirtualViewport);
     webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
     LayerCompositor* compositor = webViewHelper.webViewImpl()->compositor();
-    EXPECT_EQ(LayoutSize(0, 0), webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize());
-    EXPECT_EQ(FloatSize(0.0, 0.0), compositor->containerLayer()->size());
+    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
+    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
+    EXPECT_EQ(0.0, compositor->containerLayer()->size().width());
+    EXPECT_EQ(0.0, compositor->containerLayer()->size().height());
 
     webViewHelper.webView()->resize(WebSize(viewportWidth, 0));
-    EXPECT_EQ(LayoutSize(viewportWidth, 0), webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize());
-    EXPECT_EQ(FloatSize(viewportWidth, 0.0), compositor->containerLayer()->size());
+    EXPECT_EQ(viewportWidth, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
+    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
+    EXPECT_EQ(viewportWidth, compositor->containerLayer()->size().width());
+    EXPECT_EQ(0.0, compositor->containerLayer()->size().height());
 
     // Two flags PinchVirtualViewportEnabled and ForceZeroLayoutHeight will cause the following
     // resize of viewport height to be ignored by the outer viewport (the container layer of
     // LayerCompositor). The height of the pinchViewport, however, is not affected.
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     EXPECT_FALSE(webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
-    EXPECT_EQ(LayoutSize(viewportWidth, 0), webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize());
-    EXPECT_EQ(FloatSize(viewportWidth, 0.0), compositor->containerLayer()->size());
+    EXPECT_EQ(viewportWidth, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
+    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
+    EXPECT_EQ(viewportWidth, compositor->containerLayer()->size().width());
+    EXPECT_EQ(0.0, compositor->containerLayer()->size().height());
 
     LocalFrame* frame = webViewHelper.webViewImpl()->mainFrameImpl()->frame();
     PinchViewport& pinchViewport = frame->page()->frameHost().pinchViewport();
