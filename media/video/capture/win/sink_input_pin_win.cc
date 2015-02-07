@@ -69,8 +69,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       pvi->bmiHeader.biBitCount = 12;  // bit per pixel
       pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
       pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
-      pvi->bmiHeader.biSizeImage =
-          requested_format_.frame_size.GetArea() * 3 / 2;
+      pvi->bmiHeader.biSizeImage = requested_format_.ImageAllocationSize();
       media_type->subtype = kMediaSubTypeI420;
       break;
     }
@@ -79,7 +78,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       pvi->bmiHeader.biBitCount = 16;
       pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
       pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
-      pvi->bmiHeader.biSizeImage = requested_format_.frame_size.GetArea() * 2;
+      pvi->bmiHeader.biSizeImage = requested_format_.ImageAllocationSize();
       media_type->subtype = MEDIASUBTYPE_YUY2;
       break;
     }
@@ -88,7 +87,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       pvi->bmiHeader.biBitCount = 24;
       pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
       pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
-      pvi->bmiHeader.biSizeImage = requested_format_.frame_size.GetArea() * 3;
+      pvi->bmiHeader.biSizeImage = requested_format_.ImageAllocationSize();
       media_type->subtype = MEDIASUBTYPE_RGB24;
       break;
     }

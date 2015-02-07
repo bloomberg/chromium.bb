@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "media/video/capture/video_capture_types.h"
 
 namespace media {
 static const int kY4MHeaderMaxSize = 200;
@@ -169,10 +170,10 @@ void FileVideoCaptureDevice::StopAndDeAllocate() {
   capture_thread_.Stop();
 }
 
-int FileVideoCaptureDevice::CalculateFrameSize() {
+int FileVideoCaptureDevice::CalculateFrameSize() const {
   DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_I420);
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
-  return capture_format_.frame_size.GetArea() * 12 / 8;
+  return capture_format_.ImageAllocationSize();
 }
 
 void FileVideoCaptureDevice::OnAllocateAndStart(

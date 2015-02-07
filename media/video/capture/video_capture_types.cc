@@ -31,6 +31,36 @@ bool VideoCaptureFormat::IsValid() const {
          (pixel_format < PIXEL_FORMAT_MAX);
 }
 
+size_t VideoCaptureFormat::ImageAllocationSize() const {
+  size_t result_frame_size = frame_size.GetArea();
+  switch (pixel_format) {
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+      result_frame_size = result_frame_size * 3 / 2;
+      break;
+    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
+      result_frame_size *= 2;
+      break;
+    case PIXEL_FORMAT_RGB24:
+      result_frame_size *= 3;
+      break;
+    case PIXEL_FORMAT_ARGB:
+      result_frame_size *= 4;
+      break;
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_TEXTURE:
+      result_frame_size = 0;
+      break;
+    default:  // Sizes for the rest of the formats are unknown.
+      NOTREACHED() << "Unknown pixel format provided.";
+      break;
+  }
+  return result_frame_size;
+}
+
 std::string VideoCaptureFormat::ToString() const {
   return base::StringPrintf("resolution: %s, fps: %.3f, pixel format: %s",
                             frame_size.ToString().c_str(),
