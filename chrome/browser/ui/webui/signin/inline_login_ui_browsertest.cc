@@ -277,16 +277,9 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
 
 // Flaky on CrOS, http://crbug.com/364759.
 // Also flaky on Mac, http://crbug.com/442674.
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_NavigationToOtherChromeURLDisallowed \
-    DISABLED_NavigationToOtherChromeURLDisallowed
-#else
-#define MAYBE_NavigationToOtherChromeURLDisallowed \
-    NavigationToOtherChromeURLDisallowed
-#endif
-
+// Also flaky on Linux which is just too flaky
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
-    MAYBE_NavigationToOtherChromeURLDisallowed) {
+    DISABLED_NavigationToOtherChromeURLDisallowed) {
   ui_test_utils::NavigateToURL(
       browser(), signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false));
   WaitUntilUIReady(browser());
