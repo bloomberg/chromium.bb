@@ -138,7 +138,7 @@ public:
     virtual void applyViewportDeltas(
         const WebSize& scrollDelta,
         float scaleFactor,
-        float topControlsDelta) { }
+        float topControlsShownRatioDelta) { }
 
     // Applies viewport related properties during a commit from the compositor
     // thread.
@@ -149,7 +149,7 @@ public:
         const WebSize& mainFrameDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float scaleFactor,
-        float topControlsDelta) { }
+        float topControlsShownRatioDelta) { }
 
     // Applies viewport related properties during a commit from the compositor
     // thread.
@@ -158,7 +158,7 @@ public:
         const WebFloatSize& mainFrameDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float scaleFactor,
-        float topControlsDelta) { }
+        float topControlsShownRatioDelta) { }
 
     // Called to inform the WebWidget that mouse capture was lost.
     virtual void mouseCaptureLost() { }
@@ -271,8 +271,12 @@ public:
     // but not the select popup.
     virtual WebPagePopup* pagePopup() const { return 0; }
 
-    // Sets the height subtracted from the Widget to accomodate the top controls.
+    // TODO(aelias): Delete this after Blink roll.
     virtual void setTopControlsLayoutHeight(float) { }
+
+    // Notification about the top controls height.  If the boolean is true, then
+    // the embedder shrunk the WebView size by the top controls height.
+    virtual void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) { }
 
 protected:
     ~WebWidget() { }

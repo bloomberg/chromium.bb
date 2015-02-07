@@ -88,7 +88,6 @@ public:
     // Sets the offset from the top of the screen that the contents are displaced by due to top controls showing.
     virtual void setTopControlsContentOffset(float) { }
 
-
     // Flow control and scheduling ---------------------------------------
 
     // Indicates that an animation needs to be updated.

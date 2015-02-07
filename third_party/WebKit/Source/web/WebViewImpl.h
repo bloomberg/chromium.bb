@@ -121,19 +121,19 @@ public:
     virtual void applyViewportDeltas(
         const WebSize& scrollDelta,
         float pageScaleDelta,
-        float topControlsDelta) override;
+        float topControlsShownRatioDelta) override;
     virtual void applyViewportDeltas(
         const WebSize& pinchViewportDelta,
         const WebSize& mainFrameDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float pageScaleDelta,
-        float topControlsDelta) override;
+        float topControlsShownRatioDelta) override;
     virtual void applyViewportDeltas(
         const WebFloatSize& pinchViewportDelta,
         const WebFloatSize& mainFrameDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float pageScaleDelta,
-        float topControlsDelta) override;
+        float topControlsShownRatioDelta) override;
     virtual void mouseCaptureLost() override;
     virtual void setFocus(bool enable) override;
     virtual bool setComposition(
@@ -517,6 +517,7 @@ public:
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
     virtual void setTopControlsLayoutHeight(float) override;
+    virtual void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) override;
 
     virtual void forceNextWebGLContextCreationToFail() override;
 
@@ -524,7 +525,7 @@ public:
 
 private:
     void didUpdateTopControls();
-    void setTopControlsContentOffset(float);
+    void setTopControlsShownRatio(float);
 
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
     // prevent external usage
@@ -757,12 +758,19 @@ private:
 
     bool m_userGestureObserved;
 
-    // The top controls offset since the last compositor commit.
-    float m_topControlsContentOffset;
+    // The top controls shown amount (normalized from 0 to 1) since the last
+    // compositor commit.
+    float m_topControlsShownRatio;
 
-    // The top controls offset at the time of the last Resize event. This is the
-    // amount that the viewport was shrunk by to accomodate the top controls.
-    float m_topControlsLayoutHeight;
+    float m_topControlsHeight;
+    // If this is true, then the embedder shrunk the WebView size by the top
+    // controls height.
+    bool m_topControlsShrinkLayoutSize;
+
+    // If true, then top controls is normalized between 0 and 1; if false,
+    // then it's an absolute value.
+    // TODO(aelias): Delete this after Blink roll.
+    bool m_topControlsOffsetIsNormalized;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());

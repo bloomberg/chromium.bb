@@ -413,8 +413,10 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
-    , m_topControlsContentOffset(0)
-    , m_topControlsLayoutHeight(0)
+    , m_topControlsShownRatio(0)
+    , m_topControlsHeight(0)
+    , m_topControlsShrinkLayoutSize(true)
+    , m_topControlsOffsetIsNormalized(true)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -1719,16 +1721,27 @@ void WebViewImpl::performResize()
     }
 }
 
-void WebViewImpl::setTopControlsContentOffset(float offset)
+void WebViewImpl::setTopControlsShownRatio(float offset)
 {
-    m_topControlsContentOffset = offset;
+    m_topControlsShownRatio = offset;
+    // TODO(aelias): Rename this to ShownRatio after CC side lands.
     m_layerTreeView->setTopControlsContentOffset(offset);
     didUpdateTopControls();
 }
 
 void WebViewImpl::setTopControlsLayoutHeight(float height)
 {
-    m_topControlsLayoutHeight = height;
+    m_topControlsOffsetIsNormalized = false;
+    setTopControlsHeight(height, true);
+}
+
+void WebViewImpl::setTopControlsHeight(float height, bool topControlsShrinkLayoutSize)
+{
+    if (m_topControlsHeight == height && m_topControlsShrinkLayoutSize == topControlsShrinkLayoutSize)
+        return;
+
+    m_topControlsHeight = height;
+    m_topControlsShrinkLayoutSize = topControlsShrinkLayoutSize;
     didUpdateTopControls();
 }
 
@@ -1742,7 +1755,11 @@ void WebViewImpl::didUpdateTopControls()
     if (!view)
         return;
 
-    float topControlsViewportAdjustment = m_topControlsLayoutHeight - m_topControlsContentOffset;
+    float topControlsViewportAdjustment = 0;
+    if (m_topControlsShrinkLayoutSize)
+        topControlsViewportAdjustment += m_topControlsHeight;
+    topControlsViewportAdjustment -= m_topControlsShownRatio * (m_topControlsOffsetIsNormalized ? m_topControlsHeight : 1);
+
     if (!pinchVirtualViewportEnabled()) {
         // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell
         // the FrameView about it so it can make correct scroll offset clamping decisions during compositor
@@ -1758,13 +1775,13 @@ void WebViewImpl::didUpdateTopControls()
 
 // On ChromeOS the pinch viewport can change size independent of the layout viewport due to the
 // on screen keyboard so we should only set the FrameView adjustment on Android.
-#if OS(ANDROID)
-        // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
-        float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
-        float newHeight = view->unscaledVisibleContentSize(ExcludeScrollbars).width() / aspectRatio;
-        float adjustment = newHeight - view->unscaledVisibleContentSize(ExcludeScrollbars).height();
-        view->setTopControlsViewportAdjustment(adjustment);
-#endif
+        if (settings() && settings()->mainFrameResizesAreOrientationChanges()) {
+            // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
+            float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
+            float newHeight = view->unscaledVisibleContentSize(ExcludeScrollbars).width() / aspectRatio;
+            float adjustment = newHeight - view->unscaledVisibleContentSize(ExcludeScrollbars).height();
+            view->setTopControlsViewportAdjustment(adjustment);
+        }
     }
 }
 
@@ -4397,14 +4414,14 @@ void WebViewImpl::applyViewportDeltas(
     const WebSize& outerViewportDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
-    float topControlsDelta)
+    float topControlsShownRatioDelta)
 {
     applyViewportDeltas(
         WebFloatSize(pinchViewportDelta.width, pinchViewportDelta.height),
         WebFloatSize(outerViewportDelta.width, outerViewportDelta.height),
         elasticOverscrollDelta,
         pageScaleDelta,
-        topControlsDelta);
+        topControlsShownRatioDelta);
 }
 
 void WebViewImpl::applyViewportDeltas(
@@ -4412,7 +4429,7 @@ void WebViewImpl::applyViewportDeltas(
     const WebFloatSize& outerViewportDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
-    float topControlsDelta)
+    float topControlsShownRatioDelta)
 {
     ASSERT(pinchVirtualViewportEnabled());
 
@@ -4422,7 +4439,7 @@ void WebViewImpl::applyViewportDeltas(
     if (!frameView)
         return;
 
-    setTopControlsContentOffset(m_topControlsContentOffset + topControlsDelta);
+    setTopControlsShownRatio(m_topControlsShownRatio + topControlsShownRatioDelta);
 
     FloatPoint pinchViewportOffset = page()->frameHost().pinchViewport().visibleRect().location();
     pinchViewportOffset.move(pinchViewportDelta.width, pinchViewportDelta.height);
@@ -4437,12 +4454,12 @@ void WebViewImpl::applyViewportDeltas(
         DoubleSize(outerViewportDelta.width, outerViewportDelta.height), /* programmaticScroll */ false);
 }
 
-void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsDelta)
+void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsShownRatioDelta)
 {
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
 
-    setTopControlsContentOffset(m_topControlsContentOffset + topControlsDelta);
+    setTopControlsShownRatio(m_topControlsShownRatio + topControlsShownRatioDelta);
 
     if (pageScaleDelta == 1) {
         TRACE_EVENT_INSTANT2("blink", "WebViewImpl::applyScrollAndScale::scrollBy", "x", scrollDelta.width, "y", scrollDelta.height);
