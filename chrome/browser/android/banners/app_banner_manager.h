@@ -94,6 +94,17 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                              jstring japp_package,
                              jstring jicon_url);
 
+  // Called when the installation Intent has been handled and focus has been
+  // returned to Chrome.
+  void OnInstallIntentReturned(JNIEnv* env,
+                               jobject obj,
+                               jboolean jis_installing);
+
+  // Called when the InstallerDelegate task has finished.
+  void OnInstallFinished(JNIEnv* env,
+                         jobject obj,
+                         jboolean success);
+
   // Fetches the icon at the given URL asynchronously.
   // Returns |false| if this couldn't be kicked off.
   bool FetchIcon(const GURL& image_url);
@@ -102,6 +113,9 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // TODO(dfalcantara): Fold into Install() when more CLs land.
   static void InstallManifestApp(const content::Manifest& manifest,
                                  const SkBitmap& icon);
+
+  // Called when the AppBannerInfoBar's button needs to be updated.
+  void UpdateInstallState(JNIEnv* env, jobject obj);
 
   // WebContentsObserver overrides.
   void DidNavigateMainFrame(
@@ -117,6 +131,7 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // AppBannerInfoBarDelegate::AppDelegate overrides.
   void Block() const override;
   bool OnButtonClicked() const override;
+  bool OnLinkClicked() const override;
   void OnInfoBarDestroyed() override;
   base::string16 GetTitle() const override;
   gfx::Image GetIcon() const override;

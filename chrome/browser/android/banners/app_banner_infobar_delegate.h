@@ -33,6 +33,10 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
     // Returns true if the infobar should be dismissed.
     virtual bool OnButtonClicked() const = 0;
 
+    // User has clicked the link.
+    // Returns true if the infobar should be dismissed.
+    virtual bool OnLinkClicked() const = 0;
+
     // Called when the infobar has been destroyed.
     virtual void OnInfoBarDestroyed() = 0;
 
@@ -67,6 +71,7 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   bool Accept() override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
   explicit AppBannerInfoBarDelegate(AppDelegate* delegate);

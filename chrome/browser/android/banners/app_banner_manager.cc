@@ -99,7 +99,16 @@ bool AppBannerManager::OnButtonClicked() const {
   if (!web_contents())
     return true;
 
-  if (!web_app_data_.IsEmpty()) {
+  if (!native_app_data_.is_null()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
+    if (jobj.is_null())
+      return true;
+
+    return Java_AppBannerManager_installOrOpenNativeApp(env,
+                                                        jobj.obj(),
+                                                        native_app_data_.obj());
+  } else if (!web_app_data_.IsEmpty()) {
     AppBannerSettingsHelper::RecordBannerEvent(
         web_contents(), web_contents()->GetURL(),
         web_app_data_.start_url.spec(),
@@ -111,6 +120,27 @@ bool AppBannerManager::OnButtonClicked() const {
   }
 
   return true;
+}
+
+bool AppBannerManager::OnLinkClicked() const {
+  if (!web_contents())
+    return true;
+
+  if (!native_app_data_.is_null()) {
+    // Try to show the details for the native app.
+    JNIEnv* env = base::android::AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
+    if (jobj.is_null())
+      return true;
+
+    Java_AppBannerManager_showAppDetails(env,
+                                         jobj.obj(),
+                                         native_app_data_.obj());
+    return true;
+  } else {
+    // Nothing should happen if the user is installing a web app.
+    return false;
+  }
 }
 
 base::string16 AppBannerManager::GetTitle() const {
@@ -317,6 +347,53 @@ bool AppBannerManager::OnAppDetailsRetrieved(JNIEnv* env,
   native_app_package_ = ConvertJavaStringToUTF8(env, japp_package);
   native_app_data_.Reset(env, japp_data);
   return FetchIcon(GURL(image_url));
+}
+
+void AppBannerManager::OnInstallIntentReturned(JNIEnv* env,
+                                               jobject obj,
+                                               jboolean jis_installing) {
+  if (!weak_infobar_ptr_)
+    return;
+
+  if (jis_installing) {
+    AppBannerSettingsHelper::RecordBannerEvent(
+        web_contents(),
+        web_contents()->GetURL(),
+        native_app_package_,
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+        base::Time::Now());
+  }
+
+  UpdateInstallState(env, obj);
+}
+
+void AppBannerManager::OnInstallFinished(JNIEnv* env,
+                                         jobject obj,
+                                         jboolean success) {
+  if (!weak_infobar_ptr_)
+    return;
+
+  if (success) {
+    UpdateInstallState(env, obj);
+  } else {
+    InfoBarService* service = InfoBarService::FromWebContents(web_contents());
+    service->RemoveInfoBar(weak_infobar_ptr_);
+  }
+}
+
+void AppBannerManager::UpdateInstallState(JNIEnv* env, jobject obj) {
+  if (!weak_infobar_ptr_ || native_app_data_.is_null())
+    return;
+
+  ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
+  if (jobj.is_null())
+    return;
+
+  int newState = Java_AppBannerManager_determineInstallState(
+      env,
+      jobj.obj(),
+      native_app_data_.obj());
+  weak_infobar_ptr_->OnInstallStateChanged(newState);
 }
 
 bool AppBannerManager::FetchIcon(const GURL& image_url) {

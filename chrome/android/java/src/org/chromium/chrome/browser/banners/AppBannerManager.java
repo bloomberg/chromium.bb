@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.banners;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
@@ -12,7 +18,9 @@ import org.chromium.base.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.infobar.AppBannerInfoBar;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manages an AppBannerInfoBar for a Tab.
@@ -26,7 +34,7 @@ import org.chromium.content_public.browser.WebContents;
  * from the network.
  */
 @JNINamespace("banners")
-public class AppBannerManager extends EmptyTabObserver implements AppDetailsDelegate.Observer {
+public class AppBannerManager extends EmptyTabObserver {
     private static final String TAG = "AppBannerManager";
 
     /** Retrieves information about a given package. */
@@ -37,6 +45,12 @@ public class AppBannerManager extends EmptyTabObserver implements AppDetailsDele
 
     /** Tab that the AppBannerView/AppBannerManager is owned by. */
     private final Tab mTab;
+
+    /** Monitors an installation in progress. */
+    private InstallerDelegate mInstallTask;
+
+    /** Monitors for application state changes. */
+    private final ApplicationStatus.ApplicationStateListener mListener;
 
     /**
      * Checks if app banners are enabled.
@@ -63,6 +77,18 @@ public class AppBannerManager extends EmptyTabObserver implements AppDetailsDele
         mNativePointer = nativeInit();
         mTab = tab;
         updatePointers();
+        mListener = createApplicationStateListener();
+        ApplicationStatus.registerApplicationStateListener(mListener);
+    }
+
+    private ApplicationStatus.ApplicationStateListener createApplicationStateListener() {
+        return new ApplicationStatus.ApplicationStateListener() {
+            @Override
+            public void onApplicationStateChange(int newState) {
+                if (!ApplicationStatus.hasVisibleActivities()) return;
+                nativeUpdateInstallState(mNativePointer);
+            }
+        };
     }
 
     @Override
@@ -80,6 +106,11 @@ public class AppBannerManager extends EmptyTabObserver implements AppDetailsDele
      * Destroys the native AppBannerManager.
      */
     public void destroy() {
+        if (mInstallTask != null) {
+            mInstallTask.cancel();
+            mInstallTask = null;
+        }
+        ApplicationStatus.unregisterApplicationStateListener(mListener);
         nativeDestroy(mNativePointer);
     }
 
@@ -105,23 +136,105 @@ public class AppBannerManager extends EmptyTabObserver implements AppDetailsDele
     private void fetchAppDetails(String url, String packageName) {
         if (sAppDetailsDelegate == null) return;
         int iconSize = getPreferredIconSize();
-        sAppDetailsDelegate.getAppDetailsAsynchronously(this, url, packageName, iconSize);
+        sAppDetailsDelegate.getAppDetailsAsynchronously(
+                createAppDetailsObserver(), url, packageName, iconSize);
     }
 
-    /**
-     * Called when data about the package has been retrieved, which includes the url for the app's
-     * icon but not the icon Bitmap itself.  Kicks off a background task to retrieve it.
-     * @param data Data about the app.  Null if the task failed.
-     */
-    @Override
-    public void onAppDetailsRetrieved(AppData data) {
-        if (data == null) return;
+    private AppDetailsDelegate.Observer createAppDetailsObserver() {
+        return new AppDetailsDelegate.Observer() {
+            /**
+             * Called when data about the package has been retrieved, which includes the url for the
+             * app's icon but not the icon Bitmap itself.
+             * @param data Data about the app.  Null if the task failed.
+             */
+            @Override
+            public void onAppDetailsRetrieved(AppData data) {
+                if (data == null) return;
 
-        String imageUrl = data.imageUrl();
-        if (TextUtils.isEmpty(imageUrl)) return;
+                String imageUrl = data.imageUrl();
+                if (TextUtils.isEmpty(imageUrl)) return;
 
-        nativeOnAppDetailsRetrieved(
-                mNativePointer, data, data.title(), data.packageName(), data.imageUrl());
+                nativeOnAppDetailsRetrieved(
+                        mNativePointer, data, data.title(), data.packageName(), data.imageUrl());
+            }
+        };
+    }
+
+    @CalledByNative
+    private boolean installOrOpenNativeApp(AppData appData) {
+        Context context = ApplicationStatus.getApplicationContext();
+        String packageName = appData.packageName();
+        PackageManager packageManager = context.getPackageManager();
+
+        if (InstallerDelegate.isInstalled(packageManager, packageName)) {
+            // Open the app.
+            Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
+            if (launchIntent == null) return true;
+            context.startActivity(launchIntent);
+            return true;
+        } else {
+            // Try installing the app.  If the installation was kicked off, return false to prevent
+            // the infobar from disappearing.
+            return !mTab.getWindowAndroid().showIntent(
+                    appData.installIntent(), createIntentCallback(appData),
+                    R.string.low_memory_error);
+        }
+    }
+
+    private WindowAndroid.IntentCallback createIntentCallback(final AppData appData) {
+        return new WindowAndroid.IntentCallback() {
+            @Override
+            public void onIntentCompleted(WindowAndroid window, int resultCode,
+                    ContentResolver contentResolver, Intent data) {
+                boolean isInstalling = resultCode == Activity.RESULT_OK;
+                if (isInstalling) {
+                    // Start monitoring the install.
+                    PackageManager pm =
+                            ApplicationStatus.getApplicationContext().getPackageManager();
+                    mInstallTask = new InstallerDelegate(
+                            Looper.getMainLooper(), pm, createInstallerDelegateObserver(),
+                            appData.packageName());
+                    mInstallTask.start();
+                }
+
+                nativeOnInstallIntentReturned(mNativePointer, isInstalling);
+            }
+        };
+    }
+
+    private InstallerDelegate.Observer createInstallerDelegateObserver() {
+        return new InstallerDelegate.Observer() {
+            @Override
+            public void onInstallFinished(InstallerDelegate task, boolean success) {
+                if (mInstallTask != task) return;
+                mInstallTask = null;
+                nativeOnInstallFinished(mNativePointer, success);
+            }
+        };
+    }
+
+    @CalledByNative
+    private void showAppDetails(AppData appData) {
+        WindowAndroid.IntentCallback emptyCallback = new WindowAndroid.IntentCallback() {
+            @Override
+            public void onIntentCompleted(WindowAndroid window, int resultCode,
+                    ContentResolver contentResolver, Intent data) {
+                // Do nothing.
+            }
+        };
+
+        mTab.getWindowAndroid().showIntent(
+                appData.detailsIntent(), emptyCallback, R.string.low_memory_error);
+    }
+
+    @CalledByNative
+    private int determineInstallState(AppData data) {
+        if (mInstallTask != null) return AppBannerInfoBar.INSTALL_STATE_INSTALLING;
+
+        PackageManager pm = ApplicationStatus.getApplicationContext().getPackageManager();
+        boolean isInstalled = InstallerDelegate.isInstalled(pm, data.packageName());
+        return isInstalled ? AppBannerInfoBar.INSTALL_STATE_INSTALLED
+                : AppBannerInfoBar.INSTALL_STATE_NOT_INSTALLED;
     }
 
     private static native boolean nativeIsEnabled();
@@ -131,6 +244,10 @@ public class AppBannerManager extends EmptyTabObserver implements AppDetailsDele
             WebContents webContents);
     private native boolean nativeOnAppDetailsRetrieved(long nativeAppBannerManager, AppData data,
             String title, String packageName, String imageUrl);
+    private native void nativeOnInstallIntentReturned(
+            long nativeAppBannerManager, boolean isInstalling);
+    private native void nativeOnInstallFinished(long nativeAppBannerManager, boolean success);
+    private native void nativeUpdateInstallState(long nativeAppBannerManager);
 
     // UMA tracking.
     private static native void nativeRecordDismissEvent(int metric);

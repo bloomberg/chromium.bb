@@ -29,6 +29,11 @@ class AppBannerInfoBar : public ConfirmInfoBar {
 
   ~AppBannerInfoBar() override;
 
+  // Called when the installation state of the app may have changed.
+  // Updates the InfoBar visuals to match the new state and re-enables controls
+  // that may have been disabled.
+  void OnInstallStateChanged(int new_state);
+
  private:
   // InfoBarAndroid overrides.
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

@@ -71,4 +71,9 @@ bool AppBannerInfoBarDelegate::Accept() {
   return delegate_->OnButtonClicked();
 }
 
+bool AppBannerInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  DCHECK(delegate_);
+  return delegate_->OnLinkClicked();
+}
+
 }  // namespace banners
