@@ -170,6 +170,10 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
                 }
             }
         });
+        // Set up the animation placeholder to be the SurfaceView. This disables the
+        // SurfaceView's 'hole' clipping during animations that are notified to the window.
+        mWindow.setAnimationPlaceholderView(
+                mTabManager.getContentViewRenderView().getSurfaceView());
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {

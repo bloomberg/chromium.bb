@@ -73,6 +73,10 @@ public class ContentShellActivity extends Activity {
         mWindowAndroid = new ActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(savedInstanceState);
         mShellManager.setWindow(mWindowAndroid);
+        // Set up the animation placeholder to be the SurfaceView. This disables the
+        // SurfaceView's 'hole' clipping during animations that are notified to the window.
+        mWindowAndroid.setAnimationPlaceholderView(
+                mShellManager.getContentViewRenderView().getSurfaceView());
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {

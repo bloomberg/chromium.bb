@@ -123,6 +123,13 @@ public class ContentViewRenderView extends FrameLayout {
     }
 
     /**
+     * Gets the SurfaceView for this ContentViewRenderView
+     */
+    public SurfaceView getSurfaceView() {
+        return mSurfaceView;
+    }
+
+    /**
      * Should be called when the ContentViewRenderView is not needed anymore so its associated
      * native resource can be freed.
      */

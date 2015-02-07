@@ -99,6 +99,13 @@ public class ShellManager extends FrameLayout {
     }
 
     /**
+     * Get the ContentViewRenderView.
+     */
+    public ContentViewRenderView getContentViewRenderView() {
+        return mContentViewRenderView;
+    }
+
+    /**
      * Sets the startup URL for new shell windows.
      */
     public void setStartupUrl(String url) {

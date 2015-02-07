@@ -110,6 +110,13 @@ public class TabManager extends LinearLayout {
     }
 
     /**
+     * Get the ContentViewRenderView.
+     */
+    public ContentViewRenderView getContentViewRenderView() {
+        return mContentViewRenderView;
+    }
+
+    /**
      * @param startupUrl The URL that the first tab should navigate to.
      */
     public void setStartupUrl(String startupUrl) {
