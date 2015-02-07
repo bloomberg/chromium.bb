@@ -287,14 +287,6 @@ void BrowserPluginGuest::InitInternal(
       GetWebContents()->GetRenderViewHost()->GetWebkitPreferences();
   prefs.navigate_on_drag_drop = false;
   GetWebContents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
-
-  // Enable input method for guest if it's enabled for the embedder.
-  if (static_cast<RenderViewHostImpl*>(
-      owner_web_contents_->GetRenderViewHost())->input_method_active()) {
-    RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
-        GetWebContents()->GetRenderViewHost());
-    guest_rvh->SetInputMethodActive(true);
-  }
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -643,6 +635,14 @@ void BrowserPluginGuest::Attach(
   delegate_->DidAttach(guest_proxy_routing_id_);
 
   has_render_view_ = true;
+
+  // Enable input method for guest if it's enabled for the embedder.
+  if (static_cast<RenderViewHostImpl*>(
+      owner_web_contents_->GetRenderViewHost())->input_method_active()) {
+    RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+        GetWebContents()->GetRenderViewHost());
+    guest_rvh->SetInputMethodActive(true);
+  }
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }
