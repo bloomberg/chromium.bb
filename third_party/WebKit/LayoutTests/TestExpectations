@@ -680,8 +680,6 @@ crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
 crbug.com/449949 [ Android ] inspector-protocol/input/dispatchMouseEvent.html [ Failure Pass ]
 
-crbug.com/454658 svg/dynamic-updates/SVGFESpecularLightingElement-dom-kernelUnitLength-attr.html [ NeedsRebaseline ]
-
 crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Crash Pass ]
 
 crbug.com/454628 svg/dynamic-updates/SVGFEDiffuseLightingElement-dom-kernelUnitLength-attr.html [ NeedsRebaseline ]
