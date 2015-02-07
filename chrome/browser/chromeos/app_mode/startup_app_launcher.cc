@@ -90,6 +90,8 @@ StartupAppLauncher::~StartupAppLauncher() {
   // through a user bailout shortcut.
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
       ->RemoveObserver(this);
+  extensions::InstallTrackerFactory::GetForBrowserContext(profile_)
+      ->RemoveObserver(this);
 }
 
 void StartupAppLauncher::Initialize() {
