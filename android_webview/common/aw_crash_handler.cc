@@ -71,7 +71,7 @@ void RegisterCrashHandler(const std::string& version) {
     return;
   }
 
-  g_crash_msg = "### WebView crash. " + version;
+  g_crash_msg = "### WebView " + version;
   g_crash_msg_ptr = g_crash_msg.c_str();
 
   // Fail if unable to store all the old handlers.
