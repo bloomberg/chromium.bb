@@ -2734,6 +2734,19 @@ TEST_F(GLES2FormatTest, Uniform4uivImmediate) {
   // TODO(gman): Check that data was inserted;
 }
 
+TEST_F(GLES2FormatTest, UniformBlockBinding) {
+  cmds::UniformBlockBinding& cmd = *GetBufferAs<cmds::UniformBlockBinding>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLuint>(12), static_cast<GLuint>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UniformBlockBinding::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.index);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.binding);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, UniformMatrix2fvImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {

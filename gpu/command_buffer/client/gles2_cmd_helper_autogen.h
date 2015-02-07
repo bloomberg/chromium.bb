@@ -1672,6 +1672,14 @@ void Uniform4uivImmediate(GLint location, GLsizei count, const GLuint* v) {
   }
 }
 
+void UniformBlockBinding(GLuint program, GLuint index, GLuint binding) {
+  gles2::cmds::UniformBlockBinding* c =
+      GetCmdSpace<gles2::cmds::UniformBlockBinding>();
+  if (c) {
+    c->Init(program, index, binding);
+  }
+}
+
 void UniformMatrix2fvImmediate(GLint location,
                                GLsizei count,
                                const GLfloat* value) {

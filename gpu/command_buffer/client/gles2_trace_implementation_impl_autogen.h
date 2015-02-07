@@ -1238,6 +1238,13 @@ void GLES2TraceImplementation::Uniform4uiv(GLint location,
   gl_->Uniform4uiv(location, count, v);
 }
 
+void GLES2TraceImplementation::UniformBlockBinding(GLuint program,
+                                                   GLuint index,
+                                                   GLuint binding) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::UniformBlockBinding");
+  gl_->UniformBlockBinding(program, index, binding);
+}
+
 void GLES2TraceImplementation::UniformMatrix2fv(GLint location,
                                                 GLsizei count,
                                                 GLboolean transpose,

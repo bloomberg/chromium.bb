@@ -2756,6 +2756,11 @@ _FUNCTION_INFO = {
     'count': 12,
     'unsafe': True,
   },
+  'UniformBlockBinding': {
+    'type': 'Custom',
+    'impl_func': False,
+    'unsafe': True,
+  },
   'UnmapBufferCHROMIUM': {
     'gen_cmd': False,
     'extension': True,

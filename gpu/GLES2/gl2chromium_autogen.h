@@ -192,6 +192,7 @@
 #define glUniform4iv GLES2_GET_FUN(Uniform4iv)
 #define glUniform4ui GLES2_GET_FUN(Uniform4ui)
 #define glUniform4uiv GLES2_GET_FUN(Uniform4uiv)
+#define glUniformBlockBinding GLES2_GET_FUN(UniformBlockBinding)
 #define glUniformMatrix2fv GLES2_GET_FUN(UniformMatrix2fv)
 #define glUniformMatrix2x3fv GLES2_GET_FUN(UniformMatrix2x3fv)
 #define glUniformMatrix2x4fv GLES2_GET_FUN(UniformMatrix2x4fv)

@@ -1347,6 +1347,18 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformLocationInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_P(GLES2DecoderWithShaderTest, UniformBlockBindingValidArgs) {
+  EXPECT_CALL(*gl_, UniformBlockBinding(kServiceProgramId, 2, 3));
+  SpecializedSetup<cmds::UniformBlockBinding, 0>(true);
+  cmds::UniformBlockBinding cmd;
+  cmd.Init(client_program_id_, 2, 3);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderWithShaderTest, BindUniformLocationCHROMIUMBucket) {
   const uint32 kBucketId = 123;
   const GLint kLocation = 2;

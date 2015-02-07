@@ -8385,6 +8385,47 @@ static_assert(offsetof(Uniform4uivImmediate, location) == 4,
 static_assert(offsetof(Uniform4uivImmediate, count) == 8,
               "offset of Uniform4uivImmediate count should be 8");
 
+struct UniformBlockBinding {
+  typedef UniformBlockBinding ValueType;
+  static const CommandId kCmdId = kUniformBlockBinding;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program, GLuint _index, GLuint _binding) {
+    SetHeader();
+    program = _program;
+    index = _index;
+    binding = _binding;
+  }
+
+  void* Set(void* cmd, GLuint _program, GLuint _index, GLuint _binding) {
+    static_cast<ValueType*>(cmd)->Init(_program, _index, _binding);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t index;
+  uint32_t binding;
+};
+
+static_assert(sizeof(UniformBlockBinding) == 16,
+              "size of UniformBlockBinding should be 16");
+static_assert(offsetof(UniformBlockBinding, header) == 0,
+              "offset of UniformBlockBinding header should be 0");
+static_assert(offsetof(UniformBlockBinding, program) == 4,
+              "offset of UniformBlockBinding program should be 4");
+static_assert(offsetof(UniformBlockBinding, index) == 8,
+              "offset of UniformBlockBinding index should be 8");
+static_assert(offsetof(UniformBlockBinding, binding) == 12,
+              "offset of UniformBlockBinding binding should be 12");
+
 struct UniformMatrix2fvImmediate {
   typedef UniformMatrix2fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix2fvImmediate;

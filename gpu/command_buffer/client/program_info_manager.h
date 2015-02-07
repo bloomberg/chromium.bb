@@ -60,6 +60,12 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
       GLES2Implementation* gl, GLuint program, GLuint index,
       GLenum pname, GLint* params);
 
+  // Attempt to update the |index| uniform block binding.
+  // It's no op if the program does not exist, or the |index| uniform block
+  // is not in the cache, or binding >= GL_MAX_UNIFORM_BUFFER_BINDINGS.
+  void UniformBlockBinding(
+      GLES2Implementation* gl, GLuint program, GLuint index, GLuint binding);
+
  private:
   friend class ProgramInfoManagerTest;
 
@@ -126,6 +132,8 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     // Gets the index of a uniform block by name.
     GLuint GetUniformBlockIndex(const std::string& name) const;
     const UniformBlock* GetUniformBlock(GLuint index) const;
+    // Update the binding if the |index| uniform block is in the cache.
+    void UniformBlockBinding(GLuint index, GLuint binding);
 
     // Updates the ES2 only program info after a successful link.
     void UpdateES2(const std::vector<int8>& result);

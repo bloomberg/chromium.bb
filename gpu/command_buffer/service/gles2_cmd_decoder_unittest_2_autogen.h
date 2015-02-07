@@ -1290,6 +1290,7 @@ TEST_P(GLES2DecoderTest2, Uniform4uivImmediateValidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
+// TODO(gman): UniformBlockBinding
 
 TEST_P(GLES2DecoderTest2, UniformMatrix2fvImmediateValidArgs) {
   cmds::UniformMatrix2fvImmediate& cmd =
@@ -1546,20 +1547,6 @@ TEST_P(GLES2DecoderTest2, VertexAttrib4fValidArgs) {
   cmds::VertexAttrib4f cmd;
   cmd.Init(1, 2, 3, 4, 5);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, VertexAttrib4fvImmediateValidArgs) {
-  cmds::VertexAttrib4fvImmediate& cmd =
-      *GetImmediateAs<cmds::VertexAttrib4fvImmediate>();
-  SpecializedSetup<cmds::VertexAttrib4fvImmediate, 0>(true);
-  GLfloat temp[4] = {
-      0,
-  };
-  cmd.Init(1, &temp[0]);
-  EXPECT_CALL(*gl_, VertexAttrib4fv(1, reinterpret_cast<GLfloat*>(
-                                           ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

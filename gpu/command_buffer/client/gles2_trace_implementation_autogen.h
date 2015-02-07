@@ -414,6 +414,7 @@ void Uniform4ui(GLint location,
                 GLuint z,
                 GLuint w) override;
 void Uniform4uiv(GLint location, GLsizei count, const GLuint* v) override;
+void UniformBlockBinding(GLuint program, GLuint index, GLuint binding) override;
 void UniformMatrix2fv(GLint location,
                       GLsizei count,
                       GLboolean transpose,

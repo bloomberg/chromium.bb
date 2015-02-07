@@ -4649,6 +4649,19 @@ bool GLES2Implementation::PackStringsToBucket(GLsizei count,
   return true;
 }
 
+void GLES2Implementation::UniformBlockBinding(GLuint program,
+                                              GLuint index,
+                                              GLuint binding) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniformBlockBinding(" << program
+                     << ", " << index << ", " << binding << ")");
+  share_group_->program_info_manager()->UniformBlockBinding(
+      this, program, index, binding);
+  helper_->UniformBlockBinding(program, index, binding);
+  CheckGLError();
+}
+
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

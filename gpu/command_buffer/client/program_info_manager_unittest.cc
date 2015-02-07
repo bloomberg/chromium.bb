@@ -191,36 +191,36 @@ TEST_F(ProgramInfoManagerTest, GetActiveUniformBlockivCached) {
   for (uint32_t ii = 0; ii < data.header.num_uniform_blocks; ++ii) {
     ASSERT_GE(2u, data.entry[ii].active_uniforms);
     GLint params[2];
-    EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockiv(
+    EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
         NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_BINDING, params));
     EXPECT_EQ(data.entry[ii].binding, static_cast<uint32_t>(params[0]));
 
-    EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockiv(
+    EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
         NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_DATA_SIZE, params));
     EXPECT_EQ(data.entry[ii].data_size, static_cast<uint32_t>(params[0]));
 
-    EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockiv(
+    EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
         NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_NAME_LENGTH, params));
     EXPECT_EQ(strlen(kName[ii]) + 1, static_cast<uint32_t>(params[0]));
 
-    EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockiv(
+    EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
         NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, params));
     EXPECT_EQ(data.entry[ii].active_uniforms, static_cast<uint32_t>(params[0]));
 
-    EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockiv(
+    EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
         NULL, kClientProgramId, ii,
         GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, params));
     for (uint32_t uu = 0; uu < data.entry[ii].active_uniforms; ++uu) {
       EXPECT_EQ(kIndices[ii][uu], static_cast<uint32_t>(params[uu]));
     }
 
-    EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockiv(
+    EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
         NULL, kClientProgramId, ii,
         GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER, params));
     EXPECT_EQ(data.entry[ii].referenced_by_vertex_shader,
               static_cast<uint32_t>(params[0]));
 
-    EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockiv(
+    EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
         NULL, kClientProgramId, ii,
         GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER, params));
     EXPECT_EQ(data.entry[ii].referenced_by_fragment_shader,

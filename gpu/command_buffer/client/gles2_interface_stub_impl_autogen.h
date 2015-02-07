@@ -727,6 +727,10 @@ void GLES2InterfaceStub::Uniform4uiv(GLint /* location */,
                                      GLsizei /* count */,
                                      const GLuint* /* v */) {
 }
+void GLES2InterfaceStub::UniformBlockBinding(GLuint /* program */,
+                                             GLuint /* index */,
+                                             GLuint /* binding */) {
+}
 void GLES2InterfaceStub::UniformMatrix2fv(GLint /* location */,
                                           GLsizei /* count */,
                                           GLboolean /* transpose */,

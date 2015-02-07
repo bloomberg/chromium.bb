@@ -179,6 +179,13 @@ GLuint ProgramInfoManager::Program::GetUniformBlockIndex(
   return GL_INVALID_INDEX;
 }
 
+void ProgramInfoManager::Program::UniformBlockBinding(
+    GLuint index , GLuint binding) {
+  if (index < uniform_blocks_.size()) {
+    uniform_blocks_[index].binding = binding;
+  }
+}
+
 void ProgramInfoManager::Program::UpdateES2(const std::vector<int8>& result) {
   if (cached_es2_) {
     return;
@@ -636,6 +643,20 @@ bool ProgramInfoManager::GetActiveUniformBlockiv(
     }
   }
   return gl->GetActiveUniformBlockivHelper(program, index, pname, params);
+}
+
+void ProgramInfoManager::UniformBlockBinding(
+    GLES2Implementation* gl, GLuint program, GLuint index, GLuint binding) {
+  GLuint max_bindings =
+      static_cast<GLuint>(gl->capabilities().max_uniform_buffer_bindings);
+  if (binding < max_bindings) {
+    base::AutoLock auto_lock(lock_);
+    // If UniformBlock info haven't been cached yet, skip updating the binding.
+    Program* info = GetProgramInfo(gl, program, kNone);
+    if (info) {
+      info->UniformBlockBinding(index, binding);
+    }
+  }
 }
 
 }  // namespace gles2

@@ -421,6 +421,9 @@ virtual void Uniform4ui(GLint location,
                         GLuint z,
                         GLuint w) = 0;
 virtual void Uniform4uiv(GLint location, GLsizei count, const GLuint* v) = 0;
+virtual void UniformBlockBinding(GLuint program,
+                                 GLuint index,
+                                 GLuint binding) = 0;
 virtual void UniformMatrix2fv(GLint location,
                               GLsizei count,
                               GLboolean transpose,

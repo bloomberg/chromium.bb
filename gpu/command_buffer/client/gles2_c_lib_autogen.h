@@ -779,6 +779,9 @@ void GLES2Uniform4ui(GLint location, GLuint x, GLuint y, GLuint z, GLuint w) {
 void GLES2Uniform4uiv(GLint location, GLsizei count, const GLuint* v) {
   gles2::GetGLContext()->Uniform4uiv(location, count, v);
 }
+void GLES2UniformBlockBinding(GLuint program, GLuint index, GLuint binding) {
+  gles2::GetGLContext()->UniformBlockBinding(program, index, binding);
+}
 void GLES2UniformMatrix2fv(GLint location,
                            GLsizei count,
                            GLboolean transpose,
@@ -1984,6 +1987,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glUniform4uiv",
      reinterpret_cast<GLES2FunctionPointer>(glUniform4uiv),
+    },
+    {
+     "glUniformBlockBinding",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformBlockBinding),
     },
     {
      "glUniformMatrix2fv",
