@@ -8,14 +8,9 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "url/url_constants.h"
 
 namespace bookmarks {
-
-namespace {
-
-const char kJavaScriptScheme[] = "javascript";
-
-}  // namespace
 
 // static
 const ui::OSExchangeData::CustomFormat&
@@ -35,7 +30,7 @@ void BookmarkNodeData::Write(const base::FilePath& profile_path,
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
   if (has_single_url()) {
-    if (elements[0].url.SchemeIs(kJavaScriptScheme)) {
+    if (elements[0].url.SchemeIs(url::kJavaScriptScheme)) {
       data->SetString(base::UTF8ToUTF16(elements[0].url.spec()));
     } else {
       data->SetURL(elements[0].url, elements[0].title);
