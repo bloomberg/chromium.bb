@@ -171,7 +171,7 @@ void TableSectionPainter::paintCell(LayoutTableCell* cell, const PaintInfo& pain
 
         TableCellPainter tableCellPainter(*cell);
 
-        RenderDrawingRecorder recorder(paintInfo.context, m_layoutTableSection, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
+        RenderDrawingRecorder recorder(paintInfo.context, *cell, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
         if (!recorder.canUseCachedDrawing()) {
             // Column groups and columns first.
             // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
