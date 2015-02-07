@@ -32,7 +32,8 @@ public class ActivityWindowAndroid extends WindowAndroid {
     }
 
     @Override
-    public int showCancelableIntent(PendingIntent intent, IntentCallback callback, int errorId) {
+    public int showCancelableIntent(
+            PendingIntent intent, IntentCallback callback, Integer errorId) {
         Activity activity = mActivityRef.get();
         if (activity == null) return START_INTENT_FAILURE;
 
@@ -50,7 +51,7 @@ public class ActivityWindowAndroid extends WindowAndroid {
     }
 
     @Override
-    public int showCancelableIntent(Intent intent, IntentCallback callback, int errorId) {
+    public int showCancelableIntent(Intent intent, IntentCallback callback, Integer errorId) {
         Activity activity = mActivityRef.get();
         if (activity == null) return START_INTENT_FAILURE;
 
@@ -104,8 +105,9 @@ public class ActivityWindowAndroid extends WindowAndroid {
         return requestCode;
     }
 
-    private void storeCallbackData(int requestCode, IntentCallback callback, int errorId) {
+    private void storeCallbackData(int requestCode, IntentCallback callback, Integer errorId) {
         mOutstandingIntents.put(requestCode, callback);
-        mIntentErrors.put(requestCode, mApplicationContext.getString(errorId));
+        mIntentErrors.put(
+                requestCode, errorId == null ? null : mApplicationContext.getString(errorId));
     }
 }

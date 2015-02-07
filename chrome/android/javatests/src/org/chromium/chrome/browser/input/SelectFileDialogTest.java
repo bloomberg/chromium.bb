@@ -28,15 +28,15 @@ import org.chromium.ui.base.ActivityWindowAndroid;
  */
 public class SelectFileDialogTest extends ChromeShellTestBase {
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><head><meta name=\"viewport\"" +
-            "content=\"width=device-width, initial-scale=2.0, maximum-scale=2.0\" /></head>" +
-            "<body><form action=\"about:blank\">" +
-            "<input id=\"input_file\" type=\"file\" /><br/>" +
-            "<input id=\"input_file_multiple\" type=\"file\" multiple /><br />" +
-            "<input id=\"input_image\" type=\"file\" accept=\"image/*\" capture /><br/>" +
-            "<input id=\"input_audio\" type=\"file\" accept=\"audio/*\" capture />" +
-            "</form>" +
-            "</body></html>");
+            "<html><head><meta name=\"viewport\""
+            + "content=\"width=device-width, initial-scale=2.0, maximum-scale=2.0\" /></head>"
+            + "<body><form action=\"about:blank\">"
+            + "<input id=\"input_file\" type=\"file\" /><br/>"
+            + "<input id=\"input_file_multiple\" type=\"file\" multiple /><br />"
+            + "<input id=\"input_image\" type=\"file\" accept=\"image/*\" capture /><br/>"
+            + "<input id=\"input_audio\" type=\"file\" accept=\"audio/*\" capture />"
+            + "</form>"
+            + "</body></html>");
 
     private ContentViewCore mContentViewCore;
     private ActivityWindowAndroidForTest mActivityWindowAndroidForTest;
@@ -52,7 +52,7 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
         }
 
         @Override
-        public int showCancelableIntent(Intent intent, IntentCallback callback, int errorId) {
+        public int showCancelableIntent(Intent intent, IntentCallback callback, Integer errorId) {
             lastIntent = intent;
             lastCallback = callback;
             return 1;
