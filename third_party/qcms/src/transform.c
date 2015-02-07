@@ -1167,6 +1167,71 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
 	return transform;
 }
 
+/* Create a transform LUT using the given number of sample points. The transform LUT data is stored
+   in the output (cube) in bgra format in zyx sample order. */
+qcms_bool qcms_transform_create_LUT_zyx_bgra(qcms_profile *in, qcms_profile *out, qcms_intent intent,
+                                             int samples, unsigned char* cube)
+{
+	uint16_t z,y,x;
+	uint32_t l,index;
+	uint32_t lutSize = 3 * samples * samples * samples;
+
+	float* src = NULL;
+	float* dest = NULL;
+	float* lut = NULL;
+	float inverse;
+
+	src = malloc(lutSize*sizeof(float));
+	dest = malloc(lutSize*sizeof(float));
+
+	if (src && dest) {
+		/* Prepare a list of points we want to sample: z, y, x order */
+		l = 0;
+		inverse = 1 / (float)(samples-1);
+		for (z = 0; z < samples; z++) {
+			for (y = 0; y < samples; y++) {
+				for (x = 0; x < samples; x++) {
+					src[l++] = x * inverse; // r
+					src[l++] = y * inverse; // g
+					src[l++] = z * inverse; // b
+				}
+			}
+		}
+
+		lut = qcms_chain_transform(in, out, src, dest, lutSize);
+
+		if (lut) {
+			index = l = 0;
+			for (z = 0; z < samples; z++) {
+				for (y = 0; y < samples; y++) {
+					for (x = 0; x < samples; x++) {
+						cube[index++] = (int)floorf(lut[l + 2] * 255.0f + 0.5f); // b
+						cube[index++] = (int)floorf(lut[l + 1] * 255.0f + 0.5f); // g
+						cube[index++] = (int)floorf(lut[l + 0] * 255.0f + 0.5f); // r
+						cube[index++] = 255;                                     // a
+						l += 3;
+					}
+				}
+			}
+		}
+	}
+
+	// XXX: qcms_modular_transform_data may return the lut data in either the src or
+	// dest buffer so free src, dest, and lut with care.
+
+	if (src && lut != src)
+		free(src);
+	if (dest && lut != dest)
+		free(dest);
+
+	if (lut) {
+		free(lut);
+		return true;
+	}
+
+	return false;
+}
+
 #define NO_MEM_TRANSFORM NULL
 
 qcms_transform* qcms_transform_create(

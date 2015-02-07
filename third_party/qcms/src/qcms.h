@@ -158,10 +158,14 @@ qcms_transform* qcms_transform_create(
 		qcms_profile* out, qcms_data_type out_type,
 		qcms_intent intent);
 
-void qcms_transform_release(qcms_transform *);
+qcms_bool qcms_transform_create_LUT_zyx_bgra(
+		qcms_profile *in, qcms_profile* out, qcms_intent intent,
+		int samples, unsigned char* lut);
 
 void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length);
 void qcms_transform_data_type(qcms_transform *transform, void *src, void *dest, size_t length, qcms_output_type type);
+
+void qcms_transform_release(qcms_transform *);
 
 void qcms_enable_iccv4();
 
