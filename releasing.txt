@@ -1,14 +1,19 @@
 To make a release of Weston and/or Wayland, follow these steps.
 
-  0.  Update the first three lines of configure.ac to the intended
-      version, commit.  Also note that Weston includes versioned
-      dependencies on 'wayland-server' and 'wayland-client' in
-      configure.ac which typically need updated as well.
-
-  1.  Verify the test suites and codebase checks pass.  (All of the
-      tests pass should pass except for xwayland, which can be flaky.)
+  0.  Verify the test suites and codebase checks pass.  All of the
+      tests pass should either pass or skip.
 
       $ make check
+
+  1.  Update the first three lines of configure.ac to the intended
+      version, commit.  Also note that Weston includes versioned
+      dependencies on 'wayland-server' and 'wayland-client' in
+      configure.ac which typically need updated as well.  Then commit
+      your changes:
+
+      $ git status
+      $ git commit configure.ac -m "configure.ac: bump to version x.y.z for the xxx release"
+      $ git push
 
   2.  Run the release.sh script to generate the tarballs, sign and
       upload them, and generate a release announcement template.
