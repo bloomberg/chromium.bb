@@ -282,6 +282,10 @@ public:
     enum InvalidURLAction { DoNothing, Complain };
     bool isSafeToLoadURL(const KURL&, InvalidURLAction);
 
+    // Checks to see if current media data is CORS-same-origin as the
+    // specified origin.
+    bool isMediaDataCORSSameOrigin(SecurityOrigin*) const;
+
     MediaController* controller() const;
     void setController(PassRefPtrWillBeRawPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
 

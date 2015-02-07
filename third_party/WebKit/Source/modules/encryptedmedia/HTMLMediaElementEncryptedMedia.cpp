@@ -515,8 +515,15 @@ void HTMLMediaElementEncryptedMedia::encrypted(HTMLMediaElement& element, const 
 
     if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
         // Send event for WD EME.
-        // FIXME: Check origin before providing initData. http://crbug.com/418233.
-        RefPtrWillBeRawPtr<Event> event = createEncryptedEvent(initDataType, initData, initDataLength);
+        RefPtrWillBeRawPtr<Event> event;
+        if (element.isMediaDataCORSSameOrigin(element.executionContext()->securityOrigin())) {
+            event = createEncryptedEvent(initDataType, initData, initDataLength);
+        } else {
+            // Current page is not allowed to see content from the media file,
+            // so don't return the initData. However, they still get an event.
+            event = createEncryptedEvent(emptyString(), nullptr, 0);
+        }
+
         event->setTarget(&element);
         element.scheduleEvent(event.release());
     }

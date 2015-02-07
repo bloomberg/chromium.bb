@@ -1564,6 +1564,18 @@ bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionI
     return true;
 }
 
+bool HTMLMediaElement::isMediaDataCORSSameOrigin(SecurityOrigin* origin) const
+{
+    // hasSingleSecurityOrigin() tells us whether the origin in the src is
+    // the same as the actual request (i.e. after redirect).
+    // didPassCORSAccessCheck() means it was a successful CORS-enabled fetch
+    // (vs. non-CORS-enabled or failed).
+    // taintsCanvas() does checkAccess() on the URL plus allow data sources,
+    // to ensure that it is not a URL that requires CORS (basically same
+    // origin).
+    return hasSingleSecurityOrigin() && ((webMediaPlayer() && webMediaPlayer()->didPassCORSAccessCheck()) || !origin->taintsCanvas(currentSrc()));
+}
+
 void HTMLMediaElement::startProgressEventTimer()
 {
     if (m_progressEventTimer.isActive())
