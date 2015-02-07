@@ -898,17 +898,29 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
     context().addAdditionalRequestHeaders(document(), request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
 
-void ResourceFetcher::maybeUpgradeInsecureRequestURL(FetchRequest& request)
+void ResourceFetcher::maybeUpgradeInsecureRequestURL(FetchRequest& fetchRequest)
 {
     if (!m_document)
         return;
 
-    KURL url = request.resourceRequest().url();
-    if (m_document->insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && url.protocol() == "http") {
-        url.setProtocol("https");
-        if (url.port() == 80)
-            url.setPort(443);
-        request.mutableResourceRequest().setURL(url);
+    KURL url = fetchRequest.resourceRequest().url();
+    if (m_document->insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && url.protocolIs("http")) {
+        // We always upgrade subresource requests and nested frames, we always upgrade form
+        // submissions, and we always upgrade requests whose host matches the host of the
+        // containing document's security origin.
+        //
+        // FIXME: We need to check the document that set the policy, not the current document.
+        const ResourceRequest& request = fetchRequest.resourceRequest();
+        if (request.frameType() == WebURLRequest::FrameTypeNone
+            || request.frameType() == WebURLRequest::FrameTypeNested
+            || request.requestContext() == WebURLRequest::RequestContextForm
+            || url.host() == m_document->securityOrigin()->host())
+        {
+            url.setProtocol("https");
+            if (url.port() == 80)
+                url.setPort(443);
+            fetchRequest.mutableResourceRequest().setURL(url);
+        }
     }
 }
 

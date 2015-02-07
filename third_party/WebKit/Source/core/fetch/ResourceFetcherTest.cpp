@@ -42,13 +42,15 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
 class ResourceFetcherTest : public ::testing::Test {
 public:
     ResourceFetcherTest()
-        : secureURL(ParsedURLString, "https://example.test/image.png")
+        : secureURL(ParsedURLString, "https://secureorigin.test/image.png")
+        , exampleOrigin(SecurityOrigin::create(KURL(ParsedURLString, "https://example.test/")))
         , secureOrigin(SecurityOrigin::create(secureURL))
     {
     }
@@ -67,11 +69,20 @@ protected:
 
     void expectUpgrade(const char* input, const char* expected)
     {
+        expectUpgrade(input, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeNone, expected);
+    }
+
+    void expectUpgrade(const char* input, WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType, const char* expected)
+    {
         KURL inputURL(ParsedURLString, input);
         KURL expectedURL(ParsedURLString, expected);
 
         FetchRequest fetchRequest = FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
+        fetchRequest.mutableResourceRequest().setRequestContext(requestContext);
+        fetchRequest.mutableResourceRequest().setFrameType(frameType);
+
         fetcher->maybeUpgradeInsecureRequestURL(fetchRequest);
+
         EXPECT_STREQ(expectedURL.string().utf8().data(), fetchRequest.resourceRequest().url().string().utf8().data());
         EXPECT_EQ(expectedURL.protocol(), fetchRequest.resourceRequest().url().protocol());
         EXPECT_EQ(expectedURL.host(), fetchRequest.resourceRequest().url().host());
@@ -81,6 +92,7 @@ protected:
     }
 
     KURL secureURL;
+    RefPtr<SecurityOrigin> exampleOrigin;
     RefPtr<SecurityOrigin> secureOrigin;
 
     // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
@@ -104,20 +116,46 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
 
 TEST_F(ResourceFetcherTest, UpgradeInsecureResourceRequests)
 {
-    document->setSecurityOrigin(secureOrigin);
+    struct TestCase {
+        const char* original;
+        const char* upgraded;
+    } tests[] = {
+        { "http://example.test/image.png", "https://example.test/image.png" },
+        { "http://example.test:80/image.png", "https://example.test:443/image.png" },
+        { "http://example.test:1212/image.png", "https://example.test:1212/image.png" },
+
+        { "https://example.test/image.png", "https://example.test/image.png" },
+        { "https://example.test:80/image.png", "https://example.test:80/image.png" },
+        { "https://example.test:1212/image.png", "https://example.test:1212/image.png" },
+
+        { "ftp://example.test/image.png", "ftp://example.test/image.png" },
+        { "ftp://example.test:21/image.png", "ftp://example.test:21/image.png" },
+        { "ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png" },
+    };
+
     document->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
 
-    expectUpgrade("http://example.test/image.png", "https://example.test/image.png");
-    expectUpgrade("http://example.test:80/image.png", "https://example.test:443/image.png");
-    expectUpgrade("http://example.test:1212/image.png", "https://example.test:1212/image.png");
+    for (auto test : tests) {
+        // secureOrigin's host is 'secureorigin.test', not 'example.test'
+        document->setSecurityOrigin(secureOrigin);
 
-    expectUpgrade("https://example.test/image.png", "https://example.test/image.png");
-    expectUpgrade("https://example.test:80/image.png", "https://example.test:80/image.png");
-    expectUpgrade("https://example.test:1212/image.png", "https://example.test:1212/image.png");
+        // We always upgrade for FrameTypeNone and FrameTypeNested.
+        expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeNone, test.upgraded);
+        expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeNested, test.upgraded);
 
-    expectUpgrade("ftp://example.test/image.png", "ftp://example.test/image.png");
-    expectUpgrade("ftp://example.test:21/image.png", "ftp://example.test:21/image.png");
-    expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
+        // We do not upgrade for FrameTypeTopLevel or FrameTypeAuxiliary...
+        expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeTopLevel, test.original);
+        expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeAuxiliary, test.original);
+
+        // unless the request context is RequestContextForm.
+        expectUpgrade(test.original, WebURLRequest::RequestContextForm, WebURLRequest::FrameTypeTopLevel, test.upgraded);
+        expectUpgrade(test.original, WebURLRequest::RequestContextForm, WebURLRequest::FrameTypeAuxiliary, test.upgraded);
+
+        // Or unless the host of the document matches the host of the resource:
+        document->setSecurityOrigin(exampleOrigin);
+        expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeTopLevel, test.upgraded);
+        expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeAuxiliary, test.upgraded);
+    }
 }
 
 TEST_F(ResourceFetcherTest, DoNotUpgradeInsecureResourceRequests)
