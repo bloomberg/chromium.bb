@@ -24,9 +24,8 @@
 # Optional/automatic variables:
 #  additional_input_paths - These paths will be included in the 'inputs' list to
 #    ensure that this target is rebuilt when one of these paths changes.
-#  additional_res_dirs - Additional directories containing Android resources.
-#  additional_res_packages - Package names of the R.java files corresponding to
-#    each directory in additional_res_dirs.
+#  additional_res_packages - Package names of R.java files generated in addition
+#    to the default package name defined in AndroidManifest.xml.
 #  additional_src_dirs - Additional directories with .java files to be compiled
 #    and included in the output of this target.
 #  additional_bundled_libs - Additional libraries what will be stripped and
