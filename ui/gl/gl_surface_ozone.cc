@@ -105,7 +105,9 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                             AcceleratedWidget widget)
       : SurfacelessEGL(gfx::Size()),
         ozone_surface_(ozone_surface.Pass()),
-        widget_(widget) {}
+        widget_(widget),
+        has_implicit_external_sync_(
+            HasEGLExtension("EGL_ARM_implicit_external_sync")) {}
 
   bool Initialize() override {
     if (!SurfacelessEGL::Initialize())
@@ -122,8 +124,8 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     return SurfacelessEGL::Resize(size);
   }
   bool SwapBuffers() override {
-    // TODO: this should be replaced by a fence when supported by the driver.
-    glFlush();
+    if (!Flush())
+      return false;
     return ozone_surface_->OnSwapBuffers();
   }
   bool ScheduleOverlayPlane(int z_order,
@@ -143,8 +145,8 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     return true;
   }
   bool SwapBuffersAsync(const SwapCompletionCallback& callback) override {
-    // TODO: this should be replaced by a fence when supported by the driver.
-    glFlush();
+    if (!Flush())
+      return false;
     return ozone_surface_->OnSwapBuffersAsync(callback);
   }
   bool PostSubBufferAsync(int x,
@@ -160,11 +162,35 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
   }
 
+  bool Flush() {
+    glFlush();
+    // TODO: the following should be replaced by a per surface flush as it gets
+    // implemented in GL drivers.
+    if (has_implicit_external_sync_) {
+      const EGLint attrib_list[] = {
+          EGL_SYNC_CONDITION_KHR,
+          EGL_SYNC_PRIOR_COMMANDS_IMPLICIT_EXTERNAL_ARM,
+          EGL_NONE};
+      EGLSyncKHR fence =
+          eglCreateSyncKHR(GetDisplay(), EGL_SYNC_FENCE_KHR, attrib_list);
+      if (fence) {
+        // TODO(dbehr): piman@ suggests we could improve here by moving
+        // following wait to right before drmModePageFlip crbug.com/456417.
+        eglClientWaitSyncKHR(GetDisplay(), fence,
+                             EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, EGL_FOREVER_KHR);
+        eglDestroySyncKHR(GetDisplay(), fence);
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
   AcceleratedWidget widget_;
   scoped_ptr<VSyncProvider> vsync_provider_;
-
+  bool has_implicit_external_sync_;
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneSurfaceless);
 };
 

@@ -33,6 +33,8 @@ GLES2/gl2ext.h
 EGL/eglplatform.h
  - Added EGLNative*Type for Mac.
  - Added EGLNative*Type for native linux framebuffers.
+EGL/eglext.h
+ - Added EGL_ARM_implicit_external_sync extension tokens
 KHR/khrplatform.h
  - Modified KHRONOS_APICALL and KHRONOS_APIENTRY
 DEPS
