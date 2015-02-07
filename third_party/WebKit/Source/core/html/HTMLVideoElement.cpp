@@ -310,7 +310,7 @@ PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageMode mode
 
     paintCurrentFrameInContext(imageBuffer->context(), IntRect(IntPoint(0, 0), intrinsicSize));
 
-    *status = NormalSourceImageStatus;
+    *status = (mode == CopySourceImageIfVolatile) ? NormalSourceImageStatus : ExternalSourceImageStatus;
     return imageBuffer->copyImage(mode == CopySourceImageIfVolatile ? CopyBackingStore : DontCopyBackingStore, Unscaled);
 }
 
