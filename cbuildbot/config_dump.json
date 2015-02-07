@@ -16,6 +16,7 @@
         "build_packages_in_background": false,
         "build_tests": true,
         "build_type": "pfq",
+        "buildbot_waterfall_name": null,
         "child_configs": [],
         "chrome_binhost_only": false,
         "chrome_rev": null,

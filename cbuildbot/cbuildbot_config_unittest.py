@@ -499,6 +499,16 @@ class CBuildBotTest(cros_test_lib.TestCase):
                                             board))
             prebuilt_slave_boards[board] = slave['name']
 
+  def testNoDuplicateWaterfallNames(self):
+    """Tests that no two configs specify same waterfall name."""
+    waterfall_names = set()
+    for config in cbuildbot_config.config.values():
+      wn = config['buildbot_waterfall_name']
+      if wn is not None:
+        self.assertNotIn(wn, waterfall_names,
+                         'Duplicate waterfall name %s.' % wn)
+        waterfall_names.add(wn)
+
   def testCantBeBothTypesOfAFDO(self):
     """Using afdo_generate and afdo_use together doesn't work."""
     for config in cbuildbot_config.config.values():

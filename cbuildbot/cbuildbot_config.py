@@ -653,6 +653,13 @@ _settings = dict(
 # =============================================================================
 # The documentation associated with the config.
   doc=None,
+
+# =============================================================================
+# Hints to Buildbot master UI
+
+# buildbot_waterfall_name -- If set, tells buildbot what name to give to the
+# corresponding builder on its waterfall.
+  buildbot_waterfall_name=None,
 )
 
 
