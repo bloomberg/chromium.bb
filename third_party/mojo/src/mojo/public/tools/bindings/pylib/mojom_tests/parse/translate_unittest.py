@@ -54,11 +54,10 @@ class TranslateTest(unittest.TestCase):
            ast.UnionField("b", None, None, "string")]))])
     expected = [{
       "name": "SomeUnion",
-      "fields": [
-        {"kind": "i32", "name": "a", "ordinal": None},
-        {"kind": "s", "name": "b", "ordinal": None}]}]
+      "fields": [{"kind": "i32", "name": "a"},
+                 {"kind": "s", "name": "b"}]}]
     actual = translate.Translate(tree, "mojom_tree")
-    self.assertEquals(actual["union"], expected)
+    self.assertEquals(actual["unions"], expected)
 
 
 if __name__ == "__main__":

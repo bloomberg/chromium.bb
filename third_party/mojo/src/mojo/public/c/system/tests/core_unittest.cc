@@ -109,6 +109,9 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
+  // Last parameter is optional.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h0, MOJO_HANDLE_SIGNAL_WRITABLE, 0, NULL));
+
   // Try to read.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,

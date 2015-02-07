@@ -9,6 +9,7 @@ import os.path
 import re
 
 import module as mojom
+import mojom.fileutil as fileutil
 import pack
 
 def GetStructFromMethod(method):
@@ -50,8 +51,7 @@ def CamelCaseToAllCaps(camel_case):
 def WriteFile(contents, full_path):
   # Make sure the containing directory exists.
   full_dir = os.path.dirname(full_path)
-  if not os.path.exists(full_dir):
-    os.makedirs(full_dir)
+  fileutil.EnsureDirectoryExists(full_dir)
 
   # Dump the data to disk.
   with open(full_path, "w+") as f:

@@ -19,11 +19,6 @@ class _MojoHandleWatcherNatives {
 // The MojoHandleWatcher sends a stream of events to application isolates that
 // register Mojo handles with it. Application isolates make the following calls:
 //
-// Start() - Starts up the MojoHandleWatcher isolate. Should be called only once
-//           per VM process.
-//
-// Stop() - Causes the MojoHandleWatcher isolate to exit.
-//
 // add(handle, port, signals) - Instructs the MojoHandleWatcher isolate to add
 //     'handle' to the set of handles it watches, and to notify the calling
 //     isolate only for the events specified by 'signals' using the send port
@@ -291,7 +286,9 @@ class MojoHandleWatcher {
     return new MojoResult(result);
   }
 
-  static Future<Isolate> Start() {
+  // Starts up the MojoHandleWatcher isolate. Should be called only once
+  // per VM process.
+  static Future<Isolate> _start() {
     // Make a control message pipe,
     MojoMessagePipe pipe = new MojoMessagePipe();
     int consumerHandle = pipe.endpoints[0].handle.h;
@@ -305,7 +302,9 @@ class MojoHandleWatcher {
     return Isolate.spawn(_handleWatcherIsolate, consumerHandle);
   }
 
-  static void Stop() {
+  // Causes the MojoHandleWatcher isolate to exit. Should be called only
+  // once per VM process.
+  static void _stop() {
     // Create a port for notification that the handle watcher has shutdown.
     var shutdownReceivePort = new ReceivePort();
     var shutdownSendPort = shutdownReceivePort.sendPort;
@@ -339,7 +338,7 @@ class MojoHandleWatcher {
     return _sendControlData(mojoHandle, null, _encodeCommand(REMOVE));
   }
 
-  static MojoResult timer(SendPort port, int deadline) {
+  static MojoResult timer(Object ignored, SendPort port, int deadline) {
     // The deadline will be unwrapped before sending to the handle watcher.
     return _sendControlData(
         new MojoHandle(deadline), port, _encodeCommand(TIMER));

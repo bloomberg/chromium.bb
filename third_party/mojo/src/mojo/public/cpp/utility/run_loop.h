@@ -15,6 +15,8 @@ namespace mojo {
 
 class RunLoopHandler;
 
+// Watches handles for signals and calls event handlers when they occur. Also
+// executes delayed tasks. This class should only be used by a single thread.
 class RunLoop {
  public:
   RunLoop();
@@ -31,8 +33,17 @@ class RunLoop {
   // created.
   static RunLoop* current();
 
-  // Registers a RunLoopHandler for the specified handle. Only one handler can
-  // be registered for a specified handle.
+  // Registers a RunLoopHandler for the specified handle. It is an error to
+  // register more than one handler for a handle, and crashes the process.
+  //
+  // The handler's OnHandleReady() method is invoked after one of the signals in
+  // |handle_signals| occurs. Note that the handler remains registered until
+  // explicitly removed or an error occurs.
+  //
+  // The handler's OnHandleError() method is invoked if the deadline elapses, an
+  // error is detected, or the RunLoop is being destroyed. The handler is
+  // automatically unregistered before calling OnHandleError(), so it will not
+  // receive any further notifications.
   void AddHandler(RunLoopHandler* handler,
                   const Handle& handle,
                   MojoHandleSignals handle_signals,

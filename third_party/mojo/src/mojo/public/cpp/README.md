@@ -8,7 +8,7 @@ subdirectories of the same name, under mojo/public/c/). Typically, these
 wrappers provide increased convenience and/or type-safety.
 
 Other subdirectories provide support (static) libraries of various sorts. In
-this case, the organization is to have the public interface for the library in
+this case, the organization is to have the public interface for the library
 defined in header files in the subdirectory itself and the implementation of the
 library at a lower level, under a lib (sub)subdirectory. A developer should be
 able to substitute their own implementation of any such support library, and

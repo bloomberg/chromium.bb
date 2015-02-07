@@ -35,12 +35,18 @@ class MessageHeader {
   MessageHeader.fromMessage(Message message) {
     var decoder = new Decoder(message);
     _header = decoder.decodeDataHeader();
+    if (_header.size < kSimpleMessageSize) {
+      throw new MojoCodecError(
+          'Incorrect message size. Got: ${_header.size} '
+          'wanted $kSimpleMessageSize');
+    }
     type = decoder.decodeUint32(kMessageTypeOffset);
     flags = decoder.decodeUint32(kMessageFlagsOffset);
     if (mustHaveRequestId(flags)) {
       if (_header.size < kMessageWithRequestIdSize) {
-        throw 'Incorrect message size. Got: ${_header.size} ' +
-              'wanted $kMessageWithRequestIdSize';
+        throw new MojoCodecError(
+            'Incorrect message size. Got: ${_header.size} '
+            'wanted $kMessageWithRequestIdSize');
       }
       requestId = decoder.decodeUint64(kMessageRequestIdOffset);
     } else {
@@ -63,6 +69,35 @@ class MessageHeader {
   ServiceMessage get serviceMessage => new ServiceMessage(this);
 
   String toString() => "MessageHeader($_header, $type, $flags, $requestId)";
+
+  bool validateHeaderFlags(expectedFlags) =>
+      (flags & (kMessageExpectsResponse | kMessageIsResponse)) == expectedFlags;
+
+  bool validateHeader(int expectedType, int expectedFlags) =>
+      (type == expectedType) && validateHeaderFlags(expectedFlags);
+
+  static void _validateDataHeader(DataHeader dataHeader) {
+    if (dataHeader.numFields < kSimpleMessageNumFields) {
+      throw 'Incorrect number of fields, expecting at least '
+            '$kSimpleMessageNumFields, but got: ${dataHeader.numFields}.';
+    }
+    if (dataHeader.size < kSimpleMessageSize) {
+      throw 'Incorrect message size, expecting at least $kSimpleMessageSize, '
+            'but got: ${dataHeader.size}';
+    }
+    if ((dataHeader.numFields == kSimpleMessageSize) &&
+        (dataHeader.size != kSimpleMessageSize)) {
+      throw 'Incorrect message size for a message with $kSimpleMessageNumFields'
+            ' fields, expecting $kSimpleMessageSize, '
+            'but got ${dataHeader.size}';
+    }
+    if ((dataHeader.numFields == kMessageWithRequestIdNumFields) &&
+        (dataHeader.size != kMessageWithRequestIdSize)) {
+      throw 'Incorrect message size for a message with '
+            '$kMessageWithRequestIdNumFields fields, expecting '
+            '$kMessageWithRequestIdSize, but got ${dataHeader.size}';
+    }
+  }
 }
 
 

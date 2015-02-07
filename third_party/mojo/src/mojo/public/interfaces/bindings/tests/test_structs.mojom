@@ -22,7 +22,7 @@ struct EmptyStruct {
 
 // Used to verify that struct fields which don't specify a default are
 // initialized to: false for bool, 0 for numbers, and null for strings,
-// handles, and structs. The "?" nullable suffix shouldn't have any 
+// handles, and structs. The "?" nullable suffix shouldn't have any
 // impact on initial field values.
 
 struct NoDefaultFieldValues {
@@ -58,7 +58,7 @@ struct NoDefaultFieldValues {
 };
 
 // Used to verify that struct fields with an explicit default value
-// are initialized correctly. The "?" nullable suffix shouldn't have any 
+// are initialized correctly. The "?" nullable suffix shouldn't have any
 // impact on initial field values.
 
 struct DefaultFieldValues {
@@ -140,6 +140,18 @@ struct MapValueTypes {
   map<string, array<map<string, string>>> f8;
 };
 
+// Used to verify that various array types can be encoded and decoded
+// successfully.
+
+struct ArrayValueTypes {
+  array<int8> f0;
+  array<int16> f1;
+  array<int32> f2;
+  array<int64> f3;
+  array<float> f4;
+  array<double> f5;
+};
+
 // Used to verify that various float and double values can be encoded and
 // decoded correctly.
 
@@ -189,18 +201,18 @@ struct IntegerNumberValues {
   const int32 V13 = 1234567890;
   const int32 V14 = 2147483647;
 
-  // The limits for JavaScript integers are +/- (2^53 - 1). 
+  // The limits for JavaScript integers are +/- (2^53 - 1).
   const int64 V15 = -9007199254740991; // Number.MIN_SAFE_INTEGER
   const int64 V16 = -1;
   const int64 V17 = 0;
   const int64 V18 = 1234567890123456;
   const int64 V19 = 9007199254740991; // Number.MAX_SAFE_INTEGER
 
-  int8 f0 = V0;  
+  int8 f0 = V0;
   int8 f1 = V1;
-  int8 f2 = V2;  
-  int8 f3 = V3;  
-  int8 f4 = V4;  
+  int8 f2 = V2;
+  int8 f3 = V3;
+  int8 f4 = V4;
 
   int16 f5 = V5;
   int16 f6 = V6;
@@ -237,14 +249,14 @@ struct UnsignedNumberValues {
   const uint32 V7 = 1234567890;
   const uint32 V8 = 0xFFFFFFFF;
 
-  // The limits for JavaScript integers are +/- (2^53 - 1). 
+  // The limits for JavaScript integers are +/- (2^53 - 1).
   const uint64 V9 = 0;
   const uint64 V10 = 1234567890123456;
   const uint64 V11 = 9007199254740991; // Number.MAX_SAFE_INTEGER
 
-  uint8 f0 = V0;  
+  uint8 f0 = V0;
   uint8 f1 = V1;
-  uint8 f2 = V2;  
+  uint8 f2 = V2;
 
   uint16 f3 = V3;
   uint16 f4 = V4;

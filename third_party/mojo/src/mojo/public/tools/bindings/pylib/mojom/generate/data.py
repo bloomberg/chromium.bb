@@ -42,6 +42,10 @@ def istr(index, string):
   rv.__index__ = index
   return rv
 
+def AddOptional(dictionary, key, value):
+  if value is not None:
+    dictionary[key] = value;
+
 builtin_values = frozenset([
     "double.INFINITY",
     "double.NEGATIVE_INFINITY",
@@ -186,15 +190,19 @@ def ImportFromData(module, data):
   return import_item
 
 def StructToData(struct):
-  return {
+  data = {
     istr(0, 'name'): struct.name,
-    istr(1, 'fields'): map(FieldToData, struct.fields)
+    istr(1, 'fields'): map(FieldToData, struct.fields),
+    # TODO(yzshen): EnumToData() and ConstantToData() are missing.
+    istr(2, 'enums'): [],
+    istr(3, 'constants'): []
   }
+  AddOptional(data, istr(4, 'attributes'), struct.attributes)
+  return data
 
 def StructFromData(module, data):
   struct = mojom.Struct(module=module)
   struct.name = data['name']
-  struct.attributes = data['attributes']
   struct.spec = 'x:' + module.namespace + '.' + struct.name
   module.kinds[struct.spec] = struct
   struct.enums = map(lambda enum:
@@ -203,13 +211,16 @@ def StructFromData(module, data):
       ConstantFromData(module, constant, struct), data['constants'])
   # Stash fields data here temporarily.
   struct.fields_data = data['fields']
+  struct.attributes = data.get('attributes')
   return struct
 
 def UnionToData(union):
-  return {
+  data = {
     istr(0, 'name'): union.name,
     istr(1, 'fields'): map(FieldToData, union.fields)
   }
+  AddOptional(data, istr(2, 'attributes'), union.attributes)
+  return data
 
 def UnionFromData(module, data):
   union = mojom.Union(module=module)
@@ -218,6 +229,7 @@ def UnionFromData(module, data):
   module.kinds[union.spec] = union
   # Stash fields data here temporarily.
   union.fields_data = data['fields']
+  union.attributes = data.get('attributes')
   return union
 
 def FieldToData(field):
@@ -225,10 +237,9 @@ def FieldToData(field):
     istr(0, 'name'): field.name,
     istr(1, 'kind'): KindToData(field.kind)
   }
-  if field.ordinal != None:
-    data[istr(2, 'ordinal')] = field.ordinal
-  if field.default != None:
-    data[istr(3, 'default')] = field.default
+  AddOptional(data, istr(2, 'ordinal'), field.ordinal)
+  AddOptional(data, istr(3, 'default'), field.default)
+  AddOptional(data, istr(4, 'attributes'), field.attributes)
   return data
 
 def FieldFromData(module, data, struct):
@@ -239,6 +250,7 @@ def FieldFromData(module, data, struct):
   field.ordinal = data.get('ordinal')
   field.default = FixupExpression(
       module, data.get('default'), (module.namespace, struct.name), field.kind)
+  field.attributes = data.get('attributes')
   return field
 
 def ParameterToData(parameter):
@@ -246,10 +258,9 @@ def ParameterToData(parameter):
     istr(0, 'name'): parameter.name,
     istr(1, 'kind'): parameter.kind.spec
   }
-  if parameter.ordinal != None:
-    data[istr(2, 'ordinal')] = parameter.ordinal
-  if parameter.default != None:
-    data[istr(3, 'default')] = parameter.default
+  AddOptional(data, istr(2, 'ordinal'), parameter.ordinal)
+  AddOptional(data, istr(3, 'default'), parameter.default)
+  AddOptional(data, istr(4, 'attributes'), parameter.attributes)
   return data
 
 def ParameterFromData(module, data, interface):
@@ -259,6 +270,7 @@ def ParameterFromData(module, data, interface):
       module.kinds, data['kind'], (module.namespace, interface.name))
   parameter.ordinal = data.get('ordinal')
   parameter.default = data.get('default')
+  parameter.attributes = data.get('attributes')
   return parameter
 
 def MethodToData(method):
@@ -266,36 +278,39 @@ def MethodToData(method):
     istr(0, 'name'):       method.name,
     istr(1, 'parameters'): map(ParameterToData, method.parameters)
   }
-  if method.ordinal != None:
-    data[istr(2, 'ordinal')] = method.ordinal
-  if method.response_parameters != None:
-    data[istr(3, 'response_parameters')] = map(
+  if method.response_parameters is not None:
+    data[istr(2, 'response_parameters')] = map(
         ParameterToData, method.response_parameters)
+  AddOptional(data, istr(3, 'ordinal'), method.ordinal)
+  AddOptional(data, istr(4, 'attributes'), method.attributes)
   return data
 
 def MethodFromData(module, data, interface):
   method = mojom.Method(interface, data['name'], ordinal=data.get('ordinal'))
-  method.default = data.get('default')
   method.parameters = map(lambda parameter:
       ParameterFromData(module, parameter, interface), data['parameters'])
   if data.has_key('response_parameters'):
     method.response_parameters = map(
         lambda parameter: ParameterFromData(module, parameter, interface),
                           data['response_parameters'])
+  method.attributes = data.get('attributes')
   return method
 
 def InterfaceToData(interface):
-  return {
+  data = {
     istr(0, 'name'):    interface.name,
-    istr(1, 'client'):  interface.client,
-    istr(2, 'methods'): map(MethodToData, interface.methods)
+    istr(1, 'methods'): map(MethodToData, interface.methods),
+    # TODO(yzshen): EnumToData() and ConstantToData() are missing.
+    istr(2, 'enums'): [],
+    istr(3, 'constants'): []
   }
+  AddOptional(data, istr(4, 'attributes'), interface.attributes)
+  return data
 
 def InterfaceFromData(module, data):
   interface = mojom.Interface(module=module)
   interface.name = data['name']
   interface.spec = 'x:' + module.namespace + '.' + interface.name
-  interface.client = data['client'] if data.has_key('client') else None
   module.kinds[interface.spec] = interface
   interface.enums = map(lambda enum:
       EnumFromData(module, enum, interface), data['enums'])
@@ -303,6 +318,7 @@ def InterfaceFromData(module, data):
       ConstantFromData(module, constant, interface), data['constants'])
   # Stash methods data here temporarily.
   interface.methods_data = data['methods']
+  interface.attributes = data.get('attributes')
   return interface
 
 def EnumFieldFromData(module, enum, data, parent_kind):
@@ -314,10 +330,11 @@ def EnumFieldFromData(module, enum, data, parent_kind):
   # vice versa?
   if parent_kind:
     field.value = FixupExpression(
-        module, data['value'], (module.namespace, parent_kind.name), enum)
+        module, data.get('value'), (module.namespace, parent_kind.name), enum)
   else:
     field.value = FixupExpression(
-        module, data['value'], (module.namespace, ), enum)
+        module, data.get('value'), (module.namespace, ), enum)
+  field.attributes = data.get('attributes')
   value = mojom.EnumValue(module, enum, field)
   module.values[value.GetSpec()] = value
   return field
@@ -330,10 +347,11 @@ def EnumFromData(module, data, parent_kind):
     name = parent_kind.name + '.' + name
   enum.spec = 'x:%s.%s' % (module.namespace, name)
   enum.parent_kind = parent_kind
-
   enum.fields = map(
       lambda field: EnumFieldFromData(module, enum, field, parent_kind),
       data['fields'])
+  enum.attributes = data.get('attributes')
+
   module.kinds[enum.spec] = enum
   return enum
 
@@ -353,13 +371,20 @@ def ConstantFromData(module, data, parent_kind):
   return constant
 
 def ModuleToData(module):
-  return {
+  data = {
     istr(0, 'name'):       module.name,
     istr(1, 'namespace'):  module.namespace,
-    istr(2, 'structs'):    map(StructToData, module.structs),
-    istr(3, 'interfaces'): map(InterfaceToData, module.interfaces),
+    # TODO(yzshen): Imports information is missing.
+    istr(2, 'imports'): [],
+    istr(3, 'structs'):    map(StructToData, module.structs),
     istr(4, 'unions'):     map(UnionToData, module.unions),
+    istr(5, 'interfaces'): map(InterfaceToData, module.interfaces),
+    # TODO(yzshen): EnumToData() and ConstantToData() are missing.
+    istr(6, 'enums'): [],
+    istr(7, 'constants'): []
   }
+  AddOptional(data, istr(8, 'attributes'), module.attributes)
+  return data
 
 def ModuleFromData(data):
   module = mojom.Module()
@@ -371,12 +396,12 @@ def ModuleFromData(data):
 
   module.name = data['name']
   module.namespace = data['namespace']
-  module.attributes = data['attributes']
   # Imports must come first, because they add to module.kinds which is used
   # by by the others.
   module.imports = map(
       lambda import_data: ImportFromData(module, import_data),
       data['imports'])
+  module.attributes = data.get('attributes')
 
   # First pass collects kinds.
   module.enums = map(

@@ -36,6 +36,13 @@ type encodingState struct {
 	elementsProcessed uint32
 }
 
+func (s *encodingState) alignOffsetToBytes() {
+	if s.bitOffset > 0 {
+		s.offset++
+		s.bitOffset = 0
+	}
+}
+
 func (s *encodingState) skipBits(count uint32) {
 	s.bitOffset += count
 	s.offset += int(s.bitOffset >> 3) // equal to s.bitOffset / 8
@@ -61,16 +68,6 @@ type Encoder struct {
 	// A stack of encoder states matching current one-level value stack
 	// of the encoding data structure.
 	stateStack []encodingState
-}
-
-func align(size, alignment int) int {
-	return ((size - 1) | (alignment - 1)) + 1
-}
-
-// bytesForBits returns minimum number of bytes required to store provided
-// number of bits.
-func bytesForBits(bits uint64) int {
-	return int((bits + 7) / 8)
 }
 
 func ensureElementBitSizeAndCapacity(state *encodingState, bitSize uint32) error {
@@ -213,6 +210,7 @@ func (e *Encoder) WriteUint8(value uint8) error {
 	if err := ensureElementBitSizeAndCapacity(e.state(), 8); err != nil {
 		return err
 	}
+	e.state().alignOffsetToBytes()
 	e.buf[e.state().offset] = value
 	e.state().skipBytes(1)
 	e.state().elementsProcessed++
@@ -229,6 +227,7 @@ func (e *Encoder) WriteUint16(value uint16) error {
 	if err := ensureElementBitSizeAndCapacity(e.state(), 16); err != nil {
 		return err
 	}
+	e.state().alignOffsetToBytes()
 	e.state().offset = align(e.state().offset, 2)
 	binary.LittleEndian.PutUint16(e.buf[e.state().offset:], value)
 	e.state().skipBytes(2)
@@ -246,6 +245,7 @@ func (e *Encoder) WriteUint32(value uint32) error {
 	if err := ensureElementBitSizeAndCapacity(e.state(), 32); err != nil {
 		return err
 	}
+	e.state().alignOffsetToBytes()
 	e.state().offset = align(e.state().offset, 4)
 	binary.LittleEndian.PutUint32(e.buf[e.state().offset:], value)
 	e.state().skipBytes(4)
@@ -263,6 +263,7 @@ func (e *Encoder) WriteUint64(value uint64) error {
 	if err := ensureElementBitSizeAndCapacity(e.state(), 64); err != nil {
 		return err
 	}
+	e.state().alignOffsetToBytes()
 	e.state().offset = align(e.state().offset, 8)
 	binary.LittleEndian.PutUint64(e.buf[e.state().offset:], value)
 	e.state().skipBytes(8)

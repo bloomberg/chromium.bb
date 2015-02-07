@@ -4,6 +4,7 @@
 
 #include "mojo/edk/embedder/embedder.h"
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -25,42 +26,25 @@ namespace embedder {
 
 namespace {
 
-// Helper for |CreateChannel...()|. Returns 0 on failure. Called on the channel
-// creation thread.
-system::ChannelId MakeChannel(
-    ScopedPlatformHandle platform_handle,
-    scoped_refptr<system::ChannelEndpoint> channel_endpoint) {
-  DCHECK(platform_handle.is_valid());
+// TODO(vtl): For now, we need this to be thread-safe (since theoretically we
+// currently support multiple channel creation threads -- possibly one per
+// channel). Eventually, we won't need it to be thread-safe (we'll require a
+// single I/O thread), and eventually we won't need it at all. Remember to
+// remove the base/atomicops.h include.
+system::ChannelId MakeChannelId() {
+  // Note that |AtomicWord| is signed.
+  static base::subtle::AtomicWord counter = 0;
 
-  // Create and initialize a |system::Channel|.
-  DCHECK(internal::g_core);
-  scoped_refptr<system::Channel> channel =
-      new system::Channel(internal::g_core->platform_support());
-  channel->Init(system::RawChannel::Create(platform_handle.Pass()));
-  channel->SetBootstrapEndpoint(channel_endpoint);
-
-  DCHECK(internal::g_channel_manager);
-  return internal::g_channel_manager->AddChannel(
-      channel, base::MessageLoopProxy::current());
-}
-
-// Helper for |CreateChannel()|. Called on the channel creation thread.
-void CreateChannelHelper(
-    ScopedPlatformHandle platform_handle,
-    scoped_ptr<ChannelInfo> channel_info,
-    scoped_refptr<system::ChannelEndpoint> channel_endpoint,
-    DidCreateChannelCallback callback,
-    scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  channel_info->channel_id =
-      MakeChannel(platform_handle.Pass(), channel_endpoint);
-
-  // Hand the channel back to the embedder.
-  if (callback_thread_task_runner) {
-    callback_thread_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, channel_info.release()));
-  } else {
-    callback.Run(channel_info.release());
-  }
+  base::subtle::AtomicWord new_counter_value =
+      base::subtle::NoBarrier_AtomicIncrement(&counter, 1);
+  // Don't allow the counter to wrap. Note that any (strictly) positive value is
+  // a valid |ChannelId| (and |NoBarrier_AtomicIncrement()| returns the value
+  // post-increment).
+  CHECK_GT(new_counter_value, 0);
+  // Use "negative" values for these IDs, so that we'll also be able to use
+  // "positive" "process identifiers" (see connection_manager.h) as IDs (and
+  // they won't conflict).
+  return static_cast<system::ChannelId>(-new_counter_value);
 }
 
 }  // namespace
@@ -68,16 +52,24 @@ void CreateChannelHelper(
 namespace internal {
 
 // Declared in embedder_internal.h.
+PlatformSupport* g_platform_support = nullptr;
 system::Core* g_core = nullptr;
 system::ChannelManager* g_channel_manager = nullptr;
 
 }  // namespace internal
 
 void Init(scoped_ptr<PlatformSupport> platform_support) {
+  DCHECK(platform_support);
+
+  DCHECK(!internal::g_platform_support);
+  internal::g_platform_support = platform_support.release();
+
   DCHECK(!internal::g_core);
-  internal::g_core = new system::Core(platform_support.Pass());
+  internal::g_core = new system::Core(internal::g_platform_support);
+
   DCHECK(!internal::g_channel_manager);
-  internal::g_channel_manager = new system::ChannelManager();
+  internal::g_channel_manager =
+      new system::ChannelManager(internal::g_platform_support);
 }
 
 Configuration* GetConfiguration() {
@@ -99,8 +91,9 @@ ScopedMessagePipeHandle CreateChannelOnIOThread(
   ScopedMessagePipeHandle rv(
       MessagePipeHandle(internal::g_core->AddDispatcher(dispatcher)));
 
-  *channel_info =
-      new ChannelInfo(MakeChannel(platform_handle.Pass(), channel_endpoint));
+  *channel_info = new ChannelInfo(MakeChannelId());
+  internal::g_channel_manager->CreateChannelOnIOThread(
+      (*channel_info)->channel_id, platform_handle.Pass(), channel_endpoint);
 
   return rv.Pass();
 }
@@ -126,14 +119,16 @@ ScopedMessagePipeHandle CreateChannel(
   scoped_ptr<ChannelInfo> channel_info(new ChannelInfo());
 
   if (rv.is_valid()) {
-    io_thread_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&CreateChannelHelper, base::Passed(&platform_handle),
-                   base::Passed(&channel_info), channel_endpoint, callback,
-                   callback_thread_task_runner));
+    system::ChannelId channel_id = MakeChannelId();
+    channel_info->channel_id = channel_id;
+    internal::g_channel_manager->CreateChannel(
+        channel_id, platform_handle.Pass(), channel_endpoint,
+        io_thread_task_runner,
+        base::Bind(callback, base::Unretained(channel_info.release())),
+        callback_thread_task_runner);
   } else {
-    (callback_thread_task_runner.get() ? callback_thread_task_runner
-                                       : io_thread_task_runner)
+    (callback_thread_task_runner ? callback_thread_task_runner
+                                 : io_thread_task_runner)
         ->PostTask(FROM_HERE, base::Bind(callback, channel_info.release()));
   }
 

@@ -36,7 +36,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces_service.mojom.h"
+#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 #include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"

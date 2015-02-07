@@ -19,11 +19,13 @@ class ChannelManager;
 class Core;
 
 // Repeat a typedef in mojo/edk/system/channel_manager.h, to avoid including it.
-typedef uintptr_t ChannelId;
+typedef uint64_t ChannelId;
 
 }  // namespace system
 
 namespace embedder {
+
+class PlatformSupport;
 
 // This is a type that's opaque to users of the embedder API (which only
 // gives/takes |ChannelInfo*|s). We make it a struct to make it
@@ -36,6 +38,9 @@ struct ChannelInfo {
 };
 
 namespace internal {
+
+// Instance of |PlatformSupport| to use.
+extern PlatformSupport* g_platform_support;
 
 // Instance of |Core| used by the system functions (|Mojo...()|).
 extern system::Core* g_core;

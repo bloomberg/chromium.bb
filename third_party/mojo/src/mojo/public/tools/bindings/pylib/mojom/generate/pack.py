@@ -65,6 +65,7 @@ class PackedField(object):
     self.size = self.GetSizeForKind(field.kind)
     self.offset = None
     self.bit = None
+    self.min_version = None
 
 
 # Returns the pad necessary to reserve space for alignment of |size|.
@@ -102,6 +103,47 @@ class PackedStruct(object):
       src_fields.append(PackedField(field, index, ordinal))
       ordinal += 1
     src_fields.sort(key=lambda field: field.ordinal)
+
+    # Set |min_version| for each field.
+    #
+    # TODO(yzshen): We are in the middle of converting the |num_fields| field in
+    # encoded structs to |version|. In order to make code using |num_fields| and
+    # |version| work together, for structs without any [MinVersion] annotation,
+    # each field will be treated as if [MinVersion=ordinal+1] is set:
+    #
+    # struct Foo {
+    #   int32 field_0;
+    #   int32 field_1;
+    # }
+    #
+    # is treated as:
+    #
+    # struct Foo {
+    #   [MinVersion=1] int32 field_0;
+    #   [MinVersion=2] int32 field_1;
+    # }
+    #
+    # This way |num_fields| is the same value as |version|.
+    #
+    # This trick needs to be removed once the conversion is done.
+
+    if any(packed_field.field.min_version is not None
+               for packed_field in src_fields):
+      # This struct has fields that explicitly set [MinVersion]. Assume that it
+      # is only handled by code that understands versioning.
+      next_min_version = 0
+      for packed_field in src_fields:
+        if packed_field.field.min_version is None:
+          assert next_min_version == 0
+        else:
+          assert packed_field.field.min_version >= next_min_version
+          next_min_version = packed_field.field.min_version
+        packed_field.min_version = next_min_version
+    else:
+      next_min_version = 1
+      for packed_field in src_fields:
+        packed_field.min_version = next_min_version
+        next_min_version += 1
 
     src_field = src_fields[0]
     src_field.offset = 0

@@ -50,12 +50,13 @@ if (decoder{{level+1}} == null) {
   List<{{kind.key_kind|dart_type}}> keys{{level}};
   List<{{kind.value_kind|dart_type}}> values{{level}};
   {
-    {{decode('keys'~level, kind.key_kind|array, 'DataHeader.HEADER_SIZE', 0, level+1)|indent(4)}}
+    {{decode('keys'~level, kind.key_kind|array, 'bindings.DataHeader.kHeaderSize', 0, level+1)|indent(4)}}
   }
   {
     {{decode('values'~level, kind.value_kind|array('keys'~level~'.length'), 'bindings.DataHeader.kHeaderSize + bindings.kPointerSize', 0, level+1)|indent(4)}}
   }
-  {{variable}} = new Map<{{kind.key_kind|dart_type}}, {{kind.value_kind|dart_type}}>.fromIterables(keys, values);
+  {{variable}} = new Map<{{kind.key_kind|dart_type}}, {{kind.value_kind|dart_type}}>.fromIterables(
+      keys{{level}}, values{{level}});
 {%-     else %}
   var si{{level+1}} = decoder{{level+1}}.decodeDataHeaderForPointerArray({{kind|array_expected_length}});
   {{variable}} = new {{kind|dart_type}}(si{{level+1}}.numFields);
@@ -105,11 +106,13 @@ class {{struct|name}} extends bindings.Struct {
       return null;
     }
     {{struct|name}} result = new {{struct|name}}();
-{%- if not struct.bytes %}
-    decoder0.decodeDataHeader();
-{%- else %}
+
     var mainDataHeader = decoder0.decodeDataHeader();
-{%- endif %}
+    if ((mainDataHeader.size < kStructSize) ||
+        (mainDataHeader.numFields < {{struct.packed.packed_fields|length}})) {
+      throw new bindings.MojoCodecError('Malformed header');
+    }
+
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
     if (mainDataHeader.numFields > {{packed_field.ordinal}}) {

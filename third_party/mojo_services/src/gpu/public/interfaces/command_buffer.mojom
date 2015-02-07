@@ -25,10 +25,19 @@ interface CommandBufferSyncPointClient {
   DidInsertSyncPoint(uint32 sync_point);
 };
 
-[Client=CommandBufferClient]
+interface CommandBufferLostContextObserver {
+  DidLoseContext(int32 context_lost_reason);
+};
+
 interface CommandBuffer {
+  // Initialize attempts to initialize the command buffer. Success or failure
+  // will be communicated via the CommandBufferSyncClient DidInitialize() call.
+  // If the context is lost after creation the LostContext method on the
+  // CommandBufferLostContextObserver's will be called then this pipe will be
+  // closed.
   Initialize(CommandBufferSyncClient sync_client,
              CommandBufferSyncPointClient sync_point_client,
+             CommandBufferLostContextObserver lost_observer,
              handle<shared_buffer> shared_state);
   SetGetBuffer(int32 buffer);
   Flush(int32 put_offset);
@@ -43,11 +52,4 @@ interface CommandBuffer {
   InsertSyncPoint(bool retire);
   RetireSyncPoint(uint32 sync_point);
   Echo() => ();
-
-  // TODO(piman): sync points
-};
-
-interface CommandBufferClient {
-  DidDestroy();
-  LostContext(int32 lost_reason);  // TODO(piman): enum
 };

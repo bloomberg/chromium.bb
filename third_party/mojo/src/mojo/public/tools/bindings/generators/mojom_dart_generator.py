@@ -69,9 +69,9 @@ _kind_to_dart_decl_type = {
 
 _spec_to_decode_method = {
   mojom.BOOL.spec:                  'decodeBool',
-  mojom.DCPIPE.spec:                'decodeHandle',
+  mojom.DCPIPE.spec:                'decodeConsumerHandle',
   mojom.DOUBLE.spec:                'decodeDouble',
-  mojom.DPPIPE.spec:                'decodeHandle',
+  mojom.DPPIPE.spec:                'decodeProducerHandle',
   mojom.FLOAT.spec:                 'decodeFloat',
   mojom.HANDLE.spec:                'decodeHandle',
   mojom.INT16.spec:                 'decodeInt16',
@@ -95,9 +95,9 @@ _spec_to_decode_method = {
 
 _spec_to_encode_method = {
   mojom.BOOL.spec:                  'encodeBool',
-  mojom.DCPIPE.spec:                'encodeHandle',
+  mojom.DCPIPE.spec:                'encodeConsumerHandle',
   mojom.DOUBLE.spec:                'encodeDouble',
-  mojom.DPPIPE.spec:                'encodeHandle',
+  mojom.DPPIPE.spec:                'encodeProducerHandle',
   mojom.FLOAT.spec:                 'encodeFloat',
   mojom.HANDLE.spec:                'encodeHandle',
   mojom.INT16.spec:                 'encodeInt16',

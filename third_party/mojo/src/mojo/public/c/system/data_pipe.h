@@ -81,8 +81,8 @@ const MojoWriteDataFlags MOJO_WRITE_DATA_FLAG_ALL_OR_NONE = 1 << 0;
 //        elements.
 //   |MOJO_READ_DATA_FLAG_QUERY| - Query the number of elements available to
 //       read. For use with |MojoReadData()| only. Mutually exclusive with
-//       |MOJO_READ_DATA_FLAG_DISCARD| and |MOJO_READ_DATA_FLAG_ALL_OR_NONE| is
-//       ignored if this flag is set.
+//       |MOJO_READ_DATA_FLAG_DISCARD|, and |MOJO_READ_DATA_FLAG_ALL_OR_NONE|
+//       is ignored if this flag is set.
 //   |MOJO_READ_DATA_FLAG_PEEK| - Read elements without removing them. For use
 //       with |MojoReadData()| only. Mutually exclusive with
 //       |MOJO_READ_DATA_FLAG_DISCARD| and |MOJO_READ_DATA_FLAG_QUERY|.
@@ -264,8 +264,8 @@ MOJO_SYSTEM_EXPORT MojoResult
 // available to future reads.
 //
 // If flags has |MOJO_READ_DATA_FLAG_DISCARD| set, it discards up to
-// |*num_bytes| (which again be a multiple of the element size) bytes of data,
-// setting |*num_bytes| to the amount actually discarded. If flags has
+// |*num_bytes| (which again must be a multiple of the element size) bytes of
+// data, setting |*num_bytes| to the amount actually discarded. If flags has
 // |MOJO_READ_DATA_FLAG_ALL_OR_NONE|, it will either discard exactly
 // |*num_bytes| bytes of data or none. In this case, |MOJO_READ_DATA_FLAG_QUERY|
 // must not be set, and |elements| is ignored (and should typically be set to

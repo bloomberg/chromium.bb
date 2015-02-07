@@ -389,7 +389,8 @@ ViewportMetricsPtr CreateEmptyViewportMetrics() {
   metrics->size = Size::New();
   return metrics.Pass();
 }
-}
+
+}  // namespace
 
 View::View()
     : manager_(NULL),

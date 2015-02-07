@@ -7,10 +7,10 @@ import("//testing/test.gni")
 
 test("mojo_view_manager_lib_unittests") {
   sources = [
+    "run_all_unittests.cc",
     "view_manager_test_suite.cc",
     "view_manager_test_suite.h",
     "view_manager_unittest.cc",
-    "view_manager_unittests.cc",
     "view_unittest.cc",
   ]
 

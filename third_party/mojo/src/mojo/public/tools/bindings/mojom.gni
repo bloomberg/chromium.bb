@@ -73,6 +73,7 @@ template("mojom") {
     "$generator_root/generators/dart_templates/module.lib.tmpl",
     "$generator_root/generators/dart_templates/module_definition.tmpl",
     "$generator_root/generators/dart_templates/struct_definition.tmpl",
+    "$generator_root/generators/go_templates/source.tmpl",
     "$generator_root/generators/java_templates/constant_definition.tmpl",
     "$generator_root/generators/java_templates/constants.java.tmpl",
     "$generator_root/generators/java_templates/enum.java.tmpl",
@@ -93,6 +94,7 @@ template("mojom") {
     "$generator_root/generators/python_templates/module.py.tmpl",
     "$generator_root/generators/mojom_cpp_generator.py",
     "$generator_root/generators/mojom_dart_generator.py",
+    "$generator_root/generators/mojom_go_generator.py",
     "$generator_root/generators/mojom_js_generator.py",
     "$generator_root/generators/mojom_java_generator.py",
     "$generator_root/generators/mojom_python_generator.py",
@@ -117,6 +119,7 @@ template("mojom") {
   ]
   generator_dart_outputs =
       [ "{{source_gen_dir}}/{{source_name_part}}.mojom.dart" ]
+  generator_dart_zip_output = "$target_out_dir/$target_name.dartzip"
   generator_java_outputs =
       [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
   generator_js_outputs = [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
@@ -209,7 +212,10 @@ template("mojom") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    data_deps = [ ":${target_name}_python" ]
+    data_deps = [
+      ":${target_name}_python",
+      ":${target_name}_dart",
+    ]
     if (defined(invoker.mojo_sdk_deps)) {
       foreach(sdk_dep, invoker.mojo_sdk_deps) {
         # Check that the SDK dep was not mistakenly given as an absolute path.
@@ -266,6 +272,42 @@ template("mojom") {
     ]
 
     rebase_base_dir = rebase_path(target_gen_dir, root_build_dir)
+    rebase_inputs = rebase_path(inputs, root_build_dir)
+    rebase_zip_inputs = rebase_path(zip_inputs, root_build_dir)
+    rebase_output = rebase_path(output, root_build_dir)
+    args = [
+      "--base-dir=$rebase_base_dir",
+      "--inputs=$rebase_inputs",
+      "--zip-inputs=$rebase_zip_inputs",
+      "--output=$rebase_output",
+    ]
+  }
+
+  action("${target_name}_dart") {
+    script = rebase_path("mojo/public/tools/gn/zip.py", ".", mojo_root)
+
+    inputs = process_file_template(invoker.sources, generator_dart_outputs)
+
+    deps = []
+    zip_inputs = []
+
+    foreach(d, all_deps) {
+      # Resolve the name, so that a target //mojo/something becomes
+      # //mojo/something:something and we can append "_dart" to get the dart
+      # dependency name.
+      full_name = get_label_info(d, "label_no_toolchain")
+      dep_name = get_label_info(d, "name")
+      dep_target_out_dir = get_label_info(d, "target_out_dir")
+      deps += [ "${full_name}_dart" ]
+      zip_inputs += [ "$dep_target_out_dir/$dep_name.dartzip" ]
+    }
+
+    output = generator_dart_zip_output
+    outputs = [
+      output,
+    ]
+
+    rebase_base_dir = rebase_path("$root_build_dir/gen/", root_build_dir)
     rebase_inputs = rebase_path(inputs, root_build_dir)
     rebase_zip_inputs = rebase_path(zip_inputs, root_build_dir)
     rebase_output = rebase_path(output, root_build_dir)

@@ -17,6 +17,8 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/channel_endpoint.h"
+#include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -42,19 +44,20 @@ class ChannelManagerTest : public testing::Test {
 };
 
 TEST_F(ChannelManagerTest, Basic) {
-  ChannelManager cm;
-
-  // Hang on to a ref to the |Channel|, so that we can check that the
-  // |ChannelManager| takes/releases refs to it.
-  scoped_refptr<Channel> ch(new Channel(platform_support()));
-  ASSERT_TRUE(ch->HasOneRef());
+  ChannelManager cm(platform_support());
 
   embedder::PlatformChannelPair channel_pair;
-  ch->Init(RawChannel::Create(channel_pair.PassServerHandle()));
 
-  ChannelId id = cm.AddChannel(ch, base::MessageLoopProxy::current());
-  EXPECT_NE(id, 0u);
-  // |ChannelManager| should take a ref.
+  scoped_refptr<ChannelEndpoint> cep;
+  scoped_refptr<MessagePipeDispatcher> d =
+      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep);
+  const ChannelId id = 1;
+  cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle(), cep);
+  cep = nullptr;
+
+  scoped_refptr<Channel> ch = cm.GetChannel(id);
+  EXPECT_TRUE(ch);
+  // |ChannelManager| should have a ref.
   EXPECT_FALSE(ch->HasOneRef());
 
   cm.WillShutdownChannel(id);
@@ -65,30 +68,34 @@ TEST_F(ChannelManagerTest, Basic) {
   // On the "I/O" thread, so shutdown should happen synchronously.
   // |ChannelManager| should have given up its ref.
   EXPECT_TRUE(ch->HasOneRef());
+
+  EXPECT_EQ(MOJO_RESULT_OK, d->Close());
 }
 
 TEST_F(ChannelManagerTest, TwoChannels) {
-  ChannelManager cm;
-
-  // Hang on to a ref to each |Channel|, so that we can check that the
-  // |ChannelManager| takes/releases refs to them.
-  scoped_refptr<Channel> ch1(new Channel(platform_support()));
-  ASSERT_TRUE(ch1->HasOneRef());
-  scoped_refptr<Channel> ch2(new Channel(platform_support()));
-  ASSERT_TRUE(ch2->HasOneRef());
+  ChannelManager cm(platform_support());
 
   embedder::PlatformChannelPair channel_pair;
-  ch1->Init(RawChannel::Create(channel_pair.PassServerHandle()));
-  ch2->Init(RawChannel::Create(channel_pair.PassClientHandle()));
 
-  ChannelId id1 = cm.AddChannel(ch1, base::MessageLoopProxy::current());
-  EXPECT_NE(id1, 0u);
-  EXPECT_FALSE(ch1->HasOneRef());
+  scoped_refptr<ChannelEndpoint> cep1;
+  scoped_refptr<MessagePipeDispatcher> d1 =
+      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep1);
+  const ChannelId id1 = 1;
+  cm.CreateChannelOnIOThread(id1, channel_pair.PassServerHandle(), cep1);
+  cep1 = nullptr;
 
-  ChannelId id2 = cm.AddChannel(ch2, base::MessageLoopProxy::current());
-  EXPECT_NE(id2, 0u);
-  EXPECT_NE(id2, id1);
-  EXPECT_FALSE(ch2->HasOneRef());
+  scoped_refptr<ChannelEndpoint> cep2;
+  scoped_refptr<MessagePipeDispatcher> d2 =
+      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep2);
+  const ChannelId id2 = 2;
+  cm.CreateChannelOnIOThread(id2, channel_pair.PassClientHandle(), cep2);
+  cep2 = nullptr;
+
+  scoped_refptr<Channel> ch1 = cm.GetChannel(id1);
+  EXPECT_TRUE(ch1);
+
+  scoped_refptr<Channel> ch2 = cm.GetChannel(id2);
+  EXPECT_TRUE(ch2);
 
   // Calling |WillShutdownChannel()| multiple times (on |id1|) is okay.
   cm.WillShutdownChannel(id1);
@@ -100,45 +107,47 @@ TEST_F(ChannelManagerTest, TwoChannels) {
   EXPECT_TRUE(ch1->HasOneRef());
   cm.ShutdownChannel(id2);
   EXPECT_TRUE(ch2->HasOneRef());
+
+  EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
+  EXPECT_EQ(MOJO_RESULT_OK, d2->Close());
 }
 
 class OtherThread : public base::SimpleThread {
  public:
-  // Note: We rely on the main thread keeping *exactly one* reference to
-  // |channel|.
+  // Note: There should be no other refs to the channel identified by
+  // |channel_id| outside the channel manager.
   OtherThread(scoped_refptr<base::TaskRunner> task_runner,
               ChannelManager* channel_manager,
-              Channel* channel,
+              ChannelId channel_id,
               base::Closure quit_closure)
       : base::SimpleThread("other_thread"),
         task_runner_(task_runner),
         channel_manager_(channel_manager),
-        channel_(channel),
+        channel_id_(channel_id),
         quit_closure_(quit_closure) {}
   ~OtherThread() override {}
 
  private:
   void Run() override {
-    // See comment above constructor.
-    ASSERT_TRUE(channel_->HasOneRef());
+    // TODO(vtl): Once we have a way of creating a channel from off the I/O
+    // thread, do that here instead.
 
-    ChannelId id = channel_manager_->AddChannel(make_scoped_refptr(channel_),
-                                                task_runner_);
-    EXPECT_NE(id, 0u);
-    // |ChannelManager| should take a ref.
-    EXPECT_FALSE(channel_->HasOneRef());
+    // You can use any unique, nonzero value as the ID.
+    scoped_refptr<Channel> ch = channel_manager_->GetChannel(channel_id_);
+    // |ChannelManager| should have a ref.
+    EXPECT_FALSE(ch->HasOneRef());
 
-    channel_manager_->WillShutdownChannel(id);
+    channel_manager_->WillShutdownChannel(channel_id_);
     // |ChannelManager| should still have a ref.
-    EXPECT_FALSE(channel_->HasOneRef());
+    EXPECT_FALSE(ch->HasOneRef());
 
-    channel_manager_->ShutdownChannel(id);
+    channel_manager_->ShutdownChannel(channel_id_);
     // This doesn't happen synchronously, so we "wait" until it does.
-    // TODO(vtl): Possibly |Channel| should provide some notification of being
+    // TODO(vtl): Probably |Channel| should provide some notification of being
     // shut down.
     base::TimeTicks start_time(base::TimeTicks::Now());
     for (;;) {
-      if (channel_->HasOneRef())
+      if (ch->HasOneRef())
         break;
 
       // Check, instead of assert, since if things go wrong, dying is more
@@ -153,29 +162,32 @@ class OtherThread : public base::SimpleThread {
 
   scoped_refptr<base::TaskRunner> task_runner_;
   ChannelManager* channel_manager_;
-  Channel* channel_;
+  ChannelId channel_id_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(OtherThread);
 };
 
 TEST_F(ChannelManagerTest, CallsFromOtherThread) {
-  ChannelManager cm;
-
-  // Hang on to a ref to the |Channel|, so that we can check that the
-  // |ChannelManager| takes/releases refs to it.
-  scoped_refptr<Channel> ch(new Channel(platform_support()));
-  ASSERT_TRUE(ch->HasOneRef());
+  ChannelManager cm(platform_support());
 
   embedder::PlatformChannelPair channel_pair;
-  ch->Init(RawChannel::Create(channel_pair.PassServerHandle()));
+
+  scoped_refptr<ChannelEndpoint> cep;
+  scoped_refptr<MessagePipeDispatcher> d =
+      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep);
+  const ChannelId id = 1;
+  cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle(), cep);
+  cep = nullptr;
 
   base::RunLoop run_loop;
-  OtherThread thread(base::MessageLoopProxy::current(), &cm, ch.get(),
+  OtherThread thread(base::MessageLoopProxy::current(), &cm, id,
                      run_loop.QuitClosure());
   thread.Start();
   run_loop.Run();
   thread.Join();
+
+  EXPECT_EQ(MOJO_RESULT_OK, d->Close());
 }
 
 }  // namespace

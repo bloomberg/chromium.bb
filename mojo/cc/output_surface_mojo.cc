@@ -4,6 +4,7 @@
 
 #include "mojo/cc/output_surface_mojo.h"
 
+#include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -20,6 +21,8 @@ OutputSurfaceMojo::OutputSurfaceMojo(
       surface_(surface.Pass()),
       id_namespace_(0u),
       local_id_(0u) {
+  surface_->GetIdNamespace(
+      base::Bind(&OutputSurfaceMojo::SetIdNamespace, base::Unretained(this)));
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -36,11 +39,7 @@ void OutputSurfaceMojo::SetIdNamespace(uint32_t id_namespace) {
   }
 }
 
-void OutputSurfaceMojo::ReturnResources(Array<ReturnedResourcePtr> resources) {
-}
-
 bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
-  surface_.set_client(this);
   return cc::OutputSurface::BindToClient(client);
 }
 

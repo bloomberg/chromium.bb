@@ -90,8 +90,6 @@ extern "C" {
 //       |*options| is invalid).
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
 //       been reached.
-//
-// TODO(vtl): Add an options struct pointer argument.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
     const struct MojoCreateMessagePipeOptions* options,  // Optional.
     MojoHandle* message_pipe_handle0,                    // Out.
@@ -118,7 +116,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
 //       latter case).
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed.
 //       Note that closing an endpoint is not necessarily synchronous (e.g.,
-//       across processes), so this function may be succeed even if the other
+//       across processes), so this function may succeed even if the other
 //       endpoint has been closed (in which case the message would be dropped).
 //   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
 //   |MOJO_RESULT_BUSY| if some handle to be sent is currently in use.
@@ -133,37 +131,37 @@ MOJO_SYSTEM_EXPORT MojoResult
                      uint32_t num_handles,
                      MojoWriteMessageFlags flags);
 
-// Reads a message from the message pipe endpoint given by
-// |message_pipe_handle|; also usable to query the size of the next message or
-// discard the next message. |bytes|/|*num_bytes| indicate the buffer/buffer
-// size to receive the message data (if any) and |handles|/|*num_handles|
-// indicate the buffer/maximum handle count to receive the attached handles (if
-// any).
+// Reads the next message from a message pipe, or indicates the size of the
+// message if it cannot fit in the provided buffers. The message will be read
+// in its entirety or not at all; if it is not, it will remain enqueued unless
+// the |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| flag was passed. At most one
+// message will be consumed from the queue, and the return value will indicate
+// whether a message was successfully read.
 //
-// |num_bytes| and |num_handles| are optional "in-out" parameters. If non-null,
-// on return |*num_bytes| and |*num_handles| will usually indicate the number
-// of bytes and number of attached handles in the "next" message, respectively,
-// whether that message was read or not. (If null, the number of bytes/handles
-// is treated as zero.)
+// |num_bytes| and |num_handles| are optional in/out parameters that on input
+// must be set to the sizes of the |bytes| and |handles| arrays, and on output
+// will be set to the actual number of bytes or handles contained in the
+// message (even if the message was not retrieved due to being too large).
+// Either |num_bytes| or |num_handles| may be null if the message is not
+// expected to contain the corresponding type of data, but such a call would
+// fail with |MOJO_RESULT_RESOURCE_EXHAUSTED| if the message in fact did
+// contain that type of data.
 //
-// If |bytes| is null, then |*num_bytes| must be zero, and similarly for
-// |handles| and |*num_handles|.
-//
-// Partial reads are NEVER done. Either a full read is done and |MOJO_RESULT_OK|
-// returned, or the read is NOT done and |MOJO_RESULT_RESOURCE_EXHAUSTED| is
-// returned (if |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| was set, the message is
-// also discarded in this case).
+// |bytes| and |handles| will receive the contents of the message, if it is
+// retrieved. Either or both may be null, in which case the corresponding size
+// parameter(s) must also be set to zero or passed as null.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success (i.e., a message was actually read).
 //   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed.
-//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if one of the buffers to receive the
-//       message/attached handles (|bytes|/|*num_bytes| or
-//       |handles|/|*num_handles|) was too small. (TODO(vtl): Reconsider this
-//       error code; should distinguish this from the hitting-system-limits
-//       case.)
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if the message was too large to fit in the
+//       provided buffer(s). The message will have been left in the queue or
+//       discarded, depending on flags.
 //   |MOJO_RESULT_SHOULD_WAIT| if no message was available to be read.
+//
+// TODO(vtl): Reconsider the |MOJO_RESULT_RESOURCE_EXHAUSTED| error code; should
+// distinguish this from the hitting-system-limits case.
 MOJO_SYSTEM_EXPORT MojoResult
     MojoReadMessage(MojoHandle message_pipe_handle,
                     void* bytes,            // Optional out.

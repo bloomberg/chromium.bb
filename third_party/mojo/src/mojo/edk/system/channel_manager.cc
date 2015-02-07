@@ -5,8 +5,10 @@
 #include "mojo/edk/system/channel_manager.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/task_runner.h"
 
 namespace mojo {
 namespace system {
@@ -26,7 +28,8 @@ void ShutdownChannelHelper(const ChannelInfo& channel_info) {
 
 }  // namespace
 
-ChannelManager::ChannelManager() {
+ChannelManager::ChannelManager(embedder::PlatformSupport* platform_support)
+    : platform_support_(platform_support) {
 }
 
 ChannelManager::~ChannelManager() {
@@ -35,24 +38,57 @@ ChannelManager::~ChannelManager() {
     ShutdownChannelHelper(map_elem.second);
 }
 
-ChannelId ChannelManager::AddChannel(
-    scoped_refptr<Channel> channel,
-    scoped_refptr<base::TaskRunner> channel_thread_task_runner) {
-  ChannelId channel_id = GetChannelId(channel.get());
+void ChannelManager::CreateChannelOnIOThread(
+    ChannelId channel_id,
+    embedder::ScopedPlatformHandle platform_handle,
+    scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint) {
+  DCHECK_NE(channel_id, kInvalidChannelId);
+  DCHECK(platform_handle.is_valid());
+  DCHECK(bootstrap_channel_endpoint);
+
+  // Create and initialize a |system::Channel|.
+  scoped_refptr<system::Channel> channel =
+      new system::Channel(platform_support_);
+  channel->Init(system::RawChannel::Create(platform_handle.Pass()));
+  channel->SetBootstrapEndpoint(bootstrap_channel_endpoint);
 
   {
     base::AutoLock locker(lock_);
-    DCHECK(channel_infos_.find(channel_id) == channel_infos_.end());
+    CHECK(channel_infos_.find(channel_id) == channel_infos_.end());
     channel_infos_[channel_id] =
-        ChannelInfo(channel, channel_thread_task_runner);
+        ChannelInfo(channel, base::MessageLoopProxy::current());
   }
   channel->SetChannelManager(this);
+}
 
-  return channel_id;
+void ChannelManager::CreateChannel(
+    ChannelId channel_id,
+    embedder::ScopedPlatformHandle platform_handle,
+    scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint,
+    scoped_refptr<base::TaskRunner> io_thread_task_runner,
+    base::Closure callback,
+    scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
+  DCHECK(io_thread_task_runner);
+  DCHECK(!callback.is_null());
+  // (|callback_thread_task_runner| may be null.)
+
+  io_thread_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&ChannelManager::CreateChannelHelper, base::Unretained(this),
+                 channel_id, base::Passed(&platform_handle),
+                 bootstrap_channel_endpoint, callback,
+                 callback_thread_task_runner));
+}
+
+scoped_refptr<Channel> ChannelManager::GetChannel(ChannelId channel_id) const {
+  base::AutoLock locker(lock_);
+  auto it = channel_infos_.find(channel_id);
+  DCHECK(it != channel_infos_.end());
+  return it->second.channel;
 }
 
 void ChannelManager::WillShutdownChannel(ChannelId channel_id) {
-  GetChannelInfo(channel_id).channel->WillShutdownSoon();
+  GetChannel(channel_id)->WillShutdownSoon();
 }
 
 void ChannelManager::ShutdownChannel(ChannelId channel_id) {
@@ -67,11 +103,18 @@ void ChannelManager::ShutdownChannel(ChannelId channel_id) {
   ShutdownChannelHelper(channel_info);
 }
 
-ChannelInfo ChannelManager::GetChannelInfo(ChannelId channel_id) {
-  base::AutoLock locker(lock_);
-  auto it = channel_infos_.find(channel_id);
-  DCHECK(it != channel_infos_.end());
-  return it->second;
+void ChannelManager::CreateChannelHelper(
+    ChannelId channel_id,
+    embedder::ScopedPlatformHandle platform_handle,
+    scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint,
+    base::Closure callback,
+    scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
+  CreateChannelOnIOThread(channel_id, platform_handle.Pass(),
+                          bootstrap_channel_endpoint);
+  if (callback_thread_task_runner)
+    callback_thread_task_runner->PostTask(FROM_HERE, callback);
+  else
+    callback.Run();
 }
 
 }  // namespace system

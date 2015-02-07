@@ -14,7 +14,7 @@
 #include "mojo/cc/output_surface_mojo.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces_service.mojom.h"
+#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 
 namespace base {
 class MessageLoopProxy;

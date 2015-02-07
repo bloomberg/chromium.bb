@@ -9,8 +9,6 @@
 #ifndef MOJO_PUBLIC_C_SYSTEM_FUNCTIONS_H_
 #define MOJO_PUBLIC_C_SYSTEM_FUNCTIONS_H_
 
-// Note: This header should be compilable as C.
-
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
 
@@ -25,9 +23,12 @@ extern "C" {
 // operation's success/failure. E.g., a separate |flags| parameter may control
 // whether a given "in/out" parameter is used for input, output, or both.)
 
-// Platform-dependent monotonically increasing tick count representing "right
-// now." The resolution of this clock is ~1-15ms. Resolution varies depending
-// on hardware/operating system configuration.
+// Returns the time, in microseconds, since some undefined point in the past.
+// The values are only meaningful relative to other values that were obtained
+// from the same device without an intervening system restart. Such values are
+// guaranteed to be monotonically-increasing with the passage of real time.
+// Although the units are microseconds, the resolution of the clock may vary and
+// is typically in the range of ~1-15 ms.
 MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow(void);
 
 // Closes the given |handle|.
@@ -71,7 +72,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoClose(MojoHandle handle);
 //       end of a message pipe and the other end is closed).
 //
 // If there are multiple waiters (on different threads, obviously) waiting on
-// the same handle and signal, and that signal becomes is satisfied, all waiters
+// the same handle and signal, and that signal becomes satisfied, all waiters
 // will be awoken.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoWait(MojoHandle handle,
