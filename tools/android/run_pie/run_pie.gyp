@@ -18,10 +18,10 @@
       'ldflags!': [
         '-pie',
       ],
-      # Don't inherit unneeded dependencies on libc++, so the binary remains
+      # Don't inherit unneeded dependencies on stlport.so, so the binary remains
       # self-contained also in component=shared_library builds.
       'libraries!': [
-        '-l<(android_libcpp_library)',
+        '-l<(android_stlport_library)',
       ],
     },
     {

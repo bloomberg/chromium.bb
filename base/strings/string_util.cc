@@ -454,8 +454,8 @@ bool LowerCaseEqualsASCII(string16::const_iterator a_begin,
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
 
-// TODO(jdduke): Remove guards after complete adoption of libc++ on Android.
-#if !defined(OS_ANDROID) || !defined(USE_STLPORT)
+// TODO(port): Resolve wchar_t/iterator issues that require OS_ANDROID here.
+#if !defined(OS_ANDROID)
 bool LowerCaseEqualsASCII(const char* a_begin,
                           const char* a_end,
                           const char* b) {
@@ -467,7 +467,8 @@ bool LowerCaseEqualsASCII(const char16* a_begin,
                           const char* b) {
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
-#endif  // !defined(OS_ANDROID) || !defined(USE_STLPORT)
+
+#endif  // !defined(OS_ANDROID)
 
 bool EqualsASCII(const string16& a, const base::StringPiece& b) {
   if (a.length() != b.length())

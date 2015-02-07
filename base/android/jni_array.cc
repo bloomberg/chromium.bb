@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 
 namespace base {
 namespace android {
@@ -54,7 +53,7 @@ ScopedJavaLocalRef<jintArray> ToJavaIntArray(
 
 ScopedJavaLocalRef<jintArray> ToJavaIntArray(
     JNIEnv* env, const std::vector<int>& ints) {
-  return ToJavaIntArray(env, vector_as_array(&ints), ints.size());
+  return ToJavaIntArray(env, ints.begin(), ints.size());
 }
 
 ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
@@ -73,7 +72,7 @@ ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
 // Returns a new Java long array converted from the given int64 array.
 BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
     JNIEnv* env, const std::vector<int64>& longs) {
-  return ToJavaLongArray(env, vector_as_array(&longs), longs.size());
+  return ToJavaLongArray(env, longs.begin(), longs.size());
 }
 
 ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(

@@ -42,7 +42,6 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -844,7 +843,7 @@ jboolean AwContents::RestoreFromOpaqueState(
   std::vector<uint8> state_vector;
   base::android::JavaByteArrayToByteVector(env, state, &state_vector);
 
-  Pickle pickle(reinterpret_cast<const char*>(vector_as_array(&state_vector)),
+  Pickle pickle(reinterpret_cast<const char*>(state_vector.begin()),
                 state_vector.size());
   PickleIterator iterator(pickle);
 
