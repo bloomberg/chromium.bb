@@ -38,6 +38,7 @@
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/filters/FilterOperations.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
@@ -292,6 +293,8 @@ private:
     void setupContentsLayer(WebLayer*);
     void clearContentsLayerIfUnregistered();
     WebLayer* contentsLayerIfRegistered();
+
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     GraphicsLayerClient* m_client;
 

@@ -38,6 +38,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
@@ -279,13 +280,16 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
     if (firstPaintInvalidationTrackingEnabled())
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
-    m_client->paintContents(this, context, m_paintingPhase, clip);
 #ifndef NDEBUG
-    if (m_displayItemList) {
+    if (m_displayItemList && contentsOpaque()) {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-        context.fillRect(clip, Color(0xFF, 0, 0));
+        FloatRect rect(FloatPoint(), size());
+        DrawingRecorder recorder(&context, displayItemClient(), DisplayItem::DebugRedFill, rect);
+        if (!recorder.canUseCachedDrawing())
+            context.fillRect(rect, SK_ColorRED);
     }
 #endif
+    m_client->paintContents(this, context, m_paintingPhase, clip);
 }
 
 void GraphicsLayer::updateChildList()
@@ -750,6 +754,14 @@ void GraphicsLayer::setSize(const FloatSize& size)
 
     m_layer->layer()->setBounds(flooredIntSize(m_size));
     // Note that we don't resize m_contentsLayer. It's up the caller to do that.
+
+#ifndef NDEBUG
+    // The red debug fill needs to be invalidated if the layer resizes.
+    if (m_displayItemList) {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+        m_displayItemList->invalidate(displayItemClient());
+    }
+#endif
 }
 
 void GraphicsLayer::setTransform(const TransformationMatrix& transform)
