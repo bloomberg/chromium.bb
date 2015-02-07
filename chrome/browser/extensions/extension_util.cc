@@ -375,8 +375,8 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
 }
 
 bool IsNewBookmarkAppsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewBookmarkApps);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNewBookmarkApps);
 }
 
 }  // namespace util

@@ -57,21 +57,6 @@ class AppListServiceImplBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListServiceImplBrowserTest);
 };
 
-class AppListServiceImplBrowserTestWithBookmarkAppsEnabled
-    : public AppListServiceImplBrowserTest {
- public:
-  AppListServiceImplBrowserTestWithBookmarkAppsEnabled() {}
-
-  // Overridden from BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableNewBookmarkApps);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      AppListServiceImplBrowserTestWithBookmarkAppsEnabled);
-};
-
 // Test that showing a loaded profile for the first time is lazy and
 // synchronous. Then tests that showing a second loaded profile without
 // dismissing correctly switches profiles.
@@ -172,8 +157,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
 
 // Test that all the items in the context menu for a hosted app have valid
 // labels.
-IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTestWithBookmarkAppsEnabled,
-                       ShowContextMenu) {
+IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
   AppListService* service = test::GetAppListService();
   EXPECT_TRUE(service);
 
