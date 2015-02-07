@@ -1077,8 +1077,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 #endif
 #elif defined(OS_ANDROID)
-  // TODO(crbug.com/439322): This should be set to |true|.
-  established_gpu_channel = false;
+  established_gpu_channel = true;
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
 #endif
 
