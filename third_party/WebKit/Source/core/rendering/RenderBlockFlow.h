@@ -36,8 +36,8 @@
 #ifndef RenderBlockFlow_h
 #define RenderBlockFlow_h
 
+#include "core/layout/FloatingObjects.h"
 #include "core/layout/line/TrailingObjects.h"
-#include "core/rendering/FloatingObjects.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 

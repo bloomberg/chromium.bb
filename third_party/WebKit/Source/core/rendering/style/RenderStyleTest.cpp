@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/rendering/style/RenderStyle.h"
 
-#include "core/rendering/ClipPathOperation.h"
+#include "core/layout/ClipPathOperation.h"
 #include "core/rendering/style/ShapeValue.h"
 
 #include <gtest/gtest.h>

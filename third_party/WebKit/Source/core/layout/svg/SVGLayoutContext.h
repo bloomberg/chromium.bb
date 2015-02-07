@@ -25,9 +25,9 @@
 #ifndef SVGLayoutContext_h
 #define SVGLayoutContext_h
 
+#include "core/layout/PaintInfo.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/transforms/AffineTransform.h"

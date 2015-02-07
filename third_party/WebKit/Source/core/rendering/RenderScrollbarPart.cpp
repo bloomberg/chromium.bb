@@ -27,7 +27,7 @@
 #include "core/rendering/RenderScrollbarPart.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarTheme.h"
 #include "core/rendering/RenderView.h"

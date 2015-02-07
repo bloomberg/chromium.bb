@@ -204,8 +204,8 @@ private:
         "sizeof(FingerprintSourceData) must be a multiple of UChar");
 
     typedef unsigned Fingerprint;
-    typedef HashMap<Fingerprint, OwnPtr<Supercluster> > SuperclusterMap;
-    typedef Vector<OwnPtr<Cluster> > ClusterStack;
+    typedef HashMap<Fingerprint, OwnPtr<Supercluster>> SuperclusterMap;
+    typedef Vector<OwnPtr<Cluster>> ClusterStack;
 
     // Fingerprints are computed during style recalc, for (some subset of)
     // blocks that will become cluster roots.
@@ -220,7 +220,7 @@ private:
         bool hasFingerprints() const { return !m_fingerprints.isEmpty(); }
     private:
         typedef HashMap<const LayoutObject*, Fingerprint> FingerprintMap;
-        typedef HashMap<Fingerprint, OwnPtr<BlockSet> > ReverseFingerprintMap;
+        typedef HashMap<Fingerprint, OwnPtr<BlockSet>> ReverseFingerprintMap;
 
         FingerprintMap m_fingerprints;
         ReverseFingerprintMap m_blocksForFingerprint;
@@ -304,7 +304,7 @@ private:
     SuperclusterMap m_superclusters;
     ClusterStack m_clusterStack;
     FingerprintMapper m_fingerprintMapper;
-    Vector<RefPtr<RenderStyle> > m_stylesRetainedDuringLayout;
+    Vector<RefPtr<RenderStyle>> m_stylesRetainedDuringLayout;
     // FIXME: All frames should share the same m_pageInfo instance.
     PageInfo m_pageInfo;
     bool m_updatePageInfoDeferred;

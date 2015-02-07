@@ -26,7 +26,7 @@
 #ifndef ClipRects_h
 #define ClipRects_h
 
-#include "core/rendering/ClipRect.h"
+#include "core/layout/ClipRect.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {

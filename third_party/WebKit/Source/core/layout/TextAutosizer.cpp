@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/TextAutosizer.h"
+#include "core/layout/TextAutosizer.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"

@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/rendering/RenderCombineText.h"
 
-#include "core/rendering/TextRunConstructor.h"
+#include "core/layout/TextRunConstructor.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {

@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/BlockFlowPainter.h"
 
+#include "core/layout/FloatingObjects.h"
 #include "core/layout/Layer.h"
-#include "core/rendering/FloatingObjects.h"
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
 

@@ -7,9 +7,9 @@
 
 #include "core/layout/Layer.h"
 #include "core/layout/LayerScrollableArea.h"
+#include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/ScrollbarPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"

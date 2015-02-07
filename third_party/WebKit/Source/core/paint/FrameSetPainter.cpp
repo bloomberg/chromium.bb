@@ -6,8 +6,8 @@
 #include "core/paint/FrameSetPainter.h"
 
 #include "core/html/HTMLFrameSetElement.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/GraphicsContextAnnotator.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFrameSet.h"
 
 namespace blink {

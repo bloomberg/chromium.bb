@@ -27,9 +27,9 @@
 #include "core/HTMLNames.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOListElement.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/TextAutosizer.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 

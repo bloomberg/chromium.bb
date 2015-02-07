@@ -26,7 +26,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableSection.h"
-#include "core/rendering/TextAutosizer.h"
+#include "core/layout/TextAutosizer.h"
 
 namespace blink {
 

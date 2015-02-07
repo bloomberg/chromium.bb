@@ -26,12 +26,12 @@
 #include "config.h"
 #include "core/rendering/RenderBoxModelObject.h"
 
+#include "core/layout/ImageQualityController.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
-#include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"

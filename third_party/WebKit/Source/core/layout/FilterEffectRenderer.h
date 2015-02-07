@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,16 +23,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/rendering/ClipRect.h"
+#ifndef FilterEffectRenderer_h
+#define FilterEffectRenderer_h
 
-#include "core/layout/HitTestLocation.h"
+#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/heap/Handle.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
-bool ClipRect::intersects(const HitTestLocation& hitTestLocation) const
-{
-    return hitTestLocation.intersects(m_rect);
-}
+class FilterOperations;
+class ReferenceFilter;
+class LayoutObject;
+
+class FilterEffectRenderer final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectRenderer> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+public:
+    static PassRefPtrWillBeRawPtr<FilterEffectRenderer> create()
+    {
+        return adoptRefWillBeNoop(new FilterEffectRenderer());
+    }
+
+    virtual ~FilterEffectRenderer();
+    void trace(Visitor*);
+
+    bool build(LayoutObject* renderer, const FilterOperations&);
+    void clearIntermediateResults();
+
+    PassRefPtrWillBeRawPtr<FilterEffect> lastEffect() const
+    {
+        return m_lastEffect;
+    }
+
+private:
+    FilterEffectRenderer();
+
+    RefPtrWillBeMember<FilterEffect> m_lastEffect;
+    WillBeHeapVector<RefPtrWillBeMember<ReferenceFilter>> m_referenceFilters;
+};
 
 } // namespace blink
+
+#endif // FilterEffectRenderer_h

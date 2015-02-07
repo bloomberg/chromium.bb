@@ -23,10 +23,10 @@
 #ifndef RenderBlock_h
 #define RenderBlock_h
 
+#include "core/layout/ColumnInfo.h"
+#include "core/layout/FloatingObjects.h"
+#include "core/layout/GapRects.h"
 #include "core/layout/line/RootInlineBox.h"
-#include "core/rendering/ColumnInfo.h"
-#include "core/rendering/FloatingObjects.h"
-#include "core/rendering/GapRects.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLineBoxList.h"
 #include "core/rendering/style/ShapeValue.h"

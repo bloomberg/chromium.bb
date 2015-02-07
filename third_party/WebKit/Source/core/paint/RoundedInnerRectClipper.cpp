@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"

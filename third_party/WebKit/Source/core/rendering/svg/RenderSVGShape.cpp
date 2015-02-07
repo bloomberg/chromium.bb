@@ -29,12 +29,12 @@
 #include "core/rendering/svg/RenderSVGShape.h"
 
 #include "core/layout/HitTestRequest.h"
+#include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGPathData.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGShapePainter.h"
-#include "core/rendering/PointerEventsHitRules.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/StrokeData.h"

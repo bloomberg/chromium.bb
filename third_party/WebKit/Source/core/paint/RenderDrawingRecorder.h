@@ -5,7 +5,7 @@
 #ifndef RenderDrawingRecorder_h
 #define RenderDrawingRecorder_h
 
-#include "core/rendering/PaintPhase.h"
+#include "core/layout/PaintPhase.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"

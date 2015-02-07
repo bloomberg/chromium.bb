@@ -5,7 +5,7 @@
 #ifndef ClipRectsCache_h
 #define ClipRectsCache_h
 
-#include "core/rendering/ClipRects.h"
+#include "core/layout/ClipRects.h"
 
 #if ENABLE(ASSERT)
 #include "core/rendering/RenderBox.h" // For OverlayScrollbarSizeRelevancy.

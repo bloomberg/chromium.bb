@@ -8,8 +8,8 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/ImagePainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderVideo.h"
 #include "platform/geometry/LayoutPoint.h"
 

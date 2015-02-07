@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/paint/FieldsetPainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFieldset.h"
 
 namespace blink {

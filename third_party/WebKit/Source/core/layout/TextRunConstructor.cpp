@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/TextRunConstructor.h"
+#include "core/layout/TextRunConstructor.h"
 
 #include "core/rendering/RenderText.h"
 #include "core/rendering/style/RenderStyle.h"

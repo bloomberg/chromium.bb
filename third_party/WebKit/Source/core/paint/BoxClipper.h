@@ -5,7 +5,7 @@
 #ifndef BoxClipper_h
 #define BoxClipper_h
 
-#include "core/rendering/PaintPhase.h"
+#include "core/layout/PaintPhase.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/DisplayItem.h"
 

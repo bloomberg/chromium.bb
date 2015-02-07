@@ -26,7 +26,7 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutThemeChromiumFontProvider.h"
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderMediaControls.h"
 #include "core/rendering/RenderProgress.h"

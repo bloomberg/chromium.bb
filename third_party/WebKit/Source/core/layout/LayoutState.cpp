@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/LayoutState.h"
+#include "core/layout/LayoutState.h"
 
 #include "core/layout/Layer.h"
 #include "core/rendering/RenderFlowThread.h"

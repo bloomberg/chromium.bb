@@ -24,8 +24,8 @@
 
 #include "core/dom/Position.h"
 #include "core/frame/FrameView.h"
-#include "core/rendering/LayoutState.h"
-#include "core/rendering/PaintInvalidationState.h"
+#include "core/layout/LayoutState.h"
+#include "core/layout/PaintInvalidationState.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/RuntimeEnabledFeatures.h"

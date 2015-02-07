@@ -26,7 +26,7 @@
 #define FrameView_h
 
 #include "core/frame/FrameViewAutoSizeInfo.h"
-#include "core/rendering/PaintPhase.h"
+#include "core/layout/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Widget.h"
 #include "platform/geometry/IntRect.h"

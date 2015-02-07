@@ -26,7 +26,7 @@
 #ifndef LayerFragment_h
 #define LayerFragment_h
 
-#include "core/rendering/ClipRect.h"
+#include "core/layout/ClipRect.h"
 #include "wtf/Vector.h"
 
 namespace blink {

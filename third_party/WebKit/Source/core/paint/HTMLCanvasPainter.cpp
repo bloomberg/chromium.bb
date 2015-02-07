@@ -6,8 +6,8 @@
 #include "core/paint/HTMLCanvasPainter.h"
 
 #include "core/html/HTMLCanvasElement.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipRecorder.h"

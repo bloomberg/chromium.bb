@@ -21,10 +21,10 @@
 #include "core/layout/line/InlineBox.h"
 
 #include "core/layout/LayoutObject.h"
+#include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/Partitions.h"
 #include "platform/fonts/FontMetrics.h"

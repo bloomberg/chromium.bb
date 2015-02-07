@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/FloatingObjects.h"
+#include "core/layout/FloatingObjects.h"
 
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderBox.h"

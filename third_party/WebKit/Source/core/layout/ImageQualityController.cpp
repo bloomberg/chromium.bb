@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/ImageQualityController.h"
+#include "core/layout/ImageQualityController.h"
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -107,9 +107,9 @@ void ImageQualityController::removeLayer(LayoutObject* object, LayerSizeMap* inn
 
 void ImageQualityController::set(LayoutObject* object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size)
 {
-    if (innerMap)
+    if (innerMap) {
         innerMap->set(layer, size);
-    else {
+    } else {
         LayerSizeMap newInnerMap;
         newInnerMap.set(layer, size);
         m_objectLayerSizeMap.set(object, newInnerMap);

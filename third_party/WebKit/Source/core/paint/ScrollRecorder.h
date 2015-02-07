@@ -5,7 +5,7 @@
 #ifndef ScrollRecorder_h
 #define ScrollRecorder_h
 
-#include "core/rendering/PaintPhase.h"
+#include "core/layout/PaintPhase.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/FastAllocBase.h"

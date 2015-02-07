@@ -5,12 +5,12 @@
 #include "config.h"
 #include "core/paint/SVGRootPainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/graphics/paint/ClipRecorder.h"

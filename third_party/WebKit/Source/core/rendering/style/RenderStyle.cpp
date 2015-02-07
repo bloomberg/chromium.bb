@@ -26,7 +26,7 @@
 #include <algorithm>
 #include "core/css/resolver/StyleResolver.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/rendering/TextAutosizer.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/rendering/style/AppliedTextDecoration.h"
 #include "core/rendering/style/BorderEdge.h"
 #include "core/rendering/style/ContentData.h"

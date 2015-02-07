@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/paint/FileUploadControlPainter.h"
 
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
+#include "core/layout/TextRunConstructor.h"
 #include "core/rendering/RenderButton.h"
 #include "core/rendering/RenderFileUploadControl.h"
-#include "core/rendering/TextRunConstructor.h"
 
 namespace blink {
 

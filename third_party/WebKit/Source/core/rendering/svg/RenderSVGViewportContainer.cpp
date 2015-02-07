@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/SVGContainerPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/graphics/GraphicsContext.h"

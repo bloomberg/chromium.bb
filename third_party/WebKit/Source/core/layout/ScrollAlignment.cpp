@@ -42,7 +42,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/ScrollAlignment.h"
+#include "core/layout/ScrollAlignment.h"
 
 #include "platform/geometry/LayoutRect.h"
 

@@ -30,7 +30,7 @@
 #include "core/editing/Caret.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/VisibleSelection.h"
-#include "core/rendering/ScrollAlignment.h"
+#include "core/layout/ScrollAlignment.h"
 #include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"

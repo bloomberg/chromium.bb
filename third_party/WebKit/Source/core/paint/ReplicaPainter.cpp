@@ -6,10 +6,10 @@
 #include "core/paint/ReplicaPainter.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderReplica.h"
 
 namespace blink {

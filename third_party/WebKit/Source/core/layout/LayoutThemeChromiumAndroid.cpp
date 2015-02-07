@@ -30,7 +30,7 @@
 #include "core/InputTypeNames.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutSlider.h"
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderMediaControls.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"

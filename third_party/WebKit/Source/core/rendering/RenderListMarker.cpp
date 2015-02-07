@@ -27,9 +27,9 @@
 
 #include "core/fetch/ImageResource.h"
 #include "core/layout/Layer.h"
+#include "core/layout/TextRunConstructor.h"
 #include "core/paint/ListMarkerPainter.h"
 #include "core/rendering/RenderListItem.h"
-#include "core/rendering/TextRunConstructor.h"
 #include "platform/fonts/Font.h"
 #include "wtf/text/StringBuilder.h"
 

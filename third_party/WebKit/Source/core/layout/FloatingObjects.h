@@ -130,7 +130,7 @@ typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;
 typedef PODInterval<int, FloatingObject*> FloatingObjectInterval;
 typedef PODIntervalTree<int, FloatingObject*> FloatingObjectTree;
 typedef PODFreeListArena<PODRedBlackTree<FloatingObjectInterval>::Node> IntervalArena;
-typedef HashMap<RenderBox*, OwnPtr<FloatingObject> > RendererToFloatInfoMap;
+typedef HashMap<RenderBox*, OwnPtr<FloatingObject>> RendererToFloatInfoMap;
 
 class FloatingObjects {
     WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED;

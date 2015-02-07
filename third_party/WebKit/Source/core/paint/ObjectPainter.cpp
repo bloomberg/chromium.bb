@@ -7,8 +7,8 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"

@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/ScrollbarPainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "platform/graphics/GraphicsContext.h"

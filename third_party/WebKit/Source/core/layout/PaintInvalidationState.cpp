@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/PaintInvalidationState.h"
+#include "core/layout/PaintInvalidationState.h"
 
 #include "core/layout/Layer.h"
 #include "core/rendering/RenderInline.h"

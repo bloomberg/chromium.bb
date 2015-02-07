@@ -27,6 +27,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
+#include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/LayoutTextInfo.h"
@@ -38,7 +39,6 @@
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "platform/text/TextBreakIterator.h"
 

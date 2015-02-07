@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/ListItemPainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderListItem.h"
 #include "platform/geometry/LayoutPoint.h"
 

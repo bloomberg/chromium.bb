@@ -32,7 +32,7 @@
 
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 
-#include "core/rendering/ClipPathOperation.h"
+#include "core/layout/ClipPathOperation.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/svg/SVGLengthContext.h"
 #include "platform/transforms/ScaleTransformOperation.h"

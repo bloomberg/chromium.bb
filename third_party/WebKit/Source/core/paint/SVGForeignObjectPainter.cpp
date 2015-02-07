@@ -5,12 +5,12 @@
 #include "config.h"
 #include "core/paint/SVGForeignObjectPainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
 namespace blink {

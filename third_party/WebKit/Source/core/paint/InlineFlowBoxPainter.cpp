@@ -6,9 +6,9 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"

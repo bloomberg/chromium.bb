@@ -35,7 +35,7 @@
 #import "core/html/shadow/MediaControlElements.h"
 #import "core/layout/Layer.h"
 #import "core/layout/LayoutSlider.h"
-#import "core/rendering/PaintInfo.h"
+#import "core/layout/PaintInfo.h"
 #import "core/rendering/RenderMedia.h"
 #import "core/rendering/RenderMediaControls.h"
 #import "core/rendering/RenderMeter.h"

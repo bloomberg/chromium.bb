@@ -45,7 +45,7 @@
 #ifndef LayerPaintingInfo_h
 #define LayerPaintingInfo_h
 
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {

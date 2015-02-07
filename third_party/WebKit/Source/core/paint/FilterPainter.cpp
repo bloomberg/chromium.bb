@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/paint/FilterPainter.h"
 
+#include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/Layer.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
-#include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"

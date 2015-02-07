@@ -26,7 +26,7 @@
 #define StyleRareNonInheritedData_h
 
 #include "core/css/StyleColor.h"
-#include "core/rendering/ClipPathOperation.h"
+#include "core/layout/ClipPathOperation.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/CounterDirectives.h"
 #include "core/rendering/style/CursorData.h"

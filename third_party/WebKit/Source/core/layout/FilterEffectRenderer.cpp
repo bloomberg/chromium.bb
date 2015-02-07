@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "core/rendering/FilterEffectRenderer.h"
+#include "core/layout/FilterEffectRenderer.h"
 
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/DocumentResourceReference.h"

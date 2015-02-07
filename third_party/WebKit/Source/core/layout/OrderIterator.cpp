@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/OrderIterator.h"
+#include "core/layout/OrderIterator.h"
 
 #include "core/rendering/RenderBox.h"
 

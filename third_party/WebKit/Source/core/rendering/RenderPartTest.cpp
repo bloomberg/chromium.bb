@@ -6,7 +6,7 @@
 #include "core/rendering/RenderPart.h"
 
 #include "core/html/HTMLElement.h"
-#include "core/rendering/ImageQualityController.h"
+#include "core/layout/ImageQualityController.h"
 #include "core/rendering/RenderingTestHelper.h"
 #include <gtest/gtest.h>
 

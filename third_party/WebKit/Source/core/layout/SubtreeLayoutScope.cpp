@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/SubtreeLayoutScope.h"
+#include "core/layout/SubtreeLayoutScope.h"
 
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"

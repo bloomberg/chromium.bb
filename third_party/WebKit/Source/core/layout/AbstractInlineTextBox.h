@@ -89,7 +89,7 @@ private:
     RenderText* m_renderText;
     InlineTextBox* m_inlineTextBox;
 
-    typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox> > InlineToAbstractInlineTextBoxHashMap;
+    typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox>> InlineToAbstractInlineTextBoxHashMap;
     static InlineToAbstractInlineTextBoxHashMap* gAbstractInlineTextBoxMap;
 };
 

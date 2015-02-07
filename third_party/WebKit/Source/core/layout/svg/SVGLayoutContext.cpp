@@ -27,11 +27,11 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/layout/Layer.h"
+#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "platform/FloatConversion.h"

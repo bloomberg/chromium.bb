@@ -32,7 +32,7 @@
 #define AnimatableClipPathOperation_h
 
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/rendering/ClipPathOperation.h"
+#include "core/layout/ClipPathOperation.h"
 
 namespace blink {
 

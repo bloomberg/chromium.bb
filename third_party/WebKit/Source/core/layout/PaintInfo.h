@@ -26,8 +26,7 @@
 #ifndef PaintInfo_h
 #define PaintInfo_h
 
-#include <limits>
-#include "core/rendering/PaintPhase.h"
+#include "core/layout/PaintPhase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -36,6 +35,8 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
+
+#include <limits>
 
 namespace blink {
 

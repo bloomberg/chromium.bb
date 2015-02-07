@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/ScrollRecorder.h"
 
-#include "core/rendering/PaintPhase.h"
+#include "core/layout/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"

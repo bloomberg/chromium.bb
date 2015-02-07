@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/SVGShapePainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGMarkerData.h"
@@ -15,7 +16,6 @@
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGShape.h"

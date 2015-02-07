@@ -27,7 +27,7 @@
 #include "core/rendering/RenderVTTCue.h"
 
 #include "core/html/track/vtt/VTTCue.h"
-#include "core/rendering/LayoutState.h"
+#include "core/layout/LayoutState.h"
 #include "core/rendering/RenderInline.h"
 
 namespace blink {

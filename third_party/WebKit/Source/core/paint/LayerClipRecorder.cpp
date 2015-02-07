@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/LayerClipRecorder.h"
 
+#include "core/layout/ClipRect.h"
 #include "core/layout/Layer.h"
-#include "core/rendering/ClipRect.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"

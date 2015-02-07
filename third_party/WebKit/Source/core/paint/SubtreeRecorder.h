@@ -5,7 +5,7 @@
 #ifndef SubtreeRecorder_h
 #define SubtreeRecorder_h
 
-#include "core/rendering/PaintPhase.h"
+#include "core/layout/PaintPhase.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

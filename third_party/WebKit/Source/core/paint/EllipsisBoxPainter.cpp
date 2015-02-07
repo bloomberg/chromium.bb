@@ -5,12 +5,12 @@
 #include "config.h"
 #include "core/paint/EllipsisBoxPainter.h"
 
+#include "core/layout/PaintInfo.h"
+#include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/TextPainter.h"
-#include "core/rendering/PaintInfo.h"
-#include "core/rendering/TextRunConstructor.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {

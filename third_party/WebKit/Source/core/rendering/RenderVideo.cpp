@@ -29,8 +29,8 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/VideoPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "public/platform/WebLayer.h"
 

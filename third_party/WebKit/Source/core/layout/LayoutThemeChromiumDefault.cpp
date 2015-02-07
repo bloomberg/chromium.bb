@@ -27,7 +27,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/PaintInfo.h"
+#include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"

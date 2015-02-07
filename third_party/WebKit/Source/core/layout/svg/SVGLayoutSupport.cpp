@@ -26,11 +26,11 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/PaintInfo.h"
+#include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderGeometryMap.h"
-#include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"

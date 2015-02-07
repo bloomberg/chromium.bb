@@ -45,7 +45,7 @@
 #ifndef LayerClipper_h
 #define LayerClipper_h
 
-#include "core/rendering/ClipRectsCache.h"
+#include "core/layout/ClipRectsCache.h"
 #include "core/rendering/RenderBox.h"
 
 namespace blink {

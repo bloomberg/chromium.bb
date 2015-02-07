@@ -29,10 +29,10 @@
 #include "core/fetch/ImageResource.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutTableCell.h"
+#include "core/layout/PaintInfo.h"
+#include "core/layout/SubtreeLayoutScope.h"
 #include "core/paint/TableRowPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace blink {

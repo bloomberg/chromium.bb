@@ -32,9 +32,9 @@
 #include "core/layout/LayerFilterInfo.h"
 
 #include "core/fetch/DocumentResourceReference.h"
+#include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/Layer.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
-#include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"

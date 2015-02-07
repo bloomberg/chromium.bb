@@ -24,7 +24,7 @@ class WebDisplayItemList;
 class PLATFORM_EXPORT DisplayItem {
 public:
     enum {
-        // Must be kept in sync with core/rendering/PaintPhase.h.
+        // Must be kept in sync with core/layout/PaintPhase.h.
         PaintPhaseMax = 12,
     };
 

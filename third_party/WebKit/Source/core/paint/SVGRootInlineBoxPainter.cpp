@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
@@ -12,7 +13,6 @@
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
-#include "core/rendering/PaintInfo.h"
 
 namespace blink {
 

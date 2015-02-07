@@ -27,12 +27,12 @@
 
 #include "core/rendering/svg/RenderSVGImage.h"
 
+#include "core/layout/ImageQualityController.h"
+#include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGImagePainter.h"
-#include "core/rendering/ImageQualityController.h"
-#include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGImageElement.h"

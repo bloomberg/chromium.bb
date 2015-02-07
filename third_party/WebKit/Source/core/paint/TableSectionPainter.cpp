@@ -9,13 +9,13 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/TableCellPainter.h"
 #include "core/paint/TableRowPainter.h"
-#include "core/rendering/PaintInfo.h"
 
 namespace blink {
 

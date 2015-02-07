@@ -38,11 +38,11 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableSection.h"
+#include "core/layout/SubtreeLayoutScope.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/TablePainter.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/SubtreeLayoutScope.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace blink {

@@ -27,9 +27,9 @@
 #include "core/rendering/RenderGrid.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/paint/GridPainter.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/GridCoordinate.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"

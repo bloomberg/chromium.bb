@@ -6,10 +6,10 @@
 #include "core/paint/ViewPainter.h"
 
 #include "core/frame/FrameView.h"
+#include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
 

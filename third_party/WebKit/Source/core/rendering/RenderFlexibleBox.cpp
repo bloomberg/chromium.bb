@@ -33,9 +33,9 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/Layer.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/paint/BlockPainter.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/MathExtras.h"

@@ -30,9 +30,9 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/HTMLCanvasPainter.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {

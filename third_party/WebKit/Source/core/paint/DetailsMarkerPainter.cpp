@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/DetailsMarkerPainter.h"
 
+#include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderDetailsMarker.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
