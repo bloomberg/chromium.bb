@@ -23,7 +23,7 @@ cr.define('cr.ui.pageManager', function() {
     this.name = name;
     this.title = title;
     this.pageDivName = pageDivName;
-    this.pageDiv = $(this.pageDivName);
+    this.pageDiv = getRequiredElement(this.pageDivName);
     // |pageDiv.page| is set to the page object (this) when the page is visible
     // to track which page is being shown when multiple pages can share the same
     // underlying div.

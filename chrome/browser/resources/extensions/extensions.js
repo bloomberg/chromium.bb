@@ -380,7 +380,7 @@ cr.define('extensions', function() {
   ExtensionSettings.showOverlay = function(node) {
     var pageDiv = $('extension-settings');
     pageDiv.style.width = node ? window.getComputedStyle(pageDiv).width : '';
-    document.body.classList.toggle('no-scroll', node);
+    document.body.classList.toggle('no-scroll', !!node);
 
     var currentlyShowingOverlay = ExtensionSettings.getCurrentOverlay();
     if (currentlyShowingOverlay) {
