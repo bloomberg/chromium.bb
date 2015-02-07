@@ -730,6 +730,7 @@
         '../../ipc/ipc.gyp:test_support_ipc',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
