@@ -57,6 +57,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -1468,6 +1469,10 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
   // We need to do this repeatedly until no more tasks were added to the queue
   // during the period where we release the lock.
   while (true) {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("456373 CookieMonster::OnKeyLoaded1"));
     {
       base::AutoLock autolock(lock_);
       std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
@@ -1484,6 +1489,10 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
       it->second.swap(tasks_pending_for_key);
     }
 
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("456373 CookieMonster::OnKeyLoaded2"));
     while (!tasks_pending_for_key.empty()) {
       scoped_refptr<CookieMonsterTask> task = tasks_pending_for_key.front();
       task->Run();
@@ -1494,6 +1503,10 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
 
 void CookieMonster::StoreLoadedCookies(
     const std::vector<CanonicalCookie*>& cookies) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::StoreLoadedCookies"));
   // Initialize the store and sync in any saved persistent cookies.  We don't
   // care if it's expired, insert it so it can be garbage collected, removed,
   // and sync'd.

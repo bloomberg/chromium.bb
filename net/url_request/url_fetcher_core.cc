@@ -541,6 +541,10 @@ URLFetcherCore::~URLFetcherCore() {
 }
 
 void URLFetcherCore::StartOnIOThread() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456327 URLFetcherCore::StartOnIOThread"));
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (!response_writer_)
@@ -553,6 +557,10 @@ void URLFetcherCore::StartOnIOThread() {
 }
 
 void URLFetcherCore::StartURLRequest() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456327 URLFetcherCore::StartURLRequest"));
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (was_cancelled_) {
@@ -669,8 +677,13 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
 
   DCHECK(request_context_getter_.get());
 
-  int64 delay = INT64_C(0);
+  int64 delay = 0;
   if (!original_url_throttler_entry_.get()) {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "456327 URLFetcherCore::StartURLRequestWhenAppropriate1"));
     URLRequestThrottlerManager* manager =
         request_context_getter_->GetURLRequestContext()->throttler_manager();
     if (manager) {
@@ -679,11 +692,16 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
     }
   }
   if (original_url_throttler_entry_.get()) {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "456327 URLFetcherCore::StartURLRequestWhenAppropriate2"));
     delay = original_url_throttler_entry_->ReserveSendingTimeForNextRequest(
         GetBackoffReleaseTime());
   }
 
-  if (delay == INT64_C(0)) {
+  if (delay == 0) {
     StartURLRequest();
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -507,6 +508,11 @@ void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyInBackground(
 void SQLitePersistentCookieStore::Backend::CompleteLoadForKeyInForeground(
     const LoadedCallback& loaded_callback,
     bool load_success) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 SQLitePersistentCookieStore::Backend::"
+          "CompleteLoadForKeyInForeground"));
   DCHECK(client_task_runner_->RunsTasksOnCurrentThread());
 
   Notify(loaded_callback, load_success);

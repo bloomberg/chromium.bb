@@ -977,6 +977,10 @@ void ResourceDispatcherHostImpl::OnRequestResource(
     int routing_id,
     int request_id,
     const ResourceHostMsg_Request& request_data) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::OnRequestResource"));
   // When logging time-to-network only care about main frame and non-transfer
   // navigations.
   if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME &&
@@ -1092,6 +1096,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
     const ResourceHostMsg_Request& request_data,
     IPC::Message* sync_result,  // only valid for sync
     int route_id) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::BeginRequest1"));
   int process_type = filter_->process_type();
   int child_id = filter_->child_id();
 
@@ -1112,6 +1120,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // If the request that's coming in is being transferred from another process,
   // we want to reuse and resume the old loader rather than start a new one.
   {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "456331 ResourceDispatcherHostImpl::BeginRequest2"));
     LoaderMap::iterator it = pending_loaders_.find(
         GlobalRequestID(request_data.transferred_request_child_id,
                         request_data.transferred_request_request_id));
@@ -1132,6 +1145,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
     }
   }
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::BeginRequest3"));
   ResourceContext* resource_context = NULL;
   net::URLRequestContext* request_context = NULL;
   filter_->GetContexts(request_data, &resource_context, &request_context);
@@ -1154,6 +1171,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
     return;
   }
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::BeginRequest4"));
   // Construct the request.
   net::CookieStore* cookie_store =
       GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
@@ -1180,6 +1201,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
   headers.AddHeadersFromString(request_data.headers);
   new_request->SetExtraRequestHeaders(headers);
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::BeginRequest5"));
   storage::BlobStorageContext* blob_context =
       GetBlobStorageContext(filter_->blob_storage_context());
   // Resolve elements from request_body and prepare upload data.
@@ -1203,6 +1228,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
             .get()));
   }
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::BeginRequest6"));
   bool allow_download = request_data.allow_download &&
       IsResourceTypeFrame(request_data.resource_type);
   bool do_not_prompt_for_login = request_data.do_not_prompt_for_login;
@@ -1278,6 +1307,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
             new_request->url()));
   }
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile7(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::BeginRequest7"));
   // Initialize the service worker handler for the request. We don't use
   // ServiceWorker for synchronous loads to avoid renderer deadlocks.
   ServiceWorkerRequestHandler::InitializeHandler(
@@ -2031,6 +2064,10 @@ int ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
 void ResourceDispatcherHostImpl::BeginRequestInternal(
     scoped_ptr<net::URLRequest> request,
     scoped_ptr<ResourceHandler> handler) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456331 ResourceDispatcherHostImpl::BeginRequestInternal"));
   DCHECK(!request->is_pending());
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request.get());
