@@ -42,6 +42,7 @@
 #include "core/loader/LinkHeader.h"
 #include "core/loader/PrerenderHandle.h"
 #include "platform/Prerender.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/WebPrerender.h"
 
@@ -127,6 +128,16 @@ static void dnsPrefetchIfNeeded(const LinkRelAttribute& relAttribute, const KURL
     }
 }
 
+static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document)
+{
+    if (relAttribute.isPreconnect() && href.isValid()) {
+        ASSERT(RuntimeEnabledFeatures::linkPreconnectEnabled());
+        if (document.settings()->logDnsPrefetchAndPreconnect())
+            document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preconnect triggered for " + href.host())));
+        preconnect(href);
+    }
+}
+
 bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* document)
 {
     if (!document)
@@ -139,6 +150,9 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
         KURL url = document->completeURL(header.url());
         dnsPrefetchIfNeeded(relAttribute, url, *document);
 
+        if (RuntimeEnabledFeatures::linkPreconnectEnabled())
+            preconnectIfNeeded(relAttribute, url, *document);
+
         // FIXME: Add more supported headers as needed.
     }
     return true;
@@ -148,9 +162,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
 {
     dnsPrefetchIfNeeded(relAttribute, href, document);
 
-    if (relAttribute.isPreconnect() && href.isValid()) {
-        preconnect(href);
-    }
+    preconnectIfNeeded(relAttribute, href, document);
 
     // FIXME(crbug.com/323096): Should take care of import.
     if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource() || relAttribute.isTransitionExitingStylesheet()) && href.isValid() && document.frame()) {
