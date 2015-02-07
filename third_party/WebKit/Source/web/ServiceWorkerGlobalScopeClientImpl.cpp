@@ -128,11 +128,6 @@ void ServiceWorkerGlobalScopeClientImpl::claim(WebServiceWorkerClientsClaimCallb
     m_client.claim(callbacks);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::focus(int clientID, WebServiceWorkerClientFocusCallback* callback)
-{
-    m_client.focus(clientID, callback);
-}
-
 void ServiceWorkerGlobalScopeClientImpl::focus(int clientID, WebServiceWorkerClientCallbacks* callback)
 {
     m_client.focus(clientID, callback);

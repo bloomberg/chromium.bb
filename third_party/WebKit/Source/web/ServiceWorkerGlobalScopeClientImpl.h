@@ -66,7 +66,6 @@ public:
     virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) override;
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) override;
-    virtual void focus(int clientID, WebServiceWorkerClientFocusCallback*) override;
     virtual void focus(int clientID, WebServiceWorkerClientCallbacks*) override;
 
     virtual void trace(Visitor* visitor) override { ServiceWorkerGlobalScopeClient::trace(visitor); }
