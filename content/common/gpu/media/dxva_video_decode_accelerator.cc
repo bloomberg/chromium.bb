@@ -884,6 +884,12 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     RETURN_ON_HR_FAILURE(hr, "Failed to enable DXVA H/W decoding", false);
   }
 
+  hr = attributes->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE);
+  if (SUCCEEDED(hr)) {
+    DVLOG(1) << "Successfully set Low latency mode on decoder.";
+  } else {
+    DVLOG(1) << "Failed to set Low latency mode on decoder. Error: " << hr;
+  }
   return true;
 }
 
