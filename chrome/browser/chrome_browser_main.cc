@@ -994,8 +994,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
   SetupMetricsAndFieldTrials();
 
-  cpu_profiler_.Initialize(nullptr);
-
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   browser_process_->PreCreateThreads();
 
@@ -1649,8 +1647,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Android specific MessageLoop
   NOTREACHED();
 #else
-
-  cpu_profiler_.Stop();
 
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
