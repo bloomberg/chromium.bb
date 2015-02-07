@@ -1515,9 +1515,6 @@ int HostProcessMain() {
   // Ensures runtime specific CPU features are initialized.
   media::InitializeCPUSpecificMediaFeatures();
 
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
-
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
   scoped_ptr<ChromotingHostContext> context =
@@ -1525,6 +1522,10 @@ int HostProcessMain() {
           message_loop.message_loop_proxy(), base::MessageLoop::QuitClosure()));
   if (!context)
     return kInitializationFailed;
+
+  // NetworkChangeNotifier must be initialized after MessageLoop.
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
+      net::NetworkChangeNotifier::Create());
 
   // BasicURLRequestContext holds references to threads, so it needs to be
   // dereferences on UI threads. Store the reference to the URLRequestGetter to
