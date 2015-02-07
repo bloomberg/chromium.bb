@@ -7963,8 +7963,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.BackgroundPageLoadTime" units="milliseconds">
+  <obsolete>
+    Replaced by Extensions.BackgroundPageLoadTime2.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <summary>The time for an extension's background page to load.</summary>
+</histogram>
+
+<histogram name="Extensions.BackgroundPageLoadTime2" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The time taken for an extension's persistent background page to load its
+    initial URL.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.BackgroundPageType"
@@ -8070,6 +8081,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.DialogLoadTime" units="milliseconds">
+  <obsolete>
+    There is no such thing as an extension dialog.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The time for a dialog-hosted extension to load.</summary>
 </histogram>
@@ -8197,8 +8211,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.EventPageActiveTime" units="milliseconds">
+  <obsolete>
+    Replaced by Extensions.EventPageActiveTime2.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <summary>The time an extension's event page has spent loaded.</summary>
+</histogram>
+
+<histogram name="Extensions.EventPageActiveTime2" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The time between an extension's event page loading its first URL and the
+    event page later shutting down.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.EventPageIdleTime" units="milliseconds">
@@ -8207,8 +8232,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.EventPageLoadTime" units="milliseconds">
+  <obsolete>
+    Replaced by Extensions.EventPageLoadTime2.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <summary>The time for an extension's event page to load.</summary>
+</histogram>
+
+<histogram name="Extensions.EventPageLoadTime2" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The time taken for an extension's event page to load its initial URL.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheCount">
@@ -9005,6 +9040,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The permissions present in an extension when installation from the web store
     was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.PopupLoadTime" units="milliseconds">
+  <obsolete>
+    Replaced by Extensions.PopupLoadTime2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <summary>The time for an Extension's popup to load.</summary>
+</histogram>
+
+<histogram name="Extensions.PopupLoadTime2" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The time taken for an extension popup to load its initial URL. This may not
+    include the time taken for an extension process to start, if the extension
+    already has a background page running.
   </summary>
 </histogram>
 

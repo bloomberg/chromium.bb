@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -152,9 +152,10 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 
 ExtensionHost::~ExtensionHost() {
   if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-      extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
-    UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageActiveTime",
-                             since_created_.Elapsed());
+      extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_) &&
+      load_start_.get()) {
+    UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageActiveTime2",
+                             load_start_->Elapsed());
   }
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -179,7 +180,7 @@ bool ExtensionHost::IsRenderViewLive() const {
 }
 
 void ExtensionHost::CreateRenderViewSoon() {
-  if ((render_process_host() && render_process_host()->HasConnection())) {
+  if (render_process_host() && render_process_host()->HasConnection()) {
     // If the process is already started, go ahead and initialize the RenderView
     // synchronously. The process creation is the real meaty part that we want
     // to defer.
@@ -238,6 +239,7 @@ const GURL& ExtensionHost::GetURL() const {
 }
 
 void ExtensionHost::LoadInitialURL() {
+  load_start_.reset(new base::ElapsedTimer());
   host_contents_->GetController().LoadURL(
       initial_url_, content::Referrer(), ui::PAGE_TRANSITION_LINK,
       std::string());
@@ -306,23 +308,18 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   did_stop_loading_ = true;
   OnDidStopLoading();
   if (notify) {
+    CHECK(load_start_.get());
     if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
-        UMA_HISTOGRAM_TIMES("Extensions.EventPageLoadTime",
-                            since_created_.Elapsed());
+        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.EventPageLoadTime2",
+                                   load_start_->Elapsed());
       } else {
-        UMA_HISTOGRAM_TIMES("Extensions.BackgroundPageLoadTime",
-                            since_created_.Elapsed());
+        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.BackgroundPageLoadTime2",
+                                   load_start_->Elapsed());
       }
-    } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_DIALOG) {
-      UMA_HISTOGRAM_TIMES("Extensions.DialogLoadTime",
-                          since_created_.Elapsed());
     } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
-      UMA_HISTOGRAM_TIMES("Extensions.PopupLoadTime",
-                          since_created_.Elapsed());
-    } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_INFOBAR) {
-      UMA_HISTOGRAM_TIMES("Extensions.InfobarLoadTime",
-        since_created_.Elapsed());
+      UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
+                                 load_start_->Elapsed());
     }
 
     // Send the notification last, because it might result in this being

@@ -197,8 +197,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   // The type of view being hosted.
   ViewType extension_host_type_;
 
-  // Used to measure how long it's been since the host was created.
-  base::ElapsedTimer since_created_;
+  // Measures how long since the initial URL started loading.
+  scoped_ptr<base::ElapsedTimer> load_start_;
 
   ObserverList<ExtensionHostObserver> observer_list_;
 
