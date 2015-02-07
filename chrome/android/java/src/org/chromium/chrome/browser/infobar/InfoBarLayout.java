@@ -23,6 +23,9 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.ButtonCompat;
+
+import java.util.ArrayList;
 
 /**
  * Layout that arranges an InfoBar's views. An InfoBarLayout consists of:
@@ -76,6 +79,18 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         /** Whether the views are vertically stacked. */
         public boolean isStacked;
 
+        Group(View... views) {
+            this.views = views;
+        }
+
+        static View[] filterNullViews(View... views) {
+            ArrayList<View> viewsList = new ArrayList<View>();
+            for (View v : views) {
+                if (v != null) viewsList.add(v);
+            }
+            return viewsList.toArray(new View[viewsList.size()]);
+        }
+
         void setHorizontalMode(int horizontalSpacing, int startMargin, int endMargin) {
             isStacked = false;
             for (int i = 0; i < views.length; i++) {
@@ -85,7 +100,6 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
                 lp.endMargin = i == views.length - 1 ? endMargin : 0;
                 lp.bottomMargin = 0;
             }
-
         }
 
         void setVerticalMode(int verticalSpacing, int bottomMargin) {
@@ -109,9 +123,14 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
     private final int mAccentColor;
 
     private final InfoBarView mInfoBarView;
-    private final TextView mMessageView;
     private final ImageButton mCloseButton;
+    private TextView mMessageTextView;
+    private View mMessageView;
     private ImageView mIconView;
+    private ButtonCompat mPrimaryButton;
+    private Button mSecondaryButton;
+    private Button mTertiaryButton;
+    private View mCustomButton;
 
     private Group mMainGroup;
     private Group mCustomGroup;
@@ -169,7 +188,6 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         mCloseButton.setOnClickListener(this);
         mCloseButton.setContentDescription(res.getString(R.string.infobar_close));
         mCloseButton.setLayoutParams(new LayoutParams(0, -mMargin, -mMargin, -mMargin));
-        addView(mCloseButton);
 
         // Set up the icon.
         if (iconResourceId != 0 || iconBitmap != null) {
@@ -186,24 +204,27 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         }
 
         // Set up the message view.
-        mMessageView = (TextView) LayoutInflater.from(context).inflate(R.layout.infobar_text, null);
-        mMessageView.setText(message, TextView.BufferType.SPANNABLE);
-        mMessageView.setMovementMethod(LinkMovementMethod.getInstance());
-        mMessageView.setLinkTextColor(mAccentColor);
-        mMessageView.setLayoutParams(new LayoutParams(0, mMargin / 4, 0, 0));
-
-        if (mIconView == null) {
-            mMainGroup = addGroup(mMessageView);
-        } else {
-            mMainGroup = addGroup(mIconView, mMessageView);
-        }
+        mMessageTextView = (TextView) LayoutInflater.from(context).inflate(R.layout.infobar_text,
+                null);
+        mMessageTextView.setText(message, TextView.BufferType.SPANNABLE);
+        mMessageTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        mMessageTextView.setLinkTextColor(mAccentColor);
+        mMessageView = mMessageTextView;
     }
 
     /**
      * Sets the message to show on the infobar.
      */
     public void setMessage(CharSequence message) {
-        mMessageView.setText(message, TextView.BufferType.SPANNABLE);
+        mMessageTextView.setText(message, TextView.BufferType.SPANNABLE);
+    }
+
+    /**
+     * Sets a custom view to show in place of the message.
+     */
+    public void setMessageView(View view) {
+        mMessageView = view;
+        mMessageTextView = null;
     }
 
     /**
@@ -215,7 +236,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      *  - Stacked above each other on two separate rows, taking up the full width of the infobar.
      */
     public void setCustomContent(View view1, View view2) {
-        mCustomGroup = addGroup(view1, view2);
+        mCustomGroup = new Group(view1, view2);
     }
 
     /**
@@ -227,7 +248,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      *  - On a separate row, start-aligned
      */
     public void setCustomContent(View view) {
-        mCustomGroup = addGroup(view);
+        mCustomGroup = new Group(view);
     }
 
     /**
@@ -247,53 +268,85 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
     public void setButtons(String primaryText, String secondaryText, String tertiaryText) {
         if (TextUtils.isEmpty(primaryText)) return;
 
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        Button primaryButton = (Button) inflater.inflate(R.layout.infobar_button, null);
-        primaryButton.setId(R.id.button_primary);
-        primaryButton.setOnClickListener(this);
-        primaryButton.setText(primaryText);
-        primaryButton.setBackgroundResource(R.drawable.btn_infobar_blue);
-        primaryButton.setTextColor(Color.WHITE);
+        mPrimaryButton = new ButtonCompat(getContext(), mAccentColor);
+        mPrimaryButton.setId(R.id.button_primary);
+        mPrimaryButton.setOnClickListener(this);
+        mPrimaryButton.setText(primaryText);
+        mPrimaryButton.setTextColor(Color.WHITE);
 
-        if (TextUtils.isEmpty(secondaryText)) {
-            mButtonGroup = addGroup(primaryButton);
-            return;
-        }
+        if (TextUtils.isEmpty(secondaryText)) return;
 
-        Button secondaryButton = (Button) inflater.inflate(R.layout.infobar_button, null);
-        secondaryButton.setId(R.id.button_secondary);
-        secondaryButton.setOnClickListener(this);
-        secondaryButton.setText(secondaryText);
-        secondaryButton.setTextColor(mAccentColor);
+        mSecondaryButton = ButtonCompat.createBorderlessButton(getContext());
+        mSecondaryButton.setId(R.id.button_secondary);
+        mSecondaryButton.setOnClickListener(this);
+        mSecondaryButton.setText(secondaryText);
+        mSecondaryButton.setTextColor(mAccentColor);
 
-        if (TextUtils.isEmpty(tertiaryText)) {
-            mButtonGroup = addGroup(secondaryButton, primaryButton);
-            return;
-        }
+        if (TextUtils.isEmpty(tertiaryText)) return;
 
-        Button tertiaryButton = (Button) inflater.inflate(R.layout.infobar_button, null);
-        tertiaryButton.setId(R.id.button_tertiary);
-        tertiaryButton.setOnClickListener(this);
-        tertiaryButton.setText(tertiaryText);
-        tertiaryButton.setPadding(mMargin / 2, tertiaryButton.getPaddingTop(), mMargin / 2,
-                tertiaryButton.getPaddingBottom());
-        tertiaryButton.setTextColor(
+        mTertiaryButton = ButtonCompat.createBorderlessButton(getContext());
+        mTertiaryButton.setId(R.id.button_tertiary);
+        mTertiaryButton.setOnClickListener(this);
+        mTertiaryButton.setText(tertiaryText);
+        mTertiaryButton.setPadding(mMargin / 2, mTertiaryButton.getPaddingTop(), mMargin / 2,
+                mTertiaryButton.getPaddingBottom());
+        mTertiaryButton.setTextColor(
                 getContext().getResources().getColor(R.color.infobar_tertiary_button_text));
-
-        mButtonGroup = addGroup(tertiaryButton, secondaryButton, primaryButton);
     }
 
     /**
-     * Adds a group of Views that are measured and laid out together.
+     * Adds a custom view to show in the button row in place of the tertiary button.
      */
-    private Group addGroup(View... views) {
-        Group group = new Group();
-        group.views = views;
+    public void setCustomViewInButtonRow(View view) {
+        mCustomButton = view;
+    }
 
-        for (View v : views) {
-            addView(v);
+    /**
+     * Sets the size of the icon and the spacing between it and the message.
+     */
+    public void setIconSizeAndSpacing(int width, int height, int iconMessageSpacing) {
+        LayoutParams lp = (LayoutParams) mIconView.getLayoutParams();
+        lp.width = width;
+        lp.height = height;
+        lp.endMargin = iconMessageSpacing;
+    }
+
+
+    /**
+     * Returns the primary button, or null if it doesn't exist.
+     */
+    public ButtonCompat getPrimaryButton() {
+        return mPrimaryButton;
+    }
+
+    /**
+     * Returns the icon, or null if it doesn't exist.
+     */
+    public ImageView getIcon() {
+        return mIconView;
+    }
+
+    /**
+     * Must be called after the message, buttons, and custom content have been set, and before the
+     * first call to onMeasure().
+     */
+    void onContentCreated() {
+        mMessageView.setLayoutParams(new LayoutParams(0, mMargin / 4, 0, 0));
+        mMainGroup = new Group(Group.filterNullViews(mIconView, mMessageView));
+
+        View[] buttons = Group.filterNullViews(mCustomButton, mTertiaryButton,
+                mSecondaryButton, mPrimaryButton);
+        if (buttons.length != 0) mButtonGroup = new Group(buttons);
+
+        // Add the child views in the desired focus order.
+        for (View v : mMainGroup.views) addView(v);
+        if (mCustomGroup != null) {
+            for (View v : mCustomGroup.views) addView(v);
         }
-        return group;
+        if (mButtonGroup != null) {
+            for (View v : mButtonGroup.views) addView(v);
+        }
+        addView(mCloseButton);
     }
 
     @Override
@@ -393,13 +446,32 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
 
                 // If the infobar consists of just a main row and a buttons row, the buttons must be
                 // at least 32dp below the bottom of the message text.
-                if (mCustomGroup == null) {
-                    LayoutParams lp = (LayoutParams) mMessageView.getLayoutParams();
-                    int messageBottom = lp.top + mMessageView.getMeasuredHeight();
+                if (mCustomGroup == null && mMessageTextView != null) {
+                    LayoutParams lp = (LayoutParams) mMessageTextView.getLayoutParams();
+                    int messageBottom = lp.top + mMessageTextView.getMeasuredHeight();
                     mTop = Math.max(mTop, messageBottom + 2 * mMargin);
                 }
             }
             placeGroup(mButtonGroup);
+
+            if (mCustomButton != null && !buttonGroupOnMainRow) {
+                // The custom button is start-aligned with the message view (unless that causes it
+                // to overlap the primary button).
+                LayoutParams primaryButtonLP = (LayoutParams) mPrimaryButton.getLayoutParams();
+                LayoutParams customButtonLP = (LayoutParams) mCustomButton.getLayoutParams();
+                LayoutParams messageLP = (LayoutParams) mMessageView.getLayoutParams();
+                if (customButtonLP.start >= messageLP.start) {
+                    customButtonLP.start = messageLP.start;
+                } else {
+                    customButtonLP.start = mMargin;
+                }
+                if (!mButtonGroup.isStacked) {
+                    // Center the custom button vertically relative to the primary button.
+                    customButtonLP.top = primaryButtonLP.top
+                            + (mPrimaryButton.getMeasuredHeight()
+                            - mCustomButton.getMeasuredHeight()) / 2;
+                }
+            }
         }
 
         startRow();
@@ -516,10 +588,14 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
                 // Group is too wide to fit on a single row, so stack the group items vertically.
                 mButtonGroup.setVerticalMode(mMargin / 2, 0);
                 mButtonGroup.gravity = Gravity.FILL_HORIZONTAL;
-            } else if (mButtonGroup.views.length == 3) {
-                // Align tertiary button at the start and the other two buttons at the end.
-                ((LayoutParams) mButtonGroup.views[0].getLayoutParams()).endMargin += extraWidth;
+            } else if (mTertiaryButton != null) {
+                // Align tertiary or custom button at the start and the other buttons at the end.
+                ((LayoutParams) mTertiaryButton.getLayoutParams()).endMargin += extraWidth;
             }
+        }
+        if (row == ROW_MAIN && mCustomButton != null) {
+            // Increase spacing between custom button and primary button.
+            ((LayoutParams) mCustomButton.getLayoutParams()).endMargin = mMargin;
         }
     }
 

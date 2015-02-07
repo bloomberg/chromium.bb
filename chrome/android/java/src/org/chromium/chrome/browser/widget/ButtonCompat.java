@@ -43,6 +43,14 @@ public class ButtonCompat extends Button {
     private int mColor;
 
     /**
+     * Returns a new borderless material-style button.
+     */
+    public static Button createBorderlessButton(Context context) {
+        Context wrapper = new ContextThemeWrapper(context, R.style.ButtonBorderlessCompat);
+        return new Button(wrapper, null, 0);
+    }
+
+    /**
      * Constructs a button with the given buttonColor as its background.
      */
     public ButtonCompat(Context context, int buttonColor) {
@@ -81,6 +89,7 @@ public class ButtonCompat extends Button {
      * Sets the background color of the button.
      */
     public void setButtonColor(int color) {
+        if (color == mColor) return;
         mColor = color;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

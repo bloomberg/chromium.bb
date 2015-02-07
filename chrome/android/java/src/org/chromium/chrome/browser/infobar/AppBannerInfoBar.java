@@ -5,9 +5,14 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import org.chromium.base.ApplicationStatus;
@@ -26,7 +31,7 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
 
     // Views composing the infobar.
     private Button mButton;
-    private View mTitleView;
+    private ViewGroup mTitleView;
     private View mIconView;
 
     private final String mAppTitle;
@@ -58,32 +63,45 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
 
     @Override
     public void createContent(InfoBarLayout layout) {
-        if (mAppUrl != null) {
-            TextView url = new TextView(layout.getContext());
-            url.setText(mAppUrl);
-            layout.setCustomContent(url);
-        }
-
         super.createContent(layout);
 
-        mButton = (Button) layout.findViewById(R.id.button_primary);
-        mTitleView = layout.findViewById(R.id.infobar_message);
+        mButton = layout.getPrimaryButton();
+        mIconView = layout.getIcon();
 
-        // TODO(dfalcantara): Grab the icon from the layout.
-        // mIconView = layout.findViewById(R.id.infobar_icon);
+        Resources res = getContext().getResources();
+        int iconSize = res.getDimensionPixelSize(R.dimen.app_banner_infobar_icon_size);
+        int iconSpacing = res.getDimensionPixelSize(R.dimen.app_banner_infobar_icon_spacing);
+        layout.setIconSizeAndSpacing(iconSize, iconSize, iconSpacing);
 
-        assert mButton != null && mTitleView != null;
+        mTitleView = (ViewGroup) LayoutInflater.from(getContext()).inflate(
+                R.layout.app_banner_title, null);
+        TextView appName = (TextView) mTitleView.findViewById(R.id.app_name);
+        RatingBar ratingView = (RatingBar) mTitleView.findViewById(R.id.rating_bar);
+        TextView webAppUrl = (TextView) mTitleView.findViewById(R.id.web_app_url);
+        appName.setText(mAppTitle);
+        layout.setMessageView(mTitleView);
 
-        // Set up accessibility text.
         Context context = getContext();
         if (mAppData != null) {
+            // Native app.
+            ImageView playLogo = new ImageView(layout.getContext());
+            playLogo.setImageResource(R.drawable.google_play);
+            layout.setCustomViewInButtonRow(playLogo);
+
+            ratingView.setRating(mAppData.rating());
+            layout.getPrimaryButton().setButtonColor(getContext().getResources().getColor(
+                    R.color.app_banner_install_button_bg));
             layout.setContentDescription(context.getString(
                     R.string.app_banner_view_native_app_accessibility, mAppTitle,
                     mAppData.rating()));
+            mTitleView.removeView(webAppUrl);
         } else {
+            // Web app.
+            webAppUrl.setText(mAppUrl);
             layout.setContentDescription(context.getString(
                     R.string.app_banner_view_web_app_accessibility, mAppTitle,
                     mAppUrl));
+            mTitleView.removeView(ratingView);
         }
 
         // Set up clicking on the controls to bring up the app details.

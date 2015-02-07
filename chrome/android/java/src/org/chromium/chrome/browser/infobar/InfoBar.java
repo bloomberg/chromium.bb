@@ -152,6 +152,7 @@ public abstract class InfoBar implements InfoBarView {
         InfoBarLayout layout =
                 new InfoBarLayout(mContext, this, mIconDrawableId, mIconBitmap, mMessage);
         createContent(layout);
+        layout.onContentCreated();
         return layout;
     }
 
