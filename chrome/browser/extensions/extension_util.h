@@ -26,6 +26,7 @@ namespace extensions {
 
 class Extension;
 struct ExtensionInfo;
+class PermissionSet;
 
 namespace util {
 
@@ -68,6 +69,9 @@ void SetAllowFileAccess(const std::string& extension_id,
 bool AllowedScriptingOnAllUrls(const std::string& extension_id,
                                content::BrowserContext* context);
 
+// Returns the default value for being allowed to script on all urls.
+bool DefaultAllowedScriptingOnAllUrls();
+
 // Sets whether the extension with |extension_id| is allowed to execute scripts
 // on all urls (exempting chrome:// urls, etc) without explicit user consent.
 // This should only be used with FeatureSwitch::scripts_require_action()
@@ -77,8 +81,12 @@ void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
                                   bool allowed);
 
 // Returns true if the --scripts-require-action flag would possibly affect
-// the given |extension|.
-bool ScriptsMayRequireActionForExtension(const Extension* extension);
+// the given |extension| and |permissions|. We pass in the |permissions|
+// explicitly, as we may need to check with permissions other than the ones
+// that are currently on the extension's PermissionsData.
+bool ScriptsMayRequireActionForExtension(
+    const Extension* extension,
+    const PermissionSet* permissions);
 
 // Returns true if |extension_id| can be launched (possibly only after being
 // enabled).

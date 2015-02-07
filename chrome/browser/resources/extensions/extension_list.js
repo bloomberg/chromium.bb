@@ -51,6 +51,7 @@
  *            prettifiedPath: (string|undefined),
  *            recommendedInstall: boolean,
  *            runtimeErrors: (Array.<RuntimeError>|undefined),
+ *            showAllUrls: boolean,
  *            suspiciousInstall: boolean,
  *            terminated: boolean,
  *            updateRequiredByPolicy: boolean,
@@ -58,7 +59,6 @@
  *            views: Array.<{renderViewId: number, renderProcessId: number,
  *                path: string, incognito: boolean,
  *                generatedBackgroundPage: boolean}>,
- *            wantsAllUrls: boolean,
  *            wantsErrorCollection: boolean,
  *            wantsFileAccess: boolean,
  *            warnings: (Array|undefined)}}
@@ -258,7 +258,7 @@ cr.define('options', function() {
       // The 'allow on all urls' checkbox. This should only be visible if
       // active script restrictions are enabled. If they are not enabled, no
       // extensions should want all urls.
-      if (extension.wantsAllUrls) {
+      if (extension.showAllUrls) {
         var allUrls = node.querySelector('.all-urls-control');
         allUrls.addEventListener('click', function(e) {
           chrome.send('extensionSettingsAllowOnAllUrls',

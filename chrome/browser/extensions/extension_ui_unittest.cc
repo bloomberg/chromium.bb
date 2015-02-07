@@ -329,23 +329,22 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   scoped_ptr<base::DictionaryValue> value(handler()->CreateExtensionDetailValue(
       all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
   bool result = false;
-  const std::string kWantsAllUrls = "wantsAllUrls";
+  const std::string kShowAllUrls = "showAllUrls";
   const std::string kAllowAllUrls = "allowAllUrls";
 
   // The extension should want all urls, but not currently have it.
-  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_TRUE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
   EXPECT_FALSE(result);
 
   // Give the extension all urls.
-  util::SetAllowedScriptingOnAllUrls(
-      all_urls_extension->id(), profile(), true);
+  util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
 
   // Now the extension should both want and have all urls.
   value.reset(handler()->CreateExtensionDetailValue(
       all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
-  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_TRUE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
   EXPECT_TRUE(result);
@@ -353,20 +352,34 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   // The other extension should neither want nor have all urls.
   value.reset(handler()->CreateExtensionDetailValue(
       no_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
-  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
   EXPECT_FALSE(result);
+
+  // Revoke the first extension's permissions.
+  util::SetAllowedScriptingOnAllUrls(
+      all_urls_extension->id(), profile(), false);
 
   // Turn off the switch and load another extension (so permissions are
   // re-initialized).
   enable_scripts_switch.reset();
 
-  // Even though the extension has the all urls preference, the checkbox
-  // shouldn't show up with the switch off.
+  // Since the extension doesn't have access to all urls (but normally would),
+  // the extension should have the "want" flag even with the switch off.
   value.reset(handler()->CreateExtensionDetailValue(
       all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
-  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
+  EXPECT_FALSE(result);
+
+  // If we grant the extension all urls, then it should no longer "want" it,
+  // since it is back in its normal state (with the switch off).
+  util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
+  value.reset(handler()->CreateExtensionDetailValue(
+      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
+  EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
   EXPECT_TRUE(result);
@@ -379,10 +392,10 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   // show up without the switch.
   value.reset(handler()->CreateExtensionDetailValue(
       all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
-  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
-  EXPECT_FALSE(result);
+  EXPECT_TRUE(result);
 }
 
 }  // namespace extensions

@@ -182,14 +182,14 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
     bounded_active = GetBoundedActivePermissions(extension, active_permissions);
   }
 
-  // Withhold permissions if the switch applies to this extension.
-  // Non-transient extensions also must not have the preference to allow
-  // scripting on all urls.
-  bool should_withhold_permissions =
-      util::ScriptsMayRequireActionForExtension(extension);
-  if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
-    should_withhold_permissions &=
-        !util::AllowedScriptingOnAllUrls(extension->id(), browser_context_);
+  // Determine whether or not to withhold host permissions.
+  bool should_withhold_permissions = false;
+  if (util::ScriptsMayRequireActionForExtension(extension,
+                                                bounded_active.get())) {
+    should_withhold_permissions =
+        init_flag_ & INIT_FLAG_TRANSIENT ?
+            !util::DefaultAllowedScriptingOnAllUrls() :
+            !util::AllowedScriptingOnAllUrls(extension->id(), browser_context_);
   }
 
   URLPatternSet granted_explicit_hosts;

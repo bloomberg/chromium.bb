@@ -130,10 +130,9 @@ class ActiveScriptController : public content::WebContentsObserver,
   // The associated browser context.
   content::BrowserContext* browser_context_;
 
-  // Whether or not the ActiveScriptController is enabled (corresponding to the
-  // kActiveScriptEnforcement switch). If it is not, it acts as an empty shell,
-  // always allowing scripts to run and never displaying actions.
-  bool enabled_;
+  // Whether or not the feature was used for any extensions. This may not be the
+  // case if the user never enabled the scripts-require-action flag.
+  bool was_used_on_page_;
 
   // The map of extension_id:pending_request of all pending requests.
   PendingRequestMap pending_requests_;

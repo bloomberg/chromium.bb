@@ -70,6 +70,35 @@ std::string ReloadExtensionIfEnabled(const std::string& extension_id,
   return id;
 }
 
+// Sets the preference for scripting on all urls to |allowed|, optionally
+// updating the extension's active permissions (based on |update_permissions|).
+void SetAllowedScriptingOnAllUrlsHelper(
+    content::BrowserContext* context,
+    const std::string& extension_id,
+    bool allowed,
+    bool update_permissions) {
+  // TODO(devlin): Right now, we always need to have a value for this pref.
+  // Once the scripts-require-action feature launches, we can change the set
+  // to be null if false.
+  ExtensionPrefs::Get(context)->UpdateExtensionPref(
+      extension_id,
+      kExtensionAllowedOnAllUrlsPrefName,
+      new base::FundamentalValue(allowed));
+
+  if (update_permissions) {
+    const Extension* extension =
+        ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
+            extension_id);
+    if (extension) {
+      PermissionsUpdater updater(context);
+      if (allowed)
+        updater.GrantWithheldImpliedAllHosts(extension);
+      else
+        updater.WithholdImpliedAllHosts(extension);
+    }
+  }
+}
+
 }  // namespace
 
 bool IsIncognitoEnabled(const std::string& extension_id,
@@ -176,46 +205,42 @@ void SetAllowFileAccess(const std::string& extension_id,
 bool AllowedScriptingOnAllUrls(const std::string& extension_id,
                                content::BrowserContext* context) {
   bool allowed = false;
-  return ExtensionPrefs::Get(context)->ReadPrefAsBoolean(
-             extension_id,
-             kExtensionAllowedOnAllUrlsPrefName,
-             &allowed) &&
-         allowed;
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
+  if (!prefs->ReadPrefAsBoolean(extension_id,
+                                kExtensionAllowedOnAllUrlsPrefName,
+                                &allowed)) {
+    // If there is no value present, we make one, defaulting it to the value of
+    // the 'scripts require action' flag. If the flag is on, then the extension
+    // does not have permission to script on all urls by default.
+    allowed = DefaultAllowedScriptingOnAllUrls();
+    SetAllowedScriptingOnAllUrlsHelper(context, extension_id, allowed, false);
+  }
+  return allowed;
 }
 
 void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
                                   content::BrowserContext* context,
                                   bool allowed) {
-  if (allowed == AllowedScriptingOnAllUrls(extension_id, context))
-    return;  // Nothing to do here.
-
-  ExtensionPrefs::Get(context)->UpdateExtensionPref(
-      extension_id,
-      kExtensionAllowedOnAllUrlsPrefName,
-      allowed ? new base::FundamentalValue(true) : NULL);
-
-  const Extension* extension =
-      ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
-          extension_id);
-  if (extension) {
-    PermissionsUpdater updater(context);
-    if (allowed)
-      updater.GrantWithheldImpliedAllHosts(extension);
-    else
-      updater.WithholdImpliedAllHosts(extension);
-  }
+  if (allowed != AllowedScriptingOnAllUrls(extension_id, context))
+    SetAllowedScriptingOnAllUrlsHelper(context, extension_id, allowed, true);
 }
 
-bool ScriptsMayRequireActionForExtension(const Extension* extension) {
-  // An extension requires user action to execute scripts iff the switch to do
-  // so is enabled, the extension shows up in chrome:extensions (so the user can
-  // grant withheld permissions), the extension is not part of chrome or
-  // corporate policy, and also not on the scripting whitelist.
-  return FeatureSwitch::scripts_require_action()->IsEnabled() &&
-      extension->ShouldDisplayInExtensionSettings() &&
+bool DefaultAllowedScriptingOnAllUrls() {
+  return !FeatureSwitch::scripts_require_action()->IsEnabled();
+}
+
+bool ScriptsMayRequireActionForExtension(
+    const Extension* extension,
+    const PermissionSet* permissions) {
+  // An extension may require user action to execute scripts iff the extension
+  // shows up in chrome:extensions (so the user can grant withheld permissions),
+  // is not part of chrome or corporate policy, not on the scripting whitelist,
+  // and requires enough permissions that we should withhold them.
+  return extension->ShouldDisplayInExtensionSettings() &&
       !Manifest::IsPolicyLocation(extension->location()) &&
       !Manifest::IsComponentLocation(extension->location()) &&
-      !PermissionsData::CanExecuteScriptEverywhere(extension);
+      !PermissionsData::CanExecuteScriptEverywhere(extension) &&
+      permissions->ShouldWarnAllHosts();
 }
 
 bool IsAppLaunchable(const std::string& extension_id,

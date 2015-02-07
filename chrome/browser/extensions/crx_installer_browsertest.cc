@@ -598,42 +598,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, ManagementPolicy) {
   EXPECT_FALSE(InstallExtension(crx_path, 0));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, WithheldElevationCheck) {
-  // Enable consent flag and install extension. The <all_hosts> permission will
-  // be withheld.
-  scoped_ptr<FeatureSwitch::ScopedOverride> enable_scripts_switch(
-      new FeatureSwitch::ScopedOverride(
-          FeatureSwitch::scripts_require_action(), true));
-
-  const char kManifest[] =
-      "{"
-      "  \"name\": \"Withheld test\","
-      "  \"version\": \"1.0\","
-      "  \"permissions\": ["
-      "    \"http://*/*\""
-      "  ],"
-      "  \"manifest_version\": 2"
-      "}";
-  TestExtensionDir dir;
-  dir.WriteManifest(kManifest);
-  base::FilePath crx_path = dir.Pack();
-  EXPECT_FALSE(crx_path.empty());
-  const Extension* extension = InstallExtension(crx_path, 1);
-  EXPECT_TRUE(base::PathExists(extension->path()));
-
-  std::string extension_id = extension->id();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(
-      browser()->profile());
-  EXPECT_TRUE(registry->enabled_extensions().GetByID(extension_id));
-
-  // Disable consent flag and reinstall extension. It should now be disabled
-  // because previously withheld permissions are now being requested.
-  enable_scripts_switch.reset();
-  extension = InstallExtension(crx_path, -1);
-  EXPECT_FALSE(registry->enabled_extensions().GetByID(extension_id));
-  EXPECT_TRUE(registry->disabled_extensions().GetByID(extension_id));
-  EXPECT_TRUE(ExtensionPrefs::Get(browser()->profile())->GetDisableReasons(
-      extension_id) & Extension::DISABLE_PERMISSIONS_INCREASE);
-}
-
 }  // namespace extensions

@@ -11,10 +11,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -36,7 +38,8 @@ namespace {
 scoped_refptr<const Extension> CreateExtensionWithPermissions(
     const std::set<URLPattern>& scriptable_hosts,
     const std::set<URLPattern>& explicit_hosts,
-    Manifest::Location location) {
+    Manifest::Location location,
+    const std::string& name) {
   ListBuilder scriptable_host_list;
   for (std::set<URLPattern>::const_iterator pattern = scriptable_hosts.begin();
        pattern != scriptable_hosts.end();
@@ -59,12 +62,13 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
       .SetLocation(location)
       .SetManifest(
            DictionaryBuilder()
-               .Set("name", "extension")
+               .Set("name", name)
                .Set("description", "foo")
                .Set("manifest_version", 2)
                .Set("version", "0.1.2.3")
                .Set("content_scripts", ListBuilder().Append(script.Pass()))
                .Set("permissions", explicit_host_list.Pass()))
+      .SetID(crx_file::id_util::GenerateId(name))
       .Build();
 }
 
@@ -300,7 +304,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
       all_host_patterns, safe_patterns);
 
   scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      all_patterns, all_patterns, Manifest::INTERNAL);
+      all_patterns, all_patterns, Manifest::INTERNAL, "a");
   const PermissionsData* permissions_data = extension->permissions_data();
   PermissionsUpdater updater(profile_.get());
   updater.InitializePermissions(extension.get());
@@ -359,7 +363,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
 
   // Creating a component extension should result in no withheld permissions.
   extension = CreateExtensionWithPermissions(
-      all_patterns, all_patterns, Manifest::COMPONENT);
+      all_patterns, all_patterns, Manifest::COMPONENT, "b");
   permissions_data = extension->permissions_data();
   updater.InitializePermissions(extension.get());
   EXPECT_TRUE(SetsAreEqual(
@@ -380,7 +384,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   // Without the switch, we shouldn't withhold anything.
   switch_override.reset();
   extension = CreateExtensionWithPermissions(
-      all_patterns, all_patterns, Manifest::INTERNAL);
+      all_patterns, all_patterns, Manifest::INTERNAL, "c");
   permissions_data = extension->permissions_data();
   updater.InitializePermissions(extension.get());
   EXPECT_TRUE(SetsAreEqual(
@@ -397,6 +401,75 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
                   ->explicit_hosts()
                   .patterns()
                   .empty());
+}
+
+// Tests that withholding all hosts behaves properly with extensions installed
+// when the switch is turned on and off.
+TEST_F(PermissionsUpdaterTest, WithholdAllHostsWithTransientSwitch) {
+  InitializeEmptyExtensionService();
+
+  URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
+  std::set<URLPattern> all_host_patterns;
+  all_host_patterns.insert(all_hosts);
+
+  scoped_refptr<const Extension> extension_a = CreateExtensionWithPermissions(
+      all_host_patterns, all_host_patterns, Manifest::INTERNAL, "a");
+  PermissionsUpdater updater(profile());
+  updater.InitializePermissions(extension_a.get());
+  const PermissionsData* permissions_data = extension_a->permissions_data();
+
+  // Since the extension was created without the switch on, it should default
+  // to having all urls access.
+  EXPECT_TRUE(SetsAreEqual(
+      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      all_host_patterns));
+  EXPECT_TRUE(
+      permissions_data->withheld_permissions()->scriptable_hosts().is_empty());
+  EXPECT_TRUE(util::AllowedScriptingOnAllUrls(extension_a->id(), profile()));
+
+  // Enable the switch, and re-init permission for the extension.
+  scoped_ptr<FeatureSwitch::ScopedOverride> switch_override(
+      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
+                                        FeatureSwitch::OVERRIDE_ENABLED));
+  updater.InitializePermissions(extension_a.get());
+
+  // Since the extension was installed when the switch was off, it should still
+  // have the all urls pref.
+  permissions_data = extension_a->permissions_data();
+  EXPECT_TRUE(SetsAreEqual(
+      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      all_host_patterns));
+  EXPECT_TRUE(
+      permissions_data->withheld_permissions()->scriptable_hosts().is_empty());
+  EXPECT_TRUE(util::AllowedScriptingOnAllUrls(extension_a->id(), profile()));
+
+  // Load a new extension, which also has all urls. Since the switch is now on,
+  // the permissions should be withheld.
+  scoped_refptr<const Extension> extension_b = CreateExtensionWithPermissions(
+      all_host_patterns, all_host_patterns, Manifest::INTERNAL, "b");
+  updater.InitializePermissions(extension_b.get());
+  permissions_data = extension_b->permissions_data();
+
+  EXPECT_TRUE(
+      permissions_data->active_permissions()->scriptable_hosts().is_empty());
+  EXPECT_TRUE(SetsAreEqual(
+      permissions_data->withheld_permissions()->scriptable_hosts().patterns(),
+      all_host_patterns));
+  EXPECT_FALSE(util::AllowedScriptingOnAllUrls(extension_b->id(), profile()));
+
+  // Disable the switch, and reload the extension.
+  switch_override.reset();
+  updater.InitializePermissions(extension_b.get());
+
+  // Since the extension was installed with the switch on, it should still be
+  // restricted with the switch off.
+  permissions_data = extension_b->permissions_data();
+  EXPECT_TRUE(
+      permissions_data->active_permissions()->scriptable_hosts().is_empty());
+  EXPECT_TRUE(SetsAreEqual(
+      permissions_data->withheld_permissions()->scriptable_hosts().patterns(),
+      all_host_patterns));
+  EXPECT_FALSE(util::AllowedScriptingOnAllUrls(extension_b->id(), profile()));
 }
 
 }  // namespace extensions
