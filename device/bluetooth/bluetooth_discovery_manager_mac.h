@@ -28,6 +28,9 @@ class BluetoothDiscoveryManagerMac {
     // such as when a user disables the controller, in which case the value of
     // |unexpected| will be true.
     virtual void DiscoveryStopped(bool unexpected) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   virtual ~BluetoothDiscoveryManagerMac();
