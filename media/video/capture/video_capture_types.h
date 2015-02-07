@@ -67,10 +67,6 @@ class MEDIA_EXPORT VideoCaptureFormat {
   std::string ToString() const;
   static std::string PixelFormatToString(VideoPixelFormat format);
 
-  // Returns the required buffer size to hold an image of a given
-  // VideoCaptureFormat with no padding and tightly packed.
-  size_t ImageAllocationSize() const;
-
   // Checks that all values are in the expected range. All limits are specified
   // in media::Limits.
   bool IsValid() const;

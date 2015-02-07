@@ -43,7 +43,7 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
  private:
   // Returns size in bytes of an I420 frame, not including possible paddings,
   // defined by |capture_format_|.
-  int CalculateFrameSize() const;
+  int CalculateFrameSize();
 
   // Called on the |capture_thread_|.
   void OnAllocateAndStart(const VideoCaptureParams& params,
