@@ -1892,11 +1892,11 @@ crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash ]
 
 # These baselines need to be reviewed and perhaps updated after the mass-rebaselining
 # on 2015-02-06 (after the change in r189636).
-crbug.com/452967 [ Mac ] compositing/color-matching/pdf-image-match.html [ Pass Failure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-005.htm [ Pass Failure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-007.htm [ Pass Failure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-008.htm [ Pass Failure ]
-crbug.com/452967 [ Mac ] svg/W3C-SVG-1.1/color-prop-02-f.svg [ Pass Failure ]
-crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ]
+crbug.com/452967 [ Mac ] compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-005.htm [ Pass Failure ImageOnlyFailure ]
+crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-007.htm [ Pass Failure ImageOnlyFailure ]
+crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-008.htm [ Pass Failure ImageOnlyFailure ]
+crbug.com/452967 [ Mac ] svg/W3C-SVG-1.1/color-prop-02-f.svg [ Pass Failure ImageOnlyFailure ]
+crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/456412 [ XP ] inspector/sources/debugger/script-snippet-model.html [ Pass Failure ]
