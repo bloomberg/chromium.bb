@@ -26,7 +26,6 @@ class QuicPacketGenerator;
 class QuicPacketWriter;
 class QuicReceivedPacketManager;
 class QuicSentPacketManager;
-class ReceiveAlgorithmInterface;
 class SendAlgorithmInterface;
 
 namespace test {
@@ -36,16 +35,13 @@ class QuicConnectionPeer {
  public:
   static void SendAck(QuicConnection* connection);
 
-  static void SetReceiveAlgorithm(QuicConnection* connection,
-                                  ReceiveAlgorithmInterface* receive_algorithm);
-
   static void SetSendAlgorithm(QuicConnection* connection,
                                SendAlgorithmInterface* send_algorithm);
 
-  static QuicAckFrame* CreateAckFrame(QuicConnection* connection);
+  static void PopulateAckFrame(QuicConnection* connection, QuicAckFrame* ack);
 
-  static QuicStopWaitingFrame* CreateStopWaitingFrame(
-      QuicConnection* connection);
+  static void PopulateStopWaitingFrame(QuicConnection* connection,
+                                       QuicStopWaitingFrame* stop_waiting);
 
   static QuicConnectionVisitorInterface* GetVisitor(
       QuicConnection* connection);

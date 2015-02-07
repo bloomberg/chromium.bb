@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
-#include "net/quic/congestion_control/receive_algorithm_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -63,17 +62,6 @@ const bool kEntropyFlag = true;
 const QuicPacketEntropyHash kTestEntropyHash = 76;
 
 const int kDefaultRetransmissionTimeMs = 500;
-
-class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
- public:
-  TestReceiveAlgorithm() {}
-
-  MOCK_METHOD3(RecordIncomingPacket,
-               void(QuicByteCount, QuicPacketSequenceNumber, QuicTime));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestReceiveAlgorithm);
-};
 
 // TaggingEncrypter appends kTagSize bytes of |tag| to the end of each message.
 class TaggingEncrypter : public QuicEncrypter {
@@ -408,10 +396,6 @@ class TestConnection : public QuicConnection {
     QuicConnectionPeer::SendAck(this);
   }
 
-  void SetReceiveAlgorithm(TestReceiveAlgorithm* receive_algorithm) {
-     QuicConnectionPeer::SetReceiveAlgorithm(this, receive_algorithm);
-  }
-
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
     QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
   }
@@ -603,7 +587,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         peer_creator_(connection_id_, &framer_, &random_generator_),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         loss_algorithm_(new MockLossAlgorithm()),
-        receive_algorithm_(new TestReceiveAlgorithm),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
         writer_(new TestPacketWriter(version(), &clock_)),
         factory_(writer_.get()),
@@ -624,12 +607,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     connection_.SetSendAlgorithm(send_algorithm_);
     connection_.SetLossAlgorithm(loss_algorithm_);
     framer_.set_received_entropy_calculator(&entropy_calculator_);
-    connection_.SetReceiveAlgorithm(receive_algorithm_);
     EXPECT_CALL(
         *send_algorithm_, TimeUntilSend(_, _, _)).WillRepeatedly(Return(
             QuicTime::Delta::Zero()));
-    EXPECT_CALL(*receive_algorithm_,
-                RecordIncomingPacket(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
@@ -662,14 +642,13 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   QuicAckFrame* outgoing_ack() {
-    outgoing_ack_.reset(QuicConnectionPeer::CreateAckFrame(&connection_));
-    return outgoing_ack_.get();
+    QuicConnectionPeer::PopulateAckFrame(&connection_, &ack_);
+    return &ack_;
   }
 
   QuicStopWaitingFrame* stop_waiting() {
-    stop_waiting_.reset(
-        QuicConnectionPeer::CreateStopWaitingFrame(&connection_));
-    return stop_waiting_.get();
+    QuicConnectionPeer::PopulateStopWaitingFrame(&connection_, &stop_waiting_);
+    return &stop_waiting_;
   }
 
   QuicPacketSequenceNumber least_unacked() {
@@ -991,7 +970,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
 
   MockSendAlgorithm* send_algorithm_;
   MockLossAlgorithm* loss_algorithm_;
-  TestReceiveAlgorithm* receive_algorithm_;
   MockClock clock_;
   MockRandom random_generator_;
   scoped_ptr<TestConnectionHelper> helper_;
@@ -1006,8 +984,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   QuicPacketHeader header_;
   QuicStreamFrame frame1_;
   QuicStreamFrame frame2_;
-  scoped_ptr<QuicAckFrame> outgoing_ack_;
-  scoped_ptr<QuicStopWaitingFrame> stop_waiting_;
+  QuicAckFrame ack_;
+  QuicStopWaitingFrame stop_waiting_;
   QuicSequenceNumberLength sequence_number_length_;
   QuicConnectionIdLength connection_id_length_;
 
@@ -3157,7 +3135,6 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
 TEST_P(QuicConnectionTest, TimeoutAfterSendSilentClose) {
   // Same test as above, but complete a handshake which enables silent close,
   // causing no connection close packet to be sent.
-  ValueRestore<bool> old_flag(&FLAGS_quic_allow_silent_close, true);
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
   QuicConfig config;

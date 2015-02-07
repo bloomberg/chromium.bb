@@ -12,7 +12,6 @@
 #include <sys/socket.h>
 
 #include "net/base/ip_endpoint.h"
-#include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
@@ -130,12 +129,11 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   // because the default usage of QuicServer is as a test server with one or
   // two clients.  Adjust higher for use with many clients.
   if (!QuicSocketUtils::SetReceiveBufferSize(fd_,
-                                             TcpReceiver::kReceiveWindowTCP)) {
+                                             kDefaultSocketReceiveBuffer)) {
     return false;
   }
 
-  if (!QuicSocketUtils::SetSendBufferSize(fd_,
-                                          TcpReceiver::kReceiveWindowTCP)) {
+  if (!QuicSocketUtils::SetSendBufferSize(fd_, kDefaultSocketReceiveBuffer)) {
     return false;
   }
 

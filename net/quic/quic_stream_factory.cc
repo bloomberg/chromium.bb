@@ -21,7 +21,6 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
 #include "net/http/http_server_properties.h"
-#include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/channel_id_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_random.h"
@@ -1039,7 +1038,7 @@ int QuicStreamFactory::CreateSession(
   // does not consume "too much" memory.  If we see bursty packet loss, we may
   // revisit this setting and test for its impact.
   const int32 kSocketBufferSize =
-      static_cast<int32>(TcpReceiver::kReceiveWindowTCP);
+      static_cast<int32>(kDefaultSocketReceiveBuffer);
   rv = socket->SetReceiveBufferSize(kSocketBufferSize);
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_BUFFER);

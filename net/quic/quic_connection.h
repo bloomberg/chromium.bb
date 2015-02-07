@@ -370,8 +370,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool ShouldGeneratePacket(TransmissionType transmission_type,
                             HasRetransmittableData retransmittable,
                             IsHandshake handshake) override;
-  QuicAckFrame* CreateAckFrame() override;
-  QuicStopWaitingFrame* CreateStopWaitingFrame() override;
+  void PopulateAckFrame(QuicAckFrame* ack) override;
+  void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;
   void OnSerializedPacket(const SerializedPacket& packet) override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
@@ -628,9 +628,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   void ProcessAckFrame(const QuicAckFrame& incoming_ack);
 
   void ProcessStopWaitingFrame(const QuicStopWaitingFrame& stop_waiting);
-
-  // Update |stop_waiting| for an outgoing ack.
-  void UpdateStopWaiting(QuicStopWaitingFrame* stop_waiting);
 
   // Queues an ack or sets the ack alarm when an incoming packet arrives that
   // should be acked.

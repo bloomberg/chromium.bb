@@ -176,20 +176,22 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 
   SerializedPacket CreatePacket(QuicPacketSequenceNumber sequence_number,
                                 bool retransmittable) {
-    packets_.push_back(QuicPacket::NewDataPacket(
-        nullptr, kDefaultLength, false, PACKET_8BYTE_CONNECTION_ID, false,
-        PACKET_6BYTE_SEQUENCE_NUMBER));
+    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
+                                      PACKET_8BYTE_CONNECTION_ID, false,
+                                      PACKET_6BYTE_SEQUENCE_NUMBER));
     return SerializedPacket(
         sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER, packets_.back(), 0u,
         retransmittable ? new RetransmittableFrames() : nullptr);
   }
 
   SerializedPacket CreateFecPacket(QuicPacketSequenceNumber sequence_number) {
-    packets_.push_back(QuicPacket::NewFecPacket(
-        nullptr, kDefaultLength, false, PACKET_8BYTE_CONNECTION_ID, false,
-        PACKET_6BYTE_SEQUENCE_NUMBER));
-    return SerializedPacket(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0u, nullptr);
+    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
+                                      PACKET_8BYTE_CONNECTION_ID, false,
+                                      PACKET_6BYTE_SEQUENCE_NUMBER));
+    SerializedPacket serialized(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
+                                packets_.back(), 0u, nullptr);
+    serialized.is_fec_packet = true;
+    return serialized;
   }
 
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {

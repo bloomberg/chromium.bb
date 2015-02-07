@@ -509,11 +509,9 @@ QuicPacket::QuicPacket(char* buffer,
                        bool owns_buffer,
                        QuicConnectionIdLength connection_id_length,
                        bool includes_version,
-                       QuicSequenceNumberLength sequence_number_length,
-                       bool is_fec_packet)
+                       QuicSequenceNumberLength sequence_number_length)
     : QuicData(buffer, length, owns_buffer),
       buffer_(buffer),
-      is_fec_packet_(is_fec_packet),
       connection_id_length_(connection_id_length),
       includes_version_(includes_version),
       sequence_number_length_(sequence_number_length) {
@@ -639,7 +637,8 @@ SerializedPacket::SerializedPacket(
       sequence_number_length(sequence_number_length),
       packet(packet),
       entropy_hash(entropy_hash),
-      retransmittable_frames(retransmittable_frames) {
+      retransmittable_frames(retransmittable_frames),
+      is_fec_packet(false) {
 }
 
 SerializedPacket::~SerializedPacket() {}

@@ -19,7 +19,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_record_send_time_before_write;
 NET_EXPORT_PRIVATE
 extern bool FLAGS_quic_enable_bandwidth_resumption_experiment;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_pacing;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_silent_close;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_std_cbrt;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_multiple_address_in_source_tokens;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_rto_uses_last_sent;

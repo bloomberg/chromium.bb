@@ -598,8 +598,8 @@ bool QuicSentPacketManager::OnPacketSent(
   // Since FEC packets should also be counted towards the congestion window,
   // consider them as retransmittable for the purposes of congestion control.
   HasRetransmittableData has_congestion_controlled_data =
-      serialized_packet->packet->is_fec_packet() ?
-      HAS_RETRANSMITTABLE_DATA : has_retransmittable_data;
+      serialized_packet->is_fec_packet ? HAS_RETRANSMITTABLE_DATA
+                                       : has_retransmittable_data;
   const bool in_flight =
       send_algorithm_->OnPacketSent(sent_time,
                                     unacked_packets_.bytes_in_flight(),

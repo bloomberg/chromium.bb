@@ -46,7 +46,9 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       fec_timeout_(QuicTime::Delta::Zero()),
       should_fec_protect_(false),
       should_send_ack_(false),
-      should_send_stop_waiting_(false) {
+      should_send_stop_waiting_(false),
+      ack_queued_(false),
+      stop_waiting_queued_(false) {
 }
 
 QuicPacketGenerator::~QuicPacketGenerator() {
@@ -101,12 +103,12 @@ void QuicPacketGenerator::OnRttChange(QuicTime::Delta rtt) {
 }
 
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {
-  if (pending_ack_frame_ != nullptr) {
+  if (ack_queued_) {
     // Ack already queued, nothing to do.
     return;
   }
 
-  if (also_send_stop_waiting && pending_stop_waiting_frame_ != nullptr) {
+  if (also_send_stop_waiting && stop_waiting_queued_) {
     LOG(DFATAL) << "Should only ever be one pending stop waiting frame.";
     return;
   }
@@ -360,19 +362,21 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
   if (should_send_ack_) {
-    pending_ack_frame_.reset(delegate_->CreateAckFrame());
+    delegate_->PopulateAckFrame(&pending_ack_frame_);
+    ack_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
-    should_send_ack_ = !AddFrame(QuicFrame(pending_ack_frame_.get()));
+    should_send_ack_ = !AddFrame(QuicFrame(&pending_ack_frame_));
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_ack_;
   }
 
   if (should_send_stop_waiting_) {
-    pending_stop_waiting_frame_.reset(delegate_->CreateStopWaitingFrame());
+    delegate_->PopulateStopWaitingFrame(&pending_stop_waiting_frame_);
+    stop_waiting_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
     should_send_stop_waiting_ =
-        !AddFrame(QuicFrame(pending_stop_waiting_frame_.get()));
+        !AddFrame(QuicFrame(&pending_stop_waiting_frame_));
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_stop_waiting_;
@@ -409,9 +413,9 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   delegate_->OnSerializedPacket(serialized_packet);
   MaybeSendFecPacketAndCloseGroup(/*force=*/false);
 
-  // The packet has now been serialized, safe to delete pending frames.
-  pending_ack_frame_.reset();
-  pending_stop_waiting_frame_.reset();
+  // The packet has now been serialized, so the frames are no longer queued.
+  ack_queued_ = false;
+  stop_waiting_queued_ = false;
 }
 
 void QuicPacketGenerator::StopSendingVersion() {

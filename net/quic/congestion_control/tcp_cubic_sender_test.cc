@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
-#include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -65,7 +65,6 @@ class TcpCubicSenderTest : public ::testing::Test {
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
         sender_(new TcpCubicSenderPeer(&clock_, true,
                                        kMaxTcpCongestionWindow)),
-        receiver_(new TcpReceiver()),
         sequence_number_(1),
         acked_sequence_number_(0),
         bytes_in_flight_(0) {
@@ -133,7 +132,6 @@ class TcpCubicSenderTest : public ::testing::Test {
   const QuicTime::Delta one_ms_;
   MockClock clock_;
   scoped_ptr<TcpCubicSenderPeer> sender_;
-  scoped_ptr<TcpReceiver> receiver_;
   QuicPacketSequenceNumber sequence_number_;
   QuicPacketSequenceNumber acked_sequence_number_;
   QuicByteCount bytes_in_flight_;

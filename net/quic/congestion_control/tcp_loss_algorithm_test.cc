@@ -35,9 +35,9 @@ class TcpLossAlgorithmTest : public ::testing::Test {
   }
 
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
-    packets_.push_back(QuicPacket::NewDataPacket(
-        nullptr, kDefaultLength, false, PACKET_8BYTE_CONNECTION_ID, false,
-        PACKET_1BYTE_SEQUENCE_NUMBER));
+    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
+                                      PACKET_8BYTE_CONNECTION_ID, false,
+                                      PACKET_1BYTE_SEQUENCE_NUMBER));
     SerializedPacket packet(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0, new RetransmittableFrames());
     unacked_packets_.AddSentPacket(packet, 0, NOT_RETRANSMISSION, clock_.Now(),
@@ -80,7 +80,7 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1Packet) {
   // Loss on three acks.
   unacked_packets_.RemoveFromInFlight(4);
   unacked_packets_.NackPacket(1, 3);
-  QuicPacketSequenceNumber lost[] = { 1 };
+  QuicPacketSequenceNumber lost[] = {1};
   VerifyLosses(4, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }

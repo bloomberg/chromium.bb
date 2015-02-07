@@ -75,6 +75,8 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
     return num_duplicate_frames_received_;
   }
 
+  int num_early_frames_received() const { return num_early_frames_received_; }
+
  private:
   friend class test::QuicStreamSequencerPeer;
 
@@ -121,6 +123,10 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   // Count of the number of duplicate frames received.
   int num_duplicate_frames_received_;
+
+  // Count of the number of frames received before all previous frames were
+  // received.
+  int num_early_frames_received_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencer);
 };

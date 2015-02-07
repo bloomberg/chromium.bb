@@ -920,48 +920,22 @@ class NET_EXPORT_PRIVATE QuicData {
 
 class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
  public:
-  static QuicPacket* NewDataPacket(
-      char* buffer,
-      size_t length,
-      bool owns_buffer,
-      QuicConnectionIdLength connection_id_length,
-      bool includes_version,
-      QuicSequenceNumberLength sequence_number_length) {
-    return new QuicPacket(buffer, length, owns_buffer, connection_id_length,
-                          includes_version, sequence_number_length, false);
-  }
-
-  static QuicPacket* NewFecPacket(
-      char* buffer,
-      size_t length,
-      bool owns_buffer,
-      QuicConnectionIdLength connection_id_length,
-      bool includes_version,
-      QuicSequenceNumberLength sequence_number_length) {
-    return new QuicPacket(buffer, length, owns_buffer, connection_id_length,
-                          includes_version, sequence_number_length, true);
-  }
+  QuicPacket(char* buffer,
+             size_t length,
+             bool owns_buffer,
+             QuicConnectionIdLength connection_id_length,
+             bool includes_version,
+             QuicSequenceNumberLength sequence_number_length);
 
   base::StringPiece FecProtectedData() const;
   base::StringPiece AssociatedData() const;
   base::StringPiece BeforePlaintext() const;
   base::StringPiece Plaintext() const;
 
-  bool is_fec_packet() const { return is_fec_packet_; }
-
   char* mutable_data() { return buffer_; }
 
  private:
-  QuicPacket(char* buffer,
-             size_t length,
-             bool owns_buffer,
-             QuicConnectionIdLength connection_id_length,
-             bool includes_version,
-             QuicSequenceNumberLength sequence_number_length,
-             bool is_fec_packet);
-
   char* buffer_;
-  const bool is_fec_packet_;
   const QuicConnectionIdLength connection_id_length_;
   const bool includes_version_;
   const QuicSequenceNumberLength sequence_number_length_;
@@ -1033,6 +1007,7 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   QuicPacket* packet;
   QuicPacketEntropyHash entropy_hash;
   RetransmittableFrames* retransmittable_frames;
+  bool is_fec_packet;
 
   // Optional notifiers which will be informed when this packet has been ACKed.
   std::list<QuicAckNotifier*> notifiers;

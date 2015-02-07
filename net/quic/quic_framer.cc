@@ -410,7 +410,7 @@ SerializedPacket QuicFramer::BuildDataPacket(
   // Less than or equal because truncated acks end up with max_plaintex_size
   // length, even though they're typically slightly shorter.
   DCHECK_LE(len, packet_size);
-  QuicPacket* packet = QuicPacket::NewDataPacket(
+  QuicPacket* packet = new QuicPacket(
       writer.take(), len, true, header.public_header.connection_id_length,
       header.public_header.version_flag,
       header.public_header.sequence_number_length);
@@ -445,14 +445,16 @@ SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
     return kNoPacket;
   }
 
-  return SerializedPacket(
+  SerializedPacket packet(
       header.packet_sequence_number,
       header.public_header.sequence_number_length,
-      QuicPacket::NewFecPacket(writer.take(), len, true,
-                               header.public_header.connection_id_length,
-                               header.public_header.version_flag,
-                               header.public_header.sequence_number_length),
+      new QuicPacket(writer.take(), len, true,
+                     header.public_header.connection_id_length,
+                     header.public_header.version_flag,
+                     header.public_header.sequence_number_length),
       GetPacketEntropyHash(header), nullptr);
+  packet.is_fec_packet = true;
+  return packet;
 }
 
 // static

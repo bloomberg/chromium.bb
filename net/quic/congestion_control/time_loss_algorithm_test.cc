@@ -35,9 +35,9 @@ class TimeLossAlgorithmTest : public ::testing::Test {
   }
 
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
-    packets_.push_back(QuicPacket::NewDataPacket(
-        nullptr, kDefaultLength, false, PACKET_8BYTE_CONNECTION_ID, false,
-        PACKET_1BYTE_SEQUENCE_NUMBER));
+    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
+                                      PACKET_8BYTE_CONNECTION_ID, false,
+                                      PACKET_1BYTE_SEQUENCE_NUMBER));
     SerializedPacket packet(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0, new RetransmittableFrames());
     unacked_packets_.AddSentPacket(packet, 0, NOT_RETRANSMISSION, clock_.Now(),

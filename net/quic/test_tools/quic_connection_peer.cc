@@ -5,7 +5,6 @@
 #include "net/quic/test_tools/quic_connection_peer.h"
 
 #include "base/stl_util.h"
-#include "net/quic/congestion_control/receive_algorithm_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
@@ -23,14 +22,6 @@ void QuicConnectionPeer::SendAck(QuicConnection* connection) {
 }
 
 // static
-void QuicConnectionPeer::SetReceiveAlgorithm(
-    QuicConnection* connection,
-    ReceiveAlgorithmInterface* receive_algorithm) {
-  connection->received_packet_manager_.receive_algorithm_.reset(
-      receive_algorithm);
-}
-
-// static
 void QuicConnectionPeer::SetSendAlgorithm(
     QuicConnection* connection,
     SendAlgorithmInterface* send_algorithm) {
@@ -38,14 +29,16 @@ void QuicConnectionPeer::SetSendAlgorithm(
 }
 
 // static
-QuicAckFrame* QuicConnectionPeer::CreateAckFrame(QuicConnection* connection) {
-  return connection->CreateAckFrame();
+void QuicConnectionPeer::PopulateAckFrame(QuicConnection* connection,
+                                          QuicAckFrame* ack) {
+  connection->PopulateAckFrame(ack);
 }
 
 // static
-QuicStopWaitingFrame* QuicConnectionPeer::CreateStopWaitingFrame(
-    QuicConnection* connection) {
-  return connection->CreateStopWaitingFrame();
+void QuicConnectionPeer::PopulateStopWaitingFrame(
+    QuicConnection* connection,
+    QuicStopWaitingFrame* stop_waiting) {
+  connection->PopulateStopWaitingFrame(stop_waiting);
 }
 
 // static

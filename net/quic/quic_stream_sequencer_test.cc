@@ -226,6 +226,7 @@ TEST_F(QuicStreamSequencerTest, NextxFrameNotConsumed) {
   EXPECT_EQ(1u, buffered_frames_->size());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
   EXPECT_EQ("abc", buffered_frames_->find(0)->second);
+  EXPECT_EQ(0, sequencer_->num_early_frames_received());
 }
 
 TEST_F(QuicStreamSequencerTest, FutureFrameNotProcessed) {
@@ -233,6 +234,7 @@ TEST_F(QuicStreamSequencerTest, FutureFrameNotProcessed) {
   EXPECT_EQ(1u, buffered_frames_->size());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
   EXPECT_EQ("abc", buffered_frames_->find(3)->second);
+  EXPECT_EQ(1, sequencer_->num_early_frames_received());
 }
 
 TEST_F(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {

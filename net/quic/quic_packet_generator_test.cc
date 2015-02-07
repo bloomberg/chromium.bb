@@ -43,8 +43,8 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
                bool(TransmissionType transmission_type,
                     HasRetransmittableData retransmittable,
                     IsHandshake handshake));
-  MOCK_METHOD0(CreateAckFrame, QuicAckFrame*());
-  MOCK_METHOD0(CreateStopWaitingFrame, QuicStopWaitingFrame*());
+  MOCK_METHOD1(PopulateAckFrame, void(QuicAckFrame*));
+  MOCK_METHOD1(PopulateStopWaitingFrame, void(QuicStopWaitingFrame*));
   MOCK_METHOD1(OnSerializedPacket, void(const SerializedPacket& packet));
   MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
 
@@ -135,18 +135,6 @@ class QuicPacketGeneratorTest : public ::testing::Test {
     delete packet7_.retransmittable_frames;
     delete packet8_.packet;
     delete packet8_.retransmittable_frames;
-  }
-
-  QuicAckFrame* CreateAckFrame() {
-    // TODO(rch): Initialize this so it can be verified later.
-    return new QuicAckFrame(MakeAckFrame(0));
-  }
-
-  QuicStopWaitingFrame* CreateStopWaitingFrame() {
-    QuicStopWaitingFrame* frame = new QuicStopWaitingFrame();
-    frame->entropy_hash = 0;
-    frame->least_unacked = 0;
-    return frame;
   }
 
   QuicRstStreamFrame* CreateRstStreamFrame() {
@@ -256,7 +244,7 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldNotFlush) {
   delegate_.SetCanWriteOnlyNonRetransmittable();
   generator_.StartBatchOperations();
 
-  EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
+  EXPECT_CALL(delegate_, PopulateAckFrame(_));
   EXPECT_CALL(debug_delegate, OnFrameAddedToPacket(_)).Times(1);
 
   generator_.SetShouldSendAck(false);
@@ -266,7 +254,7 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldNotFlush) {
 TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldFlush) {
   delegate_.SetCanWriteOnlyNonRetransmittable();
 
-  EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
+  EXPECT_CALL(delegate_, PopulateAckFrame(_));
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
 
   generator_.SetShouldSendAck(false);
@@ -285,9 +273,7 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_MultipleCalls) {
   delegate_.SetCanWriteAnything();
 
   // Only one AckFrame should be created.
-  EXPECT_CALL(delegate_, CreateAckFrame())
-      .Times(1)
-      .WillOnce(Return(CreateAckFrame()));
+  EXPECT_CALL(delegate_, PopulateAckFrame(_)).Times(1);
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .Times(1)
       .WillOnce(SaveArg<0>(&packet_));
@@ -871,9 +857,8 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnWithPendingFramesInGenerator) {
   generator_.StartBatchOperations();
 
   // Set up frames to write into the creator when control frames are written.
-  EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
-  EXPECT_CALL(delegate_, CreateStopWaitingFrame()).WillOnce(
-      Return(CreateStopWaitingFrame()));
+  EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
 
   // Generator should have queued control frames, and creator should be empty.
   EXPECT_TRUE(generator_.HasQueuedFrames());
@@ -1026,7 +1011,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   generator_.StartBatchOperations();
 
   // When the first write operation is invoked, the ack frame will be returned.
-  EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
+  EXPECT_CALL(delegate_, PopulateAckFrame(_));
 
   // Send some data and a control frame
   generator_.ConsumeData(3, MakeIOVector("quux"), 7, false, MAY_FEC_PROTECT,
@@ -1058,7 +1043,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   generator_.StartBatchOperations();
 
   // When the first write operation is invoked, the ack frame will be returned.
-  EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
+  EXPECT_CALL(delegate_, PopulateAckFrame(_));
 
   {
     InSequence dummy;

@@ -291,7 +291,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.negotiated()) {
     SetNetworkTimeouts(QuicTime::Delta::Infinite(),
                        config.IdleConnectionStateLifetime());
-    if (FLAGS_quic_allow_silent_close && config.SilentClose()) {
+    if (config.SilentClose()) {
       silent_close_enabled_ = true;
     }
   } else {
@@ -969,18 +969,16 @@ void QuicConnection::MaybeCloseIfTooManyOutstandingPackets() {
   }
 }
 
-QuicAckFrame* QuicConnection::CreateAckFrame() {
-  QuicAckFrame* outgoing_ack = new QuicAckFrame();
-  received_packet_manager_.UpdateReceivedPacketInfo(
-      outgoing_ack, clock_->ApproximateNow());
-  DVLOG(1) << ENDPOINT << "Creating ack frame: " << *outgoing_ack;
-  return outgoing_ack;
+void QuicConnection::PopulateAckFrame(QuicAckFrame* ack) {
+  received_packet_manager_.UpdateReceivedPacketInfo(ack,
+                                                    clock_->ApproximateNow());
 }
 
-QuicStopWaitingFrame* QuicConnection::CreateStopWaitingFrame() {
-  QuicStopWaitingFrame stop_waiting;
-  UpdateStopWaiting(&stop_waiting);
-  return new QuicStopWaitingFrame(stop_waiting);
+void QuicConnection::PopulateStopWaitingFrame(
+    QuicStopWaitingFrame* stop_waiting) {
+  stop_waiting->least_unacked = GetLeastUnacked();
+  stop_waiting->entropy_hash = sent_entropy_manager_.GetCumulativeEntropy(
+      stop_waiting->least_unacked - 1);
 }
 
 bool QuicConnection::ShouldLastPacketInstigateAck() const {
@@ -1439,15 +1437,14 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   }
   DCHECK_LE(encrypted->length(), packet_generator_.max_packet_length());
   DVLOG(1) << ENDPOINT << "Sending packet " << sequence_number << " : "
-           << (packet->serialized_packet.packet->is_fec_packet() ? "FEC " :
-               (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA
-                ? "data bearing " : " ack only "))
-           << ", encryption level: "
+           << (packet->serialized_packet.is_fec_packet
+                   ? "FEC "
+                   : (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA
+                          ? "data bearing "
+                          : " ack only ")) << ", encryption level: "
            << QuicUtils::EncryptionLevelToString(packet->encryption_level)
-           << ", length:"
-           << packet->serialized_packet.packet->length()
-           << ", encrypted length:"
-           << encrypted->length();
+           << ", length:" << packet->serialized_packet.packet->length()
+           << ", encrypted length:" << encrypted->length();
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
            << QuicUtils::StringToHexASCIIDump(
                packet->serialized_packet.packet->AsStringPiece());
@@ -1604,7 +1601,7 @@ void QuicConnection::OnSerializedPacket(
       sent_packet_manager_.OnSerializedPacket(serialized_packet);
     }
   }
-  if (serialized_packet.packet->is_fec_packet() && fec_alarm_->IsSet()) {
+  if (serialized_packet.is_fec_packet && fec_alarm_->IsSet()) {
     // If an FEC packet is serialized with the FEC alarm set, cancel the alarm.
     fec_alarm_->Cancel();
   }
@@ -1651,12 +1648,6 @@ void QuicConnection::SendOrQueuePacket(QueuedPacket packet) {
   if (!WritePacket(&packet)) {
     queued_packets_.push_back(packet);
   }
-}
-
-void QuicConnection::UpdateStopWaiting(QuicStopWaitingFrame* stop_waiting) {
-  stop_waiting->least_unacked = GetLeastUnacked();
-  stop_waiting->entropy_hash = sent_entropy_manager_.GetCumulativeEntropy(
-      stop_waiting->least_unacked - 1);
 }
 
 void QuicConnection::SendPing() {

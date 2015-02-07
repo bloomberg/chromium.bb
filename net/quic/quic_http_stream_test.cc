@@ -13,7 +13,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/transport_security_state.h"
-#include "net/quic/congestion_control/receive_algorithm_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -74,16 +73,6 @@ class TestQuicConnection : public QuicConnection {
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
     QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
   }
-
-  void SetReceiveAlgorithm(ReceiveAlgorithmInterface* receive_algorithm) {
-    QuicConnectionPeer::SetReceiveAlgorithm(this, receive_algorithm);
-  }
-};
-
-class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
- public:
-  MOCK_METHOD3(RecordIncomingPacket,
-               void(QuicByteCount, QuicPacketSequenceNumber, QuicTime));
 };
 
 // Subclass of QuicHttpStream that closes itself when the first piece of data
@@ -198,9 +187,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
     send_algorithm_ = new MockSendAlgorithm();
-    receive_algorithm_ = new TestReceiveAlgorithm();
-    EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _)).
-        Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, _, _, _, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
@@ -220,7 +206,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                          helper_.get(), writer_factory);
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
-    connection_->SetReceiveAlgorithm(receive_algorithm_);
     session_.reset(
         new QuicClientSession(connection_,
                               scoped_ptr<DatagramClientSocket>(socket),
@@ -307,7 +292,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   BoundNetLog net_log_;
   bool use_closing_stream_;
   MockSendAlgorithm* send_algorithm_;
-  TestReceiveAlgorithm* receive_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
   scoped_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;

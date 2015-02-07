@@ -75,8 +75,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     virtual bool ShouldGeneratePacket(TransmissionType transmission_type,
                                       HasRetransmittableData retransmittable,
                                       IsHandshake handshake) = 0;
-    virtual QuicAckFrame* CreateAckFrame() = 0;
-    virtual QuicStopWaitingFrame* CreateStopWaitingFrame() = 0;
+    virtual void PopulateAckFrame(QuicAckFrame* ack) = 0;
+    virtual void PopulateStopWaitingFrame(
+        QuicStopWaitingFrame* stop_waiting) = 0;
     // Takes ownership of |packet.packet| and |packet.retransmittable_frames|.
     virtual void OnSerializedPacket(const SerializedPacket& packet) = 0;
     virtual void CloseConnection(QuicErrorCode error, bool from_peer) = 0;
@@ -254,8 +255,12 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // have to hold a reference to it until we flush (and serialize it).
   // Retransmittable frames are referenced elsewhere so that they
   // can later be (optionally) retransmitted.
-  scoped_ptr<QuicAckFrame> pending_ack_frame_;
-  scoped_ptr<QuicStopWaitingFrame> pending_stop_waiting_frame_;
+  QuicAckFrame pending_ack_frame_;
+  QuicStopWaitingFrame pending_stop_waiting_frame_;
+  // True if an ack or stop waiting frame is already queued, and should not be
+  // re-added.
+  bool ack_queued_;
+  bool stop_waiting_queued_;
 
   // Stores notifiers that should be attached to the next serialized packet.
   std::list<QuicAckNotifier*> ack_notifiers_;

@@ -85,8 +85,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
     fake_packet_reorder_percentage_ = fake_packet_reorder_percentage;
   }
 
-  // The percent of time WritePacket will block and set WriteResult's status
-  // to WRITE_STATUS_BLOCKED.
+  // The delay before writing this packet.
   void set_fake_packet_delay(QuicTime::Delta fake_packet_delay) {
     DCHECK(clock_);
     base::AutoLock locked(config_mutex_);

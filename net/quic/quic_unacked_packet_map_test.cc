@@ -30,18 +30,18 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
 
   SerializedPacket CreateRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
-    packets_.push_back(QuicPacket::NewDataPacket(
-        nullptr, kDefaultLength, false, PACKET_8BYTE_CONNECTION_ID, false,
-        PACKET_1BYTE_SEQUENCE_NUMBER));
+    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
+                                      PACKET_8BYTE_CONNECTION_ID, false,
+                                      PACKET_1BYTE_SEQUENCE_NUMBER));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0, new RetransmittableFrames());
   }
 
   SerializedPacket CreateNonRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
-    packets_.push_back(QuicPacket::NewDataPacket(
-        nullptr, kDefaultLength, false, PACKET_8BYTE_CONNECTION_ID, false,
-        PACKET_1BYTE_SEQUENCE_NUMBER));
+    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
+                                      PACKET_8BYTE_CONNECTION_ID, false,
+                                      PACKET_1BYTE_SEQUENCE_NUMBER));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0, nullptr);
   }

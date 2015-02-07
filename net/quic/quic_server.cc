@@ -8,7 +8,6 @@
 
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_crypto_stream.h"
@@ -94,7 +93,7 @@ int QuicServer::Listen(const IPEndPoint& address) {
   // because the default usage of QuicServer is as a test server with one or
   // two clients.  Adjust higher for use with many clients.
   rc = socket->SetReceiveBufferSize(
-      static_cast<int32>(TcpReceiver::kReceiveWindowTCP));
+      static_cast<int32>(kDefaultSocketReceiveBuffer));
   if (rc < 0) {
     LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToString(rc);
     return rc;
