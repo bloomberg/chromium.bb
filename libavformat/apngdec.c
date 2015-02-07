@@ -26,13 +26,13 @@
  * @see http://www.w3.org/TR/PNG
  */
 
-#include "apng.h"
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
+#include "libavcodec/apng.h"
 #include "libavcodec/png.h"
 #include "libavcodec/bytestream.h"
 
@@ -87,7 +87,7 @@ static int apng_probe(AVProbeData *p)
         /* we don't check IDAT size, as this is the last tag
          * we check, and it may be larger than the probe buffer */
         if (tag != MKTAG('I', 'D', 'A', 'T') &&
-            len > bytestream2_get_bytes_left(&gb))
+            len + 4 > bytestream2_get_bytes_left(&gb))
             return 0;
 
         switch (tag) {
@@ -404,7 +404,7 @@ static int apng_read_packet(AVFormatContext *s, AVPacket *pkt)
         return 0;
     default:
         {
-        char tag_buf[5];
+        char tag_buf[32];
 
         av_get_codec_tag_string(tag_buf, sizeof(tag_buf), tag);
         avpriv_request_sample(s, "In-stream tag=%s (0x%08X) len=%"PRIu32, tag_buf, tag, len);

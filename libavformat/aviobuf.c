@@ -228,7 +228,7 @@ int64_t avio_seek(AVIOContext *s, int64_t offset, int whence)
 
     offset1 = offset - pos;
     if (!s->must_flush && (!s->direct || !s->seek) &&
-        offset1 >= 0 && offset1 <= buffer_size) {
+        offset1 >= 0 && offset1 <= buffer_size - s->write_flag) {
         /* can do the seek inside the buffer */
         s->buf_ptr = s->buffer + offset1;
     } else if ((!s->seekable ||
@@ -679,7 +679,7 @@ int ff_get_line(AVIOContext *s, char *buf, int maxlen)
         if (c && i < maxlen-1)
             buf[i++] = c;
     } while (c != '\n' && c != '\r' && c);
-    if (c == '\r' && avio_r8(s) != '\n')
+    if (c == '\r' && avio_r8(s) != '\n' && !avio_feof(s))
         avio_skip(s, -1);
 
     buf[i] = 0;

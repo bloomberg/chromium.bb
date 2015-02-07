@@ -342,7 +342,7 @@ av_cold int ff_mpv_encode_init(AVCodecContext *avctx)
     s->rtp_mode           = !!avctx->rtp_payload_size;
     s->intra_dc_precision = avctx->intra_dc_precision;
 
-    // workaround some differences between how applications specify dc precission
+    // workaround some differences between how applications specify dc precision
     if (s->intra_dc_precision < 0) {
         s->intra_dc_precision += 8;
     } else if (s->intra_dc_precision >= 8)
@@ -728,6 +728,7 @@ av_cold int ff_mpv_encode_init(AVCodecContext *avctx)
         s->out_format = FMT_H261;
         avctx->delay  = 0;
         s->low_delay  = 1;
+        s->rtp_mode   = 0; /* Sliced encoding not supported */
         break;
     case AV_CODEC_ID_H263:
         if (!CONFIG_H263_ENCODER)
@@ -888,7 +889,8 @@ av_cold int ff_mpv_encode_init(AVCodecContext *avctx)
     if (CONFIG_H263_ENCODER && s->out_format == FMT_H263)
         ff_h263_encode_init(s);
     if (CONFIG_MSMPEG4_ENCODER && s->msmpeg4_version)
-        ff_msmpeg4_encode_init(s);
+        if ((ret = ff_msmpeg4_encode_init(s)) < 0)
+            return ret;
     if ((CONFIG_MPEG1VIDEO_ENCODER || CONFIG_MPEG2VIDEO_ENCODER)
         && s->out_format == FMT_MPEG1)
         ff_mpeg1_encode_init(s);
@@ -1191,8 +1193,8 @@ static int load_input_picture(MpegEncContext *s, const AVFrame *pic_arg)
                     if ((s->width & 15) || (s->height & (vpad-1))) {
                         s->mpvencdsp.draw_edges(dst, dst_stride,
                                                 w, h,
-                                                16>>h_shift,
-                                                vpad>>v_shift,
+                                                16 >> h_shift,
+                                                vpad >> v_shift,
                                                 EDGE_BOTTOM);
                     }
                 }
@@ -2851,9 +2853,6 @@ static int encode_thread(AVCodecContext *c, void *arg){
                 if(s->start_mb_y == mb_y && mb_y > 0 && mb_x==0) is_gob_start=1;
 
                 switch(s->codec_id){
-                case AV_CODEC_ID_H261:
-                    is_gob_start=0;//FIXME
-                    break;
                 case AV_CODEC_ID_H263:
                 case AV_CODEC_ID_H263P:
                     if(!s->h263_slice_structured)

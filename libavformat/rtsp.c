@@ -438,7 +438,7 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
         if (!strcmp(ff_rtp_enc_name(rtsp_st->sdp_payload_type), "MP2T")) {
             /* no corresponding stream */
             if (rt->transport == RTSP_TRANSPORT_RAW) {
-                if (!rt->ts && CONFIG_RTPDEC)
+                if (CONFIG_RTPDEC && !rt->ts)
                     rt->ts = avpriv_mpegts_parse_open(s);
             } else {
                 RTPDynamicProtocolHandler *handler;
@@ -652,10 +652,10 @@ int ff_sdp_parse(AVFormatContext *s, const char *content)
     }
 
     for (i = 0; i < s1->nb_default_include_source_addrs; i++)
-        av_free(s1->default_include_source_addrs[i]);
+        av_freep(&s1->default_include_source_addrs[i]);
     av_freep(&s1->default_include_source_addrs);
     for (i = 0; i < s1->nb_default_exclude_source_addrs; i++)
-        av_free(s1->default_exclude_source_addrs[i]);
+        av_freep(&s1->default_exclude_source_addrs[i]);
     av_freep(&s1->default_exclude_source_addrs);
 
     rt->p = av_malloc_array(rt->nb_rtsp_streams + 1, sizeof(struct pollfd) * 2);
@@ -684,12 +684,12 @@ void ff_rtsp_undo_setup(AVFormatContext *s, int send_packets)
                     avio_close_dyn_buf(rtpctx->pb, &ptr);
                     av_free(ptr);
                 } else {
-                    avio_close(rtpctx->pb);
+                    avio_closep(&rtpctx->pb);
                 }
                 avformat_free_context(rtpctx);
-            } else if (rt->transport == RTSP_TRANSPORT_RDT && CONFIG_RTPDEC)
+            } else if (CONFIG_RTPDEC && rt->transport == RTSP_TRANSPORT_RDT)
                 ff_rdt_parse_close(rtsp_st->transport_priv);
-            else if (rt->transport == RTSP_TRANSPORT_RTP && CONFIG_RTPDEC)
+            else if (CONFIG_RTPDEC && rt->transport == RTSP_TRANSPORT_RTP)
                 ff_rtp_parse_close(rtsp_st->transport_priv);
         }
         rtsp_st->transport_priv = NULL;
@@ -714,23 +714,23 @@ void ff_rtsp_close_streams(AVFormatContext *s)
                 rtsp_st->dynamic_handler->free(
                     rtsp_st->dynamic_protocol_context);
             for (j = 0; j < rtsp_st->nb_include_source_addrs; j++)
-                av_free(rtsp_st->include_source_addrs[j]);
+                av_freep(&rtsp_st->include_source_addrs[j]);
             av_freep(&rtsp_st->include_source_addrs);
             for (j = 0; j < rtsp_st->nb_exclude_source_addrs; j++)
-                av_free(rtsp_st->exclude_source_addrs[j]);
+                av_freep(&rtsp_st->exclude_source_addrs[j]);
             av_freep(&rtsp_st->exclude_source_addrs);
 
-            av_free(rtsp_st);
+            av_freep(&rtsp_st);
         }
     }
-    av_free(rt->rtsp_streams);
+    av_freep(&rt->rtsp_streams);
     if (rt->asf_ctx) {
         avformat_close_input(&rt->asf_ctx);
     }
-    if (rt->ts && CONFIG_RTPDEC)
+    if (CONFIG_RTPDEC && rt->ts)
         avpriv_mpegts_parse_close(rt->ts);
-    av_free(rt->p);
-    av_free(rt->recvbuf);
+    av_freep(&rt->p);
+    av_freep(&rt->recvbuf);
 }
 
 int ff_rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
@@ -751,7 +751,7 @@ int ff_rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
     if (!st)
         s->ctx_flags |= AVFMTCTX_NOHEADER;
 
-    if (s->oformat && CONFIG_RTSP_MUXER) {
+    if (CONFIG_RTSP_MUXER && s->oformat) {
         int ret = ff_rtp_chain_mux_open((AVFormatContext **)&rtsp_st->transport_priv,
                                         s, st, rtsp_st->rtp_handle,
                                         RTSP_TCP_MAX_PACKET_SIZE,
@@ -763,7 +763,7 @@ int ff_rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
         st->time_base = ((AVFormatContext*)rtsp_st->transport_priv)->streams[0]->time_base;
     } else if (rt->transport == RTSP_TRANSPORT_RAW) {
         return 0; // Don't need to open any parser here
-    } else if (rt->transport == RTSP_TRANSPORT_RDT && CONFIG_RTPDEC)
+    } else if (CONFIG_RTPDEC && rt->transport == RTSP_TRANSPORT_RDT)
         rtsp_st->transport_priv = ff_rdt_parse_open(s, st->index,
                                             rtsp_st->dynamic_protocol_context,
                                             rtsp_st->dynamic_handler);
@@ -774,7 +774,7 @@ int ff_rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
 
     if (!rtsp_st->transport_priv) {
          return AVERROR(ENOMEM);
-    } else if (rt->transport == RTSP_TRANSPORT_RTP && CONFIG_RTPDEC) {
+    } else if (CONFIG_RTPDEC && rt->transport == RTSP_TRANSPORT_RTP) {
         if (rtsp_st->dynamic_handler) {
             ff_rtp_parse_set_dynamic_protocol(rtsp_st->transport_priv,
                                               rtsp_st->dynamic_protocol_context,
@@ -1158,7 +1158,7 @@ start:
     if (content_ptr)
         *content_ptr = content;
     else
-        av_free(content);
+        av_freep(&content);
 
     if (request) {
         char buf[1024];
@@ -1463,7 +1463,7 @@ int ff_rtsp_make_setup_request(AVFormatContext *s, const char *host, int port,
                  transport);
         if (rt->accept_dynamic_rate)
             av_strlcat(cmd, "x-Dynamic-Rate: 0\r\n", sizeof(cmd));
-        if (i == 0 && rt->server_type == RTSP_SERVER_REAL && CONFIG_RTPDEC) {
+        if (CONFIG_RTPDEC && i == 0 && rt->server_type == RTSP_SERVER_REAL) {
             char real_res[41], real_csum[9];
             ff_rdt_calc_response_and_checksum(real_res, real_csum,
                                               real_challenge);
@@ -1528,8 +1528,8 @@ int ff_rtsp_make_setup_request(AVFormatContext *s, const char *host, int port,
              * potential NAT router by sending dummy packets.
              * RTP/RTCP dummy packets are used for RDT, too.
              */
-            if (!(rt->server_type == RTSP_SERVER_WMS && i > 1) && s->iformat &&
-                CONFIG_RTPDEC)
+            if (CONFIG_RTPDEC &&
+                !(rt->server_type == RTSP_SERVER_WMS && i > 1) && s->iformat)
                 ff_rtp_send_punch_packets(rtsp_st->rtp_handle);
             break;
         }
@@ -1752,6 +1752,10 @@ redirect:
     rt->seq = 0;
 
     tcp_fd = ffurl_get_file_handle(rt->rtsp_hd);
+    if (tcp_fd < 0) {
+        err = tcp_fd;
+        goto fail;
+    }
     if (!getpeername(tcp_fd, (struct sockaddr*) &peer, &peer_len)) {
         getnameinfo((struct sockaddr*) &peer, peer_len, host, sizeof(host),
                     NULL, 0, NI_NUMERICHOST);
@@ -1794,7 +1798,7 @@ redirect:
         break;
     }
 
-    if (s->iformat && CONFIG_RTSP_DEMUXER)
+    if (CONFIG_RTSP_DEMUXER && s->iformat)
         err = ff_rtsp_setup_input_streams(s, reply);
     else if (CONFIG_RTSP_MUXER)
         err = ff_rtsp_setup_output_streams(s, host);
@@ -1885,7 +1889,7 @@ static int udp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
                     p[max_p].fd       = fds[fdsidx];
                     p[max_p++].events = POLLIN;
                 }
-                av_free(fds);
+                av_freep(&fds);
             }
         }
         n = poll(p, max_p, POLL_TIMEOUT_MS);
@@ -1994,7 +1998,7 @@ int ff_rtsp_fetch_packet(AVFormatContext *s, AVPacket *pkt)
             ret = ff_rdt_parse_packet(rt->cur_transport_priv, pkt, NULL, 0);
         } else if (rt->transport == RTSP_TRANSPORT_RTP) {
             ret = ff_rtp_parse_packet(rt->cur_transport_priv, pkt, NULL, 0);
-        } else if (rt->ts && CONFIG_RTPDEC) {
+        } else if (CONFIG_RTPDEC && rt->ts) {
             ret = avpriv_mpegts_parse_packet(rt->ts, pkt, rt->recvbuf + rt->recvbuf_pos, rt->recvbuf_len - rt->recvbuf_pos);
             if (ret >= 0) {
                 rt->recvbuf_pos += ret;
@@ -2133,7 +2137,7 @@ redo:
                     return AVERROR_EOF;
             }
         }
-    } else if (rt->ts && CONFIG_RTPDEC) {
+    } else if (CONFIG_RTPDEC && rt->ts) {
         ret = avpriv_mpegts_parse_packet(rt->ts, pkt, rt->recvbuf, len);
         if (ret >= 0) {
             if (ret < len) {
@@ -2217,7 +2221,7 @@ static int sdp_read_header(AVFormatContext *s)
     content[size] ='\0';
 
     err = ff_sdp_parse(s, content);
-    av_free(content);
+    av_freep(&content);
     if (err) goto fail;
 
     /* open each RTP stream */

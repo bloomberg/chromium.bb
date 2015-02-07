@@ -106,11 +106,15 @@ static int xcbgrab_reposition(AVFormatContext *s,
                               xcb_get_geometry_reply_t *geo)
 {
     XCBGrabContext *c = s->priv_data;
-    int x = c->x, y = c->y, p_x = p->win_x, p_y = p->win_y;
+    int x = c->x, y = c->y;
     int w = c->width, h = c->height, f = c->follow_mouse;
+    int p_x, p_y;
 
     if (!p || !geo)
         return AVERROR(EIO);
+
+    p_x = p->win_x;
+    p_y = p->win_y;
 
     if (f == FOLLOW_CENTER) {
         x = p_x - w / 2;
@@ -455,11 +459,11 @@ static int pixfmt_from_pixmap_format(AVFormatContext *s, int depth,
             switch (depth) {
             case 32:
                 if (fmt->bits_per_pixel == 32)
-                    *pix_fmt = AV_PIX_FMT_ARGB;
+                    *pix_fmt = AV_PIX_FMT_0RGB;
                 break;
             case 24:
                 if (fmt->bits_per_pixel == 32)
-                    *pix_fmt = AV_PIX_FMT_RGB32;
+                    *pix_fmt = AV_PIX_FMT_0RGB32;
                 else if (fmt->bits_per_pixel == 24)
                     *pix_fmt = AV_PIX_FMT_RGB24;
                 break;
@@ -564,7 +568,7 @@ static void setup_window(AVFormatContext *s)
     uint32_t values[] = { 1,
                           XCB_EVENT_MASK_EXPOSURE |
                           XCB_EVENT_MASK_STRUCTURE_NOTIFY };
-    xcb_rectangle_t rect = { c->x, c->y, c->width, c->height };
+    xcb_rectangle_t rect = { 0, 0, c->width, c->height };
 
     c->window = xcb_generate_id(c->conn);
 
@@ -608,11 +612,11 @@ static av_cold int xcbgrab_read_header(AVFormatContext *s)
         sscanf(s->filename, "+%d,%d", &c->x, &c->y);
     }
 
-    c->conn = xcb_connect(display_name, &screen_num);
+    c->conn = xcb_connect(display_name[0] ? display_name : NULL, &screen_num);
     av_freep(&display_name);
     if ((ret = xcb_connection_has_error(c->conn))) {
         av_log(s, AV_LOG_ERROR, "Cannot open display %s, error %d.\n",
-               (*s->filename) ? s->filename : "default", ret);
+               s->filename[0] ? s->filename : "default", ret);
         return AVERROR(EIO);
     }
     setup = xcb_get_setup(c->conn);

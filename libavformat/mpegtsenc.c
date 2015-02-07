@@ -577,7 +577,7 @@ static void mpegts_prefix_m2ts_header(AVFormatContext *s)
         uint32_t tp_extra_header = pcr % 0x3fffffff;
         tp_extra_header = AV_RB32(&tp_extra_header);
         avio_write(s->pb, (unsigned char *) &tp_extra_header,
-                sizeof(tp_extra_header));
+                   sizeof(tp_extra_header));
     }
 }
 
@@ -814,9 +814,9 @@ fail:
         service = ts->services[i];
         av_freep(&service->provider_name);
         av_freep(&service->name);
-        av_free(service);
+        av_freep(&service);
     }
-    av_free(ts->services);
+    av_freep(&ts->services);
     return ret;
 }
 
@@ -1400,7 +1400,8 @@ static int mpegts_write_end(AVFormatContext *s)
     MpegTSService *service;
     int i;
 
-    mpegts_write_flush(s);
+    if (s->pb)
+        mpegts_write_flush(s);
 
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *st = s->streams[i];
@@ -1416,9 +1417,9 @@ static int mpegts_write_end(AVFormatContext *s)
         service = ts->services[i];
         av_freep(&service->provider_name);
         av_freep(&service->name);
-        av_free(service);
+        av_freep(&service);
     }
-    av_free(ts->services);
+    av_freep(&ts->services);
 
     return 0;
 }

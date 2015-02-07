@@ -1,5 +1,6 @@
 fate-vsynth1-%: SRC = tests/data/vsynth1.yuv
 fate-vsynth2-%: SRC = tests/data/vsynth2.yuv
+fate-vsynth_lena-%: SRC = tests/data/vsynth_lena.yuv
 fate-vsynth3-%: SRC = tests/data/vsynth3.yuv
 fate-vsynth%: CODEC = $(word 3, $(subst -, ,$(@)))
 fate-vsynth%: FMT = avi
@@ -36,10 +37,15 @@ fate-vsynth%-dnxhd-720p-10bit:   ENCOPTS = -s hd720 -b 90M              \
                                            -pix_fmt yuv422p10 -frames 5 -qmax 8
 fate-vsynth%-dnxhd-720p-10bit:   FMT     = dnxhd
 
-FATE_VCODEC-$(call ENCDEC, DNXHD, MOV)  += dnxhd-1080i
+FATE_VCODEC-$(call ENCDEC, DNXHD, MOV)  += dnxhd-1080i dnxhd-1080i-colr
 fate-vsynth%-dnxhd-1080i:        ENCOPTS = -s hd1080 -b 120M -flags +ildct \
                                            -pix_fmt yuv422p -frames 5 -qmax 8
 fate-vsynth%-dnxhd-1080i:        FMT     = mov
+
+fate-vsynth%-dnxhd-1080i-colr:   ENCOPTS = -s hd1080 -b 120M -flags +ildct -movflags write_colr \
+                                           -pix_fmt yuv422p -frames 5 -qmax 8
+fate-vsynth%-dnxhd-1080i-colr:   DECOPTS = -sws_flags area+accurate_rnd+bitexact
+fate-vsynth%-dnxhd-1080i-colr:   FMT     = mov
 
 FATE_VCODEC-$(call ENCDEC, DVVIDEO, DV) += dv dv-411 dv-50
 fate-vsynth%-dv:                 CODEC   = dvvideo
@@ -308,6 +314,7 @@ FATE_VCODEC-$(call ENCDEC, ZLIB, AVI) += zlib
 FATE_VCODEC += $(FATE_VCODEC-yes)
 FATE_VSYNTH1 = $(FATE_VCODEC:%=fate-vsynth1-%)
 FATE_VSYNTH2 = $(FATE_VCODEC:%=fate-vsynth2-%)
+FATE_VSYNTH_LENA = $(FATE_VCODEC:%=fate-vsynth_lena-%)
 # Redundant tests because they just resize the input
 RESIZE_OFF   = dnxhd-720p dnxhd-720p-rd dnxhd-720p-10bit dnxhd-1080i \
                dv dv-411 dv-50 avui snow snow-hpel snow-ll
@@ -321,12 +328,14 @@ FATE_VSYNTH3 = $(FATE_VCODEC3:%=fate-vsynth3-%)
 
 $(FATE_VSYNTH1): tests/data/vsynth1.yuv
 $(FATE_VSYNTH2): tests/data/vsynth2.yuv
+$(FATE_VSYNTH_LENA): tests/data/vsynth_lena.yuv
 $(FATE_VSYNTH3): tests/data/vsynth3.yuv
 
-FATE_AVCONV += $(FATE_VSYNTH1) $(FATE_VSYNTH3)
-FATE_SAMPLES_AVCONV += $(FATE_VSYNTH2)
+FATE_AVCONV += $(FATE_VSYNTH1) $(FATE_VSYNTH2) $(FATE_VSYNTH3)
+FATE_SAMPLES_AVCONV += $(FATE_VSYNTH_LENA)
 
 fate-vsynth1: $(FATE_VSYNTH1)
 fate-vsynth2: $(FATE_VSYNTH2)
+fate-vsynth_lena: $(FATE_VSYNTH_LENA)
 fate-vsynth3: $(FATE_VSYNTH3)
-fate-vcodec:  fate-vsynth1 fate-vsynth2 fate-vsynth3
+fate-vcodec:  fate-vsynth1 fate-vsynth_lena fate-vsynth2 fate-vsynth3

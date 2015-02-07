@@ -491,7 +491,7 @@ static int64_t mkv_write_cues(AVFormatContext *s, mkv_cues *cues, mkv_track *tra
 
 static int put_xiph_codecpriv(AVFormatContext *s, AVIOContext *pb, AVCodecContext *codec)
 {
-    uint8_t *header_start[3];
+    const uint8_t *header_start[3];
     int header_len[3];
     int first_header_size;
     int j;
@@ -570,20 +570,21 @@ static int put_flac_codecpriv(AVFormatContext *s,
     return 0;
 }
 
-static void get_aac_sample_rates(AVFormatContext *s, AVCodecContext *codec,
-                                 int *sample_rate, int *output_sample_rate)
+static int get_aac_sample_rates(AVFormatContext *s, AVCodecContext *codec,
+                                int *sample_rate, int *output_sample_rate)
 {
     MPEG4AudioConfig mp4ac;
 
     if (avpriv_mpeg4audio_get_config(&mp4ac, codec->extradata,
                                      codec->extradata_size * 8, 1) < 0) {
-        av_log(s, AV_LOG_WARNING,
+        av_log(s, AV_LOG_ERROR,
                "Error parsing AAC extradata, unable to determine samplerate.\n");
-        return;
+        return AVERROR(EINVAL);
     }
 
     *sample_rate        = mp4ac.sample_rate;
     *output_sample_rate = mp4ac.ext_sample_rate;
+    return 0;
 }
 
 static int mkv_write_native_codecprivate(AVFormatContext *s,
@@ -822,8 +823,11 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
     if (!bit_depth)
         bit_depth = codec->bits_per_coded_sample;
 
-    if (codec->codec_id == AV_CODEC_ID_AAC)
-        get_aac_sample_rates(s, codec, &sample_rate, &output_sample_rate);
+    if (codec->codec_id == AV_CODEC_ID_AAC) {
+        ret = get_aac_sample_rates(s, codec, &sample_rate, &output_sample_rate);
+        if (ret < 0)
+            return ret;
+    }
 
     track = start_ebml_master(pb, MATROSKA_ID_TRACKENTRY, 0);
     put_ebml_uint (pb, MATROSKA_ID_TRACKNUMBER,
@@ -1084,12 +1088,15 @@ static int mkv_write_chapters(AVFormatContext *s)
     return 0;
 }
 
-static void mkv_write_simpletag(AVIOContext *pb, AVDictionaryEntry *t)
+static int mkv_write_simpletag(AVIOContext *pb, AVDictionaryEntry *t)
 {
     uint8_t *key = av_strdup(t->key);
     uint8_t *p   = key;
     const uint8_t *lang = NULL;
     ebml_master tag;
+
+    if (!key)
+        return AVERROR(ENOMEM);
 
     if ((p = strrchr(p, '-')) &&
         (lang = av_convert_lang_to(p + 1, AV_LANG_ISO639_2_BIBL)))
@@ -1112,6 +1119,7 @@ static void mkv_write_simpletag(AVIOContext *pb, AVDictionaryEntry *t)
     end_ebml_master(pb, tag);
 
     av_freep(&key);
+    return 0;
 }
 
 static int mkv_write_tag(AVFormatContext *s, AVDictionary *m, unsigned int elementid,
@@ -1135,11 +1143,15 @@ static int mkv_write_tag(AVFormatContext *s, AVDictionary *m, unsigned int eleme
         put_ebml_uint(s->pb, elementid, uid);
     end_ebml_master(s->pb, targets);
 
-    while ((t = av_dict_get(m, "", t, AV_DICT_IGNORE_SUFFIX)))
+    while ((t = av_dict_get(m, "", t, AV_DICT_IGNORE_SUFFIX))) {
         if (av_strcasecmp(t->key, "title") &&
             av_strcasecmp(t->key, "stereo_mode") &&
-            av_strcasecmp(t->key, "encoding_tool"))
-            mkv_write_simpletag(s->pb, t);
+            av_strcasecmp(t->key, "encoding_tool")) {
+            ret = mkv_write_simpletag(s->pb, t);
+            if (ret < 0)
+                return ret;
+        }
+    }
 
     end_ebml_master(s->pb, tag);
     return 0;

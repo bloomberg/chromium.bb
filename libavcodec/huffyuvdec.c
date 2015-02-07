@@ -30,8 +30,6 @@
  * huffyuv decoder
  */
 
-#define UNCHECKED_BITSTREAM_READER 1
-
 #include "avcodec.h"
 #include "get_bits.h"
 #include "huffyuv.h"

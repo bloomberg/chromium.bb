@@ -143,6 +143,8 @@ static int set_string_binary(void *obj, const AVOption *o, const char *val, uint
     len /= 2;
 
     ptr = bin = av_malloc(len);
+    if (!ptr)
+        return AVERROR(ENOMEM);
     while (*val) {
         int a = hexchar2int(*val++);
         int b = hexchar2int(*val++);
@@ -162,7 +164,7 @@ static int set_string(void *obj, const AVOption *o, const char *val, uint8_t **d
 {
     av_freep(dst);
     *dst = av_strdup(val);
-    return 0;
+    return *dst ? 0 : AVERROR(ENOMEM);
 }
 
 #define DEFAULT_NUMVAL(opt) ((opt->type == AV_OPT_TYPE_INT64 || \
@@ -711,7 +713,7 @@ int av_opt_get(void *obj, const char *name, int search_flags, uint8_t **out_val)
             *out_val = av_strdup(*(uint8_t**)dst);
         else
             *out_val = av_strdup("");
-        return 0;
+        return *out_val ? 0 : AVERROR(ENOMEM);
     case AV_OPT_TYPE_BINARY:
         len = *(int*)(((uint8_t *)dst) + sizeof(uint8_t *));
         if ((uint64_t)len*2 + 1 > INT_MAX)
@@ -757,7 +759,7 @@ int av_opt_get(void *obj, const char *name, int search_flags, uint8_t **out_val)
     if (ret >= sizeof(buf))
         return AVERROR(EINVAL);
     *out_val = av_strdup(buf);
-    return 0;
+    return *out_val ? 0 : AVERROR(ENOMEM);
 }
 
 static int get_number(void *obj, const char *name, const AVOption **o_out, double *num, int *den, int64_t *intnum,
@@ -1788,9 +1790,9 @@ int av_opt_is_set_to_default(void *obj, const AVOption *o)
         } tmp = {0};
         int opt_size = *(int *)((void **)dst + 1);
         void *opt_ptr = *(void **)dst;
-        if (!opt_ptr && (!o->default_val.str || !strlen(o->default_val.str)))
+        if (!opt_size && (!o->default_val.str || !strlen(o->default_val.str)))
             return 1;
-        if (opt_ptr && o->default_val.str && !strlen(o->default_val.str))
+        if (!opt_size ||  !o->default_val.str || !strlen(o->default_val.str ))
             return 0;
         if (opt_size != strlen(o->default_val.str) / 2)
             return 0;
@@ -1811,13 +1813,17 @@ int av_opt_is_set_to_default(void *obj, const AVOption *o)
         return (w == *(int *)dst) && (h == *((int *)dst+1));
     case AV_OPT_TYPE_VIDEO_RATE:
         q = (AVRational){0, 0};
-        if (o->default_val.str)
-            av_parse_video_rate(&q, o->default_val.str);
+        if (o->default_val.str) {
+            if ((ret = av_parse_video_rate(&q, o->default_val.str)) < 0)
+                return ret;
+        }
         return !av_cmp_q(*(AVRational*)dst, q);
     case AV_OPT_TYPE_COLOR: {
         uint8_t color[4] = {0, 0, 0, 0};
-        if (o->default_val.str)
-            av_parse_color(color, o->default_val.str, -1, NULL);
+        if (o->default_val.str) {
+            if ((ret = av_parse_color(color, o->default_val.str, -1, NULL)) < 0)
+                return ret;
+        }
         return !memcmp(color, dst, sizeof(color));
     }
     default:

@@ -43,6 +43,7 @@ typedef struct AVIStream {
     int remaining;
     int packet_size;
 
+    uint32_t handler;
     uint32_t scale;
     uint32_t rate;
     int sample_size;        /* size of one sample (or packet)
@@ -126,7 +127,7 @@ static inline int get_duration(AVIStream *ast, int len)
 {
     if (ast->sample_size)
         return len;
-    else if (ast->dshow_block_align)
+    else if (ast->dshow_block_align > 1)
         return (len + ast->dshow_block_align - 1) / ast->dshow_block_align;
     else
         return 1;
@@ -627,7 +628,7 @@ static int avi_read_header(AVFormatContext *s)
             }
 
             av_assert0(stream_index < s->nb_streams);
-            st->codec->stream_codec_tag = handler;
+            ast->handler = handler;
 
             avio_rl32(pb); /* flags */
             avio_rl16(pb); /* priority */
@@ -659,7 +660,7 @@ static int avi_read_header(AVFormatContext *s)
             avio_rl32(pb); /* quality */
             if (ast->cum_len*ast->scale/ast->rate > 3600) {
                 av_log(s, AV_LOG_ERROR, "crazy start time, iam scared, giving up\n");
-                return AVERROR_INVALIDDATA;
+                ast->cum_len = 0;
             }
             ast->sample_size = avio_rl32(pb); /* sample ssize */
             ast->cum_len    *= FFMAX(1, ast->sample_size);
@@ -774,6 +775,11 @@ static int avi_read_header(AVFormatContext *s)
                     /* This is needed to get the pict type which is necessary
                      * for generating correct pts. */
                     st->need_parsing = AVSTREAM_PARSE_HEADERS;
+
+                    if (st->codec->codec_id == AV_CODEC_ID_MPEG4 &&
+                        ast->handler == MKTAG('X', 'V', 'I', 'D'))
+                        st->codec->codec_tag = MKTAG('X', 'V', 'I', 'D');
+
                     if (st->codec->codec_tag == MKTAG('V', 'S', 'S', 'H'))
                         st->need_parsing = AVSTREAM_PARSE_FULL;
 
@@ -794,7 +800,7 @@ static int avi_read_header(AVFormatContext *s)
 //                    avio_skip(pb, size - 5 * 4);
                     break;
                 case AVMEDIA_TYPE_AUDIO:
-                    ret = ff_get_wav_header(pb, st->codec, size);
+                    ret = ff_get_wav_header(pb, st->codec, size, 0);
                     if (ret < 0)
                         return ret;
                     ast->dshow_block_align = st->codec->block_align;
@@ -822,7 +828,7 @@ static int avi_read_header(AVFormatContext *s)
                         st->need_parsing = AVSTREAM_PARSE_NONE;
                     /* AVI files with Xan DPCM audio (wrongly) declare PCM
                      * audio in the header but have Axan as stream_code_tag. */
-                    if (st->codec->stream_codec_tag == AV_RL32("Axan")) {
+                    if (ast->handler == AV_RL32("Axan")) {
                         st->codec->codec_id  = AV_CODEC_ID_XAN_DPCM;
                         st->codec->codec_tag = 0;
                         ast->dshow_block_align = 0;
@@ -1847,12 +1853,12 @@ static int avi_read_close(AVFormatContext *s)
                 av_freep(&ast->sub_ctx->pb);
                 avformat_close_input(&ast->sub_ctx);
             }
-            av_free(ast->sub_buffer);
+            av_freep(&ast->sub_buffer);
             av_free_packet(&ast->sub_pkt);
         }
     }
 
-    av_free(avi->dv_demux);
+    av_freep(&avi->dv_demux);
 
     return 0;
 }
@@ -1863,8 +1869,8 @@ static int avi_probe(AVProbeData *p)
 
     /* check file header */
     for (i = 0; avi_headers[i][0]; i++)
-        if (!memcmp(p->buf,     avi_headers[i],     4) &&
-            !memcmp(p->buf + 8, avi_headers[i] + 4, 4))
+        if (AV_RL32(p->buf    ) == AV_RL32(avi_headers[i]    ) &&
+            AV_RL32(p->buf + 8) == AV_RL32(avi_headers[i] + 4))
             return AVPROBE_SCORE_MAX;
 
     return 0;

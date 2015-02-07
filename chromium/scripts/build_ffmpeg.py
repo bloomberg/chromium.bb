@@ -110,7 +110,7 @@ def DetermineHostOsAndArch():
 
 
 def GetDsoName(target_os, dso_name, dso_version):
-  if target_os == 'linux':
+  if target_os in ('linux', 'linux-noasm'):
     return 'lib%s.so.%s' % (dso_name, dso_version)
   elif target_os == 'mac':
     return 'lib%s.%s.dylib' % (dso_name, dso_version)
@@ -148,7 +148,7 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
                   'HAVE_EBP_AVAILABLE 1',
                   'HAVE_EBP_AVAILABLE 0')
 
-  if host_os == target_os and not config_only:
+  if target_os in (host_os, host_os + '-noasm') and not config_only:
     libraries = [
         os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 56)),
         os.path.join('libavformat', GetDsoName(target_os, 'avformat', 56)),
