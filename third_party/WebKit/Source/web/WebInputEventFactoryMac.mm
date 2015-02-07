@@ -62,6 +62,10 @@ enum {
     NSEventPhaseMayBegin    = 0x1 << 5
 };
 
+enum {
+    NSEventTypeSmartMagnify = 32
+};
+
 #endif  // __MAC_OS_X_VERSION_MAX_ALLOWED < 1080
 
 namespace blink {
@@ -1147,6 +1151,14 @@ WebGestureEvent WebInputEventFactory::gestureEvent(NSEvent *event, NSView *view)
     case NSEventTypeMagnify:
         result.type = WebInputEvent::GesturePinchUpdate;
         result.data.pinchUpdate.scale = [event magnification] + 1.0;
+        break;
+    case NSEventTypeSmartMagnify:
+        // Map the Cocoa "double-tap with two fingers" zoom gesture to regular
+        // GestureDoubleTap, because the effect is similar to single-finger
+        // double-tap zoom on mobile platforms. Note that tapCount is set to 1
+        // because the gesture type already encodes that information.
+        result.type = WebInputEvent::GestureDoubleTap;
+        result.data.tap.tapCount = 1;
         break;
     case NSEventTypeBeginGesture:
     case NSEventTypeEndGesture:
