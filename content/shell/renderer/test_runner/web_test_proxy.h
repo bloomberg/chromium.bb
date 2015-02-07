@@ -76,7 +76,6 @@ typedef unsigned WebColor;
 namespace content {
 
 class MockCredentialManagerClient;
-class MockPresentationClient;
 class MockScreenOrientationClient;
 class MockWebSpeechRecognizer;
 class MockWebUserMediaClient;
@@ -132,7 +131,6 @@ class WebTestProxyBase {
   blink::WebMIDIClientMock* GetMIDIClientMock();
   MockWebSpeechRecognizer* GetSpeechRecognizerMock();
   MockCredentialManagerClient* GetCredentialManagerClientMock();
-  MockPresentationClient* GetPresentationClientMock();
 
   WebTaskList* mutable_task_list() { return &task_list_; }
 
@@ -269,7 +267,6 @@ class WebTestProxyBase {
   scoped_ptr<blink::WebMIDIClientMock> midi_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
   scoped_ptr<MockScreenOrientationClient> screen_orientation_client_;
-  scoped_ptr<MockPresentationClient> presentation_client_;
 
   std::string accept_languages_;
 
