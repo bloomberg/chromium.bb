@@ -101,7 +101,8 @@ void WebLayerTreeViewImpl::ApplyViewportDeltas(
 }
 
 void WebLayerTreeViewImpl::RequestNewOutputSurface() {
-  layer_tree_host_->SetOutputSurface(output_surface_.Pass());
+  if (output_surface_.get())
+    layer_tree_host_->SetOutputSurface(output_surface_.Pass());
 }
 
 void WebLayerTreeViewImpl::DidFailToInitializeOutputSurface() {
