@@ -746,6 +746,24 @@ base::string16 FontCollectionLoader::GetFontNameFromKey(UINT32 idx) {
   return reg_fonts_[idx];
 }
 
+const wchar_t* kFontsToIgnore[] = {
+  // "Gill Sans Ultra Bold" turns into an Ultra Bold weight "Gill Sans" in
+  // DirectWrite, but most users don't have any other weights. The regular
+  // weight font is named "Gill Sans MT", but that ends up in a different
+  // family with that name. On Mac, there's a "Gill Sans" with various weights,
+  // so CSS authors use { 'font-family': 'Gill Sans', 'Gill Sans MT', ... } and
+  // because of the DirectWrite family futzing, they end up with an Ultra Bold
+  // font, when they just wanted "Gill Sans". Mozilla implemented a more
+  // complicated hack where they effectively rename the Ultra Bold font to
+  // "Gill Sans MT Ultra Bold", but because the Ultra Bold font is so ugly
+  // anyway, we simply ignore it. See
+  // http://www.microsoft.com/typography/fonts/font.aspx?FMID=978 for a picture
+  // of the font, and the file name. We also ignore "Gill Sans Ultra Bold
+  // Condensed".
+  L"gilsanub.ttf",
+  L"gillubcd.ttf",
+};
+
 bool FontCollectionLoader::LoadFontListFromRegistry() {
   const wchar_t kFontsRegistry[] =
       L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
@@ -773,7 +791,15 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
            value.size() < kMaxFontFileNameLength - 1) ||
           base::FilePath::CompareEqualIgnoreCase(system_font_path.value(),
                                                  path.DirName().value())) {
-        reg_fonts_.push_back(value.c_str());
+        bool should_ignore = false;
+        for (const auto& ignore : kFontsToIgnore) {
+          if (base::FilePath::CompareEqualIgnoreCase(path.value(), ignore)) {
+            should_ignore = true;
+            break;
+          }
+        }
+        if (!should_ignore)
+          reg_fonts_.push_back(value.c_str());
       }
     }
   }
