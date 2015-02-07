@@ -160,6 +160,11 @@ bool SoftwareRenderer::BindFramebufferToTexture(
     DrawingFrame* frame,
     const ScopedResource* texture,
     const gfx::Rect& target_rect) {
+  DCHECK(texture->id());
+
+  // Explicitly release lock, otherwise we can crash when try to lock
+  // same texture again.
+  current_framebuffer_lock_ = nullptr;
   current_framebuffer_lock_ = make_scoped_ptr(
       new ResourceProvider::ScopedWriteLockSoftware(
           resource_provider_, texture->id()));

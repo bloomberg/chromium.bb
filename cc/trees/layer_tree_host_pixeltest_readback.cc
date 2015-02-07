@@ -1144,6 +1144,38 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerOutsideViewport) {
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
+class LayerTreeHostReadbackNonFirstNonRootRenderPassPixelTest
+    : public LayerTreeHostReadbackPixelTest,
+      public testing::WithParamInterface<bool> {};
+
+TEST_P(LayerTreeHostReadbackNonFirstNonRootRenderPassPixelTest,
+       ReadbackNonRootOrFirstLayer) {
+  // This test has 3 render passes with the copy request on the render pass in
+  // the middle. Doing a copy request can be destructive of state, so for render
+  // passes after the first drawn the code path is different. This verifies the
+  // non-first and non-root path. See http://crbug.com/99393 for more info.
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  blue->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+      base::Bind(&IgnoreReadbackResult)));
+  background->AddChild(blue);
+
+  RunReadbackTestWithReadbackTarget(
+      GetParam() ? PIXEL_TEST_GL : PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      background.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    LayerTreeHostReadbackNonFirstNonRootRenderPassPixelTests,
+    LayerTreeHostReadbackNonFirstNonRootRenderPassPixelTest,
+    testing::Bool());
+
 }  // namespace
 }  // namespace cc
 

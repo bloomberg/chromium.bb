@@ -2712,6 +2712,8 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
                                           const gfx::Rect& target_rect) {
   DCHECK(texture->id());
 
+  // Explicitly release lock, otherwise we can crash when try to lock
+  // same texture again.
   current_framebuffer_lock_ = nullptr;
 
   SetStencilEnabled(false);
