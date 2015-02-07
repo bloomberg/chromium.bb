@@ -34,8 +34,6 @@ namespace {
 
 const char kNoDocumentURLErrorMessage[] =
     "No URL is associated with the caller's document.";
-const char kDisallowedURLErrorMessage[] =
-    "The URL is not supported.";
 const char kShutdownErrorMessage[] =
     "The Service Worker system has shutdown.";
 const char kUserDeniedPermissionMessage[] =
@@ -301,12 +299,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 
   if (!CanRegisterServiceWorker(
       provider_host->document_url(), pattern, script_url)) {
-    // TODO(kinuko): Change this back to BadMessageReceived() once we start
-    // to check these in the renderer too. (http://crbug.com/453982)
-    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
-            base::ASCIIToUTF16(kDisallowedURLErrorMessage)));
+    BadMessageReceived();
     return;
   }
 
@@ -391,12 +384,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
   }
 
   if (!CanUnregisterServiceWorker(provider_host->document_url(), pattern)) {
-    // TODO(kinuko): Change this back to BadMessageReceived() once we start
-    // to check these in the renderer too. (http://crbug.com/453982)
-    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) +
-            base::ASCIIToUTF16(kDisallowedURLErrorMessage)));
+    BadMessageReceived();
     return;
   }
 
@@ -466,12 +454,7 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
   }
 
   if (!CanGetRegistration(provider_host->document_url(), document_url)) {
-    // TODO(kinuko): Change this back to BadMessageReceived() once we start
-    // to check these in the renderer too. (http://crbug.com/453982)
-    Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
-            base::ASCIIToUTF16(kDisallowedURLErrorMessage)));
+    BadMessageReceived();
     return;
   }
 
