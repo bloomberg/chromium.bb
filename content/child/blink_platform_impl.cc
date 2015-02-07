@@ -666,38 +666,6 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
   return result;
 }
 
-blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    int num_args,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    unsigned char flags) {
-  return addTraceEvent(phase, category_group_enabled, name, id,
-                       monotonicallyIncreasingTime(),
-                       num_args, arg_names, arg_types, arg_values, flags);
-}
-
-blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    int num_args,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    const blink::WebConvertableToTraceFormat* convertable_values,
-    unsigned char flags) {
-  return addTraceEvent(phase, category_group_enabled, name, id,
-                       monotonicallyIncreasingTime(),
-                       num_args, arg_names, arg_types, arg_values,
-                       convertable_values, flags);
-}
-
 void BlinkPlatformImpl::updateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,
