@@ -24,7 +24,8 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
     public void testMultipleAddressesInText() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/geo_address_multiple.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/geo_address_multiple.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
@@ -37,7 +38,8 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
     public void testSplitAddresses() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/geo_address_split.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/geo_address_split.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
@@ -56,7 +58,8 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
     public void testAddressLimits() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/geo_address_limits.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/geo_address_limits.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
@@ -75,7 +78,8 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
     public void testRealAddresses() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/geo_address_real.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/geo_address_real.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
@@ -94,7 +98,8 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
     public void testSpecialChars() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/geo_address_special_chars.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/geo_address_special_chars.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),

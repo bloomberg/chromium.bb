@@ -24,7 +24,7 @@ public class EmailAddressDetectionTest extends ContentDetectionTestBase {
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
     public void testValidEmailAddresses() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/email.html");
+        startActivityWithTestUrl("content/test/data/android/content_detection/email.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // valid_1: i.want.a.pony@chromium.org.

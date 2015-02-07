@@ -16,18 +16,39 @@ public class UrlUtils {
 
     /**
      * Construct the full path of a test data file.
-     * @param path Pathname relative to external/chrome/testing/data
+     * @param path Pathname relative to external/chrome/test/data
      */
     public static String getTestFilePath(String path) {
+        // TODO(jbudorick): Remove DATA_DIR once everything has been isolated. crbug/400499
         return PathUtils.getExternalStorageDirectory() + DATA_DIR + path;
+    }
+
+    // TODO(jbudorick): Remove this function once everything has been isolated and switched back
+    // to getTestFilePath. crbug/400499
+    /**
+     * Construct the full path of a test data file.
+     * @param path Pathname relative to external/
+     */
+    public static String getIsolatedTestFilePath(String path) {
+        return PathUtils.getExternalStorageDirectory() + "/" + path;
     }
 
     /**
      * Construct a suitable URL for loading a test data file.
-     * @param path Pathname relative to external/chrome/testing/data
+     * @param path Pathname relative to external/chrome/test/data
      */
     public static String getTestFileUrl(String path) {
         return "file://" + getTestFilePath(path);
+    }
+
+    // TODO(jbudorick): Remove this function once everything has been isolated and switched back
+    // to getTestFileUrl. crbug/400499
+    /**
+     * Construct a suitable URL for loading a test data file.
+     * @param path Pathname relative to external/
+     */
+    public static String getIsolatedTestFileUrl(String path) {
+        return "file://" + getIsolatedTestFilePath(path);
     }
 
     /**
@@ -41,8 +62,7 @@ public class UrlUtils {
             // ' '->'+' needs to be undone and replaced with ' '->'%20'
             // to match the Data URI requirements.
             String encoded =
-                    "data:text/html;utf-8," +
-                    java.net.URLEncoder.encode(html, "UTF-8");
+                    "data:text/html;utf-8," + java.net.URLEncoder.encode(html, "UTF-8");
             encoded = encoded.replace("+", "%20");
             return encoded;
         } catch (java.io.UnsupportedEncodingException e) {

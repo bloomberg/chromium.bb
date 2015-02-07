@@ -75,10 +75,11 @@ public class ContentShellTestBase
      * @param url Test url to load.
      */
     protected void startActivityWithTestUrl(String url) throws Throwable {
-        launchContentShellWithUrl(UrlUtils.getTestFileUrl(url));
+        launchContentShellWithUrl(UrlUtils.getIsolatedTestFileUrl(url));
         assertNotNull(getActivity());
         assertTrue(waitForActiveShellToBeDoneLoading());
-        assertEquals(UrlUtils.getTestFileUrl(url), getContentViewCore().getWebContents().getUrl());
+        assertEquals(UrlUtils.getIsolatedTestFileUrl(url),
+                getContentViewCore().getWebContents().getUrl());
     }
 
     /**
