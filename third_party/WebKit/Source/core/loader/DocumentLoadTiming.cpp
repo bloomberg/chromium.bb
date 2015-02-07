@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/loader/DocumentLoadTiming.h"
 
+#include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/RefPtr.h"
 
@@ -65,6 +66,7 @@ double DocumentLoadTiming::monotonicTimeToPseudoWallTime(double monotonicTime) c
 
 void DocumentLoadTiming::markNavigationStart()
 {
+    TRACE_EVENT_MARK("blink.user_timing", "navigationStart");
     ASSERT(!m_navigationStart && !m_referenceMonotonicTime && !m_referenceWallTime);
 
     m_navigationStart = m_referenceMonotonicTime = monotonicallyIncreasingTime();
@@ -73,6 +75,7 @@ void DocumentLoadTiming::markNavigationStart()
 
 void DocumentLoadTiming::setNavigationStart(double navigationStart)
 {
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "navigationStart", navigationStart);
     ASSERT(m_referenceMonotonicTime && m_referenceWallTime);
     m_navigationStart = navigationStart;
 
@@ -87,12 +90,63 @@ void DocumentLoadTiming::setNavigationStart(double navigationStart)
 void DocumentLoadTiming::addRedirect(const KURL& redirectingUrl, const KURL& redirectedUrl)
 {
     m_redirectCount++;
-    if (!m_redirectStart)
-        m_redirectStart = m_fetchStart;
-    m_redirectEnd = m_fetchStart = monotonicallyIncreasingTime();
+    if (!m_redirectStart) {
+        setRedirectStart(m_fetchStart);
+    }
+    markRedirectEnd();
+    markFetchStart();
+
     // Check if the redirected url is allowed to access the redirecting url's timing information.
     RefPtr<SecurityOrigin> redirectedSecurityOrigin = SecurityOrigin::create(redirectedUrl);
     m_hasCrossOriginRedirect = !redirectedSecurityOrigin->canRequest(redirectingUrl);
+}
+
+void DocumentLoadTiming::markUnloadEventStart()
+{
+    TRACE_EVENT_MARK("blink.user_timing", "unloadEventStart");
+    m_unloadEventStart = monotonicallyIncreasingTime();
+}
+
+void DocumentLoadTiming::markUnloadEventEnd()
+{
+    TRACE_EVENT_MARK("blink.user_timing", "unloadEventEnd");
+    m_unloadEventEnd = monotonicallyIncreasingTime();
+}
+
+void DocumentLoadTiming::markFetchStart()
+{
+    TRACE_EVENT_MARK("blink.user_timing", "fetchStart");
+    m_fetchStart = monotonicallyIncreasingTime();
+}
+
+void DocumentLoadTiming::setResponseEnd(double responseEnd)
+{
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "responseEnd", responseEnd);
+    m_responseEnd = responseEnd;
+}
+
+void DocumentLoadTiming::markLoadEventStart()
+{
+    TRACE_EVENT_MARK("blink.user_timing", "loadEventStart");
+    m_loadEventStart = monotonicallyIncreasingTime();
+}
+
+void DocumentLoadTiming::markLoadEventEnd()
+{
+    TRACE_EVENT_MARK("blink.user_timing", "loadEventEnd");
+    m_loadEventEnd = monotonicallyIncreasingTime();
+}
+
+void DocumentLoadTiming::setRedirectStart(double redirectStart)
+{
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "redirectStart", redirectStart);
+    m_redirectStart = m_fetchStart;
+}
+
+void DocumentLoadTiming::markRedirectEnd()
+{
+    TRACE_EVENT_MARK("blink.user_timing", "redirectEnd");
+    m_redirectEnd = monotonicallyIncreasingTime();
 }
 
 } // namespace blink

@@ -43,12 +43,12 @@ public:
     void setNavigationStart(double);
     void addRedirect(const KURL& redirectingUrl, const KURL& redirectedUrl);
 
-    void markUnloadEventStart() { m_unloadEventStart = monotonicallyIncreasingTime(); }
-    void markUnloadEventEnd() { m_unloadEventEnd = monotonicallyIncreasingTime(); }
-    void markFetchStart() { m_fetchStart = monotonicallyIncreasingTime(); }
-    void setResponseEnd(double monotonicTime) { m_responseEnd = monotonicTime; }
-    void markLoadEventStart() { m_loadEventStart = monotonicallyIncreasingTime(); }
-    void markLoadEventEnd() { m_loadEventEnd = monotonicallyIncreasingTime(); }
+    void markUnloadEventStart();
+    void markUnloadEventEnd();
+    void markFetchStart();
+    void setResponseEnd(double);
+    void markLoadEventStart();
+    void markLoadEventEnd();
 
     void setHasSameOriginAsPreviousDocument(bool value) { m_hasSameOriginAsPreviousDocument = value; }
 
@@ -68,6 +68,9 @@ public:
     double referenceMonotonicTime() const { return m_referenceMonotonicTime; }
 
 private:
+    void setRedirectStart(double);
+    void markRedirectEnd();
+
     double m_referenceMonotonicTime;
     double m_referenceWallTime;
     double m_navigationStart;

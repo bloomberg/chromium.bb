@@ -284,6 +284,10 @@
     INTERNAL_TRACE_EVENT_ADD( \
         TRACE_EVENT_PHASE_MARK, category_group, name, TRACE_EVENT_FLAG_NONE)
 
+#define TRACE_EVENT_MARK_WITH_TIMESTAMP(category_group, name, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP( \
+        TRACE_EVENT_PHASE_MARK, category_group, name, timestamp, TRACE_EVENT_FLAG_NONE)
+
 #define TRACE_EVENT__MEASURE(category_group, name, start_mark, end_mark) \
     INTERNAL_TRACE_EVENT_ADD( \
         TRACE_EVENT_PHASE_MEASURE, category_group, name, TRACE_EVENT_FLAG_NONE, \
@@ -293,6 +297,10 @@
 #define TRACE_EVENT_COPY_MARK(category_group, name) \
     INTERNAL_TRACE_EVENT_ADD( \
         TRACE_EVENT_PHASE_MARK, category_group, name, TRACE_EVENT_FLAG_COPY)
+
+#define TRACE_EVENT_COPY_MARK_WITH_TIMESTAMP(category_group, name, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP( \
+        TRACE_EVENT_PHASE_MARK, category_group, name, timestamp, TRACE_EVENT_FLAG_COPY)
 
 #define TRACE_EVENT_COPY_MEASURE(category_group, name, start_mark, end_mark) \
     INTERNAL_TRACE_EVENT_ADD( \
