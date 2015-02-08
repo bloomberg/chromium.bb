@@ -418,6 +418,28 @@ TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReadyButDataIsReady) {
   RemoveMockTransaction(&kHostInfoTransaction1);
 }
 
+TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReadyAfterDeleteCache) {
+  scoped_ptr<QuicServerInfo> quic_server_info;
+  {
+    MockHttpCache cache;
+    AddMockTransaction(&kHostInfoTransaction1);
+    TestCompletionCallback callback;
+
+    QuicServerId server_id("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+    quic_server_info.reset(
+        new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
+    EXPECT_FALSE(quic_server_info->IsDataReady());
+    quic_server_info->Start();
+    int rv = quic_server_info->WaitForDataReady(callback.callback());
+    quic_server_info->CancelWaitForDataReadyCallback();
+    EXPECT_EQ(OK, callback.GetResult(rv));
+    EXPECT_TRUE(quic_server_info->IsDataReady());
+    RemoveMockTransaction(&kHostInfoTransaction1);
+  }
+  // Cancel the callback after Cache is deleted.
+  quic_server_info->CancelWaitForDataReadyCallback();
+}
+
 // Test Start() followed by Persist() without calling WaitForDataReady.
 TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
   MockHttpCache cache;
