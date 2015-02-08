@@ -1359,9 +1359,6 @@ crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-re
 
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
 
-crbug.com/452219 svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ NeedsRebaseline ]
-crbug.com/452219 svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ NeedsRebaseline ]
-
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
