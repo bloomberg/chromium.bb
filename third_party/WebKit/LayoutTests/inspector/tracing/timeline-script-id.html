@@ -35,6 +35,10 @@ function test()
         if (recordTypes.indexOf(record.type()) === -1)
             return;
 
+        var detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target());
+        if (detailsText)
+            InspectorTest.addResult("detailsTextContent for " + record.type() + " event: '" + detailsText + "'");
+
         var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target(), linkifier);
         if (details)
             InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent + "'");

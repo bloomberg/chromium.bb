@@ -99,7 +99,7 @@ InspectorTest.stopTimeline = function(callback)
     function didStop()
     {
         panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
-        callback();
+        InspectorTest.runAfterPendingDispatches(callback);
     }
     panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
     panel.toggleTimelineButton.element.click();
