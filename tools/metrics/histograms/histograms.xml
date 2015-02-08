@@ -12314,6 +12314,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ManagedUsers.Whitelist.Count" units="whitelists">
+  <owner>bauerb@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <summary>
+    The number of whitelists installed for a supervised user. Recorded at every
+    profile startup.
+  </summary>
+</histogram>
+
 <histogram name="ManagedUsers.Whitelist.JsonParseDuration" units="milliseconds">
   <owner>bauerb@chromium.org</owner>
   <owner>treib@chromium.org</owner>

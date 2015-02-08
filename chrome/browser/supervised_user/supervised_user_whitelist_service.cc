@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_split.h"
@@ -61,6 +63,7 @@ void SupervisedUserWhitelistService::Init() {
     bool new_installation = false;
     RegisterWhitelist(it.key(), name, new_installation);
   }
+  UMA_HISTOGRAM_COUNTS_100("ManagedUsers.Whitelist.Count", whitelists->size());
 
   // Register whitelists specified on the command line.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -257,6 +260,8 @@ syncer::SyncError SupervisedUserWhitelistService::ProcessSyncChanges(
 void SupervisedUserWhitelistService::AddNewWhitelist(
     base::DictionaryValue* pref_dict,
     const sync_pb::ManagedUserWhitelistSpecifics& whitelist) {
+  base::RecordAction(base::UserMetricsAction("ManagedUsers_Whitelist_Added"));
+
   bool new_installation = true;
   RegisterWhitelist(whitelist.id(), whitelist.name(), new_installation);
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
@@ -273,6 +278,8 @@ void SupervisedUserWhitelistService::SetWhitelistProperties(
 void SupervisedUserWhitelistService::RemoveWhitelist(
     base::DictionaryValue* pref_dict,
     const std::string& id) {
+  base::RecordAction(base::UserMetricsAction("ManagedUsers_Whitelist_Removed"));
+
   pref_dict->RemoveWithoutPathExpansion(id, NULL);
   installer_->UnregisterWhitelist(id);
   UnloadWhitelist(id);
