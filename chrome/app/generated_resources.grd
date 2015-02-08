@@ -2885,9 +2885,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_CERT_DETAILS_NOT_AFTER" desc="The label of the Validity->Not After element in the details page of the certificate info dialog.">
           Not After
         </message>
-        <message name="IDS_CERT_DETAILS_UTC_TIMEZONE" desc="The string specifying the timezone in the Validity->Not Before and Validity->Not After elements in the details page of the certificate info dialog.">
-          (UTC)
-        </message>
         <message name="IDS_CERT_DETAILS_SUBJECT" desc="The label of the Subject element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
           Subject
         </message>

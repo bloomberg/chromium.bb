@@ -5,10 +5,13 @@
 #include "base/i18n/time_formatting.h"
 
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/uversion.h"
+#include "third_party/icu/source/i18n/unicode/calendar.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace base {
 namespace {
@@ -17,6 +20,19 @@ const Time::Exploded kTestDateTimeExploded = {
   2011, 4, 6, 30, // Sat, Apr 30, 2011
   15, 42, 7, 0    // 15:42:07.000
 };
+
+base::string16 GetShortTimeZone() {
+  scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  // This code shamelessly taken from
+  // src/chrome/browser/chromeos/system/timezone_util.cc.
+  int raw_offset, dst_offset;
+  UErrorCode status;
+  zone->getOffset(icu::Calendar::getNow(), false, raw_offset, dst_offset,
+                  status);
+  icu::UnicodeString name;
+  zone->getDisplayName(true, icu::TimeZone::SHORT, name);
+  return base::string16(name.getBuffer(), name.length());
+}
 
 TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
   // Test for a locale defaulted to 12h clock.
@@ -129,6 +145,8 @@ TEST(TimeFormattingTest, TimeFormatDateUS) {
 
   EXPECT_EQ(ASCIIToUTF16("4/30/11, 3:42:07 PM"),
             TimeFormatShortDateAndTime(time));
+  EXPECT_EQ(ASCIIToUTF16("4/30/11, 3:42:07 PM ") + GetShortTimeZone(),
+            TimeFormatShortDateAndTimeWithTimeZone(time));
 
   EXPECT_EQ(ASCIIToUTF16("Saturday, April 30, 2011 at 3:42:07 PM"),
             TimeFormatFriendlyDateAndTime(time));
@@ -148,6 +166,8 @@ TEST(TimeFormattingTest, TimeFormatDateGB) {
   EXPECT_EQ(ASCIIToUTF16("30/04/2011"), TimeFormatShortDateNumeric(time));
   EXPECT_EQ(ASCIIToUTF16("30/04/2011 15:42:07"),
             TimeFormatShortDateAndTime(time));
+  EXPECT_EQ(ASCIIToUTF16("30/04/2011 15:42:07 ") + GetShortTimeZone(),
+            TimeFormatShortDateAndTimeWithTimeZone(time));
   EXPECT_EQ(ASCIIToUTF16("Saturday, 30 April 2011 15:42:07"),
             TimeFormatFriendlyDateAndTime(time));
   EXPECT_EQ(ASCIIToUTF16("Saturday, 30 April 2011"),

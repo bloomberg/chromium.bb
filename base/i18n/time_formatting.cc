@@ -106,6 +106,12 @@ string16 TimeFormatShortDateAndTime(const Time& time) {
   return TimeFormat(formatter.get(), time);
 }
 
+string16 TimeFormatShortDateAndTimeWithTimeZone(const Time& time) {
+  scoped_ptr<icu::DateFormat> formatter(icu::DateFormat::createDateTimeInstance(
+      icu::DateFormat::kShort, icu::DateFormat::kLong));
+  return TimeFormat(formatter.get(), time);
+}
+
 string16 TimeFormatFriendlyDateAndTime(const Time& time) {
   scoped_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateTimeInstance(icu::DateFormat::kFull));

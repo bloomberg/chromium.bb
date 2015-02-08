@@ -48,6 +48,11 @@ BASE_I18N_EXPORT string16 TimeFormatShortDateNumeric(const Time& time);
 // Returns a numeric date and time such as "12/13/52 2:44:30 PM".
 BASE_I18N_EXPORT string16 TimeFormatShortDateAndTime(const Time& time);
 
+// Returns a numeric date and time with time zone such as
+// "12/13/52 2:44:30 PM PST".
+BASE_I18N_EXPORT string16
+TimeFormatShortDateAndTimeWithTimeZone(const Time& time);
+
 // Formats a time in a friendly sentence format, e.g.
 // "Monday, March 6, 2008 2:44:30 PM".
 BASE_I18N_EXPORT string16 TimeFormatFriendlyDateAndTime(const Time& time);

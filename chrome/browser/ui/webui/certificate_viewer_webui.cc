@@ -350,16 +350,14 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_NOT_AFTER));
   base::Time issued, expires;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
-    // The object Time internally saves the time in UTC timezone. This is why we
-    // do a simple UTC string concatenation.
     node_details->SetString(
         "payload.val",
-        base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(issued)) + " " +
-            l10n_util::GetStringUTF8(IDS_CERT_DETAILS_UTC_TIMEZONE));
+        base::UTF16ToUTF8(
+            base::TimeFormatShortDateAndTimeWithTimeZone(issued)));
     alt_node_details->SetString(
         "payload.val",
-        base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(expires)) + " " +
-            l10n_util::GetStringUTF8(IDS_CERT_DETAILS_UTC_TIMEZONE));
+        base::UTF16ToUTF8(
+            base::TimeFormatShortDateAndTimeWithTimeZone(expires)));
   }
 
   cert_fields->Append(node_details = new base::DictionaryValue());
