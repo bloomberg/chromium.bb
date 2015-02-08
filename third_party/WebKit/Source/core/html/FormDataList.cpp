@@ -138,7 +138,7 @@ FormDataList::Entry FormDataList::itemsToEntry(const FormDataList::Item& key, co
     String filename = value.filename();
     if (filename.isNull())
         filename = "blob";
-    return Entry(name, File::create(filename, currentTime(), value.blob()->blobDataHandle()));
+    return Entry(name, File::create(filename, currentTimeMS(), value.blob()->blobDataHandle()));
 }
 
 bool FormDataList::hasEntry(const String& key) const

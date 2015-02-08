@@ -46,12 +46,12 @@ bool getFileSize(const String& path, long long& result)
     return true;
 }
 
-bool getFileModificationTime(const String& path, time_t& result)
+bool getFileModificationTime(const String& path, double& result)
 {
     FileMetadata metadata;
     if (!getFileMetadata(path, metadata))
         return false;
-    result = metadata.modificationTime;
+    result = metadata.modificationTimeMS;
     return true;
 }
 
@@ -60,7 +60,7 @@ bool getFileMetadata(const String& path, FileMetadata& metadata)
     WebFileInfo webFileInfo;
     if (!Platform::current()->fileUtilities()->getFileInfo(path, webFileInfo))
         return false;
-    metadata.modificationTime = webFileInfo.modificationTime;
+    metadata.modificationTimeMS = webFileInfo.modificationTimeMS;
     metadata.length = webFileInfo.length;
     metadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
     return true;

@@ -64,7 +64,8 @@ public:
     // Version 5: Added CryptoKeyTag for Key objects.
     // Version 6: Added indexed serialization for File, Blob, and FileList.
     // Version 7: Extended File serialization with user visibility.
-    static const uint32_t wireFormatVersion = 7;
+    // Version 8: File.lastModified in milliseconds (seconds-based in earlier versions.)
+    static const uint32_t wireFormatVersion = 8;
 
     // VarInt encoding constants.
     static const int varIntShift = 7;

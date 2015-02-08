@@ -1,4 +1,4 @@
-var kSerializedScriptValueVersion = 7;
+var kSerializedScriptValueVersion = 8;
 
 function forVersion(version, values) {
     var versionTag = 0xff;
