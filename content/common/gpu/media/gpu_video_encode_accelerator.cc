@@ -18,13 +18,12 @@
 #include "media/base/video_frame.h"
 
 #if defined(OS_CHROMEOS)
-#if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
+#if defined(USE_V4L2_CODEC)
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
-// defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
-#endif  // defined(ARCH_CPU_X86_FAMILY)
+#endif
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
 #include "content/common/gpu/media/android_video_encode_accelerator.h"
 #endif
@@ -212,8 +211,7 @@ GpuVideoEncodeAccelerator::CreateVEAFps() {
 scoped_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateV4L2VEA() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder;
-#if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
-    (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device));
