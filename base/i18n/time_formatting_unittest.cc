@@ -23,12 +23,6 @@ const Time::Exploded kTestDateTimeExploded = {
 
 base::string16 GetShortTimeZone() {
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
-  // This code shamelessly taken from
-  // src/chrome/browser/chromeos/system/timezone_util.cc.
-  int raw_offset, dst_offset;
-  UErrorCode status;
-  zone->getOffset(icu::Calendar::getNow(), false, raw_offset, dst_offset,
-                  status);
   icu::UnicodeString name;
   zone->getDisplayName(true, icu::TimeZone::SHORT, name);
   return base::string16(name.getBuffer(), name.length());
