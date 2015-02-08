@@ -308,7 +308,7 @@ class LogTest(cros_test_lib.TempDirTestCase):
                       25)
 
 
-class InterfaceTest(cros_test_lib.MoxTestCase, cros_test_lib.LoggingTestCase):
+class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
   """Test the command line interface."""
 
   _X86_PREFLIGHT = 'x86-generic-paladin'
@@ -401,28 +401,16 @@ class InterfaceTest(cros_test_lib.MoxTestCase, cros_test_lib.LoggingTestCase):
 
   def testValidateClobberUserDeclines_1(self):
     """Test case where user declines in prompt."""
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
-
-    os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
-
-    self.mox.ReplayAll()
+    self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(cros_build_lib, 'GetInput', return_value='No')
     self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
-    self.mox.VerifyAll()
 
   def testValidateClobberUserDeclines_2(self):
     """Test case where user does not enter the full 'yes' pattern."""
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
-
-    os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('asdf')
-    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
-
-    self.mox.ReplayAll()
+    self.PatchObject(os.path, 'exists', return_value=True)
+    m = self.PatchObject(cros_build_lib, 'GetInput', side_effect=['asdf', 'No'])
     self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
-    self.mox.VerifyAll()
+    self.assertEqual(m.call_count, 2)
 
   def testValidateClobberProtectRunningChromite(self):
     """User should not be clobbering our own source."""
@@ -474,9 +462,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase, cros_test_lib.LoggingTestCase):
         '--chrome_root=.',
         self._X86_PREFLIGHT,
     ]
-    self.mox.ReplayAll()
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
-    self.mox.VerifyAll()
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)
 
@@ -497,9 +483,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase, cros_test_lib.LoggingTestCase):
         '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
         self._X86_PREFLIGHT,
     ]
-    self.mox.ReplayAll()
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
-    self.mox.VerifyAll()
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)
 
