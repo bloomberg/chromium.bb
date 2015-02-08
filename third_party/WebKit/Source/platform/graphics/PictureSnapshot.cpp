@@ -123,6 +123,7 @@ PassOwnPtr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minRepeat
     const SkIRect bounds = m_picture->cullRect().roundOut();
     SkBitmap bitmap;
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
+    bitmap.eraseARGB(0, 0, 0, 0);
 
     double now = WTF::monotonicallyIncreasingTime();
     double stopTime = now + minDuration;

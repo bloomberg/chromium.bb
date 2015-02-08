@@ -39,6 +39,7 @@
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -64,6 +65,7 @@ public:
     {
         SkBitmap bitmap;
         bitmap.allocN32Pixels(size.width(), size.height());
+        bitmap.eraseColor(SK_ColorTRANSPARENT);
         m_nativeImage = NativeImageSkia::create(bitmap);
     }
 

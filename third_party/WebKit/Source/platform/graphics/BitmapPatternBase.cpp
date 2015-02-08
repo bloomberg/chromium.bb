@@ -36,6 +36,7 @@ PassRefPtr<SkShader> BitmapPatternBase::createShader()
 
     SkBitmap bm2;
     bm2.allocPixels(info);
+    bm2.eraseColor(SK_ColorTRANSPARENT);
     SkCanvas canvas(bm2);
 
     SkPaint paint;

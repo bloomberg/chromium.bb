@@ -55,6 +55,7 @@ public:
     {
         SkBitmap bitmap;
         bitmap.allocN32Pixels(size.width(), size.height(), isOpaque);
+        bitmap.eraseColor(SK_ColorTRANSPARENT);
         m_nativeImage = NativeImageSkia::create(bitmap);
     }
 
