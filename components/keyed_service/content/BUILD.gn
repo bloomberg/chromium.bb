@@ -13,6 +13,8 @@ component("content") {
     "browser_context_keyed_base_factory.cc",
     "browser_context_keyed_service_factory.cc",
     "browser_context_keyed_service_factory.h",
+    "browser_context_keyed_service_shutdown_notifier_factory.cc",
+    "browser_context_keyed_service_shutdown_notifier_factory.h",
     "refcounted_browser_context_keyed_service_factory.cc",
     "refcounted_browser_context_keyed_service_factory.h",
   ]
