@@ -565,7 +565,6 @@
             'animation/ColorStyleInterpolation.cpp',
             'animation/ColorStyleInterpolation.h',
             'animation/ConstantStyleInterpolation.h',
-            'animation/DefaultStyleInterpolation.h',
             'animation/DeferredLegacyStyleInterpolation.cpp',
             'animation/DeferredLegacyStyleInterpolation.h',
             'animation/DocumentAnimation.h',

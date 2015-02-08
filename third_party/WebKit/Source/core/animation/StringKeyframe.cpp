@@ -7,7 +7,6 @@
 
 #include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/ConstantStyleInterpolation.h"
-#include "core/animation/DefaultStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/ImageStyleInterpolation.h"
@@ -85,11 +84,10 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     InterpolationRange range = RangeAll;
     bool fallBackToLegacy = false;
 
-    if (!CSSPropertyMetadata::isAnimatableProperty(property)) {
-        // FIXME: Remove this once TimingFunction partitioning is implemented for all types.
-        if (!RuntimeEnabledFeatures::webAnimationsAPITimingFunctionPartitioningEnabled())
-            return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+    // FIXME: Remove this flag once we can rely on legacy's behaviour being correct.
+    bool forceDefaultInterpolation = false;
 
+    if (!CSSPropertyMetadata::isAnimatableProperty(property)) {
         if (fromCSSValue == toCSSValue)
             return ConstantStyleInterpolation::create(fromCSSValue, property);
 
@@ -239,8 +237,10 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return interpolation.release();
 
         // FIXME: AnimatableShadow incorrectly animates between inset and non-inset values so it will never indicate it needs default interpolation
-        if (ShadowStyleInterpolation::usesDefaultStyleInterpolation(*fromCSSValue, *toCSSValue))
-            return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+        if (ShadowStyleInterpolation::usesDefaultStyleInterpolation(*fromCSSValue, *toCSSValue)) {
+            forceDefaultInterpolation = true;
+            break;
+        }
 
         // FIXME: Handle interpolation from/to none, unspecified color values
         fallBackToLegacy = true;
@@ -276,7 +276,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         // We use default interpolation for
         // baseline-shift keywords 'super', 'sub', and
         // from and to values with distinct units.
-        return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+        forceDefaultInterpolation = true;
+        break;
     }
 
     default:
@@ -284,6 +285,12 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         fallBackToLegacy = true;
         break;
     }
+
+    if (fromCSSValue == toCSSValue)
+        return ConstantStyleInterpolation::create(fromCSSValue, property);
+
+    if (forceDefaultInterpolation)
+        return nullptr;
 
     if (fromCSSValue->isUnsetValue() || fromCSSValue->isInheritedValue() || fromCSSValue->isInitialValue()
         || toCSSValue->isUnsetValue() || toCSSValue->isInheritedValue() || toCSSValue->isInitialValue())
@@ -310,14 +317,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     ASSERT(AnimatableValue::usesDefaultInterpolation(
         StyleResolver::createAnimatableValueSnapshot(*element, property, *fromCSSValue).get(),
         StyleResolver::createAnimatableValueSnapshot(*element, property, *toCSSValue).get()));
-
-
-    // FIXME: Remove this once TimingFunction partitioning is implemented for all types.
-    if (!RuntimeEnabledFeatures::webAnimationsAPITimingFunctionPartitioningEnabled())
-        return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
-
-    if (fromCSSValue == toCSSValue)
-        return ConstantStyleInterpolation::create(fromCSSValue, property);
 
     return nullptr;
 

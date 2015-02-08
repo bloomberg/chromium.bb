@@ -39,8 +39,6 @@ void InterpolationEffect::addInterpolationsFromKeyframes(CSSPropertyID property,
     if (interpolation) {
         addInterpolation(interpolation, &keyframeA.easing(), keyframeA.offset(), keyframeB.offset(), applyFrom, applyTo);
     } else {
-        ASSERT(RuntimeEnabledFeatures::webAnimationsAPITimingFunctionPartitioningEnabled());
-
         RefPtrWillBeRawPtr<Interpolation> interpolationA = keyframeA.maybeCreateInterpolation(property, keyframeA, element);
         RefPtrWillBeRawPtr<Interpolation> interpolationB = keyframeB.maybeCreateInterpolation(property, keyframeB, element);
 

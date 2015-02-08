@@ -149,7 +149,6 @@ Touch status=stable
 TouchIconLoading
 UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
-WebAnimationsAPITimingFunctionPartitioning
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
