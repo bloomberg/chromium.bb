@@ -87,7 +87,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         LocationProviderFactory.setLocationProviderImpl(mMockLocationProvider);
 
         try {
-            startActivityWithTestUrl("content/test/data/android/geolocation.html");
+            startActivityWithTestUrl("content/geolocation.html");
         } catch (Throwable t) {
             fail();
         }
