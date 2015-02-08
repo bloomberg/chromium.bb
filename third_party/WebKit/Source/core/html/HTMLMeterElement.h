@@ -69,6 +69,7 @@ private:
     virtual ~HTMLMeterElement();
 
     virtual bool areAuthorShadowsAllowed() const override { return false; }
+    virtual void willAddFirstAuthorShadowRoot() override;
     RenderMeter* renderMeter() const;
 
     virtual bool supportLabels() const override { return true; }

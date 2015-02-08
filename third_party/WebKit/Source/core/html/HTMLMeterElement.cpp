@@ -211,6 +211,12 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     inner->appendChild(bar);
 }
 
+void HTMLMeterElement::willAddFirstAuthorShadowRoot()
+{
+    ASSERT(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled());
+    lazyReattachIfAttached();
+}
+
 void HTMLMeterElement::trace(Visitor* visitor)
 {
     visitor->trace(m_value);

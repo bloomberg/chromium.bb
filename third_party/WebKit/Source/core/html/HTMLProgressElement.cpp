@@ -170,6 +170,12 @@ bool HTMLProgressElement::shouldAppearIndeterminate() const
     return !isDeterminate();
 }
 
+void HTMLProgressElement::willAddFirstAuthorShadowRoot()
+{
+    ASSERT(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled());
+    lazyReattachIfAttached();
+}
+
 void HTMLProgressElement::trace(Visitor* visitor)
 {
     visitor->trace(m_value);
