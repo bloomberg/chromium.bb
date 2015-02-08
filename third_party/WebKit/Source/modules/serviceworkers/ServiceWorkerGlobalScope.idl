@@ -45,7 +45,7 @@
 
   [RaisesException] void close();
 
-  [CallWith=ScriptState] Promise skipWaiting();
+  [CallWith=ScriptState] Promise<void> skipWaiting();
 
   attribute EventHandler onactivate;
   [RuntimeEnabled=ServiceWorkerOnFetch] attribute EventHandler onfetch;
