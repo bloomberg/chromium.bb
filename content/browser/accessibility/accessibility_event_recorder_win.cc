@@ -95,6 +95,11 @@ class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
                       DWORD event_thread,
                       DWORD event_time);
 
+  // Wrapper around AccessibleObjectFromWindow because the function call
+  // inexplicably flakes sometimes on build/trybots.
+  HRESULT AccessibleObjectFromWindowWrapper(
+      HWND hwnd, DWORD dwId, REFIID riid, void **ppvObject);
+
   HWINEVENTHOOK win_event_hook_handle_;
   static AccessibilityEventRecorderWin* instance_;
 };
@@ -138,7 +143,6 @@ AccessibilityEventRecorderWin::AccessibilityEventRecorderWin(
       GetCurrentProcessId(),
       0,  // Hook all threads
       WINEVENT_INCONTEXT);
-  LOG(INFO) << "SetWinEventHook handle: " << win_event_hook_handle_;
   CHECK(win_event_hook_handle_);
 }
 
@@ -155,18 +159,8 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     LONG child_id,
     DWORD event_thread,
     DWORD event_time) {
-  // http://crbug.com/440579 TODO(dmazzoni): remove most logging in this file,
-  // or change to VLOG(1), once flakiness on CrWinClang testers is fixed.
-  LOG(INFO) << "OnWinEventHook handle=" << handle
-            << " event=" << event
-            << " hwnd=" << hwnd
-            << " obj_id=" << obj_id
-            << " child_id=" << child_id
-            << " event_thread=" << event_thread
-            << " event_time=" << event_time;
-
   base::win::ScopedComPtr<IAccessible> browser_accessible;
-  HRESULT hr = AccessibleObjectFromWindow(
+  HRESULT hr = AccessibleObjectFromWindowWrapper(
       hwnd,
       obj_id,
       IID_IAccessible,
@@ -175,10 +169,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     // Note: our event hook will pick up some superfluous events we
     // don't care about, so it's safe to just ignore these failures.
     // Same below for other HRESULT checks.
-    LOG(INFO) << "Ignoring result " << hr << " from AccessibleObjectFromWindow";
-    TCHAR name[MAX_PATH];
-    GetClassName(hwnd, name, _countof(name));
-    LOG(INFO) << "Hwnd " << hwnd << " class is " << name;
+    VLOG(1) << "Ignoring result " << hr << " from AccessibleObjectFromWindow";
     return;
   }
 
@@ -186,21 +177,21 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   base::win::ScopedComPtr<IDispatch> dispatch;
   hr = browser_accessible->get_accChild(childid_variant, dispatch.Receive());
   if (!SUCCEEDED(hr) || !dispatch) {
-    LOG(INFO) << "Ignoring result " << hr << " and result " << dispatch
-              << " from get_accChild";
+    VLOG(1) << "Ignoring result " << hr << " and result " << dispatch
+            << " from get_accChild";
     return;
   }
 
   base::win::ScopedComPtr<IAccessible> iaccessible;
   hr = dispatch.QueryInterface(iaccessible.Receive());
   if (!SUCCEEDED(hr)) {
-    LOG(INFO) << "Ignoring result " << hr << " from QueryInterface";
+    VLOG(1) << "Ignoring result " << hr << " from QueryInterface";
     return;
   }
 
   std::string event_str = AccessibilityEventToStringUTF8(event);
   if (event_str.empty()) {
-    LOG(INFO) << "Ignoring event " << event;
+    VLOG(1) << "Ignoring event " << event;
     return;
   }
 
@@ -244,9 +235,27 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     }
   }
 
-  LOG(INFO) << "Got event log: " << log;
-
   event_logs_.push_back(log);
+}
+
+HRESULT AccessibilityEventRecorderWin::AccessibleObjectFromWindowWrapper(
+    HWND hwnd, DWORD dw_id, REFIID riid, void** ppv_object) {
+  HRESULT hr = ::AccessibleObjectFromWindow(hwnd, dw_id, riid, ppv_object);
+  if (SUCCEEDED(hr))
+    return hr;
+
+  // The above call to ::AccessibleObjectFromWindow fails for unknown
+  // reasons every once in a while on the bots.  Work around it by grabbing
+  // the object directly from the BrowserAccessibilityManager.
+  HWND accessibility_hwnd =
+      manager_->delegate()->AccessibilityGetAcceleratedWidget();
+  if (accessibility_hwnd != hwnd)
+    return E_FAIL;
+
+  IAccessible* obj = manager_->GetRoot()->ToBrowserAccessibilityWin();
+  obj->AddRef();
+  *ppv_object = obj;
+  return S_OK;
 }
 
 }  // namespace content
