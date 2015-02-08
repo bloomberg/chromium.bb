@@ -340,13 +340,13 @@ def RunWebkitLayoutTests(options):
       unexpected_passes, unexpected_failures, unexpected_flakes = (
           _ParseLayoutTestResults(full_results))
       if unexpected_failures:
-        _PrintDashboardLink('failed', unexpected_failures,
+        _PrintDashboardLink('failed', unexpected_failures.keys(),
                             max_tests=25)
       elif unexpected_passes:
-        _PrintDashboardLink('unexpected passes', unexpected_passes,
+        _PrintDashboardLink('unexpected passes', unexpected_passes.keys(),
                             max_tests=10)
       if unexpected_flakes:
-        _PrintDashboardLink('unexpected flakes', unexpected_flakes,
+        _PrintDashboardLink('unexpected flakes', unexpected_flakes.keys(),
                             max_tests=10)
 
       if exit_code == 0 and (unexpected_passes or unexpected_flakes):
