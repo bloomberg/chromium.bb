@@ -9,6 +9,8 @@ crbug.com/420198 [ Linux ] virtual/gpu/fast/canvas/webgl/uninitialized-test.html
 crbug.com/420198 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/webgl/uninitialized-test.html [ Skip ]
 crbug.com/420198 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-large-texture.html [ Skip ]
 crbug.com/420198 [ Linux ] perf/array-nested-loop.html [ Skip ]
+crbug.com/420198 [ Linux ] fast/css/fontface-arraybuffer.html [ Skip ]
+crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/css/fontface-arraybuffer.html [ Skip ]
 
 # Deliberate infinite recursion. A JS exception is expected, but may crash with
 # a stack overflow due to bloated stack frames under MSan.
@@ -31,3 +33,4 @@ crbug.com/454329 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.ht
 
 # Flaky under MSAN (hang forever)
 crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
+
