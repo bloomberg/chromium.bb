@@ -41,8 +41,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   virtual void OnNodeCreated(ui::AXNode* node) override;
 
   // BrowserAccessibilityManager methods
-  virtual void OnWindowFocused() override;
-  virtual void NotifyAccessibilityEvent(
+  void OnWindowFocused() override;
+  void UserIsReloading() override;
+  void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) override;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when

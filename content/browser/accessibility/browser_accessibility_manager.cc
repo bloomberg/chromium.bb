@@ -79,6 +79,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       focus_(NULL),
+      user_is_navigating_away_(false),
       osk_state_(OSK_ALLOWED) {
   tree_->SetDelegate(this);
 }
@@ -91,6 +92,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       focus_(NULL),
+      user_is_navigating_away_(false),
       osk_state_(OSK_ALLOWED) {
   tree_->SetDelegate(this);
   Initialize(initial_tree);
@@ -150,6 +152,22 @@ void BrowserAccessibilityManager::OnWindowFocused() {
 void BrowserAccessibilityManager::OnWindowBlurred() {
   if (focus_)
     NotifyAccessibilityEvent(ui::AX_EVENT_BLUR, GetFromAXNode(focus_));
+}
+
+void BrowserAccessibilityManager::UserIsNavigatingAway() {
+  user_is_navigating_away_ = true;
+}
+
+void BrowserAccessibilityManager::UserIsReloading() {
+  user_is_navigating_away_ = true;
+}
+
+void BrowserAccessibilityManager::NavigationSucceeded() {
+  user_is_navigating_away_ = false;
+}
+
+void BrowserAccessibilityManager::NavigationFailed() {
+  user_is_navigating_away_ = false;
 }
 
 void BrowserAccessibilityManager::GotMouseDown() {
