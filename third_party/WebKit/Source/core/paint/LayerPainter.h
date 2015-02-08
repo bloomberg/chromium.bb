@@ -16,6 +16,8 @@ class Layer;
 
 class LayerPainter {
 public:
+    enum FragmentPolicy { AllowMultipleFragments, ForceSingleFragment };
+
     LayerPainter(Layer& renderLayer) : m_renderLayer(renderLayer) { }
 
     // The paint() method paints the layers that intersect the damage rect from back to front.
@@ -24,14 +26,14 @@ public:
     // paintLayer() assumes that the caller will clip to the bounds of the painting dirty if necessary.
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     // paintLayerContents() assumes that the caller will clip to the bounds of the painting dirty rect if necessary.
-    void paintLayerContents(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
+    void paintLayerContents(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, FragmentPolicy = AllowMultipleFragments);
 
     void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, LayoutObject* paintingRoot = 0);
 
 private:
     enum ClipState { HasNotClipped, HasClipped };
 
-    void paintLayerContentsAndReflection(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
+    void paintLayerContentsAndReflection(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, FragmentPolicy = AllowMultipleFragments);
     void paintLayerWithTransform(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     void paintFragmentByApplyingTransform(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& fragmentTranslation);
 

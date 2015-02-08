@@ -1552,18 +1552,23 @@ bool Layer::hasOverflowControls() const
     return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->scrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
 }
 
+void Layer::appendSingleFragmentIgnoringPagination(LayerFragments& fragments, const Layer* rootLayer, const LayoutRect& dirtyRect, ClipRectsCacheSlot clipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot, const LayoutSize& subPixelAccumulation)
+{
+    LayerFragment fragment;
+    ClipRectsContext clipRectsContext(rootLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy, subPixelAccumulation);
+    if (respectOverflowClip == IgnoreOverflowClip)
+        clipRectsContext.setIgnoreOverflowClip();
+    clipper().calculateRects(clipRectsContext, dirtyRect, fragment.layerBounds, fragment.backgroundRect, fragment.foregroundRect, fragment.outlineRect, offsetFromRoot);
+    fragments.append(fragment);
+}
+
 void Layer::collectFragments(LayerFragments& fragments, const Layer* rootLayer, const LayoutRect& dirtyRect,
     ClipRectsCacheSlot clipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot,
     const LayoutSize& subPixelAccumulation, const LayoutRect* layerBoundingBox)
 {
-    if (!enclosingPaginationLayer() || hasTransformRelatedProperty()) {
+    if (!enclosingPaginationLayer()) {
         // For unpaginated layers, there is only one fragment.
-        LayerFragment fragment;
-        ClipRectsContext clipRectsContext(rootLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy, subPixelAccumulation);
-        if (respectOverflowClip == IgnoreOverflowClip)
-            clipRectsContext.setIgnoreOverflowClip();
-        clipper().calculateRects(clipRectsContext, dirtyRect, fragment.layerBounds, fragment.backgroundRect, fragment.foregroundRect, fragment.outlineRect, offsetFromRoot);
-        fragments.append(fragment);
+        appendSingleFragmentIgnoringPagination(fragments, rootLayer, dirtyRect, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy, respectOverflowClip, offsetFromRoot, subPixelAccumulation);
         return;
     }
 
@@ -1884,7 +1889,10 @@ Layer* Layer::hitTestLayer(Layer* rootLayer, Layer* containerLayer, const HitTes
 
     // Collect the fragments. This will compute the clip rectangles for each layer fragment.
     LayerFragments layerFragments;
-    collectFragments(layerFragments, rootLayer, hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
+    if (appliedTransform)
+        appendSingleFragmentIgnoringPagination(layerFragments, rootLayer, hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
+    else
+        collectFragments(layerFragments, rootLayer, hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
 
     if (m_scrollableArea && m_scrollableArea->hitTestResizerInFragments(layerFragments, hitTestLocation)) {
         renderer()->updateHitTestResult(result, hitTestLocation.point());
