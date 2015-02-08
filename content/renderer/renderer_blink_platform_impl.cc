@@ -983,11 +983,27 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
 
   if (gpu_channel_host.get() && gl_info) {
     const gpu::GPUInfo& gpu_info = gpu_channel_host->gpu_info();
-    gl_info->vendorInfo.assign(blink::WebString::fromUTF8(gpu_info.gl_vendor));
-    gl_info->rendererInfo.assign(
-        blink::WebString::fromUTF8(gpu_info.gl_renderer));
-    gl_info->driverVersion.assign(
-        blink::WebString::fromUTF8(gpu_info.gl_version));
+    switch (gpu_info.context_info_state) {
+      case gpu::kCollectInfoSuccess:
+      case gpu::kCollectInfoNonFatalFailure:
+        gl_info->vendorInfo.assign(
+            blink::WebString::fromUTF8(gpu_info.gl_vendor));
+        gl_info->rendererInfo.assign(
+            blink::WebString::fromUTF8(gpu_info.gl_renderer));
+        gl_info->driverVersion.assign(
+            blink::WebString::fromUTF8(gpu_info.driver_version));
+        gl_info->vendorId = gpu_info.gpu.vendor_id;
+        gl_info->deviceId = gpu_info.gpu.device_id;
+        break;
+      case gpu::kCollectInfoFatalFailure:
+      case gpu::kCollectInfoNone:
+        gl_info->contextInfoCollectionFailure.assign(blink::WebString::fromUTF8(
+            "GPUInfoCollectionFailure: GPU initialization Failed. GPU "
+            "Info not Collected."));
+        break;
+      default:
+        NOTREACHED();
+    };
   }
 
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
