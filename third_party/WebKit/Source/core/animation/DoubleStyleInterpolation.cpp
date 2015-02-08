@@ -28,10 +28,10 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> DoubleStyleInterpolation::doubleToInte
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDouble(InterpolableValue* value, bool isNumber, InterpolationRange clamp)
+PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDouble(const InterpolableValue& value, bool isNumber, InterpolationRange clamp)
 {
-    ASSERT(value->isNumber());
-    double doubleValue = toInterpolableNumber(value)->value();
+    ASSERT(value.isNumber());
+    double doubleValue = toInterpolableNumber(value).value();
 
     switch (clamp) {
     case RangeOpacityFIXME:
@@ -54,11 +54,11 @@ PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDo
 void DoubleStyleInterpolation::apply(StyleResolverState& state) const
 {
     if (m_id != CSSPropertyMotionRotation) {
-        StyleBuilder::applyProperty(m_id, state, interpolableValueToDouble(m_cachedValue.get(), m_isNumber, m_clamp).get());
+        StyleBuilder::applyProperty(m_id, state, interpolableValueToDouble(*m_cachedValue, m_isNumber, m_clamp).get());
         return;
     }
 
-    StyleBuilder::applyProperty(m_id, state, interpolableValueToMotionRotation(m_cachedValue.get(), m_flag).get());
+    StyleBuilder::applyProperty(m_id, state, interpolableValueToMotionRotation(*m_cachedValue, m_flag).get());
 }
 
 void DoubleStyleInterpolation::trace(Visitor* visitor)
@@ -99,13 +99,13 @@ bool extractMotionRotation(const CSSValue& value, float* rotation, MotionRotatio
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToMotionRotation(InterpolableValue* value, bool flag)
+PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToMotionRotation(const InterpolableValue& value, bool flag)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (flag)
         list->append(CSSPrimitiveValue::createIdentifier(CSSValueAuto));
-    ASSERT(value->isNumber());
-    list->append(CSSPrimitiveValue::create(toInterpolableNumber(value)->value(), CSSPrimitiveValue::CSS_DEG));
+    ASSERT(value.isNumber());
+    list->append(CSSPrimitiveValue::create(toInterpolableNumber(value).value(), CSSPrimitiveValue::CSS_DEG));
     return list.release();
 }
 

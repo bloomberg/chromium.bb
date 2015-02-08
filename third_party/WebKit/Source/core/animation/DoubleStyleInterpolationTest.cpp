@@ -26,24 +26,24 @@ protected:
         return DoubleStyleInterpolation::motionRotationToInterpolableValue(value);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(InterpolableValue* value, bool isNumber, InterpolationRange clamp)
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(InterpolableValue& value, bool isNumber, InterpolationRange clamp)
     {
         return DoubleStyleInterpolation::interpolableValueToDouble(value, isNumber, clamp);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToMotionRotation(InterpolableValue* value, bool flag)
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToMotionRotation(InterpolableValue& value, bool flag)
     {
         return DoubleStyleInterpolation::interpolableValueToMotionRotation(value, flag);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return interpolableValueToDouble(doubleToInterpolableValue(*value).get(), toCSSPrimitiveValue(value.get())->primitiveType() == CSSPrimitiveValue::CSS_NUMBER, RangeAll);
+        return interpolableValueToDouble(*doubleToInterpolableValue(*value), toCSSPrimitiveValue(value.get())->primitiveType() == CSSPrimitiveValue::CSS_NUMBER, RangeAll);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTripMotionRotation(PassRefPtrWillBeRawPtr<CSSValue> value, bool flag)
     {
-        return interpolableValueToMotionRotation(motionRotationToInterpolableValue(*value).get(), flag);
+        return interpolableValueToMotionRotation(*motionRotationToInterpolableValue(*value), flag);
     }
 
     static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double doubleValue, CSSPrimitiveValue::UnitType unitType)
