@@ -565,7 +565,7 @@
           'name': 'RemoteAccessClientFirewallTraversal',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:14-', 'chrome_os:14-'],
+          'supported_on': ['chrome.*:14-16', 'chrome_os:14-16'],
           'features': {
             'dynamic_refresh': True,
           },
@@ -623,11 +623,13 @@
           'name': 'RemoteAccessHostRequireTwoFactor',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:22-', 'chrome_os:41-'],
+          'supported_on': ['chrome.*:22-22'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          # Mark this 'removed' when http://crbug.com/100216 is resolved.
+          'deprecated': True,
           'example_value': False,
           'id': 155,
           'caption': '''Enable two-factor authentication for remote access hosts''',
