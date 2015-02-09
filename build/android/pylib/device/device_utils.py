@@ -1046,6 +1046,8 @@ class DeviceUtils(object):
     """
     def find_property(lines, property_name):
       for index, line in enumerate(lines):
+        if line.strip() == '':
+          continue
         key, value = (s.strip() for s in line.split('=', 1))
         if key == property_name:
           return index, value
