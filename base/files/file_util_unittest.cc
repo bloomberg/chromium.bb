@@ -1388,19 +1388,15 @@ void SetReadOnly(const FilePath& path, bool read_only) {
       path.value().c_str(),
       read_only ? (attrs | FILE_ATTRIBUTE_READONLY) :
           (attrs & ~FILE_ATTRIBUTE_READONLY)));
-  // Files in the temporary directory should not be indexed ever. If this
-  // assumption change, fix this unit test accordingly.
-  // FILE_ATTRIBUTE_NOT_CONTENT_INDEXED doesn't exist on XP.
+
   DWORD expected = read_only ?
       ((attrs & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_DIRECTORY)) |
           FILE_ATTRIBUTE_READONLY) :
       (attrs & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_DIRECTORY));
-  // TODO(ripp@yandex-team.ru): this seems out of place here. If we really think
-  // it is important to verify that temp files are not indexed there should be
-  // a dedicated test for that (create a file, inspect the attributes)
-  if (win::GetVersion() >= win::VERSION_VISTA)
-    expected |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-  attrs = GetFileAttributes(path.value().c_str());
+
+  // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED if present.
+  attrs = GetFileAttributes(path.value().c_str()) &
+          ~FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
   ASSERT_EQ(expected, attrs);
 #else
   // On all other platforms, it involves removing/setting the write bit.
