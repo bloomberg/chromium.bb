@@ -427,8 +427,8 @@ available in the browser. You may want to use to <a class="reference external" h
 to use POSIX-like sockets.</li>
 <li>Code that creates processes, including UNIX <code>fork</code>, won&#8217;t function
 as-is. However, threads are supported. You can nonetheless create new
-<code>&lt;embed&gt;</code> tags in your HTML page to launch new PNaCl processes, even using
-new <code>.pexe</code> files that your existing <code>.pexe</code> saved in a local
+<code>&lt;embed&gt;</code> tags in your HTML page to launch new PNaCl processes. You can even
+use new <code>.pexe</code> files that your existing <code>.pexe</code> saved in a local
 filesystem. This is somewhat akin to <code>execve</code>, but the process management
 has to go through <code>postMessage</code> to JavaScript in order to create the new
 <code>&lt;embed&gt;</code>.</li>

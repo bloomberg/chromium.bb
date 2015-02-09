@@ -502,8 +502,8 @@ The following kinds of code may be more challenging to port:
   to use POSIX-like sockets.
 * Code that creates processes, including UNIX ``fork``, won't function
   as-is. However, threads are supported. You can nonetheless create new
-  ``<embed>`` tags in your HTML page to launch new PNaCl processes, even using
-  new ``.pexe`` files that your existing ``.pexe`` saved in a local
+  ``<embed>`` tags in your HTML page to launch new PNaCl processes. You can even
+  use new ``.pexe`` files that your existing ``.pexe`` saved in a local
   filesystem. This is somewhat akin to ``execve``, but the process management
   has to go through ``postMessage`` to JavaScript in order to create the new
   ``<embed>``.
