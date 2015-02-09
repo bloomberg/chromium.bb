@@ -213,7 +213,7 @@ application files. Refer to `What are Chrome Apps </apps/about_apps>`_ for more
 information about creating a packaged application.
 
 Some Pepper features, such as `TCP
-<pepper_stable/cpp/classpp_1_1_u_d_p_socket>`_ or `UDP
+<pepper_stable/cpp/classpp_1_1_t_c_p_socket>`_ or `UDP
 <pepper_stable/cpp/classpp_1_1_u_d_p_socket>`_ socket access, are only allowed
 in `packaged applications </apps/about_apps>`_. The examples that use these
 features must be run as `packaged applications </apps/about_apps>`_, by using
