@@ -21,7 +21,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
-#include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
 #include "content/browser/web_contents/aura/window_slider.h"
@@ -52,6 +51,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/aura/window_tree_host_observer.h"
+#include "ui/aura_extra/image_window_delegate.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -116,7 +116,7 @@ RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
 // The window delegate for the overscroll window. This redirects trackpad events
 // to the web-contents window. The delegate destroys itself when the window is
 // destroyed.
-class OverscrollWindowDelegate : public ImageWindowDelegate {
+class OverscrollWindowDelegate : public aura_extra::ImageWindowDelegate {
  public:
   OverscrollWindowDelegate(WebContentsImpl* web_contents,
                            OverscrollMode overscroll_mode)

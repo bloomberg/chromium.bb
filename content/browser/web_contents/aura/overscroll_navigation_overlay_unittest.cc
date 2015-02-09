@@ -5,7 +5,6 @@
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
@@ -15,6 +14,7 @@
 #include "content/test/test_web_contents.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura_extra/image_window_delegate.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace content {
@@ -87,7 +87,8 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
 
     // Create the overlay, and set the contents of the overlay window.
     overlay_.reset(new OverscrollNavigationOverlay(contents()));
-    ImageWindowDelegate* image_delegate = new ImageWindowDelegate();
+    aura_extra::ImageWindowDelegate* image_delegate =
+        new aura_extra::ImageWindowDelegate();
     scoped_ptr<aura::Window> overlay_window(
       aura::test::CreateTestWindowWithDelegate(
           image_delegate,

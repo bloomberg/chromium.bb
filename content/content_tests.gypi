@@ -1094,6 +1094,7 @@
         ['use_aura==1', {
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
+            '../ui/aura_extra/aura_extra.gyp:aura_extra',
             '../ui/wm/wm.gyp:wm',
           ]
         }],

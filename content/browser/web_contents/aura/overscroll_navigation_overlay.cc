@@ -6,12 +6,12 @@
 
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/aura/window.h"
+#include "ui/aura_extra/image_window_delegate.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -162,7 +162,7 @@ void OverscrollNavigationOverlay::StartObserving() {
 
 void OverscrollNavigationOverlay::SetOverlayWindow(
     scoped_ptr<aura::Window> window,
-    ImageWindowDelegate* delegate) {
+    aura_extra::ImageWindowDelegate* delegate) {
   window_ = window.Pass();
   if (window_.get() && window_->parent())
     window_->parent()->StackChildAtTop(window_.get());

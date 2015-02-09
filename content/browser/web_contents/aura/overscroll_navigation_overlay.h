@@ -13,10 +13,13 @@
 
 struct ViewHostMsg_UpdateRect_Params;
 
+namespace aura_extra {
+class ImageWindowDelegate;
+}
+
 namespace content {
 
 class ImageLayerDelegate;
-class ImageWindowDelegate;
 class OverscrollNavigationOverlayTest;
 
 // When a history navigation is triggered at the end of an overscroll
@@ -43,10 +46,10 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
 
   // Sets the screenshot window and the delegate. This takes ownership of
   // |window|.
-  // Note that ImageWindowDelegate manages its own lifetime, so this function
-  // does not take ownership of |delegate|.
+  // Note that aura_extra::ImageWindowDelegate manages its own lifetime, so this
+  // function does not take ownership of |delegate|.
   void SetOverlayWindow(scoped_ptr<aura::Window> window,
-                        ImageWindowDelegate* delegate);
+                        aura_extra::ImageWindowDelegate* delegate);
 
  private:
   friend class OverscrollNavigationOverlayTest;
@@ -96,7 +99,7 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
 
   // This is the WindowDelegate of |window_|. The delegate manages its own
   // lifetime (destroys itself when |window_| is destroyed).
-  ImageWindowDelegate* image_delegate_;
+  aura_extra::ImageWindowDelegate* image_delegate_;
 
   bool loading_complete_;
   bool received_paint_update_;

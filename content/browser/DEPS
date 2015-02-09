@@ -11,6 +11,7 @@ include_rules = [
   "+media/video",  # For Video Device monitoring in Mac.
   "+mojo",
   "+sql",
+  "+ui/aura_extra",
   "+ui/webui",
   "+win8/util",
 

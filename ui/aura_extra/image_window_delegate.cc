@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_contents/aura/image_window_delegate.h"
+#include "ui/aura_extra/image_window_delegate.h"
 
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
@@ -13,10 +13,11 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace content {
+namespace aura_extra {
 
 ImageWindowDelegate::ImageWindowDelegate()
-    : size_mismatch_(false) {
+    : background_color_(SK_ColorWHITE),
+      size_mismatch_(false) {
 }
 
 ImageWindowDelegate::~ImageWindowDelegate() {
@@ -69,13 +70,12 @@ void ImageWindowDelegate::OnCaptureLost() {
 }
 
 void ImageWindowDelegate::OnPaint(gfx::Canvas* canvas) {
-  if (image_.IsEmpty()) {
-    canvas->DrawColor(SK_ColorWHITE);
-  } else {
-    if (size_mismatch_)
-      canvas->DrawColor(SK_ColorWHITE);
-    canvas->DrawImageInt(image_.AsImageSkia(), 0, 0);
+  if (background_color_ != SK_ColorTRANSPARENT &&
+      (image_.IsEmpty() || size_mismatch_ || !offset_.IsZero())) {
+    canvas->DrawColor(background_color_);
   }
+  if (!image_.IsEmpty())
+    canvas->DrawImageInt(image_.AsImageSkia(), offset_.x(), offset_.y());
 }
 
 void ImageWindowDelegate::OnDeviceScaleFactorChanged(float scale_factor) {
@@ -98,4 +98,4 @@ bool ImageWindowDelegate::HasHitTestMask() const {
 void ImageWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
 }
 
-}  // namespace content
+}  // namespace aura_extra

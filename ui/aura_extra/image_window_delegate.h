@@ -2,23 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_CONTENTS_AURA_IMAGE_WINDOW_DELEGATE_H_
-#define CONTENT_BROWSER_WEB_CONTENTS_AURA_IMAGE_WINDOW_DELEGATE_H_
+#ifndef UI_AURA_EXTRA_IMAGE_WINDOW_DELEGATE_H_
+#define UI_AURA_EXTRA_IMAGE_WINDOW_DELEGATE_H_
 
-#include "content/common/content_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura_extra/aura_extra_export.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image.h"
 
-namespace content {
+namespace aura_extra {
 
-// An ImageWindowDelegate paints an image for a Window. The delegate destroys
-// itself when the Window is destroyed. The delegate does not consume any event.
-class CONTENT_EXPORT ImageWindowDelegate : public aura::WindowDelegate {
+// An ImageWindowDelegate paints an image for a Window, possibly also filling
+// the window with a specified backround color. The delegate does not consume
+// any event.
+//
+// The delegate destroys itself when the Window is destroyed. This is done in
+// |OnWindowDestroyed()| function which subclasses can override to prevent
+// self-destroying.
+class AURA_EXTRA_EXPORT ImageWindowDelegate : public aura::WindowDelegate {
  public:
   ImageWindowDelegate();
 
   void SetImage(const gfx::Image& image);
+
+  void set_background_color(SkColor color) { background_color_ = color; }
+  void set_image_offset(gfx::Vector2d offset) { offset_ = offset; }
+
   bool has_image() const { return !image_.IsEmpty(); }
 
  protected:
@@ -46,17 +57,20 @@ class CONTENT_EXPORT ImageWindowDelegate : public aura::WindowDelegate {
   void GetHitTestMask(gfx::Path* mask) const override;
 
  protected:
+  SkColor background_color_;
   gfx::Image image_;
+  gfx::Vector2d offset_;
+
   gfx::Size window_size_;
 
   // Keeps track of whether the window size matches the image size or not. If
-  // the image size is smaller than the window size, then the delegate paints a
-  // white background for the missing regions.
+  // the image size is smaller than the window size, then the delegate fills the
+  // missing regions with |background_color_| (defult is white).
   bool size_mismatch_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageWindowDelegate);
 };
 
-}  // namespace content
+}  // namespace aura_extra
 
-#endif  // CONTENT_BROWSER_WEB_CONTENTS_AURA_IMAGE_WINDOW_DELEGATE_H_
+#endif  // UI_AURA_EXTRA_IMAGE_WINDOW_DELEGATE_H_

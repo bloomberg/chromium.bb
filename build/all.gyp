@@ -230,6 +230,7 @@
         ['use_aura==1', {
           'dependencies': [
             '../ui/aura/aura.gyp:*',
+            '../ui/aura_extra/aura_extra.gyp:*',
           ],
         }],
         ['use_ash==1', {
@@ -1272,6 +1273,7 @@
             '../skia/skia_tests.gyp:skia_unittests',
             '../ui/app_list/app_list.gyp:*',
             '../ui/aura/aura.gyp:*',
+            '../ui/aura_extra/aura_extra.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
             '../ui/compositor/compositor.gyp:*',
             '../ui/display/display.gyp:display_unittests',

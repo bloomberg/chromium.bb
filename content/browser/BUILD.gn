@@ -361,6 +361,7 @@ source_set("browser") {
   if (use_aura) {
     deps += [
       "//ui/aura",
+      "//ui/aura_extra",
       "//ui/strings",
       "//ui/wm",
     ]
@@ -377,8 +378,6 @@ source_set("browser") {
       "renderer_host/web_input_event_aura.h",
       "web_contents/aura/gesture_nav_simple.cc",
       "web_contents/aura/gesture_nav_simple.h",
-      "web_contents/aura/image_window_delegate.cc",
-      "web_contents/aura/image_window_delegate.h",
       "web_contents/aura/overscroll_navigation_overlay.cc",
       "web_contents/aura/overscroll_navigation_overlay.h",
       "web_contents/aura/shadow_layer_delegate.cc",

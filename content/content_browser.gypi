@@ -1399,8 +1399,6 @@
       'browser/utility_process_host_impl.h',
       'browser/web_contents/aura/gesture_nav_simple.cc',
       'browser/web_contents/aura/gesture_nav_simple.h',
-      'browser/web_contents/aura/image_window_delegate.cc',
-      'browser/web_contents/aura/image_window_delegate.h',
       'browser/web_contents/aura/overscroll_navigation_overlay.cc',
       'browser/web_contents/aura/overscroll_navigation_overlay.h',
       'browser/web_contents/aura/shadow_layer_delegate.cc',
@@ -1908,6 +1906,7 @@
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
+        '../ui/aura_extra/aura_extra.gyp:aura_extra',
         '../ui/strings/ui_strings.gyp:ui_strings',
       ],
     }, {
