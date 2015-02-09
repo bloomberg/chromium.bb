@@ -55,13 +55,13 @@ bool Syncer::ExitRequested() {
 }
 
 bool Syncer::NormalSyncShare(ModelTypeSet request_types,
-                             const NudgeTracker& nudge_tracker,
+                             NudgeTracker* nudge_tracker,
                              SyncSession* session) {
   HandleCycleBegin(session);
-  if (nudge_tracker.IsGetUpdatesRequired() ||
+  if (nudge_tracker->IsGetUpdatesRequired() ||
       session->context()->ShouldFetchUpdatesBeforeCommit()) {
     VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
-    NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
+    NormalGetUpdatesDelegate normal_delegate(*nudge_tracker);
     GetUpdatesProcessor get_updates_processor(
         session->context()->model_type_registry()->update_handler_map(),
         normal_delegate);
@@ -70,18 +70,18 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
             session,
             &get_updates_processor,
             kCreateMobileBookmarksFolder)) {
-      return HandleCycleEnd(session, nudge_tracker.GetLegacySource());
+      return HandleCycleEnd(session, nudge_tracker->GetLegacySource());
     }
   }
 
   VLOG(1) << "Committing from types " << ModelTypeSetToString(request_types);
   CommitProcessor commit_processor(
       session->context()->model_type_registry()->commit_contributor_map());
-  SyncerError commit_result =
-      BuildAndPostCommits(request_types, session, &commit_processor);
+  SyncerError commit_result = BuildAndPostCommits(request_types, nudge_tracker,
+                                                  session, &commit_processor);
   session->mutable_status_controller()->set_commit_result(commit_result);
 
-  return HandleCycleEnd(session, nudge_tracker.GetLegacySource());
+  return HandleCycleEnd(session, nudge_tracker->GetLegacySource());
 }
 
 bool Syncer::ConfigureSyncShare(
@@ -160,6 +160,7 @@ bool Syncer::DownloadAndApplyUpdates(
 }
 
 SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
+                                        sessions::NudgeTracker* nudge_tracker,
                                         sessions::SyncSession* session,
                                         CommitProcessor* commit_processor) {
   // The ExitRequested() check is unnecessary, since we should start getting
@@ -180,8 +181,7 @@ SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
     }
 
     SyncerError error = commit->PostAndProcessResponse(
-        session,
-        session->mutable_status_controller(),
+        nudge_tracker, session, session->mutable_status_controller(),
         session->context()->extensions_activity());
     commit->CleanUp();
     if (error != SYNCER_OK) {

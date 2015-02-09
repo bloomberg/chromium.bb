@@ -14,6 +14,7 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/sessions/nudge_tracker.h"
 #include "sync/util/extensions_activity.h"
 
 namespace syncer {
@@ -54,10 +55,10 @@ class SYNC_EXPORT_PRIVATE Commit {
       CommitProcessor* commit_processor,
       ExtensionsActivity* extensions_activity);
 
-  SyncerError PostAndProcessResponse(
-      sessions::SyncSession* session,
-      sessions::StatusController* status,
-      ExtensionsActivity* extensions_activity);
+  SyncerError PostAndProcessResponse(sessions::NudgeTracker* nudge_tracker,
+                                     sessions::SyncSession* session,
+                                     sessions::StatusController* status,
+                                     ExtensionsActivity* extensions_activity);
 
   // Cleans up state associated with this commit.  Must be called before the
   // destructor.

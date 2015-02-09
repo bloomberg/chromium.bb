@@ -492,6 +492,13 @@ message GetUpdateTriggers {
   //
   // Introduced in M38.
   optional bool initial_sync_in_progress = 7;
+
+  // This flag is set if this GetUpdate request is due to client receiving
+  // conflict response from server, so client needs to sync and then resolve
+  // conflict locally, and then commit again.
+  //
+  // Introduced in M42.
+  optional bool sync_for_resolve_conflict_in_progress = 8;
 }
 
 message GarbageCollectionDirective {

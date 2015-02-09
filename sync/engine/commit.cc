@@ -83,6 +83,7 @@ Commit* Commit::Init(
 }
 
 SyncerError Commit::PostAndProcessResponse(
+    sessions::NudgeTracker* nudge_tracker,
     sessions::SyncSession* session,
     sessions::StatusController* status,
     ExtensionsActivity* extensions_activity) {
@@ -153,6 +154,9 @@ SyncerError Commit::PostAndProcessResponse(
                  "type", ModelTypeToString(it->first));
     SyncerError type_result =
         it->second->ProcessCommitResponse(response_, status);
+    if (type_result == SERVER_RETURN_CONFLICT) {
+      nudge_tracker->RecordCommitConflict(it->first);
+    }
     if (processing_result == SYNCER_OK && type_result != SYNCER_OK) {
       processing_result = type_result;
     }

@@ -46,23 +46,22 @@ void SimulateConfigureConnectionFailure(
 }
 
 void SimulateNormalSuccess(ModelTypeSet requested_types,
-                           const sessions::NudgeTracker& nudge_tracker,
+                           sessions::NudgeTracker* nudge_tracker,
                            sessions::SyncSession* session) {
   session->mutable_status_controller()->set_commit_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateDownloadUpdatesFailed(
-    ModelTypeSet requested_types,
-    const sessions::NudgeTracker& nudge_tracker,
-    sessions::SyncSession* session) {
+void SimulateDownloadUpdatesFailed(ModelTypeSet requested_types,
+                                   sessions::NudgeTracker* nudge_tracker,
+                                   sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
 }
 
 void SimulateCommitFailed(ModelTypeSet requested_types,
-                          const sessions::NudgeTracker& nudge_tracker,
+                          sessions::NudgeTracker* nudge_tracker,
                           sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
@@ -71,10 +70,9 @@ void SimulateCommitFailed(ModelTypeSet requested_types,
       SERVER_RETURN_TRANSIENT_ERROR);
 }
 
-void SimulateConnectionFailure(
-                           ModelTypeSet requested_types,
-                           const sessions::NudgeTracker& nudge_tracker,
-                           sessions::SyncSession* session) {
+void SimulateConnectionFailure(ModelTypeSet requested_types,
+                               sessions::NudgeTracker* nudge_tracker,
+                               sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_download_updates_result(
       NETWORK_CONNECTION_UNAVAILABLE);
 }
@@ -118,7 +116,7 @@ void SimulatePollIntervalUpdateImpl(
 
 void SimulateSessionsCommitDelayUpdateImpl(
     ModelTypeSet requested_types,
-    const sessions::NudgeTracker& nudge_tracker,
+    sessions::NudgeTracker* nudge_tracker,
     sessions::SyncSession* session,
     const base::TimeDelta& new_delay) {
   SimulateNormalSuccess(requested_types, nudge_tracker, session);

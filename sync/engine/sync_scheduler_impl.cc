@@ -465,9 +465,7 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
            << ModelTypeSetToString(session_context_->GetEnabledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   bool premature_exit = !syncer_->NormalSyncShare(
-      GetEnabledAndUnthrottledTypes(),
-      nudge_tracker_,
-      session.get());
+      GetEnabledAndUnthrottledTypes(), &nudge_tracker_, session.get());
   AdjustPolling(FORCE_RESET);
   // Don't run poll job till the next time poll timer fires.
   do_poll_after_credentials_updated_ = false;

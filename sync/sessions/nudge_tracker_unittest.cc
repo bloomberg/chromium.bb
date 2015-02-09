@@ -369,6 +369,12 @@ TEST_F(NudgeTrackerTest, IsSyncRequired) {
   nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
+  // Sync request for resolve conflict.
+  nudge_tracker_.RecordCommitConflict(BOOKMARKS);
+  EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
+
   // Local changes.
   nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS));
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
