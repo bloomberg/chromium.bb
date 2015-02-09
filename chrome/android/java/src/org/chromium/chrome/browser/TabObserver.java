@@ -47,6 +47,20 @@ public interface TabObserver {
     void onContentChanged(Tab tab);
 
     /**
+     * Called when a {@link ContentViewCore} overlay is attached to {@code tab}.
+     * @param tab     The notifying {@link Tab}.
+     * @param content The {@link ContentViewCore} being added.
+     */
+    void onOverlayContentViewCoreAdded(Tab tab, ContentViewCore content);
+
+    /**
+     * Called when a {@link ContentViewCore} overlay is detached from {@code tab}.
+     * @param tab     The notifying {@link Tab}.
+     * @param content The {@link ContentViewCore} being removed.
+     */
+    void onOverlayContentViewCoreRemoved(Tab tab, ContentViewCore content);
+
+    /**
      * Called when loadUrl is triggered on a a {@link Tab}.
      * @param tab      The notifying {@link Tab}.
      * @param url      The url that is being loaded.
@@ -260,6 +274,11 @@ public interface TabObserver {
      */
     public void onDidDetachInterstitialPage(Tab tab);
 
+    /**
+     * Called when a navigation is started to a pending entry.
+     * @param tab The notifying {@link Tab}.
+     * @param url The url being navigated to.
+     */
     public void onDidStartNavigationToPendingEntry(Tab tab, String url);
 
     /**
@@ -269,6 +288,15 @@ public interface TabObserver {
      */
     public void onBackgroundColorChanged(Tab tab, int color);
 
+    /**
+     * Called when a {@link WebContents} object has been created.
+     * @param tab                 The notifying {@link Tab}.
+     * @param sourceWebContents   The {@link WebContents} that triggered the creation.
+     * @param openerRenderFrameId The opener render frame id.
+     * @param frameName           The name of the frame.
+     * @param targetUrl           The target url.
+     * @param newWebContents      The newly created {@link WebContents}.
+     */
     public void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, WebContents newWebContents);
 }

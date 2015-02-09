@@ -9,7 +9,9 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/layers/layer.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
+#include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/uma_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -110,11 +112,14 @@ void TabAndroid::AttachTabHelpers(content::WebContents* web_contents) {
 
 TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
     : weak_java_tab_(env, obj),
+      content_layer_(cc::Layer::Create()),
+      tab_content_manager_(NULL),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
 
 TabAndroid::~TabAndroid() {
+  GetContentLayer()->RemoveAllChildren();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_clearNativePtr(env, weak_java_tab_.get(env).obj());
 }
@@ -122,6 +127,10 @@ TabAndroid::~TabAndroid() {
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return weak_java_tab_.get(env);
+}
+
+scoped_refptr<cc::Layer> TabAndroid::GetContentLayer() const {
+  return content_layer_;
 }
 
 int TabAndroid::GetAndroidId() const {
@@ -439,12 +448,18 @@ void TabAndroid::InitWebContents(JNIEnv* env,
       InstantServiceFactory::GetForProfile(GetProfile());
   if (instant_service)
     instant_service->AddObserver(this);
+
+  content_layer_->InsertChild(content_view_core->GetLayer(), 0);
 }
 
 void TabAndroid::DestroyWebContents(JNIEnv* env,
                                     jobject obj,
                                     jboolean delete_native) {
   DCHECK(web_contents());
+
+  content::ContentViewCore* content_view_core = GetContentViewCore();
+  if (content_view_core)
+    content_view_core->GetLayer()->RemoveFromParent();
 
   notification_registrar_.Remove(
       this,
@@ -740,6 +755,45 @@ void TabAndroid::SetInterceptNavigationDelegate(JNIEnv* env, jobject obj,
   InterceptNavigationDelegate::Associate(
       web_contents(),
       make_scoped_ptr(new ChromeInterceptNavigationDelegate(env, delegate)));
+}
+
+void TabAndroid::AttachToTabContentManager(JNIEnv* env,
+                                           jobject obj,
+                                           jobject jtab_content_manager) {
+  chrome::android::TabContentManager* tab_content_manager =
+      chrome::android::TabContentManager::FromJavaObject(jtab_content_manager);
+  if (tab_content_manager == tab_content_manager_)
+    return;
+
+  if (tab_content_manager_)
+    tab_content_manager_->DetachLiveLayer(GetAndroidId(), GetContentLayer());
+  tab_content_manager_ = tab_content_manager;
+  if (tab_content_manager_)
+    tab_content_manager_->AttachLiveLayer(GetAndroidId(), GetContentLayer());
+}
+
+void TabAndroid::AttachOverlayContentViewCore(JNIEnv* env,
+                                              jobject obj,
+                                              jobject jcontent_view_core,
+                                              jboolean visible) {
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::GetNativeContentViewCore(env,
+                                                         jcontent_view_core);
+  DCHECK(content_view_core);
+
+  content_view_core->GetLayer()->SetHideLayerAndSubtree(!visible);
+  content_layer_->AddChild(content_view_core->GetLayer());
+}
+
+void TabAndroid::DetachOverlayContentViewCore(JNIEnv* env,
+                                              jobject obj,
+                                              jobject jcontent_view_core) {
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::GetNativeContentViewCore(env,
+                                                         jcontent_view_core);
+  DCHECK(content_view_core);
+
+  content_view_core->GetLayer()->RemoveFromParent();
 }
 
 static void Init(JNIEnv* env, jobject obj) {

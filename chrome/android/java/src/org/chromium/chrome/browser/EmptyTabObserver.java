@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.view.ContextMenu;
 
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -27,6 +28,12 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onContentChanged(Tab tab) { }
+
+    @Override
+    public void onOverlayContentViewCoreAdded(Tab tab, ContentViewCore content) { }
+
+    @Override
+    public void onOverlayContentViewCoreRemoved(Tab tab, ContentViewCore content) { }
 
     @Override
     public void onLoadUrl(Tab tab, String url, int loadType) { }
