@@ -12612,7 +12612,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <if expr="chromeos">
           <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
-            Themes &amp; Wallpapers
+            Themes &amp; wallpapers
           </message>
         </if>
         <if expr="not chromeos">
@@ -12633,7 +12633,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Apps
         </message>
         <message name="IDS_SYNC_DATATYPE_TABS" desc="Open Tabs, one of the data types that we allow syncing.">
-          Open Tabs
+          Open tabs
         </message>
         <message name="IDS_SYNC_DATATYPE_WIFI_CREDENTIALS" desc="WiFi network names and passwords, one of the data types that we allow syncing.">
           Wi-Fi networks
