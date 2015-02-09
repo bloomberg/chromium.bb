@@ -173,6 +173,9 @@ class PDFEngine {
 
     // Returns true if the plugin has been opened within print preview.
     virtual bool IsPrintPreview() = 0;
+
+    // Get the background color of the PDF.
+    virtual uint32 GetBackgroundColor() = 0;
   };
 
   // Factory method to create an instance of the PDF Engine.
@@ -245,11 +248,6 @@ class PDFEngine {
   virtual bool GetPrintScaling() = 0;
   // Returns number of copies to be printed.
   virtual int GetCopiesToPrint() = 0;
-
-  // Retrieve the background color of the PDF viewer.
-  virtual uint32 GetBackgroundColor() = 0;
-  // Set the background color of the PDF viewer.
-  virtual void SetBackgroundColor(uint32 background_color) = 0;
 
   // Returns a VarArray of Bookmarks, each a VarDictionary containing the
   // following key/values:

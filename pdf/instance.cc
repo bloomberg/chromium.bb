@@ -367,8 +367,6 @@ bool Instance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
   CreatePageIndicator(IsPrintPreviewUrl(url));
 
-  engine_->SetBackgroundColor(kBackgroundColor);
-
   if (!full_) {
     // For PDFs embedded in a frame, we don't get the data automatically like we
     // do for full-frame loads.  Start loading the data manually.
@@ -2641,6 +2639,10 @@ void Instance::SetPrintPreviewMode(int page_count) {
 
 bool Instance::IsPrintPreview() {
   return IsPrintPreviewUrl(url_);
+}
+
+uint32 Instance::GetBackgroundColor() {
+  return kBackgroundColor;
 }
 
 int Instance::GetPageNumberToDisplay() {

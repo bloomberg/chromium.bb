@@ -600,7 +600,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       most_visible_page_(-1),
       called_do_document_action_(false),
       render_grayscale_(false),
-      background_color_(0),
       progressive_paint_timeout_(0),
       getting_password_(false) {
   find_factory_.Initialize(this);
@@ -2368,14 +2367,6 @@ int PDFiumEngine::GetNumberOfPages() {
   return pages_.size();
 }
 
-uint32 PDFiumEngine::GetBackgroundColor() {
-  return background_color_;
-}
-
-void PDFiumEngine::SetBackgroundColor(uint32 background_color) {
-  background_color_ = background_color;
-}
-
 pp::VarArray PDFiumEngine::GetBookmarks() {
   pp::VarDictionary dict = TraverseBookmarks(doc_, NULL);
   // The root bookmark contains no useful information.
@@ -2947,7 +2938,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 
     FPDFBitmap_FillRect(bitmap, left.x() - dirty_in_screen.x(),
                         left.y() - dirty_in_screen.y(), left.width(),
-                        left.height(), background_color_);
+                        left.height(), client_->GetBackgroundColor());
   }
 
   if (page_rect.right() < document_size_.width()) {
@@ -2961,7 +2952,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 
     FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
                         right.y() - dirty_in_screen.y(), right.width(),
-                        right.height(), background_color_);
+                        right.height(), client_->GetBackgroundColor());
   }
 
   // Paint separator.
@@ -2973,7 +2964,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 
   FPDFBitmap_FillRect(bitmap, bottom.x() - dirty_in_screen.x(),
                       bottom.y() - dirty_in_screen.y(), bottom.width(),
-                      bottom.height(), background_color_);
+                      bottom.height(), client_->GetBackgroundColor());
 }
 
 void PDFiumEngine::PaintPageShadow(int progressive_index,
@@ -3425,7 +3416,8 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
 
   // We need to check depth only to verify our copy of shadow matrix is correct.
   if (!page_shadow_.get() || page_shadow_->depth() != depth)
-    page_shadow_.reset(new ShadowMatrix(depth, factor, background_color_));
+    page_shadow_.reset(new ShadowMatrix(depth, factor,
+                                        client_->GetBackgroundColor()));
 
   DCHECK(!image_data->is_null());
   DrawShadow(image_data, shadow_rect, page_rect, clip_rect, *page_shadow_);

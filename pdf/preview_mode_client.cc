@@ -159,4 +159,9 @@ bool PreviewModeClient::IsPrintPreview() {
   return false;
 }
 
+uint32 PreviewModeClient::GetBackgroundColor() {
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace chrome_pdf

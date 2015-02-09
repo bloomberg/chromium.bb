@@ -271,7 +271,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       recently_sent_find_update_(false),
       received_viewport_message_(false),
       did_call_start_loading_(false),
-      stop_scrolling_(false) {
+      stop_scrolling_(false),
+      background_color_(kBackgroundColor) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -348,10 +349,9 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   }
 
   if (is_material)
-      engine_->SetBackgroundColor(kBackgroundColorMaterial);
+    background_color_ = kBackgroundColorMaterial;
   else
-      engine_->SetBackgroundColor(kBackgroundColor);
-
+    background_color_ = kBackgroundColor;
 
   // TODO(raymes): This is a hack to ensure that if no headers are passed in
   // then we get the right MIME type. When the in process plugin is removed we
@@ -675,7 +675,7 @@ void OutOfProcessInstance::OnPaint(
   if (first_paint_) {
     first_paint_ = false;
     pp::Rect rect = pp::Rect(pp::Point(), image_data_.size());
-    FillRect(rect, engine_->GetBackgroundColor());
+    FillRect(rect, background_color_);
     ready->push_back(PaintManager::ReadyRect(rect, image_data_, true));
   }
 
@@ -768,7 +768,7 @@ void OutOfProcessInstance::CalculateBackgroundParts() {
   // horizontal centering.
   BackgroundPart part = {
     pp::Rect(0, 0, left_width, bottom),
-    engine_->GetBackgroundColor()
+    background_color_
   };
   if (!part.location.IsEmpty())
     background_parts_.push_back(part);
@@ -1345,6 +1345,10 @@ void OutOfProcessInstance::AppendBlankPrintPreviewPages() {
 
 bool OutOfProcessInstance::IsPrintPreview() {
   return IsPrintPreviewUrl(url_);
+}
+
+uint32 OutOfProcessInstance::GetBackgroundColor() {
+  return background_color_;
 }
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,

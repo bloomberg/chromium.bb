@@ -136,6 +136,7 @@ class OutOfProcessInstance : public pp::Instance,
   void DocumentLoadProgress(uint32 available, uint32 doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
+  uint32 GetBackgroundColor() override;
 
   // PreviewModeClient::Client implementation.
   void PreviewDocumentLoadComplete() override;
@@ -283,6 +284,9 @@ class OutOfProcessInstance : public pp::Instance,
   // Used for printing without re-entrancy issues.
   pp::CompletionCallbackFactory<OutOfProcessInstance> print_callback_factory_;
 
+  // The callback for receiving the password from the page.
+  scoped_ptr<pp::CompletionCallbackWithOutput<pp::Var> > password_callback_;
+
   // True if we haven't painted the plugin viewport yet.
   bool first_paint_;
 
@@ -339,8 +343,8 @@ class OutOfProcessInstance : public pp::Instance,
   // zooming the plugin so that flickering doesn't occur while zooming.
   bool stop_scrolling_;
 
-  // The callback for receiving the password from the page.
-  scoped_ptr<pp::CompletionCallbackWithOutput<pp::Var> > password_callback_;
+  // The background color of the PDF viewer.
+  uint32 background_color_;
 };
 
 }  // namespace chrome_pdf

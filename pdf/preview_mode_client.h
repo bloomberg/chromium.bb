@@ -67,6 +67,7 @@ class PreviewModeClient : public PDFEngine::Client {
   virtual void DocumentLoadProgress(uint32 available, uint32 doc_size);
   virtual void FormTextFieldFocusChange(bool in_focus);
   virtual bool IsPrintPreview();
+  virtual uint32 GetBackgroundColor();
 
  private:
   Client* client_;

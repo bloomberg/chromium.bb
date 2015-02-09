@@ -174,6 +174,7 @@ class Instance : public pp::InstancePrivate,
   void DocumentLoadProgress(uint32 available, uint32 doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
+  uint32 GetBackgroundColor() override;
 
   // ControlOwner implementation.
   void OnEvent(uint32 control_id, uint32 event_id, void* data) override;
