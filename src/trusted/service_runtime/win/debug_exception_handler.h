@@ -10,6 +10,7 @@
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
+#include "native_client/src/public/win/debug_exception_handler.h"
 
 #if NACL_WINDOWS
 
@@ -18,19 +19,6 @@
 EXTERN_C_BEGIN
 
 struct NaClApp;
-
-/*
- * This runs the debug exception handler in the current thread.  The
- * current thread should already have attached to the target process
- * through the Windows debug API by calling DebugActiveProcess() or by
- * calling CreateProcess() with DEBUG_PROCESS.
- *
- * In info/info_size this function expects to receive an array of
- * bytes that was passed to a NaClAttachDebugExceptionHandlerFunc
- * callback by NaClDebugExceptionHandlerEnsureAttached().
- */
-void NaClDebugExceptionHandlerRun(HANDLE process_handle,
-                                  const void *info, size_t info_size);
 
 /*
  * This requests that a debug exception handler be attached to the
