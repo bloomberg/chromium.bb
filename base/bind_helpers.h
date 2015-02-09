@@ -535,23 +535,6 @@ struct ConcatTypeListsImpl<TypeList<Types1...>, TypeList<Types2...>> {
 template <typename List1, typename List2>
 using ConcatTypeLists = typename ConcatTypeListsImpl<List1, List2>::Type;
 
-template <size_t n, typename List>
-struct NthTypeImpl;
-
-template <size_t n, typename T, typename... Types>
-struct NthTypeImpl<n, TypeList<T, Types...>>
-    : NthTypeImpl<n - 1, TypeList<Types...>> {
-};
-
-template <typename T, typename... Types>
-struct NthTypeImpl<0, TypeList<T, Types...>> {
-  typedef T Type;
-};
-
-// A type-level function that extracts |n|th type from a TypeList.
-template <size_t n, typename List>
-using NthType = typename NthTypeImpl<n, List>::Type;
-
 // Used for MakeFunctionType implementation.
 template <typename R, typename ArgList>
 struct MakeFunctionTypeImpl;
