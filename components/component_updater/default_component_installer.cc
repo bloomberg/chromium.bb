@@ -17,16 +17,18 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/default_component_installer.h"
 #include "components/update_client/component_unpacker.h"
-#include "components/update_client/update_client.h"
+#include "components/update_client/utils.h"
 
 using update_client::CrxComponent;
 
 namespace component_updater {
 
 namespace {
+
 // Version "0" corresponds to no installed version. By the server's conventions,
 // we represent it as a dotted quad.
 const char kNullVersion[] = "0.0.0.0";
+
 }  // namespace
 
 ComponentInstallerTraits::~ComponentInstallerTraits() {
@@ -40,7 +42,6 @@ DefaultComponentInstaller::DefaultComponentInstaller(
 }
 
 DefaultComponentInstaller::~DefaultComponentInstaller() {
-  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void DefaultComponentInstaller::Register(ComponentUpdateService* cus) {
@@ -77,6 +78,8 @@ bool DefaultComponentInstaller::InstallHelper(
 
 bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
                                         const base::FilePath& unpack_path) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   std::string manifest_version;
   manifest.GetStringASCII("version", &manifest_version);
   base::Version version(manifest_version.c_str());
@@ -116,6 +119,13 @@ bool DefaultComponentInstaller::GetInstalledFile(
   *installed_file = installer_traits_->GetBaseDirectory()
                         .AppendASCII(current_version_.GetString())
                         .AppendASCII(file);
+  return true;
+}
+
+bool DefaultComponentInstaller::Uninstall() {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DefaultComponentInstaller::UninstallOnTaskRunner, this));
   return true;
 }
 
@@ -194,6 +204,33 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::FinishRegistration,
                  this, cus));
+}
+
+void DefaultComponentInstaller::UninstallOnTaskRunner() {
+  DCHECK(task_runner_.get());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  const base::FilePath base_dir = installer_traits_->GetBaseDirectory();
+
+  base::FileEnumerator file_enumerator(base_dir, false,
+                                       base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
+       path = file_enumerator.Next()) {
+    base::Version version(path.BaseName().MaybeAsASCII());
+
+    // Ignore folders that don't have valid version names. These folders are not
+    // managed by the component installer, so do not try to remove them.
+    if (!version.IsValid())
+      continue;
+
+    if (!base::DeleteFile(path, true))
+      DLOG(ERROR) << "Couldn't delete " << path.value();
+  }
+
+  // Delete the base directory if it's empty now.
+  if (base::IsDirectoryEmpty(base_dir)) {
+    if (base::DeleteFile(base_dir, false))
+      DLOG(ERROR) << "Couldn't delete " << base_dir.value();
+  }
 }
 
 base::FilePath DefaultComponentInstaller::GetInstallDirectory() {

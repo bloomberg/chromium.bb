@@ -71,6 +71,10 @@ struct CrxUpdateItem {
   // enforce conditions or notify observers of the change.
   Status status;
 
+  // True if the component was recently unregistered and will be uninstalled
+  // soon (after the currently operation is finished, if there is one).
+  bool unregistered;
+
   std::string id;
   CrxComponent component;
 

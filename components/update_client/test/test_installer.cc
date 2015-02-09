@@ -33,6 +33,10 @@ bool TestInstaller::GetInstalledFile(const std::string& file,
 TestInstaller::~TestInstaller() {
 }
 
+bool TestInstaller::Uninstall() {
+  return false;
+}
+
 ReadOnlyTestInstaller::ReadOnlyTestInstaller(const base::FilePath& install_dir)
     : install_directory_(install_dir) {
 }

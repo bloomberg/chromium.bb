@@ -96,6 +96,22 @@ class MockComponentUpdateService : public ComponentUpdateService {
     return kOk;
   }
 
+  Status UnregisterComponent(const std::string& crx_id) override {
+    if (!component_) {
+      ADD_FAILURE();
+      return kError;
+    }
+
+    EXPECT_EQ(GetCrxComponentID(*component_), crx_id);
+    if (!component_->installer->Uninstall()) {
+      ADD_FAILURE();
+      return kError;
+    }
+
+    component_.reset();
+    return kOk;
+  }
+
   OnDemandUpdater& GetOnDemandUpdater() override { return on_demand_updater_; }
 
   void MaybeThrottle(const std::string& kCrxId,
@@ -241,16 +257,27 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   EXPECT_EQ(kWhitelistContents, whitelist_contents);
 }
 
-TEST_F(SupervisedUserWhitelistInstallerTest, RegisterExistingWhitelist) {
+TEST_F(SupervisedUserWhitelistInstallerTest,
+       RegisterAndUninstallExistingWhitelist) {
   ASSERT_TRUE(base::CreateDirectory(whitelist_directory_));
   ASSERT_NO_FATAL_FAILURE(PrepareWhitelistDirectory(whitelist_directory_));
 
-  base::RunLoop run_loop;
-  bool new_installation = false;
-  LoadWhitelist(new_installation, run_loop.QuitClosure());
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    bool new_installation = false;
+    LoadWhitelist(new_installation, run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   ASSERT_NO_FATAL_FAILURE(CheckRegisteredComponent(kVersion));
+
+  {
+    base::RunLoop run_loop;
+    installer_->UninstallWhitelist(kCrxId);
+    run_loop.RunUntilIdle();
+  }
+  EXPECT_FALSE(component_update_service_.registered_component());
+  EXPECT_FALSE(base::DirectoryExists(whitelist_directory_));
 }
 
 }  // namespace component_updater

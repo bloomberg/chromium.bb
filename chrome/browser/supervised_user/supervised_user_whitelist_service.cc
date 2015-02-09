@@ -281,7 +281,7 @@ void SupervisedUserWhitelistService::RemoveWhitelist(
   base::RecordAction(base::UserMetricsAction("ManagedUsers_Whitelist_Removed"));
 
   pref_dict->RemoveWithoutPathExpansion(id, NULL);
-  installer_->UnregisterWhitelist(id);
+  installer_->UninstallWhitelist(id);
   UnloadWhitelist(id);
 }
 

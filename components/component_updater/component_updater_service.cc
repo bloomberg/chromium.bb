@@ -100,6 +100,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
   Status Start() override;
   Status Stop() override;
   Status RegisterComponent(const CrxComponent& component) override;
+  Status UnregisterComponent(const std::string& crx_id) override;
   std::vector<std::string> GetComponentIDs() const override;
   OnDemandUpdater& GetOnDemandUpdater() override;
   void MaybeThrottle(const std::string& crx_id,
@@ -153,6 +154,9 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
   Status OnDemandUpdateWithCooldown(CrxUpdateItem* item);
 
   void ProcessPendingItems();
+
+  // Uninstall and remove all unregistered work items.
+  void UninstallUnregisteredItems();
 
   // Find a component that is ready to update.
   CrxUpdateItem* FindReadyComponent() const;
@@ -432,6 +436,7 @@ ComponentUpdateService::Status CrxUpdateService::RegisterComponent(
   CrxUpdateItem* uit = FindUpdateItemById(id);
   if (uit) {
     uit->component = component;
+    uit->unregistered = false;
     return kReplaced;
   }
 
@@ -458,6 +463,19 @@ ComponentUpdateService::Status CrxUpdateService::RegisterComponent(
     }
   }
 
+  return kOk;
+}
+
+ComponentUpdateService::Status CrxUpdateService::UnregisterComponent(
+    const std::string& crx_id) {
+  auto it = std::find_if(work_items_.begin(), work_items_.end(),
+                         CrxUpdateItem::FindById(crx_id));
+  if (it == work_items_.end())
+    return kError;
+
+  (*it)->unregistered = true;
+
+  ScheduleNextRun(kStepDelayShort);
   return kOk;
 }
 
@@ -492,7 +510,7 @@ void CrxUpdateService::MaybeThrottle(const std::string& crx_id,
 
 scoped_refptr<base::SequencedTaskRunner>
 CrxUpdateService::GetSequencedTaskRunner() {
-  return config_->GetSequencedTaskRunner();
+  return blocking_task_runner_;
 }
 
 bool CrxUpdateService::GetComponentDetails(const std::string& component_id,
@@ -524,8 +542,24 @@ void CrxUpdateService::ProcessPendingItems() {
     return;
   }
 
+  UninstallUnregisteredItems();
+
   if (!CheckForUpdates())
     ScheduleNextRun(kStepDelayLong);
+}
+
+void CrxUpdateService::UninstallUnregisteredItems() {
+  std::vector<CrxUpdateItem*> new_work_items;
+  for (CrxUpdateItem* item : work_items_) {
+    scoped_ptr<CrxUpdateItem> owned_item(item);
+    if (owned_item->unregistered) {
+      const bool success = owned_item->component.installer->Uninstall();
+      DCHECK(success);
+    } else {
+      new_work_items.push_back(owned_item.release());
+    }
+  }
+  new_work_items.swap(work_items_);
 }
 
 CrxUpdateItem* CrxUpdateService::FindReadyComponent() const {
@@ -781,6 +815,7 @@ void CrxUpdateService::DownloadComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CrxUpdateItem* crx = FindUpdateItemById(crx_context->id);
+
   DCHECK(crx->status == CrxUpdateItem::kDownloadingDiff ||
          crx->status == CrxUpdateItem::kDownloading);
 
@@ -895,6 +930,7 @@ void CrxUpdateService::DoneInstalling(const std::string& component_id,
   const bool is_success = error == ComponentUnpacker::kNone;
 
   CrxUpdateItem* item = FindUpdateItemById(component_id);
+
   if (item->status == CrxUpdateItem::kUpdatingDiff && !is_success) {
     item->diff_error_category = error_category;
     item->diff_error_code = error;

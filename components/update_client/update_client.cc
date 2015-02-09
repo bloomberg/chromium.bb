@@ -10,6 +10,7 @@ namespace update_client {
 
 CrxUpdateItem::CrxUpdateItem()
     : status(kNew),
+      unregistered(false),
       on_demand(false),
       diff_update_failed(false),
       error_category(0),
@@ -23,8 +24,7 @@ CrxUpdateItem::CrxUpdateItem()
 CrxUpdateItem::~CrxUpdateItem() {
 }
 
-CrxComponent::CrxComponent()
-    : installer(NULL), allow_background_download(true) {
+CrxComponent::CrxComponent() : allow_background_download(true) {
 }
 
 CrxComponent::~CrxComponent() {

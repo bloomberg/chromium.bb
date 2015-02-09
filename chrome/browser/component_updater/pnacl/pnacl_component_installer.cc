@@ -280,6 +280,10 @@ bool PnaclComponentInstaller::GetInstalledFile(const std::string& file,
   return true;
 }
 
+bool PnaclComponentInstaller::Uninstall() {
+  return false;
+}
+
 CrxComponent PnaclComponentInstaller::GetCrxComponent() {
   CrxComponent pnacl_component;
   pnacl_component.version = current_version();

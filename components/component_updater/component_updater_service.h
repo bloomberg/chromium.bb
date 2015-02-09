@@ -124,6 +124,14 @@ class ComponentUpdateService {
   virtual Status RegisterComponent(
       const update_client::CrxComponent& component) = 0;
 
+  // Unregisters the component with the given ID. This means that the component
+  // is not going to be included in future update checks. If a download or
+  // update operation for the component is currently in progress, it will
+  // silently finish without triggering the next step.
+  // Note that the installer for the component is responsible for removing any
+  // existing versions of the component from disk.
+  virtual Status UnregisterComponent(const std::string& crx_id) = 0;
+
   // Returns a list of registered components.
   virtual std::vector<std::string> GetComponentIDs() const = 0;
 

@@ -344,6 +344,8 @@ class PepperFlashComponentInstaller : public update_client::ComponentInstaller {
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
 
+  bool Uninstall() override;
+
  private:
   ~PepperFlashComponentInstaller() override {}
 
@@ -392,6 +394,10 @@ bool PepperFlashComponentInstaller::Install(
 bool PepperFlashComponentInstaller::GetInstalledFile(
     const std::string& file,
     base::FilePath* installed_file) {
+  return false;
+}
+
+bool PepperFlashComponentInstaller::Uninstall() {
   return false;
 }
 

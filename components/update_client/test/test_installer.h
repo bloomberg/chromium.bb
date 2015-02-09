@@ -31,6 +31,8 @@ class TestInstaller : public ComponentInstaller {
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
 
+  bool Uninstall() override;
+
   int error() const {
     return error_;
   }

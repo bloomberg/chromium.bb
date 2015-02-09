@@ -241,4 +241,8 @@ bool CRLSetFetcher::GetInstalledFile(
   return false;
 }
 
+bool CRLSetFetcher::Uninstall() {
+  return false;
+}
+
 CRLSetFetcher::~CRLSetFetcher() {}

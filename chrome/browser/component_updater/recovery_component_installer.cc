@@ -186,6 +186,8 @@ class RecoveryComponentInstaller : public update_client::ComponentInstaller {
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
 
+  bool Uninstall() override;
+
  private:
   ~RecoveryComponentInstaller() override {}
 
@@ -357,6 +359,10 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
 bool RecoveryComponentInstaller::GetInstalledFile(
     const std::string& file,
     base::FilePath* installed_file) {
+  return false;
+}
+
+bool RecoveryComponentInstaller::Uninstall() {
   return false;
 }
 

@@ -98,6 +98,7 @@ class DefaultComponentInstaller : public update_client::ComponentInstaller {
                const base::FilePath& unpack_path) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
+  bool Uninstall() override;
 
  private:
   ~DefaultComponentInstaller() override;
@@ -109,6 +110,7 @@ class DefaultComponentInstaller : public update_client::ComponentInstaller {
   void StartRegistration(ComponentUpdateService* cus);
   void FinishRegistration(ComponentUpdateService* cus);
   void ComponentReady(scoped_ptr<base::DictionaryValue> manifest);
+  void UninstallOnTaskRunner();
 
   base::Version current_version_;
   std::string current_fingerprint_;

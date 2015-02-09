@@ -41,6 +41,7 @@ class CRLSetFetcher : public update_client::ComponentInstaller {
                const base::FilePath& unpack_path) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
+  bool Uninstall() override;
 
  private:
   friend class base::RefCountedThreadSafe<CRLSetFetcher>;

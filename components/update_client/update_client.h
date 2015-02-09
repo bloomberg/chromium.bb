@@ -45,6 +45,11 @@ class ComponentInstaller
   virtual bool GetInstalledFile(const std::string& file,
                                 base::FilePath* installed_file) = 0;
 
+  // Called by the component updater when a component has been unregistered and
+  // all versions should be uninstalled from disk. Returns true if
+  // uninstallation is supported, false otherwise.
+  virtual bool Uninstall() = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<ComponentInstaller>;
 

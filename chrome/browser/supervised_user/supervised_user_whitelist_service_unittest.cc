@@ -56,10 +56,10 @@ class MockSupervisedUserWhitelistInstaller
     ready_callbacks_[crx_id] = callback;
   }
 
-  void UnregisterWhitelist(const std::string& crx_id) override {
+  void UninstallWhitelist(const std::string& crx_id) override {
     EXPECT_TRUE(WhitelistIsRegistered(crx_id)) << crx_id;
     registered_whitelists_.erase(crx_id);
-    // Don't remove the callback (see above).
+    // Don't remove the ready callback (see above).
   }
 
  private:

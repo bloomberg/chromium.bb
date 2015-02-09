@@ -47,8 +47,8 @@ class SupervisedUserWhitelistInstaller {
                                  bool new_installation,
                                  const WhitelistReadyCallback& callback) = 0;
 
-  // Unregisters a whitelist.
-  virtual void UnregisterWhitelist(const std::string& crx_id) = 0;
+  // Uninstalls a whitelist.
+  virtual void UninstallWhitelist(const std::string& crx_id) = 0;
 
  protected:
   // Triggers an update for a whitelist to be installed. Protected so it can be

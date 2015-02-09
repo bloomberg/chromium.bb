@@ -109,6 +109,8 @@ class SwiftShaderComponentInstaller : public update_client::ComponentInstaller {
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
 
+  bool Uninstall() override;
+
  private:
   ~SwiftShaderComponentInstaller() override {}
 
@@ -160,6 +162,10 @@ bool SwiftShaderComponentInstaller::Install(
 bool SwiftShaderComponentInstaller::GetInstalledFile(
     const std::string& file,
     base::FilePath* installed_file) {
+  return false;
+}
+
+bool SwiftShaderComponentInstaller::Uninstall() {
   return false;
 }
 

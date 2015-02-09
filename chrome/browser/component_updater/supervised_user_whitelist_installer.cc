@@ -121,7 +121,7 @@ class SupervisedUserWhitelistInstallerImpl
                          const std::string& name,
                          bool newly_added,
                          const WhitelistReadyCallback& callback) override;
-  void UnregisterWhitelist(const std::string& crx_id) override;
+  void UninstallWhitelist(const std::string& crx_id) override;
 
   ComponentUpdateService* cus_;
 };
@@ -141,17 +141,17 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
                                                           callback));
   scoped_refptr<DefaultComponentInstaller> installer(
       new DefaultComponentInstaller(traits.Pass()));
-
   installer->Register(cus_);
 
   if (newly_added)
     TriggerComponentUpdate(&cus_->GetOnDemandUpdater(), crx_id);
 }
 
-void SupervisedUserWhitelistInstallerImpl::UnregisterWhitelist(
-    const std::string& id) {
-  // TODO(bauerb): Implement!
-  NOTIMPLEMENTED();
+void SupervisedUserWhitelistInstallerImpl::UninstallWhitelist(
+    const std::string& crx_id) {
+  const ComponentUpdateService::Status status =
+      cus_->UnregisterComponent(crx_id);
+  DCHECK_EQ(ComponentUpdateService::kOk, status);
 }
 
 }  // namespace
