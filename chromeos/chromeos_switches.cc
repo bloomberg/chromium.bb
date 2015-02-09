@@ -53,6 +53,9 @@ const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[] = "disable-boot-animation";
 
+// Disables cloud backup feature.
+const char kDisableCloudImport[] = "disable-cloud-import";
+
 // Disables the ChromeOS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
 
@@ -96,9 +99,6 @@ const char kDisableNetworkPortalNotification[] =
 
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[] = "enable-carrier-switching";
-
-// Enables cloud backup feature.
-const char kEnableCloudBackup[] = "enable-cloud-backup";
 
 // Enables consumer management, which allows user to enroll, remotely lock and
 // locate the device.

@@ -983,11 +983,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableCarrierSwitching)
   },
   {
-    "enable-cloud-backup",
-    IDS_FLAGS_ENABLE_CLOUD_BACKUP,
-    IDS_FLAGS_ENABLE_CLOUD_BACKUP_DESCRIPTION,
+    "disable-cloud-import",
+    IDS_FLAGS_DISABLE_CLOUD_IMPORT,
+    IDS_FLAGS_DISABLE_CLOUD_IMPORT_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableCloudBackup)
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableCloudImport)
   },
   {
     "enable-request-tablet-site",

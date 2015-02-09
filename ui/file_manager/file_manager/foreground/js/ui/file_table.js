@@ -584,7 +584,7 @@ FileTable.prototype.renderStatus_ = function(entry, columnId, table) {
  *     or 'unknown'.
  */
 FileTable.prototype.getImportStatus_ = function(entry, destination) {
-  if (!entry.isFile) {
+  if (!importer.isEligibleEntry(this.volumeManager_, entry)) {
     // Our import history doesn't deal with directories.
     // TODO(kenobi): May need to revisit this if the above assumption changes.
     return Promise.resolve('unknown');

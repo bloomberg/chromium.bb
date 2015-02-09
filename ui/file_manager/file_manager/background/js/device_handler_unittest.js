@@ -84,8 +84,6 @@ function testRemovableMediaDeviceWithImportEnabled(callback) {
         '/DCIM/grandma.jpg'
       ]);
 
-  // "Enable" cloud backup, then make a device handler.
-  chrome.commandLinePrivate.cloudBackupEnabled = true;
   var resolver = new importer.Resolver();
 
   // Handle media device navigation requests.
@@ -121,8 +119,6 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
         '/dcim/grandpa.jpg'
       ]);
 
-  // "Enable" cloud backup, then make a device handler.
-  chrome.commandLinePrivate.cloudBackupEnabled = true;
   var resolver = new importer.Resolver();
 
   // Handle media device navigation requests.
@@ -150,7 +146,7 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
 }
 
 function testMediaDeviceWithImportDisabled(callback) {
-  chrome.commandLinePrivate.cloudBackupEnabled = false;
+  chrome.commandLinePrivate.cloudImportDisabled = true;
 
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
@@ -566,11 +562,11 @@ function setupChromeApis() {
   chrome = {
     commandLinePrivate: {
       hasSwitch: function(switchName, callback) {
-        if (switchName === 'enable-cloud-backup') {
-          callback(chrome.commandLinePrivate.cloudBackupEnabled);
+        if (switchName === 'disable-cloud-import') {
+          callback(chrome.commandLinePrivate.cloudImportDisabled);
         }
       },
-      cloudBackupEnabled: false
+      cloudImportDisabled: false
     },
     fileManagerPrivate: {
       onDeviceChanged: {

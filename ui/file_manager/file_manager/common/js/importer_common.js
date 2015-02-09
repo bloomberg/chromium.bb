@@ -126,10 +126,10 @@ importer.importEnabled = function() {
   return new Promise(
       function(resolve, reject) {
         chrome.commandLinePrivate.hasSwitch(
-            'enable-cloud-backup',
-            /** @param {boolean} enabled */
-            function(enabled) {
-              resolve(enabled);
+            'disable-cloud-import',
+            /** @param {boolean} disabled */
+            function(disabled) {
+              resolve(!disabled);
             });
       });
 };

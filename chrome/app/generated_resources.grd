@@ -6281,11 +6281,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_CARRIER_SWITCHING_DESCRIPTION" desc="Description for the flag to set to enable carrier switching.">
         Allows the user to switch between mobile carriers from the UI. Warning: The Sprint carrier will ONLY work for users with an existing Sprint plan.
       </message>
-      <message name="IDS_FLAGS_ENABLE_CLOUD_BACKUP" desc="Name for the flag to enable cloud backup feature.">
-        Enable cloud backup.
+      <message name="IDS_FLAGS_DISABLE_CLOUD_IMPORT" desc="Name for the flag to disable cloud import feature.">
+        Disable Cloud Import.
       </message>
-      <message name="IDS_FLAGS_ENABLE_CLOUD_BACKUP_DESCRIPTION" desc="Description for the flag to enable cloud backup.">
-        Allows the user to easily backup content to the cloud.
+      <message name="IDS_FLAGS_DISABLE_CLOUD_IMPORT_DESCRIPTION" desc="Description for the flag to disable cloud import.">
+        Allows the user to easily disable the cloud-import feature.
       </message>
       <message name="IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_NAME" desc="Name for the flag to set to enable Request Tablet Site in the wrench menu.">
         Enables the request tablet site option in the settings menu.
