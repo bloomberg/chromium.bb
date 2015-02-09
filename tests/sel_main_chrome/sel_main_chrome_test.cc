@@ -20,7 +20,6 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
-#include "native_client/src/trusted/desc/nacl_desc_file_info.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -127,7 +126,6 @@ static int TestResolveFileToken(void *handle, struct NaClFileToken *file_token,
 
 struct ThreadArgs {
   NaClHandle channel;
-  NaClFileInfo file_info;
 };
 
 void WINAPI DummyRendererThread(void *thread_arg) {
@@ -240,9 +238,6 @@ int main(int argc, char **argv) {
   args->irt_load_optional = g_irt_load_optional;
   CHECK(args->irt_fd >= 0);
 
-  memset(&thread_args.file_info, 0, sizeof thread_args.file_info);
-  thread_args.file_info.desc = OpenFileReadOnly(nexe_filename);
-  CHECK(thread_args.file_info.desc >= 0);
   NaClFileNameForValgrind(nexe_filename);
 
   NaClHandle socketpair[2];
