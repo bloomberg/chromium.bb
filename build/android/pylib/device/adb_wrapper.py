@@ -253,6 +253,20 @@ class AdbWrapper(object):
             command, output, status=status, device_serial=self._device_serial)
     return output
 
+  def IterShell(self, command, timeout):
+    """Runs a shell command and returns an iterator over its output lines.
+
+    Args:
+      command: A string with the shell command to run.
+      timeout: Timeout in seconds.
+
+    Yields:
+      The output of the command line by line.
+    """
+    args = ['shell', command]
+    return cmd_helper.IterCmdOutputLines(
+      self._BuildAdbCmd(args, self._device_serial), timeout=timeout)
+
   def Ls(self, path, timeout=_DEFAULT_TIMEOUT, retries=_DEFAULT_RETRIES):
     """List the contents of a directory on the device.
 
