@@ -109,7 +109,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> TransformStyleInterpolation::transform
 }
 
 
-PassRefPtrWillBeRawPtr<CSSValue> TransformStyleInterpolation::interpolableValueToTransform(InterpolableValue* value, WillBeHeapVector<CSSTransformValue::TransformOperationType> types)
+PassRefPtrWillBeRawPtr<CSSValue> TransformStyleInterpolation::interpolableValueToTransform(InterpolableValue* value, Vector<CSSTransformValue::TransformOperationType> types)
 {
     InterpolableList* list = toInterpolableList(value);
     if (list->length() == 0)

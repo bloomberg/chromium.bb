@@ -17,7 +17,7 @@ public:
         if (!canCreateFrom(start) || !canCreateFrom(end))
             return nullptr;
         ASSERT(!TransformStyleInterpolation::fallBackToLegacy(start, end));
-        WillBeHeapVector<CSSTransformValue::TransformOperationType> types;
+        Vector<CSSTransformValue::TransformOperationType> types;
         if (start.isPrimitiveValue() && end.isPrimitiveValue())
             return adoptRefWillBeNoop(new TransformStyleInterpolation(transformToInterpolableValue(start), transformToInterpolableValue(end), id, types));
         const CSSValueList* startList = toCSSValueList(&start);
@@ -35,7 +35,7 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    TransformStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, WillBeHeapVector<CSSTransformValue::TransformOperationType> types)
+    TransformStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, Vector<CSSTransformValue::TransformOperationType> types)
         : StyleInterpolation(start, end, id)
         , m_types(types)
     { }
@@ -43,9 +43,9 @@ private:
     static bool canCreateFrom(const CSSValue&);
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> transformToInterpolableValue(CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToTransform(InterpolableValue*, WillBeHeapVector<CSSTransformValue::TransformOperationType> types);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToTransform(InterpolableValue*, Vector<CSSTransformValue::TransformOperationType> types);
 
-    WillBeHeapVector<CSSTransformValue::TransformOperationType> m_types;
+    Vector<CSSTransformValue::TransformOperationType> m_types;
 
     friend class AnimationTransformStyleInterpolationTest;
 };

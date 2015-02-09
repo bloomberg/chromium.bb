@@ -51,7 +51,7 @@ protected:
 
 TEST_F(AnimationTransformStyleInterpolationTest, ZeroTransform)
 {
-    RefPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
 
     RefPtrWillBeRawPtr<CSSTransformValue> transform = CSSTransformValue::create(CSSTransformValue::PerspectiveTransformOperation);
     transform->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
@@ -179,7 +179,7 @@ TEST_F(AnimationTransformStyleInterpolationTest, ZeroTransform)
 
 TEST_F(AnimationTransformStyleInterpolationTest, SingleUnitTransform)
 {
-    RefPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
 
     RefPtrWillBeRawPtr<CSSTransformValue> transform = CSSTransformValue::create(CSSTransformValue::PerspectiveTransformOperation);
     transform->append(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
