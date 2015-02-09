@@ -33,7 +33,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
-#include "native_client/src/trusted/desc_cacheability/desc_cacheability.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/fault_injection/test_injection.h"
 #include "native_client/src/trusted/interval_multiset/nacl_interval_range_tree_intern.h"
@@ -58,7 +57,6 @@
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
 #include "native_client/src/trusted/validator/rich_file_info.h"
-#include "native_client/src/trusted/validator/validation_cache.h"
 
 static int IsEnvironmentVariableSet(char const *env_name) {
   return NULL != getenv(env_name);
@@ -1027,12 +1025,6 @@ void NaClAppLoadModule(struct NaClApp   *nap,
   NaClDescRef(nexe);
 
   NaClXMutexLock(&nap->mu);
-
-  /*
-   * TODO(teravest): Remove this when file tokens are no longer used in |nexe|.
-   */
-  NaClReplaceDescIfValidationCacheAssertsMappable(&nexe,
-                                                  nap->validation_cache);
 
   /* Transfer ownership from nexe to nap->main_nexe_desc. */
   CHECK(nap->main_nexe_desc == NULL);

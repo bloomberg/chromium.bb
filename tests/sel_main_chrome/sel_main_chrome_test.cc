@@ -15,7 +15,7 @@
 
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
-#include "native_client/src/public/nacl_file_info.h"
+#include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -48,17 +48,15 @@ int OpenFileReadOnly(const char *filename) {
 #endif
 }
 
-int32_t OpenFileHandleReadExec(const char *filename) {
+NaClHandle OpenFileHandleReadExec(const char *filename) {
 #if NACL_WINDOWS
-  HANDLE h = CreateFileA(filename,
-                         GENERIC_READ | GENERIC_EXECUTE,
-                         FILE_SHARE_READ,
-                         NULL,
-                         OPEN_EXISTING,
-                         FILE_ATTRIBUTE_NORMAL,
-                         NULL);
-  // On Windows, valid handles are 32 bit unsigned integers so this is safe.
-  return reinterpret_cast<int32_t>(h);
+  return CreateFileA(filename,
+                     GENERIC_READ | GENERIC_EXECUTE,
+                     FILE_SHARE_READ,
+                     NULL,
+                     OPEN_EXISTING,
+                     FILE_ATTRIBUTE_NORMAL,
+                     NULL);
 #else
   return open(filename, O_RDONLY);
 #endif
@@ -76,14 +74,6 @@ class DummyLauncher : public nacl::SelLdrLauncherBase {
     UNREFERENCED_PARAMETER(url);
     return true;
   }
-};
-
-// Fake validation cache methods for testing.
-struct TestValidationHandle {
-  uint64_t expected_token_lo;
-  uint64_t expected_token_hi;
-  int32_t expected_file_handle;
-  char *expected_file_path;
 };
 
 struct TestValidationQuery {
@@ -124,13 +114,15 @@ static int TestCachingIsInexpensive(const struct NaClValidationMetadata *m) {
 static int TestResolveFileToken(void *handle, struct NaClFileToken *file_token,
                                 int32_t *fd, char **file_path,
                                 uint32_t *file_path_length) {
-  TestValidationHandle *h = static_cast<TestValidationHandle *>(handle);
-  CHECK(h->expected_token_lo == file_token->lo);
-  CHECK(h->expected_token_hi == file_token->hi);
-  *fd = h->expected_file_handle;
-  *file_path = h->expected_file_path;
-  *file_path_length = static_cast<uint32_t>(strlen(h->expected_file_path));
-  return 1;
+  // We don't expect ResolveFileToken() to be used any more.
+  // TODO(mseaborn): Remove ResolveFileToken() entirely.
+  UNREFERENCED_PARAMETER(handle);
+  UNREFERENCED_PARAMETER(file_token);
+  UNREFERENCED_PARAMETER(fd);
+  UNREFERENCED_PARAMETER(file_path);
+  UNREFERENCED_PARAMETER(file_path_length);
+  CHECK(false);
+  return 0;
 }
 
 struct ThreadArgs {
@@ -262,14 +254,9 @@ int main(int argc, char **argv) {
   NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, MakeExampleDesc());
 
   // Set up mock validation cache.
-  struct TestValidationHandle test_handle;
   struct NaClValidationCache test_cache;
   if (g_test_validation_cache) {
-    test_handle.expected_token_lo = 0xabcdef123456789LL;
-    test_handle.expected_token_hi = 0x101010101010101LL;
-    test_handle.expected_file_handle = OpenFileHandleReadExec(nexe_filename);
-    test_handle.expected_file_path = strdup(nexe_filename);
-    test_cache.handle = &test_handle;
+    test_cache.handle = NULL;
     test_cache.CreateQuery = &TestCreateQuery;
     test_cache.AddData = &TestAddData;
     test_cache.QueryKnownToValidate = &TestQueryKnownToValidate;
@@ -278,22 +265,10 @@ int main(int argc, char **argv) {
     test_cache.CachingIsInexpensive = &TestCachingIsInexpensive;
     test_cache.ResolveFileToken = &TestResolveFileToken;
     args->validation_cache = &test_cache;
-    thread_args.file_info.file_token.lo = test_handle.expected_token_lo;
-    thread_args.file_info.file_token.hi = test_handle.expected_token_hi;
   }
-  NaClFileInfo info;
-  info.desc = OpenFileHandleReadExec(nexe_filename);
-#if NACL_WINDOWS
-  info.desc = _open_osfhandle(info.desc, _O_RDONLY | _O_BINARY);
-#endif
-  if (g_test_validation_cache) {
-    info.file_token.lo = test_handle.expected_token_lo;
-    info.file_token.hi = test_handle.expected_token_hi;
-  } else {
-    info.file_token.lo = 0;
-    info.file_token.hi = 0;
-  }
-  args->nexe_desc = NaClDescIoFromFileInfo(info, NACL_ABI_O_RDONLY);
+  NaClHandle nexe_handle = OpenFileHandleReadExec(nexe_filename);
+  args->nexe_desc = NaClDescCreateWithFilePathMetadata(nexe_handle,
+                                                       "dummy_pathname");
 
   NaClThread thread;
   CHECK(NaClThreadCtor(&thread, DummyRendererThread, &thread_args,
