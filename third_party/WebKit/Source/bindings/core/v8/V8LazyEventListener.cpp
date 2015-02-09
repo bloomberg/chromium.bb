@@ -120,15 +120,16 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
     if (!scriptState->contextIsValid())
         return;
 
-    if (executionContext->isDocument() && !toDocument(executionContext)->allowInlineEventHandlers(m_node, this, m_sourceURL, m_position.m_line)) {
+    if (!executionContext->isDocument())
+        return;
+
+    if (!toDocument(executionContext)->allowInlineEventHandlers(m_node, this, m_sourceURL, m_position.m_line)) {
         clearListenerObject();
         return;
     }
 
     if (hasExistingListenerObject())
         return;
-
-    ASSERT(executionContext->isDocument());
 
     ScriptState::Scope scope(scriptState);
     String listenerSource =  InspectorInstrumentation::preprocessEventListener(toDocument(executionContext)->frame(), m_code, m_sourceURL, m_functionName);
@@ -166,7 +167,8 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
         return;
 
     // Call the outer function to get the inner function.
-    ASSERT(result->IsFunction());
+    if (!result->IsFunction())
+        return;
     v8::Local<v8::Function> intermediateFunction = result.As<v8::Function>();
 
     HTMLFormElement* formElement = 0;
