@@ -8,6 +8,7 @@
   ],
   'variables': {
     'main_schema_files': [
+      'accessibility_features.json',
       'accessibility_private.json',
       'activity_log_private.json',
       'automation.idl',
@@ -105,7 +106,6 @@
 
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [
-      'accessibility_features.json',
       'enterprise_platform_keys.idl',
       'enterprise_platform_keys_internal.idl',
       'file_browser_handler_internal.json',

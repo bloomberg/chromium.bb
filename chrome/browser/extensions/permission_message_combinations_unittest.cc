@@ -1165,18 +1165,11 @@ TEST_F(PermissionMessageCombinationsUnittest, PermissionMessageCombos) {
       "  ]"
       "}");
 
-#ifdef OS_CHROMEOS
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read your browsing history on all your signed-in devices",
       "Capture content of your screen", "Read and change your bookmarks",
       "Read and change your data on a number of websites",
       "Read and change your accessibility settings"));
-#else
-  ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Read your browsing history on all your signed-in devices",
-      "Capture content of your screen", "Read and change your bookmarks",
-      "Read and change your data on a number of websites"));
-#endif
 
   ASSERT_TRUE(CheckManifestProducesHostPermissions(
       "All go.com sites", "All google.com sites", "All news.com sites",
@@ -1216,14 +1209,9 @@ TEST_F(PermissionMessageCombinationsUnittest, PermissionMessageCombos) {
       "  ]"
       "}");
 
-#ifdef OS_CHROMEOS
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access your serial devices", "Store data in your Google Drive account",
       "Read and change your accessibility settings"));
-#else
-  ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Access your serial devices", "Store data in your Google Drive account"));
-#endif
 
   ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }

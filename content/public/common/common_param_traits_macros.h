@@ -50,6 +50,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::PointerType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::HoverType,
                               ui::HOVER_TYPE_FIRST,
                               ui::HOVER_TYPE_LAST)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::ImageAnimationPolicy,
+                              content::IMAGE_ANIMATION_POLICY_ALLOWED,
+                              content::IMAGE_ANIMATION_POLICY_NO_ANIMATION)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -194,6 +197,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(v8_cache_options)
   IPC_STRUCT_TRAITS_MEMBER(slimming_paint_enabled)
   IPC_STRUCT_TRAITS_MEMBER(pepper_accelerated_video_decode_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(animation_policy)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(text_autosizing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(font_scale_factor)

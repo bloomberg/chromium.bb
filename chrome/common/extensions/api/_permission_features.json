@@ -22,13 +22,11 @@
 {
   "accessibilityFeatures.modify": {
     "channel": "stable",
-    "extension_types": ["extension", "platform_app"],
-    "platforms": ["chromeos"]
+    "extension_types": ["extension", "platform_app"]
   },
   "accessibilityFeatures.read": {
     "channel": "stable",
-    "extension_types": ["extension", "platform_app"],
-    "platforms": ["chromeos"]
+    "extension_types": ["extension", "platform_app"]
   },
   "accessibilityPrivate": {
     "channel": "stable",

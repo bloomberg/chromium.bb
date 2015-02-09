@@ -59,6 +59,13 @@ STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_RECENT_SMALL,
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
                              WebSettings::V8CacheOptionsRecentSmall);
 
+STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_ALLOWED,
+                             WebSettings::ImageAnimationPolicyAllowed);
+STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_ANIMATION_ONCE,
+                             WebSettings::ImageAnimationPolicyAnimateOnce);
+STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_NO_ANIMATION,
+                             WebSettings::ImageAnimationPolicyNoAnimation);
+
 STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_NONE,
                              WebSettings::PointerTypeNone);
 STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_COARSE,
@@ -182,6 +189,7 @@ WebPreferences::WebPreferences()
       slimming_paint_enabled(false),
       cookie_enabled(true),
       pepper_accelerated_video_decode_enabled(false),
+      animation_policy(IMAGE_ANIMATION_POLICY_ALLOWED),
 #if defined(OS_ANDROID)
       text_autosizing_enabled(true),
       font_scale_factor(1.0f),

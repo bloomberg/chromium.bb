@@ -50,6 +50,16 @@ enum V8CacheOptions {
   V8_CACHE_OPTIONS_LAST = V8_CACHE_OPTIONS_RECENT_SMALL
 };
 
+// ImageAnimationPolicy is used for controlling image animation
+// when image frame is rendered for animation.
+// See third_party/WebKit/Source/platform/graphics/ImageAnimationPolicy.h
+// for information on the options.
+enum ImageAnimationPolicy {
+  IMAGE_ANIMATION_POLICY_ALLOWED,
+  IMAGE_ANIMATION_POLICY_ANIMATION_ONCE,
+  IMAGE_ANIMATION_POLICY_NO_ANIMATION
+};
+
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
@@ -184,6 +194,8 @@ struct CONTENT_EXPORT WebPreferences {
   // This flag indicates whether H/W accelerated video decode is enabled for
   // pepper plugins. Defaults to false.
   bool pepper_accelerated_video_decode_enabled;
+
+  ImageAnimationPolicy animation_policy;
 
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;

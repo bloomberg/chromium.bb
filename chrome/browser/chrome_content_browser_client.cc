@@ -222,6 +222,7 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/accessibility/animation_policy_prefs.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
@@ -2218,6 +2219,18 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitTextAreasAreResizable);
   web_prefs->hyperlink_auditing_enabled =
       prefs->GetBoolean(prefs::kEnableHyperlinkAuditing);
+
+#if defined(ENABLE_EXTENSIONS)
+  std::string image_animation_policy =
+      prefs->GetString(prefs::kAnimationPolicy);
+  if (image_animation_policy == kAnimationPolicyOnce)
+    web_prefs->animation_policy =
+        content::IMAGE_ANIMATION_POLICY_ANIMATION_ONCE;
+  else if (image_animation_policy == kAnimationPolicyNone)
+    web_prefs->animation_policy = content::IMAGE_ANIMATION_POLICY_NO_ANIMATION;
+  else
+    web_prefs->animation_policy = content::IMAGE_ANIMATION_POLICY_ALLOWED;
+#endif
 
   // Make sure we will set the default_encoding with canonical encoding name.
   web_prefs->default_encoding =

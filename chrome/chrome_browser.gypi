@@ -1260,6 +1260,8 @@
     'chrome_browser_extensions_sources': [
       'browser/accessibility/accessibility_extension_api.cc',
       'browser/accessibility/accessibility_extension_api.h',
+      'browser/accessibility/animation_policy_prefs.cc',
+      'browser/accessibility/animation_policy_prefs.h',
       'browser/autocomplete/keyword_extensions_delegate_impl.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl.h',
       'browser/content_settings/content_settings_internal_extension_provider.cc',

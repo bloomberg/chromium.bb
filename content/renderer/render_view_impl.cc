@@ -1065,6 +1065,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setV8CacheOptions(
       static_cast<WebSettings::V8CacheOptions>(prefs.v8_cache_options));
 
+  settings->setImageAnimationPolicy(
+      static_cast<WebSettings::ImageAnimationPolicy>(prefs.animation_policy));
+
   // Needs to happen before setIgnoreVIewportTagScaleLimits below.
   web_view->setDefaultPageScaleLimits(
       prefs.default_minimum_page_scale_factor,

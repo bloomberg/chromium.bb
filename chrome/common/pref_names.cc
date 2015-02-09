@@ -2281,4 +2281,9 @@ const char kPasswordBubbleLastInteractions[] = "password_bubble.interactions";
 const char kRecoveryComponentNeedsElevation[] =
     "recovery_component.needs_elevation";
 
+#if defined(ENABLE_EXTENSIONS)
+// Policy that indicates how to handle animated images.
+const char kAnimationPolicy[] = "settings.a11y.animation_policy";
+#endif
+
 }  // namespace prefs

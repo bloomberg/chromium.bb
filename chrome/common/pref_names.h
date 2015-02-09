@@ -817,6 +817,10 @@ extern const char kPasswordBubbleLastInteractions[];
 
 extern const char kRecoveryComponentNeedsElevation[];
 
+#if defined(ENABLE_EXTENSIONS)
+extern const char kAnimationPolicy[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

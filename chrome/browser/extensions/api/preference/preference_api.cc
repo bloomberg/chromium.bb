@@ -112,6 +112,12 @@ PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"translationServiceEnabled", prefs::kEnableTranslate,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
+    // accessibilityFeatures.animationPolicy is available for
+    // all platforms but the others from accessibilityFeatures
+    // is only available for OS_CHROMEOS.
+    {"animationPolicy", prefs::kAnimationPolicy,
+     APIPermission::kAccessibilityFeaturesRead,
+     APIPermission::kAccessibilityFeaturesModify},
 #if defined(OS_CHROMEOS)
     {"autoclick", prefs::kAccessibilityAutoclickEnabled,
      APIPermission::kAccessibilityFeaturesRead,

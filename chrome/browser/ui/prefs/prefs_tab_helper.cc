@@ -58,6 +58,9 @@ namespace {
 
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {
+#if defined(ENABLE_EXTENSIONS)
+  prefs::kAnimationPolicy,
+#endif
   prefs::kDefaultCharset,
   prefs::kDisable3DAPIs,
   prefs::kEnableHyperlinkAuditing,
