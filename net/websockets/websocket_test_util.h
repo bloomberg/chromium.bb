@@ -27,6 +27,7 @@ namespace net {
 class BoundNetLog;
 class DeterministicMockClientSocketFactory;
 class DeterministicSocketData;
+class ProxyService;
 class URLRequestContext;
 class WebSocketHandshakeStreamCreateHelper;
 struct SSLSocketDataProvider;
@@ -123,6 +124,12 @@ struct WebSocketTestURLRequestContextHost {
   void AddSSLSocketDataProvider(
       scoped_ptr<SSLSocketDataProvider> ssl_socket_data);
 
+  // Allow a proxy to be set. Usage:
+  //   SetProxyConfig("proxy1:8000");
+  // Any syntax accepted by net::ProxyConfig::ParseFromString() will work.
+  // Do not call after GetURLRequestContext() has been called.
+  void SetProxyConfig(const std::string& proxy_rules);
+
   // Call after calling one of SetExpections() or AddRawExpectations(). The
   // returned pointer remains owned by this object.
   TestURLRequestContext* GetURLRequestContext();
@@ -131,6 +138,7 @@ struct WebSocketTestURLRequestContextHost {
   WebSocketDeterministicMockClientSocketFactoryMaker maker_;
   TestURLRequestContext url_request_context_;
   TestNetworkDelegate network_delegate_;
+  scoped_ptr<ProxyService> proxy_service_;
   bool url_request_context_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTestURLRequestContextHost);

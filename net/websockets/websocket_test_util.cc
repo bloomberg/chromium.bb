@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 
 namespace net {
@@ -149,6 +150,13 @@ void WebSocketTestURLRequestContextHost::AddRawExpectations(
 void WebSocketTestURLRequestContextHost::AddSSLSocketDataProvider(
     scoped_ptr<SSLSocketDataProvider> ssl_socket_data) {
   maker_.AddSSLSocketDataProvider(ssl_socket_data.Pass());
+}
+
+void WebSocketTestURLRequestContextHost::SetProxyConfig(
+    const std::string& proxy_rules) {
+  DCHECK(!url_request_context_initialized_);
+  proxy_service_.reset(ProxyService::CreateFixed(proxy_rules));
+  url_request_context_.set_proxy_service(proxy_service_.get());
 }
 
 TestURLRequestContext*

@@ -22,6 +22,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
@@ -1410,6 +1411,34 @@ TEST_F(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
                                   "http://localhost", socket_data.Pass());
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
+}
+
+TEST_F(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
+  static const char kConnectRequest[] =
+      "CONNECT localhost:80 HTTP/1.1\r\n"
+      "Host: localhost\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      "\r\n";
+
+  static const char kProxyResponse[] =
+      "HTTP/1.1 403 Forbidden\r\n"
+      "Content-Type: text/html\r\n"
+      "Content-Length: 9\r\n"
+      "Connection: keep-alive\r\n"
+      "\r\n"
+      "Forbidden";
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, 1, kProxyResponse)};
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, kConnectRequest)};
+  scoped_ptr<DeterministicSocketData> socket_data(
+      BuildSocketData(reads, writes));
+  url_request_context_host_.SetProxyConfig("https=proxy:8000");
+  CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
+                                  "http://localhost", socket_data.Pass());
+  RunUntilIdle();
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Establishing a tunnel via proxy server failed.",
+            failure_message());
 }
 
 }  // namespace

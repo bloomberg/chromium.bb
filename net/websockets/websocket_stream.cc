@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/load_flags.h"
@@ -135,6 +136,20 @@ class StreamRequestImpl : public WebSocketStreamRequest {
     connect_delegate_->OnSuccess(create_helper_->Upgrade());
   }
 
+  std::string FailureMessageFromNetError() {
+    int error = url_request_->status().error();
+    if (error == ERR_TUNNEL_CONNECTION_FAILED) {
+      // This error is common and confusing, so special-case it.
+      // TODO(ricea): Include the HostPortPair of the selected proxy server in
+      // the error message. This is not currently possible because it isn't set
+      // in HttpResponseInfo when a ERR_TUNNEL_CONNECTION_FAILED error happens.
+      return "Establishing a tunnel via proxy server failed.";
+    } else {
+      return std::string("Error in connection establishment: ") +
+             ErrorToString(url_request_->status().error());
+    }
+  }
+
   void ReportFailure() {
     DCHECK(timer_);
     timer_->Stop();
@@ -150,9 +165,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
             failure_message_ = "WebSocket opening handshake was canceled";
           break;
         case URLRequestStatus::FAILED:
-          failure_message_ =
-              std::string("Error in connection establishment: ") +
-              ErrorToString(url_request_->status().error());
+          failure_message_ = FailureMessageFromNetError();
           break;
       }
     }
