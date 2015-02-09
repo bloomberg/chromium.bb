@@ -46,6 +46,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_LOCKBOX_CANNOT_SIGN = 17;
   CRYPTOHOME_ERROR_BOOT_ATTRIBUTE_NOT_FOUND = 18;
   CRYPTOHOME_ERROR_BOOT_ATTRIBUTES_CANNOT_SIGN = 19;
+  CRYPTOHOME_ERROR_TPM_EK_NOT_AVAILABLE = 20;
 }
 
 message AccountIdentifier {
@@ -252,3 +253,15 @@ message GetTpmStatusReply {
   optional bool verified_boot_measured = 15;
 }
 
+message GetEndorsementInfoRequest {
+}
+
+message GetEndorsementInfoReply {
+  extend BaseReply {
+    optional GetEndorsementInfoReply reply = 1007;
+  }
+  // The endorsement public key (PKCS #1 RSAPublicKey).
+  optional bytes ek_public_key = 1;
+  // The endorsement certificate (X.509).
+  optional bytes ek_certificate = 2;
+}
