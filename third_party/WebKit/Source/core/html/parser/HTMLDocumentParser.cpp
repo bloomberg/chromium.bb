@@ -46,6 +46,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/Scheduler.h"
 #include "wtf/Functional.h"
 #include "wtf/RefCounted.h"
 #include "wtf/TemporaryChange.h"
@@ -778,7 +779,7 @@ void HTMLDocumentParser::startBackgroundParser()
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
     ASSERT(config->preloadScanner->isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::start, reference.release(), config.release()));
+    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::start, reference.release(), config.release(), Scheduler::shared()));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()

@@ -41,6 +41,7 @@
 namespace blink {
 
 class HTMLDocumentParser;
+class Scheduler;
 class XSSAuditor;
 
 class BackgroundHTMLParser {
@@ -54,7 +55,7 @@ public:
         OwnPtr<TextResourceDecoder> decoder;
     };
 
-    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>);
+    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, Scheduler*);
 
     struct Checkpoint {
         WeakPtr<HTMLDocumentParser> parser;
@@ -79,7 +80,7 @@ public:
     void forcePlaintextForTextDocument();
 
 private:
-    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>);
+    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, Scheduler*);
     ~BackgroundHTMLParser();
 
     void appendDecodedBytes(const String&);
@@ -105,6 +106,7 @@ private:
     OwnPtr<TokenPreloadScanner> m_preloadScanner;
     OwnPtr<TextResourceDecoder> m_decoder;
     DocumentEncodingData m_lastSeenEncodingData;
+    Scheduler* m_scheduler; // NOT OWNED, scheduler will outlive BackgroundHTMLParser
 
     bool m_startingScript;
 };
