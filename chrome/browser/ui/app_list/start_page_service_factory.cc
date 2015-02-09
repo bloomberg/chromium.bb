@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -47,6 +48,12 @@ KeyedService* StartPageServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   return new StartPageService(profile);
+}
+
+content::BrowserContext* StartPageServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  // The start page service needs an instance in ChromeOS guest mode.
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace app_list

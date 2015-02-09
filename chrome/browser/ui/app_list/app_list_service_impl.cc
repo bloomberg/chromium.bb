@@ -261,7 +261,7 @@ AppListServiceImpl::~AppListServiceImpl() {}
 AppListViewDelegate* AppListServiceImpl::GetViewDelegate(Profile* profile) {
   if (!view_delegate_)
     view_delegate_.reset(new AppListViewDelegate(GetControllerDelegate()));
-  view_delegate_->SetProfile(profile);
+  view_delegate_->SetProfile(profile->GetOriginalProfile());
   return view_delegate_.get();
 }
 
