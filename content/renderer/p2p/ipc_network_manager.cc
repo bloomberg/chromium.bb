@@ -74,8 +74,6 @@ void IpcNetworkManager::OnNetworkListChanged(
   // rtc::Network uses these prefix_length to compare network
   // interfaces discovered.
   std::vector<rtc::Network*> networks;
-  int ipv4_interfaces = 0;
-  int ipv6_interfaces = 0;
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
        it != list.end(); it++) {
     if (it->address.size() == net::kIPv4AddressSize) {
@@ -89,7 +87,6 @@ void IpcNetworkManager::OnNetworkListChanged(
                            ConvertConnectionTypeToAdapterType(it->type));
       network->AddIP(rtc::IPAddress(address));
       networks.push_back(network);
-      ++ipv4_interfaces;
     } else if (it->address.size() == net::kIPv6AddressSize) {
       in6_addr address;
       memcpy(&address, &it->address[0], sizeof(in6_addr));
@@ -102,17 +99,9 @@ void IpcNetworkManager::OnNetworkListChanged(
                              ConvertConnectionTypeToAdapterType(it->type));
         network->AddIP(ip6_addr);
         networks.push_back(network);
-        ++ipv6_interfaces;
       }
     }
   }
-
-
-  // Send interface counts to UMA.
-  UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4Interfaces",
-                           ipv4_interfaces);
-  UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
-                           ipv6_interfaces);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowLoopbackInPeerConnection)) {
@@ -132,9 +121,16 @@ void IpcNetworkManager::OnNetworkListChanged(
   }
 
   bool changed = false;
-  MergeNetworkList(networks, &changed);
+  NetworkManager::Stats stats;
+  MergeNetworkList(networks, &changed, &stats);
   if (changed)
     SignalNetworksChanged();
+
+  // Send interface counts to UMA.
+  UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4Interfaces",
+                           stats.ipv4_network_count);
+  UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
+                           stats.ipv6_network_count);
 }
 
 void IpcNetworkManager::SendNetworksChangedSignal() {
