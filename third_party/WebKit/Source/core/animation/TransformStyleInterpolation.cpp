@@ -170,7 +170,6 @@ void TransformStyleInterpolation::apply(StyleResolverState& state) const
 
 void TransformStyleInterpolation::trace(Visitor* visitor)
 {
-    visitor->trace(m_types);
     StyleInterpolation::trace(visitor);
 }
 
