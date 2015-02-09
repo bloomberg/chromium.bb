@@ -776,16 +776,16 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " <<
         locale;
+  }
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-    if (process_type == switches::kUtilityProcess ||
-        process_type == switches::kZygoteProcess) {
-      ChromeContentUtilityClient::PreSandboxStartup();
-    }
-
-    chrome::InitializePDF();
-#endif
+  if (process_type == switches::kUtilityProcess ||
+      process_type == switches::kZygoteProcess) {
+    ChromeContentUtilityClient::PreSandboxStartup();
   }
+
+  chrome::InitializePDF();
+#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Zygote needs to call InitCrashReporter() in RunZygote().

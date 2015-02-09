@@ -50,9 +50,11 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
     LOGFONT logfont;
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
-      content::ChildThread::Get()->PreCacheFont(logfont);
+      if (content::ChildThread::Get())
+        content::ChildThread::Get()->PreCacheFont(logfont);
       rv = g_original_get_font_data(hdc, table, offset, buffer, length);
-      content::ChildThread::Get()->ReleaseCachedFonts();
+      if (content::ChildThread::Get())
+        content::ChildThread::Get()->ReleaseCachedFonts();
     }
   }
   return rv;
