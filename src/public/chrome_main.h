@@ -198,9 +198,8 @@ struct NaClChromeMainArgs {
 #endif
 
   /*
-   * Descriptor for the user nexe module to load and run. This is optional and
-   * may be NULL if SRPC is used for module loading.
-   * Callee assumes ownership.
+   * Descriptor for the user nexe module to load and run.  This is
+   * required.  Callee assumes ownership.
    */
   struct NaClDesc *nexe_desc;
 

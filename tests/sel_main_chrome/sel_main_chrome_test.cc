@@ -30,11 +30,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
-// A global variable that specifies whether the module should be loaded via
-// SRPC. Its value is controlled by a command line flag kNoSrpcLoadModule.
-bool g_load_module_srpc = true;
-const char kNoSrpcLoadModule[] = "--no_srpc_load_module";
-
 // A global variable that specifies whether or not the test should set
 // the irt_load_optional flag in NaClChromeMainArgs.
 bool g_irt_load_optional = false;
@@ -146,21 +141,10 @@ struct ThreadArgs {
 void WINAPI DummyRendererThread(void *thread_arg) {
   struct ThreadArgs *args = (struct ThreadArgs *) thread_arg;
 
-  nacl::DescWrapperFactory desc_wrapper_factory;
   DummyLauncher launcher(args->channel);
   NaClSrpcChannel trusted_channel;
   NaClSrpcChannel untrusted_channel;
-  if (g_load_module_srpc) {
-    struct NaClDesc *desc = NaClDescIoFromFileInfo(args->file_info,
-                                                   NACL_ABI_O_RDONLY);
-    CHECK(desc != NULL);
-    nacl::DescWrapper *nexe_desc =
-        desc_wrapper_factory.MakeGenericCleanup(desc);
-    CHECK(nexe_desc != NULL);
-    CHECK(launcher.SetupCommandAndLoad(&trusted_channel, nexe_desc));
-  } else {
-    CHECK(launcher.SetupCommand(&trusted_channel));
-  }
+  CHECK(launcher.SetupCommand(&trusted_channel));
   CHECK(launcher.StartModuleAndSetupAppChannel(&trusted_channel,
                                                &untrusted_channel));
 }
@@ -207,7 +191,6 @@ int NaClHandleArguments(int argc, char **argv) {
     bool *flag_reference;
     bool value_to_set;
   } long_opts[] = {
-    {kNoSrpcLoadModule, &g_load_module_srpc, false},
     {kIrtLoadOptional, &g_irt_load_optional, true},
     {kTestValidationCache, &g_test_validation_cache, true},
     {NULL, NULL, false}
@@ -257,10 +240,9 @@ int main(int argc, char **argv) {
 
   NaClLog(LOG_INFO,
           "SelMainChromeTest configuration:\n"
-          "g_load_module_srpc: %d\n"
           "g_irt_load_optional: %d\n"
           "g_test_validation_cache: %d\n",
-           g_load_module_srpc, g_irt_load_optional, g_test_validation_cache);
+          g_irt_load_optional, g_test_validation_cache);
 
   args->irt_fd = OpenFileReadOnly(irt_filename);
   args->irt_load_optional = g_irt_load_optional;
@@ -299,21 +281,19 @@ int main(int argc, char **argv) {
     thread_args.file_info.file_token.lo = test_handle.expected_token_lo;
     thread_args.file_info.file_token.hi = test_handle.expected_token_hi;
   }
-  if (!g_load_module_srpc) {
-    NaClFileInfo info;
-    info.desc = OpenFileHandleReadExec(nexe_filename);
+  NaClFileInfo info;
+  info.desc = OpenFileHandleReadExec(nexe_filename);
 #if NACL_WINDOWS
-    info.desc = _open_osfhandle(info.desc, _O_RDONLY | _O_BINARY);
+  info.desc = _open_osfhandle(info.desc, _O_RDONLY | _O_BINARY);
 #endif
-    if (g_test_validation_cache) {
-      info.file_token.lo = test_handle.expected_token_lo;
-      info.file_token.hi = test_handle.expected_token_hi;
-    } else {
-      info.file_token.lo = 0;
-      info.file_token.hi = 0;
-    }
-    args->nexe_desc = NaClDescIoFromFileInfo(info, NACL_ABI_O_RDONLY);
+  if (g_test_validation_cache) {
+    info.file_token.lo = test_handle.expected_token_lo;
+    info.file_token.hi = test_handle.expected_token_hi;
+  } else {
+    info.file_token.lo = 0;
+    info.file_token.hi = 0;
   }
+  args->nexe_desc = NaClDescIoFromFileInfo(info, NACL_ABI_O_RDONLY);
 
   NaClThread thread;
   CHECK(NaClThreadCtor(&thread, DummyRendererThread, &thread_args,

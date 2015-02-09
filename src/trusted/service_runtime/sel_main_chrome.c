@@ -301,11 +301,10 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
     NaClSetUpBootstrapChannel(nap, args->imc_bootstrap_handle);
   }
 
-  if (args->nexe_desc) {
-    NaClAppLoadModule(nap, args->nexe_desc, NULL, NULL);
-    NaClDescUnref(args->nexe_desc);
-    args->nexe_desc = NULL;
-  }
+  CHECK(args->nexe_desc != NULL);
+  NaClAppLoadModule(nap, args->nexe_desc, NULL, NULL);
+  NaClDescUnref(args->nexe_desc);
+  args->nexe_desc = NULL;
 
   if (has_bootstrap_channel) {
     NACL_FI_FATAL("BeforeSecureCommandChannel");
