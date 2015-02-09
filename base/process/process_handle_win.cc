@@ -20,10 +20,6 @@ ProcessHandle GetCurrentProcessHandle() {
   return ::GetCurrentProcess();
 }
 
-void CloseProcessHandle(ProcessHandle process) {
-  CloseHandle(process);
-}
-
 ProcessId GetProcId(ProcessHandle process) {
   // This returns 0 if we have insufficient rights to query the process handle.
   return GetProcessId(process);

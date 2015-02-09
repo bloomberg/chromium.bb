@@ -16,11 +16,6 @@ ProcessHandle GetCurrentProcessHandle() {
   return GetCurrentProcId();
 }
 
-void CloseProcessHandle(ProcessHandle process) {
-  // See OpenProcessHandle, nothing to do.
-  return;
-}
-
 ProcessId GetProcId(ProcessHandle process) {
   return process;
 }

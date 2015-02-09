@@ -33,16 +33,15 @@ class CommandLine;
 //     // Maybe set some options (e.g., |start_hidden| on Windows)....
 //
 //     // Start a child process and run |a_test_func|.
-//     base::ProcessHandle test_child_handle =
+//     base::Process test_child_process =
 //         base::SpawnMultiProcessTestChild("a_test_func", command_line,
 //                                          options);
 //
-//     // Do stuff involving |test_child_handle| and the child process....
+//     // Do stuff involving |test_child_process| and the child process....
 //
 //     int rv = -1;
-//     ASSERT_TRUE(base::WaitForExitCodeWithTimeout(
-//         test_child_handle, &rv, TestTimeouts::action_timeout()));
-//     base::CloseProcessHandle(test_child_handle);
+//     ASSERT_TRUE(test_child_process.WaitForExitWithTimeout(
+//         TestTimeouts::action_timeout(), &rv));
 //     EXPECT_EQ(0, rv);
 //   }
 //

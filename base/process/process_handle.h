@@ -42,9 +42,6 @@ BASE_EXPORT ProcessHandle GetCurrentProcessHandle();
 
 
 
-// Closes the process handle opened by OpenProcessHandle.
-BASE_EXPORT void CloseProcessHandle(ProcessHandle process);
-
 // Returns the unique ID for the specified process. This is functionally the
 // same as Windows' GetProcessId(), but works on versions of Windows before
 // Win XP SP1 as well.

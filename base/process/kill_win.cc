@@ -182,10 +182,9 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
 }
 
 bool WaitForExitCode(ProcessHandle handle, int* exit_code) {
-  bool success = WaitForExitCodeWithTimeout(
-      handle, exit_code, base::TimeDelta::FromMilliseconds(INFINITE));
-  CloseProcessHandle(handle);
-  return success;
+  // TODO(rvargas) crbug.com/417532: Remove this function.
+  Process process(handle);
+  return process.WaitForExit(exit_code);
 }
 
 bool WaitForExitCodeWithTimeout(ProcessHandle handle,
