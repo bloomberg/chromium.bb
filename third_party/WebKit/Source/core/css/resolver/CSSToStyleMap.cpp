@@ -37,8 +37,8 @@
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/rendering/style/BorderImageLengthBox.h"
-#include "core/rendering/style/FillLayer.h"
+#include "core/layout/style/BorderImageLengthBox.h"
+#include "core/layout/style/FillLayer.h"
 
 namespace blink {
 

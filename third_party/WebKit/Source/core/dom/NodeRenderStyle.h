@@ -29,11 +29,11 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 
 namespace blink {
 
-inline RenderStyle* Node::renderStyle() const
+inline LayoutStyle* Node::layoutStyle() const
 {
     if (LayoutObject* renderer = this->renderer())
         return renderer->style();
@@ -45,15 +45,15 @@ inline RenderStyle* Node::renderStyle() const
     return 0;
 }
 
-inline RenderStyle* Node::parentRenderStyle() const
+inline LayoutStyle* Node::parentLayoutStyle() const
 {
     ContainerNode* parent = NodeRenderingTraversal::parent(*this);
-    return parent ? parent->renderStyle() : 0;
+    return parent ? parent->layoutStyle() : 0;
 }
 
-inline const RenderStyle& Node::renderStyleRef() const
+inline const LayoutStyle& Node::layoutStyleRef() const
 {
-    const RenderStyle* style = renderStyle();
+    const LayoutStyle* style = layoutStyle();
     ASSERT(style);
     return *style;
 }

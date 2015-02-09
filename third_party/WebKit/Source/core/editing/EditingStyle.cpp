@@ -55,8 +55,8 @@
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
 
@@ -472,23 +472,23 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
     }
 
     if (node && node->computedStyle()) {
-        RenderStyle* renderStyle = node->computedStyle();
-        removeTextFillAndStrokeColorsIfNeeded(renderStyle);
-        replaceFontSizeByKeywordIfPossible(renderStyle, computedStyleAtPosition.get());
+        LayoutStyle* layoutStyle = node->computedStyle();
+        removeTextFillAndStrokeColorsIfNeeded(layoutStyle);
+        replaceFontSizeByKeywordIfPossible(layoutStyle, computedStyleAtPosition.get());
     }
 
     m_fixedPitchFontType = computedStyleAtPosition->fixedPitchFontType();
     extractFontSizeDelta();
 }
 
-void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(RenderStyle* renderStyle)
+void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(LayoutStyle* layoutStyle)
 {
     // If a node's text fill color is currentColor, then its children use
     // their font-color as their text fill color (they don't
     // inherit it).  Likewise for stroke color.
-    if (renderStyle->textFillColor().isCurrentColor())
+    if (layoutStyle->textFillColor().isCurrentColor())
         m_mutableStyle->removeProperty(CSSPropertyWebkitTextFillColor);
-    if (renderStyle->textStrokeColor().isCurrentColor())
+    if (layoutStyle->textStrokeColor().isCurrentColor())
         m_mutableStyle->removeProperty(CSSPropertyWebkitTextStrokeColor);
 }
 
@@ -500,10 +500,10 @@ void EditingStyle::setProperty(CSSPropertyID propertyID, const String& value, bo
     m_mutableStyle->setProperty(propertyID, value, important);
 }
 
-void EditingStyle::replaceFontSizeByKeywordIfPossible(RenderStyle* renderStyle, CSSComputedStyleDeclaration* computedStyle)
+void EditingStyle::replaceFontSizeByKeywordIfPossible(LayoutStyle* layoutStyle, CSSComputedStyleDeclaration* computedStyle)
 {
-    ASSERT(renderStyle);
-    if (renderStyle->fontDescription().keywordSize())
+    ASSERT(layoutStyle);
+    if (layoutStyle->fontDescription().keywordSize())
         m_mutableStyle->setProperty(CSSPropertyFontSize, computedStyle->getFontSizeCSSValuePreferringKeyword()->cssText());
 }
 

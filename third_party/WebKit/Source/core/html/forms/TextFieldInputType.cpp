@@ -65,7 +65,7 @@ private:
     inline DataListIndicatorElement(Document& document) : HTMLDivElement(document) { }
     inline HTMLInputElement* hostInput() const { return toHTMLInputElement(shadowHost()); }
 
-    virtual LayoutObject* createRenderer(const RenderStyle&) override
+    virtual LayoutObject* createRenderer(const LayoutStyle&) override
     {
         return new RenderDetailsMarker(this);
     }
@@ -268,7 +268,7 @@ bool TextFieldInputType::shouldSubmitImplicitly(Event* event)
     return (event->type() == EventTypeNames::textInput && event->hasInterface(EventNames::TextEvent) && toTextEvent(event)->data() == "\n") || InputType::shouldSubmitImplicitly(event);
 }
 
-LayoutObject* TextFieldInputType::createRenderer(const RenderStyle&) const
+LayoutObject* TextFieldInputType::createRenderer(const LayoutStyle&) const
 {
     return new RenderTextControlSingleLine(&element());
 }

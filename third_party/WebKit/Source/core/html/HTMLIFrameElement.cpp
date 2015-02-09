@@ -107,12 +107,12 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
     }
 }
 
-bool HTMLIFrameElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLIFrameElement::rendererIsNeeded(const LayoutStyle& style)
 {
     return isURLAllowed() && HTMLElement::rendererIsNeeded(style);
 }
 
-LayoutObject* HTMLIFrameElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLIFrameElement::createRenderer(const LayoutStyle&)
 {
     return new RenderIFrame(this);
 }

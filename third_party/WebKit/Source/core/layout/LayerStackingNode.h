@@ -54,7 +54,7 @@ namespace blink {
 
 class Layer;
 class LayerCompositor;
-class RenderStyle;
+class LayoutStyle;
 
 class LayerStackingNode {
     WTF_MAKE_NONCOPYABLE(LayerStackingNode);
@@ -85,7 +85,7 @@ public:
     bool normalFlowListDirty() const { return m_normalFlowListDirty; }
     void dirtyNormalFlowList();
 
-    void updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle);
+    void updateStackingNodesAfterStyleChange(const LayoutStyle* oldStyle);
 
     LayerStackingNode* ancestorStackingContextNode() const;
 

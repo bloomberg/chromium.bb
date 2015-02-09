@@ -63,8 +63,8 @@ void AffectedByFocusTest::checkElements(ElementResult expected[], unsigned expec
 
     for (; element && i < expectedCount; element = Traversal<HTMLElement>::next(*element), ++i) {
         ASSERT_TRUE(element->hasTagName(expected[i].tag));
-        ASSERT(element->renderStyle());
-        ASSERT_EQ(expected[i].affectedBy, element->renderStyle()->affectedByFocus());
+        ASSERT(element->layoutStyle());
+        ASSERT_EQ(expected[i].affectedBy, element->layoutStyle()->affectedByFocus());
         ASSERT_EQ(expected[i].childrenOrSiblingsAffectedBy, element->childrenOrSiblingsAffectedByFocus());
     }
 
@@ -73,7 +73,7 @@ void AffectedByFocusTest::checkElements(ElementResult expected[], unsigned expec
 
 // A global :focus rule in html.css currently causes every single element to be
 // affectedByFocus. Check that all elements in a document with no :focus rules
-// gets the affectedByFocus set on RenderStyle and not childrenOrSiblingsAffectedByFocus.
+// gets the affectedByFocus set on LayoutStyle and not childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByFocusTest, UAUniversalFocusRule)
 {
     ElementResult expected[] = {

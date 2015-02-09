@@ -34,7 +34,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderSVGForeignObject"; }
 
-    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 

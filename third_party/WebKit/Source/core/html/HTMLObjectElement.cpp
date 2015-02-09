@@ -305,7 +305,7 @@ void HTMLObjectElement::updateWidgetInternal()
     }
 }
 
-bool HTMLObjectElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLObjectElement::rendererIsNeeded(const LayoutStyle& style)
 {
     // FIXME: This check should not be needed, detached documents never render!
     if (!document().frame())

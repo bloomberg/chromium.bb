@@ -206,7 +206,7 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
     }
 }
 
-LayoutObject* VTTCueBox::createRenderer(const RenderStyle&)
+LayoutObject* VTTCueBox::createRenderer(const LayoutStyle&)
 {
     return new RenderVTTCue(this);
 }

@@ -133,7 +133,7 @@ static inline void notifyObserverEnteredObject(Observer* observer, LayoutObject*
     if (!observer || !object || !object->isRenderInline())
         return;
 
-    RenderStyle* style = object->style();
+    LayoutStyle* style = object->style();
     EUnicodeBidi unicodeBidi = style->unicodeBidi();
     if (unicodeBidi == UBNormal) {
         // http://dev.w3.org/csswg/css3-writing-modes/#unicode-bidi

@@ -22,8 +22,8 @@
 #ifndef LayoutCounter_h
 #define LayoutCounter_h
 
+#include "core/layout/style/CounterContent.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/style/CounterContent.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ public:
     static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);
     static void rendererSubtreeAttached(LayoutObject*);
     static void rendererRemovedFromTree(LayoutObject*);
-    static void rendererStyleChanged(LayoutObject&, const RenderStyle* oldStyle, const RenderStyle* newStyle);
+    static void rendererStyleChanged(LayoutObject&, const LayoutStyle* oldStyle, const LayoutStyle* newStyle);
 
     void updateCounter();
 

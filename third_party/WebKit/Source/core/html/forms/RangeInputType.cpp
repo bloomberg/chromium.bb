@@ -244,7 +244,7 @@ void RangeInputType::createShadowSubtree()
     element().userAgentShadowRoot()->appendChild(container.release());
 }
 
-LayoutObject* RangeInputType::createRenderer(const RenderStyle&) const
+LayoutObject* RangeInputType::createRenderer(const LayoutStyle&) const
 {
     return new LayoutSlider(&element());
 }

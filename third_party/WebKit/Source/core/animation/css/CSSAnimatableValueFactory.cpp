@@ -57,13 +57,13 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "platform/Length.h"
 #include "platform/LengthBox.h"
 
 namespace blink {
 
-static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& length, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& length, const LayoutStyle& style)
 {
     switch (length.type()) {
     case Fixed:
@@ -90,7 +90,7 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& le
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLineHeight(const Length& length, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLineHeight(const Length& length, const LayoutStyle& style)
 {
     if (length.type() == Percent) {
         double value = length.value();
@@ -107,7 +107,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromDouble(double va
     return AnimatableDouble::create(value, constraint);
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthBox(const LengthBox& lengthBox, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthBox(const LengthBox& lengthBox, const LayoutStyle& style)
 {
     return AnimatableLengthBox::create(
         createFromLength(lengthBox.left(), style),
@@ -116,14 +116,14 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthBox(const 
         createFromLength(lengthBox.bottom(), style));
 }
 
-static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBorderImageLength(const BorderImageLength& borderImageLength, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBorderImageLength(const BorderImageLength& borderImageLength, const LayoutStyle& style)
 {
     if (borderImageLength.isNumber())
         return createFromDouble(borderImageLength.number());
     return createFromLength(borderImageLength.length(), style);
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBorderImageLengthBox(const BorderImageLengthBox& borderImageLengthBox, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBorderImageLengthBox(const BorderImageLengthBox& borderImageLengthBox, const LayoutStyle& style)
 {
     return AnimatableLengthBox::create(
         createFromBorderImageLength(borderImageLengthBox.left(), style),
@@ -132,26 +132,26 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBorderImageLengt
         createFromBorderImageLength(borderImageLengthBox.bottom(), style));
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthBoxAndBool(const LengthBox lengthBox, const bool flag, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthBoxAndBool(const LengthBox lengthBox, const bool flag, const LayoutStyle& style)
 {
     return AnimatableLengthBoxAndBool::create(
         createFromLengthBox(lengthBox, style),
         flag);
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromDoubleAndBool(double number, const bool flag, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromDoubleAndBool(double number, const bool flag, const LayoutStyle& style)
 {
     return AnimatableDoubleAndBool::create(number, flag);
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthPoint(const LengthPoint& lengthPoint, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthPoint(const LengthPoint& lengthPoint, const LayoutStyle& style)
 {
     return AnimatableLengthPoint::create(
         createFromLength(lengthPoint.x(), style),
         createFromLength(lengthPoint.y(), style));
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromTransformOrigin(const TransformOrigin& transformOrigin, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromTransformOrigin(const TransformOrigin& transformOrigin, const LayoutStyle& style)
 {
     return AnimatableLengthPoint3D::create(
         createFromLength(transformOrigin.x(), style),
@@ -159,7 +159,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromTransformOrigin(
         createFromDouble(transformOrigin.z()));
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthSize(const LengthSize& lengthSize, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthSize(const LengthSize& lengthSize, const LayoutStyle& style)
 {
     return AnimatableLengthSize::create(
         createFromLength(lengthSize.width(), style),
@@ -175,7 +175,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromStyleImage(Style
     return AnimatableUnknown::create(CSSValueNone);
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillSize(const FillSize& fillSize, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillSize(const FillSize& fillSize, const LayoutStyle& style)
 {
     switch (fillSize.type) {
     case SizeLength:
@@ -190,7 +190,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillSize(const F
     }
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBackgroundPosition(const Length& length, bool originIsSet, BackgroundEdgeOrigin origin, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBackgroundPosition(const Length& length, bool originIsSet, BackgroundEdgeOrigin origin, const LayoutStyle& style)
 {
     if (!originIsSet || origin == LeftEdge || origin == TopEdge)
         return createFromLength(length, style);
@@ -198,7 +198,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBackgroundPositi
 }
 
 template<CSSPropertyID property>
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillLayers(const FillLayer& fillLayers, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillLayers(const FillLayer& fillLayers, const LayoutStyle& style)
 {
     WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > values;
     for (const FillLayer* fillLayer = &fillLayers; fillLayer; fillLayer = fillLayer->next()) {
@@ -225,7 +225,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillLayers(const
     return AnimatableRepeatable::create(values);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSPropertyID property, const RenderStyle& style)
+PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSPropertyID property, const LayoutStyle& style)
 {
     Color color = style.colorIncludingFallback(property, false);
     Color visitedLinkColor = style.colorIncludingFallback(property, true);
@@ -289,7 +289,7 @@ static SVGPaintType normalizeSVGPaintType(SVGPaintType paintType)
 }
 
 // FIXME: Generate this function.
-PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const RenderStyle& style)
+PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const LayoutStyle& style)
 {
     ASSERT(CSSPropertyMetadata::isAnimatableProperty(property));
     switch (property) {

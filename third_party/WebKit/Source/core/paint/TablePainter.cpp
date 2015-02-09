@@ -8,13 +8,13 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableSection.h"
 #include "core/layout/PaintInfo.h"
+#include "core/layout/style/CollapsedBorderValue.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/ScopeRecorder.h"
-#include "core/rendering/style/CollapsedBorderValue.h"
 
 namespace blink {
 

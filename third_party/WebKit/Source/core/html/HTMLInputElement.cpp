@@ -815,12 +815,12 @@ void HTMLInputElement::finishParsingChildren()
     }
 }
 
-bool HTMLInputElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLInputElement::rendererIsNeeded(const LayoutStyle& style)
 {
     return m_inputType->rendererIsNeeded() && HTMLTextFormControlElement::rendererIsNeeded(style);
 }
 
-LayoutObject* HTMLInputElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLInputElement::createRenderer(const LayoutStyle& style)
 {
     return m_inputTypeView->createRenderer(style);
 }
@@ -1884,7 +1884,7 @@ bool HTMLInputElement::supportsAutofocus() const
     return m_inputType->isInteractiveContent();
 }
 
-PassRefPtr<RenderStyle> HTMLInputElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLInputElement::customStyleForRenderer()
 {
     return m_inputTypeView->customStyleForRenderer(originalStyleForRenderer());
 }

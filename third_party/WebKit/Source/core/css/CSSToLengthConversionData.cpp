@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/css/CSSToLengthConversionData.h"
 
+#include "core/layout/style/LayoutStyle.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ CSSToLengthConversionData::FontSizes::FontSizes(float em, float rem, const Font*
     ASSERT(m_font);
 }
 
-CSSToLengthConversionData::FontSizes::FontSizes(const RenderStyle* style, const RenderStyle* rootStyle)
+CSSToLengthConversionData::FontSizes::FontSizes(const LayoutStyle* style, const LayoutStyle* rootStyle)
     : FontSizes(style->computedFontSize(), rootStyle ? rootStyle->computedFontSize() : 1.0f, &style->font())
 {
 }
@@ -73,7 +73,7 @@ CSSToLengthConversionData::ViewportSize::ViewportSize(const RenderView* renderVi
 {
 }
 
-CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const FontSizes& fontSizes, const ViewportSize& viewportSize, float zoom)
+CSSToLengthConversionData::CSSToLengthConversionData(const LayoutStyle* style, const FontSizes& fontSizes, const ViewportSize& viewportSize, float zoom)
     : m_style(style)
     , m_fontSizes(fontSizes)
     , m_viewportSize(viewportSize)
@@ -82,7 +82,7 @@ CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, c
     ASSERT(m_style);
 }
 
-CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, const RenderView* renderView, float zoom)
+CSSToLengthConversionData::CSSToLengthConversionData(const LayoutStyle* style, const LayoutStyle* rootStyle, const RenderView* renderView, float zoom)
     : CSSToLengthConversionData(style, FontSizes(style, rootStyle), ViewportSize(renderView), zoom)
 {
 }

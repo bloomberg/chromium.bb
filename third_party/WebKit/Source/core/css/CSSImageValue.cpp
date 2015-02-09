@@ -26,8 +26,8 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ImageResource.h"
-#include "core/rendering/style/StyleFetchedImage.h"
-#include "core/rendering/style/StylePendingImage.h"
+#include "core/layout/style/StyleFetchedImage.h"
+#include "core/layout/style/StylePendingImage.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 

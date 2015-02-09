@@ -26,8 +26,8 @@
 #ifndef RenderImageResourceStyleImage_h
 #define RenderImageResourceStyleImage_h
 
+#include "core/layout/style/StyleImage.h"
 #include "core/rendering/RenderImageResource.h"
-#include "core/rendering/style/StyleImage.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

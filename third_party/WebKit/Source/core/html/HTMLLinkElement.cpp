@@ -47,9 +47,9 @@
 #include "core/html/LinkManifest.h"
 #include "core/html/imports/LinkImport.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/style/StyleInheritedData.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/rendering/style/StyleInheritedData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 
@@ -706,7 +706,7 @@ void LinkStyle::process()
         bool mediaQueryMatches = true;
         LocalFrame* frame = loadingFrame();
         if (!m_owner->media().isEmpty() && frame && frame->document()) {
-            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*frame->document());
+            RefPtr<LayoutStyle> documentStyle = StyleResolver::styleForDocument(*frame->document());
             RefPtrWillBeRawPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
             MediaQueryEvaluator evaluator(frame);
             mediaQueryMatches = evaluator.eval(media.get());

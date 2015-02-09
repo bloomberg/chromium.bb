@@ -6,9 +6,9 @@
 #include "core/animation/css/CSSPropertyEquality.h"
 
 #include "core/animation/css/CSSAnimations.h"
-#include "core/rendering/style/DataEquivalency.h"
-#include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/ShadowList.h"
+#include "core/layout/style/DataEquivalency.h"
+#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ShadowList.h"
 
 namespace blink {
 
@@ -56,7 +56,7 @@ bool fillLayersEqual(const FillLayer& aLayers, const FillLayer& bLayers)
 
 }
 
-bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle& a, const RenderStyle& b)
+bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle& a, const LayoutStyle& b)
 {
     switch (prop) {
     case CSSPropertyBackgroundColor:
@@ -117,8 +117,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyColor:
         return a.color() == b.color() && a.visitedLinkColor() == b.visitedLinkColor();
     case CSSPropertyFill: {
-        const SVGRenderStyle& aSVG = a.svgStyle();
-        const SVGRenderStyle& bSVG = b.svgStyle();
+        const SVGLayoutStyle& aSVG = a.svgStyle();
+        const SVGLayoutStyle& bSVG = b.svgStyle();
         return aSVG.fillPaintType() == bSVG.fillPaintType()
             && (aSVG.fillPaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.fillPaintColor() == bSVG.fillPaintColor())
             && aSVG.visitedLinkFillPaintType() == bSVG.visitedLinkFillPaintType()
@@ -213,8 +213,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyStopOpacity:
         return a.stopOpacity() == b.stopOpacity();
     case CSSPropertyStroke: {
-        const SVGRenderStyle& aSVG = a.svgStyle();
-        const SVGRenderStyle& bSVG = b.svgStyle();
+        const SVGLayoutStyle& aSVG = a.svgStyle();
+        const SVGLayoutStyle& bSVG = b.svgStyle();
         return aSVG.strokePaintType() == bSVG.strokePaintType()
             && (aSVG.strokePaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.strokePaintColor() == bSVG.strokePaintColor())
             && aSVG.visitedLinkStrokePaintType() == bSVG.visitedLinkStrokePaintType()

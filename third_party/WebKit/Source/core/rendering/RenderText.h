@@ -144,8 +144,8 @@ public:
 protected:
     virtual void willBeDestroyed() override;
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle&) override final { }
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const LayoutStyle&) override final { }
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     virtual void setTextInternal(PassRefPtr<StringImpl>);
     virtual UChar previousCharacter() const;
@@ -238,7 +238,7 @@ inline RenderText* Text::renderer() const
     return toRenderText(CharacterData::renderer());
 }
 
-void applyTextTransform(const RenderStyle*, String&, UChar);
+void applyTextTransform(const LayoutStyle*, String&, UChar);
 
 } // namespace blink
 

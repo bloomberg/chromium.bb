@@ -115,7 +115,7 @@ void RenderFileUploadControl::computePreferredLogicalWidths()
 
     m_minPreferredLogicalWidth = 0;
     m_maxPreferredLogicalWidth = 0;
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
 
     if (styleToUse.width().isFixed() && styleToUse.width().value() > 0)
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse.width().value());

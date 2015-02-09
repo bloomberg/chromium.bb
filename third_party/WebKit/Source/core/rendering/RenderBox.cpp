@@ -42,6 +42,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/style/ShadowList.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -57,7 +58,6 @@
 #include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
@@ -170,9 +170,9 @@ void RenderBox::removeFloatingOrPositionedChildFromBlockLists()
         RenderBlock::removePositionedObject(this);
 }
 
-void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
+void RenderBox::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
-    const RenderStyle* oldStyle = style();
+    const LayoutStyle* oldStyle = style();
     if (oldStyle) {
         // The background of the root element or the body element could propagate up to
         // the canvas. Just dirty the entire canvas when our style changes substantially.
@@ -204,7 +204,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
     RenderBoxModelObject::styleWillChange(diff, newStyle);
 }
 
-void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     // Horizontal writing mode definition is updated in RenderBoxModelObject::updateFromStyle,
     // (as part of the RenderBoxModelObject::styleDidChange call below). So, we can safely cache the horizontal
@@ -213,7 +213,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
 
     RenderBoxModelObject::styleDidChange(diff, oldStyle);
 
-    const RenderStyle& newStyle = styleRef();
+    const LayoutStyle& newStyle = styleRef();
     if (needsLayout() && oldStyle)
         RenderBlock::removePercentHeightDescendantIfNeeded(this);
 
@@ -254,16 +254,16 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
         placeholder->updateMarginProperties();
 }
 
-void RenderBox::updateShapeOutsideInfoAfterStyleChange(const RenderStyle& style, const RenderStyle* oldStyle)
+void RenderBox::updateShapeOutsideInfoAfterStyleChange(const LayoutStyle& style, const LayoutStyle* oldStyle)
 {
     const ShapeValue* shapeOutside = style.shapeOutside();
-    const ShapeValue* oldShapeOutside = oldStyle ? oldStyle->shapeOutside() : RenderStyle::initialShapeOutside();
+    const ShapeValue* oldShapeOutside = oldStyle ? oldStyle->shapeOutside() : LayoutStyle::initialShapeOutside();
 
     Length shapeMargin = style.shapeMargin();
-    Length oldShapeMargin = oldStyle ? oldStyle->shapeMargin() : RenderStyle::initialShapeMargin();
+    Length oldShapeMargin = oldStyle ? oldStyle->shapeMargin() : LayoutStyle::initialShapeMargin();
 
     float shapeImageThreshold = style.shapeImageThreshold();
-    float oldShapeImageThreshold = oldStyle ? oldStyle->shapeImageThreshold() : RenderStyle::initialShapeImageThreshold();
+    float oldShapeImageThreshold = oldStyle ? oldStyle->shapeImageThreshold() : LayoutStyle::initialShapeImageThreshold();
 
     // FIXME: A future optimization would do a deep comparison for equality. (bug 100811)
     if (shapeOutside == oldShapeOutside && shapeMargin == oldShapeMargin && shapeImageThreshold == oldShapeImageThreshold)
@@ -278,7 +278,7 @@ void RenderBox::updateShapeOutsideInfoAfterStyleChange(const RenderStyle& style,
         markShapeOutsideDependentsForLayout();
 }
 
-void RenderBox::updateGridPositionAfterStyleChange(const RenderStyle* oldStyle)
+void RenderBox::updateGridPositionAfterStyleChange(const LayoutStyle* oldStyle)
 {
     if (!oldStyle || !parent() || !parent()->isRenderGrid())
         return;
@@ -300,7 +300,7 @@ void RenderBox::updateFromStyle()
 {
     RenderBoxModelObject::updateFromStyle();
 
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     bool isRootObject = isDocumentElement();
     bool isViewObject = isRenderView();
     bool rootLayerScrolls = document().settings() && document().settings()->rootLayerScrolls();
@@ -572,7 +572,7 @@ void RenderBox::updateLayerTransformAfterLayout()
 
 LayoutUnit RenderBox::constrainLogicalWidthByMinMax(LayoutUnit logicalWidth, LayoutUnit availableWidth, RenderBlock* cb) const
 {
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxWidth().isMaxSizeNone())
         logicalWidth = std::min(logicalWidth, computeLogicalWidthUsing(MaxSize, styleToUse.logicalMaxWidth(), availableWidth, cb));
     return std::max(logicalWidth, computeLogicalWidthUsing(MinSize, styleToUse.logicalMinWidth(), availableWidth, cb));
@@ -580,7 +580,7 @@ LayoutUnit RenderBox::constrainLogicalWidthByMinMax(LayoutUnit logicalWidth, Lay
 
 LayoutUnit RenderBox::constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const
 {
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
         LayoutUnit maxH = computeLogicalHeightUsing(styleToUse.logicalMaxHeight(), intrinsicContentHeight);
         if (maxH != -1)
@@ -591,7 +591,7 @@ LayoutUnit RenderBox::constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, L
 
 LayoutUnit RenderBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const
 {
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
         LayoutUnit maxH = computeContentLogicalHeight(styleToUse.logicalMaxHeight(), intrinsicContentHeight);
         if (maxH != -1)
@@ -1233,7 +1233,7 @@ bool RenderBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
 
 static bool isCandidateForOpaquenessTest(const RenderBox& childBox)
 {
-    const RenderStyle& childStyle = childBox.styleRef();
+    const LayoutStyle& childStyle = childBox.styleRef();
     if (childStyle.position() != StaticPosition && childBox.containingBlock() != childBox.parent())
         return false;
     if (childStyle.visibility() != VISIBLE || childStyle.shapeOutside())
@@ -1545,7 +1545,7 @@ LayoutUnit RenderBox::perpendicularContainingBlockLogicalHeight() const
     if (cb->hasOverrideHeight())
         return cb->overrideLogicalContentHeight();
 
-    const RenderStyle& containingBlockStyle = cb->styleRef();
+    const LayoutStyle& containingBlockStyle = cb->styleRef();
     Length logicalHeightLength = containingBlockStyle.logicalHeight();
 
     // FIXME: For now just support fixed heights.  Eventually should support percentage heights as well.
@@ -1792,7 +1792,7 @@ void RenderBox::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* 
     // RenderView::computeRectForPaintInvalidation then converts the rect to physical coordinates. We also convert to
     // physical when we hit a paintInvalidationContainer boundary. Therefore the final rect returned is always in the
     // physical coordinate space of the paintInvalidationContainer.
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
 
     EPosition position = styleToUse.position();
 
@@ -1968,7 +1968,7 @@ void RenderBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     bool stretching = (parent()->style()->boxAlign() == BSTRETCH);
     bool treatAsReplaced = shouldComputeSizeAsReplaced() && (!inVerticalBox || !stretching);
 
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     Length logicalWidthLength = treatAsReplaced ? Length(computeReplacedLogicalWidth(), Fixed) : styleToUse.logicalWidth();
 
     RenderBlock* cb = containingBlock();
@@ -2201,7 +2201,7 @@ void RenderBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     if (marginBoxWidth < availableWidth) {
         // CSS 2.1: "If both 'margin-left' and 'margin-right' are 'auto', their used values are equal. This horizontally centers the element
         // with respect to the edges of the containing block."
-        const RenderStyle& containingBlockStyle = containingBlock->styleRef();
+        const LayoutStyle& containingBlockStyle = containingBlock->styleRef();
         if ((marginStartLength.isAuto() && marginEndLength.isAuto())
             || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlockStyle.textAlign() == WEBKIT_CENTER)) {
             // Other browsers center the margin box for align=center elements so we match them here.
@@ -2436,7 +2436,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
     }
     cb->addPercentHeightDescendant(const_cast<RenderBox*>(this));
 
-    const RenderStyle& cbstyle = cb->styleRef();
+    const LayoutStyle& cbstyle = cb->styleRef();
 
     // A positioned element that specified both top/bottom or that specifies height should be treated as though it has a height
     // explicitly specified that can be used for any percentage computations.
@@ -2577,7 +2577,7 @@ bool RenderBox::logicalHeightComputesAsNone(SizeType sizeType) const
 {
     ASSERT(sizeType == MinSize || sizeType == MaxSize);
     Length logicalHeight = sizeType == MinSize ? style()->logicalMinHeight() : style()->logicalMaxHeight();
-    Length initialLogicalHeight = sizeType == MinSize ? RenderStyle::initialMinSize() : RenderStyle::initialMaxSize();
+    Length initialLogicalHeight = sizeType == MinSize ? LayoutStyle::initialMinSize() : LayoutStyle::initialMaxSize();
 
     if (logicalHeight == initialLogicalHeight)
         return true;
@@ -3201,7 +3201,7 @@ void RenderBox::computePositionedLogicalHeight(LogicalExtentComputedValues& comp
 
     const LayoutUnit containerLogicalHeight = containingBlockLogicalHeightForPositioned(containerBlock);
 
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     const LayoutUnit bordersPlusPadding = borderAndPaddingLogicalHeight();
     const Length marginBefore = styleToUse.marginBefore();
     const Length marginAfter = styleToUse.marginAfter();
@@ -4279,7 +4279,7 @@ Layer* RenderBox::enclosingFloatPaintingLayer() const
     return 0;
 }
 
-LayoutRect RenderBox::logicalVisualOverflowRectForPropagation(const RenderStyle& parentStyle) const
+LayoutRect RenderBox::logicalVisualOverflowRectForPropagation(const LayoutStyle& parentStyle) const
 {
     LayoutRect rect = visualOverflowRectForPropagation(parentStyle);
     if (!parentStyle.isHorizontalWritingMode())
@@ -4287,7 +4287,7 @@ LayoutRect RenderBox::logicalVisualOverflowRectForPropagation(const RenderStyle&
     return rect;
 }
 
-LayoutRect RenderBox::visualOverflowRectForPropagation(const RenderStyle& parentStyle) const
+LayoutRect RenderBox::visualOverflowRectForPropagation(const LayoutStyle& parentStyle) const
 {
     // If the writing modes of the child and parent match, then we don't have to
     // do anything fancy. Just return the result.
@@ -4305,7 +4305,7 @@ LayoutRect RenderBox::visualOverflowRectForPropagation(const RenderStyle& parent
     return rect;
 }
 
-LayoutRect RenderBox::logicalLayoutOverflowRectForPropagation(const RenderStyle& parentStyle) const
+LayoutRect RenderBox::logicalLayoutOverflowRectForPropagation(const LayoutStyle& parentStyle) const
 {
     LayoutRect rect = layoutOverflowRectForPropagation(parentStyle);
     if (!parentStyle.isHorizontalWritingMode())
@@ -4313,7 +4313,7 @@ LayoutRect RenderBox::logicalLayoutOverflowRectForPropagation(const RenderStyle&
     return rect;
 }
 
-LayoutRect RenderBox::layoutOverflowRectForPropagation(const RenderStyle& parentStyle) const
+LayoutRect RenderBox::layoutOverflowRectForPropagation(const LayoutStyle& parentStyle) const
 {
     // Only propagate interior layout overflow if we don't clip it.
     LayoutRect rect = borderBoxRect();

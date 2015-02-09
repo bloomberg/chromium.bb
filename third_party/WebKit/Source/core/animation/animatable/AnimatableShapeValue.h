@@ -32,7 +32,7 @@
 #define AnimatableShapeValue_h
 
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/rendering/style/ShapeValue.h"
+#include "core/layout/style/ShapeValue.h"
 
 namespace blink {
 

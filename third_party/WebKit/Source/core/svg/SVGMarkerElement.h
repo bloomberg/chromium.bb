@@ -84,8 +84,8 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual LayoutObject* createRenderer(const RenderStyle&) override;
-    virtual bool rendererIsNeeded(const RenderStyle&) override { return true; }
+    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual bool rendererIsNeeded(const LayoutStyle&) override { return true; }
 
     virtual bool selfHasRelativeLengths() const override;
 

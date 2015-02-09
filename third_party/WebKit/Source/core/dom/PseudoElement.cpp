@@ -30,8 +30,8 @@
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/style/ContentData.h"
 #include "core/rendering/RenderQuote.h"
-#include "core/rendering/style/ContentData.h"
 
 namespace blink {
 
@@ -91,7 +91,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<RenderStyle> PseudoElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> PseudoElement::customStyleForRenderer()
 {
     return parentOrShadowHostElement()->renderer()->getCachedPseudoStyle(m_pseudoId);
 }
@@ -122,7 +122,7 @@ void PseudoElement::attach(const AttachContext& context)
     if (!renderer)
         return;
 
-    RenderStyle& style = renderer->mutableStyleRef();
+    LayoutStyle& style = renderer->mutableStyleRef();
     if (style.styleType() != BEFORE && style.styleType() != AFTER)
         return;
     ASSERT(style.contentData());
@@ -138,7 +138,7 @@ void PseudoElement::attach(const AttachContext& context)
     }
 }
 
-bool PseudoElement::rendererIsNeeded(const RenderStyle& style)
+bool PseudoElement::rendererIsNeeded(const LayoutStyle& style)
 {
     return pseudoElementRendererIsNeeded(&style);
 }

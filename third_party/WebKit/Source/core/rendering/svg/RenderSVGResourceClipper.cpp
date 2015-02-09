@@ -92,10 +92,10 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
         if (!childElement->isSVGGraphicsElement())
             continue;
         SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
-        const RenderStyle* style = renderer->style();
+        const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;
-        const SVGRenderStyle& svgStyle = style->svgStyle();
+        const SVGLayoutStyle& svgStyle = style->svgStyle();
         // Current shape in clip-path gets clipped too. Fallback to masking.
         if (!svgStyle.clipperResource().isEmpty())
             return false;
@@ -266,7 +266,7 @@ void RenderSVGResourceClipper::createPicture(GraphicsContext* context)
         if (!renderer)
             continue;
 
-        const RenderStyle* style = renderer->style();
+        const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
@@ -311,7 +311,7 @@ void RenderSVGResourceClipper::calculateClipContentPaintInvalidationRect()
             continue;
         if (!renderer->isSVGShape() && !renderer->isSVGText() && !isSVGUseElement(*childElement))
             continue;
-        const RenderStyle* style = renderer->style();
+        const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;
         m_clipBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));

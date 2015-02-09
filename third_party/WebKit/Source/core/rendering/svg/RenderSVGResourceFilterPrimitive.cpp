@@ -31,7 +31,7 @@
 
 namespace blink {
 
-void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderSVGHiddenContainer::styleDidChange(diff, oldStyle);
 
@@ -43,7 +43,7 @@ void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, cons
     if (!oldStyle)
         return;
 
-    const SVGRenderStyle& newStyle = this->style()->svgStyle();
+    const SVGLayoutStyle& newStyle = this->style()->svgStyle();
     ASSERT(element());
     if (isSVGFEFloodElement(*element())) {
         if (newStyle.floodColor() != oldStyle->svgStyle().floodColor())

@@ -31,9 +31,9 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
+#include "core/layout/style/StyleInheritedData.h"
 #include "core/paint/TableRowPainter.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace blink {
 
@@ -54,7 +54,7 @@ void LayoutTableRow::willBeRemovedFromTree()
     section()->setNeedsCellRecalc();
 }
 
-static bool borderWidthChanged(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+static bool borderWidthChanged(const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
 {
     return oldStyle->borderLeftWidth() != newStyle->borderLeftWidth()
         || oldStyle->borderTopWidth() != newStyle->borderTopWidth()
@@ -62,7 +62,7 @@ static bool borderWidthChanged(const RenderStyle* oldStyle, const RenderStyle* n
         || oldStyle->borderBottomWidth() != newStyle->borderBottomWidth();
 }
 
-void LayoutTableRow::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutTableRow::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     ASSERT(style()->display() == TABLE_ROW);
 
@@ -234,7 +234,7 @@ LayoutTableRow* LayoutTableRow::createAnonymous(Document* document)
 LayoutTableRow* LayoutTableRow::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     LayoutTableRow* newRow = LayoutTableRow::createAnonymous(&parent->document());
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW);
+    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW);
     newRow->setStyle(newStyle.release());
     return newRow;
 }

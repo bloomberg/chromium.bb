@@ -41,12 +41,12 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/rendering/style/StyleInheritedData.h"
+#include "core/layout/style/StyleInheritedData.h"
 
 namespace blink {
 
 ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
-    const SelectorFilter& filter, RenderStyle* style)
+    const SelectorFilter& filter, LayoutStyle* style)
     : m_context(context)
     , m_selectorFilter(filter)
     , m_style(style)

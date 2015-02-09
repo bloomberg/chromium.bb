@@ -74,7 +74,7 @@ private:
 
     void positionListMarker();
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     virtual void addOverflowFromChildren() override;
 

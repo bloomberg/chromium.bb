@@ -81,7 +81,7 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
 
     CompositingReasons reasons = CompositingReasonNone;
 
-    RenderStyle* style = renderer->style();
+    LayoutStyle* style = renderer->style();
 
     if (requiresCompositingForTransform(renderer))
         reasons |= CompositingReason3DTransform;
@@ -170,7 +170,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     return directReasons;
 }
 
-bool CompositingReasonFinder::requiresCompositingForAnimation(RenderStyle* style) const
+bool CompositingReasonFinder::requiresCompositingForAnimation(LayoutStyle* style) const
 {
     if (style->subtreeWillChangeContents())
         return style->isRunningAnimationOnCompositor();
@@ -192,7 +192,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutO
     // Note that the other requires* functions run at LayoutObject::styleDidChange time and so can rely
     // only on the style of their object.  This function runs at CompositingRequirementsUpdater::update
     // time, and so can consider the style of other objects.
-    RenderStyle* style = renderer->style();
+    LayoutStyle* style = renderer->style();
 
     // We should only get here by CompositingReasonScrollBlocksOn being a potential compositing reason.
     ASSERT(style->hasScrollBlocksOn() && !renderer->isDocumentElement());

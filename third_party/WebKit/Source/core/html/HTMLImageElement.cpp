@@ -333,7 +333,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
     return ImageCandidate();
 }
 
-LayoutObject* HTMLImageElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLImageElement::createRenderer(const LayoutStyle& style)
 {
     if (style.hasContent())
         return LayoutObject::createObject(this, style);
@@ -706,14 +706,14 @@ void HTMLImageElement::reattachFallbackContent()
         lazyReattachIfAttached();
 }
 
-PassRefPtr<RenderStyle> HTMLImageElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLImageElement::customStyleForRenderer()
 {
-    RefPtr<RenderStyle> newStyle = originalStyleForRenderer();
+    RefPtr<LayoutStyle> newStyle = originalStyleForRenderer();
 
     if (!m_useFallbackContent)
         return newStyle;
 
-    RefPtr<RenderStyle> style = RenderStyle::clone(*newStyle);
+    RefPtr<LayoutStyle> style = LayoutStyle::clone(*newStyle);
     return HTMLImageFallbackHelper::customStyleForAltText(*this, style);
 }
 

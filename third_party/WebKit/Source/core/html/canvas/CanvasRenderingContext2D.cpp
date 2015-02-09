@@ -1873,9 +1873,9 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
 
     // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
     // relative to the canvas.
-    RefPtr<RenderStyle> newStyle = RenderStyle::create();
+    RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
     canvas()->document().updateRenderTreeIfNeeded();
-    if (RenderStyle* computedStyle = canvas()->computedStyle()) {
+    if (LayoutStyle* computedStyle = canvas()->computedStyle()) {
         FontDescription elementFontDescription(computedStyle->fontDescription());
         // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
         elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
@@ -1949,9 +1949,9 @@ void CanvasRenderingContext2D::setTextBaseline(const String& s)
     modifiableState().m_textBaseline = baseline;
 }
 
-inline TextDirection CanvasRenderingContext2D::toTextDirection(Direction direction, RenderStyle** computedStyle) const
+inline TextDirection CanvasRenderingContext2D::toTextDirection(Direction direction, LayoutStyle** computedStyle) const
 {
-    RenderStyle* style = (computedStyle || direction == DirectionInherit) ? canvas()->computedStyle() : nullptr;
+    LayoutStyle* style = (computedStyle || direction == DirectionInherit) ? canvas()->computedStyle() : nullptr;
     if (computedStyle)
         *computedStyle = style;
     switch (direction) {
@@ -2096,7 +2096,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
 
     // FIXME: Need to turn off font smoothing.
 
-    RenderStyle* computedStyle;
+    LayoutStyle* computedStyle;
     TextDirection direction = toTextDirection(state().m_direction, &computedStyle);
     bool isRTL = direction == RTL;
     bool override = computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;

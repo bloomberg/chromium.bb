@@ -34,7 +34,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURLHash.h"
@@ -78,7 +78,7 @@ class RegisteredEventListener;
 class RenderBox;
 class RenderBoxModelObject;
 class LayoutObject;
-class RenderStyle;
+class LayoutStyle;
 class SVGQualifiedName;
 class ShadowRoot;
 template <typename NodeType> class StaticNodeTypeList;
@@ -518,7 +518,7 @@ public:
     RenderBoxModelObject* renderBoxModelObject() const;
 
     struct AttachContext {
-        RenderStyle* resolvedStyle;
+        LayoutStyle* resolvedStyle;
         bool performingReattach;
 
         AttachContext() : resolvedStyle(nullptr), performingReattach(false) { }
@@ -544,12 +544,12 @@ public:
     bool shouldCallRecalcStyle(StyleRecalcChange);
 
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
-    RenderStyle* renderStyle() const;
-    RenderStyle* parentRenderStyle() const;
+    LayoutStyle* layoutStyle() const;
+    LayoutStyle* parentLayoutStyle() const;
 
-    const RenderStyle& renderStyleRef() const;
+    const LayoutStyle& layoutStyleRef() const;
 
-    RenderStyle* computedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualComputedStyle(pseudoElementSpecifier); }
+    LayoutStyle* computedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualComputedStyle(pseudoElementSpecifier); }
 
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see ContainerNode.h for more notification methods)
@@ -806,9 +806,9 @@ private:
 
     void setStyleChange(StyleChangeType);
 
-    virtual RenderStyle* nonRendererStyle() const { return nullptr; }
+    virtual LayoutStyle* nonRendererStyle() const { return nullptr; }
 
-    virtual RenderStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
+    virtual LayoutStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
 
     void trackForDebugging();
 

@@ -25,9 +25,9 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/layout/style/ShadowList.h"
 #include "core/paint/EllipsisBoxPainter.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/TextRun.h"
 
@@ -59,7 +59,7 @@ InlineBox* EllipsisBox::markupBox() const
 
 IntRect EllipsisBox::selectionRect()
 {
-    const RenderStyle& style = renderer().styleRef(isFirstLineStyle());
+    const LayoutStyle& style = renderer().styleRef(isFirstLineStyle());
     const Font& font = style.font();
     return enclosingIntRect(font.selectionRectForText(constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
@@ -72,7 +72,7 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
     // Hit test the markup box.
     if (InlineBox* markupBox = this->markupBox()) {
-        RenderStyle* style = renderer().style(isFirstLineStyle());
+        LayoutStyle* style = renderer().style(isFirstLineStyle());
         LayoutUnit mtx = adjustedLocation.x() + m_logicalWidth - markupBox->x();
         LayoutUnit mty = adjustedLocation.y() + style->fontMetrics().ascent() - (markupBox->y() + markupBox->renderer().style(isFirstLineStyle())->fontMetrics().ascent());
         if (markupBox->nodeAtPoint(request, result, locationInContainer, LayoutPoint(mtx, mty), lineTop, lineBottom)) {

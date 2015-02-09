@@ -9,9 +9,9 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/Color.h"
 #include <gtest/gtest.h>
@@ -47,12 +47,12 @@ void LayoutThemeTest::setHtmlInnerHTML(const char* htmlContent)
 
 inline Color outlineColor(Element* element)
 {
-    return element->renderStyle()->visitedDependentColor(CSSPropertyOutlineColor);
+    return element->layoutStyle()->visitedDependentColor(CSSPropertyOutlineColor);
 }
 
 inline EBorderStyle outlineStyle(Element* element)
 {
-    return element->renderStyle()->outlineStyle();
+    return element->layoutStyle()->outlineStyle();
 }
 
 TEST_F(LayoutThemeTest, ChangeFocusRingColor)

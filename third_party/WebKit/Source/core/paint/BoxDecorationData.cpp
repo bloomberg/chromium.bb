@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/BoxDecorationData.h"
 
+#include "core/layout/style/BorderEdge.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/style/BorderEdge.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -72,7 +72,7 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     return BackgroundBleedClipBackground;
 }
 
-bool BoxDecorationData::borderObscuresBackgroundEdge(const RenderStyle& style, const FloatSize& contextScale) const
+bool BoxDecorationData::borderObscuresBackgroundEdge(const LayoutStyle& style, const FloatSize& contextScale) const
 {
     BorderEdge edges[4];
     style.getBorderEdgeInfo(edges);

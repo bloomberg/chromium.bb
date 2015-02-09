@@ -112,7 +112,7 @@ protected:
     virtual bool useFallbackContent() const { return m_useFallbackContent; }
 
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
 private:
     virtual bool areAuthorShadowsAllowed() const override { return false; }
 
@@ -121,7 +121,7 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
     virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual LayoutObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
 
     virtual bool canStartSelection() const override { return false; }
 

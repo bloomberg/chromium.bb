@@ -28,10 +28,10 @@
 
 #include "core/layout/Layer.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/style/GridCoordinate.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/paint/GridPainter.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/GridCoordinate.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -288,7 +288,7 @@ void RenderGrid::removeChild(LayoutObject* child)
     return;
 }
 
-void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderGrid::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);
     if (!oldStyle)
@@ -305,13 +305,13 @@ void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
         dirtyGrid();
 }
 
-bool RenderGrid::explicitGridDidResize(const RenderStyle& oldStyle) const
+bool RenderGrid::explicitGridDidResize(const LayoutStyle& oldStyle) const
 {
     return oldStyle.gridTemplateColumns().size() != styleRef().gridTemplateColumns().size()
         || oldStyle.gridTemplateRows().size() != styleRef().gridTemplateRows().size();
 }
 
-bool RenderGrid::namedGridLinesDefinitionDidChange(const RenderStyle& oldStyle) const
+bool RenderGrid::namedGridLinesDefinitionDidChange(const LayoutStyle& oldStyle) const
 {
     return oldStyle.namedGridRowLines() != styleRef().namedGridRowLines()
         || oldStyle.namedGridColumnLines() != styleRef().namedGridColumnLines();
@@ -1341,7 +1341,7 @@ LayoutUnit RenderGrid::columnPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
 
-    switch (RenderStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
+    switch (LayoutStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // For orthogonal writing-modes, this computes to 'start'
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
@@ -1446,7 +1446,7 @@ bool RenderGrid::allowedToStretchLogicalHeightForChild(const RenderBox& child) c
 // FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
 bool RenderGrid::needToStretchChildLogicalHeight(const RenderBox& child) const
 {
-    if (RenderStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
+    if (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
         return false;
 
     return isHorizontalWritingMode() && child.style()->height().isAuto();
@@ -1508,7 +1508,7 @@ LayoutUnit RenderGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
 // FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
 void RenderGrid::applyStretchAlignmentToChildIfNeeded(RenderBox& child, LayoutUnit gridAreaBreadthForChild)
 {
-    if (RenderStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
+    if (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
         return;
 
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
@@ -1534,7 +1534,7 @@ void RenderGrid::applyStretchAlignmentToChildIfNeeded(RenderBox& child, LayoutUn
 LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    switch (RenderStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
+    switch (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // If orthogonal writing-modes, this computes to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.

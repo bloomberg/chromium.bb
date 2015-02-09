@@ -89,7 +89,7 @@ public:
     RawPtrWillBeMember<CSSValue> value;
 };
 
-// This class selects a RenderStyle for a given element based on a collection of stylesheets.
+// This class selects a LayoutStyle for a given element based on a collection of stylesheets.
 class StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -103,20 +103,20 @@ public:
     void pushParentElement(Element&);
     void popParentElement(Element&);
 
-    PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
+    PassRefPtr<LayoutStyle> styleForElement(Element*, LayoutStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules);
 
-    PassRefPtr<RenderStyle> styleForKeyframe(Element&, const RenderStyle&, RenderStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
+    PassRefPtr<LayoutStyle> styleForKeyframe(Element&, const LayoutStyle&, LayoutStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, CSSPropertyID, CSSValue&);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(StyleResolverState&, CSSPropertyID, CSSValue&);
 
-    PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
+    PassRefPtr<LayoutStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, LayoutStyle* parentStyle);
 
-    PassRefPtr<RenderStyle> styleForPage(int pageIndex);
-    PassRefPtr<RenderStyle> defaultStyleForElement();
-    PassRefPtr<RenderStyle> styleForText(Text*);
+    PassRefPtr<LayoutStyle> styleForPage(int pageIndex);
+    PassRefPtr<LayoutStyle> defaultStyleForElement();
+    PassRefPtr<LayoutStyle> styleForText(Text*);
 
-    static PassRefPtr<RenderStyle> styleForDocument(Document&);
+    static PassRefPtr<LayoutStyle> styleForDocument(Document&);
 
     // FIXME: It could be better to call appendAuthorStyleSheets() directly after we factor StyleResolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
@@ -147,7 +147,7 @@ public:
     PassRefPtrWillBeRawPtr<StyleRuleList> styleRulesForElement(Element*, unsigned rulesToInclude);
 
     // |properties| is an array with |count| elements.
-    void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
+    void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, LayoutStyle*);
 
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
@@ -161,8 +161,8 @@ public:
 
     void notifyResizeForViewportUnits();
 
-    // Exposed for RenderStyle::isStyleAvilable().
-    static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
+    // Exposed for LayoutStyle::isStyleAvilable().
+    static LayoutStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
 
     RuleFeatureSet& ensureUpdatedRuleFeatureSet()
     {
@@ -207,7 +207,7 @@ private:
     void updateFont(StyleResolverState&);
 
     void loadPendingResources(StyleResolverState&);
-    void adjustRenderStyle(StyleResolverState&, Element*);
+    void adjustLayoutStyle(StyleResolverState&, Element*);
 
     void appendCSSStyleSheet(CSSStyleSheet&);
     void addRulesFromSheet(CSSStyleSheet&, TreeScope*, unsigned);
@@ -245,13 +245,13 @@ private:
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;
 
-    bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, RenderStyle* parentStyle, StyleResolverState&);
+    bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, LayoutStyle* parentStyle, StyleResolverState&);
 
     PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElement(Element* parent, PseudoId);
 
     Document& document() { return *m_document; }
 
-    static RenderStyle* s_styleNotYetAvailable;
+    static LayoutStyle* s_styleNotYetAvailable;
 
     void cacheBorderAndBackground();
 

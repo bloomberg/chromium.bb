@@ -49,7 +49,7 @@ private:
 
     virtual bool selfHasRelativeLengths() const override;
 
-    virtual LayoutObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_cx;
     RefPtrWillBeMember<SVGAnimatedLength> m_cy;

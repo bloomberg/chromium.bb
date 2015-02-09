@@ -52,7 +52,7 @@ HTMLMeterElement* MeterShadowElement::meterElement() const
     return toHTMLMeterElement(shadowHost());
 }
 
-bool MeterShadowElement::rendererIsNeeded(const RenderStyle& style)
+bool MeterShadowElement::rendererIsNeeded(const LayoutStyle& style)
 {
     LayoutObject* renderer = meterElement()->renderer();
     return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
@@ -70,7 +70,7 @@ PassRefPtrWillBeRawPtr<MeterInnerElement> MeterInnerElement::create(Document& do
     return element.release();
 }
 
-bool MeterInnerElement::rendererIsNeeded(const RenderStyle& style)
+bool MeterInnerElement::rendererIsNeeded(const LayoutStyle& style)
 {
     if (meterElement()->hasAuthorShadowRoot())
         return HTMLDivElement::rendererIsNeeded(style);
@@ -79,7 +79,7 @@ bool MeterInnerElement::rendererIsNeeded(const RenderStyle& style)
     return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
 }
 
-LayoutObject* MeterInnerElement::createRenderer(const RenderStyle&)
+LayoutObject* MeterInnerElement::createRenderer(const LayoutStyle&)
 {
     return new RenderMeter(this);
 }

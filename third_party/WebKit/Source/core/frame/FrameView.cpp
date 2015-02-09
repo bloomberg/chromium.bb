@@ -54,6 +54,7 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -70,7 +71,6 @@
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
@@ -1299,7 +1299,7 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
 
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
         LayoutObject* renderer = viewportConstrainedObject;
-        RenderStyle* style = renderer->style();
+        LayoutStyle* style = renderer->style();
         if (widthChanged) {
             if (style->width().isFixed() && (style->left().isAuto() || style->right().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
@@ -2450,7 +2450,7 @@ void FrameView::updateAnnotatedRegions()
 
 void FrameView::updateScrollCorner()
 {
-    RefPtr<RenderStyle> cornerStyle;
+    RefPtr<LayoutStyle> cornerStyle;
     IntRect cornerRect = scrollCornerRect();
     Document* doc = m_frame->document();
 

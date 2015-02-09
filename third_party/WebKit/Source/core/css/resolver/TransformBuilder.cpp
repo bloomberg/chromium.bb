@@ -31,7 +31,7 @@
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSTransformValue.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/MatrixTransformOperation.h"

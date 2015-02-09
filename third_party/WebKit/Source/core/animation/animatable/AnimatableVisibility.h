@@ -32,7 +32,7 @@
 #define AnimatableVisibility_h
 
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 
 namespace blink {
 

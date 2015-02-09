@@ -26,7 +26,7 @@
 #ifndef RenderScrollbar_h
 #define RenderScrollbar_h
 
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/HashMap.h"
@@ -37,7 +37,7 @@ class LocalFrame;
 class Node;
 class RenderBox;
 class RenderScrollbarPart;
-class RenderStyle;
+class LayoutStyle;
 
 class RenderScrollbar final : public Scrollbar {
 public:
@@ -76,7 +76,7 @@ private:
 
     void updateScrollbarParts(bool destroy = false);
 
-    PassRefPtr<RenderStyle> getScrollbarPseudoStyle(ScrollbarPart, PseudoId);
+    PassRefPtr<LayoutStyle> getScrollbarPseudoStyle(ScrollbarPart, PseudoId);
     void updateScrollbarPart(ScrollbarPart, bool destroy = false);
 
     // This Scrollbar(Widget) may outlive the DOM which created it (during tear down),

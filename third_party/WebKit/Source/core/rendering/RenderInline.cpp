@@ -29,6 +29,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/style/StyleInheritedData.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
@@ -39,7 +40,6 @@
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -152,16 +152,16 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
     return 0;
 }
 
-static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const RenderStyle& newStyle, const RenderStyle& oldStyle)
+static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const LayoutStyle& newStyle, const LayoutStyle& oldStyle)
 {
     for (;block && block->isAnonymousBlock(); block = block->nextSibling()) {
         if (!toRenderBlock(block)->isAnonymousBlockContinuation())
             continue;
 
-        RefPtr<RenderStyle> newBlockStyle;
+        RefPtr<LayoutStyle> newBlockStyle;
 
         if (!block->style()->isOutlineEquivalent(&newStyle)) {
-            newBlockStyle = RenderStyle::clone(block->styleRef());
+            newBlockStyle = LayoutStyle::clone(block->styleRef());
             newBlockStyle->setOutlineFromStyle(newStyle);
         }
 
@@ -172,7 +172,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
                 && inFlowPositionedInlineAncestor(toRenderBlock(block)->inlineElementContinuation()))
                 continue;
             if (!newBlockStyle)
-                newBlockStyle = RenderStyle::clone(block->styleRef());
+                newBlockStyle = LayoutStyle::clone(block->styleRef());
             newBlockStyle->setPosition(newStyle.position());
         }
 
@@ -181,7 +181,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
     }
 }
 
-void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBoxModelObject::styleDidChange(diff, oldStyle);
 
@@ -191,7 +191,7 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     // e.g., <font>foo <h4>goo</h4> moo</font>.  The <font> inlines before
     // and after the block share the same style, but the block doesn't
     // need to pass its style on to anyone else.
-    const RenderStyle& newStyle = styleRef();
+    const LayoutStyle& newStyle = styleRef();
     RenderInline* continuation = inlineElementContinuation();
     for (RenderInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
         RenderBoxModelObject* nextCont = currCont->continuation();
@@ -228,7 +228,7 @@ void RenderInline::updateAlwaysCreateLineBoxes(bool fullLayout)
     if (alwaysCreateLineBoxes())
         return;
 
-    const RenderStyle& parentStyle = parent()->styleRef();
+    const LayoutStyle& parentStyle = parent()->styleRef();
     RenderInline* parentRenderInline = parent()->isRenderInline() ? toRenderInline(parent()) : 0;
     bool checkFonts = document().inNoQuirksMode();
     bool alwaysCreateLineBoxesNew = (parentRenderInline && parentRenderInline->alwaysCreateLineBoxes())
@@ -240,8 +240,8 @@ void RenderInline::updateAlwaysCreateLineBoxes(bool fullLayout)
 
     if (!alwaysCreateLineBoxesNew && checkFonts && document().styleEngine()->usesFirstLineRules()) {
         // Have to check the first line style as well.
-        const RenderStyle& firstLineParentStyle = parent()->styleRef(true);
-        const RenderStyle& childStyle = styleRef(true);
+        const LayoutStyle& firstLineParentStyle = parent()->styleRef(true);
+        const LayoutStyle& childStyle = styleRef(true);
         alwaysCreateLineBoxesNew = !firstLineParentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
         || childStyle.verticalAlign() != BASELINE
         || firstLineParentStyle.lineHeight() != childStyle.lineHeight();
@@ -331,7 +331,7 @@ void RenderInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
         // inline into continuations.  This involves creating an anonymous block box to hold
         // |newChild|.  We then make that block box a continuation of this inline.  We take all of
         // the children after |beforeChild| and put them in a clone of this object.
-        RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
+        RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
 
         // If inside an inline affected by in-flow positioning the block needs to be affected by it too.
         // Giving the block a layer like this allows it to collect the x/y offsets from inline parents later.
@@ -755,22 +755,22 @@ LayoutUnit RenderInline::marginBottom() const
     return computeMargin(this, style()->marginBottom());
 }
 
-LayoutUnit RenderInline::marginStart(const RenderStyle* otherStyle) const
+LayoutUnit RenderInline::marginStart(const LayoutStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginStartUsing(otherStyle ? otherStyle : style()));
 }
 
-LayoutUnit RenderInline::marginEnd(const RenderStyle* otherStyle) const
+LayoutUnit RenderInline::marginEnd(const LayoutStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginEndUsing(otherStyle ? otherStyle : style()));
 }
 
-LayoutUnit RenderInline::marginBefore(const RenderStyle* otherStyle) const
+LayoutUnit RenderInline::marginBefore(const LayoutStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginBeforeUsing(otherStyle ? otherStyle : style()));
 }
 
-LayoutUnit RenderInline::marginAfter(const RenderStyle* otherStyle) const
+LayoutUnit RenderInline::marginAfter(const LayoutStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginAfterUsing(otherStyle ? otherStyle : style()));
 }
@@ -1311,7 +1311,7 @@ InlineFlowBox* RenderInline::createAndAppendInlineFlowBox()
 LayoutUnit RenderInline::lineHeight(bool firstLine, LineDirectionMode /*direction*/, LinePositionMode /*linePositionMode*/) const
 {
     if (firstLine && document().styleEngine()->usesFirstLineRules()) {
-        const RenderStyle* s = style(firstLine);
+        const LayoutStyle* s = style(firstLine);
         if (s != style())
             return s->computedLineHeight();
     }

@@ -87,7 +87,7 @@ void HTMLOptionElement::attach(const AttachContext& context)
         ASSERT(!m_style || m_style == context.resolvedStyle);
         m_style = context.resolvedStyle;
     } else {
-        updateNonRenderStyle();
+        updateNonLayoutStyle();
         optionContext.resolvedStyle = m_style.get();
     }
     HTMLElement::attach(optionContext);
@@ -284,21 +284,21 @@ void HTMLOptionElement::setLabel(const AtomicString& label)
     setAttribute(labelAttr, label);
 }
 
-void HTMLOptionElement::updateNonRenderStyle()
+void HTMLOptionElement::updateNonLayoutStyle()
 {
     m_style = originalStyleForRenderer();
     if (HTMLSelectElement* select = ownerSelectElement())
         select->updateListOnRenderer();
 }
 
-RenderStyle* HTMLOptionElement::nonRendererStyle() const
+LayoutStyle* HTMLOptionElement::nonRendererStyle() const
 {
     return m_style.get();
 }
 
-PassRefPtr<RenderStyle> HTMLOptionElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLOptionElement::customStyleForRenderer()
 {
-    updateNonRenderStyle();
+    updateNonLayoutStyle();
     return m_style;
 }
 
@@ -407,7 +407,7 @@ bool HTMLOptionElement::isDisplayNone() const
         Element* parent = parentElement();
         ASSERT(parent);
         if (isHTMLOptGroupElement(*parent)) {
-            RenderStyle* parentStyle = parent->renderStyle() ? parent->renderStyle() : parent->computedStyle();
+            LayoutStyle* parentStyle = parent->layoutStyle() ? parent->layoutStyle() : parent->computedStyle();
             return !parentStyle || parentStyle->display() == NONE;
         }
     }

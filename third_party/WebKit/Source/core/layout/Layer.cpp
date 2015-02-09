@@ -335,12 +335,12 @@ void Layer::updateTransformationMatrix()
         RenderBox* box = renderBox();
         ASSERT(box);
         m_transform->makeIdentity();
-        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), RenderStyle::IncludeTransformOrigin);
+        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), LayoutStyle::IncludeTransformOrigin);
         makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
     }
 }
 
-void Layer::updateTransform(const RenderStyle* oldStyle, RenderStyle* newStyle)
+void Layer::updateTransform(const LayoutStyle* oldStyle, LayoutStyle* newStyle)
 {
     if (oldStyle && newStyle->transformDataEquivalent(*oldStyle))
         return;
@@ -389,16 +389,16 @@ Layer* Layer::renderingContextRoot()
     return renderingContext;
 }
 
-TransformationMatrix Layer::currentTransform(RenderStyle::ApplyTransformOrigin applyOrigin) const
+TransformationMatrix Layer::currentTransform(LayoutStyle::ApplyTransformOrigin applyOrigin) const
 {
     if (!m_transform)
         return TransformationMatrix();
 
     // m_transform includes transform-origin, so we need to recompute the transform here.
-    if (applyOrigin == RenderStyle::ExcludeTransformOrigin) {
+    if (applyOrigin == LayoutStyle::ExcludeTransformOrigin) {
         RenderBox* box = renderBox();
         TransformationMatrix currTransform;
-        box->style()->applyTransform(currTransform, LayoutSize(box->pixelSnappedSize()), RenderStyle::ExcludeTransformOrigin);
+        box->style()->applyTransform(currTransform, LayoutSize(box->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(currTransform, compositor()->hasAcceleratedCompositing());
         return currTransform;
     }
@@ -900,7 +900,7 @@ TransformationMatrix Layer::perspectiveTransform() const
     if (!renderer()->hasTransformRelatedProperty())
         return TransformationMatrix();
 
-    RenderStyle* style = renderer()->style();
+    LayoutStyle* style = renderer()->style();
     if (!style->hasPerspective())
         return TransformationMatrix();
 
@@ -931,7 +931,7 @@ FloatPoint Layer::perspectiveOrigin() const
         return FloatPoint();
 
     const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
-    RenderStyle* style = renderer()->style();
+    LayoutStyle* style = renderer()->style();
 
     return FloatPoint(floatValueForLength(style->perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style->perspectiveOriginY(), borderBox.height().toFloat()));
 }
@@ -1518,7 +1518,7 @@ void Layer::didUpdateNeedsCompositedScrolling()
     updateSelfPaintingLayer();
 }
 
-void Layer::updateReflectionInfo(const RenderStyle* oldStyle)
+void Layer::updateReflectionInfo(const LayoutStyle* oldStyle)
 {
     ASSERT(!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle));
     if (renderer()->hasReflection()) {
@@ -2700,7 +2700,7 @@ bool Layer::hasVisibleBoxDecorations() const
     return hasBoxDecorationsOrBackground() || hasOverflowControls();
 }
 
-void Layer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+void Layer::updateFilters(const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
 {
     if (!newStyle->hasFilter() && (!oldStyle || !oldStyle->hasFilter()))
         return;
@@ -2709,7 +2709,7 @@ void Layer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* newSty
     updateOrRemoveFilterEffectRenderer();
 }
 
-bool Layer::attemptDirectCompositingUpdate(StyleDifference diff, const RenderStyle* oldStyle)
+bool Layer::attemptDirectCompositingUpdate(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     CompositingReasons oldPotentialCompositingReasonsFromStyle = m_potentialCompositingReasonsFromStyle;
     compositor()->updatePotentialCompositingReasonsFromStyle(this);
@@ -2767,7 +2767,7 @@ bool Layer::attemptDirectCompositingUpdate(StyleDifference diff, const RenderSty
     return true;
 }
 
-void Layer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle)
+void Layer::styleChanged(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     if (attemptDirectCompositingUpdate(diff, oldStyle))
         return;
@@ -2803,7 +2803,7 @@ bool Layer::scrollsOverflow() const
     return false;
 }
 
-FilterOperations Layer::computeFilterOperations(const RenderStyle* style)
+FilterOperations Layer::computeFilterOperations(const LayoutStyle* style)
 {
     const FilterOperations& filters = style->filter();
     if (filters.hasReferenceFilter()) {

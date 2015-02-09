@@ -130,7 +130,7 @@ bool RenderSVGEllipse::shapeDependentFillContains(const FloatPoint& point, const
 
 bool RenderSVGEllipse::hasContinuousStroke() const
 {
-    const SVGRenderStyle& svgStyle = style()->svgStyle();
+    const SVGLayoutStyle& svgStyle = style()->svgStyle();
     return svgStyle.strokeDashArray()->isEmpty();
 }
 

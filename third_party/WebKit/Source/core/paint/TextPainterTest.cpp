@@ -9,10 +9,10 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/frame/Settings.h"
+#include "core/layout/style/ShadowData.h"
+#include "core/layout/style/ShadowList.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderingTestHelper.h"
-#include "core/rendering/style/ShadowData.h"
-#include "core/rendering/style/ShadowList.h"
 #include <gtest/gtest.h>
 
 namespace blink {

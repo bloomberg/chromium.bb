@@ -149,7 +149,7 @@ void HTMLEmbedElement::updateWidgetInternal()
     requestObject(m_url, m_serviceType, paramNames, paramValues);
 }
 
-bool HTMLEmbedElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLEmbedElement::rendererIsNeeded(const LayoutStyle& style)
 {
     if (isImageType())
         return HTMLPlugInElement::rendererIsNeeded(style);

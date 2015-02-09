@@ -311,8 +311,8 @@ public:
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
 
-    virtual LayoutObject* createRenderer(const RenderStyle&);
-    virtual bool rendererIsNeeded(const RenderStyle&);
+    virtual LayoutObject* createRenderer(const LayoutStyle&);
+    virtual bool rendererIsNeeded(const LayoutStyle&);
     void recalcStyle(StyleRecalcChange, Text* nextTextSibling = nullptr);
     void pseudoStateChanged(CSSSelector::PseudoType);
     void setAnimationStyleChange(bool);
@@ -335,7 +335,7 @@ public:
 
     bool isInDescendantTreeOf(const Element* shadowHost) const;
 
-    RenderStyle* computedStyle(PseudoId = NOPSEUDO);
+    LayoutStyle* computedStyle(PseudoId = NOPSEUDO);
 
     // Methods for indicating the style is affected by dynamic updates (e.g., children changing, our position changing in our sibling list, etc.)
     bool styleAffectedByEmpty() const { return hasElementFlag(StyleAffectedByEmpty); }
@@ -473,7 +473,7 @@ public:
     bool isSpellCheckingEnabled() const;
 
     // FIXME: public for RenderTreeBuilder, we shouldn't expose this though.
-    PassRefPtr<RenderStyle> styleForRenderer();
+    PassRefPtr<LayoutStyle> styleForRenderer();
 
     bool hasID() const;
     bool hasClass() const;
@@ -515,7 +515,7 @@ protected:
 
     virtual void willRecalcStyle(StyleRecalcChange);
     virtual void didRecalcStyle(StyleRecalcChange);
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer();
+    virtual PassRefPtr<LayoutStyle> customStyleForRenderer();
 
     virtual bool shouldRegisterAsNamedItem() const { return false; }
     virtual bool shouldRegisterAsExtraNamedItem() const { return false; }
@@ -536,7 +536,7 @@ protected:
     // svgAttributeChanged (called when element.className.baseValue is set)
     void classAttributeChanged(const AtomicString& newClassString);
 
-    PassRefPtr<RenderStyle> originalStyleForRenderer();
+    PassRefPtr<LayoutStyle> originalStyleForRenderer();
 
     Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
 
@@ -608,13 +608,13 @@ private:
     virtual void formatForDebugger(char* buffer, unsigned length) const override;
 #endif
 
-    bool pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle);
+    bool pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutStyle* newStyle);
 
     void cancelFocusAppearanceUpdate();
 
-    virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override { return computedStyle(pseudoElementSpecifier); }
+    virtual LayoutStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override { return computedStyle(pseudoElementSpecifier); }
 
-    inline void updateCallbackSelectors(RenderStyle* oldStyle, RenderStyle* newStyle);
+    inline void updateCallbackSelectors(LayoutStyle* oldStyle, LayoutStyle* newStyle);
     inline void removeCallbackSelectors();
     inline void addCallbackSelectors();
 

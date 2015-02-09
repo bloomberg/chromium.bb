@@ -43,7 +43,7 @@
 
 namespace blink {
 
-RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element& element, RenderStyle* style)
+RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element& element, LayoutStyle* style)
     : RenderTreeBuilder(element, nullptr)
     , m_style(style)
 {
@@ -106,7 +106,7 @@ bool RenderTreeBuilderForElement::shouldCreateRenderer() const
     return m_node->rendererIsNeeded(style());
 }
 
-RenderStyle& RenderTreeBuilderForElement::style() const
+LayoutStyle& RenderTreeBuilderForElement::style() const
 {
     if (!m_style)
         m_style = m_node->styleForRenderer();
@@ -115,7 +115,7 @@ RenderStyle& RenderTreeBuilderForElement::style() const
 
 void RenderTreeBuilderForElement::createRenderer()
 {
-    RenderStyle& style = this->style();
+    LayoutStyle& style = this->style();
 
     LayoutObject* newRenderer = m_node->createRenderer(style);
     if (!newRenderer)
@@ -149,7 +149,7 @@ void RenderTreeBuilderForElement::createRenderer()
 void RenderTreeBuilderForText::createRenderer()
 {
     LayoutObject* parentRenderer = this->parentRenderer();
-    RenderStyle* style = parentRenderer->style();
+    LayoutStyle* style = parentRenderer->style();
 
     ASSERT(m_node->textRendererIsNeeded(*style, *parentRenderer));
 

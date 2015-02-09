@@ -1622,7 +1622,7 @@ void Document::updateDistributionForNodeIfNeeded(Node* node)
         root->recalcDistribution();
 }
 
-void Document::setupFontBuilder(RenderStyle& documentStyle)
+void Document::setupFontBuilder(LayoutStyle& documentStyle)
 {
     FontBuilder fontBuilder(*this);
     RefPtrWillBeRawPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
@@ -1634,7 +1634,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     ASSERT(inStyleRecalc());
     ASSERT(documentElement());
 
-    RefPtr<RenderStyle> documentElementStyle = documentElement()->renderStyle();
+    RefPtr<LayoutStyle> documentElementStyle = documentElement()->layoutStyle();
     if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force)
         documentElementStyle = ensureStyleResolver().styleForElement(documentElement());
 
@@ -1642,16 +1642,16 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     TextDirection rootDirection = documentElementStyle->direction();
 
     HTMLElement* body = this->body();
-    RefPtr<RenderStyle> bodyStyle;
+    RefPtr<LayoutStyle> bodyStyle;
     if (body) {
-        bodyStyle = body->renderStyle();
+        bodyStyle = body->layoutStyle();
         if (!bodyStyle || body->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
             bodyStyle = ensureStyleResolver().styleForElement(body, documentElementStyle.get());
         rootWritingMode = bodyStyle->writingMode();
         rootDirection = bodyStyle->direction();
     }
 
-    RefPtr<RenderStyle> overflowStyle;
+    RefPtr<LayoutStyle> overflowStyle;
     if (Element* element = viewportDefiningElement(documentElementStyle.get())) {
         if (element == body) {
             overflowStyle = bodyStyle;
@@ -1691,14 +1691,14 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     WebScrollBlocksOn scrollBlocksOn = documentElementStyle->scrollBlocksOn();
 
-    RefPtr<RenderStyle> documentStyle = renderView()->style();
+    RefPtr<LayoutStyle> documentStyle = renderView()->style();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->overflowX() != overflowX
         || documentStyle->overflowY() != overflowY
         || documentStyle->columnGap() != columnGap
         || documentStyle->scrollBlocksOn() != scrollBlocksOn) {
-        RefPtr<RenderStyle> newStyle = RenderStyle::clone(*documentStyle);
+        RefPtr<LayoutStyle> newStyle = LayoutStyle::clone(*documentStyle);
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
         newStyle->setColumnGap(columnGap);
@@ -1710,13 +1710,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 
     if (body) {
-        if (RenderStyle* style = body->renderStyle()) {
+        if (LayoutStyle* style = body->layoutStyle()) {
             if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
                 body->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
         }
     }
 
-    if (RenderStyle* style = documentElement()->renderStyle()) {
+    if (LayoutStyle* style = documentElement()->layoutStyle()) {
         if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
             documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
     }
@@ -1807,8 +1807,8 @@ void Document::updateStyle(StyleRecalcChange change)
 
     if (change == Force) {
         m_hasNodesWithPlaceholderStyle = false;
-        RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this);
-        StyleRecalcChange localChange = RenderStyle::stylePropagationDiff(documentStyle.get(), renderView()->style());
+        RefPtr<LayoutStyle> documentStyle = StyleResolver::styleForDocument(*this);
+        StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(documentStyle.get(), renderView()->style());
         if (localChange != NoChange)
             renderView()->setStyle(documentStyle.release());
     }
@@ -1955,14 +1955,14 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
         view()->flushAnyPendingPostLayoutTasks();
 }
 
-PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
+PassRefPtr<LayoutStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
     ASSERT_ARG(element, element->document() == this);
     StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
     return ensureStyleResolver().styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
 }
 
-PassRefPtr<RenderStyle> Document::styleForPage(int pageIndex)
+PassRefPtr<LayoutStyle> Document::styleForPage(int pageIndex)
 {
     updateDistributionIfNeeded();
     return ensureStyleResolver().styleForPage(pageIndex);
@@ -1975,7 +1975,7 @@ bool Document::isPageBoxVisible(int pageIndex)
 
 void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
 {
-    RefPtr<RenderStyle> style = styleForPage(pageIndex);
+    RefPtr<LayoutStyle> style = styleForPage(pageIndex);
 
     int width = pageSize.width();
     int height = pageSize.height();
@@ -2414,7 +2414,7 @@ HTMLHeadElement* Document::head() const
     return Traversal<HTMLHeadElement>::firstChild(*de);
 }
 
-Element* Document::viewportDefiningElement(RenderStyle* rootStyle) const
+Element* Document::viewportDefiningElement(LayoutStyle* rootStyle) const
 {
     // If a BODY element sets non-visible overflow, it is to be propagated to the viewport, as long
     // as the following conditions are all met:
@@ -2427,7 +2427,7 @@ Element* Document::viewportDefiningElement(RenderStyle* rootStyle) const
     if (!rootElement)
         return 0;
     if (!rootStyle) {
-        rootStyle = rootElement->renderStyle();
+        rootStyle = rootElement->layoutStyle();
         if (!rootStyle)
             return 0;
     }

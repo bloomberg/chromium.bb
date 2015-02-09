@@ -22,10 +22,10 @@
 #ifndef RenderQuote_h
 #define RenderQuote_h
 
+#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/QuotesData.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/style/QuotesData.h"
-#include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ private:
     virtual void willBeDestroyed() override;
     virtual const char* renderName() const override { return "RenderQuote"; };
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || RenderInline::isOfType(type); }
-    virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
     virtual void willBeRemovedFromTree() override;
 
     String computeText() const;

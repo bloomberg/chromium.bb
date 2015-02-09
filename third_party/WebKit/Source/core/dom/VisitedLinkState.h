@@ -30,7 +30,7 @@
 #define VisitedLinkState_h
 
 #include "core/dom/Element.h"
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 #include "platform/LinkHash.h"
 #include "wtf/HashSet.h"
 

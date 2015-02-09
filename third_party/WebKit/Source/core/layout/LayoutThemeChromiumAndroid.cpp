@@ -71,7 +71,7 @@ String LayoutThemeChromiumAndroid::extraDefaultStyleSheet()
 
 }
 
-void LayoutThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumAndroid::adjustInnerSpinButtonStyle(LayoutStyle& style, Element*) const
 {
     if (LayoutTestSupport::isRunningLayoutTest()) {
         // Match Linux spin button style in layout tests.

@@ -60,7 +60,7 @@ void RenderQuote::willBeRemovedFromTree()
     detachQuote();
 }
 
-void RenderQuote::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderQuote::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderInline::styleDidChange(diff, oldStyle);
     updateText();

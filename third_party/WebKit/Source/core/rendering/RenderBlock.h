@@ -27,9 +27,9 @@
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/GapRects.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/layout/style/ShapeValue.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLineBoxList.h"
-#include "core/rendering/style/ShapeValue.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "wtf/ListHashSet.h"
@@ -295,8 +295,8 @@ protected:
 
     void updateScrollInfoAfterLayout();
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     virtual bool hasLineIfEmpty() const;
 

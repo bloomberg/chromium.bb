@@ -84,7 +84,7 @@ LayoutThemeChromiumDefault::~LayoutThemeChromiumDefault()
 {
 }
 
-bool LayoutThemeChromiumDefault::supportsFocusRing(const RenderStyle& style) const
+bool LayoutThemeChromiumDefault::supportsFocusRing(const LayoutStyle& style) const
 {
     if (useMockTheme()) {
         // Don't use focus rings for buttons when mocking controls.
@@ -183,7 +183,7 @@ int LayoutThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
     return -16;
 }
 
-void LayoutThemeChromiumDefault::adjustSliderThumbSize(RenderStyle& style, Element* element) const
+void LayoutThemeChromiumDefault::adjustSliderThumbSize(LayoutStyle& style, Element* element) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartSliderThumb);
 
@@ -245,7 +245,7 @@ bool LayoutThemeChromiumDefault::paintCheckbox(LayoutObject* o, const PaintInfo&
     return false;
 }
 
-void LayoutThemeChromiumDefault::setCheckboxSize(RenderStyle& style) const
+void LayoutThemeChromiumDefault::setCheckboxSize(LayoutStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -268,7 +268,7 @@ bool LayoutThemeChromiumDefault::paintRadio(LayoutObject* o, const PaintInfo& i,
     return false;
 }
 
-void LayoutThemeChromiumDefault::setRadioSize(RenderStyle& style) const
+void LayoutThemeChromiumDefault::setRadioSize(LayoutStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -445,7 +445,7 @@ bool LayoutThemeChromiumDefault::paintSliderThumb(LayoutObject* o, const PaintIn
     return false;
 }
 
-void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(LayoutStyle& style, Element*) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
@@ -490,7 +490,7 @@ bool LayoutThemeChromiumDefault::shouldOpenPickerWithF4Key() const
     return true;
 }
 
-bool LayoutThemeChromiumDefault::shouldUseFallbackTheme(const RenderStyle& style) const
+bool LayoutThemeChromiumDefault::shouldUseFallbackTheme(const LayoutStyle& style) const
 {
     if (useMockTheme()) {
         // The mock theme can't handle zoomed controls, so we fall back to the "fallback" theme.

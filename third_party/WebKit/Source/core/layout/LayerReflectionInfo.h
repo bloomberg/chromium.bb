@@ -65,7 +65,7 @@ public:
 
     bool isPaintingInsideReflection() const { return m_isPaintingInsideReflection; }
 
-    void updateAfterStyleChange(const RenderStyle* oldStyle);
+    void updateAfterStyleChange(const LayoutStyle* oldStyle);
 
     void paint(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 

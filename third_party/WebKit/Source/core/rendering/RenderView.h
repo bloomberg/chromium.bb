@@ -59,7 +59,7 @@ public:
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 
-    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
     virtual void layout() override;
     virtual void updateLogicalWidth() override;

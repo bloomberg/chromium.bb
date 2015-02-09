@@ -37,9 +37,9 @@ RenderCombineText::RenderCombineText(Node* node, PassRefPtr<StringImpl> string)
 {
 }
 
-void RenderCombineText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderCombineText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    setStyleInternal(RenderStyle::clone(styleRef()));
+    setStyleInternal(LayoutStyle::clone(styleRef()));
     RenderText::styleDidChange(diff, oldStyle);
 
     updateIsCombined();

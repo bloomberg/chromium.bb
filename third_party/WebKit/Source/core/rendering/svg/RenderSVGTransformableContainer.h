@@ -30,7 +30,7 @@ class RenderSVGTransformableContainer final : public RenderSVGContainer {
 public:
     explicit RenderSVGTransformableContainer(SVGGraphicsElement*);
 
-    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTransformableContainer || RenderSVGContainer::isOfType(type); }
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }

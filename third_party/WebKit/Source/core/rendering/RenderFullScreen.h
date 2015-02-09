@@ -25,8 +25,8 @@
 #ifndef RenderFullScreen_h
 #define RenderFullScreen_h
 
+#include "core/layout/style/StyleInheritedData.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ public:
 
     void setPlaceholder(RenderBlock*);
     RenderBlock* placeholder() { return m_placeholder; }
-    void createPlaceholder(PassRefPtr<RenderStyle>, const LayoutRect& frameRect);
+    void createPlaceholder(PassRefPtr<LayoutStyle>, const LayoutRect& frameRect);
 
 
     static LayoutObject* wrapRenderer(LayoutObject*, LayoutObject*, Document*);

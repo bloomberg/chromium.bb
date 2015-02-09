@@ -347,14 +347,14 @@ bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(LayoutObject* object
     return pointInClippingArea(object, localPoint);
 }
 
-void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext* context, const RenderStyle& style, const LayoutObject* object)
+void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext* context, const LayoutStyle& style, const LayoutObject* object)
 {
     ASSERT(context);
     ASSERT(object);
     ASSERT(object->node());
     ASSERT(object->node()->isSVGElement());
 
-    const SVGRenderStyle& svgStyle = style.svgStyle();
+    const SVGLayoutStyle& svgStyle = style.svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object->node()));
     context->setStrokeThickness(svgStyle.strokeWidth()->value(lengthContext));
@@ -373,7 +373,7 @@ void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext* context, const
     context->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, const RenderStyle* style, const LayoutObject* object)
+void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, const LayoutStyle* style, const LayoutObject* object)
 {
     ASSERT(strokeData);
     ASSERT(style);
@@ -381,7 +381,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     ASSERT(object->node());
     ASSERT(object->node()->isSVGElement());
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGLayoutStyle& svgStyle = style->svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object->node()));
     strokeData->setThickness(svgStyle.strokeWidth()->value(lengthContext));
@@ -400,7 +400,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const RenderStyle& style, LayoutObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
+bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
 {
     ASSERT(paintInfo.context == stateSaver.context());
 
@@ -408,7 +408,7 @@ bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     if (paintInfo.isRenderingClipPathAsMaskImage()) {
         if (resourceMode == ApplyToStrokeMode)
             return false;
-        context->setFillColor(SVGRenderStyle::initialFillPaintColor());
+        context->setFillColor(SVGLayoutStyle::initialFillPaintColor());
         return true;
     }
 
@@ -419,7 +419,7 @@ bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     if (additionalPaintServerTransform && paintServer.isTransformDependent())
         paintServer.prependTransform(*additionalPaintServerTransform);
 
-    const SVGRenderStyle& svgStyle = style.svgStyle();
+    const SVGLayoutStyle& svgStyle = style.svgStyle();
     float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity() : svgStyle.strokeOpacity();
     paintServer.apply(*context, resourceMode, paintAlpha, stateSaver);
 
@@ -438,10 +438,10 @@ bool SVGLayoutSupport::isRenderableTextNode(const LayoutObject* object)
     return object->isSVGInlineText() && !toRenderSVGInlineText(object)->hasEmptyText();
 }
 
-bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const RenderStyle* style)
+bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const LayoutStyle* style)
 {
     ASSERT(style);
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGLayoutStyle& svgStyle = style->svgStyle();
 
     return style->hasIsolation() || style->opacity() < 1 || style->hasBlendMode()
         || svgStyle.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();

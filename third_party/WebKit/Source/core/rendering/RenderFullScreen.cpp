@@ -90,7 +90,7 @@ void RenderFullScreen::willBeDestroyed()
 
 void RenderFullScreen::updateStyle()
 {
-    RefPtr<RenderStyle> fullscreenStyle = RenderStyle::createDefaultStyle();
+    RefPtr<LayoutStyle> fullscreenStyle = LayoutStyle::createDefaultStyle();
 
     // Create a stacking context:
     fullscreenStyle->setZIndex(INT_MAX);
@@ -189,7 +189,7 @@ void RenderFullScreen::setPlaceholder(RenderBlock* placeholder)
     m_placeholder = placeholder;
 }
 
-void RenderFullScreen::createPlaceholder(PassRefPtr<RenderStyle> style, const LayoutRect& frameRect)
+void RenderFullScreen::createPlaceholder(PassRefPtr<LayoutStyle> style, const LayoutRect& frameRect)
 {
     if (style->width().isAuto())
         style->setWidth(Length(frameRect.width(), Fixed));

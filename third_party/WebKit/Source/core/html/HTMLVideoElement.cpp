@@ -71,12 +71,12 @@ void HTMLVideoElement::trace(Visitor* visitor)
     HTMLMediaElement::trace(visitor);
 }
 
-bool HTMLVideoElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLVideoElement::rendererIsNeeded(const LayoutStyle& style)
 {
     return HTMLElement::rendererIsNeeded(style);
 }
 
-LayoutObject* HTMLVideoElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLVideoElement::createRenderer(const LayoutStyle&)
 {
     return new RenderVideo(this);
 }

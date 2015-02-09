@@ -1075,7 +1075,7 @@ RenderListMarker* RenderListMarker::createAnonymous(RenderListItem* item)
     return renderer;
 }
 
-void RenderListMarker::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
+void RenderListMarker::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
     if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
@@ -1083,7 +1083,7 @@ void RenderListMarker::styleWillChange(StyleDifference diff, const RenderStyle& 
     RenderBox::styleWillChange(diff, newStyle);
 }
 
-void RenderListMarker::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderListMarker::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBox::styleDidChange(diff, oldStyle);
 
@@ -1632,7 +1632,7 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const LayoutLayer
 
 void RenderListMarker::listItemStyleDidChange()
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::create();
+    RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
     // The marker always inherits from the list item, regardless of where it might end
     // up (e.g., in some deeply nested line box). See CSS3 spec.
     newStyle->inheritFrom(m_listItem->styleRef());

@@ -46,11 +46,11 @@ RenderBR::~RenderBR()
 
 int RenderBR::lineHeight(bool firstLine) const
 {
-    const RenderStyle& style = styleRef(firstLine && document().styleEngine()->usesFirstLineRules());
+    const LayoutStyle& style = styleRef(firstLine && document().styleEngine()->usesFirstLineRules());
     return style.computedLineHeight();
 }
 
-void RenderBR::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderBR::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderText::styleDidChange(diff, oldStyle);
 }

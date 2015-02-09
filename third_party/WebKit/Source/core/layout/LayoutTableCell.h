@@ -171,7 +171,7 @@ public:
     // This means we can safely use the same style in all cases to simplify our code.
     // FIXME: Eventually this function should replaced by style() once we support direction
     // on all table parts and writing-mode on cells.
-    const RenderStyle* styleForCellFlow() const
+    const LayoutStyle* styleForCellFlow() const
     {
         return row()->style();
     }
@@ -215,7 +215,7 @@ public:
     }
 #endif
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
     virtual void computePreferredLogicalWidths() override;
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;

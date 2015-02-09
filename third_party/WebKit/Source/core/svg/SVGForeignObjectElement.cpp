@@ -122,12 +122,12 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 }
 
-LayoutObject* SVGForeignObjectElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGForeignObjectElement::createRenderer(const LayoutStyle&)
 {
     return new RenderSVGForeignObject(this);
 }
 
-bool SVGForeignObjectElement::rendererIsNeeded(const RenderStyle& style)
+bool SVGForeignObjectElement::rendererIsNeeded(const LayoutStyle& style)
 {
     // Suppress foreignObject renderers in SVG hidden containers.
     // (https://bugs.webkit.org/show_bug.cgi?id=87297)

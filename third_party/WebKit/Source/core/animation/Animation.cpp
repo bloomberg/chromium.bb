@@ -250,7 +250,7 @@ bool Animation::isCandidateForAnimationOnCompositor(double playerPlaybackRate) c
 {
     if (!effect()
         || !m_target
-        || (m_target->renderStyle() && m_target->renderStyle()->hasMotionPath()))
+        || (m_target->layoutStyle() && m_target->layoutStyle()->hasMotionPath()))
         return false;
 
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *m_target, player(), *effect(), playerPlaybackRate);

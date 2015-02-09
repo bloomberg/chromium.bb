@@ -87,11 +87,11 @@ void LayoutLayerModelObject::willBeDestroyed()
     destroyLayer();
 }
 
-void LayoutLayerModelObject::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
+void LayoutLayerModelObject::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
     s_wasFloating = isFloating();
 
-    if (RenderStyle* oldStyle = style()) {
+    if (LayoutStyle* oldStyle = style()) {
         if (parent() && diff.needsPaintInvalidationLayer()) {
             if (oldStyle->hasAutoClip() != newStyle.hasAutoClip()
                 || oldStyle->clip() != newStyle.clip())
@@ -102,7 +102,7 @@ void LayoutLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
     LayoutObject::styleWillChange(diff, newStyle);
 }
 
-void LayoutLayerModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutLayerModelObject::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     bool hadTransform = hasTransformRelatedProperty();
     bool hadLayer = hasLayer();

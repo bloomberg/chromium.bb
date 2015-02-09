@@ -248,7 +248,7 @@ public:
 private:
     explicit MediaControlTextTrackContainerElement(MediaControls&);
 
-    virtual LayoutObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
 
     IntRect m_videoDisplaySize;
     float m_fontSize;

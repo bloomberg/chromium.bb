@@ -34,7 +34,7 @@ public:
     virtual ~RenderTextControl();
 
     HTMLTextFormControlElement* textFormControlElement() const;
-    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle& startStyle) const = 0;
+    virtual PassRefPtr<LayoutStyle> createInnerEditorStyle(const LayoutStyle& startStyle) const = 0;
 
 protected:
     RenderTextControl(HTMLTextFormControlElement*);
@@ -44,9 +44,9 @@ protected:
     HTMLElement* innerEditorElement() const;
 
     int scrollbarThickness() const;
-    void adjustInnerEditorStyle(RenderStyle& textBlockStyle) const;
+    void adjustInnerEditorStyle(LayoutStyle& textBlockStyle) const;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     void hitInnerEditorElement(HitTestResult&, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset);
 

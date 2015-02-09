@@ -101,12 +101,12 @@ public:
 // ElementRuleCollector is designed to be used as a stack object.
 // Create one, ask what rules the ElementResolveContext matches
 // and then let it go out of scope.
-// FIXME: Currently it modifies the RenderStyle but should not!
+// FIXME: Currently it modifies the LayoutStyle but should not!
 class ElementRuleCollector {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 public:
-    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0);
+    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, LayoutStyle* = 0);
     ~ElementRuleCollector();
 
     void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
@@ -157,7 +157,7 @@ private:
 private:
     const ElementResolveContext& m_context;
     const SelectorFilter& m_selectorFilter;
-    RefPtr<RenderStyle> m_style; // FIXME: This can be mutated during matching!
+    RefPtr<LayoutStyle> m_style; // FIXME: This can be mutated during matching!
 
     PseudoStyleRequest m_pseudoStyleRequest;
     SelectorChecker::Mode m_mode;

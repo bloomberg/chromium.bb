@@ -185,7 +185,7 @@ CompositingReasons RenderPart::additionalCompositingReasons() const
     return CompositingReasonNone;
 }
 
-void RenderPart::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderReplaced::styleDidChange(diff, oldStyle);
     Widget* widget = this->widget();

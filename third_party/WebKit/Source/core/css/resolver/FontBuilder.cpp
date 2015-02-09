@@ -225,7 +225,7 @@ float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescrip
     return FontSize::getComputedSizeFromSpecifiedSize(&m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
 }
 
-static void getFontAndGlyphOrientation(const RenderStyle& style, FontOrientation& fontOrientation, NonCJKGlyphOrientation& glyphOrientation)
+static void getFontAndGlyphOrientation(const LayoutStyle& style, FontOrientation& fontOrientation, NonCJKGlyphOrientation& glyphOrientation)
 {
     if (style.isHorizontalWritingMode()) {
         fontOrientation = Horizontal;
@@ -264,7 +264,7 @@ static void getFontAndGlyphOrientation(const RenderStyle& style, FontOrientation
     }
 }
 
-void FontBuilder::updateOrientation(FontDescription& description, const RenderStyle& style)
+void FontBuilder::updateOrientation(FontDescription& description, const LayoutStyle& style)
 {
     FontOrientation fontOrientation;
     NonCJKGlyphOrientation glyphOrientation;
@@ -307,7 +307,7 @@ void FontBuilder::checkForGenericFamilyChange(const FontDescription& oldDescript
     newDescription.setSpecifiedSize(size);
 }
 
-void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const RenderStyle& style)
+void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const LayoutStyle& style)
 {
     float specifiedSize = fontDescription.specifiedSize();
 
@@ -319,7 +319,7 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const Re
     checkForGenericFamilyChange(style.fontDescription(), fontDescription);
 }
 
-void FontBuilder::updateComputedSize(FontDescription& fontDescription, const RenderStyle& style)
+void FontBuilder::updateComputedSize(FontDescription& fontDescription, const LayoutStyle& style)
 {
     float computedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), fontDescription.specifiedSize());
     float multiplier = style.textAutosizingMultiplier();
@@ -328,7 +328,7 @@ void FontBuilder::updateComputedSize(FontDescription& fontDescription, const Ren
     fontDescription.setComputedSize(computedSize);
 }
 
-void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, RenderStyle& style)
+void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, LayoutStyle& style)
 {
     if (!m_flags)
         return;
@@ -377,7 +377,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
     m_flags = 0;
 }
 
-void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, RenderStyle& documentStyle)
+void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, LayoutStyle& documentStyle)
 {
     FontDescription fontDescription = FontDescription();
     fontDescription.setLocale(documentStyle.locale());

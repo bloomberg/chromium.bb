@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<TextControlInnerContainer> TextControlInnerContainer::cre
     return element.release();
 }
 
-LayoutObject* TextControlInnerContainer::createRenderer(const RenderStyle&)
+LayoutObject* TextControlInnerContainer::createRenderer(const LayoutStyle&)
 {
     return new RenderTextControlInnerContainer(this);
 }
@@ -77,12 +77,12 @@ PassRefPtrWillBeRawPtr<EditingViewPortElement> EditingViewPortElement::create(Do
     return element.release();
 }
 
-PassRefPtr<RenderStyle> EditingViewPortElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> EditingViewPortElement::customStyleForRenderer()
 {
     // FXIME: Move these styles to html.css.
 
-    RefPtr<RenderStyle> style = RenderStyle::create();
-    style->inheritFrom(shadowHost()->renderStyleRef());
+    RefPtr<LayoutStyle> style = LayoutStyle::create();
+    style->inheritFrom(shadowHost()->layoutStyleRef());
 
     style->setFlexGrow(1);
     style->setDisplay(BLOCK);
@@ -130,12 +130,12 @@ void TextControlInnerEditorElement::defaultEventHandler(Event* event)
         HTMLDivElement::defaultEventHandler(event);
 }
 
-LayoutObject* TextControlInnerEditorElement::createRenderer(const RenderStyle&)
+LayoutObject* TextControlInnerEditorElement::createRenderer(const LayoutStyle&)
 {
     return new RenderTextControlInnerBlock(this);
 }
 
-PassRefPtr<RenderStyle> TextControlInnerEditorElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> TextControlInnerEditorElement::customStyleForRenderer()
 {
     LayoutObject* parentRenderer = shadowHost()->renderer();
     if (!parentRenderer || !parentRenderer->isTextControl())

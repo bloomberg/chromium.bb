@@ -116,12 +116,12 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
         markForLayoutAndParentResourceInvalidation(object);
 }
 
-LayoutObject* SVGTextPathElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGTextPathElement::createRenderer(const LayoutStyle&)
 {
     return new RenderSVGTextPath(this);
 }
 
-bool SVGTextPathElement::rendererIsNeeded(const RenderStyle& style)
+bool SVGTextPathElement::rendererIsNeeded(const LayoutStyle& style)
 {
     if (parentNode() && (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
         return Element::rendererIsNeeded(style);

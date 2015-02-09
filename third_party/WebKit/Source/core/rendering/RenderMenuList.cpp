@@ -78,7 +78,7 @@ void RenderMenuList::destroy()
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
 // to prevent children from rendering.
-bool RenderMenuList::isChildAllowed(LayoutObject* object, const RenderStyle&) const
+bool RenderMenuList::isChildAllowed(LayoutObject* object, const LayoutStyle&) const
 {
     return object->isAnonymous() && !object->isRenderFullScreen();
 }
@@ -100,7 +100,7 @@ void RenderMenuList::createInnerBlock()
 
 void RenderMenuList::adjustInnerStyle()
 {
-    RenderStyle& innerStyle = m_innerBlock->mutableStyleRef();
+    LayoutStyle& innerStyle = m_innerBlock->mutableStyleRef();
     innerStyle.setFlexGrow(1);
     innerStyle.setFlexShrink(1);
     // Use margin:auto instead of align-items:center to get safe centering, i.e.
@@ -150,7 +150,7 @@ void RenderMenuList::removeChild(LayoutObject* oldChild)
         m_innerBlock->removeChild(oldChild);
 }
 
-void RenderMenuList::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderMenuList::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);
 
@@ -180,7 +180,7 @@ void RenderMenuList::updateOptionsWidth()
         if (LayoutTheme::theme().popupOptionSupportsTextIndent()) {
             // Add in the option's text indent.  We can't calculate percentage values for now.
             float optionWidth = 0;
-            if (const RenderStyle* optionStyle = element->renderStyle())
+            if (const LayoutStyle* optionStyle = element->layoutStyle())
                 optionWidth += minimumValueForLength(optionStyle->textIndent(), 0);
             if (!text.isEmpty())
                 optionWidth += style()->font().width(text);
@@ -244,7 +244,7 @@ void RenderMenuList::setTextFromOption(int optionIndex)
             HTMLOptionElement* selectedOptionElement = toHTMLOptionElement(listItems[firstSelectedIndex]);
             ASSERT(selectedOptionElement->selected());
             text = selectedOptionElement->textIndentedToRespectGroupLabel();
-            m_optionStyle = selectedOptionElement->renderStyle();
+            m_optionStyle = selectedOptionElement->layoutStyle();
         } else {
             Locale& locale = select->locale();
             String localizedNumberString = locale.convertToLocalizedNumber(String::number(selectedCount));
@@ -257,7 +257,7 @@ void RenderMenuList::setTextFromOption(int optionIndex)
             Element* element = listItems[i];
             if (isHTMLOptionElement(*element)) {
                 text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-                m_optionStyle = element->renderStyle();
+                m_optionStyle = element->layoutStyle();
             }
         }
     }
@@ -388,9 +388,9 @@ Element& RenderMenuList::ownerElement() const
     return *selectElement();
 }
 
-const RenderStyle* RenderMenuList::renderStyleForItem(Element& element) const
+const LayoutStyle* RenderMenuList::layoutStyleForItem(Element& element) const
 {
-    return element.renderStyle() ? element.renderStyle() : element.computedStyle();
+    return element.layoutStyle() ? element.layoutStyle() : element.computedStyle();
 }
 
 void RenderMenuList::didSetSelectedIndex(int listIndex)
@@ -488,7 +488,7 @@ PopupMenuStyle RenderMenuList::itemStyle(unsigned listIndex) const
     bool itemHasCustomBackgroundColor;
     getItemBackgroundColor(listIndex, itemBackgroundColor, itemHasCustomBackgroundColor);
 
-    const RenderStyle* style = element->renderStyle() ? element->renderStyle() : element->computedStyle();
+    const LayoutStyle* style = element->layoutStyle() ? element->layoutStyle() : element->computedStyle();
     return style ? PopupMenuStyle(resolveColor(*style, CSSPropertyColor), itemBackgroundColor, style->font(), style->visibility() == VISIBLE,
         isHTMLOptionElement(*element) ? toHTMLOptionElement(*element).isDisplayNone() : style->display() == NONE,
         style->textIndent(), style->direction(), isOverride(style->unicodeBidi()),
@@ -506,7 +506,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
     HTMLElement* element = listItems[listIndex];
 
     Color backgroundColor;
-    if (const RenderStyle* style = element->renderStyle())
+    if (const LayoutStyle* style = element->layoutStyle())
         backgroundColor = resolveColor(*style, CSSPropertyBackgroundColor);
     itemHasCustomBackgroundColor = backgroundColor.alpha();
     // If the item has an opaque background color, return that.
@@ -529,7 +529,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
 PopupMenuStyle RenderMenuList::menuStyle() const
 {
     const LayoutObject* o = m_innerBlock ? m_innerBlock : this;
-    const RenderStyle& style = o->styleRef();
+    const LayoutStyle& style = o->styleRef();
     return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), style.font(), style.visibility() == VISIBLE,
         style.display() == NONE, style.textIndent(), style.direction(), isOverride(style.unicodeBidi()));
 }

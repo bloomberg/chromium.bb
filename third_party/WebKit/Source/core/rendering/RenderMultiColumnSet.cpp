@@ -40,12 +40,12 @@ RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
 {
 }
 
-RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread& flowThread, const RenderStyle& parentStyle)
+RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread& flowThread, const LayoutStyle& parentStyle)
 {
     Document& document = flowThread.document();
     RenderMultiColumnSet* renderer = new RenderMultiColumnSet(&flowThread);
     renderer->setDocumentForAnonymous(&document);
-    renderer->setStyle(RenderStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    renderer->setStyle(LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
 }
 
@@ -333,7 +333,7 @@ void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTo
 LayoutUnit RenderMultiColumnSet::calculateMaxColumnHeight() const
 {
     RenderBlockFlow* multicolBlock = multiColumnBlockFlow();
-    const RenderStyle& multicolStyle = multicolBlock->styleRef();
+    const LayoutStyle& multicolStyle = multicolBlock->styleRef();
     LayoutUnit availableHeight = multiColumnFlowThread()->columnHeightAvailable();
     LayoutUnit maxColumnHeight = availableHeight ? availableHeight : RenderFlowThread::maxLogicalHeight();
     if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {

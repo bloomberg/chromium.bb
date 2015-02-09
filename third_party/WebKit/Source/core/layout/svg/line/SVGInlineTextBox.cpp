@@ -83,7 +83,7 @@ int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragmen
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
 
-    const RenderStyle& style = textRenderer.styleRef();
+    const LayoutStyle& style = textRenderer.styleRef();
 
     TextRun textRun = constructTextRun(style, fragment);
 
@@ -104,7 +104,7 @@ FloatWillBeLayoutUnit SVGInlineTextBox::positionForOffset(int) const
     return 0;
 }
 
-FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& fragment, int startPosition, int endPosition, const RenderStyle& style)
+FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& fragment, int startPosition, int endPosition, const LayoutStyle& style)
 {
     ASSERT(startPosition < endPosition);
 
@@ -137,7 +137,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
     if (startPosition >= endPosition)
         return LayoutRect();
 
-    const RenderStyle& style = renderer().styleRef();
+    const LayoutStyle& style = renderer().styleRef();
 
     AffineTransform fragmentTransform;
     FloatRectWillBeLayoutRect selectionRect;
@@ -170,7 +170,7 @@ void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
     SVGInlineTextBoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
-TextRun SVGInlineTextBox::constructTextRun(const RenderStyle& style, const SVGTextFragment& fragment) const
+TextRun SVGInlineTextBox::constructTextRun(const LayoutStyle& style, const SVGTextFragment& fragment) const
 {
     RenderText* text = &renderer();
 
@@ -229,12 +229,12 @@ bool SVGInlineTextBox::mapStartEndPositionsIntoFragmentCoordinates(const SVGText
     return true;
 }
 
-void SVGInlineTextBox::paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const RenderStyle&, const Font&, bool)
+void SVGInlineTextBox::paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const LayoutStyle&, const Font&, bool)
 {
     // SVG does not have support for generic document markers (e.g., spellchecking, etc).
 }
 
-void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const FloatPointWillBeLayoutPoint& point, DocumentMarker* marker, const RenderStyle& style, const Font& font)
+void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const FloatPointWillBeLayoutPoint& point, DocumentMarker* marker, const LayoutStyle& style, const Font& font)
 {
     SVGInlineTextBoxPainter(*this).paintTextMatchMarker(context, point.toFloatPoint(), marker, style, font);
 }

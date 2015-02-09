@@ -32,7 +32,7 @@
 #include "core/animation/animatable/AnimatableImage.h"
 
 #include "core/css/CSSImageValue.h"
-#include "core/rendering/style/StyleGeneratedImage.h"
+#include "core/layout/style/StyleGeneratedImage.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {

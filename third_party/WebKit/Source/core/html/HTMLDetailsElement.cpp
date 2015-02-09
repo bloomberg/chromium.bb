@@ -75,7 +75,7 @@ void HTMLDetailsElement::dispatchPendingEvent(DetailsEventSender* eventSender)
 }
 
 
-LayoutObject* HTMLDetailsElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLDetailsElement::createRenderer(const LayoutStyle&)
 {
     return new RenderBlockFlow(this);
 }

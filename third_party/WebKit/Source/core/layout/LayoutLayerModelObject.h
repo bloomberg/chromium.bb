@@ -51,8 +51,8 @@ public:
     Layer* layer() const { return m_layer.get(); }
     LayerScrollableArea* scrollableArea() const;
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
     virtual void updateFromStyle() { }
 
     virtual LayerType layerTypeRequired() const = 0;

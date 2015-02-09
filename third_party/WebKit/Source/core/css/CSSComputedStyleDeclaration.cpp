@@ -38,7 +38,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -411,7 +411,7 @@ static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
     return static_cast<CSSValueID>(CSSValueXxSmall + keywordSize - 1);
 }
 
-inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const LayoutStyle& style)
 {
     return cssValuePool().createValue(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::CSS_PX);
 }
@@ -423,7 +423,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValu
 
     m_node->document().updateLayoutIgnorePendingStylesheets();
 
-    RefPtr<RenderStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
+    RefPtr<LayoutStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
         return nullptr;
 
@@ -439,7 +439,7 @@ FixedPitchFontType CSSComputedStyleDeclaration::fixedPitchFontType() const
     if (!m_node)
         return NonFixedPitchFont;
 
-    RefPtr<RenderStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
+    RefPtr<LayoutStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
         return NonFixedPitchFont;
 
@@ -455,7 +455,7 @@ static void logUnimplementedPropertyID(CSSPropertyID propertyID)
     WTF_LOG_ERROR("WebKit does not yet implement getComputedStyle for '%s'.", getPropertyName(propertyID));
 }
 
-static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> style, LayoutObject* renderer)
+static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<LayoutStyle> style, LayoutObject* renderer)
 {
     // Some properties only depend on layout in certain conditions which
     // are specified in the main switch statement below. So we can avoid
@@ -507,7 +507,7 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> 
     }
 }
 
-PassRefPtr<RenderStyle> CSSComputedStyleDeclaration::computeRenderStyle() const
+PassRefPtr<LayoutStyle> CSSComputedStyleDeclaration::computeLayoutStyle() const
 {
     Node* styledNode = this->styledNode();
     ASSERT(styledNode);
@@ -531,7 +531,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     if (!styledNode)
         return nullptr;
     LayoutObject* renderer = styledNode->renderer();
-    RefPtr<RenderStyle> style;
+    RefPtr<LayoutStyle> style;
 
     if (updateLayout) {
         Document& document = styledNode->document();
@@ -546,7 +546,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         styledNode = this->styledNode();
         renderer = styledNode->renderer();
 
-        style = computeRenderStyle();
+        style = computeLayoutStyle();
 
         bool forceFullLayout = isLayoutDependent(propertyID, style, renderer)
             || styledNode->isInShadowTree()
@@ -555,11 +555,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         if (forceFullLayout) {
             document.updateLayoutIgnorePendingStylesheets();
             styledNode = this->styledNode();
-            style = computeRenderStyle();
+            style = computeLayoutStyle();
             renderer = styledNode->renderer();
         }
     } else {
-        style = computeRenderStyle();
+        style = computeLayoutStyle();
     }
 
     if (!style)
@@ -601,7 +601,7 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
 {
     if (propertyID == CSSPropertyFontSize && propertyValue->isPrimitiveValue() && m_node) {
         m_node->document().updateLayoutIgnorePendingStylesheets();
-        RenderStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
+        LayoutStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
         if (style && style->fontDescription().keywordSize()) {
             CSSValueID sizeValue = cssIdentifierForFontSizeKeyword(style->fontDescription().keywordSize());
             const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(propertyValue);

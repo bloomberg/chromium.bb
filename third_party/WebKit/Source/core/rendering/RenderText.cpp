@@ -189,7 +189,7 @@ bool RenderText::isWordBreak() const
     return false;
 }
 
-void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     // There is no need to ever schedule paint invalidations from a style change of a text run, since
     // we already did this for the parent of the text run.
@@ -200,7 +200,7 @@ void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
         m_knownToHaveNoOverflowAndNoFallbackFonts = false;
     }
 
-    const RenderStyle& newStyle = styleRef();
+    const LayoutStyle& newStyle = styleRef();
     ETextTransform oldTransform = oldStyle ? oldStyle->textTransform() : TTNONE;
     ETextSecurity oldSecurity = oldStyle ? oldStyle->textSecurity() : TSNONE;
     if (oldTransform != newStyle.textTransform() || oldSecurity != newStyle.textSecurity())
@@ -668,7 +668,7 @@ LayoutRect RenderText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
         *extraWidthToEndOfLine = (box->root().logicalWidth() + rootLeft) - (left + 1);
 
     RenderBlock* cb = containingBlock();
-    const RenderStyle& cbStyle = cb->styleRef();
+    const LayoutStyle& cbStyle = cb->styleRef();
 
     float leftEdge;
     float rightEdge;
@@ -727,7 +727,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
         bool isSpace;
         ASSERT(m_text);
         StringImpl& text = *m_text.impl();
-        const RenderStyle& renderStyle = styleRef();
+        const LayoutStyle& layoutStyle = styleRef();
         for (int i = start; i < start + len; i++) {
             char c = text[i];
             // If glyph is not present in primary font then we cannot calculate width based on primary
@@ -741,11 +741,11 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
                     w += monospaceCharacterWidth;
                     isSpace = true;
                 } else if (c == characterTabulation) {
-                    if (renderStyle.collapseWhiteSpace()) {
+                    if (layoutStyle.collapseWhiteSpace()) {
                         w += monospaceCharacterWidth;
                         isSpace = true;
                     } else {
-                        w += f.tabWidth(renderStyle.tabSize(), xPos + w);
+                        w += f.tabWidth(layoutStyle.tabSize(), xPos + w);
                         isSpace = false;
                     }
                 } else
@@ -893,7 +893,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth)
 
 static inline float hyphenWidth(RenderText* renderer, const Font& font, TextDirection direction)
 {
-    const RenderStyle& style = renderer->styleRef();
+    const LayoutStyle& style = renderer->styleRef();
     return font.width(constructTextRun(renderer, font, style.hyphenString().string(), style, direction));
 }
 
@@ -918,7 +918,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     m_hasBreakableEnd = false;
     m_hasEndWhiteSpace = false;
 
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     const Font& f = styleToUse.font(); // FIXME: This ignores first-line.
     float wordSpacing = styleToUse.wordSpacing();
     int len = textLength();
@@ -1343,7 +1343,7 @@ void RenderText::addLayerHitTestRects(LayerHitTestRects&, const Layer* currentLa
     // Text nodes aren't event targets, so don't descend any further.
 }
 
-void applyTextTransform(const RenderStyle* style, String& text, UChar previousCharacter)
+void applyTextTransform(const LayoutStyle* style, String& text, UChar previousCharacter)
 {
     if (!style)
         return;

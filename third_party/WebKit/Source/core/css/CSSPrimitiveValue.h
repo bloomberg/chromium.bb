@@ -43,7 +43,7 @@ class Pair;
 class Quad;
 class RGBColor;
 class Rect;
-class RenderStyle;
+class LayoutStyle;
 
 // Dimension calculations are imprecise, often resulting in values of e.g.
 // 44.99998. We need to go ahead and round if we're really close to the next
@@ -237,7 +237,7 @@ public:
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value, zoom));
     }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const LengthSize& value, const RenderStyle& style)
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const LengthSize& value, const LayoutStyle& style)
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value, style));
     }
@@ -336,7 +336,7 @@ private:
     CSSPrimitiveValue(int parserOperator, UnitType);
     CSSPrimitiveValue(unsigned color, UnitType); // RGB value
     CSSPrimitiveValue(const Length&, float zoom);
-    CSSPrimitiveValue(const LengthSize&, const RenderStyle&);
+    CSSPrimitiveValue(const LengthSize&, const LayoutStyle&);
     CSSPrimitiveValue(const String&, UnitType);
     CSSPrimitiveValue(double, UnitType);
 
@@ -358,7 +358,7 @@ private:
     template<typename T> operator T*(); // compile-time guard
 
     void init(const Length&);
-    void init(const LengthSize&, const RenderStyle&);
+    void init(const LengthSize&, const LayoutStyle&);
     void init(PassRefPtrWillBeRawPtr<Counter>);
     void init(PassRefPtrWillBeRawPtr<Rect>);
     void init(PassRefPtrWillBeRawPtr<Pair>);

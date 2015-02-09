@@ -835,7 +835,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
         || node->hasTagName(h5Tag)
         || node->hasTagName(h6Tag)
         || node->hasTagName(pTag)) {
-        RenderStyle* style = r->style();
+        LayoutStyle* style = r->style();
         if (style) {
             int bottomMargin = toRenderBox(r)->collapsedMarginAfter();
             int fontSize = style->fontDescription().computedPixelSize();

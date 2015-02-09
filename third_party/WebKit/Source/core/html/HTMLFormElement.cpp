@@ -121,7 +121,7 @@ bool HTMLFormElement::isValidElement()
     return !checkInvalidControlsAndCollectUnhandled(0, CheckValidityDispatchNoEvent);
 }
 
-bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLFormElement::rendererIsNeeded(const LayoutStyle& style)
 {
     if (!m_wasDemoted)
         return HTMLElement::rendererIsNeeded(style);

@@ -34,7 +34,7 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutRubyRun.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -85,7 +85,7 @@ static inline RenderBlock* rubyAfterBlock(const LayoutObject* ruby)
 
 static RenderBlockFlow* createAnonymousRubyInlineBlock(LayoutObject* ruby)
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(ruby->styleRef(), INLINE_BLOCK);
+    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(ruby->styleRef(), INLINE_BLOCK);
     RenderBlockFlow* newBlock = RenderBlockFlow::createAnonymous(&ruby->document());
     newBlock->setStyle(newStyle.release());
     return newBlock;
@@ -119,7 +119,7 @@ LayoutRubyAsInline::~LayoutRubyAsInline()
 {
 }
 
-void LayoutRubyAsInline::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutRubyAsInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderInline::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
@@ -228,7 +228,7 @@ LayoutRubyAsBlock::~LayoutRubyAsBlock()
 {
 }
 
-void LayoutRubyAsBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutRubyAsBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlockFlow::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();

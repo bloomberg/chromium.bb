@@ -433,7 +433,7 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     bool shouldCreatePlaceholder = renderer && renderer->isBox();
     if (shouldCreatePlaceholder) {
         m_savedPlaceholderFrameRect = toRenderBox(renderer)->frameRect();
-        m_savedPlaceholderRenderStyle = RenderStyle::clone(renderer->styleRef());
+        m_savedPlaceholderLayoutStyle = LayoutStyle::clone(renderer->styleRef());
     }
 
     if (m_fullScreenElement != document()->documentElement())
@@ -489,11 +489,11 @@ void Fullscreen::setFullScreenRenderer(RenderFullScreen* renderer)
     if (renderer == m_fullScreenRenderer)
         return;
 
-    if (renderer && m_savedPlaceholderRenderStyle) {
-        renderer->createPlaceholder(m_savedPlaceholderRenderStyle.release(), m_savedPlaceholderFrameRect);
+    if (renderer && m_savedPlaceholderLayoutStyle) {
+        renderer->createPlaceholder(m_savedPlaceholderLayoutStyle.release(), m_savedPlaceholderFrameRect);
     } else if (renderer && m_fullScreenRenderer && m_fullScreenRenderer->placeholder()) {
         RenderBlock* placeholder = m_fullScreenRenderer->placeholder();
-        renderer->createPlaceholder(RenderStyle::clone(placeholder->styleRef()), placeholder->frameRect());
+        renderer->createPlaceholder(LayoutStyle::clone(placeholder->styleRef()), placeholder->frameRect());
     }
 
     if (m_fullScreenRenderer)

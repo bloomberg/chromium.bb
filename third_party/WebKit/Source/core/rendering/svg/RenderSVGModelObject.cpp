@@ -46,7 +46,7 @@ RenderSVGModelObject::RenderSVGModelObject(SVGElement* node)
 {
 }
 
-bool RenderSVGModelObject::isChildAllowed(LayoutObject* child, const RenderStyle&) const
+bool RenderSVGModelObject::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
 }
@@ -95,7 +95,7 @@ void RenderSVGModelObject::addLayerHitTestRects(LayerHitTestRects&, const Layer*
     // We don't walk into SVG trees at all - just report their container.
 }
 
-void RenderSVGModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderSVGModelObject::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     if (diff.needsFullLayout()) {
         setNeedsBoundariesUpdate();

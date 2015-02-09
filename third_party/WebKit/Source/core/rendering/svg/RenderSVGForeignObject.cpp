@@ -42,7 +42,7 @@ RenderSVGForeignObject::~RenderSVGForeignObject()
 {
 }
 
-bool RenderSVGForeignObject::isChildAllowed(LayoutObject* child, const RenderStyle& style) const
+bool RenderSVGForeignObject::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
 {
     // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS"> subdocuments.
     return !child->isSVG() || child->isSVGRoot();
@@ -99,7 +99,7 @@ void RenderSVGForeignObject::layout()
         updateCachedBoundariesInParents = oldViewport != m_viewport;
 
     // Set box origin to the foreignObject x/y translation, so positioned objects in XHTML content get correct
-    // positions. A regular RenderBoxModelObject would pull this information from RenderStyle - in SVG those
+    // positions. A regular RenderBoxModelObject would pull this information from LayoutStyle - in SVG those
     // properties are ignored for non <svg> elements, so we mimic what happens when specifying them through CSS.
 
     // FIXME: Investigate in location rounding issues - only affects RenderSVGForeignObject & RenderSVGText

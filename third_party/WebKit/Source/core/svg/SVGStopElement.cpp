@@ -58,26 +58,26 @@ void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::svgAttributeChanged(attrName);
 }
 
-LayoutObject* SVGStopElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGStopElement::createRenderer(const LayoutStyle&)
 {
     return new RenderSVGGradientStop(this);
 }
 
-bool SVGStopElement::rendererIsNeeded(const RenderStyle&)
+bool SVGStopElement::rendererIsNeeded(const LayoutStyle&)
 {
     return true;
 }
 
 Color SVGStopElement::stopColorIncludingOpacity() const
 {
-    RenderStyle* style = renderer() ? renderer()->style() : 0;
+    LayoutStyle* style = renderer() ? renderer()->style() : 0;
     // FIXME: This check for null style exists to address Bug WK 90814, a rare crash condition in
     // which the renderer or style is null. This entire class is scheduled for removal (Bug WK 86941)
     // and we will tolerate this null check until then.
     if (!style)
         return Color(Color::transparent); // Transparent black.
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGLayoutStyle& svgStyle = style->svgStyle();
     return svgStyle.stopColor().combineWithAlpha(svgStyle.stopOpacity());
 }
 

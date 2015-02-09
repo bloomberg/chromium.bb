@@ -254,7 +254,7 @@ static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
     return true;
 }
 
-bool Text::textRendererIsNeeded(const RenderStyle& style, const LayoutObject& parent)
+bool Text::textRendererIsNeeded(const LayoutStyle& style, const LayoutObject& parent)
 {
     if (!parent.canHaveChildren())
         return false;
@@ -315,7 +315,7 @@ static bool isSVGText(Text* text)
     return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
-RenderText* Text::createTextRenderer(RenderStyle* style)
+RenderText* Text::createTextRenderer(LayoutStyle* style)
 {
     if (isSVGText(this))
         return new RenderSVGInlineText(this, dataImpl());
@@ -383,7 +383,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 bool Text::needsWhitespaceRenderer()
 {
     ASSERT(!renderer());
-    if (RenderStyle* style = parentRenderStyle())
+    if (LayoutStyle* style = parentLayoutStyle())
         return style->preserveNewline();
     return false;
 }

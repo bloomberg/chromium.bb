@@ -110,7 +110,7 @@ void SVGLayoutContext::applyCompositingIfNecessary()
     if (m_object->isSVGRoot())
         return;
 
-    RenderStyle* style = m_object->style();
+    LayoutStyle* style = m_object->style();
     ASSERT(style);
     float opacity = style->opacity();
     bool hasBlendMode = style->hasBlendMode() && m_object->isBlendingAllowed();

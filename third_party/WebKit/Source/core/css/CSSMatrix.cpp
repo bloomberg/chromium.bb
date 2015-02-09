@@ -35,8 +35,8 @@
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/StyleInheritedData.h"
+#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -69,7 +69,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
             return;
 
         // FIXME: This has a null pointer crash if we use ex units (crbug.com/414145)
-        DEFINE_STATIC_REF(RenderStyle, defaultStyle, RenderStyle::createDefaultStyle());
+        DEFINE_STATIC_REF(LayoutStyle, defaultStyle, LayoutStyle::createDefaultStyle());
         TransformOperations operations;
         if (!TransformBuilder::createTransformOperations(value.get(), CSSToLengthConversionData(defaultStyle, defaultStyle, nullptr, 1.0f), operations)) {
             exceptionState.throwDOMException(SyntaxError, "Failed to interpret '" + string + "' as a transformation operation.");

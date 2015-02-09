@@ -69,7 +69,7 @@ protected:
 
     virtual void setSelectionState(SelectionState) override final;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     void setIntrinsicSize(const LayoutSize& intrinsicSize) { m_intrinsicSize = intrinsicSize; }
     virtual void intrinsicSizeChanged();

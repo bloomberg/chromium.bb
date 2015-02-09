@@ -21,7 +21,7 @@
 #define PointerEventsHitRules_h
 
 #include "core/layout/HitTestRequest.h"
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 
 namespace blink {
 

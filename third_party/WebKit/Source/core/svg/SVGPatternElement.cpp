@@ -124,7 +124,7 @@ void SVGPatternElement::childrenChanged(const ChildrenChange& change)
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-LayoutObject* SVGPatternElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGPatternElement::createRenderer(const LayoutStyle&)
 {
     return new RenderSVGResourcePattern(this);
 }

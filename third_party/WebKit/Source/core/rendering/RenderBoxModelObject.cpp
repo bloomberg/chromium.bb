@@ -31,6 +31,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/style/BorderEdge.h"
+#include "core/layout/style/ShadowList.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
@@ -39,8 +41,6 @@
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/BorderEdge.h"
-#include "core/rendering/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/DrawLooperBuilder.h"
@@ -113,7 +113,7 @@ void RenderBoxModelObject::willBeDestroyed()
 
 bool RenderBoxModelObject::calculateHasBoxDecorations() const
 {
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     return hasBackground() || styleToUse.hasBorder() || styleToUse.hasAppearance() || styleToUse.boxShadow();
 }
 
@@ -121,7 +121,7 @@ void RenderBoxModelObject::updateFromStyle()
 {
     LayoutLayerModelObject::updateFromStyle();
 
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     setHasBoxDecorationBackground(calculateHasBoxDecorations());
     setInline(styleToUse.isDisplayInlineType());
     setPositionState(styleToUse.position());
@@ -499,7 +499,7 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     // However, as soon as some content is entered, the line boxes will be
     // constructed and this kludge is not called any more. So only the caret size
     // of an empty :first-line'd block is wrong. I think we can live with that.
-    const RenderStyle& currentStyle = firstLineStyleRef();
+    const LayoutStyle& currentStyle = firstLineStyleRef();
 
     enum CaretAlignment { alignLeft, alignRight, alignCenter };
 

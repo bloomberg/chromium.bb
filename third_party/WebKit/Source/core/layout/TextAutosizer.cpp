@@ -222,7 +222,7 @@ static bool blockHeightConstrained(const RenderBlock* block)
     // FIXME: This code needs to take into account vertical writing modes.
     // FIXME: Consider additional heuristics, such as ignoring fixed heights if the content is already overflowing before autosizing kicks in.
     for (; block; block = block->containingBlock()) {
-        const RenderStyle& style = block->styleRef();
+        const LayoutStyle& style = block->styleRef();
         if (style.overflowY() >= OSCROLL)
             return false;
         if (style.height().isSpecified() || style.maxHeight().isSpecified() || block->isOutOfFlowPositioned()) {
@@ -571,7 +571,7 @@ void TextAutosizer::resetMultipliers()
 {
     LayoutObject* renderer = m_document->renderView();
     while (renderer) {
-        if (const RenderStyle* style = renderer->style()) {
+        if (const LayoutStyle* style = renderer->style()) {
             if (style->textAutosizingMultiplier() != 1)
                 applyMultiplier(renderer, 1, LayoutNeeded);
         }
@@ -690,7 +690,7 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const LayoutObject*
 
     data.m_qualifiedNameHash = QualifiedNameHash::hash(toElement(node)->tagQName());
 
-    if (const RenderStyle* style = renderer->style()) {
+    if (const LayoutStyle* style = renderer->style()) {
         data.m_packedStyleProperties = style->direction();
         data.m_packedStyleProperties |= (style->position() << 1);
         data.m_packedStyleProperties |= (style->floating() << 4);
@@ -969,19 +969,19 @@ const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size
 void TextAutosizer::applyMultiplier(LayoutObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
 {
     ASSERT(renderer);
-    RenderStyle& currentStyle = renderer->mutableStyleRef();
+    LayoutStyle& currentStyle = renderer->mutableStyleRef();
     if (currentStyle.textAutosizingMultiplier() == multiplier)
         return;
 
     // We need to clone the render style to avoid breaking style sharing.
-    RefPtr<RenderStyle> style = RenderStyle::clone(currentStyle);
+    RefPtr<LayoutStyle> style = LayoutStyle::clone(currentStyle);
     style->setTextAutosizingMultiplier(multiplier);
     style->setUnique();
 
     switch (relayoutBehavior) {
     case AlreadyInLayout:
         // Don't free currentStyle until the end of the layout pass. This allows other parts of the system
-        // to safely hold raw RenderStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
+        // to safely hold raw LayoutStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
         m_stylesRetainedDuringLayout.append(&currentStyle);
 
         renderer->setStyleInternal(style.release());

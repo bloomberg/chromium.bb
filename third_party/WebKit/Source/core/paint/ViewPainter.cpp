@@ -42,7 +42,7 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
 static inline bool rendererObscuresBackground(RenderBox* rootBox)
 {
     ASSERT(rootBox);
-    const RenderStyle& style = rootBox->styleRef();
+    const LayoutStyle& style = rootBox->styleRef();
     if (style.visibility() != VISIBLE
         || style.opacity() != 1
         || style.hasFilter()

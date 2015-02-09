@@ -304,7 +304,7 @@ private:
     SuperclusterMap m_superclusters;
     ClusterStack m_clusterStack;
     FingerprintMapper m_fingerprintMapper;
-    Vector<RefPtr<RenderStyle>> m_stylesRetainedDuringLayout;
+    Vector<RefPtr<LayoutStyle>> m_stylesRetainedDuringLayout;
     // FIXME: All frames should share the same m_pageInfo instance.
     PageInfo m_pageInfo;
     bool m_updatePageInfoDeferred;

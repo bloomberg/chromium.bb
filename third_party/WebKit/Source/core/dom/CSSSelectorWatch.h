@@ -67,7 +67,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<StyleRule> > m_watchedCallbackSelectors;
 
     // Maps a CSS selector string with a -webkit-callback property to the number
-    // of matching RenderStyle objects in this document.
+    // of matching LayoutStyle objects in this document.
     HashCountedSet<String> m_matchingCallbackSelectors;
     // Selectors are relative to m_matchingCallbackSelectors's contents at
     // the previous call to selectorMatchChanged.

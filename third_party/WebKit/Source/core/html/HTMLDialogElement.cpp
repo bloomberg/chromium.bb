@@ -34,8 +34,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/frame/FrameView.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
 

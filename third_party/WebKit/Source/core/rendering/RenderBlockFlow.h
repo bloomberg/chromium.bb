@@ -38,8 +38,8 @@
 
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/line/TrailingObjects.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace blink {
 
@@ -244,8 +244,8 @@ protected:
 
     void createFloatingObjects();
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox&);
 
@@ -315,7 +315,7 @@ private:
 
     virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG
 
-    bool isPagedOverflow(const RenderStyle&);
+    bool isPagedOverflow(const LayoutStyle&);
 
     enum FlowThreadType {
         NoFlowThread,
@@ -323,10 +323,10 @@ private:
         PagedFlowThread
     };
 
-    FlowThreadType flowThreadType(const RenderStyle&);
+    FlowThreadType flowThreadType(const LayoutStyle&);
 
     RenderMultiColumnFlowThread* createMultiColumnFlowThread(FlowThreadType);
-    void createOrDestroyMultiColumnFlowThreadIfNeeded(const RenderStyle* oldStyle);
+    void createOrDestroyMultiColumnFlowThreadIfNeeded(const LayoutStyle* oldStyle);
 
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, unsigned expansionOpportunityCount);
     void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);

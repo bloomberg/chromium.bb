@@ -29,7 +29,7 @@
 #include "platform/ThemeTypes.h"
 #endif
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/CachedUAStyle.h"
+#include "core/layout/style/CachedUAStyle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -55,14 +55,14 @@ public:
     // appropriate platform theme.
     static LayoutTheme& theme();
 
-    static void setSizeIfAuto(RenderStyle&, const IntSize&);
+    static void setSizeIfAuto(LayoutStyle&, const IntSize&);
 
     // This method is called whenever style has been computed for an element and the appearance
     // property has been set to a value other than "none".  The theme should map in all of the appropriate
     // metrics and defaults given the contents of the style.  This includes sophisticated operations like
     // selection of control size based off the font, the disabling of appearance when certain other properties like
     // "border" are set, or if the appearance is not supported by the theme.
-    void adjustStyle(RenderStyle&, Element*, const CachedUAStyle*);
+    void adjustStyle(LayoutStyle&, Element*, const CachedUAStyle*);
 
     // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates
@@ -91,7 +91,7 @@ public:
     bool isControlContainer(ControlPart) const;
 
     // Whether or not the control has been styled enough by the author to disable the native appearance.
-    virtual bool isControlStyled(const RenderStyle&, const CachedUAStyle*) const;
+    virtual bool isControlStyled(const LayoutStyle&, const CachedUAStyle*) const;
 
     // Some controls may spill out of their containers (e.g., the check on an OS X checkbox). When these controls issues paint invalidations,
     // the theme needs to communicate this inflated rect to the engine so that it can invalidate the whole control.
@@ -104,7 +104,7 @@ public:
     bool shouldDrawDefaultFocusRing(LayoutObject*) const;
 
     // A method asking if the theme's controls actually care about redrawing when hovered.
-    virtual bool supportsHover(const RenderStyle&) const { return false; }
+    virtual bool supportsHover(const LayoutStyle&) const { return false; }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // A method asking if the platform is able to show a calendar picker for a given input type.
@@ -142,14 +142,14 @@ public:
     void systemFont(CSSValueID systemFontID, FontDescription&);
     virtual Color systemColor(CSSValueID) const;
 
-    virtual int minimumMenuListSize(const RenderStyle&) const { return 0; }
+    virtual int minimumMenuListSize(const LayoutStyle&) const { return 0; }
 
-    virtual void adjustSliderThumbSize(RenderStyle&, Element*) const;
+    virtual void adjustSliderThumbSize(LayoutStyle&, Element*) const;
 
-    virtual int popupInternalPaddingLeft(const RenderStyle&) const { return 0; }
-    virtual int popupInternalPaddingRight(const RenderStyle&) const { return 0; }
-    virtual int popupInternalPaddingTop(const RenderStyle&) const { return 0; }
-    virtual int popupInternalPaddingBottom(const RenderStyle&) const { return 0; }
+    virtual int popupInternalPaddingLeft(const LayoutStyle&) const { return 0; }
+    virtual int popupInternalPaddingRight(const LayoutStyle&) const { return 0; }
+    virtual int popupInternalPaddingTop(const LayoutStyle&) const { return 0; }
+    virtual int popupInternalPaddingBottom(const LayoutStyle&) const { return 0; }
     virtual bool popupOptionSupportsTextIndent() const { return false; }
 
     virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) { return RegularScrollbar; }
@@ -207,22 +207,22 @@ protected:
     virtual Color platformInactiveListBoxSelectionForegroundColor() const;
 
     // A method asking if the theme is able to draw the focus ring.
-    virtual bool supportsFocusRing(const RenderStyle&) const;
+    virtual bool supportsFocusRing(const LayoutStyle&) const;
 
 #if !USE(NEW_THEME)
     // Methods for each appearance value.
-    virtual void adjustCheckboxStyle(RenderStyle&, Element*) const;
+    virtual void adjustCheckboxStyle(LayoutStyle&, Element*) const;
     virtual bool paintCheckbox(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual void setCheckboxSize(RenderStyle&) const { }
+    virtual void setCheckboxSize(LayoutStyle&) const { }
 
-    virtual void adjustRadioStyle(RenderStyle&, Element*) const;
+    virtual void adjustRadioStyle(LayoutStyle&, Element*) const;
     virtual bool paintRadio(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual void setRadioSize(RenderStyle&) const { }
+    virtual void setRadioSize(LayoutStyle&) const { }
 
-    virtual void adjustButtonStyle(RenderStyle&, Element*) const;
+    virtual void adjustButtonStyle(LayoutStyle&, Element*) const;
     virtual bool paintButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustInnerSpinButtonStyle(RenderStyle&, Element*) const;
+    virtual void adjustInnerSpinButtonStyle(LayoutStyle&, Element*) const;
     virtual bool paintInnerSpinButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 #endif
 
@@ -230,10 +230,10 @@ protected:
 
     virtual bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustMenuListStyle(RenderStyle&, Element*) const;
+    virtual void adjustMenuListStyle(LayoutStyle&, Element*) const;
     virtual bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustMenuListButtonStyle(RenderStyle&, Element*) const;
+    virtual void adjustMenuListButtonStyle(LayoutStyle&, Element*) const;
     virtual bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual bool paintMeter(LayoutObject*, const PaintInfo&, const IntRect&);
@@ -242,19 +242,19 @@ protected:
 
     virtual bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustSliderThumbStyle(RenderStyle&, Element*) const;
+    virtual void adjustSliderThumbStyle(LayoutStyle&, Element*) const;
     virtual bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustSearchFieldStyle(RenderStyle&, Element*) const;
+    virtual void adjustSearchFieldStyle(LayoutStyle&, Element*) const;
     virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustSearchFieldCancelButtonStyle(RenderStyle&, Element*) const;
+    virtual void adjustSearchFieldCancelButtonStyle(LayoutStyle&, Element*) const;
     virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustSearchFieldDecorationStyle(RenderStyle&, Element*) const;
+    virtual void adjustSearchFieldDecorationStyle(LayoutStyle&, Element*) const;
     virtual bool paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle&, Element*) const;
+    virtual void adjustSearchFieldResultsDecorationStyle(LayoutStyle&, Element*) const;
     virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual bool paintMediaFullscreenButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
@@ -274,12 +274,12 @@ protected:
     virtual bool paintMediaFullScreenVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaFullScreenVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual bool shouldUseFallbackTheme(const RenderStyle&) const;
-    void adjustStyleUsingFallbackTheme(RenderStyle&, Element*);
+    virtual bool shouldUseFallbackTheme(const LayoutStyle&) const;
+    void adjustStyleUsingFallbackTheme(LayoutStyle&, Element*);
     bool paintUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
-    void adjustCheckboxStyleUsingFallbackTheme(RenderStyle&, Element*) const;
+    void adjustCheckboxStyleUsingFallbackTheme(LayoutStyle&, Element*) const;
     bool paintCheckboxUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
-    void adjustRadioStyleUsingFallbackTheme(RenderStyle&, Element*) const;
+    void adjustRadioStyleUsingFallbackTheme(LayoutStyle&, Element*) const;
     bool paintRadioUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
 
 public:

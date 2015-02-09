@@ -107,7 +107,7 @@ InlineFlowBox* RenderBlockFlow::createLineBoxes(LayoutObject* obj, const LineInf
     unsigned lineDepth = 1;
     InlineFlowBox* parentBox = 0;
     InlineFlowBox* result = 0;
-    bool hasDefaultLineBoxContain = style()->lineBoxContain() == RenderStyle::initialLineBoxContain();
+    bool hasDefaultLineBoxContain = style()->lineBoxContain() == LayoutStyle::initialLineBoxContain();
     do {
         ASSERT_WITH_SECURITY_IMPLICATION(obj->isRenderInline() || obj == this);
 
@@ -787,7 +787,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     InlineBidiResolver& resolver, const InlineIterator& cleanLineStart,
     const BidiStatus& cleanLineBidiStatus)
 {
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
     LineMidpointState& lineMidpointState = resolver.midpointState();
     InlineIterator endOfLine = resolver.position();
@@ -1155,7 +1155,7 @@ static LayoutUnit getBPMWidth(LayoutUnit childValue, Length cssUnit)
 
 static LayoutUnit getBorderPaddingMargin(const RenderBoxModelObject& child, bool endOfInline)
 {
-    const RenderStyle& childStyle = child.styleRef();
+    const LayoutStyle& childStyle = child.styleRef();
     if (endOfInline) {
         return getBPMWidth(child.marginEnd(), childStyle.marginEnd()) +
             getBPMWidth(child.paddingEnd(), childStyle.paddingEnd()) +
@@ -1213,7 +1213,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     FloatWillBeLayoutUnit inlineMax;
     FloatWillBeLayoutUnit inlineMin;
 
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     RenderBlock* containingBlock = this->containingBlock();
     LayoutUnit cw = containingBlock ? containingBlock->contentLogicalWidth() : LayoutUnit();
 
@@ -1281,7 +1281,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
             // values (if any of them are larger than our current min/max). We then look at
             // the width of the last non-breakable run and use that to start a new line
             // (unless we end in whitespace).
-            const RenderStyle& childStyle = child->styleRef();
+            const LayoutStyle& childStyle = child->styleRef();
             FloatWillBeLayoutUnit childMin;
             FloatWillBeLayoutUnit childMax;
 

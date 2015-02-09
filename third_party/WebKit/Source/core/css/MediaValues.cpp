@@ -17,9 +17,9 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "platform/PlatformScreen.h"
 
 namespace blink {

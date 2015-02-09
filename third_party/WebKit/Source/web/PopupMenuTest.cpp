@@ -124,7 +124,7 @@ public:
     virtual void setTextFromItem(unsigned listIndex) { }
     virtual IntRect elementRectRelativeToRootView() const override { return IntRect(); }
     virtual Element& ownerElement() const override { return *toElement(m_node); }
-    virtual RenderStyle* renderStyleForItem(Element& element) const override { return nullptr; }
+    virtual LayoutStyle* layoutStyleForItem(Element& element) const override { return nullptr; }
 
     virtual FontSelector* fontSelector() const { return 0; }
     virtual HostWindow* hostWindow() const { return 0; }

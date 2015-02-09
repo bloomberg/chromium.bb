@@ -37,19 +37,19 @@
 
 // - font
 // The default property handlers call into the FontBuilder instead of setting
-// values directly onto the RenderStyle
+// values directly onto the LayoutStyle
 // - svg
-// The default property handlers access the SVGRenderStyle
+// The default property handlers access the SVGLayoutStyle
 
 // - name_for_methods=BlendMode
 // Tweaks how we choose defaults for getter, setter, initial and type_name.
 // For example, setting this to BlendMode will make us use a setter of setBlendMode
 // - initial
-// The initial value accessor on the RenderStyle, defaults to e.g. initialBoxShadow
+// The initial value accessor on the LayoutStyle, defaults to e.g. initialBoxShadow
 // - getter
-// The RenderStyle getter, defaults to e.g. borderBottomLeft
+// The LayoutStyle getter, defaults to e.g. borderBottomLeft
 // - setter
-// The RenderStyle setter, defaults to e.g. setBorderBottomLeft
+// The LayoutStyle setter, defaults to e.g. setBorderBottomLeft
 // - type_name
 // The computed type for the property. Only required for the default value
 // application, defaults to e.g. EDisplay

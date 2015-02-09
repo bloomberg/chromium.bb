@@ -586,12 +586,12 @@ void HTMLMediaElement::finishParsingChildren()
         scheduleDelayedAction(LoadTextTrackResource);
 }
 
-bool HTMLMediaElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLMediaElement::rendererIsNeeded(const LayoutStyle& style)
 {
     return shouldShowControls() && HTMLElement::rendererIsNeeded(style);
 }
 
-LayoutObject* HTMLMediaElement::createRenderer(const RenderStyle&)
+LayoutObject* HTMLMediaElement::createRenderer(const LayoutStyle&)
 {
     return new RenderMedia(this);
 }

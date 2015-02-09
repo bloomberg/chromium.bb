@@ -61,7 +61,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
         if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
             RenderDrawingRecorder recorder(renderingContext.paintInfo().context, m_renderSVGShape, renderingContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
-                const SVGRenderStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
+                const SVGLayoutStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
                 if (svgStyle.shapeRendering() == SR_CRISPEDGES)
                     renderingContext.paintInfo().context->setShouldAntialias(false);
 

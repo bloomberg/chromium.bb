@@ -5,7 +5,7 @@
 #ifndef LineBoxListPainter_h
 #define LineBoxListPainter_h
 
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 
 namespace blink {
 

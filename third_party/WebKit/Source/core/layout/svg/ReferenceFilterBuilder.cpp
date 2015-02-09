@@ -75,8 +75,8 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
         return false;
 
     const LayoutObject* renderer = svgElement->renderer();
-    const RenderStyle* style = renderer ? renderer->style() : 0;
-    const SVGRenderStyle* svgStyle = style ? &style->svgStyle() : 0;
+    const LayoutStyle* style = renderer ? renderer->style() : 0;
+    const SVGLayoutStyle* svgStyle = style ? &style->svgStyle() : 0;
     EColorInterpolation eColorInterpolation = CI_AUTO;
     if (svgStyle) {
         // If a layout has been performed, then we can use the fast path to get this attribute

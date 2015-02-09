@@ -39,7 +39,7 @@ struct PaintInfo;
 class RenderGeometryMap;
 class LayoutLayerModelObject;
 class LayoutObject;
-class RenderStyle;
+class LayoutStyle;
 class RenderSVGRoot;
 class StrokeData;
 class TransformState;
@@ -78,13 +78,13 @@ public:
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
 
     // Shared between SVG renderers and resources.
-    static void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle&, const LayoutObject*);
-    static void applyStrokeStyleToStrokeData(StrokeData*, const RenderStyle*, const LayoutObject*);
+    static void applyStrokeStyleToContext(GraphicsContext*, const LayoutStyle&, const LayoutObject*);
+    static void applyStrokeStyleToStrokeData(StrokeData*, const LayoutStyle*, const LayoutObject*);
 
     // Update the GC state (on |paintInfo.context|) for painting |renderer|
     // using |style|. |resourceMode| is used to decide between fill/stroke.
     // Previous state will be saved (if needed) using |stateSaver|.
-    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const RenderStyle&, LayoutObject&, RenderSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
+    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const LayoutStyle&, LayoutObject&, RenderSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
 
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(LayoutObject*);
@@ -96,8 +96,8 @@ public:
     // can/will be rendered as part of a <text>.
     static bool isRenderableTextNode(const LayoutObject*);
 
-    // Determines whether a svg node should isolate or not based on RenderStyle.
-    static bool willIsolateBlendingDescendantsForStyle(const RenderStyle*);
+    // Determines whether a svg node should isolate or not based on LayoutStyle.
+    static bool willIsolateBlendingDescendantsForStyle(const LayoutStyle*);
     static bool willIsolateBlendingDescendantsForObject(const LayoutObject*);
     template<typename LayoutObjectType>
     static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);

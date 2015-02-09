@@ -33,11 +33,11 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/PointerEventsHitRules.h"
+#include "core/layout/style/ShadowList.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/SVGTextPainter.h"
-#include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
@@ -67,7 +67,7 @@ RenderSVGText::~RenderSVGText()
     ASSERT(m_layoutAttributes.isEmpty());
 }
 
-bool RenderSVGText::isChildAllowed(LayoutObject* child, const RenderStyle&) const
+bool RenderSVGText::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isSVGInline() || (child->isText() && SVGLayoutSupport::isRenderableTextNode(child));
 }
@@ -464,7 +464,7 @@ void RenderSVGText::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 FloatRect RenderSVGText::strokeBoundingBox() const
 {
     FloatRect strokeBoundaries = objectBoundingBox();
-    const SVGRenderStyle& svgStyle = style()->svgStyle();
+    const SVGLayoutStyle& svgStyle = style()->svgStyle();
     if (!svgStyle.hasStroke())
         return strokeBoundaries;
 

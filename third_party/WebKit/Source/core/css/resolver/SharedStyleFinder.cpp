@@ -46,7 +46,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/svg/SVGElement.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
@@ -198,14 +198,14 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (element() == candidate)
         return false;
     Element* parent = candidate.parentOrShadowHostElement();
-    RenderStyle* style = candidate.renderStyle();
+    LayoutStyle* style = candidate.layoutStyle();
     if (!style)
         return false;
     if (!style->isSharable())
         return false;
     if (!parent)
         return false;
-    if (element().parentOrShadowHostElement()->renderStyle() != parent->renderStyle())
+    if (element().parentOrShadowHostElement()->layoutStyle() != parent->layoutStyle())
         return false;
     if (candidate.tagQName() != element().tagQName())
         return false;
@@ -308,7 +308,7 @@ bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet)
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-RenderStyle* SharedStyleFinder::findSharedStyle()
+LayoutStyle* SharedStyleFinder::findSharedStyle()
 {
     INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleLookups);
 
@@ -344,7 +344,7 @@ RenderStyle* SharedStyleFinder::findSharedStyle()
         return 0;
     }
 
-    return shareElement->renderStyle();
+    return shareElement->layoutStyle();
 }
 
 }

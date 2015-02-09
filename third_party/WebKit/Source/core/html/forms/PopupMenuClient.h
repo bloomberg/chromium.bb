@@ -30,7 +30,7 @@
 namespace blink {
 
 class Element;
-class RenderStyle;
+class LayoutStyle;
 
 class PopupMenuClient {
 public:
@@ -56,7 +56,7 @@ public:
     virtual void setTextFromItem(unsigned listIndex) = 0;
     virtual IntRect elementRectRelativeToRootView() const = 0;
     virtual Element& ownerElement() const = 0;
-    virtual const RenderStyle* renderStyleForItem(Element&) const = 0;
+    virtual const LayoutStyle* layoutStyleForItem(Element&) const = 0;
 
     virtual void listBoxSelectItem(int /*listIndex*/, bool /*allowMultiplySelections*/, bool /*shift*/, bool /*fireOnChangeNow*/ = true) { ASSERT_NOT_REACHED(); }
     virtual bool multiple() const

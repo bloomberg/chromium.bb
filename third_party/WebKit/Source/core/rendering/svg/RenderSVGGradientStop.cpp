@@ -36,7 +36,7 @@ RenderSVGGradientStop::~RenderSVGGradientStop()
 {
 }
 
-void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     LayoutObject::styleDidChange(diff, oldStyle);
     if (!diff.hasDifference())

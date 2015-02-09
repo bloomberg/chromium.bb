@@ -74,7 +74,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/rendering/style/GridCoordinate.h"
+#include "core/layout/style/GridCoordinate.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"

@@ -20,7 +20,7 @@
 #ifndef SVGResourcesCache_h
 #define SVGResourcesCache_h
 
-#include "core/rendering/style/StyleDifference.h"
+#include "core/layout/style/StyleDifference.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -29,7 +29,7 @@
 namespace blink {
 
 class LayoutObject;
-class RenderStyle;
+class LayoutStyle;
 class RenderSVGResourceContainer;
 class SVGResources;
 
@@ -42,7 +42,7 @@ public:
     static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
 
     // Called from all SVG renderers addChild() methods.
-    static void clientWasAddedToTree(LayoutObject*, const RenderStyle* newStyle);
+    static void clientWasAddedToTree(LayoutObject*, const LayoutStyle* newStyle);
 
     // Called from all SVG renderers removeChild() methods.
     static void clientWillBeRemovedFromTree(LayoutObject*);
@@ -54,13 +54,13 @@ public:
     static void clientLayoutChanged(LayoutObject*);
 
     // Called from all SVG renderers styleDidChange() methods.
-    static void clientStyleChanged(LayoutObject*, StyleDifference, const RenderStyle* newStyle);
+    static void clientStyleChanged(LayoutObject*, StyleDifference, const LayoutStyle* newStyle);
 
     // Called from RenderSVGResourceContainer::willBeDestroyed().
     static void resourceDestroyed(RenderSVGResourceContainer*);
 
 private:
-    void addResourcesFromLayoutObject(LayoutObject*, const RenderStyle*);
+    void addResourcesFromLayoutObject(LayoutObject*, const LayoutStyle*);
     void removeResourcesFromLayoutObject(LayoutObject*);
 
     typedef HashMap<const LayoutObject*, OwnPtr<SVGResources>> CacheMap;

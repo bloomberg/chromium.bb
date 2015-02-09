@@ -75,9 +75,9 @@ int RenderTextControlMultiLine::baselinePosition(FontBaseline baselineType, bool
     return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
-PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerEditorStyle(const RenderStyle& startStyle) const
+PassRefPtr<LayoutStyle> RenderTextControlMultiLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
 {
-    RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();
+    RefPtr<LayoutStyle> textBlockStyle = LayoutStyle::create();
     textBlockStyle->inheritFrom(startStyle);
     adjustInnerEditorStyle(*textBlockStyle);
     textBlockStyle->setDisplay(BLOCK);

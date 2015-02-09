@@ -100,7 +100,7 @@ bool RenderSVGContainer::selfWillPaint()
     return resources && resources->filter();
 }
 
-void RenderSVGContainer::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderSVGContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderSVGModelObject::styleDidChange(diff, oldStyle);
 

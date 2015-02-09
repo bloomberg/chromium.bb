@@ -84,8 +84,8 @@ private:
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
     virtual void willBeDestroyed() override;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
-    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
     virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
     virtual void removeChild(LayoutObject*) override;
 

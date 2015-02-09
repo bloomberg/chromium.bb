@@ -64,7 +64,7 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
 
 TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
 {
-    RenderStyle* style = text->style();
+    LayoutStyle* style = text->style();
     ASSERT(style);
 
     TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.

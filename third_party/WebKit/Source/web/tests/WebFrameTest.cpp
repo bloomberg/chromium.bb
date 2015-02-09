@@ -474,7 +474,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
 }
 
-TEST_F(WebFrameCSSCallbackTest, SharedRenderStyle)
+TEST_F(WebFrameCSSCallbackTest, SharedLayoutStyle)
 {
     // Check that adding an element calls back when it matches an existing rule.
     std::vector<WebString> selectors;
@@ -488,9 +488,9 @@ TEST_F(WebFrameCSSCallbackTest, SharedRenderStyle)
     EXPECT_EQ(1, updateCount());
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
 
-    // Adding a second element that shares a RenderStyle shouldn't call back.
+    // Adding a second element that shares a LayoutStyle shouldn't call back.
     // We use <span>s to avoid default style rules that can set
-    // RenderStyle::unique().
+    // LayoutStyle::unique().
     executeScript(
         "i2 = document.createElement('span');"
         "i2.id = 'second_span';"

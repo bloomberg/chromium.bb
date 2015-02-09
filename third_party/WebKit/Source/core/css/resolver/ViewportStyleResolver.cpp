@@ -130,7 +130,7 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const
         return primitiveValue->getFloatValue();
 
     if (primitiveValue->isFontRelativeLength())
-        return primitiveValue->getFloatValue() * m_document->renderStyle()->fontDescription().computedSize();
+        return primitiveValue->getFloatValue() * m_document->layoutStyle()->fontDescription().computedSize();
 
     if (primitiveValue->isPercentage()) {
         float percentValue = primitiveValue->getFloatValue() / 100.0f;
@@ -179,7 +179,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     if (primitiveValue->getValueID() == CSSValueInternalExtendToZoom)
         return Length(ExtendToZoom);
 
-    RenderStyle* documentStyle = m_document->renderStyle();
+    LayoutStyle* documentStyle = m_document->layoutStyle();
 
     // If we have viewport units the conversion will mark the document style as having viewport units.
     bool documentStyleHasViewportUnits = documentStyle->hasViewportUnits();

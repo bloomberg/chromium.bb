@@ -263,7 +263,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     HTMLFrameOwnerElement::detach(context);
 }
 
-LayoutObject* HTMLPlugInElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLPlugInElement::createRenderer(const LayoutStyle& style)
 {
     // Fallback content breaks the DOM->Renderer class relationship of this
     // class and all superclasses because createObject won't necessarily return

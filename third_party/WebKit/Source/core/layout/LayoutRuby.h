@@ -60,7 +60,7 @@ public:
     virtual void removeChild(LayoutObject* child) override;
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || RenderInline::isOfType(type); }
@@ -78,7 +78,7 @@ public:
     virtual void removeChild(LayoutObject* child) override;
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || RenderBlockFlow::isOfType(type); }

@@ -53,7 +53,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/KeyframeList.h"
+#include "core/layout/style/KeyframeList.h"
 #include "platform/animation/TimingFunction.h"
 #include "public/platform/Platform.h"
 #include "wtf/BitArray.h"
@@ -85,7 +85,7 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
     return property;
 }
 
-static void resolveKeyframes(StyleResolver* resolver, const Element* animatingElement, Element& element, const RenderStyle& style, RenderStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
+static void resolveKeyframes(StyleResolver* resolver, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
     AnimatableValueKeyframeVector& keyframes)
 {
     // When the animating element is null, use its parent for scoping purposes.
@@ -100,7 +100,7 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
     PropertySet specifiedPropertiesForUseCounter;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleRuleKeyframe* styleKeyframe = styleKeyframes[i].get();
-        RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, parentStyle, styleKeyframe, name);
+        RefPtr<LayoutStyle> keyframeStyle = resolver->styleForKeyframe(element, style, parentStyle, styleKeyframe, name);
         RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
@@ -225,7 +225,7 @@ bool CSSAnimations::isTransitionAnimationForInspector(const AnimationPlayer& pla
     return false;
 }
 
-PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* animatingElement, Element& element, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
+PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle, StyleResolver* resolver)
 {
     OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = adoptPtrWillBeNoop(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), animatingElement, element, style, parentStyle, resolver);
@@ -235,7 +235,7 @@ PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const 
     return update->isEmpty() ? nullptr : update.release();
 }
 
-void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const Element* animatingElement, Element& element, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
+void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle, StyleResolver* resolver)
 {
     const ActiveAnimations* activeAnimations = animatingElement ? animatingElement->activeAnimations() : nullptr;
 
@@ -440,7 +440,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     }
 }
 
-void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPropertyID eventId, const CSSTransitionData& transitionData, size_t transitionIndex, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update, const Element* element)
+void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPropertyID eventId, const CSSTransitionData& transitionData, size_t transitionIndex, const LayoutStyle& oldStyle, const LayoutStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update, const Element* element)
 {
     RefPtrWillBeRawPtr<AnimatableValue> to = nullptr;
     if (activeTransitions) {
@@ -500,7 +500,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPr
     ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
 }
 
-void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* animatingElement, const RenderStyle& style)
+void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* animatingElement, const LayoutStyle& style)
 {
     if (!animatingElement)
         return;
@@ -521,7 +521,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
     bool anyTransitionHadTransitionAll = false;
     const LayoutObject* renderer = animatingElement->renderer();
     if (!animationStyleRecalc && style.display() != NONE && renderer && renderer->style() && transitionData) {
-        const RenderStyle& oldStyle = *renderer->style();
+        const LayoutStyle& oldStyle = *renderer->style();
 
         for (size_t i = 0; i < transitionData->propertyList().size(); ++i) {
             const CSSTransitionData::TransitionProperty& transitionProperty = transitionData->propertyList()[i];

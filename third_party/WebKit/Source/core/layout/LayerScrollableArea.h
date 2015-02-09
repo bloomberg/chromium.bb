@@ -142,7 +142,7 @@ public:
     }
 
     void updateAfterLayout();
-    void updateAfterStyleChange(const RenderStyle*);
+    void updateAfterStyleChange(const LayoutStyle*);
     void updateAfterOverflowRecalc();
 
     virtual bool updateAfterCompositingChange() override;

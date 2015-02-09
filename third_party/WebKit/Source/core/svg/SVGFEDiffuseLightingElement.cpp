@@ -21,7 +21,7 @@
 #include "core/svg/SVGFEDiffuseLightingElement.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/filters/FEDiffuseLighting.h"

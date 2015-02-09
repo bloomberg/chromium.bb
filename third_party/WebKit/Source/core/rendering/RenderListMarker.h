@@ -84,8 +84,8 @@ private:
     void updateMargins();
     void updateContent();
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     String m_text;
     RefPtr<StyleImage> m_image;

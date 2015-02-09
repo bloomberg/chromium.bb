@@ -29,7 +29,7 @@
 namespace blink {
 
 class ElementStyleResources;
-class RenderStyle;
+class LayoutStyle;
 class ResourceFetcher;
 class ShapeValue;
 class StyleImage;
@@ -43,14 +43,14 @@ WTF_MAKE_NONCOPYABLE(StyleResourceLoader);
 public:
     explicit StyleResourceLoader(ResourceFetcher*);
 
-    void loadPendingResources(RenderStyle*, ElementStyleResources&);
+    void loadPendingResources(LayoutStyle*, ElementStyleResources&);
 
 private:
-    void loadPendingSVGDocuments(RenderStyle*, ElementStyleResources&);
+    void loadPendingSVGDocuments(LayoutStyle*, ElementStyleResources&);
 
     PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*, float deviceScaleFactor);
-    void loadPendingImages(RenderStyle*, ElementStyleResources&);
-    void loadPendingShapeImage(RenderStyle*, ShapeValue*, float deviceScaleFactor);
+    void loadPendingImages(LayoutStyle*, ElementStyleResources&);
+    void loadPendingShapeImage(LayoutStyle*, ShapeValue*, float deviceScaleFactor);
 
     ResourceFetcher* m_fetcher;
 };

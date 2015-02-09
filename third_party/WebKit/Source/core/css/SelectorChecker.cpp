@@ -50,10 +50,10 @@
 #include "core/html/track/vtt/VTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderScrollbar.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
@@ -613,8 +613,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 element.setStyleAffectedByEmpty();
                 if (context.elementStyle)
                     context.elementStyle->setEmptyState(result);
-                else if (element.renderStyle() && (element.document().styleEngine()->usesSiblingRules() || element.renderStyle()->unique()))
-                    element.renderStyle()->setEmptyState(result);
+                else if (element.layoutStyle() && (element.document().styleEngine()->usesSiblingRules() || element.layoutStyle()->unique()))
+                    element.layoutStyle()->setEmptyState(result);
             }
             return result;
         }
@@ -690,7 +690,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
             if (m_mode == ResolvingStyle) {
-                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
+                LayoutStyle* childStyle = context.elementStyle ? context.elementStyle : element.layoutStyle();
                 if (childStyle)
                     childStyle->setUnique();
                 parent->setChildrenAffectedByForwardPositionalRules();

@@ -26,8 +26,8 @@
 #define LayoutTable_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/layout/style/CollapsedBorderValue.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/style/CollapsedBorderValue.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -279,7 +279,7 @@ public:
     void recalcCollapsedBorders();
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
     virtual void simplifiedNormalFlowLayout() override;
 
 private:

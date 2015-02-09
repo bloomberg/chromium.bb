@@ -47,7 +47,7 @@ RenderListItem::RenderListItem(Element* element)
     setInline(false);
 }
 
-void RenderListItem::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderListItem::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlockFlow::styleDidChange(diff, oldStyle);
 

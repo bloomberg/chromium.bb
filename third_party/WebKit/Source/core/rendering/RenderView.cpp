@@ -127,7 +127,7 @@ LayoutUnit RenderView::availableLogicalHeight(AvailableLogicalHeightType heightT
     return RenderBlockFlow::availableLogicalHeight(heightType);
 }
 
-bool RenderView::isChildAllowed(LayoutObject* child, const RenderStyle&) const
+bool RenderView::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isBox();
 }

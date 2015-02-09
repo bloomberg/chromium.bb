@@ -20,7 +20,7 @@ MutableStylePropertySet* SVGElementRareData::ensureAnimatedSMILStyleProperties()
     return m_animatedSMILStyleProperties.get();
 }
 
-RenderStyle* SVGElementRareData::overrideComputedStyle(Element* element, RenderStyle* parentStyle)
+LayoutStyle* SVGElementRareData::overrideComputedStyle(Element* element, LayoutStyle* parentStyle)
 {
     ASSERT(element);
     if (!m_useOverrideComputedStyle)

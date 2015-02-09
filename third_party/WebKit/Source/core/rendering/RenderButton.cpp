@@ -60,7 +60,7 @@ void RenderButton::removeChild(LayoutObject* oldChild)
         m_inner->removeChild(oldChild);
 }
 
-void RenderButton::updateAnonymousChildStyle(const LayoutObject& child, RenderStyle& childStyle) const
+void RenderButton::updateAnonymousChildStyle(const LayoutObject& child, LayoutStyle& childStyle) const
 {
     ASSERT(!m_inner || &child == m_inner);
 

@@ -221,7 +221,7 @@ void RenderSVGRoot::willBeDestroyed()
     RenderReplaced::willBeDestroyed();
 }
 
-void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderSVGRoot::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();
@@ -234,7 +234,7 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldS
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }
 
-bool RenderSVGRoot::isChildAllowed(LayoutObject* child, const RenderStyle&) const
+bool RenderSVGRoot::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
 }

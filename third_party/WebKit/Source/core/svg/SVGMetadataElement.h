@@ -33,7 +33,7 @@ public:
 private:
     explicit SVGMetadataElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
+    virtual bool rendererIsNeeded(const LayoutStyle&) override { return false; }
 };
 
 } // namespace blink

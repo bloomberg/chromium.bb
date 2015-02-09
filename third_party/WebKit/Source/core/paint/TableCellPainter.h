@@ -5,7 +5,7 @@
 #ifndef TableCellPainter_h
 #define TableCellPainter_h
 
-#include "core/rendering/style/CollapsedBorderValue.h"
+#include "core/layout/style/CollapsedBorderValue.h"
 
 namespace blink {
 
@@ -14,7 +14,7 @@ class LayoutPoint;
 class LayoutRect;
 class LayoutTableCell;
 class LayoutObject;
-class RenderStyle;
+class LayoutStyle;
 
 class TableCellPainter {
 public:
@@ -33,10 +33,10 @@ public:
     LayoutRect paintBounds(const LayoutPoint& paintOffset, PaintBoundOffsetBehavior);
 
 private:
-    CollapsedBorderValue cachedCollapsedLeftBorder(const RenderStyle&) const;
-    CollapsedBorderValue cachedCollapsedRightBorder(const RenderStyle&) const;
-    CollapsedBorderValue cachedCollapsedTopBorder(const RenderStyle&) const;
-    CollapsedBorderValue cachedCollapsedBottomBorder(const RenderStyle&) const;
+    CollapsedBorderValue cachedCollapsedLeftBorder(const LayoutStyle&) const;
+    CollapsedBorderValue cachedCollapsedRightBorder(const LayoutStyle&) const;
+    CollapsedBorderValue cachedCollapsedTopBorder(const LayoutStyle&) const;
+    CollapsedBorderValue cachedCollapsedBottomBorder(const LayoutStyle&) const;
 
     LayoutTableCell& m_layoutTableCell;
 };

@@ -774,7 +774,7 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
     return result;
 }
 
-static inline LayoutUnit calculateMinimumPageHeight(const RenderStyle& style, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
+static inline LayoutUnit calculateMinimumPageHeight(const LayoutStyle& style, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     // We may require a certain minimum number of lines per page in order to satisfy
     // orphans and widows, and that may affect the minimum page height.
@@ -1088,7 +1088,7 @@ MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
     , m_determinedMarginBeforeQuirk(false)
     , m_discardMargin(false)
 {
-    const RenderStyle& blockStyle = blockFlow->styleRef();
+    const LayoutStyle& blockStyle = blockFlow->styleRef();
     ASSERT(blockFlow->isRenderView() || blockFlow->parent());
     m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isRenderFlowThread() && !blockFlow->isRenderView();
 
@@ -1700,7 +1700,7 @@ void RenderBlockFlow::setMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg)
 bool RenderBlockFlow::mustSeparateMarginBeforeForChild(const RenderBox& child) const
 {
     ASSERT(!child.selfNeedsLayout());
-    const RenderStyle& childStyle = child.styleRef();
+    const LayoutStyle& childStyle = child.styleRef();
     if (!child.isWritingModeRoot())
         return childStyle.marginBeforeCollapse() == MSEPARATE;
     if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
@@ -1713,7 +1713,7 @@ bool RenderBlockFlow::mustSeparateMarginBeforeForChild(const RenderBox& child) c
 bool RenderBlockFlow::mustSeparateMarginAfterForChild(const RenderBox& child) const
 {
     ASSERT(!child.selfNeedsLayout());
-    const RenderStyle& childStyle = child.styleRef();
+    const LayoutStyle& childStyle = child.styleRef();
     if (!child.isWritingModeRoot())
         return childStyle.marginAfterCollapse() == MSEPARATE;
     if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
@@ -1930,9 +1930,9 @@ void RenderBlockFlow::createFloatingObjects()
     m_floatingObjects = adoptPtr(new FloatingObjects(this, isHorizontalWritingMode()));
 }
 
-void RenderBlockFlow::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
+void RenderBlockFlow::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
-    const RenderStyle* oldStyle = style();
+    const LayoutStyle* oldStyle = style();
     s_canPropagateFloatIntoSibling = oldStyle ? !isFloatingOrOutOfFlowPositioned() && !avoidsFloats() : false;
     if (oldStyle && parent() && diff.needsFullLayout() && oldStyle->position() != newStyle.position()
         && containsFloats() && !isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
@@ -1941,7 +1941,7 @@ void RenderBlockFlow::styleWillChange(StyleDifference diff, const RenderStyle& n
     RenderBlock::styleWillChange(diff, newStyle);
 }
 
-void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderBlockFlow::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);
 
@@ -3046,12 +3046,12 @@ RootInlineBox* RenderBlockFlow::createRootInlineBox()
     return new RootInlineBox(*this);
 }
 
-bool RenderBlockFlow::isPagedOverflow(const RenderStyle& style)
+bool RenderBlockFlow::isPagedOverflow(const LayoutStyle& style)
 {
     return style.isOverflowPaged() && node() != document().viewportDefiningElement();
 }
 
-RenderBlockFlow::FlowThreadType RenderBlockFlow::flowThreadType(const RenderStyle& style)
+RenderBlockFlow::FlowThreadType RenderBlockFlow::flowThreadType(const LayoutStyle& style)
 {
     if (isPagedOverflow(style))
         return PagedFlowThread;
@@ -3074,7 +3074,7 @@ RenderMultiColumnFlowThread* RenderBlockFlow::createMultiColumnFlowThread(FlowTh
     }
 }
 
-void RenderBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const RenderStyle* oldStyle)
+void RenderBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const LayoutStyle* oldStyle)
 {
     if (!document().regionBasedColumnsEnabled())
         return;

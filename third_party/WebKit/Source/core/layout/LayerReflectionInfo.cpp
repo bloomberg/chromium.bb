@@ -46,9 +46,9 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/Layer.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/paint/LayerPainter.h"
 #include "core/rendering/RenderReplica.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 
@@ -81,9 +81,9 @@ Layer* LayerReflectionInfo::reflectionLayer() const
     return m_reflection->layer();
 }
 
-void LayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldStyle)
+void LayerReflectionInfo::updateAfterStyleChange(const LayoutStyle* oldStyle)
 {
-    RefPtr<RenderStyle> newStyle = RenderStyle::create();
+    RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
     newStyle->inheritFrom(box().styleRef());
 
     // Map in our transform.

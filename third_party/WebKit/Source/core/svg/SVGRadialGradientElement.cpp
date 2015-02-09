@@ -102,7 +102,7 @@ void SVGRadialGradientElement::svgAttributeChanged(const QualifiedName& attrName
         renderer->invalidateCacheAndMarkForLayout();
 }
 
-LayoutObject* SVGRadialGradientElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGRadialGradientElement::createRenderer(const LayoutStyle&)
 {
     return new RenderSVGResourceRadialGradient(this);
 }

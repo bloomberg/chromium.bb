@@ -90,8 +90,8 @@ public:
 private:
     HTMLVideoElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) override;
-    virtual LayoutObject* createRenderer(const RenderStyle&) override;
+    virtual bool rendererIsNeeded(const LayoutStyle&) override;
+    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool isPresentationAttribute(const QualifiedName&) const override;

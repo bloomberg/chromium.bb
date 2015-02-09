@@ -30,9 +30,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
@@ -94,8 +94,8 @@ bool nodeRespondsToTapGesture(Node* node)
         if (element->childrenOrSiblingsAffectedByActive() || element->childrenOrSiblingsAffectedByHover())
             return true;
     }
-    if (RenderStyle* renderStyle = node->renderStyle()) {
-        if (renderStyle->affectedByActive() || renderStyle->affectedByHover())
+    if (LayoutStyle* layoutStyle = node->layoutStyle()) {
+        if (layoutStyle->affectedByActive() || layoutStyle->affectedByHover())
             return true;
     }
     return false;

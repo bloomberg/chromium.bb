@@ -38,9 +38,9 @@ public:
     {
     }
 
-    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override { return false; }
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override { return false; }
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
 
     virtual const char* renderName() const override { return "RenderSVGResourceFilterPrimitive"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || RenderSVGHiddenContainer::isOfType(type); }

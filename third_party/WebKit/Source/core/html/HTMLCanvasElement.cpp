@@ -137,7 +137,7 @@ void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLElement::parseAttribute(name, value);
 }
 
-LayoutObject* HTMLCanvasElement::createRenderer(const RenderStyle& style)
+LayoutObject* HTMLCanvasElement::createRenderer(const LayoutStyle& style)
 {
     LocalFrame* frame = document().frame();
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
@@ -234,7 +234,7 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
             m_context = WebGLRenderingContext::create(this, attributes);
-            RenderStyle* style = computedStyle();
+            LayoutStyle* style = computedStyle();
             if (style && m_context)
                 toWebGLRenderingContext(m_context.get())->setFilterLevel(style->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
             setNeedsCompositingUpdate();
@@ -623,7 +623,7 @@ void HTMLCanvasElement::createImageBufferInternal()
     m_imageBuffer->setClient(this);
 
     document().updateRenderTreeIfNeeded();
-    RenderStyle* style = computedStyle();
+    LayoutStyle* style = computedStyle();
     m_imageBuffer->setFilterLevel((style && (style->imageRendering() == ImageRenderingPixelated)) ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
 
     m_didFailToCreateImageBuffer = false;

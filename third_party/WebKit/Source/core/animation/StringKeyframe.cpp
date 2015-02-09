@@ -22,7 +22,7 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 
 namespace blink {
 
@@ -298,7 +298,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return DeferredLegacyStyleInterpolation::create(fromCSSValue, toCSSValue, property);
         }
 
-        // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
+        // FIXME: Remove the use of AnimatableValues, LayoutStyles and Elements here.
         // FIXME: Remove this cache
         ASSERT(element);
         if (!m_animatableValueCache)

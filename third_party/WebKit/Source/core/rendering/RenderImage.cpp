@@ -228,7 +228,7 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     if (path.isEmpty())
         return;
 
-    const RenderStyle* areaElementStyle = areaElement->computedStyle();
+    const LayoutStyle* areaElementStyle = areaElement->computedStyle();
     unsigned short outlineWidth = areaElementStyle->outlineWidth();
 
     IntRect paintInvalidationRect = enclosingIntRect(path.boundingRect());
@@ -262,7 +262,7 @@ bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     if ((backgroundClip == BorderFillBox || backgroundClip == PaddingFillBox) && style()->hasPadding())
         return false;
     // Object-position may leave parts of the content box empty, regardless of the value of object-fit.
-    if (style()->objectPosition() != RenderStyle::initialObjectPosition())
+    if (style()->objectPosition() != LayoutStyle::initialObjectPosition())
         return false;
     // Object-fit may leave parts of the content box empty.
     ObjectFit objectFit = style()->objectFit();

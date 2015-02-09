@@ -40,6 +40,7 @@
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/LayerStackingNodeIterator.h"
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/style/KeyframeList.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -53,7 +54,6 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/KeyframeList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
@@ -116,7 +116,7 @@ static inline bool isAcceleratedCanvas(const LayoutObject* renderer)
     return false;
 }
 
-static bool hasBoxDecorationsOrBackgroundImage(const RenderStyle* style)
+static bool hasBoxDecorationsOrBackgroundImage(const LayoutStyle* style)
 {
     return style->hasBoxDecorations() || style->hasBackgroundImage();
 }
@@ -259,30 +259,30 @@ void CompositedLayerMapping::destroyGraphicsLayers()
     m_scrollingBlockSelectionLayer = nullptr;
 }
 
-void CompositedLayerMapping::updateOpacity(const RenderStyle* style)
+void CompositedLayerMapping::updateOpacity(const LayoutStyle* style)
 {
     m_graphicsLayer->setOpacity(compositingOpacity(style->opacity()));
 }
 
-void CompositedLayerMapping::updateTransform(const RenderStyle* style)
+void CompositedLayerMapping::updateTransform(const LayoutStyle* style)
 {
     // FIXME: This could use m_owningLayer.transform(), but that currently has transform-origin
     // baked into it, and we don't want that.
     TransformationMatrix t;
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        style->applyTransform(t, LayoutSize(toRenderBox(renderer())->pixelSnappedSize()), RenderStyle::ExcludeTransformOrigin);
+        style->applyTransform(t, LayoutSize(toRenderBox(renderer())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 
     m_graphicsLayer->setTransform(t);
 }
 
-void CompositedLayerMapping::updateFilters(const RenderStyle* style)
+void CompositedLayerMapping::updateFilters(const LayoutStyle* style)
 {
     m_graphicsLayer->setFilters(owningLayer().computeFilterOperations(style));
 }
 
-void CompositedLayerMapping::updateLayerBlendMode(const RenderStyle* style)
+void CompositedLayerMapping::updateLayerBlendMode(const LayoutStyle* style)
 {
     setBlendMode(style->blendMode());
 }
@@ -297,7 +297,7 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
     m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
 }
 
-void CompositedLayerMapping::updateScrollBlocksOn(const RenderStyle* style)
+void CompositedLayerMapping::updateScrollBlocksOn(const LayoutStyle* style)
 {
     // Note that blink determines the default scroll blocking policy, even
     // when the scroll-blocks-on CSS feature isn't enabled.
@@ -448,7 +448,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         layerConfigChanged = true;
 
     bool hasPerspective = false;
-    if (RenderStyle* style = renderer->style())
+    if (LayoutStyle* style = renderer->style())
         hasPerspective = style->hasPerspective();
     bool needsChildTransformLayer = hasPerspective && (layerForChildrenTransform() == m_childTransformLayer.get()) && renderer->isBox();
     if (updateChildTransformLayer(needsChildTransformLayer))
@@ -1466,7 +1466,7 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
     // so that the transform propagates to child layers correctly.
     if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
         bool hasPerspective = false;
-        if (RenderStyle* style = m_owningLayer.renderer()->style())
+        if (LayoutStyle* style = m_owningLayer.renderer()->style())
             hasPerspective = style->hasPerspective();
         if (hasPerspective)
             childTransformLayer->setShouldFlattenTransform(false);
@@ -1893,7 +1893,7 @@ void CompositedLayerMapping::updateImageContents()
 
 FloatPoint3D CompositedLayerMapping::computeTransformOrigin(const IntRect& borderBox) const
 {
-    RenderStyle* style = renderer()->style();
+    LayoutStyle* style = renderer()->style();
 
     FloatPoint3D origin;
     origin.setX(floatValueForLength(style->transformOriginX(), borderBox.width()));

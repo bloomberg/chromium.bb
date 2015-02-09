@@ -96,7 +96,7 @@ private:
     // InputType functions
     virtual String badInputText() const override;
     virtual void blur() override final;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>) override;
+    virtual PassRefPtr<LayoutStyle> customStyleForRenderer(PassRefPtr<LayoutStyle>) override;
     virtual void createShadowSubtree() override final;
     virtual void destroyShadowSubtree() override final;
     virtual void disabledAttributeChanged() override final;

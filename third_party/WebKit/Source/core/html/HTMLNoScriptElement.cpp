@@ -47,7 +47,7 @@ inline HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLNoScriptElement)
 
-bool HTMLNoScriptElement::rendererIsNeeded(const RenderStyle& style)
+bool HTMLNoScriptElement::rendererIsNeeded(const LayoutStyle& style)
 {
     if (document().frame()->script().canExecuteScripts(NotAboutToExecuteScript))
         return false;

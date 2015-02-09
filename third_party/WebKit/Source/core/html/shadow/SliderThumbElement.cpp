@@ -54,7 +54,7 @@ using namespace HTMLNames;
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
     ASSERT(input->renderer());
-    RenderStyle* sliderStyle = input->renderer()->style();
+    LayoutStyle* sliderStyle = input->renderer()->style();
 
     return sliderStyle->appearance() == SliderVerticalPart;
 }
@@ -81,7 +81,7 @@ void SliderThumbElement::setPositionFromValue()
         renderer()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-LayoutObject* SliderThumbElement::createRenderer(const RenderStyle&)
+LayoutObject* SliderThumbElement::createRenderer(const LayoutStyle&)
 {
     return new LayoutSliderThumb(this);
 }
@@ -283,7 +283,7 @@ const AtomicString& SliderThumbElement::shadowPseudoId() const
     if (!input || !input->renderer())
         return sliderThumbShadowPartId();
 
-    RenderStyle* sliderStyle = input->renderer()->style();
+    LayoutStyle* sliderStyle = input->renderer()->style();
     switch (sliderStyle->appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:
@@ -306,7 +306,7 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
 
 DEFINE_NODE_FACTORY(SliderContainerElement)
 
-LayoutObject* SliderContainerElement::createRenderer(const RenderStyle&)
+LayoutObject* SliderContainerElement::createRenderer(const LayoutStyle&)
 {
     return new LayoutSliderContainer(this);
 }
@@ -319,7 +319,7 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     if (!shadowHost() || !shadowHost()->renderer())
         return sliderContainer;
 
-    RenderStyle* sliderStyle = shadowHost()->renderer()->style();
+    LayoutStyle* sliderStyle = shadowHost()->renderer()->style();
     switch (sliderStyle->appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:

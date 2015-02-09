@@ -32,7 +32,7 @@
 #define AnimatableShadow_h
 
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/rendering/style/ShadowList.h"
+#include "core/layout/style/ShadowList.h"
 
 namespace blink {
 

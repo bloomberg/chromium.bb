@@ -165,7 +165,7 @@ public:
     // position.
     GraphicsLayer* detachLayerForOverflowControls(const Layer& enclosingLayer);
 
-    void updateFilters(const RenderStyle*);
+    void updateFilters(const LayoutStyle*);
 
     void setBlendMode(WebBlendMode);
 
@@ -254,11 +254,11 @@ private:
     // Result is transform origin in pixels.
     FloatPoint3D computeTransformOrigin(const IntRect& borderBox) const;
 
-    void updateOpacity(const RenderStyle*);
-    void updateTransform(const RenderStyle*);
-    void updateLayerBlendMode(const RenderStyle*);
+    void updateOpacity(const LayoutStyle*);
+    void updateTransform(const LayoutStyle*);
+    void updateLayerBlendMode(const LayoutStyle*);
     void updateIsRootForIsolatedGroup();
-    void updateScrollBlocksOn(const RenderStyle*);
+    void updateScrollBlocksOn(const LayoutStyle*);
     // Return the opacity value that this layer should use for compositing.
     float compositingOpacity(float rendererOpacity) const;
 

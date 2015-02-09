@@ -29,14 +29,14 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/layout/style/ContentData.h"
+#include "core/layout/style/FillLayer.h"
+#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/StyleFetchedImage.h"
+#include "core/layout/style/StyleFetchedImageSet.h"
+#include "core/layout/style/StyleGeneratedImage.h"
+#include "core/layout/style/StylePendingImage.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
-#include "core/rendering/style/ContentData.h"
-#include "core/rendering/style/FillLayer.h"
-#include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/StyleFetchedImage.h"
-#include "core/rendering/style/StyleFetchedImageSet.h"
-#include "core/rendering/style/StyleGeneratedImage.h"
-#include "core/rendering/style/StylePendingImage.h"
 
 namespace blink {
 
@@ -45,12 +45,12 @@ StyleResourceLoader::StyleResourceLoader(ResourceFetcher* fetcher)
 {
 }
 
-void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingSVGDocuments(LayoutStyle* layoutStyle, ElementStyleResources& elementStyleResources)
 {
-    if (!renderStyle->hasFilter() || elementStyleResources.pendingSVGDocuments().isEmpty())
+    if (!layoutStyle->hasFilter() || elementStyleResources.pendingSVGDocuments().isEmpty())
         return;
 
-    FilterOperations::FilterOperationVector& filterOperations = renderStyle->mutableFilter().operations();
+    FilterOperations::FilterOperationVector& filterOperations = layoutStyle->mutableFilter().operations();
     for (unsigned i = 0; i < filterOperations.size(); ++i) {
         RefPtrWillBeRawPtr<FilterOperation> filterOperation = filterOperations.at(i);
         if (filterOperation->type() == FilterOperation::REFERENCE) {
@@ -97,7 +97,7 @@ PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* 
     return doLoadPendingImage(m_fetcher, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
 }
 
-void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeValue* shapeValue, float deviceScaleFactor)
+void StyleResourceLoader::loadPendingShapeImage(LayoutStyle* layoutStyle, ShapeValue* shapeValue, float deviceScaleFactor)
 {
     if (!shapeValue)
         return;
@@ -114,7 +114,7 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
     shapeValue->setImage(doLoadPendingImage(m_fetcher, toStylePendingImage(image), deviceScaleFactor, options));
 }
 
-void StyleResourceLoader::loadPendingImages(RenderStyle* style, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingImages(LayoutStyle* style, ElementStyleResources& elementStyleResources)
 {
     if (elementStyleResources.pendingImageProperties().isEmpty())
         return;
@@ -199,13 +199,13 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, ElementStyleReso
     elementStyleResources.clearPendingImageProperties();
 }
 
-void StyleResourceLoader::loadPendingResources(RenderStyle* renderStyle, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingResources(LayoutStyle* layoutStyle, ElementStyleResources& elementStyleResources)
 {
     // Start loading images referenced by this style.
-    loadPendingImages(renderStyle, elementStyleResources);
+    loadPendingImages(layoutStyle, elementStyleResources);
 
     // Start loading the SVG Documents referenced by this style.
-    loadPendingSVGDocuments(renderStyle, elementStyleResources);
+    loadPendingSVGDocuments(layoutStyle, elementStyleResources);
 }
 
 }

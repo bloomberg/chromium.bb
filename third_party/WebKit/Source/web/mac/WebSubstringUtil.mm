@@ -47,7 +47,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
 #include "public/platform/WebRect.h"
@@ -77,7 +77,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
         if (!renderer)
             continue;
 
-        RenderStyle* style = renderer->style();
+        LayoutStyle* style = renderer->style();
         NSFont* font = style->font().primaryFont()->getNSFont();
         // If the platform font can't be loaded, it's likely that the site is
         // using a web font. For now, just use the default font instead.

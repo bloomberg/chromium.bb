@@ -62,7 +62,7 @@ void SearchInputType::countUsage()
     countUsageIfVisible(UseCounter::InputTypeSearch);
 }
 
-LayoutObject* SearchInputType::createRenderer(const RenderStyle&) const
+LayoutObject* SearchInputType::createRenderer(const LayoutStyle&) const
 {
     return new RenderSearchField(&element());
 }

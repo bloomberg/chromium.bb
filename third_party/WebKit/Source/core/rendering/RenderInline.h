@@ -52,10 +52,10 @@ public:
     virtual LayoutUnit marginRight() const override final;
     virtual LayoutUnit marginTop() const override final;
     virtual LayoutUnit marginBottom() const override final;
-    virtual LayoutUnit marginBefore(const RenderStyle* otherStyle = 0) const override final;
-    virtual LayoutUnit marginAfter(const RenderStyle* otherStyle = 0) const override final;
-    virtual LayoutUnit marginStart(const RenderStyle* otherStyle = 0) const override final;
-    virtual LayoutUnit marginEnd(const RenderStyle* otherStyle = 0) const override final;
+    virtual LayoutUnit marginBefore(const LayoutStyle* otherStyle = 0) const override final;
+    virtual LayoutUnit marginAfter(const LayoutStyle* otherStyle = 0) const override final;
+    virtual LayoutUnit marginStart(const LayoutStyle* otherStyle = 0) const override final;
+    virtual LayoutUnit marginEnd(const LayoutStyle* otherStyle = 0) const override final;
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override final;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
@@ -100,7 +100,7 @@ public:
 protected:
     virtual void willBeDestroyed() override;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     virtual void computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const override;
 

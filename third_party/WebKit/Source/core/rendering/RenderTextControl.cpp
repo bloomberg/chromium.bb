@@ -62,7 +62,7 @@ void RenderTextControl::addChild(LayoutObject* newChild, LayoutObject* beforeChi
         RenderBlockFlow::addChild(newChild, beforeChild);
 }
 
-void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderTextControl::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlockFlow::styleDidChange(diff, oldStyle);
     Element* innerEditor = innerEditorElement();
@@ -80,12 +80,12 @@ void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* 
     textFormControlElement()->updatePlaceholderVisibility(false);
 }
 
-static inline void updateUserModifyProperty(HTMLTextFormControlElement& node, RenderStyle& style)
+static inline void updateUserModifyProperty(HTMLTextFormControlElement& node, LayoutStyle& style)
 {
     style.setUserModify(node.isDisabledOrReadOnly() ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
 }
 
-void RenderTextControl::adjustInnerEditorStyle(RenderStyle& textBlockStyle) const
+void RenderTextControl::adjustInnerEditorStyle(LayoutStyle& textBlockStyle) const
 {
     // The inner block, if present, always has its direction set to LTR,
     // so we need to inherit the direction and unicode-bidi style from the element.
@@ -258,7 +258,7 @@ void RenderTextControl::computePreferredLogicalWidths()
 
     m_minPreferredLogicalWidth = 0;
     m_maxPreferredLogicalWidth = 0;
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
 
     if (styleToUse.logicalWidth().isFixed() && styleToUse.logicalWidth().value() >= 0)
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalWidth().value());

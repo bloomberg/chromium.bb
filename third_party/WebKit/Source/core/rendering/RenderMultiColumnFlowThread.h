@@ -116,7 +116,7 @@ class RenderMultiColumnFlowThread : public RenderFlowThread {
 public:
     virtual ~RenderMultiColumnFlowThread();
 
-    static RenderMultiColumnFlowThread* createAnonymous(Document&, const RenderStyle& parentStyle);
+    static RenderMultiColumnFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
 
     virtual bool isRenderMultiColumnFlowThread() const override final { return true; }
 

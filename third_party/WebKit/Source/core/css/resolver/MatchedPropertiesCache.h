@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class RenderStyle;
+class LayoutStyle;
 class StyleResolverState;
 
 class CachedMatchedProperties final : public NoBaseWillBeGarbageCollectedFinalized<CachedMatchedProperties> {
@@ -41,10 +41,10 @@ class CachedMatchedProperties final : public NoBaseWillBeGarbageCollectedFinaliz
 public:
     WillBeHeapVector<MatchedProperties> matchedProperties;
     MatchRanges ranges;
-    RefPtr<RenderStyle> renderStyle;
-    RefPtr<RenderStyle> parentRenderStyle;
+    RefPtr<LayoutStyle> layoutStyle;
+    RefPtr<LayoutStyle> parentLayoutStyle;
 
-    void set(const RenderStyle&, const RenderStyle& parentStyle, const MatchResult&);
+    void set(const LayoutStyle&, const LayoutStyle& parentStyle, const MatchResult&);
     void clear();
     void trace(Visitor* visitor) { visitor->trace(matchedProperties); }
 };
@@ -65,12 +65,12 @@ public:
     MatchedPropertiesCache();
 
     const CachedMatchedProperties* find(unsigned hash, const StyleResolverState&, const MatchResult&);
-    void add(const RenderStyle&, const RenderStyle& parentStyle, unsigned hash, const MatchResult&);
+    void add(const LayoutStyle&, const LayoutStyle& parentStyle, unsigned hash, const MatchResult&);
 
     void clear();
     void clearViewportDependent();
 
-    static bool isCacheable(const Element*, const RenderStyle&, const RenderStyle& parentStyle);
+    static bool isCacheable(const Element*, const LayoutStyle&, const LayoutStyle& parentStyle);
 
     void trace(Visitor*);
 

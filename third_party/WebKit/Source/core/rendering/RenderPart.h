@@ -56,7 +56,7 @@ public:
 protected:
     virtual LayerType layerTypeRequired() const override;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
     virtual void layout() override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override final;

@@ -63,12 +63,12 @@ void RenderReplaced::willBeDestroyed()
     RenderBox::willBeDestroyed();
 }
 
-void RenderReplaced::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderReplaced::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBox::styleDidChange(diff, oldStyle);
 
     bool hadStyle = (oldStyle != 0);
-    float oldZoom = hadStyle ? oldStyle->effectiveZoom() : RenderStyle::initialZoom();
+    float oldZoom = hadStyle ? oldStyle->effectiveZoom() : LayoutStyle::initialZoom();
     if (style() && style()->effectiveZoom() != oldZoom)
         intrinsicSizeChanged();
 }
@@ -220,7 +220,7 @@ LayoutRect RenderReplaced::replacedContentRect(const LayoutSize* overriddenIntri
     LayoutRect contentRect = contentBoxRect();
     ObjectFit objectFit = style()->objectFit();
 
-    if (objectFit == ObjectFitFill && style()->objectPosition() == RenderStyle::initialObjectPosition()) {
+    if (objectFit == ObjectFitFill && style()->objectPosition() == LayoutStyle::initialObjectPosition()) {
         return contentRect;
     }
 
@@ -378,7 +378,7 @@ void RenderReplaced::computePreferredLogicalWidths()
     else
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = computeReplacedLogicalWidth(ComputePreferred);
 
-    const RenderStyle& styleToUse = styleRef();
+    const LayoutStyle& styleToUse = styleRef();
     if (styleToUse.logicalWidth().isPercent() || styleToUse.logicalMaxWidth().isPercent())
         m_minPreferredLogicalWidth = 0;
 

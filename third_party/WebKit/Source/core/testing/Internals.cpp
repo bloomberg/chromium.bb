@@ -338,7 +338,7 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
 bool Internals::isSharingStyle(Element* element1, Element* element2) const
 {
     ASSERT(element1 && element2);
-    return element1->renderStyle() == element2->renderStyle();
+    return element1->layoutStyle() == element2->layoutStyle();
 }
 
 bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionState& exceptionState)

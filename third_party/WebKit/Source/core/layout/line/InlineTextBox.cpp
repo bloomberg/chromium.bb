@@ -187,7 +187,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
 
     LayoutUnit selTop = root().selectionTop();
     LayoutUnit selHeight = root().selectionHeight();
-    const RenderStyle& styleToUse = renderer().styleRef(isFirstLineStyle());
+    const LayoutStyle& styleToUse = renderer().styleRef(isFirstLineStyle());
     const Font& font = styleToUse.font();
 
     StringBuilder charactersWithHyphen;
@@ -329,7 +329,7 @@ bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     return false;
 }
 
-bool InlineTextBox::getEmphasisMarkPosition(const RenderStyle& style, TextEmphasisPosition& emphasisPosition) const
+bool InlineTextBox::getEmphasisMarkPosition(const LayoutStyle& style, TextEmphasisPosition& emphasisPosition) const
 {
     // This function returns true if there are text emphasis marks and they are suppressed by ruby text.
     if (style.textEmphasisMark() == TextEmphasisMarkNone)
@@ -375,12 +375,12 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos) const
     ePos = std::min(endPos - m_start, (int)m_len);
 }
 
-void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, const RenderStyle& style, const Font& font, bool grammar)
+void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, const LayoutStyle& style, const Font& font, bool grammar)
 {
     InlineTextBoxPainter(*this).paintDocumentMarker(pt, boxOrigin.toFloatPoint(), marker, style, font, grammar);
 }
 
-void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, const RenderStyle& style, const Font& font)
+void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, const LayoutStyle& style, const Font& font)
 {
     InlineTextBoxPainter(*this).paintTextMatchMarker(pt, boxOrigin.toFloatPoint(), marker, style, font);
 }
@@ -415,7 +415,7 @@ int InlineTextBox::offsetForPosition(FloatWillBeLayoutUnit lineOffset, bool incl
         return isLeftToRightDirection() ? 0 : len();
 
     RenderText& text = renderer();
-    const RenderStyle& style = text.styleRef(isFirstLineStyle());
+    const LayoutStyle& style = text.styleRef(isFirstLineStyle());
     const Font& font = style.font();
     return font.offsetForPosition(constructTextRun(style, font), lineOffset - logicalLeft(), includePartialGlyphs);
 }
@@ -429,7 +429,7 @@ FloatWillBeLayoutUnit InlineTextBox::positionForOffset(int offset) const
         return logicalLeft();
 
     RenderText& text = renderer();
-    const RenderStyle& styleToUse = text.styleRef(isFirstLineStyle());
+    const LayoutStyle& styleToUse = text.styleRef(isFirstLineStyle());
     const Font& font = styleToUse.font();
     int from = !isLeftToRightDirection() ? offset - m_start : 0;
     int to = !isLeftToRightDirection() ? m_len : offset - m_start;
@@ -465,7 +465,7 @@ void InlineTextBox::characterWidths(Vector<FloatWillBeLayoutUnit>& widths) const
 {
     FontCachePurgePreventer fontCachePurgePreventer;
 
-    const RenderStyle& styleToUse = renderer().styleRef(isFirstLineStyle());
+    const LayoutStyle& styleToUse = renderer().styleRef(isFirstLineStyle());
     const Font& font = styleToUse.font();
 
     TextRun textRun = constructTextRun(styleToUse, font);
@@ -480,7 +480,7 @@ void InlineTextBox::characterWidths(Vector<FloatWillBeLayoutUnit>& widths) const
     }
 }
 
-TextRun InlineTextBox::constructTextRun(const RenderStyle& style, const Font& font, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(const LayoutStyle& style, const Font& font, StringBuilder* charactersWithHyphen) const
 {
     ASSERT(renderer().text());
 
@@ -494,7 +494,7 @@ TextRun InlineTextBox::constructTextRun(const RenderStyle& style, const Font& fo
     return constructTextRun(style, font, string, renderer().textLength() - startPos, charactersWithHyphen);
 }
 
-TextRun InlineTextBox::constructTextRun(const RenderStyle& style, const Font& font, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(const LayoutStyle& style, const Font& font, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
 {
     if (charactersWithHyphen) {
         const AtomicString& hyphenString = style.hyphenString();
@@ -518,7 +518,7 @@ TextRun InlineTextBox::constructTextRun(const RenderStyle& style, const Font& fo
     return run;
 }
 
-TextRun InlineTextBox::constructTextRunForInspector(const RenderStyle& style, const Font& font) const
+TextRun InlineTextBox::constructTextRunForInspector(const LayoutStyle& style, const Font& font) const
 {
     return InlineTextBox::constructTextRun(style, font);
 }

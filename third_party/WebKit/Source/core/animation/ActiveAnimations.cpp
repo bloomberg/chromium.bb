@@ -49,7 +49,7 @@ ActiveAnimations::~ActiveAnimations()
 #endif
 }
 
-void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
+void ActiveAnimations::updateAnimationFlags(LayoutStyle& style)
 {
     for (const auto& entry : m_players) {
         const AnimationPlayer& player = *entry.key;
@@ -90,31 +90,31 @@ void ActiveAnimations::trace(Visitor* visitor)
 #endif
 }
 
-const RenderStyle* ActiveAnimations::baseRenderStyle() const
+const LayoutStyle* ActiveAnimations::baseLayoutStyle() const
 {
 #if !ENABLE(ASSERT)
     if (isAnimationStyleChange())
-        return m_baseRenderStyle.get();
+        return m_baseLayoutStyle.get();
 #endif
     return nullptr;
 }
 
-void ActiveAnimations::updateBaseRenderStyle(const RenderStyle* renderStyle)
+void ActiveAnimations::updateBaseLayoutStyle(const LayoutStyle* layoutStyle)
 {
     if (!isAnimationStyleChange()) {
-        m_baseRenderStyle = nullptr;
+        m_baseLayoutStyle = nullptr;
         return;
     }
 #if ENABLE(ASSERT)
-    if (m_baseRenderStyle && renderStyle)
-        ASSERT(*m_baseRenderStyle == *renderStyle);
+    if (m_baseLayoutStyle && layoutStyle)
+        ASSERT(*m_baseLayoutStyle == *layoutStyle);
 #endif
-    m_baseRenderStyle = RenderStyle::clone(*renderStyle);
+    m_baseLayoutStyle = LayoutStyle::clone(*layoutStyle);
 }
 
-void ActiveAnimations::clearBaseRenderStyle()
+void ActiveAnimations::clearBaseLayoutStyle()
 {
-    m_baseRenderStyle = nullptr;
+    m_baseLayoutStyle = nullptr;
 }
 
 } // namespace blink

@@ -47,7 +47,7 @@ public:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyBase || RenderBlockFlow::isOfType(type); }
 
-    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
 private:
     LayoutRubyBase();

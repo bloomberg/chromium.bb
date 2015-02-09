@@ -27,8 +27,8 @@
 #define RenderGrid_h
 
 #include "core/layout/OrderIterator.h"
+#include "core/layout/style/GridResolvedPosition.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/style/GridResolvedPosition.h"
 
 namespace blink {
 
@@ -69,10 +69,10 @@ private:
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
     virtual void removeChild(LayoutObject*) override;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
 
-    bool explicitGridDidResize(const RenderStyle&) const;
-    bool namedGridLinesDefinitionDidChange(const RenderStyle&) const;
+    bool explicitGridDidResize(const LayoutStyle&) const;
+    bool namedGridLinesDefinitionDidChange(const LayoutStyle&) const;
 
     class GridIterator;
     struct GridSizingData;

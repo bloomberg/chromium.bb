@@ -58,7 +58,7 @@ inline static Decimal sliderPosition(HTMLInputElement* element)
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
     ASSERT(input->renderer());
-    RenderStyle* sliderStyle = input->renderer()->style();
+    LayoutStyle* sliderStyle = input->renderer()->style();
 
     return sliderStyle->appearance() == SliderVerticalPart;
 }

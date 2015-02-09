@@ -37,9 +37,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableCell.h"
@@ -991,11 +991,11 @@ WebString WebAXObject::computedStyleDisplay() const
     if (!node)
         return WebString();
 
-    RenderStyle* renderStyle = node->computedStyle();
-    if (!renderStyle)
+    LayoutStyle* layoutStyle = node->computedStyle();
+    if (!layoutStyle)
         return WebString();
 
-    return WebString(CSSPrimitiveValue::create(renderStyle->display())->getStringValue());
+    return WebString(CSSPrimitiveValue::create(layoutStyle->display())->getStringValue());
 }
 
 bool WebAXObject::accessibilityIsIgnored() const

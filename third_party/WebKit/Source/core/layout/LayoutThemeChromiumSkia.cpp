@@ -80,12 +80,12 @@ String LayoutThemeChromiumSkia::extraQuirksStyleSheet()
     return loadResourceAsASCIIString("themeWinQuirks.css");
 }
 
-bool LayoutThemeChromiumSkia::supportsHover(const RenderStyle& style) const
+bool LayoutThemeChromiumSkia::supportsHover(const LayoutStyle& style) const
 {
     return true;
 }
 
-bool LayoutThemeChromiumSkia::supportsFocusRing(const RenderStyle& style) const
+bool LayoutThemeChromiumSkia::supportsFocusRing(const LayoutStyle& style) const
 {
     // This causes WebKit to draw the focus rings for us.
     return false;
@@ -132,7 +132,7 @@ void LayoutThemeChromiumSkia::systemFont(CSSValueID systemFontID, FontStyle& fon
     LayoutThemeChromiumFontProvider::systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
 }
 
-int LayoutThemeChromiumSkia::minimumMenuListSize(const RenderStyle& style) const
+int LayoutThemeChromiumSkia::minimumMenuListSize(const LayoutStyle& style) const
 {
     return 0;
 }
@@ -153,7 +153,7 @@ IntRect center(const IntRect& original, int width, int height)
     return IntRect(x, y, width, height);
 }
 
-void LayoutThemeChromiumSkia::setCheckboxSize(RenderStyle& style) const
+void LayoutThemeChromiumSkia::setCheckboxSize(LayoutStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -168,17 +168,17 @@ void LayoutThemeChromiumSkia::setCheckboxSize(RenderStyle& style) const
     setSizeIfAuto(style, size);
 }
 
-void LayoutThemeChromiumSkia::setRadioSize(RenderStyle& style) const
+void LayoutThemeChromiumSkia::setRadioSize(LayoutStyle& style) const
 {
     // Use same sizing for radio box as checkbox.
     setCheckboxSize(style);
 }
 
-void LayoutThemeChromiumSkia::adjustButtonStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumSkia::adjustButtonStyle(LayoutStyle& style, Element*) const
 {
     if (style.appearance() == PushButtonPart) {
         // Ignore line-height.
-        style.setLineHeight(RenderStyle::initialLineHeight());
+        style.setLineHeight(LayoutStyle::initialLineHeight());
     }
 }
 
@@ -187,10 +187,10 @@ bool LayoutThemeChromiumSkia::paintTextArea(LayoutObject* o, const PaintInfo& i,
     return paintTextField(o, i, r);
 }
 
-void LayoutThemeChromiumSkia::adjustSearchFieldStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumSkia::adjustSearchFieldStyle(LayoutStyle& style, Element*) const
 {
     // Ignore line-height.
-    style.setLineHeight(RenderStyle::initialLineHeight());
+    style.setLineHeight(LayoutStyle::initialLineHeight());
 }
 
 bool LayoutThemeChromiumSkia::paintSearchField(LayoutObject* o, const PaintInfo& i, const IntRect& r)
@@ -198,7 +198,7 @@ bool LayoutThemeChromiumSkia::paintSearchField(LayoutObject* o, const PaintInfo&
     return paintTextField(o, i, r);
 }
 
-void LayoutThemeChromiumSkia::adjustSearchFieldCancelButtonStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumSkia::adjustSearchFieldCancelButtonStyle(LayoutStyle& style, Element*) const
 {
     // Scale the button size based on the font size
     float fontScale = style.fontSize() / defaultControlFontPixelSize;
@@ -247,14 +247,14 @@ bool LayoutThemeChromiumSkia::paintSearchFieldCancelButton(LayoutObject* cancelB
     return false;
 }
 
-void LayoutThemeChromiumSkia::adjustSearchFieldDecorationStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumSkia::adjustSearchFieldDecorationStyle(LayoutStyle& style, Element*) const
 {
     IntSize emptySize(1, 11);
     style.setWidth(Length(emptySize.width(), Fixed));
     style.setHeight(Length(emptySize.height(), Fixed));
 }
 
-void LayoutThemeChromiumSkia::adjustSearchFieldResultsDecorationStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumSkia::adjustSearchFieldResultsDecorationStyle(LayoutStyle& style, Element*) const
 {
     // Scale the decoration size based on the font size
     float fontScale = style.fontSize() / defaultControlFontPixelSize;
@@ -301,7 +301,7 @@ bool LayoutThemeChromiumSkia::paintMediaVolumeSliderTrack(LayoutObject* object, 
     return RenderMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
 
-void LayoutThemeChromiumSkia::adjustSliderThumbSize(RenderStyle& style, Element*) const
+void LayoutThemeChromiumSkia::adjustSliderThumbSize(LayoutStyle& style, Element*) const
 {
     RenderMediaControls::adjustMediaSliderThumbSize(style);
 }
@@ -356,13 +356,13 @@ bool LayoutThemeChromiumSkia::paintMediaFullscreenButton(LayoutObject* object, c
     return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
-void LayoutThemeChromiumSkia::adjustMenuListStyle(RenderStyle& style, Element*) const
+void LayoutThemeChromiumSkia::adjustMenuListStyle(LayoutStyle& style, Element*) const
 {
     // Height is locked to auto on all browsers.
-    style.setLineHeight(RenderStyle::initialLineHeight());
+    style.setLineHeight(LayoutStyle::initialLineHeight());
 }
 
-void LayoutThemeChromiumSkia::adjustMenuListButtonStyle(RenderStyle& style, Element* e) const
+void LayoutThemeChromiumSkia::adjustMenuListButtonStyle(LayoutStyle& style, Element* e) const
 {
     adjustMenuListStyle(style, e);
 }
@@ -373,22 +373,22 @@ bool LayoutThemeChromiumSkia::paintMenuListButton(LayoutObject* o, const PaintIn
     return paintMenuList(o, i, rect);
 }
 
-int LayoutThemeChromiumSkia::popupInternalPaddingLeft(const RenderStyle& style) const
+int LayoutThemeChromiumSkia::popupInternalPaddingLeft(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, LeftPadding);
 }
 
-int LayoutThemeChromiumSkia::popupInternalPaddingRight(const RenderStyle& style) const
+int LayoutThemeChromiumSkia::popupInternalPaddingRight(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, RightPadding);
 }
 
-int LayoutThemeChromiumSkia::popupInternalPaddingTop(const RenderStyle& style) const
+int LayoutThemeChromiumSkia::popupInternalPaddingTop(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, TopPadding);
 }
 
-int LayoutThemeChromiumSkia::popupInternalPaddingBottom(const RenderStyle& style) const
+int LayoutThemeChromiumSkia::popupInternalPaddingBottom(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, BottomPadding);
 }
@@ -409,7 +409,7 @@ int LayoutThemeChromiumSkia::menuListArrowPadding() const
     return ScrollbarTheme::theme()->scrollbarThickness();
 }
 
-int LayoutThemeChromiumSkia::menuListInternalPadding(const RenderStyle& style, int paddingType) const
+int LayoutThemeChromiumSkia::menuListInternalPadding(const LayoutStyle& style, int paddingType) const
 {
     // This internal padding is in addition to the user-supplied padding.
     // Matches the FF behavior.

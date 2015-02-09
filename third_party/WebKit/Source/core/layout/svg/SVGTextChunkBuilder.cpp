@@ -87,10 +87,10 @@ void SVGTextChunkBuilder::addTextChunk(Vector<SVGInlineTextBox*>& lineLayoutBoxe
 
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(textBox->renderer());
 
-    const RenderStyle* style = toRenderSVGInlineText(textBox->renderer()).style();
+    const LayoutStyle* style = toRenderSVGInlineText(textBox->renderer()).style();
     ASSERT(style);
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGLayoutStyle& svgStyle = style->svgStyle();
 
     // Build chunk style flags.
     unsigned chunkStyle = SVGTextChunk::DefaultStyle;

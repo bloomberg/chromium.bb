@@ -224,7 +224,7 @@ void FirstLetterPseudoElement::detach(const AttachContext& context)
     PseudoElement::detach(context);
 }
 
-RenderStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* rendererContainer)
+LayoutStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* rendererContainer)
 {
     ASSERT(rendererContainer);
 
@@ -236,7 +236,7 @@ RenderStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* rendere
     // into account.
     styleContainer->style()->removeCachedPseudoStyle(FIRST_LETTER);
 
-    RenderStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(FIRST_LETTER, rendererContainer->firstLineStyle());
+    LayoutStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(FIRST_LETTER, rendererContainer->firstLineStyle());
     ASSERT(pseudoStyle);
 
     return pseudoStyle;
@@ -254,7 +254,7 @@ void FirstLetterPseudoElement::attachFirstLetterTextRenderers()
     String oldText = toRenderText(nextRenderer)->isTextFragment() ? toRenderTextFragment(nextRenderer)->completeText() : toRenderText(nextRenderer)->originalText();
     ASSERT(oldText.impl());
 
-    RenderStyle* pseudoStyle = styleForFirstLetter(nextRenderer->parent());
+    LayoutStyle* pseudoStyle = styleForFirstLetter(nextRenderer->parent());
     renderer()->setStyle(pseudoStyle);
 
     // FIXME: This would already have been calculated in firstLetterRenderer. Can we pass the length through?
@@ -297,7 +297,7 @@ void FirstLetterPseudoElement::didRecalcStyle(StyleRecalcChange)
         // We need to re-calculate the correct style for the first letter element
         // and then apply that to the container and the text fragment inside.
         if (child->style()->styleType() == FIRST_LETTER && m_remainingTextRenderer) {
-            if (RenderStyle* pseudoStyle = styleForFirstLetter(m_remainingTextRenderer->parent()))
+            if (LayoutStyle* pseudoStyle = styleForFirstLetter(m_remainingTextRenderer->parent()))
                 child->setPseudoStyle(pseudoStyle);
             continue;
         }

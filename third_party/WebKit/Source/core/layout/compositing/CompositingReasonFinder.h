@@ -33,7 +33,7 @@ private:
     CompositingReasons nonStyleDeterminedDirectReasons(const Layer*) const;
 
     bool requiresCompositingForTransform(LayoutObject*) const;
-    bool requiresCompositingForAnimation(RenderStyle*) const;
+    bool requiresCompositingForAnimation(LayoutStyle*) const;
     bool requiresCompositingForPositionFixed(const Layer*) const;
     bool requiresCompositingForScrollBlocksOn(const LayoutObject*) const;
 

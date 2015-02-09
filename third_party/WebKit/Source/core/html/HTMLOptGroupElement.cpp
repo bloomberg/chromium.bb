@@ -98,7 +98,7 @@ void HTMLOptGroupElement::detach(const AttachContext& context)
     HTMLElement::detach(context);
 }
 
-void HTMLOptGroupElement::updateNonRenderStyle()
+void HTMLOptGroupElement::updateNonLayoutStyle()
 {
     m_style = originalStyleForRenderer();
     if (renderer()) {
@@ -107,14 +107,14 @@ void HTMLOptGroupElement::updateNonRenderStyle()
     }
 }
 
-RenderStyle* HTMLOptGroupElement::nonRendererStyle() const
+LayoutStyle* HTMLOptGroupElement::nonRendererStyle() const
 {
     return m_style.get();
 }
 
-PassRefPtr<RenderStyle> HTMLOptGroupElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLOptGroupElement::customStyleForRenderer()
 {
-    updateNonRenderStyle();
+    updateNonLayoutStyle();
     return m_style;
 }
 

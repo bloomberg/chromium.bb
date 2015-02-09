@@ -24,8 +24,8 @@
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/layout/line/InlineBox.h"
+#include "core/layout/style/ShadowData.h"
 #include "core/rendering/RenderOverflow.h"
-#include "core/rendering/style/ShadowData.h"
 
 namespace blink {
 

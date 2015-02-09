@@ -1032,11 +1032,11 @@ void ContainerNode::focusStateChanged()
         return;
 
     if (styleChangeType() < SubtreeStyleChange) {
-        if (renderStyle()->affectedByFocus() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
+        if (layoutStyle()->affectedByFocus() && layoutStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
             document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
-        else if (renderStyle()->affectedByFocus())
+        else if (layoutStyle()->affectedByFocus())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
 
@@ -1073,15 +1073,15 @@ void ContainerNode::setActive(bool down)
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (renderer()) {
         if (styleChangeType() < SubtreeStyleChange) {
-            if (renderStyle()->affectedByActive() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
+            if (layoutStyle()->affectedByActive() && layoutStyle()->hasPseudoStyle(FIRST_LETTER))
                 setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
             else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
                 document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
-            else if (renderStyle()->affectedByActive())
+            else if (layoutStyle()->affectedByActive())
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
         }
 
-        if (renderStyle()->hasAppearance())
+        if (layoutStyle()->hasAppearance())
             LayoutTheme::theme().stateChanged(renderer(), PressedControlState);
     }
 }
@@ -1105,11 +1105,11 @@ void ContainerNode::setHovered(bool over)
     }
 
     if (styleChangeType() < SubtreeStyleChange) {
-        if (renderStyle()->affectedByHover() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
+        if (layoutStyle()->affectedByHover() && layoutStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
             document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
-        else if (renderStyle()->affectedByHover())
+        else if (layoutStyle()->affectedByHover())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
     }
 

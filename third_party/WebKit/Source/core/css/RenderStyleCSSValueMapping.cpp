@@ -46,35 +46,35 @@
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/style/ContentData.h"
+#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/PathStyleMotionPath.h"
+#include "core/layout/style/ShadowList.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderGrid.h"
-#include "core/rendering/style/ContentData.h"
-#include "core/rendering/style/PathStyleMotionPath.h"
-#include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
 
-inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const LayoutStyle& style)
 {
     return cssValuePool().createValue(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::CSS_PX);
 }
 
-inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedNumberValue(double value, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedNumberValue(double value, const LayoutStyle& style)
 {
     return cssValuePool().createValue(value / style.effectiveZoom(), CSSPrimitiveValue::CSS_NUMBER);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength(const Length& length, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength(const Length& length, const LayoutStyle& style)
 {
     if (length.isFixed())
         return zoomAdjustedPixelValue(length.value(), style);
     return cssValuePool().createValue(length, style);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer& layer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer& layer, const LayoutStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> positionList = CSSValueList::createSpaceSeparated();
     if (layer.isBackgroundXOriginSet()) {
@@ -90,13 +90,13 @@ static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSProper
     return positionList.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RenderStyleCSSValueMapping::currentColorOrValidColor(const RenderStyle& style, const StyleColor& color)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RenderStyleCSSValueMapping::currentColorOrValidColor(const LayoutStyle& style, const StyleColor& color)
 {
     // This function does NOT look at visited information, so that computed style doesn't expose that.
     return cssValuePool().createColorValue(color.resolve(style.color()).rgb());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSize(const FillSize& fillSize, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSize(const FillSize& fillSize, const LayoutStyle& style)
 {
     if (fillSize.type == Contain)
         return cssValuePool().createIdentifierValue(CSSValueContain);
@@ -144,7 +144,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSourceType(EMaskSourceType t
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const RenderStyle& style, CSSPropertyID propertyID, const LayoutObject* renderer)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const LayoutStyle& style, CSSPropertyID propertyID, const LayoutObject* renderer)
 {
     Length offset;
     switch (propertyID) {
@@ -233,7 +233,7 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
     return CSSBorderImageSliceValue::create(cssValuePool().createValue(quad.release()), image.fill());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const BorderImageLengthBox& box, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const BorderImageLengthBox& box, const LayoutStyle& style)
 {
     // Create the slices.
     RefPtrWillBeRawPtr<CSSPrimitiveValue> top = nullptr;
@@ -312,7 +312,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImageRepeat(const NineP
     return cssValuePool().createValue(Pair::create(horizontalRepeat.release(), verticalRepeat.release(), Pair::DropIdenticalValues));
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, const LayoutStyle& style)
 {
     if (!image.hasImage())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -337,7 +337,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImage(const NinePieceIm
     return createBorderImageValue(imageValue.release(), imageSlices.release(), borderSlices.release(), outset.release(), repeat.release());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForReflection(const StyleReflection* reflection, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForReflection(const StyleReflection* reflection, const LayoutStyle& style)
 {
     if (!reflection)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -390,7 +390,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlig
     return result.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand& shorthand, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand& shorthand, const LayoutStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
@@ -401,7 +401,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePr
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand& shorthand, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand& shorthand, const LayoutStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
@@ -412,7 +412,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const Sty
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const LayoutStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
     const FillLayer* currLayer = &style.backgroundLayers();
@@ -464,7 +464,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForContentPositionAndDistributi
     return result.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForLineHeight(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForLineHeight(const LayoutStyle& style)
 {
     Length length = style.lineHeight();
     if (length.isNegative())
@@ -497,7 +497,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFamily(const AtomicStri
     return cssValuePool().createValue(family.string(), CSSPrimitiveValue::CSS_STRING);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(const LayoutStyle& style)
 {
     const FontFamily& firstFamily = style.fontDescription().family();
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
@@ -506,32 +506,32 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(const RenderStyle
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontSize(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontSize(const LayoutStyle& style)
 {
     return zoomAdjustedPixelValue(style.fontDescription().computedSize(), style);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStretch(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStretch(const LayoutStyle& style)
 {
     return cssValuePool().createValue(style.fontDescription().stretch());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStyle(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStyle(const LayoutStyle& style)
 {
     return cssValuePool().createValue(style.fontDescription().style());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontVariant(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontVariant(const LayoutStyle& style)
 {
     return cssValuePool().createValue(style.fontDescription().variant());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontWeight(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontWeight(const LayoutStyle& style)
 {
     return cssValuePool().createValue(style.fontDescription().weight());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const LayoutStyle& style)
 {
     if (!trackBreadth.isLength())
         return cssValuePool().createValue(trackBreadth.flex(), CSSPrimitiveValue::CSS_FR);
@@ -542,7 +542,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackBreadth(const 
     return zoomAdjustedPixelValueForLength(trackBreadthLength, style);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& trackSize, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& trackSize, const LayoutStyle& style)
 {
     switch (trackSize.type()) {
     case LengthTrackSizing:
@@ -569,7 +569,7 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
     list.append(lineNames.release());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, const LayoutObject* renderer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, const LayoutObject* renderer, const LayoutStyle& style)
 {
     const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridTemplateColumns() : style.gridTemplateRows();
     const OrderedNamedGridLines& orderedNamedGridLines = direction == ForColumns ? style.orderedNamedGridColumnLines() : style.orderedNamedGridRowLines();
@@ -861,7 +861,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationTimingFunction(const CS
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBorderRadiusCorner(LengthSize radius, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBorderRadiusCorner(LengthSize radius, const LayoutStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (radius.width().type() == Percent)
@@ -875,7 +875,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBorderRadiusCorner(LengthSi
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForBorderRadiusCorner(LengthSize radius, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForBorderRadiusCorner(LengthSize radius, const LayoutStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = valuesForBorderRadiusCorner(radius, style);
     if (list->item(0)->equals(*list->item(1)))
@@ -883,7 +883,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForBorderRadiusCorner(LengthSize ra
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const TransformationMatrix& transform, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const TransformationMatrix& transform, const LayoutStyle& style)
 {
     RefPtrWillBeRawPtr<CSSTransformValue> transformValue = nullptr;
     if (transform.isAffine()) {
@@ -922,7 +922,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const T
     return transformValue.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* renderer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* renderer, const LayoutStyle& style)
 {
     if (!renderer || !renderer->hasTransformRelatedProperty() || !style.hasTransform())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -932,7 +932,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* re
         box = pixelSnappedIntRect(toRenderBox(renderer)->borderBoxRect());
 
     TransformationMatrix transform;
-    style.applyTransform(transform, LayoutSize(box.size()), RenderStyle::ExcludeTransformOrigin, RenderStyle::ExcludeMotionPath);
+    style.applyTransform(transform, LayoutSize(box.size()), LayoutStyle::ExcludeTransformOrigin, LayoutStyle::ExcludeMotionPath);
 
     // FIXME: Need to print out individual functions (https://bugs.webkit.org/show_bug.cgi?id=23924)
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
@@ -972,7 +972,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> createLineBoxContainValue(unsigned lineB
     return CSSLineBoxContainValue::create(lineBoxContain);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const LayoutStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (const ContentData* contentData = style.contentData(); contentData; contentData = contentData->next()) {
@@ -991,7 +991,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const RenderStyle& s
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const RenderStyle& style, CSSPropertyID propertyID)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const LayoutStyle& style, CSSPropertyID propertyID)
 {
     const CounterDirectiveMap* map = style.counterDirectives();
     if (!map)
@@ -1014,7 +1014,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const RenderSt
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, ShapeValue* shapeValue)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const LayoutStyle& style, ShapeValue* shapeValue)
 {
     if (!shapeValue)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1035,7 +1035,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, 
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand& shorthand, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand& shorthand, const LayoutStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     // Assume the properties are in the usual order top, right, bottom, left.
@@ -1063,7 +1063,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StyleP
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valueForBorderRadiusShorthand(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValueList> valueForBorderRadiusShorthand(const LayoutStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
 
@@ -1185,7 +1185,7 @@ static inline String serializeAsFragmentIdentifier(const AtomicString& resource)
     return "#" + resource;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowData(const ShadowData& shadow, const RenderStyle& style, bool useSpread)
+PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowData(const ShadowData& shadow, const LayoutStyle& style, bool useSpread)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> x = zoomAdjustedPixelValue(shadow.x(), style);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> y = zoomAdjustedPixelValue(shadow.y(), style);
@@ -1196,7 +1196,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowData(
     return CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), shadowStyle.release(), color.release());
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowList(const ShadowList* shadowList, const RenderStyle& style, bool useSpread)
+PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowList(const ShadowList* shadowList, const LayoutStyle& style, bool useSpread)
 {
     if (!shadowList)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1208,7 +1208,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowList(
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(const RenderStyle& style)
+PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(const LayoutStyle& style)
 {
     if (style.filter().operations().isEmpty())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1278,9 +1278,9 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(cons
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID propertyID, const RenderStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID propertyID, const LayoutStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
-    const SVGRenderStyle& svgStyle = style.svgStyle();
+    const SVGLayoutStyle& svgStyle = style.svgStyle();
     propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.writingMode());
     switch (propertyID) {
     case CSSPropertyInvalid:

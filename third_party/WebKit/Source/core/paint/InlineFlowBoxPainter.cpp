@@ -117,7 +117,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
     }
 }
 
-void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const RenderStyle& s, ShadowStyle shadowStyle, const LayoutRect& paintRect)
+void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutStyle& s, ShadowStyle shadowStyle, const LayoutRect& paintRect)
 {
     if ((!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) || !m_inlineFlowBox.parent()) {
         BoxPainter::paintBoxShadow(info, paintRect, s, shadowStyle);
@@ -132,7 +132,7 @@ void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const RenderSty
 static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NinePieceImage& image, const LayoutRect& paintRect)
 {
     LayoutRect clipRect(paintRect);
-    const RenderStyle& style = box->renderer().styleRef();
+    const LayoutStyle& style = box->renderer().styleRef();
     LayoutRectOutsets outsets = style.imageOutsets(image);
     if (box->isHorizontal()) {
         clipRect.setY(paintRect.y() - outsets.top());
@@ -194,7 +194,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     // You can use p::first-line to specify a background. If so, the root line boxes for
     // a line may actually have to paint a background.
-    const RenderStyle* styleToUse = m_inlineFlowBox.renderer().style(m_inlineFlowBox.isFirstLineStyle());
+    const LayoutStyle* styleToUse = m_inlineFlowBox.renderer().style(m_inlineFlowBox.isFirstLineStyle());
     bool shouldPaintBoxDecorationBackground;
     if (m_inlineFlowBox.parent())
         shouldPaintBoxDecorationBackground = m_inlineFlowBox.renderer().hasBoxDecorationBackground();

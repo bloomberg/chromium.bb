@@ -56,7 +56,7 @@ class MutableStylePropertySet;
 class Node;
 class Position;
 class QualifiedName;
-class RenderStyle;
+class LayoutStyle;
 class StylePropertySet;
 class VisibleSelection;
 
@@ -151,9 +151,9 @@ private:
     explicit EditingStyle(const StylePropertySet*);
     EditingStyle(CSSPropertyID, const String& value);
     void init(Node*, PropertiesToInclude);
-    void removeTextFillAndStrokeColorsIfNeeded(RenderStyle*);
+    void removeTextFillAndStrokeColorsIfNeeded(LayoutStyle*);
     void setProperty(CSSPropertyID, const String& value, bool important = false);
-    void replaceFontSizeByKeywordIfPossible(RenderStyle*, CSSComputedStyleDeclaration*);
+    void replaceFontSizeByKeywordIfPossible(LayoutStyle*, CSSComputedStyleDeclaration*);
     void extractFontSizeDelta();
     TriState triStateOfStyle(CSSStyleDeclaration* styleToCompare, ShouldIgnoreTextOnlyProperties) const;
     bool conflictsWithInlineStyleOfElement(HTMLElement*, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const;

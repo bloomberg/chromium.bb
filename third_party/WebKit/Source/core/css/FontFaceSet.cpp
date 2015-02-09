@@ -40,7 +40,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/rendering/style/StyleInheritedData.h"
+#include "core/layout/style/StyleInheritedData.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -510,7 +510,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
     if (fontValue == "inherit" || fontValue == "initial")
         return false;
 
-    RefPtr<RenderStyle> style = RenderStyle::create();
+    RefPtr<LayoutStyle> style = LayoutStyle::create();
 
     FontFamily fontFamily;
     fontFamily.setFamily(defaultFontFamily);

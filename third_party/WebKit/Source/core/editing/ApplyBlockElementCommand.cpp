@@ -37,7 +37,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 
 namespace blink {
 
@@ -173,11 +173,11 @@ static bool isNewLineAtPosition(const Position& position)
     return textAtPosition[0] == '\n';
 }
 
-static RenderStyle* renderStyleOfEnclosingTextNode(const Position& position)
+static LayoutStyle* layoutStyleOfEnclosingTextNode(const Position& position)
 {
     if (position.anchorType() != Position::PositionIsOffsetInAnchor || !position.containerNode() || !position.containerNode()->isTextNode())
         return 0;
-    return position.containerNode()->renderStyle();
+    return position.containerNode()->layoutStyle();
 }
 
 void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition& endOfCurrentParagraph, Position& start, Position& end)
@@ -188,9 +188,9 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
     document().updateRenderTreeIfNeeded();
 
     bool isStartAndEndOnSameNode = false;
-    if (RenderStyle* startStyle = renderStyleOfEnclosingTextNode(start)) {
-        isStartAndEndOnSameNode = renderStyleOfEnclosingTextNode(end) && start.containerNode() == end.containerNode();
-        bool isStartAndEndOfLastParagraphOnSameNode = renderStyleOfEnclosingTextNode(m_endOfLastParagraph) && start.containerNode() == m_endOfLastParagraph.containerNode();
+    if (LayoutStyle* startStyle = layoutStyleOfEnclosingTextNode(start)) {
+        isStartAndEndOnSameNode = layoutStyleOfEnclosingTextNode(end) && start.containerNode() == end.containerNode();
+        bool isStartAndEndOfLastParagraphOnSameNode = layoutStyleOfEnclosingTextNode(m_endOfLastParagraph) && start.containerNode() == m_endOfLastParagraph.containerNode();
 
         // Avoid obtanining the start of next paragraph for start
         if (startStyle->preserveNewline() && isNewLineAtPosition(start) && !isNewLineAtPosition(start.previous()) && start.offsetInContainerNode() > 0)
@@ -215,8 +215,8 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
 
     document().updateRenderTreeIfNeeded();
 
-    if (RenderStyle* endStyle = renderStyleOfEnclosingTextNode(end)) {
-        bool isEndAndEndOfLastParagraphOnSameNode = renderStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.deprecatedNode() == m_endOfLastParagraph.deprecatedNode();
+    if (LayoutStyle* endStyle = layoutStyleOfEnclosingTextNode(end)) {
+        bool isEndAndEndOfLastParagraphOnSameNode = layoutStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.deprecatedNode() == m_endOfLastParagraph.deprecatedNode();
         // Include \n at the end of line if we're at an empty paragraph
         if (endStyle->preserveNewline() && start == end && end.offsetInContainerNode() < end.containerNode()->maxCharacterOffset()) {
             int endOffset = end.offsetInContainerNode();
@@ -247,7 +247,7 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
 {
     VisiblePosition endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());
     Position position = endOfNextParagraph.deepEquivalent();
-    RenderStyle* style = renderStyleOfEnclosingTextNode(position);
+    LayoutStyle* style = layoutStyleOfEnclosingTextNode(position);
     if (!style)
         return endOfNextParagraph;
 

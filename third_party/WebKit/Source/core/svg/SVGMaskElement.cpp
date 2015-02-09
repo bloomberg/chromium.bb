@@ -121,7 +121,7 @@ void SVGMaskElement::childrenChanged(const ChildrenChange& change)
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-LayoutObject* SVGMaskElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGMaskElement::createRenderer(const LayoutStyle&)
 {
     return new RenderSVGResourceMasker(this);
 }

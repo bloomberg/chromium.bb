@@ -27,10 +27,10 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/CounterNode.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "wtf/StdLibExtras.h"
 
 #ifndef NDEBUG
@@ -111,7 +111,7 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
     // We must have a generating node or else we cannot have a counter.
     if (!generatingNode)
         return false;
-    RenderStyle* style = object.style();
+    LayoutStyle* style = object.style();
     ASSERT(style);
 
     switch (style->styleType()) {
@@ -547,7 +547,7 @@ void LayoutCounter::rendererSubtreeAttached(LayoutObject* renderer)
         updateCounters(*descendant);
 }
 
-void LayoutCounter::rendererStyleChanged(LayoutObject& renderer, const RenderStyle* oldStyle, const RenderStyle* newStyle)
+void LayoutCounter::rendererStyleChanged(LayoutObject& renderer, const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
 {
     Node* node = renderer.generatingNode();
     if (!node || node->needsAttach())

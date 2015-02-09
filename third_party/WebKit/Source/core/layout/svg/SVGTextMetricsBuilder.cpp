@@ -97,7 +97,7 @@ SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
 
 void SVGTextMetricsCalculator::setupBidiRuns()
 {
-    RenderStyle* style = m_text->style();
+    LayoutStyle* style = m_text->style();
     m_textDirection = style->direction();
     if (isOverride(style->unicodeBidi()))
         return;

@@ -44,7 +44,7 @@ public:
 private:
     explicit HTMLNoEmbedElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) override;
+    virtual bool rendererIsNeeded(const LayoutStyle&) override;
 };
 
 } // namespace

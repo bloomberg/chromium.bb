@@ -345,7 +345,7 @@ private:
     virtual bool isTransformInvertible() const override { return state().m_invertibleCTM; }
 
     virtual WebLayer* platformLayer() const override;
-    TextDirection toTextDirection(Direction, RenderStyle** computedStyle = nullptr) const;
+    TextDirection toTextDirection(Direction, LayoutStyle** computedStyle = nullptr) const;
 
     WillBeHeapVector<OwnPtrWillBeMember<State>> m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;

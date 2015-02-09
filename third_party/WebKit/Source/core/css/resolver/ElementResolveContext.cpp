@@ -32,7 +32,7 @@ namespace blink {
 ElementResolveContext::ElementResolveContext(const Document& document)
     : m_element(nullptr)
     , m_parentNode(nullptr)
-    , m_rootElementStyle(document.documentElement() ? document.documentElement()->renderStyle() : document.renderStyle())
+    , m_rootElementStyle(document.documentElement() ? document.documentElement()->layoutStyle() : document.layoutStyle())
     , m_elementLinkState(NotInsideLink)
     , m_distributedToInsertionPoint(false)
 {
@@ -49,8 +49,8 @@ ElementResolveContext::ElementResolveContext(Element& element)
 
     const Document& document = element.document();
     Node* documentElement = document.documentElement();
-    RenderStyle* documentStyle = document.renderStyle();
-    m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
+    LayoutStyle* documentStyle = document.layoutStyle();
+    m_rootElementStyle = documentElement && element != documentElement ? documentElement->layoutStyle() : documentStyle;
     if (!m_rootElementStyle)
         m_rootElementStyle = documentStyle;
 }

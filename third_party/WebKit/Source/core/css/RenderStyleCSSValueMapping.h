@@ -11,7 +11,7 @@ namespace blink {
 
 class CSSPrimitiveValue;
 class LayoutObject;
-class RenderStyle;
+class LayoutStyle;
 class ShadowData;
 class ShadowList;
 class StyleColor;
@@ -19,13 +19,13 @@ class Node;
 
 class RenderStyleCSSValueMapping {
 public:
-    // FIXME: Resolve computed auto alignment in applyProperty/RenderStyle and remove this non-const styledNode parameter.
-    static PassRefPtrWillBeRawPtr<CSSValue> get(CSSPropertyID, const RenderStyle&, const LayoutObject* renderer = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);
+    // FIXME: Resolve computed auto alignment in applyProperty/LayoutStyle and remove this non-const styledNode parameter.
+    static PassRefPtrWillBeRawPtr<CSSValue> get(CSSPropertyID, const LayoutStyle&, const LayoutObject* renderer = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);
 private:
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const StyleColor&);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle&, bool useSpread);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const RenderStyle&);
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> currentColorOrValidColor(const LayoutStyle&, const StyleColor&);
+    static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const LayoutStyle&, bool useSpread);
+    static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const LayoutStyle&, bool useSpread);
+    static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const LayoutStyle&);
 };
 
 } // namespace blink

@@ -41,8 +41,8 @@
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/compositing/CompositingState.h"
 #include "core/layout/compositing/CompositingTriggers.h"
-#include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/StyleInheritedData.h"
+#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/CompositingReasons.h"
@@ -268,7 +268,7 @@ public:
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
     virtual bool canHaveGeneratedChildren() const;
-    virtual bool isChildAllowed(LayoutObject*, const RenderStyle&) const { return true; }
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const { return true; }
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0);
     virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) { return addChild(newChild, beforeChild); }
     virtual void removeChild(LayoutObject*);
@@ -304,7 +304,7 @@ private:
 
     // Gets pseudoStyle from Shadow host(in case of input elements)
     // or from Parent element.
-    PassRefPtr<RenderStyle> getUncachedPseudoStyleFromParentOrShadowHost() const;
+    PassRefPtr<LayoutStyle> getUncachedPseudoStyleFromParentOrShadowHost() const;
 
     bool skipInvalidationWhenLaidOutChildren() const;
 
@@ -321,7 +321,7 @@ public:
     void showRenderTreeAndMark(const LayoutObject* markedObject1 = 0, const char* markedLabel1 = 0, const LayoutObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
 #endif
 
-    static LayoutObject* createObject(Element*, const RenderStyle&);
+    static LayoutObject* createObject(Element*, const LayoutStyle&);
     static unsigned instanceCount() { return s_instanceCount; }
 
     // LayoutObjects are allocated out of the rendering partition.
@@ -601,8 +601,8 @@ public:
 
     // The pseudo element style can be cached or uncached.  Use the cached method if the pseudo element doesn't respect
     // any pseudo classes (and therefore has no concept of changing state).
-    RenderStyle* getCachedPseudoStyle(PseudoId, RenderStyle* parentStyle = 0) const;
-    PassRefPtr<RenderStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, RenderStyle* parentStyle = 0, RenderStyle* ownStyle = 0) const;
+    LayoutStyle* getCachedPseudoStyle(PseudoId, LayoutStyle* parentStyle = 0) const;
+    PassRefPtr<LayoutStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, LayoutStyle* parentStyle = 0, LayoutStyle* ownStyle = 0) const;
 
     virtual void updateDragState(bool dragOn);
 
@@ -736,14 +736,14 @@ public:
     virtual void dirtyLinesFromChangedChild(LayoutObject*);
 
     // Set the style of the object and update the state of the object accordingly.
-    void setStyle(PassRefPtr<RenderStyle>);
+    void setStyle(PassRefPtr<LayoutStyle>);
 
     // Set the style of the object if it's generated content.
-    void setPseudoStyle(PassRefPtr<RenderStyle>);
+    void setPseudoStyle(PassRefPtr<LayoutStyle>);
 
     // Updates only the local style ptr of the object.  Does not update the state of the object,
     // and so only should be called when the style is known not to have changed (or from setStyle).
-    void setStyleInternal(PassRefPtr<RenderStyle> style) { m_style = style; }
+    void setStyleInternal(PassRefPtr<LayoutStyle> style) { m_style = style; }
 
     // returns the containing block level element for this element.
     RenderBlock* containingBlock() const;
@@ -798,21 +798,21 @@ public:
     virtual LayoutUnit minPreferredLogicalWidth() const { return 0; }
     virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }
 
-    RenderStyle* style() const { return m_style.get(); }
+    LayoutStyle* style() const { return m_style.get(); }
 
     // m_style can only be nullptr before the first style is set, thus most
     // callers will never see a nullptr style and should use styleRef().
     // FIXME: It would be better if style() returned a const reference.
-    const RenderStyle& styleRef() const { return mutableStyleRef(); }
-    RenderStyle& mutableStyleRef() const { ASSERT(m_style); return *m_style; }
+    const LayoutStyle& styleRef() const { return mutableStyleRef(); }
+    LayoutStyle& mutableStyleRef() const { ASSERT(m_style); return *m_style; }
 
     /* The following methods are inlined in LayoutObjectInlines.h */
-    RenderStyle* firstLineStyle() const;
-    const RenderStyle& firstLineStyleRef() const;
-    RenderStyle* style(bool firstLine) const;
-    const RenderStyle& styleRef(bool firstLine) const;
+    LayoutStyle* firstLineStyle() const;
+    const LayoutStyle& firstLineStyleRef() const;
+    LayoutStyle* style(bool firstLine) const;
+    const LayoutStyle& styleRef(bool firstLine) const;
 
-    static inline Color resolveColor(const RenderStyle& styleToUse, int colorProperty)
+    static inline Color resolveColor(const LayoutStyle& styleToUse, int colorProperty)
     {
         return styleToUse.visitedDependentColor(colorProperty);
     }
@@ -824,7 +824,7 @@ public:
 
     // Used only by Element::pseudoStyleCacheIsInvalid to get a first line style based off of a
     // given new style, without accessing the cache.
-    PassRefPtr<RenderStyle> uncachedFirstLineStyle(RenderStyle*) const;
+    PassRefPtr<LayoutStyle> uncachedFirstLineStyle(LayoutStyle*) const;
 
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
@@ -1143,12 +1143,12 @@ protected:
 
     // Overrides should call the superclass at the end. m_style will be 0 the first time
     // this function will be called.
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle);
+    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle);
     // Overrides should call the superclass at the start. |oldStyle| will be 0 the first
     // time this function is called.
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle);
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
-    virtual void updateAnonymousChildStyle(const LayoutObject& child, RenderStyle& style) const { }
+    virtual void updateAnonymousChildStyle(const LayoutObject& child, LayoutStyle& style) const { }
 
 protected:
     void setSelfMayNeedPaintInvalidation();
@@ -1219,7 +1219,7 @@ private:
     void removeFromRenderFlowThread();
     void removeFromRenderFlowThreadRecursive(RenderFlowThread*);
 
-    RenderStyle* cachedFirstLineStyle() const;
+    LayoutStyle* cachedFirstLineStyle() const;
     StyleDifference adjustStyleDifference(StyleDifference) const;
 
     Color selectionColor(int colorProperty) const;
@@ -1234,7 +1234,7 @@ private:
 
     static bool isAllowedToModifyRenderTreeStructure(Document&);
 
-    RefPtr<RenderStyle> m_style;
+    RefPtr<LayoutStyle> m_style;
 
     // Oilpan: raw pointer back to the owning Node is considered safe.
     Node* m_node;

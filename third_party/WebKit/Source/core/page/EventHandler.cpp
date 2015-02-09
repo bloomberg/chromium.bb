@@ -63,6 +63,7 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"
@@ -79,7 +80,6 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -1064,7 +1064,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
         return selectAutoCursor(result, node, iBeamCursor());
 
     LayoutObject* renderer = node->renderer();
-    RenderStyle* style = renderer ? renderer->style() : nullptr;
+    LayoutStyle* style = renderer ? renderer->style() : nullptr;
 
     if (renderer) {
         Cursor overrideCursor;

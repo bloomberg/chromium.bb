@@ -33,7 +33,7 @@
 
 #include "core/animation/animatable/AnimatableColor.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/rendering/style/SVGRenderStyleDefs.h"
+#include "core/layout/style/SVGLayoutStyleDefs.h"
 
 namespace blink {
 

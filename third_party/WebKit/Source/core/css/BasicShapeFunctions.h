@@ -30,7 +30,7 @@
 #ifndef BasicShapeFunctions_h
 #define BasicShapeFunctions_h
 
-#include "core/rendering/style/BasicShapes.h"
+#include "core/layout/style/BasicShapes.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
@@ -41,9 +41,9 @@ class CSSBasicShape;
 class CSSValue;
 class FloatPoint;
 class StyleResolverState;
-class RenderStyle;
+class LayoutStyle;
 
-PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle&, const BasicShape*);
+PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const LayoutStyle&, const BasicShape*);
 PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&, const CSSBasicShape*);
 FloatPoint floatPointForCenterCoordinate(const BasicShapeCenterCoordinate&, const BasicShapeCenterCoordinate&, FloatSize);
 

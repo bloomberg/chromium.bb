@@ -28,7 +28,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 
 namespace blink {
 
@@ -121,7 +121,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value
     }
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const RenderStyle& style)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const LayoutStyle& style)
 {
     return CSSPrimitiveValue::create(value, style.effectiveZoom());
 }

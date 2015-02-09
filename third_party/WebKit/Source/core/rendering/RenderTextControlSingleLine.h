@@ -35,7 +35,7 @@ public:
     RenderTextControlSingleLine(HTMLInputElement*);
     virtual ~RenderTextControlSingleLine();
     // FIXME: Move createInnerEditorStyle() to TextControlInnerEditorElement.
-    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle& startStyle) const override final;
+    virtual PassRefPtr<LayoutStyle> createInnerEditorStyle(const LayoutStyle& startStyle) const override final;
 
     void capsLockStateMayHaveChanged();
 
@@ -71,7 +71,7 @@ private:
     virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const override final;
     virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
+    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
 
     bool textShouldBeTruncated() const;
 

@@ -15,7 +15,7 @@ class Font;
 class GraphicsContext;
 class LayoutPoint;
 class LayoutUnit;
-class RenderStyle;
+class LayoutStyle;
 
 class EllipsisBoxPainter {
 public:
@@ -24,9 +24,9 @@ public:
     void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
 
 private:
-    void paintEllipsis(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const RenderStyle&);
-    void paintMarkupBox(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const RenderStyle&);
-    void paintSelection(GraphicsContext*, const FloatPoint&, const RenderStyle&, const Font&);
+    void paintEllipsis(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const LayoutStyle&);
+    void paintMarkupBox(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const LayoutStyle&);
+    void paintSelection(GraphicsContext*, const FloatPoint&, const LayoutStyle&, const Font&);
 
     EllipsisBox& m_ellipsisBox;
 };

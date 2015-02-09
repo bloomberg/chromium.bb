@@ -42,7 +42,7 @@ class SliderThumbElement;
 class LayoutSliderThumb final : public RenderBlockFlow {
 public:
     LayoutSliderThumb(SliderThumbElement*);
-    void updateAppearance(const RenderStyle& parentStyle);
+    void updateAppearance(const LayoutStyle& parentStyle);
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSliderThumb || RenderBlockFlow::isOfType(type); }

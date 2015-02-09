@@ -216,7 +216,7 @@ bool RenderTextControlSingleLine::nodeAtPoint(const HitTestRequest& request, Hit
     return true;
 }
 
-void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     m_desiredInnerEditorLogicalHeight = -1;
     RenderTextControl::styleDidChange(diff, oldStyle);
@@ -332,9 +332,9 @@ LayoutUnit RenderTextControlSingleLine::computeControlLogicalHeight(LayoutUnit l
     return lineHeight + nonContentHeight;
 }
 
-PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerEditorStyle(const RenderStyle& startStyle) const
+PassRefPtr<LayoutStyle> RenderTextControlSingleLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
 {
-    RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();
+    RefPtr<LayoutStyle> textBlockStyle = LayoutStyle::create();
     textBlockStyle->inheritFrom(startStyle);
     adjustInnerEditorStyle(*textBlockStyle);
 
@@ -348,7 +348,7 @@ PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerEditorStyle(cons
         textBlockStyle->setLogicalHeight(Length(m_desiredInnerEditorLogicalHeight, Fixed));
     // Do not allow line-height to be smaller than our default.
     if (textBlockStyle->fontMetrics().lineSpacing() > lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes))
-        textBlockStyle->setLineHeight(RenderStyle::initialLineHeight());
+        textBlockStyle->setLineHeight(LayoutStyle::initialLineHeight());
 
     textBlockStyle->setDisplay(BLOCK);
     textBlockStyle->setUnique();

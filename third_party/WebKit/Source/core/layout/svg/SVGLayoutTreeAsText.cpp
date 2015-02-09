@@ -270,13 +270,13 @@ static void writeSVGPaintingResource(TextStream& ts, const SVGPaintDescription& 
 
 static void writeStyle(TextStream& ts, const LayoutObject& object)
 {
-    const RenderStyle* style = object.style();
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const LayoutStyle* style = object.style();
+    const SVGLayoutStyle& svgStyle = style->svgStyle();
 
     if (!object.localTransform().isIdentity())
         writeNameValuePair(ts, "transform", object.localTransform());
-    writeIfNotDefault(ts, "image rendering", style->imageRendering(), RenderStyle::initialImageRendering());
-    writeIfNotDefault(ts, "opacity", style->opacity(), RenderStyle::initialOpacity());
+    writeIfNotDefault(ts, "image rendering", style->imageRendering(), LayoutStyle::initialImageRendering());
+    writeIfNotDefault(ts, "opacity", style->opacity(), LayoutStyle::initialOpacity());
     if (object.isSVGShape()) {
         const RenderSVGShape& shape = static_cast<const RenderSVGShape&>(object);
         ASSERT(shape.element());
@@ -407,7 +407,7 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
 
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(textBox->renderer());
 
-    const SVGRenderStyle& svgStyle = textRenderer.style()->svgStyle();
+    const SVGLayoutStyle& svgStyle = textRenderer.style()->svgStyle();
     String text = textBox->renderer().text();
 
     unsigned fragmentsSize = fragments.size();
@@ -637,7 +637,7 @@ void writeSVGGradientStop(TextStream& ts, const RenderSVGGradientStop& stop, int
     SVGStopElement* stopElement = toSVGStopElement(stop.node());
     ASSERT(stopElement);
 
-    RenderStyle* style = stop.style();
+    LayoutStyle* style = stop.style();
     if (!style)
         return;
 
@@ -646,8 +646,8 @@ void writeSVGGradientStop(TextStream& ts, const RenderSVGGradientStop& stop, int
 
 void writeResources(TextStream& ts, const LayoutObject& object, int indent)
 {
-    const RenderStyle* style = object.style();
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const LayoutStyle* style = object.style();
+    const SVGLayoutStyle& svgStyle = style->svgStyle();
 
     // FIXME: We want to use SVGResourcesCache to determine which resources are present, instead of quering the resource <-> id cache.
     // For now leave the DRT output as is, but later on we should change this so cycles are properly ignored in the DRT output.

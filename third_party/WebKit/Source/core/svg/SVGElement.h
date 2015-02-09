@@ -127,7 +127,7 @@ public:
 
     void synchronizeAnimatedSVGAttribute(const QualifiedName&) const;
 
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() override final;
+    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override final;
 
     virtual void synchronizeRequiredFeatures() { }
     virtual void synchronizeRequiredExtensions() { }
@@ -231,8 +231,8 @@ private:
     bool isSVGElement() const = delete; // This will catch anyone doing an unnecessary check.
     bool isStyledElement() const = delete; // This will catch anyone doing an unnecessary check.
 
-    RenderStyle* computedStyle(PseudoId = NOPSEUDO);
-    virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override final { return computedStyle(pseudoElementSpecifier); }
+    LayoutStyle* computedStyle(PseudoId = NOPSEUDO);
+    virtual LayoutStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override final { return computedStyle(pseudoElementSpecifier); }
     virtual void willRecalcStyle(StyleRecalcChange) override;
 
     void buildPendingResourcesIfNeeded();

@@ -22,7 +22,7 @@
 #define CSSComputedStyleDeclaration_h
 
 #include "core/css/CSSStyleDeclaration.h"
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 #include "platform/fonts/FixedPitchFontType.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
@@ -38,7 +38,7 @@ class ExceptionState;
 class MutableStylePropertySet;
 class Node;
 class LayoutObject;
-class RenderStyle;
+class LayoutStyle;
 class ShadowData;
 class ShadowList;
 class StyleColor;
@@ -87,7 +87,7 @@ private:
     virtual CSSRule* parentRule() const override;
     virtual unsigned length() const override;
     virtual String item(unsigned index) const override;
-    PassRefPtr<RenderStyle> computeRenderStyle() const;
+    PassRefPtr<LayoutStyle> computeLayoutStyle() const;
     virtual String getPropertyValue(const String& propertyName) override;
     virtual String getPropertyPriority(const String& propertyName) override;
     virtual String getPropertyShorthand(const String& propertyName) override;

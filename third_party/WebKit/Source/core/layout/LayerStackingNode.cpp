@@ -275,7 +275,7 @@ void LayerStackingNode::updateLayerListsIfNeeded()
     reflectionLayer->stackingNode()->updateNormalFlowList();
 }
 
-void LayerStackingNode::updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle)
+void LayerStackingNode::updateStackingNodesAfterStyleChange(const LayoutStyle* oldStyle)
 {
     bool wasStackingContext = oldStyle ? !oldStyle->hasAutoZIndex() : false;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;

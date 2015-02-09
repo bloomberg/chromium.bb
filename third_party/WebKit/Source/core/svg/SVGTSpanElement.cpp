@@ -34,12 +34,12 @@ inline SVGTSpanElement::SVGTSpanElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGTSpanElement)
 
-LayoutObject* SVGTSpanElement::createRenderer(const RenderStyle&)
+LayoutObject* SVGTSpanElement::createRenderer(const LayoutStyle&)
 {
     return new RenderSVGTSpan(this);
 }
 
-bool SVGTSpanElement::rendererIsNeeded(const RenderStyle& style)
+bool SVGTSpanElement::rendererIsNeeded(const LayoutStyle& style)
 {
     if (parentNode()
         && (isSVGAElement(*parentNode())

@@ -25,7 +25,7 @@
 
 #include "core/css/CSSHelper.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/fonts/FontMetrics.h"
 
@@ -185,7 +185,7 @@ float SVGLengthContext::convertValueFromPercentageToUserUnits(const SVGLength& v
     return value.scaleByPercentage(dimensionForLengthMode(value.unitMode(), viewportSize));
 }
 
-static inline RenderStyle* renderStyleForLengthResolving(const SVGElement* context)
+static inline LayoutStyle* layoutStyleForLengthResolving(const SVGElement* context)
 {
     if (!context)
         return 0;
@@ -204,7 +204,7 @@ static inline RenderStyle* renderStyleForLengthResolving(const SVGElement* conte
 
 float SVGLengthContext::convertValueFromUserUnitsToEMS(float value) const
 {
-    RenderStyle* style = renderStyleForLengthResolving(m_context);
+    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
 
@@ -217,7 +217,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEMS(float value) const
 
 float SVGLengthContext::convertValueFromEMSToUserUnits(float value) const
 {
-    RenderStyle* style = renderStyleForLengthResolving(m_context);
+    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
     return value * style->specifiedFontSize();
@@ -225,7 +225,7 @@ float SVGLengthContext::convertValueFromEMSToUserUnits(float value) const
 
 float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const
 {
-    RenderStyle* style = renderStyleForLengthResolving(m_context);
+    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
 
@@ -240,7 +240,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const
 
 float SVGLengthContext::convertValueFromEXSToUserUnits(float value) const
 {
-    RenderStyle* style = renderStyleForLengthResolving(m_context);
+    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
 

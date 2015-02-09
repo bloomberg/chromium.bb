@@ -25,7 +25,7 @@
 #define RenderBoxModelObject_h
 
 #include "core/layout/LayoutLayerModelObject.h"
-#include "core/rendering/style/ShadowData.h"
+#include "core/layout/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
@@ -136,10 +136,10 @@ public:
     virtual LayoutUnit marginBottom() const = 0;
     virtual LayoutUnit marginLeft() const = 0;
     virtual LayoutUnit marginRight() const = 0;
-    virtual LayoutUnit marginBefore(const RenderStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginAfter(const RenderStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginStart(const RenderStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginEnd(const RenderStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginBefore(const LayoutStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginAfter(const LayoutStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginStart(const LayoutStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginEnd(const LayoutStyle* otherStyle = 0) const = 0;
     LayoutUnit marginHeight() const { return marginTop() + marginBottom(); }
     LayoutUnit marginWidth() const { return marginLeft() + marginRight(); }
     LayoutUnit marginLogicalHeight() const { return marginBefore() + marginAfter(); }

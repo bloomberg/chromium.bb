@@ -30,13 +30,13 @@
 #include "core/layout/LayoutRubyText.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/layout/style/ShadowList.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -120,8 +120,8 @@ void InlineFlowBox::addToLine(InlineBox* child)
     }
 
     if (descendantsHaveSameLineHeightAndBaseline() && !child->renderer().isOutOfFlowPositioned()) {
-        RenderStyle* parentStyle = renderer().style(isFirstLineStyle());
-        RenderStyle* childStyle = child->renderer().style(isFirstLineStyle());
+        LayoutStyle* parentStyle = renderer().style(isFirstLineStyle());
+        LayoutStyle* childStyle = child->renderer().style(isFirstLineStyle());
         bool shouldClearDescendantsHaveSameLineHeightAndBaseline = false;
         if (child->renderer().isReplaced()) {
             shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
@@ -158,7 +158,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
 
     if (!child->renderer().isOutOfFlowPositioned()) {
         if (child->isText()) {
-            RenderStyle* childStyle = child->renderer().style(isFirstLineStyle());
+            LayoutStyle* childStyle = child->renderer().style(isFirstLineStyle());
             if (childStyle->letterSpacing() < 0 || childStyle->textShadow() || childStyle->textEmphasisMark() != TextEmphasisMarkNone || childStyle->textStrokeWidth())
                 child->clearKnownToHaveNoOverflow();
         } else if (child->renderer().isReplaced()) {
@@ -778,7 +778,7 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
     if (!parent())
         return;
 
-    RenderStyle* style = renderer().style(isFirstLineStyle());
+    LayoutStyle* style = renderer().style(isFirstLineStyle());
     WritingMode writingMode = style->writingMode();
     ShadowList* boxShadow = style->boxShadow();
     if (!boxShadow)
@@ -800,7 +800,7 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
     if (!parent())
         return;
 
-    RenderStyle* style = renderer().style(isFirstLineStyle());
+    LayoutStyle* style = renderer().style(isFirstLineStyle());
     if (!style->hasBorderImageOutsets())
         return;
 
@@ -824,7 +824,7 @@ inline void InlineFlowBox::addOutlineVisualOverflow(LayoutRect& logicalVisualOve
     if (!parent())
         return;
 
-    RenderStyle* style = renderer().style(isFirstLineStyle());
+    LayoutStyle* style = renderer().style(isFirstLineStyle());
     if (!style->hasOutline())
         return;
 
@@ -836,7 +836,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     if (textBox->knownToHaveNoOverflow())
         return;
 
-    const RenderStyle& style = textBox->renderer().styleRef(isFirstLineStyle());
+    const LayoutStyle& style = textBox->renderer().styleRef(isFirstLineStyle());
 
     GlyphOverflowAndFallbackFontsMap::iterator it = textBoxDataMap.find(textBox);
     GlyphOverflow* glyphOverflow = it == textBoxDataMap.end() ? 0 : &it->value.second;
@@ -1189,7 +1189,7 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
         }
 
         if (curr->isInlineTextBox()) {
-            const RenderStyle& style = curr->renderer().styleRef(isFirstLineStyle());
+            const LayoutStyle& style = curr->renderer().styleRef(isFirstLineStyle());
             TextEmphasisPosition emphasisMarkPosition;
             if (style.textEmphasisMark() != TextEmphasisMarkNone && toInlineTextBox(curr)->getEmphasisMarkPosition(style, emphasisMarkPosition) && emphasisMarkPosition == TextEmphasisPositionOver) {
                 if (!style.isFlippedLinesWritingMode()) {
@@ -1237,7 +1237,7 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
         }
 
         if (curr->isInlineTextBox()) {
-            RenderStyle* style = curr->renderer().style(isFirstLineStyle());
+            LayoutStyle* style = curr->renderer().style(isFirstLineStyle());
             if (style->textEmphasisMark() != TextEmphasisMarkNone && style->textEmphasisPosition() == TextEmphasisPositionUnder) {
                 if (!style->isFlippedLinesWritingMode()) {
                     LayoutUnit bottomOfEmphasisMark = curr->logicalBottom() + style->font().emphasisMarkHeight(style->textEmphasisMarkString());

@@ -7,7 +7,7 @@
 
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSShadowValue.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/layout/style/LayoutStyle.h"
 #include "platform/Length.h"
 
 namespace blink {

@@ -51,7 +51,7 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual LayoutObject* createRenderer(const RenderStyle&) override;
+    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
 
     RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
 };

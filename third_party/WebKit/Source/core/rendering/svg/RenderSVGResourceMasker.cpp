@@ -79,7 +79,7 @@ void RenderSVGResourceMasker::finishEffect(LayoutObject* object, GraphicsContext
 
     FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
 
-    const SVGRenderStyle& svgStyle = style()->svgStyle();
+    const SVGLayoutStyle& svgStyle = style()->svgStyle();
     ColorFilter maskLayerFilter = svgStyle.maskType() == MT_LUMINANCE
         ? ColorFilterLuminanceToAlpha : ColorFilterNone;
     ColorFilter maskContentFilter = svgStyle.colorInterpolation() == CI_LINEARRGB
@@ -134,7 +134,7 @@ void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
         LayoutObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
-        const RenderStyle* style = renderer->style();
+        const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
@@ -149,7 +149,7 @@ void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
         LayoutObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
-        const RenderStyle* style = renderer->style();
+        const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;
         m_maskContentBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));

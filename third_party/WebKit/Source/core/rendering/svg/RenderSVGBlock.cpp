@@ -22,10 +22,10 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGBlock.h"
 
+#include "core/layout/style/ShadowList.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGElement.h"
 
@@ -77,7 +77,7 @@ void RenderSVGBlock::willBeDestroyed()
     RenderBlockFlow::willBeDestroyed();
 }
 
-void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void RenderSVGBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();
