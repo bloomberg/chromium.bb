@@ -17,7 +17,6 @@
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/SVGLengthStyleInterpolation.h"
 #include "core/animation/ShadowStyleInterpolation.h"
-#include "core/animation/TransformStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -252,17 +251,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         if (LengthBoxStyleInterpolation::matchingFill(*toCSSValue, *fromCSSValue) && LengthBoxStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthBoxStyleInterpolation::createFromBorderImageSlice(*fromCSSValue, *toCSSValue, property);
         break;
-    case CSSPropertyTransform: {
-        if (TransformStyleInterpolation::fallBackToLegacy(*fromCSSValue, *toCSSValue)) {
-            // FIXME: Handle matrices and interpolating to/from CSSValueNone from/to CSSValueList
-            fallBackToLegacy = true;
-            break;
-        }
-        RefPtrWillBeRawPtr<Interpolation> interpolation = TransformStyleInterpolation::maybeCreateFrom(*fromCSSValue, *toCSSValue, property);
-        if (interpolation)
-            return interpolation.release();
-        break;
-    }
 
     case CSSPropertyStrokeWidth:
         range = RangeNonNegative;

@@ -36,15 +36,14 @@ private:
     static PassOwnPtrWillBeRawPtr<InterpolableValue> doubleToInterpolableValue(const CSSValue&);
     static PassOwnPtrWillBeRawPtr<InterpolableValue> motionRotationToInterpolableValue(const CSSValue&);
 
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(const InterpolableValue&, bool, InterpolationRange);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToMotionRotation(const InterpolableValue&, bool);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(InterpolableValue*, bool, InterpolationRange);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToMotionRotation(InterpolableValue*, bool);
 
     bool m_isNumber;
     InterpolationRange m_clamp;
     bool m_flag;
 
     friend class AnimationDoubleStyleInterpolationTest;
-    friend class TransformStyleInterpolation;
 };
 }
 #endif
