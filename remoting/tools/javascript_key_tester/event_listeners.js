@@ -19,15 +19,13 @@ var PNaClEvent = function() {
 
 
 /**
- * @param {HTMLElement} jsLog
  * @param {HTMLElement} pnaclLog
  * @param {HTMLElement} textLog
  * @param {HTMLElement} pnaclPlugin
  * @param {HTMLElement} pnaclListener
  * @constructor
  */
-var EventListeners = function(jsLog, pnaclLog, textLog,
-                              pnaclPlugin, pnaclListener) {
+var EventListeners = function(pnaclLog, textLog, pnaclPlugin, pnaclListener) {
   this.pnaclPlugin_ = pnaclPlugin;
   this.pnaclListener_ = pnaclListener;
   this.textLog_ = textLog;
@@ -39,7 +37,6 @@ var EventListeners = function(jsLog, pnaclLog, textLog,
   this.onPluginBlurHandler_ = this.onPluginBlur_.bind(this);
   this.onWindowBlurHandler_ = this.onWindowBlur_.bind(this);
 
-  this.jsChordTracker_ = new ChordTracker(jsLog);
   this.pnaclChordTracker_ = new ChordTracker(pnaclLog);
 
   this.startTime_ = new Date();
@@ -78,8 +75,6 @@ EventListeners.prototype.deactivate = function() {
  */
 EventListeners.prototype.onKeyDown_ = function(event) {
   this.appendToTextLog_(this.jsonifyJavascriptKeyEvent_(event, 'keydown'));
-  this.jsChordTracker_.addKeyDownEvent(
-      event.keyCode, this.jsonifyJavascriptKeyEvent_(event, 'keydown', 2));
 };
 
 /**
@@ -88,8 +83,6 @@ EventListeners.prototype.onKeyDown_ = function(event) {
  */
 EventListeners.prototype.onKeyUp_ = function(event) {
   this.appendToTextLog_(this.jsonifyJavascriptKeyEvent_(event, 'keyup'));
-  this.jsChordTracker_.addKeyUpEvent(
-      event.keyCode, this.jsonifyJavascriptKeyEvent_(event, 'keyup', 2));
 }
 
 /**
@@ -98,9 +91,6 @@ EventListeners.prototype.onKeyUp_ = function(event) {
  */
 EventListeners.prototype.onKeyPress_ = function(event) {
   this.appendToTextLog_(this.jsonifyJavascriptKeyEvent_(event, 'keypress'));
-  this.jsChordTracker_.addCharEvent(
-      String.fromCharCode(event.keyCode),
-      this.jsonifyJavascriptKeyEvent_(event, 'keypress', 2));
 }
 
 /**
@@ -134,7 +124,6 @@ EventListeners.prototype.onPluginBlur_ = function() {
  * @return {void}
  */
 EventListeners.prototype.onWindowBlur_ = function() {
-  this.jsChordTracker_.releaseAllKeys();
   this.pnaclChordTracker_.releaseAllKeys();
 };
 
@@ -160,7 +149,7 @@ EventListeners.prototype.jsonifyJavascriptKeyEvent_ =
   return "JavaScript '" + eventName + "' event = " + JSON.stringify(
       event,
       ['type', 'alt', 'shift', 'control', 'meta', 'charCode', 'keyCode',
-       'keyIdentifier', 'repeat'],
+       'keyIdentifier', 'repeat', 'code'],
       opt_space);
 };
 

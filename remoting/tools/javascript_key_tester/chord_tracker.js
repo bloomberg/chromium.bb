@@ -17,30 +17,26 @@ var ChordTracker = function(parentDiv) {
 };
 
 /**
- * @param {number|string} keyId Either a Javascript key-code, or a PNaCl "code"
- *     string.
+ * @param {string} code The PNaCl "code" string.
  * @param {string} title
  * @return {void}
  */
-ChordTracker.prototype.addKeyUpEvent = function(keyId, title) {
-  var text = this.keyName_(keyId);
-  var span = this.addSpanElement_('key-up', text, title);
-  delete this.pressedKeys_[keyId];
+ChordTracker.prototype.addKeyUpEvent = function(code, title) {
+  var span = this.addSpanElement_('key-up', code, title);
+  delete this.pressedKeys_[code];
   if (!this.keysPressed_()) {
     this.end_();
   }
 };
 
 /**
- * @param {number|string} keyId Either a Javascript key-code, or a PNaCl "code"
- *     string.
+ * @param {string} code The PNaCl "code" string.
  * @param {string} title
  * @return {void}
  */
-ChordTracker.prototype.addKeyDownEvent = function(keyId, title) {
-  var text = this.keyName_(keyId);
-  var span = this.addSpanElement_('key-down', text, title);
-  this.pressedKeys_[keyId] = span;
+ChordTracker.prototype.addKeyDownEvent = function(code, title) {
+  var span = this.addSpanElement_('key-down', code, title);
+  this.pressedKeys_[code] = span;
 };
 
 /**
@@ -117,21 +113,4 @@ ChordTracker.prototype.keysPressed_ = function() {
     return true;
   }
   return false;
-};
-
-/**
- * @param {number|string} keyId Either a Javascript key-code, or a PNaCl "code"
- *     string.
- * @return {string} A human-readable representation of the key.
- * @private
- */
-ChordTracker.prototype.keyName_ = function(keyId) {
-  if (typeof keyId == 'string') {
-    return keyId;
-  }
-  var result = keyboardMap[keyId];
-  if (!result) {
-    result = '<' + keyId + '>';
-  }
-  return result;
 };

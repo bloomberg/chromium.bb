@@ -13,10 +13,8 @@ html {
 }
 
 .summary-log-container {
-  width: 50%;
   height: 100%;
   overflow-y: auto;
-  float: left;
 }
 
 #text-log-container {
@@ -33,6 +31,10 @@ html {
 
 #text-log {
   padding: 8px;
+}
+
+#pnacl-listener {
+  height: 0;
 }
 
 .selectable {

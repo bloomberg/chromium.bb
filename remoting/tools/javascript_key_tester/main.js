@@ -4,21 +4,19 @@
  */
 
 function onLoad() {
-  var jsLog = document.getElementById('javascript-log');
   var pnaclLog = document.getElementById('pnacl-log');
   var pnaclPlugin = document.getElementById('pnacl-plugin');
   var pnaclListener = document.getElementById('pnacl-listener');
   var textLog = document.getElementById('text-log');
   var textLogContainer = document.getElementById('text-log-container');
 
-  var eventListeners = new EventListeners(jsLog, pnaclLog, textLog,
+  var eventListeners = new EventListeners(pnaclLog, textLog,
                                           pnaclPlugin, pnaclListener);
   eventListeners.activate();
 
   document.getElementById('clear-log').addEventListener(
       'click',
       function() {
-        jsLog.innerText = '';
         pnaclLog.innerText = '';
         textLog.innerText = '';
       },

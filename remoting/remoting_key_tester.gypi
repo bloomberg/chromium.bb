@@ -12,7 +12,6 @@
         'tools/javascript_key_tester/background.js',
         'tools/javascript_key_tester/chord_tracker.js',
         'tools/javascript_key_tester/event_listeners.js',
-        'tools/javascript_key_tester/keyboard_map.js',
         'tools/javascript_key_tester/main.js',
      ],
   },
