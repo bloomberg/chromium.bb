@@ -16,7 +16,7 @@ class TestSearchResult : public SearchResult {
   ~TestSearchResult() override;
 
   // SearchResult:
-  scoped_ptr<SearchResult> Duplicate() override;
+  scoped_ptr<SearchResult> Duplicate() const override;
 
   void SetDisplayType(SearchResult::DisplayType type);
 

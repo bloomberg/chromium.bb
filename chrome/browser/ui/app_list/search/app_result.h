@@ -52,7 +52,7 @@ class AppResult : public SearchResult,
 
   // SearchResult overrides:
   void Open(int event_flags) override;
-  scoped_ptr<SearchResult> Duplicate() override;
+  scoped_ptr<SearchResult> Duplicate() const override;
   ui::MenuModel* GetContextMenuModel() override;
 
  private:

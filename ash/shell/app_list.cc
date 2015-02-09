@@ -192,7 +192,7 @@ class ExampleSearchResult : public app_list::SearchResult {
   WindowTypeShelfItem::Type type() const { return type_; }
 
   // app_list::SearchResult:
-  scoped_ptr<SearchResult> Duplicate() override {
+  scoped_ptr<SearchResult> Duplicate() const override {
     return scoped_ptr<SearchResult>();
   }
 

@@ -128,7 +128,7 @@ void WebstoreResult::InvokeAction(int action_index, int event_flags) {
   StartInstall(action_index == kLaunchEphemeralAppAction);
 }
 
-scoped_ptr<SearchResult> WebstoreResult::Duplicate() {
+scoped_ptr<SearchResult> WebstoreResult::Duplicate() const {
   return scoped_ptr<SearchResult>(new WebstoreResult(profile_,
                                                      app_id_,
                                                      localized_name_,

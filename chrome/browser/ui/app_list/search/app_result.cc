@@ -123,7 +123,7 @@ void AppResult::Open(int event_flags) {
       event_flags);
 }
 
-scoped_ptr<SearchResult> AppResult::Duplicate() {
+scoped_ptr<SearchResult> AppResult::Duplicate() const {
   scoped_ptr<SearchResult> copy(
       new AppResult(profile_, app_id_, controller_,
                     display_type() == DISPLAY_RECOMMENDATION));

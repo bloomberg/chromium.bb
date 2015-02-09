@@ -131,7 +131,7 @@ class APP_LIST_EXPORT SearchResult {
 
   // TODO(mukai): Remove this method and really simplify the ownership of
   // SearchResult. Ideally, SearchResult will be copyable.
-  virtual scoped_ptr<SearchResult> Duplicate() = 0;
+  virtual scoped_ptr<SearchResult> Duplicate() const = 0;
 
   // Opens the result.
   virtual void Open(int event_flags);

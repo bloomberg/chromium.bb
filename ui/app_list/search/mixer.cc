@@ -207,13 +207,13 @@ void Mixer::Publish(const SortedResults& new_results,
 
   // Add items back to |ui_results| in the order of |new_results|.
   for (size_t i = 0; i < new_results.size(); ++i) {
-    SearchResult* new_result = new_results[i].result;
+    const SearchResult& new_result = *new_results[i].result;
     IdToResultMap::const_iterator ui_result_it =
-        ui_results_map.find(new_result->id());
+        ui_results_map.find(new_result.id());
     if (ui_result_it != ui_results_map.end()) {
       // Update and use the old result if it exists.
       SearchResult* ui_result = ui_result_it->second;
-      UpdateResult(*new_result, ui_result);
+      UpdateResult(new_result, ui_result);
 
       // |ui_results| takes back ownership from |ui_results_map| here.
       ui_results->Add(ui_result);
@@ -223,7 +223,7 @@ void Mixer::Publish(const SortedResults& new_results,
       ui_results_map.erase(ui_result->id());
     } else {
       // Copy the result from |new_results| otherwise.
-      ui_results->Add(new_result->Duplicate().release());
+      ui_results->Add(new_result.Duplicate().release());
     }
   }
 

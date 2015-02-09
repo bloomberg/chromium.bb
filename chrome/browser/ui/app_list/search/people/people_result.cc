@@ -117,7 +117,7 @@ void PeopleResult::InvokeAction(int action_index, int event_flags) {
   }
 }
 
-scoped_ptr<SearchResult> PeopleResult::Duplicate() {
+scoped_ptr<SearchResult> PeopleResult::Duplicate() const {
   return scoped_ptr<SearchResult>(
       new PeopleResult(profile_, controller_, person_->Duplicate().Pass()));
 }

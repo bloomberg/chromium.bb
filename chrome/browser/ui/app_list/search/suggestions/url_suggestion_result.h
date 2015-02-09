@@ -39,7 +39,7 @@ class URLSuggestionResult : public SearchResult {
 
   // SearchResult overrides:
   void Open(int event_flags) override;
-  scoped_ptr<SearchResult> Duplicate() override;
+  scoped_ptr<SearchResult> Duplicate() const override;
 
   // Refer to SearchResult::set_relevance for documentation.
   using SearchResult::set_relevance;

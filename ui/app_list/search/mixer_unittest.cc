@@ -34,7 +34,7 @@ class TestSearchResult : public SearchResult {
   // SearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
-  scoped_ptr<SearchResult> Duplicate() override {
+  scoped_ptr<SearchResult> Duplicate() const override {
     return scoped_ptr<SearchResult>(new TestSearchResult(id(), relevance()));
   }
 
