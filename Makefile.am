@@ -8,8 +8,7 @@ module_LTLIBRARIES =
 noinst_LTLIBRARIES =
 BUILT_SOURCES =
 
-# Do not run xwayland test while it is known broken.
-AM_DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install --disable-xwayland-test
+AM_DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
 
 EXTRA_DIST = weston.ini.in ivi-shell/weston.ini.in
 
