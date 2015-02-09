@@ -27,8 +27,8 @@
 #define Timer_h
 
 #include "platform/PlatformExport.h"
-#include "platform/TraceLocation.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -43,20 +43,20 @@ public:
     TimerBase();
     virtual ~TimerBase();
 
-    void start(double nextFireInterval, double repeatInterval, const TraceLocation&);
+    void start(double nextFireInterval, double repeatInterval, const WebTraceLocation&);
 
-    void startRepeating(double repeatInterval, const TraceLocation& caller)
+    void startRepeating(double repeatInterval, const WebTraceLocation& caller)
     {
         start(repeatInterval, repeatInterval, caller);
     }
-    void startOneShot(double interval, const TraceLocation& caller)
+    void startOneShot(double interval, const WebTraceLocation& caller)
     {
         start(interval, 0, caller);
     }
 
     void stop();
     bool isActive() const;
-    const TraceLocation& location() const { return m_location; }
+    const WebTraceLocation& location() const { return m_location; }
 
     double nextFireInterval() const;
     double nextUnalignedFireInterval() const;
@@ -102,7 +102,7 @@ private:
     int m_heapIndex; // -1 if not in heap
     unsigned m_heapInsertionOrder; // Used to keep order among equal-fire-time timers
     Vector<TimerBase*>* m_cachedThreadGlobalTimerHeap;
-    TraceLocation m_location;
+    WebTraceLocation m_location;
 
 #if ENABLE(ASSERT)
     ThreadIdentifier m_thread;

@@ -5,23 +5,26 @@
 #include "config.h"
 #include "public/platform/WebTraceLocation.h"
 
-#include "platform/TraceLocation.h"
-
 namespace blink {
 
-WebTraceLocation::WebTraceLocation(const TraceLocation& location)
-    : m_location(location)
-{
-}
+WebTraceLocation::WebTraceLocation()
+    : m_functionName("unknown")
+    , m_fileName("unknown")
+{ }
+
+WebTraceLocation::WebTraceLocation(const char* functionName, const char* fileName)
+    : m_functionName(functionName)
+    , m_fileName(fileName)
+{ }
 
 const char* WebTraceLocation::functionName() const
 {
-    return m_location.functionName();
+    return m_functionName;
 }
 
 const char* WebTraceLocation::fileName() const
 {
-    return m_location.fileName();
+    return m_fileName;
 }
 
 } // namespace blink

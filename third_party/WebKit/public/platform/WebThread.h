@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 namespace blink {
+class WebTraceLocation;
 
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;

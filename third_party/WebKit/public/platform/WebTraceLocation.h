@@ -7,29 +7,27 @@
 
 #include "WebCommon.h"
 
-#if INSIDE_BLINK
-#include "platform/TraceLocation.h"
-#endif
-
 namespace blink {
 
 // This class is used to keep track of where posted tasks originate. See base/location.h in Chromium.
+// Currently only store the bits used in Blink, base::Location stores more.
 class BLINK_PLATFORM_EXPORT WebTraceLocation {
 public:
-#if INSIDE_BLINK
-    explicit WebTraceLocation(const TraceLocation&);
-#endif
+    // These char*s are not copied and must live for the duration of the program.
+    WebTraceLocation(const char* function, const char* file);
+    WebTraceLocation();
 
     const char* functionName() const;
     const char* fileName() const;
 
 private:
-    WebTraceLocation();
+    const char* m_functionName;
+    const char* m_fileName;
+};
 
 #if INSIDE_BLINK
-    TraceLocation m_location;
-#endif
-};
+#define FROM_HERE ::blink::WebTraceLocation(__FUNCTION__, __FILE__)
+#endif // INSIDE_BLINK
 
 }
 

@@ -5,7 +5,6 @@
 #include "config.h"
 #include "platform/scheduler/Scheduler.h"
 
-#include "platform/TraceLocation.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTraceLocation.h"
@@ -60,16 +59,16 @@ Scheduler::~Scheduler()
         m_webScheduler->shutdown();
 }
 
-void Scheduler::postIdleTask(const TraceLocation& location, PassOwnPtr<IdleTask> idleTask)
+void Scheduler::postIdleTask(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)
 {
     if (m_webScheduler)
-        m_webScheduler->postIdleTask(WebTraceLocation(location), new IdleTaskRunner(idleTask));
+        m_webScheduler->postIdleTask(location, new IdleTaskRunner(idleTask));
 }
 
-void Scheduler::postLoadingTask(const TraceLocation& location, WebThread::Task* task)
+void Scheduler::postLoadingTask(const WebTraceLocation& location, WebThread::Task* task)
 {
     if (m_webScheduler)
-        m_webScheduler->postLoadingTask(WebTraceLocation(location), task);
+        m_webScheduler->postLoadingTask(location, task);
 }
 
 bool Scheduler::shouldYieldForHighPriorityWork() const

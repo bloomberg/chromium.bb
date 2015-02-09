@@ -202,7 +202,7 @@ TimerBase::~TimerBase()
     ASSERT(!inHeap());
 }
 
-void TimerBase::start(double nextFireInterval, double repeatInterval, const TraceLocation& caller)
+void TimerBase::start(double nextFireInterval, double repeatInterval, const WebTraceLocation& caller)
 {
     ASSERT(m_thread == currentThread());
 

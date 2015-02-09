@@ -5,7 +5,6 @@
 #include "config.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 
-#include "platform/TraceLocation.h"
 #include "public/platform/Platform.h"
 #include "wtf/InstanceCounter.h"
 

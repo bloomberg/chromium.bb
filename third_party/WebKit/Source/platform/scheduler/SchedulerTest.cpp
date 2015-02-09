@@ -7,9 +7,9 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TestingPlatformSupport.h"
-#include "platform/TraceLocation.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
+#include "public/platform/WebTraceLocation.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
