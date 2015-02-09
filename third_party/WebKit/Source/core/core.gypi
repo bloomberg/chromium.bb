@@ -2175,6 +2175,8 @@
             'dom/DocumentStyleSheetCollection.h',
             'dom/DocumentStyleSheetCollector.cpp',
             'dom/DocumentStyleSheetCollector.h',
+            'dom/DocumentTiming.cpp',
+            'dom/DocumentTiming.h',
             'dom/DocumentType.cpp',
             'dom/Element.cpp',
             'dom/Element.h',

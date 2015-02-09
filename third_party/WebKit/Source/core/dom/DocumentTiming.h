@@ -30,20 +30,13 @@ namespace blink {
 
 class DocumentTiming {
 public:
-    DocumentTiming()
-        : m_domLoading(0.0)
-        , m_domInteractive(0.0)
-        , m_domContentLoadedEventStart(0.0)
-        , m_domContentLoadedEventEnd(0.0)
-        , m_domComplete(0.0)
-    {
-    }
+    DocumentTiming();
 
-    void setDomLoading(double domLoading) { m_domLoading = domLoading; }
-    void setDomInteractive(double domInteractive) { m_domInteractive = domInteractive; }
-    void setDomContentLoadedEventStart(double domContentLoadedEventStart) { m_domContentLoadedEventStart = domContentLoadedEventStart; }
-    void setDomContentLoadedEventEnd(double domContentLoadedEventEnd) { m_domContentLoadedEventEnd = domContentLoadedEventEnd; }
-    void setDomComplete(double domComplete) { m_domComplete = domComplete; }
+    void setDomLoading(double);
+    void setDomInteractive(double);
+    void setDomContentLoadedEventStart(double);
+    void setDomContentLoadedEventEnd(double);
+    void setDomComplete(double);
 
     double domLoading() const { return m_domLoading; }
     double domInteractive() const { return m_domInteractive; }
