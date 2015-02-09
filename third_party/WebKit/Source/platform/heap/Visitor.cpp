@@ -102,7 +102,7 @@ void assertObjectHasGCInfo(const void* payload, size_t gcInfoIndex)
 #if !defined(COMPONENT_BUILD)
     // On component builds we cannot compare the gcInfos as they are statically
     // defined in each of the components and hence will not match.
-    BasePage* page = pageFromObject(payload);
+    BaseHeapPage* page = pageFromObject(payload);
     ASSERT(page->orphaned() || HeapObjectHeader::fromPayload(payload)->gcInfoIndex() == gcInfoIndex);
 #endif
 }

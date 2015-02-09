@@ -308,9 +308,9 @@ ThreadState::ThreadState()
         s_mainThreadUnderestimatedStackSize = StackFrameDepth::getUnderestimatedStackSize() - sizeof(void*);
     }
 
-    for (int heapIndex = 0; heapIndex < LargeObjectHeapIndex; heapIndex++)
-        m_heaps[heapIndex] = new NormalPageHeap(this, heapIndex);
-    m_heaps[LargeObjectHeapIndex] = new LargeObjectHeap(this, LargeObjectHeapIndex);
+    for (int heapIndex = 0; heapIndex < LargeObjectHeap; heapIndex++)
+        m_heaps[heapIndex] = new ThreadHeapForHeapPage(this, heapIndex);
+    m_heaps[LargeObjectHeap] = new ThreadHeapForLargeObject(this, LargeObjectHeap);
 
     m_weakCallbackStack = new CallbackStack();
 }
@@ -573,7 +573,7 @@ void ThreadState::visitPersistents(Visitor* visitor)
 #if ENABLE(GC_PROFILING)
 const GCInfo* ThreadState::findGCInfo(Address address)
 {
-    if (BasePage* page = findPageFromAddress(address))
+    if (BaseHeapPage* page = findPageFromAddress(address))
         return page->findGCInfo(address);
     return nullptr;
 }
@@ -1005,10 +1005,10 @@ void ThreadState::prepareHeapForTermination()
 }
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
-BasePage* ThreadState::findPageFromAddress(Address address)
+BaseHeapPage* ThreadState::findPageFromAddress(Address address)
 {
     for (int i = 0; i < NumberOfHeaps; ++i) {
-        if (BasePage* page = m_heaps[i]->findPageFromAddress(address))
+        if (BaseHeapPage* page = m_heaps[i]->findPageFromAddress(address))
             return page;
     }
     return nullptr;

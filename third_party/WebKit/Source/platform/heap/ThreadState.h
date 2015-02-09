@@ -51,7 +51,7 @@ class Isolate;
 
 namespace blink {
 
-class BasePage;
+class BaseHeapPage;
 class CallbackStack;
 struct GCInfo;
 class HeapObjectHeader;
@@ -60,7 +60,7 @@ class PageMemory;
 class PersistentNode;
 class SafePointBarrier;
 class SafePointAwareMutexLocker;
-class BaseHeap;
+class ThreadHeap;
 class ThreadState;
 class Visitor;
 
@@ -179,13 +179,13 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 
 #define TypedHeapEnumName(Type) Type##Heap,
 
-enum HeapIndices {
-    NormalPageHeapIndex = 0,
-    VectorHeapIndex,
-    InlineVectorHeapIndex,
-    HashTableHeapIndex,
+enum TypedHeaps {
+    GeneralHeap = 0,
+    VectorBackingHeap,
+    InlineVectorBackingHeap,
+    HashTableBackingHeap,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
-    LargeObjectHeapIndex,
+    LargeObjectHeap,
     // Values used for iteration of heap segments.
     NumberOfHeaps,
 };
@@ -481,14 +481,14 @@ public:
     // The heap is split into multiple heap parts based on object
     // types. To get the index for a given type, use
     // HeapIndexTrait<Type>::index.
-    BaseHeap* heap(int heapIndex) const { return m_heaps[heapIndex]; }
+    ThreadHeap* heap(int heapIndex) const { return m_heaps[heapIndex]; }
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
-    BasePage* findPageFromAddress(Address);
-    BasePage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
+    BaseHeapPage* findPageFromAddress(Address);
+    BaseHeapPage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
 #endif
 
     // List of persistent roots allocated on the given thread.
@@ -666,7 +666,7 @@ private:
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_allocatedObjectSizeBeforeGC;
-    BaseHeap* m_heaps[NumberOfHeaps];
+    ThreadHeap* m_heaps[NumberOfHeaps];
 
     Vector<OwnPtr<CleanupTask>> m_cleanupTasks;
     bool m_isTerminating;

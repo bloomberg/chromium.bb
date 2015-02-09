@@ -1803,7 +1803,7 @@ TEST(HeapTest, LazySweepingPages)
     EXPECT_EQ(11000, SimpleFinalizedObject::s_destructorCalls);
 }
 
-TEST(HeapTest, LazySweepingLargeObjectPages)
+TEST(HeapTest, LazySweepingLargeObjects)
 {
     clearOutOldGarbage();
 
@@ -2088,14 +2088,14 @@ TEST(HeapTest, LargeHeapObjects)
             EXPECT_EQ('a', object->get(0));
             object->set(object->length() - 1, 'b');
             EXPECT_EQ('b', object->get(object->length() - 1));
-            size_t expectedLargeHeapObjectPayloadSize = BaseHeap::allocationSizeFromSize(sizeof(LargeHeapObject));
+            size_t expectedLargeHeapObjectPayloadSize = ThreadHeap::allocationSizeFromSize(sizeof(LargeHeapObject));
             size_t expectedObjectPayloadSize = expectedLargeHeapObjectPayloadSize + sizeof(IntWrapper);
             size_t actualObjectPayloadSize = Heap::objectPayloadSizeForTesting() - initialObjectPayloadSize;
             CheckWithSlack(expectedObjectPayloadSize, actualObjectPayloadSize, slack);
             // There is probably space for the IntWrapper in a heap page without
             // allocating extra pages. However, the IntWrapper allocation might cause
             // the addition of a heap page.
-            size_t largeObjectAllocationSize = sizeof(LargeObjectPage) + expectedLargeHeapObjectPayloadSize;
+            size_t largeObjectAllocationSize = sizeof(LargeObject) + expectedLargeHeapObjectPayloadSize;
             size_t allocatedSpaceLowerBound = initialAllocatedSpace + largeObjectAllocationSize;
             size_t allocatedSpaceUpperBound = allocatedSpaceLowerBound + slack + blinkPageSize;
             EXPECT_LE(allocatedSpaceLowerBound, afterAllocation);
