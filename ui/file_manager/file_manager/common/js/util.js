@@ -762,8 +762,8 @@ util.getCurrentLocaleOrDefault = function() {
 
 /**
  * Converts array of entries to an array of corresponding URLs.
- * @param {Array.<Entry>} entries Input array of entries.
- * @return {Array.<string>} Output array of URLs.
+ * @param {Array<Entry>} entries Input array of entries.
+ * @return {!Array<string>} Output array of URLs.
  */
 util.entriesToURLs = function(entries) {
   return entries.map(function(entry) {

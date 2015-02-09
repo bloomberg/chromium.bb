@@ -44,7 +44,7 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
                                     this.onFilterChanged_.bind(this));
 
   this.currentFileListContext_ = new FileListContext(
-      fileFilter, metadataCache);
+      fileFilter, metadataCache, fileSystemMetadata);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
@@ -834,7 +834,7 @@ DirectoryModel.prototype.createDirectory = function(name,
       then(function(newEntry) {
         // Refresh the cache.
         this.metadataCache_.clear([newEntry], '*');
-        this.fileSystemMetadata_.notifyEntryCreated([newEntry]);
+        this.fileSystemMetadata_.notifyEntriesCreated([newEntry]);
         return new Promise(function(onFulfilled, onRejected) {
           dirContents.prefetchMetadata(
               [newEntry], false, onFulfilled.bind(null, newEntry));

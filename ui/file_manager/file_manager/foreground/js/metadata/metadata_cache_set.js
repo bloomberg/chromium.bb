@@ -104,11 +104,11 @@ MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
 
 /**
  * Clears the caches of entries.
- * @param {!Array<!Entry>} entries
+ * @param {!Array<string>} urls
  */
-MetadataCacheSet.prototype.clear = function(entries) {
-  for (var i = 0; i < entries.length; i++) {
-    this.items_.remove(entries[i].toURL());
+MetadataCacheSet.prototype.clear = function(urls) {
+  for (var i = 0; i < urls.length; i++) {
+    this.items_.remove(urls[i]);
   }
 };
 

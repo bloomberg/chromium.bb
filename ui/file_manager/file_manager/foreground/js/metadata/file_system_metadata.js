@@ -64,8 +64,13 @@ FileSystemMetadata.prototype.get = function(entries, names) {
     }
   }
 
+  // Correct property names that are valid for fileSystemMetadataProvider.
+  var fileSystemPropertyNames = names.filter(function(name) {
+    return name === 'size' || name === 'modificationTime';
+  });
+
   return Promise.all([
-    this.fileSystemMetadataProvider_.get(localEntries, names),
+    this.fileSystemMetadataProvider_.get(localEntries, fileSystemPropertyNames),
     this.externalMetadataProvider_.get(externalEntries, names)
   ]).then(function(results) {
     var integratedResults = [];
@@ -95,6 +100,23 @@ FileSystemMetadata.prototype.getCache = function(entries, names) {
  * Clears old metadata for newly created entries.
  * @param {!Array<!Entry>} entries
  */
-FileSystemMetadata.prototype.notifyEntryCreated = function(entries) {
-  this.cache_.clear(entries);
+FileSystemMetadata.prototype.notifyEntriesCreated = function(entries) {
+  this.cache_.clear(util.entriesToURLs(entries));
+};
+
+/**
+ * Clears metadata for deleted entries.
+ * @param {!Array<string>} urls Note it is not an entry list because we cannot
+ *     obtain entries after removing them from the file system.
+ */
+FileSystemMetadata.prototype.notifyEntriesRemoved = function(urls) {
+  this.cache_.clear(urls);
+};
+
+/**
+ * Invalidates metadata for updated entries.
+ * @param {!Array<!Entry>} entries
+ */
+FileSystemMetadata.prototype.notifyEntriesChanged = function(entries) {
+  this.cache_.invalidate(this.cache_.generateRequestId(), entries);
 };

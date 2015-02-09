@@ -130,7 +130,7 @@ function testMetadataCacheSetClear() {
   assertTrue(set.hasFreshCache([entryA], ['propertyA']));
 
   set.startRequests(1, set.createRequests([entryA], ['propertyB']));
-  set.clear([entryA]);
+  set.clear([entryA.toURL()]);
   // PropertyB should not be stored because it is requsted before clear.
   set.storeProperties(1, [entryA], [{propertyB: 'value'}]);
 

@@ -408,6 +408,7 @@ function FileListModel(metadataCache) {
   this.metadataCache_ = metadataCache;
 
   // Initialize compare functions.
+  // TODO(hirono): Use new metadata cache for sorting.
   this.setCompareFunction('name',
       /** @type {function(*, *): number} */ (this.compareName_.bind(this)));
   this.setCompareFunction('modificationTime',
@@ -544,9 +545,10 @@ FileListModel.prototype.compareType_ = function(a, b) {
  *
  * @param {FileFilter} fileFilter The file-filter context.
  * @param {MetadataCache} metadataCache Metadata cache service.
+ * @param {!FileSystemMetadata} fileSystemMetadata
  * @constructor
  */
-function FileListContext(fileFilter, metadataCache) {
+function FileListContext(fileFilter, metadataCache, fileSystemMetadata) {
   /**
    * @type {FileListModel}
    */
@@ -556,6 +558,12 @@ function FileListContext(fileFilter, metadataCache) {
    * @type {MetadataCache}
    */
   this.metadataCache = metadataCache;
+
+  /**
+   * @public {!FileSystemMetadata}
+   * @const
+   */
+  this.fileSystemMetadata = fileSystemMetadata;
 
   /**
    * @type {FileFilter}
@@ -626,6 +634,7 @@ DirectoryContents.prototype.dispose = function() {
 
 /**
  * Make a space for current directory size in the metadata cache.
+ * TODO(hirono): Update size of new meatadata cache here.
  *
  * @param {number} size The cache size to be set.
  * @private
@@ -755,8 +764,10 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
     addedList.push(updatedMap[url]);
   }
 
-  if (removedUrls.length > 0)
+  if (removedUrls.length > 0) {
     this.fileList_.metadataCache_.clearByUrl(removedUrls, '*');
+    this.context_.fileSystemMetadata.notifyEntriesRemoved(removedUrls);
+  }
 
   this.prefetchMetadata(updatedList, true, function() {
     this.onNewEntries_(true, addedList);
@@ -914,7 +925,7 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
 };
 
 /**
- * @param {Array.<Entry>} entries Files.
+ * @param {!Array<!Entry>} entries Files.
  * @param {boolean} refresh True to refresh metadata, or false to use cached
  *     one.
  * @param {function(Object)} callback Callback on done.
@@ -922,10 +933,16 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
 DirectoryContents.prototype.prefetchMetadata =
     function(entries, refresh, callback) {
   var TYPES = 'filesystem|external';
-  if (refresh)
+  if (refresh) {
     this.context_.metadataCache.getLatest(entries, TYPES, callback);
-  else
+    this.context_.fileSystemMetadata.notifyEntriesChanged(entries);
+    this.context_.fileSystemMetadata.get(
+        entries, FileTable.METADATA_PROPERTY_NAMES);
+  } else {
     this.context_.metadataCache.get(entries, TYPES, callback);
+    this.context_.fileSystemMetadata.get(
+        entries, FileTable.METADATA_PROPERTY_NAMES);
+  }
 };
 
 /**

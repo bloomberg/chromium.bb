@@ -232,6 +232,19 @@ function FileTable() {
 }
 
 /**
+ * Metadata property names used by FileTable.
+ * These metadata is expected to be cached.
+ * @const {!Array<string>}
+ */
+FileTable.METADATA_PROPERTY_NAMES = [
+  'size',
+  'modificationTime',
+  'hosted',
+  'availableOffline',
+  'customIconUrl'
+];
+
+/**
  * Inherits from cr.ui.Table.
  */
 FileTable.prototype.__proto__ = cr.ui.Table.prototype;

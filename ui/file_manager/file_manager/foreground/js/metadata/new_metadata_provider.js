@@ -121,6 +121,10 @@ NewMetadataProvider.prototype.get = function(entries, names) {
  * @return {!Array<!T>}
  */
 NewMetadataProvider.prototype.getCache = function(entries, names) {
+  // Check if the property name is correct or not.
+  for (var i = 0; i < names.length; i++) {
+    assert(this.validPropertyNames_[names[i]]);
+  }
   return this.cache_.get(entries, names);
 };
 
