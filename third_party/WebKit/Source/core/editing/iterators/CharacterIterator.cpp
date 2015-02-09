@@ -337,9 +337,12 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
 
 inline SearchBuffer::~SearchBuffer()
 {
-    // Leave the static object pointing to a valid string.
+    // Leave the static object pointing to valid strings (pattern=targer,
+    // text=buffer). Otheriwse, usearch_reset() will results in 'use-after-free'
+    // error.
     UErrorCode status = U_ZERO_ERROR;
     usearch_setPattern(blink::searcher(), &newlineCharacter, 1, &status);
+    usearch_setText(blink::searcher(), &newlineCharacter, 1, &status);
     ASSERT(status == U_ZERO_ERROR);
 
     unlockSearcher();
