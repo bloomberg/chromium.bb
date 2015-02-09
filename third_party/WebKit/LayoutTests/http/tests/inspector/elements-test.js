@@ -513,8 +513,9 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
             var userProperties = userPropertyDataDump(treeItem);
             var value = prefix + expander + beautify(treeItem.listItemElement) + userProperties;
             if (treeItem.shadowHostToolbar) {
-                value = prefix + expander;
-                for (var button of treeItem.buttons) {
+                value = prefix + expander + "shadow-root ";
+                for (var i = 0; i < treeItem.shadowHostToolbar.children.length; ++i) {
+                    var button = treeItem.shadowHostToolbar.children[i];
                     var toggled = button.disabled;
                     var name = (toggled ? "<" : "") + button.textContent + (toggled ? ">" : "");
                     value += name + " ";

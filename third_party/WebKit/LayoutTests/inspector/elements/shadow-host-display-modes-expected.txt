@@ -13,8 +13,7 @@ oldest distributed text
   </div>
 ========= After shadow root created ========
 - <div id="shadowHost">
-      <Logical> Composed Flattened 
-    - #shadow-root
+    - shadow-root <Logical> Composed 
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div id="fallbackOldest"></div>
@@ -27,8 +26,7 @@ oldest distributed text
   </div>
 ========= After switching to composed mode ========
 - <div id="shadowHost">
-      Logical <Composed> Flattened 
-    - #shadow-root
+    - shadow-root Logical <Composed> 
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
@@ -37,8 +35,7 @@ oldest distributed text
   </div>
 ========= After adding distributed node ========
 - <div id="shadowHost">
-      Logical <Composed> Flattened 
-    - #shadow-root
+    - shadow-root Logical <Composed> 
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
@@ -46,27 +43,9 @@ oldest distributed text
               </content>
           </div>
   </div>
-========= After switching to flattened mode ========
-- <div id="shadowHost">
-      Logical Composed <Flattened> 
-    - <div class="oldestShadowMain">
-          <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
-          <div class="distributeMeToOldest distributeMeAsWell_1"></div>
-      </div>
-  </div>
 ========= After adding another distributed node ========
 - <div id="shadowHost">
-      Logical Composed <Flattened> 
-    - <div class="oldestShadowMain">
-          <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
-          <div class="distributeMeToOldest distributeMeAsWell_1"></div>
-          <div class="distributeMeToOldest distributeMeAsWell_2"></div>
-      </div>
-  </div>
-========= After switching to composed mode ========
-- <div id="shadowHost">
-      Logical <Composed> Flattened 
-    - #shadow-root
+    - shadow-root Logical <Composed> 
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
@@ -77,8 +56,7 @@ oldest distributed text
   </div>
 ========= After adding youngest shadow root ========
 - <div id="shadowHost">
-      Logical <Composed> Flattened 
-    - #shadow-root
+    - shadow-root Logical <Composed> 
         - <div class="youngestShadowMain">
             - <shadow>
                 - #shadow-root
@@ -101,88 +79,9 @@ oldest distributed text
               </div>
           </div>
   </div>
-========= After switching to flattened mode ========
-- <div id="shadowHost">
-      Logical Composed <Flattened> 
-    - <div class="youngestShadowMain">
-        - <div class="oldestShadowMain">
-              <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
-              <div class="distributeMeToOldest distributeMeAsWell_1"></div>
-              <div class="distributeMeToOldest distributeMeAsWell_2"></div>
-          </div>
-          <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
-        - <div class="innerShadowHost">
-              <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
-              <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
-          </div>
-      </div>
-  </div>
 ========= After adding inner shadow root node ========
 - <div id="shadowHost">
-      Logical Composed <Flattened> 
-    - <div class="youngestShadowMain">
-        - <div class="oldestShadowMain">
-              <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
-              <div class="distributeMeToOldest distributeMeAsWell_1"></div>
-              <div class="distributeMeToOldest distributeMeAsWell_2"></div>
-          </div>
-          <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
-        - <div class="innerShadowHost" id="innerShadowHost">
-              <Logical> Composed Flattened 
-            - #shadow-root
-                - <div class="innerShadowMain">
-                      <content in-inner-shadow-root select=".distributeMeToInner"></content>
-                  </div>
-              <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
-              <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
-          </div>
-      </div>
-  </div>
-========= After switching inner to composed mode ========
-- <div id="shadowHost">
-      Logical Composed <Flattened> 
-    - <div class="youngestShadowMain">
-        - <div class="oldestShadowMain">
-              <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
-              <div class="distributeMeToOldest distributeMeAsWell_1"></div>
-              <div class="distributeMeToOldest distributeMeAsWell_2"></div>
-          </div>
-          <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
-        - <div class="innerShadowHost" id="innerShadowHost">
-              Logical <Composed> Flattened 
-            - #shadow-root
-                - <div class="innerShadowMain">
-                    - <content in-inner-shadow-root select=".distributeMeToInner">
-                          <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
-                          <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
-                      </content>
-                  </div>
-          </div>
-      </div>
-  </div>
-========= After switching inner to flattened mode ========
-- <div id="shadowHost">
-      Logical Composed <Flattened> 
-    - <div class="youngestShadowMain">
-        - <div class="oldestShadowMain">
-              <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
-              <div class="distributeMeToOldest distributeMeAsWell_1"></div>
-              <div class="distributeMeToOldest distributeMeAsWell_2"></div>
-          </div>
-          <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
-        - <div class="innerShadowHost" id="innerShadowHost">
-              Logical Composed <Flattened> 
-            - <div class="innerShadowMain">
-                  <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
-                  <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
-              </div>
-          </div>
-      </div>
-  </div>
-========= After switching outer to composed mode ========
-- <div id="shadowHost">
-      Logical <Composed> Flattened 
-    - #shadow-root
+    - shadow-root Logical <Composed> 
         - <div class="youngestShadowMain">
             - <shadow>
                 - #shadow-root
@@ -198,20 +97,20 @@ oldest distributed text
                   <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
               </content>
             - <div class="innerShadowHost" id="innerShadowHost">
-                  Logical Composed <Flattened> 
-                - <div class="innerShadowMain">
-                    - <content in-youngest-shadow-root select=".distributeMeToInner">
-                          <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
-                          <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
-                      </content>
-                  </div>
+                - shadow-root <Logical> Composed 
+                    - <div class="innerShadowMain">
+                          <content in-inner-shadow-root select=".distributeMeToInner"></content>
+                      </div>
+                - <content in-youngest-shadow-root select=".distributeMeToInner">
+                      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+                      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+                  </content>
               </div>
           </div>
   </div>
 ========= After switching inner to composed mode ========
 - <div id="shadowHost">
-      Logical <Composed> Flattened 
-    - #shadow-root
+    - shadow-root Logical <Composed> 
         - <div class="youngestShadowMain">
             - <shadow>
                 - #shadow-root
@@ -227,8 +126,7 @@ oldest distributed text
                   <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
               </content>
             - <div class="innerShadowHost" id="innerShadowHost">
-                  Logical Composed <Flattened> 
-                - #shadow-root
+                - shadow-root Logical <Composed> 
                     - <div class="innerShadowMain">
                         - <content in-inner-shadow-root select=".distributeMeToInner">
                             - <content in-youngest-shadow-root select=".distributeMeToInner">
@@ -242,16 +140,14 @@ oldest distributed text
   </div>
 ========= After switching outer to logical mode ========
 - <div id="shadowHost">
-      Logical Composed Flattened 
-    - #shadow-root
+    - shadow-root <Logical> Composed 
         - <div class="youngestShadowMain">
               <shadow></shadow>
             - <content select=".distributeMeToYoungest">
                   <div id="fallbackYoungest"></div>
               </content>
             - <div class="innerShadowHost" id="innerShadowHost">
-                  Logical Composed <Flattened> 
-                - #shadow-root
+                - shadow-root Logical <Composed> 
                     - <div class="innerShadowMain">
                         - <content in-inner-shadow-root select=".distributeMeToInner">
                               <content in-youngest-shadow-root select=".distributeMeToInner"></content>

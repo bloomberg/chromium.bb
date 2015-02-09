@@ -88,35 +88,17 @@ function test()
 
     function distributedNodeChangedAfterFirstAdding()
     {
-        waitForModifiedNodesUpdate("After switching to flattened mode", shadowHostDisplayModeUpdatedAgain);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(shadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Flattened);
-    }
-
-    function shadowHostDisplayModeUpdatedAgain()
-    {
         waitForModifiedNodesUpdate("After adding another distributed node", distributedNodeChangedAfterSecondAdding);
         InspectorTest.evaluateInPage("addDistributedNodeToOldest()");
     }
 
     function distributedNodeChangedAfterSecondAdding()
     {
-        waitForModifiedNodesUpdate("After switching to composed mode", shadowHostDisplayModeBackToComposed);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(shadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
-    }
-
-    function shadowHostDisplayModeBackToComposed()
-    {
         waitForModifiedNodesUpdate("After adding youngest shadow root", distributedNodeChangedAfterAddingYoungestShadowRoot);
         InspectorTest.evaluateInPage("initYoungestShadowRoot()");
     }
 
     function distributedNodeChangedAfterAddingYoungestShadowRoot()
-    {
-        waitForModifiedNodesUpdate("After switching to flattened mode", shadowHostDisplayModeFlattenedWithYoungest);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(shadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Flattened);
-    }
-
-    function shadowHostDisplayModeFlattenedWithYoungest()
     {
         waitForModifiedNodesUpdate("After adding inner shadow root node", distributedNodeChangedAfterAddingInnerShadowRoot);
         InspectorTest.evaluateInPage("initInnerShadowRoot()");
@@ -126,24 +108,6 @@ function test()
     {
         innerShadowHostNode = InspectorTest.expandedNodeWithId("innerShadowHost");
         innerShadowHostTreeElement = treeOutline.findTreeElement(innerShadowHostNode);
-        waitForModifiedNodesUpdate("After switching inner to composed mode", shadowHostDisplayModeInnerComposedOuterFlattened);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(innerShadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
-    }
-
-    function shadowHostDisplayModeInnerComposedOuterFlattened()
-    {
-        waitForModifiedNodesUpdate("After switching inner to flattened mode", shadowHostDisplayModeInnerFlattenedOuterFlattened);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(innerShadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Flattened);
-    }
-
-    function shadowHostDisplayModeInnerFlattenedOuterFlattened()
-    {
-        waitForModifiedNodesUpdate("After switching outer to composed mode", shadowHostDisplayModeInnerFlattenedOuterComposed);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(shadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
-    }
-
-    function shadowHostDisplayModeInnerFlattenedOuterComposed()
-    {
         waitForModifiedNodesUpdate("After switching inner to composed mode", shadowHostDisplayModeInnerComposedOuterComposed);
         treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(innerShadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
     }
