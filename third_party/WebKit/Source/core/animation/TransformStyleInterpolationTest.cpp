@@ -21,12 +21,12 @@ protected:
         return TransformStyleInterpolation::transformToInterpolableValue(value);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToTransform(InterpolableValue* value, WillBeHeapVector<CSSTransformValue::TransformOperationType> types)
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToTransform(InterpolableValue* value, Vector<CSSTransformValue::TransformOperationType> types)
     {
         return TransformStyleInterpolation::interpolableValueToTransform(value, types);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(CSSValue& value, WillBeHeapVector<CSSTransformValue::TransformOperationType> types)
+    static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(CSSValue& value, HeapVector<CSSTransformValue::TransformOperationType> types)
     {
         return interpolableValueToTransform(transformToInterpolableValue(value).get(), types);
     }
