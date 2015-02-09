@@ -135,7 +135,8 @@ TEST(TopControlsManagerTest, EnsureScrollThresholdApplied) {
   manager->ScrollEnd();
 }
 
-TEST(TopControlsManagerTest, PartialShownHideAnimation) {
+// Flaky. See http://crbug.com/456617.
+TEST(TopControlsManagerTest, DISABLED_PartialShownHideAnimation) {
   MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   manager->ScrollBegin();
@@ -221,7 +222,9 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
+// Flaky. See http://crbug.com/456617.
+TEST(TopControlsManagerTest,
+     DISABLED_PartialHiddenWithAmbiguousThresholdHides) {
   MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
@@ -336,7 +339,8 @@ TEST(TopControlsManagerTest, PinchIgnoresScroll) {
   EXPECT_TRUE(manager->animation());
 }
 
-TEST(TopControlsManagerTest, PinchBeginStartsAnimationIfNecessary) {
+// Flaky. See http://crbug.com/456617.
+TEST(TopControlsManagerTest, DISABLED_PinchBeginStartsAnimationIfNecessary) {
   MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
 
