@@ -95,6 +95,7 @@ ToolbarController.prototype.onCancelSelectionButtonClicked_ = function() {
  */
 ToolbarController.prototype.onNavigationListRelayout_ = function() {
   // Make the width of spacer same as the width of navigation list.
-  var navWidth = parseFloat(getComputedStyle(this.navigationList_).width);
+  var navWidth = parseFloat(
+      window.getComputedStyle(this.navigationList_).width);
   this.cancelSelectionButtonWrapper_.style.width = navWidth + 'px';
 }
