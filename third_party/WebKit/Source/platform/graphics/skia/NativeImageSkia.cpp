@@ -103,32 +103,7 @@ void NativeImageSkia::drawPattern(
     if (destRect.isEmpty() || normSrcRect.isEmpty())
         return; // nothing to draw
 
-    SkMatrix totalMatrix = context->getTotalMatrix();
-    totalMatrix.preScale(scale.width(), scale.height());
-
-    // Figure out what size the bitmap will be in the destination. The
-    // destination rect is the bounds of the pattern, we need to use the
-    // matrix to see how big it will be.
-    SkRect destRectTarget;
-    totalMatrix.mapRect(&destRectTarget, normSrcRect);
-
-    float destBitmapWidth = SkScalarToFloat(destRectTarget.width());
-    float destBitmapHeight = SkScalarToFloat(destRectTarget.height());
-
-    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
-
-    // Compute the resampling mode.
-    InterpolationQuality resampling;
-    if (context->isAccelerated() || context->printing())
-        resampling = InterpolationLow;
-    else if (isLazyDecoded)
-        resampling = InterpolationHigh;
-    else
-        resampling = computeInterpolationQuality(totalMatrix, normSrcRect.width(), normSrcRect.height(), destBitmapWidth, destBitmapHeight, isDataComplete());
-    resampling = limitInterpolationQuality(context, resampling);
-
     SkMatrix localMatrix;
-
     // We also need to translate it such that the origin of the pattern is the
     // origin of the destination rect, which is what WebKit expects. Skia uses
     // the coordinate system origin as the base for the pattern. If WebKit wants
@@ -160,16 +135,18 @@ void NativeImageSkia::drawPattern(
     }
     RefPtr<SkShader> shader = adoptRef(SkShader::CreateBitmapShader(bitmapToPaint, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
 
-    SkPaint paint;
-    paint.setShader(shader.get());
-    paint.setXfermodeMode(compositeOp);
-    paint.setColorFilter(context->colorFilter());
-    paint.setFilterLevel(static_cast<SkPaint::FilterLevel>(resampling));
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
+    {
+        SkPaint paint;
+        int initialSaveCount = context->preparePaintForDrawRectToRect(&paint, floatSrcRect,
+            destRect, compositeOp, !bitmap().isOpaque(), isLazyDecoded, isDataComplete());
+        paint.setShader(shader.get());
+        context->drawRect(destRect, paint);
+        context->canvas()->restoreToCount(initialSaveCount);
+    }
 
     if (isLazyDecoded)
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap().getGenerationID());
-
-    context->drawRect(destRect, paint);
 }
 
 } // namespace blink
