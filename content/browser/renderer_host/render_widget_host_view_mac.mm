@@ -2271,13 +2271,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   [responderDelegate_ touchesEndedWithEvent:event];
 }
 
-- (void)smartMagnifyWithEvent:(NSEvent*)event {
-  const WebGestureEvent& smartMagnifyEvent =
-      WebInputEventFactory::gestureEvent(event, self);
-  renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(
-      smartMagnifyEvent);
-}
-
 // This is invoked only on 10.8 or newer when the user taps a word using
 // three fingers.
 - (void)quickLookWithEvent:(NSEvent*)event {
