@@ -30,14 +30,15 @@
       'target_name': 'util',
       'variables': {
         'depends': ['cr.js'],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        # TODO(jlklein): Get <(VARIABLES) in transient externs/depends working.
+        'externs': ['../../../../third_party/closure_compiler/externs/chrome_send_externs.js'],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     },
     {
       'target_name': 'parse_html_subset',
       'variables': {
-        'externs': ['<(CLOSURE_DIR)/externs/pending_compiler_externs.js'],
+        'externs': ['../../../../third_party/closure_compiler/externs/pending_compiler_externs.js'],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     },

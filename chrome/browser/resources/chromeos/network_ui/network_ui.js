@@ -64,14 +64,15 @@ var NetworkUI = (function() {
    * Creates a cell with a button for expanding a network state table row.
    *
    * @param {string} guid The GUID identifying the network.
-   * @return {DOMElement} The created td element that displays the given value.
+   * @return {!HTMLElement} The created td element that displays the given
+   *     value.
    */
   var createStateTableExpandButton = function(guid) {
-    var cell = document.createElement('td');
+    var cell = /** @type {!HTMLElement} */ (document.createElement('td'));
     cell.className = 'state-table-expand-button-cell';
     var button = document.createElement('button');
     button.addEventListener('click', function(event) {
-      toggleExpandRow(event.target, guid);
+      toggleExpandRow(/** @type {!HTMLElement} */ (event.target), guid);
     });
     button.className = 'state-table-expand-button';
     button.textContent = '+';
@@ -83,10 +84,11 @@ var NetworkUI = (function() {
    * Creates a cell in network state table.
    *
    * @param {string} value Content in the cell.
-   * @return {DOMElement} The created td element that displays the given value.
+   * @return {!HTMLElement} The created td element that displays the given
+   *     value.
    */
   var createStateTableCell = function(value) {
-    var cell = document.createElement('td');
+    var cell = /** @type {!HTMLElement} */ (document.createElement('td'));
     cell.textContent = value || '';
     return cell;
   };
@@ -96,13 +98,13 @@ var NetworkUI = (function() {
    *
    * @param {Array} stateFields The state fields to use for the row.
    * @param {Object} state Property values for the network or favorite.
-   * @return {DOMElement} The created tr element that contains the network
+   * @return {!HTMLElement} The created tr element that contains the network
    *     state information.
    */
   var createStateTableRow = function(stateFields, state) {
-    var row = document.createElement('tr');
+    var row = /** @type {!HTMLElement} */ (document.createElement('tr'));
     row.className = 'state-table-row';
-    var guid = state.GUID;
+    var guid = state['GUID'];
     row.appendChild(createStateTableExpandButton(guid));
     for (var i = 0; i < stateFields.length; ++i) {
       var field = stateFields[i];
@@ -118,7 +120,7 @@ var NetworkUI = (function() {
       }
       if (field == 'GUID')
         value = value.slice(0, 8);
-      row.appendChild(createStateTableCell(value));
+      row.appendChild(createStateTableCell(/** @type {string} */ (value)));
     }
     return row;
   };
@@ -143,7 +145,7 @@ var NetworkUI = (function() {
   /**
    * This callback function is triggered when visible networks are received.
    *
-   * @param {Array} data A list of network state information for each
+   * @param {Array} states A list of network state information for each
    *     visible network.
    */
   var onVisibleNetworksReceived = function(states) {
@@ -153,7 +155,7 @@ var NetworkUI = (function() {
   /**
    * This callback function is triggered when favorite networks are received.
    *
-   * @param {Object} data A list of network state information for each
+   * @param {!Array} states A list of network state information for each
    *     favorite network.
    */
   var onFavoriteNetworksReceived = function(states) {
@@ -164,12 +166,12 @@ var NetworkUI = (function() {
    * Toggles the button state and add or remove a row displaying the complete
    * state information for a row.
    *
-   * @param {DOMElement} btn The button that was clicked.
+   * @param {!HTMLElement} btn The button that was clicked.
    * @param {string} guid GUID identifying the network.
    */
   var toggleExpandRow = function(btn, guid) {
     var cell = btn.parentNode;
-    var row = cell.parentNode;
+    var row = /** @type {!HTMLElement} */ (cell.parentNode);
     if (btn.textContent == '-') {
       btn.textContent = '+';
       row.parentNode.removeChild(row.nextSibling);
@@ -183,12 +185,14 @@ var NetworkUI = (function() {
   /**
    * Creates the expanded row for displaying the complete state as JSON.
    *
-   * @param {Object} state Property values for the network or favorite.
-   * @param {DOMElement} baseRow The unexpanded row associated with the new row.
-   * @return {DOMElement} The created tr element for the expanded row.
+   * @param {string} guid The GUID identifying the network.
+   * @param {!HTMLElement} baseRow The unexpanded row associated with the new
+   *     row.
+   * @return {!HTMLElement} The created tr element for the expanded row.
    */
   var createExpandedRow = function(guid, baseRow) {
-    var expandedRow = document.createElement('tr');
+    var expandedRow = /** @type {!HTMLElement} */ (
+      document.createElement('tr'));
     expandedRow.className = 'state-table-row';
     var emptyCell = document.createElement('td');
     emptyCell.style.border = 'none';
@@ -221,7 +225,7 @@ var NetworkUI = (function() {
   /**
    * Callback invoked by Chrome after a getShillProperties call.
    *
-   * @param {Object} properties The requested Shill properties. Will contain
+   * @param {Array} args The requested Shill properties. Will contain
    *     just the 'GUID' and 'ShillError' properties if the call failed.
    */
   var getShillPropertiesResult = function(args) {
@@ -261,7 +265,7 @@ var NetworkUI = (function() {
   var setRefresh = function() {
     var interval = parseQueryParams(window.location)['refresh'];
     if (interval && interval != '')
-      setInterval(requestNetworks, parseInt(interval) * 1000);
+      setInterval(requestNetworks, parseInt(interval, 10) * 1000);
   };
 
   /**
