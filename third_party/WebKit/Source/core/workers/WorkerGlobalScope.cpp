@@ -334,9 +334,18 @@ void WorkerGlobalScope::countFeature(UseCounter::Feature) const
     // FIXME: How should we count features for shared/service workers?
 }
 
-void WorkerGlobalScope::countDeprecation(UseCounter::Feature) const
+void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
 {
     // FIXME: How should we count features for shared/service workers?
+
+    ASSERT(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope());
+    // For each deprecated feature, send console message at most once
+    // per worker lifecycle.
+    if (m_deprecationWarningBits.recordMeasurement(feature)) {
+        ASSERT(!UseCounter::deprecationMessage(feature).isEmpty());
+        ASSERT(executionContext());
+        executionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, UseCounter::deprecationMessage(feature)));
+    }
 }
 
 ConsoleMessageStorage* WorkerGlobalScope::messageStorage()

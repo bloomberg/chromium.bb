@@ -159,6 +159,8 @@ private:
     mutable RefPtrWillBeMember<WorkerLocation> m_location;
     mutable RefPtrWillBeMember<WorkerNavigator> m_navigator;
 
+    mutable UseCounter::CountBits m_deprecationWarningBits;
+
     OwnPtr<WorkerScriptController> m_script;
     WorkerThread* m_thread;
 

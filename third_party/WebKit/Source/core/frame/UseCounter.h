@@ -659,8 +659,8 @@ public:
     // deprecation warnings when we're actively interested in removing them from
     // the platform.
     //
-    // The ExecutionContext* overload doesn't work for shared workers and
-    // service workers.
+    // For shared workers and service workers, the ExecutionContext* overload
+    // doesn't count the usage but only sends a console warning.
     static void countDeprecation(const LocalFrame*, Feature);
     static void countDeprecation(ExecutionContext*, Feature);
     static void countDeprecation(const Document&, Feature);
@@ -668,7 +668,7 @@ public:
     // if you don't want to count metrics in private scripts. You should use
     // countDeprecationIfNotPrivateScript() in a binding layer.
     static void countDeprecationIfNotPrivateScript(v8::Isolate*, ExecutionContext*, Feature);
-    String deprecationMessage(Feature);
+    static String deprecationMessage(Feature);
 
     void didCommitLoad();
 
@@ -681,30 +681,38 @@ public:
     static void muteForInspector();
     static void unmuteForInspector();
 
+    class CountBits {
+    public:
+        bool recordMeasurement(Feature feature)
+        {
+            if (UseCounter::m_muteCount)
+                return false;
+            ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
+            ASSERT(feature < NumberOfFeatures);
+            if (!m_bits) {
+                m_bits = adoptPtr(new BitVector(NumberOfFeatures));
+                m_bits->clearAll();
+            }
+
+            if (m_bits->quickGet(feature))
+                return false;
+
+            m_bits->quickSet(feature);
+            return true;
+        }
+        void updateMeasurements();
+
+    private:
+        OwnPtr<BitVector> m_bits;
+    };
+
 private:
     static int m_muteCount;
 
-    bool recordMeasurement(Feature feature)
-    {
-        if (UseCounter::m_muteCount)
-            return false;
-        ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
-        ASSERT(feature < NumberOfFeatures);
-        if (!m_countBits) {
-            m_countBits = adoptPtr(new BitVector(NumberOfFeatures));
-            m_countBits->clearAll();
-        }
-
-        if (m_countBits->quickGet(feature))
-            return false;
-
-        m_countBits->quickSet(feature);
-        return true;
-    }
-
+    bool recordMeasurement(Feature feature) { return m_countBits.recordMeasurement(feature); }
     void updateMeasurements();
 
-    OwnPtr<BitVector> m_countBits;
+    CountBits m_countBits;
     BitVector m_CSSFeatureBits;
 };
 

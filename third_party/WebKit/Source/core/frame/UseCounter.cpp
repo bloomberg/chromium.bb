@@ -537,18 +537,22 @@ UseCounter::~UseCounter()
     updateMeasurements();
 }
 
-void UseCounter::updateMeasurements()
+void UseCounter::CountBits::updateMeasurements()
 {
-    blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageVisits, NumberOfFeatures);
-
-    if (m_countBits) {
+    if (m_bits) {
         for (unsigned i = 0; i < NumberOfFeatures; ++i) {
-            if (m_countBits->quickGet(i))
+            if (m_bits->quickGet(i))
                 blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
         }
         // Clearing count bits is timing sensitive.
-        m_countBits->clearAll();
+        m_bits->clearAll();
     }
+}
+
+void UseCounter::updateMeasurements()
+{
+    blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageVisits, NumberOfFeatures);
+    m_countBits.updateMeasurements();
 
     // FIXME: Sometimes this function is called more than once per page. The following
     //        bool guards against incrementing the page count when there are no CSS
@@ -581,7 +585,7 @@ void UseCounter::count(const Frame* frame, Feature feature)
     if (!host)
         return;
 
-    ASSERT(host->useCounter().deprecationMessage(feature).isEmpty());
+    ASSERT(deprecationMessage(feature).isEmpty());
     host->useCounter().recordMeasurement(feature);
 }
 
@@ -632,8 +636,8 @@ void UseCounter::countDeprecation(const LocalFrame* frame, Feature feature)
         return;
 
     if (host->useCounter().recordMeasurement(feature)) {
-        ASSERT(!host->useCounter().deprecationMessage(feature).isEmpty());
-        frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature)));
+        ASSERT(!deprecationMessage(feature).isEmpty());
+        frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, deprecationMessage(feature)));
     }
 }
 
