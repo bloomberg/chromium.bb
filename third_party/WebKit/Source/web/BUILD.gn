@@ -35,9 +35,7 @@ component("web") {
     "//third_party/skia/include/utils",
   ]
 
-  configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
-    "//build/config/compiler:no_chromium_code",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
     "//third_party/WebKit/Source:non_test_config",
@@ -93,9 +91,7 @@ source_set("test_support") {
 
     sources = [ "WebTestingSupport.cpp" ]
 
-    configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
-      "//build/config/compiler:no_chromium_code",
       "//third_party/WebKit/Source:config",
     ]
 
