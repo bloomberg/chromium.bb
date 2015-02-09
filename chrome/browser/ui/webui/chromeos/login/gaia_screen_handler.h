@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/base/net_errors.h"
 
@@ -97,7 +98,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
   friend class SigninScreenHandler;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 

@@ -30,7 +30,8 @@ class KioskAutolaunchScreenHandler : public KioskAutolaunchScreenActor,
   void OnKioskAppDataChanged(const std::string& app_id) override;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:

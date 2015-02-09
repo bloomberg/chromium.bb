@@ -30,7 +30,8 @@ class NetworkDropdownHandler : public BaseScreenHandler,
   void RemoveObserver(Observer* observer);
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:

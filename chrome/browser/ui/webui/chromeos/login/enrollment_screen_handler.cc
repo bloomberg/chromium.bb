@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/login/localized_values_builder.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -339,7 +340,7 @@ void EnrollmentScreenHandler::Initialize() {
 }
 
 void EnrollmentScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("oauthEnrollScreenTitle",
                IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE);
   builder->Add("oauthEnrollDescription", IDS_ENTERPRISE_ENROLLMENT_DESCRIPTION);

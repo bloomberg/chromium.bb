@@ -33,7 +33,8 @@ class ResetScreenHandler : public ResetScreenActor,
   void SetDelegate(Delegate* delegate) override;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:

@@ -23,7 +23,8 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
 
  private:
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;

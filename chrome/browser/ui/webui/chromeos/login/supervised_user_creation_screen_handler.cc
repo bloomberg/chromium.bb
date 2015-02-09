@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -48,7 +49,7 @@ SupervisedUserCreationScreenHandler::~SupervisedUserCreationScreenHandler() {
 }
 
 void SupervisedUserCreationScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add(
       "supervisedUserCreationFlowRetryButtonTitle",
       IDS_CREATE_SUPERVISED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE);

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -30,7 +31,7 @@ UpdateScreenHandler::~UpdateScreenHandler() {
 }
 
 void UpdateScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("checkingForUpdatesMsg", IDS_CHECKING_FOR_UPDATE_MSG);
   builder->Add("installingUpdateDesc", IDS_UPDATE_MSG);
   builder->Add("updateScreenTitle", IDS_UPDATE_SCREEN_TITLE);

@@ -8,6 +8,7 @@
     'type': '<(component)',
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
+      '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
     ],
     'defines': [
       'LOGIN_IMPLEMENTATION',
@@ -15,6 +16,8 @@
     'sources': [
       'login/base_screen_handler_utils.cc',
       'login/base_screen_handler_utils.h',
+      'login/localized_values_builder.cc',
+      'login/localized_values_builder.h',
       'login/screens/screen_context.cc',
       'login/screens/screen_context.h',
     ],

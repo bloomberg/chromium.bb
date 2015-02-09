@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 
 namespace {
 
@@ -41,7 +42,7 @@ void AutoEnrollmentCheckScreenHandler::SetDelegate(Delegate* delegate) {
 }
 
 void AutoEnrollmentCheckScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("autoEnrollmentCheckScreenHeader",
                IDS_AUTO_ENROLLMENT_CHECK_SCREEN_HEADER);
   builder->Add("autoEnrollmentCheckMessage",

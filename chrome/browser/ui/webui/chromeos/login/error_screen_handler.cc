@@ -28,6 +28,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
+#include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -250,7 +251,7 @@ void ErrorScreenHandler::RegisterMessages() {
 }
 
 void ErrorScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("loginErrorTitle", IDS_LOGIN_ERROR_TITLE);
   builder->Add("rollbackErrorTitle", IDS_RESET_SCREEN_REVERT_ERROR);
   builder->Add("signinOfflineMessageBody", IDS_LOGIN_OFFLINE_MESSAGE);

@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "components/login/localized_values_builder.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {
@@ -51,7 +52,7 @@ void HostPairingScreenHandler::Initialize() {
 }
 
 void HostPairingScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   // TODO(dzhioev): Move the prefix logic to the base screen handler after
   // migration.
   std::string prefix;

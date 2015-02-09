@@ -22,6 +22,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/login/localized_values_builder.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -84,7 +85,7 @@ void EnableDebuggingScreenHandler::SetDelegate(Delegate* delegate) {
 }
 
 void EnableDebuggingScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("enableDebuggingScreenTitle",
                IDS_ENABLE_DEBUGGING_SCREEN_TITLE);
   builder->Add("enableDebuggingScreenAccessibleTitle",

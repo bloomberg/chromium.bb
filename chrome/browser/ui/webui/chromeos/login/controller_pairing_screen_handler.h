@@ -23,7 +23,8 @@ class ControllerPairingScreenHandler : public ControllerPairingScreenActor,
 
   // Overridden from BaseScreenHandler:
   void Initialize() override;
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
 
   // Overridden from content::WebUIMessageHandler:
   void RegisterMessages() override;

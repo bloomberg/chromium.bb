@@ -30,6 +30,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -278,7 +279,7 @@ void GaiaScreenHandler::CancelEmbeddedSignin() {
 }
 
 void GaiaScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("signinScreenTitle", IDS_SIGNIN_SCREEN_TITLE);
   builder->Add("signinScreenPasswordChanged",
                IDS_SIGNIN_SCREEN_PASSWORD_CHANGED);

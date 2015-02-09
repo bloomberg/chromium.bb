@@ -50,7 +50,8 @@ class HIDDetectionScreenHandler
       const base::Callback<void(bool)>& on_check_done) override;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:

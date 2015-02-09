@@ -54,7 +54,8 @@ class EnrollmentScreenHandler
 
   // Implements BaseScreenHandler:
   void Initialize() override;
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
 
   // Implements NetworkStateInformer::NetworkStateInformerObserver
   void UpdateState(ErrorScreenActor::ErrorReason reason) override;

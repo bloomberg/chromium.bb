@@ -94,7 +94,8 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
   void ShowExistingSupervisedUsers(const base::ListValue* users);
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:

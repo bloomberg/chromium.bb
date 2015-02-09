@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
@@ -57,7 +58,7 @@ void TermsOfServiceScreenHandler::RegisterMessages() {
 }
 
 void TermsOfServiceScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("termsOfServiceScreenHeading",
                IDS_TERMS_OF_SERVICE_SCREEN_HEADING);
   builder->Add("termsOfServiceScreenSubheading",

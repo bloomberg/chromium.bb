@@ -26,6 +26,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_constants.h"
+#include "components/login/localized_values_builder.h"
 #include "grit/components_strings.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/display.h"
@@ -63,7 +64,8 @@ void CoreOobeHandler::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void CoreOobeHandler::DeclareLocalizedValues(LocalizedValuesBuilder* builder) {
+void CoreOobeHandler::DeclareLocalizedValues(
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("title", IDS_SHORT_PRODUCT_NAME);
   builder->Add("productName", IDS_SHORT_PRODUCT_NAME);
   builder->Add("learnMore", IDS_LEARN_MORE);

@@ -108,6 +108,12 @@ per-file keyed_service.gypi=rlp@chromium.org
 per-file leveldb_proto*=cjhopman@chromium.org
 per-file leveldb_proto*=mathp@chromium.org
 
+per-file login*=alemate@chromium.org
+per-file login*=antrim@chromium.org
+per-file login*=dpolukhin@chromium.org
+per-file login*=dzhioev@chromium.org
+per-file login*=nkostylev@chromium.org
+
 per-file metrics*=asvitkine@chromium.org
 per-file metrics*=mpearson@chromium.org
 per-file metrics*=jar@chromium.org

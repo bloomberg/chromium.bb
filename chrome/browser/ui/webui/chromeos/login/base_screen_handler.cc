@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -15,55 +16,6 @@ namespace chromeos {
 namespace {
 const char kMethodContextChanged[] = "contextChanged";
 }  // namespace
-
-LocalizedValuesBuilder::LocalizedValuesBuilder(base::DictionaryValue* dict)
-    : dict_(dict) {
-}
-
-void LocalizedValuesBuilder::Add(const std::string& key,
-                                 const std::string& message) {
-  dict_->SetString(key, message);
-}
-
-void LocalizedValuesBuilder::Add(const std::string& key,
-                                 const base::string16& message) {
-  dict_->SetString(key, message);
-}
-
-void LocalizedValuesBuilder::Add(const std::string& key, int message_id) {
-  dict_->SetString(key,
-                   l10n_util::GetStringUTF16(message_id));
-}
-
-void LocalizedValuesBuilder::AddF(const std::string& key,
-                                  int message_id,
-                                  const base::string16& a) {
-  dict_->SetString(key,
-                   l10n_util::GetStringFUTF16(message_id, a));
-}
-
-void LocalizedValuesBuilder::AddF(const std::string& key,
-                                  int message_id,
-                                  const base::string16& a,
-                                  const base::string16& b) {
-  dict_->SetString(key,
-                   l10n_util::GetStringFUTF16(message_id, a, b));
-}
-
-void LocalizedValuesBuilder::AddF(const std::string& key,
-                                  int message_id,
-                                  int message_id_a) {
-    AddF(key, message_id, l10n_util::GetStringUTF16(message_id_a));
-}
-
-void LocalizedValuesBuilder::AddF(const std::string& key,
-                                  int message_id,
-                                  int message_id_a,
-                                  int message_id_b) {
-    AddF(key, message_id,
-         l10n_util::GetStringUTF16(message_id_a),
-         l10n_util::GetStringUTF16(message_id_b));
-}
 
 BaseScreenHandler::BaseScreenHandler()
     : page_is_ready_(false), base_screen_(nullptr) {
@@ -89,7 +41,7 @@ void BaseScreenHandler::InitializeBase() {
 }
 
 void BaseScreenHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
-  scoped_ptr<LocalizedValuesBuilder> builder(new LocalizedValuesBuilder(dict));
+  auto builder = make_scoped_ptr(new ::login::LocalizedValuesBuilder(dict));
   DeclareLocalizedValues(builder.get());
   GetAdditionalParameters(dict);
 }

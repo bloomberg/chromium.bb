@@ -17,6 +17,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/login/localized_values_builder.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -87,7 +88,7 @@ void KioskAutolaunchScreenHandler::UpdateKioskApp() {
 }
 
 void KioskAutolaunchScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("autolaunchTitle", IDS_AUTOSTART_WARNING_TITLE);
   builder->Add("autolaunchWarningTitle", IDS_AUTOSTART_WARNING_TITLE);
   builder->Add("autolaunchWarning", IDS_KIOSK_AUTOSTART_SCREEN_WARNING_MSG);

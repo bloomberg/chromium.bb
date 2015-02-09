@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 
 namespace {
 
@@ -39,7 +40,7 @@ void NetworkDropdownHandler::RemoveObserver(Observer* observer) {
 }
 
 void NetworkDropdownHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("selectNetwork", IDS_NETWORK_SELECTION_SELECT);
   builder->Add("selectAnotherNetwork", IDS_ANOTHER_NETWORK_SELECTION_SELECT);
 }

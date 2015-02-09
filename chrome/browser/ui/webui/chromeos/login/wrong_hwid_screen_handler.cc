@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 
 namespace {
 
@@ -47,7 +48,7 @@ void WrongHWIDScreenHandler::SetDelegate(Delegate* delegate) {
 }
 
 void WrongHWIDScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("wrongHWIDScreenHeader", IDS_WRONG_HWID_SCREEN_HEADER);
   builder->Add("wrongHWIDMessageFirstPart",
                 IDS_WRONG_HWID_SCREEN_MESSAGE_FIRST_PART);

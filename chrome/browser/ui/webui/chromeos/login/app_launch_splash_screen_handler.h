@@ -28,7 +28,8 @@ class AppLaunchSplashScreenHandler
   ~AppLaunchSplashScreenHandler() override;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:

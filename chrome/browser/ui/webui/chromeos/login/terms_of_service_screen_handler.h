@@ -28,7 +28,8 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   void RegisterMessages() override;
 
   // BaseScreenHandler:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
 
   // TermsOfServiceScreenActor:
   void SetDelegate(Delegate* screen) override;

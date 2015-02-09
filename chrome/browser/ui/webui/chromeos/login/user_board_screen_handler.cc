@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
 
 #include "chrome/browser/chromeos/login/ui/models/user_board_model.h"
+#include "components/login/localized_values_builder.h"
 
 namespace chromeos {
 
@@ -15,7 +16,7 @@ UserBoardScreenHandler::~UserBoardScreenHandler() {
 }
 
 void UserBoardScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
 }
 
 void UserBoardScreenHandler::RegisterMessages() {

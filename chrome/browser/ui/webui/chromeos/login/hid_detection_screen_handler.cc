@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/login/localized_values_builder.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -153,7 +154,7 @@ void HIDDetectionScreenHandler::CheckIsScreenRequired(
 }
 
 void HIDDetectionScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("hidDetectionContinue", IDS_HID_DETECTION_CONTINUE_BUTTON);
   builder->Add("hidDetectionInvitation", IDS_HID_DETECTION_INVITATION_TEXT);
   builder->Add("hidDetectionPrerequisites",

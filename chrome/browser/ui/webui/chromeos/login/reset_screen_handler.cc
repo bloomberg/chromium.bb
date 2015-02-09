@@ -23,6 +23,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "components/login/localized_values_builder.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -125,7 +126,7 @@ void ResetScreenHandler::SetDelegate(Delegate* delegate) {
 }
 
 void ResetScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("resetScreenTitle", IDS_RESET_SCREEN_TITLE);
   builder->Add("resetScreenAccessibleTitle", IDS_RESET_SCREEN_TITLE);
   builder->Add("resetScreenIconTitle", IDS_RESET_SCREEN_ICON_TITLE);

@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 
@@ -73,7 +74,7 @@ void KioskEnableScreenHandler::SetDelegate(Delegate* delegate) {
 }
 
 void KioskEnableScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("kioskEnableTitle", IDS_KIOSK_ENABLE_SCREEN_WARNING);
   builder->Add("kioskEnableWarningText",
                IDS_KIOSK_ENABLE_SCREEN_WARNING);

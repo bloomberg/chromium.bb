@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 
 namespace {
 
@@ -56,7 +57,7 @@ void DeviceDisabledScreenHandler::UpdateMessage(const std::string& message) {
 }
 
 void DeviceDisabledScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("deviceDisabledHeading", IDS_DEVICE_DISABLED_HEADING);
   builder->Add("deviceDisabledExplanationWithDomain",
                IDS_DEVICE_DISABLED_EXPLANATION_WITH_DOMAIN);

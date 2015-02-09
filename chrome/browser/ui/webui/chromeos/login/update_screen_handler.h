@@ -29,7 +29,8 @@ class UpdateScreenHandler : public UpdateView,
   void Unbind() override;
 
   // BaseScreenHandler:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
  private:

@@ -44,7 +44,8 @@ class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
   void ReloadLocalizedContent() override;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 

@@ -70,7 +70,8 @@ class ErrorScreenHandler : public BaseScreenHandler,
   void RegisterMessages() override;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
   // Non-owning ptr.

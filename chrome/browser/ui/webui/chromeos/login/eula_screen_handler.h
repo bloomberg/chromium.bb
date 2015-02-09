@@ -39,7 +39,8 @@ class EulaScreenHandler : public EulaView,
   void OnPasswordFetched(const std::string& tpm_password) override;
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void DeclareJSCallbacks() override;
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;

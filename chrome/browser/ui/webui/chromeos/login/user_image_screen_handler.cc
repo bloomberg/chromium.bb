@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/login/localized_values_builder.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "grit/browser_resources.h"
@@ -89,7 +90,7 @@ void UserImageScreenHandler::PrepareToShow() {
 }
 
 void UserImageScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("userImageScreenTitle", IDS_USER_IMAGE_SCREEN_TITLE);
   builder->Add("userImageScreenDescription",
                IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT);

@@ -11,6 +11,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/login/localized_values_builder.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -54,8 +55,7 @@ AppLaunchSplashScreenHandler::~AppLaunchSplashScreenHandler() {
 }
 
 void AppLaunchSplashScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* builder) {
-
+    ::login::LocalizedValuesBuilder* builder) {
   builder->Add("appStartMessage", IDS_APP_START_NETWORK_WAIT_MESSAGE);
   builder->Add("configureNetwork", IDS_APP_START_CONFIGURE_NETWORK);
 

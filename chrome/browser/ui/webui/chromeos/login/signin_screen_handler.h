@@ -268,7 +268,8 @@ class SigninScreenHandler
   void ReloadGaia(bool force_reload);
 
   // BaseScreenHandler implementation:
-  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(
+      ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
   gfx::NativeWindow GetNativeWindow() override;
 
