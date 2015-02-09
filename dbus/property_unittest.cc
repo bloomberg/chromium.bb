@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
@@ -275,6 +276,110 @@ TEST_F(PropertyTest, Set) {
   WaitForUpdates(1);
 
   EXPECT_EQ("NewService", properties_->name.value());
+}
+
+TEST(PropertyTestStatic, ReadWriteStringMap) {
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  MessageWriter variant_writer(NULL);
+  MessageWriter variant_array_writer(NULL);
+  MessageWriter struct_entry_writer(NULL);
+
+  writer.OpenVariant("a{ss}", &variant_writer);
+  variant_writer.OpenArray("{ss}", &variant_array_writer);
+  const char* items[] = {"One", "Two", "Three", "Four"};
+  for (unsigned i = 0; i < arraysize(items); ++i) {
+    variant_array_writer.OpenDictEntry(&struct_entry_writer);
+    struct_entry_writer.AppendString(items[i]);
+    struct_entry_writer.AppendString(base::UintToString(i + 1));
+    variant_array_writer.CloseContainer(&struct_entry_writer);
+  }
+  variant_writer.CloseContainer(&variant_array_writer);
+  writer.CloseContainer(&variant_writer);
+
+  MessageReader reader(message.get());
+  Property<std::map<std::string, std::string>> string_map;
+  EXPECT_TRUE(string_map.PopValueFromReader(&reader));
+  ASSERT_EQ(4U, string_map.value().size());
+  EXPECT_EQ("1", string_map.value().at("One"));
+  EXPECT_EQ("2", string_map.value().at("Two"));
+  EXPECT_EQ("3", string_map.value().at("Three"));
+  EXPECT_EQ("4", string_map.value().at("Four"));
+}
+
+TEST(PropertyTestStatic, SerializeStringMap) {
+  std::map<std::string, std::string> test_map;
+  test_map["Hi"] = "There";
+  test_map["Map"] = "Test";
+  test_map["Random"] = "Text";
+
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+
+  Property<std::map<std::string, std::string>> string_map;
+  string_map.ReplaceSetValueForTesting(test_map);
+  string_map.AppendSetValueToWriter(&writer);
+
+  MessageReader reader(message.get());
+  EXPECT_TRUE(string_map.PopValueFromReader(&reader));
+  EXPECT_EQ(test_map, string_map.value());
+}
+
+TEST(PropertyTestStatic, ReadWriteNetAddressArray) {
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  MessageWriter variant_writer(NULL);
+  MessageWriter variant_array_writer(NULL);
+  MessageWriter struct_entry_writer(NULL);
+
+  writer.OpenVariant("a(ayq)", &variant_writer);
+  variant_writer.OpenArray("(ayq)", &variant_array_writer);
+  uint8 ip_bytes[] = {0x54, 0x65, 0x73, 0x74, 0x30};
+  for (uint16 i = 0; i < 5; ++i) {
+    variant_array_writer.OpenStruct(&struct_entry_writer);
+    ip_bytes[4] = 0x30 + i;
+    struct_entry_writer.AppendArrayOfBytes(ip_bytes, arraysize(ip_bytes));
+    struct_entry_writer.AppendUint16(i);
+    variant_array_writer.CloseContainer(&struct_entry_writer);
+  }
+  variant_writer.CloseContainer(&variant_array_writer);
+  writer.CloseContainer(&variant_writer);
+
+  MessageReader reader(message.get());
+  Property<std::vector<std::pair<std::vector<uint8>, uint16>>> ip_list;
+  EXPECT_TRUE(ip_list.PopValueFromReader(&reader));
+
+  ASSERT_EQ(5U, ip_list.value().size());
+  size_t item_index = 0;
+  for (auto& item : ip_list.value()) {
+    ASSERT_EQ(5U, item.first.size());
+    ip_bytes[4] = 0x30 + item_index;
+    EXPECT_EQ(0, memcmp(ip_bytes, item.first.data(), 5U));
+    EXPECT_EQ(item_index, item.second);
+    ++item_index;
+  }
+}
+
+TEST(PropertyTestStatic, SerializeNetAddressArray) {
+  std::vector<std::pair<std::vector<uint8>, uint16>> test_list;
+
+  uint8 ip_bytes[] = {0x54, 0x65, 0x73, 0x74, 0x30};
+  for (uint16 i = 0; i < 5; ++i) {
+    ip_bytes[4] = 0x30 + i;
+    std::vector<uint8> bytes(ip_bytes, ip_bytes + arraysize(ip_bytes));
+    test_list.push_back(make_pair(bytes, 16));
+  }
+
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+
+  Property<std::vector<std::pair<std::vector<uint8>, uint16>>> ip_list;
+  ip_list.ReplaceSetValueForTesting(test_list);
+  ip_list.AppendSetValueToWriter(&writer);
+
+  MessageReader reader(message.get());
+  EXPECT_TRUE(ip_list.PopValueFromReader(&reader));
+  EXPECT_EQ(test_list, ip_list.value());
 }
 
 }  // namespace dbus

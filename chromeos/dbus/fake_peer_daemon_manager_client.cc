@@ -15,6 +15,32 @@ FakePeerDaemonManagerClient::~FakePeerDaemonManagerClient() {
 void FakePeerDaemonManagerClient::Init(dbus::Bus* bus) {
 }
 
+void FakePeerDaemonManagerClient::AddObserver(Observer* observer) {
+}
+
+void FakePeerDaemonManagerClient::RemoveObserver(Observer* observer) {
+}
+
+std::vector<dbus::ObjectPath> FakePeerDaemonManagerClient::GetPeers() {
+  return std::vector<dbus::ObjectPath>();
+}
+
+std::vector<dbus::ObjectPath> FakePeerDaemonManagerClient::GetServices() {
+  return std::vector<dbus::ObjectPath>();
+}
+
+PeerDaemonManagerClient::PeerProperties*
+FakePeerDaemonManagerClient::GetPeerProperties(
+    const dbus::ObjectPath& object_path) {
+  return nullptr;
+}
+
+PeerDaemonManagerClient::ServiceProperties*
+FakePeerDaemonManagerClient::GetServiceProperties(
+    const dbus::ObjectPath& object_path) {
+  return nullptr;
+}
+
 void FakePeerDaemonManagerClient::StartMonitoring(
     const std::vector<std::string>& requested_technologies,
     const base::DictionaryValue& options,

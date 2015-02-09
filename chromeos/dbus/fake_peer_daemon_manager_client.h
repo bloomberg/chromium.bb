@@ -24,6 +24,14 @@ class FakePeerDaemonManagerClient : public PeerDaemonManagerClient {
   void Init(dbus::Bus* bus) override;
 
   // PeerDaemonManagerClient overrides:
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  std::vector<dbus::ObjectPath> GetPeers() override;
+  std::vector<dbus::ObjectPath> GetServices() override;
+  PeerProperties* GetPeerProperties(
+      const dbus::ObjectPath& object_path) override;
+  ServiceProperties* GetServiceProperties(
+      const dbus::ObjectPath& object_path) override;
   void StartMonitoring(const std::vector<std::string>& requested_technologies,
                        const base::DictionaryValue& options,
                        const StringDBusMethodCallback& callback) override;
