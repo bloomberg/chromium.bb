@@ -1257,6 +1257,8 @@
         'formats/common/offset_byte_queue_unittest.cc',
         'formats/webm/cluster_builder.cc',
         'formats/webm/cluster_builder.h',
+        'formats/webm/opus_packet_builder.cc',
+        'formats/webm/opus_packet_builder.h',
         'formats/webm/tracks_builder.cc',
         'formats/webm/tracks_builder.h',
         'formats/webm/webm_cluster_parser_unittest.cc',

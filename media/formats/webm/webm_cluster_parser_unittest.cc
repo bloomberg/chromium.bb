@@ -4,11 +4,14 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/decrypt_config.h"
 #include "media/formats/webm/cluster_builder.h"
+#include "media/formats/webm/opus_packet_builder.h"
 #include "media/formats/webm/webm_cluster_parser.h"
 #include "media/formats/webm/webm_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,6 +34,8 @@ enum {
   kTestVideoFrameDefaultDurationInMs = 17
 };
 
+// Test duration defaults must differ from parser estimation defaults to know
+// which durations parser used when emitting buffers.
 static_assert(
     static_cast<int>(kTestAudioFrameDefaultDurationInMs) !=
         static_cast<int>(WebMClusterParser::kDefaultAudioBufferDurationInMs),
@@ -49,21 +54,27 @@ struct BlockInfo {
   // this BlockGroup. The absolute value is used for parser verification.
   // For simple blocks, this value must be non-negative, and is used only for
   // parser verification.
-  int duration;
+  double duration;
+
   bool use_simple_block;
+
+  // Default data will be used if no data given.
+  const uint8_t* data;
+  int data_length;
 };
 
 static const BlockInfo kDefaultBlockInfo[] = {
-  { kAudioTrackNum, 0, 23, true },
-  { kAudioTrackNum, 23, 23, true },
-  { kVideoTrackNum, 33, 34, true },  // Assumes not using DefaultDuration
-  { kAudioTrackNum, 46, 23, true },
-  { kVideoTrackNum, 67, 33, false },
-  { kAudioTrackNum, 69, 23, false },
-  { kVideoTrackNum, 100, 33, false },
+    {kAudioTrackNum, 0, 23, true, NULL, 0},
+    {kAudioTrackNum, 23, 23, true, NULL, 0},
+    // Assumes not using DefaultDuration
+    {kVideoTrackNum, 33, 34, true, NULL, 0},
+    {kAudioTrackNum, 46, 23, true, NULL, 0},
+    {kVideoTrackNum, 67, 33, false, NULL, 0},
+    {kAudioTrackNum, 69, 23, false, NULL, 0},
+    {kVideoTrackNum, 100, 33, false, NULL, 0},
 };
 
-static const uint8 kEncryptedFrame[] = {
+static const uint8_t kEncryptedFrame[] = {
   0x01,  // Block is encrypted
   0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08  // IV
 };
@@ -74,27 +85,35 @@ static scoped_ptr<Cluster> CreateCluster(int timecode,
   ClusterBuilder cb;
   cb.SetClusterTimecode(0);
 
+  uint8_t kDefaultBlockData[] = { 0x00 };
+
   for (int i = 0; i < block_count; i++) {
-    uint8 data[] = { 0x00 };
+    const uint8_t* data;
+    int data_length;
+    if (block_info[i].data != NULL) {
+      data = block_info[i].data;
+      data_length = block_info[i].data_length;
+    } else {
+      data = kDefaultBlockData;
+      data_length = sizeof(kDefaultBlockData);
+    }
+
     if (block_info[i].use_simple_block) {
       CHECK_GE(block_info[i].duration, 0);
-      cb.AddSimpleBlock(block_info[i].track_num,
-                        block_info[i].timestamp,
-                        0, data, sizeof(data));
+      cb.AddSimpleBlock(block_info[i].track_num, block_info[i].timestamp, 0,
+                        data, data_length);
       continue;
     }
 
     if (block_info[i].duration < 0) {
       cb.AddBlockGroupWithoutBlockDuration(block_info[i].track_num,
-                                           block_info[i].timestamp,
-                                           0, data, sizeof(data));
+                                           block_info[i].timestamp, 0, data,
+                                           data_length);
       continue;
     }
 
-    cb.AddBlockGroup(block_info[i].track_num,
-                     block_info[i].timestamp,
-                     block_info[i].duration,
-                     0, data, sizeof(data));
+    cb.AddBlockGroup(block_info[i].track_num, block_info[i].timestamp,
+                     block_info[i].duration, 0, data, data_length);
   }
 
   return cb.Finish();
@@ -161,7 +180,7 @@ static bool VerifyBuffers(const WebMClusterParser::BufferQueue& audio_buffers,
 
     EXPECT_EQ(block_info[i].timestamp, buffer->timestamp().InMilliseconds());
     EXPECT_EQ(std::abs(block_info[i].duration),
-              buffer->duration().InMilliseconds());
+              buffer->duration().InMillisecondsF());
     EXPECT_EQ(expected_type, buffer->type());
     EXPECT_EQ(block_info[i].track_num, buffer->track_id());
   }
@@ -212,7 +231,7 @@ static bool VerifyTextBuffers(
     const scoped_refptr<StreamParserBuffer> buffer = *buffer_iter++;
     EXPECT_EQ(block_info.timestamp, buffer->timestamp().InMilliseconds());
     EXPECT_EQ(std::abs(block_info.duration),
-              buffer->duration().InMilliseconds());
+              buffer->duration().InMillisecondsF());
     EXPECT_EQ(DemuxerStream::TEXT, buffer->type());
     EXPECT_EQ(text_track_num, buffer->track_id());
   }
@@ -248,6 +267,7 @@ class WebMClusterParserTest : public testing::Test {
                                       std::set<int64>(),
                                       std::string(),
                                       std::string(),
+                                      kUnknownAudioCodec,
                                       LogCB())) {}
 
  protected:
@@ -270,6 +290,7 @@ class WebMClusterParserTest : public testing::Test {
                                         std::set<int64>(),
                                         std::string(),
                                         std::string(),
+                                        kUnknownAudioCodec,
                                         LogCB()));
   }
 
@@ -305,18 +326,19 @@ TEST_F(WebMClusterParserTest, HeldBackBufferHoldsBackAllTracks) {
                                       std::set<int64>(),
                                       std::string(),
                                       std::string(),
+                                      kUnknownAudioCodec,
                                       LogCB()));
 
   const BlockInfo kBlockInfo[] = {
-    { kVideoTrackNum, 0, 33, true },
-    { kAudioTrackNum, 0, 23, false },
-    { kTextTrackNum, 10, 42, false },
-    { kAudioTrackNum, 23, kTestAudioFrameDefaultDurationInMs, true },
-    { kVideoTrackNum, 33, 33, true },
-    { kAudioTrackNum, 36, kTestAudioFrameDefaultDurationInMs, true },
-    { kVideoTrackNum, 66, 33, true },
-    { kAudioTrackNum, 70, kTestAudioFrameDefaultDurationInMs, true },
-    { kAudioTrackNum, 83, kTestAudioFrameDefaultDurationInMs, true },
+      {kVideoTrackNum, 0, 33, true, NULL, 0},
+      {kAudioTrackNum, 0, 23, false, NULL, 0},
+      {kTextTrackNum, 10, 42, false, NULL, 0},
+      {kAudioTrackNum, 23, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
+      {kVideoTrackNum, 33, 33, true, NULL, 0},
+      {kAudioTrackNum, 36, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
+      {kVideoTrackNum, 66, 33, true, NULL, 0},
+      {kAudioTrackNum, 70, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
+      {kAudioTrackNum, 83, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
   };
 
   const int kExpectedBuffersOnPartialCluster[] = {
@@ -407,7 +429,7 @@ TEST_F(WebMClusterParserTest, ParseClusterWithMultipleCalls) {
   WebMClusterParser::BufferQueue video_buffers;
   const WebMClusterParser::BufferQueue no_text_buffers;
 
-  const uint8* data = cluster->data();
+  const uint8_t* data = cluster->data();
   int size = cluster->size();
   int default_parse_size = 3;
   int parse_size = std::min(default_parse_size, size);
@@ -444,12 +466,12 @@ TEST_F(WebMClusterParserTest, ParseClusterWithMultipleCalls) {
 // one of these scenarios.
 TEST_F(WebMClusterParserTest, ParseBlockGroup) {
   const BlockInfo kBlockInfo[] = {
-    { kAudioTrackNum, 0, 23, false },
-    { kVideoTrackNum, 33, 34, false },
+      {kAudioTrackNum, 0, 23, false, NULL, 0},
+      {kVideoTrackNum, 33, 34, false, NULL, 0},
   };
   int block_count = arraysize(kBlockInfo);
 
-  const uint8 kClusterData[] = {
+  const uint8_t kClusterData[] = {
     0x1F, 0x43, 0xB6, 0x75, 0x9B,  // Cluster(size=27)
     0xE7, 0x81, 0x00,  // Timecode(size=1, value=0)
     // BlockGroup with BlockDuration before Block.
@@ -470,11 +492,11 @@ TEST_F(WebMClusterParserTest, ParseBlockGroup) {
 
 TEST_F(WebMClusterParserTest, ParseSimpleBlockAndBlockGroupMixture) {
   const BlockInfo kBlockInfo[] = {
-    { kAudioTrackNum, 0, 23, true },
-    { kAudioTrackNum, 23, 23, false },
-    { kVideoTrackNum, 33, 34, true },
-    { kAudioTrackNum, 46, 23, false },
-    { kVideoTrackNum, 67, 33, false },
+      {kAudioTrackNum, 0, 23, true, NULL, 0},
+      {kAudioTrackNum, 23, 23, false, NULL, 0},
+      {kVideoTrackNum, 33, 34, true, NULL, 0},
+      {kAudioTrackNum, 46, 23, false, NULL, 0},
+      {kVideoTrackNum, 67, 33, false, NULL, 0},
   };
   int block_count = arraysize(kBlockInfo);
   scoped_ptr<Cluster> cluster(CreateCluster(0, kBlockInfo, block_count));
@@ -497,24 +519,25 @@ TEST_F(WebMClusterParserTest, IgnoredTracks) {
                                       ignored_tracks,
                                       std::string(),
                                       std::string(),
+                                      kUnknownAudioCodec,
                                       LogCB()));
 
   const BlockInfo kInputBlockInfo[] = {
-    { kAudioTrackNum, 0,  23, true },
-    { kAudioTrackNum, 23, 23, true },
-    { kVideoTrackNum, 33, 34, true },
-    { kTextTrackNum,  33, 99, true },
-    { kAudioTrackNum, 46, 23, true },
-    { kVideoTrackNum, 67, 34, true },
+      {kAudioTrackNum, 0, 23, true, NULL, 0},
+      {kAudioTrackNum, 23, 23, true, NULL, 0},
+      {kVideoTrackNum, 33, 34, true, NULL, 0},
+      {kTextTrackNum, 33, 99, true, NULL, 0},
+      {kAudioTrackNum, 46, 23, true, NULL, 0},
+      {kVideoTrackNum, 67, 34, true, NULL, 0},
   };
   int input_block_count = arraysize(kInputBlockInfo);
 
   const BlockInfo kOutputBlockInfo[] = {
-    { kAudioTrackNum, 0,  23, true },
-    { kAudioTrackNum, 23, 23, true },
-    { kVideoTrackNum, 33, 34, true },
-    { kAudioTrackNum, 46, 23, true },
-    { kVideoTrackNum, 67, 34, true },
+      {kAudioTrackNum, 0, 23, true, NULL, 0},
+      {kAudioTrackNum, 23, 23, true, NULL, 0},
+      {kVideoTrackNum, 33, 34, true, NULL, 0},
+      {kAudioTrackNum, 46, 23, true, NULL, 0},
+      {kVideoTrackNum, 67, 34, true, NULL, 0},
   };
   int output_block_count = arraysize(kOutputBlockInfo);
 
@@ -542,16 +565,17 @@ TEST_F(WebMClusterParserTest, ParseTextTracks) {
                                       std::set<int64>(),
                                       std::string(),
                                       std::string(),
+                                      kUnknownAudioCodec,
                                       LogCB()));
 
   const BlockInfo kInputBlockInfo[] = {
-    { kAudioTrackNum, 0,  23, true },
-    { kAudioTrackNum, 23, 23, true },
-    { kVideoTrackNum, 33, 34, true },
-    { kTextTrackNum,  33, 42, false },
-    { kAudioTrackNum, 46, 23, true },
-    { kTextTrackNum, 55, 44, false },
-    { kVideoTrackNum, 67, 34, true },
+      {kAudioTrackNum, 0, 23, true, NULL, 0},
+      {kAudioTrackNum, 23, 23, true, NULL, 0},
+      {kVideoTrackNum, 33, 34, true, NULL, 0},
+      {kTextTrackNum, 33, 42, false, NULL, 0},
+      {kAudioTrackNum, 46, 23, true, NULL, 0},
+      {kTextTrackNum, 55, 44, false, NULL, 0},
+      {kVideoTrackNum, 67, 34, true, NULL, 0},
   };
   int input_block_count = arraysize(kInputBlockInfo);
 
@@ -579,6 +603,7 @@ TEST_F(WebMClusterParserTest, TextTracksSimpleBlock) {
                                       std::set<int64>(),
                                       std::string(),
                                       std::string(),
+                                      kUnknownAudioCodec,
                                       LogCB()));
 
   const BlockInfo kInputBlockInfo[] = {
@@ -616,17 +641,18 @@ TEST_F(WebMClusterParserTest, ParseMultipleTextTracks) {
                                       std::set<int64>(),
                                       std::string(),
                                       std::string(),
+                                      kUnknownAudioCodec,
                                       LogCB()));
 
   const BlockInfo kInputBlockInfo[] = {
-    { kAudioTrackNum, 0,  23, true },
-    { kAudioTrackNum, 23, 23, true },
-    { kVideoTrackNum, 33, 34, true },
-    { kSubtitleTextTrackNum,  33, 42, false },
-    { kAudioTrackNum, 46, 23, true },
-    { kCaptionTextTrackNum, 55, 44, false },
-    { kVideoTrackNum, 67, 34, true },
-    { kSubtitleTextTrackNum,  67, 33, false },
+      {kAudioTrackNum, 0, 23, true, NULL, 0},
+      {kAudioTrackNum, 23, 23, true, NULL, 0},
+      {kVideoTrackNum, 33, 34, true, NULL, 0},
+      {kSubtitleTextTrackNum, 33, 42, false, NULL, 0},
+      {kAudioTrackNum, 46, 23, true, NULL, 0},
+      {kCaptionTextTrackNum, 55, 44, false, NULL, 0},
+      {kVideoTrackNum, 67, 34, true, NULL, 0},
+      {kSubtitleTextTrackNum, 67, 33, false, NULL, 0},
   };
   int input_block_count = arraysize(kInputBlockInfo);
 
@@ -662,6 +688,7 @@ TEST_F(WebMClusterParserTest, ParseEncryptedBlock) {
                                       std::set<int64>(),
                                       std::string(),
                                       "video_key_id",
+                                      kUnknownAudioCodec,
                                       LogCB()));
   int result = parser_->Parse(cluster->data(), cluster->size());
   EXPECT_EQ(cluster->size(), result);
@@ -683,13 +710,14 @@ TEST_F(WebMClusterParserTest, ParseBadEncryptedBlock) {
                                       std::set<int64>(),
                                       std::string(),
                                       "video_key_id",
+                                      kUnknownAudioCodec,
                                       LogCB()));
   int result = parser_->Parse(cluster->data(), cluster->size());
   EXPECT_EQ(-1, result);
 }
 
 TEST_F(WebMClusterParserTest, ParseInvalidZeroSizedCluster) {
-  const uint8 kBuffer[] = {
+  const uint8_t kBuffer[] = {
     0x1F, 0x43, 0xB6, 0x75, 0x80,  // CLUSTER (size = 0)
   };
 
@@ -697,7 +725,7 @@ TEST_F(WebMClusterParserTest, ParseInvalidZeroSizedCluster) {
 }
 
 TEST_F(WebMClusterParserTest, ParseInvalidUnknownButActuallyZeroSizedCluster) {
-  const uint8 kBuffer[] = {
+  const uint8_t kBuffer[] = {
     0x1F, 0x43, 0xB6, 0x75, 0xFF,  // CLUSTER (size = "unknown")
     0x1F, 0x43, 0xB6, 0x75, 0x85,  // CLUSTER (size = 5)
   };
@@ -722,6 +750,7 @@ TEST_F(WebMClusterParserTest, ParseInvalidTextBlockGroupWithoutDuration) {
                                       std::set<int64>(),
                                       std::string(),
                                       std::string(),
+                                      kUnknownAudioCodec,
                                       LogCB()));
 
   const BlockInfo kBlockInfo[] = {
@@ -741,13 +770,13 @@ TEST_F(WebMClusterParserTest, ParseWithDefaultDurationsSimpleBlocks) {
   EXPECT_LT(kTestVideoFrameDefaultDurationInMs, 33);
 
   const BlockInfo kBlockInfo[] = {
-    { kAudioTrackNum, 0, kTestAudioFrameDefaultDurationInMs, true },
-    { kAudioTrackNum, 23, kTestAudioFrameDefaultDurationInMs, true },
-    { kVideoTrackNum, 33, kTestVideoFrameDefaultDurationInMs, true },
-    { kAudioTrackNum, 46, kTestAudioFrameDefaultDurationInMs, true },
-    { kVideoTrackNum, 67, kTestVideoFrameDefaultDurationInMs, true },
-    { kAudioTrackNum, 69, kTestAudioFrameDefaultDurationInMs, true },
-    { kVideoTrackNum, 100, kTestVideoFrameDefaultDurationInMs, true },
+      {kAudioTrackNum, 0, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
+      {kAudioTrackNum, 23, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
+      {kVideoTrackNum, 33, kTestVideoFrameDefaultDurationInMs, true, NULL, 0},
+      {kAudioTrackNum, 46, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
+      {kVideoTrackNum, 67, kTestVideoFrameDefaultDurationInMs, true, NULL, 0},
+      {kAudioTrackNum, 69, kTestAudioFrameDefaultDurationInMs, true, NULL, 0},
+      {kVideoTrackNum, 100, kTestVideoFrameDefaultDurationInMs, true, NULL, 0},
   };
 
   int block_count = arraysize(kBlockInfo);
@@ -778,13 +807,15 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsSimpleBlocks) {
   // as the lowest non-zero duration seen so far if the last buffer in the track
   // in the cluster (independently for each track in the cluster).
   const BlockInfo kBlockInfo1[] = {
-    { kAudioTrackNum, 0, 23, true },
-    { kAudioTrackNum, 23, 22, true },
-    { kVideoTrackNum, 33, 33, true },
-    { kAudioTrackNum, 45, 23, true },
-    { kVideoTrackNum, 66, 34, true },
-    { kAudioTrackNum, 68, 22, true },  // Estimated from minimum audio dur
-    { kVideoTrackNum, 100, 33, true },  // Estimated from minimum video dur
+      {kAudioTrackNum, 0, 23, true, NULL, 0},
+      {kAudioTrackNum, 23, 22, true, NULL, 0},
+      {kVideoTrackNum, 33, 33, true, NULL, 0},
+      {kAudioTrackNum, 45, 23, true, NULL, 0},
+      {kVideoTrackNum, 66, 34, true, NULL, 0},
+      // Estimated from minimum audio dur
+      {kAudioTrackNum, 68, 22, true, NULL, 0},
+      // Estimated from minimum video dur
+      {kVideoTrackNum, 100, 33, true, NULL, 0},
   };
 
   int block_count1 = arraysize(kBlockInfo1);
@@ -812,8 +843,10 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsSimpleBlocks) {
   // Verify that the estimated frame duration is tracked across clusters for
   // each track.
   const BlockInfo kBlockInfo2[] = {
-    { kAudioTrackNum, 200, 22, true },  // Estimate carries over across clusters
-    { kVideoTrackNum, 201, 33, true },  // Estimate carries over across clusters
+      // Estimate carries over across clusters
+      {kAudioTrackNum, 200, 22, true, NULL, 0},
+      // Estimate carries over across clusters
+      {kVideoTrackNum, 201, 33, true, NULL, 0},
   };
 
   int block_count2 = arraysize(kBlockInfo2);
@@ -831,14 +864,16 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsBlockGroups) {
   // cluster, and are estimated as the lowest non-zero duration seen so far if
   // the last buffer in the track in the cluster (independently for each track
   // in the cluster).
-    const BlockInfo kBlockInfo1[] = {
-    { kAudioTrackNum, 0, -23, false },
-    { kAudioTrackNum, 23, -22, false },
-    { kVideoTrackNum, 33, -33, false },
-    { kAudioTrackNum, 45, -23, false },
-    { kVideoTrackNum, 66, -34, false },
-    { kAudioTrackNum, 68, -22, false },  // Estimated from minimum audio dur
-    { kVideoTrackNum, 100, -33, false },  // Estimated from minimum video dur
+  const BlockInfo kBlockInfo1[] = {
+      {kAudioTrackNum, 0, -23, false, NULL, 0},
+      {kAudioTrackNum, 23, -22, false, NULL, 0},
+      {kVideoTrackNum, 33, -33, false, NULL, 0},
+      {kAudioTrackNum, 45, -23, false, NULL, 0},
+      {kVideoTrackNum, 66, -34, false, NULL, 0},
+      // Estimated from minimum audio dur
+      {kAudioTrackNum, 68, -22, false, NULL, 0},
+      // Estimated from minimum video dur
+      {kVideoTrackNum, 100, -33, false, NULL, 0},
   };
 
   int block_count1 = arraysize(kBlockInfo1);
@@ -866,8 +901,8 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsBlockGroups) {
   // Verify that the estimated frame duration is tracked across clusters for
   // each track.
   const BlockInfo kBlockInfo2[] = {
-    { kAudioTrackNum, 200, -22, false },
-    { kVideoTrackNum, 201, -33, false },
+      {kAudioTrackNum, 200, -22, false, NULL, 0},
+      {kVideoTrackNum, 201, -33, false, NULL, 0},
   };
 
   int block_count2 = arraysize(kBlockInfo2);
@@ -887,13 +922,18 @@ TEST_F(WebMClusterParserTest,
   EXPECT_LT(kTestVideoFrameDefaultDurationInMs, 33);
 
   const BlockInfo kBlockInfo[] = {
-    { kAudioTrackNum, 0, -kTestAudioFrameDefaultDurationInMs, false },
-    { kAudioTrackNum, 23, -kTestAudioFrameDefaultDurationInMs, false },
-    { kVideoTrackNum, 33, -kTestVideoFrameDefaultDurationInMs, false },
-    { kAudioTrackNum, 46, -kTestAudioFrameDefaultDurationInMs, false },
-    { kVideoTrackNum, 67, -kTestVideoFrameDefaultDurationInMs, false },
-    { kAudioTrackNum, 69, -kTestAudioFrameDefaultDurationInMs, false },
-    { kVideoTrackNum, 100, -kTestVideoFrameDefaultDurationInMs, false },
+      {kAudioTrackNum, 0, -kTestAudioFrameDefaultDurationInMs, false, NULL, 0},
+      {kAudioTrackNum, 23, -kTestAudioFrameDefaultDurationInMs, false, NULL, 0},
+      {kVideoTrackNum, 33, -kTestVideoFrameDefaultDurationInMs, false, NULL, 0},
+      {kAudioTrackNum, 46, -kTestAudioFrameDefaultDurationInMs, false, NULL, 0},
+      {kVideoTrackNum, 67, -kTestVideoFrameDefaultDurationInMs, false, NULL, 0},
+      {kAudioTrackNum, 69, -kTestAudioFrameDefaultDurationInMs, false, NULL, 0},
+      {kVideoTrackNum,
+       100,
+       -kTestVideoFrameDefaultDurationInMs,
+       false,
+       NULL,
+       0},
   };
 
   int block_count = arraysize(kBlockInfo);
@@ -951,6 +991,100 @@ TEST_F(WebMClusterParserTest,
   scoped_ptr<Cluster> cluster(CreateCluster(0, kBlockInfo, block_count));
   int result = parser_->Parse(cluster->data(), cluster->size());
   EXPECT_EQ(cluster->size(), result);
+  ASSERT_TRUE(VerifyBuffers(parser_, kBlockInfo, block_count));
+}
+
+TEST_F(WebMClusterParserTest, ReadOpusDurationsSimpleBlockAtEndOfCluster) {
+  // Reset parser to expect Opus codec audio.
+  parser_.reset(new WebMClusterParser(
+      kTimecodeScale, kAudioTrackNum, kNoTimestamp(), kVideoTrackNum,
+      kNoTimestamp(), TextTracks(), std::set<int64>(), std::string(),
+      std::string(), kCodecOpus, LogCB()));
+
+  int loop_count = 0;
+  for (const auto* packet_ptr : BuildAllOpusPackets()) {
+    const BlockInfo kBlockInfo[] = {{kAudioTrackNum,
+                                     0,
+                                     packet_ptr->duration_ms(),
+                                     true,  // Make it a SimpleBlock.
+                                     packet_ptr->data(),
+                                     packet_ptr->size()}};
+
+    int block_count = arraysize(kBlockInfo);
+    scoped_ptr<Cluster> cluster(CreateCluster(0, kBlockInfo, block_count));
+    int result = parser_->Parse(cluster->data(), cluster->size());
+    EXPECT_EQ(cluster->size(), result);
+    ASSERT_TRUE(VerifyBuffers(parser_, kBlockInfo, block_count));
+    loop_count++;
+  }
+
+  // Test should minimally cover all the combinations of config and frame count.
+  ASSERT_GE(loop_count, kNumPossibleOpusConfigs * kMaxOpusPacketFrameCount);
+}
+
+TEST_F(WebMClusterParserTest, PreferOpusDurationsOverBlockDurations) {
+  // Reset parser to expect Opus codec audio.
+  parser_.reset(new WebMClusterParser(
+      kTimecodeScale, kAudioTrackNum, kNoTimestamp(), kVideoTrackNum,
+      kNoTimestamp(), TextTracks(), std::set<int64>(), std::string(),
+      std::string(), kCodecOpus, LogCB()));
+
+  int loop_count = 0;
+  for (const auto* packet_ptr : BuildAllOpusPackets()) {
+    // Setting BlockDuration != Opus duration to see which one the parser uses.
+    int block_duration_ms = packet_ptr->duration_ms() + 10;
+
+    BlockInfo block_infos[] = {{kAudioTrackNum,
+                                0,
+                                block_duration_ms,
+                                false,  // Not a SimpleBlock.
+                                packet_ptr->data(),
+                                packet_ptr->size()}};
+
+    int block_count = arraysize(block_infos);
+    scoped_ptr<Cluster> cluster(CreateCluster(0, block_infos, block_count));
+    int result = parser_->Parse(cluster->data(), cluster->size());
+    EXPECT_EQ(cluster->size(), result);
+
+    // BlockInfo duration will be used to verify buffer duration, so changing
+    // duration to be that of the Opus packet to verify it was preferred.
+    block_infos[0].duration = packet_ptr->duration_ms();
+
+    ASSERT_TRUE(VerifyBuffers(parser_, block_infos, block_count));
+    loop_count++;
+  }
+
+  // Test should minimally cover all the combinations of config and frame count.
+  ASSERT_GE(loop_count, kNumPossibleOpusConfigs * kMaxOpusPacketFrameCount);
+}
+
+// Tests that BlockDuration is used to set duration on buffer rather than
+// encoded duration in Opus packet (or hard coded duration estimates). Encoded
+// Opus duration is usually preferred but cannot be known when encrypted.
+TEST_F(WebMClusterParserTest, DontReadEncodedDurationWhenEncrypted) {
+  // Non-empty dummy value signals encryption is active for audio.
+  std::string audio_encryption_id("audio_key_id");
+
+  // Reset parser to expect Opus codec audio and use audio encryption key id.
+  parser_.reset(new WebMClusterParser(
+      kTimecodeScale, kAudioTrackNum, kNoTimestamp(), kVideoTrackNum,
+      kNoTimestamp(), TextTracks(), std::set<int64>(), audio_encryption_id,
+      std::string(), kCodecOpus, LogCB()));
+
+  // Single Block with BlockDuration and encrypted data.
+  const BlockInfo kBlockInfo[] = {{kAudioTrackNum,
+                                   0,
+                                   kTestAudioFrameDefaultDurationInMs,
+                                   false,            // Not a SimpleBlock
+                                   kEncryptedFrame,  // Encrypted frame data
+                                   arraysize(kEncryptedFrame)}};
+
+  int block_count = arraysize(kBlockInfo);
+  scoped_ptr<Cluster> cluster(CreateCluster(0, kBlockInfo, block_count));
+  int result = parser_->Parse(cluster->data(), cluster->size());
+  EXPECT_EQ(cluster->size(), result);
+
+  // Will verify that duration of buffer matches that of BlockDuration.
   ASSERT_TRUE(VerifyBuffers(parser_, kBlockInfo, block_count));
 }
 

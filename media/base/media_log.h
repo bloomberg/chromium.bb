@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
@@ -35,6 +36,11 @@ class LogHelper {
 };
 
 #define MEDIA_LOG(log_cb) LogHelper(log_cb).stream()
+
+// Logs only while count < max. Increments count for each log. Use LAZY_STREAM
+// to avoid wasteful evaluation of subsequent stream arguments.
+#define LIMITED_MEDIA_LOG(log_cb, count, max) \
+  LAZY_STREAM(MEDIA_LOG(log_cb), (count) < (max) && ((count)++ || true))
 
 class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
  public:
