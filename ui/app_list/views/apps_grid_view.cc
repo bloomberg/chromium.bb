@@ -60,7 +60,7 @@ namespace {
 const int kDragBufferPx = 20;
 
 // Padding space in pixels for fixed layout.
-const int kBottomPadding = 3;
+const int kBottomPadding = 2;
 const int kLeftRightPadding = 24;
 
 // Padding space in pixels between pages.
@@ -70,12 +70,13 @@ const int kPagePadding = 40;
 const int kPreferredTileWidth = 88;
 const int kPreferredTileHeight = 98;
 
-const int kExperimentalPreferredTileWidth = 90;
-const int kExperimentalPreferredTileHeight = 90;
+const int kExperimentalPreferredTileWidth = 100;
+const int kExperimentalPreferredTileHeight = 100;
 
 // Padding on each side of a tile.
-const int kExperimentalTileLeftRightPadding = 15;
-const int kExperimentalTileTopBottomPadding = 11;
+const int kExperimentalTileLeftRightPadding = 10;
+const int kExperimentalTileBottomPadding = 12;
+const int kExperimentalTileTopPadding = 6;
 
 // Width in pixels of the area on the sides that triggers a page flip.
 const int kPageFlipZoneSize = 40;
@@ -109,6 +110,16 @@ gfx::Size GetTileViewSize() {
              ? gfx::Size(kExperimentalPreferredTileWidth,
                          kExperimentalPreferredTileHeight)
              : gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
+}
+
+// Returns the padding around a tile view.
+gfx::Insets GetTilePadding() {
+  if (!switches::IsExperimentalAppListEnabled())
+    return gfx::Insets();
+
+  return gfx::Insets(
+      -kExperimentalTileLeftRightPadding, -kExperimentalTileTopPadding,
+      -kExperimentalTileLeftRightPadding, -kExperimentalTileBottomPadding);
 }
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
@@ -407,7 +418,7 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
 
   if (switches::IsExperimentalAppListEnabled()) {
     SetBorder(views::Border::CreateEmptyBorder(
-        0, kExperimentalWindowPadding, 0, kExperimentalWindowPadding));
+        0, kExperimentalAppsGridPadding, 0, kExperimentalAppsGridPadding));
   } else {
     SetBorder(views::Border::CreateEmptyBorder(
         0, kLeftRightPadding, kBottomPadding, kLeftRightPadding));
@@ -419,7 +430,7 @@ gfx::Size AppsGridView::GetTotalTileSize() {
   gfx::Size size = GetTileViewSize();
   if (switches::IsExperimentalAppListEnabled()) {
     size.Enlarge(2 * kExperimentalTileLeftRightPadding,
-                 2 * kExperimentalTileTopBottomPadding);
+                 kExperimentalTileBottomPadding);
   }
   return size;
 }
@@ -2120,9 +2131,7 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
 gfx::Size AppsGridView::GetTileGridSize() const {
   gfx::Rect bounds = GetExpectedTileBounds(0, 0);
   bounds.Union(GetExpectedTileBounds(rows_per_page_ - 1, cols_ - 1));
-  if (switches::IsExperimentalAppListEnabled())
-    bounds.Inset(-kExperimentalTileLeftRightPadding,
-                 -kExperimentalTileTopBottomPadding);
+  bounds.Inset(GetTilePadding());
   return bounds.size();
 }
 
@@ -2136,7 +2145,7 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(int row, int col) const {
   gfx::Rect tile_bounds(gfx::Point(bounds.x() + col * total_tile_size.width(),
                                    bounds.y() + row * total_tile_size.height()),
                         total_tile_size);
-  tile_bounds.ClampToCenteredSize(GetTileViewSize());
+  tile_bounds.Inset(-GetTilePadding());
   return tile_bounds;
 }
 

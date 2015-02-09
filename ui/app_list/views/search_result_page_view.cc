@@ -51,8 +51,8 @@ SearchResultPageView::SearchResultPageView() : selected_index_(0) {
     gfx::ShadowValue shadow = GetShadowForZHeight(1);
     scoped_ptr<views::Border> border(new views::ShadowBorder(shadow));
 
-    gfx::Insets insets = gfx::Insets(kTopPadding, kExperimentalWindowPadding, 0,
-                                     kExperimentalWindowPadding);
+    gfx::Insets insets = gfx::Insets(kTopPadding, kExperimentalSearchBoxPadding,
+                                     0, kExperimentalSearchBoxPadding);
     insets += -border->GetInsets();
 
     views::BoxLayout* layout =

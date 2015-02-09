@@ -201,7 +201,7 @@ void FolderHeaderView::OnPaint(gfx::Canvas* canvas) {
 
   // Draw bottom separator line.
   int horizontal_padding = app_list::switches::IsExperimentalAppListEnabled()
-                               ? kExperimentalWindowPadding
+                               ? kExperimentalAppsGridPadding
                                : kBottomSeparatorPadding;
   rect.Inset(horizontal_padding, 0);
   rect.set_y(rect.bottom() - kBottomSeparatorHeight);

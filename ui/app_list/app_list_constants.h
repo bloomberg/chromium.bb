@@ -69,7 +69,8 @@ APP_LIST_EXPORT extern const int kExperimentalPreferredRows;
 
 APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;
 
-APP_LIST_EXPORT extern const int kExperimentalWindowPadding;
+APP_LIST_EXPORT extern const int kExperimentalAppsGridPadding;
+APP_LIST_EXPORT extern const int kExperimentalSearchBoxPadding;
 
 APP_LIST_EXPORT extern size_t kMaxFolderItems;
 APP_LIST_EXPORT extern const size_t kNumFolderTopItems;

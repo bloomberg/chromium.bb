@@ -39,8 +39,8 @@ namespace app_list {
 
 namespace {
 
-const int kTopPadding = 20;
-const int kIconTitleSpacing = 7;
+const int kTopPadding = 18;
+const int kIconTitleSpacing = 6;
 const int kProgressBarHorizontalPadding = 12;
 
 // Radius of the folder dropping preview circle.

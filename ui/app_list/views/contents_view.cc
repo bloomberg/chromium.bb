@@ -356,8 +356,8 @@ gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
   gfx::Rect search_box_bounds(0, 0, GetDefaultContentsSize().width(),
                               GetSearchBoxView()->GetPreferredSize().height());
   if (switches::IsExperimentalAppListEnabled()) {
-    search_box_bounds.set_y(kExperimentalWindowPadding);
-    search_box_bounds.Inset(kExperimentalWindowPadding, 0);
+    search_box_bounds.set_y(kExperimentalSearchBoxPadding);
+    search_box_bounds.Inset(kExperimentalSearchBoxPadding, 0);
   }
   return search_box_bounds;
 }

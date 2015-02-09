@@ -309,8 +309,7 @@ void AppListViewTestContext::RunDisplayTest() {
       EXPECT_EQ("576x402", view_->bounds().size().ToString());
       break;
     case EXPERIMENTAL:
-      // TODO(calamity): This should be 768x560, to match the most recent mocks.
-      EXPECT_EQ("768x577", view_->bounds().size().ToString());
+      EXPECT_EQ("768x570", view_->bounds().size().ToString());
       break;
     default:
       NOTREACHED();

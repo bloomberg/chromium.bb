@@ -98,8 +98,13 @@ const int kExperimentalPreferredRows = 4;
 // Radius of the circle, in which if entered, show re-order preview.
 const int kReorderDroppingCircleRadius = 35;
 
-// The padding around the outside of the experimental app list (top and sides).
-const int kExperimentalWindowPadding = 24;
+// The padding around the outside of the experimental app list apps grid
+// (sides).
+const int kExperimentalAppsGridPadding = 24;
+
+// The padding around the outside of the experimental app list search box (top
+// and sides).
+const int kExperimentalSearchBoxPadding = 16;
 
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;

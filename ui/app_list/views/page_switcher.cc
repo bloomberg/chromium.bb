@@ -20,7 +20,7 @@ namespace app_list {
 
 namespace {
 
-const int kPreferredHeight = 57;
+const int kPreferredHeight = 58;
 
 const int kMaxButtonSpacing = 18;
 const int kMinButtonSpacing = 4;
