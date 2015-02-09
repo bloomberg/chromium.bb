@@ -9,6 +9,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
         '../third_party/libxml/libxml.gyp:libxml',
         'onc_component',
       ],
