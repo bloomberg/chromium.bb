@@ -297,9 +297,17 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     }
 
     private void checkRequestCaching(String url, boolean expectCached) {
+        checkRequestCaching(url, expectCached, false);
+    }
+
+    private void checkRequestCaching(String url, boolean expectCached,
+            boolean disableCache) {
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
                 url, listener, listener.getExecutor());
+        if (disableCache) {
+            urlRequest.disableCache();
+        }
         urlRequest.start();
         listener.blockForDone();
         assertEquals(expectCached, listener.mResponseInfo.wasCached());
@@ -346,6 +354,36 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testDisableCache() throws Exception {
+        enableCache(UrlRequestContextConfig.HttpCache.DISK);
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
+
+        // When cache is disabled, making a request does not write to the cache.
+        checkRequestCaching(url, false, true /** disable cache */);
+        checkRequestCaching(url, false);
+
+        // When cache is enabled, the second request is cached.
+        checkRequestCaching(url, false, true /** disable cache */);
+        checkRequestCaching(url, true);
+
+        // Shut down the server, next request should have a cached response.
+        NativeTestServer.shutdownNativeTestServer();
+        checkRequestCaching(url, true);
+
+        // Cache is disabled after server is shut down, request should fail.
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                url, listener, listener.getExecutor());
+        urlRequest.disableCache();
+        urlRequest.start();
+        listener.blockForDone();
+        assertNotNull(listener.mError);
+        assertEquals("Exception in CronetUrlRequest: net::ERR_CONNECTION_REFUSED",
+                listener.mError.getMessage());
     }
 
     // TODO(mef): Simple cache uses global thread pool that is not affected by

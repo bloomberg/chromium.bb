@@ -208,6 +208,16 @@ static void FollowDeferredRedirect(JNIEnv* env,
                  base::Unretained(request_adapter)));
 }
 
+static void DisableCache(JNIEnv* env,
+                         jobject jurl_request,
+                         jlong jurl_request_adapter) {
+  DCHECK(jurl_request_adapter);
+  CronetURLRequestAdapter* request_adapter =
+      reinterpret_cast<CronetURLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(!request_adapter->IsOnNetworkThread());
+  request_adapter->DisableCache();
+}
+
 static void PopulateResponseHeaders(JNIEnv* env,
                                     jobject jurl_request,
                                     jlong jurl_request_adapter,

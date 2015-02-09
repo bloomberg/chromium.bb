@@ -71,6 +71,9 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         for (Pair<String, String> requestHeader : mRequestHeaders) {
             mRequest.addHeader(requestHeader.first, requestHeader.second);
         }
+        if (!getUseCaches()) {
+            mRequest.disableCache();
+        }
         mRequest.start();
         // Blocks until onResponseStarted or onFailed is called.
         mMessageLoop.loop();

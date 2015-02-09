@@ -79,9 +79,6 @@ public class CronetTestActivity extends Activity {
             return;
         }
         mRequestFactory = initRequestFactory();
-        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(
-                getApplicationContext(), null);
-
         if (mRequestFactory == null) {
             return;
         }
@@ -120,6 +117,9 @@ public class CronetTestActivity extends Activity {
                 getApplicationContext(), config);
 
         mHistogramManager = HistogramManager.createHistogramManager();
+
+        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(
+                getApplicationContext(), config);
 
         return HttpUrlRequestFactory.createFactory(getApplicationContext(),
                                                    config);

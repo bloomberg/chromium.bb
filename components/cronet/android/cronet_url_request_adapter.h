@@ -121,6 +121,10 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   // prior to decompression.
   int64 GetTotalReceivedBytes() const;
 
+  // Bypasses cache. If context is not set up to use cache, this call has no
+  // effect.
+  void DisableCache();
+
   // net::URLRequest::Delegate overrides.
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
@@ -139,6 +143,7 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   const GURL initial_url_;
   const net::RequestPriority initial_priority_;
   std::string initial_method_;
+  int load_flags_;
   net::HttpRequestHeaders initial_request_headers_;
 
   scoped_refptr<net::IOBufferWithSize> read_buffer_;

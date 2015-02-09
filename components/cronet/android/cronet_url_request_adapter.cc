@@ -28,7 +28,8 @@ CronetURLRequestAdapter::CronetURLRequestAdapter(
       delegate_(delegate.Pass()),
       initial_url_(url),
       initial_priority_(priority),
-      initial_method_("GET") {
+      initial_method_("GET"),
+      load_flags_(context->default_load_flags()) {
 }
 
 CronetURLRequestAdapter::~CronetURLRequestAdapter() {
@@ -39,6 +40,11 @@ void CronetURLRequestAdapter::AddRequestHeader(const std::string& name,
                                                const std::string& value) {
   DCHECK(!IsOnNetworkThread());
   initial_request_headers_.SetHeader(name, value);
+}
+
+void CronetURLRequestAdapter::DisableCache() {
+  DCHECK(!IsOnNetworkThread());
+  load_flags_ |= net::LOAD_DISABLE_CACHE;
 }
 
 bool CronetURLRequestAdapter::PostTaskToNetworkThread(
@@ -59,7 +65,7 @@ void CronetURLRequestAdapter::Start() {
           << " priority: " << RequestPriorityToString(initial_priority_);
   url_request_ = context_->GetURLRequestContext()->CreateRequest(
       initial_url_, net::DEFAULT_PRIORITY, this, NULL);
-  url_request_->SetLoadFlags(context_->default_load_flags());
+  url_request_->SetLoadFlags(load_flags_);
   url_request_->set_method(initial_method_);
   url_request_->SetExtraRequestHeaders(initial_request_headers_);
   url_request_->SetPriority(initial_priority_);

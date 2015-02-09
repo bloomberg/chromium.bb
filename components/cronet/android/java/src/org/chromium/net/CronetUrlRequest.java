@@ -34,6 +34,7 @@ final class CronetUrlRequest implements UrlRequest {
     private boolean mStarted = false;
     private boolean mCanceled = false;
     private boolean mInOnDataReceived = false;
+    private boolean mDisableCache = false;
 
     /*
      * Synchronize access to mUrlRequestAdapter, mStarted, mCanceled and
@@ -280,6 +281,9 @@ final class CronetUrlRequest implements UrlRequest {
                             + header.first + "=" + header.second);
                 }
             }
+            if (mDisableCache) {
+                nativeDisableCache(mUrlRequestAdapter);
+            }
             mStarted = true;
             nativeStart(mUrlRequestAdapter);
         }
@@ -320,6 +324,12 @@ final class CronetUrlRequest implements UrlRequest {
     @Override
     public void resume() {
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void disableCache() {
+        checkNotStarted();
+        mDisableCache = true;
     }
 
     /**
@@ -620,4 +630,6 @@ final class CronetUrlRequest implements UrlRequest {
     private native boolean nativeGetWasCached(long urlRequestAdapter);
 
     private native long nativeGetTotalReceivedBytes(long urlRequestAdapter);
+
+    private native void nativeDisableCache(long urlRequestAdapter);
 }

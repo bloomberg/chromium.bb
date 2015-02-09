@@ -11,6 +11,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.cronet_test_apk.CronetTestActivity;
 import org.chromium.cronet_test_apk.CronetTestBase;
 import org.chromium.cronet_test_apk.NativeTestServer;
+import org.chromium.net.UrlRequestContextConfig;
 import org.chromium.net.UrlRequestException;
 
 import java.io.ByteArrayOutputStream;
@@ -41,7 +42,14 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mActivity = launchCronetTestApp();
+        UrlRequestContextConfig config = new UrlRequestContextConfig();
+        config.setStoragePath(prepareTestStorage());
+        config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK,
+                1000 * 1024);
+        String[] commandLineArgs = {
+                CronetTestActivity.CONFIG_KEY, config.toString()};
+        mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
+                commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
     }
@@ -709,6 +717,68 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals(null, connection.getHeaderFieldKey(6));
         assertEquals(null, connection.getHeaderField(6));
         connection.disconnect();
+    }
+
+    private static enum CacheSetting { USE_CACHE, DONT_USE_CACHE };
+
+    private static enum ExpectedOutcome { SUCCESS, FAILURE };
+
+    /**
+     * Helper method to make a request with cache enabled or disabled, and check
+     * whether the request is successful.
+     * @param requestUrl request url.
+     * @param cacheSetting indicates cache should be used.
+     * @param outcome indicates request is expected to be successful.
+     */
+    private void checkRequestCaching(String requestUrl,
+            CacheSetting cacheSetting,
+            ExpectedOutcome outcome) throws Exception {
+        URL url = new URL(requestUrl);
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        connection.setUseCaches(cacheSetting == CacheSetting.USE_CACHE);
+        if (outcome == ExpectedOutcome.SUCCESS) {
+            assertEquals(200, connection.getResponseCode());
+            assertEquals("this is a cacheable file\n",
+                    getResponseAsString(connection));
+        } else {
+            try {
+                connection.getResponseCode();
+                fail();
+            } catch (IOException e) {
+                // Expected.
+            }
+        }
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    // Strangely, the default implementation fails to return a cached response.
+    // If the server is shut down, the request just fails with a connection
+    // refused error. Therefore, this test and the next only runs Cronet.
+    public void testSetUseCaches() throws Exception {
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(url,
+                CacheSetting.USE_CACHE, ExpectedOutcome.SUCCESS);
+        // Shut down the server, we should be able to receive a cached response.
+        NativeTestServer.shutdownNativeTestServer();
+        checkRequestCaching(url,
+                CacheSetting.USE_CACHE, ExpectedOutcome.SUCCESS);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    public void testSetUseCachesFalse() throws Exception {
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(url,
+                CacheSetting.USE_CACHE, ExpectedOutcome.SUCCESS);
+        NativeTestServer.shutdownNativeTestServer();
+        // Disables caching. No cached response is received.
+        checkRequestCaching(url,
+                CacheSetting.DONT_USE_CACHE, ExpectedOutcome.FAILURE);
     }
 
     private void checkExceptionsAreThrown(HttpURLConnection connection)

@@ -91,6 +91,12 @@ public interface UrlRequest {
     public void resume();
 
     /**
+     * Disables cache for the request. If context is not set up to use cache,
+     * this call has no effect.
+     */
+    public void disableCache();
+
+    /**
      * Note:  There are deliberately no accessors for the results of the request
      * here.  Having none removes any ambiguity over when they are populated,
      * particularly in the redirect case.
