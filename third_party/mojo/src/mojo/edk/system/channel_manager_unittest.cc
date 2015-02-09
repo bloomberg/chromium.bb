@@ -48,12 +48,9 @@ TEST_F(ChannelManagerTest, Basic) {
 
   embedder::PlatformChannelPair channel_pair;
 
-  scoped_refptr<ChannelEndpoint> cep;
-  scoped_refptr<MessagePipeDispatcher> d =
-      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep);
   const ChannelId id = 1;
-  cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle(), cep);
-  cep = nullptr;
+  scoped_refptr<MessagePipeDispatcher> d =
+      cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle());
 
   scoped_refptr<Channel> ch = cm.GetChannel(id);
   EXPECT_TRUE(ch);
@@ -77,19 +74,13 @@ TEST_F(ChannelManagerTest, TwoChannels) {
 
   embedder::PlatformChannelPair channel_pair;
 
-  scoped_refptr<ChannelEndpoint> cep1;
-  scoped_refptr<MessagePipeDispatcher> d1 =
-      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep1);
   const ChannelId id1 = 1;
-  cm.CreateChannelOnIOThread(id1, channel_pair.PassServerHandle(), cep1);
-  cep1 = nullptr;
+  scoped_refptr<MessagePipeDispatcher> d1 =
+      cm.CreateChannelOnIOThread(id1, channel_pair.PassServerHandle());
 
-  scoped_refptr<ChannelEndpoint> cep2;
-  scoped_refptr<MessagePipeDispatcher> d2 =
-      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep2);
   const ChannelId id2 = 2;
-  cm.CreateChannelOnIOThread(id2, channel_pair.PassClientHandle(), cep2);
-  cep2 = nullptr;
+  scoped_refptr<MessagePipeDispatcher> d2 =
+      cm.CreateChannelOnIOThread(id2, channel_pair.PassClientHandle());
 
   scoped_refptr<Channel> ch1 = cm.GetChannel(id1);
   EXPECT_TRUE(ch1);
@@ -173,12 +164,9 @@ TEST_F(ChannelManagerTest, CallsFromOtherThread) {
 
   embedder::PlatformChannelPair channel_pair;
 
-  scoped_refptr<ChannelEndpoint> cep;
-  scoped_refptr<MessagePipeDispatcher> d =
-      MessagePipeDispatcher::CreateRemoteMessagePipe(&cep);
   const ChannelId id = 1;
-  cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle(), cep);
-  cep = nullptr;
+  scoped_refptr<MessagePipeDispatcher> d =
+      cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle());
 
   base::RunLoop run_loop;
   OtherThread thread(base::MessageLoopProxy::current(), &cm, id,

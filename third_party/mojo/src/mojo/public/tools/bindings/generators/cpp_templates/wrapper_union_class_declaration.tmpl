@@ -39,7 +39,11 @@ class {{union.name}} {
     Union_() {}
     ~Union_() {}
 {%  for field in union.fields %}
+{%    if field.kind|is_object_kind -%}
+    {{field.kind|cpp_wrapper_type}}* {{field.name}};
+{%    else -%}
     {{field.kind|cpp_wrapper_type}} {{field.name}};
+{%    endif -%}
 {%- endfor %}
   };
   void SwitchActive(Tag new_active);

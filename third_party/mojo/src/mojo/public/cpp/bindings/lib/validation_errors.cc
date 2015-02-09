@@ -42,6 +42,8 @@ const char* ValidationErrorToString(ValidationError error) {
       return "VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID";
     case VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP:
       return "VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP";
+    case VALIDATION_ERROR_UNKOWN_UNION_TAG:
+      return "VALIDATION_ERROR_UNKOWN_UNION_TAG";
   }
 
   return "Unknown error";

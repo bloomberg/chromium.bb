@@ -11,6 +11,9 @@ import module as mojom
 # ps.packed_fields will access a list of PackedField objects, each of which
 # will have an offset, a size and a bit (for mojom.BOOLs).
 
+# Size of struct header in bytes: num_bytes [4B] + version [4B].
+HEADER_SIZE = 8
+
 class PackedField(object):
   kind_to_size = {
     mojom.BOOL:                  1,
@@ -42,8 +45,8 @@ class PackedField(object):
   def GetSizeForKind(cls, kind):
     if isinstance(kind, (mojom.Array, mojom.Map, mojom.Struct)):
       return 8
-    if isinstance(kind, mojom.Interface) or \
-       isinstance(kind, mojom.InterfaceRequest):
+    if (isinstance(kind, mojom.Interface) or
+        isinstance(kind, mojom.InterfaceRequest)):
       kind = mojom.MSGPIPE
     if isinstance(kind, mojom.Enum):
       # TODO(mpcomplete): what about big enums?
@@ -68,16 +71,16 @@ class PackedField(object):
     self.min_version = None
 
 
-# Returns the pad necessary to reserve space for alignment of |size|.
 def GetPad(offset, size):
+  """Returns the pad necessary to reserve space for alignment of |size|."""
   return (size - (offset % size)) % size
 
 
-# Returns a 2-tuple of the field offset and bit (for BOOLs)
 def GetFieldOffset(field, last_field):
-  if field.field.kind == mojom.BOOL and \
-      last_field.field.kind == mojom.BOOL and \
-      last_field.bit < 7:
+  """Returns a 2-tuple of the field offset and bit (for BOOLs)."""
+  if (field.field.kind == mojom.BOOL and
+      last_field.field.kind == mojom.BOOL and
+      last_field.bit < 7):
     return (last_field.offset, last_field.bit + 1)
 
   offset = last_field.offset + last_field.size
@@ -85,17 +88,32 @@ def GetFieldOffset(field, last_field):
   return (offset + pad, 0)
 
 
+def GetPayloadSizeUpToField(field):
+  """Returns the payload size (not including struct header) if |field| is the
+  last field.
+  """
+  if not field:
+    return 0
+  offset = field.offset + field.size
+  pad = GetPad(offset, 8)
+  return offset + pad
+
+
 class PackedStruct(object):
   def __init__(self, struct):
     self.struct = struct
+    # |packed_fields| contains all the fields, in increasing offset order.
     self.packed_fields = []
+    # |packed_fields_in_ordinal_order| refers to the same fields as
+    # |packed_fields|, but in ordinal order.
+    self.packed_fields_in_ordinal_order = []
 
     # No fields.
     if (len(struct.fields) == 0):
       return
 
     # Start by sorting by ordinal.
-    src_fields = []
+    src_fields = self.packed_fields_in_ordinal_order
     ordinal = 0
     for index, field in enumerate(struct.fields):
       if field.ordinal is not None:
@@ -148,7 +166,6 @@ class PackedStruct(object):
     src_field = src_fields[0]
     src_field.offset = 0
     src_field.bit = 0
-    # dst_fields will contain each of the fields, in increasing offset order.
     dst_fields = self.packed_fields
     dst_fields.append(src_field)
 
@@ -170,14 +187,6 @@ class PackedStruct(object):
         src_field.offset, src_field.bit = GetFieldOffset(src_field, last_field)
         dst_fields.append(src_field)
 
-  def GetTotalSize(self):
-    if not self.packed_fields:
-      return 0
-    last_field = self.packed_fields[-1]
-    offset = last_field.offset + last_field.size
-    pad = GetPad(offset, 8)
-    return offset + pad
-
 
 class ByteInfo(object):
   def __init__(self):
@@ -186,7 +195,9 @@ class ByteInfo(object):
 
 
 def GetByteLayout(packed_struct):
-  bytes = [ByteInfo() for i in xrange(packed_struct.GetTotalSize())]
+  total_payload_size = GetPayloadSizeUpToField(
+      packed_struct.packed_fields[-1] if packed_struct.packed_fields else None)
+  bytes = [ByteInfo() for i in xrange(total_payload_size)]
 
   limit_of_previous_field = 0
   for packed_field in packed_struct.packed_fields:
@@ -203,3 +214,46 @@ def GetByteLayout(packed_struct):
     assert not (byte.is_padding and byte.packed_fields)
 
   return bytes
+
+
+class VersionInfo(object):
+  def __init__(self, version, num_fields, num_bytes):
+    self.version = version
+    self.num_fields = num_fields
+    self.num_bytes = num_bytes
+
+
+def GetVersionInfo(packed_struct):
+  """Get version information for a struct.
+
+  Args:
+    packed_struct: A PackedStruct instance.
+
+  Returns:
+    A non-empty list of VersionInfo instances, sorted by version in increasing
+    order.
+    Note: The version numbers may not be consecutive.
+  """
+  versions = []
+  last_version = 0
+  last_num_fields = 0
+  last_payload_size = 0
+
+  for packed_field in packed_struct.packed_fields_in_ordinal_order:
+    if packed_field.min_version != last_version:
+      versions.append(
+          VersionInfo(last_version, last_num_fields,
+                      last_payload_size + HEADER_SIZE))
+      last_version = packed_field.min_version
+
+    last_num_fields += 1
+    # The fields are iterated in ordinal order here. However, the size of a
+    # version is determined by the last field of that version in pack order,
+    # instead of ordinal order. Therefore, we need to calculate the max value.
+    last_payload_size = max(GetPayloadSizeUpToField(packed_field),
+                            last_payload_size)
+
+  assert len(versions) == 0 or last_num_fields != versions[-1].num_fields
+  versions.append(VersionInfo(last_version, last_num_fields,
+                              last_payload_size + HEADER_SIZE))
+  return versions

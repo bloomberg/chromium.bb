@@ -1,0 +1,219 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% macro define(struct, exported=True) %}
+type {{struct|name(exported)}} struct {
+{% for packed_field in struct.packed.packed_fields %}
+	{{packed_field.field|name(exported)}} {{packed_field.field.kind|go_type}}
+{% endfor %}
+}
+
+func (s *{{struct|name(exported)}}) Encode(encoder *bindings.Encoder) error {
+	encoder.StartStruct({{struct.versions[-1].num_bytes}}, {{struct.packed.packed_fields|length}})
+{% for byte in struct.bytes %}
+{%   for packed_field in byte.packed_fields %}
+	{{encode('s.'~packed_field.field|name(exported), packed_field.field.kind)|tab_indent()}}
+{%   endfor %}
+{% endfor %}
+	if err := encoder.Finish(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *{{struct|name(exported)}}) Decode(decoder *bindings.Decoder) error {
+{% if struct.bytes %}
+	numFields, err := decoder.StartStruct()
+{% else %}
+	_, err := decoder.StartStruct()
+{% endif %}
+	if err != nil {
+		return err
+	}
+{% for byte in struct.bytes %}
+{%   for packed_field in byte.packed_fields %}
+	if numFields > {{packed_field.ordinal}} {
+		{{decode('s.'~packed_field.field|name(exported), packed_field.field.kind)|tab_indent(2)}}
+	}
+{%   endfor %}
+{% endfor %}
+	if err := decoder.Finish(); err != nil {
+		return err
+	}
+	return nil
+}
+
+{% endmacro %}
+
+
+
+{% macro encode(value, kind, level=0) %}
+{% if kind|is_nullable %}
+if {{value}} == nil {
+{%   if kind|is_handle %}
+	encoder.WriteInvalidHandle()
+{%   else %}
+	encoder.WriteNullPointer()
+{%   endif %}
+} else {
+	{{encodeNonNullable('(*'~value~')', kind, level)|tab_indent()}}
+}
+{% else -%}
+{{encodeNonNullable(value, kind, level)}}
+{%- endif %}
+{% endmacro %}
+
+
+
+{% macro encodeNonNullable(value, kind, level=0) %}
+{% if kind|is_pointer %}
+if err := encoder.WritePointer(); err != nil {
+	return err
+}
+{% endif %}
+{% if kind|is_struct %}
+if err := {{value}}.Encode(encoder); err != nil {
+	return err
+}
+{% elif kind|is_array %}
+encoder.StartArray(uint32(len({{value}})), {{kind.kind|bit_size}})
+for _, elem{{level}} := range {{value}} {
+	{{encode('elem'~level, kind.kind, level+1)|tab_indent()}}
+}
+if err := encoder.Finish(); err != nil {
+	return err
+}
+{% elif kind|is_map %}
+encoder.StartMap()
+{
+	var keys{{level}} {{kind.key_kind|array|go_type}}
+	var values{{level}} {{kind.value_kind|array|go_type}}
+	for key{{level}}, value{{level}} := range {{value}} {
+		keys{{level}} = append(keys{{level}}, key{{level}})
+		values{{level}} = append(values{{level}}, value{{level}})
+	}
+	{{encode('keys'~level, kind.key_kind|array, level+1)|tab_indent()}}
+	{{encode('values'~level, kind.value_kind|array, level+1)|tab_indent()}}
+}
+if err := encoder.Finish(); err != nil {
+	return err
+}
+{% elif kind|is_enum %}
+if err := encoder.WriteInt32(int32({{value}})); err != nil {
+	return err
+}
+{% else %}
+if err := encoder.Write{{kind|encode_suffix}}({{value}}); err != nil {
+	return err
+}
+{% endif %}
+{% endmacro %}
+
+
+
+{% macro decode(value, kind, level=0) %}
+{% if kind|is_pointer %}
+pointer{{level}}, err := decoder.ReadPointer()
+if err != nil {
+	return err
+}
+if pointer{{level}} == 0 {
+{%   if kind|is_nullable %}
+	{{value}} = nil
+} else {
+	{{value}} = new({{kind|go_type(False)}})
+	{{decodePointerValue('(*'~value~')', kind, level)|tab_indent()}}
+}
+{%   else %}
+	return fmt.Errorf("unexpected null pointer")
+} else {
+	{{decodePointerValue(value, kind, level)|tab_indent()}}
+}
+{%   endif %}
+{% elif kind|is_handle %}
+handle{{level}}, err := decoder.Read{{kind|decode_suffix}}()
+if err != nil {
+	return err
+}
+if handle{{level}}.IsValid() {
+	{{value}} = {% if kind|is_nullable %}&{% endif %}handle{{level}}
+} else {
+{%   if kind|is_nullable %}
+	{{value}} = nil
+{%   else %}
+	return fmt.Errorf("unexpected invalid handle")
+{%   endif %}
+}
+{% elif kind|is_enum %}
+value{{level}}, err := decoder.Read{{kind|decode_suffix}}()
+if err != nil {
+	return err
+}
+{{value}} = {% if kind|is_nullable %}&{% endif %}{{kind|go_type(False)}}(value{{level}})
+{% else %}
+value{{level}}, err := decoder.Read{{kind|decode_suffix}}()
+if err != nil {
+	return err
+}
+{{value}} = {% if kind|is_nullable %}&{% endif %}value{{level}}
+{% endif %}
+{% endmacro %}
+
+
+
+{% macro decodePointerValue(value, kind, level=0) %}
+{% if kind|is_struct %}
+if err := {{value}}.Decode(decoder); err != nil {
+	return err
+}
+{% elif kind|is_array %}
+len{{level}}, err := decoder.StartArray({{kind.kind|bit_size}})
+if err != nil {
+	return err
+}
+{%   if kind.length %}
+if len{{level}} != {{kind.length}} {
+	return fmt.Errorf("invalid array length: expected %d, got %d", {{kind.length}}, len{{level}})
+}
+{%   else %}
+{{value}} = make({{kind|go_type(False)}}, len{{level}})
+{%   endif %}
+for i{{level}} := uint32(0); i{{level}} < len{{level}}; i{{level}}++ {
+	{{decode(value~'[i'~level~']', kind.kind, level+1)|tab_indent()}}
+}
+if err := decoder.Finish(); err != nil {
+	return err
+}
+{% elif kind|is_map %}
+if err := decoder.StartMap(); err != nil {
+	return err
+}
+var keys{{level}} {{kind.key_kind|array|go_type}}
+{
+	{{decode('keys'~level, kind.key_kind|array, level+1)|tab_indent()}}
+}
+var values{{level}} {{kind.value_kind|array|go_type}}
+{
+	{{decode('values'~level, kind.value_kind|array, level+1)|tab_indent()}}
+}
+if len(keys{{level}}) != len(values{{level}}) {
+	return fmt.Errorf("Number of keys %d is different from number of values %d", len(keys{{level}}), len(values{{level}}))
+}
+if err := decoder.Finish(); err != nil {
+	return err
+}
+len{{level}} := len(keys{{level}})
+map{{level}} := make({{kind|go_type(False)}})
+for i{{level}} := 0; i{{level}} < len{{level}}; i{{level}}++ {
+	map{{level}}[keys{{level}}[i{{level}}]] = values{{level}}[i{{level}}]
+}
+{{value}} = map{{level}}
+{% else %}
+value{{level}}, err := decoder.Read{{kind|decode_suffix}}()
+if err != nil {
+	return err
+}
+{{value}} = value{{level}}
+{% endif %}
+{% endmacro %}

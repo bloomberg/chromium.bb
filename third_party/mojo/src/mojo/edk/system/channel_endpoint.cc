@@ -82,8 +82,8 @@ void ChannelEndpoint::AttachAndRun(Channel* channel,
   remote_id_ = remote_id;
 
   while (!channel_message_queue_.IsEmpty()) {
-    LOG_IF(WARNING, !WriteMessageNoLock(channel_message_queue_.GetMessage()))
-        << "Failed to write enqueue message to channel";
+    bool ok = WriteMessageNoLock(channel_message_queue_.GetMessage());
+    LOG_IF(WARNING, !ok) << "Failed to write enqueue message to channel";
   }
 
   if (!client_) {

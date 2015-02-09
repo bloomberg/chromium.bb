@@ -17,20 +17,17 @@ namespace system {
 // SlaveConnectionManager ------------------------------------------------------
 
 SlaveConnectionManager::SlaveConnectionManager()
-    : creation_thread_task_runner_(base::MessageLoop::current()->task_runner()),
-      slave_process_delegate_(),
+    : slave_process_delegate_(),
       private_thread_("SlaveConnectionManagerPrivateThread"),
       awaiting_ack_type_(NOT_AWAITING_ACK),
       ack_result_(),
       ack_peer_process_identifier_(),
       ack_platform_handle_(),
       event_(false, false) {  // Auto-reset, not initially signalled.
-  DCHECK(creation_thread_task_runner_);
-  AssertOnCreationThread();  // Just make sure this assertion works correctly.
 }
 
 SlaveConnectionManager::~SlaveConnectionManager() {
-  AssertOnCreationThread();
+  DCHECK(!delegate_thread_task_runner_);
   DCHECK(!slave_process_delegate_);
   DCHECK(!private_thread_.message_loop());
   DCHECK_EQ(awaiting_ack_type_, NOT_AWAITING_ACK);
@@ -40,14 +37,18 @@ SlaveConnectionManager::~SlaveConnectionManager() {
 }
 
 void SlaveConnectionManager::Init(
+    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
     embedder::SlaveProcessDelegate* slave_process_delegate,
     embedder::ScopedPlatformHandle platform_handle) {
-  AssertOnCreationThread();
+  DCHECK(delegate_thread_task_runner);
   DCHECK(slave_process_delegate);
   DCHECK(platform_handle.is_valid());
+  DCHECK(!delegate_thread_task_runner_);
   DCHECK(!slave_process_delegate_);
   DCHECK(!private_thread_.message_loop());
 
+  delegate_thread_task_runner_ = delegate_thread_task_runner;
+  AssertOnDelegateThread();
   slave_process_delegate_ = slave_process_delegate;
   CHECK(private_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
@@ -59,7 +60,7 @@ void SlaveConnectionManager::Init(
 }
 
 void SlaveConnectionManager::Shutdown() {
-  AssertOnCreationThread();
+  AssertOnDelegateThread();
   DCHECK(slave_process_delegate_);
   DCHECK(private_thread_.message_loop());
 
@@ -69,6 +70,7 @@ void SlaveConnectionManager::Shutdown() {
                             base::Unretained(this)));
   private_thread_.Stop();
   slave_process_delegate_ = nullptr;
+  delegate_thread_task_runner_ = nullptr;
 }
 
 bool SlaveConnectionManager::AllowConnect(
@@ -287,15 +289,15 @@ void SlaveConnectionManager::OnError(Error error) {
   raw_channel_.reset();
 
   DCHECK(slave_process_delegate_);
-  creation_thread_task_runner_->PostTask(
+  delegate_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&embedder::SlaveProcessDelegate::OnMasterDisconnect,
                             base::Unretained(slave_process_delegate_)));
 }
 
-void SlaveConnectionManager::AssertOnCreationThread() const {
+void SlaveConnectionManager::AssertOnDelegateThread() const {
   DCHECK(base::MessageLoop::current());
   DCHECK_EQ(base::MessageLoop::current()->task_runner(),
-            creation_thread_task_runner_);
+            delegate_thread_task_runner_);
 }
 
 void SlaveConnectionManager::AssertNotOnPrivateThread() const {

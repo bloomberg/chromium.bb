@@ -17,9 +17,9 @@ union PodUnion {
   float  f_float;
   double f_double;
   bool   f_bool;
-  string f_string;
 };
 
-struct SomeStruct {
+union ObjectUnion {
+  int8   f_int8;
   string f_string;
 };

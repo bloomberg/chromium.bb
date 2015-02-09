@@ -21,7 +21,11 @@
   switch (tag_) {
 {%    for field in union.fields %}
     case Tag::{{field.name|upper}}:
+{%    if field.kind|is_object_kind %}
+      rv->set_{{field.name}}(*(data_.{{field.name}}));
+{%-   else %}
       rv->set_{{field.name}}(data_.{{field.name}});
+{%-   endif %}
       break;
 {%-   endfor %}
   };
@@ -37,7 +41,11 @@ bool {{union.name}}::Equals(const {{union.name}}& other) const {
   switch (tag_) {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
-      return mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(data_.{{field.name}}, other.get_{{field.name}}());
+{%    if field.kind|is_object_kind %}
+      return mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(*(data_.{{field.name}}), *(other.data_.{{field.name}}));
+{%-   else %}
+      return mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(data_.{{field.name}}, other.data_.{{field.name}});
+{%-   endif %}
 {%- endfor %}
   };
 
@@ -51,12 +59,20 @@ bool {{union.name}}::is_{{field.name}}() const {
 
 {{field.kind|cpp_result_type}} {{union.name}}::get_{{field.name}}() const {
   MOJO_DCHECK(tag_ == Tag::{{field.name|upper}});
+{%    if field.kind|is_object_kind %}
+  return *(data_.{{field.name}});
+{%-   else %}
   return data_.{{field.name}};
+{%-   endif %}
 }
 
 void {{union.name}}::set_{{field.name}}({{field.kind|cpp_const_wrapper_type}} {{field.name}}) {
   SwitchActive(Tag::{{field.name|upper}});
+{%    if field.kind|is_string_kind %}
+  *(data_.{{field.name}}) = {{field.name}};
+{%-   else %}
   data_.{{field.name}} = {{field.name}};
+{%-   endif %}
 }
 {%- endfor %}
 
@@ -74,7 +90,7 @@ void {{union.name}}::SetActive(Tag new_active) {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
 {%    if field.kind|is_string_kind %}
-      new (&data_.{{field.name}}) String();
+      data_.{{field.name}} = new String();
 {%-   endif %}
       break;
 {%- endfor %}
@@ -88,7 +104,7 @@ void {{union.name}}::DestroyActive() {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
 {%    if field.kind|is_string_kind %}
-      data_.{{field.name}}.~String();
+      delete data_.{{field.name}};
 {%-   endif %}
       break;
 {%- endfor %}

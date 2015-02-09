@@ -10,11 +10,20 @@ if (use_prebuilt_mojo_shell) {
     if (is_win) {
       filename += ".exe"
     }
+    if (is_android) {
+      filename = "MojoShell.apk"
+    }
     sources = [
       "prebuilt/$filename",
     ]
-    outputs = [
-      "$root_out_dir/$filename",
-    ]
+    if (is_android) {
+      outputs = [
+        "$root_out_dir/apks/$filename",
+      ]
+    } else {
+      outputs = [
+        "$root_out_dir/$filename",
+      ]
+    }
   }
 }

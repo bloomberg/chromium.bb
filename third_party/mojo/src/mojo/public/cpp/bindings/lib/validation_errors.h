@@ -46,7 +46,9 @@ enum ValidationError {
   VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID,
   // Two parallel arrays which are supposed to represent a map have different
   // lengths.
-  VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP
+  VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP,
+  // Attempted to deserialize a tagged union with an unknown tag.
+  VALIDATION_ERROR_UNKOWN_UNION_TAG
 };
 
 const char* ValidationErrorToString(ValidationError error);

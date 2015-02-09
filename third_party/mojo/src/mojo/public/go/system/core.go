@@ -9,6 +9,7 @@ package system
 import "C"
 import (
 	"reflect"
+	"sync"
 	"unsafe"
 )
 
@@ -57,8 +58,21 @@ type Core interface {
 
 // coreImpl is an implementation of the Mojo system APIs.
 type coreImpl struct {
+	// Protects from making parallel non-blocking mojo cgo calls.
+	mu sync.Mutex
 }
 
+// GetCore returns singleton instance of the Mojo system APIs implementation.
+//
+// The implementation uses cgo to call native mojo APIs implementation. Each cgo
+// call uses a separate thread for execution. To limit the number of used
+// threads all non-blocking system calls (i.e. all system calls except |Wait|
+// and |WaitMany|) on this implementation and on handles returned by this
+// implementation are protected by a mutex so that if you make two parallel
+// system calls one will wait for another to finish before executing.
+// However, |Wait| and |WaitMany| are not protected by a mutex and each parallel
+// call will use a separate thread. To reduce number of threads used for |Wait|
+// calls prefer to use |WaitMany|.
 func GetCore() Core {
 	return &core
 }
@@ -68,10 +82,13 @@ func (impl *coreImpl) acquireCHandle(handle C.MojoHandle) UntypedHandle {
 }
 
 func (impl *coreImpl) AcquireNativeHandle(handle MojoHandle) UntypedHandle {
-	return &untypedHandleImpl{baseHandle{handle}}
+	return &untypedHandleImpl{baseHandle{impl, handle}}
 }
 
 func (impl *coreImpl) GetTimeTicksNow() MojoTimeTicks {
+	impl.mu.Lock()
+	defer impl.mu.Unlock()
+
 	return MojoTimeTicks(C.MojoGetTimeTicksNow())
 }
 
@@ -108,6 +125,9 @@ func (impl *coreImpl) WaitMany(handles []Handle, signals []MojoHandleSignals, de
 }
 
 func (impl *coreImpl) CreateDataPipe(opts *DataPipeOptions) (MojoResult, ProducerHandle, ConsumerHandle) {
+	impl.mu.Lock()
+	defer impl.mu.Unlock()
+
 	cParams := C.MallocCreateDataPipeParams()
 	defer C.FreeCreateDataPipeParams(cParams)
 	result := C.MojoCreateDataPipe(opts.cValue(cParams.opts), cParams.producer, cParams.consumer)
@@ -117,6 +137,9 @@ func (impl *coreImpl) CreateDataPipe(opts *DataPipeOptions) (MojoResult, Produce
 }
 
 func (impl *coreImpl) CreateMessagePipe(opts *MessagePipeOptions) (MojoResult, MessagePipeHandle, MessagePipeHandle) {
+	impl.mu.Lock()
+	defer impl.mu.Unlock()
+
 	cParams := C.MallocCreateMessagePipeParams()
 	defer C.FreeCreateMessagePipeParams(cParams)
 	result := C.MojoCreateMessagePipe(opts.cValue(cParams.opts), cParams.handle0, cParams.handle1)
@@ -126,6 +149,9 @@ func (impl *coreImpl) CreateMessagePipe(opts *MessagePipeOptions) (MojoResult, M
 }
 
 func (impl *coreImpl) CreateSharedBuffer(opts *SharedBufferOptions, numBytes uint64) (MojoResult, SharedBufferHandle) {
+	impl.mu.Lock()
+	defer impl.mu.Unlock()
+
 	cParams := C.MallocCreateSharedBufferParams()
 	defer C.FreeCreateSharedBufferParams(cParams)
 	result := C.MojoCreateSharedBuffer(opts.cValue(cParams.opts), C.uint64_t(numBytes), cParams.handle)

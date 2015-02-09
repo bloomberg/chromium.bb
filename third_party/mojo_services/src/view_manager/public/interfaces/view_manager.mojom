@@ -35,7 +35,6 @@ enum ErrorCode {
 // and the lower 16 the id assigned by the client.
 //
 // The root view is identified with a connection id of 0, and value of 1.
-[Client=ViewManagerClient]
 interface ViewManagerService {
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
@@ -139,14 +138,16 @@ interface ViewManagerService {
 // Changes to views are not sent to the connection that originated the
 // change. For example, if connection 1 changes the bounds of a view by calling
 // SetBounds(), connection 1 does not receive OnViewBoundsChanged().
-[Client=ViewManagerService]
 interface ViewManagerClient {
   // Invoked when the client application has been embedded at |root|.
-  // See Embed() on ViewManagerService for more details. |window_manager_pipe|
-  // is a pipe to the WindowManager.
+  // See Embed() on ViewManagerService for more details. |view_manager_service|
+  // will be a handle back to the view manager service, unless the connection is
+  // to the WindowManager in which case it will be null.
+  // |window_manager_pipe| is a pipe to the WindowManager.
   OnEmbed(uint16 connection_id,
           string embedder_url,
           ViewData root,
+          ViewManagerService? view_manager_service,
           ServiceProvider&? services,
           ServiceProvider? exposed_services,
           handle<message_pipe> window_manager_pipe);
