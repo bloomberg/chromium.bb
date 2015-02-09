@@ -147,8 +147,10 @@
           ],
         }, {
           'dependencies': [
+            # Trusty and above.
             '<(_sanitizer_type)-libtasn1-6',
             '<(_sanitizer_type)-harfbuzz',
+            '<(_sanitizer_type)-libsecret',
           ],
         }],
         ['msan==1', {
@@ -776,6 +778,17 @@
       # http://cgit.freedesktop.org/libva/diff/va/va.c?h=staging&id=d4988142a3f2256e38c5c5cdcdfc1b4f5f3c1ea9
       'patch': 'patches/libva1.diff',
       'run_before_build': 'scripts/libva1.sh',
+      'includes': ['standard_instrumented_package_target.gypi'],
+    },
+    {
+      'package_name': 'libsecret',
+      'dependencies=': [],
+      'extra_configure_flags': [
+          '--disable-static',
+          # See above.
+          '--disable-introspection',
+      ],
+      'run_before_build': 'scripts/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
   ],
