@@ -322,9 +322,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/455665
 "race:mojo::common::*::tick_clock\n"
 
-// https://crbug.com/456095
-"race:blink::Scheduler\n"
-
 // End of suppressions.
 ;  // Please keep this semicolon.
 
