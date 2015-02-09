@@ -32,7 +32,6 @@
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
-#include "native_client/src/public/nacl_file_info.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
 #include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"

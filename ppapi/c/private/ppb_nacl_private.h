@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Jan 23 09:09:44 2015. */
+/* From private/ppb_nacl_private.idl modified Sun Feb  8 11:33:30 2015. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -191,11 +191,9 @@ typedef void (*PP_OpenResourceCompletionCallback)(void* user_data,
  * @addtogroup Structs
  * @{
  */
-/* Corresponds to NaClFileInfo in
- * native_client/src/trusted/validator/nacl_file_info.h */
 struct PP_NaClFileInfo {
   PP_FileHandle handle;
-  /* See NaClFileToken comment in nacl_file_info.h */
+  /* See NaClFileToken comment in nacl_process_host.h */
   uint64_t token_lo;
   uint64_t token_hi;
 };

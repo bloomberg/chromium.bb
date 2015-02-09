@@ -19,8 +19,6 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/cpp/completion_callback.h"
 
-struct NaClFileInfo;
-
 namespace plugin {
 
 class ErrorInfo;

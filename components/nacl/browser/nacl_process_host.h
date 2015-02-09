@@ -19,7 +19,6 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "ipc/ipc_channel_handle.h"
-#include "native_client/src/public/nacl_file_info.h"
 #include "net/socket/socket_descriptor.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
@@ -34,6 +33,17 @@ class ChannelProxy;
 }
 
 namespace nacl {
+
+// NaClFileToken is a single-use nonce that the NaCl loader process can use
+// to query the browser process for trusted information about a file.  This
+// helps establish that the file is known by the browser to be immutable
+// and suitable for file-identity-based validation caching.  lo == 0 && hi
+// == 0 indicates the token is invalid and no additional information is
+// available.
+struct NaClFileToken {
+  uint64_t lo;
+  uint64_t hi;
+};
 
 class NaClHostMessageFilter;
 void* AllocateAddressSpaceASLR(base::ProcessHandle process, size_t size);

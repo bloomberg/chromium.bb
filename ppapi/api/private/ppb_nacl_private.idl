@@ -154,12 +154,10 @@ struct PP_PNaClOptions {
 typedef void PP_OpenResourceCompletionCallback([inout] mem_t user_data,
                                                [in] PP_FileHandle file_handle);
 
-/* Corresponds to NaClFileInfo in
- * native_client/src/trusted/validator/nacl_file_info.h */
 struct PP_NaClFileInfo {
   PP_FileHandle handle;
 
-  /* See NaClFileToken comment in nacl_file_info.h */
+  /* See NaClFileToken comment in nacl_process_host.h */
   uint64_t token_lo;
   uint64_t token_hi;
 };

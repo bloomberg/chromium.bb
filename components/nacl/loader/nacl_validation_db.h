@@ -9,8 +9,6 @@
 
 #include "base/basictypes.h"
 
-struct NaClFileToken;
-
 class NaClValidationDB {
  public:
   NaClValidationDB() {}
