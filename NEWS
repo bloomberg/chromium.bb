@@ -17,6 +17,7 @@ harness test suite and improves, as usual, on Braille tables.
 - Corrections to dot patterns in no-no-g0.utb thanks to Lars Bjørndal
 - Corrections and additional test cases for Hungarian grade 1, thanks
   to Hammer Attila.
+- New table for Finnish thanks to Jukka Eerikäinen from Celia
 
 * Noteworthy changes in release 2.6.1 (2014-12-01)
 This release focuses on table and documentation improvements. The
