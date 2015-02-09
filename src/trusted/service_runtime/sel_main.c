@@ -42,7 +42,6 @@
 #include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
-#include "native_client/src/trusted/service_runtime/nacl_bootstrap_channel_error_reporter.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_log_hook.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -548,9 +547,6 @@ int NaClSelLdrMain(int argc, char **argv) {
   if (nap == NULL) {
     NaClLog(LOG_FATAL, "NaClAppCreate() failed\n");
   }
-
-  NaClBootstrapChannelErrorReporterInit();
-  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
 
   NaClPerfCounterCtor(&time_all_main, "SelMain");
 

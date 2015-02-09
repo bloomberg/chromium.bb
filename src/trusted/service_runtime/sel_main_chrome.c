@@ -28,7 +28,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
-#include "native_client/src/trusted/service_runtime/nacl_bootstrap_channel_error_reporter.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_log_hook.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
@@ -180,14 +179,6 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   int has_bootstrap_channel = args->imc_bootstrap_handle != NACL_INVALID_HANDLE;
 
   CHECK(g_initialized);
-
-  /*
-   * TODO(teravest): Remove this once Chromium uses NaClSetFatalErrorCallback.
-   */
-  if (has_bootstrap_channel && g_fatal_error_handler == NULL) {
-    NaClBootstrapChannelErrorReporterInit();
-    NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
-  }
 
   /* Allow or disallow dyncode API based on args. */
   nap->enable_dyncode_syscalls = args->enable_dyncode_syscalls;

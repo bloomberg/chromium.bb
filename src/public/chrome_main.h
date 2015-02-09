@@ -231,9 +231,6 @@ void NaClChromeMainInit(void);
  * function is invoked, recent log messages will be passed in the data
  * parameter, and its length in the bytes parameter.
  * This function is only safe to call after NaClChromeMainInit().
- *
- * If NaClSetFatalErrorCallback() is not called, recent log messages will be
- * written to the IMC bootstrap channel on a fatal error.
  */
 void NaClSetFatalErrorCallback(void (*func)(const char *data, size_t bytes));
 

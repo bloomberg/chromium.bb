@@ -19,7 +19,6 @@
           'load_file.c',
           'nacl_all_modules.c',
           'nacl_app_thread.c',
-          'nacl_bootstrap_channel_error_reporter.c',
           'nacl_copy.c',
           'nacl_desc_effector_ldr.c',
           'nacl_error_gio.c',
