@@ -110,6 +110,13 @@ void UdpTransport::SetDscp(net::DiffServCodePoint dscp) {
   next_dscp_value_ = dscp;
 }
 
+#if defined(OS_WIN)
+void UdpTransport::UseNonBlockingIO() {
+  DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+  udp_socket_->UseNonBlockingIO();
+}
+#endif
+
 void UdpTransport::ScheduleReceiveNextPacket() {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
   if (!packet_receiver_.is_null() && !receive_pending_) {

@@ -53,6 +53,11 @@ class UdpTransport : public PacketSender {
   // the next send.
   void SetDscp(net::DiffServCodePoint dscp);
 
+#if defined(OS_WIN)
+  // Switch to use non-blocking IO. Must be called before StartReceiving().
+  void UseNonBlockingIO();
+#endif
+
   // PacketSender implementations.
   bool SendPacket(PacketRef packet, const base::Closure& cb) override;
   int64 GetBytesSent() override;

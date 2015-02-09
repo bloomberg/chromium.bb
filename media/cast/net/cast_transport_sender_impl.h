@@ -59,6 +59,8 @@ class CastTransportSenderImpl : public CastTransportSender {
   // |options| contains optional settings for the transport, possible
   // keys are:
   //   "DSCP" (value ignored) - turns DSCP on
+  //   "non_blocking_io" (value ignored) - Windows only.
+  //                                       Turns on non-blocking IO for socket.
   //   "pacer_target_burst_size": int - specifies how many packets to send
   //                                    per 10 ms ideally.
   //   "pacer_max_burst_size": int - specifies how many pakcets to send

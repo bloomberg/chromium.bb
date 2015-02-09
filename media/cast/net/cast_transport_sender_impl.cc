@@ -18,10 +18,13 @@ namespace cast {
 namespace {
 
 // See header file for what these mean.
+const char kOptionDscp[] = "DSCP";
+#if defined(OS_WIN)
+const char kOptionNonBlockingIO[] = "non_blocking_io";
+#endif
 const char kOptionPacerTargetBurstSize[] = "pacer_target_burst_size";
 const char kOptionPacerMaxBurstSize[] = "pacer_max_burst_size";
 const char kOptionSendBufferMinSize[] = "send_buffer_min_size";
-const char kOptionDscp[] = "DSCP";
 const char kOptionWifiDisableScan[] = "disable_wifi_scan";
 const char kOptionWifiMediaStreamingMode[] = "media_streaming_mode";
 
@@ -134,6 +137,11 @@ CastTransportSenderImpl::CastTransportSenderImpl(
       // priority over other traffic.
       transport_->SetDscp(net::DSCP_AF41);
     }
+#if defined(OS_WIN)
+    if (options->HasKey(kOptionNonBlockingIO)) {
+      transport_->UseNonBlockingIO();
+    }
+#endif
     transport_->StartReceiving(
         base::Bind(&CastTransportSenderImpl::OnReceivedPacket,
                    base::Unretained(this)));
