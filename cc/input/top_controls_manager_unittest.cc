@@ -135,8 +135,7 @@ TEST(TopControlsManagerTest, EnsureScrollThresholdApplied) {
   manager->ScrollEnd();
 }
 
-// Flaky. See http://crbug.com/456617.
-TEST(TopControlsManagerTest, DISABLED_PartialShownHideAnimation) {
+TEST(TopControlsManagerTest, PartialShownHideAnimation) {
   MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   manager->ScrollBegin();
@@ -154,12 +153,12 @@ TEST(TopControlsManagerTest, DISABLED_PartialShownHideAnimation) {
   EXPECT_TRUE(manager->animation());
 
   base::TimeTicks time = gfx::FrameTime::Now();
-  float previous_offset = manager->ControlsTopOffset();
+  float previous;
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_LT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
@@ -184,12 +183,12 @@ TEST(TopControlsManagerTest, PartialShownShowAnimation) {
   EXPECT_TRUE(manager->animation());
 
   base::TimeTicks time = gfx::FrameTime::Now();
-  float previous_offset = manager->ControlsTopOffset();
+  float previous;
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_GT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
@@ -210,21 +209,19 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
   EXPECT_TRUE(manager->animation());
 
   base::TimeTicks time = gfx::FrameTime::Now();
-  float previous_offset = manager->ControlsTopOffset();
+  float previous;
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_GT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
 
-// Flaky. See http://crbug.com/456617.
-TEST(TopControlsManagerTest,
-     DISABLED_PartialHiddenWithAmbiguousThresholdHides) {
+TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
   MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
@@ -238,19 +235,19 @@ TEST(TopControlsManagerTest,
   EXPECT_TRUE(manager->animation());
 
   base::TimeTicks time = gfx::FrameTime::Now();
-  float previous_offset = manager->ControlsTopOffset();
+  float previous;
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_LT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, DISABLED_PartialShownWithAmbiguousThresholdHides) {
+TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
   MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
@@ -268,12 +265,12 @@ TEST(TopControlsManagerTest, DISABLED_PartialShownWithAmbiguousThresholdHides) {
   EXPECT_TRUE(manager->animation());
 
   base::TimeTicks time = gfx::FrameTime::Now();
-  float previous_offset = manager->ControlsTopOffset();
+  float previous;
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_LT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
@@ -298,12 +295,12 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
   EXPECT_TRUE(manager->animation());
 
   base::TimeTicks time = gfx::FrameTime::Now();
-  float previous_offset = manager->ControlsTopOffset();
+  float previous;
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_GT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
@@ -339,8 +336,7 @@ TEST(TopControlsManagerTest, PinchIgnoresScroll) {
   EXPECT_TRUE(manager->animation());
 }
 
-// Flaky. See http://crbug.com/456617.
-TEST(TopControlsManagerTest, DISABLED_PinchBeginStartsAnimationIfNecessary) {
+TEST(TopControlsManagerTest, PinchBeginStartsAnimationIfNecessary) {
   MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
 
@@ -362,12 +358,12 @@ TEST(TopControlsManagerTest, DISABLED_PinchBeginStartsAnimationIfNecessary) {
   EXPECT_TRUE(manager->animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous_offset = manager->ControlsTopOffset();
+  float previous;
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_LT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
 
@@ -383,12 +379,11 @@ TEST(TopControlsManagerTest, DISABLED_PinchBeginStartsAnimationIfNecessary) {
   EXPECT_TRUE(manager->animation());
 
   time = base::TimeTicks::Now();
-  previous_offset = manager->ControlsTopOffset();
   while (manager->animation()) {
+    previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
-    EXPECT_GT(manager->ControlsTopOffset(), previous_offset);
-    previous_offset = manager->ControlsTopOffset();
+    EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
