@@ -68,6 +68,7 @@ if ${PNACL_DEBUG} || ${PNACL_BUILDBOT}; then
                        bitcode=1
                        skip_trusted_tests=1
                        --verbose
+                       sysinfo=0
                        -j${PNACL_CONCURRENCY})
 else
   readonly SCONS_ARGS=(MODE=nacl,opt-host
@@ -119,6 +120,7 @@ scons-clean () {
   # a mix of both tests.
   if [ "${mode}" == "native" ] ; then
     Run rm -rf scons-out/nacl-${arch}-pnacl-${frontend}
+    Run rm -rf scons-out/nacl-${arch}-${frontend}
     Run rm -rf scons-out/nacl-${arch}-pnacl-pexe-${frontend}
   else
     Run rm -rf scons-out/nacl-${arch}-pnacl-${mode}-${frontend}
@@ -162,9 +164,10 @@ scons-tests () {
     if [ ${mode} == "sbtc" ]; then
       return 0
     fi
-    if [ ${arch} != "arm" ]; then
-      RunScons ${arch} ${modeflags} bitcode=0 nacl_clang=1 "$@" smoke_tests
-    fi
+
+    # nacl-clang tests
+    RunScons ${arch} ${modeflags} bitcode=0 nacl_clang=1 "$@" smoke_tests
+
     # nonpexe tests
     RunScons ${arch} ${modeflags} pnacl_generate_pexe=0 "$@" nonpexe_tests
     if [ ${arch} != "x86-64" ]; then
