@@ -125,7 +125,6 @@ class DataReductionProxySettingsTestBase : public testing::Test {
                             bool expected_enabled,
                             bool expected_fallback_restricted);
   void CheckOnPrefChange(bool enabled, bool expected_enabled, bool managed);
-  void InitWithStatisticsPrefs();
   void CheckInitDataReductionProxy(bool enabled_at_startup);
   void RegisterSyntheticFieldTrialCallback(bool proxy_enabled) {
     proxy_enabled_ = proxy_enabled;
@@ -137,6 +136,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   scoped_ptr<TestDataReductionProxyParams> expected_params_;
   base::Time last_update_time_;
   bool proxy_enabled_;
+  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
   net::CapturingNetLog net_log_;
   scoped_ptr<DataReductionProxyEventStore> event_store_;
 };

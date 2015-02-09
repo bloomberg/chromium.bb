@@ -109,8 +109,6 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
       new DataReductionProxyIOData(
           Client::UNKNOWN, make_scoped_ptr(statistics_prefs), settings(),
           net_log(), message_loop_proxy(), message_loop_proxy()));
-  settings()->SetDataReductionProxyStatisticsPrefs(
-      io_data->PassStatisticsPrefs());
 
   // Check that io_data creates an interceptor. Such an interceptor is
   // thoroughly tested by DataReductionProxyInterceptoTest.
@@ -120,7 +118,13 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
 
   // At this point io_data->statistics_prefs() should be set and compression
   // statistics logging should be enabled.
-  EXPECT_EQ(statistics_prefs, settings()->statistics_prefs().get());
+  EXPECT_EQ(statistics_prefs, io_data->statistics_prefs());
+
+  // Check if explicitly enabling compression statistics logging results in
+  // a new logging object being created.
+  io_data->EnableCompressionStatisticsLogging(prefs(), base::TimeDelta());
+  EXPECT_NE(statistics_prefs, io_data->statistics_prefs());
+  EXPECT_TRUE(io_data->statistics_prefs());
 
   // When creating a network delegate, expect that it properly wraps a
   // network delegate. Such a network delegate is thoroughly tested by

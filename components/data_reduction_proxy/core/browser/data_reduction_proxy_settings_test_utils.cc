@@ -68,6 +68,11 @@ void DataReductionProxySettingsTestBase::SetUp() {
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
 
+  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+      &pref_service_,
+      scoped_refptr<base::TestSimpleTaskRunner>(
+          new base::TestSimpleTaskRunner()),
+          base::TimeDelta()));
   event_store_.reset(new DataReductionProxyEventStore(
       scoped_refptr<base::TestSimpleTaskRunner>(
           new base::TestSimpleTaskRunner())));
@@ -85,17 +90,9 @@ void DataReductionProxySettingsTestBase::SetUp() {
     received_update->Insert(0, new base::StringValue(base::Int64ToString(i)));
   }
   last_update_time_ = base::Time::Now().LocalMidnight();
-  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs(
-      new DataReductionProxyStatisticsPrefs(
-          &pref_service_,
-          scoped_refptr<base::TestSimpleTaskRunner>(
-              new base::TestSimpleTaskRunner()),
-              base::TimeDelta()));
-  statistics_prefs->SetInt64(
+  statistics_prefs_->SetInt64(
       prefs::kDailyHttpContentLengthLastUpdateDate,
       last_update_time_.ToInternalValue());
-  settings_->SetDataReductionProxyStatisticsPrefs(
-        statistics_prefs.Pass());
   expected_params_.reset(new TestDataReductionProxyParams(
       DataReductionProxyParams::kAllowed |
       DataReductionProxyParams::kFallbackAllowed |
@@ -137,6 +134,7 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
       scoped_refptr<base::TestSimpleTaskRunner>(
           new base::TestSimpleTaskRunner()), &net_log_, event_store_.get()));
   settings_->configurator_ = configurator_.get();
+  settings_->SetDataReductionProxyStatisticsPrefs(statistics_prefs_.get());
 }
 
 // Explicitly generate required instantiations.
@@ -271,13 +269,8 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
   scoped_refptr<net::TestURLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
 
-  // Delete statistics prefs, otherwise the DCHECK in
-  // InitDataReductionProxySettings fails.
-  settings_->SetDataReductionProxyStatisticsPrefs(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>());
   settings_->InitDataReductionProxySettings(
       &pref_service_,
-      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(),
       request_context.get(),
       &net_log_,
       event_store_.get());

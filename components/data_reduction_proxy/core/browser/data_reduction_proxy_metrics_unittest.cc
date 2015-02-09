@@ -91,6 +91,42 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
   scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
 };
 
+TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
+  const int64 kOriginalLength = 200;
+  const int64 kReceivedLength = 100;
+
+  UpdateContentLengthPrefs(
+      kReceivedLength, kOriginalLength,
+      pref_service_.GetBoolean(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
+      UNKNOWN_TYPE, statistics_prefs_.get());
+
+  EXPECT_EQ(kReceivedLength,
+            statistics_prefs_->GetInt64(
+                data_reduction_proxy::prefs::kHttpReceivedContentLength));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
+  EXPECT_EQ(kOriginalLength,
+            statistics_prefs_->GetInt64(
+                data_reduction_proxy::prefs::kHttpOriginalContentLength));
+
+  // Record the same numbers again, and total lengths should be doubled.
+  UpdateContentLengthPrefs(
+      kReceivedLength, kOriginalLength,
+      pref_service_.GetBoolean(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
+      UNKNOWN_TYPE, statistics_prefs_.get());
+
+  EXPECT_EQ(kReceivedLength * 2,
+            statistics_prefs_->GetInt64(
+                data_reduction_proxy::prefs::kHttpReceivedContentLength));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
+  EXPECT_EQ(kOriginalLength * 2,
+            statistics_prefs_->GetInt64(
+                data_reduction_proxy::prefs::kHttpOriginalContentLength));
+}
+
 // The initial last update time used in test. There is no leap second a few
 // days around this time used in the test.
 // Note: No time zone is specified. Local time will be assumed by

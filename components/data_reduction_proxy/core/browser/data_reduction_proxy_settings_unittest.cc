@@ -29,8 +29,6 @@ const char kProbeURLWithNoResponse[] = "http://no.org/";
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyStatisticsPrefs;
-
 class DataReductionProxySettingsTest
     : public ConcreteDataReductionProxySettingsTest<
           DataReductionProxySettings> {
@@ -425,7 +423,6 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
   settings_->InitDataReductionProxySettings(
       &pref_service_,
-      scoped_ptr<DataReductionProxyStatisticsPrefs>(),
       request_context.get(),
       &net_log_,
       event_store_.get());

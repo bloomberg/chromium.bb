@@ -43,8 +43,7 @@ class DataReductionProxyChromeSettings
   ~DataReductionProxyChromeSettings() override;
 
   // Initialize the settings object with the given configurator, prefs services,
-  // and request context. Settings takes ownership of statistics prefs from
-  // |io_data|.
+  // and request context.
   void InitDataReductionProxySettings(
       data_reduction_proxy::DataReductionProxyIOData* io_data,
       PrefService* profile_prefs,
