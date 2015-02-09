@@ -10,23 +10,25 @@ import sys
 import tempfile
 import zipfile
 
-BINARY_FOR_PLATFORM = {
-    "linux-x64" : "mojo_shell",
-    "android-arm" : "MojoShell.apk"
-}
-
 if not sys.platform.startswith("linux"):
   print "Not supported for your platform"
   sys.exit(0)
 
-CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
-PREBUILT_FILE_PATH = os.path.join(CURRENT_PATH, "prebuilt")
-
 
 def download(tools_directory):
-  stamp_path = os.path.join(PREBUILT_FILE_PATH, "VERSION")
+  current_path = os.path.dirname(os.path.realpath(__file__))
+  find_depot_tools_path = os.path.join(current_path, tools_directory)
+  sys.path.insert(0, find_depot_tools_path)
+  # pylint: disable=F0401
+  import find_depot_tools
 
-  version_path = os.path.join(CURRENT_PATH, "../VERSION")
+  prebuilt_file_path = os.path.join(current_path, "prebuilt")
+  stamp_path = os.path.join(prebuilt_file_path, "VERSION")
+
+  depot_tools_path = find_depot_tools.add_depot_tools_to_path()
+  gsutil_exe = os.path.join(depot_tools_path, "third_party", "gsutil", "gsutil")
+
+  version_path = os.path.join(current_path, "../VERSION")
   with open(version_path) as version_file:
     version = version_file.read().strip()
 
@@ -36,26 +38,12 @@ def download(tools_directory):
       if current_version == version:
         return 0  # Already have the right version.
   except IOError:
-    pass  # If the stamp file does not exist we need to download new binaries.
+    pass  # If the stamp file does not exist we need to download a new binary.
 
-  for platform in ["linux-x64", "android-arm"]:
-    download_version_for_platform(version, platform, tools_directory)
-
-  with open(stamp_path, 'w') as stamp_file:
-    stamp_file.write(version)
-  return 0
-
-def download_version_for_platform(version, platform, tools_directory):
-  find_depot_tools_path = os.path.join(CURRENT_PATH, tools_directory)
-  sys.path.insert(0, find_depot_tools_path)
-  # pylint: disable=F0401
-  import find_depot_tools
-
+  platform = "linux-x64"  # TODO: configurate
   basename = platform + ".zip"
-  gs_path = "gs://mojo/shell/" + version + "/" + basename
 
-  depot_tools_path = find_depot_tools.add_depot_tools_to_path()
-  gsutil_exe = os.path.join(depot_tools_path, "third_party", "gsutil", "gsutil")
+  gs_path = "gs://mojo/shell/" + version + "/" + basename
 
   with tempfile.NamedTemporaryFile() as temp_zip_file:
     # We're downloading from a public bucket which does not need authentication,
@@ -82,16 +70,19 @@ def download_version_for_platform(version, platform, tools_directory):
       print e.output
       sys.exit(1)
 
-    binary_name = BINARY_FOR_PLATFORM[platform]
     with zipfile.ZipFile(temp_zip_file.name) as z:
-      zi = z.getinfo(binary_name)
+      zi = z.getinfo("mojo_shell")
       mode = zi.external_attr >> 16
-      z.extract(zi, PREBUILT_FILE_PATH)
-      os.chmod(os.path.join(PREBUILT_FILE_PATH, binary_name), mode)
+      z.extract(zi, prebuilt_file_path)
+      os.chmod(os.path.join(prebuilt_file_path, "mojo_shell"), mode)
+
+  with open(stamp_path, 'w') as stamp_file:
+    stamp_file.write(version)
+  return 0
 
 
 def main():
-  parser = argparse.ArgumentParser(description="Download mojo_shell binaries "
+  parser = argparse.ArgumentParser(description="Download mojo_shell binary "
                                    "from google storage")
   parser.add_argument("--tools-directory",
                       dest="tools_directory",

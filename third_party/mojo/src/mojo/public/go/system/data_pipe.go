@@ -86,9 +86,6 @@ type dataPipeConsumer struct {
 }
 
 func (h *dataPipeConsumer) ReadData(flags MojoReadDataFlags) (MojoResult, []byte) {
-	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
 	cParams := C.MallocReadDataParams()
 	defer C.FreeReadDataParams(cParams)
 	*cParams.num_bytes = 0
@@ -106,9 +103,6 @@ func (h *dataPipeConsumer) ReadData(flags MojoReadDataFlags) (MojoResult, []byte
 }
 
 func (h *dataPipeConsumer) BeginReadData(numBytes int, flags MojoReadDataFlags) (MojoResult, []byte) {
-	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
 	cParams := C.MallocTwoPhaseActionParams()
 	defer C.FreeTwoPhaseActionParams(cParams)
 	*cParams.num_bytes = C.uint32_t(numBytes)
@@ -118,9 +112,6 @@ func (h *dataPipeConsumer) BeginReadData(numBytes int, flags MojoReadDataFlags) 
 }
 
 func (h *dataPipeConsumer) EndReadData(numBytesRead int) MojoResult {
-	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
 	return MojoResult(C.MojoEndReadData(h.mojoHandle.cValue(), C.uint32_t(numBytesRead)))
 }
 
@@ -129,9 +120,6 @@ type dataPipeProducer struct {
 }
 
 func (h *dataPipeProducer) WriteData(data []byte, flags MojoWriteDataFlags) (MojoResult, int) {
-	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
 	cParams := C.MallocWriteDataParams(C.uint32_t(len(data)))
 	defer C.FreeWriteDataParams(cParams)
 	*cParams.num_bytes = C.uint32_t(len(data))
@@ -142,9 +130,6 @@ func (h *dataPipeProducer) WriteData(data []byte, flags MojoWriteDataFlags) (Moj
 }
 
 func (h *dataPipeProducer) BeginWriteData(numBytes int, flags MojoWriteDataFlags) (MojoResult, []byte) {
-	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
 	cParams := C.MallocTwoPhaseActionParams()
 	defer C.FreeTwoPhaseActionParams(cParams)
 	*cParams.num_bytes = C.uint32_t(numBytes)
@@ -154,8 +139,5 @@ func (h *dataPipeProducer) BeginWriteData(numBytes int, flags MojoWriteDataFlags
 }
 
 func (h *dataPipeProducer) EndWriteData(numBytesWritten int) MojoResult {
-	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
 	return MojoResult(C.MojoEndWriteData(h.mojoHandle.cValue(), C.uint32_t(numBytesWritten)))
 }

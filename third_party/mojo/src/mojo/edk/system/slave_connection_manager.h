@@ -31,10 +31,10 @@ namespace system {
 
 // The |ConnectionManager| implementation for slave processes.
 //
-// Objects of this class may be created and destroyed on any thread. However,
-// |Init()| and |Shutdown()| must be called on the "delegate thread". Otherwise,
-// its public methods are thread-safe (except that they may not be called from
-// its internal, private thread).
+// Objects of this class must created, initialized (via |Init()|), shut down
+// (via |Shutdown()|), and destroyed on the same thread (the "creation thread").
+// Otherwise, its public methods are thread-safe (except that they may not be
+// called from its internal, private thread).
 class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
     : public ConnectionManager,
       public RawChannel::Delegate {
@@ -45,11 +45,10 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
   ~SlaveConnectionManager() override;
 
   // No other methods may be called until after this has been called.
-  // |delegate_thread_task_runner| should be the task runner for the "delegate
-  // thread", on which |slave_process_delegate|'s methods will be called. Both
-  // must stay alive at least until after |Shutdown()| has been called.
-  void Init(scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
-            embedder::SlaveProcessDelegate* slave_process_delegate,
+  // |slave_process_delegate| must stay alive at least until after |Shutdown()|
+  // has been called; its methods will be called on this object's creation
+  // thread.
+  void Init(embedder::SlaveProcessDelegate* slave_process_delegate,
             embedder::ScopedPlatformHandle platform_handle);
 
   // No other methods may be called after this is (or while it is being) called.
@@ -81,10 +80,10 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
       embedder::ScopedPlatformHandleVectorPtr platform_handles) override;
   void OnError(Error error) override;
 
-  // Asserts that the current thread is the delegate thread. (This actually
-  // checks the current message loop.)
-  // TODO(vtl): Probably we should actually check the thread.
-  void AssertOnDelegateThread() const;
+  // Asserts that the current thread is the creation thread. (This actually
+  // checks the current message loop, which is what we depend on, not the thread
+  // per se.)
+  void AssertOnCreationThread() const;
 
   // Asserts that the current thread is *not* |private_thread_| (no-op if
   // DCHECKs are not enabled). This should only be called while
@@ -96,11 +95,12 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
   // (i.e., after |Init()| but before |Shutdown()|).
   void AssertOnPrivateThread() const;
 
-  // These are set in |Init()| before |private_thread_| exists and only cleared
+  const scoped_refptr<base::TaskRunner> creation_thread_task_runner_;
+
+  // These is set in |Init()| before |private_thread_| exists and only cleared
   // in |Shutdown()| after |private_thread_| is dead. Thus it's safe to "use" on
   // |private_thread_|. (Note that |slave_process_delegate_| may only be called
-  // from the delegate thread.)
-  scoped_refptr<base::TaskRunner> delegate_thread_task_runner_;
+  // from the creation thread.)
   embedder::SlaveProcessDelegate* slave_process_delegate_;
 
   // This is a private I/O thread on which this class does the bulk of its work.

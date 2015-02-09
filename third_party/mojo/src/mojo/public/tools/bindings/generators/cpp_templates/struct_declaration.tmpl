@@ -18,5 +18,5 @@ class {{class_name}} {
   {{class_name}}();
   ~{{class_name}}() = delete;
 };
-static_assert(sizeof({{class_name}}) == {{struct.versions[-1].num_bytes}},
+static_assert(sizeof({{class_name}}) == {{struct.packed|struct_size}},
               "Bad sizeof({{class_name}})");

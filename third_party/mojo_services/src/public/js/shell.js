@@ -30,13 +30,10 @@ define("mojo/services/public/js/shell", [
 
       var application = new ServiceExchange();
       this.shellProxy.connectToApplication(url,
-          function(servicesProxy) {
-            application.proxy = servicesProxy;
+          function(services) {
+            application.proxy = services;
           },
-          function(exposedServicesStub) {
-            application.stub = exposedServicesStub;
-            StubBindings(exposedServicesStub).delegate = application;
-          });
+          application);
       this.applications_.set(url, application);
       return application;
     }

@@ -29,11 +29,11 @@ class ViewManagerClientImpl : public ViewManager,
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate,
                         Shell* shell,
-                        InterfaceRequest<ViewManagerClient> request,
+                        ScopedMessagePipeHandle handle,
                         bool delete_on_error);
   ~ViewManagerClientImpl() override;
 
-  bool connected() const { return service_; }
+  bool connected() const { return connected_; }
   ConnectionSpecificId connection_id() const { return connection_id_; }
 
   // API exposed to the view implementations that pushes local changes to the
@@ -77,8 +77,6 @@ class ViewManagerClientImpl : public ViewManager,
   void AddView(View* view);
   void RemoveView(Id view_id);
 
-  void SetViewManagerService(ViewManagerServicePtr service);
-
  private:
   friend class RootObserver;
 
@@ -97,7 +95,6 @@ class ViewManagerClientImpl : public ViewManager,
   void OnEmbed(ConnectionSpecificId connection_id,
                const String& creator_url,
                ViewDataPtr root,
-               ViewManagerServicePtr view_manager_service,
                InterfaceRequest<ServiceProvider> services,
                ServiceProviderPtr exposed_services,
                ScopedMessagePipeHandle window_manager_pipe) override;
@@ -145,6 +142,7 @@ class ViewManagerClientImpl : public ViewManager,
                                   uint32_t focused_view_id,
                                   uint32_t active_view_id);
 
+  bool connected_;
   ConnectionSpecificId connection_id_;
   ConnectionSpecificId next_id_;
 
@@ -166,7 +164,7 @@ class ViewManagerClientImpl : public ViewManager,
   Binding<WindowManagerObserver> wm_observer_binding_;
 
   Binding<ViewManagerClient> binding_;
-  ViewManagerServicePtr service_;
+  ViewManagerService* service_;
   const bool delete_on_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);

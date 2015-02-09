@@ -46,8 +46,8 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message) {
   DCHECK(channel_endpoint_);
-  bool ok = channel_endpoint_->EnqueueMessage(message.Pass());
-  LOG_IF(WARNING, !ok) << "Failed to write enqueue message to channel";
+  LOG_IF(WARNING, !channel_endpoint_->EnqueueMessage(message.Pass()))
+      << "Failed to write enqueue message to channel";
 }
 
 void ProxyMessagePipeEndpoint::Close() {

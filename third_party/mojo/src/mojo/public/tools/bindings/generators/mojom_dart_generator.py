@@ -13,6 +13,8 @@ from mojom.generate.template_expander import UseJinja
 
 GENERATOR_PREFIX = 'dart'
 
+_HEADER_SIZE = 8
+
 _kind_to_dart_default_value = {
   mojom.BOOL:                  "false",
   mojom.INT8:                  "0",
@@ -207,6 +209,14 @@ def GetNameForElement(element):
 def GetInterfaceResponseName(method):
   return UpperCamelCase(method.name + 'Response')
 
+def GetResponseStructFromMethod(method):
+  return generator.GetDataHeader(
+      False, generator.GetResponseStructFromMethod(method))
+
+def GetStructFromMethod(method):
+  return generator.GetDataHeader(
+      False, generator.GetStructFromMethod(method))
+
 def GetDartTrueFalse(value):
   return 'true' if value else 'false'
 
@@ -369,8 +379,9 @@ class Generator(generator.Generator):
     'dart_type': DartDeclType,
     'name': GetNameForElement,
     'interface_response_name': GetInterfaceResponseName,
-    'response_struct_from_method': generator.GetResponseStructFromMethod,
-    'struct_from_method': generator.GetStructFromMethod,
+    'response_struct_from_method': GetResponseStructFromMethod,
+    'struct_from_method': GetStructFromMethod,
+    'struct_size': lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
   }
 
   def GetParameters(self):

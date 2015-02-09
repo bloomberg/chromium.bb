@@ -364,7 +364,6 @@ def ConstantFromData(module, data, parent_kind):
     scope = (module.namespace, )
   # TODO(mpcomplete): maybe we should only support POD kinds.
   constant.kind = KindFromData(module.kinds, data['kind'], scope)
-  constant.parent_kind = parent_kind
   constant.value = FixupExpression(module, data.get('value'), scope, None)
 
   value = mojom.ConstantValue(module, parent_kind, constant)
@@ -410,7 +409,7 @@ def ModuleFromData(data):
   module.structs = map(
       lambda struct: StructFromData(module, struct), data['structs'])
   module.unions = map(
-      lambda union: UnionFromData(module, union), data.get('unions', []))
+      lambda union: UnionFromData(module, struct), data.get('unions', []))
   module.interfaces = map(
       lambda interface: InterfaceFromData(module, interface),
       data['interfaces'])

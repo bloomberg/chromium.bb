@@ -6,9 +6,6 @@
 
 #include <algorithm>
 
-#include "base/task_runner.h"
-#include "mojo/edk/system/channel.h"
-
 namespace mojo {
 namespace system {
 

@@ -110,7 +110,7 @@ if (decoder{{level+1}} == null) {
 {% macro struct_def(struct, inner_class=False) %}
 {{'static' if inner_class else 'public'}} final class {{struct|name}} extends org.chromium.mojo.bindings.Struct {
 
-    private static final int STRUCT_SIZE = {{struct.versions[-1].num_bytes}};
+    private static final int STRUCT_SIZE = {{struct.packed|struct_size}};
     private static final DataHeader DEFAULT_STRUCT_INFO = new DataHeader(STRUCT_SIZE, {{struct.packed.packed_fields|length}});
 {%  for constant in struct.constants %}
 

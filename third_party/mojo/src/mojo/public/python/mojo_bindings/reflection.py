@@ -146,6 +146,7 @@ class MojoInterfaceType(type):
     class MyInterface(object):
       __metaclass__ = MojoInterfaceType
       DESCRIPTOR = {
+        'client': MyInterfaceClient,
         'methods': [
           {
             'name': 'FireAndForget',
@@ -180,10 +181,13 @@ class MojoInterfaceType(type):
     methods = [_MethodDescriptor(x) for x in descriptor.get('methods', [])]
     for method in methods:
       dictionary[method.name] = _NotImplemented
+    client_class_getter = descriptor.get('client', None)
     fully_qualified_name = descriptor['fully_qualified_name']
 
-    interface_manager = InterfaceManager(fully_qualified_name, methods)
+    interface_manager = InterfaceManager(fully_qualified_name, methods,
+        client_class_getter)
     dictionary.update({
+        'client': None,
         'manager': None,
         '_interface_manager': interface_manager,
     })
@@ -240,12 +244,23 @@ class InterfaceManager(object):
   over a pipe.
   """
 
-  def __init__(self, name, methods):
+  def __init__(self, name, methods, client_class_getter):
     self.name = name
     self.methods = methods
     self.interface_class = None
+    self._client_class_getter = client_class_getter
+    self._client_manager = None
+    self._client_manager_computed = False
     self._proxy_class = None
     self._stub_class = None
+
+  @property
+  def client_manager(self):
+    if not self._client_manager_computed:
+      self._client_manager_computed = True
+      if self._client_class_getter:
+        self._client_manager = self._client_class_getter().manager
+    return self._client_manager
 
   def Proxy(self, handle):
     router = messaging.Router(handle)
@@ -267,6 +282,9 @@ class InterfaceManager(object):
       retainer.release()
     error_handler.AddCallback(Cleanup)
 
+    if self.client_manager:
+      impl.client = self.client_manager._InternalProxy(router, error_handler)
+
     # Give an instance manager to the implementation to allow it to close
     # the connection.
     impl.manager = InstanceManager(router, error_handler)
@@ -274,14 +292,15 @@ class InterfaceManager(object):
     router.Start()
 
   def _InternalProxy(self, router, error_handler):
-    if error_handler is None:
-      error_handler = _ProxyErrorHandler()
-
     if not self._proxy_class:
       dictionary = {
         '__module__': __name__,
         '__init__': _ProxyInit,
       }
+      if self.client_manager:
+        dictionary['client'] = property(_ProxyGetClient, _ProxySetClient)
+        dictionary['manager'] = None
+        dictionary['_client_manager'] = self.client_manager
       for method in self.methods:
         dictionary[method.name] = _ProxyMethodCall(method)
       self._proxy_class = type('%sProxy' % self.name,
@@ -316,18 +335,15 @@ class InstanceManager(object):
   def __init__(self, router, error_handler):
     self._router = router
     self._error_handler = error_handler
-    assert self._error_handler is not None
 
   def Close(self):
-    self._error_handler.OnClose()
     self._router.Close()
 
   def PassMessagePipe(self):
-    self._error_handler.OnClose()
     return self._router.PassMessagePipe()
 
   def AddOnErrorCallback(self, callback):
-    self._error_handler.AddCallback(lambda _: callback(), False)
+    self._error_handler.AddCallback(lambda _: callback())
 
 
 class _MethodDescriptor(object):
@@ -357,32 +373,21 @@ def _ConstructParameterStruct(descriptor, name, suffix):
 class _ProxyErrorHandler(messaging.ConnectionErrorHandler):
   def __init__(self):
     messaging.ConnectionErrorHandler.__init__(self)
-    self._callbacks = dict()
+    self._callbacks = set()
 
   def OnError(self, result):
-    if self._callbacks is None:
-      return
     exception = messaging.MessagingException('Mojo error: %d' % result)
-    for (callback, _) in self._callbacks.iteritems():
+    for callback in list(self._callbacks):
       callback(exception)
     self._callbacks = None
 
-  def OnClose(self):
-    if self._callbacks is None:
-      return
-    exception = messaging.MessagingException('Router has been closed.')
-    for (callback, call_on_close) in self._callbacks.iteritems():
-      if call_on_close:
-        callback(exception)
-    self._callbacks = None
-
-  def AddCallback(self, callback, call_on_close=True):
+  def AddCallback(self, callback):
     if self._callbacks is not None:
-      self._callbacks[callback] = call_on_close
+      self._callbacks.add(callback)
 
   def RemoveCallback(self, callback):
     if self._callbacks:
-      del self._callbacks[callback]
+      self._callbacks.remove(callback)
 
 
 class _Retainer(object):
@@ -452,6 +457,19 @@ def _StructNe(self, other):
 def _ProxyInit(self, router, error_handler):
   self._router = router
   self._error_handler = error_handler
+  self._client = None
+
+
+# pylint: disable=W0212
+def _ProxyGetClient(self):
+  return self._client
+
+
+# pylint: disable=W0212
+def _ProxySetClient(self, client):
+  self._client = client
+  stub = self._client_manager._Stub(client)
+  self._router.SetIncomingMessageReceiver(stub)
 
 
 # pylint: disable=W0212

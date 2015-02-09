@@ -16,8 +16,6 @@ interface WindowManagerInternal {
   CreateWindowManagerForViewManagerClient(
       uint16 connection_id,
       handle<message_pipe> window_manager_pipe);
-
-  SetViewManagerClient(handle<message_pipe> view_manager_client_request);
 };
 
 // WindowManagerInternalClient is an interface provide by the ViewManager

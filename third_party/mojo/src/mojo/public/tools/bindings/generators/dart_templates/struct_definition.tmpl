@@ -74,7 +74,7 @@ if (decoder{{level+1}} == null) {
 
 {%- macro struct_def(struct) %}
 class {{struct|name}} extends bindings.Struct {
-  static const int kStructSize = {{struct.versions[-1].num_bytes}};
+  static const int kStructSize = {{struct.packed|struct_size}};
   static const bindings.DataHeader kDefaultStructInfo =
       const bindings.DataHeader(kStructSize, {{struct.packed.packed_fields|length}});
 

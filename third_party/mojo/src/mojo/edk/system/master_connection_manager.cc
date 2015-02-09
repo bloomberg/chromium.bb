@@ -220,13 +220,16 @@ struct MasterConnectionManager::PendingConnectionInfo {
 // MasterConnectionManager -----------------------------------------------------
 
 MasterConnectionManager::MasterConnectionManager()
-    : master_process_delegate_(),
+    : creation_thread_task_runner_(base::MessageLoop::current()->task_runner()),
+      master_process_delegate_(),
       private_thread_("MasterConnectionManagerPrivateThread"),
       next_process_identifier_(kFirstSlaveProcessIdentifier) {
+  DCHECK(creation_thread_task_runner_);
+  AssertOnCreationThread();  // Just make sure this assertion works correctly.
 }
 
 MasterConnectionManager::~MasterConnectionManager() {
-  DCHECK(!delegate_thread_task_runner_);
+  AssertOnCreationThread();
   DCHECK(!master_process_delegate_);
   DCHECK(!private_thread_.message_loop());
   DCHECK(helpers_.empty());
@@ -234,23 +237,19 @@ MasterConnectionManager::~MasterConnectionManager() {
 }
 
 void MasterConnectionManager::Init(
-    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
     embedder::MasterProcessDelegate* master_process_delegate) {
-  DCHECK(delegate_thread_task_runner);
+  AssertOnCreationThread();
   DCHECK(master_process_delegate);
-  DCHECK(!delegate_thread_task_runner_);
   DCHECK(!master_process_delegate_);
   DCHECK(!private_thread_.message_loop());
 
-  delegate_thread_task_runner_ = delegate_thread_task_runner;
-  AssertOnDelegateThread();
   master_process_delegate_ = master_process_delegate;
   CHECK(private_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 }
 
 void MasterConnectionManager::Shutdown() {
-  AssertOnDelegateThread();
+  AssertOnCreationThread();
   DCHECK(master_process_delegate_);
   DCHECK(private_thread_.message_loop());
 
@@ -262,7 +261,6 @@ void MasterConnectionManager::Shutdown() {
   DCHECK(helpers_.empty());
   DCHECK(pending_connections_.empty());
   master_process_delegate_ = nullptr;
-  delegate_thread_task_runner_ = nullptr;
 }
 
 void MasterConnectionManager::AddSlave(
@@ -549,16 +547,16 @@ void MasterConnectionManager::CallOnSlaveDisconnect(
     scoped_ptr<embedder::SlaveInfo> slave_info) {
   AssertOnPrivateThread();
   DCHECK(master_process_delegate_);
-  delegate_thread_task_runner_->PostTask(
+  creation_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&embedder::MasterProcessDelegate::OnSlaveDisconnect,
                             base::Unretained(master_process_delegate_),
                             base::Passed(&slave_info)));
 }
 
-void MasterConnectionManager::AssertOnDelegateThread() const {
+void MasterConnectionManager::AssertOnCreationThread() const {
   DCHECK(base::MessageLoop::current());
   DCHECK_EQ(base::MessageLoop::current()->task_runner(),
-            delegate_thread_task_runner_);
+            creation_thread_task_runner_);
 }
 
 void MasterConnectionManager::AssertNotOnPrivateThread() const {

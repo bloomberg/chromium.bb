@@ -4,20 +4,6 @@
 
 import("../mojo_edk.gni")
 
-# TODO(hansmuller): The organization of tests in this directory is weird:
-#   * Really, js_unittests tests public stuff, so that should live in public
-#     and be reworked as some sort of apptest.
-#   * Both js_unittests and js_integration_tests should auto-generate their
-#     tests somehow. The .cc files are just test runner stubs, including
-#     explicit lists of .js files.
-group("tests") {
-  testonly = true
-  deps = [
-    "test:js_unittests",
-    "test:js_integration_tests",
-  ]
-}
-
 mojo_edk_source_set("js") {
   sources = [
     "core.cc",
@@ -64,5 +50,7 @@ mojo_edk_source_set("js_unittests") {
     "mojo/edk/test:test_support",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/cpp/system" ]
+  mojo_sdk_deps = [
+    "mojo/public/cpp/system",
+  ]
 }

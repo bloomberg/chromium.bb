@@ -74,14 +74,16 @@ template("mojo_native_application") {
     }
 
     # Copy the prebuilt mojo_shell if using it.
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
+    if (defined(invoker.datadeps)) {
+      datadeps = invoker.datadeps
       if (use_prebuilt_mojo_shell) {
-        data_deps += [ copy_mojo_shell ]
+        datadeps += [ copy_mojo_shell ]
       }
     } else {
       if (use_prebuilt_mojo_shell) {
-        data_deps = [ copy_mojo_shell ]
+        datadeps = [
+          copy_mojo_shell,
+        ]
       }
     }
     deps = rebase_path([

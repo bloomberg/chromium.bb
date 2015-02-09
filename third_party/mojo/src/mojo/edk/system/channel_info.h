@@ -6,16 +6,12 @@
 #define MOJO_EDK_SYSTEM_CHANNEL_INFO_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
+#include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/system_impl_export.h"
-
-namespace base {
-class TaskRunner;
-}
 
 namespace mojo {
 namespace system {
-
-class Channel;
 
 struct MOJO_SYSTEM_IMPL_EXPORT ChannelInfo {
   ChannelInfo();

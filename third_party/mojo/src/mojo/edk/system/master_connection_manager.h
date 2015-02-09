@@ -35,10 +35,10 @@ const ProcessIdentifier kMasterProcessIdentifier = 1;
 
 // The |ConnectionManager| implementation for the master process.
 //
-// Objects of this class may be created and destroyed on any thread. However,
-// |Init()| and |Shutdown()| must be called on the "delegate thread". Otherwise,
-// its public methods are thread-safe (except that they may not be called from
-// its internal, private thread).
+// Objects of this class must be created, initialized (via |Init()|), shut down
+// (via |Shutdown()|), and destroyed on the same thread (the "creation thread").
+// Otherwise, its public methods are thread-safe (except that they may not be
+// called from its internal, private thread).
 class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
     : public ConnectionManager {
  public:
@@ -48,11 +48,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   ~MasterConnectionManager() override;
 
   // No other methods may be called until after this has been called.
-  // |delegate_thread_task_runner| should be the task runner for the "delegate
-  // thread", on which |master_process_delegate|'s methods will be called. Both
-  // must stay alive at least until after |Shutdown()| has been called.
-  void Init(scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
-            embedder::MasterProcessDelegate* master_process_delegate);
+  // |master_process_delegate| must stay alive at least until after |Shutdown()|
+  // has been called; its methods will be called on this object's creation
+  // thread.
+  void Init(embedder::MasterProcessDelegate* master_process_delegate);
 
   // No other methods may be called after this is (or while it is being) called.
   void Shutdown();
@@ -97,10 +96,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   // Posts a call to |master_process_delegate_->OnSlaveDisconnect()|.
   void CallOnSlaveDisconnect(scoped_ptr<embedder::SlaveInfo> slave_info);
 
-  // Asserts that the current thread is the delegate thread. (This actually
-  // checks the current message loop.)
-  // TODO(vtl): Probably we should actually check the thread.
-  void AssertOnDelegateThread() const;
+  // Asserts that the current thread is the creation thread. (This actually
+  // checks the current message loop, which is what we depend on, not the thread
+  // per se.)
+  void AssertOnCreationThread() const;
 
   // Asserts that the current thread is *not* |private_thread_| (no-op if
   // DCHECKs are not enabled). This should only be called while
@@ -112,11 +111,12 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   // (i.e., after |Init()| but before |Shutdown()|).
   void AssertOnPrivateThread() const;
 
-  // These are set in |Init()| before |private_thread_| exists and only cleared
-  // in |Shutdown()| after |private_thread_| is dead. Thus it's safe to "use" on
+  const scoped_refptr<base::TaskRunner> creation_thread_task_runner_;
+
+  // This is set in |Init()| before |private_thread_| exists and only cleared in
+  // |Shutdown()| after |private_thread_| is dead. Thus it's safe to "use" on
   // |private_thread_|. (Note that |master_process_delegate_| may only be called
-  // from the delegate thread.)
-  scoped_refptr<base::TaskRunner> delegate_thread_task_runner_;
+  // from the creation thread.)
   embedder::MasterProcessDelegate* master_process_delegate_;
 
   // This is a private I/O thread on which this class does the bulk of its work.

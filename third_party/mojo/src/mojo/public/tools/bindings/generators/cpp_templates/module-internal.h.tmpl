@@ -32,11 +32,6 @@ namespace {{namespace}} {
 class {{struct.name}};
 {%- endfor %}
 
-{#--- Wrapper forward declarations for unions #}
-{%  for union in unions %}
-class {{union.name}};
-{%- endfor %}
-
 namespace internal {
 
 {#--- Internal forward declarations #}
@@ -44,19 +39,11 @@ namespace internal {
 class {{struct.name}}_Data;
 {%- endfor %}
 
-{%  for union in unions %}
-class {{union.name}}_Data;
-{%- endfor %}
-
 #pragma pack(push, 1)
 
 {#--- Class declarations #}
 {%  for struct in structs %}
 {%    include "struct_declaration.tmpl" %}
-{%- endfor %}
-
-{%  for union in unions %}
-{%    include "union_declaration.tmpl" %}
 {%- endfor %}
 
 #pragma pack(pop)

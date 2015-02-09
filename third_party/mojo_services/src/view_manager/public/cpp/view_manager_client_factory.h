@@ -24,8 +24,7 @@ class ViewManagerClientFactory : public InterfaceFactory<ViewManagerClient> {
 
   // Creates a ViewManagerClient from the supplied arguments.
   static scoped_ptr<ViewManagerClient> WeakBindViewManagerToPipe(
-      InterfaceRequest<ViewManagerClient> request,
-      ViewManagerServicePtr view_manager_service,
+      ScopedMessagePipeHandle handle,
       Shell* shell,
       ViewManagerDelegate* delegate);
 

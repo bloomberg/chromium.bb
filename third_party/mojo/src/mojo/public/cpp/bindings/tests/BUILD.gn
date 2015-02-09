@@ -24,7 +24,6 @@ mojo_sdk_source_set("tests") {
     "string_unittest.cc",
     "struct_unittest.cc",
     "type_conversion_unittest.cc",
-    "union_unittest.cc",
     "validation_unittest.cc",
   ]
 

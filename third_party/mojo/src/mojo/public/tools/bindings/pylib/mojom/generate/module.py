@@ -171,11 +171,10 @@ class EnumValue(NamedValue):
 
 
 class Constant(object):
-  def __init__(self, name=None, kind=None, value=None, parent_kind=None):
+  def __init__(self, name=None, kind=None, value=None):
     self.name = name
     self.kind = kind
     self.value = value
-    self.parent_kind = parent_kind
 
 
 class Field(object):
@@ -465,10 +464,6 @@ def IsStructKind(kind):
   return isinstance(kind, Struct)
 
 
-def IsUnionKind(kind):
-  return isinstance(kind, Union)
-
-
 def IsArrayKind(kind):
   return isinstance(kind, Array)
 
@@ -499,7 +494,7 @@ def IsMapKind(kind):
 
 def IsObjectKind(kind):
   return (IsStructKind(kind) or IsArrayKind(kind) or IsStringKind(kind) or
-          IsMapKind(kind) or IsUnionKind(kind))
+          IsMapKind(kind))
 
 
 def IsNonInterfaceHandleKind(kind):
@@ -517,8 +512,7 @@ def IsAnyHandleKind(kind):
 
 
 def IsMoveOnlyKind(kind):
-  return (not IsStringKind(kind) and IsObjectKind(kind)) or \
-      IsAnyHandleKind(kind)
+  return IsObjectKind(kind) or IsAnyHandleKind(kind)
 
 
 def IsCloneableKind(kind):
@@ -531,7 +525,7 @@ def IsCloneableKind(kind):
       return True
     if IsArrayKind(kind):
       return ContainsHandles(kind.kind, visited_kinds)
-    if IsStructKind(kind) or IsUnionKind(kind):
+    if IsStructKind(kind):
       for field in kind.fields:
         if ContainsHandles(field.kind, visited_kinds):
           return True

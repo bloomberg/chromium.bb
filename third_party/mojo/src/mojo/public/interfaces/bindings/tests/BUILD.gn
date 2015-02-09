@@ -19,7 +19,6 @@ mojom("test_interfaces") {
     "sample_service.mojom",
     "serialization_test_structs.mojom",
     "test_structs.mojom",
-    "test_unions.mojom",
     "validation_test_interfaces.mojom",
   ]
 }
