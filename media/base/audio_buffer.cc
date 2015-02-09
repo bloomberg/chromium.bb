@@ -337,6 +337,7 @@ void AudioBuffer::ReadFramesInterleavedS32(int frames_to_copy,
                              trim_start_,
                              dest_data,
                              ConvertS32ToS32);
+      break;
     case kUnknownSampleFormat:
       NOTREACHED();
       break;
