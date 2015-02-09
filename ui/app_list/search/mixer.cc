@@ -28,6 +28,7 @@ const size_t kMaxSuggestionsResults = 6;
 const size_t kNoMaxResultsLimit = 0;
 
 void UpdateResult(const SearchResult& source, SearchResult* target) {
+  target->set_display_type(source.display_type());
   target->set_title(source.title());
   target->set_title_tags(source.title_tags());
   target->set_details(source.details());

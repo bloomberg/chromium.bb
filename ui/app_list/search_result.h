@@ -99,7 +99,11 @@ class APP_LIST_EXPORT SearchResult {
 
   const std::string& id() const { return id_; }
   double relevance() const { return relevance_; }
+
   DisplayType display_type() const { return display_type_; }
+  void set_display_type(DisplayType display_type) {
+    display_type_ = display_type;
+  }
 
   const Actions& actions() const {
     return actions_;
@@ -143,9 +147,6 @@ class APP_LIST_EXPORT SearchResult {
  protected:
   void set_id(const std::string& id) { id_ = id; }
   void set_relevance(double relevance) { relevance_ = relevance; }
-  void set_display_type(DisplayType display_type) {
-    display_type_ = display_type;
-  }
   void set_voice_result(bool voice_result) { voice_result_ = voice_result; }
 
  private:
