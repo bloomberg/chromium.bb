@@ -3526,7 +3526,7 @@
         ],
         # TODO(glider): enable the default options on other systems.
         'conditions': [
-          ['use_sanitizer_options==1 and ((OS=="linux" and (chromeos==0 or target_arch!="ia32")) or OS=="mac")', {
+          ['use_sanitizer_options==1 and (OS=="linux" or OS=="mac")', {
             'dependencies': [
               '<(DEPTH)/build/sanitizers/sanitizers.gyp:sanitizer_options',
             ],
