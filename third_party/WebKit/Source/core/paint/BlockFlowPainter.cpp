@@ -8,6 +8,7 @@
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/Layer.h"
 #include "core/layout/PaintInfo.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
 
@@ -54,7 +55,15 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
         LayoutUnit lastRight = m_renderBlockFlow.logicalRightSelectionOffset(&m_renderBlockFlow, lastTop);
         ClipRecorderStack clipRecorderStack(paintInfo.context);
 
-        LayoutRect gapRectsBounds = m_renderBlockFlow.selectionGaps(&m_renderBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight, &paintInfo);
+        LayoutRect bounds;
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            bounds = m_renderBlockFlow.visualOverflowRect();
+            bounds.moveBy(paintOffset);
+        }
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderBlockFlow, DisplayItem::SelectionGap, bounds);
+
+        LayoutRect gapRectsBounds = m_renderBlockFlow.selectionGaps(&m_renderBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight,
+            recorder.canUseCachedDrawing() ? nullptr : &paintInfo);
         if (!gapRectsBounds.isEmpty()) {
             Layer* layer = m_renderBlockFlow.enclosingLayer();
             gapRectsBounds.moveBy(-paintOffset);

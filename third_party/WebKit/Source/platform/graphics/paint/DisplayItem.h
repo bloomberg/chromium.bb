@@ -67,6 +67,7 @@ public:
         ScrollbarHorizontal,
         ScrollbarTickMark,
         ScrollbarVertical,
+        SelectionGap,
         VideoBitmap,
         ViewBackground,
         DebugRedFill,

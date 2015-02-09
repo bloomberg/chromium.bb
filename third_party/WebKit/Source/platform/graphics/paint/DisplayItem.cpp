@@ -53,6 +53,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ScrollbarHorizontal: return "DrawingScrollbarHorizontal";
     case DisplayItem::ScrollbarTickMark: return "DrawingScrollbarTickMark";
     case DisplayItem::ScrollbarVertical: return "DrawingScrollbarVertical";
+    case DisplayItem::SelectionGap: return "DrawingSelectionGap";
     case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
     case DisplayItem::ViewBackground: return "DrawingViewBackground";
     case DisplayItem::DebugRedFill: return "DrawingDebugRedFill";
