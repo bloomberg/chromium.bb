@@ -26,7 +26,7 @@ protected:
         return TransformStyleInterpolation::interpolableValueToTransform(value, types);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(CSSValue& value, HeapVector<CSSTransformValue::TransformOperationType> types)
+    static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(CSSValue& value, Vector<CSSTransformValue::TransformOperationType> types)
     {
         return interpolableValueToTransform(transformToInterpolableValue(value).get(), types);
     }
@@ -131,7 +131,7 @@ TEST_F(AnimationTransformStyleInterpolationTest, ZeroTransform)
     transform->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_NUMBER));
     result->append(transform);
 
-    WillBeHeapVector<CSSTransformValue::TransformOperationType> types = WillBeHeapVector<CSSTransformValue::TransformOperationType>(19);
+    Vector<CSSTransformValue::TransformOperationType> types = Vector<CSSTransformValue::TransformOperationType>(19);
     types.append(CSSTransformValue::PerspectiveTransformOperation);
     types.append(CSSTransformValue::TranslateTransformOperation);
     types.append(CSSTransformValue::TranslateXTransformOperation);
@@ -259,7 +259,7 @@ TEST_F(AnimationTransformStyleInterpolationTest, SingleUnitTransform)
     transform->append(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_NUMBER));
     result->append(transform);
 
-    WillBeHeapVector<CSSTransformValue::TransformOperationType> types = WillBeHeapVector<CSSTransformValue::TransformOperationType>(19);
+    Vector<CSSTransformValue::TransformOperationType> types = Vector<CSSTransformValue::TransformOperationType>(19);
     types.append(CSSTransformValue::PerspectiveTransformOperation);
     types.append(CSSTransformValue::TranslateTransformOperation);
     types.append(CSSTransformValue::TranslateXTransformOperation);
