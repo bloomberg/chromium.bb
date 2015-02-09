@@ -27,7 +27,7 @@ TEST(FileInputTypeTest, createFileList)
     KURL url(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file");
     FileMetadata metadata;
     metadata.length = 64;
-    metadata.modificationTimeMS = 1.0 * msPerDay + 3;
+    metadata.modificationTime = 1.0 * msPerDay + 3;
     files.append(FileChooserFileInfo(url, metadata));
 
 

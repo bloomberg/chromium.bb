@@ -74,7 +74,7 @@ static PassOwnPtr<BlobData> createBlobDataForFileWithMetadata(const String& file
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(getContentTypeFromFileName(fileSystemName, File::WellKnownContentTypes));
-    blobData->appendFile(metadata.platformPath, 0, metadata.length, metadata.modificationTimeMS / msPerSecond);
+    blobData->appendFile(metadata.platformPath, 0, metadata.length, metadata.modificationTime / msPerSecond);
     return blobData.release();
 }
 
@@ -82,7 +82,7 @@ static PassOwnPtr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSyste
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(getContentTypeFromFileName(fileSystemURL.path(), File::WellKnownContentTypes));
-    blobData->appendFileSystemURL(fileSystemURL, 0, metadata.length, metadata.modificationTimeMS / msPerSecond);
+    blobData->appendFileSystemURL(fileSystemURL, 0, metadata.length, metadata.modificationTime / msPerSecond);
     return blobData.release();
 }
 
@@ -144,7 +144,7 @@ File::File(const String& name, const FileMetadata& metadata, UserVisibility user
     , m_path(metadata.platformPath)
     , m_name(name)
     , m_snapshotSize(metadata.length)
-    , m_snapshotModificationTimeMS(metadata.modificationTimeMS)
+    , m_snapshotModificationTimeMS(metadata.modificationTime)
 {
 }
 
@@ -155,7 +155,7 @@ File::File(const KURL& fileSystemURL, const FileMetadata& metadata, UserVisibili
     , m_name(decodeURLEscapeSequences(fileSystemURL.lastPathComponent()))
     , m_fileSystemURL(fileSystemURL)
     , m_snapshotSize(metadata.length)
-    , m_snapshotModificationTimeMS(metadata.modificationTimeMS)
+    , m_snapshotModificationTimeMS(metadata.modificationTime)
 {
 }
 
@@ -277,7 +277,7 @@ void File::captureSnapshot(long long& snapshotSize, double& snapshotModification
     }
 
     snapshotSize = metadata.length;
-    snapshotModificationTimeMS = metadata.modificationTimeMS;
+    snapshotModificationTimeMS = metadata.modificationTime;
 }
 
 void File::close(ExecutionContext* executionContext, ExceptionState& exceptionState)

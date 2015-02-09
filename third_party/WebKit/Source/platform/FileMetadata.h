@@ -45,7 +45,7 @@ inline bool isValidFileTime(double time) { return std::isfinite(time); }
 class FileMetadata {
 public:
     FileMetadata()
-        : modificationTimeMS(invalidFileTime())
+        : modificationTime(invalidFileTime())
         , length(-1)
         , type(TypeUnknown)
     {
@@ -53,7 +53,7 @@ public:
 
     // The last modification time of the file, in milliseconds.
     // The value NaN means that the time is not known.
-    double modificationTimeMS;
+    double modificationTime;
 
     // The length of the file in bytes.
     // The value -1 means that the length is not set.

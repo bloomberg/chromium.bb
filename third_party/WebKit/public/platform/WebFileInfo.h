@@ -36,15 +36,12 @@
 namespace blink {
 
 struct WebFileInfo {
-    // The last modification time of the file, in seconds since Epoch,
-    // with a quiet NaN value representing "not known."
-    // FIXME: change to be milliseconds-based once the transition to a
-    // WebFileInfo with milliseconds-based modification is complete.
-    double modificationTime;
-
     // The last modification time of the file, in milliseconds since Epoch,
     // with a quiet NaN value representing "not known."
-    // FIXME: remove once the milliseconds transition is complete.
+    double modificationTime;
+
+    // FIXME: unused, remove once embedder has stopped updating (and expecting)
+    // this field.
     double modificationTimeMS;
 
     // The length of the file in bytes.
