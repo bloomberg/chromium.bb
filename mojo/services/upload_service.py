@@ -12,20 +12,20 @@ import tempfile
 import time
 import zipfile
 
-# A service's name is defined as the name of its subdirectory in the directory
-# containing this file.
-SERVICES = [ "network", "html_viewer" ]
+SERVICES = ["html_viewer", "network_service", "network_service_apptests"]
 
-SERVICE_BINARY_NAMES = {
-    "network" : "network_service.mojo",
-    "html_viewer" : "html_viewer.mojo"
+# A service does not need to expose interfaces. Those that do expose interfaces
+# have their mojoms located in the directories listed below, in paths relative
+# to the directory of this script.
+MOJOMS_IN_DIR = {
+    "network_service": os.path.join("network", "public", "interfaces")
 }
 
 # The network service is downloaded out-of-band rather than dynamically by the
 # shell and thus can be stored zipped in the cloud. Other services are intended
 # to be downloaded dynamically by the shell, which doesn't currently understand
 # zipped binaries.
-SERVICES_WITH_ZIPPED_BINARIES = [ "network" ]
+SERVICES_WITH_ZIPPED_BINARIES = ["network_service", "network_service_apptests"]
 
 if not sys.platform.startswith("linux"):
   print "Only support linux for now"
@@ -54,19 +54,9 @@ def gsutil_cp(source, dest, dry_run):
     subprocess.check_call([gsutil_exe, "cp", source, dest])
 
 
-def upload_mojoms(service, dry_run):
-  script_dir = os.path.dirname(os.path.realpath(__file__))
-  service_dir = os.path.join(script_dir, service)
-  absolute_mojom_directory_path = os.path.join(
-      service_dir,
-      "public",
-      "interfaces")
-
-  if not os.path.exists(absolute_mojom_directory_path):
-    # This service has no interfaces.
-    return
-
+def upload_mojoms(service, absolute_mojom_directory_path, dry_run):
   dest = "gs://mojo/" + service + "/" + version + "/" + "mojoms.zip"
+
   with tempfile.NamedTemporaryFile() as mojom_zip_file:
     with zipfile.ZipFile(mojom_zip_file, 'w') as z:
       for root, _, files in os.walk(absolute_mojom_directory_path):
@@ -78,17 +68,18 @@ def upload_mojoms(service, dry_run):
 
 
 def upload_binary(service, binary_dir, platform, dry_run):
-  binary_name = SERVICE_BINARY_NAMES[service]
+  dest_dir = "gs://mojo/" + service + "/" + version + "/" + platform + "/"
+  should_zip = service in SERVICES_WITH_ZIPPED_BINARIES
+  binary_name = service + ".mojo"
   absolute_binary_path = os.path.join(root_path, binary_dir, binary_name)
-  binary_dest_prefix = "gs://mojo/" + service + "/" + version + "/" + platform
 
-  if service not in SERVICES_WITH_ZIPPED_BINARIES:
-    binary_dest = binary_dest_prefix + "/" + binary_name
-    gsutil_cp(absolute_binary_path, binary_dest, dry_run)
+  if not should_zip:
+    dest = dest_dir + binary_name
+    gsutil_cp(absolute_binary_path, dest, dry_run)
     return
 
   # Zip the binary before uploading it to the cloud.
-  binary_dest = binary_dest_prefix + ".zip"
+  dest = dest_dir + binary_name + ".zip"
   with tempfile.NamedTemporaryFile() as binary_zip_file:
     with zipfile.ZipFile(binary_zip_file, 'w') as z:
       with open(absolute_binary_path) as service_binary:
@@ -97,7 +88,7 @@ def upload_binary(service, binary_dir, platform, dry_run):
         zipinfo.compress_type = zipfile.ZIP_DEFLATED
         zipinfo.date_time = time.gmtime(os.path.getmtime(absolute_binary_path))
         z.writestr(zipinfo, service_binary.read())
-    gsutil_cp(binary_zip_file.name, binary_dest, dry_run)
+    gsutil_cp(binary_zip_file.name, dest, dry_run)
 
 
 def main():
@@ -122,10 +113,16 @@ def main():
     print SERVICES
     return 1
 
-  upload_mojoms(args.service, args.dry_run)
+  if args.service in MOJOMS_IN_DIR:
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    absolute_mojom_directory_path = os.path.join(script_dir,
+                                                 MOJOMS_IN_DIR[args.service])
+    upload_mojoms(args.service, absolute_mojom_directory_path, args.dry_run)
+
   if args.linux_x64_binary_dir:
     upload_binary(args.service, args.linux_x64_binary_dir,
                   "linux-x64", args.dry_run)
+
   if args.android_arm_binary_dir:
     upload_binary(args.service, args.android_arm_binary_dir,
                   "android-arm", args.dry_run)
