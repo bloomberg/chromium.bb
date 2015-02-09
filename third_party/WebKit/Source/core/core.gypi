@@ -47,6 +47,7 @@
             'dom/ClientRect.idl',
             'dom/ClientRectList.idl',
             'dom/Comment.idl',
+            'dom/CommonDefinitions.idl',
             'dom/DOMError.idl',
             'dom/DOMException.idl',
             'dom/DOMImplementation.idl',

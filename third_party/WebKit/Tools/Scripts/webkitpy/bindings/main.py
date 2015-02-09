@@ -171,6 +171,10 @@ def generate_interface_dependencies(output_directory):
     # non-test IDL files.
     info_individuals = [non_test_interfaces_info] + test_interfaces_info.values()
     compute_interfaces_info_overall(info_individuals)
+    # Add typedefs which are specified in the actual IDL files to the testing
+    # component info.
+    test_component_info['core']['typedefs'].update(
+        non_test_component_info['typedefs'])
     component_info_providers['core'] = ComponentInfoProviderCore(
         interfaces_info, test_component_info['core'])
     component_info_providers['modules'] = ComponentInfoProviderModules(

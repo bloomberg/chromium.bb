@@ -69,6 +69,10 @@ class ComponentInfoProvider(object):
         return {}
 
     @property
+    def typedefs(self):
+        return {}
+
+    @property
     def union_types(self):
         return set()
 
@@ -94,6 +98,10 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
     @property
     def enumerations(self):
         return self._component_info['enumerations']
+
+    @property
+    def typedefs(self):
+        return self._component_info['typedefs']
 
     @property
     def union_types(self):
@@ -125,6 +133,12 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
         enums = self._component_info_core['enumerations'].copy()
         enums.update(self._component_info_modules['enumerations'])
         return enums
+
+    @property
+    def typedefs(self):
+        typedefs = self._component_info_core['typedefs'].copy()
+        typedefs.update(self._component_info_modules['typedefs'])
+        return typedefs
 
     @property
     def union_types(self):
@@ -252,6 +266,14 @@ def write_pickle_file(pickle_filename, data, only_if_changed):
 
 def is_callback_interface_from_idl(file_contents):
     match = re.search(r'callback\s+interface\s+\w+\s*{', file_contents)
+    return bool(match)
+
+
+def should_generate_impl_file_from_idl(file_contents):
+    """True when a given IDL file contents could generate .h/.cpp files."""
+    # FIXME: This would be error-prone and we should use AST rather than
+    # improving the regexp pattern.
+    match = re.search(r'(interface|dictionary|exception)\s+\w+', file_contents)
     return bool(match)
 
 

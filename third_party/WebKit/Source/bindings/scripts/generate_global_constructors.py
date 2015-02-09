@@ -25,7 +25,7 @@ import re
 import sys
 
 from collections import defaultdict
-from utilities import get_file_contents, idl_filename_to_interface_name, read_file_to_list, write_file, get_interface_extended_attributes_from_idl, get_interface_exposed_arguments, is_callback_interface_from_idl
+from utilities import should_generate_impl_file_from_idl, get_file_contents, idl_filename_to_interface_name, read_file_to_list, write_file, get_interface_extended_attributes_from_idl, get_interface_exposed_arguments, is_callback_interface_from_idl
 
 interface_name_to_global_names = {}
 global_name_to_constructors = defaultdict(list)
@@ -77,7 +77,8 @@ def record_global_constructors(idl_filename):
     # Callback interfaces with constants also have interface properties,
     # but there are none of these in Blink.
     # http://heycam.github.io/webidl/#es-interfaces
-    if (is_callback_interface_from_idl(idl_file_contents) or
+    if ((not should_generate_impl_file_from_idl(idl_file_contents)) or
+        is_callback_interface_from_idl(idl_file_contents) or
         'NoInterfaceObject' in extended_attributes):
         return
 

@@ -116,19 +116,17 @@ def set_global_type_info(info_provider):
     v8_types.set_component_dirs(interfaces_info['component_dirs'])
 
 
-class TypedefResolver(Visitor):
-    STANDARD_TYPEDEFS = {
-        # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
-        'DOMTimeStamp': IdlType('unsigned long long'),
-    }
+def should_generate_code(definitions):
+    return definitions.interfaces or definitions.dictionaries
 
+
+class TypedefResolver(Visitor):
     def __init__(self, info_provider):
         self.info_provider = info_provider
 
     def resolve(self, definitions, definition_name):
         """Traverse definitions and resolves typedefs with the actual types."""
-        self.typedefs = self.info_provider.component_info['typedefs']
-        self.typedefs.update(self.STANDARD_TYPEDEFS)
+        self.typedefs = self.info_provider.typedefs
         self.additional_includes = set()
         definitions.accept(self)
         self._update_dependencies_include_paths(definition_name)
@@ -182,6 +180,9 @@ class CodeGeneratorBase(object):
     def generate_code(self, definitions, definition_name):
         """Returns .h/.cpp code as ((path, content)...)."""
         # Set local type info
+        if not should_generate_code(definitions):
+            return set()
+
         IdlType.set_callback_functions(definitions.callback_functions.keys())
         # Resolve typedefs
         self.typedef_resolver.resolve(definitions, definition_name)

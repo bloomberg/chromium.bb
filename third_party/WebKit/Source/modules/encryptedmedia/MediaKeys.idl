@@ -29,10 +29,6 @@ enum SessionType {
     "persistent-release-message"
 };
 
-// FIXME: BufferSource is a common typedef and this should be defined in
-// somewhere else.
-typedef (ArrayBuffer or ArrayBufferView) BufferSource;
-
 [
     RuntimeEnabled=EncryptedMedia,
     GarbageCollected,

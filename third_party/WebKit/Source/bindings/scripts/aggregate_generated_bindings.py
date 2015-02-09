@@ -53,7 +53,7 @@ import os
 import re
 import sys
 
-from utilities import idl_filename_to_component, idl_filename_to_interface_name, read_idl_files_list_from_file
+from utilities import should_generate_impl_file_from_idl, get_file_contents, idl_filename_to_component, idl_filename_to_interface_name, read_idl_files_list_from_file
 
 # A regexp for finding Conditional attributes in interface definitions.
 CONDITIONAL_PATTERN = re.compile(
@@ -100,10 +100,8 @@ COPYRIGHT_TEMPLATE = """/*
 """
 
 
-def extract_conditional(idl_file_path):
+def extract_conditional(idl_contents):
     """Find [Conditional] interface extended attribute."""
-    with open(idl_file_path) as idl_file:
-        idl_contents = idl_file.read()
 
     match = CONDITIONAL_PATTERN.search(idl_contents)
     if not match:
@@ -123,11 +121,15 @@ def extract_meta_data(file_paths):
             print 'WARNING: file not found: "%s"' % file_path
             continue
 
+        idl_file_contents = get_file_contents(file_path)
+        if not should_generate_impl_file_from_idl(idl_file_contents):
+            continue
+
         # Extract interface name from file name
         interface_name = idl_filename_to_interface_name(file_path)
 
         meta_data = {
-            'conditional': extract_conditional(file_path),
+            'conditional': extract_conditional(idl_file_contents),
             'name': interface_name,
         }
         meta_data_list.append(meta_data)
