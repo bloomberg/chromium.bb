@@ -153,6 +153,7 @@ float SVGSVGElement::currentScale() const
 
 void SVGSVGElement::setCurrentScale(float scale)
 {
+    ASSERT(std::isfinite(scale));
     if (!inDocument() || !isOutermostSVGSVGElement())
         return;
 
@@ -578,8 +579,7 @@ float SVGSVGElement::getCurrentTime() const
 
 void SVGSVGElement::setCurrentTime(float seconds)
 {
-    if (std::isnan(seconds))
-        return;
+    ASSERT(std::isfinite(seconds));
     seconds = max(seconds, 0.0f);
     m_timeContainer->setElapsed(seconds);
 }

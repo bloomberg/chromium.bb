@@ -25,7 +25,7 @@
 // TODO: no css::ViewCSS available!
 // TODO: no events::DocumentEvent available!
 [
-    TypeChecking=Interface,
+    TypeChecking=(Interface, Unrestricted),
 ] interface SVGSVGElement : SVGGraphicsElement {
 
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength x;
