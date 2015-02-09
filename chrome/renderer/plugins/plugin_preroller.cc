@@ -66,8 +66,7 @@ void PluginPreroller::OnThrottleStateChange() {
           render_frame(), frame_, params_, info_, identifier_, name_,
           IDR_PLUGIN_POSTER_HTML, message_, keyframe_data_url_);
   placeholder->SetPremadePlugin(plugin_, throttler_);
-  placeholder->set_power_saver_mode(
-      content::PluginPowerSaverMode::POWER_SAVER_MODE_PERIPHERAL_THROTTLED);
+  placeholder->set_power_saver_enabled(true);
   placeholder->set_allow_loading(true);
 
   blink::WebPluginContainer* container = plugin_->container();

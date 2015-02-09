@@ -1765,19 +1765,6 @@ void RenderFrameImpl::RegisterPeripheralPlugin(
   return plugin_power_saver_helper_->RegisterPeripheralPlugin(
       content_origin, unthrottle_callback);
 }
-
-bool RenderFrameImpl::ShouldThrottleContent(
-    const blink::WebPluginParams& params,
-    const GURL& page_frame_url,
-    GURL* poster_image,
-    bool* cross_origin_main_content) const {
-  return plugin_power_saver_helper_->ShouldThrottleContent(
-      params, page_frame_url, poster_image, cross_origin_main_content);
-}
-
-void RenderFrameImpl::WhitelistContentOrigin(const GURL& content_origin) {
-  return plugin_power_saver_helper_->WhitelistContentOrigin(content_origin);
-}
 #endif  // defined(ENABLE_PLUGINS)
 
 bool RenderFrameImpl::IsFTPDirectoryListing() {

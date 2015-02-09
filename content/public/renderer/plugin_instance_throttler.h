@@ -9,24 +9,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
+namespace blink {
+struct WebPluginParams;
+}
+
 class GURL;
 class SkBitmap;
 
 namespace content {
-
-class RenderFrame;
-
-// Plugin instances are "peripheral" if they are heuristically determined to be
-// not "essential" to the web page content. See comments on
-// RenderFrame::ShouldThrottleContent for details on these heuristics.
-enum PluginPowerSaverMode {
-  // Plugin content is main content, and therefore never throttled.
-  POWER_SAVER_MODE_ESSENTIAL = 0,
-  // Plugin content is peripheral, but throttling is disabled.
-  POWER_SAVER_MODE_PERIPHERAL_UNTHROTTLED = 1,
-  // Plugin content is peripheral, and throttling is enabled.
-  POWER_SAVER_MODE_PERIPHERAL_THROTTLED = 2
-};
 
 // This class manages the metric collection, throttling, and unthrottling of a
 // single peripheral plugin instance. If the Power Saver feature is disabled,
@@ -73,11 +63,7 @@ class CONTENT_EXPORT PluginInstanceThrottler {
     virtual void OnThrottlerDestroyed() {}
   };
 
-  // Returns a nullptr if no throttler needed based on |power_saver_mode|.
-  static scoped_ptr<PluginInstanceThrottler> Get(
-      RenderFrame* frame,
-      const GURL& plugin_url,
-      PluginPowerSaverMode power_saver_mode);
+  static scoped_ptr<PluginInstanceThrottler> Create(bool power_saver_enabled);
 
   static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
 

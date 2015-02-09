@@ -315,11 +315,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void RegisterPeripheralPlugin(
       const GURL& content_origin,
       const base::Closure& unthrottle_callback) override;
-  bool ShouldThrottleContent(const blink::WebPluginParams& params,
-                             const GURL& page_frame_url,
-                             GURL* poster_image,
-                             bool* cross_origin_main_content) const override;
-  void WhitelistContentOrigin(const GURL& content_origin) override;
+  PluginPowerSaverHelper* plugin_power_saver_helper() {
+    return plugin_power_saver_helper_;
+  }
 #endif
   bool IsFTPDirectoryListing() override;
   void AttachGuest(int element_instance_id) override;

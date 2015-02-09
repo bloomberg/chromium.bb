@@ -155,7 +155,6 @@ using autofill::PasswordGenerationAgent;
 using base::ASCIIToUTF16;
 using base::UserMetricsAction;
 using content::PluginInstanceThrottler;
-using content::PluginPowerSaverMode;
 using content::RenderFrame;
 using content::RenderThread;
 using content::WebPluginInfo;
@@ -266,6 +265,21 @@ void IsGuestViewApiAvailableToScriptContext(
   if (context->GetAvailability("guestViewInternal").is_available()) {
     *api_is_available = true;
   }
+}
+#endif
+
+#if defined(ENABLE_PLUGINS)
+GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
+                                  const GURL& page_base_url) {
+  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
+
+  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
+    if (params.attributeNames[i].utf8() == "poster" &&
+        !params.attributeValues[i].isEmpty()) {
+      return page_base_url.Resolve(params.attributeValues[i].utf8());
+    }
+  }
+  return GURL();
 }
 #endif
 
@@ -796,34 +810,17 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 #endif  // !defined(DISABLE_NACL) && defined(ENABLE_EXTENSIONS)
 
-        scoped_ptr<content::PluginInstanceThrottler> throttler;
 #if defined(ENABLE_PLUGINS)
-        PluginPowerSaverMode power_saver_mode =
-            PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL;
-        bool show_poster = false;
-        GURL poster_url;
-        bool cross_origin_main_content = false;
-        bool blocked_for_background_tab =
-            render_frame->IsHidden() &&
+        bool power_saver_enabled =
             status_value ==
-                ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
-        if (render_frame->ShouldThrottleContent(params, frame->document().url(),
-                                                &poster_url,
-                                                &cross_origin_main_content)) {
-          // TODO(tommycli): Apply throttler behavior to all plugins.
-          if (info.name == base::ASCIIToUTF16(content::kFlashPluginName) &&
-              status_value == ChromeViewHostMsg_GetPluginInfo_Status::
-                                  kPlayImportantContent) {
-            power_saver_mode =
-                PluginPowerSaverMode::POWER_SAVER_MODE_PERIPHERAL_THROTTLED;
-            show_poster = poster_url.is_valid();
-          } else {
-            power_saver_mode =
-                PluginPowerSaverMode::POWER_SAVER_MODE_PERIPHERAL_UNTHROTTLED;
-          }
+            ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
+        bool blocked_for_background_tab =
+            render_frame->IsHidden() && power_saver_enabled;
 
-          throttler = content::PluginInstanceThrottler::Get(render_frame, url,
-                                                            power_saver_mode);
+        GURL poster_url;
+        if (power_saver_enabled) {
+          poster_url =
+              GetPluginInstancePosterImage(params, frame->document().url());
         }
 
         // Delay loading plugins if prerendering.
@@ -832,41 +829,40 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         //                reduce the chance of future regressions.
         bool is_prerendering =
             prerender::PrerenderHelper::IsPrerendering(render_frame);
-        if (blocked_for_background_tab || is_prerendering || show_poster) {
+        if (blocked_for_background_tab || is_prerendering ||
+            poster_url.is_valid()) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
               render_frame, frame, params, info, identifier, group_name,
-              show_poster ? IDR_PLUGIN_POSTER_HTML : IDR_BLOCKED_PLUGIN_HTML,
+              poster_url.is_valid() ? IDR_PLUGIN_POSTER_HTML
+                                    : IDR_BLOCKED_PLUGIN_HTML,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
               poster_url);
           placeholder->set_blocked_for_background_tab(
               blocked_for_background_tab);
           placeholder->set_blocked_for_prerendering(is_prerendering);
-          placeholder->set_power_saver_mode(power_saver_mode);
+          placeholder->set_power_saver_enabled(power_saver_enabled);
           placeholder->set_allow_loading(true);
           break;
-        } else if (cross_origin_main_content) {
-          GURL content_origin = GURL(params.url).GetOrigin();
-          render_frame->WhitelistContentOrigin(content_origin);
         }
 
-        if (power_saver_mode ==
-            PluginPowerSaverMode::POWER_SAVER_MODE_PERIPHERAL_THROTTLED) {
-          content::PluginInstanceThrottler* throttler_raw = throttler.get();
-          blink::WebPlugin* plugin =
-              render_frame->CreatePlugin(frame, info, params, throttler.Pass());
+        scoped_ptr<content::PluginInstanceThrottler> throttler =
+            PluginInstanceThrottler::Create(power_saver_enabled);
+        content::PluginInstanceThrottler* throttler_raw = throttler.get();
+        blink::WebPlugin* plugin =
+            render_frame->CreatePlugin(frame, info, params, throttler.Pass());
 
+        if (power_saver_enabled) {
           // PluginPreroller manages its own lifetime.
           new PluginPreroller(
               render_frame, frame, params, info, identifier, group_name,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
               plugin, throttler_raw);
-
-          return plugin;
         }
 
+        return plugin;
+#else   // !defined(ENABLE_PLUGINS)
+        return render_frame->CreatePlugin(frame, info, params, nullptr);
 #endif  // defined(ENABLE_PLUGINS)
-        return render_frame->CreatePlugin(frame, info, params,
-                                          throttler.Pass());
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
         RenderThread::Get()->RecordAction(

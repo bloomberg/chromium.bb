@@ -11,22 +11,20 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
 
 namespace blink {
 class WebInputEvent;
+struct WebRect;
 }
 
-class SkBitmap;
-
 namespace content {
+
+class RenderFrameImpl;
 
 class CONTENT_EXPORT PluginInstanceThrottlerImpl
     : public PluginInstanceThrottler {
  public:
-  PluginInstanceThrottlerImpl(RenderFrame* frame,
-                              const GURL& plugin_url,
-                              bool power_saver_enabled);
+  PluginInstanceThrottlerImpl(bool power_saver_enabled);
 
   ~PluginInstanceThrottlerImpl() override;
 
@@ -39,13 +37,19 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   void SetHiddenForPlaceholder(bool hidden) override;
 
   bool needs_representative_keyframe() const {
-    return state_ == POWER_SAVER_ENABLED_AWAITING_KEYFRAME;
+    return state_ == THROTTLER_STATE_AWAITING_KEYFRAME;
   }
 
   bool power_saver_enabled() const {
-    return state_ == POWER_SAVER_ENABLED_AWAITING_KEYFRAME ||
-           state_ == POWER_SAVER_ENABLED_PLUGIN_THROTTLED;
+    return state_ == THROTTLER_STATE_AWAITING_KEYFRAME ||
+           state_ == THROTTLER_STATE_PLUGIN_THROTTLED;
   }
+
+  // Throttler needs to be initialized with the real plugin's view bounds.
+  void Initialize(RenderFrameImpl* frame,
+                  const GURL& content_origin,
+                  const std::string& plugin_module_name,
+                  const blink::WebRect& bounds);
 
   // Called when the plugin flushes it's graphics context. Supplies the
   // throttler with a candidate to use as the representative keyframe.
@@ -57,32 +61,33 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
  private:
   friend class PluginInstanceThrottlerImplTest;
 
-  enum State {
-    // Initial state if Power Saver is disabled. We are just collecting metrics.
-    POWER_SAVER_DISABLED,
-    // Initial state if Power Saver is enabled. Waiting for a keyframe.
-    POWER_SAVER_ENABLED_AWAITING_KEYFRAME,
-    // We've chosen a keyframe and the plug-in is throttled.
-    POWER_SAVER_ENABLED_PLUGIN_THROTTLED,
-    // Plugin instance is no longer considered peripheral. This can happen from
-    // a user click, whitelisting, or some other reason. We can end up in this
-    // state regardless of whether power saver is enabled.
-    PLUGIN_INSTANCE_MARKED_ESSENTIAL
+  enum ThrottlerState {
+    // Power saver is disabled, but the plugin instance is still peripheral.
+    THROTTLER_STATE_POWER_SAVER_DISABLED,
+    // Plugin has been found to be peripheral, Plugin Power Saver is enabled,
+    // and throttler is awaiting a representative keyframe.
+    THROTTLER_STATE_AWAITING_KEYFRAME,
+    // A representative keyframe has been chosen and the plugin is throttled.
+    THROTTLER_STATE_PLUGIN_THROTTLED,
+    // Plugin instance has been marked essential.
+    THROTTLER_STATE_MARKED_ESSENTIAL,
   };
+
+  // Maximum number of frames to examine for a suitable keyframe. After that, we
+  // simply suspend the plugin where it's at. Chosen arbitrarily.
+  static const int kMaximumFramesToExamine;
 
   void EngageThrottle();
 
-  void TimeoutKeyframeExtraction();
-
-  State state_;
+  ThrottlerState state_;
 
   bool is_hidden_for_placeholder_;
 
   // Number of consecutive interesting frames we've encountered.
   int consecutive_interesting_frames_;
 
-  // If true, take the next frame as the keyframe regardless of interestingness.
-  bool keyframe_extraction_timed_out_;
+  // Number of frames we've examined to find a keyframe.
+  int frames_examined_;
 
   ObserverList<Observer> observer_list_;
 

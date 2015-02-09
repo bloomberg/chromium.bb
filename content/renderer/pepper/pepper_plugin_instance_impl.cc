@@ -816,6 +816,9 @@ bool PepperPluginInstanceImpl::Initialize(
   if (throttler) {
     throttler_ = throttler.Pass();
     throttler_->AddObserver(this);
+    throttler_->Initialize(render_frame_, plugin_url_.GetOrigin(),
+                           module()->name(),
+                           container()->element().boundsInViewportSpace());
   }
 
   message_channel_ = MessageChannel::Create(this, &message_channel_object_);

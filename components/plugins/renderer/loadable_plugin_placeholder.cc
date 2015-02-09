@@ -32,7 +32,6 @@ using blink::WebPluginParams;
 using blink::WebScriptSource;
 using blink::WebURLRequest;
 using content::PluginInstanceThrottler;
-using content::PluginPowerSaverMode;
 using content::RenderThread;
 
 namespace plugins {
@@ -44,7 +43,7 @@ void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
 
   render_frame()->RegisterPeripheralPlugin(
       GURL(GetPluginParams().url).GetOrigin(),
-      base::Bind(&LoadablePluginPlaceholder::DisablePowerSaverForInstance,
+      base::Bind(&LoadablePluginPlaceholder::MarkPluginEssential,
                  weak_factory_.GetWeakPtr(),
                  PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_WHITELIST));
 }
@@ -77,7 +76,8 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
       is_blocked_for_background_tab_(false),
       is_blocked_for_prerendering_(false),
       is_blocked_for_power_saver_poster_(false),
-      power_saver_mode_(PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL),
+      power_saver_enabled_(false),
+      plugin_marked_essential_(false),
       premade_plugin_(nullptr),
       premade_throttler_(nullptr),
       allow_loading_(false),
@@ -92,8 +92,8 @@ LoadablePluginPlaceholder::~LoadablePluginPlaceholder() {
   DCHECK(!premade_plugin_);
   DCHECK(!premade_throttler_);
 
-  if (!placeholder_was_replaced_ && !is_blocked_for_prerendering_ &&
-      power_saver_mode_ != PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL) {
+  if (!plugin_marked_essential_ && !placeholder_was_replaced_ &&
+      !is_blocked_for_prerendering_ && is_blocked_for_power_saver_poster_) {
     PluginInstanceThrottler::RecordUnthrottleMethodMetric(
         PluginInstanceThrottler::UNTHROTTLE_METHOD_NEVER);
   }
@@ -101,20 +101,19 @@ LoadablePluginPlaceholder::~LoadablePluginPlaceholder() {
 }
 
 #if defined(ENABLE_PLUGINS)
-void LoadablePluginPlaceholder::DisablePowerSaverForInstance(
+void LoadablePluginPlaceholder::MarkPluginEssential(
     PluginInstanceThrottler::PowerSaverUnthrottleMethod method) {
-  if (power_saver_mode_ == PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL)
+  if (plugin_marked_essential_)
     return;
 
-  power_saver_mode_ = PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL;
+  plugin_marked_essential_ = true;
   if (premade_throttler_) {
     premade_throttler_->MarkPluginEssential(method);
-  } else {
-    PluginInstanceThrottler::RecordUnthrottleMethodMetric(method);
   }
 
   if (is_blocked_for_power_saver_poster_) {
     is_blocked_for_power_saver_poster_ = false;
+    PluginInstanceThrottler::RecordUnthrottleMethodMetric(method);
     if (!LoadingBlocked())
       LoadPlugin();
   }
@@ -307,8 +306,10 @@ void LoadablePluginPlaceholder::LoadPlugin() {
     //                reduce the chance of future regressions.
     scoped_ptr<PluginInstanceThrottler> throttler;
 #if defined(ENABLE_PLUGINS)
-    throttler = PluginInstanceThrottler::Get(
-        render_frame(), GetPluginParams().url, power_saver_mode_);
+    // If the plugin has already been marked essential in its placeholder form,
+    // we shouldn't create a new throttler and start the process all over again.
+    if (!plugin_marked_essential_)
+      throttler = PluginInstanceThrottler::Create(power_saver_enabled_);
 #endif
     WebPlugin* plugin = render_frame()->CreatePlugin(
         GetFrame(), plugin_info_, GetPluginParams(), throttler.Pass());
@@ -322,8 +323,7 @@ void LoadablePluginPlaceholder::LoadCallback() {
 #if defined(ENABLE_PLUGINS)
   // If the user specifically clicks on the plug-in content's placeholder,
   // disable power saver throttling for this instance.
-  DisablePowerSaverForInstance(
-      PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_CLICK);
+  MarkPluginEssential(PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_CLICK);
 #endif
   LoadPlugin();
 }

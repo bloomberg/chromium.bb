@@ -120,34 +120,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void RegisterPeripheralPlugin(
       const GURL& content_origin,
       const base::Closure& unthrottle_callback) = 0;
-
-  // Returns true if this plugin should have power saver enabled.
-  //
-  // Power Saver is enabled for plugin content that are cross-origin and
-  // heuristically determined to be not essential to the web page content.
-  //
-  // Plugin content is defined to be cross-origin when the plugin source's
-  // origin differs from the top level frame's origin. For example:
-  //  - Cross-origin:  a.com -> b.com/plugin.swf
-  //  - Cross-origin:  a.com -> b.com/iframe.html -> b.com/plugin.swf
-  //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
-  //
-  // |page_frame_url| is the URL of the frame containing the plugin, which may
-  // be different from the URL of the top level document.
-  //
-  // |poster_image| may be NULL. It is set to the absolute URL of the poster
-  // image if it exists and this method returns true. Otherwise, an empty GURL.
-  //
-  // |cross_origin_main_content| may be NULL. It is set to true if the
-  // plugin content is cross-origin but still the "main attraction" of the page.
-  virtual bool ShouldThrottleContent(const blink::WebPluginParams& params,
-                                     const GURL& page_frame_url,
-                                     GURL* poster_image,
-                                     bool* cross_origin_main_content) const = 0;
-
-  // Whitelists a |content_origin| so its content will never be throttled in
-  // this RenderFrame. Whitelist is cleared by top level navigation.
-  virtual void WhitelistContentOrigin(const GURL& content_origin) = 0;
 #endif
 
   // Returns true if this frame is a FTP directory listing.

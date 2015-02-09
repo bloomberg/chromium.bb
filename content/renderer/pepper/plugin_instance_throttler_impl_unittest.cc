@@ -27,6 +27,9 @@ class PluginInstanceThrottlerImplTest
     : public testing::Test,
       public PluginInstanceThrottler::Observer {
  protected:
+  const int kMaximumFramesToExamine =
+      PluginInstanceThrottlerImpl::kMaximumFramesToExamine;
+
   PluginInstanceThrottlerImplTest() : change_callback_calls_(0) {}
   ~PluginInstanceThrottlerImplTest() override {
     throttler_->RemoveObserver(this);
@@ -36,8 +39,10 @@ class PluginInstanceThrottlerImplTest
     blink::WebRect rect;
     rect.width = 100;
     rect.height = 100;
-    throttler_.reset(new PluginInstanceThrottlerImpl(
-        nullptr, GURL("http://example.com"), true /* power_saver_enabled */));
+    throttler_.reset(
+        new PluginInstanceThrottlerImpl(true /* power_saver_enabled */));
+    throttler_->Initialize(nullptr, GURL("http://example.com"),
+                           "Shockwave Flash", rect);
     throttler_->AddObserver(this);
   }
 
@@ -125,6 +130,19 @@ TEST_F(PluginInstanceThrottlerImplTest, ThrottleByKeyframe) {
   EXPECT_EQ(1, change_callback_calls());
 }
 
+TEST_F(PluginInstanceThrottlerImplTest, MaximumKeyframesAnalyzed) {
+  EXPECT_FALSE(throttler()->IsThrottled());
+  EXPECT_EQ(0, change_callback_calls());
+
+  SkBitmap boring_bitmap;
+
+  // Throttle after tons of boring bitmaps.
+  for (int i = 0; i < kMaximumFramesToExamine; ++i) {
+    throttler()->OnImageFlush(&boring_bitmap);
+  }
+  EXPECT_TRUE(throttler()->IsThrottled());
+  EXPECT_EQ(1, change_callback_calls());
+}
 TEST_F(PluginInstanceThrottlerImplTest, IgnoreThrottlingAfterMouseUp) {
   EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());

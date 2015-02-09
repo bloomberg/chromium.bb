@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/frame_messages.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -18,8 +19,6 @@
 namespace content {
 
 namespace {
-
-const char kPosterParamName[] = "poster";
 
 // Initial decision of the peripheral content decision.
 // These numeric values are used in UMA logs; do not change them.
@@ -48,45 +47,6 @@ const int kPeripheralContentTinySize = 5;
 void RecordDecisionMetric(PeripheralHeuristicDecision decision) {
   UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, decision,
                             HEURISTIC_DECISION_NUM_ITEMS);
-}
-
-const char kWebPluginParamHeight[] = "height";
-const char kWebPluginParamWidth[] = "width";
-
-// Returns true if valid non-negative height and width extracted.
-// When this returns false, |width| and |height| are set to undefined values.
-bool ExtractDimensions(const blink::WebPluginParams& params,
-                       int* width,
-                       int* height) {
-  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
-  DCHECK(width);
-  DCHECK(height);
-  bool width_extracted = false;
-  bool height_extracted = false;
-  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
-    if (params.attributeNames[i].utf8() == kWebPluginParamWidth) {
-      width_extracted =
-          base::StringToInt(params.attributeValues[i].utf8(), width);
-    } else if (params.attributeNames[i].utf8() == kWebPluginParamHeight) {
-      height_extracted =
-          base::StringToInt(params.attributeValues[i].utf8(), height);
-    }
-  }
-  return width_extracted && height_extracted && *width >= 0 && *height >= 0;
-}
-
-GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
-                                  const GURL& page_base_url) {
-  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
-
-  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
-    if (params.attributeNames[i] == kPosterParamName) {
-      std::string poster_value(params.attributeValues[i].utf8());
-      if (!poster_value.empty())
-        return page_base_url.Resolve(poster_value);
-    }
-  }
-  return GURL();
 }
 
 }  // namespace
@@ -148,25 +108,26 @@ void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
 void PluginPowerSaverHelper::RegisterPeripheralPlugin(
     const GURL& content_origin,
     const base::Closure& unthrottle_callback) {
+  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
   peripheral_plugins_.push_back(
       PeripheralPlugin(content_origin, unthrottle_callback));
 }
 
 bool PluginPowerSaverHelper::ShouldThrottleContent(
-    const blink::WebPluginParams& params,
-    const GURL& plugin_frame_url,
-    GURL* poster_image,
+    const GURL& content_origin,
+    const std::string& plugin_module_name,
+    int width,
+    int height,
     bool* cross_origin_main_content) const {
-  if (poster_image)
-    *poster_image = GURL();
+  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
   if (cross_origin_main_content)
     *cross_origin_main_content = false;
 
-  GURL content_origin = GURL(params.url).GetOrigin();
+  // This feature has only been tested throughly with Flash thus far.
+  if (plugin_module_name != content::kFlashPluginName)
+    return false;
 
-  int width = 0;
-  int height = 0;
-  if (!ExtractDimensions(params, &width, &height))
+  if (width <= 0 || height <= 0)
     return false;
 
   // TODO(alexmos): Update this to use the origin of the RemoteFrame when 426512
@@ -176,8 +137,6 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
       render_frame()->GetWebFrame()->view()->mainFrame();
   if (main_frame->isWebRemoteFrame()) {
     RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
-    if (poster_image)
-      *poster_image = GetPluginInstancePosterImage(params, plugin_frame_url);
     return true;
   }
 
@@ -211,8 +170,6 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
   }
 
   RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
-  if (poster_image)
-    *poster_image = GetPluginInstancePosterImage(params, plugin_frame_url);
   return true;
 }
 

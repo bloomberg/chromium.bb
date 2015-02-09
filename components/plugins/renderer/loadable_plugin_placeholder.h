@@ -26,8 +26,8 @@ class LoadablePluginPlaceholder
   }
 
 #if defined(ENABLE_PLUGINS)
-  void set_power_saver_mode(content::PluginPowerSaverMode power_saver_mode) {
-    power_saver_mode_ = power_saver_mode;
+  void set_power_saver_enabled(bool power_saver_enabled) {
+    power_saver_enabled_ = power_saver_enabled;
   }
 
   // Defer loading of plug-in, and instead show the Power Saver poster image.
@@ -50,7 +50,7 @@ class LoadablePluginPlaceholder
   ~LoadablePluginPlaceholder() override;
 
 #if defined(ENABLE_PLUGINS)
-  void DisablePowerSaverForInstance(
+  void MarkPluginEssential(
       content::PluginInstanceThrottler::PowerSaverUnthrottleMethod method);
 #endif
 
@@ -117,7 +117,10 @@ class LoadablePluginPlaceholder
   bool is_blocked_for_power_saver_poster_;
 
   // This is independent of deferred plugin load due to a Power Saver poster.
-  content::PluginPowerSaverMode power_saver_mode_;
+  bool power_saver_enabled_;
+
+  // True if the plugin has been marked essential.
+  bool plugin_marked_essential_;
 
   // When we load, uses this premade plugin instead of creating a new one.
   blink::WebPlugin* premade_plugin_;

@@ -303,7 +303,7 @@ void ChromePluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
     case chrome::MENU_COMMAND_PLUGIN_RUN: {
       RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Menu"));
 #if defined(ENABLE_PLUGINS)
-      DisablePowerSaverForInstance(
+      MarkPluginEssential(
           content::PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_CLICK);
 #endif
       LoadPlugin();
