@@ -114,6 +114,7 @@ void MediaPipelineImpl::SetCdm(int cdm_id) {
 
 void MediaPipelineImpl::SetCdm(::media::BrowserCdm* media_keys) {
   CMALOG(kLogControl) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
   audio_pipeline_->SetCdm(static_cast<BrowserCdmCast*>(media_keys));
   video_pipeline_->SetCdm(static_cast<BrowserCdmCast*>(media_keys));
 }

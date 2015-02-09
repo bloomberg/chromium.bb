@@ -19,6 +19,7 @@
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/pipeline/decrypt_util.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decrypt_config.h"
 
 namespace chromecast {
@@ -187,8 +188,10 @@ void AvPipelineImpl::SetCdm(BrowserCdmCast* media_keys) {
 
   media_keys_ = media_keys;
   media_keys_callback_id_ = media_keys_->RegisterPlayer(
-      base::Bind(&AvPipelineImpl::OnCdmStateChanged, weak_this_),
-      base::Bind(&AvPipelineImpl::OnCdmDestroyed, weak_this_));
+      ::media::BindToCurrentLoop(
+          base::Bind(&AvPipelineImpl::OnCdmStateChanged, weak_this_)),
+      ::media::BindToCurrentLoop(
+          base::Bind(&AvPipelineImpl::OnCdmDestroyed, weak_this_)));
 }
 
 void AvPipelineImpl::OnEos() {

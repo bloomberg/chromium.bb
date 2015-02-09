@@ -9,11 +9,16 @@
 namespace chromecast {
 namespace media {
 
-BrowserCdmCast::BrowserCdmCast() {
+BrowserCdmCast::BrowserCdmCast()
+    : next_registration_id_(0) {
 }
 
 BrowserCdmCast::~BrowserCdmCast() {
-  player_tracker_.NotifyCdmUnset();
+  base::AutoLock auto_lock(callback_lock_);
+  for (std::map<uint32_t, base::Closure>::const_iterator it =
+       cdm_unset_callbacks_.begin(); it != cdm_unset_callbacks_.end(); ++it) {
+    it->second.Run();
+  }
 }
 
 void BrowserCdmCast::SetCallbacks(
@@ -31,11 +36,25 @@ void BrowserCdmCast::SetCallbacks(
 
 int BrowserCdmCast::RegisterPlayer(const base::Closure& new_key_cb,
                                    const base::Closure& cdm_unset_cb) {
-  return player_tracker_.RegisterPlayer(new_key_cb, cdm_unset_cb);
+  int registration_id = next_registration_id_++;
+  DCHECK(!new_key_cb.is_null());
+  DCHECK(!cdm_unset_cb.is_null());
+  {
+    base::AutoLock auto_lock(callback_lock_);
+    DCHECK(!ContainsKey(new_key_callbacks_, registration_id));
+    DCHECK(!ContainsKey(cdm_unset_callbacks_, registration_id));
+    new_key_callbacks_[registration_id] = new_key_cb;
+    cdm_unset_callbacks_[registration_id] = cdm_unset_cb;
+  }
+  return registration_id;
 }
 
 void BrowserCdmCast::UnregisterPlayer(int registration_id) {
-  player_tracker_.UnregisterPlayer(registration_id);
+  base::AutoLock auto_lock(callback_lock_);
+  DCHECK(ContainsKey(new_key_callbacks_, registration_id));
+  DCHECK(ContainsKey(cdm_unset_callbacks_, registration_id));
+  new_key_callbacks_.erase(registration_id);
+  cdm_unset_callbacks_.erase(registration_id);
 }
 
 void BrowserCdmCast::OnSessionMessage(const std::string& web_session_id,
@@ -68,7 +87,13 @@ void BrowserCdmCast::OnSessionKeysChange(
   session_keys_change_cb_.Run(web_session_id, true, cdm_keys_info.Pass());
 
   // Notify listeners of a new key.
-  player_tracker_.NotifyNewKey();
+  {
+    base::AutoLock auto_lock(callback_lock_);
+    for (std::map<uint32_t, base::Closure>::const_iterator it =
+         new_key_callbacks_.begin(); it != new_key_callbacks_.end(); ++it) {
+      it->second.Run();
+    }
+  }
 }
 
 }  // namespace media

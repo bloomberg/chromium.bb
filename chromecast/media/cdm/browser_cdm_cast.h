@@ -13,9 +13,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "media/base/browser_cdm.h"
 #include "media/cdm/json_web_key.h"
-#include "media/cdm/player_tracker_impl.h"
 
 namespace chromecast {
 namespace media {
@@ -49,7 +49,7 @@ class BrowserCdmCast : public ::media::BrowserCdm {
   // |key_id|.
   // Returns null if |key_id| is not available.
   virtual scoped_refptr<DecryptContext> GetDecryptContext(
-      const std::string& key_id) const = 0;
+      const std::string& key_id) = 0;
 
  protected:
   void OnSessionMessage(const std::string& web_session_id,
@@ -66,7 +66,10 @@ class BrowserCdmCast : public ::media::BrowserCdm {
   ::media::SessionKeysChangeCB session_keys_change_cb_;
   ::media::SessionExpirationUpdateCB session_expiration_update_cb_;
 
-  ::media::PlayerTrackerImpl player_tracker_;
+  base::Lock callback_lock_;
+  uint32_t next_registration_id_;
+  std::map<uint32_t, base::Closure> new_key_callbacks_;
+  std::map<uint32_t, base::Closure> cdm_unset_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCdmCast);
 };
