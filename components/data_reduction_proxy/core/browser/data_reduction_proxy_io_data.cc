@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -31,7 +32,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : client_(client),
-      statistics_prefs_(statistics_prefs.Pass()),
+      temporary_statistics_prefs_(statistics_prefs.Pass()),
       settings_(settings),
       net_log_(net_log),
       io_task_runner_(io_task_runner),
@@ -50,6 +51,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   proxy_delegate_.reset(
       new data_reduction_proxy::DataReductionProxyDelegate(
           auth_request_handler_.get(), params_.get()));
+  if (temporary_statistics_prefs_)
+    statistics_prefs_ = temporary_statistics_prefs_->GetWeakPtr();
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {
@@ -62,15 +65,21 @@ void DataReductionProxyIOData::InitOnUIThread(PrefService* pref_service) {
   enabled_.MoveToThread(io_task_runner_);
 }
 
-void  DataReductionProxyIOData::ShutdownOnUIThread() {
+void DataReductionProxyIOData::ShutdownOnUIThread() {
   DCHECK(!shutdown_on_ui_);
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  if (statistics_prefs_) {
-    statistics_prefs_->WritePrefs();
-    statistics_prefs_->ShutdownOnUIThread();
-  }
   enabled_.Destroy();
   shutdown_on_ui_ = true;
+}
+
+void DataReductionProxyIOData::SetDataReductionProxyStatisticsPrefs(
+    base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs) {
+  statistics_prefs_ = statistics_prefs;
+}
+
+scoped_ptr<DataReductionProxyStatisticsPrefs>
+DataReductionProxyIOData::PassStatisticsPrefs() {
+  return temporary_statistics_prefs_.Pass();
 }
 
 bool DataReductionProxyIOData::IsEnabled() const {
@@ -87,15 +96,6 @@ DataReductionProxyIOData::CreateInterceptor() {
       params_.get(), usage_stats_.get(), event_store_.get()));
 }
 
-void DataReductionProxyIOData::EnableCompressionStatisticsLogging(
-    PrefService* prefs,
-    const base::TimeDelta& commit_delay) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  statistics_prefs_.reset(
-      new DataReductionProxyStatisticsPrefs(
-          prefs, ui_task_runner_, commit_delay));
-}
-
 scoped_ptr<DataReductionProxyNetworkDelegate>
 DataReductionProxyIOData::CreateNetworkDelegate(
     scoped_ptr<net::NetworkDelegate> wrapped_network_delegate,
@@ -106,12 +106,10 @@ DataReductionProxyIOData::CreateNetworkDelegate(
           wrapped_network_delegate.Pass(), params_.get(),
           auth_request_handler_.get(), configurator_.get()));
   if (track_proxy_bypass_statistics && !usage_stats_) {
-    usage_stats_.reset(
-        new data_reduction_proxy::DataReductionProxyUsageStats(
+    usage_stats_.reset(new data_reduction_proxy::DataReductionProxyUsageStats(
         params_.get(), settings_, ui_task_runner_));
     network_delegate->InitStatisticsPrefsAndUMA(
-        ui_task_runner_, statistics_prefs_.get(), &enabled_,
-        usage_stats_.get());
+        ui_task_runner_, statistics_prefs_, &enabled_, usage_stats_.get());
   }
   return network_delegate.Pass();
 }

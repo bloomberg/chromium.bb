@@ -17,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -74,6 +75,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   SetProxyConfigurator(io_data->configurator());
   DataReductionProxySettings::InitDataReductionProxySettings(
       profile_prefs,
+      io_data->PassStatisticsPrefs(),
       request_context,
       io_data->net_log(),
       io_data->event_store());

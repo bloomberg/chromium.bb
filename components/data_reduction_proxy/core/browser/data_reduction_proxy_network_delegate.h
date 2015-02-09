@@ -6,8 +6,10 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_NETWORK_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "net/base/layered_network_delegate.h"
@@ -68,7 +70,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // report UMA.
   void InitStatisticsPrefsAndUMA(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      DataReductionProxyStatisticsPrefs* statistics_prefs,
+      const base::WeakPtr<DataReductionProxyStatisticsPrefs>& statistics_prefs,
       BooleanPrefMember* data_reduction_proxy_enabled,
       DataReductionProxyUsageStats* usage_stats);
 
@@ -83,6 +85,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   base::Value* SessionNetworkStatsInfoToValue() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyNetworkDelegateTest, TotalLengths);
+
   // Called as the proxy is being resolved for |url|. Allows the delegate to
   // override the proxy resolution decision made by ProxyService. The delegate
   // may override the decision by modifying the ProxyInfo |result|.
@@ -119,6 +123,13 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
                                int64 original_content_length,
                                DataReductionProxyRequestType request_type);
 
+  // Records daily data savings statistics to prefs and reports data savings
+  // UMA.
+  void UpdateContentLengthPrefs(int received_content_length,
+                                int original_content_length,
+                                bool data_reduction_proxy_enabled,
+                                DataReductionProxyRequestType request_type);
+
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Total size of all content (excluding headers) that has been received
@@ -140,7 +151,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   DataReductionProxyAuthRequestHandler*
       data_reduction_proxy_auth_request_handler_;
 
-  DataReductionProxyStatisticsPrefs* data_reduction_proxy_statistics_prefs_;
+  base::WeakPtr<DataReductionProxyStatisticsPrefs>
+      data_reduction_proxy_statistics_prefs_;
 
   const DataReductionProxyConfigurator* configurator_;
 

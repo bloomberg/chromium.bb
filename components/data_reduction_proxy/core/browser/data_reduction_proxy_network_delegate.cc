@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
@@ -84,7 +85,6 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_params_(params),
       data_reduction_proxy_usage_stats_(NULL),
       data_reduction_proxy_auth_request_handler_(handler),
-      data_reduction_proxy_statistics_prefs_(NULL),
       configurator_(configurator) {
   DCHECK(data_reduction_proxy_params_);
   DCHECK(data_reduction_proxy_auth_request_handler_);
@@ -95,10 +95,9 @@ DataReductionProxyNetworkDelegate::~DataReductionProxyNetworkDelegate() {
 
 void DataReductionProxyNetworkDelegate::InitStatisticsPrefsAndUMA(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    DataReductionProxyStatisticsPrefs* statistics_prefs,
+    const base::WeakPtr<DataReductionProxyStatisticsPrefs>& statistics_prefs,
     BooleanPrefMember* data_reduction_proxy_enabled,
     DataReductionProxyUsageStats* usage_stats) {
-  DCHECK(statistics_prefs);
   DCHECK(data_reduction_proxy_enabled);
   DCHECK(usage_stats);
   ui_task_runner_ = ui_task_runner;
@@ -233,19 +232,47 @@ void DataReductionProxyNetworkDelegate::AccumulateContentLength(
     DataReductionProxyRequestType request_type) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
-  if (data_reduction_proxy_enabled_ &&
-      data_reduction_proxy_statistics_prefs_) {
+  if (data_reduction_proxy_enabled_) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&UpdateContentLengthPrefs,
+        base::Bind(&DataReductionProxyNetworkDelegate::UpdateContentLengthPrefs,
+                   base::Unretained(this),
                    received_content_length,
                    original_content_length,
                    data_reduction_proxy_enabled_->GetValue(),
-                   request_type,
-                   data_reduction_proxy_statistics_prefs_));
+                   request_type));
   }
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;
+}
+
+void DataReductionProxyNetworkDelegate::UpdateContentLengthPrefs(
+    int received_content_length,
+    int original_content_length,
+    bool data_reduction_proxy_enabled,
+    DataReductionProxyRequestType request_type) {
+  if (data_reduction_proxy_statistics_prefs_) {
+    int64 total_received = data_reduction_proxy_statistics_prefs_->GetInt64(
+        data_reduction_proxy::prefs::kHttpReceivedContentLength);
+    int64 total_original = data_reduction_proxy_statistics_prefs_->GetInt64(
+        data_reduction_proxy::prefs::kHttpOriginalContentLength);
+    total_received += received_content_length;
+    total_original += original_content_length;
+    data_reduction_proxy_statistics_prefs_->SetInt64(
+        data_reduction_proxy::prefs::kHttpReceivedContentLength,
+        total_received);
+    data_reduction_proxy_statistics_prefs_->SetInt64(
+        data_reduction_proxy::prefs::kHttpOriginalContentLength,
+        total_original);
+
+    UpdateContentLengthPrefsForDataReductionProxy(
+        received_content_length,
+        original_content_length,
+        data_reduction_proxy_enabled,
+        request_type,
+        base::Time::Now(),
+        data_reduction_proxy_statistics_prefs_.get());
+  }
 }
 
 void OnResolveProxyHandler(const GURL& url,

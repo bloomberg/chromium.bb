@@ -46,8 +46,7 @@ CreateDataReductionProxyChromeIOData(
   data_reduction_proxy::DataReductionProxyStatisticsPrefs*
       data_reduction_proxy_statistics_prefs =
           new data_reduction_proxy::DataReductionProxyStatisticsPrefs(
-              prefs, ui_task_runner,
-              commit_delay);
+              prefs, ui_task_runner, commit_delay);
 
   scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
@@ -59,8 +58,6 @@ CreateDataReductionProxyChromeIOData(
               io_task_runner,
               ui_task_runner));
   data_reduction_proxy_io_data->InitOnUIThread(prefs);
-  settings->SetDataReductionProxyStatisticsPrefs(
-      data_reduction_proxy_statistics_prefs);
 
   return data_reduction_proxy_io_data.Pass();
 }

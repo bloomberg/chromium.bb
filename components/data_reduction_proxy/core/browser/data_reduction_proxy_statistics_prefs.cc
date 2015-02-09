@@ -33,12 +33,8 @@ DataReductionProxyStatisticsPrefs::DataReductionProxyStatisticsPrefs(
 }
 
 DataReductionProxyStatisticsPrefs::~DataReductionProxyStatisticsPrefs() {
-  // This object is created on UI thread, but destroyed on IO thread. So no
-  // DCHECK on thread_checker_ here.
-}
-
-void DataReductionProxyStatisticsPrefs::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  WritePrefs();
   pref_change_registrar_->RemoveAll();
   weak_factory_.InvalidateWeakPtrs();
 }
@@ -77,7 +73,7 @@ void DataReductionProxyStatisticsPrefs::Init() {
   pref_change_registrar_->Init(pref_service_);
   pref_change_registrar_->Add(prefs::kUpdateDailyReceivedContentLengths,
       base::Bind(&DataReductionProxyStatisticsPrefs::OnUpdateContentLengths,
-                                         weak_factory_.GetWeakPtr()));
+                 GetWeakPtr()));
 }
 
 void DataReductionProxyStatisticsPrefs::OnUpdateContentLengths() {
@@ -155,7 +151,7 @@ void DataReductionProxyStatisticsPrefs::DelayedWritePrefs() {
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyStatisticsPrefs::WritePrefs,
-                 weak_factory_.GetWeakPtr()),
+                 GetWeakPtr()),
                  delay_);
 
   delayed_task_posted_ = true;
@@ -184,6 +180,11 @@ int64 DataReductionProxyStatisticsPrefs::GetListPrefInt64Value(
   bool rv = base::StringToInt64(string_value, &value);
   DCHECK(rv);
   return value;
+}
+
+base::WeakPtr<DataReductionProxyStatisticsPrefs>
+DataReductionProxyStatisticsPrefs::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace data_reduction_proxy
