@@ -949,9 +949,6 @@ crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-wi
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
 
-crbug.com/120846 fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ NeedsRebaseline ]
-crbug.com/120846 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
 crbug.com/446408 [ Win Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
