@@ -131,7 +131,6 @@
         '<(_sanitizer_type)-libgdk-pixbuf2.0-0',
         '<(_sanitizer_type)-libpci3',
         '<(_sanitizer_type)-libdbusmenu-glib4',
-        '<(_sanitizer_type)-overlay-scrollbar',
         '<(_sanitizer_type)-libgconf-2-4',
         '<(_sanitizer_type)-libappindicator1',
         '<(_sanitizer_type)-libdbusmenu',
@@ -652,16 +651,6 @@
           # TODO(earthdok): find a better fix.
           '--disable-introspection',
           '--disable-vala',
-      ],
-      'dependencies=': [],
-      'run_before_build': 'scripts/autogen.sh',
-      'includes': ['standard_instrumented_package_target.gypi'],
-    },
-    {
-      'package_name': 'overlay-scrollbar',
-      'extra_configure_flags': [
-          '--disable-static',
-          '--with-gtk=2',
       ],
       'dependencies=': [],
       'run_before_build': 'scripts/autogen.sh',

@@ -59,7 +59,6 @@ libxrender1 \
 libxss1 \
 libxtst6 \
 nss \
-overlay-scrollbar \
 pango1.0 \
 pulseaudio \
 udev \
@@ -69,7 +68,8 @@ brltty"
 precise_specific_packages="libtasn1-3"
 trusty_specific_packages="\
 libtasn1-6 \
-harfbuzz"
+harfbuzz
+libsecret"
 
 ubuntu_release=$(lsb_release -cs)
 
