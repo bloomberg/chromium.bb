@@ -47,6 +47,27 @@ bool FileDescriptorInfoImpl::HasID(int id) const {
   return false;
 }
 
+bool FileDescriptorInfoImpl::OwnsFD(base::PlatformFile file) const {
+  return owned_descriptors_.end() !=
+         std::find_if(
+             owned_descriptors_.begin(), owned_descriptors_.end(),
+             [file](const base::ScopedFD* fd) { return fd->get() == file; });
+}
+
+base::ScopedFD FileDescriptorInfoImpl::ReleaseFD(base::PlatformFile file) {
+  DCHECK(OwnsFD(file));
+
+  base::ScopedFD fd;
+  auto found = std::find_if(
+      owned_descriptors_.begin(), owned_descriptors_.end(),
+      [file](const base::ScopedFD* fd) { return fd->get() == file; });
+
+  (*found)->swap(fd);
+  owned_descriptors_.erase(found);
+
+  return fd.Pass();
+}
+
 void FileDescriptorInfoImpl::AddToMapping(int id, base::PlatformFile fd) {
   DCHECK(!HasID(id));
   mapping_.push_back(std::make_pair(fd, id));

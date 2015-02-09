@@ -128,14 +128,12 @@ void StartChildProcess(
       env->GetBooleanArrayElements(j_file_auto_close.obj(), NULL);
   base::android::CheckException(env);
   for (size_t i = 0; i < file_count; ++i) {
-    // Owners of passed descriptors can outlive this function and we don't know
-    // when it is safe to close() them. So we pass dup()-ed FD and
-    // let ChildProcessLauncher in java take care of their lifetimes.
-    // TODO(morrita): Drop FileDescriptorInfo.mAutoClose on Java side.
-    file_auto_close[i] = true;  // This indicates ownership transfer.
     file_ids[i] = files_to_register->GetIDAt(i);
-    file_fds[i] = dup(files_to_register->GetFDAt(i));
+    file_fds[i] = files_to_register->GetFDAt(i);
     PCHECK(0 <= file_fds[i]);
+    file_auto_close[i] = files_to_register->OwnsFD(file_fds[i]);
+    if (file_auto_close[i])
+      ignore_result(files_to_register->ReleaseFD(file_fds[i]).release());
   }
   env->ReleaseIntArrayElements(j_file_ids.obj(), file_ids, 0);
   env->ReleaseIntArrayElements(j_file_fds.obj(), file_fds, 0);

@@ -25,6 +25,8 @@ class FileDescriptorInfoImpl : public FileDescriptorInfo {
   base::PlatformFile GetFDAt(size_t i) const override;
   int GetIDAt(size_t i) const override;
   size_t GetMappingSize() const override;
+  bool OwnsFD(base::PlatformFile file) const override;
+  base::ScopedFD ReleaseFD(base::PlatformFile file) override;
 
  private:
   FileDescriptorInfoImpl();

@@ -41,6 +41,11 @@ class FileDescriptorInfo {
   virtual base::PlatformFile GetFDAt(size_t i) const = 0;
   virtual int GetIDAt(size_t i) const = 0;
   virtual size_t GetMappingSize() const = 0;
+
+  // True if |this| has an ownership of |file|.
+  virtual bool OwnsFD(base::PlatformFile file) const = 0;
+  // Assuming |OwnsFD(file)|, release the ownership.
+  virtual base::ScopedFD ReleaseFD(base::PlatformFile file) = 0;
 };
 
 }
