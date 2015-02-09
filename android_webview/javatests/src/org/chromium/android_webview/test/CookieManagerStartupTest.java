@@ -122,8 +122,7 @@ public class CookieManagerStartupTest extends AwTestBase {
         String url = "http://www.example.com";
         TestAwContentsClient contentsClient = new TestAwContentsClient() {
             @Override
-            public AwWebResourceResponse shouldInterceptRequest(
-                    ShouldInterceptRequestParams params) {
+            public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
                 (new AwCookieManager()).getCookie("www.example.com");
                 return null;
             }

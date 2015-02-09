@@ -285,35 +285,35 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     private static class WebResourceRequestImpl implements WebResourceRequest {
-        private final ShouldInterceptRequestParams mParams;
+        private final AwWebResourceRequest mRequest;
 
-        public WebResourceRequestImpl(ShouldInterceptRequestParams params) {
-            mParams = params;
+        public WebResourceRequestImpl(AwWebResourceRequest request) {
+            mRequest = request;
         }
 
         @Override
         public Uri getUrl() {
-            return Uri.parse(mParams.url);
+            return Uri.parse(mRequest.url);
         }
 
         @Override
         public boolean isForMainFrame() {
-            return mParams.isMainFrame;
+            return mRequest.isMainFrame;
         }
 
         @Override
         public boolean hasGesture() {
-            return mParams.hasUserGesture;
+            return mRequest.hasUserGesture;
         }
 
         @Override
         public String getMethod() {
-            return mParams.method;
+            return mRequest.method;
         }
 
         @Override
         public Map<String, String> getRequestHeaders() {
-            return mParams.requestHeaders;
+            return mRequest.requestHeaders;
         }
     }
 
@@ -321,12 +321,12 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
      * @see AwContentsClient#shouldInterceptRequest(java.lang.String)
      */
     @Override
-    public AwWebResourceResponse shouldInterceptRequest(ShouldInterceptRequestParams params) {
+    public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.shouldInterceptRequest");
-            if (TRACE) Log.d(TAG, "shouldInterceptRequest=" + params.url);
+            if (TRACE) Log.d(TAG, "shouldInterceptRequest=" + request.url);
             WebResourceResponse response = mWebViewClient.shouldInterceptRequest(mWebView,
-                    new WebResourceRequestImpl(params));
+                    new WebResourceRequestImpl(request));
             if (response == null) return null;
 
             // AwWebResourceResponse should support null headers. b/16332774.

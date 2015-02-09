@@ -67,7 +67,7 @@ public class NullContentsClient extends AwContentsClient {
 
     @Override
     public AwWebResourceResponse shouldInterceptRequest(
-            AwContentsClient.ShouldInterceptRequestParams params) {
+            AwContentsClient.AwWebResourceRequest request) {
         return null;
     }
 

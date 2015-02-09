@@ -89,7 +89,7 @@ public abstract class AwContentsClient {
     /**
      * Parameters for the {@link AwContentsClient#shouldInterceptRequest} method.
      */
-    public static class ShouldInterceptRequestParams {
+    public static class AwWebResourceRequest {
         // Url of the request.
         public String url;
         // Is this for the main frame or a child iframe?
@@ -109,7 +109,7 @@ public abstract class AwContentsClient {
     public abstract void onProgressChanged(int progress);
 
     public abstract AwWebResourceResponse shouldInterceptRequest(
-            ShouldInterceptRequestParams params);
+            AwWebResourceRequest request);
 
     public abstract boolean shouldOverrideKeyEvent(KeyEvent event);
 

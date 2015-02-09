@@ -47,8 +47,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
             private List<String> mShouldInterceptRequestUrls = new ArrayList<String>();
             private ConcurrentHashMap<String, AwWebResourceResponse> mReturnValuesByUrls =
                     new ConcurrentHashMap<String, AwWebResourceResponse>();
-            private ConcurrentHashMap<String, ShouldInterceptRequestParams> mParamsByUrls =
-                    new ConcurrentHashMap<String, ShouldInterceptRequestParams>();
+            private ConcurrentHashMap<String, AwWebResourceRequest> mRequestsByUrls =
+                    new ConcurrentHashMap<String, AwWebResourceRequest>();
             // This is read from the IO thread, so needs to be marked volatile.
             private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue = null;
             void setReturnValue(AwWebResourceResponse value) {
@@ -66,14 +66,14 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 if (value != null) return value;
                 return mShouldInterceptRequestReturnValue;
             }
-            public ShouldInterceptRequestParams getParamsForUrl(String url) {
+            public AwWebResourceRequest getRequestsForUrl(String url) {
                 assert getCallCount() > 0;
-                assert mParamsByUrls.containsKey(url);
-                return mParamsByUrls.get(url);
+                assert mRequestsByUrls.containsKey(url);
+                return mRequestsByUrls.get(url);
             }
-            public void notifyCalled(ShouldInterceptRequestParams params) {
-                mShouldInterceptRequestUrls.add(params.url);
-                mParamsByUrls.put(params.url, params);
+            public void notifyCalled(AwWebResourceRequest request) {
+                mShouldInterceptRequestUrls.add(request.url);
+                mRequestsByUrls.put(request.url, request);
                 notifyCalled();
             }
         }
@@ -93,10 +93,10 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         }
 
         @Override
-        public AwWebResourceResponse shouldInterceptRequest(ShouldInterceptRequestParams params) {
+        public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
             AwWebResourceResponse returnValue =
-                    mShouldInterceptRequestHelper.getReturnValue(params.url);
-            mShouldInterceptRequestHelper.notifyCalled(params);
+                    mShouldInterceptRequestHelper.getReturnValue(request.url);
+            mShouldInterceptRequestHelper.notifyCalled(request);
             return returnValue;
         }
 
@@ -201,9 +201,9 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
         assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
         assertEquals(false,
-                mShouldInterceptRequestHelper.getParamsForUrl(subframeUrl).isMainFrame);
+                mShouldInterceptRequestHelper.getRequestsForUrl(subframeUrl).isMainFrame);
         assertEquals(true,
-                mShouldInterceptRequestHelper.getParamsForUrl(pageWithIframeUrl).isMainFrame);
+                mShouldInterceptRequestHelper.getRequestsForUrl(pageWithIframeUrl).isMainFrame);
     }
 
     @SmallTest
@@ -218,14 +218,14 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         loadUrlAsync(mAwContents, pageWithFormUrl);
         mShouldInterceptRequestHelper.waitForCallback(callCount);
         assertEquals("GET",
-                mShouldInterceptRequestHelper.getParamsForUrl(pageWithFormUrl).method);
+                mShouldInterceptRequestHelper.getRequestsForUrl(pageWithFormUrl).method);
 
         callCount = mShouldInterceptRequestHelper.getCallCount();
         JSUtils.clickOnLinkUsingJs(this, mAwContents,
                 mContentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
         mShouldInterceptRequestHelper.waitForCallback(callCount);
         assertEquals("POST",
-                mShouldInterceptRequestHelper.getParamsForUrl(pageToPostToUrl).method);
+                mShouldInterceptRequestHelper.getRequestsForUrl(pageToPostToUrl).method);
     }
 
     @SmallTest
@@ -240,7 +240,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         loadUrlAsync(mAwContents, pageWithLinkUrl);
         mShouldInterceptRequestHelper.waitForCallback(callCount);
         assertEquals(false,
-                mShouldInterceptRequestHelper.getParamsForUrl(pageWithLinkUrl).hasUserGesture);
+                mShouldInterceptRequestHelper.getRequestsForUrl(pageWithLinkUrl).hasUserGesture);
 
         // TODO(mkosiba): Remove this once we have a real API to wait for the page to load and
         // display.
@@ -261,7 +261,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         AwTestTouchUtils.simulateTouchCenterOfView(mTestContainerView);
         mShouldInterceptRequestHelper.waitForCallback(callCount);
         assertEquals(true,
-                mShouldInterceptRequestHelper.getParamsForUrl(aboutPageUrl).hasUserGesture);
+                mShouldInterceptRequestHelper.getRequestsForUrl(aboutPageUrl).hasUserGesture);
     }
 
     @SmallTest
@@ -286,7 +286,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
 
         Map<String, String> headers =
-                mShouldInterceptRequestHelper.getParamsForUrl(syncGetUrl).requestHeaders;
+                mShouldInterceptRequestHelper.getRequestsForUrl(syncGetUrl).requestHeaders;
         assertTrue(headers.containsKey(headerName));
         assertEquals(headerValue, headers.get(headerName));
     }

@@ -348,20 +348,20 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public AwWebResourceResponse shouldInterceptRequest(
-                AwContentsClient.ShouldInterceptRequestParams params) {
-            String url = params.url;
+                AwContentsClient.AwWebResourceRequest request) {
+            String url = request.url;
             AwWebResourceResponse awWebResourceResponse;
             // Return the response directly if the url is default video poster url.
             awWebResourceResponse = mDefaultVideoPosterRequestHandler.shouldInterceptRequest(url);
             if (awWebResourceResponse != null) return awWebResourceResponse;
 
-            awWebResourceResponse = mContentsClient.shouldInterceptRequest(params);
+            awWebResourceResponse = mContentsClient.shouldInterceptRequest(request);
 
             if (awWebResourceResponse == null) {
                 mContentsClient.getCallbackHelper().postOnLoadResource(url);
             }
 
-            if (params.isMainFrame && awWebResourceResponse != null
+            if (request.isMainFrame && awWebResourceResponse != null
                     && awWebResourceResponse.getData() == null) {
                 // In this case the intercepted URLRequest job will simulate an empty response
                 // which doesn't trigger the onReceivedError callback. For WebViewClassic

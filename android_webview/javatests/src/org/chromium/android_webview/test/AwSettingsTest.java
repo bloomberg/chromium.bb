@@ -22,7 +22,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwContentsClient.ShouldInterceptRequestParams;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
@@ -2739,9 +2738,8 @@ public class AwSettingsTest extends AwTestBase {
         final String defaultVideoPosterUrl = "http://default_video_poster/";
         TestAwContentsClient client = new TestAwContentsClient() {
             @Override
-            public AwWebResourceResponse shouldInterceptRequest(
-                    ShouldInterceptRequestParams params) {
-                if (params.url.equals(defaultVideoPosterUrl)) {
+            public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
+                if (request.url.equals(defaultVideoPosterUrl)) {
                     videoPosterAccessedCallbackHelper.notifyCalled();
                 }
                 return null;
