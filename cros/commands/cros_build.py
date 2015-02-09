@@ -45,6 +45,7 @@ To just build a single package:
     self.chroot_update = options.chroot_update and options.deps
     if options.chroot_update and not options.deps:
       cros_build_lib.Debug('Skipping chroot update due to --nodeps')
+    self.build_pkgs = None
 
 
   @classmethod
@@ -65,7 +66,10 @@ To just build a single package:
                       default=True, dest='deps', action='store_false')
     deps.add_argument('--rebuild-deps', default=False, action='store_true',
                       help='Automatically rebuild dependencies')
-    parser.add_argument('packages', help='Packages to build', nargs='+')
+    parser.add_argument('packages',
+                        help='Packages to build. If no packages listed, uses '
+                        'the current project main package.',
+                        nargs='*')
 
     # Advanced options.
     advanced = parser.add_argument_group('Advanced options')
@@ -90,7 +94,7 @@ To just build a single package:
     """
     if self.options.deps and not self.options.host:
       cmd = self._GetEmergeCommand(self.options.board)
-      cmd += ['-pe', '--backtrack=0'] + self.options.packages
+      cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
       try:
         cros_build_lib.RunCommand(cmd, combine_stdout_stderr=True,
                                   debug_level=logging.DEBUG)
@@ -164,7 +168,7 @@ To just build a single package:
     """Update the chroot, then merge the requested packages."""
     self._UpdateChroot()
     board = None if self.options.host else self.options.board
-    self._Emerge(self.options.packages, board)
+    self._Emerge(self.build_pkgs, board)
 
   def _SetupBoardIfNeeded(self):
     """Create the board if it's missing."""
@@ -186,6 +190,11 @@ To just build a single package:
                          '--board/--project')
 
     self.RunInsideChroot(auto_detect_project=True)
+
+    # If no packages were listed, find the main project package.
+    self.build_pkgs = self.options.packages or self.DefaultPackages()
+    if not self.build_pkgs:
+      cros_build_lib.Die('No packages found, nothing to build.')
 
     self._SetupBoardIfNeeded()
     parallel.RunParallelSteps([self._CheckDependencies, self._Build])

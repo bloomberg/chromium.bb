@@ -100,6 +100,22 @@ class CrosCommand(object):
 
     raise commandline.ChrootRequiredError(extra_args=extra_args)
 
+  def DefaultPackages(self):
+    """Returns the default packages for the current project/board.
+
+    Currently, this finds the 'main_package' property of the current project.
+    We nevertheless return a (single element) list because it matches the
+    argument type that different commands are expecting.
+
+    Returns:
+      A list of default packages; empty if project is unknown or has no main
+      package configured.
+    """
+    proj_name = self.options.board or self.current_project
+    proj = proj_name and project.FindProjectByName(proj_name)
+    main_package = proj and proj.config.get('main_package')
+    return [main_package] if main_package else []
+
   def Run(self):
     """The command to run."""
     raise NotImplementedError()

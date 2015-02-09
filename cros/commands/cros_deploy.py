@@ -733,8 +733,9 @@ For more information of cros build usage:
     parser.add_argument(
         'packages', help='Packages to install. You can specify '
         '[category/]package[:slot] or the path to the binary package. '
-        'Use @installed to update all installed packages (requires --update).',
-        nargs='+')
+        'Use @installed to update all installed packages (requires --update). '
+        'If no packages listed, uses the current project main package.',
+        nargs='*')
     parser.add_argument(
         '--board', '--project', help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
@@ -941,6 +942,11 @@ For more information of cros build usage:
         logging.info('Board is %s', self.board)
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
+        # If no packages were listed, find the project's main packages.
+        deploy_pkgs = self.options.packages or self.DefaultPackages()
+        if not deploy_pkgs:
+          cros_build_lib.Die('No packages found, nothing to deploy.')
+
         if self.clean_binpkg:
           logging.info('Cleaning outdated binary packages for %s', self.board)
           portage_util.CleanOutdatedBinaryPackages(self.board)
@@ -953,8 +959,7 @@ For more information of cros build usage:
         # Obtain list of packages to upgrade/remove.
         pkg_scanner = InstallPackageScanner(self.board, self.sysroot)
         pkgs, listed, num_updates = pkg_scanner.Run(
-            device, self.root, self.options.packages,
-            self.options.update,
+            device, self.root, deploy_pkgs, self.options.update,
             self.options.deep, self.options.deep_rev)
         if self.emerge:
           action_str = 'emerge'

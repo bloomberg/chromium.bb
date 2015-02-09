@@ -97,10 +97,10 @@ class CrosCommandTest(object):
     packages = ['dev-python/cherrypy', 'app-portage/portage-utils']
     # Set the installation root to /usr/local so that `cros deploy`
     # does not attempt to remount rootfs (which leads to VM reboot).
-    cmd_base = ['cros', 'deploy', '--debug', '--root=/usr/local', device_addr]
+    cmd_base = ['cros', 'deploy', '--debug', '--root=/usr/local']
 
     # Unmerge the packages.
-    cmd = cmd_base + ['--unmerge'] + packages
+    cmd = cmd_base + ['--unmerge', device_addr] + packages
     result = cros_build_lib.RunCommand(cmd, capture_output=True,
                                        enter_chroot=True,
                                        error_code_ok=True)
@@ -110,7 +110,7 @@ class CrosCommandTest(object):
       raise TestError('cros deploy unmerge test failed.')
 
     # Re-install the packages.
-    cmd = cmd_base + packages
+    cmd = cmd_base + [device_addr] + packages
     result = cros_build_lib.RunCommand(cmd, capture_output=True,
                                        enter_chroot=True,
                                        error_code_ok=True)
