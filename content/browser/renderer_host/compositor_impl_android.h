@@ -76,7 +76,7 @@ class CONTENT_EXPORT CompositorImpl
                            float page_scale,
                            float top_controls_delta) override {}
   void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override {}
+  void DidInitializeOutputSurface() override;
   void DidFailToInitializeOutputSurface() override;
   void WillCommit() override {}
   void DidCommit() override;
@@ -119,8 +119,7 @@ class CONTENT_EXPORT CompositorImpl
   }
   bool WillComposite() const {
     return WillCompositeThisFrame() ||
-           composite_on_vsync_trigger_ != DO_NOT_COMPOSITE ||
-           defer_composite_for_gpu_channel_;
+           composite_on_vsync_trigger_ != DO_NOT_COMPOSITE;
   }
   void CancelComposite() {
     DCHECK(WillComposite());
@@ -131,7 +130,6 @@ class CONTENT_EXPORT CompositorImpl
     will_composite_immediately_ = false;
   }
   void CreateLayerTreeHost();
-  void OnGpuChannelEstablished();
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_
   // is the one attached by the compositor client.
@@ -183,13 +181,15 @@ class CONTENT_EXPORT CompositorImpl
   // the GPU thread.
   unsigned int pending_swapbuffers_;
 
-  // Whether we are currently deferring a requested Composite operation until
-  // the GPU channel is established (it was either lost or not yet fully
-  // established the first time we tried to composite).
-  bool defer_composite_for_gpu_channel_;
+  size_t num_successive_context_creation_failures_;
 
   base::TimeDelta vsync_period_;
   base::TimeTicks last_vsync_;
+
+  // If set, a pending task to request or create a new OutputSurface for the
+  // current host. Cancelled when |host_| gets destroyed, so we don't call
+  // into the new LayerTreeHost with an old LTH's request.
+  scoped_ptr<base::CancelableClosure> output_surface_task_for_host_;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 

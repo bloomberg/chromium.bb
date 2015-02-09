@@ -181,7 +181,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       will_composite_immediately_(false),
       composite_on_vsync_trigger_(DO_NOT_COMPOSITE),
       pending_swapbuffers_(0U),
-      defer_composite_for_gpu_channel_(false),
+      num_successive_context_creation_failures_(0),
       weak_factory_(this) {
   DCHECK(client);
   DCHECK(root_window);
@@ -198,7 +198,7 @@ void CompositorImpl::PostComposite(CompositingTrigger trigger) {
   DCHECK(needs_composite_);
   DCHECK(trigger == COMPOSITE_IMMEDIATELY || trigger == COMPOSITE_EVENTUALLY);
 
-  if (defer_composite_for_gpu_channel_ || will_composite_immediately_ ||
+  if (will_composite_immediately_ ||
       (trigger == COMPOSITE_EVENTUALLY && WillComposite())) {
     // We will already composite soon enough.
     DCHECK(WillComposite());
@@ -254,30 +254,9 @@ void CompositorImpl::PostComposite(CompositingTrigger trigger) {
       FROM_HERE, current_composite_task_->callback(), delay);
 }
 
-void CompositorImpl::OnGpuChannelEstablished() {
-  defer_composite_for_gpu_channel_ = false;
-
-  if (host_)
-    PostComposite(COMPOSITE_IMMEDIATELY);
-}
-
 void CompositorImpl::Composite(CompositingTrigger trigger) {
   if (trigger == COMPOSITE_IMMEDIATELY)
     will_composite_immediately_ = false;
-
-  BrowserGpuChannelHostFactory* factory =
-      BrowserGpuChannelHostFactory::instance();
-  if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
-    CauseForGpuLaunch cause =
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-    factory->EstablishGpuChannel(
-        cause, base::Bind(&CompositorImpl::OnGpuChannelEstablished,
-                          weak_factory_.GetWeakPtr()));
-    DCHECK(!defer_composite_for_gpu_channel_);
-    defer_composite_for_gpu_channel_ = true;
-    current_composite_task_.reset();
-    return;
-  }
 
   DCHECK(host_);
   DCHECK(trigger == COMPOSITE_IMMEDIATELY || trigger == COMPOSITE_EVENTUALLY);
@@ -285,7 +264,11 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
   DCHECK(!DidCompositeThisFrame());
 
   DCHECK_LE(pending_swapbuffers_, kMaxSwapBuffers);
-  if (pending_swapbuffers_ == kMaxSwapBuffers) {
+  // Swap Ack accounting is unreliable if the OutputSurface was lost.
+  // In that case still attempt to composite, which will cause creation of a
+  // new OutputSurface and reset pending_swapbuffers_.
+  if (pending_swapbuffers_ == kMaxSwapBuffers &&
+      !host_->output_surface_lost()) {
     TRACE_EVENT0("compositor", "CompositorImpl_SwapLimit");
     return;
   }
@@ -389,7 +372,6 @@ void CompositorImpl::CreateLayerTreeHost() {
   DCHECK(!host_);
   DCHECK(!WillCompositeThisFrame());
   needs_composite_ = false;
-  defer_composite_for_gpu_channel_ = false;
   pending_swapbuffers_ = 0;
   cc::LayerTreeSettings settings;
   settings.renderer_settings.refresh_rate = 60.0;
@@ -447,6 +429,7 @@ void CompositorImpl::SetVisible(bool visible) {
       CancelComposite();
     ui_resource_provider_.SetLayerTreeHost(NULL);
     host_.reset();
+    output_surface_task_for_host_.reset();
     display_client_.reset();
     if (current_composite_task_) {
       current_composite_task_->Cancel();
@@ -530,36 +513,33 @@ void CompositorImpl::Layout() {
 }
 
 void CompositorImpl::RequestNewOutputSurface() {
-  // SetVisible(false) can happen (destroying the host_) between when this
-  // function is posted and when it is handled.  An output surface will get
-  // re-requested when the host is recreated.
-  if (!host_.get())
-    return;
-
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
   if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
     CauseForGpuLaunch cause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-    factory->EstablishGpuChannel(
-        cause,
-        base::Bind(&CompositorImpl::CreateOutputSurface,
-                   weak_factory_.GetWeakPtr()));
+    output_surface_task_for_host_.reset(new base::CancelableClosure(base::Bind(
+        &CompositorImpl::CreateOutputSurface, base::Unretained(this))));
+    factory->EstablishGpuChannel(cause,
+                                 output_surface_task_for_host_->callback());
     return;
   }
 
   CreateOutputSurface();
 }
 
+void CompositorImpl::DidInitializeOutputSurface() {
+  num_successive_context_creation_failures_ = 0;
+}
+
 void CompositorImpl::DidFailToInitializeOutputSurface() {
   RequestNewOutputSurface();
+  LOG(ERROR) << "Failed to init OutputSurface for compositor.";
+  LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 3)
+      << "Too many context creation failures. Giving up... ";
 }
 
 void CompositorImpl::CreateOutputSurface() {
-  // This function will get called again when the compositor becomes visible.
-  if (!host_.get())
-    return;
-
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
@@ -579,9 +559,12 @@ void CompositorImpl::CreateOutputSurface() {
   }
   if (!context_provider.get()) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
+    LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 3)
+        << "Too many context creation failures. Giving up... ";
+    output_surface_task_for_host_.reset(new base::CancelableClosure(base::Bind(
+        &CompositorImpl::RequestNewOutputSurface, base::Unretained(this))));
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(&CompositorImpl::RequestNewOutputSurface,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, output_surface_task_for_host_->callback());
     return;
   }
 
