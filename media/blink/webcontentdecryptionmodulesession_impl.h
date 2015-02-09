@@ -32,12 +32,6 @@ class WebContentDecryptionModuleSessionImpl
   virtual void setClientInterface(Client* client);
   virtual blink::WebString sessionId() const;
 
-  // TODO(jrummell): Remove the next 3 methods once blink updated.
-  virtual void initializeNewSession(const blink::WebString& mime_type,
-                                    const uint8* init_data,
-                                    size_t init_data_length);
-  virtual void update(const uint8* response, size_t response_length);
-  virtual void release();
   virtual void initializeNewSession(
       const blink::WebString& init_data_type,
       const uint8* init_data,
@@ -51,9 +45,6 @@ class WebContentDecryptionModuleSessionImpl
                       blink::WebContentDecryptionModuleResult result);
   virtual void close(blink::WebContentDecryptionModuleResult result);
   virtual void remove(blink::WebContentDecryptionModuleResult result);
-
-  // TODO(jrummell): Remove the next method once blink updated.
-  virtual void release(blink::WebContentDecryptionModuleResult result);
 
   // Callbacks.
   void OnSessionMessage(MediaKeys::MessageType message_type,

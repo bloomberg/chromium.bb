@@ -96,25 +96,6 @@ blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
 void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     const blink::WebString& init_data_type,
     const uint8* init_data,
-    size_t init_data_length) {
-  // TODO(jrummell): Remove once blink updated.
-  NOTREACHED();
-}
-
-void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
-                                                   size_t response_length) {
-  // TODO(jrummell): Remove once blink updated.
-  NOTREACHED();
-}
-
-void WebContentDecryptionModuleSessionImpl::release() {
-  // TODO(jrummell): Remove once blink updated.
-  NOTREACHED();
-}
-
-void WebContentDecryptionModuleSessionImpl::initializeNewSession(
-    const blink::WebString& init_data_type,
-    const uint8* init_data,
     size_t init_data_length,
     const blink::WebString& session_type,
     blink::WebContentDecryptionModuleResult result) {
@@ -220,11 +201,6 @@ void WebContentDecryptionModuleSessionImpl::remove(
       session_id_,
       scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
           result, adapter_->GetKeySystemUMAPrefix() + kRemoveSessionUMAName)));
-}
-
-void WebContentDecryptionModuleSessionImpl::release(
-    blink::WebContentDecryptionModuleResult result) {
-  close(result);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
