@@ -1491,7 +1491,14 @@ class DiskCache(LocalCache):
       # An untracked file.
       if not isolated_format.is_valid_hash(filename, self.hash_algo):
         logging.warning('Removing unknown file %s from cache', filename)
-        file_path.try_remove(self._path(filename))
+        p = self._path(filename)
+        if os.path.isdir(p):
+          try:
+            file_path.rmtree(p)
+          except OSError:
+            pass
+        else:
+          file_path.try_remove(p)
         continue
       # File that's not referenced in 'state.json'.
       # TODO(vadimsh): Verify its SHA1 matches file name.
