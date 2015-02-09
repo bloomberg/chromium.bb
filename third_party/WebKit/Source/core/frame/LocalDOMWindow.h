@@ -242,7 +242,6 @@ private:
 
         // FrameDestructionObserver overrides:
         void willDetachFrameHost() override;
-        void frameDestroyed() override;
 
         RawPtrWillBeMember<LocalDOMWindow> m_window;
     };
@@ -266,7 +265,6 @@ private:
     };
 
     void willDetachFrameHost();
-    void frameDestroyed();
     void removeAllEventListenersInternal(BroadcastListenerRemoval);
 
     OwnPtrWillBeMember<WindowFrameObserver> m_frameObserver;

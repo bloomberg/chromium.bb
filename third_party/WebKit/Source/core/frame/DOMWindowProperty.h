@@ -49,7 +49,7 @@ protected:
     virtual ~DOMWindowProperty();
 #endif
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    RawPtrWillBeWeakMember<LocalFrame> m_frame;
 
 #if !ENABLE(OILPAN)
 private:

@@ -16,15 +16,15 @@ PASS window.cached_applicationCache.onupdateready is null
 PASS window.cached_applicationCache.status is 0
 PASS window.cached_history.length is 0
 PASS window.cached_history.state is null
-FAIL window.cached_location.hash should be  (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.host should be  (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.hostname should be  (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.href should be about:blank (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.origin should be null (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.pathname should be blank (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.port should be  (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.protocol should be about: (of type string). Was undefined (of type undefined).
-FAIL window.cached_location.search should be  (of type string). Was undefined (of type undefined).
+PASS window.cached_location.hash is ''
+PASS window.cached_location.host is ''
+PASS window.cached_location.hostname is ''
+PASS window.cached_location.href is 'about:blank'
+PASS window.cached_location.origin is 'null'
+PASS window.cached_location.pathname is 'blank'
+PASS window.cached_location.port is ''
+PASS window.cached_location.protocol is 'about:'
+PASS window.cached_location.search is ''
 FAIL window.cached_location_ancestorOrigins.length should be 0. Was 1.
 PASS window.cached_locationbar.visible is false
 PASS window.cached_menubar.visible is false
