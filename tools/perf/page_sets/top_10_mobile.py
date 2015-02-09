@@ -7,13 +7,16 @@ from telemetry.page import page_set as page_set_module
 
 class Top10MobilePage(page_module.Page):
 
-  def __init__(self, url, page_set):
+  def __init__(self, url, page_set, run_no_page_interactions):
     super(Top10MobilePage, self).__init__(
         url=url, page_set=page_set, credentials_path = 'data/credentials.json')
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/top_10_mobile.json'
+    self._run_no_page_interactions = run_no_page_interactions
 
   def RunPageInteractions(self, action_runner):
+    if self._run_no_page_interactions:
+      return
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
@@ -24,7 +27,7 @@ class Top10MobilePageSet(page_set_module.PageSet):
 
   """ Top 10 mobile sites """
 
-  def __init__(self):
+  def __init__(self, run_no_page_interactions=False):
     super(Top10MobilePageSet, self).__init__(
       user_agent_type='mobile',
       archive_data_file='data/top_10_mobile.json',
@@ -63,4 +66,4 @@ class Top10MobilePageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(Top10MobilePage(url, self))
+      self.AddUserStory(Top10MobilePage(url, self, run_no_page_interactions))

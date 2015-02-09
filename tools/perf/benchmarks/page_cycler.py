@@ -169,11 +169,13 @@ class PageCyclerTop10Mobile(_PageCycler):
 
   Runs against pages recorded in November, 2013.
   """
-  page_set = page_sets.Top10MobilePageSet
 
   @classmethod
   def Name(cls):
     return 'page_cycler.top_10_mobile'
+
+  def CreatePageSet(self, options):
+    return page_sets.Top10MobilePageSet(run_no_page_interactions=True)
 
 
 @benchmark.Disabled
@@ -207,11 +209,13 @@ class PageCyclerTypical25(_PageCycler):
   Designed to represent typical, not highly optimized or highly popular web
   sites. Runs against pages recorded in June, 2014.
   """
-  page_set = page_sets.Typical25PageSet
 
   @classmethod
   def Name(cls):
     return 'page_cycler.typical_25'
+
+  def CreatePageSet(self, options):
+    return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
 
 @benchmark.Disabled # crbug.com/443730

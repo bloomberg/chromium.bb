@@ -13,12 +13,6 @@ class ToughLayoutCasesPage(page_module.Page):
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/tough_layout_cases.json'
 
-  def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
-    action_runner.ScrollPage()
-    interaction.End()
-
 
 class ToughLayoutCasesPageSet(page_set_module.PageSet):
 
