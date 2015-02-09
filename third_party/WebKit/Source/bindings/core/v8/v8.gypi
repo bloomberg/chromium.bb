@@ -48,6 +48,8 @@
             'PostMessage.h',
             'PrivateScriptRunner.cpp',
             'PrivateScriptRunner.h',
+            'RejectedPromises.cpp',
+            'RejectedPromises.h',
             'RetainedDOMInfo.cpp',
             'RetainedDOMInfo.h',
             'RetainedObjectInfo.h',

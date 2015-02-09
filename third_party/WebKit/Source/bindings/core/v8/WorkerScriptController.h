@@ -31,6 +31,7 @@
 #ifndef WorkerScriptController_h
 #define WorkerScriptController_h
 
+#include "bindings/core/v8/RejectedPromises.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "wtf/OwnPtr.h"
@@ -84,6 +85,8 @@ public:
     // Used by V8 bindings:
     v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
 
+    RejectedPromises* rejectedPromises() const { return m_rejectedPromises.get(); }
+
 private:
     class WorkerGlobalScopeExecutionState;
 
@@ -100,6 +103,8 @@ private:
     bool m_executionForbidden;
     bool m_executionScheduledToTerminate;
     mutable Mutex m_scheduledTerminationMutex;
+
+    OwnPtrWillBePersistent<RejectedPromises> m_rejectedPromises;
 
     // |m_globalScopeExecutionState| refers to a stack object
     // that evaluate() allocates; evaluate() ensuring that the

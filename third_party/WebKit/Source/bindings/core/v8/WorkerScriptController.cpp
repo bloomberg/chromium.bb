@@ -107,6 +107,7 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
     , m_workerGlobalScope(workerGlobalScope)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
+    , m_rejectedPromises(RejectedPromises::create())
     , m_globalScopeExecutionState(0)
 {
     m_isolate = V8PerIsolateData::initialize();
@@ -140,6 +141,9 @@ private:
 
 WorkerScriptController::~WorkerScriptController()
 {
+    m_rejectedPromises->dispose();
+    m_rejectedPromises.clear();
+
     ThreadState::current()->removeInterruptor(m_interruptor.get());
 
     m_world->dispose();

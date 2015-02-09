@@ -60,12 +60,25 @@ const int64_t kLongIdleHandlerDelayMs = 10*1000;
 
 class MicrotaskRunner : public WebThread::TaskObserver {
 public:
+    explicit MicrotaskRunner(WorkerThread* workerThread)
+        : m_workerThread(workerThread)
+    {
+    }
+
     virtual void willProcessTask() override { }
     virtual void didProcessTask() override
     {
         Microtask::performCheckpoint();
-        V8Initializer::reportRejectedPromises();
+        if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
+            if (WorkerScriptController* scriptController = globalScope->script())
+                scriptController->rejectedPromises()->processQueue();
+        }
     }
+
+private:
+    // Thread owns the microtask runner; reference remains
+    // valid for the lifetime of this object.
+    WorkerThread* m_workerThread;
 };
 
 } // namespace
@@ -310,7 +323,7 @@ void WorkerThread::initialize()
             return;
         }
 
-        m_microtaskRunner = adoptPtr(new MicrotaskRunner);
+        m_microtaskRunner = adoptPtr(new MicrotaskRunner(this));
         m_thread->addTaskObserver(m_microtaskRunner.get());
         m_thread->attachGC();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
