@@ -114,6 +114,14 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns the pagination model for the ContentsView.
   const PaginationModel& pagination_model() { return pagination_model_; }
 
+  // Gets the on-screen page bounds for a given launcher page with index
+  // |page_index|.
+  gfx::Rect GetOnscreenPageBounds(int page_index) const;
+
+  // Gets the the off-screen resting place for a given launcher page with index
+  // |page_index|.
+  gfx::Rect GetOffscreenPageBounds(int page_index) const;
+
   // Returns search box bounds to use for content views that do not specify
   // their own custom layout.
   gfx::Rect GetDefaultSearchBoxBounds() const;

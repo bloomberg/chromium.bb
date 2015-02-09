@@ -352,6 +352,26 @@ int ContentsView::AddLauncherPage(views::View* view,
   return page_index;
 }
 
+gfx::Rect ContentsView::GetOnscreenPageBounds(int page_index) const {
+  AppListModel::State state = GetStateForPageIndex(page_index);
+  bool fills_contents_view =
+      state == AppListModel::STATE_CUSTOM_LAUNCHER_PAGE ||
+      state == AppListModel::STATE_START;
+  return fills_contents_view ? GetContentsBounds() : GetDefaultContentsBounds();
+}
+
+gfx::Rect ContentsView::GetOffscreenPageBounds(int page_index) const {
+  AppListModel::State state = GetStateForPageIndex(page_index);
+  gfx::Rect bounds(GetOnscreenPageBounds(page_index));
+  // The start page and search page origins are above; all other pages' origins
+  // are below.
+  bool origin_above = state == AppListModel::STATE_START ||
+                      state == AppListModel::STATE_SEARCH_RESULTS;
+  bounds.set_y(origin_above ? -bounds.height()
+                            : GetContentsBounds().height() + bounds.y());
+  return bounds;
+}
+
 gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
   gfx::Rect search_box_bounds(0, 0, GetDefaultContentsSize().width(),
                               GetSearchBoxView()->GetPreferredSize().height());
@@ -370,7 +390,8 @@ gfx::Rect ContentsView::GetSearchBoxBoundsForState(
     // Convert to ContentsView space, assuming that the StartPageView is in the
     // ContentsView's default bounds.
     return start_page_view_->GetSearchBoxBounds() +
-           GetDefaultContentsBounds().OffsetFromOrigin();
+           GetOnscreenPageBounds(GetPageIndexForState(state))
+               .OffsetFromOrigin();
   }
 
   return GetDefaultSearchBoxBounds();
@@ -459,14 +480,9 @@ void ContentsView::Layout() {
   // Move the current view onto the screen, and all other views off screen to
   // the left. (Since we are not animating, we don't need to be careful about
   // which side we place the off-screen views onto.)
-  gfx::Rect rect(GetDefaultContentsBounds());
-  // Custom pages are aligned to the top of the window, not under the search
-  // box.
-  double progress = 0;
-  if (IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
-    rect = GetContentsBounds();
-    progress = 1;
-  }
+  gfx::Rect rect = GetOnscreenPageBounds(GetActivePageIndex());
+  double progress =
+      IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE) ? 1 : 0;
 
   // Notify the custom launcher page that the active page has changed.
   app_list_main_view_->view_delegate()->CustomLauncherPageAnimationChanged(

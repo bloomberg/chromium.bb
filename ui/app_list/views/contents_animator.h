@@ -39,14 +39,6 @@ class ContentsAnimator {
  protected:
   const ContentsView* contents_view() const { return contents_view_; }
 
-  // Gets the on-screen page bounds for a given launcher page with index
-  // |page_index|.
-  gfx::Rect GetOnscreenPageBounds(int page_index) const;
-
-  // Gets the origin (the off-screen resting place) for a given launcher page
-  // with index |page_index|.
-  gfx::Rect GetOffscreenPageBounds(int page_index) const;
-
   // Updates the position of the custom launcher page view (if it exists), in
   // the default way for start page <-> other page transitions. This places it
   // into collapsed state on the start page, and hidden on any other page. Any

@@ -36,7 +36,7 @@ const int kStartPageSearchBoxWidth = 480;
 
 // WebView constants.
 const int kWebViewWidth = 700;
-const int kWebViewHeight = 189;
+const int kWebViewHeight = 254;
 
 // Tile container constants.
 const size_t kNumStartPageTiles = 4;

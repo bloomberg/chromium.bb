@@ -246,7 +246,7 @@ bool AppListViewTestContext::IsStateShown(AppListModel::State state) {
   bool success = true;
   for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
     success = success &&
-              (i == index) == (contents_view->GetDefaultContentsBounds() ==
+              (i == index) == (contents_view->GetOnscreenPageBounds(i) ==
                                contents_view->GetPageView(i)->bounds());
   }
   return success && state == delegate_->GetTestModel()->state();
@@ -507,30 +507,40 @@ void AppListViewTestContext::RunPageSwitchingAnimationTest() {
     contents_view->SetActivePage(0);
     contents_view->Layout();
 
-    const gfx::Rect expected_bounds = contents_view->GetDefaultContentsBounds();
-
-    EXPECT_EQ(expected_bounds, contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(2)->bounds());
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(0),
+              contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
+              contents_view->GetPageView(1)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(2),
+              contents_view->GetPageView(2)->bounds());
 
     // Change pages. View should not have moved without Layout().
     contents_view->SetActivePage(1);
-    EXPECT_EQ(expected_bounds, contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(2)->bounds());
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(0),
+              contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
+              contents_view->GetPageView(1)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(2),
+              contents_view->GetPageView(2)->bounds());
 
     // Change to a third page. This queues up the second animation behind the
     // first.
     contents_view->SetActivePage(2);
-    EXPECT_EQ(expected_bounds, contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(2)->bounds());
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(0),
+              contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
+              contents_view->GetPageView(1)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(2),
+              contents_view->GetPageView(2)->bounds());
 
     // Call Layout(). Should jump to the third page.
     contents_view->Layout();
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
-    EXPECT_EQ(expected_bounds, contents_view->GetPageView(2)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(0),
+              contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
+              contents_view->GetPageView(1)->bounds());
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(2),
+              contents_view->GetPageView(2)->bounds());
   }
 
   Close();
@@ -600,31 +610,20 @@ void AppListViewTestContext::RunSearchResultsTest() {
   contents_view->Layout();
   EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
 
-  const gfx::Rect default_contents_bounds =
-      contents_view->GetDefaultContentsBounds();
-  EXPECT_EQ(AppListModel::STATE_SEARCH_RESULTS,
-            delegate_->GetTestModel()->state());
-  EXPECT_EQ(default_contents_bounds,
-            contents_view->search_results_page_view()->bounds());
+  EXPECT_TRUE(IsStateShown(AppListModel::STATE_SEARCH_RESULTS));
 
   // Hide the search results.
   contents_view->ShowSearchResults(false);
   contents_view->Layout();
 
   // Check that we return to the page that we were on before the search.
-  EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_APPS));
-  EXPECT_EQ(AppListModel::STATE_APPS, delegate_->GetTestModel()->state());
-  EXPECT_EQ(default_contents_bounds,
-            contents_view->apps_container_view()->bounds());
+  EXPECT_TRUE(IsStateShown(AppListModel::STATE_APPS));
 
   if (test_type_ == EXPERIMENTAL) {
     // Check that typing into the search box triggers the search page.
     EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
     view_->Layout();
-    EXPECT_EQ(default_contents_bounds,
-              contents_view->start_page_view()->bounds());
-    EXPECT_TRUE(CheckSearchBoxWidget(
-        contents_view->GetSearchBoxBoundsForState(AppListModel::STATE_START)));
+    EXPECT_TRUE(IsStateShown(AppListModel::STATE_START));
 
     base::string16 search_text = base::UTF8ToUTF16("test");
     main_view->search_box_view()->search_box()->SetText(base::string16());
@@ -641,8 +640,7 @@ void AppListViewTestContext::RunSearchResultsTest() {
     // Check that typing into the search box triggers the search page.
     EXPECT_TRUE(SetAppListState(AppListModel::STATE_APPS));
     contents_view->Layout();
-    EXPECT_EQ(default_contents_bounds,
-              contents_view->apps_container_view()->bounds());
+    EXPECT_TRUE(IsStateShown(AppListModel::STATE_APPS));
     EXPECT_TRUE(
         CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
 
@@ -654,8 +652,7 @@ void AppListViewTestContext::RunSearchResultsTest() {
     EXPECT_EQ(new_search_text,
               main_view->search_box_view()->search_box()->text());
     contents_view->Layout();
-    EXPECT_TRUE(
-        contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
+    EXPECT_TRUE(IsStateShown(AppListModel::STATE_SEARCH_RESULTS));
     EXPECT_TRUE(
         CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
   }
