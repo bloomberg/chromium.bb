@@ -57,7 +57,8 @@ const IOSurfaceDrawQuad* IOSurfaceDrawQuad::MaterialCast(
   return static_cast<const IOSurfaceDrawQuad*>(quad);
 }
 
-void IOSurfaceDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void IOSurfaceDrawQuad::ExtendValue(
+    base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("io_surface_size", io_surface_size, value);
 
   value->SetInteger("io_surface_resource_id", io_surface_resource_id);

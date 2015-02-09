@@ -50,7 +50,8 @@ size_t FilterDisplayItem::PictureMemoryUsage() const {
   return sizeof(skia::RefPtr<SkImageFilter>) + sizeof(gfx::RectF);
 }
 
-void FilterDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void FilterDisplayItem::AsValueInto(
+    base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("FilterDisplayItem bounds: [%s]",
                                          bounds_.ToString().c_str()));
 }
@@ -79,7 +80,8 @@ size_t EndFilterDisplayItem::PictureMemoryUsage() const {
   return 0;
 }
 
-void EndFilterDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void EndFilterDisplayItem::AsValueInto(
+    base::trace_event::TracedValue* array) const {
   array->AppendString("EndFilterDisplayItem");
 }
 

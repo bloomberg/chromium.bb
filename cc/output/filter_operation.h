@@ -19,14 +19,8 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TracedValue;
-}
 class Value;
-}  // namespace base
+}
 
 namespace cc {
 
@@ -229,7 +223,7 @@ class CC_EXPORT FilterOperation {
                                const FilterOperation* to,
                                double progress);
 
-  void AsValueInto(base::debug::TracedValue* value) const;
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
  private:
   FilterOperation(FilterType type, float amount);

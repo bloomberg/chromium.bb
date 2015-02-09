@@ -379,7 +379,8 @@ bool PicturePileImpl::ShouldAttemptToUseDistanceFieldText() const {
   return should_attempt_to_use_distance_field_text_;
 }
 
-void PicturePileImpl::AsValueInto(base::debug::TracedValue* pictures) const {
+void PicturePileImpl::AsValueInto(
+    base::trace_event::TracedValue* pictures) const {
   gfx::Rect tiling_rect(tiling_.tiling_size());
   std::set<const void*> appended_pictures;
   bool include_borders = true;

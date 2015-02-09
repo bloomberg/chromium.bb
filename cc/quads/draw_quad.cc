@@ -57,7 +57,7 @@ void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
 DrawQuad::~DrawQuad() {
 }
 
-void DrawQuad::AsValueInto(base::debug::TracedValue* value) const {
+void DrawQuad::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("material", material);
   TracedValue::SetIDRef(shared_quad_state, value, "shared_state");
 

@@ -46,15 +46,8 @@ namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::ConvertableToTraceFormat;
-using ::base::trace_event::TracedValue;
-}
 class DictionaryValue;
-}  // namespace base
+}
 
 namespace cc {
 
@@ -574,7 +567,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual void PushPropertiesTo(LayerImpl* layer);
 
   virtual void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const;
+  virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   virtual size_t GPUMemoryUsageInBytes() const;
 
@@ -593,7 +586,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
   virtual void SetDebugInfo(
-      scoped_refptr<base::debug::ConvertableToTraceFormat> other);
+      scoped_refptr<base::trace_event::ConvertableToTraceFormat> other);
 
   bool IsDrawnRenderSurfaceLayerListMember() const;
 
@@ -769,7 +762,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // hierarchy before layers can be drawn.
   DrawProperties<LayerImpl> draw_properties_;
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat> debug_info_;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> debug_info_;
   scoped_ptr<RenderSurfaceImpl> render_surface_;
 
   std::vector<FrameTimingRequest> frame_timing_requests_;

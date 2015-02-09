@@ -16,13 +16,7 @@ namespace trace_event {
 class TracedValue;
 }
 class Value;
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TracedValue;
 }
-}  // namespace base
 
 namespace cc {
 
@@ -46,7 +40,7 @@ class CC_EXPORT SharedQuadState {
               float opacity,
               SkXfermode::Mode blend_mode,
               int sorting_context_id);
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   // Transforms from quad's original content space to its target content space.
   gfx::Transform content_to_target_transform;

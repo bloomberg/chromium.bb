@@ -32,7 +32,7 @@ class CC_EXPORT TransparencyDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   TransparencyDisplayItem(float opacity, SkXfermode::Mode blend_mode);
@@ -55,7 +55,7 @@ class CC_EXPORT EndTransparencyDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   EndTransparencyDisplayItem();

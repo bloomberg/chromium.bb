@@ -79,7 +79,8 @@ const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
   return static_cast<const YUVVideoDrawQuad*>(quad);
 }
 
-void YUVVideoDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void YUVVideoDrawQuad::ExtendValue(
+    base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
   MathUtil::AddToTracedValue("tex_size", tex_size, value);
   value->SetInteger("y_plane_resource_id", y_plane_resource_id);

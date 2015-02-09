@@ -26,7 +26,7 @@ class CC_EXPORT DisplayItem {
   virtual bool IsSuitableForGpuRasterization() const = 0;
   virtual int ApproximateOpCount() const = 0;
   virtual size_t PictureMemoryUsage() const = 0;
-  virtual void AsValueInto(base::debug::TracedValue* array) const = 0;
+  virtual void AsValueInto(base::trace_event::TracedValue* array) const = 0;
 
  protected:
   DisplayItem();

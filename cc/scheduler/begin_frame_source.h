@@ -50,7 +50,7 @@ class CC_EXPORT BeginFrameObserver {
   virtual const BeginFrameArgs LastUsedBeginFrameArgs() const = 0;
 
   // Tracing support
-  virtual void AsValueInto(base::debug::TracedValue* dict) const = 0;
+  virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
 };
 
 // Simple mix in which implements a BeginFrameObserver which checks the
@@ -75,7 +75,7 @@ class CC_EXPORT BeginFrameObserverMixIn : public BeginFrameObserver {
   const BeginFrameArgs LastUsedBeginFrameArgs() const override;
 
   // Outputs last_begin_frame_args_
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
   // Subclasses should override this method!
@@ -122,7 +122,7 @@ class CC_EXPORT BeginFrameSource {
 
   // Tracing support - Recommend (but not required) to call this implementation
   // in any override.
-  virtual void AsValueInto(base::debug::TracedValue* dict) const = 0;
+  virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
 };
 
 // Simple mix in which implements a BeginFrameSource.
@@ -146,7 +146,7 @@ class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
 
   // Tracing support - Recommend (but not required) to call this implementation
   // in any override.
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
   BeginFrameSourceMixIn();
@@ -178,7 +178,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
   void DidFinishFrame(size_t remaining_frames) override;
 
   // Tracing
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
   explicit BackToBackBeginFrameSource(
@@ -214,7 +214,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceMixIn,
   bool NeedsBeginFrames() const override;
 
   // Tracing
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   // VSyncParameterObserver
   void OnUpdateVSyncParameters(base::TimeTicks new_vsync_timebase,
@@ -267,7 +267,7 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceMixIn,
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   // Tracing
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
   BeginFrameSourceMultiplexer();

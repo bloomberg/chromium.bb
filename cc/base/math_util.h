@@ -24,12 +24,6 @@ class Value;
 namespace trace_event {
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015.
-namespace debug {
-using ::base::trace_event::TracedValue;
-}
 }  // namespace base
 
 namespace gfx {
@@ -207,40 +201,40 @@ class CC_EXPORT MathUtil {
 
   static void AddToTracedValue(const char* name,
                                const gfx::Size& s,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::SizeF& s,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::Rect& r,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::PointF& q,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::Point3F&,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::Vector2d& v,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::Vector2dF& v,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::ScrollOffset& v,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::QuadF& q,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::RectF& rect,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::Transform& transform,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::BoxF& box,
-                               base::debug::TracedValue* res);
+                               base::trace_event::TracedValue* res);
 
   // Returns a base::Value representation of the floating point value.
   // If the value is inf, returns max double/float representation.

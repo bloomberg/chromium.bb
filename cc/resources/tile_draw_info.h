@@ -59,7 +59,7 @@ class CC_EXPORT TileDrawInfo {
     resource_ = resource.Pass();
   }
 
-  void AsValueInto(base::debug::TracedValue* state) const;
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
   friend class Tile;

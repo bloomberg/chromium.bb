@@ -29,7 +29,7 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   explicit TransformDisplayItem(const gfx::Transform& transform);
@@ -51,7 +51,7 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   EndTransformDisplayItem();

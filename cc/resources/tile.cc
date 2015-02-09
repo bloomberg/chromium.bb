@@ -49,7 +49,7 @@ Tile::~Tile() {
       "cc::Tile", this);
 }
 
-void Tile::AsValueInto(base::debug::TracedValue* res) const {
+void Tile::AsValueInto(base::trace_event::TracedValue* res) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), res, "cc::Tile", this);
   TracedValue::SetIDRef(raster_source_.get(), res, "picture_pile");

@@ -542,7 +542,8 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   }
 }
 
-void SingleThreadProxy::AsValueInto(base::debug::TracedValue* state) const {
+void SingleThreadProxy::AsValueInto(
+    base::trace_event::TracedValue* state) const {
   // The following line casts away const modifiers because it is just
   // setting debug state. We still want the AsValue() function and its
   // call chain to be const throughout.

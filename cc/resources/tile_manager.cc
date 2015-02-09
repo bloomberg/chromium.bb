@@ -184,10 +184,10 @@ const char* TaskSetName(TaskSet task_set) {
 RasterTaskCompletionStats::RasterTaskCompletionStats()
     : completed_count(0u), canceled_count(0u) {}
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   state->SetInteger("completed_count", stats.completed_count);
   state->SetInteger("canceled_count", stats.canceled_count);
   return state;
@@ -477,15 +477,16 @@ void TileManager::UpdateVisibleTiles(
   update_visible_tiles_stats_ = RasterTaskCompletionStats();
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 TileManager::BasicStateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> value =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> value =
+      new base::trace_event::TracedValue();
   BasicStateAsValueInto(value.get());
   return value;
 }
 
-void TileManager::BasicStateAsValueInto(base::debug::TracedValue* state) const {
+void TileManager::BasicStateAsValueInto(
+    base::trace_event::TracedValue* state) const {
   state->SetInteger("tile_count", tiles_.size());
   state->SetBoolean("did_oom_on_last_assign", did_oom_on_last_assign_);
   state->BeginDictionary("global_state");

@@ -36,7 +36,7 @@ class CC_EXPORT DisplayItemList
   int ApproximateOpCount() const;
   size_t PictureMemoryUsage() const;
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
 
   void EmitTraceSnapshot() const;
 

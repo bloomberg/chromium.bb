@@ -21,15 +21,8 @@ namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::ConvertableToTraceFormat;
-using ::base::trace_event::TracedValue;
-}
 class Value;
-}  // namespace base
+}
 
 namespace cc {
 
@@ -121,8 +114,9 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* ActionToString(Action action);
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  void AsValueInto(base::debug::TracedValue* dict, base::TimeTicks now) const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  void AsValueInto(base::trace_event::TracedValue* dict,
+                   base::TimeTicks now) const;
 
   Action NextAction() const;
   void UpdateState(Action action);

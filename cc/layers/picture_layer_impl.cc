@@ -1180,7 +1180,8 @@ void PictureLayerImpl::GetAllTilesForTracing(
   tilings_->GetAllTilesForTracing(tiles);
 }
 
-void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
+void PictureLayerImpl::AsValueInto(
+    base::trace_event::TracedValue* state) const {
   LayerImpl::AsValueInto(state);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
   state->SetDouble("geometry_contents_scale", MaximumTilingContentsScale());

@@ -65,10 +65,10 @@ size_t DisplayItemList::PictureMemoryUsage() const {
   return total_size;
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat> DisplayItemList::AsValue()
-    const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+DisplayItemList::AsValue() const {
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
 
   state->SetInteger("length", items_.size());
   state->BeginArray("params.items");

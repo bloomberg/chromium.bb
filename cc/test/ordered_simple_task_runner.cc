@@ -60,16 +60,16 @@ bool TestOrderablePendingTask::operator<(
   return ShouldRunBefore(other);
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 TestOrderablePendingTask::AsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueInto(state.get());
   return state;
 }
 
 void TestOrderablePendingTask::AsValueInto(
-    base::debug::TracedValue* state) const {
+    base::trace_event::TracedValue* state) const {
   state->SetInteger("id", task_id_);
   state->SetInteger("run_at", GetTimeToRun().ToInternalValue());
   state->SetString("posted_from", location.ToString());
@@ -255,17 +255,17 @@ bool OrderedSimpleTaskRunner::RunForPeriod(base::TimeDelta period) {
   return RunUntilTime(now_src_->Now() + period);
 }
 
-// base::debug tracing functionality
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+// base::trace_event tracing functionality
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 OrderedSimpleTaskRunner::AsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueInto(state.get());
   return state;
 }
 
 void OrderedSimpleTaskRunner::AsValueInto(
-    base::debug::TracedValue* state) const {
+    base::trace_event::TracedValue* state) const {
   state->SetInteger("pending_tasks", pending_tasks_.size());
 
   state->BeginArray("tasks");

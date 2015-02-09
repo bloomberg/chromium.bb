@@ -37,7 +37,8 @@ TestDelayBasedTimeSource::~TestDelayBasedTimeSource() {
 void FakeBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
   remaining_frames_ = remaining_frames;
 }
-void FakeBeginFrameSource::AsValueInto(base::debug::TracedValue* dict) const {
+void FakeBeginFrameSource::AsValueInto(
+    base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "FakeBeginFrameSource");
   BeginFrameSourceMixIn::AsValueInto(dict);
 }

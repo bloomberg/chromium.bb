@@ -1219,7 +1219,7 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                  animate));
 }
 
-void LayerTreeHost::AsValueInto(base::debug::TracedValue* state) const {
+void LayerTreeHost::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginDictionary("proxy");
   proxy_->AsValueInto(state);
   state->EndDictionary();

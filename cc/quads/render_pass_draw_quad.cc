@@ -95,7 +95,8 @@ const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
   return static_cast<const RenderPassDrawQuad*>(quad);
 }
 
-void RenderPassDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void RenderPassDrawQuad::ExtendValue(
+    base::trace_event::TracedValue* value) const {
   TracedValue::SetIDRef(render_pass_id.AsTracingId(), value, "render_pass_id");
   value->SetInteger("mask_resource_id", mask_resource_id);
   MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);

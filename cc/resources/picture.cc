@@ -461,19 +461,19 @@ Picture::PixelRefIterator& Picture::PixelRefIterator::operator++() {
   return *this;
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
     Picture::AsTraceableRasterData(float scale) const {
-  scoped_refptr<base::debug::TracedValue> raster_data =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> raster_data =
+      new base::trace_event::TracedValue();
   TracedValue::SetIDRef(this, raster_data.get(), "picture_id");
   raster_data->SetDouble("scale", scale);
   return raster_data;
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
     Picture::AsTraceableRecordData() const {
-  scoped_refptr<base::debug::TracedValue> record_data =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> record_data =
+      new base::trace_event::TracedValue();
   TracedValue::SetIDRef(this, record_data.get(), "picture_id");
   MathUtil::AddToTracedValue("layer_rect", layer_rect_, record_data.get());
   return record_data;

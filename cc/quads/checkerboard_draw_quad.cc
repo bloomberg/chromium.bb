@@ -43,7 +43,8 @@ const CheckerboardDrawQuad* CheckerboardDrawQuad::MaterialCast(
   return static_cast<const CheckerboardDrawQuad*>(quad);
 }
 
-void CheckerboardDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void CheckerboardDrawQuad::ExtendValue(
+    base::trace_event::TracedValue* value) const {
   value->SetInteger("color", color);
 }
 

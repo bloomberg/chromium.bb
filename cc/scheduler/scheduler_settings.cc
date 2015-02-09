@@ -46,10 +46,10 @@ SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
 
 SchedulerSettings::~SchedulerSettings() {}
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerSettings::AsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   state->SetBoolean("use_external_begin_frame_source",
                     use_external_begin_frame_source);
   state->SetBoolean("forward_begin_frames_to_children",

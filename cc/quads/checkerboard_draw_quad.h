@@ -35,7 +35,7 @@ class CC_EXPORT CheckerboardDrawQuad : public DrawQuad {
   static const CheckerboardDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
 }  // namespace cc

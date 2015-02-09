@@ -34,7 +34,7 @@ class SimpleDrawQuad : public DrawQuad {
 
   void set_value(int val) { value = val; }
   int get_value() { return value; }
-  void ExtendValue(base::debug::TracedValue* value) const override {}
+  void ExtendValue(base::trace_event::TracedValue* value) const override {}
 
  private:
   int value;
@@ -58,7 +58,7 @@ class MockDrawQuad : public DrawQuad {
  public:
   ~MockDrawQuad() override { Destruct(); }
   void IterateResources(const ResourceIteratorCallback& callback) override {}
-  void ExtendValue(base::debug::TracedValue* value) const override {}
+  void ExtendValue(base::trace_event::TracedValue* value) const override {}
   MOCK_METHOD0(Destruct, void());
 };
 

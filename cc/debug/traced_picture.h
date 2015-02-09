@@ -13,14 +13,14 @@
 
 namespace cc {
 
-class TracedPicture : public base::debug::ConvertableToTraceFormat {
+class TracedPicture : public base::trace_event::ConvertableToTraceFormat {
  public:
   explicit TracedPicture(scoped_refptr<const Picture>);
 
-  static scoped_refptr<base::debug::ConvertableToTraceFormat>
+  static scoped_refptr<base::trace_event::ConvertableToTraceFormat>
       AsTraceablePicture(const Picture* picture);
 
-  static scoped_refptr<base::debug::ConvertableToTraceFormat>
+  static scoped_refptr<base::trace_event::ConvertableToTraceFormat>
       AsTraceablePictureAlias(const Picture* original);
 
   void AppendAsTraceFormat(std::string* out) const override;

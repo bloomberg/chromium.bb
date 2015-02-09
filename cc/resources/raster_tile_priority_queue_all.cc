@@ -280,10 +280,10 @@ RasterTilePriorityQueueAll::PairedTilingSetQueue::NextTileIteratorTree(
                             pending_queue_.get(), nullptr);
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 RasterTilePriorityQueueAll::PairedTilingSetQueue::StateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
 
   bool active_queue_has_tile = active_queue_ && !active_queue_->IsEmpty();
   TilePriority::PriorityBin active_priority_bin = TilePriority::EVENTUALLY;

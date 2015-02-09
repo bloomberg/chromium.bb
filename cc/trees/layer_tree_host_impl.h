@@ -185,7 +185,7 @@ class CC_EXPORT LayerTreeHostImpl
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
     ~FrameData() override;
-    void AsValueInto(base::debug::TracedValue* value) const;
+    void AsValueInto(base::trace_event::TracedValue* value) const;
 
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
@@ -452,15 +452,15 @@ class CC_EXPORT LayerTreeHostImpl
     return begin_impl_frame_interval_;
   }
 
-  void AsValueInto(base::debug::TracedValue* value) const;
+  void AsValueInto(base::trace_event::TracedValue* value) const;
   void AsValueWithFrameInto(FrameData* frame,
-                            base::debug::TracedValue* value) const;
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValueWithFrame(
+                            base::trace_event::TracedValue* value) const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueWithFrame(
       FrameData* frame) const;
-  scoped_refptr<base::debug::ConvertableToTraceFormat> ActivationStateAsValue()
-      const;
-  void ActivationStateAsValueInto(base::debug::TracedValue* value) const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+  ActivationStateAsValue() const;
+  void ActivationStateAsValueInto(base::trace_event::TracedValue* value) const;
 
   bool page_scale_animation_active() const { return !!page_scale_animation_; }
 

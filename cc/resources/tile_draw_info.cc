@@ -28,7 +28,7 @@ bool TileDrawInfo::IsReadyToDraw() const {
   return false;
 }
 
-void TileDrawInfo::AsValueInto(base::debug::TracedValue* state) const {
+void TileDrawInfo::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("is_solid_color", mode_ == SOLID_COLOR_MODE);
   state->SetBoolean("is_transparent",
                     mode_ == SOLID_COLOR_MODE && !SkColorGetA(solid_color_));

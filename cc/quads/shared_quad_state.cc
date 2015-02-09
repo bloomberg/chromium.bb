@@ -46,7 +46,7 @@ void SharedQuadState::SetAll(const gfx::Transform& content_to_target_transform,
   this->sorting_context_id = sorting_context_id;
 }
 
-void SharedQuadState::AsValueInto(base::debug::TracedValue* value) const {
+void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("transform", content_to_target_transform, value);
   MathUtil::AddToTracedValue("layer_content_bounds", content_bounds, value);
   MathUtil::AddToTracedValue("layer_visible_content_rect", visible_content_rect,

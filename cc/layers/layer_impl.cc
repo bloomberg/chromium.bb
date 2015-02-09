@@ -175,7 +175,7 @@ void LayerImpl::SetScrollParent(LayerImpl* parent) {
 }
 
 void LayerImpl::SetDebugInfo(
-    scoped_refptr<base::debug::ConvertableToTraceFormat> other) {
+    scoped_refptr<base::trace_event::ConvertableToTraceFormat> other) {
   debug_info_ = other;
   SetNeedsPushProperties();
 }
@@ -1401,7 +1401,7 @@ void LayerImpl::RemoveDependentNeedsPushProperties() {
 void LayerImpl::GetAllTilesForTracing(std::set<const Tile*>* tiles) const {
 }
 
-void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
+void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       state,

@@ -30,7 +30,7 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   explicit FloatClipDisplayItem(gfx::RectF clip_rect);
@@ -52,7 +52,7 @@ class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   EndFloatClipDisplayItem();

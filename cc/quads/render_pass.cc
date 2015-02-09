@@ -180,7 +180,7 @@ void RenderPass::SetAll(RenderPassId id,
   DCHECK(shared_quad_state_list.empty());
 }
 
-void RenderPass::AsValueInto(base::debug::TracedValue* value) const {
+void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("output_rect", output_rect, value);
   MathUtil::AddToTracedValue("damage_rect", damage_rect, value);
 

@@ -458,7 +458,7 @@ void WebLayerImpl::setWebLayerClient(blink::WebLayerClient* client) {
   web_layer_client_ = client;
 }
 
-class TracedDebugInfo : public base::debug::ConvertableToTraceFormat {
+class TracedDebugInfo : public base::trace_event::ConvertableToTraceFormat {
  public:
   // This object takes ownership of the debug_info object.
   explicit TracedDebugInfo(blink::WebGraphicsLayerDebugInfo* debug_info)
@@ -476,7 +476,7 @@ class TracedDebugInfo : public base::debug::ConvertableToTraceFormat {
   base::ThreadChecker thread_checker_;
 };
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 WebLayerImpl::TakeDebugInfo() {
   if (!web_layer_client_)
     return nullptr;

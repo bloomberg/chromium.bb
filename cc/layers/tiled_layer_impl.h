@@ -68,7 +68,7 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   bool HasResourceIdForTileAt(int i, int j) const;
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  private:
   const char* LayerTypeAsString() const override;

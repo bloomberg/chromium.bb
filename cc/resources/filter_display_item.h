@@ -32,7 +32,7 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   FilterDisplayItem(skia::RefPtr<SkImageFilter> filter, gfx::RectF bounds);
@@ -55,7 +55,7 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   EndFilterDisplayItem();

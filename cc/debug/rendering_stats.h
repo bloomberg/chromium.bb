@@ -25,7 +25,7 @@ struct CC_EXPORT RenderingStats {
 
     void Append(base::TimeDelta value);
     void AddToTracedValue(const char* name,
-                          base::debug::TracedValue* list_value) const;
+                          base::trace_event::TracedValue* list_value) const;
 
     void Add(const TimeDeltaList& other);
 
@@ -52,7 +52,8 @@ struct CC_EXPORT RenderingStats {
   TimeDeltaList commit_to_activate_duration;
   TimeDeltaList commit_to_activate_duration_estimate;
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData()
+      const;
   void Add(const RenderingStats& other);
 };
 

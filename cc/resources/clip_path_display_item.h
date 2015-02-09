@@ -31,7 +31,7 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   ClipPathDisplayItem(const SkPath& path, SkRegion::Op clip_op, bool antialias);
@@ -55,7 +55,7 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
   EndClipPathDisplayItem();

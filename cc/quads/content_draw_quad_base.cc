@@ -54,7 +54,8 @@ void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
   this->nearest_neighbor = nearest_neighbor;
 }
 
-void ContentDrawQuadBase::ExtendValue(base::debug::TracedValue* value) const {
+void ContentDrawQuadBase::ExtendValue(
+    base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
   MathUtil::AddToTracedValue("texture_size", texture_size, value);
 

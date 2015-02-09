@@ -48,7 +48,7 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
   static const IOSurfaceDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
 }  // namespace cc

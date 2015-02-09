@@ -84,7 +84,7 @@ const PictureDrawQuad* PictureDrawQuad::MaterialCast(const DrawQuad* quad) {
   return static_cast<const PictureDrawQuad*>(quad);
 }
 
-void PictureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void PictureDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
   ContentDrawQuadBase::ExtendValue(value);
   MathUtil::AddToTracedValue("content_rect", content_rect, value);
   value->SetDouble("contents_scale", contents_scale);

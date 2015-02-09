@@ -66,7 +66,7 @@ const TileDrawQuad* TileDrawQuad::MaterialCast(const DrawQuad* quad) {
   return static_cast<const TileDrawQuad*>(quad);
 }
 
-void TileDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void TileDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
   ContentDrawQuadBase::ExtendValue(value);
   value->SetInteger("resource_id", resource_id);
 }

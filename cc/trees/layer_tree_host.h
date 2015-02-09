@@ -273,7 +273,7 @@ class CC_EXPORT LayerTreeHost {
   }
 
   // Obtains a thorough dump of the LayerTreeHost as a value.
-  void AsValueInto(base::debug::TracedValue* value) const;
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 

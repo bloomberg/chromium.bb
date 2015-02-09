@@ -59,15 +59,15 @@ BeginFrameArgs BeginFrameArgs::Create(BeginFrameArgs::CreationLocation location,
 #endif
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat> BeginFrameArgs::AsValue()
-    const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+BeginFrameArgs::AsValue() const {
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueInto(state.get());
   return state;
 }
 
-void BeginFrameArgs::AsValueInto(base::debug::TracedValue* state) const {
+void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetString("type", "BeginFrameArgs");
   state->SetString("subtype", TypeToString(type));
   state->SetDouble("frame_time_us", frame_time.ToInternalValue());

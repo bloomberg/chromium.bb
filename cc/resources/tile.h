@@ -102,7 +102,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
            !draw_info_.IsReadyToDraw();
   }
 
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   inline bool IsReadyToDraw() const { return draw_info_.IsReadyToDraw(); }
 

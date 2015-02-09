@@ -95,7 +95,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Tracing functionality.
   virtual void DidBeginTracing() = 0;
-  virtual void AsValueInto(base::debug::TracedValue* array) const = 0;
+  virtual void AsValueInto(base::trace_event::TracedValue* array) const = 0;
   virtual skia::RefPtr<SkPicture> GetFlattenedPicture() = 0;
   virtual size_t GetPictureMemoryUsage() const = 0;
 

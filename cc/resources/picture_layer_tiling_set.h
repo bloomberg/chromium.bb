@@ -17,13 +17,7 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TracedValue;
 }
-}  // namespace base
 
 namespace cc {
 
@@ -157,7 +151,7 @@ class CC_EXPORT PictureLayerTilingSet {
     Region::Iterator region_iter_;
   };
 
-  void AsValueInto(base::debug::TracedValue* array) const;
+  void AsValueInto(base::trace_event::TracedValue* array) const;
   size_t GPUMemoryUsageInBytes() const;
 
   TilingRange GetTilingRange(TilingRangeType type) const;

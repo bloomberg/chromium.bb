@@ -34,9 +34,9 @@ class TestOrderablePendingTask : public base::TestPendingTask {
   bool operator==(const TestOrderablePendingTask& other) const;
   bool operator<(const TestOrderablePendingTask& other) const;
 
-  // debug tracing functions
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  void AsValueInto(base::debug::TracedValue* state) const;
+  // base::trace_event tracing functionality
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
   static size_t task_id_counter;
@@ -102,9 +102,9 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
   bool RunUntilTime(base::TimeTicks time);
   bool RunForPeriod(base::TimeDelta period);
 
-  // base::debug tracing functionality
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  virtual void AsValueInto(base::debug::TracedValue* state) const;
+  // base::trace_event tracing functionality
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  virtual void AsValueInto(base::trace_event::TracedValue* state) const;
 
   // Common conditions to run for, exposed publicly to allow external users to
   // use their own combinations.

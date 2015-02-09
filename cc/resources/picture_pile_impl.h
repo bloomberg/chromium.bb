@@ -63,7 +63,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
 
   // Tracing functionality.
   void DidBeginTracing() override;
-  void AsValueInto(base::debug::TracedValue* array) const override;
+  void AsValueInto(base::trace_event::TracedValue* array) const override;
   skia::RefPtr<SkPicture> GetFlattenedPicture() override;
   size_t GetPictureMemoryUsage() const override;
 

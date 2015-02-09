@@ -549,7 +549,7 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
 }
 
 void LayerTreeHostImpl::FrameData::AsValueInto(
-    base::debug::TracedValue* value) const {
+    base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_no_damage", has_no_damage);
 
   // Quad data can be quite large, so only dump render passes if we select
@@ -3272,26 +3272,27 @@ BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 LayerTreeHostImpl::AsValue() const {
   return AsValueWithFrame(NULL);
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 LayerTreeHostImpl::AsValueWithFrame(FrameData* frame) const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueWithFrameInto(frame, state.get());
   return state;
 }
 
-void LayerTreeHostImpl::AsValueInto(base::debug::TracedValue* value) const {
+void LayerTreeHostImpl::AsValueInto(
+    base::trace_event::TracedValue* value) const {
   return AsValueWithFrameInto(NULL, value);
 }
 
 void LayerTreeHostImpl::AsValueWithFrameInto(
     FrameData* frame,
-    base::debug::TracedValue* state) const {
+    base::trace_event::TracedValue* state) const {
   if (this->pending_tree_) {
     state->BeginDictionary("activation_state");
     ActivationStateAsValueInto(state);
@@ -3337,16 +3338,16 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
   }
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 LayerTreeHostImpl::ActivationStateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   ActivationStateAsValueInto(state.get());
   return state;
 }
 
 void LayerTreeHostImpl::ActivationStateAsValueInto(
-    base::debug::TracedValue* state) const {
+    base::trace_event::TracedValue* state) const {
   TracedValue::SetIDRef(this, state, "lthi");
   if (tile_manager_) {
     state->BeginDictionary("tile_manager");

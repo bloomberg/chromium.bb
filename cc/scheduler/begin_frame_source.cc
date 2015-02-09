@@ -53,7 +53,7 @@ void BeginFrameObserverMixIn::OnBeginFrame(const BeginFrameArgs& args) {
 }
 
 void BeginFrameObserverMixIn::AsValueInto(
-    base::debug::TracedValue* dict) const {
+    base::trace_event::TracedValue* dict) const {
   dict->BeginDictionary("last_begin_frame_args_");
   last_begin_frame_args_.AsValueInto(dict);
   dict->EndDictionary();
@@ -117,7 +117,8 @@ void BeginFrameSourceMixIn::CallOnBeginFrame(const BeginFrameArgs& args) {
 }
 
 // Tracing support
-void BeginFrameSourceMixIn::AsValueInto(base::debug::TracedValue* dict) const {
+void BeginFrameSourceMixIn::AsValueInto(
+    base::trace_event::TracedValue* dict) const {
   // As the observer might try to trace the source, prevent an infinte loop
   // from occuring.
   if (inside_as_value_into_) {
@@ -198,7 +199,7 @@ void BackToBackBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
 
 // Tracing support
 void BackToBackBeginFrameSource::AsValueInto(
-    base::debug::TracedValue* dict) const {
+    base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "BackToBackBeginFrameSource");
   BeginFrameSourceMixIn::AsValueInto(dict);
   dict->SetBoolean("send_begin_frame_posted_", send_begin_frame_posted_);
@@ -270,7 +271,7 @@ bool SyntheticBeginFrameSource::NeedsBeginFrames() const {
 
 // Tracing support
 void SyntheticBeginFrameSource::AsValueInto(
-    base::debug::TracedValue* dict) const {
+    base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "SyntheticBeginFrameSource");
   BeginFrameSourceMixIn::AsValueInto(dict);
 
@@ -439,7 +440,7 @@ void BeginFrameSourceMultiplexer::DidFinishFrame(size_t remaining_frames) {
 
 // Tracing support
 void BeginFrameSourceMultiplexer::AsValueInto(
-    base::debug::TracedValue* dict) const {
+    base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "BeginFrameSourceMultiplexer");
 
   dict->SetInteger("minimum_interval_us", minimum_interval_.InMicroseconds());

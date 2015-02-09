@@ -20,14 +20,8 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TracedValue;
-}
 class SingleThreadTaskRunner;
-}  // namespace base
+}
 
 namespace gfx {
 class Rect;
@@ -108,7 +102,7 @@ class CC_EXPORT Proxy {
 
   virtual bool SupportsImplScrolling() const = 0;
 
-  virtual void AsValueInto(base::debug::TracedValue* value) const = 0;
+  virtual void AsValueInto(base::trace_event::TracedValue* value) const = 0;
 
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) = 0;
 

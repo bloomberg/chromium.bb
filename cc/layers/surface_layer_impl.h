@@ -33,7 +33,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
 
  private:
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
   const char* LayerTypeAsString() const override;
 
   SurfaceId surface_id_;

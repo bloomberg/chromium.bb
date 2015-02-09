@@ -467,10 +467,10 @@ void OneCopyTileTaskWorkerPool::CheckForCompletedCopyOperations(
   }
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 OneCopyTileTaskWorkerPool::StateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
 
   state->BeginArray("tasks_pending");
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set)
@@ -484,7 +484,7 @@ OneCopyTileTaskWorkerPool::StateAsValue() const {
 }
 
 void OneCopyTileTaskWorkerPool::StagingStateAsValueInto(
-    base::debug::TracedValue* staging_state) const {
+    base::trace_event::TracedValue* staging_state) const {
   staging_state->SetInteger("staging_resource_count",
                             resource_pool_->total_resource_count());
   staging_state->SetInteger("bytes_used_for_staging_resources",

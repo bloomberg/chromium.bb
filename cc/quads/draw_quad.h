@@ -14,15 +14,9 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TracedValue;
-}
 class Value;
 class DictionaryValue;
-}  // namespace base
+}
 
 namespace cc {
 
@@ -132,7 +126,7 @@ class CC_EXPORT DrawQuad {
     return IsLeftEdge() || IsTopEdge() || IsRightEdge() || IsBottomEdge();
   }
 
-  void AsValueInto(base::debug::TracedValue* value) const;
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
  protected:
   DrawQuad();
@@ -143,7 +137,7 @@ class CC_EXPORT DrawQuad {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending);
-  virtual void ExtendValue(base::debug::TracedValue* value) const = 0;
+  virtual void ExtendValue(base::trace_event::TracedValue* value) const = 0;
 };
 
 }  // namespace cc

@@ -64,7 +64,7 @@ class MockBeginFrameObserver : public BeginFrameObserver {
   MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
   MOCK_CONST_METHOD0(LastUsedBeginFrameArgs, const BeginFrameArgs());
 
-  virtual void AsValueInto(base::debug::TracedValue* dict) const {
+  virtual void AsValueInto(base::trace_event::TracedValue* dict) const {
     dict->SetString("type", "MockBeginFrameObserver");
     dict->BeginDictionary("last_begin_frame_args");
     LastUsedBeginFrameArgs().AsValueInto(dict);
@@ -284,7 +284,7 @@ class LoopingBeginFrameObserver : public BeginFrameObserverMixIn {
  public:
   BeginFrameSource* source_;
 
-  void AsValueInto(base::debug::TracedValue* dict) const override {
+  void AsValueInto(base::trace_event::TracedValue* dict) const override {
     dict->SetString("type", "LoopingBeginFrameObserver");
     dict->BeginDictionary("source");
     source_->AsValueInto(dict);
@@ -305,8 +305,8 @@ TEST(BeginFrameSourceMixInTest, DetectAsValueIntoLoop) {
   obs.source_ = &source;
   source.AddObserver(&obs);
 
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   source.AsValueInto(state.get());
 }
 

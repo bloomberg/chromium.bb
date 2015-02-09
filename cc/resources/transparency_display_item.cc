@@ -42,7 +42,7 @@ size_t TransparencyDisplayItem::PictureMemoryUsage() const {
 }
 
 void TransparencyDisplayItem::AsValueInto(
-    base::debug::TracedValue* array) const {
+    base::trace_event::TracedValue* array) const {
   array->AppendString(
       base::StringPrintf("TransparencyDisplayItem opacity: %f, blend_mode: %d",
                          opacity_, blend_mode_));
@@ -72,7 +72,7 @@ size_t EndTransparencyDisplayItem::PictureMemoryUsage() const {
 }
 
 void EndTransparencyDisplayItem::AsValueInto(
-    base::debug::TracedValue* array) const {
+    base::trace_event::TracedValue* array) const {
   array->AppendString("EndTransparencyDisplayItem");
 }
 

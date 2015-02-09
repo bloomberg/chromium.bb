@@ -61,7 +61,8 @@ size_t DrawingDisplayItem::PictureMemoryUsage() const {
   return SkPictureUtils::ApproximateBytesUsed(picture_.get());
 }
 
-void DrawingDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void DrawingDisplayItem::AsValueInto(
+    base::trace_event::TracedValue* array) const {
   array->BeginDictionary();
   array->SetString("name", "DrawingDisplayItem");
   array->SetString("location",

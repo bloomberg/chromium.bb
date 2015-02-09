@@ -132,7 +132,7 @@ class CC_EXPORT PictureLayerImpl
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
   void GetAllTilesForTracing(std::set<const Tile*>* tiles) const override;
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   virtual void UpdateIdealScales();
   float MaximumTilingContentsScale() const;

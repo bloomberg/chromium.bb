@@ -148,15 +148,15 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
   return "???";
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerStateMachine::AsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueInto(state.get(), gfx::FrameTime::Now());
   return state;
 }
 
-void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
+void SchedulerStateMachine::AsValueInto(base::trace_event::TracedValue* state,
                                         base::TimeTicks now) const {
   state->BeginDictionary("major_state");
   state->SetString("next_action", ActionToString(NextAction()));

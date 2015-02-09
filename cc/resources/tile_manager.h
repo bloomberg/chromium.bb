@@ -30,14 +30,7 @@ namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::ConvertableToTraceFormat;
-using ::base::trace_event::TracedValue;
 }
-}  // namespace base
 
 namespace cc {
 class PictureLayerImpl;
@@ -87,8 +80,8 @@ struct RasterTaskCompletionStats {
   size_t completed_count;
   size_t canceled_count;
 };
-scoped_refptr<base::debug::ConvertableToTraceFormat>
-    RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 
 // This class manages tiles, deciding which should get rasterized and which
 // should no longer have any memory assigned to them. Tile objects are "owned"
@@ -135,9 +128,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
                                  int source_frame_number,
                                  int flags);
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat> BasicStateAsValue()
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> BasicStateAsValue()
       const;
-  void BasicStateAsValueInto(base::debug::TracedValue* dict) const;
+  void BasicStateAsValueInto(base::trace_event::TracedValue* dict) const;
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
   }

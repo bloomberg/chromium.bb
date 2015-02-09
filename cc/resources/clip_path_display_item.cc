@@ -38,7 +38,8 @@ size_t ClipPathDisplayItem::PictureMemoryUsage() const {
   return total_size;
 }
 
-void ClipPathDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void ClipPathDisplayItem::AsValueInto(
+    base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("ClipPathDisplayItem length: %d",
                                          clip_path_.countPoints()));
 }
@@ -67,7 +68,7 @@ size_t EndClipPathDisplayItem::PictureMemoryUsage() const {
 }
 
 void EndClipPathDisplayItem::AsValueInto(
-    base::debug::TracedValue* array) const {
+    base::trace_event::TracedValue* array) const {
   array->AppendString("EndClipPathDisplayItem");
 }
 

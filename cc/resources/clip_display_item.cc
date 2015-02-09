@@ -53,7 +53,7 @@ size_t ClipDisplayItem::PictureMemoryUsage() const {
   return total_size;
 }
 
-void ClipDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void ClipDisplayItem::AsValueInto(base::trace_event::TracedValue* array) const {
   std::string value = base::StringPrintf("ClipDisplayItem rect: [%s]",
                                          clip_rect_.ToString().c_str());
   for (const SkRRect& rounded_rect : rounded_clip_rects_) {
@@ -102,7 +102,8 @@ size_t EndClipDisplayItem::PictureMemoryUsage() const {
   return 0;
 }
 
-void EndClipDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void EndClipDisplayItem::AsValueInto(
+    base::trace_event::TracedValue* array) const {
   array->AppendString("EndClipDisplayItem");
 }
 

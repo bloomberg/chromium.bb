@@ -191,10 +191,10 @@ void BitmapTileTaskWorkerPool::OnTaskSetFinished(TaskSet task_set) {
   client_->DidFinishRunningTileTasks(task_set);
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 BitmapTileTaskWorkerPool::StateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
 
   state->BeginArray("tasks_pending");
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set)

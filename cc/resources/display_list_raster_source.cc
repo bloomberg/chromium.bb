@@ -191,7 +191,7 @@ bool DisplayListRasterSource::ShouldAttemptToUseDistanceFieldText() const {
 }
 
 void DisplayListRasterSource::AsValueInto(
-    base::debug::TracedValue* array) const {
+    base::trace_event::TracedValue* array) const {
   if (display_list_.get())
     TracedValue::AppendIDRef(display_list_.get(), array);
 }

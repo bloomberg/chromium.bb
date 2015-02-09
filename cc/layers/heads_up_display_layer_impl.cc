@@ -838,7 +838,7 @@ const char* HeadsUpDisplayLayerImpl::LayerTypeAsString() const {
 }
 
 void HeadsUpDisplayLayerImpl::AsValueInto(
-    base::debug::TracedValue* dict) const {
+    base::trace_event::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
   dict->SetString("layer_name", "Heads Up Display Layer");
 }

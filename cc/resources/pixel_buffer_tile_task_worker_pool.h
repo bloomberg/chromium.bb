@@ -20,14 +20,7 @@ namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::ConvertableToTraceFormat;
-using ::base::trace_event::TracedValue;
 }
-}  // namespace base
 
 namespace cc {
 class ResourceProvider;
@@ -101,8 +94,10 @@ class CC_EXPORT PixelBufferTileTaskWorkerPool : public TileTaskWorkerPool,
   void CheckForCompletedRasterizerTasks();
 
   const char* StateName() const;
-  scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
-  void ThrottleStateAsValueInto(base::debug::TracedValue* throttle_state) const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
+      const;
+  void ThrottleStateAsValueInto(
+      base::trace_event::TracedValue* throttle_state) const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;

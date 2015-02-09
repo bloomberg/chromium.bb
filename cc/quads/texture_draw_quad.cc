@@ -91,7 +91,7 @@ const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {
   return static_cast<const TextureDrawQuad*>(quad);
 }
 
-void TextureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void TextureDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
   value->SetInteger("resource_id", resource_id);
   value->SetBoolean("premultiplied_alpha", premultiplied_alpha);
 

@@ -38,7 +38,7 @@ class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
   static const DebugBorderDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
 }  // namespace cc

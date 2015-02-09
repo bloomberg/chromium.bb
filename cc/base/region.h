@@ -18,13 +18,7 @@ class Value;
 namespace trace_event {
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015.
-namespace debug {
-using ::base::trace_event::TracedValue;
 }
-}  // namespace base
 
 namespace cc {
 class SimpleEnclosedRegion;
@@ -69,7 +63,7 @@ class CC_EXPORT Region {
 
   std::string ToString() const;
   scoped_ptr<base::Value> AsValue() const;
-  void AsValueInto(base::debug::TracedValue* array) const;
+  void AsValueInto(base::trace_event::TracedValue* array) const;
 
   class CC_EXPORT Iterator {
    public:

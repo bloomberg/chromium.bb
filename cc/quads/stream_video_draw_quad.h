@@ -39,7 +39,7 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
   static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
 }  // namespace cc

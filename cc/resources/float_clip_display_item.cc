@@ -36,7 +36,8 @@ size_t FloatClipDisplayItem::PictureMemoryUsage() const {
   return sizeof(gfx::RectF);
 }
 
-void FloatClipDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void FloatClipDisplayItem::AsValueInto(
+    base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("FloatClipDisplayItem rect: [%s]",
                                          clip_rect_.ToString().c_str()));
 }
@@ -65,7 +66,7 @@ size_t EndFloatClipDisplayItem::PictureMemoryUsage() const {
 }
 
 void EndFloatClipDisplayItem::AsValueInto(
-    base::debug::TracedValue* array) const {
+    base::trace_event::TracedValue* array) const {
   array->AppendString("EndFloatClipDisplayItem");
 }
 

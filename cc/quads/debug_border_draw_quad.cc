@@ -50,7 +50,8 @@ const DebugBorderDrawQuad* DebugBorderDrawQuad::MaterialCast(
   return static_cast<const DebugBorderDrawQuad*>(quad);
 }
 
-void DebugBorderDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void DebugBorderDrawQuad::ExtendValue(
+    base::trace_event::TracedValue* value) const {
   value->SetInteger("color", color);
   value->SetInteger("width", width);
 }

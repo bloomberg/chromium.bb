@@ -701,10 +701,10 @@ void PixelBufferTileTaskWorkerPool::CheckForCompletedRasterizerTasks() {
   completed_tasks_.clear();
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 PixelBufferTileTaskWorkerPool::StateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   state->SetInteger("completed_count", completed_raster_tasks_.size());
   state->BeginArray("pending_count");
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set)
@@ -719,7 +719,7 @@ PixelBufferTileTaskWorkerPool::StateAsValue() const {
 }
 
 void PixelBufferTileTaskWorkerPool::ThrottleStateAsValueInto(
-    base::debug::TracedValue* throttle_state) const {
+    base::trace_event::TracedValue* throttle_state) const {
   throttle_state->SetInteger("bytes_available_for_upload",
                              max_bytes_pending_upload_ - bytes_pending_upload_);
   throttle_state->SetInteger("bytes_pending_upload", bytes_pending_upload_);

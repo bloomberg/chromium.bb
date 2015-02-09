@@ -740,15 +740,15 @@ void Scheduler::ProcessScheduledActions() {
   RescheduleBeginImplFrameDeadlineIfNeeded();
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
+scoped_refptr<base::trace_event::ConvertableToTraceFormat> Scheduler::AsValue()
     const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueInto(state.get());
   return state;
 }
 
-void Scheduler::AsValueInto(base::debug::TracedValue* state) const {
+void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginDictionary("state_machine");
   state_machine_.AsValueInto(state, Now());
   state->EndDictionary();

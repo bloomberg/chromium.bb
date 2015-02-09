@@ -93,14 +93,14 @@ void TestNowSource::SetNowMicroseconds(int64_t time_in_microseconds) {
 }
 
 // TestNowSource::Tracing functions
-void TestNowSource::AsValueInto(base::debug::TracedValue* state) const {
+void TestNowSource::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("now_in_microseconds", now_.ToInternalValue());
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat> TestNowSource::AsValue()
-    const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+TestNowSource::AsValue() const {
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueInto(state.get());
   return state;
 }

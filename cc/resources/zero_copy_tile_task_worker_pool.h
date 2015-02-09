@@ -14,13 +14,7 @@ namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::ConvertableToTraceFormat;
 }
-}  // namespace base
 
 namespace cc {
 class ResourceProvider;
@@ -58,7 +52,8 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
 
  private:
   void OnTaskSetFinished(TaskSet task_set);
-  scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
+      const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;

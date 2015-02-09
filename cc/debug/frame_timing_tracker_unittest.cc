@@ -15,8 +15,8 @@ namespace {
 
 static std::string ToString(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> timingset) {
-  scoped_refptr<base::debug::TracedValue> value =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> value =
+      new base::trace_event::TracedValue();
   value->BeginArray("values");
   for (const auto& it : *timingset) {
     value->BeginDictionary();

@@ -90,7 +90,7 @@ struct FakeBeginFrameSource : public BeginFrameSourceMixIn {
 
   // BeginFrameSource
   void DidFinishFrame(size_t remaining_frames) override;
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   ~FakeBeginFrameSource() override {}
 };

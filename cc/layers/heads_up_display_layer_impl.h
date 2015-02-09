@@ -71,7 +71,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   const char* LayerTypeAsString() const override;
 
-  void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   void UpdateHudContents();
   void DrawHudContents(SkCanvas* canvas);

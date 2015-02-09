@@ -18,7 +18,7 @@ void RenderingStats::TimeDeltaList::Append(base::TimeDelta value) {
 
 void RenderingStats::TimeDeltaList::AddToTracedValue(
     const char* name,
-    base::debug::TracedValue* list_value) const {
+    base::trace_event::TracedValue* list_value) const {
   list_value->BeginArray(name);
   for (const auto& value : values) {
     list_value->AppendDouble(value.InMillisecondsF());
@@ -43,10 +43,10 @@ RenderingStats::RenderingStats()
 RenderingStats::~RenderingStats() {
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 RenderingStats::AsTraceableData() const {
-  scoped_refptr<base::debug::TracedValue> record_data =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> record_data =
+      new base::trace_event::TracedValue();
   record_data->SetInteger("frame_count", frame_count);
   record_data->SetInteger("visible_content_area", visible_content_area);
   record_data->SetInteger("approximated_visible_content_area",

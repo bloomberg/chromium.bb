@@ -113,7 +113,7 @@ scoped_ptr<LayerImpl> TiledLayerImpl::CreateLayerImpl(
   return TiledLayerImpl::Create(tree_impl, id(), synced_scroll_offset());
 }
 
-void TiledLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
+void TiledLayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   LayerImpl::AsValueInto(state);
   MathUtil::AddToTracedValue("invalidation", update_rect(), state);
 }

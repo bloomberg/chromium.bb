@@ -33,7 +33,8 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
     WhichTree NextTileIteratorTree(TreePriority tree_priority) const;
     void SkipTilesReturnedByTwin(TreePriority tree_priority);
 
-    scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
+    scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
+        const;
 
     const TilingSetRasterQueueAll* active_queue() const {
       return active_queue_.get();

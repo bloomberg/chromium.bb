@@ -290,7 +290,8 @@ std::string DelayBasedTimeSourceHighRes::TypeString() const {
   return "DelayBasedTimeSourceHighRes";
 }
 
-void DelayBasedTimeSource::AsValueInto(base::debug::TracedValue* state) const {
+void DelayBasedTimeSource::AsValueInto(
+    base::trace_event::TracedValue* state) const {
   state->SetString("type", TypeString());
   state->SetDouble("last_tick_time_us", LastTickTime().ToInternalValue());
   state->SetDouble("next_tick_time_us", NextTickTime().ToInternalValue());

@@ -255,7 +255,7 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
   return blended_filter;
 }
 
-void FilterOperation::AsValueInto(base::debug::TracedValue* value) const {
+void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("type", type_);
   switch (type_) {
     case FilterOperation::GRAYSCALE:

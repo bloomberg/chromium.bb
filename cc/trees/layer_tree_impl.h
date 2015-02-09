@@ -22,13 +22,7 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TracedValue;
 }
-}  // namespace base
 
 namespace cc {
 
@@ -120,7 +114,7 @@ class CC_EXPORT LayerTreeImpl {
   float device_scale_factor() const;
   DebugRectHistory* debug_rect_history() const;
   void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   // Other public methods
   // ---------------------------------------------------------------------------

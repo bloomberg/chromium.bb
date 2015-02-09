@@ -70,7 +70,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
 }  // namespace cc

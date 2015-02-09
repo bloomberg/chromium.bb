@@ -66,7 +66,7 @@ void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,
   *width = DebugColors::SurfaceLayerBorderWidth(layer_tree_impl());
 }
 
-void SurfaceLayerImpl::AsValueInto(base::debug::TracedValue* dict) const {
+void SurfaceLayerImpl::AsValueInto(base::trace_event::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
   dict->SetInteger("surface_id", surface_id_.id);
 }

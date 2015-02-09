@@ -36,7 +36,8 @@ size_t TransformDisplayItem::PictureMemoryUsage() const {
   return sizeof(gfx::Transform);
 }
 
-void TransformDisplayItem::AsValueInto(base::debug::TracedValue* array) const {
+void TransformDisplayItem::AsValueInto(
+    base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("TransformDisplayItem transform: [%s]",
                                          transform_.ToString().c_str()));
 }
@@ -65,7 +66,7 @@ size_t EndTransformDisplayItem::PictureMemoryUsage() const {
 }
 
 void EndTransformDisplayItem::AsValueInto(
-    base::debug::TracedValue* array) const {
+    base::trace_event::TracedValue* array) const {
   array->AppendString("EndTransformDisplayItem");
 }
 

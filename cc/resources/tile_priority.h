@@ -74,7 +74,7 @@ struct CC_EXPORT TilePriority {
     }
   }
 
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   bool operator ==(const TilePriority& other) const {
     return resolution == other.resolution &&
@@ -151,7 +151,7 @@ class GlobalStateThatImpactsTilePriority {
     return !(*this == other);
   }
 
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  void AsValueInto(base::trace_event::TracedValue* dict) const;
 };
 
 }  // namespace cc

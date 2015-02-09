@@ -48,7 +48,8 @@ const SolidColorDrawQuad* SolidColorDrawQuad::MaterialCast(
   return static_cast<const SolidColorDrawQuad*>(quad);
 }
 
-void SolidColorDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void SolidColorDrawQuad::ExtendValue(
+    base::trace_event::TracedValue* value) const {
   value->SetInteger("color", color);
   value->SetBoolean("force_anti_aliasing_off", force_anti_aliasing_off);
 }

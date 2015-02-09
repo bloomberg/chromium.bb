@@ -866,7 +866,8 @@ void PictureLayerTiling::GetAllTilesForTracing(
     tiles->insert(it->second.get());
 }
 
-void PictureLayerTiling::AsValueInto(base::debug::TracedValue* state) const {
+void PictureLayerTiling::AsValueInto(
+    base::trace_event::TracedValue* state) const {
   state->SetInteger("num_tiles", tiles_.size());
   state->SetDouble("content_scale", contents_scale_);
   MathUtil::AddToTracedValue("tiling_size", tiling_size(), state);

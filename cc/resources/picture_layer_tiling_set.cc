@@ -479,7 +479,8 @@ PictureLayerTilingSet::CoverageIterator::operator bool() const {
       region_iter_.has_rect();
 }
 
-void PictureLayerTilingSet::AsValueInto(base::debug::TracedValue* state) const {
+void PictureLayerTilingSet::AsValueInto(
+    base::trace_event::TracedValue* state) const {
   for (size_t i = 0; i < tilings_.size(); ++i) {
     state->BeginDictionary();
     tilings_[i]->AsValueInto(state);

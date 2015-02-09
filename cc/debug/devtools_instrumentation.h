@@ -96,9 +96,9 @@ struct ScopedCommitTrace {
 };
 
 struct ScopedLayerObjectTracker
-    : public base::debug::TraceScopedTrackableObject<int> {
+    : public base::trace_event::TraceScopedTrackableObject<int> {
   explicit ScopedLayerObjectTracker(int layer_id)
-      : base::debug::TraceScopedTrackableObject<int>(
+      : base::trace_event::TraceScopedTrackableObject<int>(
             internal::kCategory,
             internal::kLayerId,
             layer_id) {
@@ -142,10 +142,10 @@ inline void DidRequestMainThreadFrame(int layer_tree_host_id) {
                        layer_tree_host_id);
 }
 
-inline scoped_refptr<base::debug::ConvertableToTraceFormat>
+inline scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 BeginMainThreadFrameData(int frame_id) {
-  scoped_refptr<base::debug::TracedValue> value =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> value =
+      new base::trace_event::TracedValue();
   value->SetInteger("frameId", frame_id);
   return value;
 }
