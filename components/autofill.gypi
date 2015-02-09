@@ -150,6 +150,7 @@
         'autofill/core/browser/autofill_type.h',
         'autofill/core/browser/autofill_xml_parser.cc',
         'autofill/core/browser/autofill_xml_parser.h',
+        'autofill/core/browser/card_unmask_delegate.cc',
         'autofill/core/browser/card_unmask_delegate.h',
         'autofill/core/browser/contact_info.cc',
         'autofill/core/browser/contact_info.h',
@@ -407,15 +408,6 @@
 
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
-
-          'conditions': [
-            [ 'OS == "android"', {
-              'sources!': [
-                'autofill/content/browser/risk/fingerprint.cc',
-                'autofill/content/browser/risk/fingerprint.h',
-              ],
-            }],
-          ],
         },
 
         {

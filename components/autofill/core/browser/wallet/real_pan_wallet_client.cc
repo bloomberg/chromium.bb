@@ -55,7 +55,8 @@ void RealPanWalletClient::Prepare() {
 }
 
 void RealPanWalletClient::UnmaskCard(const CreditCard& card,
-                                     const std::string& cvc) {
+                                     const std::string& cvc,
+                                     const std::string& risk_data) {
   DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
 
   request_.reset(net::URLFetcher::Create(
@@ -65,11 +66,7 @@ void RealPanWalletClient::UnmaskCard(const CreditCard& card,
   base::DictionaryValue request_dict;
   request_dict.SetString("encrypted_cvc", "__param:cvc");
   request_dict.SetString("credit_card_token", card.server_id());
-
-  // TODO(estade): add real risk data.
-  std::string base64_risk;
-  base::Base64Encode("{}", &base64_risk);
-  request_dict.SetString("risk_data_base64", base64_risk);
+  request_dict.SetString("risk_data_base64", risk_data);
 
   std::string json_request;
   base::JSONWriter::Write(&request_dict, &json_request);
@@ -135,8 +132,8 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
     response_dict->GetString("pan", &real_pan);
 
   if (real_pan.empty()) {
-    NOTIMPLEMENTED() << "Unhandled error: " << response_code <<
-        " with data: " << data;
+    NOTIMPLEMENTED() << "Unhandled error: " << response_code
+                     << " with data: " << data;
   }
 
   delegate_->OnDidGetRealPan(real_pan);

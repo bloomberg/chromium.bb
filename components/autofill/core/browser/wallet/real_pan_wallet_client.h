@@ -52,7 +52,9 @@ class RealPanWalletClient : public net::URLFetcherDelegate,
   void Prepare();
 
   // The user has attempted to unmask a card with the given cvc.
-  void UnmaskCard(const CreditCard& card, const std::string& cvc);
+  void UnmaskCard(const CreditCard& card,
+                  const std::string& cvc,
+                  const std::string& risk_data);
 
   // Cancels and clears the current |request_|.
   void CancelRequest();

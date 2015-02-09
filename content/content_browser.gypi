@@ -1860,7 +1860,6 @@
       ],
       'sources!': [
         'browser/browser_ipc_logging.cc',
-        'browser/font_list_async.cc',
         'browser/geolocation/device_data_provider.cc',
         'browser/geolocation/empty_device_data_provider.cc',
         'browser/geolocation/wifi_data_provider_common.cc',

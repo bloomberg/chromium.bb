@@ -1133,10 +1133,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_TRUE(test_view->IsShowingOverlay());
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
-  scoped_ptr<risk::Fingerprint> fingerprint(new risk::Fingerprint());
-  fingerprint->mutable_machine_characteristics()->mutable_screen_size()->
-      set_width(1024);
-  controller()->OnDidLoadRiskFingerprintData(fingerprint.Pass());
+  controller()->OnDidLoadRiskFingerprintData("a");
 
   controller()->OnDidGetFullWallet(
       wallet::GetTestFullWalletWithRequiredActions(

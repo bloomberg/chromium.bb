@@ -301,7 +301,6 @@ source_set("browser") {
     sources -= [
       "browser_ipc_logging.cc",
       "device_sensors/data_fetcher_shared_memory_default.cc",
-      "font_list_async.cc",
       "geolocation/network_location_provider.cc",
       "geolocation/network_location_provider.h",
       "geolocation/network_location_request.cc",

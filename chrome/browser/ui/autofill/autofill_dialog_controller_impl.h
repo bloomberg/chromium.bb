@@ -262,8 +262,7 @@ class AutofillDialogControllerImpl
   // Asks risk module to asynchronously load fingerprint data. Data will be
   // returned via |OnDidLoadRiskFingerprintData()|. Exposed for testing.
   virtual void LoadRiskFingerprintData();
-  virtual void OnDidLoadRiskFingerprintData(
-      scoped_ptr<risk::Fingerprint> fingerprint);
+  virtual void OnDidLoadRiskFingerprintData(const std::string& risk_data);
 
   // Opens the given URL in a new foreground tab.
   virtual void OpenTabWithUrl(const GURL& url);

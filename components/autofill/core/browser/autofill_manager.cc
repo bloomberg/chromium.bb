@@ -709,12 +709,11 @@ void AutofillManager::OnLoadedServerPredictions(
   driver_->SendAutofillTypePredictionsToRenderer(form_structures_.get());
 }
 
-void AutofillManager::OnUnmaskResponse(const base::string16& cvc,
-                                       const base::string16& exp_month,
-                                       const base::string16& exp_year) {
-  unmasking_cvc_ = cvc;
+void AutofillManager::OnUnmaskResponse(const UnmaskResponse& response) {
+  unmasking_cvc_ = response.cvc;
   // TODO(estade): use month/year.
-  real_pan_client_.UnmaskCard(unmasking_card_, base::UTF16ToASCII(cvc));
+  real_pan_client_.UnmaskCard(unmasking_card_, base::UTF16ToASCII(response.cvc),
+                              response.risk_data);
 }
 
 void AutofillManager::OnUnmaskPromptClosed() {

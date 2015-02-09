@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -32,6 +33,8 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   if (card_unmask_view_)
     card_unmask_view_->ControllerGone();
 
+  pending_response_ = CardUnmaskDelegate::UnmaskResponse();
+  LoadRiskFingerprint();
   card_ = card;
   delegate_ = delegate;
   card_unmask_view_ = CardUnmaskPromptView::CreateAndShow(this);
@@ -52,7 +55,13 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
     const base::string16& exp_month,
     const base::string16& exp_year) {
   card_unmask_view_->DisableAndWaitForVerification();
-  delegate_->OnUnmaskResponse(cvc, exp_month, exp_year);
+
+  DCHECK(!cvc.empty());
+  pending_response_.cvc = cvc;
+  pending_response_.exp_month = exp_month;
+  pending_response_.exp_year = exp_year;
+  if (!pending_response_.risk_data.empty())
+    delegate_->OnUnmaskResponse(pending_response_);
 }
 
 content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
@@ -101,6 +110,20 @@ bool CardUnmaskPromptControllerImpl::InputTextIsValid(
   return trimmed_text.size() == input_size &&
          base::ContainsOnlyChars(trimmed_text,
                                  base::ASCIIToUTF16("0123456789"));
+}
+
+void CardUnmaskPromptControllerImpl::LoadRiskFingerprint() {
+  LoadRiskData(
+      0, web_contents_,
+      base::Bind(&CardUnmaskPromptControllerImpl::OnDidLoadRiskFingerprint,
+                 weak_pointer_factory_.GetWeakPtr()));
+}
+
+void CardUnmaskPromptControllerImpl::OnDidLoadRiskFingerprint(
+    const std::string& risk_data) {
+  pending_response_.risk_data = risk_data;
+  if (!pending_response_.cvc.empty())
+    delegate_->OnUnmaskResponse(pending_response_);
 }
 
 }  // namespace autofill

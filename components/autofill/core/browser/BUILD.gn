@@ -83,6 +83,8 @@ static_library("browser") {
     "autofill_type.h",
     "autofill_xml_parser.cc",
     "autofill_xml_parser.h",
+    "card_unmask_delegate.cc",
+    "card_unmask_delegate.h",
     "contact_info.cc",
     "contact_info.h",
     "credit_card.cc",

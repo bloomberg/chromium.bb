@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
+#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
 
 namespace autofill {
 
-class CardUnmaskDelegate;
 class CardUnmaskPromptView;
 
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
@@ -39,10 +40,15 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool InputTextIsValid(const base::string16& input_text) const override;
 
  private:
+  void LoadRiskFingerprint();
+  void OnDidLoadRiskFingerprint(const std::string& risk_data);
+
   content::WebContents* web_contents_;
   CreditCard card_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;
   CardUnmaskPromptView* card_unmask_view_;
+
+  CardUnmaskDelegate::UnmaskResponse pending_response_;
 
   base::WeakPtrFactory<CardUnmaskPromptControllerImpl> weak_pointer_factory_;
 

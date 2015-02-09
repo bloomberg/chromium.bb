@@ -184,6 +184,8 @@
       'browser/autofill/android/personal_data_manager_android.h',
       'browser/autofill/personal_data_manager_factory.cc',
       'browser/autofill/personal_data_manager_factory.h',
+      'browser/autofill/risk_util.cc',
+      'browser/autofill/risk_util.h',
       'browser/autofill/validation_rules_storage_factory.cc',
       'browser/autofill/validation_rules_storage_factory.h',
       'browser/bitmap_fetcher/bitmap_fetcher.cc',

@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/case_conversion.h"
@@ -22,8 +21,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,15 +36,11 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/content/browser/risk/fingerprint.h"
-#include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/content/browser/wallet/form_field_error.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/gaia_account.h"
@@ -64,7 +59,6 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -76,8 +70,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/native_app_window.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"
 #include "grit/platform_locale_settings.h"
@@ -90,7 +82,6 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_problem.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
-#include "ui/base/base_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -247,21 +238,6 @@ void GetBillingInfoFromOutputs(const FieldValueMap& output,
   }
 }
 
-// Returns the containing window for the given |web_contents|. The containing
-// window might be a browser window for a Chrome tab, or it might be an app
-// window for a platform app.
-ui::BaseWindow* GetBaseWindowForWebContents(
-    content::WebContents* web_contents) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser)
-    return browser->window();
-
-  gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
-  extensions::AppWindow* app_window =
-      AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
-          native_window);
-  return app_window->GetBaseWindow();
-}
 
 // Returns a string descriptor for a DialogSection, for use with prefs (do not
 // change these values).
@@ -2874,32 +2850,16 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
                                       &obfuscated_gaia_id);
   DCHECK(success);
 
-  gfx::Rect window_bounds;
-  window_bounds = GetBaseWindowForWebContents(web_contents())->GetBounds();
-
-  PrefService* user_prefs = profile_->GetPrefs();
-  std::string charset = user_prefs->GetString(::prefs::kDefaultCharset);
-  std::string accept_languages =
-      user_prefs->GetString(::prefs::kAcceptLanguages);
-  base::Time install_time = base::Time::FromTimeT(
-      g_browser_process->metrics_service()->GetInstallDate());
-
-  risk::GetFingerprint(
-      obfuscated_gaia_id, window_bounds, web_contents(),
-      chrome::VersionInfo().Version(), charset, accept_languages, install_time,
-      g_browser_process->GetApplicationLocale(), GetUserAgent(),
+  LoadRiskData(
+      obfuscated_gaia_id, web_contents(),
       base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
-    scoped_ptr<risk::Fingerprint> fingerprint) {
+    const std::string& risk_data) {
   DCHECK(AreLegalDocumentsCurrent());
-
-  std::string proto_data;
-  fingerprint->SerializeToString(&proto_data);
-  base::Base64Encode(proto_data, &risk_data_);
-
+  risk_data_ = risk_data;
   SubmitWithWallet();
 }
 
