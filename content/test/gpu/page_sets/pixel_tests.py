@@ -26,12 +26,12 @@ class PixelTestsPageSet(page_set_module.PageSet):
   def __init__(self):
     super(PixelTestsPageSet, self).__init__(
       user_agent_type='desktop')
-    self.AddUserStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_canvas2d.html',
-      name='Pixel.Canvas2DRedBox',
-      test_rect=[0, 0, 300, 300],
-      revision=4,
-      page_set=self))
+    # self.AddUserStory(PixelTestsPage(
+    #   url='file://../../data/gpu/pixel_canvas2d.html',
+    #   name='Pixel.Canvas2DRedBox',
+    #   test_rect=[0, 0, 300, 300],
+    #   revision=4,
+    #   page_set=self))
 
     self.AddUserStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_css3d.html',
