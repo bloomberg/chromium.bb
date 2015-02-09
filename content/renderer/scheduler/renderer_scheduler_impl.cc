@@ -338,15 +338,15 @@ const char* RendererSchedulerImpl::PolicyToString(Policy policy) {
   }
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   incoming_signals_lock_.AssertAcquired();
 
   if (optional_now.is_null())
     optional_now = Now();
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
 
   state->SetString("current_policy", PolicyToString(current_policy_));
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());

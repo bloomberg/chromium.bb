@@ -35,7 +35,7 @@ bool TracingControllerAndroid::StartTracing(JNIEnv* env,
                                             jstring jtraceoptions) {
   std::string categories =
       base::android::ConvertJavaStringToUTF8(env, jcategories);
-  base::debug::TraceOptions trace_options;
+  base::trace_event::TraceOptions trace_options;
   trace_options.SetFromString(
       base::android::ConvertJavaStringToUTF8(env, jtraceoptions));
 
@@ -43,7 +43,7 @@ bool TracingControllerAndroid::StartTracing(JNIEnv* env,
   LOG(WARNING) << "Logging performance trace to file";
 
   return TracingController::GetInstance()->EnableRecording(
-      base::debug::CategoryFilter(categories),
+      base::trace_event::CategoryFilter(categories),
       trace_options,
       TracingController::EnableRecordingDoneCallback());
 }
@@ -105,8 +105,10 @@ void TracingControllerAndroid::OnKnownCategoriesReceived(
 }
 
 static jstring GetDefaultCategories(JNIEnv* env, jobject obj) {
-  return base::android::ConvertUTF8ToJavaString(env,
-      base::debug::CategoryFilter::kDefaultCategoryFilterString).Release();
+  return base::android::ConvertUTF8ToJavaString(
+             env,
+             base::trace_event::CategoryFilter::kDefaultCategoryFilterString)
+      .Release();
 }
 
 bool RegisterTracingControllerAndroid(JNIEnv* env) {

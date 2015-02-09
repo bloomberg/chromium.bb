@@ -14,12 +14,6 @@ class TaskQueue;
 namespace trace_event {
 class TracedValue;
 }  // namespace trace_event
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TracedValue;
-}  // namespace debug
 }  // namespace base
 
 namespace content {
@@ -41,7 +35,7 @@ class TaskQueueSelector {
   virtual bool SelectWorkQueueToService(size_t* out_queue_index) = 0;
 
   // Serialize the selector state for tracing.
-  virtual void AsValueInto(base::debug::TracedValue* state) const = 0;
+  virtual void AsValueInto(base::trace_event::TracedValue* state) const = 0;
 };
 
 }  // namespace content

@@ -6,9 +6,9 @@
 #include "content/renderer/devtools/v8_sampling_profiler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::debug::CategoryFilter;
-using base::debug::TraceLog;
-using base::debug::TraceOptions;
+using base::trace_event::CategoryFilter;
+using base::trace_event::TraceLog;
+using base::trace_event::TraceOptions;
 
 namespace content {
 

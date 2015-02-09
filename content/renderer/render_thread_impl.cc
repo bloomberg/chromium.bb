@@ -453,7 +453,7 @@ RenderThreadImpl::RenderThreadImpl(
 void RenderThreadImpl::Init() {
   TRACE_EVENT_BEGIN_ETW("RenderThreadImpl::Init", 0, "");
 
-  base::debug::TraceLog::GetInstance()->SetThreadSortIndex(
+  base::trace_event::TraceLog::GetInstance()->SetThreadSortIndex(
       base::PlatformThread::CurrentId(),
       kTraceEventRendererMainThreadSortIndex);
 

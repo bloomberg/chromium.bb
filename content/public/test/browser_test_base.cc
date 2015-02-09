@@ -283,12 +283,12 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTracing)) {
-    base::debug::CategoryFilter category_filter(
+    base::trace_event::CategoryFilter category_filter(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kEnableTracing));
     TracingController::GetInstance()->EnableRecording(
         category_filter,
-        base::debug::TraceOptions(base::debug::RECORD_CONTINUOUSLY),
+        base::trace_event::TraceOptions(base::trace_event::RECORD_CONTINUOUSLY),
         TracingController::EnableRecordingDoneCallback());
   }
 

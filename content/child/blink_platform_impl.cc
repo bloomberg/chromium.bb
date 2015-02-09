@@ -140,7 +140,7 @@ class MemoryUsageCache {
 };
 
 class ConvertableToTraceFormatWrapper
-    : public base::debug::ConvertableToTraceFormat {
+    : public base::trace_event::ConvertableToTraceFormat {
  public:
   explicit ConvertableToTraceFormatWrapper(
       const blink::WebConvertableToTraceFormat& convertable)
@@ -596,7 +596,7 @@ long* BlinkPlatformImpl::getTraceSamplingState(
 
 static_assert(
     sizeof(blink::Platform::TraceEventHandle) ==
-        sizeof(base::debug::TraceEventHandle),
+        sizeof(base::trace_event::TraceEventHandle),
     "TraceEventHandle types must be same size");
 
 blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
@@ -612,7 +612,7 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
     unsigned char flags) {
   base::TimeTicks timestamp_tt = base::TimeTicks::FromInternalValue(
       static_cast<int64>(timestamp * base::Time::kMicrosecondsPerSecond));
-  base::debug::TraceEventHandle handle =
+  base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
           phase, category_group_enabled, name, id,
           base::PlatformThread::CurrentId(),
@@ -635,7 +635,8 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
     const unsigned long long* arg_values,
     const blink::WebConvertableToTraceFormat* convertable_values,
     unsigned char flags) {
-  scoped_refptr<base::debug::ConvertableToTraceFormat> convertable_wrappers[2];
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+      convertable_wrappers[2];
   if (convertable_values) {
     size_t size = std::min(static_cast<size_t>(num_args),
                            arraysize(convertable_wrappers));
@@ -648,7 +649,7 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
   }
   base::TimeTicks timestamp_tt = base::TimeTicks::FromInternalValue(
       static_cast<int64>(timestamp * base::Time::kMicrosecondsPerSecond));
-  base::debug::TraceEventHandle handle =
+  base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(phase,
                                       category_group_enabled,
                                       name,
@@ -670,7 +671,7 @@ void BlinkPlatformImpl::updateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,
     TraceEventHandle handle) {
-  base::debug::TraceEventHandle traceEventHandle;
+  base::trace_event::TraceEventHandle traceEventHandle;
   memcpy(&traceEventHandle, &handle, sizeof(handle));
   TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(
       category_group_enabled, name, traceEventHandle);

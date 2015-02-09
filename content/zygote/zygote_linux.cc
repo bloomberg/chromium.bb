@@ -402,7 +402,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     IPC::Channel::SetGlobalPid(real_pid);
     // Force the real PID so chrome event data have a PID that corresponds
     // to system trace event data.
-    base::debug::TraceLog::GetInstance()->SetProcessID(
+    base::trace_event::TraceLog::GetInstance()->SetProcessID(
         static_cast<int>(real_pid));
 #endif
     return 0;

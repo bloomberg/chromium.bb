@@ -11,10 +11,10 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 
-using base::debug::CategoryFilter;
-using base::debug::TraceOptions;
-using base::debug::RECORD_CONTINUOUSLY;
-using base::debug::RECORD_UNTIL_FULL;
+using base::trace_event::CategoryFilter;
+using base::trace_event::TraceOptions;
+using base::trace_event::RECORD_CONTINUOUSLY;
+using base::trace_event::RECORD_UNTIL_FULL;
 
 namespace content {
 

@@ -111,10 +111,10 @@ const int64 kHandleMoreWorkPeriodBusyMs = 1;
 // Prevents idle work from being starved.
 const int64 kMaxTimeSinceIdleMs = 10;
 
-class DevToolsChannelData : public base::debug::ConvertableToTraceFormat {
+class DevToolsChannelData : public base::trace_event::ConvertableToTraceFormat {
  public:
-  static scoped_refptr<base::debug::ConvertableToTraceFormat> CreateForChannel(
-      GpuChannel* channel);
+  static scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+  CreateForChannel(GpuChannel* channel);
 
   void AppendAsTraceFormat(std::string* out) const override {
     std::string tmp;
@@ -129,7 +129,7 @@ class DevToolsChannelData : public base::debug::ConvertableToTraceFormat {
   DISALLOW_COPY_AND_ASSIGN(DevToolsChannelData);
 };
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue);
   res->SetInteger("renderer_pid", channel->renderer_pid());

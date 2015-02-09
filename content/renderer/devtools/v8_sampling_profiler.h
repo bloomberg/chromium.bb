@@ -14,7 +14,7 @@ namespace content {
 // The class monitors enablement of V8 CPU profiler and
 // spawns a sampling thread when needed.
 class CONTENT_EXPORT V8SamplingProfiler final
-    : public base::debug::TraceLog::EnabledStateObserver {
+    : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
   V8SamplingProfiler();
   ~V8SamplingProfiler();

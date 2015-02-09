@@ -30,8 +30,8 @@ BrowserShutdownProfileDumper::~BrowserShutdownProfileDumper() {
 }
 
 static float GetTraceBufferPercentFull() {
-  base::debug::TraceLogStatus status =
-      base::debug::TraceLog::GetInstance()->GetStatus();
+  base::trace_event::TraceLogStatus status =
+      base::trace_event::TraceLog::GetInstance()->GetStatus();
   return 100 * static_cast<float>(static_cast<double>(status.event_count) /
                                   status.event_capacity);
 }
@@ -72,8 +72,8 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc() {
 
 void BrowserShutdownProfileDumper::EndTraceAndFlush(
     base::WaitableEvent* flush_complete_event) {
-  base::debug::TraceLog::GetInstance()->SetDisabled();
-  base::debug::TraceLog::GetInstance()->Flush(
+  base::trace_event::TraceLog::GetInstance()->SetDisabled();
+  base::trace_event::TraceLog::GetInstance()->Flush(
       base::Bind(&BrowserShutdownProfileDumper::WriteTraceDataCollected,
                  base::Unretained(this),
                  base::Unretained(flush_complete_event)));

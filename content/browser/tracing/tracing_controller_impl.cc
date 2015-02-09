@@ -24,9 +24,9 @@
 #include "content/browser/tracing/etw_system_event_consumer_win.h"
 #endif
 
-using base::debug::TraceLog;
-using base::debug::TraceOptions;
-using base::debug::CategoryFilter;
+using base::trace_event::TraceLog;
+using base::trace_event::TraceOptions;
+using base::trace_event::CategoryFilter;
 
 namespace content {
 
@@ -264,7 +264,7 @@ bool TracingControllerImpl::EnableRecording(
       base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                  base::Unretained(this),
                  category_filter,
-                 base::debug::TraceLog::RECORDING_MODE,
+                 base::trace_event::TraceLog::RECORDING_MODE,
                  trace_options,
                  on_enable_recording_done_callback));
   return true;
@@ -383,7 +383,7 @@ bool TracingControllerImpl::EnableMonitoring(
       base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                  base::Unretained(this),
                  category_filter,
-                 base::debug::TraceLog::MONITORING_MODE,
+                 base::trace_event::TraceLog::MONITORING_MODE,
                  trace_options,
                  on_enable_monitoring_done_callback));
   return true;
@@ -515,7 +515,8 @@ bool TracingControllerImpl::GetTraceBufferUsage(
   maximum_trace_buffer_usage_ = 0;
   approximate_event_count_ = 0;
 
-  base::debug::TraceLogStatus status = TraceLog::GetInstance()->GetStatus();
+  base::trace_event::TraceLogStatus status =
+      TraceLog::GetInstance()->GetStatus();
   // Call OnTraceLogStatusReply unconditionally for the browser process.
   // This will result in immediate execution of the callback if there are no
   // child processes.
@@ -643,7 +644,7 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
           base::Bind(&TracingControllerImpl::OnTraceLogStatusReply,
                      base::Unretained(this),
                      make_scoped_refptr(trace_message_filter),
-                     base::debug::TraceLogStatus()));
+                     base::trace_event::TraceLogStatus()));
     }
   }
 
@@ -820,7 +821,7 @@ void TracingControllerImpl::OnLocalMonitoringTraceDataCollected(
 
 void TracingControllerImpl::OnTraceLogStatusReply(
     TraceMessageFilter* trace_message_filter,
-    const base::debug::TraceLogStatus& status) {
+    const base::trace_event::TraceLogStatus& status) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

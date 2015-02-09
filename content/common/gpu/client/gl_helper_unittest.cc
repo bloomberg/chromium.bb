@@ -76,11 +76,11 @@ class GLHelperTest : public testing::Test {
   }
 
   void StartTracing(const std::string& filter) {
-    base::debug::TraceLog::GetInstance()->SetEnabled(
-        base::debug::CategoryFilter(filter),
-        base::debug::TraceLog::RECORDING_MODE,
-        base::debug::TraceOptions(
-            base::debug::RECORD_UNTIL_FULL));
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        base::trace_event::CategoryFilter(filter),
+        base::trace_event::TraceLog::RECORDING_MODE,
+        base::trace_event::TraceOptions(
+            base::trace_event::RECORD_UNTIL_FULL));
   }
 
   static void TraceDataCB(
@@ -101,9 +101,9 @@ class GLHelperTest : public testing::Test {
   // of event name->counts.
   void EndTracing(std::map<std::string, int>* event_counts) {
     std::string json_data = "[";
-    base::debug::TraceLog::GetInstance()->SetDisabled();
+    base::trace_event::TraceLog::GetInstance()->SetDisabled();
     base::RunLoop run_loop;
-    base::debug::TraceLog::GetInstance()->Flush(
+    base::trace_event::TraceLog::GetInstance()->Flush(
         base::Bind(&GLHelperTest::TraceDataCB,
                    run_loop.QuitClosure(),
                    base::Unretained(&json_data)));

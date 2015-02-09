@@ -91,8 +91,9 @@ Response TracingHandler::Start(DevToolsCommandId command_id,
     return Response::InternalError("Tracing is already started");
 
   is_recording_ = true;
-  base::debug::TraceOptions options = TraceOptionsFromString(options_str);
-  base::debug::CategoryFilter filter(categories ? *categories : std::string());
+  base::trace_event::TraceOptions options = TraceOptionsFromString(options_str);
+  base::trace_event::CategoryFilter filter(categories ? *categories
+                                                      : std::string());
   if (buffer_usage_reporting_interval)
     SetupTimer(*buffer_usage_reporting_interval);
 
@@ -157,9 +158,9 @@ void TracingHandler::OnCategoriesReceived(
       GetCategoriesResponse::Create()->set_categories(categories));
 }
 
-base::debug::TraceOptions TracingHandler::TraceOptionsFromString(
+base::trace_event::TraceOptions TracingHandler::TraceOptionsFromString(
     const std::string* options) {
-  base::debug::TraceOptions ret;
+  base::trace_event::TraceOptions ret;
   if (!options)
     return ret;
 
@@ -169,11 +170,11 @@ base::debug::TraceOptions TracingHandler::TraceOptionsFromString(
   base::SplitString(*options, ',', &split);
   for (iter = split.begin(); iter != split.end(); ++iter) {
     if (*iter == kRecordUntilFull) {
-      ret.record_mode = base::debug::RECORD_UNTIL_FULL;
+      ret.record_mode = base::trace_event::RECORD_UNTIL_FULL;
     } else if (*iter == kRecordContinuously) {
-      ret.record_mode = base::debug::RECORD_CONTINUOUSLY;
+      ret.record_mode = base::trace_event::RECORD_CONTINUOUSLY;
     } else if (*iter == kRecordAsMuchAsPossible) {
-      ret.record_mode = base::debug::RECORD_AS_MUCH_AS_POSSIBLE;
+      ret.record_mode = base::trace_event::RECORD_AS_MUCH_AS_POSSIBLE;
     } else if (*iter == kEnableSampling) {
       ret.enable_sampling = true;
     }

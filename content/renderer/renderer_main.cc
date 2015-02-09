@@ -96,8 +96,8 @@ class RendererMessageLoopObserver : public base::MessageLoop::TaskObserver {
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
-  base::debug::TraceLog::GetInstance()->SetProcessName("Renderer");
-  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+  base::trace_event::TraceLog::GetInstance()->SetProcessName("Renderer");
+  base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
   const base::CommandLine& parsed_command_line = parameters.command_line;

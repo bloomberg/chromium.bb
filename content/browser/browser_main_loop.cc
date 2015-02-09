@@ -541,8 +541,9 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
   {
-    system_stats_monitor_.reset(new base::debug::TraceEventSystemStatsMonitor(
-        base::ThreadTaskRunnerHandle::Get()));
+    system_stats_monitor_.reset(
+        new base::trace_event::TraceEventSystemStatsMonitor(
+            base::ThreadTaskRunnerHandle::Get()));
   }
 #endif  // !defined(OS_IOS)
 
@@ -585,10 +586,9 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
-  trace_memory_controller_.reset(new base::debug::TraceMemoryController(
+  trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
       base::MessageLoop::current()->message_loop_proxy(),
-      ::HeapProfilerWithPseudoStackStart,
-      ::HeapProfilerStop,
+      ::HeapProfilerWithPseudoStackStart, ::HeapProfilerStop,
       ::GetHeapProfile));
 #endif
 }

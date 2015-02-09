@@ -111,8 +111,8 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 
   base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrPPAPIMain");
-  base::debug::TraceLog::GetInstance()->SetProcessName("PPAPI Process");
-  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+  base::trace_event::TraceLog::GetInstance()->SetProcessName("PPAPI Process");
+  base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventPpapiProcessSortIndex);
 
 #if defined(OS_LINUX) && defined(USE_NSS)

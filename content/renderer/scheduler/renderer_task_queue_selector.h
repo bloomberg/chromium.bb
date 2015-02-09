@@ -55,7 +55,7 @@ class CONTENT_EXPORT RendererTaskQueueSelector
   void RegisterWorkQueues(
       const std::vector<const base::TaskQueue*>& work_queues) override;
   bool SelectWorkQueueToService(size_t* out_queue_index) override;
-  void AsValueInto(base::debug::TracedValue* state) const override;
+  void AsValueInto(base::trace_event::TracedValue* state) const override;
 
  private:
   // Returns true if queueA contains an older task than queueB.

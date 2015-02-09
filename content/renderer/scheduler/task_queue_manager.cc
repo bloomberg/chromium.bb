@@ -56,7 +56,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 
   void set_name(const char* name) { name_ = name; }
 
-  void AsValueInto(base::debug::TracedValue* state) const;
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
   ~TaskQueue() override;
@@ -71,9 +71,9 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 
   void TraceWorkQueueSize() const;
   static void QueueAsValueInto(const base::TaskQueue& queue,
-                               base::debug::TracedValue* state);
+                               base::trace_event::TracedValue* state);
   static void TaskAsValueInto(const base::PendingTask& task,
-                              base::debug::TracedValue* state);
+                              base::trace_event::TracedValue* state);
 
   // This lock protects all members except the work queue.
   mutable base::Lock lock_;
@@ -224,7 +224,7 @@ void TaskQueue::PumpQueue() {
   PumpQueueLocked();
 }
 
-void TaskQueue::AsValueInto(base::debug::TracedValue* state) const {
+void TaskQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   base::AutoLock lock(lock_);
   state->BeginDictionary();
   if (name_)
@@ -241,7 +241,7 @@ void TaskQueue::AsValueInto(base::debug::TracedValue* state) const {
 
 // static
 void TaskQueue::QueueAsValueInto(const base::TaskQueue& queue,
-                                 base::debug::TracedValue* state) {
+                                 base::trace_event::TracedValue* state) {
   base::TaskQueue queue_copy(queue);
   while (!queue_copy.empty()) {
     TaskAsValueInto(queue_copy.front(), state);
@@ -251,7 +251,7 @@ void TaskQueue::QueueAsValueInto(const base::TaskQueue& queue,
 
 // static
 void TaskQueue::TaskAsValueInto(const base::PendingTask& task,
-                                base::debug::TracedValue* state) {
+                                base::trace_event::TracedValue* state) {
   state->BeginDictionary();
   state->SetString("posted_from", task.posted_from.ToString());
   state->SetInteger("sequence_num", task.sequence_num);
@@ -452,12 +452,12 @@ base::TimeTicks TaskQueueManager::Now() const {
   return UNLIKELY(time_source_) ? time_source_->Now() : base::TimeTicks::Now();
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 TaskQueueManager::AsValueWithSelectorResult(bool should_run,
                                             size_t selected_queue) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   state->BeginArray("queues");
   for (auto& queue : queues_)
     queue->AsValueInto(state.get());

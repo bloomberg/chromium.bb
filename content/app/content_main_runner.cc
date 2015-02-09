@@ -656,13 +656,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being
     // ignored.
     if (command_line.HasSwitch(switches::kTraceStartup)) {
-      base::debug::CategoryFilter category_filter(
+      base::trace_event::CategoryFilter category_filter(
           command_line.GetSwitchValueASCII(switches::kTraceStartup));
-      base::debug::TraceLog::GetInstance()->SetEnabled(
+      base::trace_event::TraceLog::GetInstance()->SetEnabled(
           category_filter,
-          base::debug::TraceLog::RECORDING_MODE,
-          base::debug::TraceOptions(
-              base::debug::RECORD_UNTIL_FULL));
+          base::trace_event::TraceLog::RECORDING_MODE,
+          base::trace_event::TraceOptions(
+              base::trace_event::RECORD_UNTIL_FULL));
     }
 #if !defined(OS_ANDROID)
     // Android tracing started at the beginning of the method.

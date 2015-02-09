@@ -28,19 +28,20 @@ class TracingControllerImpl : public TracingController {
 
   // TracingController implementation.
   bool GetCategories(const GetCategoriesDoneCallback& callback) override;
-  bool EnableRecording(const base::debug::CategoryFilter& category_filter,
-                       const base::debug::TraceOptions& trace_options,
+  bool EnableRecording(const base::trace_event::CategoryFilter& category_filter,
+                       const base::trace_event::TraceOptions& trace_options,
                        const EnableRecordingDoneCallback& callback) override;
   bool DisableRecording(const scoped_refptr<TraceDataSink>& sink) override;
-  bool EnableMonitoring(const base::debug::CategoryFilter& category_filter,
-                        const base::debug::TraceOptions& trace_options,
-                        const EnableMonitoringDoneCallback& callback) override;
+  bool EnableMonitoring(
+      const base::trace_event::CategoryFilter& category_filter,
+      const base::trace_event::TraceOptions& trace_options,
+      const EnableMonitoringDoneCallback& callback) override;
   bool DisableMonitoring(
       const DisableMonitoringDoneCallback& callback) override;
   void GetMonitoringStatus(
       bool* out_enabled,
-      base::debug::CategoryFilter* out_category_filter,
-      base::debug::TraceOptions* out_trace_options) override;
+      base::trace_event::CategoryFilter* out_category_filter,
+      base::trace_event::TraceOptions* out_trace_options) override;
   bool CaptureMonitoringSnapshot(
       const scoped_refptr<TraceDataSink>& sink) override;
   bool GetTraceBufferUsage(
@@ -117,23 +118,24 @@ class TracingControllerImpl : public TracingController {
       TraceMessageFilter* trace_message_filter);
 
   void OnTraceLogStatusReply(TraceMessageFilter* trace_message_filter,
-                             const base::debug::TraceLogStatus& status);
+                             const base::trace_event::TraceLogStatus& status);
 
   void OnWatchEventMatched();
 
   void SetEnabledOnFileThread(
-      const base::debug::CategoryFilter& category_filter,
+      const base::trace_event::CategoryFilter& category_filter,
       int mode,
-      const base::debug::TraceOptions& trace_options,
+      const base::trace_event::TraceOptions& trace_options,
       const base::Closure& callback);
   void SetDisabledOnFileThread(const base::Closure& callback);
-  void OnEnableRecordingDone(const base::debug::CategoryFilter& category_filter,
-                             const base::debug::TraceOptions& trace_options,
-                             const EnableRecordingDoneCallback& callback);
+  void OnEnableRecordingDone(
+      const base::trace_event::CategoryFilter& category_filter,
+      const base::trace_event::TraceOptions& trace_options,
+      const EnableRecordingDoneCallback& callback);
   void OnDisableRecordingDone();
   void OnEnableMonitoringDone(
-      const base::debug::CategoryFilter& category_filter,
-      const base::debug::TraceOptions& trace_options,
+      const base::trace_event::CategoryFilter& category_filter,
+      const base::trace_event::TraceOptions& trace_options,
       const EnableMonitoringDoneCallback& callback);
   void OnDisableMonitoringDone(const DisableMonitoringDoneCallback& callback);
 
@@ -158,7 +160,7 @@ class TracingControllerImpl : public TracingController {
 #endif
   bool is_recording_;
   bool is_monitoring_;
-  base::debug::TraceOptions trace_options_;
+  base::trace_event::TraceOptions trace_options_;
 
   GetCategoriesDoneCallback pending_get_categories_done_callback_;
   GetTraceBufferUsageCallback pending_trace_buffer_usage_callback_;

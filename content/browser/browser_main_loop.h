@@ -27,13 +27,6 @@ namespace trace_event {
 class TraceMemoryController;
 class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::TraceEventSystemStatsMonitor;
-using ::base::trace_event::TraceMemoryController;
-}  // namespace debug
 }  // namespace base
 
 namespace media {
@@ -219,8 +212,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<BrowserProcessSubThread> io_thread_;
   scoped_ptr<base::Thread> indexed_db_thread_;
   scoped_ptr<MemoryObserver> memory_observer_;
-  scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
-  scoped_ptr<base::debug::TraceEventSystemStatsMonitor> system_stats_monitor_;
+  scoped_ptr<base::trace_event::TraceMemoryController> trace_memory_controller_;
+  scoped_ptr<base::trace_event::TraceEventSystemStatsMonitor>
+      system_stats_monitor_;
 
   bool is_tracing_startup_;
   base::FilePath startup_trace_file_;

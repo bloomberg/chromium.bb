@@ -153,7 +153,7 @@ const char* RendererTaskQueueSelector::PriorityToString(
 }
 
 void RendererTaskQueueSelector::AsValueInto(
-    base::debug::TracedValue* state) const {
+    base::trace_event::TracedValue* state) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   state->BeginDictionary("priorities");
   for (QueuePriority priority = FIRST_QUEUE_PRIORITY;

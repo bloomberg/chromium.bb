@@ -382,11 +382,9 @@ void ChildThreadImpl::Init(const Options& options) {
 #endif
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
-  trace_memory_controller_.reset(new base::debug::TraceMemoryController(
-      message_loop_->message_loop_proxy(),
-      ::HeapProfilerWithPseudoStackStart,
-      ::HeapProfilerStop,
-      ::GetHeapProfile));
+  trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
+      message_loop_->message_loop_proxy(), ::HeapProfilerWithPseudoStackStart,
+      ::HeapProfilerStop, ::GetHeapProfile));
 #endif
 
   shared_bitmap_manager_.reset(

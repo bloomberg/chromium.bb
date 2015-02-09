@@ -13,8 +13,8 @@ namespace content {
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
-  base::debug::TraceLog::GetInstance()->SetProcessName("Browser");
-  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+  base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");
+  base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
   scoped_ptr<BrowserMainRunner> main_runner(BrowserMainRunner::Create());

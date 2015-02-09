@@ -40,7 +40,7 @@ class SelectorForTest : public TaskQueueSelector {
     return work_queues_;
   }
 
-  void AsValueInto(base::debug::TracedValue* state) const override {
+  void AsValueInto(base::trace_event::TracedValue* state) const override {
   }
 
  private:

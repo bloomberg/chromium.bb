@@ -2639,7 +2639,7 @@ void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
   // Ignore all but top level navigations.
   if (!frame->parent()) {
     base::string16 title16 = title;
-    base::debug::TraceLog::GetInstance()->UpdateProcessLabel(
+    base::trace_event::TraceLog::GetInstance()->UpdateProcessLabel(
         routing_id_, base::UTF16ToUTF8(title16));
 
     base::string16 shortened_title = title16.substr(0, kMaxTitleChars);

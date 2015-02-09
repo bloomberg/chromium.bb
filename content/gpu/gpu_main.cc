@@ -104,8 +104,8 @@ bool GpuProcessLogMessageHandler(int severity,
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
   TRACE_EVENT0("gpu", "GpuMain");
-  base::debug::TraceLog::GetInstance()->SetProcessName("GPU Process");
-  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+  base::trace_event::TraceLog::GetInstance()->SetProcessName("GPU Process");
+  base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventGpuProcessSortIndex);
 
   const base::CommandLine& command_line = parameters.command_line;

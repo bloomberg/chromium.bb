@@ -20,14 +20,7 @@ namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
-
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015
-namespace debug {
-using ::base::trace_event::ConvertableToTraceFormat;
-using ::base::trace_event::TracedValue;
 }
-}  // namespace base
 
 namespace cc {
 class TestNowSource;
@@ -141,7 +134,7 @@ class CONTENT_EXPORT TaskQueueManager {
 
   base::TimeTicks Now() const;
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat>
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run, size_t selected_queue) const;
 
   std::vector<scoped_refptr<internal::TaskQueue>> queues_;

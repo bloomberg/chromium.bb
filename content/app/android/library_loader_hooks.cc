@@ -83,19 +83,19 @@ bool LibraryLoaded(JNIEnv* env, jclass clazz) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kTraceStartup)) {
-    base::debug::CategoryFilter category_filter(
+    base::trace_event::CategoryFilter category_filter(
         command_line->GetSwitchValueASCII(switches::kTraceStartup));
-    base::debug::TraceLog::GetInstance()->SetEnabled(
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
         category_filter,
-        base::debug::TraceLog::RECORDING_MODE,
-        base::debug::TraceOptions());
+        base::trace_event::TraceLog::RECORDING_MODE,
+        base::trace_event::TraceOptions());
   }
 
   // Android's main browser loop is custom so we set the browser
   // name here as early as possible.
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
-  base::debug::TraceLog::GetInstance()->SetProcessName("Browser");
-  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+  base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");
+  base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
   // Can only use event tracing after setting up the command line.

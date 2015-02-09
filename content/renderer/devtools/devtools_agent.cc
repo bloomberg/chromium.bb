@@ -43,8 +43,8 @@ using blink::WebCString;
 using blink::WebVector;
 using blink::WebView;
 
-using base::debug::TraceLog;
-using base::debug::TraceOptions;
+using base::trace_event::TraceLog;
+using base::trace_event::TraceOptions;
 
 namespace content {
 
@@ -163,8 +163,9 @@ void DevToolsAgent::setTraceEventCallback(const WebString& category_filter,
   base::subtle::NoBarrier_Store(&event_callback_,
                                 reinterpret_cast<base::subtle::AtomicWord>(cb));
   if (!!cb) {
-    trace_log->SetEventCallbackEnabled(base::debug::CategoryFilter(
-        category_filter.utf8()), TraceEventCallbackWrapper);
+    trace_log->SetEventCallbackEnabled(
+        base::trace_event::CategoryFilter(category_filter.utf8()),
+        TraceEventCallbackWrapper);
   } else {
     trace_log->SetEventCallbackDisabled();
   }
@@ -172,9 +173,9 @@ void DevToolsAgent::setTraceEventCallback(const WebString& category_filter,
 
 void DevToolsAgent::enableTracing(const WebString& category_filter) {
   TraceLog* trace_log = TraceLog::GetInstance();
-  trace_log->SetEnabled(base::debug::CategoryFilter(category_filter.utf8()),
-                        TraceLog::RECORDING_MODE,
-                        TraceOptions());
+  trace_log->SetEnabled(
+      base::trace_event::CategoryFilter(category_filter.utf8()),
+      TraceLog::RECORDING_MODE, TraceOptions());
 }
 
 void DevToolsAgent::disableTracing() {

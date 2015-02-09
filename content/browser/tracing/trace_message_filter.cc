@@ -28,7 +28,7 @@ void TraceMessageFilter::OnChannelClosing() {
       OnCaptureMonitoringSnapshotAcked();
 
     if (is_awaiting_buffer_percent_full_ack_)
-      OnTraceLogStatusReply(base::debug::TraceLogStatus());
+      OnTraceLogStatusReply(base::trace_event::TraceLogStatus());
 
     TracingControllerImpl::GetInstance()->RemoveTraceMessageFilter(this);
   }
@@ -57,8 +57,8 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void TraceMessageFilter::SendBeginTracing(
-    const base::debug::CategoryFilter& category_filter,
-    const base::debug::TraceOptions& options) {
+    const base::trace_event::CategoryFilter& category_filter,
+    const base::trace_event::TraceOptions& options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Send(new TracingMsg_BeginTracing(category_filter.ToString(),
                                    base::TimeTicks::NowFromSystemTraceTime(),
@@ -73,8 +73,8 @@ void TraceMessageFilter::SendEndTracing() {
 }
 
 void TraceMessageFilter::SendEnableMonitoring(
-    const base::debug::CategoryFilter& category_filter,
-    const base::debug::TraceOptions& options) {
+    const base::trace_event::CategoryFilter& category_filter,
+    const base::trace_event::TraceOptions& options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Send(new TracingMsg_EnableMonitoring(category_filter.ToString(),
       base::TimeTicks::NowFromSystemTraceTime(),
@@ -158,7 +158,7 @@ void TraceMessageFilter::OnWatchEventMatched() {
 }
 
 void TraceMessageFilter::OnTraceLogStatusReply(
-    const base::debug::TraceLogStatus& status) {
+    const base::trace_event::TraceLogStatus& status) {
   if (is_awaiting_buffer_percent_full_ack_) {
     is_awaiting_buffer_percent_full_ack_ = false;
     TracingControllerImpl::GetInstance()->OnTraceLogStatusReply(this, status);
