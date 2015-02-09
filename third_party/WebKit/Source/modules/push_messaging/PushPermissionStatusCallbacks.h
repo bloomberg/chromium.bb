@@ -34,7 +34,7 @@ public:
     void onError() override;
 
 private:
-    static const WTF::String& permissionString(WebPushPermissionStatus);
+    static WTF::String permissionString(WebPushPermissionStatus);
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 

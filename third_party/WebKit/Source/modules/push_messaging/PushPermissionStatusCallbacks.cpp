@@ -31,23 +31,19 @@ void PushPermissionStatusCallbacks::onError()
 }
 
 // static
-const String& PushPermissionStatusCallbacks::permissionString(WebPushPermissionStatus status)
+String PushPermissionStatusCallbacks::permissionString(WebPushPermissionStatus status)
 {
-    DEFINE_STATIC_LOCAL(const String, grantedPermission, ("granted"));
-    DEFINE_STATIC_LOCAL(const String, deniedPermission, ("denied"));
-    DEFINE_STATIC_LOCAL(const String, defaultPermission, ("default"));
-
     switch (status) {
     case WebPushPermissionStatusGranted:
-        return grantedPermission;
+        return "granted";
     case WebPushPermissionStatusDenied:
-        return deniedPermission;
+        return "denied";
     case WebPushPermissionStatusDefault:
-        return defaultPermission;
+        return "default";
     }
 
     ASSERT_NOT_REACHED();
-    return deniedPermission;
+    return "denied";
 }
 
 } // namespace blink
