@@ -271,9 +271,6 @@ public:
     // but not the select popup.
     virtual WebPagePopup* pagePopup() const { return 0; }
 
-    // TODO(aelias): Delete this after Blink roll.
-    virtual void setTopControlsLayoutHeight(float) { }
-
     // Notification about the top controls height.  If the boolean is true, then
     // the embedder shrunk the WebView size by the top controls height.
     virtual void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) { }

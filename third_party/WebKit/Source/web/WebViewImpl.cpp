@@ -416,7 +416,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_topControlsShownRatio(0)
     , m_topControlsHeight(0)
     , m_topControlsShrinkLayoutSize(true)
-    , m_topControlsOffsetIsNormalized(true)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -1724,15 +1723,8 @@ void WebViewImpl::performResize()
 void WebViewImpl::setTopControlsShownRatio(float offset)
 {
     m_topControlsShownRatio = offset;
-    // TODO(aelias): Rename this to ShownRatio after CC side lands.
-    m_layerTreeView->setTopControlsContentOffset(offset);
+    m_layerTreeView->setTopControlsShownRatio(offset);
     didUpdateTopControls();
-}
-
-void WebViewImpl::setTopControlsLayoutHeight(float height)
-{
-    m_topControlsOffsetIsNormalized = false;
-    setTopControlsHeight(height, true);
 }
 
 void WebViewImpl::setTopControlsHeight(float height, bool topControlsShrinkLayoutSize)
@@ -1758,7 +1750,7 @@ void WebViewImpl::didUpdateTopControls()
     float topControlsViewportAdjustment = 0;
     if (m_topControlsShrinkLayoutSize)
         topControlsViewportAdjustment += m_topControlsHeight;
-    topControlsViewportAdjustment -= m_topControlsShownRatio * (m_topControlsOffsetIsNormalized ? m_topControlsHeight : 1);
+    topControlsViewportAdjustment -= m_topControlsShownRatio * m_topControlsHeight;
 
     if (!pinchVirtualViewportEnabled()) {
         // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell

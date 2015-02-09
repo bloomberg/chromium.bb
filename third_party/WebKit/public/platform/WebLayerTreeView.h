@@ -85,8 +85,9 @@ public:
 
     virtual void heuristicsForGpuRasterizationUpdated(bool) { }
 
-    // Sets the offset from the top of the screen that the contents are displaced by due to top controls showing.
-    virtual void setTopControlsContentOffset(float) { }
+    // Sets the amount that the top controls are showing, from 0 (hidden) to 1
+    // (fully shown).
+    virtual void setTopControlsShownRatio(float) { }
 
     // Flow control and scheduling ---------------------------------------
 

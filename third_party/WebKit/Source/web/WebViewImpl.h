@@ -516,7 +516,6 @@ public:
 
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
-    virtual void setTopControlsLayoutHeight(float) override;
     virtual void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) override;
 
     virtual void forceNextWebGLContextCreationToFail() override;
@@ -766,11 +765,6 @@ private:
     // If this is true, then the embedder shrunk the WebView size by the top
     // controls height.
     bool m_topControlsShrinkLayoutSize;
-
-    // If true, then top controls is normalized between 0 and 1; if false,
-    // then it's an absolute value.
-    // TODO(aelias): Delete this after Blink roll.
-    bool m_topControlsOffsetIsNormalized;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());
