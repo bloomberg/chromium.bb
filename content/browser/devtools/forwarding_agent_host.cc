@@ -4,6 +4,9 @@
 
 #include "content/browser/devtools/forwarding_agent_host.h"
 
+#include "base/bind.h"
+#include "content/browser/devtools/protocol/inspector_handler.h"
+
 namespace content {
 
 ForwardingAgentHost::ForwardingAgentHost(
@@ -19,20 +22,28 @@ void ForwardingAgentHost::DispatchOnClientHost(const std::string& message) {
 }
 
 void ForwardingAgentHost::ConnectionClosed() {
-  HostClosed();
+  devtools::inspector::Client inspector(
+      base::Bind(&ForwardingAgentHost::DispatchOnClientHost,
+                 base::Unretained(this)));
+  inspector.Detached(devtools::inspector::DetachedParams::Create()
+      ->set_reason("Connection lost."));
+  delegate_.reset();
 }
 
 void ForwardingAgentHost::Attach() {
-  delegate_->Attach(this);
+  if (delegate_)
+    delegate_->Attach(this);
 }
 
 void ForwardingAgentHost::Detach() {
-  delegate_->Detach();
+  if (delegate_)
+    delegate_->Detach();
 }
 
 void ForwardingAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-  delegate_->SendMessageToBackend(message);
+  if (delegate_)
+    delegate_->SendMessageToBackend(message);
 }
 
 DevToolsAgentHost::Type ForwardingAgentHost::GetType() {
