@@ -159,11 +159,12 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
       scoped_ptr<DistilledPagePrefs>(new DistilledPagePrefs(pref_service))));
 }
 
-void AddComponentsResources() {
+void AddComponentsTestResources() {
   base::FilePath pak_file;
   base::FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
-  pak_file = pak_dir.Append(FILE_PATH_LITERAL("components_resources.pak"));
+  pak_file =
+      pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
 }
@@ -308,7 +309,7 @@ class ContentExtractor : public ContentBrowserTest {
       EnableDNSLookupForThisTest();
     }
     CHECK(db_dir_.CreateUniqueTempDir());
-    AddComponentsResources();
+    AddComponentsTestResources();
   }
 
   void TearDownOnMainThread() override { DisableDNSLookupForThisTest(); }

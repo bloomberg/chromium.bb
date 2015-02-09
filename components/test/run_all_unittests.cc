@@ -62,7 +62,7 @@ class ComponentsTestSuite : public base::TestSuite {
     PathService::Get(base::DIR_MODULE, &resources_pack_path);
 #endif
     ui::ResourceBundle::InitSharedInstanceWithPakPath(
-        resources_pack_path.AppendASCII("components_unittests_resources.pak"));
+        resources_pack_path.AppendASCII("components_tests_resources.pak"));
 
     // These schemes need to be added globally to pass tests of
     // autocomplete_input_unittest.cc and content_settings_pattern*

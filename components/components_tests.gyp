@@ -13,6 +13,37 @@
     ['android_webview_build == 0', {
       'targets': [
         {
+          'target_name': 'components_tests_pak',
+          'type': 'none',
+          'dependencies': [
+            '../ui/resources/ui_resources.gyp:ui_resources',
+            '../ui/strings/ui_strings.gyp:ui_strings',
+            'components_resources.gyp:components_resources',
+            'components_strings.gyp:components_strings',
+          ],
+          'actions': [
+            {
+              'action_name': 'repack_components_tests_pak',
+              'variables': {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
+                ],
+                'pak_output': '<(PRODUCT_DIR)/components_tests_resources.pak',
+              },
+              'includes': [ '../build/repack_action.gypi' ],
+            },
+          ],
+          'direct_dependent_settings': {
+            'mac_bundle_resources': [
+              '<(PRODUCT_DIR)/components_tests_resources.pak',
+            ],
+          },
+        },
+        {
           # GN version: //components/components_unittests
           'target_name': 'components_unittests',
           'type': '<(gtest_target_type)',
@@ -421,25 +452,7 @@
             'components.gyp:web_resource_test_support',
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
-          ],
-          'actions': [
-            {
-              'action_name': 'repack_components_pak',
-              'variables': {
-                'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
-                ],
-                'pak_output': '<(PRODUCT_DIR)/components_unittests_resources.pak',
-              },
-              'includes': [ '../build/repack_action.gypi' ],
-            },
-          ],
-          'mac_bundle_resources': [
-            '<(PRODUCT_DIR)/components_unittests_resources.pak',
+            'components_tests_pak',
           ],
           'conditions': [
             ['toolkit_views == 1', {
@@ -951,6 +964,7 @@
             'components.gyp:pref_registry_test_support',
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
+            'components_tests_pak',
           ],
           'include_dirs': [
             '..',
@@ -963,19 +977,6 @@
             'autofill/content/renderer/password_form_conversion_utils_browsertest.cc',
             'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
             'password_manager/content/renderer/credential_manager_client_browsertest.cc',
-          ],
-          'actions': [
-            {
-              'action_name': 'repack_components_pak',
-              'variables': {
-                'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
-                ],
-                'pak_output': '<(PRODUCT_DIR)/components_resources.pak',
-              },
-              'includes': [ '../build/repack_action.gypi' ],
-            },
           ],
           'conditions': [
             ['OS == "android"', {

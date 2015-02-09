@@ -65,7 +65,8 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
     base::FilePath pak_file;
     base::FilePath pak_dir;
     PathService::Get(base::DIR_MODULE, &pak_dir);
-    pak_file = pak_dir.Append(FILE_PATH_LITERAL("components_resources.pak"));
+    pak_file =
+        pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_file, ui::SCALE_FACTOR_NONE);
   }
