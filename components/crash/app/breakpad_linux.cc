@@ -714,21 +714,19 @@ bool MicrodumpCrashDone(const MinidumpDescriptor& minidump,
   return FinalizeCrashDoneAndroid(is_browser_process);
  }
 
-// When unwind tables are stripped out (to save binary size) the stack traces
-// produced locally in the case of a crash / CHECK are meaningless. In order to
-// provide meaningful development diagnostics (and keep the binary size savings)
-// on Android we attach a secondary crash handler, in addition to the breakpad
-// minidump uploader (which depends on the user consent).
 // The microdump handler does NOT upload anything. It just dumps out on the
 // system console (logcat) a restricted and serialized variant of a minidump.
 // See crbug.com/410294 for more details.
 void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
-#if !defined(NO_UNWIND_TABLES) \
-    || (!defined(ARCH_CPU_ARMEL) && !defined(ARCH_CPU_ARM64))
+#if (!defined(ARCH_CPU_ARMEL) && !defined(ARCH_CPU_ARM64))
   // TODO(primiano): For the moment microdumps are enabled only on arm (32/64).
   // Extend support to other architectures (requires some breakpad changes).
   return;
 #endif
+
+  if (!GetCrashReporterClient()->ShouldEnableBreakpadMicrodumps())
+    return;
+
   VLOG(1) << "Enabling microdumps crash handler (process_type:"
           << process_type << ")";
   DCHECK(!g_microdump);

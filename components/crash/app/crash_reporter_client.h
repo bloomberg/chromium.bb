@@ -135,6 +135,10 @@ class CrashReporterClient {
 #if defined(OS_ANDROID)
   // Returns the descriptor key of the android minidump global descriptor.
   virtual int GetAndroidMinidumpDescriptor();
+
+  // Returns true if breakpad microdumps should be enabled. This orthogonal to
+  // the standard minidump uploader (which depends on the user consent).
+  virtual bool ShouldEnableBreakpadMicrodumps();
 #endif
 
 #if defined(OS_MACOSX)
