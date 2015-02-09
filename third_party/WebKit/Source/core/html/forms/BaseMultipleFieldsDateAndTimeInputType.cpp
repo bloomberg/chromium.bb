@@ -419,6 +419,7 @@ void BaseMultipleFieldsDateAndTimeInputType::forwardEvent(Event* event)
 
 void BaseMultipleFieldsDateAndTimeInputType::disabledAttributeChanged()
 {
+    EventQueueScope scope;
     spinButtonElement()->releaseCapture();
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->disabledStateChanged();
@@ -464,6 +465,7 @@ void BaseMultipleFieldsDateAndTimeInputType::minOrMaxAttributeChanged()
 
 void BaseMultipleFieldsDateAndTimeInputType::readonlyAttributeChanged()
 {
+    EventQueueScope scope;
     spinButtonElement()->releaseCapture();
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->readOnlyStateChanged();

@@ -444,6 +444,8 @@ void HTMLInputElement::initializeTypeInParsing()
     m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).string());
 
     m_inputTypeView->updateView();
+    setTextAsOfLastFormControlChangeEvent(value());
+    setChangedSinceLastFormControlChangeEvent(false);
 }
 
 void HTMLInputElement::updateType()
@@ -508,6 +510,7 @@ void HTMLInputElement::updateType()
     if (document().focusedElement() == this)
         document().updateFocusAppearanceSoon(true /* restore selection */);
 
+    setTextAsOfLastFormControlChangeEvent(value());
     setChangedSinceLastFormControlChangeEvent(false);
 
     addToRadioButtonGroup();
