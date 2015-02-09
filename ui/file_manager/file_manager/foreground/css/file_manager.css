@@ -1219,6 +1219,11 @@ li[renaming=''] .filename-label {
   width: 28px;
 }
 
+#list-container list li .detail-thumbnail > img {
+  -webkit-user-drag: none;
+  position: absolute;
+}
+
 #list-container list li:not([selected]) .detail-thumbnail.loaded {
   opacity: 1;
 }

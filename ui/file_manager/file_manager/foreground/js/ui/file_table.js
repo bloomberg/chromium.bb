@@ -805,7 +805,7 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
         function(metadata) {
           var loader = new ThumbnailLoader(
               entry, ThumbnailLoader.LoaderType.IMAGE, metadata);
-          loader.load(box, ThumbnailLoader.FillMode.FILL,
+          loader.load(box, ThumbnailLoader.FillMode.OVER_FILL,
                       ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
                       function(image, transform) {
                         box.classList.add('loaded');

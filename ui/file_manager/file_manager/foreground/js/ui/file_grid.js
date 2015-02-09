@@ -105,7 +105,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
                                   this.metadataCache_,
                                   this.volumeManager_,
                                   this.historyLoader_,
-                                  ThumbnailLoader.FillMode.FILL,
+                                  ThumbnailLoader.FillMode.OVER_FILL,
                                   FileGrid.ThumbnailQuality.LOW,
                                   /* animation */ false);
   }
@@ -181,7 +181,7 @@ FileGrid.decorateThumbnail = function(
         metadataCache,
         volumeManager,
         historyLoader,
-        ThumbnailLoader.FillMode.FILL,
+        ThumbnailLoader.FillMode.OVER_FILL,
         FileGrid.ThumbnailQuality.LOW,
         /* animation */ !previousBox);
   }
