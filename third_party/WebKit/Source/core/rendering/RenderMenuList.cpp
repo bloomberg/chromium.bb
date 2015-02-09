@@ -180,7 +180,7 @@ void RenderMenuList::updateOptionsWidth()
         if (LayoutTheme::theme().popupOptionSupportsTextIndent()) {
             // Add in the option's text indent.  We can't calculate percentage values for now.
             float optionWidth = 0;
-            if (RenderStyle* optionStyle = element->renderStyle())
+            if (const RenderStyle* optionStyle = element->renderStyle())
                 optionWidth += minimumValueForLength(optionStyle->textIndent(), 0);
             if (!text.isEmpty())
                 optionWidth += style()->font().width(text);
@@ -388,7 +388,7 @@ Element& RenderMenuList::ownerElement() const
     return *selectElement();
 }
 
-RenderStyle* RenderMenuList::renderStyleForItem(Element& element) const
+const RenderStyle* RenderMenuList::renderStyleForItem(Element& element) const
 {
     return element.renderStyle() ? element.renderStyle() : element.computedStyle();
 }
@@ -488,7 +488,7 @@ PopupMenuStyle RenderMenuList::itemStyle(unsigned listIndex) const
     bool itemHasCustomBackgroundColor;
     getItemBackgroundColor(listIndex, itemBackgroundColor, itemHasCustomBackgroundColor);
 
-    RenderStyle* style = element->renderStyle() ? element->renderStyle() : element->computedStyle();
+    const RenderStyle* style = element->renderStyle() ? element->renderStyle() : element->computedStyle();
     return style ? PopupMenuStyle(resolveColor(*style, CSSPropertyColor), itemBackgroundColor, style->font(), style->visibility() == VISIBLE,
         isHTMLOptionElement(*element) ? toHTMLOptionElement(*element).isDisplayNone() : style->display() == NONE,
         style->textIndent(), style->direction(), isOverride(style->unicodeBidi()),
@@ -529,9 +529,9 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
 PopupMenuStyle RenderMenuList::menuStyle() const
 {
     const LayoutObject* o = m_innerBlock ? m_innerBlock : this;
-    const RenderStyle* s = o->style();
-    return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), s->font(), s->visibility() == VISIBLE,
-        s->display() == NONE, s->textIndent(), style()->direction(), isOverride(style()->unicodeBidi()));
+    const RenderStyle& style = o->styleRef();
+    return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), style.font(), style.visibility() == VISIBLE,
+        style.display() == NONE, style.textIndent(), style.direction(), isOverride(style.unicodeBidi()));
 }
 
 LayoutUnit RenderMenuList::clientPaddingLeft() const

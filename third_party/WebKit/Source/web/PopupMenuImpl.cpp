@@ -135,7 +135,7 @@ const char* fontWeightToString(FontWeight weight)
 
 void PopupMenuImpl::addElementStyle(HTMLElement& element, SharedBuffer* data)
 {
-    RenderStyle* style = m_client->renderStyleForItem(element);
+    const RenderStyle* style = m_client->renderStyleForItem(element);
     ASSERT(style);
     PagePopupClient::addString("style: {\n", data);
     addProperty("color", style->visitedDependentColor(CSSPropertyColor).serialized(), data);

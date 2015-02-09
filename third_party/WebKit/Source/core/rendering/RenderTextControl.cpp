@@ -80,19 +80,19 @@ void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* 
     textFormControlElement()->updatePlaceholderVisibility(false);
 }
 
-static inline void updateUserModifyProperty(HTMLTextFormControlElement* node, RenderStyle* style)
+static inline void updateUserModifyProperty(HTMLTextFormControlElement& node, RenderStyle& style)
 {
-    style->setUserModify(node->isDisabledOrReadOnly() ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
+    style.setUserModify(node.isDisabledOrReadOnly() ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
 }
 
-void RenderTextControl::adjustInnerEditorStyle(RenderStyle* textBlockStyle) const
+void RenderTextControl::adjustInnerEditorStyle(RenderStyle& textBlockStyle) const
 {
     // The inner block, if present, always has its direction set to LTR,
     // so we need to inherit the direction and unicode-bidi style from the element.
-    textBlockStyle->setDirection(style()->direction());
-    textBlockStyle->setUnicodeBidi(style()->unicodeBidi());
+    textBlockStyle.setDirection(style()->direction());
+    textBlockStyle.setUnicodeBidi(style()->unicodeBidi());
 
-    updateUserModifyProperty(textFormControlElement(), textBlockStyle);
+    updateUserModifyProperty(*textFormControlElement(), textBlockStyle);
 }
 
 int RenderTextControl::textBlockLogicalHeight() const
@@ -116,7 +116,7 @@ void RenderTextControl::updateFromElement()
 {
     Element* innerEditor = innerEditorElement();
     if (innerEditor && innerEditor->renderer())
-        updateUserModifyProperty(textFormControlElement(), innerEditor->renderer()->style());
+        updateUserModifyProperty(*textFormControlElement(), innerEditor->renderer()->mutableStyleRef());
 }
 
 int RenderTextControl::scrollbarThickness() const
@@ -258,21 +258,21 @@ void RenderTextControl::computePreferredLogicalWidths()
 
     m_minPreferredLogicalWidth = 0;
     m_maxPreferredLogicalWidth = 0;
-    RenderStyle* styleToUse = style();
+    const RenderStyle& styleToUse = styleRef();
 
-    if (styleToUse->logicalWidth().isFixed() && styleToUse->logicalWidth().value() >= 0)
-        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalWidth().value());
+    if (styleToUse.logicalWidth().isFixed() && styleToUse.logicalWidth().value() >= 0)
+        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalWidth().value());
     else
         computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
 
-    if (styleToUse->logicalMinWidth().isFixed() && styleToUse->logicalMinWidth().value() > 0) {
-        m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMinWidth().value()));
-        m_minPreferredLogicalWidth = std::max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMinWidth().value()));
+    if (styleToUse.logicalMinWidth().isFixed() && styleToUse.logicalMinWidth().value() > 0) {
+        m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMinWidth().value()));
+        m_minPreferredLogicalWidth = std::max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMinWidth().value()));
     }
 
-    if (styleToUse->logicalMaxWidth().isFixed()) {
-        m_maxPreferredLogicalWidth = std::min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
-        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
+    if (styleToUse.logicalMaxWidth().isFixed()) {
+        m_maxPreferredLogicalWidth = std::min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMaxWidth().value()));
+        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMaxWidth().value()));
     }
 
     LayoutUnit toAdd = borderAndPaddingLogicalWidth();

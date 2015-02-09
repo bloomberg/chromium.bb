@@ -333,11 +333,11 @@ void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTo
 LayoutUnit RenderMultiColumnSet::calculateMaxColumnHeight() const
 {
     RenderBlockFlow* multicolBlock = multiColumnBlockFlow();
-    RenderStyle* multicolStyle = multicolBlock->style();
+    const RenderStyle& multicolStyle = multicolBlock->styleRef();
     LayoutUnit availableHeight = multiColumnFlowThread()->columnHeightAvailable();
     LayoutUnit maxColumnHeight = availableHeight ? availableHeight : RenderFlowThread::maxLogicalHeight();
-    if (!multicolStyle->logicalMaxHeight().isMaxSizeNone()) {
-        LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(multicolStyle->logicalMaxHeight(), -1);
+    if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {
+        LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(multicolStyle.logicalMaxHeight(), -1);
         if (logicalMaxHeight != -1 && maxColumnHeight > logicalMaxHeight)
             maxColumnHeight = logicalMaxHeight;
     }

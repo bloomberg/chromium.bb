@@ -98,7 +98,7 @@ private:
     virtual bool multiple() const override;
     virtual IntRect elementRectRelativeToRootView() const override;
     virtual Element& ownerElement() const override;
-    virtual RenderStyle* renderStyleForItem(Element&) const override;
+    virtual const RenderStyle* renderStyleForItem(Element&) const override;
 
     virtual bool hasLineIfEmpty() const override { return true; }
 

@@ -44,7 +44,7 @@ protected:
     HTMLElement* innerEditorElement() const;
 
     int scrollbarThickness() const;
-    void adjustInnerEditorStyle(RenderStyle* textBlockStyle) const;
+    void adjustInnerEditorStyle(RenderStyle& textBlockStyle) const;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 

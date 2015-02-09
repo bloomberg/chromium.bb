@@ -134,7 +134,7 @@ void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
         LayoutObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
-        RenderStyle* style = renderer->style();
+        const RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
@@ -149,7 +149,7 @@ void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
         LayoutObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
-        RenderStyle* style = renderer->style();
+        const RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;
         m_maskContentBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));

@@ -222,10 +222,10 @@ static bool blockHeightConstrained(const RenderBlock* block)
     // FIXME: This code needs to take into account vertical writing modes.
     // FIXME: Consider additional heuristics, such as ignoring fixed heights if the content is already overflowing before autosizing kicks in.
     for (; block; block = block->containingBlock()) {
-        RenderStyle* style = block->style();
-        if (style->overflowY() >= OSCROLL)
+        const RenderStyle& style = block->styleRef();
+        if (style.overflowY() >= OSCROLL)
             return false;
-        if (style->height().isSpecified() || style->maxHeight().isSpecified() || block->isOutOfFlowPositioned()) {
+        if (style.height().isSpecified() || style.maxHeight().isSpecified() || block->isOutOfFlowPositioned()) {
             // Some sites (e.g. wikipedia) set their html and/or body elements to height:100%,
             // without intending to constrain the height of the content within them.
             return !block->isDocumentElement() && !block->isBody();
@@ -571,7 +571,7 @@ void TextAutosizer::resetMultipliers()
 {
     LayoutObject* renderer = m_document->renderView();
     while (renderer) {
-        if (RenderStyle* style = renderer->style()) {
+        if (const RenderStyle* style = renderer->style()) {
             if (style->textAutosizingMultiplier() != 1)
                 applyMultiplier(renderer, 1, LayoutNeeded);
         }
@@ -690,7 +690,7 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const LayoutObject*
 
     data.m_qualifiedNameHash = QualifiedNameHash::hash(toElement(node)->tagQName());
 
-    if (RenderStyle* style = renderer->style()) {
+    if (const RenderStyle* style = renderer->style()) {
         data.m_packedStyleProperties = style->direction();
         data.m_packedStyleProperties |= (style->position() << 1);
         data.m_packedStyleProperties |= (style->floating() << 4);

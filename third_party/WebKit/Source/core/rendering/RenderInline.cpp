@@ -152,7 +152,7 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
     return 0;
 }
 
-static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const RenderStyle* newStyle, const RenderStyle* oldStyle)
+static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const RenderStyle& newStyle, const RenderStyle& oldStyle)
 {
     for (;block && block->isAnonymousBlock(); block = block->nextSibling()) {
         if (!toRenderBlock(block)->isAnonymousBlockContinuation())
@@ -160,20 +160,20 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
 
         RefPtr<RenderStyle> newBlockStyle;
 
-        if (!block->style()->isOutlineEquivalent(newStyle)) {
+        if (!block->style()->isOutlineEquivalent(&newStyle)) {
             newBlockStyle = RenderStyle::clone(block->styleRef());
-            newBlockStyle->setOutlineFromStyle(*newStyle);
+            newBlockStyle->setOutlineFromStyle(newStyle);
         }
 
-        if (block->style()->position() != newStyle->position()) {
+        if (block->style()->position() != newStyle.position()) {
             // If we are no longer in-flow positioned but our descendant block(s) still have an in-flow positioned ancestor then
             // their containing anonymous block should keep its in-flow positioning.
-            if (oldStyle->hasInFlowPosition()
+            if (oldStyle.hasInFlowPosition()
                 && inFlowPositionedInlineAncestor(toRenderBlock(block)->inlineElementContinuation()))
                 continue;
             if (!newBlockStyle)
                 newBlockStyle = RenderStyle::clone(block->styleRef());
-            newBlockStyle->setPosition(newStyle->position());
+            newBlockStyle->setPosition(newStyle.position());
         }
 
         if (newBlockStyle)
@@ -191,28 +191,28 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     // e.g., <font>foo <h4>goo</h4> moo</font>.  The <font> inlines before
     // and after the block share the same style, but the block doesn't
     // need to pass its style on to anyone else.
-    RenderStyle* newStyle = style();
+    const RenderStyle& newStyle = styleRef();
     RenderInline* continuation = inlineElementContinuation();
     for (RenderInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
         RenderBoxModelObject* nextCont = currCont->continuation();
         currCont->setContinuation(0);
-        currCont->setStyle(newStyle);
+        currCont->setStyle(style());
         currCont->setContinuation(nextCont);
     }
 
     // If an inline's outline or in-flow positioning has changed then any descendant blocks will need to change their styles accordingly.
     // Do this by updating the styles of the descendant blocks' containing anonymous blocks - there may be more than one.
     if (continuation && oldStyle
-        && (!newStyle->isOutlineEquivalent(oldStyle)
-            || (newStyle->position() != oldStyle->position() && (newStyle->hasInFlowPosition() || oldStyle->hasInFlowPosition())))) {
+        && (!newStyle.isOutlineEquivalent(oldStyle)
+            || (newStyle.position() != oldStyle->position() && (newStyle.hasInFlowPosition() || oldStyle->hasInFlowPosition())))) {
         // If any descendant blocks exist then they will be in the next anonymous block and its siblings.
         LayoutObject* block = containingBlock()->nextSibling();
         if (block && block->isAnonymousBlock())
-            updateStyleOfAnonymousBlockContinuations(block, newStyle, oldStyle);
+            updateStyleOfAnonymousBlockContinuations(block, newStyle, *oldStyle);
     }
 
     if (!alwaysCreateLineBoxes()) {
-        bool alwaysCreateLineBoxesNew = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle->hasPadding() || newStyle->hasMargin() || newStyle->hasOutline();
+        bool alwaysCreateLineBoxesNew = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle.hasPadding() || newStyle.hasMargin() || newStyle.hasOutline();
         if (oldStyle && alwaysCreateLineBoxesNew) {
             dirtyLineBoxes(false);
             setNeedsLayoutAndFullPaintInvalidation();
@@ -228,23 +228,23 @@ void RenderInline::updateAlwaysCreateLineBoxes(bool fullLayout)
     if (alwaysCreateLineBoxes())
         return;
 
-    RenderStyle* parentStyle = parent()->style();
+    const RenderStyle& parentStyle = parent()->styleRef();
     RenderInline* parentRenderInline = parent()->isRenderInline() ? toRenderInline(parent()) : 0;
     bool checkFonts = document().inNoQuirksMode();
     bool alwaysCreateLineBoxesNew = (parentRenderInline && parentRenderInline->alwaysCreateLineBoxes())
-        || (parentRenderInline && parentStyle->verticalAlign() != BASELINE)
+        || (parentRenderInline && parentStyle.verticalAlign() != BASELINE)
         || style()->verticalAlign() != BASELINE
         || style()->textEmphasisMark() != TextEmphasisMarkNone
-        || (checkFonts && (!parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(style()->font().fontMetrics())
-        || parentStyle->lineHeight() != style()->lineHeight()));
+        || (checkFonts && (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(style()->font().fontMetrics())
+        || parentStyle.lineHeight() != style()->lineHeight()));
 
     if (!alwaysCreateLineBoxesNew && checkFonts && document().styleEngine()->usesFirstLineRules()) {
         // Have to check the first line style as well.
-        parentStyle = parent()->style(true);
-        RenderStyle* childStyle = style(true);
-        alwaysCreateLineBoxesNew = !parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle->font().fontMetrics())
-        || childStyle->verticalAlign() != BASELINE
-        || parentStyle->lineHeight() != childStyle->lineHeight();
+        const RenderStyle& firstLineParentStyle = parent()->styleRef(true);
+        const RenderStyle& childStyle = styleRef(true);
+        alwaysCreateLineBoxesNew = !firstLineParentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
+        || childStyle.verticalAlign() != BASELINE
+        || firstLineParentStyle.lineHeight() != childStyle.lineHeight();
     }
 
     if (alwaysCreateLineBoxesNew) {
@@ -1311,7 +1311,7 @@ InlineFlowBox* RenderInline::createAndAppendInlineFlowBox()
 LayoutUnit RenderInline::lineHeight(bool firstLine, LineDirectionMode /*direction*/, LinePositionMode /*linePositionMode*/) const
 {
     if (firstLine && document().styleEngine()->usesFirstLineRules()) {
-        RenderStyle* s = style(firstLine);
+        const RenderStyle* s = style(firstLine);
         if (s != style())
             return s->computedLineHeight();
     }

@@ -79,7 +79,7 @@ PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerEditorStyle(const
 {
     RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();
     textBlockStyle->inheritFrom(startStyle);
-    adjustInnerEditorStyle(textBlockStyle.get());
+    adjustInnerEditorStyle(*textBlockStyle);
     textBlockStyle->setDisplay(BLOCK);
     textBlockStyle->setUnique();
 

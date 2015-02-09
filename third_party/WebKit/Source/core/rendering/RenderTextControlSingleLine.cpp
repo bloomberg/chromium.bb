@@ -336,7 +336,7 @@ PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerEditorStyle(cons
 {
     RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();
     textBlockStyle->inheritFrom(startStyle);
-    adjustInnerEditorStyle(textBlockStyle.get());
+    adjustInnerEditorStyle(*textBlockStyle);
 
     textBlockStyle->setWhiteSpace(PRE);
     textBlockStyle->setOverflowWrap(NormalOverflowWrap);

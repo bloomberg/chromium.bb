@@ -151,19 +151,19 @@ ALWAYS_INLINE RenderStyle::RenderStyle(const RenderStyle& o)
 {
 }
 
-static StyleRecalcChange diffPseudoStyles(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+static StyleRecalcChange diffPseudoStyles(const RenderStyle& oldStyle, const RenderStyle& newStyle)
 {
     // If the pseudoStyles have changed, we want any StyleRecalcChange that is not NoChange
     // because setStyle will do the right thing with anything else.
-    if (!oldStyle->hasAnyPublicPseudoStyles())
+    if (!oldStyle.hasAnyPublicPseudoStyles())
         return NoChange;
     for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < FIRST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
-        if (!oldStyle->hasPseudoStyle(pseudoId))
+        if (!oldStyle.hasPseudoStyle(pseudoId))
             continue;
-        RenderStyle* newPseudoStyle = newStyle->getCachedPseudoStyle(pseudoId);
+        const RenderStyle* newPseudoStyle = newStyle.getCachedPseudoStyle(pseudoId);
         if (!newPseudoStyle)
             return NoInherit;
-        RenderStyle* oldPseudoStyle = oldStyle->getCachedPseudoStyle(pseudoId);
+        const RenderStyle* oldPseudoStyle = oldStyle.getCachedPseudoStyle(pseudoId);
         if (oldPseudoStyle && *oldPseudoStyle != *newPseudoStyle)
             return NoInherit;
     }
@@ -193,7 +193,7 @@ StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle,
         return Inherit;
 
     if (*oldStyle == *newStyle)
-        return diffPseudoStyles(oldStyle, newStyle);
+        return diffPseudoStyles(*oldStyle, *newStyle);
 
     return NoInherit;
 }
@@ -283,8 +283,8 @@ bool RenderStyle::hasUniquePseudoStyle() const
         return false;
 
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
-        RenderStyle* pseudoStyle = m_cachedPseudoStyles->at(i).get();
-        if (pseudoStyle->unique())
+        const RenderStyle& pseudoStyle = *m_cachedPseudoStyles->at(i);
+        if (pseudoStyle.unique())
             return true;
     }
 

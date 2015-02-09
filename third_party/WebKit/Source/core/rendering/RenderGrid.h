@@ -71,8 +71,8 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
 
-    bool explicitGridDidResize(const RenderStyle*) const;
-    bool namedGridLinesDefinitionDidChange(const RenderStyle*) const;
+    bool explicitGridDidResize(const RenderStyle&) const;
+    bool namedGridLinesDefinitionDidChange(const RenderStyle&) const;
 
     class GridIterator;
     struct GridSizingData;

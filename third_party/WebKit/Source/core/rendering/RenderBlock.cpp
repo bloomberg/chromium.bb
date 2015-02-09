@@ -3786,7 +3786,7 @@ RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const Layo
 RenderBlockFlow* RenderBlock::createAnonymousColumnsWithParentRenderer(const LayoutObject* parent)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
-    newStyle->inheritColumnPropertiesFrom(parent->style());
+    newStyle->inheritColumnPropertiesFrom(parent->styleRef());
 
     RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
     parent->updateAnonymousChildStyle(*newBox, *newStyle);

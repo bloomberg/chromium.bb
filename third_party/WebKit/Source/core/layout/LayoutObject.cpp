@@ -1838,7 +1838,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (!document().regionBasedColumnsEnabled()) {
             if (style()->specifiesColumns()) {
                 if (child->style()->specifiesColumns())
-                    newStyle->inheritColumnPropertiesFrom(style());
+                    newStyle->inheritColumnPropertiesFrom(styleRef());
                 if (child->style()->columnSpan())
                     newStyle->setColumnSpan(ColumnSpanAll);
             }

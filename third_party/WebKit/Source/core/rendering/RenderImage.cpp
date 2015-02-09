@@ -228,7 +228,7 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     if (path.isEmpty())
         return;
 
-    RenderStyle* areaElementStyle = areaElement->computedStyle();
+    const RenderStyle* areaElementStyle = areaElement->computedStyle();
     unsigned short outlineWidth = areaElementStyle->outlineWidth();
 
     IntRect paintInvalidationRect = enclosingIntRect(path.boundingRect());

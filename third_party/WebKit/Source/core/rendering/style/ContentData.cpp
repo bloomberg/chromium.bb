@@ -66,10 +66,10 @@ PassOwnPtr<ContentData> ContentData::clone() const
     return result.release();
 }
 
-LayoutObject* ImageContentData::createRenderer(Document& doc, RenderStyle* pseudoStyle) const
+LayoutObject* ImageContentData::createRenderer(Document& doc, RenderStyle& pseudoStyle) const
 {
     RenderImage* image = RenderImage::createAnonymous(&doc);
-    image->setPseudoStyle(pseudoStyle);
+    image->setPseudoStyle(&pseudoStyle);
     if (m_image)
         image->setImageResource(RenderImageResourceStyleImage::create(m_image.get()));
     else
@@ -77,24 +77,24 @@ LayoutObject* ImageContentData::createRenderer(Document& doc, RenderStyle* pseud
     return image;
 }
 
-LayoutObject* TextContentData::createRenderer(Document& doc, RenderStyle* pseudoStyle) const
+LayoutObject* TextContentData::createRenderer(Document& doc, RenderStyle& pseudoStyle) const
 {
     LayoutObject* renderer = new RenderTextFragment(&doc, m_text.impl());
-    renderer->setPseudoStyle(pseudoStyle);
+    renderer->setPseudoStyle(&pseudoStyle);
     return renderer;
 }
 
-LayoutObject* CounterContentData::createRenderer(Document& doc, RenderStyle* pseudoStyle) const
+LayoutObject* CounterContentData::createRenderer(Document& doc, RenderStyle& pseudoStyle) const
 {
     LayoutObject* renderer = new LayoutCounter(&doc, *m_counter);
-    renderer->setPseudoStyle(pseudoStyle);
+    renderer->setPseudoStyle(&pseudoStyle);
     return renderer;
 }
 
-LayoutObject* QuoteContentData::createRenderer(Document& doc, RenderStyle* pseudoStyle) const
+LayoutObject* QuoteContentData::createRenderer(Document& doc, RenderStyle& pseudoStyle) const
 {
     LayoutObject* renderer = new RenderQuote(&doc, m_quote);
-    renderer->setPseudoStyle(pseudoStyle);
+    renderer->setPseudoStyle(&pseudoStyle);
     return renderer;
 }
 

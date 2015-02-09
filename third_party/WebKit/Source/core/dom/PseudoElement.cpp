@@ -122,14 +122,14 @@ void PseudoElement::attach(const AttachContext& context)
     if (!renderer)
         return;
 
-    RenderStyle* style = renderer->style();
-    if (style->styleType() != BEFORE && style->styleType() != AFTER)
+    RenderStyle& style = renderer->mutableStyleRef();
+    if (style.styleType() != BEFORE && style.styleType() != AFTER)
         return;
-    ASSERT(style->contentData());
+    ASSERT(style.contentData());
 
-    for (const ContentData* content = style->contentData(); content; content = content->next()) {
+    for (const ContentData* content = style.contentData(); content; content = content->next()) {
         LayoutObject* child = content->createRenderer(document(), style);
-        if (renderer->isChildAllowed(child, *style)) {
+        if (renderer->isChildAllowed(child, style)) {
             renderer->addChild(child);
             if (child->isQuote())
                 toRenderQuote(child)->attachQuote();

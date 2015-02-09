@@ -299,22 +299,22 @@ void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
     // - named grid lines only impact grid items with named grid lines.
     // - auto-flow changes only impacts auto-placed children.
 
-    if (explicitGridDidResize(oldStyle)
-        || namedGridLinesDefinitionDidChange(oldStyle)
-        || oldStyle->gridAutoFlow() != style()->gridAutoFlow())
+    if (explicitGridDidResize(*oldStyle)
+        || namedGridLinesDefinitionDidChange(*oldStyle)
+        || oldStyle->gridAutoFlow() != styleRef().gridAutoFlow())
         dirtyGrid();
 }
 
-bool RenderGrid::explicitGridDidResize(const RenderStyle* oldStyle) const
+bool RenderGrid::explicitGridDidResize(const RenderStyle& oldStyle) const
 {
-    return oldStyle->gridTemplateColumns().size() != style()->gridTemplateColumns().size()
-        || oldStyle->gridTemplateRows().size() != style()->gridTemplateRows().size();
+    return oldStyle.gridTemplateColumns().size() != styleRef().gridTemplateColumns().size()
+        || oldStyle.gridTemplateRows().size() != styleRef().gridTemplateRows().size();
 }
 
-bool RenderGrid::namedGridLinesDefinitionDidChange(const RenderStyle* oldStyle) const
+bool RenderGrid::namedGridLinesDefinitionDidChange(const RenderStyle& oldStyle) const
 {
-    return oldStyle->namedGridRowLines() != style()->namedGridRowLines()
-        || oldStyle->namedGridColumnLines() != style()->namedGridColumnLines();
+    return oldStyle.namedGridRowLines() != styleRef().namedGridRowLines()
+        || oldStyle.namedGridColumnLines() != styleRef().namedGridColumnLines();
 }
 
 void RenderGrid::layoutBlock(bool relayoutChildren)
