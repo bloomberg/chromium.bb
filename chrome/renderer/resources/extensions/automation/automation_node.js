@@ -728,7 +728,7 @@ AutomationRootNodeImpl.prototype = {
 
     // TODO(dtseng): Make into set listing all hosting node roles.
     if (nodeData.role == schema.RoleType.webView) {
-      if (nodeImpl.childTreeID !== nodeData.intAttributes.childTreeId)
+      if (nodeImpl.pendingChildFrame === undefined)
         nodeImpl.pendingChildFrame = true;
 
       if (nodeImpl.pendingChildFrame) {
