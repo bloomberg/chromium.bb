@@ -17,6 +17,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -85,8 +86,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   AddChildView(content_container_);
 
   if (switches::IsExperimentalAppListEnabled()) {
-    SetBorder(make_scoped_ptr(
-        new views::ShadowBorder(kShadowBlur, kShadowColor, kShadowYOffset, 0)));
+    SetBorder(make_scoped_ptr(new views::ShadowBorder(gfx::ShadowValue(
+        gfx::Point(0, kShadowYOffset), kShadowBlur, kShadowColor))));
     back_button_ = new views::ImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     back_button_->SetImage(

@@ -6,6 +6,7 @@
 #define UI_VIEWS_SHADOW_BORDER_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/border.h"
 #include "ui/views/views_export.h"
 
@@ -14,10 +15,7 @@ namespace views {
 // Creates a css box-shadow like border which fades into SK_ColorTRANSPARENT.
 class VIEWS_EXPORT ShadowBorder : public views::Border {
  public:
-  ShadowBorder(int blur,
-               SkColor color,
-               int vertical_offset,
-               int horizontal_offset);
+  explicit ShadowBorder(const gfx::ShadowValue& shadow);
   ~ShadowBorder() override;
 
  protected:
@@ -27,18 +25,11 @@ class VIEWS_EXPORT ShadowBorder : public views::Border {
   gfx::Size GetMinimumSize() const override;
 
  private:
-  // Blur amount of the shadow in pixels. For details on how blur is defined see
-  // comments for blur_ in class ShadowValue.
-  const int blur_;
+  // The shadow value to use for this border.
+  const gfx::ShadowValue shadow_value_;
 
-  // Shadow color.
-  const SkColor color_;
-
-  // Number of pixels to shift shadow to bottom.
-  const int vertical_offset_;
-
-  // Number of pixels to shift shadow to right.
-  const int horizontal_offset_;
+  // The insets of this border.
+  const gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowBorder);
 };

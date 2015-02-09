@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/message_center/message_center_frame_view.h"
 
 #include "ui/base/hit_test.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/views/shadow_border.h"
 #include "ui/views/widget/widget.h"
@@ -19,10 +20,8 @@ MessageCenterFrameView::MessageCenterFrameView() {
 #else
   const int kShadowBlur = 8;
   SetBorder(scoped_ptr<views::Border>(new views::ShadowBorder(
-      kShadowBlur,
-      message_center::kMessageCenterShadowColor,
-      0,    // Vertical offset
-      0)));  // Horizontal offset
+      gfx::ShadowValue(gfx::Point(0, 0), kShadowBlur,
+                       message_center::kMessageCenterShadowColor))));
 #endif
 }
 

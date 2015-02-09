@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -108,10 +109,8 @@ bool MicButton::GetHitTestMask(gfx::Path* mask) const {
 SpeechView::SpeechView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       logo_(NULL) {
-  SetBorder(scoped_ptr<views::Border>(
-      new views::ShadowBorder(kCardShadowBlur, kCardShadowColor,
-                              kCardShadowYOffset,  // Vertical offset.
-                              0)));
+  SetBorder(scoped_ptr<views::Border>(new views::ShadowBorder(gfx::ShadowValue(
+      gfx::Point(0, kCardShadowYOffset), kCardShadowBlur, kCardShadowColor))));
 
   // To keep the painting order of the border and the background, this class
   // actually has a single child of 'container' which has white background and

@@ -11,6 +11,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/padded_button.h"
@@ -126,11 +127,9 @@ gfx::Insets MessageView::GetShadowInsets() {
 }
 
 void MessageView::CreateShadowBorder() {
-  SetBorder(scoped_ptr<views::Border>(
-      new views::ShadowBorder(kShadowBlur,
-                              message_center::kShadowColor,
-                              kShadowOffset,  // Vertical offset.
-                              0)));           // Horizontal offset.
+  SetBorder(scoped_ptr<views::Border>(new views::ShadowBorder(
+      gfx::ShadowValue(gfx::Point(0, kShadowOffset), kShadowBlur,
+                       message_center::kShadowColor))));
 }
 
 bool MessageView::IsCloseButtonFocused() {

@@ -10,6 +10,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -28,7 +29,8 @@ class SearchCardView : public views::View {
  public:
   explicit SearchCardView(views::View* content_view) {
     SetBorder(make_scoped_ptr(new views::ShadowBorder(
-        kCardShadowBlur, kCardShadowColor, kCardShadowYOffset, 0)));
+        gfx::ShadowValue(gfx::Point(0, kCardShadowYOffset), kCardShadowBlur,
+                         kCardShadowColor))));
     SetLayoutManager(new views::FillLayout());
     content_view->set_background(
         views::Background::CreateSolidBackground(kCardBackgroundColor));
