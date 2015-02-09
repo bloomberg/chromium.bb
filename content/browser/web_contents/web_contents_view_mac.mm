@@ -627,7 +627,7 @@ void WebContentsViewMac::CloseTab() {
   DCHECK(base::mac::IsOSMavericksOrLater());
   NSWindow* window = [notification object];
   WebContentsImpl* webContents = [self webContents];
-  if (window && webContents) {
+  if (window && webContents && !webContents->IsBeingDestroyed()) {
     if ([window occlusionState] & NSWindowOcclusionStateVisible) {
       webContents->WasUnOccluded();
     } else {
