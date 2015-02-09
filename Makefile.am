@@ -1104,6 +1104,23 @@ EXTRA_DIST +=					\
 	protocol/ivi-application.xml		\
 	protocol/ivi-hmi-controller.xml
 
+#
+# manual test modules in tests subdirectory
+#
+
+noinst_LTLIBRARIES +=				\
+	surface-screenshot.la
+
+surface_screenshot_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
+surface_screenshot_la_LDFLAGS = $(test_module_ldflags)
+surface_screenshot_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+surface_screenshot_la_SOURCES = tests/surface-screenshot.c
+
+
+#
+# Documentation
+#
+
 man_MANS = weston.1 weston.ini.5
 
 if ENABLE_DRM_COMPOSITOR
