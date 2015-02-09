@@ -93,7 +93,6 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
-#include "chrome/browser/ui/android/website_settings_popup_legacy_android.h"
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
@@ -105,8 +104,6 @@
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_PRINT_PREVIEW)
 #include "printing/printing_context_android.h"
 #endif
-
-bool RegisterCertificateViewer(JNIEnv* env);
 
 namespace chrome {
 namespace android {
@@ -144,7 +141,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AutofillProfileBridge", autofill::RegisterAutofillProfileBridge},
     {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
-    {"CertificateViewer", RegisterCertificateViewer},
     {"ChildAccountFeedbackReporter", RegisterChildAccountFeedbackReporter},
     {"ChildAccountService", RegisterChildAccountService},
     {"ChromeBrowserProvider",
@@ -233,9 +229,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",
      WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid},
-    {"WebsiteSettingsPopupLegacyAndroid",
-     WebsiteSettingsPopupLegacyAndroid::
-         RegisterWebsiteSettingsPopupLegacyAndroid},
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_PRINT_PREVIEW)
     {"PrintingContext",
      printing::PrintingContextAndroid::RegisterPrintingContext},

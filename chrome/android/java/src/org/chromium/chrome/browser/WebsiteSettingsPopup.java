@@ -32,8 +32,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.base.CommandLine;
-import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -526,11 +524,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      */
     @SuppressWarnings("unused")
     public static void show(Context context, Profile profile, WebContents webContents) {
-        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_NEW_WEBSITE_SETTINGS)) {
-            new WebsiteSettingsPopup(context, profile, webContents);
-        } else {
-            WebsiteSettingsPopupLegacy.show(context, webContents);
-        }
+        new WebsiteSettingsPopup(context, profile, webContents);
     }
 
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);

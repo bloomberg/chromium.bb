@@ -15,12 +15,6 @@ public abstract class ChromeSwitches {
     /** Testing: pretend that the switch value is the name of a child account. */
     public static final String CHILD_ACCOUNT = "child-account";
 
-    // Disables the new Website Settings dialog, which replaces the old one.
-    // TODO(sashab): Once the new WebsiteSettingsPopup is ready to be permanent,
-    // remove this flag and delete WebsiteSettingsLegacyPopup and all it's
-    // dependencies.
-    public static final String DISABLE_NEW_WEBSITE_SETTINGS = "disable-new-website-settings";
-
     /** Mimic a low end device */
     public static final String ENABLE_ACCESSIBILITY_TAB_SWITCHER =
             "enable-accessibility-tab-switcher";

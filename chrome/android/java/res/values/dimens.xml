@@ -5,10 +5,6 @@
 -->
 
 <resources>
-    <!-- Certificate Viewer Dimensions -->
-    <dimen name="certificate_viewer_padding_wide">24dp</dimen>
-    <dimen name="certificate_viewer_padding_thin">16dp</dimen>
-
     <!-- Website Settings Popup Dimensions -->
     <dimen name="website_settings_popup_padding_sides">16dp</dimen>
     <dimen name="website_settings_popup_button_text_size">14sp</dimen>

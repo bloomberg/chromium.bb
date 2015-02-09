@@ -33,17 +33,6 @@ DEFINE_RESOURCE_ID(IDR_INFOBAR_WARNING, R.drawable.infobar_warning)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 DEFINE_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)
 
-// WebsiteSettingsUI images.
-DEFINE_RESOURCE_ID(IDR_PAGEINFO_ENTERPRISE_MANAGED,\
-                   R.drawable.pageinfo_enterprise_managed)
-DEFINE_RESOURCE_ID(IDR_PAGEINFO_BAD, R.drawable.pageinfo_bad)
-DEFINE_RESOURCE_ID(IDR_PAGEINFO_GOOD, R.drawable.pageinfo_good)
-DEFINE_RESOURCE_ID(IDR_PAGEINFO_INFO, R.drawable.pageinfo_info)
-DEFINE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MAJOR,\
-                   R.drawable.pageinfo_warning_major)
-DEFINE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MINOR,\
-                   R.drawable.pageinfo_warning_minor)
-
 // Autofill popup images.
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_AMEX, R.drawable.amex_card)
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_DISCOVER, R.drawable.discover_card)
