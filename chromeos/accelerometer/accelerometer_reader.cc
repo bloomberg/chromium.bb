@@ -203,7 +203,8 @@ void AccelerometerReader::Initialize(
 
 void AccelerometerReader::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
-  observer->OnAccelerometerUpdated(update_);
+  if (has_update_)
+    observer->OnAccelerometerUpdated(update_);
 }
 
 void AccelerometerReader::RemoveObserver(Observer* observer) {
@@ -211,7 +212,8 @@ void AccelerometerReader::RemoveObserver(Observer* observer) {
 }
 
 AccelerometerReader::AccelerometerReader()
-    : configuration_(new AccelerometerReader::Configuration()),
+    : has_update_(false),
+      configuration_(new AccelerometerReader::Configuration()),
       weak_factory_(this) {
 }
 
@@ -245,6 +247,7 @@ void AccelerometerReader::OnDataRead(
   DCHECK(!task_runner_->RunsTasksOnCurrentThread());
 
   if (success) {
+    has_update_ = true;
     for (int i = 0; i < ACCELEROMETER_SOURCE_COUNT; ++i) {
       if (!configuration_->data.has[i])
         continue;

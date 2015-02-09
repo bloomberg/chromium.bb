@@ -346,6 +346,25 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
   }
 }
 
+// Tests that CanEnterMaximizeMode returns false until a valid accelerometer
+// event has been received, and that it returns true afterwards.
+TEST_F(MaximizeModeControllerTest,
+       CanEnterMaximizeModeRequiresValidAccelerometerUpdate) {
+  // Should be false until an accelerometer event is sent.
+  ASSERT_FALSE(maximize_mode_controller()->CanEnterMaximizeMode());
+  OpenLidToAngle(90.0f);
+  EXPECT_TRUE(maximize_mode_controller()->CanEnterMaximizeMode());
+}
+
+// Tests that when an accelerometer event is received which has no keyboard that
+// we enter maximize mode.
+TEST_F(MaximizeModeControllerTest,
+       NoKeyboardAccelerometerTriggersMaximizeMode) {
+  ASSERT_FALSE(IsMaximizeModeStarted());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
+  ASSERT_TRUE(IsMaximizeModeStarted());
+}
+
 class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
  public:
   MaximizeModeControllerSwitchesTest() {}

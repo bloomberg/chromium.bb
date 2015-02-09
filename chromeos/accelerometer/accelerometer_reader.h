@@ -90,6 +90,9 @@ class CHROMEOS_EXPORT AccelerometerReader {
   // The last seen accelerometer data.
   AccelerometerUpdate update_;
 
+  // True if a valid accelerometer update is available.
+  bool has_update_;
+
   // The accelerometer configuration.
   scoped_refptr<Configuration> configuration_;
 
