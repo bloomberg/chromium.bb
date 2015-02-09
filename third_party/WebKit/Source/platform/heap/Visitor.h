@@ -298,10 +298,14 @@ public:                                  \
 
 #endif
 
-#define DECLARE_TRACE() DECLARE_TRACE_IMPL()
+#define EMPTY_ARGUMENT
+
+#define DECLARE_TRACE() DECLARE_TRACE_IMPL(EMPTY_ARGUMENT)
 #define DECLARE_VIRTUAL_TRACE() DECLARE_TRACE_IMPL(virtual)
-#define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL()
+#define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL(EMPTY_ARGUMENT)
 #define DEFINE_INLINE_VIRTUAL_TRACE() DEFINE_INLINE_TRACE_IMPL(virtual)
+
+#undef EMPTY_ARGUMENT
 
 // If MARKER_EAGER_TRACING is set to 1, a marker thread is allowed
 // to directly invoke the trace() method of not-as-yet marked objects upon
