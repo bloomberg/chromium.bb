@@ -46,4 +46,5 @@
     [Custom] deleter boolean (DOMString name);
 
     [RuntimeEnabled=FeatureName] iterable<any>;
+    [RuntimeEnabled=FeatureName, CallWith=ScriptState, RaisesException, ImplementedAs=iterableKeys] Iterator keys();
 };

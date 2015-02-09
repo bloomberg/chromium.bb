@@ -384,7 +384,7 @@ def interface_context(interface):
         iterator_method = generated_iterator_method('iterator')
 
         if interface.iterable or interface.maplike or interface.setlike:
-            methods.extend([
+            implicit_methods = [
                 generated_iterator_method('keys'),
                 generated_iterator_method('values'),
                 generated_iterator_method('entries'),
@@ -396,7 +396,17 @@ def interface_context(interface):
                                                                is_optional=True,
                                                                extended_attributes={'Default': 'Undefined'})],
                                  extended_attributes=forEach_extended_attributes),
-            ])
+            ]
+
+            methods_by_name = {}
+            for method in methods:
+                methods_by_name.setdefault(method['name'], []).append(method)
+
+            for implicit_method in implicit_methods:
+                if implicit_method['name'] in methods_by_name:
+                    # FIXME: Check that the existing method is compatible.
+                    continue
+                methods.append(implicit_method)
 
         # FIXME: maplike<> and setlike<> should also imply the presence of a
         # subset of keys(), values(), entries(), forEach(), has(), get(), add(),
