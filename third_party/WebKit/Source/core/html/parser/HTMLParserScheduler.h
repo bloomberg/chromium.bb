@@ -97,6 +97,7 @@ private:
     explicit HTMLParserScheduler(HTMLDocumentParser*);
 
     bool shouldYield(const SpeculationsPumpSession&, bool startingScript) const;
+    void continueParsing();
 
     HTMLDocumentParser* m_parser;
 

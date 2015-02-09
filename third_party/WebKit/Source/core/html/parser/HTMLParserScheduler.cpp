@@ -82,7 +82,7 @@ void SpeculationsPumpSession::addedElementTokens(size_t count)
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser)
     : m_parser(parser)
-    , m_cancellableContinueParse(WTF::bind(&HTMLDocumentParser::resumeParsingAfterYield, m_parser))
+    , m_cancellableContinueParse(WTF::bind(&HTMLParserScheduler::continueParsing, this))
     , m_isSuspendedWithActiveTimer(false)
 {
 }
@@ -154,6 +154,11 @@ void HTMLParserScheduler::forceResumeAfterYield()
 {
     ASSERT(!m_cancellableContinueParse.isPending());
     m_isSuspendedWithActiveTimer = true;
+}
+
+void HTMLParserScheduler::continueParsing()
+{
+    m_parser->resumeParsingAfterYield();
 }
 
 }
