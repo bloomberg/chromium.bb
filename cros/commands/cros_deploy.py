@@ -777,6 +777,10 @@ For more information of cros build usage:
         '--deep-rev', action='store_true',
         help='Install reverse dependencies. Implies --deep.')
     parser.add_argument(
+        '--ignore-device-board', action='store_true',
+        help='Do not require that device be compatible with current '
+        'project/board.')
+    parser.add_argument(
         '--dry-run', '-n', action='store_true',
         help='Output deployment plan but do not deploy anything.')
 
@@ -941,10 +945,18 @@ For more information of cros build usage:
         self.board = cros_build_lib.GetBoard(device_board=device.board,
                                              override_board=self.board)
         logging.info('Board is %s', self.board)
+
+        # Make sure that a project is found and compatible with the device.
+        proj = project.FindProjectByName(self.board)
+        if not proj:
+          cros_build_lib.Die('Could not find project for %s', self.board)
+        if not (self.options.ignore_device_board or
+                proj.Inherits(device.board)):
+          cros_build_lib.Die('Device %s incompatible with board', device.board)
+
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
         # If no packages were listed, find the project's main packages.
-        proj = project.FindProjectByName(self.board)
         deploy_pkgs = self.options.packages or (proj and proj.MainPackages())
         if not deploy_pkgs:
           cros_build_lib.Die('No packages found, nothing to deploy.')
