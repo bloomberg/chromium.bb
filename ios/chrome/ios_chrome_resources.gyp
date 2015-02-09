@@ -7,10 +7,8 @@
     'chromium_code': 1,
     'grit_base_dir': '<(SHARED_INTERMEDIATE_DIR)',
     'grit_out_dir': '<(grit_base_dir)/ios/chrome',
-    'grit_defines': [
-      # TODO(lliabraa): Remove this whitelist.
-      '-w', '<(DEPTH)/ios/build/grit_whitelist.txt',
-    ],
+    # TODO(lliabraa): Remove this whitelist.
+    'grit_whitelist': '<(DEPTH)/ios/build/grit_whitelist.txt',
   },
   'targets': [
     {
