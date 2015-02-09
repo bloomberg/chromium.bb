@@ -204,19 +204,10 @@ LocalFrame::~LocalFrame()
     // Verify that the FrameView has been cleared as part of detaching
     // the frame owner.
     ASSERT(!m_view);
-
 #if !ENABLE(OILPAN)
     // Oilpan: see setDOMWindow() comment why it is acceptable not to
-    // mirror the non-Oilpan call below.
-    //
-    // Also, FrameDestructionObservers that live longer than this
-    // frame object keep weak references to the frame; those will be
-    // automatically cleared by the garbage collector. Hence, explicit
-    // frameDestroyed() notifications aren't needed.
+    // explicitly call setDOMWindow() here.
     setDOMWindow(nullptr);
-
-    for (const auto& frameDestructionObserver : m_destructionObservers)
-        frameDestructionObserver->frameDestroyed();
 #endif
 }
 
@@ -281,6 +272,7 @@ void LocalFrame::detach()
     m_loader.stopAllLoaders();
     if (!client())
         return;
+
     m_loader.detach();
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
     // back to FrameLoaderClient via WindowProxy.
@@ -294,6 +286,14 @@ void LocalFrame::detach()
     // finalization. Too late to access various heap objects at that
     // stage.
     m_loader.clear();
+
+    // Signal frame destruction here rather than in the destructor.
+    // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
+    for (const auto& frameDestructionObserver : m_destructionObservers)
+        frameDestructionObserver->frameDestroyed();
+
+    m_destructionObservers.clear();
+    m_supplements.clear();
 }
 
 SecurityContext* LocalFrame::securityContext() const
