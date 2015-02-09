@@ -34,6 +34,8 @@ remoting.Host = function() {
   this.tokenUrlPatterns = [];
   /** @type {string} */
   this.updatedTime = '';
+  /** @type {string} */
+  this.hostOfflineReason = '';
 };
 
 /**

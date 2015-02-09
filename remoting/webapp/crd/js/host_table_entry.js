@@ -203,8 +203,10 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
     this.tableRow.classList.add('host-online');
     this.tableRow.classList.remove('host-offline');
   }
-  this.warningOverlay_.hidden = !remoting.Host.needsUpdate(
+  var hostReportedError = this.host.hostOfflineReason != '';
+  var hostNeedsUpdate = remoting.Host.needsUpdate(
       this.host, this.webappMajorVersion_);
+  this.warningOverlay_.hidden = !hostNeedsUpdate && !hostReportedError;
 };
 
 /**
@@ -314,6 +316,51 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
 };
 
 /**
+ * Formats host's updateTime value relative to current time (i.e. only
+ * displaying hours and minutes if updateTime is less than a day in the past).
+ * @param {string} updateTime RFC 3339 formatted date-time value.
+ * @return {string} Formatted value (i.e. 11/11/2014)
+ */
+function formatUpdateTime(updateTime) {
+  var lastOnline = new Date(updateTime);
+  var now = new Date();
+  var displayString = '';
+  if (now.getFullYear() == lastOnline.getFullYear() &&
+      now.getMonth() == lastOnline.getMonth() &&
+      now.getDate() == lastOnline.getDate()) {
+    return lastOnline.toLocaleTimeString();
+  } else {
+    return lastOnline.toLocaleDateString();
+  }
+}
+
+/**
+ * Formats host's host-offline-reason value (i.e. 'INVALID_HOST_CONFIGURATION')
+ * to a human-readable description of the error.
+ * @param {string} hostOfflineReason
+ * @return {string}
+ */
+function formatHostOfflineReason(hostOfflineReason) {
+  var knownReasonTags = [
+    /*i18n-content*/ 'OFFLINE_REASON_INITIALIZATION_FAILED',
+    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_CONFIGURATION',
+    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_ID',
+    /*i18n-content*/ 'OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS',
+    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_DOMAIN',
+    /*i18n-content*/ 'OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED',
+    /*i18n-content*/ 'OFFLINE_REASON_USERNAME_MISMATCH'
+  ];
+  var offlineReasonTag = 'OFFLINE_REASON_' + hostOfflineReason;
+  if (knownReasonTags.indexOf(offlineReasonTag) != (-1)) {
+    return chrome.i18n.getMessage(offlineReasonTag);
+  } else {
+    return chrome.i18n.getMessage(
+        /*i18n-content*/ 'OFFLINE_REASON_UNKNOWN',
+        hostOfflineReason);
+  }
+}
+
+/**
  * Create the DOM nodes and event handlers for the hostname cell.
  * @return {void} Nothing.
  * @private
@@ -341,18 +388,15 @@ remoting.HostTableEntry.prototype.setHostName_ = function() {
     hostNameNode.addEventListener('keydown', onKeyDown, false);
   } else {
     if (this.host.updatedTime) {
-      var lastOnline = new Date(this.host.updatedTime);
-      var now = new Date();
-      var displayString = '';
-      if (now.getFullYear() == lastOnline.getFullYear() &&
-          now.getMonth() == lastOnline.getMonth() &&
-          now.getDate() == lastOnline.getDate()) {
-        displayString = lastOnline.toLocaleTimeString();
-      } else {
-        displayString = lastOnline.toLocaleDateString();
-      }
+      var formattedTime = formatUpdateTime(this.host.updatedTime);
       hostNameNode.innerText = chrome.i18n.getMessage(
-          /*i18n-content*/'LAST_ONLINE', [this.host.hostName, displayString]);
+          /*i18n-content*/'LAST_ONLINE', [this.host.hostName, formattedTime]);
+      if (this.host.hostOfflineReason) {
+        var detailsText = formatHostOfflineReason(this.host.hostOfflineReason);
+        // TODO(lukasza): Put detailsText into a hideable div (title/tooltip
+        // is not as discoverable + doesn't work well for touchscreens).
+        hostNameNode.title = detailsText;
+      }
     } else {
       hostNameNode.innerText = chrome.i18n.getMessage(
           /*i18n-content*/'OFFLINE', this.host.hostName);

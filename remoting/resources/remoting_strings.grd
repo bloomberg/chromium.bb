@@ -849,11 +849,43 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Label for general-purpose OK buttons." name="IDS_OK">
         OK
       </message>
-      <message desc="Modified version of the host name shown for hosts that are not currently accessible, and for which no last-online status is available." name="IDS_OFFLINE">
+      <message desc="Modified version of the host name shown for hosts that are not currently accessible and for which no last-online status is available." name="IDS_OFFLINE">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
       </message>
       <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDS_LAST_ONLINE">
-        <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (last online <ph name="DATE">$2<ex>1/6/13</ex></ph>)
+        <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (last online <ph name="DATE_OR_TIME">$2<ex>1/6/2013 or 11:23:32 AM</ex></ph>)
+      </message>
+      <message desc="Error message indicating that the host is offline, because the host failed to initialize (i.e. failed to generate a host certificate, run out of memory early during startup, failed to set up inter-process communication, etc.)."
+               name="IDS_OFFLINE_REASON_INITIALIZATION_FAILED">
+        Host initialization failed.
+      </message>
+      <message desc="Error message indicating that the host is offline, because the host configuration is invalid."
+               name="IDS_OFFLINE_REASON_INVALID_HOST_CONFIGURATION">
+        Invalid host configuration.
+      </message>
+      <message desc="Error message indicating that the host is offline, because the host configuration specifies a host id that is not found in the Chrome Remote Desktop Directory service (possibly because the host entry was deleted by the user)."
+               name="IDS_OFFLINE_REASON_INVALID_HOST_ID">
+        Invalid host id.
+      </message>
+      <message desc="Error message indicating that the host is offline, because the host configuration specifies an OAuth credential that is rejected when the host tries to authenticate itself to Chrome Remote Desktop Directory service."
+               name="IDS_OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS">
+        Host is configured with invalid OAuth credentials.
+      </message>
+      <message desc="Error message indicating that the host is offline, because the host is owned by a user from a domain different than the domain mandated by RemoteAccessHostDomain policy."
+               name="IDS_OFFLINE_REASON_INVALID_HOST_DOMAIN">
+        Invalid host owner domain.
+      </message>
+      <message desc="Error message indicating that the host is offline, because RemoteAccessHostRequireCurtain policy requires curtain mode, which is not supported when 'launchd' runs an instance of the host at the console login screen on a Mac."
+               name="IDS_OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED">
+        Host running at the console logic screen has shutdown to support curtain mode by switching to a host running in a user-specific session.
+      </message>
+      <message desc="Error message indicating that the host is offline, because RemoteAccessHostMatchUsername policy is enabled and there is a mismatch between the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. 'johndoe' if the host is owned by 'johndoe@example.com' Google account)"
+               name="IDS_OFFLINE_REASON_USERNAME_MISMATCH">
+        Invalid host owner.
+      </message>
+      <message desc="Description of why host is offline, when client gets a host-offline-reason it doesn't recognize."
+               name="IDS_OFFLINE_REASON_UNKNOWN">
+        Unrecognized host error: <ph name="HOST_OFFLINE_REASON">$1<ex>EXIT_CODE_FROM_HOST_NEWER_THAN_CLIENT</ex></ph>.
       </message>
       <message desc="Modified version of the host name shown for hosts that are running an out-of-date version of the Me2Me host software." name="IDS_UPDATE_REQUIRED">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (out-of-date)
