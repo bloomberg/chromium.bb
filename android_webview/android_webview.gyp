@@ -303,6 +303,7 @@
         'common/render_view_messages.h',
         'common/url_constants.cc',
         'common/url_constants.h',
+        'crash_reporter/aw_microdump_crash_reporter.h',
         'lib/aw_browser_dependency_factory_impl.cc',
         'lib/aw_browser_dependency_factory_impl.h',
         'lib/main/aw_main_delegate.cc',
@@ -326,6 +327,23 @@
         'renderer/aw_render_view_ext.h',
         'renderer/print_render_frame_observer.cc',
         'renderer/print_render_frame_observer.h',
+      ],
+      # TODO(primiano): remove the *_disabled_in_android_builds fallback and
+      # merge this with the target once android_webview_build goes away.
+      'conditions': [
+        ['android_webview_build==0', {
+          'dependencies': [
+            '../components/components.gyp:breakpad_host',
+            '../components/components.gyp:crash_component',
+          ],
+          'sources': [
+            'crash_reporter/aw_microdump_crash_reporter.cc',
+          ],
+        }, {  # android_webview_build==1
+          'sources': [
+            'crash_reporter/aw_microdump_crash_reporter_disabled_in_android_builds.cc',
+          ],
+        }],
       ],
     },
     {

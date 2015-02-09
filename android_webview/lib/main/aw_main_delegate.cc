@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
+#include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_assets.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
@@ -123,6 +124,8 @@ void AwMainDelegate::PreSandboxStartup() {
   // cpu_brand info.
   base::CPU cpu_info;
 #endif
+
+  crash_reporter::EnableMicrodumpCrashReporter();
 }
 
 void AwMainDelegate::SandboxInitialized(const std::string& process_type) {
