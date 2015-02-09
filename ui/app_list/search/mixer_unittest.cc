@@ -120,7 +120,7 @@ class MixerTest : public testing::Test {
       providers_[i]->Stop();
     }
 
-    mixer_->MixAndPublish(is_voice_query_, KnownResults());
+    mixer_->MixAndPublish(is_voice_query_, known_results_);
   }
 
   std::string GetResults() const {
@@ -146,9 +146,14 @@ class MixerTest : public testing::Test {
     is_voice_query_ = is_voice_query;
   }
 
+  void AddKnownResult(const std::string& id, KnownResultType type) {
+    known_results_[id] = type;
+  }
+
  private:
   scoped_ptr<Mixer> mixer_;
   scoped_ptr<AppListModel::SearchResults> results_;
+  KnownResults known_results_;
 
   bool is_voice_query_;
 
@@ -216,6 +221,25 @@ TEST_F(MixerTest, RemoveDuplicates) {
 
   // Only three results with unique id are kept.
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
+}
+
+// Tests that "known results" have priority over others.
+TEST_F(MixerTest, KnownResultsPriority) {
+  // This gives omnibox 0 -- 5.
+  omnibox_provider()->set_count(6);
+
+  // omnibox 1 -- 4 are "known results".
+  AddKnownResult("omnibox1", PREFIX_SECONDARY);
+  AddKnownResult("omnibox2", PERFECT_SECONDARY);
+  AddKnownResult("omnibox3", PREFIX_PRIMARY);
+  AddKnownResult("omnibox4", PERFECT_PRIMARY);
+
+  RunQuery();
+
+  // omnibox 1 -- 4 should be prioritised over the others. They should be
+  // ordered 4, 3, 2, 1 (in order of match quality).
+  EXPECT_EQ("omnibox4,omnibox3,omnibox2,omnibox1,omnibox0,omnibox5",
+            GetResults());
 }
 
 TEST_F(MixerTest, VoiceQuery) {
