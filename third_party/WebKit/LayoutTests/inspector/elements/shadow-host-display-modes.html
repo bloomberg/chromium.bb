@@ -150,6 +150,12 @@ function test()
 
     function shadowHostDisplayModeInnerComposedOuterComposed()
     {
+        waitForModifiedNodesUpdate("After switching outer to logical mode", shadowHostDisplayModeInnerComposedOuterLogical);
+        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(shadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Logical);
+    }
+
+    function shadowHostDisplayModeInnerComposedOuterLogical()
+    {
         InspectorTest.completeTest();
     }
 

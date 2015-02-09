@@ -240,4 +240,36 @@ oldest distributed text
               </div>
           </div>
   </div>
+========= After switching outer to logical mode ========
+- <div id="shadowHost">
+      Logical Composed Flattened 
+    - #shadow-root
+        - <div class="youngestShadowMain">
+              <shadow></shadow>
+            - <content select=".distributeMeToYoungest">
+                  <div id="fallbackYoungest"></div>
+              </content>
+            - <div class="innerShadowHost" id="innerShadowHost">
+                  Logical Composed <Flattened> 
+                - #shadow-root
+                    - <div class="innerShadowMain">
+                        - <content in-inner-shadow-root select=".distributeMeToInner">
+                              <content in-youngest-shadow-root select=".distributeMeToInner"></content>
+                          </content>
+                      </div>
+              </div>
+          </div>
+    - #shadow-root
+        - <div class="oldestShadowMain">
+            - <content select=".distributeMeToOldest">
+                  <div id="fallbackOldest"></div>
+              </content>
+          </div>
+      <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
+      <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToOldest distributeMeAsWell_1"></div>
+      <div class="distributeMeToOldest distributeMeAsWell_2"></div>
+  </div>
 
