@@ -168,18 +168,19 @@ $ export CHROME_PATH=&lt;Path to Google Chrome&gt;
 <p>Each example can also be launched as a packaged application. A packaged
 application is a special zip file (with a .crx extension) hosted in the Chrome
 Web Store. This file contains all of the application parts: A Chrome Web Store
-manifest file (manifest.json), an icon, and all of the regular Native Client
+manifest file (<code>manifest.json</code>), an icon, and all of the regular Native Client
 application files. Refer to <a class="reference external" href="/apps/about_apps">What are Chrome Apps</a> for more
 information about creating a packaged application.</p>
-<p>Some Pepper features, such as TCP/UDP socket access, are only allowed in
-packaged applications. The examples that use these features must be run as
-packaged applications, by using the following command:</p>
+<p>Some Pepper features, such as <a class="reference external" href="pepper_stable/cpp/classpp_1_1_u_d_p_socket">TCP</a> or <a class="reference external" href="pepper_stable/cpp/classpp_1_1_u_d_p_socket">UDP</a> socket access, are only allowed
+in <a class="reference external" href="/apps/about_apps">packaged applications</a>. The examples that use these
+features must be run as <a class="reference external" href="/apps/about_apps">packaged applications</a>, by using
+the following command:</p>
 <pre class="prettyprint">
 $ make run_package
 </pre>
 <p>You can use <code>TOOLCHAIN</code> and <code>CONFIG</code> parameters as described above to run
 with a different toolchain or configuration.</p>
-<h2 id="debugging-the-sdk-examples"><span id="id4"></span>Debugging the SDK examples</h2>
+<h2 id="debugging-the-sdk-examples"><span id="id5"></span>Debugging the SDK examples</h2>
 <p>The NaCl SDK uses <a class="reference external" href="https://www.gnu.org/software/gdb/">GDB</a> to debug Native
 Client code. The SDK includes a prebuilt version of GDB that is compatible with
 NaCl code. To use it, run the <code>make debug</code> command from an example directory:</p>

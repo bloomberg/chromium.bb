@@ -493,21 +493,29 @@ source change.
 
 The following kinds of code may be more challenging to port:
 
-* Code that does direct TCP/IP or UDP networking. For security reasons
-  these APIs are only available to packaged applications, not on the
-  open web, after asking for the appropriate permissions. Native Client
-  is otherwise restricted to the networking APIs available in the
-  browser.
-* Code that creates processes, including UNIX forks. Creating processes
-  is not supported for security reasons. However, threads are supported.
-* Code that needs to do local file I/O. Native Client is restricted to
-  accessing URLs and to local storage in the browser (the Pepper file I/O API
-  has access to the same per-application storage that JavaScript has via Local
-  Storage). HTML5 File System can be used, among others. For POSIX compatabiliy
-  the Native Client SDK includes a library called nacl_io which allows the
-  application to interact with all these types of files via standard POSIX I/O
-  functions (e.g. open/fopen/read/write/...). See :doc:`Using NaCl I/O
-  <devguide/coding/nacl_io>` for more details.
+* Code that does direct `TCP <pepper_stable/cpp/classpp_1_1_u_d_p_socket>`_ or
+  `UDP <pepper_stable/cpp/classpp_1_1_u_d_p_socket>`_ networking. For security
+  reasons these APIs are only available to `packaged applications
+  </apps/about_apps>`_ after asking for the appropriate permissions, not on the
+  open web. Native Client is otherwise restricted to the networking APIs
+  available in the browser. You may want to use to `nacl_io library <nacl_io>`_
+  to use POSIX-like sockets.
+* Code that creates processes, including UNIX ``fork``, won't function
+  as-is. However, threads are supported. You can nonetheless create new
+  ``<embed>`` tags in your HTML page to launch new PNaCl processes, even using
+  new ``.pexe`` files that your existing ``.pexe`` saved in a local
+  filesystem. This is somewhat akin to ``execve``, but the process management
+  has to go through ``postMessage`` to JavaScript in order to create the new
+  ``<embed>``.
+* Code that needs to do local file I/O. Native Client is restricted to accessing
+  URLs and to local storage in the browser (the Pepper :doc:`File IO API
+  <devguide/coding/file-io>` has access to the same per-application storage that
+  JavaScript has via Local Storage). HTML5 File System can be used, among
+  others. For POSIX compatabiliy the Native Client SDK includes a library called
+  nacl_io which allows the application to interact with all these types of files
+  via standard POSIX I/O functions (e.g. ``open`` / ``fopen`` / ``read`` /
+  ``write`` / ...). See :doc:`Using NaCl I/O <devguide/coding/nacl_io>` for more
+  details.
 
 .. _faq_troubleshooting:
 
@@ -518,10 +526,11 @@ My ``.pexe`` isn't loading, help!
 ---------------------------------
 
 * You must use Google Chrome version 31 or greater for Portable Native
-  Client. Please `upgrade now <http://www.google.com/chrome/>`_ if you are
-  not. If you're already using a recent version,  open ``about:components`` and
-  "Check for update" for PNaCl. Find your version of chrome by openning 
-  ``about:chrome``.
+  Client. Find your version of chrome by opening ``about:chrome``, and `update
+  Chrome <http://www.google.com/chrome/>`_ if you are on an older version. If
+  you're already using a recent version, open ``about:components`` and "Check
+  for update" for PNaCl. Note that on ChromeOS PNaCl is always up to date,
+  whereas on other operating systems it updates shortly after Chrome updates.
 * A PNaCl ``.pexe`` must be compiled with pepper_31 SDK or higher. :ref:`Update
   your bundles <updating-bundles>` and make sure you're using a version of
   Chrome that matches the SDK version. 

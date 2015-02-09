@@ -419,29 +419,37 @@ generally straightforward, with large libraries often requiring no
 source change.</p>
 <p>The following kinds of code may be more challenging to port:</p>
 <ul class="small-gap">
-<li>Code that does direct TCP/IP or UDP networking. For security reasons
-these APIs are only available to packaged applications, not on the
-open web, after asking for the appropriate permissions. Native Client
-is otherwise restricted to the networking APIs available in the
-browser.</li>
-<li>Code that creates processes, including UNIX forks. Creating processes
-is not supported for security reasons. However, threads are supported.</li>
-<li>Code that needs to do local file I/O. Native Client is restricted to
-accessing URLs and to local storage in the browser (the Pepper file I/O API
-has access to the same per-application storage that JavaScript has via Local
-Storage). HTML5 File System can be used, among others. For POSIX compatabiliy
-the Native Client SDK includes a library called nacl_io which allows the
-application to interact with all these types of files via standard POSIX I/O
-functions (e.g. open/fopen/read/write/...). See <a class="reference internal" href="/native-client/devguide/coding/nacl_io.html"><em>Using NaCl I/O</em></a> for more details.</li>
+<li>Code that does direct <a class="reference external" href="pepper_stable/cpp/classpp_1_1_u_d_p_socket">TCP</a> or
+<a class="reference external" href="pepper_stable/cpp/classpp_1_1_u_d_p_socket">UDP</a> networking. For security
+reasons these APIs are only available to <a class="reference external" href="/apps/about_apps">packaged applications</a> after asking for the appropriate permissions, not on the
+open web. Native Client is otherwise restricted to the networking APIs
+available in the browser. You may want to use to <a class="reference external" href="nacl_io">nacl_io library</a>
+to use POSIX-like sockets.</li>
+<li>Code that creates processes, including UNIX <code>fork</code>, won&#8217;t function
+as-is. However, threads are supported. You can nonetheless create new
+<code>&lt;embed&gt;</code> tags in your HTML page to launch new PNaCl processes, even using
+new <code>.pexe</code> files that your existing <code>.pexe</code> saved in a local
+filesystem. This is somewhat akin to <code>execve</code>, but the process management
+has to go through <code>postMessage</code> to JavaScript in order to create the new
+<code>&lt;embed&gt;</code>.</li>
+<li>Code that needs to do local file I/O. Native Client is restricted to accessing
+URLs and to local storage in the browser (the Pepper <a class="reference internal" href="/native-client/devguide/coding/file-io.html"><em>File IO API</em></a> has access to the same per-application storage that
+JavaScript has via Local Storage). HTML5 File System can be used, among
+others. For POSIX compatabiliy the Native Client SDK includes a library called
+nacl_io which allows the application to interact with all these types of files
+via standard POSIX I/O functions (e.g. <code>open</code> / <code>fopen</code> / <code>read</code> /
+<code>write</code> / ...). See <a class="reference internal" href="/native-client/devguide/coding/nacl_io.html"><em>Using NaCl I/O</em></a> for more
+details.</li>
 </ul>
 <h2 id="troubleshooting"><span id="faq-troubleshooting"></span>Troubleshooting</h2>
 <h3 id="my-pexe-isn-t-loading-help">My <code>.pexe</code> isn&#8217;t loading, help!</h3>
 <ul class="small-gap">
 <li>You must use Google Chrome version 31 or greater for Portable Native
-Client. Please <a class="reference external" href="http://www.google.com/chrome/">upgrade now</a> if you are
-not. If you&#8217;re already using a recent version,  open <code>about:components</code> and
-&#8220;Check for update&#8221; for PNaCl. Find your version of chrome by openning
-<code>about:chrome</code>.</li>
+Client. Find your version of chrome by opening <code>about:chrome</code>, and <a class="reference external" href="http://www.google.com/chrome/">update
+Chrome</a> if you are on an older version. If
+you&#8217;re already using a recent version, open <code>about:components</code> and &#8220;Check
+for update&#8221; for PNaCl. Note that on ChromeOS PNaCl is always up to date,
+whereas on other operating systems it updates shortly after Chrome updates.</li>
 <li>A PNaCl <code>.pexe</code> must be compiled with pepper_31 SDK or higher. <a class="reference internal" href="/native-client/sdk/download.html#updating-bundles"><em>Update
 your bundles</em></a> and make sure you&#8217;re using a version of
 Chrome that matches the SDK version.</li>
