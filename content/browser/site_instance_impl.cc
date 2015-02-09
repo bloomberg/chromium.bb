@@ -236,8 +236,7 @@ SiteInstance* SiteInstance::Create(BrowserContext* browser_context) {
 /*static*/
 SiteInstance* SiteInstance::CreateForURL(BrowserContext* browser_context,
                                          const GURL& url) {
-  // This BrowsingInstance may be deleted if it returns an existing
-  // SiteInstance.
+  // This will create a new SiteInstance and BrowsingInstance.
   scoped_refptr<BrowsingInstance> instance(
       new BrowsingInstance(browser_context));
   return instance->GetSiteInstanceForURL(url);
