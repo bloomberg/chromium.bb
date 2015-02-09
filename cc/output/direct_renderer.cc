@@ -235,7 +235,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
              pass->copy_requests.begin();
          it != pass->copy_requests.end();
          ++it) {
-      if (i > 0) {
+      if (it != pass->copy_requests.begin()) {
         // Doing a readback is destructive of our state on Mac, so make sure
         // we restore the state between readbacks. http://crbug.com/99393.
         UseRenderPass(&frame, pass);
