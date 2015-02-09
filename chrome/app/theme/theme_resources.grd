@@ -379,8 +379,8 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_QUESTION_STABLE" file="common/profile_menu_question_stable.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_QUESTION_HOVER" file="common/profile_menu_question_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_QUESTION_SELECT" file="common/profile_menu_question_select.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_SUPERVISED" file="common/avatar_menu_supervised.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_SUPERVISED" file="common/icon_supervised.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_LEGACY_SUPERVISED" file="common/avatar_menu_legacy_supervised.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_LEGACY_SUPERVISED" file="common/icon_legacy_supervised.png" />
       </if>
       <if expr="not is_android and not is_ios and not chromeos">
         <!-- User Manager tutorial -->
@@ -470,7 +470,7 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_KIOSK_APP_USER_POD_ICON" file="cros/kiosk_app_user_pod_icon.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_ICON" file="common/limited_user.png" />
+      <structure type="chrome_scaled_image" name="IDR_LEGACY_SUPERVISED_USER_ICON" file="common/limited_user.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM" file="common/supervised_user_theme/label_bg_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_LEFT" file="common/supervised_user_theme/label_bg_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_RIGHT" file="common/supervised_user_theme/label_bg_bottom_right.png" />

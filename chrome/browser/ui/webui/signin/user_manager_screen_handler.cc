@@ -58,7 +58,7 @@ const char kKeyDisplayName[]= "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyProfilePath[] = "profilePath";
 const char kKeyPublicAccount[] = "publicAccount";
-const char kKeySupervisedUser[] = "supervisedUser";
+const char kKeyLegacySupervisedUser[] = "legacySupervisedUser";
 const char kKeyChildUser[] = "childUser";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
@@ -641,9 +641,9 @@ void UserManagerScreenHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON));
   localized_strings->SetString("removeUserWarningText",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING));
-  localized_strings->SetString("removeSupervisedUserWarningText",
+  localized_strings->SetString("removeLegacySupervisedUserWarningText",
       l10n_util::GetStringFUTF16(
-          IDS_LOGIN_POD_SUPERVISED_USER_REMOVE_WARNING,
+          IDS_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
           base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL)));
 
   // Strings needed for the User Manager tutorial slides.
@@ -727,8 +727,8 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->Set(
         kKeyProfilePath, base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
-    profile_value->SetBoolean(
-        kKeySupervisedUser, info_cache.ProfileIsLegacySupervisedAtIndex(i));
+    profile_value->SetBoolean(kKeyLegacySupervisedUser,
+                              info_cache.ProfileIsLegacySupervisedAtIndex(i));
     profile_value->SetBoolean(
         kKeyChildUser, info_cache.ProfileIsChildAtIndex(i));
     profile_value->SetBoolean(

@@ -432,8 +432,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("publicSessionSelectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
   builder->Add("removeUserWarningText",
                base::string16());
-  builder->AddF("removeSupervisedUserWarningText",
-               IDS_LOGIN_POD_SUPERVISED_USER_REMOVE_WARNING,
+  builder->AddF("removeLegacySupervisedUserWarningText",
+               IDS_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
                base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);

@@ -1638,7 +1638,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [[NSImageView alloc] initWithFrame:NSZeroRect]);
     int imageId = browser_->profile()->IsChild()
         ? IDR_ICON_PROFILES_MENU_CHILD
-        : IDR_ICON_PROFILES_MENU_SUPERVISED;
+        : IDR_ICON_PROFILES_MENU_LEGACY_SUPERVISED;
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     [supervisedIcon setImage:rb->GetNativeImageNamed(imageId).ToNSImage()];
     NSSize size = [[supervisedIcon image] size];

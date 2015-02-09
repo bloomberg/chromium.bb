@@ -225,8 +225,12 @@ base::string16 AvatarMenu::GetSupervisedUserInformation() const {
 }
 
 const gfx::Image& AvatarMenu::GetSupervisedUserIcon() const {
+  if (browser_ && browser_->profile()->IsChild()) {
+    return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+        IDR_CHILD_USER_ICON);
+  }
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_SUPERVISED_USER_ICON);
+      IDR_LEGACY_SUPERVISED_USER_ICON);
 }
 
 void AvatarMenu::ActiveBrowserChanged(Browser* browser) {

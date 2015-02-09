@@ -954,12 +954,12 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets action box menu, remove supervised user warning text div.
+     * Gets action box menu, remove legacy supervised user warning text div.
      * @type {!HTMLInputElement}
      */
-    get actionBoxRemoveSupervisedUserWarningTextElement() {
+    get actionBoxRemoveLegacySupervisedUserWarningTextElement() {
       return this.querySelector(
-          '.action-box-remove-supervised-user-warning-text');
+          '.action-box-remove-legacy-supervised-user-warning-text');
     },
 
     /**
@@ -1035,8 +1035,8 @@ cr.define('login', function() {
     customizeUserPodPerUserType: function() {
       if (this.user_.childUser && !this.user_.isDesktopUser) {
         this.setUserPodIconType('child');
-      } else if (this.user_.supervisedUser && !this.user_.isDesktopUser) {
-        this.setUserPodIconType('supervised');
+      } else if (this.user_.legacySupervisedUser && !this.user_.isDesktopUser) {
+        this.setUserPodIconType('legacySupervised');
       } else if (this.multiProfilesPolicyApplied) {
         // Mark user pod as not focusable which in addition to the grayed out
         // filter makes it look in disabled state.
@@ -1387,7 +1387,7 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveCommandClick_: function(e) {
-      if (this.user.supervisedUser || this.user.isDesktopUser) {
+      if (this.user.legacySupervisedUser || this.user.isDesktopUser) {
         this.showRemoveWarning_();
         return;
       }
@@ -1396,8 +1396,8 @@ cr.define('login', function() {
     },
 
     /**
-     * Shows remove user warning. Used for supervised users on CrOS, and for all
-     * users on desktop.
+     * Shows remove user warning. Used for legacy supervised users on CrOS, and
+     * for all users on desktop.
      */
     showRemoveWarning_: function() {
       this.actionBoxMenuRemoveElement.hidden = true;
@@ -1455,7 +1455,7 @@ cr.define('login', function() {
         return;
       switch (e.keyIdentifier) {
         case 'Enter':
-          if (this.user.supervisedUser || this.user.isDesktopUser) {
+          if (this.user.legacySupervisedUser || this.user.isDesktopUser) {
             // Prevent default so that we don't trigger a 'click' event on the
             // remove button that will be focused.
             e.preventDefault();
@@ -1931,7 +1931,7 @@ cr.define('login', function() {
       this.nameElement.textContent = this.user.displayName;
 
       var isLockedUser = this.user.needsSignin;
-      var isLegacySupervisedUser = this.user.supervisedUser;
+      var isLegacySupervisedUser = this.user.legacySupervisedUser;
       var isChildUser = this.user.childUser;
       this.classList.toggle('locked', isLockedUser);
       this.classList.toggle('legacy-supervised', isLegacySupervisedUser);
@@ -1942,7 +1942,7 @@ cr.define('login', function() {
 
       this.actionBoxRemoveUserWarningTextElement.hidden =
           isLegacySupervisedUser;
-      this.actionBoxRemoveSupervisedUserWarningTextElement.hidden =
+      this.actionBoxRemoveLegacySupervisedUserWarningTextElement.hidden =
           !isLegacySupervisedUser;
 
       this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(

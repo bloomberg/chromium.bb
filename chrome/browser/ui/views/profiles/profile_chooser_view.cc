@@ -1127,7 +1127,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     views::ImageView* supervised_icon = new views::ImageView();
     int image_id = browser_->profile()->IsChild()
         ? IDR_ICON_PROFILES_MENU_CHILD
-        : IDR_ICON_PROFILES_MENU_SUPERVISED;
+        : IDR_ICON_PROFILES_MENU_LEGACY_SUPERVISED;
     supervised_icon->SetImage(rb->GetImageSkiaNamed(image_id));
     gfx::Size preferred_size = supervised_icon->GetPreferredSize();
     gfx::Rect parent_bounds = current_profile_photo_->bounds();
