@@ -370,7 +370,7 @@ bool Internals::hasSelectorForIdInShadow(Element* host, const AtomicString& idVa
     ASSERT(host);
     if (!host->shadow()) {
         exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
-        return 0;
+        return false;
     }
 
     return host->shadow()->ensureSelectFeatureSet().hasSelectorForId(idValue);
@@ -381,7 +381,7 @@ bool Internals::hasSelectorForClassInShadow(Element* host, const AtomicString& c
     ASSERT(host);
     if (!host->shadow()) {
         exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
-        return 0;
+        return false;
     }
 
     return host->shadow()->ensureSelectFeatureSet().hasSelectorForClass(className);
@@ -392,7 +392,7 @@ bool Internals::hasSelectorForAttributeInShadow(Element* host, const AtomicStrin
     ASSERT(host);
     if (!host->shadow()) {
         exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
-        return 0;
+        return false;
     }
 
     return host->shadow()->ensureSelectFeatureSet().hasSelectorForAttribute(attributeName);
@@ -438,7 +438,7 @@ bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionState& except
     ASSERT(root);
     if (!root->isShadowRoot()) {
         exceptionState.throwDOMException(InvalidAccessError, "The node argument is not a shadow root.");
-        return 0;
+        return false;
     }
     return toShadowRoot(root)->containsShadowElements();
 }
@@ -448,7 +448,7 @@ bool Internals::hasContentElement(const Node* root, ExceptionState& exceptionSta
     ASSERT(root);
     if (!root->isShadowRoot()) {
         exceptionState.throwDOMException(InvalidAccessError, "The node argument is not a shadow root.");
-        return 0;
+        return false;
     }
     return toShadowRoot(root)->containsContentElements();
 }
@@ -1399,7 +1399,7 @@ bool Internals::hasSpellingMarker(Document* document, int from, int length)
 {
     ASSERT(document);
     if (!document->frame())
-        return 0;
+        return false;
 
     return document->frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
@@ -1417,7 +1417,7 @@ bool Internals::isOverwriteModeEnabled(Document* document)
 {
     ASSERT(document);
     if (!document->frame())
-        return 0;
+        return false;
 
     return document->frame()->editor().isOverwriteModeEnabled();
 }
@@ -1473,7 +1473,7 @@ bool Internals::hasGrammarMarker(Document* document, int from, int length)
 {
     ASSERT(document);
     if (!document->frame())
-        return 0;
+        return false;
 
     return document->frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Grammar, from, length);
 }
@@ -1526,18 +1526,18 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
     LayoutObject* renderer2 = element2->renderer();
     if (!renderer1 || !renderer1->isBox()) {
         exceptionState.throwDOMException(InvalidAccessError, renderer1 ? "The first provided element's renderer is not a box." : "The first provided element has no renderer.");
-        return 0;
+        return false;
     }
     if (!renderer2 || !renderer2->isBox()) {
         exceptionState.throwDOMException(InvalidAccessError, renderer2 ? "The second provided element's renderer is not a box." : "The second provided element has no renderer.");
-        return 0;
+        return false;
     }
 
     Layer* layer1 = toRenderBox(renderer1)->layer();
     Layer* layer2 = toRenderBox(renderer2)->layer();
     if (!layer1 || !layer2) {
         exceptionState.throwDOMException(InvalidAccessError, String::format("No render layer can be obtained from the %s provided element.", layer1 ? "second" : "first"));
-        return 0;
+        return false;
     }
 
     return layer1->scrollsWithRespectTo(layer2);
