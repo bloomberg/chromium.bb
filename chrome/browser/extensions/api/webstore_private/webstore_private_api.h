@@ -8,23 +8,14 @@
 #include <string>
 
 #include "chrome/browser/extensions/active_install_data.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/api/webstore_private.h"
 #include "chrome/common/extensions/webstore_install_result.h"
-#include "content/public/browser/gpu_data_manager_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "google_apis/gaia/google_service_auth_error.h"
+#include "extensions/browser/extension_function.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-class ProfileSyncService;
-
-namespace content {
-class GpuDataManager;
-}
 
 class GPUFeatureChecker;
 
@@ -44,7 +35,7 @@ class WebstorePrivateApi {
 };
 
 class WebstorePrivateBeginInstallWithManifest3Function
-    : public ChromeAsyncExtensionFunction,
+    : public UIThreadExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
@@ -84,6 +75,12 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
   WebstorePrivateBeginInstallWithManifest3Function();
 
+ private:
+  ~WebstorePrivateBeginInstallWithManifest3Function() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
   // WebstoreInstallHelper::Delegate:
   void OnWebstoreParseSuccess(const std::string& id,
                               const SkBitmap& icon,
@@ -96,19 +93,15 @@ class WebstorePrivateBeginInstallWithManifest3Function
   void InstallUIProceed() override;
   void InstallUIAbort(bool user_initiated) override;
 
- protected:
-  ~WebstorePrivateBeginInstallWithManifest3Function() override;
+  // Response helpers.
+  const char* ResultCodeToString(ResultCode code) const;
+  ExtensionFunction::ResponseValue BuildResponseForSuccess();
+  ExtensionFunction::ResponseValue BuildResponseForError(
+      ResultCode code, const std::string& error);
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  ChromeExtensionFunctionDetails chrome_details_;
 
-  // Sets the result_ as a string based on |code|.
-  void SetResultCode(ResultCode code);
-
- private:
-  const char* ResultCodeToString(ResultCode code);
-
-  // These store the input parameters to the function.
+  // This stores the input parameters to the function.
   scoped_ptr<api::webstore_private::BeginInstallWithManifest3::Params> params_;
 
   // The results of parsing manifest_ and icon_data_ go into these two.
@@ -117,7 +110,7 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
   // A dummy Extension object we create for the purposes of using
   // ExtensionInstallPrompt to prompt for confirmation of the install.
-  scoped_refptr<extensions::Extension> dummy_extension_;
+  scoped_refptr<Extension> dummy_extension_;
 
   // The class that displays the install prompt.
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
@@ -130,13 +123,19 @@ class WebstorePrivateBeginInstallWithManifest3Function
 };
 
 class WebstorePrivateCompleteInstallFunction
-    : public ChromeAsyncExtensionFunction,
+    : public UIThreadExtensionFunction,
       public WebstoreInstaller::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.completeInstall",
                              WEBSTOREPRIVATE_COMPLETEINSTALL)
 
   WebstorePrivateCompleteInstallFunction();
+
+ private:
+  ~WebstorePrivateCompleteInstallFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
 
   // WebstoreInstaller::Delegate:
   void OnExtensionInstallSuccess(const std::string& id) override;
@@ -145,163 +144,172 @@ class WebstorePrivateCompleteInstallFunction
       const std::string& error,
       WebstoreInstaller::FailureReason reason) override;
 
- protected:
-  ~WebstorePrivateCompleteInstallFunction() override;
+  void OnInstallSuccess(const std::string& id);
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  ChromeExtensionFunctionDetails chrome_details_;
 
- private:
   scoped_ptr<WebstoreInstaller::Approval> approval_;
   scoped_ptr<ScopedActiveInstall> scoped_active_install_;
-
-  void OnInstallSuccess(const std::string& id);
 };
 
 class WebstorePrivateEnableAppLauncherFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.enableAppLauncher",
                              WEBSTOREPRIVATE_ENABLEAPPLAUNCHER)
 
   WebstorePrivateEnableAppLauncherFunction();
 
- protected:
+ private:
   ~WebstorePrivateEnableAppLauncherFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ExtensionFunction::ResponseAction Run() override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class WebstorePrivateGetBrowserLoginFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getBrowserLogin",
                              WEBSTOREPRIVATE_GETBROWSERLOGIN)
 
- protected:
-  ~WebstorePrivateGetBrowserLoginFunction() override {}
+  WebstorePrivateGetBrowserLoginFunction();
+
+ private:
+  ~WebstorePrivateGetBrowserLoginFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ExtensionFunction::ResponseAction Run() override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class WebstorePrivateGetStoreLoginFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getStoreLogin",
                              WEBSTOREPRIVATE_GETSTORELOGIN)
 
- protected:
-  ~WebstorePrivateGetStoreLoginFunction() override {}
+  WebstorePrivateGetStoreLoginFunction();
+
+ private:
+  ~WebstorePrivateGetStoreLoginFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ExtensionFunction::ResponseAction Run() override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class WebstorePrivateSetStoreLoginFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.setStoreLogin",
                              WEBSTOREPRIVATE_SETSTORELOGIN)
 
- protected:
-  ~WebstorePrivateSetStoreLoginFunction() override {}
+  WebstorePrivateSetStoreLoginFunction();
+
+ private:
+  ~WebstorePrivateSetStoreLoginFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ExtensionFunction::ResponseAction Run() override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class WebstorePrivateGetWebGLStatusFunction
-    : public ChromeAsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getWebGLStatus",
                              WEBSTOREPRIVATE_GETWEBGLSTATUS)
 
   WebstorePrivateGetWebGLStatusFunction();
 
- protected:
+ private:
   ~WebstorePrivateGetWebGLStatusFunction() override;
 
-  void OnFeatureCheck(bool feature_allowed);
-
   // ExtensionFunction:
-  bool RunAsync() override;
+  ExtensionFunction::ResponseAction Run() override;
 
- private:
-  void CreateResult(bool webgl_allowed);
+  void OnFeatureCheck(bool feature_allowed);
 
   scoped_refptr<GPUFeatureChecker> feature_checker_;
 };
 
 class WebstorePrivateGetIsLauncherEnabledFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getIsLauncherEnabled",
                              WEBSTOREPRIVATE_GETISLAUNCHERENABLED)
 
-  WebstorePrivateGetIsLauncherEnabledFunction() {}
-
- protected:
-  ~WebstorePrivateGetIsLauncherEnabledFunction() override {}
-
-  // ExtensionFunction:
-  bool RunSync() override;
+  WebstorePrivateGetIsLauncherEnabledFunction();
 
  private:
+  ~WebstorePrivateGetIsLauncherEnabledFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
   void OnIsLauncherCheckCompleted(bool is_enabled);
 };
 
 class WebstorePrivateIsInIncognitoModeFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.isInIncognitoMode",
                              WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION)
 
-  WebstorePrivateIsInIncognitoModeFunction() {}
+  WebstorePrivateIsInIncognitoModeFunction();
 
- protected:
-  ~WebstorePrivateIsInIncognitoModeFunction() override {}
+ private:
+  ~WebstorePrivateIsInIncognitoModeFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ExtensionFunction::ResponseAction Run() override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class WebstorePrivateLaunchEphemeralAppFunction
-    : public ChromeAsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.launchEphemeralApp",
                              WEBSTOREPRIVATE_LAUNCHEPHEMERALAPP)
 
   WebstorePrivateLaunchEphemeralAppFunction();
 
- protected:
+ private:
   ~WebstorePrivateLaunchEphemeralAppFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ExtensionFunction::ResponseAction Run() override;
 
- private:
   void OnLaunchComplete(webstore_install::Result result,
                         const std::string& error);
-  void SetResult(
+
+  ExtensionFunction::ResponseValue BuildResponse(
       api::webstore_private::LaunchEphemeralApp::Results::Result result,
       const std::string& error);
+
+  ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class WebstorePrivateGetEphemeralAppsEnabledFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getEphemeralAppsEnabled",
                              WEBSTOREPRIVATE_GETEPHEMERALAPPSENABLED)
 
   WebstorePrivateGetEphemeralAppsEnabledFunction();
 
- protected:
+ private:
   ~WebstorePrivateGetEphemeralAppsEnabledFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

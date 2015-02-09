@@ -308,6 +308,12 @@ class ExtensionFunction
                       const std::string& s1,
                       const std::string& s2,
                       const std::string& s3);
+  // Error with a list of arguments |args| to pass to caller. TAKES OWNERSHIP.
+  // Using this ResponseValue indicates something is wrong with the API.
+  // It shouldn't be possible to have both an error *and* some arguments.
+  // Some legacy APIs do rely on it though, like webstorePrivate.
+  ResponseValue ErrorWithArguments(scoped_ptr<base::ListValue> args,
+                                   const std::string& error);
   // Bad message. A ResponseValue equivalent to EXTENSION_FUNCTION_VALIDATE(),
   // so this will actually kill the renderer and not respond at all.
   ResponseValue BadMessage();

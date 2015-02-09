@@ -60,6 +60,25 @@ class ArgumentListResponseValue
   const char* title_;
 };
 
+class ErrorWithArgumentsResponseValue : public ArgumentListResponseValue {
+ public:
+  ErrorWithArgumentsResponseValue(const std::string& function_name,
+                                  const char* title,
+                                  ExtensionFunction* function,
+                                  scoped_ptr<base::ListValue> result,
+                                  const std::string& error)
+      : ArgumentListResponseValue(function_name,
+                                  title,
+                                  function,
+                                  result.Pass()) {
+    function->SetError(error);
+  }
+
+  ~ErrorWithArgumentsResponseValue() override {}
+
+  bool Apply() override { return false; }
+};
+
 class ErrorResponseValue : public ExtensionFunction::ResponseValueObject {
  public:
   ErrorResponseValue(ExtensionFunction* function, const std::string& error) {
@@ -329,6 +348,13 @@ ExtensionFunction::ResponseValue ExtensionFunction::Error(
     const std::string& s3) {
   return ResponseValue(new ErrorResponseValue(
       this, ErrorUtils::FormatErrorMessage(format, s1, s2, s3)));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::ErrorWithArguments(
+    scoped_ptr<base::ListValue> args,
+    const std::string& error) {
+  return ResponseValue(new ErrorWithArgumentsResponseValue(
+      name(), "ErrorWithArguments", this, args.Pass(), error));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {

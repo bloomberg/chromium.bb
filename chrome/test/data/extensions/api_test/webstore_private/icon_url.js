@@ -26,7 +26,7 @@ var tests = [
     chrome.webstorePrivate.beginInstallWithManifest3(
         {'id': extensionId,'iconUrl': loadFailureUrl, 'manifest': manifest },
         callbackFail("Image decode failed", function(result) {
-      assertEq(result, "icon_error");
+      assertEq("icon_error", result);
     }));
   },
 
