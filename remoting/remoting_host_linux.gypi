@@ -3,22 +3,20 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'build_deb_script': 'host/installer/linux/build-deb.sh',
-    'deb_filename': 'host/installer/<!(["<(build_deb_script)", "-p", "-s", "<(DEPTH)"])',
-    'packaging_outputs': [
-      '<(deb_filename)',
-      '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
-      '<(PRODUCT_DIR)/remoting_me2me_host.debug',
-      '<(PRODUCT_DIR)/remoting_start_host.debug',
-      '<(PRODUCT_DIR)/native_messaging_host.debug',
-      '<(PRODUCT_DIR)/remote_assistance_host.debug',
-    ]
-  },
-
   'conditions': [
-    ['(branding=="Chrome" and enable_remoting_host==1 and chromeos==0) or (archive_chromoting_tests==1)', {
-
+    ['OS=="linux" and ( (branding=="Chrome" and enable_remoting_host==1 and chromeos==0) or (archive_chromoting_tests==1) )', {
+      'variables': {
+        'build_deb_script': 'host/installer/linux/build-deb.sh',
+        'deb_filename': 'host/installer/<!(["<(build_deb_script)", "-p", "-s", "<(DEPTH)"])',
+        'packaging_outputs': [
+          '<(deb_filename)',
+          '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
+          '<(PRODUCT_DIR)/remoting_me2me_host.debug',
+          '<(PRODUCT_DIR)/remoting_start_host.debug',
+          '<(PRODUCT_DIR)/native_messaging_host.debug',
+          '<(PRODUCT_DIR)/remote_assistance_host.debug',
+        ]
+      },
       'targets': [
         {
           # Store the installer package(s) into a zip file so there is a
@@ -42,7 +40,8 @@
               'action': [ 'zip', '-j', '-0', '<@(_outputs)', '<@(_inputs)' ],
             },
           ],
-        }, {
+        },
+        {
           'target_name': 'remoting_me2me_host_deb_installer',
           'type': 'none',
           'dependencies': [
@@ -76,18 +75,10 @@
             },
           ],
         },
-      ],  # end of 'targets'
-    }, {
-      # Dummy targets.
-      'targets': [
-        {
-          'target_name': 'remoting_me2me_host_archive',
-          'type': 'none',
-        },
-      ],  # end of 'targets'
-    }],  # branding=="Chrome"
+      ],
+    }],  # OS=="linux" and branding=="Chrome"
 
-    ['enable_remoting_host==1', {
+    ['OS=="linux" and enable_remoting_host==1', {
       'targets': [
         # Linux breakpad processing
         # The following target is disabled temporarily because it was failing
@@ -126,7 +117,7 @@
         #   ],  # end of 'conditions'
         # },  # end of target 'remoting_linux_symbols'
       ],  # end of 'targets'
-    }],  # 'enable_remoting_host==1'
+    }],  # 'OS=="linux"'
 
   ],  # end of 'conditions'
 }
