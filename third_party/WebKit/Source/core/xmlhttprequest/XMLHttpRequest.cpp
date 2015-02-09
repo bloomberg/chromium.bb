@@ -438,7 +438,7 @@ Blob* XMLHttpRequest::responseBlob()
             if (m_binaryResponseBuilder && m_binaryResponseBuilder->size()) {
                 size = m_binaryResponseBuilder->size();
                 blobData->appendBytes(m_binaryResponseBuilder->data(), size);
-                blobData->setContentType(finalResponseMIMETypeWithFallback());
+                blobData->setContentType(finalResponseMIMETypeWithFallback().lower());
                 m_binaryResponseBuilder.clear();
             }
             m_responseBlob = Blob::create(BlobDataHandle::create(blobData.release(), size));
@@ -1513,7 +1513,7 @@ PassRefPtr<BlobDataHandle> XMLHttpRequest::createBlobDataHandleFromResponse()
         // FIXME: finalResponseMIMETypeWithFallback() defaults to
         // text/xml which may be incorrect. Replace it with
         // finalResponseMIMEType() after compatibility investigation.
-        blobData->setContentType(finalResponseMIMETypeWithFallback());
+        blobData->setContentType(finalResponseMIMETypeWithFallback().lower());
     }
     return BlobDataHandle::create(blobData.release(), m_lengthDownloadedToFile);
 }
