@@ -103,21 +103,23 @@ void OpenFileWithMimeType(Profile* profile,
       file_urls,
       &tasks);
 
-  if (tasks.empty()) {
-    callback.Run(false);
-    return;
-  }
-
-  const file_tasks::FullTaskDescriptor* chosen_task = &tasks[0];
-  for (size_t i = 0; i < tasks.size(); ++i) {
-    if (tasks[i].is_default()) {
-      chosen_task = &tasks[i];
-      break;
+  // Select a default handler. If a default handler is not available, select
+  // a non-generic file handler.
+  const file_tasks::FullTaskDescriptor* chosen_task = nullptr;
+  for (const auto& task : tasks) {
+    if (!task.is_generic_file_handler()) {
+      chosen_task = &task;
+      if (task.is_default())
+        break;
     }
   }
 
-  ExecuteFileTaskForUrl(profile, chosen_task->task_descriptor(), url);
-  callback.Run(true);
+  if (chosen_task != nullptr) {
+    ExecuteFileTaskForUrl(profile, chosen_task->task_descriptor(), url);
+    callback.Run(true);
+  } else {
+    callback.Run(false);
+  }
 }
 
 // Opens the file specified by |url| by finding and executing a file task for
