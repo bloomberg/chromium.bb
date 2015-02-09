@@ -69,6 +69,11 @@ public:
 
     virtual void trace(Visitor*) { }
 
+    enum LoaderHostType {
+        ResourceFetcherType
+    };
+
+    virtual LoaderHostType objectType() const = 0;
 #if !ENABLE(OILPAN)
     virtual void refResourceLoaderHost() = 0;
     virtual void derefResourceLoaderHost() = 0;

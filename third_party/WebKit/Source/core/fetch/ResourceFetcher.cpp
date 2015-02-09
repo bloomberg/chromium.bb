@@ -1614,4 +1614,10 @@ void ResourceFetcher::trace(Visitor* visitor)
     ResourceLoaderHost::trace(visitor);
 }
 
+ResourceFetcher* ResourceFetcher::toResourceFetcher(ResourceLoaderHost* host)
+{
+    ASSERT(host->objectType() == ResourceLoaderHost::ResourceFetcherType);
+    return static_cast<ResourceFetcher*>(host);
+}
+
 }

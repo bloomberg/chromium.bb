@@ -170,6 +170,10 @@ public:
 
     String getCacheIdentifier() const;
 
+    virtual ResourceLoaderHost::LoaderHostType objectType() const override { return ResourceFetcherType; };
+
+    static ResourceFetcher* toResourceFetcher(ResourceLoaderHost*);
+
 private:
     friend class ResourceFetcherTest;
 

@@ -85,6 +85,7 @@ public:
 
     bool reachedTerminalState() const { return m_state == Terminated; }
     const ResourceRequest& request() const { return m_request; }
+    ResourceLoaderHost* host() const { return m_host.get(); }
 
 private:
     ResourceLoader(ResourceLoaderHost*, Resource*, const ResourceLoaderOptions&);

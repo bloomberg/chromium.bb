@@ -443,9 +443,6 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         return;
     }
 
-    if (resource && resource->type() == Resource::MainResource)
-        LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), frame()->document());
-
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 
     m_response = response;

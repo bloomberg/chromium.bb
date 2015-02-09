@@ -34,6 +34,7 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/LinkLoader.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
@@ -392,6 +393,13 @@ void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<Web
     String encoding = response.textEncodingName();
     if (!encoding.isNull())
         setEncoding(encoding);
+
+    if (m_loader) {
+        ResourceFetcher* fetcher = ResourceFetcher::toResourceFetcher(m_loader->host());
+        if (fetcher && fetcher->frame()) {
+            LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), fetcher->frame()->document());
+        }
+    }
 
     if (!m_resourceToRevalidate)
         return;
