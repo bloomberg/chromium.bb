@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//components/nacl/nacl_defines.gni")
 import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -125,8 +124,6 @@ source_set("chromeos") {
     ":device_policy_proto",
     ":drive_proto",
   ]
-
-  defines = nacl_defines
 
   sources = rebase_path(gypi_values.browser_chromeos_sources, ".", "//chrome") +
             rebase_path(gypi_values.browser_chromeos_extension_sources,

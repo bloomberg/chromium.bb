@@ -119,16 +119,6 @@ static_library("ui") {
       "//ui/web_dialogs",
       "//v8",
     ]
-
-    # TODO(GYP)
-    #'defines': [
-    #  '<@(nacl_defines)',
-    #],
-    #'direct_dependent_settings': {
-    #  'defines': [
-    #    '<@(nacl_defines)',
-    #  ],
-    #  },
   } else {
     # iOS.
     sources +=
