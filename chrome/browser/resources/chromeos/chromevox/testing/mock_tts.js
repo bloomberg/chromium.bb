@@ -113,7 +113,7 @@ MockTts.prototype = {
     // Process any idleUtterances.
     this.idleUtterances_.forEach(function(utterance) {
       this.process_(utterance, true);
-    });
+    }.bind(this));
   },
 
   /**

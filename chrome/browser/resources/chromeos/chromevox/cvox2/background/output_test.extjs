@@ -22,7 +22,7 @@ OutputE2ETest.prototype = {
 };
 
 TEST_F('OutputE2ETest', 'RenderBasic', function() {
-  this.runWithAutomation('<a href="#">Click here</a>',
+  this.runWithLoadedTree('<a href="#">Click here</a>',
     function(root) {
       var link = root.firstChild.firstChild;
       var range = cursors.Range.fromNode(link);

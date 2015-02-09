@@ -88,8 +88,12 @@ AutomationUtil.findNextSubtree = function(cur, dir) {
   while (cur) {
     var next = dir == Dir.BACKWARD ?
         cur.previousSibling : cur.nextSibling;
+    if (!AutomationUtil.isInSameTree(cur, next))
+      return null;
     if (next)
       return next;
+    if (!AutomationUtil.isInSameTree(cur, cur.parent))
+      return null;
     cur = cur.parent;
   }
 };
@@ -164,6 +168,10 @@ AutomationUtil.getAncestors = function(node) {
   var candidate = node;
   while (candidate) {
     ret.push(candidate);
+
+    if (!AutomationUtil.isInSameTree(candidate, candidate.parent))
+      break;
+
     candidate = candidate.parent;
   }
   return ret.reverse();
@@ -224,6 +232,19 @@ AutomationUtil.getDirection = function(nodeA, nodeB) {
     return Dir.FORWARD;
 
   return divA.indexInParent <= divB.indexInParent ? Dir.FORWARD : Dir.BACKWARD;
+};
+
+/**
+ * Determines whether the two given nodes come from the same tree source.
+ * @param {AutomationNode} a
+ * @param {AutomationNode} b
+ * @return {boolean}
+ */
+AutomationUtil.isInSameTree = function(a, b) {
+  if (!a || !b)
+    return true;
+
+  return a.root === b.root;
 };
 
 });  // goog.scope
