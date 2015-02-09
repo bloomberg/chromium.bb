@@ -185,6 +185,7 @@ const char kWhitelist[] = "whitelist";
 
 namespace manifest_values {
 
+const char kApiKey[] = "api_key";
 const char kBrowserActionCommandEvent[] = "_execute_browser_action";
 const char kIncognitoSplit[] = "split";
 const char kIncognitoSpanning[] = "spanning";
@@ -225,7 +226,6 @@ const char kRunAtDocumentIdle[] = "document_idle";
 const char kPageActionCommandEvent[] = "_execute_page_action";
 const char kPageActionTypeTab[] = "tab";
 const char kPageActionTypePermanent[] = "permanent";
-const char kProjectId[] = "project_id";
 const char kLaunchContainerPanel[] = "panel";
 const char kLaunchContainerTab[] = "tab";
 const char kLaunchContainerWindow[] = "window";
@@ -321,8 +321,8 @@ const char kInvalidContentScriptsList[] =
 const char kInvalidContentSecurityPolicy[] =
     "Invalid value for 'content_security_policy'.";
 const char kInvalidCopresenceConfig[] = "Invalid value for 'copresence'.";
-const char kInvalidCopresenceProjectId[] =
-    "copresence.project_id must not be empty.";
+const char kInvalidCopresenceApiKey[] =
+    "copresence.api_key must not be empty.";
 const char kInvalidCSPInsecureValue[] =
     "Ignored insecure CSP value \"*\" in directive '*'.";
 const char kInvalidCSPMissingSecureSrc[] =

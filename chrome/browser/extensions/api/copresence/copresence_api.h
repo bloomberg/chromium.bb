@@ -86,7 +86,6 @@ class CopresenceService final : public BrowserContextKeyedAPI,
   net::URLRequestContextGetter* GetRequestContext() const override;
   const std::string GetPlatformVersionString() const override;
   const std::string GetAPIKey(const std::string& app_id) const override;
-  const std::string GetProjectId(const std::string& app_id) const override;
   copresence::WhispernetClient* GetWhispernetClient() override;
   gcm::GCMDriver* GetGCMDriver() override;
   const std::string GetDeviceId(bool authenticated) override;
@@ -127,6 +126,7 @@ class CopresenceExecuteFunction : public ChromeUIThreadExtensionFunction {
   void SendResult(copresence::CopresenceStatus status);
 };
 
+// TODO(ckehoe): Remove this function.
 class CopresenceSetApiKeyFunction : public ChromeUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("copresence.setApiKey", COPRESENCE_SETAPIKEY);

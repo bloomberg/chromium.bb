@@ -34,7 +34,7 @@ struct CopresenceManifestData final : public Extension::ManifestData {
   CopresenceManifestData();
   ~CopresenceManifestData() override;
 
-  std::string project_id;
+  std::string api_key;
 };
 
 }  // namespace extensions

@@ -49,7 +49,7 @@ class RpcHandler {
   // Arguments:
   // URLRequestContextGetter: Context for the HTTP POST request.
   // string: Name of the rpc to invoke. URL format: server.google.com/rpc_name
-  // string: The API key to pass in the request. Deprecated.
+  // string: The API key to pass in the request.
   // string: The auth token to pass with the request.
   // MessageLite: Contents of POST request to be sent. This needs to be
   //     a (scoped) pointer to ease handling of the abstract MessageLite class.
@@ -157,7 +157,7 @@ class RpcHandler {
   // to contact the server, but it can be overridden for testing.
   void SendHttpPost(net::URLRequestContextGetter* url_context_getter,
                     const std::string& rpc_name,
-                    const std::string& api_key,  // Deprecated
+                    const std::string& api_key,
                     const std::string& auth_token,
                     scoped_ptr<google::protobuf::MessageLite> request_proto,
                     const PostCleanupCallback& callback);

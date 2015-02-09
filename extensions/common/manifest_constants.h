@@ -187,6 +187,7 @@ extern const char kWhitelist[];
 // Some values expected in manifests.
 namespace manifest_values {
 
+extern const char kApiKey[];
 extern const char kBrowserActionCommandEvent[];
 extern const char kIncognitoSplit[];
 extern const char kIncognitoSpanning[];
@@ -227,7 +228,6 @@ extern const char kLaunchContainerWindow[];
 extern const char kPageActionCommandEvent[];
 extern const char kPageActionTypePermanent[];
 extern const char kPageActionTypeTab[];
-extern const char kProjectId[];
 extern const char kRunAtDocumentEnd[];
 extern const char kRunAtDocumentIdle[];
 extern const char kRunAtDocumentStart[];
@@ -282,7 +282,7 @@ extern const char kInvalidContentScript[];
 extern const char kInvalidContentScriptsList[];
 extern const char kInvalidContentSecurityPolicy[];
 extern const char kInvalidCopresenceConfig[];
-extern const char kInvalidCopresenceProjectId[];
+extern const char kInvalidCopresenceApiKey[];
 extern const char kInvalidCSPInsecureValue[];
 extern const char kInvalidCSPMissingSecureSrc[];
 extern const char kInvalidCss[];

@@ -30,10 +30,10 @@ bool CopresenceManifestHandler::Parse(Extension* extension,
   }
 
   scoped_ptr<CopresenceManifestData> manifest_data(new CopresenceManifestData);
-  if (!copresence_config->GetString(manifest_values::kProjectId,
-                                    &manifest_data->project_id) ||
-      manifest_data->project_id.empty()) {
-    *error = base::ASCIIToUTF16(manifest_errors::kInvalidCopresenceProjectId);
+  if (!copresence_config->GetString(manifest_values::kApiKey,
+                                    &manifest_data->api_key) ||
+      manifest_data->api_key.empty()) {
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidCopresenceApiKey);
     return false;
   }
 

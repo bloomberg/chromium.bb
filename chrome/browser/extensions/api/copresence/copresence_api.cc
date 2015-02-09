@@ -185,19 +185,24 @@ const std::string CopresenceService::GetPlatformVersionString() const {
 
 const std::string
 CopresenceService::GetAPIKey(const std::string& app_id) const {
-  // This won't be const if we use map[]
+  // Check first if the app has set its key via the API.
   const auto& key = api_keys_by_app_.find(app_id);
-  return key == api_keys_by_app_.end() ? std::string() : key->second;
-}
+  if (key != api_keys_by_app_.end())
+    return key->second;
 
-const std::string
-CopresenceService::GetProjectId(const std::string& app_id) const {
-  const Extension* extension = ExtensionRegistry::Get(browser_context_)
-      ->GetExtensionById(app_id, ExtensionRegistry::ENABLED);
-  DCHECK(extension) << "Invalid extension ID";
-  CopresenceManifestData* manifest_data = static_cast<CopresenceManifestData*>(
-      extension->GetManifestData(manifest_keys::kCopresence));
-  return manifest_data ? manifest_data->project_id : std::string();
+  // If no key was found, look in the manifest.
+  if (!app_id.empty()) {
+    const Extension* extension = ExtensionRegistry::Get(browser_context_)
+        ->GetExtensionById(app_id, ExtensionRegistry::ENABLED);
+    DCHECK(extension) << "Invalid extension ID";
+    CopresenceManifestData* manifest_data =
+        static_cast<CopresenceManifestData*>(
+            extension->GetManifestData(manifest_keys::kCopresence));
+    if (manifest_data)
+      return manifest_data->api_key;
+  }
+
+  return std::string();
 }
 
 copresence::WhispernetClient* CopresenceService::GetWhispernetClient() {
@@ -281,6 +286,9 @@ ExtensionFunction::ResponseAction CopresenceSetApiKeyFunction::Run() {
   scoped_ptr<api::copresence::SetApiKey::Params> params(
       api::copresence::SetApiKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  LOG(WARNING) << "copresence.setApiKey() is deprecated. "
+               << "Put the key in the manifest at copresence.api_key instead.";
 
   // The api key may be set to empty, to clear it.
   CopresenceService::GetFactoryInstance()->Get(browser_context())

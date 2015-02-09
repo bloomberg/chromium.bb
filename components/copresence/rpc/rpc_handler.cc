@@ -139,18 +139,10 @@ scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
 // an int64 version. We should probably change the version proto
 // to handle a more detailed version.
 ClientVersion* CreateVersion(const std::string& client,
-                             const std::string& version_name,
-                             const std::string& project_id) {
+                             const std::string& version_name) {
   ClientVersion* version = new ClientVersion;
-
   version->set_client(client);
   version->set_version_name(version_name);
-
-  if (!project_id.empty()) {
-    DVLOG(3) << "Using project ID " << project_id;
-    version->set_project_id(project_id);
-  }
-
   return version;
 }
 
@@ -212,6 +204,15 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
                                    const std::string& auth_token,
                                    const StatusCallback& status_callback) {
   DCHECK(request.get());
+
+  // Check that the app, if any, has some kind of authentication token.
+  // Don't allow it to piggyback on Chrome's credentials.
+  if (!app_id.empty() && delegate_->GetAPIKey(app_id).empty() &&
+      auth_token.empty()) {
+    LOG(ERROR) << "App " << app_id << " has no API key or auth token";
+    status_callback.Run(FAIL);
+    return;
+  }
 
   // Store just one auth token since we should have only one account
   // per instance of the copresence component.
@@ -572,13 +573,9 @@ RequestHeader* RpcHandler::CreateRequestHeader(
   RequestHeader* header = new RequestHeader;
 
   header->set_allocated_framework_version(CreateVersion(
-      "Chrome", delegate_->GetPlatformVersionString(), std::string()));
-  if (!app_id.empty()) {
-    LOG_IF(WARNING, delegate_->GetProjectId(app_id).empty())
-        << "No copresence project ID available";
-    header->set_allocated_client_version(CreateVersion(
-        app_id, std::string(), delegate_->GetProjectId(app_id)));
-  }
+      "Chrome", delegate_->GetPlatformVersionString()));
+  if (!app_id.empty())
+    header->set_allocated_client_version(CreateVersion(app_id, std::string()));
   header->set_current_time_millis(base::Time::Now().ToJsTime());
   if (!device_id.empty())
     header->set_registered_device_id(device_id);
@@ -604,7 +601,7 @@ void RpcHandler::SendServerRequest(
     DCHECK(!auth_token_.empty());
   server_post_callback_.Run(delegate_->GetRequestContext(),
                             rpc_name,
-                            delegate_->GetAPIKey(app_id),  // Deprecated
+                            delegate_->GetAPIKey(app_id),
                             authenticated ? auth_token_ : std::string(),
                             make_scoped_ptr<MessageLite>(request.release()),
                             response_handler);
@@ -612,7 +609,7 @@ void RpcHandler::SendServerRequest(
 
 void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,
                               const std::string& rpc_name,
-                              const std::string& api_key,  // Deprecated
+                              const std::string& api_key,
                               const std::string& auth_token,
                               scoped_ptr<MessageLite> request_proto,
                               const PostCleanupCallback& callback) {
