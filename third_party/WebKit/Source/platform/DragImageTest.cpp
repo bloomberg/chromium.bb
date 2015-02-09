@@ -35,11 +35,13 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -165,6 +167,48 @@ TEST(DragImageTest, TrimWhitespace)
         DragImage::create(url, expectedLabel, fontDescription, deviceScaleFactor);
 
     EXPECT_EQ(testImage->size().width(), expectedImage->size().width());
+}
+
+// SkPixelRef which fails to lock, as a lazy pixel ref might if its pixels
+// cannot be generated.
+class InvalidPixelRef : public SkPixelRef {
+public:
+    InvalidPixelRef(const SkImageInfo& info) : SkPixelRef(info) { }
+private:
+    bool onNewLockPixels(LockRec*) override { return false; }
+    void onUnlockPixels() override { ASSERT_NOT_REACHED(); }
+};
+
+TEST(DragImageTest, InvalidRotatedBitmapImage)
+{
+    // This test is mostly useful with MSAN builds, which can actually detect
+    // the use of uninitialized memory.
+
+    // Create a BitmapImage which will fail to produce pixels, and hence not
+    // draw.
+    SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
+    RefPtr<SkPixelRef> pixelRef = adoptRef(new InvalidPixelRef(info));
+    SkBitmap invalidBitmap;
+    invalidBitmap.setInfo(info);
+    invalidBitmap.setPixelRef(pixelRef.get());
+    RefPtr<NativeImageSkia> nativeImage = NativeImageSkia::create(invalidBitmap);
+    RefPtr<BitmapImage> image = BitmapImage::createWithOrientationForTesting(nativeImage, OriginRightTop);
+
+    // Create a DragImage from it. In MSAN builds, this will cause a failure if
+    // the pixel memory is not initialized, if we have to respect non-default
+    // orientation.
+    OwnPtr<DragImage> dragImage = DragImage::create(image.get(), RespectImageOrientation);
+
+    // The DragImage should be fully transparent.
+    SkBitmap dragImageBitmap = dragImage->bitmap();
+    SkAutoLockPixels lock(dragImageBitmap);
+    ASSERT_NE(nullptr, dragImageBitmap.getPixels());
+    for (int x = 0; x < dragImageBitmap.width(); x++) {
+        for (int y = 0; y < dragImageBitmap.height(); y++) {
+            int alpha = SkColorGetA(dragImageBitmap.getColor(x, y));
+            ASSERT_EQ(0, alpha);
+        }
+    }
 }
 
 } // anonymous namespace

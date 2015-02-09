@@ -55,6 +55,9 @@ public:
         return adoptRef(new BitmapImage(observer));
     }
 
+    // This allows constructing a BitmapImage with a forced non-default orientation.
+    static PassRefPtr<BitmapImage> createWithOrientationForTesting(PassRefPtr<NativeImageSkia>, ImageOrientation);
+
     virtual ~BitmapImage();
 
     virtual bool isBitmapImage() const override;
@@ -96,7 +99,7 @@ private:
 
     void updateSize() const;
 
-protected:
+private:
     enum RepetitionCountStatus {
       Unknown,    // We haven't checked the source's repetition count.
       Uncertain,  // We have a repetition count, but it might be wrong (some GIFs have a count after the image data, and will report "loop once" until all data has been decoded).
@@ -165,7 +168,6 @@ protected:
     virtual bool mayFillWithSolidColor() override;
     virtual Color solidColor() const override;
 
-private:
     ImageSource m_source;
     mutable IntSize m_size; // The size to use for the overall image (will just be the size of the first image).
     mutable IntSize m_sizeRespectingOrientation;

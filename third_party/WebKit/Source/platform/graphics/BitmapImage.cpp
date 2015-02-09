@@ -48,6 +48,15 @@ PassRefPtr<BitmapImage> BitmapImage::create(PassRefPtr<NativeImageSkia> nativeIm
     return adoptRef(new BitmapImage(nativeImage, observer));
 }
 
+PassRefPtr<BitmapImage> BitmapImage::createWithOrientationForTesting(PassRefPtr<NativeImageSkia> nativeImage, ImageOrientation orientation)
+{
+    RefPtr<BitmapImage> result = create(nativeImage);
+    result->m_frames[0].m_orientation = orientation;
+    if (orientation.usesWidthAsHeight())
+        result->m_sizeRespectingOrientation = IntSize(result->m_size.height(), result->m_size.width());
+    return result.release();
+}
+
 BitmapImage::BitmapImage(ImageObserver* observer)
     : Image(observer)
     , m_currentFrame(0)
