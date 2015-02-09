@@ -176,8 +176,7 @@ public class AppBannerManager extends EmptyTabObserver {
             // Try installing the app.  If the installation was kicked off, return false to prevent
             // the infobar from disappearing.
             return !mTab.getWindowAndroid().showIntent(
-                    appData.installIntent(), createIntentCallback(appData),
-                    R.string.low_memory_error);
+                    appData.installIntent(), createIntentCallback(appData), null);
         }
     }
 
@@ -215,16 +214,7 @@ public class AppBannerManager extends EmptyTabObserver {
 
     @CalledByNative
     private void showAppDetails(AppData appData) {
-        WindowAndroid.IntentCallback emptyCallback = new WindowAndroid.IntentCallback() {
-            @Override
-            public void onIntentCompleted(WindowAndroid window, int resultCode,
-                    ContentResolver contentResolver, Intent data) {
-                // Do nothing.
-            }
-        };
-
-        mTab.getWindowAndroid().showIntent(
-                appData.detailsIntent(), emptyCallback, R.string.low_memory_error);
+        mTab.getWindowAndroid().showIntent(appData.detailsIntent(), null, null);
     }
 
     @CalledByNative
