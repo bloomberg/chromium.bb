@@ -478,7 +478,7 @@
                 'dom_distiller/content/web_contents_main_frame_observer_unittest.cc',
                 'error_page/renderer/net_error_helper_core_unittest.cc',
                 'metrics/gpu/gpu_metrics_provider_unittest.cc',
-                'password_manager/content/browser/content_credential_manager_dispatcher_unittest.cc',
+                'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
                 'power/origin_power_map_unittest.cc',
               ],
               'dependencies': [
