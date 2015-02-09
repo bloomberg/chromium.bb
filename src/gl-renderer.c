@@ -79,6 +79,7 @@ struct gl_output_state {
 
 enum buffer_type {
 	BUFFER_TYPE_NULL,
+	BUFFER_TYPE_SOLID, /* internal solid color surfaces without a buffer */
 	BUFFER_TYPE_SHM,
 	BUFFER_TYPE_EGL
 };
@@ -1355,6 +1356,9 @@ gl_renderer_surface_set_color(struct weston_surface *surface,
 	gs->color[1] = green;
 	gs->color[2] = blue;
 	gs->color[3] = alpha;
+	gs->buffer_type = BUFFER_TYPE_SOLID;
+	gs->pitch = 1;
+	gs->height = 1;
 
 	gs->shader = &gr->solid_shader;
 }
