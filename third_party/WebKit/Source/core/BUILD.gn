@@ -219,7 +219,8 @@ source_set("remaining") {
   # in GYP. The file list variable is the same and then GYP filters on wether
   # the path starts with "rendering/" or not. We should tweak the .gypis a bit
   # to separate out the rendering files.
-  sources = rebase_path(webcore_files, ".", "//")
+  sources = rebase_path(webcore_non_rendering_files, ".", "//")
+  sources += rebase_path(webcore_rendering_files, ".", "//")
 
   configs -= core_config_remove
   configs += core_config_add

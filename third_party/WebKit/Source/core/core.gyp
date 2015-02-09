@@ -536,17 +536,7 @@
         'webcore_prerequisites',
       ],
       'sources': [
-        '<@(webcore_files)',
-      ],
-      'sources/': [
-        ['exclude', '.*'],
-        ['include', 'rendering/'],
-        ['include', 'layout/'],
-
-        ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
-        # Previous rule excludes things like ChromiumFooWin, include those.
-        ['include', 'rendering/.*Chromium.*\\.(cpp|mm?)$'],
-        ['include', 'layout/.*Chromium.*\\.(cpp|mm?)$'],
+        '<@(webcore_rendering_files)',
       ],
       'conditions': [
         # Shard this taret into parts to work around linker limitations.
@@ -554,18 +544,17 @@
         ['OS=="win" and buildtype=="Official"', {
           'msvs_shard': 5,
         }],
-        ['use_default_render_theme==0', {
-          'sources/': [
-            ['exclude', 'layout/LayoutThemeChromiumDefault.*'],
+        ['use_default_render_theme==0 and OS != "android"', {
+          'sources!': [
+            'layout/LayoutThemeChromiumDefault.cpp',
+            'layout/LayoutThemeChromiumDefault.h',
           ],
         }],
-        ['OS=="win"', {
-          'sources/': [
-            ['exclude', 'Posix\\.cpp$'],
-          ],
-        },{ # OS!="win"
-          'sources/': [
-            ['exclude', 'Win\\.cpp$'],
+        ['OS!="win"', {
+          'sources!': [
+            'layout/LayoutThemeChromiumFontProviderWin.cpp',
+            'layout/LayoutThemeChromiumWin.cpp',
+            'layout/LayoutThemeChromiumWin.h',
           ],
         }],
         ['OS=="win" and chromium_win_pch==1', {
@@ -574,34 +563,41 @@
           ],
         }],
         ['OS=="mac"', {
-          'sources/': [
+          'sources!': [
             # LayoutThemeChromiumSkia is not used on mac since LayoutThemeChromiumMac
             # does not reference the Skia code that is used by Windows, Linux and Android.
-            ['exclude', 'layout/LayoutThemeChromiumSkia\\.cpp$'],
+            'layout/LayoutThemeChromiumSkia.cpp',
+            'layout/LayoutThemeChromiumSkia.h',
+
             # LayoutThemeChromiumFontProvider is used by LayoutThemeChromiumSkia.
-            ['exclude', 'layout/LayoutThemeChromiumFontProvider\\.cpp'],
-            ['exclude', 'layout/LayoutThemeChromiumFontProvider\\.h'],
+            'layout/LayoutThemeChromiumFontProvider.cpp',
+            'layout/LayoutThemeChromiumFontProvider.h',
           ],
         },{ # OS!="mac"
-          'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
+          'sources!': [
+            'layout/LayoutThemeChromiumMac.h',
+            'layout/LayoutThemeChromiumMac.mm',
+          ],
         }],
         ['OS == "android" and target_arch == "ia32" and gcc_version == 46', {
           # Due to a bug in gcc 4.6 in android NDK, we get warnings about uninitialized variable.
           'cflags': ['-Wno-uninitialized'],
         }],
         ['OS != "linux"', {
-          'sources/': [
-            ['exclude', 'Linux\\.cpp$'],
+          'sources!': [
+            'layout/LayoutThemeChromiumLinux.cpp',
+            'layout/LayoutThemeChromiumLinux.h',
           ],
         }],
-        ['OS=="android"', {
-          'sources/': [
-            ['include', 'layout/LayoutThemeChromiumFontProviderLinux\\.cpp$'],
-            ['include', 'layout/LayoutThemeChromiumDefault\\.cpp$'],
+        ['OS != "linux" and OS != "android"', {
+          'sources!': [
+            'layout/LayoutThemeChromiumFontProviderLinux.cpp',
           ],
-        },{ # OS!="android"
-          'sources/': [
-            ['exclude', 'Android\\.cpp$'],
+        }],
+        ['OS!="android"', {
+          'sources!': [
+            'layout/LayoutThemeChromiumAndroid.cpp',
+            'layout/LayoutThemeChromiumAndroid.h',
           ],
         }],
       ],
@@ -614,13 +610,7 @@
         'webcore_prerequisites',
       ],
       'sources': [
-        '<@(webcore_files)',
-      ],
-      'sources/': [
-        ['exclude', 'rendering/'],
-        ['exclude', 'layout/'],
-
-        ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
+        '<@(webcore_non_rendering_files)',
       ],
       'conditions': [
         # Shard this target into parts to work around linker limitations.
@@ -628,24 +618,14 @@
         ['OS=="win" and (buildtype=="Official" or (fastbuild==0 and win_z7==1))', {
           'msvs_shard': 19,
         }],
-        ['OS != "linux"', {
-          'sources/': [
-            ['exclude', 'Linux\\.cpp$'],
-          ],
-        }],
         ['OS=="android"', {
           'cflags': [
             # WebCore does not work with strict aliasing enabled.
             # https://bugs.webkit.org/show_bug.cgi?id=25864
             '-fno-strict-aliasing',
           ],
-        }, { # OS!="android"
-          'sources/': [['exclude', 'Android\\.cpp$']]
         }],
         ['OS=="mac"', {
-          'sources': [
-            'editing/SmartReplaceCF.cpp',
-          ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
@@ -654,9 +634,6 @@
           'sources/': [
             # Additional files from the WebCore Mac build that are presently
             # used in the WebCore Chromium Mac build too.
-
-            # The Mac build is USE(CF).
-            ['include', 'CF\\.cpp$'],
 
             # Cherry-pick some files that can't be included by broader regexps.
             # Some of these are used instead of Chromium platform files, see
@@ -669,7 +646,9 @@
             ['include', 'platform/Theme\\.cpp$'],
           ],
         }, { # OS!="mac"
-          'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
+          'sources!': [
+            'editing/SmartReplaceCF.cpp',
+          ],
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
