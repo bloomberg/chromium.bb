@@ -154,6 +154,17 @@ void BroadcastEvent(Profile* profile,
       make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
 }
 
+// Sends an event named |event_name| with arguments |event_args| to an extension
+// of |extention_id|.
+void DispatchEventToExtension(Profile* profile,
+                              const std::string& extension_id,
+                              const std::string& event_name,
+                              scoped_ptr<base::ListValue> event_args) {
+  extensions::EventRouter::Get(profile)->DispatchEventToExtension(
+      extension_id,
+      make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
+}
+
 file_manager_private::MountCompletedStatus
 MountErrorToMountCompletedStatus(chromeos::MountError error) {
   switch (error) {
@@ -940,9 +951,11 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
   event.entry.additional_properties.SetBoolean("fileIsDirectory",
                                                entry_definition.is_directory);
 
-  BroadcastEvent(profile_,
-                 file_manager_private::OnDirectoryChanged::kEventName,
-                 file_manager_private::OnDirectoryChanged::Create(event));
+  DispatchEventToExtension(
+      profile_,
+      *extension_id,
+      file_manager_private::OnDirectoryChanged::kEventName,
+      file_manager_private::OnDirectoryChanged::Create(event));
 }
 
 void EventRouter::OnDiskAdded(
