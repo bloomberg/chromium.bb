@@ -6,9 +6,6 @@
   'variables': {
     'chromium_code': 1,
   },
-  'includes': [
-    'nacl/nacl_defines.gypi',
-  ],
   'target_defaults': {
     'variables': {
       'nacl_target': 0,
@@ -19,9 +16,6 @@
       ['nacl_target==1', {
         'include_dirs': [
           '<(INTERMEDIATE_DIR)',
-        ],
-        'defines': [
-          '<@(nacl_defines)',
         ],
         'sources': [
           # .cc, .h, and .mm files under nacl that are used on all
@@ -93,11 +87,6 @@
               ],
             }],
           ],
-          'direct_dependent_settings': {
-            'defines': [
-              '<@(nacl_defines)',
-            ],
-          },
         },
         {
           'target_name': 'nacl_browser',
@@ -132,9 +121,6 @@
             'nacl_switches',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
             '../content/content.gyp:content_browser',
-          ],
-          'defines': [
-            '<@(nacl_defines)',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
@@ -191,14 +177,6 @@
             '../third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
             '../third_party/WebKit/public/blink.gyp:blink',
           ],
-          'defines': [
-            '<@(nacl_defines)',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              '<@(nacl_defines)',
-            ],
-          },
         },
         {
           'target_name': 'nacl_loader_unittests',
@@ -267,7 +245,6 @@
                 '..',
               ],
               'defines': [
-                '<@(nacl_defines)',
                 # Allow .cc files to know if they're being compiled as part
                 # of nacl_helper.
                 'IN_NACL_HELPER=1',
@@ -384,11 +361,6 @@
                 'Common_Base': {
                   'msvs_target_platform': 'x64',
                 },
-              },
-              'direct_dependent_settings': {
-                'defines': [
-                  '<@(nacl_defines)',
-                ],
               },
             },
             {

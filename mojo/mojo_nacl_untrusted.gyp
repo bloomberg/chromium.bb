@@ -7,7 +7,6 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'includes': [
         '../build/common_untrusted.gypi',
-        '../components/nacl/nacl_defines.gypi',
         '../mojo/mojo_nacl.gypi',
         '../third_party/mojo/mojo_variables.gypi',
       ],
@@ -21,9 +20,6 @@
             'build_newlib': 0,
             'build_pnacl_newlib': 1,
           },
-          'defines': [
-            '<@(nacl_defines)',
-          ],
           'sources': [
             '<(monacl_codegen_dir)/libmojo.cc',
           ],

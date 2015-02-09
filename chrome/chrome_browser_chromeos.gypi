@@ -1158,14 +1158,6 @@
         '../v8/tools/gyp/v8.gyp:v8',
         'chrome_resources.gyp:chrome_strings',
       ],
-      'defines': [
-        '<@(nacl_defines)',
-      ],
-      'direct_dependent_settings': {
-        'defines': [
-          '<@(nacl_defines)',
-        ],
-      },
       'export_dependent_settings': [
         'browser/extensions/api/api_registration.gyp:chrome_api_registration',
         'common/extensions/api/api.gyp:chrome_api',

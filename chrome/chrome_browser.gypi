@@ -3054,14 +3054,6 @@
             # chrome/browser/metrics/variations/generate_resources_map.py
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/generated_resources_map.cc',
           ],
-          'defines': [
-            '<@(nacl_defines)',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              '<@(nacl_defines)',
-            ],
-          },
         }, {  # OS == "ios"
           'dependencies': [
             '../net/net.gyp:net',

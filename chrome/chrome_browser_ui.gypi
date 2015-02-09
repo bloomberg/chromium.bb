@@ -2744,14 +2744,6 @@
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',
           ],
-          'defines': [
-            '<@(nacl_defines)',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              '<@(nacl_defines)',
-            ],
-          },
         }, {  # OS == "ios"
           'sources': [
             '<@(chrome_browser_ui_ios_sources)'

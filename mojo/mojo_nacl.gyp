@@ -6,7 +6,6 @@
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'includes': [
-        '../components/nacl/nacl_defines.gypi',
         '../mojo/mojo_nacl.gypi',
       ],
       'targets': [
@@ -38,9 +37,6 @@
         {
           'target_name': 'monacl_syscall',
           'type': 'static_library',
-          'defines': [
-            '<@(nacl_defines)',
-          ],
           'include_dirs': [
             '..',
           ],
@@ -54,9 +50,6 @@
         {
           'target_name': 'monacl_sel',
           'type': 'static_library',
-          'defines': [
-            '<@(nacl_defines)',
-          ],
           'include_dirs': [
             '..',
           ],
@@ -88,9 +81,6 @@
             {
               'target_name': 'monacl_syscall_win64',
               'type': 'static_library',
-              'defines': [
-                '<@(nacl_defines)',
-              ],
               'include_dirs': [
                 '..',
               ],
