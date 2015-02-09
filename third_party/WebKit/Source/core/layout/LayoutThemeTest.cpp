@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/layout/LayoutTheme.h"
 
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"

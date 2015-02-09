@@ -42,7 +42,7 @@
 #include "core/css/MediaValuesDynamic.h"
 #include "core/css/PointerProperties.h"
 #include "core/css/resolver/MediaQueryResult.h"
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"

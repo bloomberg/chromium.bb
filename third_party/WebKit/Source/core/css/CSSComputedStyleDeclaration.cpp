@@ -31,7 +31,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/RenderStyleCSSValueMapping.h"
+#include "core/css/LayoutStyleCSSValueMapping.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -565,7 +565,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     if (!style)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSValue> value = RenderStyleCSSValueMapping::get(propertyID, *style, renderer, styledNode, m_allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> value = LayoutStyleCSSValueMapping::get(propertyID, *style, renderer, styledNode, m_allowVisitedStyle);
     if (value)
         return value;
 

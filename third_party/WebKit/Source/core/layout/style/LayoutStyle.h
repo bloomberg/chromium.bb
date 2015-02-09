@@ -122,7 +122,7 @@ class LayoutStyle: public RefCounted<LayoutStyle> {
     friend class CSSPropertyEquality; // Used by CSS animations. We can't allow them to animate based off visited colors.
     friend class ApplyStyleCommand; // Editing has to only reveal unvisited info.
     friend class EditingStyle; // Editing has to only reveal unvisited info.
-    friend class RenderStyleCSSValueMapping; // Needs to be able to see visited and unvisited colors for devtools.
+    friend class LayoutStyleCSSValueMapping; // Needs to be able to see visited and unvisited colors for devtools.
     friend class StyleBuilderFunctions; // Sets color styles
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
 

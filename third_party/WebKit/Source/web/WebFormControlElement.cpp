@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebFormControlElement.h"
 
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"

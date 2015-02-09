@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RenderStyleCSSValueMapping_h
-#define RenderStyleCSSValueMapping_h
+#ifndef LayoutStyleCSSValueMapping_h
+#define LayoutStyleCSSValueMapping_h
 
 #include "core/CSSPropertyNames.h"
 
@@ -17,7 +17,7 @@ class ShadowList;
 class StyleColor;
 class Node;
 
-class RenderStyleCSSValueMapping {
+class LayoutStyleCSSValueMapping {
 public:
     // FIXME: Resolve computed auto alignment in applyProperty/LayoutStyle and remove this non-const styledNode parameter.
     static PassRefPtrWillBeRawPtr<CSSValue> get(CSSPropertyID, const LayoutStyle&, const LayoutObject* renderer = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);
@@ -30,4 +30,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderStyleCSSValueMapping_h
+#endif // LayoutStyleCSSValueMapping_h

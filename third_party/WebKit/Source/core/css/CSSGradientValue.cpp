@@ -30,7 +30,7 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/Pair.h"
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/IntSize.h"

@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "core/css/RenderStyleCSSValueMapping.h"
+#include "core/css/LayoutStyleCSSValueMapping.h"
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
@@ -90,7 +90,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSProper
     return positionList.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RenderStyleCSSValueMapping::currentColorOrValidColor(const LayoutStyle& style, const StyleColor& color)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutStyleCSSValueMapping::currentColorOrValidColor(const LayoutStyle& style, const StyleColor& color)
 {
     // This function does NOT look at visited information, so that computed style doesn't expose that.
     return cssValuePool().createColorValue(color.resolve(style.color()).rgb());
@@ -394,7 +394,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePr
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        RefPtrWillBeRawPtr<CSSValue> value = RenderStyleCSSValueMapping::get(shorthand.properties()[i], style, renderer, styledNode, allowVisitedStyle);
+        RefPtrWillBeRawPtr<CSSValue> value = LayoutStyleCSSValueMapping::get(shorthand.properties()[i], style, renderer, styledNode, allowVisitedStyle);
         ASSERT(value);
         list->append(value.release());
     }
@@ -405,7 +405,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const Sty
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        RefPtrWillBeRawPtr<CSSValue> value = RenderStyleCSSValueMapping::get(shorthand.properties()[i], style, renderer, styledNode, allowVisitedStyle);
+        RefPtrWillBeRawPtr<CSSValue> value = LayoutStyleCSSValueMapping::get(shorthand.properties()[i], style, renderer, styledNode, allowVisitedStyle);
         ASSERT(value);
         list->append(value);
     }
@@ -420,7 +420,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const L
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
         RefPtrWillBeRawPtr<CSSValueList> beforeSlash = CSSValueList::createSpaceSeparated();
         if (!currLayer->next()) { // color only for final layer
-            RefPtrWillBeRawPtr<CSSValue> value = RenderStyleCSSValueMapping::get(CSSPropertyBackgroundColor, style, renderer, styledNode, allowVisitedStyle);
+            RefPtrWillBeRawPtr<CSSValue> value = LayoutStyleCSSValueMapping::get(CSSPropertyBackgroundColor, style, renderer, styledNode, allowVisitedStyle);
             ASSERT(value);
             beforeSlash->append(value);
         }
@@ -1039,10 +1039,10 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StyleP
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     // Assume the properties are in the usual order top, right, bottom, left.
-    RefPtrWillBeRawPtr<CSSValue> topValue = RenderStyleCSSValueMapping::get(shorthand.properties()[0], style, renderer, styledNode, allowVisitedStyle);
-    RefPtrWillBeRawPtr<CSSValue> rightValue = RenderStyleCSSValueMapping::get(shorthand.properties()[1], style, renderer, styledNode, allowVisitedStyle);
-    RefPtrWillBeRawPtr<CSSValue> bottomValue = RenderStyleCSSValueMapping::get(shorthand.properties()[2], style, renderer, styledNode, allowVisitedStyle);
-    RefPtrWillBeRawPtr<CSSValue> leftValue = RenderStyleCSSValueMapping::get(shorthand.properties()[3], style, renderer, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> topValue = LayoutStyleCSSValueMapping::get(shorthand.properties()[0], style, renderer, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> rightValue = LayoutStyleCSSValueMapping::get(shorthand.properties()[1], style, renderer, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> bottomValue = LayoutStyleCSSValueMapping::get(shorthand.properties()[2], style, renderer, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> leftValue = LayoutStyleCSSValueMapping::get(shorthand.properties()[3], style, renderer, styledNode, allowVisitedStyle);
 
     // All 4 properties must be specified.
     if (!topValue || !rightValue || !bottomValue || !leftValue)
@@ -1185,7 +1185,7 @@ static inline String serializeAsFragmentIdentifier(const AtomicString& resource)
     return "#" + resource;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowData(const ShadowData& shadow, const LayoutStyle& style, bool useSpread)
+PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::valueForShadowData(const ShadowData& shadow, const LayoutStyle& style, bool useSpread)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> x = zoomAdjustedPixelValue(shadow.x(), style);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> y = zoomAdjustedPixelValue(shadow.y(), style);
@@ -1196,7 +1196,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowData(
     return CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), shadowStyle.release(), color.release());
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowList(const ShadowList* shadowList, const LayoutStyle& style, bool useSpread)
+PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::valueForShadowList(const ShadowList* shadowList, const LayoutStyle& style, bool useSpread)
 {
     if (!shadowList)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1208,7 +1208,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowList(
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(const LayoutStyle& style)
+PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::valueForFilter(const LayoutStyle& style)
 {
     if (style.filter().operations().isEmpty())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1278,7 +1278,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(cons
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID propertyID, const LayoutStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID propertyID, const LayoutStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGLayoutStyle& svgStyle = style.svgStyle();
     propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.writingMode());

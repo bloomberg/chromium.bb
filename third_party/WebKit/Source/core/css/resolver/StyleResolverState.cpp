@@ -24,7 +24,7 @@
 
 #include "core/animation/css/CSSAnimations.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/frame/FrameHost.h"
 
 namespace blink {

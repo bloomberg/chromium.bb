@@ -23,7 +23,7 @@
 #include "core/css/resolver/ElementResolveContext.h"
 
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/VisitedLinkState.h"
 

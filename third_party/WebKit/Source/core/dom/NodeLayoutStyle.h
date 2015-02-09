@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef NodeRenderStyle_h
-#define NodeRenderStyle_h
+#ifndef NodeLayoutStyle_h
+#define NodeLayoutStyle_h
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderingTraversal.h"
@@ -59,4 +59,4 @@ inline const LayoutStyle& Node::layoutStyleRef() const
 }
 
 }
-#endif
+#endif // NodeLayoutStyle_h

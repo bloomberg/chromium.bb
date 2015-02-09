@@ -23,7 +23,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/frame/FrameView.h"

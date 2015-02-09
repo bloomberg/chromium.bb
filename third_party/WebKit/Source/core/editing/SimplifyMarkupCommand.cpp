@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/SimplifyMarkupCommand.h"
 
-#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/LayoutStyle.h"
