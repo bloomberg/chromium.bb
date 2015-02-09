@@ -9,6 +9,7 @@
 
 #include "ui/app_list/search_box_model_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -47,6 +48,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   bool HasSearch() const;
   void ClearSearch();
   void InvalidateMenu();
+
+  // Sets the shadow border of the search box.
+  void SetShadow(const gfx::ShadowValue& shadow);
 
   // Returns the bounds to use for the view (including the shadow) given the
   // desired bounds of the search box contents.

@@ -8,6 +8,7 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
 #include "ui/gfx/shadow_value.h"
@@ -28,9 +29,7 @@ const int kTopPadding = 5;
 class SearchCardView : public views::View {
  public:
   explicit SearchCardView(views::View* content_view) {
-    SetBorder(make_scoped_ptr(new views::ShadowBorder(
-        gfx::ShadowValue(gfx::Point(0, kCardShadowYOffset), kCardShadowBlur,
-                         kCardShadowColor))));
+    SetBorder(make_scoped_ptr(new views::ShadowBorder(GetShadowForZHeight(1))));
     SetLayoutManager(new views::FillLayout());
     content_view->set_background(
         views::Background::CreateSolidBackground(kCardBackgroundColor));
@@ -49,9 +48,18 @@ class SearchCardView : public views::View {
 
 SearchResultPageView::SearchResultPageView() : selected_index_(0) {
   if (switches::IsExperimentalAppListEnabled()) {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                          kExperimentalWindowPadding,
-                                          kTopPadding, kGroupSpacing));
+    gfx::ShadowValue shadow = GetShadowForZHeight(1);
+    scoped_ptr<views::Border> border(new views::ShadowBorder(shadow));
+
+    gfx::Insets insets = gfx::Insets(kTopPadding, kExperimentalWindowPadding, 0,
+                                     kExperimentalWindowPadding);
+    insets += -border->GetInsets();
+
+    views::BoxLayout* layout =
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, kGroupSpacing);
+    layout->set_inside_border_insets(insets);
+
+    SetLayoutManager(layout);
   } else {
     SetLayoutManager(new views::FillLayout);
   }

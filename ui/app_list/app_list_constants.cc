@@ -50,9 +50,6 @@ const float kFolderBubbleRadius = 23;
 const float kFolderShadowRadius = 23.5;
 const float kFolderShadowOffsetY = 1;
 
-const int kCardShadowBlur = 4;
-const int kCardShadowYOffset = 1;
-const SkColor kCardShadowColor = SkColorSetARGB(0x4C, 0, 0, 0);
 const SkColor kCardBackgroundColor = SK_ColorWHITE;
 
 // Duration in milliseconds for page transition.
@@ -125,5 +122,22 @@ const char kAppListWMClass[] = "chrome_app_list";
 const char kAppListWMClass[] = "chromium_app_list";
 #endif
 #endif
+
+gfx::ShadowValue GetShadowForZHeight(int z_height) {
+  if (z_height <= 0)
+    return gfx::ShadowValue();
+
+  switch (z_height) {
+    case 1:
+      return gfx::ShadowValue(gfx::Point(0, 1), 2,
+                              SkColorSetARGB(0x4C, 0, 0, 0));
+    case 2:
+      return gfx::ShadowValue(gfx::Point(0, 2), 4,
+                              SkColorSetARGB(0x33, 0, 0, 0));
+    default:
+      return gfx::ShadowValue(gfx::Point(0, 8), 12,
+                              SkColorSetARGB(0x3F, 0, 0, 0));
+  }
+}
 
 }  // namespace app_list

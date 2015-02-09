@@ -9,6 +9,7 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/shadow_value.h"
 
 namespace app_list {
 
@@ -43,9 +44,6 @@ APP_LIST_EXPORT extern const float kFolderBubbleRadius;
 APP_LIST_EXPORT extern const float kFolderShadowRadius;
 APP_LIST_EXPORT extern const float kFolderShadowOffsetY;
 
-APP_LIST_EXPORT extern const int kCardShadowBlur;
-APP_LIST_EXPORT extern const int kCardShadowYOffset;
-APP_LIST_EXPORT extern const SkColor kCardShadowColor;
 APP_LIST_EXPORT extern const SkColor kCardBackgroundColor;
 
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
@@ -83,6 +81,9 @@ APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 // The WM_CLASS name for the app launcher window on Linux.
 APP_LIST_EXPORT extern const char kAppListWMClass[];
 #endif
+
+// Returns the shadow values for a view at |z_height|.
+gfx::ShadowValue APP_LIST_EXPORT GetShadowForZHeight(int z_height);
 
 }  // namespace app_list
 

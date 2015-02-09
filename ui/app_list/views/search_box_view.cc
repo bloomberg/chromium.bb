@@ -44,10 +44,6 @@ const int kMenuXOffsetFromButton = -7;
 
 const int kBackgroundBorderCornerRadius = 2;
 
-const int kShadowBlur = 4;
-const int kShadowYOffset = 2;
-const SkColor kShadowColor = SkColorSetARGB(0x33, 0, 0, 0);
-
 // A background that paints a solid white rounded rect with a thin grey border.
 class ExperimentalSearchBoxBackground : public views::Background {
  public:
@@ -86,8 +82,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   AddChildView(content_container_);
 
   if (switches::IsExperimentalAppListEnabled()) {
-    SetBorder(make_scoped_ptr(new views::ShadowBorder(gfx::ShadowValue(
-        gfx::Point(0, kShadowYOffset), kShadowBlur, kShadowColor))));
+    SetShadow(GetShadowForZHeight(1));
     back_button_ = new views::ImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     back_button_->SetImage(
@@ -176,10 +171,15 @@ void SearchBoxView::InvalidateMenu() {
   menu_.reset();
 }
 
+void SearchBoxView::SetShadow(const gfx::ShadowValue& shadow) {
+  SetBorder(make_scoped_ptr(new views::ShadowBorder(shadow)));
+  Layout();
+}
+
 gfx::Rect SearchBoxView::GetViewBoundsForSearchBoxContentsBounds(
     const gfx::Rect& rect) const {
   gfx::Rect view_bounds = rect;
-  view_bounds.Inset(GetInsets().Scale(-1));
+  view_bounds.Inset(-GetInsets());
   return view_bounds;
 }
 

@@ -12,10 +12,20 @@
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
+
+namespace {
+
+gfx::ShadowValue GetSearchBoxShadowForState(AppListModel::State state) {
+  return GetShadowForZHeight(state == AppListModel::STATE_SEARCH_RESULTS ? 1
+                                                                         : 2);
+}
+
+}  // namespace
 
 // ContentsAnimator
 
@@ -97,9 +107,27 @@ void ContentsAnimator::UpdateSearchBoxForDefaultAnimation(double progress,
   gfx::Rect search_box_rect =
       gfx::Tween::RectValueBetween(progress, search_box_from, search_box_to);
 
+  AppListModel::State from_state =
+      contents_view()->GetStateForPageIndex(from_page);
+  AppListModel::State to_state = contents_view()->GetStateForPageIndex(to_page);
+
+  gfx::ShadowValue original_shadow = GetSearchBoxShadowForState(from_state);
+  gfx::ShadowValue target_shadow = GetSearchBoxShadowForState(to_state);
+
   SearchBoxView* search_box = contents_view()->GetSearchBoxView();
-  search_box->GetWidget()->SetBounds(contents_view()->ConvertRectToWidget(
-      search_box->GetViewBoundsForSearchBoxContentsBounds(search_box_rect)));
+  gfx::Point offset(gfx::Tween::LinearIntValueBetween(
+                        progress, original_shadow.x(), target_shadow.x()),
+                    gfx::Tween::LinearIntValueBetween(
+                        progress, original_shadow.y(), target_shadow.y()));
+  search_box->SetShadow(gfx::ShadowValue(
+      offset, gfx::Tween::LinearIntValueBetween(
+                  progress, original_shadow.blur(), target_shadow.blur()),
+      gfx::Tween::ColorValueBetween(progress, original_shadow.color(),
+                                    target_shadow.color())));
+
+  search_box->GetWidget()->SetBounds(
+      search_box->GetViewBoundsForSearchBoxContentsBounds(
+          contents_view()->ConvertRectToWidget(search_box_rect)));
 }
 
 void ContentsAnimator::ClipSearchResultsPageToOnscreenBounds(

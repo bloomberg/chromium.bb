@@ -109,8 +109,8 @@ bool MicButton::GetHitTestMask(gfx::Path* mask) const {
 SpeechView::SpeechView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       logo_(NULL) {
-  SetBorder(scoped_ptr<views::Border>(new views::ShadowBorder(gfx::ShadowValue(
-      gfx::Point(0, kCardShadowYOffset), kCardShadowBlur, kCardShadowColor))));
+  SetBorder(scoped_ptr<views::Border>(
+      new views::ShadowBorder(GetShadowForZHeight(1))));
 
   // To keep the painting order of the border and the background, this class
   // actually has a single child of 'container' which has white background and
