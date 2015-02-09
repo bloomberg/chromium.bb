@@ -8,6 +8,7 @@
 # If you are editing this file, please also update these other OWNERS files with
 # a unique random sort (sort -R) of these owners.
 #   chrome/browser/chromeos/extensions/OWNERS
+#   chrome/browser/renderer_host/OWNERS
 #   chrome/common/extensions/OWNERS
 #   chrome/renderer/extensions/OWNERS
 #   chrome/renderer/resources/extensions/OWNERS
