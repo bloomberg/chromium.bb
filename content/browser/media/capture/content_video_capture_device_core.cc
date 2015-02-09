@@ -134,6 +134,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
         static_cast<uint8*>(output_buffer->data()),
         output_buffer->size(),
         base::SharedMemory::NULLHandle(),
+        0,
         base::TimeDelta(),
         base::Closure());
   }

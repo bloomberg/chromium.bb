@@ -286,6 +286,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
     uint8* data,
     size_t data_size,
     base::SharedMemoryHandle handle,
+    size_t data_offset,
     base::TimeDelta timestamp,
     const base::Closure& no_longer_needed_cb) {
   const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
@@ -306,6 +307,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
                          timestamp,
                          false));
       frame->shared_memory_handle_ = handle;
+      frame->shared_memory_offset_ = data_offset;
       frame->strides_[kYPlane] = new_coded_size.width();
       frame->strides_[kUPlane] = new_coded_size.width() / 2;
       frame->strides_[kVPlane] = new_coded_size.width() / 2;
@@ -685,6 +687,7 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
       natural_size_(natural_size),
       mailbox_holder_(mailbox_holder.Pass()),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
+      shared_memory_offset_(0),
       timestamp_(timestamp),
       release_sync_point_(0),
       end_of_stream_(end_of_stream),
@@ -789,6 +792,10 @@ const gpu::MailboxHolder* VideoFrame::mailbox_holder() const {
 
 base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
   return shared_memory_handle_;
+}
+
+size_t VideoFrame::shared_memory_offset() const {
+  return shared_memory_offset_;
 }
 
 void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {

@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/numerics/safe_math.h"
+#include "base/sys_info.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -243,6 +245,7 @@ GpuVideoEncodeAccelerator::CreateAndroidVEA() {
 
 void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
                                          base::SharedMemoryHandle buffer_handle,
+                                         uint32 buffer_offset,
                                          uint32 buffer_size,
                                          bool force_keyframe) {
   DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode(): frame_id=" << frame_id
@@ -257,16 +260,30 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
     return;
   }
 
+  uint32 aligned_offset =
+      buffer_offset % base::SysInfo::VMAllocationGranularity();
+  base::CheckedNumeric<off_t> map_offset = buffer_offset;
+  map_offset -= aligned_offset;
+  base::CheckedNumeric<size_t> map_size = buffer_size;
+  map_size += aligned_offset;
+
+  if (!map_offset.IsValid() || !map_size.IsValid()) {
+    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode():"
+                << " invalid (buffer_offset,buffer_size)";
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+
   scoped_ptr<base::SharedMemory> shm(
       new base::SharedMemory(buffer_handle, true));
-  if (!shm->Map(buffer_size)) {
+  if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
                    "could not map frame_id=" << frame_id;
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
-  uint8* shm_memory = reinterpret_cast<uint8*>(shm->memory());
+  uint8* shm_memory = reinterpret_cast<uint8*>(shm->memory()) + aligned_offset;
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalPackedMemory(
           input_format_,
@@ -276,6 +293,7 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
           shm_memory,
           buffer_size,
           buffer_handle,
+          buffer_offset,
           base::TimeDelta(),
           // It's turtles all the way down...
           base::Bind(base::IgnoreResult(&base::MessageLoopProxy::PostTask),

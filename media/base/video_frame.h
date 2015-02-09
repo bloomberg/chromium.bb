@@ -139,6 +139,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8* data,
       size_t data_size,
       base::SharedMemoryHandle handle,
+      size_t shared_memory_offset,
       base::TimeDelta timestamp,
       const base::Closure& no_longer_needed_cb);
 
@@ -300,6 +301,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the shared-memory handle, if present
   base::SharedMemoryHandle shared_memory_handle() const;
 
+  // Returns the offset into the shared memory where the frame data begins.
+  size_t shared_memory_offset() const;
+
   bool allow_overlay() const { return allow_overlay_; }
 
 #if defined(OS_POSIX)
@@ -392,6 +396,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Shared memory handle, if this frame was allocated from shared memory.
   base::SharedMemoryHandle shared_memory_handle_;
+
+  // Offset in shared memory buffer.
+  size_t shared_memory_offset_;
 
 #if defined(OS_POSIX)
   // Dmabufs for each plane, if this frame is wrapping memory

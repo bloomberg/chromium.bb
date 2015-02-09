@@ -244,6 +244,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
           reinterpret_cast<uint8*>(buffer->buffer->memory()),
           buffer->buffer_size,
           buffer->buffer->handle(),
+          0,
           timestamp - first_frame_timestamp_,
           media::BindToCurrentLoop(
               base::Bind(&VideoCaptureImpl::OnClientBufferFinished,

@@ -135,6 +135,7 @@ class VideoCaptureControllerTest : public testing::Test {
         reinterpret_cast<uint8*>(buffer->data()),
         media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions),
         base::SharedMemory::NULLHandle(),
+        0,
         base::TimeDelta(),
         base::Closure());
   }

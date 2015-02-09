@@ -502,6 +502,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
           reinterpret_cast<uint8*>(input_buffer->memory()),
           input_buffer->mapped_size(),
           input_buffer->handle(),
+          0,
           base::TimeDelta(),
           base::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished, this, index));
   if (!frame.get()) {

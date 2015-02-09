@@ -184,7 +184,8 @@ void GpuVideoEncodeAcceleratorHost::Encode(
   }
 
   Send(new AcceleratedVideoEncoderMsg_Encode(
-      encoder_route_id_, next_frame_id_, handle, frame_size, force_keyframe));
+      encoder_route_id_, next_frame_id_, handle, frame->shared_memory_offset(),
+      frame_size, force_keyframe));
   frame_map_[next_frame_id_] = frame;
 
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.

@@ -502,6 +502,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
           media::VideoFrame::AllocationSize(media::VideoFrame::I420,
                                             dimensions),
           base::SharedMemory::NULLHandle(),
+          0,
           base::TimeDelta(),
           base::Closure());
   DCHECK(frame.get());

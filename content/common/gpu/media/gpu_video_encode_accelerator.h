@@ -79,6 +79,7 @@ class GpuVideoEncodeAccelerator
   // process.
   void OnEncode(int32 frame_id,
                 base::SharedMemoryHandle buffer_handle,
+                uint32 buffer_offset,
                 uint32 buffer_size,
                 bool force_keyframe);
   void OnUseOutputBitstreamBuffer(int32 buffer_id,

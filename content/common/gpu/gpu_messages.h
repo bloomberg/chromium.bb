@@ -710,9 +710,10 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_ErrorNotification,
 
 // Queue a input buffer to the encoder to encode. |frame_id| will be returned by
 // AcceleratedVideoEncoderHostMsg_NotifyInputDone.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoEncoderMsg_Encode,
+IPC_MESSAGE_ROUTED5(AcceleratedVideoEncoderMsg_Encode,
                     int32 /* frame_id */,
                     base::SharedMemoryHandle /* buffer_handle */,
+                    uint32 /* buffer_offset */,
                     uint32 /* buffer_size */,
                     bool /* force_keyframe */)
 
