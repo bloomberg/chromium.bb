@@ -194,10 +194,10 @@ line-height animatable, inherited, getter=specifiedLineHeight, converter=convert
 list-style-image animatable, inherited, custom_value
 list-style-position inherited
 list-style-type inherited
-margin-bottom animatable, initial=initialMargin, converter=convertLengthOrAuto
-margin-left animatable, initial=initialMargin, converter=convertLengthOrAuto
-margin-right animatable, initial=initialMargin, converter=convertLengthOrAuto
-margin-top animatable, initial=initialMargin, converter=convertLengthOrAuto
+margin-bottom animatable, initial=initialMargin, converter=convertQuirkyLength
+margin-left animatable, initial=initialMargin, converter=convertQuirkyLength
+margin-right animatable, initial=initialMargin, converter=convertQuirkyLength
+margin-top animatable, initial=initialMargin, converter=convertQuirkyLength
 marker-end inherited, svg, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier
 marker-mid inherited, svg, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
 marker-start inherited, svg, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier

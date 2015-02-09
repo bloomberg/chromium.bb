@@ -496,17 +496,13 @@ void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const Named
 Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    result.setQuirk(primitiveValue->isQuirkValue());
-    return result;
+    return primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
 }
 
 Length StyleBuilderConverter::convertLengthOrAuto(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
-    result.setQuirk(primitiveValue->isQuirkValue());
-    return result;
+    return primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
 }
 
 Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSSValue* value)
@@ -688,6 +684,14 @@ EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSVal
     }
 
     return PO_NORMAL;
+}
+
+Length StyleBuilderConverter::convertQuirkyLength(StyleResolverState& state, CSSValue* value)
+{
+    Length length = convertLengthOrAuto(state, value);
+    // This is only for margins which use __qem
+    length.setQuirk(toCSSPrimitiveValue(value)->isQuirkValue());
+    return length;
 }
 
 PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&, CSSValue* value)

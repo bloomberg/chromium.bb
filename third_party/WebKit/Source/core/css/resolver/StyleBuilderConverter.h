@@ -72,6 +72,7 @@ public:
     static float convertNumberOrPercentage(StyleResolverState&, CSSValue*);
     static float convertPerspective(StyleResolverState&, CSSValue*);
     static LengthPoint convertPerspectiveOrigin(StyleResolverState&, CSSValue*);
+    static Length convertQuirkyLength(StyleResolverState&, CSSValue*);
     static PassRefPtr<QuotesData> convertQuotes(StyleResolverState&, CSSValue*);
     static LengthSize convertRadius(StyleResolverState&, CSSValue*);
     static EPaintOrder convertPaintOrder(StyleResolverState&, CSSValue*);
