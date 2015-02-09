@@ -101,8 +101,8 @@ test.util.sync.openFile = function(contentWindow, filename) {
  *     whether the target is found and mousedown and click events are sent.
  */
 test.util.async.selectVolume = function(contentWindow, iconName, callback) {
-  var query = '[volume-type-icon=' + iconName + ']';
-  var driveQuery = '[volume-type-icon=drive]';
+  var query = '#directory-tree [volume-type-icon=' + iconName + ']';
+  var driveQuery = '#directory-tree [volume-type-icon=drive]';
   var isDriveSubVolume = iconName == 'drive_recent' ||
                          iconName == 'drive_shared_with_me' ||
                          iconName == 'drive_offline';

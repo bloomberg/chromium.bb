@@ -310,7 +310,7 @@ body.selecting .dialog-header {
   background: rgba(204, 204, 204, 0.15);
 }
 
-.dialog-header .icon-button[disabled] {
+.dialog-header .icon-button[disabled]:not(.manual-display) {
   display: none !important;
 }
 

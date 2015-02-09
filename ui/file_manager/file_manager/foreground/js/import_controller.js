@@ -297,7 +297,7 @@ importer.ImportController.prototype.updateUi_ =
         executable: false,
         label: strf(
             'CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL',
-            opt_scan.getTotalBytes()),
+            util.bytesToString(opt_scan.getTotalBytes())),
         coreIcon: 'report-problem'
       });
       this.commandWidget_.updateDetails(opt_scan);
@@ -657,8 +657,8 @@ importer.RuntimeCommandWidget.prototype.update = function(update) {
 
 /** @override */
 importer.RuntimeCommandWidget.prototype.updateDetails = function(scan) {
-  this.photoCount_.textContent = scan.getFileEntries().length;
-  this.spaceRequired_.textContent = scan.getTotalBytes();
+  this.photoCount_.textContent = scan.getFileEntries().length.toLocaleString();
+  this.spaceRequired_.textContent = util.bytesToString(scan.getTotalBytes());
 };
 
 /** @override */

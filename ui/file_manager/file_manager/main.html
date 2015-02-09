@@ -342,13 +342,17 @@
         <core-icon icon="delete"></core-icon>
         <paper-ripple fit></paper-ripple>
       </button>
-      <button id="cloud-import-button" class="icon-button" tabindex="11"
+      <button id="cloud-import-button"
+              class="icon-button manual-display"
+              tabindex="11"
               i18n-values="aria-label:CLOUD_IMPORT_BUTTON_LABEL"
               style='display: none;'>
         <core-icon icon="cloud-queue"></core-icon>
         <paper-ripple fit></paper-ripple>
       </button>
-      <button id="cloud-import-details-button" class="icon-button" tabindex="12"
+      <button id="cloud-import-details-button"
+              class="icon-button manual-display"
+              tabindex="12"
               style='display: none;'>
         <core-icon icon="arrow-drop-down"></core-icon>
         <paper-ripple fit></paper-ripple>
@@ -369,13 +373,7 @@
       <h1>Backup to Drive</h1>
 
       <div id='#open-destination'>
-        <!!--
-          TODO(smckay): Setting volume-type-icon to "drive" breaks
-          functional tests because selection of the drive volume is
-          done using a query that matches this. Need to fix that.
-          See background/test_util.js:105
-        -->
-        <core-icon class="icon volume-icon" volume-type-icon="na">
+        <core-icon class="icon volume-icon" volume-type-icon="drive">
         </core-icon> My Photos
       </div>
 
