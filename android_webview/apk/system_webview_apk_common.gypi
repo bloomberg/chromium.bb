@@ -18,6 +18,7 @@
     'R_package_relpath': 'com/android/webview/chromium',
     'extensions_to_not_compress': 'pak,bin,dat',
     'asset_location': '<(INTERMEDIATE_DIR)/assets/',
+    'snapshot_copy_files': '<(snapshot_copy_files)',
     # TODO: crbug.com/442348 Update proguard.flags and re-enable.
     'proguard_enabled': 'false',
     'proguard_flags_paths': ['<(DEPTH)/android_webview/apk/java/proguard.flags'],
@@ -26,17 +27,15 @@
       '<@(webview_locales_output_paks)',
       '<(asset_location)/webviewchromium.pak',
       '<(asset_location)/webview_licenses.notice',
+      '<@(snapshot_additional_input_paths)',
+    ],
+    'includes': [
+      '../snapshot_copying.gypi',
     ],
     'conditions': [
       ['icu_use_data_file_flag==1', {
         'additional_input_paths': [
           '<(asset_location)/icudtl.dat',
-        ],
-      }],
-      ['v8_use_external_startup_data==1', {
-        'additional_input_paths': [
-          '<(asset_location)/natives_blob.bin',
-          '<(asset_location)/snapshot_blob.bin',
         ],
       }],
     ],
@@ -47,17 +46,12 @@
       'files': [
         '<@(webview_locales_input_paks)',
         '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
+        '<@(snapshot_copy_files)',
       ],
       'conditions': [
         ['icu_use_data_file_flag==1', {
           'files': [
             '<(PRODUCT_DIR)/icudtl.dat',
-          ],
-        }],
-        ['v8_use_external_startup_data==1', {
-          'files': [
-            '<(PRODUCT_DIR)/natives_blob.bin',
-            '<(PRODUCT_DIR)/snapshot_blob.bin',
           ],
         }],
       ],
