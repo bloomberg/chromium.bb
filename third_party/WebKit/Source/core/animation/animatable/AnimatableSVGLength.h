@@ -53,6 +53,7 @@ public:
     virtual void trace(Visitor*) override;
 
 protected:
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:

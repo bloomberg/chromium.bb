@@ -4,6 +4,7 @@
 .target {
   stroke: black;
   fill: white;
+  stroke-width: 5px;
 }
 .replica {
   stroke: green;
@@ -27,6 +28,54 @@ assertInterpolation({
   {at: 0.3, is: '6px'},
   {at: 0.6, is: '12px'},
   {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+assertInterpolation({
+  property: 'stroke-width',
+  from: '0px',
+  to: '10em'
+}, [
+  {at: -0.3, is: '0em'}, // SVG stroke-width can't be negative.
+  {at: 0, is: '0em'},
+  {at: 0.3, is: '3em'},
+  {at: 0.6, is: '6em'},
+  {at: 1, is: '10em'},
+  {at: 1.5, is: '15em'},
+]);
+assertInterpolation({
+  property: 'stroke-width',
+  from: '30px',
+  to: '10em'
+}, [
+  {at: -0.3, is: '30px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '30px'},
+  {at: 0.6, is: '10em'},
+  {at: 1, is: '10em'},
+  {at: 1.5, is: '10em'},
+]);
+assertInterpolation({
+  property: 'stroke-width',
+  from: '10em',
+  to: '0px'
+}, [
+  {at: -0.3, is: '13em'},
+  {at: 0, is: '10em'},
+  {at: 0.3, is: '7em'},
+  {at: 0.6, is: '4em'},
+  {at: 1, is: '0em'},
+  {at: 1.5, is: '0em'}, // SVG stroke-width can't be negative.
+]);
+assertInterpolation({
+  property: 'stroke-width',
+  from: '10em',
+  to: '30px'
+}, [
+  {at: -0.3, is: '10em'},
+  {at: 0, is: '10em'},
+  {at: 0.3, is: '10em'},
+  {at: 0.6, is: '30px'},
+  {at: 1, is: '30px'},
   {at: 1.5, is: '30px'},
 ]);
 </script>

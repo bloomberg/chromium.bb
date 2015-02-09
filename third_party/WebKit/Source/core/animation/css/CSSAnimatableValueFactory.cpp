@@ -305,7 +305,14 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyWebkitBackgroundSize:
         return createFromFillLayers<CSSPropertyBackgroundSize>(style.backgroundLayers(), style);
     case CSSPropertyBaselineShift:
-        return AnimatableSVGLength::create(style.baselineShiftValue());
+        switch (style.svgStyle().baselineShift()) {
+        case BS_SUPER:
+            return AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueSuper));
+        case BS_SUB:
+            return AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueSub));
+        default:
+            return AnimatableSVGLength::create(style.baselineShiftValue());
+        }
     case CSSPropertyBorderBottomColor:
         return createFromColor(property, style);
     case CSSPropertyBorderBottomLeftRadius:

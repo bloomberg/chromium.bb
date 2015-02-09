@@ -46,6 +46,7 @@ assertInterpolation({
   {at: 1, is: '10px'},
   {at: 1.25, is: '15px'},
 ]);
+
 assertInterpolation({
   property: 'baseline-shift',
   from: 'baseline',
@@ -101,16 +102,13 @@ assertInterpolation({
   from: '50mm',
   to: 'inherit'
 }, [
-  {at: -0.25, is: '50mm'},
+  {at: -0.25, is: '228.720474243164px'},
   {at: 0, is: '50mm'},
-  {at: 0.25, is: '50mm'},
-  {at: 0.75, is: '30px'},
+  {at: 0.25, is: '149.232284545898px'},
+  {at: 0.75, is: '69.7440948486328px'},
   {at: 1, is: '30px'},
-  {at: 1.25, is: '30px'},
+  {at: 1.25, is: '-9.74409484863281px'},
 ]);
-/*
-// The "Web Animations API" interpolation supports the following tests,
-// but the "CSS Animations" interpolation fails.
 assertInterpolation({
   property: 'baseline-shift',
   from: '10px',
@@ -135,6 +133,6 @@ assertInterpolation({
   {at: 1, is: '40em'},
   {at: 1.25, is: '40em'},
 ]);
-*/
+
 </script>
 </body>

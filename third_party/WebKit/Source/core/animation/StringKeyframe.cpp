@@ -273,10 +273,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         if (interpolation)
             return interpolation.release();
 
-        // We use default interpolation for
-        // baseline-shift keywords 'super', 'sub', and
-        // from and to values with distinct units.
-        forceDefaultInterpolation = true;
         break;
     }
 

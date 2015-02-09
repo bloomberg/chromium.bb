@@ -35,8 +35,24 @@
 
 namespace blink {
 
+bool AnimatableSVGLength::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    SVGLengthType type = m_length->unitType();
+
+    SVGLength* to = toAnimatableSVGLength(value)->toSVGLength();
+    SVGLengthType toType = to->unitType();
+
+    return toType != type
+        && (m_length->isRelative() || to->isRelative())
+        && !m_length->isZero()
+        && !to->isZero();
+}
+
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
+    if (usesDefaultInterpolationWith(value))
+        return defaultInterpolateTo(this, value, fraction);
+
     return create(toAnimatableSVGLength(value)->toSVGLength()->blend(m_length.get(), narrowPrecisionToFloat(fraction)));
 }
 

@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+svg {
+  stroke-dashoffset: 100px;
+}
 .target {
   stroke: black;
   stroke-width: 10px;
@@ -29,6 +32,32 @@ assertInterpolation({
   {at: 0.75, is: '5px'},
   {at: 1, is: '10px'},
   {at: 1.25, is: '15px'},
+]);
+assertInterpolation({
+  property: 'stroke-dashoffset',
+  from: '-20px',
+  to: '30em'
+}, [
+  {at: -0.25, is: '-20px'},
+  {at: 0, is: '-20px'},
+  {at: 0.25, is: '-20px'},
+  {at: 0.5, is: '30em'},
+  {at: 0.75, is: '30em'},
+  {at: 1, is: '30em'},
+  {at: 1.25, is: '30em'},
+]);
+assertInterpolation({
+  property: 'stroke-dashoffset',
+  from: 'inherit',
+  to: '140px'
+}, [
+  {at: -0.25, is: '90px'},
+  {at: 0, is: '100px'},
+  {at: 0.25, is: '110px'},
+  {at: 0.5, is: '120px'},
+  {at: 0.75, is: '130px'},
+  {at: 1, is: '140px'},
+  {at: 1.25, is: '150px'},
 ]);
 </script>
 </body>
