@@ -77,7 +77,7 @@ function test()
     function onOldestShadowRootDumped()
     {
         waitForModifiedNodesUpdate("After switching to composed mode", shadowHostDisplayModeUpdated);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(shadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
+        treeOutline.setShadowHostDisplayMode(shadowHostNode, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
     }
 
     function shadowHostDisplayModeUpdated()
@@ -109,13 +109,13 @@ function test()
         innerShadowHostNode = InspectorTest.expandedNodeWithId("innerShadowHost");
         innerShadowHostTreeElement = treeOutline.findTreeElement(innerShadowHostNode);
         waitForModifiedNodesUpdate("After switching inner to composed mode", shadowHostDisplayModeInnerComposedOuterComposed);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(innerShadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
+        treeOutline.setShadowHostDisplayMode(innerShadowHostNode, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed);
     }
 
     function shadowHostDisplayModeInnerComposedOuterComposed()
     {
         waitForModifiedNodesUpdate("After switching outer to logical mode", shadowHostDisplayModeInnerComposedOuterLogical);
-        treeOutline._elementsTreeUpdater._setShadowHostDisplayMode(shadowHostTreeElement, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Logical);
+        treeOutline.setShadowHostDisplayMode(shadowHostNode, WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Logical);
     }
 
     function shadowHostDisplayModeInnerComposedOuterLogical()
@@ -125,7 +125,7 @@ function test()
 
     function waitForModifiedNodesUpdate(title, next)
     {
-        InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", callback);
+        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
 
         function callback()
         {

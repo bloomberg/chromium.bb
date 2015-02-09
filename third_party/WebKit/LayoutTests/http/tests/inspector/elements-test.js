@@ -549,7 +549,7 @@ InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
 {
     var hasHighlights = false;
 
-    InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", didUpdate);
+    InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", didUpdate);
 
     function didUpdate()
     {
