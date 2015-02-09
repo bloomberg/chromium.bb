@@ -810,21 +810,4 @@ class BASE_EXPORT TraceLog {
 }  // namespace trace_event
 }  // namespace base
 
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015.
-namespace base {
-namespace debug {
-using base::trace_event::CategoryFilter;
-using base::trace_event::ConvertableToTraceFormat;
-using base::trace_event::RECORD_UNTIL_FULL;
-using base::trace_event::RECORD_CONTINUOUSLY;
-using base::trace_event::RECORD_AS_MUCH_AS_POSSIBLE;
-using base::trace_event::TraceEventHandle;
-using base::trace_event::TraceLog;
-using base::trace_event::TraceLogStatus;
-using base::trace_event::TraceOptions;
-using base::trace_event::TraceResultBuffer;
-}  // namespace debug
-}  // namespace base
-
 #endif  // BASE_TRACE_EVENT_TRACE_EVENT_IMPL_H_

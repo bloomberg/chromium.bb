@@ -70,7 +70,8 @@ bool IsBeginComponent(ui::LatencyComponentType type) {
 }
 
 // This class is for converting latency info to trace buffer friendly format.
-class LatencyInfoTracedValue : public base::debug::ConvertableToTraceFormat {
+class LatencyInfoTracedValue
+    : public base::trace_event::ConvertableToTraceFormat {
  public:
   static scoped_refptr<ConvertableToTraceFormat> FromValue(
       scoped_ptr<base::Value> value);
@@ -86,9 +87,9 @@ class LatencyInfoTracedValue : public base::debug::ConvertableToTraceFormat {
   DISALLOW_COPY_AND_ASSIGN(LatencyInfoTracedValue);
 };
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 LatencyInfoTracedValue::FromValue(scoped_ptr<base::Value> value) {
-  return scoped_refptr<base::debug::ConvertableToTraceFormat>(
+  return scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
       new LatencyInfoTracedValue(value.release()));
 }
 
@@ -106,7 +107,7 @@ LatencyInfoTracedValue::LatencyInfoTracedValue(base::Value* value)
 }
 
 // Converts latencyinfo into format that can be dumped into trace buffer.
-scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData(
+scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData(
     const ui::LatencyInfo& latency) {
   scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
   for (ui::LatencyInfo::LatencyMap::const_iterator it =

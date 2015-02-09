@@ -21,7 +21,7 @@
 #include "net/base/net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::debug::TraceLog;
+using base::trace_event::TraceLog;
 
 namespace net {
 
@@ -90,9 +90,9 @@ class TraceNetLogObserverTest : public testing::Test {
 
   static void EnableTraceLog() {
     TraceLog::GetInstance()->SetEnabled(
-        base::debug::CategoryFilter(kNetLogTracingCategory),
+        base::trace_event::CategoryFilter(kNetLogTracingCategory),
         TraceLog::RECORDING_MODE,
-        base::debug::TraceOptions());
+        base::trace_event::TraceOptions());
   }
 
   void EndTraceAndFlush() {
@@ -145,8 +145,8 @@ class TraceNetLogObserverTest : public testing::Test {
 
  private:
   scoped_ptr<base::ListValue> trace_events_;
-  base::debug::TraceResultBuffer trace_buffer_;
-  base::debug::TraceResultBuffer::SimpleOutput json_output_;
+  base::trace_event::TraceResultBuffer trace_buffer_;
+  base::trace_event::TraceResultBuffer::SimpleOutput json_output_;
   CapturingNetLog net_log_;
   scoped_ptr<TraceNetLogObserver> trace_net_log_observer_;
 };

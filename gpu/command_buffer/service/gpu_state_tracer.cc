@@ -16,14 +16,14 @@ namespace {
 
 const int kBytesPerPixel = 4;
 
-class Snapshot : public base::debug::ConvertableToTraceFormat {
+class Snapshot : public base::trace_event::ConvertableToTraceFormat {
  public:
   static scoped_refptr<Snapshot> Create(const ContextState* state);
 
   // Save a screenshot of the currently bound framebuffer.
   bool SaveScreenshot(const gfx::Size& size);
 
-  // base::debug::ConvertableToTraceFormat implementation.
+  // base::trace_event::ConvertableToTraceFormat implementation.
   void AppendAsTraceFormat(std::string* out) const override;
 
  private:
@@ -125,7 +125,7 @@ void GPUStateTracer::TakeSnapshotWithCurrentFramebuffer(const gfx::Size& size) {
       TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
       "gpu::State",
       state_,
-      scoped_refptr<base::debug::ConvertableToTraceFormat>(snapshot));
+      scoped_refptr<base::trace_event::ConvertableToTraceFormat>(snapshot));
 }
 
 }  // namespace gles2

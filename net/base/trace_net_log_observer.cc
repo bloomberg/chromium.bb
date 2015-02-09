@@ -22,7 +22,7 @@ namespace {
 // TraceLog category for NetLog events.
 const char kNetLogTracingCategory[] = TRACE_DISABLED_BY_DEFAULT("netlog");
 
-class TracedValue : public base::debug::ConvertableToTraceFormat {
+class TracedValue : public base::trace_event::ConvertableToTraceFormat {
  public:
   explicit TracedValue(scoped_ptr<base::Value> value) : value_(value.Pass()) {}
 
@@ -58,26 +58,26 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
   switch (entry.phase()) {
     case NetLog::PHASE_BEGIN:
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
-          kNetLogTracingCategory,
-          NetLog::EventTypeToString(entry.type()), entry.source().id,
-          "source_type", NetLog::SourceTypeToString(entry.source().type),
-          "params", scoped_refptr<base::debug::ConvertableToTraceFormat>(
+          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
+          entry.source().id, "source_type",
+          NetLog::SourceTypeToString(entry.source().type), "params",
+          scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(params.Pass())));
       break;
     case NetLog::PHASE_END:
       TRACE_EVENT_NESTABLE_ASYNC_END2(
-          kNetLogTracingCategory,
-          NetLog::EventTypeToString(entry.type()), entry.source().id,
-          "source_type", NetLog::SourceTypeToString(entry.source().type),
-          "params", scoped_refptr<base::debug::ConvertableToTraceFormat>(
+          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
+          entry.source().id, "source_type",
+          NetLog::SourceTypeToString(entry.source().type), "params",
+          scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(params.Pass())));
       break;
     case NetLog::PHASE_NONE:
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
-          kNetLogTracingCategory,
-          NetLog::EventTypeToString(entry.type()), entry.source().id,
-          "source_type", NetLog::SourceTypeToString(entry.source().type),
-          "params", scoped_refptr<base::debug::ConvertableToTraceFormat>(
+          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
+          entry.source().id, "source_type",
+          NetLog::SourceTypeToString(entry.source().type), "params",
+          scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(params.Pass())));
       break;
   }
@@ -87,13 +87,13 @@ void TraceNetLogObserver::WatchForTraceStart(NetLog* netlog) {
   DCHECK(!net_log_to_watch_);
   DCHECK(!net_log());
   net_log_to_watch_ = netlog;
-  base::debug::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
 }
 
 void TraceNetLogObserver::StopWatchForTraceStart() {
   // Should only stop if is currently watching.
   DCHECK(net_log_to_watch_);
-  base::debug::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
   if (net_log())
     net_log()->RemoveThreadSafeObserver(this);
   net_log_to_watch_ = NULL;

@@ -122,18 +122,4 @@ enum TraceEventETWFlags {
 }  // namespace trace_event
 }  // namespace base
 
-// TODO(ssid): remove these aliases after the tracing clients are moved to the
-// new trace_event namespace. See crbug.com/451032. ETA: March 2015.
-namespace base {
-namespace debug {
-using base::trace_event::kChromeTraceProviderName;
-using base::trace_event::kTraceEventClass32;
-using base::trace_event::kTraceEventClass64;
-using base::trace_event::kTraceEventTypeBegin;
-using base::trace_event::kTraceEventTypeEnd;
-using base::trace_event::kTraceEventTypeInstant;
-using base::trace_event::TraceEventETWProvider;
-}  // namespace debug
-}  // namespace base
-
 #endif  // BASE_TRACE_EVENT_TRACE_EVENT_WIN_H_

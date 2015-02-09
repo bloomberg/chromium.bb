@@ -16,7 +16,7 @@ namespace net {
 // events to TraceLog if it is enabled.
 class NET_EXPORT TraceNetLogObserver
     : public NetLog::ThreadSafeObserver,
-      public base::debug::TraceLog::EnabledStateObserver {
+      public base::trace_event::TraceLog::EnabledStateObserver {
  public:
   TraceNetLogObserver();
   ~TraceNetLogObserver() override;
@@ -34,7 +34,7 @@ class NET_EXPORT TraceNetLogObserver
   // TraceNetLogObserver is destroyed.
   void StopWatchForTraceStart();
 
-  // base::debug::TraceLog::EnabledStateChangedObserver implementation:
+  // base::trace_event::TraceLog::EnabledStateChangedObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 

@@ -181,12 +181,12 @@ void StartShutdownTracing() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kTraceShutdown)) {
-    base::debug::CategoryFilter category_filter(
+    base::trace_event::CategoryFilter category_filter(
         command_line.GetSwitchValueASCII(switches::kTraceShutdown));
-    base::debug::TraceLog::GetInstance()->SetEnabled(
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
         category_filter,
-        base::debug::TraceLog::RECORDING_MODE,
-        base::debug::TraceOptions());
+        base::trace_event::TraceLog::RECORDING_MODE,
+        base::trace_event::TraceOptions());
   }
   TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }

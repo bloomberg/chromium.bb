@@ -50,7 +50,7 @@ const struct {
   { &kChromeTraceProviderName, 255, 0 },
   { &kChromeFrameProvider, 255, 0 },
   { &kChromeTestsProvider, 255, 0 },
-  { &base::debug::kChromeTraceProviderName, 255, 0 }
+  { &base::trace_event::kChromeTraceProviderName, 255, 0 }
 };
 
 static_assert((1 << arraysize(kProviders)) - 1 ==

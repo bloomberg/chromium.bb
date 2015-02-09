@@ -55,7 +55,8 @@ class TraceEventDataConverter {
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataConverter);
 };
 
-class TraceEnabledObserver : public debug::TraceLog::EnabledStateObserver {
+class TraceEnabledObserver
+    : public trace_event::TraceLog::EnabledStateObserver {
   public:
    void OnTraceLogEnabled() override {
       JNIEnv* env = base::android::AttachCurrentThread();
@@ -72,18 +73,18 @@ base::LazyInstance<TraceEnabledObserver>::Leaky g_trace_enabled_state_observer_;
 }  // namespace
 
 static void RegisterEnabledObserver(JNIEnv* env, jclass clazz) {
-  bool enabled = debug::TraceLog::GetInstance()->IsEnabled();
+  bool enabled = trace_event::TraceLog::GetInstance()->IsEnabled();
   base::android::Java_TraceEvent_setEnabled(env, enabled);
-  debug::TraceLog::GetInstance()->AddEnabledStateObserver(
+  trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(
       g_trace_enabled_state_observer_.Pointer());
 }
 
 static void StartATrace(JNIEnv* env, jclass clazz) {
-  base::debug::TraceLog::GetInstance()->StartATrace();
+  base::trace_event::TraceLog::GetInstance()->StartATrace();
 }
 
 static void StopATrace(JNIEnv* env, jclass clazz) {
-  base::debug::TraceLog::GetInstance()->StopATrace();
+  base::trace_event::TraceLog::GetInstance()->StopATrace();
 }
 
 static void Instant(JNIEnv* env, jclass clazz,

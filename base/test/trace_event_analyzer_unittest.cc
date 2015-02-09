@@ -23,12 +23,12 @@ class TraceEventAnalyzerTest : public testing::Test {
   void BeginTracing();
   void EndTracing();
 
-  base::debug::TraceResultBuffer::SimpleOutput output_;
-  base::debug::TraceResultBuffer buffer_;
+  base::trace_event::TraceResultBuffer::SimpleOutput output_;
+  base::trace_event::TraceResultBuffer buffer_;
 };
 
 void TraceEventAnalyzerTest::ManualSetUp() {
-  ASSERT_TRUE(base::debug::TraceLog::GetInstance());
+  ASSERT_TRUE(base::trace_event::TraceLog::GetInstance());
   buffer_.SetOutputCallback(output_.GetCallback());
   output_.json_output.clear();
 }
@@ -45,16 +45,16 @@ void TraceEventAnalyzerTest::OnTraceDataCollected(
 void TraceEventAnalyzerTest::BeginTracing() {
   output_.json_output.clear();
   buffer_.Start();
-  base::debug::TraceLog::GetInstance()->SetEnabled(
-      base::debug::CategoryFilter("*"),
-      base::debug::TraceLog::RECORDING_MODE,
-      base::debug::TraceOptions());
+  base::trace_event::TraceLog::GetInstance()->SetEnabled(
+      base::trace_event::CategoryFilter("*"),
+      base::trace_event::TraceLog::RECORDING_MODE,
+      base::trace_event::TraceOptions());
 }
 
 void TraceEventAnalyzerTest::EndTracing() {
-  base::debug::TraceLog::GetInstance()->SetDisabled();
+  base::trace_event::TraceLog::GetInstance()->SetDisabled();
   base::WaitableEvent flush_complete_event(false, false);
-  base::debug::TraceLog::GetInstance()->Flush(
+  base::trace_event::TraceLog::GetInstance()->Flush(
       base::Bind(&TraceEventAnalyzerTest::OnTraceDataCollected,
                  base::Unretained(this),
                  base::Unretained(&flush_complete_event)));

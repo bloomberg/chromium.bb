@@ -9,7 +9,7 @@
 #include "components/tracing/tracing_messages.h"
 #include "ipc/ipc_channel.h"
 
-using base::debug::TraceLog;
+using base::trace_event::TraceLog;
 
 namespace tracing {
 
@@ -58,11 +58,11 @@ void ChildTraceMessageFilter::OnBeginTracing(
       browser_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
-  base::debug::TraceOptions trace_options;
+  base::trace_event::TraceOptions trace_options;
   trace_options.SetFromString(options);
   TraceLog::GetInstance()->SetEnabled(
-      base::debug::CategoryFilter(category_filter_str),
-      base::debug::TraceLog::RECORDING_MODE,
+      base::trace_event::CategoryFilter(category_filter_str),
+      base::trace_event::TraceLog::RECORDING_MODE,
       trace_options);
 }
 
@@ -81,11 +81,11 @@ void ChildTraceMessageFilter::OnEnableMonitoring(
     const std::string& category_filter_str,
     base::TimeTicks browser_time,
     const std::string& options) {
-  base::debug::TraceOptions trace_options;
+  base::trace_event::TraceOptions trace_options;
   trace_options.SetFromString(options);
   TraceLog::GetInstance()->SetEnabled(
-      base::debug::CategoryFilter(category_filter_str),
-      base::debug::TraceLog::MONITORING_MODE,
+      base::trace_event::CategoryFilter(category_filter_str),
+      base::trace_event::TraceLog::MONITORING_MODE,
       trace_options);
 }
 

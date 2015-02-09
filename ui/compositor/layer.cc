@@ -765,7 +765,7 @@ void Layer::SetForceRenderSurface(bool force) {
   cc_layer_->SetForceRenderSurface(force_render_surface_);
 }
 
-class LayerDebugInfo : public base::debug::ConvertableToTraceFormat {
+class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {
  public:
   explicit LayerDebugInfo(std::string name) : name_(name) { }
   void AppendAsTraceFormat(std::string* out) const override {
@@ -779,7 +779,8 @@ class LayerDebugInfo : public base::debug::ConvertableToTraceFormat {
   std::string name_;
 };
 
-scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+Layer::TakeDebugInfo() {
   return new LayerDebugInfo(name_);
 }
 

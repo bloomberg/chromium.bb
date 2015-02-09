@@ -200,7 +200,7 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd,
   CHECK_LE(0, shutdown_fd);
   CHECK_GT(FD_SETSIZE, shutdown_fd);
 
-  debug::TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
+  trace_event::TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
 
   while (true) {
     fd_set rfds;

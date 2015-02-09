@@ -23,7 +23,8 @@ base::StaticAtomicSequenceNumber g_ref_num;
 // values has the reference number stored in the upper 24 bits, leaving the low
 // 8 bits set to 0 for use as flags.
 inline uint32 GetRefNumUpper24() {
-  base::debug::TraceLog* trace_log = base::debug::TraceLog::GetInstance();
+  base::trace_event::TraceLog* trace_log =
+      base::trace_event::TraceLog::GetInstance();
   uint32 pid = trace_log ? trace_log->process_id() : 0;
   uint32 count = g_ref_num.GetNext();
   // The 24 bit hash is composed of 14 bits of the count and 10 bits of the

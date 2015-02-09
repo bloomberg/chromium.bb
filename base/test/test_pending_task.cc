@@ -34,7 +34,7 @@ bool TestPendingTask::ShouldRunBefore(const TestPendingTask& other) const {
 
 TestPendingTask::~TestPendingTask() {}
 
-void TestPendingTask::AsValueInto(base::debug::TracedValue* state) const {
+void TestPendingTask::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("run_at", GetTimeToRun().ToInternalValue());
   state->SetString("posting_function", location.ToString());
   state->SetInteger("post_time", post_time.ToInternalValue());
@@ -50,10 +50,10 @@ void TestPendingTask::AsValueInto(base::debug::TracedValue* state) const {
   state->SetInteger("delay", delay.ToInternalValue());
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat> TestPendingTask::AsValue()
-    const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+TestPendingTask::AsValue() const {
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
   AsValueInto(state.get());
   return state;
 }

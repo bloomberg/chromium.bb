@@ -57,8 +57,8 @@ class InProcessTraceController {
   bool BeginTracing(const std::string& category_patterns) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return content::TracingController::GetInstance()->EnableRecording(
-        base::debug::CategoryFilter(category_patterns),
-        base::debug::TraceOptions(),
+        base::trace_event::CategoryFilter(category_patterns),
+        base::trace_event::TraceOptions(),
         content::TracingController::EnableRecordingDoneCallback());
   }
 
@@ -76,8 +76,8 @@ class InProcessTraceController {
       return false;
     }
     if (!content::TracingController::GetInstance()->EnableRecording(
-            base::debug::CategoryFilter(category_patterns),
-            base::debug::TraceOptions(),
+            base::trace_event::CategoryFilter(category_patterns),
+            base::trace_event::TraceOptions(),
             base::Bind(&InProcessTraceController::OnEnableTracingComplete,
                        base::Unretained(this)))) {
       return false;

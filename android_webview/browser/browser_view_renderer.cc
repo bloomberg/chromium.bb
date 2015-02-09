@@ -568,12 +568,12 @@ void BrowserViewRenderer::UpdateRootLayerState(
   SetTotalRootLayerScrollOffset(total_scroll_offset_dip);
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 BrowserViewRenderer::RootLayerStateAsValue(
     const gfx::Vector2dF& total_scroll_offset_dip,
     const gfx::SizeF& scrollable_size_dip) {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
 
   state->SetDouble("total_scroll_offset_dip.x", total_scroll_offset_dip.x());
   state->SetDouble("total_scroll_offset_dip.y", total_scroll_offset_dip.y());

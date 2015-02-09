@@ -51,10 +51,10 @@ void TraceToFile::BeginTracing(const FilePath& path,
   path_ = path;
   WriteFileHeader();
 
-  debug::TraceLog::GetInstance()->SetEnabled(
-      debug::CategoryFilter(categories),
-      debug::TraceLog::RECORDING_MODE,
-      debug::TraceOptions(debug::RECORD_UNTIL_FULL));
+  trace_event::TraceLog::GetInstance()->SetEnabled(
+      trace_event::CategoryFilter(categories),
+      trace_event::TraceLog::RECORDING_MODE,
+      trace_event::TraceOptions(trace_event::RECORD_UNTIL_FULL));
 }
 
 void TraceToFile::WriteFileHeader() {
@@ -74,7 +74,7 @@ void TraceToFile::TraceOutputCallback(const std::string& data) {
 
 static void OnTraceDataCollected(
     Closure quit_closure,
-    debug::TraceResultBuffer* buffer,
+    trace_event::TraceResultBuffer* buffer,
     const scoped_refptr<RefCountedString>& json_events_str,
     bool has_more_events) {
   buffer->AddFragment(json_events_str->data());
@@ -87,14 +87,14 @@ void TraceToFile::EndTracingIfNeeded() {
     return;
   started_ = false;
 
-  debug::TraceLog::GetInstance()->SetDisabled();
+  trace_event::TraceLog::GetInstance()->SetDisabled();
 
-  debug::TraceResultBuffer buffer;
+  trace_event::TraceResultBuffer buffer;
   buffer.SetOutputCallback(
       Bind(&TraceToFile::TraceOutputCallback, Unretained(this)));
 
   RunLoop run_loop;
-  debug::TraceLog::GetInstance()->Flush(
+  trace_event::TraceLog::GetInstance()->Flush(
       Bind(&OnTraceDataCollected, run_loop.QuitClosure(), Unretained(&buffer)));
   run_loop.Run();
 
