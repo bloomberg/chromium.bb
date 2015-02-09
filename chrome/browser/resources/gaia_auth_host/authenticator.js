@@ -90,6 +90,27 @@ cr.define('cr.login', function() {
     this.initialFrameUrl_ = null;
     this.reloadUrl_ = null;
     this.trusted_ = true;
+
+    this.webview_.addEventListener(
+        'newwindow', this.onNewWindow_.bind(this));
+    this.webview_.addEventListener(
+        'contentload', this.onContentLoad_.bind(this));
+    this.webview_.addEventListener(
+        'loadstop', this.onLoadStop_.bind(this));
+    this.webview_.request.onCompleted.addListener(
+        this.onRequestCompleted_.bind(this),
+        {urls: ['<all_urls>'], types: ['main_frame']},
+        ['responseHeaders']);
+    this.webview_.request.onHeadersReceived.addListener(
+        this.onHeadersReceived_.bind(this),
+        {urls: ['<all_urls>'], types: ['main_frame']},
+        ['responseHeaders']);
+    window.addEventListener(
+        'message', this.onMessageFromWebview_.bind(this), false);
+    window.addEventListener(
+        'focus', this.onFocus_.bind(this), false);
+    window.addEventListener(
+        'popstate', this.onPopState_.bind(this), false);
   }
 
   // TODO(guohui,xiyuan): no need to inherit EventTarget once we deprecate the
@@ -114,27 +135,6 @@ cr.define('cr.login', function() {
     this.authFlow_ = AuthFlow.DEFAULT;
 
     this.webview_.src = this.reloadUrl_;
-    this.webview_.addEventListener(
-        'newwindow', this.onNewWindow_.bind(this));
-    this.webview_.addEventListener(
-        'contentload', this.onContentLoad_.bind(this));
-    this.webview_.addEventListener(
-        'loadstop', this.onLoadStop_.bind(this));
-    this.webview_.request.onCompleted.addListener(
-        this.onRequestCompleted_.bind(this),
-        {urls: ['*://*/*', this.continueUrlWithoutParams_ + '*'],
-            types: ['main_frame']},
-        ['responseHeaders']);
-    this.webview_.request.onHeadersReceived.addListener(
-        this.onHeadersReceived_.bind(this),
-        {urls: [this.idpOrigin_ + '*'], types: ['main_frame']},
-        ['responseHeaders']);
-    window.addEventListener(
-        'message', this.onMessageFromWebview_.bind(this), false);
-    window.addEventListener(
-        'focus', this.onFocus_.bind(this), false);
-    window.addEventListener(
-        'popstate', this.onPopState_.bind(this), false);
 
     this.loaded_ = false;
   };
@@ -242,6 +242,10 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onHeadersReceived_ = function(details) {
+    var currentUrl = details.url;
+    if (currentUrl.lastIndexOf(this.idpOrigin_, 0) != 0)
+      return;
+
     var headers = details.responseHeaders;
     for (var i = 0; headers && i < headers.length; ++i) {
       var header = headers[i];
