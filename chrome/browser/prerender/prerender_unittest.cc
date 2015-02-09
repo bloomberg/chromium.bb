@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -404,6 +405,16 @@ class PrerenderTest : public testing::Test {
   int last_prerender_id_;
   base::FieldTrialList field_trial_list_;
 };
+
+TEST_F(PrerenderTest, PrerenderRespectsDisableFlag) {
+  ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(
+    switches::kPrerenderMode,
+    switches::kPrerenderModeSwitchValueDisabled);
+  prerender::ConfigurePrerender(*command_line);
+  ASSERT_FALSE(PrerenderManager::IsPrerenderingPossible());
+}
 
 TEST_F(PrerenderTest, FoundTest) {
   GURL url("http://www.google.com/");
