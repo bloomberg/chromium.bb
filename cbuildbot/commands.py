@@ -418,7 +418,7 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     chrome_root: The directory where chrome is stored.
   """
   cmd = ['./build_packages', '--board=%s' % board,
-         '--accept_licenses=@CHROMEOS']
+         '--accept_licenses=@CHROMEOS', '--withdebugsymbols']
 
   if not build_autotest:
     cmd.append('--nowithautotest')
