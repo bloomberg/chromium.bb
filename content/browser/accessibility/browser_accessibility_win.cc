@@ -3038,8 +3038,6 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     // TODO(nektar): Handle the possibility of having multiple aria-invalid
     // attributes defined, e.g., "invalid:spelling,grammar".
     switch (invalid_state) {
-      case ui::AX_INVALID_STATE_NONE:
-        break;
       case ui::AX_INVALID_STATE_FALSE:
         win_attributes_->ia2_attributes.push_back(L"invalid:false");
         break;
@@ -3064,6 +3062,29 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
             win_attributes_->ia2_attributes.push_back(L"invalid:true");
           }
         }
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  // Expose row or column header sort direction.
+  int32 sort_direction;
+  if ((ia_role() == ROLE_SYSTEM_COLUMNHEADER ||
+      ia_role() == ROLE_SYSTEM_ROWHEADER) &&
+      GetIntAttribute(ui::AX_ATTR_SORT_DIRECTION, &sort_direction)) {
+    switch (sort_direction) {
+      case ui::AX_SORT_DIRECTION_UNSORTED:
+        win_attributes_->ia2_attributes.push_back(L"sort:none");
+        break;
+      case ui::AX_SORT_DIRECTION_ASCENDING:
+        win_attributes_->ia2_attributes.push_back(L"sort:ascending");
+        break;
+      case ui::AX_SORT_DIRECTION_DESCENDING:
+        win_attributes_->ia2_attributes.push_back(L"sort:descending");
+        break;
+      case ui::AX_SORT_DIRECTION_OTHER:
+        win_attributes_->ia2_attributes.push_back(L"sort:other");
         break;
       default:
         NOTREACHED();

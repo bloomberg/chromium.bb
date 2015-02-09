@@ -32,6 +32,11 @@ ui::AXTextDirection AXTextDirectionFromBlink(
 ui::AXInvalidState AXInvalidStateFromBlink(
     blink::WebAXInvalidState invalid_state);
 
+// Convert a Blink WebAXSortDirection to an AXSortDirection defined in
+// ui/accessibility.
+ui::AXSortDirection AXSortDirectionFromBlink(
+    blink::WebAXSortDirection sort_direction);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_ACCESSIBILITY_BLINK_AX_ENUM_CONVERSION_H_

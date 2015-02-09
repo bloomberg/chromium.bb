@@ -279,6 +279,7 @@
     table_cell_column_span,
     table_cell_row_index,
     table_cell_row_span,
+    sort_direction,
 
     // Tree control attributes.
     hierarchical_level,
@@ -405,6 +406,13 @@
     invalid_state_spelling,
     invalid_state_grammar,
     invalid_state_other
+  };
+
+  [cpp_enum_prefix_override="ax"] enum AXSortDirection {
+    sort_direction_unsorted,
+    sort_direction_ascending,
+    sort_direction_descending,
+    sort_direction_other
   };
 
 };

@@ -545,6 +545,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN, src.cellRowSpan());
   }
 
+  if ((dst->role == ui::AX_ROLE_ROW_HEADER ||
+      dst->role == ui::AX_ROLE_COLUMN_HEADER) && src.sortDirection()) {
+    dst->AddIntAttribute(ui::AX_ATTR_SORT_DIRECTION,
+                         AXSortDirectionFromBlink(src.sortDirection()));
+  }
+
   dst->AddStringAttribute(ui::AX_ATTR_NAME, name);
 
   // Add the ids of *indirect* children - those who are children of this node,

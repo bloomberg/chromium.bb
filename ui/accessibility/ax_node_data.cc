@@ -188,6 +188,22 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_TABLE_ROW_INDEX:
         result += " row_index=" + value;
         break;
+      case AX_ATTR_SORT_DIRECTION:
+        switch (int_attributes[i].second) {
+          case AX_SORT_DIRECTION_UNSORTED:
+            result += " sort_direction=none";
+            break;
+          case AX_SORT_DIRECTION_ASCENDING:
+            result += " sort_direction=ascending";
+            break;
+          case AX_SORT_DIRECTION_DESCENDING:
+            result += " sort_direction=descending";
+            break;
+          case AX_SORT_DIRECTION_OTHER:
+            result += " sort_direction=other";
+            break;
+        }
+        break;
       case AX_ATTR_TITLE_UI_ELEMENT:
         result += " title_elem=" + value;
         break;

@@ -17,3 +17,8 @@ Format for expected files:
 Compiling and running the tests:
 ninja -C out/Debug content_browsertests
 out/Debug/content_browsertests --gtest_filter="DumpAccessibilityTreeTest*"
+
+If you are adding a new test file remember to add a corresponding test case in
+content/browser/accessibility/dump_accessibility_events_browsertest.cc
+or
+content/browser/accessibility/dump_accessibility_tree_browsertest.cc

@@ -170,6 +170,7 @@ NSArray* BuildAllAttributesArray() {
       @"AXLoaded",
       @"AXLoadingProcess",
       NSAccessibilityNumberOfCharactersAttribute,
+      NSAccessibilitySortDirectionAttribute,
       NSAccessibilityOrientationAttribute,
       @"AXPlaceholder",
       @"AXRequired",

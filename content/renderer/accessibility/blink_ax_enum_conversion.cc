@@ -422,4 +422,24 @@ ui::AXInvalidState AXInvalidStateFromBlink(
   return ui::AX_INVALID_STATE_NONE;
 }
 
-}  // namespace content
+ui::AXSortDirection AXSortDirectionFromBlink(
+    blink::WebAXSortDirection sort_direction) {
+  switch (sort_direction) {
+    case blink::WebAXSortDirectionUndefined:
+      return ui::AX_SORT_DIRECTION_NONE;
+    case blink::WebAXSortDirectionNone:
+      return ui::AX_SORT_DIRECTION_UNSORTED;
+    case blink::WebAXSortDirectionAscending:
+      return ui::AX_SORT_DIRECTION_ASCENDING;
+    case blink::WebAXSortDirectionDescending:
+      return ui::AX_SORT_DIRECTION_DESCENDING;
+    case blink::WebAXSortDirectionOther:
+      return ui::AX_SORT_DIRECTION_OTHER;
+    default:
+      NOTREACHED();
+  }
+
+  return ui::AX_SORT_DIRECTION_NONE;
+}
+
+}  // Namespace content.

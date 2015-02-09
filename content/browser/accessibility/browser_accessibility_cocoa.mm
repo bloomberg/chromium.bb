@@ -115,6 +115,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { @"AXLoadingProgress", @"loadingProgress" },
     { @"AXPlaceholder", @"placeholder" },
     { @"AXRequired", @"required" },
+    { @"AXSortDirection", @"sortDirection" },
     { @"AXVisited", @"visited" },
   };
 
@@ -782,6 +783,28 @@ NSDictionary* attributeToMethodNameMap = nil;
   return  [NSValue valueWithSize:NSMakeSize(bounds.width(), bounds.height())];
 }
 
+- (NSString*)sortDirection {
+  int sortDirection;
+  if (!browserAccessibility_->GetIntAttribute(
+      ui::AX_ATTR_SORT_DIRECTION, &sortDirection))
+    return @"";
+
+  switch (sortDirection) {
+  case ui::AX_SORT_DIRECTION_UNSORTED:
+    return @"";
+  case ui::AX_SORT_DIRECTION_ASCENDING:
+    return @"AXSortDirectionAscending";
+  case ui::AX_SORT_DIRECTION_DESCENDING:
+    return @"AXSortDirectionDescending";
+  case ui::AX_SORT_DIRECTION_OTHER:
+    return @"AXSortDirectionUnknown";
+  default:
+    NOTREACHED();
+  }
+
+  return @"";
+}
+
 // Returns a subrole based upon the role.
 - (NSString*) subrole {
   ui::AXRole browserAccessibilityRole = [self internalRole];
@@ -1301,6 +1324,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityColumnIndexRangeAttribute,
         NSAccessibilityRowIndexRangeAttribute,
+        @"AXSortDirection",
         nil]];
   } else if ([role isEqualToString:@"AXWebArea"]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
