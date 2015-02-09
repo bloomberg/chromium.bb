@@ -5,10 +5,8 @@
 package org.chromium.components.gcm_driver;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -24,7 +22,7 @@ import java.util.List;
 
 /**
  * This class is the Java counterpart to the C++ GCMDriverAndroid class.
- * It uses Android's Java GCM APIs to implements GCM registration etc, and
+ * It uses Android's Java GCM APIs to implement GCM registration etc, and
  * sends back GCM messages over JNI.
  *
  * Threading model: all calls to/from C++ happen on the UI thread.
@@ -32,8 +30,6 @@ import java.util.List;
 @JNINamespace("gcm")
 public class GCMDriver {
     private static final String TAG = "GCMDriver";
-
-    private static final String LAST_GCM_APP_ID_KEY = "last_gcm_app_id";
 
     // The instance of GCMDriver currently owned by a C++ GCMDriverAndroid, if any.
     private static GCMDriver sInstance = null;
@@ -76,7 +72,6 @@ public class GCMDriver {
 
     @CalledByNative
     private void register(final String appId, final String[] senderIds) {
-        setLastAppId(appId);
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... voids) {
@@ -138,17 +133,15 @@ public class GCMDriver {
                 List<String> dataKeysAndValues = new ArrayList<String>();
                 for (String key : extras.keySet()) {
                     // TODO(johnme): Check there aren't other keys that we need to exclude.
-                    if (key.equals(bundleSubtype) || key.equals(bundleSenderId) ||
-                            key.equals(bundleCollapseKey) || key.startsWith(bundleGcmplex))
+                    if (key.equals(bundleSubtype) || key.equals(bundleSenderId)
+                            || key.equals(bundleCollapseKey) || key.startsWith(bundleGcmplex))
                         continue;
                     dataKeysAndValues.add(key);
                     dataKeysAndValues.add(extras.getString(key));
                 }
 
-                String guessedAppId = GCMListener.UNKNOWN_APP_ID.equals(appId) ? getLastAppId()
-                                                                               : appId;
                 sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
-                        guessedAppId, senderId, collapseKey,
+                        appId, senderId, collapseKey,
                         dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
             }
         });
@@ -159,9 +152,7 @@ public class GCMDriver {
         ThreadUtils.assertOnUiThread();
         launchNativeThen(context, new Runnable() {
             @Override public void run() {
-                String guessedAppId = GCMListener.UNKNOWN_APP_ID.equals(appId) ? getLastAppId()
-                                                                               : appId;
-                sInstance.nativeOnMessagesDeleted(sInstance.mNativeGCMDriverAndroid, guessedAppId);
+                sInstance.nativeOnMessagesDeleted(sInstance.mNativeGCMDriverAndroid, appId);
             }
         });
     }
@@ -173,21 +164,6 @@ public class GCMDriver {
     private native void nativeOnMessageReceived(long nativeGCMDriverAndroid, String appId,
             String senderId, String collapseKey, String[] dataKeysAndValues);
     private native void nativeOnMessagesDeleted(long nativeGCMDriverAndroid, String appId);
-
-    // TODO(johnme): This and setLastAppId are just temporary (crbug.com/350383).
-    private static String getLastAppId() {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(
-                sInstance.mContext);
-        return settings.getString(LAST_GCM_APP_ID_KEY, "push#unknown_app_id#0");
-    }
-
-    private static void setLastAppId(String appId) {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(
-                sInstance.mContext);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString(LAST_GCM_APP_ID_KEY, appId);
-        editor.commit();
-    }
 
     private static void launchNativeThen(Context context, Runnable task) {
         if (sInstance != null) {
