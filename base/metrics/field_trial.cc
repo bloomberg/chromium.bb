@@ -547,9 +547,8 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
     return;
 
   global_->observer_list_->Notify(
-      &FieldTrialList::Observer::OnFieldTrialGroupFinalized,
-      field_trial->trial_name(),
-      field_trial->group_name_internal());
+      FROM_HERE, &FieldTrialList::Observer::OnFieldTrialGroupFinalized,
+      field_trial->trial_name(), field_trial->group_name_internal());
 }
 
 // static

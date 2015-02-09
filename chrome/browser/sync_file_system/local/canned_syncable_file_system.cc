@@ -550,13 +550,13 @@ FileSystemOperationRunner* CannedSyncableFileSystem::operation_runner() {
 }
 
 void CannedSyncableFileSystem::OnSyncEnabled(const FileSystemURL& url) {
-  sync_status_observers_->Notify(&LocalFileSyncStatus::Observer::OnSyncEnabled,
-                                 url);
+  sync_status_observers_->Notify(
+      FROM_HERE, &LocalFileSyncStatus::Observer::OnSyncEnabled, url);
 }
 
 void CannedSyncableFileSystem::OnWriteEnabled(const FileSystemURL& url) {
-  sync_status_observers_->Notify(&LocalFileSyncStatus::Observer::OnWriteEnabled,
-                                 url);
+  sync_status_observers_->Notify(
+      FROM_HERE, &LocalFileSyncStatus::Observer::OnWriteEnabled, url);
 }
 
 void CannedSyncableFileSystem::DoOpenFileSystem(

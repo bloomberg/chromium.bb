@@ -356,11 +356,9 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
 
   sync_processor_->NotifyChanges(changes);
 
-  observers_->Notify(
-      &SettingsObserver::OnSettingsChanged,
-      extension_id_,
-      settings_namespace::SYNC,
-      ValueStoreChange::ToJson(changes));
+  observers_->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
+                     extension_id_, settings_namespace::SYNC,
+                     ValueStoreChange::ToJson(changes));
 
   // TODO(kalman): Something sensible with multiple errors.
   return errors.empty() ? syncer::SyncError() : errors[0];

@@ -225,7 +225,7 @@ void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   if (!changes.empty()) {
-    observers_->Notify(&Observer::OnLoginsChanged, changes);
+    observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged, changes);
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
     if (syncable_service_)
       syncable_service_->ActOnPasswordStoreChanges(changes);

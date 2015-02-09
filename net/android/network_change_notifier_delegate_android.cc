@@ -97,7 +97,7 @@ void NetworkChangeNotifierDelegateAndroid::NotifyConnectionTypeChanged(
   const ConnectionType actual_connection_type = ConvertConnectionType(
       new_connection_type);
   SetCurrentConnectionType(actual_connection_type);
-  observers_->Notify(&Observer::OnConnectionTypeChanged);
+  observers_->Notify(FROM_HERE, &Observer::OnConnectionTypeChanged);
 }
 
 jint NetworkChangeNotifierDelegateAndroid::GetConnectionType(JNIEnv*,
@@ -113,7 +113,8 @@ void NetworkChangeNotifierDelegateAndroid::NotifyMaxBandwidthChanged(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(new_max_bandwidth != GetCurrentMaxBandwidth());
   SetCurrentMaxBandwidth(new_max_bandwidth);
-  observers_->Notify(&Observer::OnMaxBandwidthChanged, new_max_bandwidth);
+  observers_->Notify(FROM_HERE, &Observer::OnMaxBandwidthChanged,
+                     new_max_bandwidth);
 }
 
 void NetworkChangeNotifierDelegateAndroid::AddObserver(

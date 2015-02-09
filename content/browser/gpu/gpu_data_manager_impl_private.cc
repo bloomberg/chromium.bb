@@ -584,7 +584,8 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
 void GpuDataManagerImplPrivate::UpdateVideoMemoryUsageStats(
     const GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   GpuDataManagerImpl::UnlockedSession session(owner_);
-  observer_list_->Notify(&GpuDataManagerObserver::OnVideoMemoryUsageStatsUpdate,
+  observer_list_->Notify(FROM_HERE,
+                         &GpuDataManagerObserver::OnVideoMemoryUsageStatsUpdate,
                          video_memory_usage_stats);
 }
 
@@ -795,7 +796,7 @@ void GpuDataManagerImplPrivate::ProcessCrashed(
     gpu_info_.process_crash_count = GpuProcessHost::gpu_crash_count();
     GpuDataManagerImpl::UnlockedSession session(owner_);
     observer_list_->Notify(
-        &GpuDataManagerObserver::OnGpuProcessCrashed, exit_code);
+        FROM_HERE, &GpuDataManagerObserver::OnGpuProcessCrashed, exit_code);
   }
 }
 
@@ -998,7 +999,7 @@ void GpuDataManagerImplPrivate::UpdateGpuSwitchingManager(
 }
 
 void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {
-  observer_list_->Notify(&GpuDataManagerObserver::OnGpuInfoUpdate);
+  observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnGpuInfoUpdate);
 }
 
 void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
@@ -1131,7 +1132,7 @@ void GpuDataManagerImplPrivate::Notify3DAPIBlocked(const GURL& url,
                                                    int render_view_id,
                                                    ThreeDAPIType requester) {
   GpuDataManagerImpl::UnlockedSession session(owner_);
-  observer_list_->Notify(&GpuDataManagerObserver::DidBlock3DAPIs,
+  observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::DidBlock3DAPIs,
                          url, render_process_id, render_view_id, requester);
 }
 

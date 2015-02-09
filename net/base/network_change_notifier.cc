@@ -949,29 +949,31 @@ void NetworkChangeNotifier::SetDnsConfig(const DnsConfig& config) {
 }
 
 void NetworkChangeNotifier::NotifyObserversOfIPAddressChangeImpl() {
-  ip_address_observer_list_->Notify(&IPAddressObserver::OnIPAddressChanged);
+  ip_address_observer_list_->Notify(FROM_HERE,
+                                    &IPAddressObserver::OnIPAddressChanged);
 }
 
 void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeImpl(
     ConnectionType type) {
   connection_type_observer_list_->Notify(
-      &ConnectionTypeObserver::OnConnectionTypeChanged, type);
+      FROM_HERE, &ConnectionTypeObserver::OnConnectionTypeChanged, type);
 }
 
 void NetworkChangeNotifier::NotifyObserversOfNetworkChangeImpl(
     ConnectionType type) {
   network_change_observer_list_->Notify(
-      &NetworkChangeObserver::OnNetworkChanged, type);
+      FROM_HERE, &NetworkChangeObserver::OnNetworkChanged, type);
 }
 
 void NetworkChangeNotifier::NotifyObserversOfDNSChangeImpl() {
-  resolver_state_observer_list_->Notify(&DNSObserver::OnDNSChanged);
+  resolver_state_observer_list_->Notify(FROM_HERE, &DNSObserver::OnDNSChanged);
 }
 
 void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeImpl(
     double max_bandwidth_mbps) {
   max_bandwidth_observer_list_->Notify(
-      &MaxBandwidthObserver::OnMaxBandwidthChanged, max_bandwidth_mbps);
+      FROM_HERE, &MaxBandwidthObserver::OnMaxBandwidthChanged,
+      max_bandwidth_mbps);
 }
 
 NetworkChangeNotifier::DisableForTest::DisableForTest()

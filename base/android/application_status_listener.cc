@@ -60,7 +60,8 @@ bool ApplicationStatusListener::RegisterBindings(JNIEnv* env) {
 // static
 void ApplicationStatusListener::NotifyApplicationStateChange(
     ApplicationState state) {
-  g_observers.Get().Notify(&ApplicationStatusListener::Notify, state);
+  g_observers.Get().Notify(FROM_HERE, &ApplicationStatusListener::Notify,
+                           state);
 }
 
 static void OnApplicationStateChange(JNIEnv* env,

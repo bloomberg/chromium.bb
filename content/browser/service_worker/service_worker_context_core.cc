@@ -303,7 +303,8 @@ void ServiceWorkerContextCore::RegistrationComplete(
   DCHECK(registration);
   callback.Run(status, status_message, registration->id());
   if (observer_list_.get()) {
-    observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationStored,
+    observer_list_->Notify(FROM_HERE,
+                           &ServiceWorkerContextObserver::OnRegistrationStored,
                            pattern);
   }
 }
@@ -315,7 +316,8 @@ void ServiceWorkerContextCore::UnregistrationComplete(
     ServiceWorkerStatusCode status) {
   callback.Run(status);
   if (observer_list_.get()) {
-    observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationDeleted,
+    observer_list_->Notify(FROM_HERE,
+                           &ServiceWorkerContextObserver::OnRegistrationDeleted,
                            registration_id, pattern);
   }
 }
@@ -439,26 +441,27 @@ void ServiceWorkerContextCore::TransferProviderHostIn(
 void ServiceWorkerContextCore::OnWorkerStarted(ServiceWorkerVersion* version) {
   if (!observer_list_.get())
     return;
-  observer_list_->Notify(&ServiceWorkerContextObserver::OnWorkerStarted,
-                         version->version_id(),
-                         version->embedded_worker()->process_id(),
-                         version->embedded_worker()->thread_id());
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextObserver::OnWorkerStarted,
+      version->version_id(), version->embedded_worker()->process_id(),
+      version->embedded_worker()->thread_id());
 }
 
 void ServiceWorkerContextCore::OnWorkerStopped(ServiceWorkerVersion* version) {
   if (!observer_list_.get())
     return;
-  observer_list_->Notify(&ServiceWorkerContextObserver::OnWorkerStopped,
-                         version->version_id(),
-                         version->embedded_worker()->process_id(),
-                         version->embedded_worker()->thread_id());
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextObserver::OnWorkerStopped,
+      version->version_id(), version->embedded_worker()->process_id(),
+      version->embedded_worker()->thread_id());
 }
 
 void ServiceWorkerContextCore::OnVersionStateChanged(
     ServiceWorkerVersion* version) {
   if (!observer_list_.get())
     return;
-  observer_list_->Notify(&ServiceWorkerContextObserver::OnVersionStateChanged,
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextObserver::OnVersionStateChanged,
                          version->version_id());
 }
 
@@ -471,12 +474,11 @@ void ServiceWorkerContextCore::OnErrorReported(
   if (!observer_list_.get())
     return;
   observer_list_->Notify(
-      &ServiceWorkerContextObserver::OnErrorReported,
-      version->version_id(),
-      version->embedded_worker()->process_id(),
+      FROM_HERE, &ServiceWorkerContextObserver::OnErrorReported,
+      version->version_id(), version->embedded_worker()->process_id(),
       version->embedded_worker()->thread_id(),
-      ServiceWorkerContextObserver::ErrorInfo(
-          error_message, line_number, column_number, source_url));
+      ServiceWorkerContextObserver::ErrorInfo(error_message, line_number,
+                                              column_number, source_url));
 }
 
 void ServiceWorkerContextCore::OnReportConsoleMessage(
@@ -489,9 +491,8 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
   if (!observer_list_.get())
     return;
   observer_list_->Notify(
-      &ServiceWorkerContextObserver::OnReportConsoleMessage,
-      version->version_id(),
-      version->embedded_worker()->process_id(),
+      FROM_HERE, &ServiceWorkerContextObserver::OnReportConsoleMessage,
+      version->version_id(), version->embedded_worker()->process_id(),
       version->embedded_worker()->thread_id(),
       ServiceWorkerContextObserver::ConsoleMessage(
           source_identifier, message_level, message, line_number, source_url));

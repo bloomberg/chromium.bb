@@ -205,7 +205,7 @@ LRESULT UserInputMonitorWinCore::OnInput(HRAWINPUT input_handle) {
       position.y = 0;
     }
     mouse_listeners_->Notify(
-        &UserInputMonitor::MouseEventListener::OnMouseMoved,
+        FROM_HERE, &UserInputMonitor::MouseEventListener::OnMouseMoved,
         SkIPoint::Make(position.x, position.y));
   } else if (input->header.dwType == RIM_TYPEKEYBOARD &&
              input->header.hDevice != NULL) {

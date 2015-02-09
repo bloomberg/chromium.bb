@@ -193,7 +193,7 @@ void AudioPipeReader::DoCapture() {
   // Dispatch asynchronous notification to the stream observers.
   scoped_refptr<base::RefCountedString> data_ref =
       base::RefCountedString::TakeString(&data);
-  observers_->Notify(&StreamObserver::OnDataRead, data_ref);
+  observers_->Notify(FROM_HERE, &StreamObserver::OnDataRead, data_ref);
 }
 
 void AudioPipeReader::WaitForPipeReadable() {

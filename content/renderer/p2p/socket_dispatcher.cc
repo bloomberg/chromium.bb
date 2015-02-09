@@ -123,7 +123,7 @@ void P2PSocketDispatcher::UnregisterHostAddressRequest(int id) {
 void P2PSocketDispatcher::OnNetworkListChanged(
     const net::NetworkInterfaceList& networks) {
   network_list_observers_->Notify(
-      &NetworkListObserver::OnNetworkListChanged, networks);
+      FROM_HERE, &NetworkListObserver::OnNetworkListChanged, networks);
 }
 
 void P2PSocketDispatcher::OnGetHostAddressResult(

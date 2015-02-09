@@ -428,7 +428,8 @@ void ServiceWorkerContextWrapper::DidDeleteAndStartOver(
   context_core_.reset(new ServiceWorkerContextCore(context_core_.get(), this));
   DVLOG(1) << "Restarted ServiceWorkerContextCore successfully.";
 
-  observer_list_->Notify(&ServiceWorkerContextObserver::OnStorageWiped);
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextObserver::OnStorageWiped);
 }
 
 }  // namespace content

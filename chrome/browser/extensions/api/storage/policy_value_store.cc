@@ -105,11 +105,9 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
   }
 
   if (!changes.empty()) {
-    observers_->Notify(
-        &SettingsObserver::OnSettingsChanged,
-        extension_id_,
-        settings_namespace::MANAGED,
-        ValueStoreChange::ToJson(changes));
+    observers_->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
+                       extension_id_, settings_namespace::MANAGED,
+                       ValueStoreChange::ToJson(changes));
   }
 }
 

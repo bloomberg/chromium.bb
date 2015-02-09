@@ -88,11 +88,9 @@ ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
     return HandleError(result->error(), storage);
 
   if (!result->changes().empty()) {
-    observers_->Notify(
-        &SettingsObserver::OnSettingsChanged,
-        extension_id(),
-        settings_namespace_,
-        ValueStoreChange::ToJson(result->changes()));
+    observers_->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
+                       extension_id(), settings_namespace_,
+                       ValueStoreChange::ToJson(result->changes()));
   }
 
   return NoArguments();

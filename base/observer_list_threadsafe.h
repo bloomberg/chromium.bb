@@ -168,7 +168,9 @@ class ObserverListThreadSafe
   // that at the completion of the Notify call that all Observers have
   // been Notified.  The notification may still be pending delivery.
   template <class Method, class... Params>
-  void Notify(Method m, const Params&... params) {
+  void Notify(const tracked_objects::Location& from_here,
+              Method m,
+              const Params&... params) {
     UnboundMethod<ObserverType, Method, Tuple<Params...>> method(
         m, MakeTuple(params...));
 
@@ -176,7 +178,7 @@ class ObserverListThreadSafe
     for (const auto& entry : observer_lists_) {
       ObserverListContext* context = entry.second;
       context->loop->PostTask(
-          FROM_HERE,
+          from_here,
           base::Bind(
               &ObserverListThreadSafe<ObserverType>::template NotifyWrapper<
                   Method, Tuple<Params...>>,

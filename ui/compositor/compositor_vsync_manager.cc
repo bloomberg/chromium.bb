@@ -55,9 +55,8 @@ void CompositorVSyncManager::RemoveObserver(Observer* observer) {
 void CompositorVSyncManager::NotifyObservers(base::TimeTicks timebase,
                                              base::TimeDelta interval) {
   observer_list_->Notify(
-      &CompositorVSyncManager::Observer::OnUpdateVSyncParameters,
-      timebase,
-      interval);
+      FROM_HERE, &CompositorVSyncManager::Observer::OnUpdateVSyncParameters,
+      timebase, interval);
 }
 
 }  // namespace ui

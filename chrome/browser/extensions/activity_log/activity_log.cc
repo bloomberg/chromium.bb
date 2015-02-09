@@ -545,7 +545,7 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
   if (IsDatabaseEnabled() && database_policy_)
     database_policy_->ProcessAction(action);
   if (IsWatchdogAppActive())
-    observers_->Notify(&Observer::OnExtensionActivity, action);
+    observers_->Notify(FROM_HERE, &Observer::OnExtensionActivity, action);
   if (testing_mode_)
     VLOG(1) << action->PrintForDebug();
 }

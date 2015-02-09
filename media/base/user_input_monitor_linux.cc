@@ -294,7 +294,8 @@ void UserInputMonitorLinuxCore::ProcessXEvent(xEvent* event) {
     SkIPoint position(SkIPoint::Make(event->u.keyButtonPointer.rootX,
                                      event->u.keyButtonPointer.rootY));
     mouse_listeners_->Notify(
-        &UserInputMonitor::MouseEventListener::OnMouseMoved, position);
+        FROM_HERE, &UserInputMonitor::MouseEventListener::OnMouseMoved,
+        position);
   } else {
     ui::EventType type;
     if (event->u.u.type == KeyPress) {
