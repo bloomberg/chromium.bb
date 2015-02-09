@@ -250,7 +250,7 @@ TEST(TopControlsManagerTest,
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
 
-TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
+TEST(TopControlsManagerTest, DISABLED_PartialShownWithAmbiguousThresholdHides) {
   MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
