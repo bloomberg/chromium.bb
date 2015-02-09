@@ -45,9 +45,9 @@ void SortBookmarksByName(std::vector<const BookmarkNode*>& nodes) {
 std::vector<const BookmarkNode*> PrimaryPermanentNodes(BookmarkModel* model) {
   DCHECK(model->loaded());
   std::vector<const BookmarkNode*> nodes;
-  nodes.push_back(model->other_node());
   nodes.push_back(model->mobile_node());
   nodes.push_back(model->bookmark_bar_node());
+  nodes.push_back(model->other_node());
   return nodes;
 }
 
