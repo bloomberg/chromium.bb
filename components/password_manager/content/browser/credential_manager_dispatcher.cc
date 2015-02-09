@@ -28,6 +28,7 @@ namespace password_manager {
 class CredentialManagerDispatcher::PendingRequestTask
     : public PasswordStoreConsumer {
  public:
+  // TODO(mkwst): De-inline the methods in this class. http://goo.gl/RmFwKd
   PendingRequestTask(CredentialManagerDispatcher* const dispatcher,
                      int request_id,
                      bool request_zero_click_only,
@@ -45,63 +46,7 @@ class CredentialManagerDispatcher::PendingRequestTask
 
   // PasswordStoreConsumer implementation.
   void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) override {
-    // We own the PasswordForm instances, so we're responsible for cleaning
-    // up the instances we don't add to |local_results| or |federated_results|.
-    //
-    // TODO(mkwst): Switch this and PromptUserToChooseCredentials() to use
-    // ScopedVector.
-    std::vector<autofill::PasswordForm*> local_results;
-    std::vector<autofill::PasswordForm*> federated_results;
-    autofill::PasswordForm* zero_click_form_to_return = nullptr;
-    bool found_zero_clickable_credential = false;
-    for (autofill::PasswordForm* form : results) {
-      if (form->origin == origin_) {
-        local_results.push_back(form);
-
-        // If this is a zero-clickable PasswordForm, and we haven't found any
-        // other zero-clickable PasswordForms, then store this one for later.
-        // If we have found other zero-clickable PasswordForms, then clear
-        // the stored form (we return zero-click forms iff there is a single,
-        // unambigious choice).
-        if (!form->skip_zero_click) {
-          zero_click_form_to_return =
-              found_zero_clickable_credential ? nullptr : form;
-          found_zero_clickable_credential = true;
-        }
-      } else if (federations_.count(form->origin.spec()))
-        federated_results.push_back(form);
-      else
-        delete form;
-    }
-
-    if ((local_results.empty() && federated_results.empty()) ||
-        dispatcher_->web_contents()->GetLastCommittedURL().GetOrigin() !=
-            origin_) {
-      dispatcher_->SendCredential(id_, CredentialInfo());
-      return;
-    }
-    if (zero_click_form_to_return && dispatcher_->IsZeroClickAllowed()) {
-      CredentialInfo info(*zero_click_form_to_return,
-                          zero_click_form_to_return->federation_url.is_empty()
-                              ? CredentialType::CREDENTIAL_TYPE_LOCAL
-                              : CredentialType::CREDENTIAL_TYPE_FEDERATED);
-      STLDeleteElements(&local_results);
-      STLDeleteElements(&federated_results);
-      dispatcher_->SendCredential(id_, info);
-      return;
-    }
-
-    if (zero_click_only_ ||
-        !dispatcher_->client()->PromptUserToChooseCredentials(
-            local_results, federated_results,
-            base::Bind(&CredentialManagerDispatcher::SendCredential,
-                       base::Unretained(dispatcher_), id_))) {
-      STLDeleteElements(&local_results);
-      STLDeleteElements(&federated_results);
-      dispatcher_->SendCredential(id_, CredentialInfo());
-    }
-  }
+      ScopedVector<autofill::PasswordForm> results) override;
 
  private:
   // Backlink to the CredentialManagerDispatcher that owns this object.
@@ -115,6 +60,57 @@ class CredentialManagerDispatcher::PendingRequestTask
   DISALLOW_COPY_AND_ASSIGN(PendingRequestTask);
 };
 
+void CredentialManagerDispatcher::PendingRequestTask::OnGetPasswordStoreResults(
+    ScopedVector<autofill::PasswordForm> results) {
+  ScopedVector<autofill::PasswordForm> local_results;
+  ScopedVector<autofill::PasswordForm> federated_results;
+  autofill::PasswordForm* zero_click_form_to_return = nullptr;
+  bool found_zero_clickable_credential = false;
+  for (auto& form : results) {
+    if (form->origin == origin_) {
+      local_results.push_back(form);
+
+      // If this is a zero-clickable PasswordForm, and we haven't found any
+      // other zero-clickable PasswordForms, then store this one for later.
+      // If we have found other zero-clickable PasswordForms, then clear
+      // the stored form (we return zero-click forms iff there is a single,
+      // unambigious choice).
+      if (!form->skip_zero_click) {
+        zero_click_form_to_return =
+            found_zero_clickable_credential ? nullptr : form;
+        found_zero_clickable_credential = true;
+      }
+      form = nullptr;
+    } else if (federations_.count(form->origin.spec())) {
+      federated_results.push_back(form);
+      form = nullptr;
+    }
+  }
+
+  if ((local_results.empty() && federated_results.empty()) ||
+      dispatcher_->web_contents()->GetLastCommittedURL().GetOrigin() !=
+          origin_) {
+    dispatcher_->SendCredential(id_, CredentialInfo());
+    return;
+  }
+  if (zero_click_form_to_return && dispatcher_->IsZeroClickAllowed()) {
+    CredentialInfo info(*zero_click_form_to_return,
+                        zero_click_form_to_return->federation_url.is_empty()
+                            ? CredentialType::CREDENTIAL_TYPE_LOCAL
+                            : CredentialType::CREDENTIAL_TYPE_FEDERATED);
+    dispatcher_->SendCredential(id_, info);
+    return;
+  }
+
+  if (zero_click_only_ ||
+      !dispatcher_->client()->PromptUserToChooseCredentials(
+          local_results.Pass(), federated_results.Pass(),
+          base::Bind(&CredentialManagerDispatcher::SendCredential,
+                     base::Unretained(dispatcher_), id_))) {
+    dispatcher_->SendCredential(id_, CredentialInfo());
+  }
+}
+
 // CredentialManagerDispatcher::PendingSignedOutTask ---------------------------
 
 class CredentialManagerDispatcher::PendingSignedOutTask
@@ -127,7 +123,7 @@ class CredentialManagerDispatcher::PendingSignedOutTask
 
   // PasswordStoreConsumer implementation.
   void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) override;
+      ScopedVector<autofill::PasswordForm> results) override;
 
  private:
   // Backlink to the CredentialManagerDispatcher that owns this object.
@@ -150,18 +146,16 @@ void CredentialManagerDispatcher::PendingSignedOutTask::AddOrigin(
 }
 
 void CredentialManagerDispatcher::PendingSignedOutTask::
-    OnGetPasswordStoreResults(
-        const std::vector<autofill::PasswordForm*>& results) {
+    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
   PasswordStore* store = dispatcher_->GetPasswordStore();
   for (autofill::PasswordForm* form : results) {
     if (origins_.count(form->origin.spec())) {
       form->skip_zero_click = true;
+      // Note that UpdateLogin ends up copying the form while posting a task to
+      // update the PasswordStore, so it's fine to let |results| delete the
+      // original at the end of this method.
       store->UpdateLogin(*form);
     }
-    // We own the PasswordForms, so we need to dispose of them. This is safe to
-    // do, as ::UpdateLogin ends up copying the form while posting a task to
-    // update the PasswordStore.
-    delete form;
   }
 
   dispatcher_->DoneSigningOut();

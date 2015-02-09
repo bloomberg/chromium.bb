@@ -226,14 +226,6 @@ class PasswordFormManagerTest : public testing::Test {
     manager->state_ = PasswordFormManager::MATCHING_PHASE;
   }
 
-  void SimulateResponseFromPasswordStore(
-      PasswordFormManager* manager,
-      const std::vector<PasswordForm*>& result) {
-    // Simply call the callback method when request done. This will transfer
-    // the ownership of the objects in |result| to the |manager|.
-    manager->OnGetPasswordStoreResults(result);
-  }
-
   void SanitizePossibleUsernames(PasswordFormManager* p, PasswordForm* form) {
     p->SanitizePossibleUsernames(form);
   }
@@ -769,8 +761,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
   SimulateFetchMatchingLoginsFromPasswordStore(&manager_no_creds);
-  std::vector<PasswordForm*> result;
-  SimulateResponseFromPasswordStore(&manager_no_creds, result);
+  manager_no_creds.OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
   Mock::VerifyAndClearExpectations(client()->mock_driver());
 
   // Signing up on a previously visited site. Credentials are found in the
@@ -783,9 +774,9 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   EXPECT_CALL(*(client()->mock_driver()), IsOffTheRecord())
       .WillRepeatedly(Return(false));
   SimulateFetchMatchingLoginsFromPasswordStore(&manager_creds);
-  // We need add heap allocated objects to result.
-  result.push_back(CreateSavedMatch(false));
-  SimulateResponseFromPasswordStore(&manager_creds, result);
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(CreateSavedMatch(false));
+  manager_creds.OnGetPasswordStoreResults(simulated_results.Pass());
   Mock::VerifyAndClearExpectations(client()->mock_driver());
 
   // There are cases, such as when a form is explicitly for creating a new
@@ -801,9 +792,8 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   EXPECT_CALL(*(client()->mock_driver()), IsOffTheRecord())
       .WillRepeatedly(Return(false));
   SimulateFetchMatchingLoginsFromPasswordStore(&manager_dropped_creds);
-  result.clear();
-  result.push_back(CreateSavedMatch(false));
-  SimulateResponseFromPasswordStore(&manager_dropped_creds, result);
+  simulated_results.push_back(CreateSavedMatch(false));
+  manager_dropped_creds.OnGetPasswordStoreResults(simulated_results.Pass());
   Mock::VerifyAndClearExpectations(client()->mock_driver());
 
   // Signing up on a previously visited site. Credentials are found in the
@@ -814,9 +804,8 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(0);
   SimulateFetchMatchingLoginsFromPasswordStore(&manager_blacklisted);
-  result.clear();
-  result.push_back(CreateSavedMatch(true));
-  SimulateResponseFromPasswordStore(&manager_blacklisted, result);
+  simulated_results.push_back(CreateSavedMatch(true));
+  manager_blacklisted.OnGetPasswordStoreResults(simulated_results.Pass());
   Mock::VerifyAndClearExpectations(client()->mock_driver());
 }
 
@@ -832,16 +821,15 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   EXPECT_CALL(*(client()->mock_driver()), IsOffTheRecord())
       .WillRepeatedly(Return(false));
 
-  std::vector<PasswordForm*> results;
-  results.push_back(CreateSavedMatch(false));
-  results.push_back(CreateSavedMatch(false));
-  results[1]->username_value = ASCIIToUTF16("other@gmail.com");
-  results[1]->password_element = ASCIIToUTF16("signup_password");
-  results[1]->username_element = ASCIIToUTF16("signup_username");
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(CreateSavedMatch(false));
+  simulated_results.push_back(CreateSavedMatch(false));
+  simulated_results[1]->username_value = ASCIIToUTF16("other@gmail.com");
+  simulated_results[1]->password_element = ASCIIToUTF16("signup_password");
+  simulated_results[1]->username_element = ASCIIToUTF16("signup_username");
   SimulateFetchMatchingLoginsFromPasswordStore(&manager_match);
-  SimulateResponseFromPasswordStore(&manager_match, results);
+  manager_match.OnGetPasswordStoreResults(simulated_results.Pass());
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
-  results.clear();
 
   // Same thing, except this time the credentials that don't match quite as
   // well are generated. They should now be sent to Autofill().
@@ -850,14 +838,14 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
 
-  results.push_back(CreateSavedMatch(false));
-  results.push_back(CreateSavedMatch(false));
-  results[1]->username_value = ASCIIToUTF16("other@gmail.com");
-  results[1]->password_element = ASCIIToUTF16("signup_password");
-  results[1]->username_element = ASCIIToUTF16("signup_username");
-  results[1]->type = PasswordForm::TYPE_GENERATED;
+  simulated_results.push_back(CreateSavedMatch(false));
+  simulated_results.push_back(CreateSavedMatch(false));
+  simulated_results[1]->username_value = ASCIIToUTF16("other@gmail.com");
+  simulated_results[1]->password_element = ASCIIToUTF16("signup_password");
+  simulated_results[1]->username_element = ASCIIToUTF16("signup_username");
+  simulated_results[1]->type = PasswordForm::TYPE_GENERATED;
   SimulateFetchMatchingLoginsFromPasswordStore(&manager_no_match);
-  SimulateResponseFromPasswordStore(&manager_no_match, results);
+  manager_no_match.OnGetPasswordStoreResults(simulated_results.Pass());
   EXPECT_EQ(2u, password_manager.GetLatestBestMatches().size());
 }
 
@@ -925,7 +913,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
 
   // Password store only has these incomplete credentials.
-  PasswordForm* incomplete_form = new PasswordForm();
+  scoped_ptr<PasswordForm> incomplete_form(new PasswordForm());
   incomplete_form->origin = GURL("http://accounts.google.com/LoginAuth");
   incomplete_form->signon_realm = "http://accounts.google.com/";
   incomplete_form->password_value = ASCIIToUTF16("my_password");
@@ -948,9 +936,9 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   obsolete_form.action = encountered_form.action;
 
   // Feed the incomplete credentials to the manager.
-  std::vector<PasswordForm*> results;
-  results.push_back(incomplete_form);  // Takes ownership.
-  form_manager.OnGetPasswordStoreResults(results);
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(incomplete_form.release());
+  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
 
   form_manager.ProvisionallySave(
       complete_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -978,14 +966,16 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
   // Second candidate has the same signon realm as the form, but has a different
   // origin and action. Public suffix match is the most important criterion so
   // the second candidate should be selected.
-  std::vector<PasswordForm*> results;
-  results.push_back(CreateSavedMatch(false));
-  results.push_back(CreateSavedMatch(false));
-  results[0]->original_signon_realm = "http://accounts2.google.com";
-  results[1]->origin = GURL("http://accounts.google.com/a/ServiceLoginAuth2");
-  results[1]->action = GURL("http://accounts.google.com/a/ServiceLogin2");
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(CreateSavedMatch(false));
+  simulated_results.push_back(CreateSavedMatch(false));
+  simulated_results[0]->original_signon_realm = "http://accounts2.google.com";
+  simulated_results[1]->origin =
+      GURL("http://accounts.google.com/a/ServiceLoginAuth2");
+  simulated_results[1]->action =
+      GURL("http://accounts.google.com/a/ServiceLogin2");
   SimulateFetchMatchingLoginsFromPasswordStore(&manager);
-  SimulateResponseFromPasswordStore(&manager, results);
+  manager.OnGetPasswordStoreResults(simulated_results.Pass());
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
   EXPECT_EQ("", password_manager.GetLatestBestMatches()
                     .begin()
@@ -1229,31 +1219,31 @@ TEST_F(PasswordFormManagerTest, UploadFormData_AccountCreationPassword) {
 
   PasswordFormManager form_manager(&password_manager, &client_with_store,
                                    client_with_store.driver(), form, false);
-  std::vector<PasswordForm*> result;
-  result.push_back(CreateSavedMatch(false));
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(CreateSavedMatch(false));
 
   field.label = ASCIIToUTF16("full_name");
   field.name = ASCIIToUTF16("full_name");
   field.form_control_type = "text";
-  result[0]->form_data.fields.push_back(field);
+  simulated_results[0]->form_data.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("Email");
   field.form_control_type = "text";
-  result[0]->form_data.fields.push_back(field);
+  simulated_results[0]->form_data.fields.push_back(field);
 
   field.label = ASCIIToUTF16("password");
   field.name = ASCIIToUTF16("password");
   field.form_control_type = "password";
-  result[0]->form_data.fields.push_back(field);
+  simulated_results[0]->form_data.fields.push_back(field);
 
   PasswordForm form_to_save(form);
   form_to_save.preferred = true;
-  form_to_save.username_value = result[0]->username_value;
-  form_to_save.password_value = result[0]->password_value;
+  form_to_save.username_value = simulated_results[0]->username_value;
+  form_to_save.password_value = simulated_results[0]->password_value;
 
   SimulateFetchMatchingLoginsFromPasswordStore(&form_manager);
-  SimulateResponseFromPasswordStore(&form_manager, result);
+  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
 
   EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
               UploadPasswordForm(_, autofill::ACCOUNT_CREATION_PASSWORD))
@@ -1338,9 +1328,9 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   // Suddenly, the frame and its driver disappear.
   client_with_store.KillDriver();
 
-  std::vector<PasswordForm*> results;
-  results.push_back(form.release());
-  form_manager.OnGetPasswordStoreResults(results);
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(form.release());
+  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
 }
 
 }  // namespace password_manager

@@ -21,9 +21,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
-using testing::_;
 using testing::ElementsAreArray;
-using testing::WithArg;
+using testing::IsEmpty;
 
 namespace password_manager {
 
@@ -31,8 +30,13 @@ namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
-  MOCK_METHOD1(OnGetPasswordStoreResults,
+  MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
                void(const std::vector<PasswordForm*>&));
+
+  // GMock cannot mock methods with move-only args.
+  void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
+    OnGetPasswordStoreResultsConstRef(results.get());
+  }
 };
 
 class MockPasswordStoreObserver : public PasswordStore::Observer {
@@ -114,11 +118,11 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   };
 
   // Build the expected forms vector and add the forms to the store.
-  std::vector<PasswordForm*> expected_forms;
+  ScopedVector<PasswordForm> expected_forms;
   for (unsigned int i = 0; i < arraysize(form_data); ++i) {
-    PasswordForm* form = CreatePasswordFormFromData(form_data[i]);
-    expected_forms.push_back(form);
-    store->AddLogin(*form);
+    expected_forms.push_back(
+        CreatePasswordFormFromData(form_data[i]).release());
+    store->AddLogin(*expected_forms.back());
   }
 
   base::MessageLoop::current()->RunUntilIdle();
@@ -126,14 +130,12 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   MockPasswordStoreConsumer consumer;
 
   // We expect to get the same data back, even though it's not all ASCII.
-  EXPECT_CALL(consumer,
-      OnGetPasswordStoreResults(ContainsAllPasswordForms(expected_forms)))
-      .WillOnce(WithArg<0>(STLDeleteElements0()));
+  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
+                            ContainsSamePasswordForms(expected_forms.get())));
   store->GetAutofillableLogins(&consumer);
 
   base::MessageLoop::current()->RunUntilIdle();
 
-  STLDeleteElements(&expected_forms);
   store->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();
 }
@@ -144,8 +146,8 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
       make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
-  scoped_ptr<PasswordForm> form(
-      CreatePasswordFormFromData(CreateTestPasswordFormData()));
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromData(CreateTestPasswordFormData());
 
   MockPasswordStoreObserver observer;
   store->AddObserver(&observer);
@@ -207,8 +209,8 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   bad_store->AddObserver(&mock_observer);
 
   // Add a new autofillable login + a blacklisted login.
-  scoped_ptr<PasswordForm> form(
-      CreatePasswordFormFromData(CreateTestPasswordFormData()));
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromData(CreateTestPasswordFormData());
   scoped_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
   blacklisted_form->signon_realm = "http://foo.example.com";
   blacklisted_form->origin = GURL("http://foo.example.com/origin");
@@ -220,15 +222,15 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Get all logins; autofillable logins; blacklisted logins.
   testing::StrictMock<MockPasswordStoreConsumer> mock_consumer;
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResults(testing::ElementsAre()));
+  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   bad_store->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &mock_consumer);
   base::MessageLoop::current()->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResults(testing::ElementsAre()));
+  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   bad_store->GetAutofillableLogins(&mock_consumer);
   base::MessageLoop::current()->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResults(testing::ElementsAre()));
+  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   bad_store->GetBlacklistLogins(&mock_consumer);
   base::MessageLoop::current()->RunUntilIdle();
 

@@ -27,8 +27,13 @@ namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
-  MOCK_METHOD1(OnGetPasswordStoreResults,
+  MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
                void(const std::vector<PasswordForm*>&));
+
+  // GMock cannot mock methods with move-only args.
+  void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
+    OnGetPasswordStoreResultsConstRef(results.get());
+  }
 };
 
 class StartSyncFlareMock {
@@ -130,11 +135,10 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   };
 
   // Build the forms vector and add the forms to the store.
-  std::vector<PasswordForm*> all_forms;
+  ScopedVector<PasswordForm> all_forms;
   for (size_t i = 0; i < arraysize(form_data); ++i) {
-    PasswordForm* form = CreatePasswordFormFromData(form_data[i]);
-    all_forms.push_back(form);
-    store->AddLogin(*form);
+    all_forms.push_back(CreatePasswordFormFromData(form_data[i]).release());
+    store->AddLogin(*all_forms.back());
   }
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -164,20 +168,15 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   bar_example_expected.push_back(all_forms[4]);
 
   MockPasswordStoreConsumer consumer;
-
-  // Expect the appropriate replies, as above, in reverse order than we will
-  // issue the queries. Each retires on saturation to avoid matcher spew.
-  EXPECT_CALL(consumer, OnGetPasswordStoreResults(
-                            ContainsAllPasswordForms(bar_example_expected)))
-      .WillOnce(WithArg<0>(STLDeleteElements0()))
+  testing::InSequence s;
+  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
+                            ContainsSamePasswordForms(www_google_expected)))
       .RetiresOnSaturation();
-  EXPECT_CALL(consumer, OnGetPasswordStoreResults(
-                            ContainsAllPasswordForms(accounts_google_expected)))
-      .WillOnce(WithArg<0>(STLDeleteElements0()))
-      .RetiresOnSaturation();
-  EXPECT_CALL(consumer, OnGetPasswordStoreResults(
-                            ContainsAllPasswordForms(www_google_expected)))
-      .WillOnce(WithArg<0>(STLDeleteElements0()))
+  EXPECT_CALL(consumer,
+              OnGetPasswordStoreResultsConstRef(ContainsSamePasswordForms(
+                  accounts_google_expected))).RetiresOnSaturation();
+  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
+                            ContainsSamePasswordForms(bar_example_expected)))
       .RetiresOnSaturation();
 
   store->GetLogins(www_google, PasswordStore::ALLOW_PROMPT, &consumer);
@@ -186,7 +185,6 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   base::MessageLoop::current()->RunUntilIdle();
 
-  STLDeleteElements(&all_forms);
   store->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();
 }

@@ -5,15 +5,12 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_
 
-#include <vector>
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
@@ -48,46 +45,6 @@ class PasswordStore : protected PasswordStoreSync,
   // Whether or not it's acceptable for Chrome to request access to locked
   // passwords, which requires prompting the user for permission.
   enum AuthorizationPromptPolicy { ALLOW_PROMPT, DISALLOW_PROMPT };
-
-  // PasswordForm vector elements are meant to be owned by the
-  // PasswordStoreConsumer. However, if the request is canceled after the
-  // allocation, then the request must take care of the deletion.
-  class GetLoginsRequest {
-   public:
-    explicit GetLoginsRequest(PasswordStoreConsumer* consumer);
-    virtual ~GetLoginsRequest();
-
-    void set_ignore_logins_cutoff(base::Time cutoff) {
-      ignore_logins_cutoff_ = cutoff;
-    }
-
-    // Removes any logins in the result list that were saved before the cutoff.
-    void ApplyIgnoreLoginsCutoff();
-
-    // Forward the result to the consumer on the original message loop.
-    void ForwardResult();
-
-    std::vector<autofill::PasswordForm*>* result() const {
-      return result_.get();
-    }
-
-   private:
-    // See GetLogins(). Logins older than this will be removed from the reply.
-    base::Time ignore_logins_cutoff_;
-
-    base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
-
-    // The result of the request. It is filled in on the PasswordStore's task
-    // thread and consumed on the UI thread.
-    // TODO(dubroy): Remove this, and instead pass the vector directly to the
-    // backend methods.
-    scoped_ptr<std::vector<autofill::PasswordForm*>> result_;
-
-    base::ThreadChecker thread_checker_;
-    scoped_refptr<base::MessageLoopProxy> origin_loop_;
-
-    DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
-  };
 
   // An interface used to notify clients (observers) of this object that data in
   // the password store has changed. Register the observer via
@@ -174,6 +131,38 @@ class PasswordStore : protected PasswordStoreSync,
 
   typedef base::Callback<PasswordStoreChangeList(void)> ModificationTask;
 
+  class GetLoginsRequest {
+   public:
+    explicit GetLoginsRequest(PasswordStoreConsumer* consumer);
+    virtual ~GetLoginsRequest();
+
+    void set_ignore_logins_cutoff(base::Time cutoff) {
+      ignore_logins_cutoff_ = cutoff;
+    }
+
+    // Removes any logins in the result list that were saved before the cutoff.
+    void ApplyIgnoreLoginsCutoff();
+
+    // Forward the result to the consumer on the original message loop.
+    void ForwardResult();
+
+    ScopedVector<autofill::PasswordForm>* result() { return &result_; }
+
+   private:
+    // See GetLogins(). Logins older than this will be removed from the reply.
+    base::Time ignore_logins_cutoff_;
+
+    base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
+
+    // The result of the request. It is filled in on the PasswordStore's task
+    // thread and consumed on the UI thread.
+    ScopedVector<autofill::PasswordForm> result_;
+
+    scoped_refptr<base::MessageLoopProxy> origin_loop_;
+
+    DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
+  };
+
   ~PasswordStore() override;
 
   // Get the TaskRunner to use for PasswordStore background tasks.
@@ -217,14 +206,15 @@ class PasswordStore : protected PasswordStoreSync,
                              const ConsumerCallbackRunner& callback_runner) = 0;
 
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
+  virtual void GetAutofillableLoginsImpl(
+      scoped_ptr<GetLoginsRequest> request) = 0;
 
   // Finds all blacklist PasswordForms, and notifies the consumer.
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) = 0;
+  virtual void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) = 0;
 
   // Dispatches the result to the PasswordStoreConsumer on the original caller's
   // thread so the callback can be executed there. This should be the UI thread.
-  static void ForwardLoginsResult(GetLoginsRequest* request);
+  static void ForwardLoginsResult(scoped_ptr<GetLoginsRequest> request);
 
   // Log UMA stats for number of bulk deletions.
   void LogStatsForBulkDeletion(int num_deletions);
@@ -249,8 +239,8 @@ class PasswordStore : protected PasswordStoreSync,
  private:
   // Schedule the given |func| to be run in the PasswordStore's own thread with
   // responses delivered to |consumer| on the current thread.
-  template <typename BackendFunc>
-  void Schedule(BackendFunc func, PasswordStoreConsumer* consumer);
+  void Schedule(void (PasswordStore::*func)(scoped_ptr<GetLoginsRequest>),
+                PasswordStoreConsumer* consumer);
 
   // Wrapper method called on the destination thread (DB for non-mac) that
   // invokes |task| and then calls back into the source thread to notify
@@ -268,12 +258,12 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
                                          base::Time delete_end);
 
-  // Copies |matched_forms| into the request's result vector, then calls
+  // Moves |matched_forms| into the request's result vector, then calls
   // |ForwardLoginsResult|. Temporarily used as an adapter between the API of
   // |GetLoginsImpl| and |PasswordStoreConsumer|.
   // TODO(dubroy): Get rid of this.
-  static void CopyAndForwardLoginsResult(
-      PasswordStore::GetLoginsRequest* request,
+  static void MoveAndForwardLoginsResult(
+      scoped_ptr<PasswordStore::GetLoginsRequest> request,
       ScopedVector<autofill::PasswordForm> matched_forms);
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)

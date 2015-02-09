@@ -59,21 +59,14 @@ class TestPasswordManagerClient
   }
 
   bool PromptUserToChooseCredentials(
-      const std::vector<autofill::PasswordForm*>& local_forms,
-      const std::vector<autofill::PasswordForm*>& federated_forms,
+      ScopedVector<autofill::PasswordForm> local_forms,
+      ScopedVector<autofill::PasswordForm> federated_forms,
       base::Callback<void(const password_manager::CredentialInfo&)> callback)
       override {
-    // TODO(melandory): Use ScopedVector instead of std::vector in arguments.
-    // ContentCredentialManagerDispatcher::OnGetPasswordStoreResults contains a
-    // memory leak because of this.
     EXPECT_FALSE(local_forms.empty() && federated_forms.empty());
     did_prompt_user_to_choose_ = true;
-    ScopedVector<autofill::PasswordForm> local_entries;
-    local_entries.assign(local_forms.begin(), local_forms.end());
-    ScopedVector<autofill::PasswordForm> federated_entries;
-    federated_entries.assign(federated_forms.begin(), federated_forms.end());
     password_manager::CredentialInfo info(
-        local_forms.empty() ? *federated_forms[0] : *local_entries[0],
+        local_forms.empty() ? *federated_forms[0] : *local_forms[0],
         local_forms.empty()
             ? password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED
             : password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);

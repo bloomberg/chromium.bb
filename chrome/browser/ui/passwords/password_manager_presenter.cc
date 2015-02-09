@@ -212,10 +212,8 @@ void PasswordManagerPresenter::PasswordListPopulater::Populate() {
 }
 
 void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
-    const std::vector<autofill::PasswordForm*>& results) {
-  page_->password_list_.clear();
-  page_->password_list_.insert(page_->password_list_.end(),
-                               results.begin(), results.end());
+    ScopedVector<autofill::PasswordForm> results) {
+  page_->password_list_.swap(results);
   page_->SetPasswordList();
 }
 
@@ -235,10 +233,7 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::Populate() {
 }
 
 void PasswordManagerPresenter::PasswordExceptionListPopulater::
-    OnGetPasswordStoreResults(
-        const std::vector<autofill::PasswordForm*>& results) {
-  page_->password_exception_list_.clear();
-  page_->password_exception_list_.insert(page_->password_exception_list_.end(),
-                                         results.begin(), results.end());
+    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
+  page_->password_exception_list_.swap(results);
   page_->SetPasswordExceptionList();
 }

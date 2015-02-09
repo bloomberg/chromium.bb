@@ -50,20 +50,18 @@ class TestPasswordStore : public PasswordStore {
   void GetLoginsImpl(const autofill::PasswordForm& form,
                      PasswordStore::AuthorizationPromptPolicy prompt_policy,
                      const ConsumerCallbackRunner& runner) override;
-  void GetAutofillableLoginsImpl(
-      PasswordStore::GetLoginsRequest* request) override;
+  void GetAutofillableLoginsImpl(scoped_ptr<GetLoginsRequest> request) override;
 
   // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,
-                         bool custom_passphrase_sync_enabled) override {}
+                         bool custom_passphrase_sync_enabled) override;
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) override;
   PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  void GetBlacklistLoginsImpl(
-      PasswordStore::GetLoginsRequest* request) override {}
+  void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(

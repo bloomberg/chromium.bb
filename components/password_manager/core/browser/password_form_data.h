@@ -7,6 +7,7 @@
 
 #include <ostream>
 
+#include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -31,23 +32,20 @@ struct PasswordFormData {
   const double creation_time;
 };
 
-// Creates and returns a new PasswordForm built from form_data. Caller is
-// responsible for deleting the object when finished with it.
-autofill::PasswordForm* CreatePasswordFormFromData(
+// Creates and returns a new PasswordForm built from form_data.
+scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromData(
     const PasswordFormData& form_data);
 
 // Checks whether two vectors of PasswordForms contain equivalent elements,
 // regardless of order.
+// TODO(vabr) The *Ptr suffix is obsolete, rename.
 bool ContainsSamePasswordFormsPtr(
     const std::vector<autofill::PasswordForm*>& first,
     const std::vector<autofill::PasswordForm*>& second);
 
-bool ContainsSamePasswordForms(std::vector<autofill::PasswordForm>& first,
-                               std::vector<autofill::PasswordForm>& second);
-
 // This gmock matcher is used to check that the |arg| contains exactly the same
 // PasswordForms as |forms|, regardless of order.
-MATCHER_P(ContainsAllPasswordForms, forms, "") {
+MATCHER_P(ContainsSamePasswordForms, forms, "") {
   return ContainsSamePasswordFormsPtr(forms, arg);
 }
 

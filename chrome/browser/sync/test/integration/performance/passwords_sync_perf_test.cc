@@ -12,7 +12,6 @@
 
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
-using passwords_helper::GetLogins;
 using passwords_helper::GetPasswordCount;
 using passwords_helper::GetPasswordStore;
 using passwords_helper::UpdateLogin;
@@ -50,12 +49,11 @@ void PasswordsSyncPerfTest::AddLogins(int profile, int num_logins) {
 }
 
 void PasswordsSyncPerfTest::UpdateLogins(int profile) {
-  std::vector<autofill::PasswordForm> logins;
-  GetLogins(GetPasswordStore(profile), logins);
-  for (std::vector<autofill::PasswordForm>::iterator it = logins.begin();
-       it != logins.end(); ++it) {
-    (*it).password_value = base::ASCIIToUTF16(NextPassword());
-    UpdateLogin(GetPasswordStore(profile), (*it));
+  ScopedVector<autofill::PasswordForm> logins =
+      passwords_helper::GetLogins(GetPasswordStore(profile));
+  for (autofill::PasswordForm* login : logins) {
+    login->password_value = base::ASCIIToUTF16(NextPassword());
+    UpdateLogin(GetPasswordStore(profile), *login);
   }
 }
 

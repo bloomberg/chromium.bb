@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -25,17 +24,6 @@ namespace password_manager {
 
 namespace {
 
-// Calls |consumer| back with the request result, if |consumer| is still alive.
-// Takes ownership of the elements in |result|, passing ownership to |consumer|
-// if it is still alive.
-void MaybeCallConsumerCallback(base::WeakPtr<PasswordStoreConsumer> consumer,
-                               scoped_ptr<std::vector<PasswordForm*>> result) {
-  if (consumer.get())
-    consumer->OnGetPasswordStoreResults(*result);
-  else
-    STLDeleteElements(result.get());
-}
-
 // http://crbug.com/404012. Let's see where the empty fields come from.
 void CheckForEmptyUsernameAndPassword(const PasswordForm& form) {
   if (form.username_value.empty() &&
@@ -48,9 +36,7 @@ void CheckForEmptyUsernameAndPassword(const PasswordForm& form) {
 
 PasswordStore::GetLoginsRequest::GetLoginsRequest(
     PasswordStoreConsumer* consumer)
-    : consumer_weak_(consumer->GetWeakPtr()),
-      result_(new std::vector<PasswordForm*>()) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    : consumer_weak_(consumer->GetWeakPtr()) {
   origin_loop_ = base::MessageLoopProxy::current();
 }
 
@@ -59,24 +45,22 @@ PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
 
 void PasswordStore::GetLoginsRequest::ApplyIgnoreLoginsCutoff() {
   if (!ignore_logins_cutoff_.is_null()) {
-    // Count down rather than up since we may be deleting elements.
-    // Note that in principle it could be more efficient to copy the whole array
-    // since that's worst-case linear time, but we expect that elements will be
-    // deleted rarely and lists will be small, so this avoids the copies.
-    for (size_t i = result_->size(); i > 0; --i) {
-      if ((*result_)[i - 1]->date_created < ignore_logins_cutoff_) {
-        delete (*result_)[i - 1];
-        result_->erase(result_->begin() + (i - 1));
+    ScopedVector<autofill::PasswordForm> remaining_logins;
+    remaining_logins.reserve(result_.size());
+    for (auto& login : result_) {
+      if (login->date_created >= ignore_logins_cutoff_) {
+        remaining_logins.push_back(login);
+        login = nullptr;
       }
     }
+    remaining_logins.swap(result_);
   }
 }
 
 void PasswordStore::GetLoginsRequest::ForwardResult() {
-  origin_loop_->PostTask(FROM_HERE,
-                         base::Bind(&MaybeCallConsumerCallback,
-                                    consumer_weak_,
-                                    base::Passed(result_.Pass())));
+  origin_loop_->PostTask(
+      FROM_HERE, base::Bind(&PasswordStoreConsumer::OnGetPasswordStoreResults,
+                            consumer_weak_, base::Passed(&result_)));
 }
 
 PasswordStore::PasswordStore(
@@ -141,11 +125,11 @@ void PasswordStore::GetLogins(const PasswordForm& form,
         { 2012, 1, 0, 1, 0, 0, 0, 0 };  // 00:00 Jan 1 2012
     ignore_logins_cutoff = base::Time::FromUTCExploded(exploded_cutoff);
   }
-  GetLoginsRequest* request = new GetLoginsRequest(consumer);
+  scoped_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
   request->set_ignore_logins_cutoff(ignore_logins_cutoff);
 
-  ConsumerCallbackRunner callback_runner = base::Bind(
-      &PasswordStore::CopyAndForwardLoginsResult, base::Owned(request));
+  ConsumerCallbackRunner callback_runner =
+      base::Bind(&MoveAndForwardLoginsResult, base::Passed(&request));
   ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl, this, form,
                           prompt_policy, callback_runner));
 }
@@ -213,18 +197,18 @@ PasswordStore::GetBackgroundTaskRunner() {
 }
 
 // static
-void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
+void PasswordStore::ForwardLoginsResult(scoped_ptr<GetLoginsRequest> request) {
   request->ApplyIgnoreLoginsCutoff();
   request->ForwardResult();
 }
 
 // static
-void PasswordStore::CopyAndForwardLoginsResult(
-    PasswordStore::GetLoginsRequest* request,
+void PasswordStore::MoveAndForwardLoginsResult(
+    scoped_ptr<PasswordStore::GetLoginsRequest> request,
     ScopedVector<autofill::PasswordForm> matched_forms) {
-  // Move the contents of |matched_forms| into the request.
-  request->result()->swap(matched_forms.get());
-  ForwardLoginsResult(request);
+  DCHECK(request->result()->empty());
+  request->result()->swap(matched_forms);
+  ForwardLoginsResult(request.Pass());
 }
 
 void PasswordStore::LogStatsForBulkDeletion(int num_deletions) {
@@ -249,14 +233,13 @@ void PasswordStore::NotifyLoginsChanged(
   }
 }
 
-template <typename BackendFunc>
-void PasswordStore::Schedule(BackendFunc func,
-                             PasswordStoreConsumer* consumer) {
-  GetLoginsRequest* request = new GetLoginsRequest(consumer);
+void PasswordStore::Schedule(
+    void (PasswordStore::*func)(scoped_ptr<GetLoginsRequest>),
+    PasswordStoreConsumer* consumer) {
+  scoped_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
   consumer->cancelable_task_tracker()->PostTask(
-      GetBackgroundTaskRunner().get(),
-      FROM_HERE,
-      base::Bind(func, this, base::Owned(request)));
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(func, this, base::Passed(&request)));
 }
 
 void PasswordStore::WrapModificationTask(ModificationTask task) {

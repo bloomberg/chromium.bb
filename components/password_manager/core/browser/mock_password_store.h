@@ -38,8 +38,9 @@ class MockPasswordStore : public PasswordStore {
                void(const autofill::PasswordForm& form,
                     PasswordStore::AuthorizationPromptPolicy prompt_policy,
                     const ConsumerCallbackRunner& callback_runner));
-  MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
-  MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
+  void GetAutofillableLoginsImpl(
+      scoped_ptr<GetLoginsRequest> request) override {}
+  void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) override {}
   MOCK_METHOD1(FillAutofillableLogins,
                bool(ScopedVector<autofill::PasswordForm>*));
   MOCK_METHOD1(FillBlacklistLogins,

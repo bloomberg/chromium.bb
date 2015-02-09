@@ -46,12 +46,12 @@ bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
 }
 
 void TestPasswordStore::GetAutofillableLoginsImpl(
-    PasswordStore::GetLoginsRequest* request) {
-  for (auto& forms_for_realm : stored_passwords_) {
+    scoped_ptr<GetLoginsRequest> request) {
+  for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second)
       request->result()->push_back(new autofill::PasswordForm(form));
   }
-  ForwardLoginsResult(request);
+  ForwardLoginsResult(request.Pass());
 }
 
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
@@ -107,6 +107,10 @@ void TestPasswordStore::GetLoginsImpl(
   runner.Run(matched_forms.Pass());
 }
 
+void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,
+                                          bool custom_passphrase_sync_enabled) {
+}
+
 PasswordStoreChangeList TestPasswordStore::RemoveLoginsCreatedBetweenImpl(
     base::Time begin,
     base::Time end) {
@@ -119,6 +123,10 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
     base::Time end) {
   PasswordStoreChangeList changes;
   return changes;
+}
+
+void TestPasswordStore::GetBlacklistLoginsImpl(
+    scoped_ptr<GetLoginsRequest> request) {
 }
 
 bool TestPasswordStore::FillAutofillableLogins(

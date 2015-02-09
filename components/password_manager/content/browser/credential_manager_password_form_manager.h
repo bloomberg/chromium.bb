@@ -36,7 +36,7 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
   ~CredentialManagerPasswordFormManager() override;
 
   void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) override;
+      ScopedVector<autofill::PasswordForm> results) override;
 
  private:
   CredentialManagerDispatcher* dispatcher_;

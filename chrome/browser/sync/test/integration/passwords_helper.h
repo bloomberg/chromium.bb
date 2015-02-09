@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -29,11 +30,10 @@ void AddLogin(password_manager::PasswordStore* store,
 void UpdateLogin(password_manager::PasswordStore* store,
                  const autofill::PasswordForm& form);
 
-// Searches |store| for all logins matching a fake signon realm used only by
-// LivePasswordsSyncTest and adds the results to |matches|. Note that the
-// caller is responsible for deleting the forms added to |matches|.
-void GetLogins(password_manager::PasswordStore* store,
-               std::vector<autofill::PasswordForm>& matches);
+// Returns all logins from |store| matching a fake signon realm used only by
+// PasswordsSyncPerfTest.
+ScopedVector<autofill::PasswordForm> GetLogins(
+    password_manager::PasswordStore* store);
 
 // Removes the login held in |form| from the password store |store|.  This
 // method blocks until the operation is complete.
@@ -91,7 +91,7 @@ int GetPasswordCount(int index);
 int GetVerifierPasswordCount();
 
 // Creates a test password form with a well known fake signon realm used only
-// by LivePasswordsSyncTest based on |index|.
+// by PasswordsSyncPerfTest based on |index|.
 autofill::PasswordForm CreateTestPasswordForm(int index);
 
 }  // namespace passwords_helper

@@ -10,8 +10,9 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-PasswordForm* CreatePasswordFormFromData(const PasswordFormData& form_data) {
-  PasswordForm* form = new PasswordForm();
+scoped_ptr<PasswordForm> CreatePasswordFormFromData(
+    const PasswordFormData& form_data) {
+  scoped_ptr<PasswordForm> form(new PasswordForm());
   form->scheme = form_data.scheme;
   form->preferred = form_data.preferred;
   form->ssl_valid = form_data.ssl_valid;
@@ -35,7 +36,7 @@ PasswordForm* CreatePasswordFormFromData(const PasswordFormData& form_data) {
   } else {
     form->blacklisted_by_user = true;
   }
-  return form;
+  return form.Pass();
 }
 
 typedef std::set<const autofill::PasswordForm*> SetOfForms;
@@ -70,19 +71,6 @@ bool ContainsSamePasswordFormsPtr(const std::vector<PasswordForm*>& first,
     }
   }
   return true;
-}
-
-bool ContainsSamePasswordForms(std::vector<autofill::PasswordForm>& first,
-                               std::vector<autofill::PasswordForm>& second) {
-  std::vector<PasswordForm*> first_ptr;
-  for (unsigned int i = 0; i < first.size(); ++i) {
-    first_ptr.push_back(&first[i]);
-  }
-  std::vector<PasswordForm*> second_ptr;
-  for (unsigned int i = 0; i < second.size(); ++i) {
-    second_ptr.push_back(&second[i]);
-  }
-  return ContainsSamePasswordFormsPtr(first_ptr, second_ptr);
 }
 
 }  // namespace password_manager

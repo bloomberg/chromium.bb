@@ -96,11 +96,10 @@ class PasswordStoreConsumerVerifier :
   PasswordStoreConsumerVerifier() : called_(false) {}
 
   void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) override {
+      ScopedVector<autofill::PasswordForm> results) override {
     EXPECT_FALSE(called_);
     called_ = true;
-    password_entries_.clear();
-    password_entries_.assign(results.begin(), results.end());
+    password_entries_.swap(results);
   }
 
   bool IsCalled() const { return called_; }

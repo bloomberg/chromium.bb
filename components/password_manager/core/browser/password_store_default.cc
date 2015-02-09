@@ -122,24 +122,17 @@ void PasswordStoreDefault::GetLoginsImpl(
 }
 
 void PasswordStoreDefault::GetAutofillableLoginsImpl(
-    GetLoginsRequest* request) {
-  // TODO(vabr) -- request should have a ScopedVector<autofill::PasswordForm>
-  // instead of using |logins| here.
+    scoped_ptr<GetLoginsRequest> request) {
   DCHECK(request->result()->empty());
-  ScopedVector<autofill::PasswordForm> logins;
-  FillAutofillableLogins(&logins);
-  logins.swap(*request->result());
-  ForwardLoginsResult(request);
+  FillAutofillableLogins(request->result());
+  ForwardLoginsResult(request.Pass());
 }
 
-void PasswordStoreDefault::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
-  // TODO(vabr) -- request should have a ScopedVector<autofill::PasswordForm>
-  // instead of using |logins| here.
+void PasswordStoreDefault::GetBlacklistLoginsImpl(
+    scoped_ptr<GetLoginsRequest> request) {
   DCHECK(request->result()->empty());
-  ScopedVector<autofill::PasswordForm> logins;
-  FillBlacklistLogins(&logins);
-  logins.swap(*request->result());
-  ForwardLoginsResult(request);
+  FillBlacklistLogins(request->result());
+  ForwardLoginsResult(request.Pass());
 }
 
 bool PasswordStoreDefault::FillAutofillableLogins(

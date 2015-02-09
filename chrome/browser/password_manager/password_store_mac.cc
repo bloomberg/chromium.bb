@@ -1087,18 +1087,18 @@ void PasswordStoreMac::GetLoginsImpl(
   callback_runner.Run(matched_forms.Pass());
 }
 
-void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
-  ScopedVector<autofill::PasswordForm> obtained_forms;
-  FillBlacklistLogins(&obtained_forms);
-  request->result()->swap(obtained_forms.get());
-  ForwardLoginsResult(request);
+void PasswordStoreMac::GetBlacklistLoginsImpl(
+    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
+  DCHECK(request->result()->empty());
+  FillBlacklistLogins(request->result());
+  ForwardLoginsResult(request.Pass());
 }
 
-void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
-  ScopedVector<autofill::PasswordForm> obtained_forms;
-  FillAutofillableLogins(&obtained_forms);
-  request->result()->swap(obtained_forms.get());
-  ForwardLoginsResult(request);
+void PasswordStoreMac::GetAutofillableLoginsImpl(
+    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
+  DCHECK(request->result()->empty());
+  FillAutofillableLogins(request->result());
+  ForwardLoginsResult(request.Pass());
 }
 
 bool PasswordStoreMac::FillAutofillableLogins(

@@ -26,20 +26,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
-using password_manager::ContainsAllPasswordForms;
+using password_manager::ContainsSamePasswordForms;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
-using testing::_;
 using testing::ElementsAreArray;
-using testing::WithArg;
+using testing::IsEmpty;
 
 namespace {
 
 class MockPasswordStoreConsumer
     : public password_manager::PasswordStoreConsumer {
  public:
-  MOCK_METHOD1(OnGetPasswordStoreResults,
+  MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
                void(const std::vector<PasswordForm*>&));
+
+  // GMock cannot mock methods with move-only args.
+  void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
+    OnGetPasswordStoreResultsConstRef(results.get());
+  }
 };
 
 class MockPasswordStoreObserver
@@ -233,7 +237,7 @@ void InitExpectedForms(bool autofillable,
         autofillable,
         false,
         static_cast<double>(i + 1)};
-    forms->push_back(CreatePasswordFormFromData(data));
+    forms->push_back(CreatePasswordFormFromData(data).release());
   }
 }
 
@@ -292,7 +296,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
       L"password_element",             L"username_value",
       L"password_value",               true,
       false,                           1};
-  scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
+  scoped_ptr<PasswordForm> form = CreatePasswordFormFromData(form_data);
 
   MockPasswordStoreObserver observer;
   store->AddObserver(&observer);
@@ -388,31 +392,29 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   MockPasswordStoreConsumer consumer;
 
   // The autofillable forms should have been migrated to the native backend.
-  EXPECT_CALL(consumer, OnGetPasswordStoreResults(ContainsAllPasswordForms(
-                            expected_autofillable.get())))
-      .WillOnce(WithArg<0>(STLDeleteElements0()));
+  EXPECT_CALL(consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  ContainsSamePasswordForms(expected_autofillable.get())));
 
   store->GetAutofillableLogins(&consumer);
   base::RunLoop().RunUntilIdle();
 
   // The blacklisted forms should have been migrated to the native backend.
-  EXPECT_CALL(consumer, OnGetPasswordStoreResults(ContainsAllPasswordForms(
-                            expected_blacklisted.get())))
-      .WillOnce(WithArg<0>(STLDeleteElements0()));
+  EXPECT_CALL(consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  ContainsSamePasswordForms(expected_blacklisted.get())));
 
   store->GetBlacklistLogins(&consumer);
   base::RunLoop().RunUntilIdle();
 
-  ScopedVector<autofill::PasswordForm> empty;
   MockLoginDatabaseReturn ld_return;
 
   if (GetParam() == WORKING_BACKEND) {
     // No autofillable logins should be left in the login DB.
-    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(
-                               ContainsAllPasswordForms(empty.get())));
+    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(IsEmpty()));
   } else {
     // The autofillable logins should still be in the login DB.
-    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(ContainsAllPasswordForms(
+    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(ContainsSamePasswordForms(
                                expected_autofillable.get())));
   }
 
@@ -423,11 +425,10 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   if (GetParam() == WORKING_BACKEND) {
     // Likewise, no blacklisted logins should be left in the login DB.
-    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(
-                               ContainsAllPasswordForms(empty.get())));
+    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(IsEmpty()));
   } else {
     // The blacklisted logins should still be in the login DB.
-    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(ContainsAllPasswordForms(
+    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(ContainsSamePasswordForms(
                                expected_blacklisted.get())));
   }
 

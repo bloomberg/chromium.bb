@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "base/task/cancelable_task_tracker.h"
 
 namespace autofill {
@@ -24,11 +25,9 @@ class PasswordStoreConsumer {
  public:
   PasswordStoreConsumer();
 
-  // Called when the request is finished. If there are no results, it is called
-  // with an empty vector.
-  // Note: The implementation owns all PasswordForms in the vector.
+  // Called when the request is finished, with the associated |results|.
   virtual void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) = 0;
+      ScopedVector<autofill::PasswordForm> results) = 0;
 
   // The base::CancelableTaskTracker can be used for cancelling the
   // tasks associated with the consumer.

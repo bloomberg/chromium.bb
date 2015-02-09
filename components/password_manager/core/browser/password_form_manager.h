@@ -123,7 +123,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void ProcessFrame(const base::WeakPtr<PasswordManagerDriver>& driver);
 
   void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) override;
+      ScopedVector<autofill::PasswordForm> results) override;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -225,7 +225,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Determines if we need to autofill given the results of the query.
   // Takes ownership of the elements in |result|.
-  void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
+  void OnRequestDone(ScopedVector<autofill::PasswordForm> result);
 
   // Helper for OnGetPasswordStoreResults to determine whether or not
   // the given result form is worth scoring.
@@ -285,6 +285,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.
+  // TODO(vabr): Consider using ScopedPtrHashMap instead of the deleter below.
   autofill::PasswordFormMap best_matches_;
 
   // Cleans up when best_matches_ goes out of scope.

@@ -31,8 +31,8 @@ CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {
 }
 
 void CredentialManagerPasswordFormManager::OnGetPasswordStoreResults(
-    const std::vector<PasswordForm*>& results) {
-  PasswordFormManager::OnGetPasswordStoreResults(results);
+    ScopedVector<autofill::PasswordForm> results) {
+  PasswordFormManager::OnGetPasswordStoreResults(results.Pass());
 
   // Mark the form as "preferred", as we've been told by the API that this is
   // indeed the credential set that the user used to sign into the site.

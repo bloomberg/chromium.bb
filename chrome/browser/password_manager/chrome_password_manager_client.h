@@ -53,10 +53,10 @@ class ChromePasswordManagerClient
   bool PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save) override;
   bool PromptUserToChooseCredentials(
-      const std::vector<autofill::PasswordForm*>& local_forms,
-      const std::vector<autofill::PasswordForm*>& federated_forms,
-      base::Callback<void(const password_manager::CredentialInfo&)>
-          callback) override;
+      ScopedVector<autofill::PasswordForm> local_forms,
+      ScopedVector<autofill::PasswordForm> federated_forms,
+      base::Callback<void(const password_manager::CredentialInfo&)> callback)
+      override;
   void AutomaticPasswordSave(scoped_ptr<password_manager::PasswordFormManager>
                                  saved_form_manager) override;
   void PasswordWasAutofilled(

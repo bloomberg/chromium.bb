@@ -78,8 +78,10 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   void GetLoginsImpl(const autofill::PasswordForm& form,
                      AuthorizationPromptPolicy prompt_policy,
                      const ConsumerCallbackRunner& callback_runner) override;
-  void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
-  void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
+  void GetAutofillableLoginsImpl(
+      scoped_ptr<PasswordStore::GetLoginsRequest> request) override;
+  void GetBlacklistLoginsImpl(
+      scoped_ptr<PasswordStore::GetLoginsRequest> request) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(

@@ -157,39 +157,41 @@ void PasswordStoreX::GetLoginsImpl(
   callback_runner.Run(matched_forms.Pass());
 }
 
-void PasswordStoreX::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
+void PasswordStoreX::GetAutofillableLoginsImpl(
+    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
   CheckMigration();
   ScopedVector<autofill::PasswordForm> obtained_forms;
   if (use_native_backend() &&
       backend_->GetAutofillableLogins(&obtained_forms)) {
-    request->result()->swap(obtained_forms.get());
-    SortLoginsByOrigin(request->result());
+    SortLoginsByOrigin(&obtained_forms.get());
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (request->result()->size() > 0)
+    if (!obtained_forms.empty())
       allow_fallback_ = false;
+    request->result()->swap(obtained_forms);
   } else if (allow_default_store()) {
-    PasswordStoreDefault::GetAutofillableLoginsImpl(request);
+    PasswordStoreDefault::GetAutofillableLoginsImpl(request.Pass());
     return;
   }
   // The consumer will be left hanging unless we reply.
-  ForwardLoginsResult(request);
+  ForwardLoginsResult(request.Pass());
 }
 
-void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
+void PasswordStoreX::GetBlacklistLoginsImpl(
+    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
   CheckMigration();
   ScopedVector<autofill::PasswordForm> obtained_forms;
   if (use_native_backend() && backend_->GetBlacklistLogins(&obtained_forms)) {
-    request->result()->swap(obtained_forms.get());
-    SortLoginsByOrigin(request->result());
+    SortLoginsByOrigin(&obtained_forms.get());
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (request->result()->size() > 0)
+    if (!obtained_forms.empty())
       allow_fallback_ = false;
+    request->result()->swap(obtained_forms);
   } else if (allow_default_store()) {
-    PasswordStoreDefault::GetBlacklistLoginsImpl(request);
+    PasswordStoreDefault::GetBlacklistLoginsImpl(request.Pass());
     return;
   }
   // The consumer will be left hanging unless we reply.
-  ForwardLoginsResult(request);
+  ForwardLoginsResult(request.Pass());
 }
 
 bool PasswordStoreX::FillAutofillableLogins(
