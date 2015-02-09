@@ -183,12 +183,17 @@ public class AwContents implements SmartClipProvider {
 
     /**
      * Callback used when flushing the visual state, see {@link #flushVisualState}.
+     *
+     * <p>The {@code requestId} is the unique request id returned by
+     * {@link AwContents#flushVisualState} which can be used to match callbacks with requests.
      */
     @VisibleForTesting
     public abstract static class VisualStateFlushCallback {
-        public abstract void onComplete();
-        public abstract void onFailure();
+        public abstract void onComplete(long requestId);
+        public abstract void onFailure(long requestId);
     }
+
+    private static long sNextVisualStateRequestId = 1;
 
     private long mNativeAwContents;
     private final AwBrowserContext mBrowserContext;
@@ -2049,9 +2054,14 @@ public class AwContents implements SmartClipProvider {
      * 1. The DOM tree is committed becoming the pending tree - see ThreadProxy::BeginMainFrame
      * 2. The pending tree is activated becoming the active tree
      * 3. A frame swap happens that draws the active tree into the screen
+     *
+     * @return an unique id that identifies this request. It can be used to match this request
+     * to the corresponding callback to allow reuse of {@link VisualStateFlushCallback} objects.
      */
-    public void flushVisualState(VisualStateFlushCallback callback) {
-        nativeFlushVisualState(mNativeAwContents, callback);
+    public long flushVisualState(VisualStateFlushCallback callback) {
+        long requestId = sNextVisualStateRequestId++;
+        nativeFlushVisualState(mNativeAwContents, callback, requestId);
+        return requestId;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -2164,16 +2174,16 @@ public class AwContents implements SmartClipProvider {
      */
     @CalledByNative
     public void flushVisualStateCallback(
-            final VisualStateFlushCallback callback, final boolean result) {
+            final VisualStateFlushCallback callback, final long requestId, final boolean result) {
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
         mContainerView.getHandler().post(new Runnable() {
             @Override
             public void run() {
                 if (result) {
-                    callback.onComplete();
+                    callback.onComplete(requestId);
                 } else {
-                    callback.onFailure();
+                    callback.onFailure(requestId);
                 }
             }
         });
@@ -2736,7 +2746,7 @@ public class AwContents implements SmartClipProvider {
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);
     private native void nativeEnableOnNewPicture(long nativeAwContents, boolean enabled);
     private native void nativeFlushVisualState(
-            long nativeAwContents, VisualStateFlushCallback callback);
+            long nativeAwContents, VisualStateFlushCallback callback, long requestId);
     private native void nativeClearView(long nativeAwContents);
     private native void nativeSetExtraHeadersForUrl(long nativeAwContents,
             String url, String extraHeaders);
