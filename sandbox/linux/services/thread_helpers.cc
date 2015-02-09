@@ -14,6 +14,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +26,9 @@
 namespace sandbox {
 
 namespace {
+
+const char kAssertSingleThreadedError[] =
+    "Current process is not mono-threaded!";
 
 bool IsSingleThreadedImpl(int proc_self_task) {
   CHECK_LE(0, proc_self_task);
@@ -38,22 +44,94 @@ bool IsSingleThreadedImpl(int proc_self_task) {
   return task_stat.st_nlink == 3;
 }
 
-}  // namespace
-
-bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
-  DCHECK_LE(-1, proc_self_task);
-  if (-1 == proc_self_task) {
-    const int task_fd =
-        open("/proc/self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-    PCHECK(0 <= task_fd);
-    const bool result = IsSingleThreadedImpl(task_fd);
-    PCHECK(0 == IGNORE_EINTR(close(task_fd)));
-    return result;
-  } else {
-    return IsSingleThreadedImpl(proc_self_task);
+bool IsThreadPresentInProcFS(int proc_self_task,
+                             const std::string& thread_id_dir_str) {
+  struct stat task_stat;
+  const int fstat_ret =
+      fstatat(proc_self_task, thread_id_dir_str.c_str(), &task_stat, 0);
+  if (fstat_ret < 0) {
+    PCHECK(ENOENT == errno);
+    return false;
   }
+  return true;
 }
 
+// Run |cb| in a loop until it returns false. Every time |cb| runs, sleep
+// for an exponentially increasing amount of time. |cb| is expected to return
+// false very quickly and this will crash if it doesn't happen within ~64ms on
+// Debug builds (2s on Release builds).
+// This is guaranteed to not sleep more than twice as much as the bare minimum
+// amount of time.
+void RunWhileTrue(const base::Callback<bool(void)>& cb) {
+#if defined(NDEBUG)
+  // In Release mode, crash after 30 iterations, which means having spent
+  // roughly 2s in
+  // nanosleep(2) cumulatively.
+  const unsigned int kMaxIterations = 30U;
+#else
+  // In practice, this never goes through more than a couple iterations. In
+  // debug mode, crash after 64ms (+ eventually 25 times the granularity of
+  // the clock) in nanosleep(2). This ensures that this is not becoming too
+  // slow.
+  const unsigned int kMaxIterations = 25U;
+#endif
+
+  // Run |cb| with an exponential back-off, sleeping 2^iterations nanoseconds
+  // in nanosleep(2).
+  // Note: the clock may not allow for nanosecond granularity, in this case the
+  // first iterations would sleep a tiny bit more instead, which would not
+  // change the calculations significantly.
+  for (unsigned int i = 0; i < kMaxIterations; ++i) {
+    if (!cb.Run()) {
+      return;
+    }
+
+    // Increase the waiting time exponentially.
+    struct timespec ts = {0, 1L << i /* nanoseconds */};
+    PCHECK(0 == HANDLE_EINTR(nanosleep(&ts, &ts)));
+  }
+
+  LOG(FATAL) << kAssertSingleThreadedError << " (iterations: " << kMaxIterations
+             << ")";
+
+  NOTREACHED();
+}
+
+// Return a ScopedFD to /proc/self/task/. If |proc_self_task| is -1, try to
+// open it directly, otherwise duplicate it.
+base::ScopedFD OpenProcSelfTask(int proc_self_task) {
+  DCHECK_LE(-1, proc_self_task);
+  if (-1 == proc_self_task) {
+    return base::ScopedFD(HANDLE_EINTR(
+        open("/proc/self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
+  }
+
+  return base::ScopedFD(HANDLE_EINTR(
+      openat(proc_self_task, "./", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
+}
+
+bool IsMultiThreaded(int proc_self_task) {
+  return !ThreadHelpers::IsSingleThreaded(proc_self_task);
+}
+
+}  // namespace
+
+// static
+bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
+  DCHECK_LE(-1, proc_self_task);
+  base::ScopedFD task_fd(OpenProcSelfTask(proc_self_task));
+  CHECK(task_fd.is_valid());
+  return IsSingleThreadedImpl(task_fd.get());
+}
+
+// static
+void ThreadHelpers::AssertSingleThreaded(int proc_self_task) {
+  const base::Callback<bool(void)> cb =
+      base::Bind(&IsMultiThreaded, proc_self_task);
+  RunWhileTrue(cb);
+}
+
+// static
 bool ThreadHelpers::StopThreadAndWatchProcFS(int proc_self_task,
                                              base::Thread* thread) {
   DCHECK_LE(0, proc_self_task);
@@ -66,38 +144,17 @@ bool ThreadHelpers::StopThreadAndWatchProcFS(int proc_self_task,
   // not have been updated.
   thread->Stop();
 
-  unsigned int iterations = 0;
-  bool thread_present_in_procfs = true;
-  // Poll /proc with an exponential back-off, sleeping 2^iterations nanoseconds
-  // in nanosleep(2).
-  // Note: the clock may not allow for nanosecond granularity, in this case the
-  // first iterations would sleep a tiny bit more instead, which would not
-  // change the calculations significantly.
-  while (thread_present_in_procfs) {
-    struct stat task_stat;
-    const int fstat_ret =
-        fstatat(proc_self_task, thread_id_dir_str.c_str(), &task_stat, 0);
-    if (fstat_ret < 0) {
-      PCHECK(ENOENT == errno);
-      // The thread disappeared from /proc, we're done.
-      thread_present_in_procfs = false;
-      break;
-    }
-    // Increase the waiting time exponentially.
-    struct timespec ts = {0, 1L << iterations /* nanoseconds */};
-    PCHECK(0 == HANDLE_EINTR(nanosleep(&ts, &ts)));
-    ++iterations;
+  const base::Callback<bool(void)> cb =
+      base::Bind(&IsThreadPresentInProcFS, proc_self_task, thread_id_dir_str);
 
-    // Crash after 30 iterations, which means having spent roughly 2s in
-    // nanosleep(2) cumulatively.
-    CHECK_GT(30U, iterations);
-    // In practice, this never goes through more than a couple iterations. In
-    // debug mode, crash after 64ms (+ eventually 25 times the granularity of
-    // the clock) in nanosleep(2).
-    DCHECK_GT(25U, iterations);
-  }
+  RunWhileTrue(cb);
 
   return true;
+}
+
+// static
+const char* ThreadHelpers::GetAssertSingleThreadedErrorMessageForTests() {
+  return kAssertSingleThreadedError;
 }
 
 }  // namespace sandbox

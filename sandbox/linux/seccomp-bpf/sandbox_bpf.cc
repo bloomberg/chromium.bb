@@ -119,10 +119,9 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   const bool supports_tsync = KernelSupportsSeccompTsync();
 
   if (seccomp_level == SeccompLevel::SINGLE_THREADED) {
-    if (!IsSingleThreaded(proc_task_fd_.get())) {
-      SANDBOX_DIE("Cannot start sandbox; process is already multi-threaded");
-      return false;
-    }
+    // Wait for /proc/self/task/ to update if needed and assert the
+    // process is single threaded.
+    ThreadHelpers::AssertSingleThreaded(proc_task_fd_.get());
   } else if (seccomp_level == SeccompLevel::MULTI_THREADED) {
     if (IsSingleThreaded(proc_task_fd_.get())) {
       SANDBOX_DIE("Cannot start sandbox; "

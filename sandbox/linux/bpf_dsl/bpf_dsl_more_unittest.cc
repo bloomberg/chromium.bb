@@ -43,6 +43,7 @@
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
+#include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"
@@ -2308,7 +2309,8 @@ class AllowAllPolicy : public Policy {
 SANDBOX_DEATH_TEST(
     SandboxBPF,
     StartMultiThreadedAsSingleThreaded,
-    DEATH_MESSAGE("Cannot start sandbox; process is already multi-threaded")) {
+    DEATH_MESSAGE(
+        ThreadHelpers::GetAssertSingleThreadedErrorMessageForTests())) {
   base::Thread thread("sandbox.linux.StartMultiThreadedAsSingleThreaded");
   BPF_ASSERT(thread.Start());
 
