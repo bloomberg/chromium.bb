@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file.h"
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -17,6 +16,7 @@ namespace webrtc {
 
 class AudioFrame;
 class AudioProcessing;
+class EchoCancellation;
 class MediaConstraintsInterface;
 class TypingDetection;
 
@@ -93,18 +93,17 @@ class CONTENT_EXPORT EchoInformation {
   EchoInformation();
   virtual ~EchoInformation();
 
-  // Updates delay statistics with a new |delay|.
-  void UpdateAecDelayStats(int delay);
+  void UpdateAecDelayStats(webrtc::EchoCancellation* echo_cancellation);
 
  private:
-  // Updates UMA histograms with an interval of |kTimeBetweenLogsInSeconds|.
+  // Updates UMA histograms with an interval of 5 seconds.
   void LogAecDelayStats();
 
-  // Counters for determining how often the estimated delay in the AEC is out of
-  // bounds.
-  int echo_poor_delay_counts_;
-  int echo_total_delay_counts_;
-  base::TimeTicks last_log_time_;
+  // Counters to be able to aquire a 5 second aggregated metric out of 1 second
+  // aggregated webrtc::EchoCancellation::GetEchoDelayMetrics() queries.
+  int num_chunks_;
+  int num_queries_;
+  float echo_fraction_poor_delays_;
 
   DISALLOW_COPY_AND_ASSIGN(EchoInformation);
 };
@@ -133,7 +132,7 @@ void StopEchoCancellationDump(AudioProcessing* audio_processing);
 
 void EnableAutomaticGainControl(AudioProcessing* audio_processing);
 
-void GetAecStats(AudioProcessing* audio_processing,
+void GetAecStats(webrtc::EchoCancellation* echo_cancellation,
                  webrtc::AudioProcessorInterface::AudioProcessorStats* stats);
 
 }  // namespace content

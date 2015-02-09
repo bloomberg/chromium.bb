@@ -418,9 +418,7 @@ void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
 void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
   stats->typing_noise_detected =
       (base::subtle::Acquire_Load(&typing_detected_) != false);
-  GetAecStats(audio_processing_.get(), stats);
-  if (echo_information_)
-    echo_information_.get()->UpdateAecDelayStats(stats->echo_delay_median_ms);
+  GetAecStats(audio_processing_.get()->echo_cancellation(), stats);
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
@@ -677,6 +675,10 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
     bool detected = typing_detector_->Process(key_pressed,
                                               vad->stream_has_voice());
     base::subtle::Release_Store(&typing_detected_, detected);
+  }
+
+  if (echo_information_) {
+    echo_information_.get()->UpdateAecDelayStats(ap->echo_cancellation());
   }
 
   // Return 0 if the volume hasn't been changed, and otherwise the new volume.
