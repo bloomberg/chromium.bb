@@ -1572,7 +1572,9 @@ class MojoPPAPITest : public InProcessBrowserTest {
 };
 
 #if defined(OS_POSIX)
-#define MAYBE_MOJO(test_name) test_name
+// TODO(teravest): Re-enable test after Mojo IRT support is enabled in
+// Chrome. http://crbug.com/454466
+#define MAYBE_MOJO(test_name) DISABLED_##test_name
 #else
 #define MAYBE_MOJO(test_name) DISABLED_##test_name
 #endif
