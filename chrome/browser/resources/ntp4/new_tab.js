@@ -298,8 +298,6 @@ cr.define('ntp', function() {
 
       startTime = Date.now();
     });
-
-    cr.ui.FocusManager.disableMouseFocusOnButtons();
   }
 
   /**

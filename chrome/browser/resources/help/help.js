@@ -19,7 +19,6 @@
       PageManager.registerOverlay(help.ChannelChangePage.getInstance(),
                                   HelpPage.getInstance());
     }
-    cr.ui.FocusManager.disableMouseFocusOnButtons();
     PageManager.addObserver(new uber.PageManagerObserver());
     PageManager.initialize(HelpPage.getInstance());
     uber.onContentFrameLoaded();

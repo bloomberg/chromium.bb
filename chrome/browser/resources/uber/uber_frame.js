@@ -27,7 +27,6 @@ cr.define('uber_frame', function() {
 
     document.documentElement.addEventListener('mousewheel', onMouseWheel);
     document.documentElement.addEventListener('mousedown', onMouseDown);
-    cr.ui.FocusManager.disableMouseFocusOnButtons();
   }
 
   /**
