@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/file_version_info.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -290,12 +289,6 @@ void URLRequestHttpJob::Start() {
 }
 
 void URLRequestHttpJob::Kill() {
-  if (awaiting_callback_) {
-    // TODO(battre) crbug.com/289715
-    // Simulate a crash to see who kills the job while it is waiting for a
-    // callback. This should not happen, see URLRequest::OrphanJob().
-    base::debug::DumpWithoutCrashing();
-  }
   if (!transaction_.get())
     return;
 
