@@ -571,6 +571,17 @@ struct weston_renderer {
 			       float red, float green,
 			       float blue, float alpha);
 	void (*destroy)(struct weston_compositor *ec);
+
+
+	/** See weston_surface_get_content_size() */
+	void (*surface_get_content_size)(struct weston_surface *surface,
+					 int *width, int *height);
+
+	/** See weston_surface_copy_content() */
+	int (*surface_copy_content)(struct weston_surface *surface,
+				    void *target, size_t size,
+				    int src_x, int src_y,
+				    int width, int height);
 };
 
 enum weston_capability {
@@ -1261,6 +1272,16 @@ void
 weston_surface_set_label_func(struct weston_surface *surface,
 			      int (*desc)(struct weston_surface *,
 					  char *, size_t));
+
+void
+weston_surface_get_content_size(struct weston_surface *surface,
+				int *width, int *height);
+
+int
+weston_surface_copy_content(struct weston_surface *surface,
+			    void *target, size_t size,
+			    int src_x, int src_y,
+			    int width, int height);
 
 struct weston_buffer *
 weston_buffer_from_resource(struct wl_resource *resource);

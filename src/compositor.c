@@ -1,7 +1,7 @@
 /*
  * Copyright © 2010-2011 Intel Corporation
  * Copyright © 2008-2011 Kristian Høgsberg
- * Copyright © 2012-2014 Collabora, Ltd.
+ * Copyright © 2012-2015 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -2901,6 +2901,107 @@ weston_surface_set_label_func(struct weston_surface *surface,
 {
 	surface->get_label = desc;
 	surface->timeline.force_refresh = 1;
+}
+
+/** Get the size of surface contents
+ *
+ * \param surface The surface to query.
+ * \param width Returns the width of raw contents.
+ * \param height Returns the height of raw contents.
+ *
+ * Retrieves the raw surface content size in pixels for the given surface.
+ * This is the whole content size in buffer pixels. If the surface
+ * has no content or the renderer does not implement this feature,
+ * zeroes are returned.
+ *
+ * This function is used to determine the buffer size needed for
+ * a weston_surface_copy_content() call.
+ */
+WL_EXPORT void
+weston_surface_get_content_size(struct weston_surface *surface,
+				int *width, int *height)
+{
+	struct weston_renderer *rer = surface->compositor->renderer;
+
+	if (!rer->surface_get_content_size) {
+		*width = 0;
+		*height = 0;
+		return;
+	}
+
+	rer->surface_get_content_size(surface, width, height);
+}
+
+/** Copy surface contents to system memory.
+ *
+ * \param surface The surface to copy from.
+ * \param target Pointer to the target memory buffer.
+ * \param size Size of the target buffer in bytes.
+ * \param src_x X location on contents to copy from.
+ * \param src_y Y location on contents to copy from.
+ * \param width Width in pixels of the area to copy.
+ * \param height Height in pixels of the area to copy.
+ * \return 0 for success, -1 for failure.
+ *
+ * Surface contents are maintained by the renderer. They can be in a
+ * reserved weston_buffer or as a copy, e.g. a GL texture, or something
+ * else.
+ *
+ * Surface contents are copied into memory pointed to by target,
+ * which has size bytes of space available. The target memory
+ * may be larger than needed, but being smaller returns an error.
+ * The extra bytes in target may or may not be written; their content is
+ * unspecified. Size must be large enough to hold the image.
+ *
+ * The image in the target memory will be arranged in rows from
+ * top to bottom, and pixels on a row from left to right. The pixel
+ * format is PIXMAN_a8b8g8r8, 4 bytes per pixel, and stride is exactly
+ * width * 4.
+ *
+ * Parameters src_x and src_y define the upper-left corner in buffer
+ * coordinates (pixels) to copy from. Parameters width and height
+ * define the size of the area to copy in pixels.
+ *
+ * The rectangle defined by src_x, src_y, width, height must fit in
+ * the surface contents. Otherwise an error is returned.
+ *
+ * Use surface_get_data_size to determine the content size; the
+ * needed target buffer size and rectangle limits.
+ *
+ * CURRENT IMPLEMENTATION RESTRICTIONS:
+ * - the machine must be little-endian due to Pixman formats.
+ *
+ * NOTE: Pixman formats are premultiplied.
+ */
+WL_EXPORT int
+weston_surface_copy_content(struct weston_surface *surface,
+			    void *target, size_t size,
+			    int src_x, int src_y,
+			    int width, int height)
+{
+	struct weston_renderer *rer = surface->compositor->renderer;
+	int cw, ch;
+	const size_t bytespp = 4; /* PIXMAN_a8b8g8r8 */
+
+	if (!rer->surface_copy_content)
+		return -1;
+
+	weston_surface_get_content_size(surface, &cw, &ch);
+
+	if (src_x < 0 || src_y < 0)
+		return -1;
+
+	if (width <= 0 || height <= 0)
+		return -1;
+
+	if (src_x + width > cw || src_y + height > ch)
+		return -1;
+
+	if (width * bytespp * height > size)
+		return -1;
+
+	return rer->surface_copy_content(surface, target, size,
+					 src_x, src_y, width, height);
 }
 
 static void
