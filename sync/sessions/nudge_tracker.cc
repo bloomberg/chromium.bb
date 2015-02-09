@@ -168,12 +168,6 @@ void NudgeTracker::RecordInitialSyncRequired(syncer::ModelType type) {
   tracker_it->second->RecordInitialSyncRequired();
 }
 
-void NudgeTracker::RecordCommitConflict(syncer::ModelType type) {
-  TypeTrackerMap::iterator tracker_it = type_trackers_.find(type);
-  DCHECK(tracker_it != type_trackers_.end());
-  tracker_it->second->RecordCommitConflict();
-}
-
 void NudgeTracker::OnInvalidationsEnabled() {
   invalidations_enabled_ = true;
 }
