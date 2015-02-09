@@ -19,32 +19,6 @@ namespace media {
 
 class MediaPlayerAndroid;
 
-// Helper class for posting MediaPlayerAndroid tasks on the UI thread.
-class MediaPlayerListenerProxy
-    : public base::RefCountedThreadSafe<MediaPlayerListenerProxy> {
- public:
-  MediaPlayerListenerProxy(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::WeakPtr<MediaPlayerAndroid> media_player);
-  void OnMediaError(int error_type);
-  void OnVideoSizeChanged(int width, int height);
-  void OnBufferingUpdate(int percent);
-  void OnPlaybackComplete();
-  void OnSeekComplete();
-  void OnMediaPrepared();
-  void OnMediaInterrupted();
-
- private:
-  friend class base::RefCountedThreadSafe<MediaPlayerListenerProxy>;
-  ~MediaPlayerListenerProxy();
-
-  // The message loop where |media_player_| lives.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // The MediaPlayerAndroid object all the callbacks should be sent to.
-  base::WeakPtr<MediaPlayerAndroid> media_player_;
-};
-
 // Acts as a thread proxy between java MediaPlayerListener object and
 // MediaPlayerAndroid so that callbacks are posted onto the UI thread.
 class MediaPlayerListener {
@@ -55,7 +29,7 @@ class MediaPlayerListener {
   MediaPlayerListener(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::WeakPtr<MediaPlayerAndroid> media_player);
-  virtual ~MediaPlayerListener();
+ virtual ~MediaPlayerListener();
 
   // Called by the Java MediaPlayerListener and mirrored to corresponding
   // callbacks.
@@ -78,8 +52,11 @@ class MediaPlayerListener {
   static bool RegisterMediaPlayerListener(JNIEnv* env);
 
  private:
-  // Proxy for posting tasks to the UI thread.
-  scoped_refptr<MediaPlayerListenerProxy> proxy_;
+  // The message loop where |media_player_| lives.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // The MediaPlayerAndroid object all the callbacks should be sent to.
+  base::WeakPtr<MediaPlayerAndroid> media_player_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_listener_;
 

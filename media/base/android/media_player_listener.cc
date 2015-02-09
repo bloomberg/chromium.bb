@@ -18,107 +18,13 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
-MediaPlayerListenerProxy::MediaPlayerListenerProxy(
+MediaPlayerListener::MediaPlayerListener(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::WeakPtr<MediaPlayerAndroid> media_player)
     : task_runner_(task_runner),
       media_player_(media_player) {
   DCHECK(task_runner_.get());
   DCHECK(media_player_);
-}
-
-void MediaPlayerListenerProxy::OnMediaError(int error_type) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPlayerListenerProxy::OnMediaError, this, error_type));
-    return;
-  }
-
-  if (media_player_)
-    media_player_->OnMediaError(error_type);
-}
-
-void MediaPlayerListenerProxy::OnVideoSizeChanged(int width, int height) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPlayerListenerProxy::OnVideoSizeChanged,
-                   this, width, height));
-    return;
-  }
-
-  if (media_player_)
-    media_player_->OnVideoSizeChanged(width, height);
-}
-
-void MediaPlayerListenerProxy::OnBufferingUpdate(int percent) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPlayerListenerProxy::OnBufferingUpdate,
-                   this, percent));
-    return;
-  }
-
-  if (media_player_)
-    media_player_->OnBufferingUpdate(percent);
-}
-
-void MediaPlayerListenerProxy::OnPlaybackComplete() {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPlayerListenerProxy::OnPlaybackComplete, this));
-    return;
-  }
-
-  if (media_player_)
-    media_player_->OnPlaybackComplete();
-}
-
-void MediaPlayerListenerProxy::OnSeekComplete() {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPlayerListenerProxy::OnSeekComplete, this));
-    return;
-  }
-
-  if (media_player_)
-    media_player_->OnSeekComplete();
-}
-
-void MediaPlayerListenerProxy::OnMediaPrepared() {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPlayerListenerProxy::OnMediaPrepared, this));
-    return;
-  }
-
-  if (media_player_)
-    media_player_->OnMediaPrepared();
-}
-
-void MediaPlayerListenerProxy::OnMediaInterrupted() {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPlayerListenerProxy::OnMediaInterrupted, this));
-    return;
-  }
-
-  if (media_player_)
-    media_player_->OnMediaInterrupted();
-}
-
-MediaPlayerListenerProxy::~MediaPlayerListenerProxy() {}
-
-MediaPlayerListener::MediaPlayerListener(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::WeakPtr<MediaPlayerAndroid> media_player)
-    : proxy_(new MediaPlayerListenerProxy(task_runner, media_player)) {
 }
 
 MediaPlayerListener::~MediaPlayerListener() {}
@@ -133,6 +39,7 @@ void MediaPlayerListener::CreateMediaPlayerListener(
   }
 }
 
+
 void MediaPlayerListener::ReleaseMediaPlayerListenerResources() {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
@@ -145,37 +52,45 @@ void MediaPlayerListener::ReleaseMediaPlayerListenerResources() {
 
 void MediaPlayerListener::OnMediaError(
     JNIEnv* /* env */, jobject /* obj */, jint error_type) {
-  proxy_->OnMediaError(error_type);
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerAndroid::OnMediaError, media_player_, error_type));
 }
 
 void MediaPlayerListener::OnVideoSizeChanged(
     JNIEnv* /* env */, jobject /* obj */, jint width, jint height) {
-  proxy_->OnVideoSizeChanged(width, height);
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerAndroid::OnVideoSizeChanged, media_player_,
+      width, height));
 }
 
 void MediaPlayerListener::OnBufferingUpdate(
     JNIEnv* /* env */, jobject /* obj */, jint percent) {
-  proxy_->OnBufferingUpdate(percent);
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerAndroid::OnBufferingUpdate, media_player_, percent));
 }
 
 void MediaPlayerListener::OnPlaybackComplete(
     JNIEnv* /* env */, jobject /* obj */) {
-  proxy_->OnPlaybackComplete();
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerAndroid::OnPlaybackComplete, media_player_));
 }
 
 void MediaPlayerListener::OnSeekComplete(
     JNIEnv* /* env */, jobject /* obj */) {
-  proxy_->OnSeekComplete();
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerAndroid::OnSeekComplete, media_player_));
 }
 
 void MediaPlayerListener::OnMediaPrepared(
     JNIEnv* /* env */, jobject /* obj */) {
-  proxy_->OnMediaPrepared();
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerAndroid::OnMediaPrepared, media_player_));
 }
 
 void MediaPlayerListener::OnMediaInterrupted(
     JNIEnv* /* env */, jobject /* obj */) {
-  proxy_->OnMediaInterrupted();
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerAndroid::OnMediaInterrupted, media_player_));
 }
 
 bool MediaPlayerListener::RegisterMediaPlayerListener(JNIEnv* env) {
