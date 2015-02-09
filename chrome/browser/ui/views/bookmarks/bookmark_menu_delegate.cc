@@ -79,17 +79,21 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
     // managed node is shown as its first child, if it's not empty.
     BookmarkModel* model = GetBookmarkModel();
     ChromeBookmarkClient* client = GetChromeBookmarkClient();
-    bool show_managed = show_options == SHOW_PERMANENT_FOLDERS &&
-                        node == model->bookmark_bar_node() &&
-                        !client->managed_node()->empty();
-    bool has_children =
-        (start_child_index < node->child_count()) || show_managed;
+    bool show_forced_folders = show_options == SHOW_PERMANENT_FOLDERS &&
+                               node == model->bookmark_bar_node();
+    bool show_managed = show_forced_folders && !client->managed_node()->empty();
+    bool show_supervised =
+        show_forced_folders && !client->supervised_node()->empty();
+    bool has_children = (start_child_index < node->child_count()) ||
+                        show_managed || show_supervised;
     int initial_count = parent->GetSubmenu() ?
         parent->GetSubmenu()->GetMenuItemCount() : 0;
     if (has_children && initial_count > 0)
       parent->AppendSeparator();
     if (show_managed)
       BuildMenuForManagedNode(parent, &next_menu_id_);
+    if (show_supervised)
+      BuildMenuForSupervisedNode(parent, &next_menu_id_);
     BuildMenu(node, start_child_index, parent, &next_menu_id_);
     if (show_options == SHOW_PERMANENT_FOLDERS)
       BuildMenusForPermanentNodes(parent, &next_menu_id_);
@@ -429,8 +433,10 @@ MenuItemView* BookmarkMenuDelegate::CreateMenu(const BookmarkNode* parent,
   menu_id_to_node_map_[menu->GetCommand()] = parent;
   menu->set_has_icons(true);
   bool show_permanent = show_options == SHOW_PERMANENT_FOLDERS;
-  if (show_permanent && parent == GetBookmarkModel()->bookmark_bar_node())
+  if (show_permanent && parent == GetBookmarkModel()->bookmark_bar_node()) {
     BuildMenuForManagedNode(menu, &next_menu_id_);
+    BuildMenuForSupervisedNode(menu, &next_menu_id_);
+  }
   BuildMenu(parent, start_child_index, menu, &next_menu_id_);
   if (show_permanent)
     BuildMenusForPermanentNodes(menu, &next_menu_id_);
@@ -476,13 +482,21 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
   menu_id_to_node_map_[id] = node;
 }
 
-void BookmarkMenuDelegate::BuildMenuForManagedNode(
-    MenuItemView* menu,
-    int* next_menu_id) {
+void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu,
+                                                   int* next_menu_id) {
   // Don't add a separator for this menu.
   bool added_separator = true;
   const BookmarkNode* node = GetChromeBookmarkClient()->managed_node();
   BuildMenuForPermanentNode(node, IDR_BOOKMARK_BAR_FOLDER_MANAGED, menu,
+                            next_menu_id, &added_separator);
+}
+
+void BookmarkMenuDelegate::BuildMenuForSupervisedNode(MenuItemView* menu,
+                                                      int* next_menu_id) {
+  // Don't add a separator for this menu.
+  bool added_separator = true;
+  const BookmarkNode* node = GetChromeBookmarkClient()->supervised_node();
+  BuildMenuForPermanentNode(node, IDR_BOOKMARK_BAR_FOLDER_SUPERVISED, menu,
                             next_menu_id, &added_separator);
 }
 

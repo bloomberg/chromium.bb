@@ -1375,6 +1375,7 @@
       'browser/supervised_user/legacy/supervised_user_shared_settings_service_unittest.cc',
       'browser/supervised_user/legacy/supervised_user_shared_settings_update_unittest.cc',
       'browser/supervised_user/legacy/supervised_user_sync_service_unittest.cc',
+      'browser/supervised_user/supervised_user_bookmarks_handler_unittest.cc',
       'browser/supervised_user/supervised_user_pref_store_unittest.cc',
       'browser/supervised_user/supervised_user_service_unittest.cc',
       'browser/supervised_user/supervised_user_settings_service_unittest.cc',

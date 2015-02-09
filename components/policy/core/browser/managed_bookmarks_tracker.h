@@ -26,8 +26,10 @@ class BookmarkPermanentNode;
 
 namespace policy {
 
-// Tracks the Managed Bookmarks policy value and makes the managed_node() in
-// the BookmarkModel follow the policy-defined bookmark tree.
+// Tracks either the Managed Bookmarks pref (set by policy) or the Supervised
+// Bookmarks pref (set for a supervised user by their custodian) and makes the
+// managed_node()/supervised_node() in the BookmarkModel follow the
+// policy/custodian-defined bookmark tree.
 class POLICY_EXPORT ManagedBookmarksTracker {
  public:
   typedef base::Callback<std::string()> GetManagementDomainCallback;
@@ -37,8 +39,11 @@ class POLICY_EXPORT ManagedBookmarksTracker {
   static const char kUrl[];
   static const char kChildren[];
 
+  // If |is_supervised| is true, this will track supervised bookmarks rather
+  // than managed bookmarks.
   ManagedBookmarksTracker(bookmarks::BookmarkModel* model,
                           PrefService* prefs,
+                          bool is_supervised,
                           const GetManagementDomainCallback& callback);
   ~ManagedBookmarksTracker();
 
@@ -46,19 +51,28 @@ class POLICY_EXPORT ManagedBookmarksTracker {
   // LoadInitial() to do the initial load.
   scoped_ptr<base::ListValue> GetInitialManagedBookmarks();
 
-  // Loads the initial managed bookmarks in |list| into |folder|. New nodes
-  // will be assigned IDs starting at |next_node_id|.
+  // Loads the initial managed/supervised bookmarks in |list| into |folder|.
+  // New nodes will be assigned IDs starting at |next_node_id|.
   // Returns the next node ID to use.
   static int64 LoadInitial(bookmarks::BookmarkNode* folder,
                            const base::ListValue* list,
                            int64 next_node_id);
 
-  // Starts tracking the policy for updates to the managed bookmarks. Should
-  // be called after loading the initial bookmarks.
+  // Starts tracking the pref for updates to the managed/supervised bookmarks.
+  // Should be called after loading the initial bookmarks.
   void Init(bookmarks::BookmarkPermanentNode* managed_node);
 
+  bool is_supervised() const { return is_supervised_; }
+
+  // Public for testing.
+  static const char* GetPrefName(bool is_supervised);
+
  private:
+  const char* GetPrefName() const;
+  base::string16 GetBookmarksFolderTitle() const;
+
   void ReloadManagedBookmarks();
+
   void UpdateBookmarks(const bookmarks::BookmarkNode* folder,
                        const base::ListValue* list);
   static bool LoadBookmark(const base::ListValue* list,
@@ -68,6 +82,7 @@ class POLICY_EXPORT ManagedBookmarksTracker {
                            const base::ListValue** children);
 
   bookmarks::BookmarkModel* model_;
+  const bool is_supervised_;
   bookmarks::BookmarkPermanentNode* managed_node_;
   PrefService* prefs_;
   PrefChangeRegistrar registrar_;

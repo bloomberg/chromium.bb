@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/url_database.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -45,13 +46,25 @@ void RunCallbackWithImage(
   callback.Run(result);
 }
 
+void LoadInitialContents(BookmarkPermanentNode* node,
+                         base::ListValue* initial_bookmarks,
+                         int64* next_node_id) {
+  // Load the initial contents of the |node| now, and assign it an unused ID.
+  int64 id = *next_node_id;
+  node->set_id(id);
+  *next_node_id = policy::ManagedBookmarksTracker::LoadInitial(
+      node, initial_bookmarks, id + 1);
+  node->set_visible(!node->empty());
+}
+
 }  // namespace
 
 ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile)
     : profile_(profile),
       history_service_(NULL),
       model_(NULL),
-      managed_node_(NULL) {
+      managed_node_(NULL),
+      supervised_node_(NULL) {
 }
 
 ChromeBookmarkClient::~ChromeBookmarkClient() {
@@ -66,8 +79,14 @@ void ChromeBookmarkClient::Init(BookmarkModel* model) {
   managed_bookmarks_tracker_.reset(new policy::ManagedBookmarksTracker(
       model_,
       profile_->GetPrefs(),
+      false,
       base::Bind(&ChromeBookmarkClient::GetManagedBookmarksDomain,
                  base::Unretained(this))));
+  supervised_bookmarks_tracker_.reset(new policy::ManagedBookmarksTracker(
+      model_,
+      profile_->GetPrefs(),
+      true,
+      base::Callback<std::string()>()));
 }
 
 void ChromeBookmarkClient::Shutdown() {
@@ -77,19 +96,6 @@ void ChromeBookmarkClient::Shutdown() {
     model_ = NULL;
   }
   BookmarkClient::Shutdown();
-}
-
-bool ChromeBookmarkClient::IsDescendantOfManagedNode(const BookmarkNode* node) {
-  return node && node->HasAncestor(managed_node_);
-}
-
-bool ChromeBookmarkClient::HasDescendantsOfManagedNode(
-    const std::vector<const BookmarkNode*>& list) {
-  for (size_t i = 0; i < list.size(); ++i) {
-    if (IsDescendantOfManagedNode(list[i]))
-      return true;
-  }
-  return false;
 }
 
 bool ChromeBookmarkClient::PreferTouchIcon() {
@@ -152,8 +158,9 @@ bool ChromeBookmarkClient::IsPermanentNodeVisible(
   DCHECK(node->type() == BookmarkNode::BOOKMARK_BAR ||
          node->type() == BookmarkNode::OTHER_NODE ||
          node->type() == BookmarkNode::MOBILE ||
-         node == managed_node_);
-  if (node == managed_node_)
+         node == managed_node_ ||
+         node == supervised_node_);
+  if (node == managed_node_ || node == supervised_node_)
     return false;
 #if !defined(OS_IOS)
   return node->type() != BookmarkNode::MOBILE;
@@ -167,33 +174,43 @@ void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 }
 
 bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
-  // Create the managed_node now; it will be populated in the LoadExtraNodes
+  // Create the managed_node_ and supervised_node_ with a temporary ID of 0 now.
+  // They will be populated (and assigned proper IDs) in the LoadExtraNodes
   // callback.
-  // The ownership of managed_node_ is in limbo until LoadExtraNodes runs,
-  // so we leave it in the care of the closure meanwhile.
+  // The ownership of managed_node_ and supervised_node_ is in limbo until
+  // LoadExtraNodes runs, so we leave them in the care of the closure meanwhile.
   scoped_ptr<BookmarkPermanentNode> managed(new BookmarkPermanentNode(0));
   managed_node_ = managed.get();
+  scoped_ptr<BookmarkPermanentNode> supervised(new BookmarkPermanentNode(0));
+  supervised_node_ = supervised.get();
 
   return base::Bind(
       &ChromeBookmarkClient::LoadExtraNodes,
       base::Passed(&managed),
-      base::Passed(managed_bookmarks_tracker_->GetInitialManagedBookmarks()));
+      base::Passed(managed_bookmarks_tracker_->GetInitialManagedBookmarks()),
+      base::Passed(&supervised),
+      base::Passed(
+          supervised_bookmarks_tracker_->GetInitialManagedBookmarks()));
 }
 
 bool ChromeBookmarkClient::CanSetPermanentNodeTitle(
     const BookmarkNode* permanent_node) {
   // The |managed_node_| can have its title updated if the user signs in or
-  // out.
-  return !IsDescendantOfManagedNode(permanent_node) ||
+  // out, since the name of the managed domain can appear in it. The
+  // |supervised_node_| has a fixed title which can never be updated.
+  return (!bookmarks::IsDescendantOf(permanent_node, managed_node_) &&
+          !bookmarks::IsDescendantOf(permanent_node, supervised_node_)) ||
          permanent_node == managed_node_;
 }
 
 bool ChromeBookmarkClient::CanSyncNode(const BookmarkNode* node) {
-  return !IsDescendantOfManagedNode(node);
+  return !bookmarks::IsDescendantOf(node, managed_node_) &&
+         !bookmarks::IsDescendantOf(node, supervised_node_);
 }
 
 bool ChromeBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
-  return !IsDescendantOfManagedNode(node);
+  return !bookmarks::IsDescendantOf(node, managed_node_) &&
+         !bookmarks::IsDescendantOf(node, supervised_node_);
 }
 
 void ChromeBookmarkClient::SetHistoryService(HistoryService* history_service) {
@@ -225,30 +242,34 @@ void ChromeBookmarkClient::BookmarkAllUserNodesRemoved(
 
 void ChromeBookmarkClient::BookmarkModelLoaded(BookmarkModel* model,
                                                bool ids_reassigned) {
-  // Start tracking the managed bookmarks. This will detect any changes that
-  // may have occurred while the initial managed bookmarks were being loaded
-  // on the background.
+  // Start tracking the managed and supervised bookmarks. This will detect any
+  // changes that may have occurred while the initial managed and supervised
+  // bookmarks were being loaded on the background.
   managed_bookmarks_tracker_->Init(managed_node_);
+  supervised_bookmarks_tracker_->Init(supervised_node_);
 }
 
 // static
 bookmarks::BookmarkPermanentNodeList ChromeBookmarkClient::LoadExtraNodes(
     scoped_ptr<BookmarkPermanentNode> managed_node,
     scoped_ptr<base::ListValue> initial_managed_bookmarks,
+    scoped_ptr<BookmarkPermanentNode> supervised_node,
+    scoped_ptr<base::ListValue> initial_supervised_bookmarks,
     int64* next_node_id) {
-  // Load the initial contents of the |managed_node| now, and assign it an
-  // unused ID.
-  int64 managed_id = *next_node_id;
-  managed_node->set_id(managed_id);
-  *next_node_id = policy::ManagedBookmarksTracker::LoadInitial(
-      managed_node.get(), initial_managed_bookmarks.get(), managed_id + 1);
-  managed_node->set_visible(!managed_node->empty());
-  managed_node->SetTitle(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
+  LoadInitialContents(
+      managed_node.get(), initial_managed_bookmarks.get(), next_node_id);
+  managed_node->SetTitle(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
+
+  LoadInitialContents(
+      supervised_node.get(), initial_supervised_bookmarks.get(), next_node_id);
+  supervised_node->SetTitle(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_BAR_SUPERVISED_FOLDER_DEFAULT_NAME));
 
   bookmarks::BookmarkPermanentNodeList extra_nodes;
-  // Ownership of the managed node passed to the caller.
+  // Ownership of the managed and supervised nodes passed to the caller.
   extra_nodes.push_back(managed_node.release());
+  extra_nodes.push_back(supervised_node.release());
 
   return extra_nodes.Pass();
 }

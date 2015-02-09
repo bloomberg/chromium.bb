@@ -65,6 +65,7 @@ enum ViewID {
   VIEW_ID_BOOKMARK_BAR,
   VIEW_ID_OTHER_BOOKMARKS,
   VIEW_ID_MANAGED_BOOKMARKS,
+  VIEW_ID_SUPERVISED_BOOKMARKS,
   // Used for bookmarks/folders on the bookmark bar.
   VIEW_ID_BOOKMARK_BAR_ELEMENT,
 

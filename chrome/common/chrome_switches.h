@@ -172,6 +172,7 @@ extern const char kEnableSSLConnectJobWaiting[];
 extern const char kEnableStaleWhileRevalidate[];
 extern const char kEnableSuggestionsService[];
 extern const char kEnableSupervisedUserBlacklist[];
+extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableSupervisedUserSafeSites[];
 extern const char kEnableSyncArticles[];
 extern const char kEnableTabAudioMuting[];

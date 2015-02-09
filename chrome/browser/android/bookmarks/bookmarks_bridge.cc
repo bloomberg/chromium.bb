@@ -227,6 +227,10 @@ void BookmarksBridge::GetTopLevelFolderIDs(JNIEnv* env,
         client_->managed_node()->child_count() > 0) {
       top_level_folders.push_back(client_->managed_node());
     }
+    if (client_->supervised_node() &&
+        client_->supervised_node()->child_count() > 0) {
+      top_level_folders.push_back(client_->supervised_node());
+    }
     if (partner_bookmarks_shim_->HasPartnerBookmarks()) {
       top_level_folders.push_back(
           partner_bookmarks_shim_->GetPartnerBookmarksRoot());
@@ -432,8 +436,11 @@ void BookmarksBridge::GetAllBookmarkIDsOrderedByCreationDate(
 
     for (int i = 0; i < (*folder_iter)->child_count(); ++i) {
       const BookmarkNode* child = (*folder_iter)->GetChild(i);
-      if (!IsReachable(child) || client_->IsDescendantOfManagedNode(child))
+      if (!IsReachable(child) ||
+          bookmarks::IsDescendantOf(child, client_->managed_node()) ||
+          bookmarks::IsDescendantOf(child, client_->supervised_node())) {
         continue;
+      }
 
       if (child->is_folder()) {
         insert_iter = folders.insert(insert_iter, child);
@@ -799,7 +806,7 @@ bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
 }
 
 bool BookmarksBridge::IsManaged(const BookmarkNode* node) const {
-  return client_->IsDescendantOfManagedNode(node);
+  return bookmarks::IsDescendantOf(node, client_->managed_node());
 }
 
 const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
@@ -833,6 +840,10 @@ bool BookmarksBridge::IsFolderAvailable(
   // The managed bookmarks folder is not shown if there are no bookmarks
   // configured via policy.
   if (folder == client_->managed_node() && folder->empty())
+    return false;
+  // Similarly, the supervised bookmarks folder is not shown if there are no
+  // bookmarks configured by the custodian.
+  if (folder == client_->supervised_node() && folder->empty())
     return false;
 
   SigninManager* signin = SigninManagerFactory::GetForProfile(

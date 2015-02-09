@@ -76,8 +76,10 @@ BookmarkTreeNode* GetBookmarkTreeNode(ChromeBookmarkClient* client,
         new double(floor(node->date_added().ToDoubleT() * 1000)));
   }
 
-  if (client->IsDescendantOfManagedNode(node))
+  if (bookmarks::IsDescendantOf(node, client->managed_node()) ||
+      bookmarks::IsDescendantOf(node, client->supervised_node())) {
     bookmark_tree_node->unmodifiable = BookmarkTreeNode::UNMODIFIABLE_MANAGED;
+  }
 
   if (recurse && node->is_folder()) {
     std::vector<linked_ptr<BookmarkTreeNode> > children;
@@ -123,7 +125,8 @@ bool RemoveNode(BookmarkModel* model,
     *error = keys::kModifySpecialError;
     return false;
   }
-  if (client->IsDescendantOfManagedNode(node)) {
+  if (bookmarks::IsDescendantOf(node, client->managed_node()) ||
+      bookmarks::IsDescendantOf(node, client->supervised_node())) {
     *error = keys::kModifyManagedError;
     return false;
   }

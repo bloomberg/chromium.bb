@@ -35,15 +35,11 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   // KeyedService:
   void Shutdown() override;
 
-  // Returns the managed_node.
+  // The top-level managed bookmarks folder, defined by an enterprise policy.
   const bookmarks::BookmarkNode* managed_node() { return managed_node_; }
-
-  // Returns true if the given node belongs to the managed bookmarks tree.
-  bool IsDescendantOfManagedNode(const bookmarks::BookmarkNode* node);
-
-  // Returns true if there is at least one managed node in the |list|.
-  bool HasDescendantsOfManagedNode(
-      const std::vector<const bookmarks::BookmarkNode*>& list);
+  // The top-level supervised bookmarks folder, defined by the custodian of a
+  // supervised user.
+  const bookmarks::BookmarkNode* supervised_node() { return supervised_node_; }
 
   // bookmarks::BookmarkClient:
   bool PreferTouchIcon() override;
@@ -85,6 +81,8 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(
       scoped_ptr<bookmarks::BookmarkPermanentNode> managed_node,
       scoped_ptr<base::ListValue> initial_managed_bookmarks,
+      scoped_ptr<bookmarks::BookmarkPermanentNode> supervised_node,
+      scoped_ptr<base::ListValue> initial_supervised_bookmarks,
       int64* next_node_id);
 
   // Returns the management domain that configured the managed bookmarks,
@@ -105,8 +103,15 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   // the call to Shutdown. Must be valid for the whole interval.
   bookmarks::BookmarkModel* model_;
 
+  // Managed bookmarks are defined by an enterprise policy.
   scoped_ptr<policy::ManagedBookmarksTracker> managed_bookmarks_tracker_;
+  // The top-level managed bookmarks folder.
   bookmarks::BookmarkPermanentNode* managed_node_;
+
+  // Supervised bookmarks are defined by the custodian of a supervised user.
+  scoped_ptr<policy::ManagedBookmarksTracker> supervised_bookmarks_tracker_;
+  // The top-level supervised bookmarks folder.
+  bookmarks::BookmarkPermanentNode* supervised_node_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBookmarkClient);
 };

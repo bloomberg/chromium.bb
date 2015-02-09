@@ -108,6 +108,7 @@ using bookmarks::BookmarkNode;
   while (node) {
     if ((node->parent() == model_->bookmark_bar_node()) ||
         (node->parent() == client_->managed_node()) ||
+        (node->parent() == client_->supervised_node()) ||
         (node == model_->other_node())) {
       pulsingBookmarkNode_ = node;
       bookmarkObserver_->StartObservingNode(pulsingBookmarkNode_);

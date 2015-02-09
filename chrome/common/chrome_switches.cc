@@ -596,6 +596,10 @@ const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 const char kEnableSupervisedUserBlacklist[] =
     "enable-supervised-user-blacklist";
 
+// Enables the supervised user managed bookmarks folder.
+const char kEnableSupervisedUserManagedBookmarksFolder[] =
+    "enable-supervised-user-managed-bookmarks-folder";
+
 // Enables SafeSites filtering for supervised users.
 const char kEnableSupervisedUserSafeSites[] =
     "enable-supervised-user-safesites";

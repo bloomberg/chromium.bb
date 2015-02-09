@@ -212,7 +212,8 @@ bool BookmarksFunction::CanBeModified(const BookmarkNode* node) {
     return false;
   }
   ChromeBookmarkClient* client = GetChromeBookmarkClient();
-  if (client->IsDescendantOfManagedNode(node)) {
+  if (::bookmarks::IsDescendantOf(node, client->managed_node()) ||
+      ::bookmarks::IsDescendantOf(node, client->supervised_node())) {
     error_ = keys::kModifyManagedError;
     return false;
   }

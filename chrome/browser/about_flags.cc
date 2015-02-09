@@ -1127,6 +1127,13 @@ const Experiment kExperiments[] = {
                               switches::kDisableSupervisedUserBlacklist)
   },
   {
+    "enable-supervised-user-managed-bookmarks-folder",
+    IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME,
+    IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION,
+    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableSupervisedUserManagedBookmarksFolder)
+  },
+  {
     "enable-supervised-user-safesites",
     IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_NAME,
     IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_DESCRIPTION,

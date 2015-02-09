@@ -74,13 +74,14 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
 
   ClearBookmarkMenu(bookmark_menu);
 
-  // Add at most one separator for the bookmark bar and the managed bookmarks
-  // folder.
+  // Add at most one separator for the bookmark bar and the managed and
+  // supervised bookmarks folders.
   ChromeBookmarkClient* client =
       ChromeBookmarkClientFactory::GetForProfile(profile_);
   const BookmarkNode* barNode = model->bookmark_bar_node();
   const BookmarkNode* managedNode = client->managed_node();
-  if (!barNode->empty() || !managedNode->empty())
+  const BookmarkNode* supervisedNode = client->supervised_node();
+  if (!barNode->empty() || !managedNode->empty() || !supervisedNode->empty())
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
   if (!managedNode->empty()) {
     // Most users never see this node, so the image is only loaded if needed.
@@ -88,6 +89,13 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     NSImage* image =
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
     AddNodeAsSubmenu(bookmark_menu, managedNode, image, !is_submenu);
+  }
+  if (!supervisedNode->empty()) {
+    // Most users never see this node, so the image is only loaded if needed.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    NSImage* image =
+        rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_SUPERVISED).ToNSImage();
+    AddNodeAsSubmenu(bookmark_menu, supervisedNode, image, !is_submenu);
   }
   if (!barNode->empty())
     AddNodeToMenu(barNode, bookmark_menu, !is_submenu);

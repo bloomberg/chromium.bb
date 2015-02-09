@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/mock_bookmark_model_observer.h"
@@ -231,21 +232,30 @@ TEST_F(ChromeBookmarkClientTest, RemoveAllUserBookmarks) {
 }
 
 TEST_F(ChromeBookmarkClientTest, IsDescendantOfManagedNode) {
-  EXPECT_FALSE(client_->IsDescendantOfManagedNode(model_->root_node()));
-  EXPECT_FALSE(client_->IsDescendantOfManagedNode(model_->bookmark_bar_node()));
-  EXPECT_FALSE(client_->IsDescendantOfManagedNode(model_->other_node()));
-  EXPECT_FALSE(client_->IsDescendantOfManagedNode(model_->mobile_node()));
-  EXPECT_TRUE(client_->IsDescendantOfManagedNode(client_->managed_node()));
+  EXPECT_FALSE(bookmarks::IsDescendantOf(model_->root_node(),
+                                         client_->managed_node()));
+  EXPECT_FALSE(bookmarks::IsDescendantOf(model_->bookmark_bar_node(),
+                                         client_->managed_node()));
+  EXPECT_FALSE(bookmarks::IsDescendantOf(model_->other_node(),
+                                         client_->managed_node()));
+  EXPECT_FALSE(bookmarks::IsDescendantOf(model_->mobile_node(),
+                                         client_->managed_node()));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(client_->managed_node(),
+                                        client_->managed_node()));
 
   const BookmarkNode* parent = client_->managed_node();
   ASSERT_EQ(2, parent->child_count());
-  EXPECT_TRUE(client_->IsDescendantOfManagedNode(parent->GetChild(0)));
-  EXPECT_TRUE(client_->IsDescendantOfManagedNode(parent->GetChild(1)));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->GetChild(0),
+                                        client_->managed_node()));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->GetChild(1),
+                                        client_->managed_node()));
 
   parent = parent->GetChild(1);
   ASSERT_EQ(2, parent->child_count());
-  EXPECT_TRUE(client_->IsDescendantOfManagedNode(parent->GetChild(0)));
-  EXPECT_TRUE(client_->IsDescendantOfManagedNode(parent->GetChild(1)));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->GetChild(0),
+                                        client_->managed_node()));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->GetChild(1),
+                                        client_->managed_node()));
 }
 
 TEST_F(ChromeBookmarkClientTest, RemoveAllDoesntRemoveManaged) {
@@ -280,9 +290,9 @@ TEST_F(ChromeBookmarkClientTest, HasDescendantsOfManagedNode) {
   ASSERT_TRUE(managed_node);
 
   std::vector<const BookmarkNode*> nodes;
-  EXPECT_FALSE(client_->HasDescendantsOfManagedNode(nodes));
+  EXPECT_FALSE(bookmarks::HasDescendantsOf(nodes, client_->managed_node()));
   nodes.push_back(user_node);
-  EXPECT_FALSE(client_->HasDescendantsOfManagedNode(nodes));
+  EXPECT_FALSE(bookmarks::HasDescendantsOf(nodes, client_->managed_node()));
   nodes.push_back(managed_node);
-  EXPECT_TRUE(client_->HasDescendantsOfManagedNode(nodes));
+  EXPECT_TRUE(bookmarks::HasDescendantsOf(nodes, client_->managed_node()));
 }

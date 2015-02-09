@@ -94,6 +94,9 @@ void BookmarkModelFactory::RegisterProfilePrefs(
   registry->RegisterListPref(
       bookmarks::prefs::kManagedBookmarks,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(
+      bookmarks::prefs::kSupervisedBookmarks,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserContext* BookmarkModelFactory::GetBrowserContextToUse(

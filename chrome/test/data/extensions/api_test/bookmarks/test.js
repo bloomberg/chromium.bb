@@ -15,9 +15,17 @@ var expected = [
       {children:[], id:"2", parentId:"0", index:1, title:"Other bookmarks"},
       {id:"4", parentId:"0", index:3, title:"Managed bookmarks",
        unmodifiable:"managed", children:[
-          {id:"5", parentId:"4", index:0, title:"Managed Bookmark",
+          {id:"6", parentId:"4", index:0, title:"Managed Bookmark",
            url:"http://www.chromium.org/", unmodifiable:"managed"},
-          {id:"6", parentId:"4", index:1, title:"Managed Folder",
+          {id:"7", parentId:"4", index:1, title:"Managed Folder",
+           children:[], unmodifiable:"managed"}
+        ]
+      },
+      {id:"5", parentId:"0", index:4, title:"Parent suggestions",
+       unmodifiable:"managed", children:[
+          {id:"8", parentId:"4", index:0, title:"Supervised Bookmark",
+           url:"http://www.pbskids.org/", unmodifiable:"managed"},
+          {id:"9", parentId:"4", index:1, title:"Supervised Folder",
            children:[], unmodifiable:"managed"}
         ]
       }
@@ -136,7 +144,7 @@ chrome.test.runTests([
     chrome.bookmarks.get("1", pass(function(results) {
       chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]));
     }));
-    chrome.bookmarks.get("5", pass(function(results) {
+    chrome.bookmarks.get("6", pass(function(results) {
       chrome.test.assertTrue(compareNode(
           results[0], expected[0].children[2].children[0]));
     }));
@@ -507,8 +515,8 @@ chrome.test.runTests([
     chrome.test.assertTrue(failed, "Calling with 0 should fail");
 
     chrome.bookmarks.getRecent(10000, pass(function(results) {
-      // Should include the "Managed Bookmark".
-      chrome.test.assertEq(4, results.length,
+      // Should include the "Managed Bookmark" and "Supervised Bookmark".
+      chrome.test.assertEq(5, results.length,
                            "Should have gotten all recent bookmarks");
     }));
 

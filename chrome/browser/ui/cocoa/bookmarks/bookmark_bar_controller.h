@@ -232,6 +232,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // "Managed bookmarks" button on the left side, next to the apps button.
   base::scoped_nsobject<BookmarkButton> managedBookmarksButton_;
 
+  // "Supervised bookmarks" button on the left side, next to the apps button.
+  base::scoped_nsobject<BookmarkButton> supervisedBookmarksButton_;
+
   // "Other bookmarks" button on the right side.
   base::scoped_nsobject<BookmarkButton> otherBookmarksButton_;
 
@@ -311,8 +314,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // Update the visible state of the bookmark bar.
 - (void)updateVisibility;
 
-// Update the visible state of the extra butons on the bookmark bar: the
-// apps shortcut and the managed bookmarks folder.
+// Update the visible state of the extra buttons on the bookmark bar: the
+// apps shortcut, the managed bookmarks folder, and the supervised bookmarks
+// folder.
 - (void)updateExtraButtonsVisibility;
 
 // Hides or shows the bookmark bar depending on the current state.

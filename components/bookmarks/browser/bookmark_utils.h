@@ -150,6 +150,14 @@ bool IsBookmarkedByUser(BookmarkModel* model, const GURL& url);
 // Returns the node with |id|, or NULL if there is no node with |id|.
 const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id);
 
+// Returns true if |node| is a descendant of |root|.
+bool IsDescendantOf(const bookmarks::BookmarkNode* node,
+                    const bookmarks::BookmarkNode* root);
+
+// Returns true if any node in |list| is a descendant of |root|.
+bool HasDescendantsOf(const std::vector<const bookmarks::BookmarkNode*>& list,
+                      const bookmarks::BookmarkNode* root);
+
 }  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UTILS_H_

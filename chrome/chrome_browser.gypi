@@ -2604,6 +2604,8 @@
       'browser/supervised_user/legacy/supervised_user_sync_service_factory.h',
       'browser/supervised_user/legacy/supervised_user_sync_service_observer.h',
       'browser/supervised_user/permission_request_creator.h',
+      'browser/supervised_user/supervised_user_bookmarks_handler.cc',
+      'browser/supervised_user/supervised_user_bookmarks_handler.h',
       'browser/supervised_user/supervised_user_constants.cc',
       'browser/supervised_user/supervised_user_constants.h',
       'browser/supervised_user/supervised_user_interstitial.cc',

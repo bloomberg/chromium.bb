@@ -361,7 +361,7 @@ bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut,
   ChromeBookmarkClient* client = GetChromeBookmarkClient();
   std::vector<const BookmarkNode*> nodes;
   EXTENSION_FUNCTION_VALIDATE(GetNodesFromVector(model, id_list, &nodes));
-  if (cut && client->HasDescendantsOfManagedNode(nodes)) {
+  if (cut && bookmarks::HasDescendantsOf(nodes, client->managed_node())) {
     error_ = bookmark_keys::kModifyManagedError;
     return false;
   }

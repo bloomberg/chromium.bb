@@ -6377,6 +6377,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_DESCRIPTION" desc="Description for the flag to enable the supervised user host blacklist.">
         Enable the host blacklist for use by child accounts.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME" desc="Name of the flag to enable the managed bookmarks folder for supervised users.">
+        Enable managed bookmarks for supervised users
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION" desc="Description for the flag to enable the managed bookmarks folder for supervised users.">
+        Enable the managed bookmarks folder for supervised users.
+      </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_NAME" desc="Name of the flag to enable the supervised user SafeSites feature.">
         Enable the child account SafeSites filter
       </message>
