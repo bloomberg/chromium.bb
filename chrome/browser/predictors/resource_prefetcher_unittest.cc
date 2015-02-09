@@ -9,6 +9,7 @@
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -37,6 +38,7 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
   MOCK_METHOD1(StartURLRequest, void(net::URLRequest* request));
 
   void ReadFullResponse(net::URLRequest* request) override {
+    EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
     FinishRequest(request, Request::PREFETCH_STATUS_FROM_CACHE);
   }
 
