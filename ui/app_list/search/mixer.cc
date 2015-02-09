@@ -61,20 +61,15 @@ class Mixer::Group {
   void FetchResults(bool is_voice_query, const KnownResults& known_results) {
     results_.clear();
 
-    for (Providers::const_iterator provider_it = providers_.begin();
-         provider_it != providers_.end();
-         ++provider_it) {
-      for (SearchProvider::Results::const_iterator result_it =
-               (*provider_it)->results().begin();
-           result_it != (*provider_it)->results().end();
-           ++result_it) {
-        DCHECK_GE((*result_it)->relevance(), 0.0);
-        DCHECK_LE((*result_it)->relevance(), 1.0);
-        DCHECK(!(*result_it)->id().empty());
+    for (const SearchProvider* provider : providers_) {
+      for (SearchResult* result : provider->results()) {
+        DCHECK_GE(result->relevance(), 0.0);
+        DCHECK_LE(result->relevance(), 1.0);
+        DCHECK(!result->id().empty());
 
         double boost = boost_;
         KnownResults::const_iterator known_it =
-            known_results.find((*result_it)->id());
+            known_results.find(result->id());
         if (known_it != known_results.end()) {
           switch (known_it->second) {
             case PERFECT_PRIMARY:
@@ -96,11 +91,10 @@ class Mixer::Group {
         }
 
         // If this is a voice query, voice results receive a massive boost.
-        if (is_voice_query && (*result_it)->voice_result())
+        if (is_voice_query && result->voice_result())
           boost += 4.0;
 
-        results_.push_back(
-            SortData(*result_it, (*result_it)->relevance() + boost));
+        results_.push_back(SortData(result, result->relevance() + boost));
       }
     }
 
@@ -206,8 +200,8 @@ void Mixer::Publish(const SortedResults& new_results,
   ui_results->RemoveAll();
 
   // Add items back to |ui_results| in the order of |new_results|.
-  for (size_t i = 0; i < new_results.size(); ++i) {
-    const SearchResult& new_result = *new_results[i].result;
+  for (const SortData& sort_data : new_results) {
+    const SearchResult& new_result = *sort_data.result;
     IdToResultMap::const_iterator ui_result_it =
         ui_results_map.find(new_result.id());
     if (ui_result_it != ui_results_map.end()) {
@@ -228,10 +222,8 @@ void Mixer::Publish(const SortedResults& new_results,
   }
 
   // Delete the results remaining in the map as they are not in the new results.
-  for (IdToResultMap::const_iterator ui_result_it = ui_results_map.begin();
-       ui_result_it != ui_results_map.end();
-       ++ui_result_it) {
-    delete ui_result_it->second;
+  for (const auto& ui_result : ui_results_map) {
+    delete ui_result.second;
   }
 }
 
@@ -240,14 +232,13 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
   final.reserve(results->size());
 
   std::set<std::string> id_set;
-  for (SortedResults::iterator it = results->begin(); it != results->end();
-       ++it) {
-    const std::string& id = it->result->id();
+  for (const SortData& sort_data : *results) {
+    const std::string& id = sort_data.result->id();
     if (id_set.find(id) != id_set.end())
       continue;
 
     id_set.insert(id);
-    final.push_back(*it);
+    final.push_back(sort_data);
   }
 
   results->swap(final);
