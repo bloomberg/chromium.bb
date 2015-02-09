@@ -31,8 +31,7 @@ public:
     static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtrWillBeRawPtr<DOMFormData>, int&);
 
 private:
-    static void prepareRequest(LocalFrame*, ResourceRequest&);
-    static void issueRequest(LocalFrame*, ResourceRequest&);
+    class Sender;
 };
 
 } // namespace blink
