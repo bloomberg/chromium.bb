@@ -1,5 +1,6 @@
 /*
  * Copyright © 2012 Intel Corporation
+ * Copyright © 2015 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -1364,6 +1365,151 @@ gl_renderer_surface_set_color(struct weston_surface *surface,
 }
 
 static void
+gl_renderer_surface_get_content_size(struct weston_surface *surface,
+				     int *width, int *height)
+{
+	struct gl_surface_state *gs = get_surface_state(surface);
+
+	if (gs->buffer_type == BUFFER_TYPE_NULL) {
+		*width = 0;
+		*height = 0;
+	} else {
+		*width = gs->pitch;
+		*height = gs->height;
+	}
+}
+
+static uint32_t
+pack_color(pixman_format_code_t format, float *c)
+{
+	uint8_t r = round(c[0] * 255.0f);
+	uint8_t g = round(c[1] * 255.0f);
+	uint8_t b = round(c[2] * 255.0f);
+	uint8_t a = round(c[3] * 255.0f);
+
+	switch (format) {
+	case PIXMAN_a8b8g8r8:
+		return (a << 24) | (b << 16) | (g << 8) | r;
+	default:
+		assert(0);
+		return 0;
+	}
+}
+
+static int
+gl_renderer_surface_copy_content(struct weston_surface *surface,
+				 void *target, size_t size,
+				 int src_x, int src_y,
+				 int width, int height)
+{
+	static const GLfloat verts[4 * 2] = {
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f
+	};
+	static const GLfloat projmat_normal[16] = { /* transpose */
+		 2.0f,  0.0f, 0.0f, 0.0f,
+		 0.0f,  2.0f, 0.0f, 0.0f,
+		 0.0f,  0.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f, 1.0f
+	};
+	static const GLfloat projmat_yinvert[16] = { /* transpose */
+		 2.0f,  0.0f, 0.0f, 0.0f,
+		 0.0f, -2.0f, 0.0f, 0.0f,
+		 0.0f,  0.0f, 1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f, 1.0f
+	};
+	const pixman_format_code_t format = PIXMAN_a8b8g8r8;
+	const size_t bytespp = 4; /* PIXMAN_a8b8g8r8 */
+	const GLenum gl_format = GL_RGBA; /* PIXMAN_a8b8g8r8 little-endian */
+	struct gl_renderer *gr = get_renderer(surface->compositor);
+	struct gl_surface_state *gs = get_surface_state(surface);
+	int cw, ch;
+	GLuint fbo;
+	GLuint tex;
+	GLenum status;
+	const GLfloat *proj;
+	int i;
+
+	gl_renderer_surface_get_content_size(surface, &cw, &ch);
+
+	switch (gs->buffer_type) {
+	case BUFFER_TYPE_NULL:
+		return -1;
+	case BUFFER_TYPE_SOLID:
+		*(uint32_t *)target = pack_color(format, gs->color);
+		return 0;
+	case BUFFER_TYPE_SHM:
+		gl_renderer_flush_damage(surface);
+		/* fall through */
+	case BUFFER_TYPE_EGL:
+		break;
+	}
+
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cw, ch,
+		     0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			       GL_TEXTURE_2D, tex, 0);
+
+	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		weston_log("%s: fbo error: %#x\n", __func__, status);
+		glDeleteFramebuffers(1, &fbo);
+		glDeleteTextures(1, &tex);
+		return -1;
+	}
+
+	glViewport(0, 0, cw, ch);
+	glDisable(GL_BLEND);
+	use_shader(gr, gs->shader);
+	if (gs->y_inverted)
+		proj = projmat_normal;
+	else
+		proj = projmat_yinvert;
+
+	glUniformMatrix4fv(gs->shader->proj_uniform, 1, GL_FALSE, proj);
+	glUniform1f(gs->shader->alpha_uniform, 1.0f);
+
+	for (i = 0; i < gs->num_textures; i++) {
+		glUniform1i(gs->shader->tex_uniforms[i], i);
+
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(gs->target, gs->textures[i]);
+		glTexParameteri(gs->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(gs->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
+
+	/* position: */
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, verts);
+	glEnableVertexAttribArray(0);
+
+	/* texcoord: */
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, verts);
+	glEnableVertexAttribArray(1);
+
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
+
+	glPixelStorei(GL_PACK_ALIGNMENT, bytespp);
+	glReadPixels(src_x, src_y, width, height, gl_format,
+		     GL_UNSIGNED_BYTE, target);
+
+	glDeleteFramebuffers(1, &fbo);
+	glDeleteTextures(1, &tex);
+
+	return 0;
+}
+
+static void
 surface_state_destroy(struct gl_surface_state *gs, struct gl_renderer *gr)
 {
 	int i;
@@ -1992,6 +2138,9 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	gr->base.attach = gl_renderer_attach;
 	gr->base.surface_set_color = gl_renderer_surface_set_color;
 	gr->base.destroy = gl_renderer_destroy;
+	gr->base.surface_get_content_size =
+		gl_renderer_surface_get_content_size;
+	gr->base.surface_copy_content = gl_renderer_surface_copy_content;
 
 	gr->egl_display = eglGetDisplay(display);
 	if (gr->egl_display == EGL_NO_DISPLAY) {
