@@ -90,8 +90,9 @@ TEST_F('BackgroundTest', 'DesktopFocus', function() {
   });
 });
 
+// Flaky: http://crbug.com/451362
 /** Tests feedback once a page loads. */
-TEST_F('BackgroundTest', 'InitialFeedback', function() {
+TEST_F('BackgroundTest', 'DISABLED_InitialFeedback', function() {
   cvox.ChromeVox.tts.expectSpeech('start', function() {
     global.backgroundObj.onGotCommand('nextLine');
   }, true);
