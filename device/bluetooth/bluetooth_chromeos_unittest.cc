@@ -414,9 +414,11 @@ TEST_F(BluetoothChromeOSTest, AlreadyPresent) {
 
   // There should be a device
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  EXPECT_EQ(1U, devices.size());
+  EXPECT_EQ(2U, devices.size());
   EXPECT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
+  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
+            devices[1]->GetAddress());
 }
 
 TEST_F(BluetoothChromeOSTest, BecomePresent) {
@@ -436,8 +438,8 @@ TEST_F(BluetoothChromeOSTest, BecomePresent) {
   EXPECT_TRUE(adapter_->IsPresent());
 
   // We should have had a device announced.
-  EXPECT_EQ(1, observer.device_added_count_);
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  EXPECT_EQ(2, observer.device_added_count_);
+  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
             observer.last_device_address_);
 
   // Other callbacks shouldn't be called if the values are false.
@@ -463,8 +465,8 @@ TEST_F(BluetoothChromeOSTest, BecomeNotPresent) {
   EXPECT_FALSE(adapter_->IsPresent());
 
   // We should have had a device removed.
-  EXPECT_EQ(1, observer.device_removed_count_);
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  EXPECT_EQ(2, observer.device_removed_count_);
+  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
             observer.last_device_address_);
 
   // Other callbacks shouldn't be called since the values are false.
@@ -500,8 +502,8 @@ TEST_F(BluetoothChromeOSTest, SecondAdapter) {
   EXPECT_FALSE(adapter_->IsPresent());
 
   // We should have had a device removed.
-  EXPECT_EQ(1, observer.device_removed_count_);
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  EXPECT_EQ(2, observer.device_removed_count_);
+  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
             observer.last_device_address_);
 
   // Other callbacks shouldn't be called since the values are false.
@@ -1534,7 +1536,7 @@ TEST_F(BluetoothChromeOSTest, DeviceProperties) {
   GetAdapter();
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  ASSERT_EQ(1U, devices.size());
+  ASSERT_EQ(2U, devices.size());
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
 
@@ -1566,7 +1568,7 @@ TEST_F(BluetoothChromeOSTest, DeviceClassChanged) {
   GetAdapter();
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  ASSERT_EQ(1U, devices.size());
+  ASSERT_EQ(2U, devices.size());
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
   ASSERT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[0]->GetDeviceType());
@@ -1592,7 +1594,7 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
   GetAdapter();
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  ASSERT_EQ(1U, devices.size());
+  ASSERT_EQ(2U, devices.size());
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
   ASSERT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
@@ -1620,7 +1622,7 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   GetAdapter();
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  ASSERT_EQ(1U, devices.size());
+  ASSERT_EQ(2U, devices.size());
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
 
@@ -1663,7 +1665,7 @@ TEST_F(BluetoothChromeOSTest, ForgetDevice) {
   GetAdapter();
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  ASSERT_EQ(1U, devices.size());
+  ASSERT_EQ(2U, devices.size());
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
 
@@ -1683,7 +1685,7 @@ TEST_F(BluetoothChromeOSTest, ForgetDevice) {
 
   // GetDevices shouldn't return the device either.
   devices = adapter_->GetDevices();
-  ASSERT_EQ(0U, devices.size());
+  ASSERT_EQ(1U, devices.size());
 }
 
 TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
@@ -3342,7 +3344,7 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   EXPECT_TRUE(adapter_->IsPowered());
   EXPECT_TRUE(adapter_->IsDiscoverable());
   EXPECT_TRUE(adapter_->IsDiscovering());
-  EXPECT_EQ(1U, adapter_->GetDevices().size());
+  EXPECT_EQ(2U, adapter_->GetDevices().size());
   EXPECT_NE(nullptr, adapter_->GetDevice(
                          FakeBluetoothDeviceClient::kPairedDeviceAddress));
   EXPECT_NE(dbus::ObjectPath(""), static_cast<BluetoothAdapterChromeOS*>(

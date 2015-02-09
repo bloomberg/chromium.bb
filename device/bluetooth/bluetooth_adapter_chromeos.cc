@@ -1012,8 +1012,7 @@ void BluetoothAdapterChromeOS::OnRegisterProfileError(
                << ": Failed to register profile: " << error_name << ": "
                << error_message;
   error_callback.Run(error_message);
-  delete profiles_[uuid];
-  profiles_.erase(uuid);
+  ReleaseProfile(uuid);
 }
 
 void BluetoothAdapterChromeOS::OnSetDiscoverable(

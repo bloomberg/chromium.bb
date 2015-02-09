@@ -128,8 +128,7 @@ void BluetoothSocketChromeOS::Listen(
     return;
   }
 
-  adapter_ = adapter;
-  adapter_->AddObserver(this);
+  adapter->AddObserver(this);
 
   uuid_ = uuid;
   options_.reset(new BluetoothProfileManagerClient::Options());
@@ -149,7 +148,7 @@ void BluetoothSocketChromeOS::Listen(
       NOTREACHED();
   }
 
-  RegisterProfile(static_cast<BluetoothAdapterChromeOS*>(adapter_.get()),
+  RegisterProfile(static_cast<BluetoothAdapterChromeOS*>(adapter.get()),
                   success_callback, error_callback);
 }
 
@@ -222,10 +221,12 @@ void BluetoothSocketChromeOS::RegisterProfile(
   DCHECK(!profile_);
   DCHECK(adapter);
 
+  adapter_ = adapter;
+
   // If the adapter is not present, this is a listening socket and the
   // adapter isn't running yet.  Report success and carry on;
   // the profile will be registered when the daemon becomes available.
-  if (!adapter->IsPresent()) {
+  if (!adapter_->IsPresent()) {
     VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
             << ": Delaying profile registration.";
     base::MessageLoop::current()->PostTask(FROM_HERE, success_callback);

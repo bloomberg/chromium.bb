@@ -195,8 +195,8 @@ TEST_F(ChromeOSMetricsProviderTest, BluetoothHardwareEnabled) {
 }
 
 TEST_F(ChromeOSMetricsProviderTest, BluetoothPairedDevices) {
-  // The fake bluetooth adapter class already claims to be paired with one
-  // device when initialized. Add a second and third fake device to it so we
+  // The fake bluetooth adapter class already claims to be paired with two
+  // device when initialized. Add a third and fourth fake device to it so we
   // can test the cases where a device is not paired (LE device, generally)
   // and a device that does not have Device ID information.
   fake_bluetooth_device_client_->CreateDevice(
@@ -220,8 +220,8 @@ TEST_F(ChromeOSMetricsProviderTest, BluetoothPairedDevices) {
   ASSERT_TRUE(system_profile.has_hardware());
   ASSERT_TRUE(system_profile.hardware().has_bluetooth());
 
-  // Only two of the devices should appear.
-  EXPECT_EQ(2, system_profile.hardware().bluetooth().paired_device_size());
+  // Only three of the devices should appear.
+  EXPECT_EQ(3, system_profile.hardware().bluetooth().paired_device_size());
 
   typedef metrics::SystemProfileProto::Hardware::Bluetooth::PairedDevice
       PairedDevice;
@@ -239,7 +239,7 @@ TEST_F(ChromeOSMetricsProviderTest, BluetoothPairedDevices) {
   EXPECT_EQ(0x030DU, device1.product_id());
   EXPECT_EQ(0x0306U, device1.device_id());
 
-  // Second device should match the Confirm Passkey object, this has
+  // Third device should match the Confirm Passkey object, this has
   // no Device ID information.
   PairedDevice device2 = system_profile.hardware().bluetooth().paired_device(1);
 

@@ -528,4 +528,34 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
   EXPECT_EQ(1U, success_callback_count_);
 }
 
+TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress);
+  ASSERT_TRUE(device != NULL);
+
+  device->ConnectToService(
+      BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
+      base::Bind(&BluetoothSocketChromeOSTest::ConnectToServiceSuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  message_loop_.Run();
+
+  EXPECT_EQ(0U, success_callback_count_);
+  EXPECT_EQ(1U, error_callback_count_);
+  EXPECT_TRUE(last_socket_.get() == NULL);
+
+  device->ConnectToService(
+      BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
+      base::Bind(&BluetoothSocketChromeOSTest::ConnectToServiceSuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  message_loop_.Run();
+
+  EXPECT_EQ(0U, success_callback_count_);
+  EXPECT_EQ(2U, error_callback_count_);
+  EXPECT_TRUE(last_socket_.get() == NULL);
+}
+
 }  // namespace chromeos
