@@ -764,8 +764,8 @@ void ThreadState::performIdleGC(double deadlineSeconds)
     if (gcState() != IdleGCScheduled)
         return;
 
-    double idleTimeInSeconds = deadlineSeconds - Platform::current()->monotonicallyIncreasingTime();
-    if (idleTimeInSeconds <= Heap::estimatedMarkingTime()) {
+    double idleDeltaInSeconds = deadlineSeconds - Platform::current()->monotonicallyIncreasingTime();
+    if (idleDeltaInSeconds <= Heap::estimatedMarkingTime()) {
         scheduleIdleGC();
         return;
     }
