@@ -63,9 +63,12 @@ class Mixer::Group {
 
     for (const SearchProvider* provider : providers_) {
       for (SearchResult* result : provider->results()) {
-        DCHECK_GE(result->relevance(), 0.0);
-        DCHECK_LE(result->relevance(), 1.0);
         DCHECK(!result->id().empty());
+
+        // We cannot rely on providers to give relevance scores in the range
+        // [0.0, 1.0] (e.g., PeopleProvider directly gives values from the
+        // Google+ API). Clamp to that range.
+        double relevance = std::min(std::max(result->relevance(), 0.0), 1.0);
 
         double boost = boost_;
         KnownResults::const_iterator known_it =
@@ -94,7 +97,7 @@ class Mixer::Group {
         if (is_voice_query && result->voice_result())
           boost += 4.0;
 
-        results_.push_back(SortData(result, result->relevance() + boost));
+        results_.push_back(SortData(result, relevance + boost));
       }
     }
 
