@@ -30,6 +30,7 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/platform_thread.h"
@@ -326,6 +327,13 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
   //     |-> to_sub_long (reparse point to temp_dir\sub_a\long_name_\sub_long)
 
   FilePath base_a = temp_dir_.path().Append(FPL("base_a"));
+#if defined(OS_WIN)
+  // TEMP can have a lower case drive letter.
+  string16 temp_base_a = base_a.value();
+  ASSERT_FALSE(temp_base_a.empty());
+  *temp_base_a.begin() = base::ToUpperASCII(*temp_base_a.begin());
+  base_a = FilePath(temp_base_a);
+#endif
   ASSERT_TRUE(CreateDirectory(base_a));
 
   FilePath sub_a = base_a.Append(FPL("sub_a"));
@@ -428,6 +436,7 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   // Get a drive letter.
   std::wstring real_drive_letter = temp_dir_.path().value().substr(0, 2);
+  StringToUpperASCII(&real_drive_letter);
   if (!isalpha(real_drive_letter[0]) || ':' != real_drive_letter[1]) {
     LOG(ERROR) << "Can't get a drive letter to test with.";
     return;
