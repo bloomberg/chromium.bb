@@ -745,8 +745,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityIframe) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe.html"));
 }
 
+// Flaky. See http://crbug.com/224659.
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeCoordinates) {
+                       DISABLED_AccessibilityIframeCoordinates) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-coordinates.html"));
 }
 
