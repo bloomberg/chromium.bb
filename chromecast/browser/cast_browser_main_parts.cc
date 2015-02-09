@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 
 #include <signal.h>
+#include <sys/prctl.h>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -57,6 +58,8 @@ void RunClosureOnSignal(int signum) {
 
 void RegisterClosureOnSignal(const base::Closure& closure) {
   DCHECK(!g_signal_closure);
+  DCHECK_GT(arraysize(kSignalsToRunClosure), 0U);
+
   // Allow memory leak by intention.
   g_signal_closure = new base::Closure(closure);
 
@@ -74,6 +77,9 @@ void RegisterClosureOnSignal(const base::Closure& closure) {
       DCHECK_EQ(sa_old.sa_handler, SIG_DFL);
     }
   }
+
+  // Get the first signal to exit when the parent process dies.
+  prctl(PR_SET_PDEATHSIG, kSignalsToRunClosure[0]);
 }
 
 }  // namespace
