@@ -4,6 +4,9 @@
 
 #include "dbus/test_service.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -485,7 +488,7 @@ void TestService::PerformAction(
     RemoveObject(object_path);
   } else if (action == "SetSendImmediatePropertiesChanged") {
     SetSendImmediatePropertiesChanged();
-  } if (action == "ReleaseOwnership") {
+  } else if (action == "ReleaseOwnership") {
     ReleaseOwnership(base::Bind(&TestService::PerformActionResponse,
                                 base::Unretained(this),
                                 method_call, response_sender));

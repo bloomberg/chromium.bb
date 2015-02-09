@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_DBUS_CLIENT_BUNDLE_H_
 #define CHROMEOS_DBUS_DBUS_CLIENT_BUNDLE_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
@@ -119,8 +121,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
 
   BluetoothGattDescriptorClient* bluetooth_gatt_descriptor_client() {
     return bluetooth_gatt_descriptor_client_.get();
-
   }
+
   BluetoothGattManagerClient* bluetooth_gatt_manager_client() {
     return bluetooth_gatt_manager_client_.get();
   }
