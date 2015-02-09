@@ -192,12 +192,12 @@ void FileStreamMd5Digester::ReadNextChunk() {
     OnChunkRead(result);
 }
 
-void FileStreamMd5Digester::OnChunkRead(int result) {
-  if (result < 0) {
+void FileStreamMd5Digester::OnChunkRead(int bytesRead) {
+  if (bytesRead < 0) {
     // Error - just return empty string.
     callback_.Run("");
     return;
-  } else if (result == 0) {
+  } else if (bytesRead == 0) {
     // EOF.
     base::MD5Digest digest;
     base::MD5Final(&digest, &md5_context_);
@@ -207,7 +207,7 @@ void FileStreamMd5Digester::OnChunkRead(int result) {
   }
 
   // Read data and digest it.
-  base::MD5Update(&md5_context_, base::StringPiece(buffer_->data(), result));
+  base::MD5Update(&md5_context_, base::StringPiece(buffer_->data(), bytesRead));
 
   // Kick off the next read.
   ReadNextChunk();
