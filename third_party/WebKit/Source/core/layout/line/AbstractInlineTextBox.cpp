@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/layout/AbstractInlineTextBox.h"
+#include "core/layout/line/AbstractInlineTextBox.h"
 
 #include "core/editing/iterators/TextIterator.h"
 #include "platform/text/TextBreakIterator.h"

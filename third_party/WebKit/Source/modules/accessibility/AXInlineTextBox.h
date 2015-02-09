@@ -29,7 +29,7 @@
 #ifndef AXInlineTextBox_h
 #define AXInlineTextBox_h
 
-#include "core/layout/AbstractInlineTextBox.h"
+#include "core/layout/line/AbstractInlineTextBox.h"
 #include "modules/accessibility/AXObject.h"
 
 namespace blink {

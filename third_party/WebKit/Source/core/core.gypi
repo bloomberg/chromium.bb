@@ -534,8 +534,6 @@
             'xmlhttprequest/XMLHttpRequestProgressEvent.idl',
         ],
         'webcore_rendering_files': [
-            'layout/AbstractInlineTextBox.cpp',
-            'layout/AbstractInlineTextBox.h',
             'layout/BidiRun.h',
             'layout/BidiRunForLine.cpp',
             'layout/BidiRunForLine.h',
@@ -657,6 +655,8 @@
             'layout/compositing/GraphicsLayerUpdater.h',
             'layout/compositing/LayerCompositor.cpp',
             'layout/compositing/LayerCompositor.h',
+            'layout/line/AbstractInlineTextBox.cpp',
+            'layout/line/AbstractInlineTextBox.h',
             'layout/line/BreakingContext.cpp',
             'layout/line/EllipsisBox.cpp',
             'layout/line/EllipsisBox.h',
