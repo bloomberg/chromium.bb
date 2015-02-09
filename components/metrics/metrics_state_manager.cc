@@ -219,9 +219,6 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void MetricsStateManager::BackUpCurrentClientInfo() {
-  // TODO(gayane): Eliminate use of ScopedAllowIO. crbug.com/413783
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
   ClientInfo client_info;
   client_info.client_id = client_id_;
   client_info.installation_date = local_state_->GetInt64(prefs::kInstallDate);

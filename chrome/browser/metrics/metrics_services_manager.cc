@@ -19,10 +19,18 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/rappor/rappor_service.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
+
+// Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
+// because it needs access to IO and cannot work from UI thread.
+void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
+  content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
+      base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo, client_info));
+}
 
 MetricsServicesManager::MetricsServicesManager(PrefService* local_state)
     : local_state_(local_state) {
@@ -80,7 +88,7 @@ metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {
         local_state_,
         base::Bind(&MetricsServicesManager::IsMetricsReportingEnabled,
                    base::Unretained(this)),
-        base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo),
+        base::Bind(&PostStoreMetricsClientInfo),
         base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
   }
   return metrics_state_manager_.get();

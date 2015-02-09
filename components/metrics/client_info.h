@@ -28,9 +28,6 @@ struct ClientInfo {
   // The date on which metrics reporting was enabled: represented as an epoch
   // time in seconds.
   int64 reporting_enabled_date;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClientInfo);
 };
 
 }  // namespace metrics
