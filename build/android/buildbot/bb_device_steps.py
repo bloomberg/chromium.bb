@@ -43,36 +43,40 @@ GS_AUTH_URL = 'https://storage.cloud.google.com'
 #   annotation: Annotation of the tests to include.
 #   exclude_annotation: The annotation of the tests to exclude.
 I_TEST = collections.namedtuple('InstrumentationTest', [
-    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root',
-    'annotation', 'exclude_annotation', 'extra_flags'])
+    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'isolate_file_path',
+    'host_driven_root', 'annotation', 'exclude_annotation', 'extra_flags'])
 
 
 def SrcPath(*path):
   return os.path.join(CHROME_SRC_DIR, *path)
 
 
-def I(name, apk, apk_package, test_apk, test_data, host_driven_root=None,
-      annotation=None, exclude_annotation=None, extra_flags=None):
-  return I_TEST(name, apk, apk_package, test_apk, test_data, host_driven_root,
-                annotation, exclude_annotation, extra_flags)
+def I(name, apk, apk_package, test_apk, test_data, isolate_file_path=None,
+      host_driven_root=None, annotation=None, exclude_annotation=None,
+      extra_flags=None):
+  return I_TEST(name, apk, apk_package, test_apk, test_data, isolate_file_path,
+                host_driven_root, annotation, exclude_annotation, extra_flags)
 
 INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     I('ContentShell',
       'ContentShell.apk',
       'org.chromium.content_shell_apk',
       'ContentShellTest',
-      'content:content/test/data/android/device_files'),
+      'content:content/test/data/android/device_files',
+      isolate_file_path='content/content_shell_test_apk.isolate'),
     I('ChromeShell',
       'ChromeShell.apk',
       'org.chromium.chrome.shell',
       'ChromeShellTest',
       'chrome:chrome/test/data/android/device_files',
-      constants.CHROME_SHELL_HOST_DRIVEN_DIR),
+      isolate_file_path='chrome/chrome_shell_test_apk.isolate',
+      host_driven_root=constants.CHROME_SHELL_HOST_DRIVEN_DIR),
     I('AndroidWebView',
       'AndroidWebView.apk',
       'org.chromium.android_webview.shell',
       'AndroidWebViewTest',
-      'webview:android_webview/test/data/device_files'),
+      'webview:android_webview/test/data/device_files',
+      isolate_file_path='android_webview/android_webview_test_apk.isolate'),
     I('ChromeSyncShell',
       'ChromeSyncShell.apk',
       'org.chromium.chrome.browser.sync',
@@ -265,6 +269,8 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
                 options.flakiness_server)
   if options.coverage_bucket:
     args.append('--coverage-dir=%s' % options.coverage_dir)
+  if test.isolate_file_path:
+    args.append('--isolate-file-path=%s' % test.isolate_file_path)
   if test.host_driven_root:
     args.append('--host-driven-root=%s' % test.host_driven_root)
   if test.annotation:
