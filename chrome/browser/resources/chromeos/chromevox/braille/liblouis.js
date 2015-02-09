@@ -100,6 +100,10 @@ cvox.LibLouis.prototype.attachToElement = function(elem) {
   embed.addEventListener('message', goog.bind(this.onInstanceMessage_, this),
       false /* useCapture */);
   elem.appendChild(embed);
+  // TODO(plundblad): Remove when the real cause of crbug.com/455889
+  // is fixed.  Sending this empty message will cause the nacl component
+  // to load and fire the load event properly.
+  embed.postMessage('{}');
 
   this.embedElement_ = /** @type {!HTMLEmbedElement} */ (embed);
   this.instanceState_ = cvox.LibLouis.InstanceState.LOADING;
