@@ -24,6 +24,7 @@ test(function() {
     verify_interface('Clients',
                      self.clients,
                      {
+                       claim: 'function',
                        getAll: 'function'
                      });
   }, 'Clients');
