@@ -201,9 +201,7 @@ test(function() {
           assert_false(response.ok, 'Response.ok must be false for ' + status);
       });
 
-    var invalidNames = ['', '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
-                        '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b'];
-    invalidNames.forEach(function(name) {
+    INVALID_HEADER_NAMES.forEach(function(name) {
         assert_throws(
           {name: 'TypeError'},
           function() {
@@ -221,8 +219,7 @@ test(function() {
           'new Response with headers with an invalid name (' + name +
           ') should throw');
       });
-    var invalidValues = ['test \r data', 'test \n data'];
-    invalidValues.forEach(function(value) {
+    INVALID_HEADER_VALUES.forEach(function(value) {
         assert_throws(
           {name: 'TypeError'},
           function() {

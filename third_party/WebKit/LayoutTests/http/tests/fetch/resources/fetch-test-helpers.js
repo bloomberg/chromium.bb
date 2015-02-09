@@ -30,6 +30,65 @@ function getContentType(headers) {
   return content_type;
 }
 
+// Method names.
+
+// A method name must match token in RFC 2616:
+// "token          = 1*<any CHAR except CTLs or separators>"
+// Fetch API Spec: https://fetch.spec.whatwg.org/#concept-method
+// FIXME: Add ''. https://crbug.com/455162
+// All octets are tested except for those >= 0x80.
+var INVALID_METHOD_NAMES = [
+  // CTL
+  '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
+  '\x08', '\x09', '\x0a', '\x0b', '\x0c', '\x0d', '\x0e', '\x0f',
+  '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17',
+  '\x18', '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', '\x7f',
+  // separators
+  ' ', '"', '(', ')', ',', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\',
+  ']', '{', '}',
+  // non-CHAR
+  '\x80', '\xff', '\u0100', '\u3042',
+  // Strings that contain characters above.
+  'a(b', 'invalid name', 'invalid \r name', 'invalid \n name',
+  'invalid\r\n name', 'invalid \0 name',
+  'test\r', 'test\n', 'test\r\n', 'test\0',
+  '\0'.repeat(100000), '<'.repeat(100000), '\r\n'.repeat(50000),
+  'x'.repeat(100000) + '\0'];
+
+// Spec: https://fetch.spec.whatwg.org/#forbidden-method
+// "A forbidden method is a method that is a byte case-insensitive match for
+// one of `CONNECT`, `TRACE`, and `TRACK`."
+var FORBIDDEN_METHODS = ['TRACE', 'TRACK', 'CONNECT',
+                         'trace', 'track', 'connect'];
+
+// Spec: https://fetch.spec.whatwg.org/#concept-method-normalize
+// "To normalize a method, if it is a byte case-insensitive match for
+// `DELETE`, `GET`, `HEAD`, `OPTIONS`, `POST`, or `PUT`, byte uppercase it"
+var TO_BE_NORMALIZED_METHOD_NAMES = [
+  'delete', 'get', 'head', 'options', 'post', 'put'];
+
+var OTHER_VALID_METHOD_NAMES = [
+  '!', '#', '$', '%', '&', '\'', '*', '+', '-', '.', '^', '_', '`', '|', '~',
+  '0123456789', 'PATCH', 'MKCOL', 'CUSTOM', 'X-FILES', 'p0sT', 'AZaz',
+  'x'.repeat(100000)];
+
+// token [RFC 2616]
+var INVALID_TOKENS = INVALID_METHOD_NAMES.concat(['']);
+var VALID_TOKENS = FORBIDDEN_METHODS
+  .concat(TO_BE_NORMALIZED_METHOD_NAMES)
+  .concat(OTHER_VALID_METHOD_NAMES);
+
+// Header names and values.
+
+// A header name must match token in RFC 2616.
+// Fetch API Spec: https://fetch.spec.whatwg.org/#concept-header-name
+var INVALID_HEADER_NAMES = INVALID_TOKENS;
+var INVALID_HEADER_VALUES = [
+  'test \r data', 'test \n data', 'test \0 data',
+  'test\r\n data',
+  'test\r', 'test\n', 'test\r\n', 'test\0',
+  '\0'.repeat(100000), '\r\n'.repeat(50000), 'x'.repeat(100000) + '\0'];
+
 var FORBIDDEN_HEADERS =
   ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers',
    'Access-Control-Request-Method', 'Connection', 'Content-Length',

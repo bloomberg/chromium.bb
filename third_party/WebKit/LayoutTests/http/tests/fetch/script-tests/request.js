@@ -50,10 +50,49 @@ test(function() {
 test(function() {
     [new Request(URL),
      new Request(URL, {method: ''}),
-     new Request(URL, {mode: ''}),
-     new Request(URL, {mode: 'invalid mode'}),
-     new Request(URL, {credentials: ''}),
-     new Request(URL, {credentials: 'invalid credentials'})]
+     // All mode/credentials below are invalid and thus ignored.
+     new Request(URL, {mode: null}),
+     new Request(URL, {mode: undefined}),
+     new Request(URL, {mode: 'sameorigin'}),
+     new Request(URL, {mode: 'same origin'}),
+     new Request(URL, {mode: 'same-origin\0'}),
+     new Request(URL, {mode: ' same-origin'}),
+     new Request(URL, {mode: 'same--origin'}),
+     new Request(URL, {mode: 'SAME-ORIGIN'}),
+     new Request(URL, {mode: 'nocors'}),
+     new Request(URL, {mode: 'no cors'}),
+     new Request(URL, {mode: 'no-cors\0'}),
+     new Request(URL, {mode: ' no-cors'}),
+     new Request(URL, {mode: 'no--cors'}),
+     new Request(URL, {mode: 'NO-CORS'}),
+     new Request(URL, {mode: 'cors\0'}),
+     new Request(URL, {mode: ' cors'}),
+     new Request(URL, {mode: 'co rs'}),
+     new Request(URL, {mode: 'CORS'}),
+     new Request(URL, {mode: '\0'.repeat(100000)}),
+     new Request(URL, {mode: 'x'.repeat(100000)}),
+     new Request(URL, {credentials: null}),
+     new Request(URL, {credentials: undefined}),
+     new Request(URL, {credentials: 'omit\0'}),
+     new Request(URL, {credentials: ' omit'}),
+     new Request(URL, {credentials: 'om it'}),
+     new Request(URL, {credentials: 'OMIT'}),
+     new Request(URL, {credentials: 'sameorigin'}),
+     new Request(URL, {credentials: 'same origin'}),
+     new Request(URL, {credentials: 'same-origin\0'}),
+     new Request(URL, {credentials: ' same-origin'}),
+     new Request(URL, {credentials: 'same--origin'}),
+     new Request(URL, {credentials: 'SAME-ORIGIN'}),
+     new Request(URL, {credentials: 'include\0'}),
+     new Request(URL, {credentials: ' include'}),
+     new Request(URL, {credentials: 'inc lude'}),
+     new Request(URL, {credentials: 'INCLUDE'}),
+     new Request(URL, {credentials: '\0'.repeat(100000)}),
+     new Request(URL, {credentials: 'x'.repeat(100000)})]
+      .concat(INVALID_TOKENS.map(
+          function(name) { return new Request(URL, {mode: name}); }))
+      .concat(INVALID_TOKENS.map(
+          function(name) { return new Request(URL, {credentials: name}); }))
       .forEach(function(request) {
           assert_equals(request.url, URL,
                         'Request.url should match');
@@ -193,8 +232,7 @@ test(function() {
 
 test(function() {
     ['same-origin', 'cors', 'no-cors'].forEach(function(mode) {
-        var forbiddenMethods = ['TRACE', 'TRACK', 'CONNECT'];
-        forbiddenMethods.forEach(function(method) {
+        FORBIDDEN_METHODS.forEach(function(method) {
             assert_throws(
               {name: 'TypeError'},
               function() {
@@ -203,10 +241,7 @@ test(function() {
               'new Request with a forbidden method (' + method + ') should ' +
               'throw');
           });
-        var invalidNames = ['(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
-                            '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b',
-                            'invalid name'];
-        invalidNames.forEach(function(name) {
+        INVALID_METHOD_NAMES.forEach(function(name) {
             assert_throws(
               {name: 'TypeError'},
               function() {
@@ -215,7 +250,7 @@ test(function() {
               'new Request with an invalid method (' + name + ') should throw');
           });
       });
-  }, 'Request method name test');
+  }, 'Request method name throw test');
 
 test(function() {
     ['same-origin', 'cors'].forEach(function(mode) {
@@ -345,14 +380,17 @@ test(function() {
 
 test(function() {
     var url = 'http://example.com';
-    ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'].forEach(
+    TO_BE_NORMALIZED_METHOD_NAMES.forEach(
       function(method) {
-        assert_equals(new Request(url, {method: method.toLowerCase()}).method,
-                      method,
+        assert_equals(new Request(url, {method: method.toUpperCase()}).method,
+                      method.toUpperCase(),
+                      'method must match: ' + method);
+        assert_equals(new Request(url, {method: method}).method,
+                      method.toUpperCase(),
                       'method should be normalized to uppercase: ' + method);
       });
 
-    ['PATCH', 'MKCOL', 'CUSTOM', 'X-FILES'].forEach(
+    OTHER_VALID_METHOD_NAMES.forEach(
       function(method) {
         assert_equals(new Request(url, {method: method}).method, method,
                       'method should not be changed when normalized: ' +
@@ -362,7 +400,7 @@ test(function() {
                       'method should not be changed when normalized: ' +
                       method);
       });
-  }, 'Request method names are normalized');
+  }, 'Request: valid method names and normalize test');
 
 test(function() {
     var req = new Request(URL);
@@ -526,9 +564,7 @@ test(function() {
     // https://fetch.spec.whatwg.org/#dom-request
     // Step 20:
     // Fill r's Headers object with headers. Rethrow any exceptions.
-    var invalidNames = ['', '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
-                        '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b'];
-    invalidNames.forEach(function(name) {
+    INVALID_HEADER_NAMES.forEach(function(name) {
         assert_throws(
           {name: 'TypeError'},
           function() {
@@ -547,8 +583,7 @@ test(function() {
           ') should throw');
       });
 
-    var invalidValues = ['test \r data', 'test \n data'];
-    invalidValues.forEach(function(value) {
+    INVALID_HEADER_VALUES.forEach(function(value) {
         assert_throws(
           {name: 'TypeError'},
           function() {

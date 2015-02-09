@@ -185,9 +185,7 @@ test(function() {
     assert_equals(headers.get('c'), 'd');
 
     // Throw errors
-    var invalidNames = ['', '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
-                        '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b'];
-    invalidNames.forEach(function(name) {
+    INVALID_HEADER_NAMES.forEach(function(name) {
         assert_throws({name: 'TypeError'},
                       function() { headers.append(name, 'a'); },
                       'Headers.append with an invalid name (' + name +
@@ -250,8 +248,7 @@ test(function() {
                         'header name: ' + header[0]);
         });
 
-    var invalidValues = ['test \r data', 'test \n data'];
-    invalidValues.forEach(function(value) {
+    INVALID_HEADER_VALUES.forEach(function(value) {
         assert_throws({name: 'TypeError'},
                       function() { headers.append('a', value); },
                       'Headers.append with an invalid value should throw');
