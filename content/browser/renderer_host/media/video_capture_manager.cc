@@ -113,6 +113,10 @@ VideoCaptureManager::DeviceEntry::DeviceEntry(
 
 VideoCaptureManager::DeviceEntry::~DeviceEntry() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // DCHECK that this DeviceEntry does not still own a
+  // media::VideoCaptureDevice. media::VideoCaptureDevice must be deleted on
+  // the device thread.
+  DCHECK(video_capture_device_ == nullptr);
 }
 
 void VideoCaptureManager::DeviceEntry::SetVideoCaptureDevice(
@@ -359,8 +363,15 @@ void VideoCaptureManager::OnDeviceStarted(
           return e->serial_id == serial_id;
         });
     DCHECK(entry_it != devices_.end());
-    DCHECK(!(*entry_it)->video_capture_device());
-    (*entry_it)->SetVideoCaptureDevice(device.Pass());
+    DeviceEntry* entry = *entry_it;
+    DCHECK(!entry->video_capture_device());
+    entry->SetVideoCaptureDevice(device.Pass());
+
+    if (entry->stream_type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
+      const media::VideoCaptureSessionId session_id =
+          device_start_queue_.front().session_id();
+      MaybePostDesktopCaptureWindowId(session_id);
+    }
   }
 
   device_start_queue_.pop_front();
@@ -408,13 +419,6 @@ VideoCaptureManager::DoStartDeviceOnDeviceThread(
       if (desktop_id.type != DesktopMediaID::TYPE_NONE &&
           desktop_id.type != DesktopMediaID::TYPE_AURA_WINDOW) {
         video_capture_device = DesktopCaptureDevice::Create(desktop_id);
-        if (notification_window_ids_.find(session_id) !=
-            notification_window_ids_.end()) {
-          static_cast<DesktopCaptureDevice*>(video_capture_device.get())
-              ->SetNotificationWindowId(notification_window_ids_[session_id]);
-          VLOG(2) << "Screen capture notification window passed for session "
-                  << session_id;
-        }
       }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
       break;
@@ -615,23 +619,26 @@ void VideoCaptureManager::SetDesktopCaptureWindowId(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(2) << "SetDesktopCaptureWindowId called for session " << session_id;
 
+  notification_window_ids_[session_id] = window_id;
+  MaybePostDesktopCaptureWindowId(session_id);
+}
+
+void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
+    media::VideoCaptureSessionId session_id) {
   SessionMap::iterator session_it = sessions_.find(session_id);
   if (session_it == sessions_.end()) {
-    VLOG(2) << "Session not found, will save the notification window.";
-    device_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &VideoCaptureManager::SaveDesktopCaptureWindowIdOnDeviceThread,
-            this,
-            session_id,
-            window_id));
     return;
   }
 
   DeviceEntry* const existing_device =
       GetDeviceEntryForMediaStreamDevice(session_it->second);
   if (!existing_device) {
-    VLOG(2) << "Failed to find an existing device.";
+    DVLOG(2) << "Failed to find an existing screen capture device.";
+    return;
+  }
+
+  if (!existing_device->video_capture_device()) {
+    DVLOG(2) << "Screen capture device not yet started.";
     return;
   }
 
@@ -643,6 +650,12 @@ void VideoCaptureManager::SetDesktopCaptureWindowId(
     return;
   }
 
+  auto window_id_it = notification_window_ids_.find(session_id);
+  if (window_id_it == notification_window_ids_.end()) {
+    DVLOG(2) << "Notification window id not set for screen capture.";
+    return;
+  }
+
   // Post |existing_device->video_capture_device| to the VideoCaptureDevice to
   // the device_task_runner_. This is safe since the device is destroyed on the
   // device_task_runner_.
@@ -651,7 +664,9 @@ void VideoCaptureManager::SetDesktopCaptureWindowId(
       base::Bind(&VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread,
                  this,
                  existing_device->video_capture_device(),
-                 window_id));
+                 window_id_it->second));
+
+  notification_window_ids_.erase(window_id_it);
 }
 
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(
@@ -847,17 +862,6 @@ void VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread(
   desktop_device->SetNotificationWindowId(window_id);
   VLOG(2) << "Screen capture notification window passed on device thread.";
 #endif
-}
-
-void VideoCaptureManager::SaveDesktopCaptureWindowIdOnDeviceThread(
-    media::VideoCaptureSessionId session_id,
-    gfx::NativeViewId window_id) {
-  DCHECK(IsOnDeviceThread());
-  DCHECK(notification_window_ids_.find(session_id) ==
-         notification_window_ids_.end());
-  notification_window_ids_[session_id] = window_id;
-  VLOG(2) << "Screen capture notification window saved for session "
-          << session_id << " on device thread.";
 }
 
 }  // namespace content

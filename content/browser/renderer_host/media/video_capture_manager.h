@@ -223,12 +223,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       const std::string& id,
       media::VideoCaptureDeviceInfos& device_vector);
 
+  void MaybePostDesktopCaptureWindowId(media::VideoCaptureSessionId session_id);
   void SetDesktopCaptureWindowIdOnDeviceThread(
       media::VideoCaptureDevice* device,
-      gfx::NativeViewId window_id);
-
-  void SaveDesktopCaptureWindowIdOnDeviceThread(
-      media::VideoCaptureSessionId session_id,
       gfx::NativeViewId window_id);
 
   // The message loop of media stream device thread, where VCD's live.
@@ -324,7 +321,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // active device capture format from the VideoCaptureController associated.
   media::VideoCaptureDeviceInfos devices_info_cache_;
 
-  // Accessed on the device thread only.
+  // Map used by DesktopCapture.
   std::map<media::VideoCaptureSessionId, gfx::NativeViewId>
       notification_window_ids_;
 
