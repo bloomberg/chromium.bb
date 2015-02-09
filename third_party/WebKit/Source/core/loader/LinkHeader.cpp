@@ -169,7 +169,7 @@ static bool parseParameterValue(CharType*& position, CharType* end, String& valu
 void LinkHeader::setValue(LinkParameterName name, String value)
 {
     // FIXME: Add support for more header parameters as neccessary.
-    if (name == LinkParameterRel)
+    if (name == LinkParameterRel && !m_rel)
         m_rel = value.lower();
 }
 
