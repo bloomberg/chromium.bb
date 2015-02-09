@@ -140,10 +140,6 @@ class BookmarkModelAssociator
       const bookmarks::BookmarkNode* permanent_node,
       const std::string& tag) WARN_UNUSED_RESULT;
 
-  // Compare the properties of a pair of nodes from either domain.
-  bool NodesMatch(const bookmarks::BookmarkNode* bookmark,
-                  const syncer::BaseNode* sync_node) const;
-
   // Check whether bookmark model and sync model are synced by comparing
   // their transaction versions.
   // Returns a PERSISTENCE_ERROR if a transaction mismatch was detected where

@@ -21,6 +21,8 @@ void DeleteJournal::GetBookmarkDeleteJournals(
       deleted_entries.begin(); i != deleted_entries.end(); ++i) {
     delete_journal_list->push_back(BookmarkDeleteJournal());
     delete_journal_list->back().id = (*i)->ref(syncer::syncable::META_HANDLE);
+    delete_journal_list->back().external_id =
+        (*i)->ref(syncer::syncable::LOCAL_EXTERNAL_ID);
     delete_journal_list->back().is_folder = (*i)->ref(syncer::syncable::IS_DIR);
 
     const sync_pb::EntitySpecifics& specifics = (*i)->ref(

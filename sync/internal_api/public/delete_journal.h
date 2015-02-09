@@ -17,6 +17,7 @@ class BaseTransaction;
 
 struct BookmarkDeleteJournal {
   int64 id;   // Metahandle of delete journal entry.
+  int64 external_id;  // Bookmark ID in the native model.
   bool is_folder;
   sync_pb::EntitySpecifics specifics;
 };
