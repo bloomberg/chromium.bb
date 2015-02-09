@@ -6,7 +6,7 @@
 
 namespace app_list {
 
-const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
+const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF2, 0xF2, 0xF2);
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
 
 // In Windows, transparent background color will cause ugly text rendering,
