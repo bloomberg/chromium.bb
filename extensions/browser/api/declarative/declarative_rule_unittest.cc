@@ -219,7 +219,6 @@ class SummingAction : public base::RefCounted<SummingAction> {
 
   static scoped_refptr<const SummingAction> Create(
       content::BrowserContext* browser_context,
-      const HostID& host_id,
       const Extension* extension,
       const base::Value& action,
       std::string* error,
@@ -271,7 +270,7 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
   std::string error;
   bool bad = false;
   scoped_ptr<SummingActionSet> result =
-      SummingActionSet::Create(NULL, HostID(), NULL, actions, &error, &bad);
+      SummingActionSet::Create(NULL, NULL, actions, &error, &bad);
   EXPECT_EQ("the error", error);
   EXPECT_FALSE(bad);
   EXPECT_FALSE(result);
@@ -279,8 +278,7 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
   actions.clear();
   actions.push_back(ScopedToLinkedPtr(ParseJson("{\"value\": 1}")));
   actions.push_back(ScopedToLinkedPtr(ParseJson("{\"bad\": 3}")));
-  result = SummingActionSet::Create(
-      NULL, HostID(), NULL, actions, &error, &bad);
+  result = SummingActionSet::Create(NULL, NULL, actions, &error, &bad);
   EXPECT_EQ("", error);
   EXPECT_TRUE(bad);
   EXPECT_FALSE(result);
@@ -297,7 +295,7 @@ TEST(DeclarativeActionTest, ApplyActionSet) {
   std::string error;
   bool bad = false;
   scoped_ptr<SummingActionSet> result =
-      SummingActionSet::Create(NULL, HostID(), NULL, actions, &error, &bad);
+      SummingActionSet::Create(NULL, NULL, actions, &error, &bad);
   EXPECT_EQ("", error);
   EXPECT_FALSE(bad);
   ASSERT_TRUE(result);
@@ -338,15 +336,13 @@ TEST(DeclarativeRuleTest, Create) {
 
   URLMatcher matcher;
   std::string error;
-  scoped_ptr<Rule> rule(
-      Rule::Create(matcher.condition_factory(),
-                   NULL,
-                   HostID(HostID::EXTENSIONS, extension.get()->id()),
-                   extension.get(),
-                   install_time,
-                   json_rule,
-                   Rule::ConsistencyChecker(),
-                   &error));
+  scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(),
+                                     NULL,
+                                     extension.get(),
+                                     install_time,
+                                     json_rule,
+                                     Rule::ConsistencyChecker(),
+                                     &error));
   EXPECT_EQ("", error);
   ASSERT_TRUE(rule.get());
 
@@ -409,15 +405,13 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                  "  \"priority\": 200 \n"
                  "}"),
       json_rule.get()));
-  scoped_ptr<Rule> rule(
-      Rule::Create(matcher.condition_factory(),
-                   NULL,
-                   HostID(HostID::EXTENSIONS, extension.get()->id()),
-                   extension.get(),
-                   base::Time(),
-                   json_rule,
-                   base::Bind(AtLeastOneCondition),
-                   &error));
+  scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(),
+                                     NULL,
+                                     extension.get(),
+                                     base::Time(),
+                                     json_rule,
+                                     base::Bind(AtLeastOneCondition),
+                                     &error));
   EXPECT_TRUE(rule);
   EXPECT_EQ("", error);
 
@@ -436,7 +430,6 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
       json_rule.get()));
   rule = Rule::Create(matcher.condition_factory(),
                       NULL,
-                      HostID(HostID::EXTENSIONS, extension.get()->id()),
                       extension.get(),
                       base::Time(),
                       json_rule,
