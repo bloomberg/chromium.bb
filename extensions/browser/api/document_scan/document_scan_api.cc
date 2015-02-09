@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/document_scan/document_scan_api.h"
+#include "extensions/browser/api/document_scan/document_scan_api.h"
 
 #include <algorithm>
 
@@ -21,12 +21,14 @@ const char kUserGestureRequiredError[] =
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 DocumentScanScanFunction::DocumentScanScanFunction()
-    : document_scan_interface_(DocumentScanInterface::CreateInstance()) {}
+    : document_scan_interface_(DocumentScanInterface::CreateInstance()) {
+}
 
-DocumentScanScanFunction::~DocumentScanScanFunction() {}
+DocumentScanScanFunction::~DocumentScanScanFunction() {
+}
 
 bool DocumentScanScanFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
@@ -84,9 +86,7 @@ void DocumentScanScanFunction::OnScannerListReceived(
   // TODO(pstew): Call a delegate method here to select a scanner and options.
 
   document_scan_interface_->Scan(
-      scanner_i->name,
-      DocumentScanInterface::kScanModeColor,
-      0,
+      scanner_i->name, DocumentScanInterface::kScanModeColor, 0,
       base::Bind(&DocumentScanScanFunction::OnResultsReceived,
                  base::Unretained(this)));
 }
@@ -95,7 +95,6 @@ void DocumentScanScanFunction::OnResultsReceived(
     const std::string& scanned_image,
     const std::string& mime_type,
     const std::string& error) {
-
   // TODO(pstew): Enlist a delegate to display received scan in the UI
   //  and confirm that this scan should be sent to the caller.  If this
   // is a multi-page scan, provide a means for adding additional scanned
@@ -120,6 +119,6 @@ bool DocumentScanScanFunction::Respond() {
   return error_.empty();
 }
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions

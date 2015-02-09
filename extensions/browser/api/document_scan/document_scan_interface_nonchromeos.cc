@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/document_scan/document_scan_interface.h"
+#include "extensions/browser/api/document_scan/document_scan_interface.h"
 
 namespace {
 
@@ -12,7 +12,7 @@ const char kScanFunctionNotImplementedError[] = "Scan function not implemented";
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 class DocumentScanInterfaceImpl : public DocumentScanInterface {
  public:
@@ -20,7 +20,7 @@ class DocumentScanInterfaceImpl : public DocumentScanInterface {
   ~DocumentScanInterfaceImpl() override {}
 
   void ListScanners(const ListScannersResultsCallback& callback) override {
-    callback.Run(std::vector<ScannerDescription> (), "");
+    callback.Run(std::vector<ScannerDescription>(), "");
   }
   void Scan(const std::string& scanner_name,
             ScanMode mode,
@@ -34,10 +34,10 @@ class DocumentScanInterfaceImpl : public DocumentScanInterface {
 };
 
 // static
-DocumentScanInterface *DocumentScanInterface::CreateInstance() {
+DocumentScanInterface* DocumentScanInterface::CreateInstance() {
   return new DocumentScanInterfaceImpl();
 }
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions

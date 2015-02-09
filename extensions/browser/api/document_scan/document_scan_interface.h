@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_INTERFACE_H_
+#define EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_INTERFACE_H_
+
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DOCUMENT_SCAN_DOCUMENT_SCAN_INTERFACE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DOCUMENT_SCAN_DOCUMENT_SCAN_INTERFACE_H_
-
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 class DocumentScanInterface {
  public:
@@ -27,20 +27,15 @@ class DocumentScanInterface {
     std::string image_mime_type;
   };
 
-  enum ScanMode {
-    kScanModeColor,
-    kScanModeGray,
-    kScanModeLineart
-  };
+  enum ScanMode { kScanModeColor, kScanModeGray, kScanModeLineart };
 
   typedef base::Callback<void(
       const std::vector<ScannerDescription>& scanner_descriptions,
       const std::string& error)> ListScannersResultsCallback;
 
-  typedef base::Callback<void(
-      const std::string& scanned_image,
-      const std::string& mime_type,
-      const std::string& error)> ScanResultsCallback;
+  typedef base::Callback<void(const std::string& scanned_image,
+                              const std::string& mime_type,
+                              const std::string& error)> ScanResultsCallback;
 
   virtual ~DocumentScanInterface();
 
@@ -51,14 +46,14 @@ class DocumentScanInterface {
   virtual void ListScanners(const ListScannersResultsCallback& callback) = 0;
 
   // Creates a platform-specific DocumentScanInterface instance.
-  static DocumentScanInterface *CreateInstance();
+  static DocumentScanInterface* CreateInstance();
 
  protected:
   DocumentScanInterface();
 };
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DOCUMENT_SCAN_DOCUMENT_SCAN_INTERFACE_H_
+#endif  // EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_INTERFACE_H_

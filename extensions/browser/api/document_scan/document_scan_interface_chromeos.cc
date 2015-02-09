@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/document_scan/document_scan_interface_chromeos.h"
+#include "extensions/browser/api/document_scan/document_scan_interface_chromeos.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -20,30 +20,31 @@ const char kPngImageDataUrlPrefix[] = "data:image/png;base64,";
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 DocumentScanInterfaceChromeos::DocumentScanInterfaceChromeos()
-    : lorgnette_manager_client_(nullptr) {}
+    : lorgnette_manager_client_(nullptr) {
+}
 
-DocumentScanInterfaceChromeos::~DocumentScanInterfaceChromeos() {}
+DocumentScanInterfaceChromeos::~DocumentScanInterfaceChromeos() {
+}
 
 void DocumentScanInterfaceChromeos::ListScanners(
     const ListScannersResultsCallback& callback) {
-  GetLorgnetteManagerClient()->ListScanners(base::Bind(
-           &DocumentScanInterfaceChromeos::OnScannerListReceived,
-           base::Unretained(this),
-           callback));
+  GetLorgnetteManagerClient()->ListScanners(
+      base::Bind(&DocumentScanInterfaceChromeos::OnScannerListReceived,
+                 base::Unretained(this), callback));
 }
 
 void DocumentScanInterfaceChromeos::OnScannerListReceived(
     const ListScannersResultsCallback& callback,
     bool succeeded,
-    const chromeos::LorgnetteManagerClient::ScannerTable &scanners) {
+    const chromeos::LorgnetteManagerClient::ScannerTable& scanners) {
   std::vector<ScannerDescription> scanner_descriptions;
   for (const auto& scanner : scanners) {
     ScannerDescription description;
     description.name = scanner.first;
-    const auto &entry = scanner.second;
+    const auto& entry = scanner.second;
     auto info_it = entry.find(lorgnette::kScannerPropertyManufacturer);
     if (info_it != entry.end()) {
       description.manufacturer = info_it->second;
@@ -90,12 +91,11 @@ void DocumentScanInterfaceChromeos::Scan(const std::string& scanner_name,
   GetLorgnetteManagerClient()->ScanImageToString(
       scanner_name, properties,
       base::Bind(&DocumentScanInterfaceChromeos::OnScanCompleted,
-                 base::Unretained(this),
-                 callback));
+                 base::Unretained(this), callback));
 }
 
 void DocumentScanInterfaceChromeos::OnScanCompleted(
-    const ScanResultsCallback &callback,
+    const ScanResultsCallback& callback,
     bool succeeded,
     const std::string& image_data) {
   VLOG(1) << "ScanImage returns " << succeeded;
@@ -112,7 +112,7 @@ void DocumentScanInterfaceChromeos::OnScanCompleted(
 }
 
 chromeos::LorgnetteManagerClient*
-    DocumentScanInterfaceChromeos::GetLorgnetteManagerClient() {
+DocumentScanInterfaceChromeos::GetLorgnetteManagerClient() {
   if (!lorgnette_manager_client_) {
     lorgnette_manager_client_ =
         chromeos::DBusThreadManager::Get()->GetLorgnetteManagerClient();
@@ -122,10 +122,10 @@ chromeos::LorgnetteManagerClient*
 }
 
 // static
-DocumentScanInterface *DocumentScanInterface::CreateInstance() {
+DocumentScanInterface* DocumentScanInterface::CreateInstance() {
   return new DocumentScanInterfaceChromeos();
 }
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions

@@ -32,7 +32,6 @@
       'desktop_capture.json',
       'developer_private.idl',
       'dial.idl',
-      'document_scan.idl',
       'downloads.idl',
       'downloads_internal.idl',
       'easy_unlock_private.idl',

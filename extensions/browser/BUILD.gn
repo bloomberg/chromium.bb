@@ -141,6 +141,10 @@ source_set("browser") {
       "api/dns/dns_api.h",
       "api/dns/host_resolver_wrapper.cc",
       "api/dns/host_resolver_wrapper.h",
+      "api/document_scan/document_scan_api.cc",
+      "api/document_scan/document_scan_api.h",
+      "api/document_scan/document_scan_interface.cc",
+      "api/document_scan/document_scan_interface.h",
       "api/execute_code_function.cc",
       "api/execute_code_function.h",
       "api/extensions_api_client.cc",
@@ -581,6 +585,7 @@ source_set("browser") {
         "api/diagnostics/diagnostics_api.cc",
         "api/diagnostics/diagnostics_api.h",
         "api/diagnostics/diagnostics_api_chromeos.cc",
+        "api/document_scan/document_scan_interface_chromeos.cc",
         "api/networking_config/networking_config_api.cc",
         "api/networking_config/networking_config_api.h",
         "api/networking_config/networking_config_service.cc",
@@ -593,6 +598,8 @@ source_set("browser") {
         "api/vpn_provider/vpn_service.h",
         "api/vpn_provider/vpn_service_factory.h",
       ]
+    } else {
+      sources += [ "api/document_scan/document_scan_interface_nonchromeos.cc" ]
     }
 
     if (is_desktop_linux) {

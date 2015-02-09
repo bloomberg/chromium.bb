@@ -61,6 +61,9 @@
         'browser/api/declarative/rules_registry_unittest.cc',
         'browser/api/declarative_webrequest/webrequest_condition_unittest.cc',
         'browser/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
+        'browser/api/document_scan/document_scan_api_unittest.cc',
+        'browser/api/document_scan/document_scan_interface_chromeos_unittest.cc',
+        'browser/api/document_scan/mock_document_scan_interface.cc',
         'browser/api/idle/idle_api_unittest.cc',
         'browser/api/mime_handler_private/mime_handler_private_unittest.cc',
         'browser/api/networking_config/networking_config_service_chromeos_unittest.cc',
@@ -160,6 +163,11 @@
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+        ['chromeos==1', {
+          'dependencies': [
+            '<(DEPTH)/chromeos/chromeos.gyp:chromeos_test_support',
           ],
         }],
       ],

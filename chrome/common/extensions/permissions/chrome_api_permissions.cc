@@ -113,11 +113,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        "dataReductionProxy",
        APIPermissionInfo::kFlagImpliesFullURLAccess |
            APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kDocumentScan,
-       "documentScan",
-       APIPermissionInfo::kFlagNone,
-       IDS_EXTENSION_PROMPT_WARNING_DOCUMENT_SCAN,
-       PermissionMessage::kDocumentScan},
       {APIPermission::kEnterprisePlatformKeys, "enterprise.platformKeys"},
       {APIPermission::kFileBrowserHandler,
        "fileBrowserHandler",

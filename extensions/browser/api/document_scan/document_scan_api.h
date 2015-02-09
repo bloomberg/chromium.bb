@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_
+#define EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_
+
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/document_scan/document_scan_interface.h"
-#include "chrome/common/extensions/api/document_scan.h"
 #include "extensions/browser/api/async_api_function.h"
-
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_
+#include "extensions/browser/api/document_scan/document_scan_interface.h"
+#include "extensions/common/api/document_scan.h"
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 class DocumentScanScanFunction : public AsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("documentScan.scan",
-                             DOCUMENT_SCAN_SCAN)
+  DECLARE_EXTENSION_FUNCTION("documentScan.scan", DOCUMENT_SCAN_SCAN)
   DocumentScanScanFunction();
 
  protected:
@@ -48,8 +47,8 @@ class DocumentScanScanFunction : public AsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(DocumentScanScanFunction);
 };
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_
+#endif  // EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_

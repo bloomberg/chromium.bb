@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/document_scan/mock_document_scan_interface.h"
+#include "extensions/browser/api/document_scan/mock_document_scan_interface.h"
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 MockDocumentScanInterface::MockDocumentScanInterface() {
 }
@@ -14,7 +14,6 @@ MockDocumentScanInterface::MockDocumentScanInterface() {
 MockDocumentScanInterface::~MockDocumentScanInterface() {
 }
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions
-

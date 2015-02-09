@@ -463,6 +463,11 @@
         'browser/api/dns/dns_api.h',
         'browser/api/dns/host_resolver_wrapper.cc',
         'browser/api/dns/host_resolver_wrapper.h',
+        'browser/api/document_scan/document_scan_api.cc',
+        'browser/api/document_scan/document_scan_api.h',
+        'browser/api/document_scan/document_scan_interface.cc',
+        'browser/api/document_scan/document_scan_interface.h',
+        'browser/api/document_scan/document_scan_interface_chromeos.cc',
         'browser/api/execute_code_function.cc',
         'browser/api/execute_code_function.h',
         'browser/api/extension_view/extension_view_internal_api.cc',
@@ -901,7 +906,11 @@
             'browser/api/vpn_provider/vpn_service.cc',
             'browser/api/vpn_provider/vpn_service.h',
             'browser/api/vpn_provider/vpn_service_factory.h'
-          ]
+          ],
+        }, {  # chromeos==0
+          'sources': [
+            'browser/api/document_scan/document_scan_interface_nonchromeos.cc',
+          ],
         }],
         ['OS == "win" or OS == "mac"', {
           'dependencies': [
