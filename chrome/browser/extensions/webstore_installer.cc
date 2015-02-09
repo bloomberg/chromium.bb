@@ -649,9 +649,9 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
       resource_context));
   params->set_file_path(file);
   if (controller.GetVisibleEntry())
-    params->set_referrer(
-        content::Referrer(controller.GetVisibleEntry()->GetURL(),
-                          blink::WebReferrerPolicyDefault));
+    params->set_referrer(content::Referrer::SanitizeForRequest(
+        download_url_, content::Referrer(controller.GetVisibleEntry()->GetURL(),
+                                         blink::WebReferrerPolicyDefault)));
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted,
                                   this,
                                   extension_id));

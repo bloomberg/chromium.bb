@@ -242,8 +242,9 @@ void SaveAs(PP_Instance instance_id) {
   content::RenderView* render_view = instance->GetRenderView();
   blink::WebLocalFrame* frame =
       render_view->GetWebView()->mainFrame()->toWebLocalFrame();
-  content::Referrer referrer(frame->document().url(),
-                             frame->document().referrerPolicy());
+  content::Referrer referrer = content::Referrer::SanitizeForRequest(
+      url, content::Referrer(frame->document().url(),
+                             frame->document().referrerPolicy()));
   render_view->Send(
       new PDFHostMsg_PDFSaveURLAs(render_view->GetRoutingID(), url, referrer));
 }

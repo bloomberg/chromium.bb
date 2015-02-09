@@ -117,7 +117,9 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
       !info->GetContext()->GetRequestContext()->job_factory()->IsHandledURL(
           url);
   NavigationParams navigation_params(
-      url, Referrer(GURL(request_->referrer()), info->GetReferrerPolicy()),
+      url,
+      Referrer::SanitizeForRequest(
+          url, Referrer(GURL(request_->referrer()), info->GetReferrerPolicy())),
       info->HasUserGesture(), method == "POST", info->GetPageTransition(),
       is_redirect, is_external_protocol);
 

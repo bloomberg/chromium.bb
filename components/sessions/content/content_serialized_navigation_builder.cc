@@ -57,14 +57,14 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
   scoped_ptr<content::NavigationEntry> entry(
       content::NavigationController::CreateNavigationEntry(
           navigation->virtual_url_,
-          content::Referrer(navigation->referrer_url_, policy),
+          content::Referrer::SanitizeForRequest(
+              navigation->virtual_url_,
+              content::Referrer(navigation->referrer_url_, policy)),
           // Use a transition type of reload so that we don't incorrectly
           // increase the typed count.
-          ui::PAGE_TRANSITION_RELOAD,
-          false,
+          ui::PAGE_TRANSITION_RELOAD, false,
           // The extra headers are not sync'ed across sessions.
-          std::string(),
-          browser_context));
+          std::string(), browser_context));
 
   entry->SetTitle(navigation->title_);
   entry->SetPageState(content::PageState::CreateFromEncodedData(

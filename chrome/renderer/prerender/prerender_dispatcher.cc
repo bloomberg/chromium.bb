@@ -140,8 +140,9 @@ void PrerenderDispatcher::add(const WebPrerender& prerender) {
 
   content::RenderThread::Get()->Send(new PrerenderHostMsg_AddLinkRelPrerender(
       extra_data.prerender_id(), attributes,
-      content::Referrer(GURL(prerender.referrer()),
-                        prerender.referrerPolicy()),
+      content::Referrer::SanitizeForRequest(
+          GURL(prerender.url()), content::Referrer(GURL(prerender.referrer()),
+                                                   prerender.referrerPolicy())),
       extra_data.size(), extra_data.render_view_route_id()));
 }
 

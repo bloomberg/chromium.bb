@@ -244,11 +244,11 @@ void OpenWindowOnUI(
     return;
   }
 
-  OpenURLParams params(url,
-                       Referrer(script_url, blink::WebReferrerPolicyDefault),
-                       NEW_FOREGROUND_TAB,
-                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                       true /* is_renderer_initiated */);
+  OpenURLParams params(
+      url, Referrer::SanitizeForRequest(
+               url, Referrer(script_url, blink::WebReferrerPolicyDefault)),
+      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      true /* is_renderer_initiated */);
 
   WebContents* web_contents =
       GetContentClient()->browser()->OpenURL(browser_context, params);

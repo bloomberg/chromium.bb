@@ -80,7 +80,8 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
   // Don't use Reload() since |url| isn't the same as the internal URL that
   // NavigationController has.
   web_contents->GetController().LoadURL(
-      url, content::Referrer(url, blink::WebReferrerPolicyDefault),
+      url, content::Referrer::SanitizeForRequest(
+               url, content::Referrer(url, blink::WebReferrerPolicyDefault)),
       ui::PAGE_TRANSITION_RELOAD, std::string());
 }
 
