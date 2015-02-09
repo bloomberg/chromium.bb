@@ -224,8 +224,8 @@ class ChromeRenderProcessHostTestWithCommandLine
   }
 };
 
-// Disable on Mac 10.9 due to ongoing flakiness. (crbug.com/442785)
-#if defined(OS_MACOSX)
+// Disable on Mac and Windows due to ongoing flakiness. (crbug.com/442785)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_ProcessPerTab DISABLED_ProcessPerTab
 #else
 #define MAYBE_ProcessPerTab ProcessPerTab
