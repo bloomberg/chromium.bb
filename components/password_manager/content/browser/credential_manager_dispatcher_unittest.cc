@@ -167,13 +167,15 @@ class CredentialManagerDispatcherTest
     form_.origin = web_contents()->GetLastCommittedURL().GetOrigin();
     form_.signon_realm = form_.origin.spec();
     form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    form_.skip_zero_click = false;
 
     form2_.username_value = base::ASCIIToUTF16("Username 2");
     form2_.display_name = base::ASCIIToUTF16("Display Name 2");
     form2_.password_value = base::ASCIIToUTF16("Password 2");
     form2_.origin = web_contents()->GetLastCommittedURL().GetOrigin();
-    form2_.signon_realm = form_.origin.spec();
+    form2_.signon_realm = form2_.origin.spec();
     form2_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    form2_.skip_zero_click = false;
 
     cross_origin_form_.username_value = base::ASCIIToUTF16("Username");
     cross_origin_form_.display_name = base::ASCIIToUTF16("Display Name");
@@ -181,6 +183,7 @@ class CredentialManagerDispatcherTest
     cross_origin_form_.origin = GURL("https://example.net/");
     cross_origin_form_.signon_realm = cross_origin_form_.origin.spec();
     cross_origin_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    cross_origin_form_.skip_zero_click = false;
 
     store_->Clear();
     EXPECT_TRUE(store_->IsEmpty());
@@ -400,6 +403,57 @@ TEST_F(CredentialManagerDispatcherTest,
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
 
   // With two items in the password store, we shouldn't get credentials back.
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(send_param).type);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       OnRequestCredentialWithZeroClickOnlyOnePasswordStore) {
+  form_.skip_zero_click = true;
+  store_->AddLogin(form_);
+  store_->AddLogin(form2_);
+
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  RunAllPendingTasks();
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
+  CredentialManagerMsg_SendCredential::Param send_param;
+  CredentialManagerMsg_SendCredential::Read(message, &send_param);
+
+  // We should get |form2_| back, as |form_| is marked as skipping zero-click.
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_LOCAL, get<1>(send_param).type);
+  EXPECT_EQ(form2_.username_value, get<1>(send_param).id);
+  EXPECT_EQ(form2_.display_name, get<1>(send_param).name);
+  EXPECT_EQ(form2_.password_value, get<1>(send_param).password);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       OnRequestCredentialWithZeroClickOnlyCrossOriginPasswordStore) {
+  store_->AddLogin(cross_origin_form_);
+
+  form_.skip_zero_click = true;
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  RunAllPendingTasks();
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
+  CredentialManagerMsg_SendCredential::Param send_param;
+  CredentialManagerMsg_SendCredential::Read(message, &send_param);
+
+  // We only have cross-origin zero-click credentials; they should not be
+  // returned.
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(send_param).type);
 }
 

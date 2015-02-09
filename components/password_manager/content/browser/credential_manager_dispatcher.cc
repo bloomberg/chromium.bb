@@ -53,10 +53,23 @@ class CredentialManagerDispatcher::PendingRequestTask
     // ScopedVector.
     std::vector<autofill::PasswordForm*> local_results;
     std::vector<autofill::PasswordForm*> federated_results;
+    autofill::PasswordForm* zero_click_form_to_return = nullptr;
+    bool found_zero_clickable_credential = false;
     for (autofill::PasswordForm* form : results) {
-      if (form->origin == origin_)
+      if (form->origin == origin_) {
         local_results.push_back(form);
-      else if (federations_.count(form->origin.spec()))
+
+        // If this is a zero-clickable PasswordForm, and we haven't found any
+        // other zero-clickable PasswordForms, then store this one for later.
+        // If we have found other zero-clickable PasswordForms, then clear
+        // the stored form (we return zero-click forms iff there is a single,
+        // unambigious choice).
+        if (!form->skip_zero_click) {
+          zero_click_form_to_return =
+              found_zero_clickable_credential ? nullptr : form;
+          found_zero_clickable_credential = true;
+        }
+      } else if (federations_.count(form->origin.spec()))
         federated_results.push_back(form);
       else
         delete form;
@@ -68,11 +81,9 @@ class CredentialManagerDispatcher::PendingRequestTask
       dispatcher_->SendCredential(id_, CredentialInfo());
       return;
     }
-    if (local_results.size() == 1 && dispatcher_->IsZeroClickAllowed()) {
-      // TODO(mkwst): Use the `one_time_disable_zero_click` flag on the result
-      // to prevent auto-sign-in, once that flag is implemented.
-      CredentialInfo info(*local_results[0],
-                          local_results[0]->federation_url.is_empty()
+    if (zero_click_form_to_return && dispatcher_->IsZeroClickAllowed()) {
+      CredentialInfo info(*zero_click_form_to_return,
+                          zero_click_form_to_return->federation_url.is_empty()
                               ? CredentialType::CREDENTIAL_TYPE_LOCAL
                               : CredentialType::CREDENTIAL_TYPE_FEDERATED);
       STLDeleteElements(&local_results);
