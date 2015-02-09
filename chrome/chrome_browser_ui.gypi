@@ -792,6 +792,8 @@
       'browser/ui/metro_pin_tab_helper_win.h',
       'browser/ui/passwords/account_avatar_fetcher.cc',
       'browser/ui/passwords/account_avatar_fetcher.h',
+      'browser/ui/passwords/account_chooser_more_combobox_model.h',
+      'browser/ui/passwords/account_chooser_more_combobox_model.cc',
       'browser/ui/passwords/manage_passwords_bubble.cc',
       'browser/ui/passwords/manage_passwords_bubble.h',
       'browser/ui/passwords/manage_passwords_bubble_model.cc',
