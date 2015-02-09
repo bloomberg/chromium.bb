@@ -114,6 +114,7 @@
   if (linkLength != 0) {
     // Add spacing between the label and the link.
     message = [message stringByAppendingFormat:@"   %@", link];
+    linkOffset = [message length] - [link length];
   }
   NSFont* font = [NSFont labelFontOfSize:
       [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
