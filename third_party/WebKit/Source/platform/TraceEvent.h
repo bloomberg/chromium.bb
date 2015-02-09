@@ -288,7 +288,7 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP( \
         TRACE_EVENT_PHASE_MARK, category_group, name, timestamp, TRACE_EVENT_FLAG_NONE)
 
-#define TRACE_EVENT__MEASURE(category_group, name, start_mark, end_mark) \
+#define TRACE_EVENT_MEASURE(category_group, name, start_mark, end_mark) \
     INTERNAL_TRACE_EVENT_ADD( \
         TRACE_EVENT_PHASE_MEASURE, category_group, name, TRACE_EVENT_FLAG_NONE, \
         "from", static_cast<const char *>(start_mark), \
