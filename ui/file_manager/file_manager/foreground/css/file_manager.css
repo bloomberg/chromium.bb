@@ -368,14 +368,11 @@ body.selecting .dialog-header {
 #cloud-import-details div {
   border: 0px 0px 1px 0px solid gray;
   padding: 10px;
-};
+}
 
 #files-selected-label {
   display: none;
-  /* TODO(fukino): Move dynamically with the navigation area's separator. */
-  left: 252px;
-  position: absolute;
-  top: 18px;
+  margin: 0 10px;
 }
 
 body.selecting #files-selected-label {
@@ -385,6 +382,10 @@ body.selecting #files-selected-label {
 #cancel-selection-button {
   text-transform: none;
   display: none
+}
+
+#cancel-selection-button-wrapper {
+  width: 240px;  /* initial value, same as .dialog-navigation-list's width. */
 }
 
 #cancel-selection-button > core-icon {

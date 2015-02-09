@@ -1123,5 +1123,5 @@ DirectoryTree.prototype.onListContentChanged_ = function() {
  * Updates the UI after the layout has changed.
  */
 DirectoryTree.prototype.relayout = function() {
-  cr.dispatchSimpleEvent(this, 'relayout');
+  cr.dispatchSimpleEvent(this, 'relayout', true);
 };

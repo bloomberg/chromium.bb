@@ -435,7 +435,9 @@ FileManager.prototype = /** @struct */ {
         this.commandHandler);
     this.toolbarController_ = new ToolbarController(
         this.ui_.cancelSelectionButton,
+        this.ui_.cancelSelectionButtonWrapper,
         this.ui_.filesSelectedLabel,
+        this.ui_.dialogNavigationList,
         this.selectionHandler_,
         this.directoryModel_.getFileListSelection());
 
