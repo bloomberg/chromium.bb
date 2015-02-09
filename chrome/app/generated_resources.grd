@@ -9170,7 +9170,7 @@ I don't think this site should be blocked!
         </message>
 
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Mobile: Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
-          Wi-Fi and mobile data are turned off. The page can be loaded once you connect to a network.
+          Wi-Fi and mobile data are unavailable. The page can be loaded once the device connects to a network.
         </message>
       </if>
       <if expr="not is_android and not is_ios">
