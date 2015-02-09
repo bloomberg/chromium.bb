@@ -102,8 +102,6 @@ cr.define('options.browser_options', function() {
 
     /** @override */
     deleteItemAtIndex: function(index) {
-      if (loadTimeData.getBoolean('profileIsSupervised'))
-        return;
       ManageProfileOverlay.showDeleteDialog(this.dataModel.item(index));
     },
 

@@ -51,11 +51,6 @@ void OpenNewWindowForProfile(chrome::HostDesktopType desktop_type,
 
 void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui) {
   DCHECK(web_ui);
-  // This handler could have been called for a supervised user, for example
-  // because the user fiddled with the web inspector. Silently return in this
-  // case.
-  if (Profile::FromWebUI(web_ui)->IsSupervised())
-    return;
 
   if (!profiles::IsMultipleProfilesEnabled())
     return;

@@ -501,8 +501,9 @@ TEST_F('ManageProfileUITest', 'CreateInProgress', function() {
   assertFalse(checkbox.disabled, 'creation finished');
 });
 
-// Supervised users shouldn't be able to open the delete or create dialogs.
-TEST_F('ManageProfileUITest', 'SupervisedShowDeleteAndCreate', function() {
+// Supervised users should be able to open the delete dialog, but not the
+// create dialog.
+TEST_F('ManageProfileUITest', 'SupervisedShowCreate', function() {
   this.setProfileSupervised_(false, 'create');
 
   ManageProfileOverlay.showCreateDialog();
@@ -519,40 +520,7 @@ TEST_F('ManageProfileUITest', 'SupervisedShowDeleteAndCreate', function() {
   ManageProfileOverlay.showCreateDialog();
   assertEquals('settings', PageManager.getTopmostVisiblePage().name);
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
-  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
-});
-
-// Only non-supervised users should be able to delete profiles.
-TEST_F('ManageProfileUITest', 'SupervisedDelete', function() {
-  ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
   assertEquals('manageProfile', PageManager.getTopmostVisiblePage().name);
-  assertFalse($('manage-profile-overlay-delete').hidden);
-
-  // Clicks the "Delete" button, after overriding chrome.send to record what
-  // messages were sent.
-  function clickAndListen() {
-    var originalChromeSend = chrome.send;
-    var chromeSendMessages = [];
-    chrome.send = function(message) {
-      chromeSendMessages.push(message);
-    };
-    $('delete-profile-ok').onclick();
-    // Restore the original function so the test framework can use it.
-    chrome.send = originalChromeSend;
-    return chromeSendMessages;
-  }
-
-  this.setProfileSupervised_(false, 'manage');
-  var messages = clickAndListen();
-  assertEquals(1, messages.length);
-  assertEquals('deleteProfile', messages[0]);
-  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
-
-  ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
-  this.setProfileSupervised_(true, 'manage');
-  messages = clickAndListen();
-  assertEquals(0, messages.length);
-  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
 });
 
 // Selecting a different avatar image should update the suggested profile name.

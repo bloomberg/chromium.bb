@@ -616,9 +616,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   if (ShouldShowMultiProfilesUserList())
     values->Set("profilesInfo", GetProfilesInfoList().release());
 
-  // Profile deletion is not allowed for supervised users, or any users
-  // using Metro mode.
-  bool allow_deletion = !Profile::FromWebUI(web_ui())->IsSupervised();
+  // Profile deletion is not allowed for any users using Metro mode.
+  bool allow_deletion = true;
 #if defined(USE_ASH)
   allow_deletion = allow_deletion && !ash::Shell::HasInstance();
 #endif

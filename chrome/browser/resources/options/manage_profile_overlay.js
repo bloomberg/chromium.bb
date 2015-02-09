@@ -71,8 +71,6 @@ cr.define('options', function() {
       };
       $('delete-profile-ok').onclick = function(event) {
         PageManager.closeOverlay();
-        if (BrowserOptions.getCurrentProfile().isSupervised)
-          return;
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
         options.SupervisedUserListData.resetPromise();
       };
@@ -148,7 +146,7 @@ cr.define('options', function() {
       }
 
       var manageNameField = $('manage-profile-name');
-      // Supervised users cannot edit their names.
+      // Legacy supervised users cannot edit their names.
       if (manageNameField.disabled)
         $('manage-profile-ok').focus();
       else
@@ -536,7 +534,8 @@ cr.define('options', function() {
       $('manage-profile-overlay-manage').hidden = false;
       $('manage-profile-overlay-delete').hidden = true;
       $('manage-profile-overlay-disconnect-managed').hidden = true;
-      $('manage-profile-name').disabled = profileInfo.isSupervised;
+      $('manage-profile-name').disabled =
+          profileInfo.isSupervised && !profileInfo.isChild;
       this.hideErrorBubble_('manage');
     },
 
@@ -558,9 +557,6 @@ cr.define('options', function() {
      * @private
      */
     showDeleteDialog_: function(profileInfo) {
-      if (BrowserOptions.getCurrentProfile().isSupervised)
-        return;
-
       ManageProfileOverlay.setProfileInfo(profileInfo, 'manage');
       $('manage-profile-overlay-create').hidden = true;
       $('manage-profile-overlay-manage').hidden = true;
@@ -572,7 +568,7 @@ cr.define('options', function() {
           loadTimeData.getStringF('deleteProfileMessage',
                                   elide(profileInfo.name, /* maxLength */ 50));
       $('delete-supervised-profile-addendum').hidden =
-          !profileInfo.isSupervised;
+          !profileInfo.isSupervised || profileInfo.isChild;
 
       // Because this dialog isn't useful when refreshing or as part of the
       // history, don't create a history entry for it when showing.
