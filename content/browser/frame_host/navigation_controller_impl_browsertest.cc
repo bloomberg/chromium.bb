@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url));
   }
 
-  // We expect http://www.a.com/0 and /1 to be gone.
+  // We expect page0 and page1 to be gone.
   EXPECT_EQ(kMaxEntryCount, controller.GetEntryCount());
   EXPECT_EQ(GURL("data:text/html,page2"),
             controller.GetEntryAtIndex(0)->GetURL());
