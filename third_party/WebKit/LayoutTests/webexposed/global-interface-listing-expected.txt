@@ -90,6 +90,7 @@ interface AudioBufferSourceNode
     method start
     method stop
 interface AudioContext
+    method close
     method constructor
     method createAnalyser
     method createBiquadFilter
@@ -3074,6 +3075,7 @@ interface XSLTProcessor
     method transformToDocument
     method transformToFragment
 interface webkitAudioContext
+    method close
     method constructor
     method createAnalyser
     method createBiquadFilter

@@ -628,6 +628,7 @@ public:
         SVGSVGElementSuspendRedraw = 686,
         SVGSVGElementUnsuspendRedraw = 687,
         SVGSVGElementUnsuspendRedrawAll = 688,
+        AudioContextClose = 689,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

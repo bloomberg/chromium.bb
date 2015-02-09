@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
@@ -81,6 +82,7 @@ namespace blink {
 // Don't allow more than this number of simultaneous AudioContexts talking to hardware.
 const unsigned MaxHardwareContexts = 6;
 unsigned AudioContext::s_hardwareContextCount = 0;
+unsigned AudioContext::s_contextId = 0;
 
 AudioContext* AudioContext::create(Document& document, ExceptionState& exceptionState)
 {
@@ -117,9 +119,6 @@ AudioContext::AudioContext(Document* document)
     m_destinationNode = DefaultAudioDestinationNode::create(this);
 
     initialize();
-#if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: AudioContext::AudioContext() #%u\n", this, AudioContext::s_hardwareContextCount);
-#endif
 }
 
 // Constructor for offline (non-realtime) rendering.
@@ -150,7 +149,7 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
 AudioContext::~AudioContext()
 {
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: AudioContext::~AudioContext()\n", this);
+    fprintf(stderr, "%p: AudioContext::~AudioContext(): %u\n", this, m_contextId);
 #endif
     // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
     ASSERT(!m_isInitialized);
@@ -161,6 +160,7 @@ AudioContext::~AudioContext()
         m_renderingAutomaticPullNodes.resize(m_automaticPullNodes.size());
     ASSERT(!m_renderingAutomaticPullNodes.size());
     ASSERT(!m_suspendResolvers.size());
+    ASSERT(!m_isResolvingResumePromises);
     ASSERT(!m_resumeResolvers.size());
 }
 
@@ -184,7 +184,12 @@ void AudioContext::initialize()
             ++s_hardwareContextCount;
         }
 
+        m_contextId = s_contextId++;
         m_isInitialized = true;
+#if DEBUG_AUDIONODE_REFERENCES
+        fprintf(stderr, "%p: AudioContext::AudioContext(): %u #%u\n",
+            this, m_contextId, AudioContext::s_hardwareContextCount);
+#endif
     }
 }
 
@@ -207,7 +212,8 @@ void AudioContext::uninitialize()
     m_isInitialized = false;
 
     // This stops the audio thread and all audio rendering.
-    m_destinationNode->uninitialize();
+    if (m_destinationNode)
+        m_destinationNode->uninitialize();
 
     if (!isOfflineContext()) {
         ASSERT(s_hardwareContextCount);
@@ -219,6 +225,15 @@ void AudioContext::uninitialize()
 
     // Reject any pending resolvers before we go away.
     rejectPendingResolvers();
+
+    // For an offline audio context, the completion event will set the state to closed.  For an
+    // online context, we need to do it here.  We only want to set the closed state once.
+    if (!isOfflineContext())
+        setContextState(Closed);
+
+    // Resolve the promise now, if any
+    if (m_closeResolver)
+        m_closeResolver->resolve();
 
     ASSERT(m_listener);
     m_listener->waitForHRTFDatabaseLoaderThreadCompletion();
@@ -242,17 +257,30 @@ void AudioContext::stop()
 
 bool AudioContext::hasPendingActivity() const
 {
-    // According to spec AudioContext must die only after page navigates.
+    // There's no pending activity if the audio context has been cleared.
     return !m_isCleared;
+}
+
+void AudioContext::throwExceptionForClosedState(ExceptionState& exceptionState)
+{
+    exceptionState.throwDOMException(InvalidStateError, "AudioContext has been closed.");
 }
 
 AudioBuffer* AudioContext::createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
 {
+    // It's ok to call createBuffer, even if the context is closed because the AudioBuffer doesn't
+    // really "belong" to any particular context.
+
     return AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
 }
 
 void AudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return;
+    }
+
     if (!audioData) {
         exceptionState.throwDOMException(
             SyntaxError,
@@ -262,9 +290,15 @@ void AudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBufferCallbac
     m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
 }
 
-AudioBufferSourceNode* AudioContext::createBufferSource()
+AudioBufferSourceNode* AudioContext::createBufferSource(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     AudioBufferSourceNode* node = AudioBufferSourceNode::create(this, m_destinationNode->sampleRate());
 
     // Do not add a reference to this source node now. The reference will be added when start() is
@@ -276,6 +310,12 @@ AudioBufferSourceNode* AudioContext::createBufferSource()
 MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaElement* mediaElement, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     if (!mediaElement) {
         exceptionState.throwDOMException(
             InvalidStateError,
@@ -302,6 +342,12 @@ MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaEle
 MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     if (!mediaStream) {
         exceptionState.throwDOMException(
             InvalidStateError,
@@ -329,26 +375,46 @@ MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(MediaStream* m
     return node;
 }
 
-MediaStreamAudioDestinationNode* AudioContext::createMediaStreamDestination()
+MediaStreamAudioDestinationNode* AudioContext::createMediaStreamDestination(ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     // Set number of output channels to stereo by default.
     return MediaStreamAudioDestinationNode::create(this, 2);
 }
 
 ScriptProcessorNode* AudioContext::createScriptProcessor(ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     // Set number of input/output channels to stereo by default.
     return createScriptProcessor(0, 2, 2, exceptionState);
 }
 
 ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     // Set number of input/output channels to stereo by default.
     return createScriptProcessor(bufferSize, 2, 2, exceptionState);
 }
 
 ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     // Set number of output channels to stereo by default.
     return createScriptProcessor(bufferSize, numberOfInputChannels, 2, exceptionState);
 }
@@ -356,6 +422,12 @@ ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size
 ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     ScriptProcessorNode* node = ScriptProcessorNode::create(this, m_destinationNode->sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
 
     if (!node) {
@@ -388,56 +460,101 @@ ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size
     return node;
 }
 
-StereoPannerNode* AudioContext::createStereoPanner()
+StereoPannerNode* AudioContext::createStereoPanner(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return StereoPannerNode::create(this, m_destinationNode->sampleRate());
 }
 
-BiquadFilterNode* AudioContext::createBiquadFilter()
+BiquadFilterNode* AudioContext::createBiquadFilter(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return BiquadFilterNode::create(this, m_destinationNode->sampleRate());
 }
 
-WaveShaperNode* AudioContext::createWaveShaper()
+WaveShaperNode* AudioContext::createWaveShaper(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return WaveShaperNode::create(this);
 }
 
-PannerNode* AudioContext::createPanner()
+PannerNode* AudioContext::createPanner(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return PannerNode::create(this, m_destinationNode->sampleRate());
 }
 
-ConvolverNode* AudioContext::createConvolver()
+ConvolverNode* AudioContext::createConvolver(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return ConvolverNode::create(this, m_destinationNode->sampleRate());
 }
 
-DynamicsCompressorNode* AudioContext::createDynamicsCompressor()
+DynamicsCompressorNode* AudioContext::createDynamicsCompressor(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return DynamicsCompressorNode::create(this, m_destinationNode->sampleRate());
 }
 
-AnalyserNode* AudioContext::createAnalyser()
+AnalyserNode* AudioContext::createAnalyser(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return AnalyserNode::create(this, m_destinationNode->sampleRate());
 }
 
-GainNode* AudioContext::createGain()
+GainNode* AudioContext::createGain(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return GainNode::create(this, m_destinationNode->sampleRate());
 }
 
 DelayNode* AudioContext::createDelay(ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     const double defaultMaxDelayTime = 1;
     return createDelay(defaultMaxDelayTime, exceptionState);
 }
@@ -445,6 +562,11 @@ DelayNode* AudioContext::createDelay(ExceptionState& exceptionState)
 DelayNode* AudioContext::createDelay(double maxDelayTime, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     DelayNode* node = DelayNode::create(this, m_destinationNode->sampleRate(), maxDelayTime, exceptionState);
     if (exceptionState.hadException())
         return 0;
@@ -453,6 +575,11 @@ DelayNode* AudioContext::createDelay(double maxDelayTime, ExceptionState& except
 
 ChannelSplitterNode* AudioContext::createChannelSplitter(ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     const unsigned ChannelSplitterDefaultNumberOfOutputs = 6;
     return createChannelSplitter(ChannelSplitterDefaultNumberOfOutputs, exceptionState);
 }
@@ -460,6 +587,11 @@ ChannelSplitterNode* AudioContext::createChannelSplitter(ExceptionState& excepti
 ChannelSplitterNode* AudioContext::createChannelSplitter(size_t numberOfOutputs, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
 
     ChannelSplitterNode* node = ChannelSplitterNode::create(this, m_destinationNode->sampleRate(), numberOfOutputs);
 
@@ -477,6 +609,11 @@ ChannelSplitterNode* AudioContext::createChannelSplitter(size_t numberOfOutputs,
 
 ChannelMergerNode* AudioContext::createChannelMerger(ExceptionState& exceptionState)
 {
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     const unsigned ChannelMergerDefaultNumberOfInputs = 6;
     return createChannelMerger(ChannelMergerDefaultNumberOfInputs, exceptionState);
 }
@@ -484,6 +621,10 @@ ChannelMergerNode* AudioContext::createChannelMerger(ExceptionState& exceptionSt
 ChannelMergerNode* AudioContext::createChannelMerger(size_t numberOfInputs, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
 
     ChannelMergerNode* node = ChannelMergerNode::create(this, m_destinationNode->sampleRate(), numberOfInputs);
 
@@ -499,9 +640,13 @@ ChannelMergerNode* AudioContext::createChannelMerger(size_t numberOfInputs, Exce
     return node;
 }
 
-OscillatorNode* AudioContext::createOscillator()
+OscillatorNode* AudioContext::createOscillator(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
 
     OscillatorNode* node = OscillatorNode::create(this, m_destinationNode->sampleRate());
 
@@ -514,6 +659,11 @@ OscillatorNode* AudioContext::createOscillator()
 PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
 
     if (!real) {
         exceptionState.throwDOMException(
@@ -647,6 +797,14 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
             DOMException::create(
                 InvalidStateError,
                 "cannot resume an OfflineAudioContext"));
+    }
+
+    if (isContextClosed()) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState,
+            DOMException::create(
+                InvalidStateError,
+                "cannot resume a closed AudioContext"));
     }
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
@@ -1090,6 +1248,8 @@ void AudioContext::fireCompletionEvent()
 
     AudioBuffer* renderedBuffer = m_renderTarget.get();
 
+    // For an offline context, we set the state to closed here so that the oncomplete handler sees
+    // that the context has been closed.
     setContextState(Closed);
 
     ASSERT(renderedBuffer);
@@ -1106,6 +1266,7 @@ void AudioContext::fireCompletionEvent()
 
 void AudioContext::trace(Visitor* visitor)
 {
+    visitor->trace(m_closeResolver);
     visitor->trace(m_offlineResolver);
     visitor->trace(m_renderTarget);
     visitor->trace(m_destinationNode);
@@ -1153,6 +1314,45 @@ void AudioContext::updateChangedChannelCountMode()
 SecurityOrigin* AudioContext::securityOrigin() const
 {
     return executionContext()->securityOrigin();
+}
+
+ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
+{
+    if (isOfflineContext()) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState,
+            DOMException::create(InvalidStateError, "Cannot call close() on an OfflineAudioContext."));
+    }
+
+    if (isContextClosed()) {
+        // We've already closed the context previously, but it hasn't yet been resolved, so just
+        // create a new promise and reject it.
+        return ScriptPromise::rejectWithDOMException(
+            scriptState,
+            DOMException::create(InvalidStateError,
+                "Cannot close a context that is being closed or has already been closed."));
+    }
+
+    m_closeResolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = m_closeResolver->promise();
+
+    // Before closing the context go and disconnect all nodes, allowing them to be collected. This
+    // will also break any connections to the destination node. Any unfinished sourced nodes will
+    // get stopped when the context is unitialized.
+    for (auto& node : m_liveNodes.keys()) {
+        if (node) {
+            for (unsigned k = 0; k < node->numberOfOutputs(); ++k)
+                node->disconnectWithoutException(k);
+        }
+    }
+
+    // Stop the audio context. This will stop the destination node from pulling audio anymore. And
+    // since we have disconnected the destination from the audio graph, and thus has no references,
+    // the destination node can GCed if JS has no references. stop() will also resolve the Promise
+    // created here.
+    stop();
+
+    return promise;
 }
 
 } // namespace blink

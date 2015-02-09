@@ -70,6 +70,8 @@ class OscillatorNode;
 class PannerNode;
 class PeriodicWave;
 class ScriptProcessorNode;
+class ScriptPromiseResolver;
+class ScriptState;
 class SecurityOrigin;
 class StereoPannerNode;
 class WaveShaperNode;
@@ -107,14 +109,14 @@ public:
     virtual bool hasPendingActivity() const override;
 
     AudioDestinationNode* destination() { return m_destinationNode.get(); }
-    // currentSampleFrame() returns the current sample frame. It should only be called from the
-    // audio thread.
-    size_t currentSampleFrame() const { return m_destinationNode->currentSampleFrame(); }
+
+    size_t currentSampleFrame() const { return m_destinationNode ? m_destinationNode->currentSampleFrame() : 0; }
+    double currentTime() const { return m_destinationNode ? m_destinationNode->currentTime() : 0; }
     // cachedSampleFrame() is like currentSampleFrame() but must be called from the main thread to
     // get the sample frame. It might be slightly behind curentSampleFrame() due to locking.
     size_t cachedSampleFrame() const;
-    double currentTime() const { return m_destinationNode->currentTime(); }
-    float sampleRate() const { return m_destinationNode->sampleRate(); }
+    float sampleRate() const { return m_destinationNode ? m_destinationNode->sampleRate() : 0; }
+
     String state() const;
 
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
@@ -125,30 +127,33 @@ public:
     AudioListener* listener() { return m_listener.get(); }
 
     // The AudioNode create methods are called on the main thread (from JavaScript).
-    AudioBufferSourceNode* createBufferSource();
+    AudioBufferSourceNode* createBufferSource(ExceptionState&);
     MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*, ExceptionState&);
     MediaStreamAudioSourceNode* createMediaStreamSource(MediaStream*, ExceptionState&);
-    MediaStreamAudioDestinationNode* createMediaStreamDestination();
-    GainNode* createGain();
-    BiquadFilterNode* createBiquadFilter();
-    WaveShaperNode* createWaveShaper();
+    MediaStreamAudioDestinationNode* createMediaStreamDestination(ExceptionState&);
+    GainNode* createGain(ExceptionState&);
+    BiquadFilterNode* createBiquadFilter(ExceptionState&);
+    WaveShaperNode* createWaveShaper(ExceptionState&);
     DelayNode* createDelay(ExceptionState&);
     DelayNode* createDelay(double maxDelayTime, ExceptionState&);
-    PannerNode* createPanner();
-    ConvolverNode* createConvolver();
-    DynamicsCompressorNode* createDynamicsCompressor();
-    AnalyserNode* createAnalyser();
+    PannerNode* createPanner(ExceptionState&);
+    ConvolverNode* createConvolver(ExceptionState&);
+    DynamicsCompressorNode* createDynamicsCompressor(ExceptionState&);
+    AnalyserNode* createAnalyser(ExceptionState&);
     ScriptProcessorNode* createScriptProcessor(ExceptionState&);
     ScriptProcessorNode* createScriptProcessor(size_t bufferSize, ExceptionState&);
     ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
     ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
-    StereoPannerNode* createStereoPanner();
+    StereoPannerNode* createStereoPanner(ExceptionState&);
     ChannelSplitterNode* createChannelSplitter(ExceptionState&);
     ChannelSplitterNode* createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
     ChannelMergerNode* createChannelMerger(ExceptionState&);
     ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
-    OscillatorNode* createOscillator();
+    OscillatorNode* createOscillator(ExceptionState&);
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
+
+    // Close
+    ScriptPromise closeContext(ScriptState*);
 
     // Suspend/Resume
     ScriptPromise suspendContext(ScriptState*);
@@ -266,7 +271,12 @@ public:
     // uniquely connected to.  See the AudioNode::ref() and AudioNode::deref() methods for more details.
     void refNode(AudioNode*);
 
+    // A context is considered closed if closeContext() has been called, even if the audio HW has
+    // not yet been stopped.  It will be stopped eventually.
+    bool isContextClosed() const { return m_closeResolver; }
+
     static unsigned s_hardwareContextCount;
+    static unsigned s_contextId;
 
     // Get the security origin for this audio context.
     SecurityOrigin* securityOrigin() const;
@@ -285,6 +295,8 @@ private:
     bool m_isStopScheduled;
     bool m_isCleared;
     void clear();
+
+    void throwExceptionForClosedState(ExceptionState&);
 
     // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
@@ -398,6 +410,7 @@ private:
 
     bool m_isOfflineContext;
 
+    // The state of the AudioContext.
     AudioContextState m_contextState;
     void setContextState(AudioContextState);
 
@@ -407,6 +420,9 @@ private:
     // to change in the pre- or post-rendering phase so as not to disturb the running audio thread.
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioNode*> m_deferredCountModeChange;
+
+    // The Promise that is returned by close();
+    RefPtrWillBeMember<ScriptPromiseResolver> m_closeResolver;
 
     // Follows the destination's currentSampleFrame, but might be slightly behind due to locking.
     size_t m_cachedSampleFrame;
@@ -419,6 +435,8 @@ private:
     // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.
     enum { MaxNumberOfChannels = 32 };
+
+    unsigned m_contextId;
 };
 
 } // namespace blink
