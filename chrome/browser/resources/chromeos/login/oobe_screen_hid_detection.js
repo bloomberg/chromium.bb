@@ -29,6 +29,22 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
      DISMISSED: 'bluetoothPairingDismissed'
    },
 
+   // Enumeration of possible connection states of a device.
+   CONNECTION: {
+     SEARCHING: 'searching',
+     CONNECTED: 'connected',
+     PAIRING: 'pairing',
+     PAIRED: 'paired',
+     // Special info state.
+     UPDATE: 'update'
+   },
+
+   // Possible ids of device blocks.
+   BLOCK: {
+     MOUSE: 'hid-mouse-block',
+     KEYBOARD: 'hid-keyboard-block'
+   },
+
     /**
      * Button to move to usual OOBE flow after detection.
      * @private
@@ -65,30 +81,35 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     /**
      * Sets a device-block css class to reflect device state of searching,
      * connected, pairing or paired (for BT devices).
-     * @param {blockId} id one of 'hid-mouse-block' or 'hid-keyboard-block'.
-     * @param {state} one of 'searching', 'connected', 'pairing', 'paired',
+     * @param {blockId} id one of keys of this.BLOCK dict.
+     * @param {state} one of keys of this.CONNECTION dict.
      * @private
      */
     setDeviceBlockState_: function(blockId, state) {
       if (state == 'update')
         return;
       var deviceBlock = $(blockId);
-      var states = ['searching', 'connected', 'pairing', 'paired'];
-      for (var i = 0; i < states.length; ++i) {
-        if (states[i] != state)
-          deviceBlock.classList.remove(states[i]);
+      for (var stateCase in this.CONNECTION)
+        deviceBlock.classList.toggle(stateCase, stateCase == state);
+
+      // 'Continue' button available iff at least one device is connected,
+      if ((blockId in this.BLOCK) &&
+          (state == this.CONNECTION.CONNECTED ||
+           state == this.CONNECTION.PAIRED)) {
+        $('hid-continue-button').disabled = false;
+      } else {
+        $('hid-continue-button').disabled = true;
       }
-      deviceBlock.classList.add(state);
     },
 
     /**
      * Sets state for mouse-block.
-     * @param {state} one of 'searching', 'connected', 'paired'.
+     * @param {state} one of keys of this.CONNECTION dict.
      */
     setPointingDeviceState: function(state) {
       if (state === undefined)
         return;
-      this.setDeviceBlockState_('hid-mouse-block', state);
+      this.setDeviceBlockState_(this.BLOCK.MOUSE, state);
     },
 
     /**
@@ -120,10 +141,10 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       if (data === undefined || !('state' in data))
         return;
       var state = data['state'];
-      this.setDeviceBlockState_('hid-keyboard-block', state);
-      if (state == 'paired')
+      this.setDeviceBlockState_(this.BLOCK.KEYBOARD, state);
+      if (state == this.CONNECTION.PAIRED)
         $('hid-keyboard-label-paired').textContent = data['keyboard-label'];
-      else if (state == 'pairing') {
+      else if (state == this.CONNECTION.PAIRING) {
         $('hid-keyboard-label-pairing').textContent = data['keyboard-label'];
         if (data['pairing-state'] == this.PAIRING.REMOTE_PIN_CODE ||
             data['pairing-state'] == this.PAIRING.REMOTE_PASSKEY) {
@@ -136,21 +157,11 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
               data['keyboard-label'] + ' ' + data['pincode'] + ' ' +
               loadTimeData.getString('hidDetectionBTEnterKey'));
         }
-      } else if (state == 'update') {
+      } else if (state == this.CONNECTION.UPDATE) {
         if ('keysEntered' in data) {
           this.setPincodeKeysState_(data['keysEntered']);
         }
       }
-    },
-
-    /**
-     * Event handler that is invoked just before the screen in shown.
-     * @param {Object} data Screen init payload.
-     */
-    onBeforeShow: function(data) {
-      $('hid-continue-button').disabled = true;
-      this.setDeviceBlockState_('hid-mouse-block', 'searching');
-      this.setDeviceBlockState_('hid-keyboard-block', 'searching');
     },
   };
 });

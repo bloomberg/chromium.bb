@@ -29,12 +29,13 @@ const char kJsScreenPath[] = "login.HIDDetectionScreen";
 const char kRemotePinCode[] = "bluetoothRemotePinCode";
 const char kRemotePasskey[] = "bluetoothRemotePasskey";
 
-// Possible ui-states for device-blocks.
+// Possible ui-states for device-blocks. Same as CONNECTION dict of
+// HIDDetectionScreen
 const char kSearchingState[] = "searching";
 const char kUSBConnectedState[] = "connected";
 const char kBTPairedState[] = "paired";
 const char kBTPairingState[] = "pairing";
-// Special state for notifications that don't switch ui-state, but add info.
+// Special state for notifications that doesn't switch ui-state, but adds info.
 const char kBTUpdateState[] = "update";
 
 // Names of possible arguments used for ui update.
@@ -59,6 +60,10 @@ bool DeviceIsPointing(const device::InputServiceLinux::InputDeviceInfo& info) {
 bool DeviceIsKeyboard(device::BluetoothDevice::DeviceType device_type) {
   return device_type == device::BluetoothDevice::DEVICE_KEYBOARD ||
          device_type == device::BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO;
+}
+
+bool DeviceIsKeyboard(const device::InputServiceLinux::InputDeviceInfo& info) {
+  return info.is_keyboard || info.is_touchscreen || info.is_tablet;
 }
 
 }  // namespace
@@ -123,10 +128,8 @@ void HIDDetectionScreenHandler::Show() {
                           num_of_times_dialog_was_shown + 1);
 
   ShowScreen(OobeUI::kScreenHIDDetection, NULL);
-  if (!pointing_device_id_.empty())
-    SendPointingDeviceNotification();
-  if (!keyboard_device_id_.empty())
-    SendKeyboardDeviceNotification(NULL);
+  SendPointingDeviceNotification();
+  SendKeyboardDeviceNotification(NULL);
 }
 
 void HIDDetectionScreenHandler::Hide() {
@@ -369,7 +372,7 @@ void HIDDetectionScreenHandler::OnInputDeviceAdded(
     pointing_device_connect_type_ = info.type;
     SendPointingDeviceNotification();
   }
-  if (keyboard_device_id_.empty() && info.is_keyboard) {
+  if (keyboard_device_id_.empty() && DeviceIsKeyboard(info)) {
     keyboard_device_id_ = info.id;
     keyboard_device_name_ = info.name;
     keyboard_device_connect_type_ = info.type;
