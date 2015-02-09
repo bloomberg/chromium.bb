@@ -368,6 +368,10 @@ bool ResourceRequest::isConditional() const
         || m_httpHeaderFields.contains("If-Unmodified-Since"));
 }
 
+void ResourceRequest::setHasUserGesture(bool hasUserGesture)
+{
+    m_hasUserGesture |= hasUserGesture;
+}
 
 static const AtomicString& cacheControlHeaderString()
 {

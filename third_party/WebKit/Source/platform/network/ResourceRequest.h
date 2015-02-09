@@ -172,7 +172,7 @@ public:
 
     // True if request was user initiated.
     bool hasUserGesture() const { return m_hasUserGesture; }
-    void setHasUserGesture(bool hasUserGesture) { m_hasUserGesture = hasUserGesture; }
+    void setHasUserGesture(bool);
 
     // True if request should be downloaded to file.
     bool downloadToFile() const { return m_downloadToFile; }

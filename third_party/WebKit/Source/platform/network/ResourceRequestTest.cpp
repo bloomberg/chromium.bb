@@ -111,4 +111,14 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_EQ(WebURLRequest::FetchCredentialsModeInclude, copy1->fetchCredentialsMode());
 }
 
+TEST(ResourceRequestTest, SetHasUserGesture)
+{
+    ResourceRequest original;
+    EXPECT_FALSE(original.hasUserGesture());
+    original.setHasUserGesture(true);
+    EXPECT_TRUE(original.hasUserGesture());
+    original.setHasUserGesture(false);
+    EXPECT_TRUE(original.hasUserGesture());
+}
+
 } // namespace blink

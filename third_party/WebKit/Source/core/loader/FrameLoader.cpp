@@ -767,6 +767,8 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         return;
 
     FrameLoadRequest request(passedRequest);
+    request.resourceRequest().setHasUserGesture(UserGestureIndicator::processingUserGesture());
+
     if (!prepareRequestForThisFrame(request))
         return;
 
