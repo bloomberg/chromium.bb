@@ -722,7 +722,7 @@ public abstract class java.util.HashSet<T> extends java.util.AbstractSet<E>
     self.assertEquals(1, len(jni_from_javap.called_by_natives))
     self.assertGoldenTextEquals(jni_from_javap.GetContent())
 
-  def testSnippnetJavap6_7(self):
+  def testSnippnetJavap6_7_8(self):
     content_javap6 = """
 public class java.util.HashSet {
 public boolean add(java.lang.Object);
@@ -736,16 +736,30 @@ public boolean add(E);
   Signature: (Ljava/lang/Object;)Z
 }
 """
+
+    content_javap8 = """
+public class java.util.HashSet {
+  public boolean add(E);
+    descriptor: (Ljava/lang/Object;)Z
+}
+"""
+
     jni_from_javap6 = jni_generator.JNIFromJavaP(content_javap6.split('\n'),
                                                  TestOptions())
     jni_from_javap7 = jni_generator.JNIFromJavaP(content_javap7.split('\n'),
                                                  TestOptions())
+    jni_from_javap8 = jni_generator.JNIFromJavaP(content_javap8.split('\n'),
+                                                 TestOptions())
     self.assertTrue(jni_from_javap6.GetContent())
     self.assertTrue(jni_from_javap7.GetContent())
+    self.assertTrue(jni_from_javap8.GetContent())
     # Ensure the javap7 is correctly parsed and uses the Signature field rather
     # than the "E" parameter.
     self.assertTextEquals(jni_from_javap6.GetContent(),
                           jni_from_javap7.GetContent())
+    # Ensure the javap8 is correctly parsed and uses the descriptor field.
+    self.assertTextEquals(jni_from_javap7.GetContent(),
+                          jni_from_javap8.GetContent())
 
   def testFromJavaP(self):
     contents = self._ReadGoldenFile(os.path.join(os.path.dirname(sys.argv[0]),

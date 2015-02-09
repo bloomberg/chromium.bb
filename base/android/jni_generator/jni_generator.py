@@ -209,7 +209,11 @@ class JniParams(object):
   @staticmethod
   def ParseJavaPSignature(signature_line):
     prefix = 'Signature: '
-    return '"%s"' % signature_line[signature_line.index(prefix) + len(prefix):]
+    index = signature_line.find(prefix)
+    if index == -1:
+      prefix = 'descriptor: '
+      index = signature_line.index(prefix)
+    return '"%s"' % signature_line[index + len(prefix):]
 
   @staticmethod
   def JavaToJni(param):
