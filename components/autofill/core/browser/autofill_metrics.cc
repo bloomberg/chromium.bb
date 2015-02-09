@@ -461,6 +461,13 @@ void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) {
 }
 
 // static
+void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
+    size_t num_profiles) {
+  UMA_HISTOGRAM_COUNTS(
+      "Autofill.StoredProfileCountAtAutofillableFormSubmission", num_profiles);
+}
+
+// static
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }

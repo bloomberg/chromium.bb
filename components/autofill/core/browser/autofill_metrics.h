@@ -423,6 +423,11 @@ class AutofillMetrics {
   // This should be called each time a new profile is launched.
   static void LogStoredProfileCount(size_t num_profiles);
 
+  // Log the number of profiles available when an autofillable form is
+  // submitted.
+  static void LogNumberOfProfilesAtAutofillableFormSubmission(
+      size_t num_profiles);
+
   // Log the number of Autofill suggestions presented to the user when filling a
   // form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);

@@ -355,6 +355,10 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  if (submitted_form->IsAutofillable()) {
+    AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
+        personal_data_->GetProfiles().size());
+  }
   const std::vector<CreditCard*>& credit_cards =
       personal_data_->GetCreditCards();
   if (!profiles.empty() || !credit_cards.empty()) {
@@ -530,7 +534,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
           RemoveDuplicateSuggestions(&suggestions);
 
         // The first time we show suggestions on this page, log the number of
-        // suggestions shown.
+        // suggestions available.
+        // TODO(mathp): Differentiate between number of suggestions available
+        // (current metric) and number shown to the user.
         if (!has_logged_address_suggestions_count_ && !section_is_autofilled) {
           AutofillMetrics::LogAddressSuggestionsCount(suggestions.size());
           has_logged_address_suggestions_count_ = true;

@@ -686,6 +686,68 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
       1);
 }
 
+// Verify that when submitting an autofillable form, the stored profile metric
+// is logged.
+TEST_F(AutofillMetricsTest, StoredProfileCountAutofillableFormSubmission) {
+  // Construct a fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  // Three fields is enough to make it an autofillable form.
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+
+  // An autofillable form was submitted, and the number of stored profiles is
+  // logged.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.StoredProfileCountAtAutofillableFormSubmission", 2, 1);
+}
+
+// Verify that when submitting a non-autofillable form, the stored profile
+// metric is not logged.
+TEST_F(AutofillMetricsTest, StoredProfileCountNonAutofillableFormSubmission) {
+  // Construct a non-fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  // Two fields is not enough to make it an autofillable form.
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+
+  // A non-autofillable form was submitted, and number of stored profiles is NOT
+  // logged.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredProfileCountAtAutofillableFormSubmission", 0);
+}
+
 // Verify that we correctly log metrics regarding developer engagement.
 TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   // Start with a non-fillable form.

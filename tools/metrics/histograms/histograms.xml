@@ -1990,6 +1990,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.StoredProfileCountAtAutofillableFormSubmission">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The number of Autofill addresses a user has stored, measured when an
+    autofillable form is submitted.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.UserHappiness" enum="AutofillUserHappiness">
   <owner>isherman@chromium.org</owner>
   <summary>
