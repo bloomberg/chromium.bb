@@ -197,7 +197,6 @@ bool BufferingController::IsLowBufferLevel() {
 }
 
 void BufferingController::DumpState() const {
-  CMALOG(kLogControl) << __FUNCTION__;
   for (StreamList::const_iterator it = stream_list_.begin();
        it != stream_list_.end(); ++it) {
     CMALOG(kLogControl) << (*it)->ToString();
