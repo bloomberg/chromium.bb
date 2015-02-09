@@ -8,8 +8,7 @@
     # platforms to include source files on (e.g. files ending in
     # _mac.h or _mac.cc are only compiled on MacOSX).
     'chromium_code': 1,
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components',
-   },
+  },
   'conditions': [
     ['android_webview_build == 0', {
       'targets': [
