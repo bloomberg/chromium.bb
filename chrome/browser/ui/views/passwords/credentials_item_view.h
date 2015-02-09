@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "ui/views/controls/button/label_button.h"
@@ -26,7 +27,8 @@ class Label;
 
 // CredentialsItemView represents a credential view in the account chooser
 // bubble.
-class CredentialsItemView : public views::LabelButton {
+class CredentialsItemView : public AccountAvatarFetcherDelegate,
+                            public views::LabelButton {
  public:
   CredentialsItemView(views::ButtonListener* button_listener,
                       const autofill::PasswordForm& form,
@@ -39,15 +41,14 @@ class CredentialsItemView : public views::LabelButton {
     return credential_type_;
   }
 
- private:
-  class AvatarFetcher;
+  // AccountAvatarFetcherDelegate:
+  void UpdateAvatar(const gfx::ImageSkia& image) override;
 
+ private:
   // views::LabelButton:
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
-
-  void UpdateAvatar(const gfx::ImageSkia& image);
 
   autofill::PasswordForm form_;
   password_manager::CredentialType credential_type_;

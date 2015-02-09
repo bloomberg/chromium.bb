@@ -9,7 +9,17 @@
 
 namespace autofill {
 struct PasswordForm;
-}
+}  // namespace autofill
+
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
+
+// The desired width and height in pixels for an account avatar.
+extern const int kAvatarImageSize;
+
+// Crops and scales |image_skia| to the desired size for an account avatar.
+gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
 
 // Returns the origin URI in a format which can be presented to a user based of
 // |password_from| field values. For web URIs |languages| is using in order to
