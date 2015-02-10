@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
@@ -135,6 +136,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
       protocol_handler_(new DevToolsProtocolHandler(
           base::Bind(&RenderFrameDevToolsAgentHost::DispatchOnInspectorFrontend,
                      base::Unretained(this)))),
+      frame_trace_recorder_(new DevToolsFrameTraceRecorder()),
       reattaching_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
@@ -496,6 +498,8 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
   page_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
+  frame_trace_recorder_->OnSwapCompositorFrame(
+      render_frame_host_, get<1>(param).metadata);
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
@@ -503,6 +507,8 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
   if (!render_frame_host_)
     return;
   page_handler_->OnSwapCompositorFrame(frame_metadata);
+  frame_trace_recorder_->OnSwapCompositorFrame(
+      render_frame_host_, frame_metadata);
 }
 
 bool RenderFrameDevToolsAgentHost::HasRenderFrameHost(

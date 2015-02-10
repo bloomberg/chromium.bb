@@ -23,6 +23,7 @@ class CompositorFrameMetadata;
 namespace content {
 
 class BrowserContext;
+class DevToolsFrameTraceRecorder;
 class DevToolsProtocolHandler;
 class RenderFrameHost;
 class RenderFrameHostImpl;
@@ -125,6 +126,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   scoped_ptr<devtools::power::PowerHandler> power_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
+  scoped_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
 #endif

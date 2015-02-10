@@ -452,6 +452,8 @@
       'browser/cocoa/system_hotkey_map.mm',
       'browser/devtools/devtools_agent_host_impl.cc',
       'browser/devtools/devtools_agent_host_impl.h',
+      'browser/devtools/devtools_frame_trace_recorder.cc',
+      'browser/devtools/devtools_frame_trace_recorder.h',
       'browser/devtools/devtools_frontend_host_impl.cc',
       'browser/devtools/devtools_frontend_host_impl.h',
       'browser/devtools/devtools_http_handler_impl.cc',
