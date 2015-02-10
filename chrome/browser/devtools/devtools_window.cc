@@ -650,15 +650,15 @@ void DevToolsWindow::OnPageCloseCanceled(WebContents* contents) {
 }
 
 DevToolsWindow::DevToolsWindow(Profile* profile,
-                               const GURL& url,
-                               content::WebContents* inspected_web_contents,
+                               WebContents* main_web_contents,
+                               DevToolsUIBindings* bindings,
+                               WebContents* inspected_web_contents,
                                bool can_dock)
     : profile_(profile),
-      main_web_contents_(
-          WebContents::Create(WebContents::CreateParams(profile))),
-      toolbox_web_contents_(NULL),
-      bindings_(NULL),
-      browser_(NULL),
+      main_web_contents_(main_web_contents),
+      toolbox_web_contents_(nullptr),
+      bindings_(bindings),
+      browser_(nullptr),
       is_docked_(true),
       can_dock_(can_dock),
       // This initialization allows external front-end to work without changes.
@@ -670,15 +670,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   // Set up delegate, so we get fully-functional window immediately.
   // It will not appear in UI though until |life_stage_ == kLoadCompleted|.
   main_web_contents_->SetDelegate(this);
-
-  main_web_contents_->GetController().LoadURL(
-      DevToolsUIBindings::ApplyThemeToURL(profile, url), content::Referrer(),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-
-  bindings_ = DevToolsUIBindings::ForWebContents(main_web_contents_);
-  if (!bindings_)
-    return;
-
   // Bindings take ownership over devtools as its delegate.
   bindings_->SetDelegate(this);
   // DevTools uses PageZoom::Zoom(), so main_web_contents_ requires a
@@ -732,13 +723,18 @@ DevToolsWindow* DevToolsWindow::Create(
                           shared_worker_frontend,
                           remote_frontend,
                           can_dock, settings));
-  DevToolsWindow* window =
-      new DevToolsWindow(profile, url, inspected_web_contents, can_dock);
-  if (!window->bindings_) {
-    delete window;
-    window = nullptr;
-  }
-  return window;
+  scoped_ptr<WebContents> main_web_contents(
+      WebContents::Create(WebContents::CreateParams(profile)));
+  main_web_contents->GetController().LoadURL(
+      DevToolsUIBindings::ApplyThemeToURL(profile, url), content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+  DevToolsUIBindings* bindings =
+      DevToolsUIBindings::ForWebContents(main_web_contents.get());
+  if (!bindings)
+    return nullptr;
+
+  return new DevToolsWindow(profile, main_web_contents.release(), bindings,
+                            inspected_web_contents, can_dock);
 }
 
 // static

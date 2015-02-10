@@ -199,7 +199,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   };
 
   DevToolsWindow(Profile* profile,
-                 const GURL& frontend_url,
+                 content::WebContents* main_web_contents,
+                 DevToolsUIBindings* bindings,
                  content::WebContents* inspected_web_contents,
                  bool can_dock);
 
