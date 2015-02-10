@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/global_error_bubble_view.h"
 
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -117,7 +119,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 
   // Top row, icon and title.
   views::ColumnSet* cs = layout->AddColumnSet(0);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                 0, views::GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, kTitleHorizontalPadding);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
@@ -189,6 +191,10 @@ void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
 void GlobalErrorBubbleView::WindowClosing() {
   if (error_)
     error_->BubbleViewDidClose(browser_);
+}
+
+bool GlobalErrorBubbleView::ShouldShowCloseButton() const {
+  return error_ && error_->ShouldShowCloseButton();
 }
 
 void GlobalErrorBubbleView::CloseBubbleView() {

@@ -86,6 +86,10 @@ void RecoveryInstallGlobalError::ShowBubbleView(Browser* browser) {
   has_shown_bubble_view_ = true;
 }
 
+bool RecoveryInstallGlobalError::ShouldCloseOnDeactivate() const {
+  return false;
+}
+
 gfx::Image RecoveryInstallGlobalError::GetBubbleViewIcon() {
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_UPDATE_MENU_SEVERITY_HIGH);
@@ -105,6 +109,10 @@ base::string16 RecoveryInstallGlobalError::GetBubbleViewAcceptButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_RUN_RECOVERY);
 }
 
+bool RecoveryInstallGlobalError::ShouldShowCloseButton() const {
+  return true;
+}
+
 bool RecoveryInstallGlobalError::ShouldAddElevationIconToAcceptButton() {
   return true;
 }
@@ -116,11 +124,13 @@ base::string16 RecoveryInstallGlobalError::GetBubbleViewCancelButtonLabel() {
 void RecoveryInstallGlobalError::OnBubbleViewDidClose(Browser* browser) {
 }
 
-void RecoveryInstallGlobalError::BubbleViewAcceptButtonPressed(Browser* ) {
+void RecoveryInstallGlobalError::BubbleViewAcceptButtonPressed(
+    Browser* browser) {
   component_updater::AcceptedElevatedRecoveryInstall(pref_registrar_.prefs());
 }
 
-void RecoveryInstallGlobalError::BubbleViewCancelButtonPressed(Browser* ) {
+void RecoveryInstallGlobalError::BubbleViewCancelButtonPressed(
+    Browser* browser) {
   component_updater::DeclinedElevatedRecoveryInstall(pref_registrar_.prefs());
 }
 

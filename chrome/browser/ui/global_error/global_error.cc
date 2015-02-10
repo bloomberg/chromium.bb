@@ -63,6 +63,10 @@ gfx::Image GlobalErrorWithStandardBubble::GetBubbleViewIcon() {
       IDR_INPUT_ALERT);
 }
 
+bool GlobalErrorWithStandardBubble::ShouldShowCloseButton() const {
+  return false;
+}
+
 bool GlobalErrorWithStandardBubble::ShouldAddElevationIconToAcceptButton() {
   return false;
 }

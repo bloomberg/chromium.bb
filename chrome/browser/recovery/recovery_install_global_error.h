@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_RECOVERY_RECOVERY_INSTALL_GLOBAL_ERROR_H_
 #define CHROME_BROWSER_RECOVERY_RECOVERY_INSTALL_GLOBAL_ERROR_H_
 
+#include <vector>
+
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,10 +35,12 @@ class RecoveryInstallGlobalError : public GlobalErrorWithStandardBubble,
   bool HasBubbleView() override;
   bool HasShownBubbleView() override;
   void ShowBubbleView(Browser* browser) override;
+  bool ShouldCloseOnDeactivate() const override;
   gfx::Image GetBubbleViewIcon() override;
   base::string16 GetBubbleViewTitle() override;
   std::vector<base::string16> GetBubbleViewMessages() override;
   base::string16 GetBubbleViewAcceptButtonLabel() override;
+  bool ShouldShowCloseButton() const override;
   bool ShouldAddElevationIconToAcceptButton() override;
   base::string16 GetBubbleViewCancelButtonLabel() override;
   void OnBubbleViewDidClose(Browser* browser) override;

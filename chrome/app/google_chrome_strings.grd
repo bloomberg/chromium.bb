@@ -1193,7 +1193,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         Chrome is out of date
       </message>
       <message name="IDS_RECOVERY_BUBBLE_TEXT" desc="Text for the chrome recovery bubble view full description.">
-        Chrome could not update to the latest version, so you are missing out on new features and security fixes. You need to update Chrome.
+        Important security improvements and new features are available in the latest version.
       </message>
 
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->

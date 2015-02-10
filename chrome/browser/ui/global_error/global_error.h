@@ -77,6 +77,8 @@ class GlobalErrorWithStandardBubble
   virtual std::vector<base::string16> GetBubbleViewMessages() = 0;
   // Returns the accept button label for the bubble view.
   virtual base::string16 GetBubbleViewAcceptButtonLabel() = 0;
+  // Returns true if the bubble needs a close(x) button.
+  virtual bool ShouldShowCloseButton() const;
   // Returns true if the accept button needs elevation icon (only effective
   // on Windows platform).
   virtual bool ShouldAddElevationIconToAcceptButton();

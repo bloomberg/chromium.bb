@@ -31,6 +31,9 @@ class GlobalErrorBubbleView : public views::ButtonListener,
   // views::WidgetDelegate implementation.
   void WindowClosing() override;
 
+  // views::BubbleDelegateView implementation.
+  bool ShouldShowCloseButton() const override;
+
   // GlobalErrorBubbleViewBase implementation.
   void CloseBubbleView() override;
 
