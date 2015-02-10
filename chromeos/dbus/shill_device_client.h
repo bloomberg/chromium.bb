@@ -59,6 +59,8 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
                                    const std::string& name,
                                    const base::Value& value) = 0;
     virtual std::string GetDevicePathForType(const std::string& type) = 0;
+    virtual void SetTDLSBusyCount(int count) = 0;
+    virtual void SetTDLSState(const std::string& state) = 0;
 
    protected:
     virtual ~TestInterface() {}

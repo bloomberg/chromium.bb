@@ -28,6 +28,9 @@ namespace chromeos {
 
 namespace {
 
+// Allow parsed command line option 'tdls_busy' to set the fake busy count.
+int s_tdls_busy_count = 0;
+
 // Used to compare values for finding entries to erase in a ListValue.
 // (ListValue only implements a const_iterator version of Find).
 struct ValueEquals {
@@ -636,6 +639,13 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   }
 
   // Wifi
+  if (s_tdls_busy_count != 0) {
+    DBusThreadManager::Get()
+        ->GetShillDeviceClient()
+        ->GetTestInterface()
+        ->SetTDLSBusyCount(s_tdls_busy_count);
+  }
+
   state = GetInitialStateForType(shill::kTypeWifi, &enabled);
   if (state != kTechnologyUnavailable) {
     bool portaled = false;
@@ -1021,16 +1031,22 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
     base::DictionaryValue* simlock_dict = new base::DictionaryValue;
     simlock_dict->Set(shill::kSIMLockEnabledProperty,
                       new base::FundamentalValue(locked));
-  // TODO(stevenjb): Investigate why non-empty value breaks UI.
-  std::string lock_type = "";  // shill::kSIMLockPin
+    // TODO(stevenjb): Investigate why non-empty value breaks UI.
+    std::string lock_type = "";  // shill::kSIMLockPin
     simlock_dict->SetString(shill::kSIMLockTypeProperty, lock_type);
     simlock_dict->SetInteger(shill::kSIMLockRetriesLeftProperty, 5);
 
-    shill_device_property_map_
-        [shill::kTypeCellular][shill::kSIMLockStatusProperty] = simlock_dict;
+    shill_device_property_map_[shill::kTypeCellular]
+                              [shill::kSIMLockStatusProperty] = simlock_dict;
     shill_device_property_map_
         [shill::kTypeCellular][shill::kTechnologyFamilyProperty] =
             new base::StringValue(shill::kNetworkTechnologyGsm);
+    return true;
+  } else if (arg0 == "tdls_busy") {
+    if (!arg1.empty())
+      base::StringToInt(arg1, &s_tdls_busy_count);
+    else
+      s_tdls_busy_count = 1;
     return true;
   }
   return SetInitialNetworkState(arg0, arg1);

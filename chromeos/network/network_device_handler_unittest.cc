@@ -75,7 +75,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
 
   void ErrorCallback(const std::string& error_name,
                      scoped_ptr<base::DictionaryValue> error_data) {
-    LOG(ERROR) << "ErrorCallback: " << error_name;
+    VLOG(1) << "ErrorCallback: " << error_name;
     result_ = error_name;
   }
 
@@ -90,8 +90,8 @@ class NetworkDeviceHandlerTest : public testing::Test {
   }
 
   void StringSuccessCallback(const std::string& result) {
-    LOG(ERROR) << "StringSuccessCallback: " << result;
-    result_ = kResultSuccess;
+    VLOG(1) << "StringSuccessCallback: " << result;
+    result_ = result;
   }
 
  protected:
@@ -221,10 +221,23 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
 
 TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabled) {
   // We add a wifi device by default, initial call should succeed.
+  fake_device_client_->GetTestInterface()->SetTDLSState(
+      shill::kTDLSConnectedState);
   network_device_handler_->SetWifiTDLSEnabled(
       "fake_ip_address", true, string_success_callback_, error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  EXPECT_EQ(shill::kTDLSConnectedState, result_);
+}
+
+TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledNonexistent) {
+  // Set the TDLS state to 'Nonexistant'. Call should fail with 'Nonexistant'
+  // result.
+  fake_device_client_->GetTestInterface()->SetTDLSState(
+      shill::kTDLSNonexistentState);
+  network_device_handler_->SetWifiTDLSEnabled(
+      "fake_ip_address", true, string_success_callback_, error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(shill::kTDLSNonexistentState, result_);
 }
 
 TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledMissing) {
@@ -239,15 +252,17 @@ TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledMissing) {
 
 TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledBusy) {
   // Set the busy count, call should succeed after repeat attempt.
-  fake_device_client_->set_tdls_busy_count(1);
+  fake_device_client_->GetTestInterface()->SetTDLSState(
+      shill::kTDLSConnectedState);
+  fake_device_client_->GetTestInterface()->SetTDLSBusyCount(1);
   network_device_handler_->SetWifiTDLSEnabled(
       "fake_ip_address", true, string_success_callback_, error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  EXPECT_EQ(shill::kTDLSConnectedState, result_);
 
   // Set the busy count to a large number, call should fail after max number
   // of repeat attempt.
-  fake_device_client_->set_tdls_busy_count(100000);
+  fake_device_client_->GetTestInterface()->SetTDLSBusyCount(100000);
   network_device_handler_->SetWifiTDLSEnabled(
       "fake_ip_address", true, string_success_callback_, error_callback_);
   message_loop_.RunUntilIdle();
@@ -256,10 +271,12 @@ TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledBusy) {
 
 TEST_F(NetworkDeviceHandlerTest, GetWifiTDLSStatus) {
   // We add a wifi device by default, initial call should succeed.
+  fake_device_client_->GetTestInterface()->SetTDLSState(
+      shill::kTDLSConnectedState);
   network_device_handler_->GetWifiTDLSStatus(
       "fake_ip_address", string_success_callback_, error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  EXPECT_EQ(shill::kTDLSConnectedState, result_);
 
   // Remove the wifi device. Call should fail with "device missing" error.
   fake_device_client_->GetTestInterface()->RemoveDevice(kDefaultWifiDevicePath);

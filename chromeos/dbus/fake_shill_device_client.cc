@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_shill_device_client.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -43,7 +45,8 @@ void PostNotFoundError(
 }  // namespace
 
 FakeShillDeviceClient::FakeShillDeviceClient()
-    : tdls_busy_count_(0),
+    : initial_tdls_busy_count_(0),
+      tdls_busy_count_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -249,18 +252,37 @@ void FakeShillDeviceClient::PerformTDLSOperation(
     PostNotFoundError(error_callback);
     return;
   }
-  if (tdls_busy_count_) {
-    --tdls_busy_count_;
-    std::string error_message("In-Progress");
+  // Use -1 to emulate a TDLS failure.
+  if (tdls_busy_count_ == -1) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   shill::kErrorResultInProgress, error_message));
+        base::Bind(error_callback, shill::kErrorDhcpFailed, "Failed"));
     return;
   }
+  if (operation != shill::kTDLSStatusOperation && tdls_busy_count_ > 0) {
+    --tdls_busy_count_;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(error_callback, shill::kErrorResultInProgress,
+                              "In-Progress"));
+    return;
+  }
+
+  tdls_busy_count_ = initial_tdls_busy_count_;
+
   std::string result;
-  if (operation == shill::kTDLSStatusOperation)
-    result = shill::kTDLSConnectedState;
+  if (operation == shill::kTDLSDiscoverOperation) {
+    if (tdls_state_.empty())
+      tdls_state_ = shill::kTDLSDisconnectedState;
+  } else if (operation == shill::kTDLSSetupOperation) {
+    if (tdls_state_.empty())
+      tdls_state_ = shill::kTDLSConnectedState;
+  } else if (operation == shill::kTDLSTeardownOperation) {
+    if (tdls_state_.empty())
+      tdls_state_ = shill::kTDLSDisconnectedState;
+  } else if (operation == shill::kTDLSStatusOperation) {
+    result = tdls_state_;
+  }
+
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(callback, result));
 }
@@ -383,6 +405,14 @@ std::string FakeShillDeviceClient::GetDevicePathForType(
     return iter.key();
   }
   return std::string();
+}
+
+void FakeShillDeviceClient::SetTDLSBusyCount(int count) {
+  tdls_busy_count_ = std::max(count, -1);
+}
+
+void FakeShillDeviceClient::SetTDLSState(const std::string& state) {
+  tdls_state_ = state;
 }
 
 void FakeShillDeviceClient::PassStubDeviceProperties(

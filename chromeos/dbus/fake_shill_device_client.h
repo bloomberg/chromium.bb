@@ -109,8 +109,8 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
                          const std::string& name,
                          const base::Value& value) override;
   std::string GetDevicePathForType(const std::string& type) override;
-
-  void set_tdls_busy_count(int count) { tdls_busy_count_ = count; }
+  void SetTDLSBusyCount(int count) override;
+  void SetTDLSState(const std::string& state) override;
 
  private:
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
@@ -133,7 +133,15 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   // Observer list for each device.
   std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
 
-  int tdls_busy_count_;  // Number of times to return InProgress for TDLS.
+  // Number of times to return InProgress for TDLS. Set to -1 to emulate
+  // TDLS failure.
+  int initial_tdls_busy_count_;
+
+  // Current TDLS busy count.
+  int tdls_busy_count_;
+
+  // Fake state for TDLS.
+  std::string tdls_state_;
 
   // Wake on packet connections for each device.
   std::map<dbus::ObjectPath, std::set<net::IPEndPoint> >
