@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -50,8 +51,17 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   // Preserve the old buffer.
   scoped_ptr<int32[]> old_buffer(buffer_.release());
 
+  base::CheckedNumeric<int> checked_size = sizeof(buffer_[0]);
+  checked_size *= new_size.width();
+  checked_size *= new_size.height();
+  if (!checked_size.IsValid())
+    return false;
+
   // Allocate a new one.
   buffer_.reset(new int32[new_size.GetArea()]);
+  if (!buffer_.get())
+    return false;
+
   memset(buffer_.get(), 0, new_size.GetArea() * sizeof(buffer_[0]));
 
   // Copy the old back buffer into the new buffer.
