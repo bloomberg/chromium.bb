@@ -110,7 +110,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
     const AutocompleteMatch& match = GetResult().match_at(ii + start_match);
     [cell setImage:ImageForMatch(match)];
     [cell setMatch:match];
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
       max_match_contents_width = std::max(max_match_contents_width,
                                            [cell getMatchContentsWidth]);
       if (contents_offset < 0.0f) {

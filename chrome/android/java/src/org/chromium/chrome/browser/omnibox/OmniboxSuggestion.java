@@ -48,8 +48,8 @@ public class OmniboxSuggestion {
                                      // containing the input.
         SEARCH_SUGGEST        (8),   // A suggested search (with the default engine).
         SEARCH_SUGGEST_ENTITY (9),   // A suggested search for an entity.
-        SEARCH_SUGGEST_INFINITE (10),  // A suggested search (with the default engine)
-                                       // to complete the tail part of the input.
+        SEARCH_SUGGEST_TAIL   (10),  // A suggested search (with the default engine)
+                                     // to complete the tail part of the input.
         SEARCH_SUGGEST_PERSONALIZED (11), // A personalized suggested search.
         SEARCH_SUGGEST_PROFILE (12), // A personalized suggested search for a
                                      // Google+ profile.
@@ -72,8 +72,8 @@ public class OmniboxSuggestion {
         }
 
         public boolean isHistoryUrl() {
-            return this == HISTORY_URL || this == HISTORY_TITLE ||
-                    this == HISTORY_BODY || this == HISTORY_KEYWORD;
+            return this == HISTORY_URL || this == HISTORY_TITLE
+                    || this == HISTORY_BODY || this == HISTORY_KEYWORD;
         }
 
         public boolean isUrl() {
@@ -187,8 +187,8 @@ public class OmniboxSuggestion {
 
     @Override
     public int hashCode() {
-        int hash = 37 * mType.mNativeType + mDisplayText.hashCode() + mFillIntoEdit.hashCode() +
-                (mIsStarred ? 1 : 0) + (mIsDeletable ? 1 : 0);
+        int hash = 37 * mType.mNativeType + mDisplayText.hashCode() + mFillIntoEdit.hashCode()
+                + (mIsStarred ? 1 : 0) + (mIsDeletable ? 1 : 0);
         if (mAnswerContents != null) {
             hash = hash + mAnswerContents.hashCode();
         }
@@ -204,10 +204,10 @@ public class OmniboxSuggestion {
         OmniboxSuggestion suggestion = (OmniboxSuggestion) obj;
 
         boolean answersAreEqual =
-                (mAnswerContents == null && suggestion.mAnswerContents == null) ||
-                (mAnswerContents != null &&
-                 suggestion.mAnswerContents != null &&
-                 mAnswerContents.equals(suggestion.mAnswerContents));
+                (mAnswerContents == null && suggestion.mAnswerContents == null)
+                || (mAnswerContents != null
+                && suggestion.mAnswerContents != null
+                && mAnswerContents.equals(suggestion.mAnswerContents));
         return mType == suggestion.mType
                 && mFillIntoEdit.equals(suggestion.mFillIntoEdit)
                 && mDisplayText.equals(suggestion.mDisplayText)

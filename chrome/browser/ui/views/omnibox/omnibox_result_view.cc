@@ -273,7 +273,7 @@ int OmniboxResultView::DrawRenderText(
   // Infinite suggestions should appear with the leading ellipses vertically
   // stacked.
   if (contents &&
-      (match.type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE)) {
+      (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)) {
     // When the directionality of suggestion doesn't match the UI, we try to
     // vertically stack the ellipsis by restricting the end edge (right_x).
     const bool is_ui_rtl = base::i18n::IsRTL();
@@ -401,7 +401,7 @@ int OmniboxResultView::GetDisplayOffset(
     const AutocompleteMatch& match,
     bool is_ui_rtl,
     bool is_match_contents_rtl) const {
-  if (match.type != AutocompleteMatchType::SEARCH_SUGGEST_INFINITE)
+  if (match.type != AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
     return 0;
 
   const base::string16& input_text =

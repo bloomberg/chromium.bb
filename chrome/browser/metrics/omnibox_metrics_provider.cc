@@ -47,8 +47,8 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::SEARCH_SUGGEST;
     case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
       return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_ENTITY;
-    case AutocompleteMatchType::SEARCH_SUGGEST_INFINITE:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_INFINITE;
+    case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
+      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_TAIL;
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
       return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_PERSONALIZED;
     case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:

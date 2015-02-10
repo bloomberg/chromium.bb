@@ -249,7 +249,7 @@ NSAttributedString* CreateClassifiedAttributedString(
       &descriptionMaxWidth);
 
   CGFloat offset = kTextStartOffset;
-  if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+  if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     // Infinite suggestions are rendered with a prefix (usually ellipsis), which
     // appear vertically stacked.
     offset += [self drawMatchPrefixWithFrame:cellFrame

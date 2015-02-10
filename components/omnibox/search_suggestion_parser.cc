@@ -26,8 +26,8 @@ namespace {
 AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
   if (type == "ENTITY")
     return AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
-  if (type == "INFINITE")
-    return AutocompleteMatchType::SEARCH_SUGGEST_INFINITE;
+  if (type == "TAIL")
+    return AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
   if (type == "PERSONALIZED_QUERY")
     return AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
   if (type == "PROFILE")
@@ -139,7 +139,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
   }
 
   base::string16 lookup_text = input_text;
-  if (type_ == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+  if (type_ == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     const size_t contents_index =
         suggestion_.length() - match_contents_.length();
     // Ensure the query starts with the input text, and ends with the match

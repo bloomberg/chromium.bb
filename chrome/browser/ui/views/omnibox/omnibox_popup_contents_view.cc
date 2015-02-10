@@ -175,7 +175,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     const AutocompleteMatch& match = GetMatchAtIndex(i);
     view->SetMatch(match);
     view->SetVisible(i >= hidden_matches);
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
       max_match_contents_width_ = std::max(
           max_match_contents_width_, view->GetMatchContentsWidth());
     }

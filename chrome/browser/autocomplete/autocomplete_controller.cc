@@ -72,7 +72,7 @@ void AutocompleteMatchToAssistedQuery(
       *subtype = 46;
       return;
     }
-    case AutocompleteMatchType::SEARCH_SUGGEST_INFINITE: {
+    case AutocompleteMatchType::SEARCH_SUGGEST_TAIL: {
       *subtype = 33;
       return;
     }

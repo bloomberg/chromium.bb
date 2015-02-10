@@ -210,7 +210,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.answer_contents = suggestion.answer_contents();
   match.answer_type = suggestion.answer_type();
   match.answer = SuggestionAnswer::copy(suggestion.answer());
-  if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+  if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     match.RecordAdditionalInfo(
         kACMatchPropertyInputText, base::UTF16ToUTF8(input.text()));
     match.RecordAdditionalInfo(

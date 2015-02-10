@@ -148,7 +148,7 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_SEARCH,         // SEARCH_HISTORY
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ENTITY
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_INFINITE
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_TAIL
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PERSONALIZED
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PROFILE
       IDR_OMNIBOX_SEARCH,         // SEARCH_OTHER_ENGINE
@@ -169,7 +169,7 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_HISTORY,        // SEARCH_HISTORY
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ENTITY
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_INFINITE
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_TAIL
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PERSONALIZED
       IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PROFILE
       IDR_OMNIBOX_SEARCH,         // SEARCH_OTHER_ENGINE
@@ -350,7 +350,7 @@ bool AutocompleteMatch::IsSearchType(Type type) {
 // static
 bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
   return type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
-         type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE ||
+         type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
