@@ -285,6 +285,7 @@ body.selecting .dialog-header {
 }
 
 .dialog-header button {
+  cursor: pointer;
   text-transform: uppercase;
 }
 
@@ -306,7 +307,9 @@ body.selecting .dialog-header {
 }
 
 .dialog-header .icon-button:hover,
-.dialog-header .icon-button:focus {
+.dialog-header .icon-button:focus,
+.dialog-header .combobutton:hover,
+.dialog-header .combobutton:focus {
   background: rgba(204, 204, 204, 0.15);
 }
 
