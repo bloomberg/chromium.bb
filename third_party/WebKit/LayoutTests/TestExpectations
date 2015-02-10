@@ -105,7 +105,6 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 
 crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
-crbug.com/451606 virtual/slimmingpaint/svg/filters/filteredImage.svg [ ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feSpecularLight-premultiplied.svg [ ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/filter-clip.svg [ ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feComponentTransfer-subregion.svg [ Crash ImageOnlyFailure ]
@@ -186,14 +185,11 @@ crbug.com/227231 virtual/slimmingpaint/fast/events/keyboardevent-code.html [ Fai
 
 # These failures need to be investigated.
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFailure ]
-crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/filter.html [ ImageOnlyFailure ]
-crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/clip.html [ ImageOnlyFailure ]
 # This needs a rebaseline after crbug.com/452967
 crbug.com/412088 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ NeedsManualRebaseline ]
 crbug.com/412088 [ Mac Win7 ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
 crbug.com/412088 [ XP ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ ImageOnlyFailure ]
 crbug.com/412088 [ XP ] virtual/slimmingpaint/svg/text/text-align-05-b.svg [ ImageOnlyFailure ]
-crbug.com/412088 [ Mac ] virtual/slimmingpaint/svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
@@ -937,14 +933,9 @@ crbug.com/334269 [ Mac ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure
 crbug.com/334269 [ Mac ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] fast/text-autosizing/list-marker-with-links-autosizing.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] svg/custom/root-size-attribute-changes.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
@@ -1353,8 +1344,6 @@ crbug.com/377476 fast/js/mozilla/strict/function-name-arity.html [ NeedsManualRe
 
 crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
 
-crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
-
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
 
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
@@ -1557,7 +1546,7 @@ crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ SnowLeopard ] fast/dom/52776.html [ Crash ]
-crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Pass Crash ]
+crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Pass Crash ]
 
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
 
@@ -1647,12 +1636,10 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/overflowHidden.html [ 
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/prepend-in-anonymous-table.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html [ Crash ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Failure Crash ]
+crbug.com/438281 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Failure Crash ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
 
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ImageOnlyFailure ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/hover-during-scroll.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-no-overried-inherited-visibility-hidden.html [ Failure ]
