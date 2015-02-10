@@ -112,7 +112,6 @@ public:
     void flushPendingProtocolNotifications();
 
     void didCommitLoadForMainFrame();
-    void didBeginFrame(int frameId);
 
     void scriptsEnabled(bool);
 

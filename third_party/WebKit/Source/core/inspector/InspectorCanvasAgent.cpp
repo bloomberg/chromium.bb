@@ -340,14 +340,11 @@ void InspectorCanvasAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
 
 void InspectorCanvasAgent::frameDetachedFromParent(LocalFrame* frame)
 {
-    if (m_enabled)
-        m_framesWithUninstrumentedCanvases.remove(frame);
+    m_framesWithUninstrumentedCanvases.remove(frame);
 }
 
-void InspectorCanvasAgent::didBeginFrame()
+void InspectorCanvasAgent::didProcessTask()
 {
-    if (!m_enabled)
-        return;
     ErrorString error;
     for (const auto& frame : m_framesWithUninstrumentedCanvases) {
         InjectedScriptCanvasModule module = injectedScriptCanvasModule(&error, ScriptState::forMainWorld(frame.key));

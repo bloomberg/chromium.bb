@@ -414,6 +414,8 @@ void InspectorController::didProcessTask()
 {
     if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
         profilerAgent->didProcessTask();
+    if (InspectorCanvasAgent* canvasAgent = m_instrumentingAgents->inspectorCanvasAgent())
+        canvasAgent->didProcessTask();
 }
 
 void InspectorController::flushPendingProtocolNotifications()
@@ -424,12 +426,6 @@ void InspectorController::flushPendingProtocolNotifications()
 void InspectorController::didCommitLoadForMainFrame()
 {
     m_agents.didCommitLoadForMainFrame();
-}
-
-void InspectorController::didBeginFrame(int frameId)
-{
-    if (InspectorCanvasAgent* canvasAgent = m_instrumentingAgents->inspectorCanvasAgent())
-        canvasAgent->didBeginFrame();
 }
 
 void InspectorController::scriptsEnabled(bool  enabled)

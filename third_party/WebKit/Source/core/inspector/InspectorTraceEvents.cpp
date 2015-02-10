@@ -696,13 +696,6 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSetLayerTreeId::data(c
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorBeginFrameEvent::data(int frameId)
-{
-    RefPtr<TracedValue> value = TracedValue::create();
-    value->setInteger("frameId", frameId);
-    return value.release();
-}
-
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationEvent::data(const AnimationPlayer& player)
 {
     RefPtr<TracedValue> value = TracedValue::create();

@@ -264,27 +264,6 @@ void WebDevToolsAgentImpl::continueProgram()
     ClientMessageLoopAdapter::didNavigate();
 }
 
-void WebDevToolsAgentImpl::didBeginFrame(int frameId)
-{
-    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "BeginMainThreadFrame", "layerTreeId", m_layerTreeId, "data", InspectorBeginFrameEvent::data(frameId));
-    if (InspectorController* ic = inspectorController())
-        ic->didBeginFrame(frameId);
-}
-
-void WebDevToolsAgentImpl::didCancelFrame()
-{
-}
-
-void WebDevToolsAgentImpl::willComposite()
-{
-    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers", "layerTreeId", m_layerTreeId);
-}
-
-void WebDevToolsAgentImpl::didComposite()
-{
-    TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers");
-}
-
 bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)
 {
     if (!m_attached && !m_generatingEvent)

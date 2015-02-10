@@ -54,11 +54,6 @@ public:
     virtual void inspectElementAt(const WebPoint&) = 0;
     virtual void setLayerTreeId(int) = 0;
 
-    virtual void didBeginFrame(int frameId = 0) = 0;
-    virtual void didCancelFrame() = 0;
-    virtual void willComposite() = 0;
-    virtual void didComposite() = 0;
-
     class GPUEvent {
     public:
         GPUEvent(double timestamp, int phase, bool foreign, uint64_t usedGPUMemoryBytes) :

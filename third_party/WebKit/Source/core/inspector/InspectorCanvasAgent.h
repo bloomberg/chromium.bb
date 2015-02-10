@@ -66,7 +66,7 @@ public:
 
     void didCommitLoad(LocalFrame*, DocumentLoader*);
     void frameDetachedFromParent(LocalFrame*);
-    void didBeginFrame();
+    void didProcessTask();
 
     // Called from InspectorCanvasInstrumentation.
     ScriptValue wrapCanvas2DRenderingContextForInstrumentation(const ScriptValue&);

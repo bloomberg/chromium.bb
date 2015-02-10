@@ -74,10 +74,6 @@ public:
     virtual void reattach(const WebString& hostId, const WebString& savedState) override;
     virtual void detach() override;
     virtual void continueProgram() override;
-    virtual void didBeginFrame(int frameId) override;
-    virtual void didCancelFrame() override;
-    virtual void willComposite() override;
-    virtual void didComposite() override;
     virtual void dispatchOnInspectorBackend(const WebString& message) override;
     virtual void inspectElementAt(const WebPoint&) override;
     virtual void evaluateInWebInspector(long callId, const WebString& script) override;
