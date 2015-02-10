@@ -308,18 +308,22 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   did_stop_loading_ = true;
   OnDidStopLoading();
   if (notify) {
-    CHECK(load_start_.get());
-    if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.EventPageLoadTime2",
-                                   load_start_->Elapsed());
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.BackgroundPageLoadTime2",
+    // Log metrics. It's tempting to CHECK(load_start_) here, but it's possible
+    // to get a DidStopLoading even if we never started loading, in convoluted
+    // notification and observer chains.
+    if (load_start_.get()) {
+      if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+        if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
+          UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.EventPageLoadTime2",
+                                     load_start_->Elapsed());
+        } else {
+          UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.BackgroundPageLoadTime2",
+                                     load_start_->Elapsed());
+        }
+      } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
                                    load_start_->Elapsed());
       }
-    } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
-                                 load_start_->Elapsed());
     }
 
     // Send the notification last, because it might result in this being
