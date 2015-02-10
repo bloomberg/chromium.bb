@@ -55,6 +55,11 @@ public:
     CSSPrimitiveValue* referenceBox() const { return m_referenceBox.get(); }
     void setReferenceBox(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> referenceBox) { m_referenceBox = referenceBox; }
 
+    bool isEllipse() const { return type() == CSSBasicShapeEllipseType; }
+    bool isPolygon() const { return type() == CSSBasicShapePolygonType; }
+    bool isCircle() const { return type() == CSSBasicShapeCircleType; }
+    bool isInset() const { return type() == CSSBasicShapeInsetType; }
+
     virtual void trace(Visitor* visitor) { visitor->trace(m_referenceBox); }
 
 protected:
@@ -221,6 +226,11 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_bottomRightRadius;
     RefPtrWillBeMember<CSSPrimitiveValue> m_bottomLeftRadius;
 };
+
+DEFINE_TYPE_CASTS(CSSBasicShapeCircle, CSSBasicShape, shape, shape->isCircle(), shape.isCircle());
+DEFINE_TYPE_CASTS(CSSBasicShapeEllipse, CSSBasicShape, shape, shape->isEllipse(), shape.isEllipse());
+DEFINE_TYPE_CASTS(CSSBasicShapePolygon, CSSBasicShape, shape, shape->isPolygon(), shape.isPolygon());
+DEFINE_TYPE_CASTS(CSSBasicShapeInset, CSSBasicShape, shape, shape->isInset(), shape.isInset());
 
 } // namespace blink
 
