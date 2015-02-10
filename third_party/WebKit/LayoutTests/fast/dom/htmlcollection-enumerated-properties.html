@@ -28,12 +28,13 @@ shouldBe("htmlCollection.length", "6");
 //       2. If element is in the HTML namespace and has a name attribute whose value is neither the empty string
 //          nor is in result, append element's name attribute value to result.
 //   3. Return result.
-var expectedEnumeratedProperties = ["0", "1" , "2", "3", "4", "5", "length", "id1", "name1", "id2", "id3", "id4", "name4", "name5", "name6", "item", "namedItem"];
+var expectedEnumeratedProperties = ["0", "1" , "2", "3", "4", "5", "length", "id1", "name1", "id2", "id3", "id4", "name4", "name5", "name6", "item", "namedItem"].sort();
 
 var enumeratedProperties = [];
 for (var property in htmlCollection) {
   enumeratedProperties[enumeratedProperties.length] = property;
 }
+enumeratedProperties.sort();
 shouldBe("enumeratedProperties", "expectedEnumeratedProperties");
 </script>
 </body>
