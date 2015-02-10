@@ -202,7 +202,6 @@ class ClientController(object):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     _, stderr = p.communicate()
     if p.returncode != 0:
-      stderr.seek(0)
       raise Error(stderr)
 
   def OnConnect(self, ip_address):

@@ -32,7 +32,7 @@ class ExampleController(host_controller.HostController):
     client = self.NewClient(
         isolate_file='client_test.isolate',
         config_vars={'multi_machine': '1'},
-        dimensions={'os': 'Linux', 'pool': 'legion'}, priority=200,
+        dimensions={'os': 'legion-linux'}, priority=200,
         idle_timeout_secs=90, connection_timeout_secs=90,
         verbosity=logging.INFO)
     client.Create()
