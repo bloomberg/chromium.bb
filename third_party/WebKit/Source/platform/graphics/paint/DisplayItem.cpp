@@ -70,6 +70,7 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
     PAINT_PHASE_BASED_DEBUG_STRINGS(ClipLayerFragment);
 
     switch (type) {
+    case DisplayItem::ClipFileUploadControlRect: return "ClipFileUploadControlRect";
     case DisplayItem::ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
     case DisplayItem::ClipFrameScrollbars: return "ClipFrameScrollbars";
     case DisplayItem::ClipLayerBackground: return "ClipLayerBackground";

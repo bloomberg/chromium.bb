@@ -7,8 +7,10 @@
 
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderButton.h"
 #include "core/rendering/RenderFileUploadControl.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
 
@@ -20,15 +22,14 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         return;
 
     // Push a clip.
-    GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
+    OwnPtr<ClipRecorder> clipRecorder;
     if (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseChildBlockBackgrounds) {
         IntRect clipRect = enclosingIntRect(LayoutRect(
             LayoutPoint(paintOffset.x() + m_renderFileUploadControl.borderLeft(), paintOffset.y() + m_renderFileUploadControl.borderTop()),
             m_renderFileUploadControl.size() + LayoutSize(0, -m_renderFileUploadControl.borderWidth() + buttonShadowHeight)));
         if (clipRect.isEmpty())
             return;
-        stateSaver.save();
-        paintInfo.context->clip(clipRect);
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderFileUploadControl.displayItemClient(), paintInfo.context, DisplayItem::ClipFileUploadControlRect, clipRect));
     }
 
     if (paintInfo.phase == PaintPhaseForeground) {
@@ -64,10 +65,12 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         textRunPaintInfo.bounds = FloatRect(textX.toFloat(), textY.toFloat() - m_renderFileUploadControl.style()->fontMetrics().ascent(),
             textWidth, m_renderFileUploadControl.style()->fontMetrics().height());
 
-        paintInfo.context->setFillColor(m_renderFileUploadControl.resolveColor(CSSPropertyColor));
-
-        // Draw the filename
-        paintInfo.context->drawBidiText(font, textRunPaintInfo, FloatPoint(roundToInt(textX), roundToInt(textY)));
+        // Draw the filename.
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderFileUploadControl, paintInfo.phase, textRunPaintInfo.bounds);
+        if (!recorder.canUseCachedDrawing()) {
+            paintInfo.context->setFillColor(m_renderFileUploadControl.resolveColor(CSSPropertyColor));
+            paintInfo.context->drawBidiText(font, textRunPaintInfo, FloatPoint(roundToInt(textX), roundToInt(textY)));
+        }
     }
 
     // Paint the children.

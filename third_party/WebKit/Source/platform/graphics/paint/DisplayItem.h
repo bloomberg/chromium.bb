@@ -83,6 +83,7 @@ public:
         ClipColumnBoundsPaintPhaseLast = ClipColumnBoundsPaintPhaseFirst + PaintPhaseMax,
         ClipLayerFragmentPaintPhaseFirst,
         ClipLayerFragmentPaintPhaseLast = ClipLayerFragmentPaintPhaseFirst + PaintPhaseMax,
+        ClipFileUploadControlRect,
         ClipFrameToVisibleContentRect,
         ClipFrameScrollbars,
         ClipLayerBackground,
