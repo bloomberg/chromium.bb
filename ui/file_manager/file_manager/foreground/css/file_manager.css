@@ -2,19 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* The order of z-index:
- * - -1: text-measure
- * - 2: drag-selection-border
- * - 3: preview-panel
- * - 500: scrollbar
- * - 500: splitter
- * - 525: spinner
- * - 550: autocomplete-suggestions
- * - 600: menus
- * - 1000: preview thumbnail popup
- * - 1000: overlay panel (ie. image editor)
- */
-
 /* Special attribute used in HTML to hide elements. */
 body[type='folder'] [invisibleif~='folder'],
 body[type='upload-folder'] [invisibleif~='upload-folder'],
@@ -252,6 +239,7 @@ div.splitter {
   opacity: 0.7;
   transition: opacity 70ms linear;
   width: 20px;
+  z-index: 1;  /* Make sure .root-eject is on upper layer than paper-ripple. */
 }
 
 #directory-tree:focus .tree-row[selected] > div.root-eject {
