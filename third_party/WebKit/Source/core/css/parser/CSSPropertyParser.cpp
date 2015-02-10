@@ -5352,7 +5352,6 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
     if (acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_NUMBER
         && value->fValue >= 0. && value->fValue < 1000000.) {
         String str = String::format("%06d", static_cast<int>((value->fValue+.5)));
-        // FIXME: This should be strict parsing for SVG as well.
         if (!fastParseColor(c, str, !acceptQuirkyColors))
             return false;
     } else if (acceptQuirkyColors && value->unit == CSSParserValue::DimensionList) {
