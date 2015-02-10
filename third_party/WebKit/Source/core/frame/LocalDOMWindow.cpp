@@ -144,6 +144,12 @@ void LocalDOMWindow::WindowFrameObserver::willDetachFrameHost()
     m_window->willDetachFrameHost();
 }
 
+void LocalDOMWindow::WindowFrameObserver::frameDestroyed()
+{
+    m_window->frameDestroyed();
+    FrameDestructionObserver::frameDestroyed();
+}
+
 class PostMessageTimer final : public NoBaseWillBeGarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
@@ -594,6 +600,12 @@ void LocalDOMWindow::willDetachFrameHost()
     LocalDOMWindow::notifyContextDestroyed();
 }
 
+void LocalDOMWindow::frameDestroyed()
+{
+    willDestroyDocumentInFrame();
+    m_properties.clear();
+}
+
 void LocalDOMWindow::willDestroyDocumentInFrame()
 {
     for (const auto& domWindowProperty : m_properties)
@@ -618,8 +630,7 @@ void LocalDOMWindow::unregisterProperty(DOMWindowProperty* property)
 
 void LocalDOMWindow::reset()
 {
-    willDestroyDocumentInFrame();
-    m_properties.clear();
+    frameDestroyed();
 
     m_screen = nullptr;
     m_history = nullptr;

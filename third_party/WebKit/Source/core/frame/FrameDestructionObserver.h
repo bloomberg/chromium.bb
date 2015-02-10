@@ -36,15 +36,7 @@ class FrameDestructionObserver : public WillBeGarbageCollectedMixin {
 public:
     explicit FrameDestructionObserver(LocalFrame*);
 
-#if !ENABLE(OILPAN)
-    // Oilpan: there is no known need for directly observing
-    // frameDestroyed() with Oilpan enabled, as its clearing is
-    // handled by keeping a weak reference.
-    //
-    // A weak callback version of frameDestroyed() can be reintroduced
-    // later, should the need arise.
     virtual void frameDestroyed();
-#endif
     virtual void willDetachFrameHost();
 
     LocalFrame* frame() const { return m_frame; }
@@ -58,7 +50,7 @@ protected:
 
     void observeFrame(LocalFrame*);
 
-    RawPtrWillBeWeakMember<LocalFrame> m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 }
