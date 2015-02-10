@@ -626,6 +626,10 @@
           '--with-x11',
           # Make the build less problematic.
           '--disable-introspection',
+          # Do not use loadable modules. Same as with Pango, there's no easy way
+          # to make gdk-pixbuf pick instrumented versions over system-installed
+          # ones.
+          '--disable-modules',
       ],
       'dependencies=': [],
       'run_before_build': 'scripts/libgdk-pixbuf2.0-0.sh',
