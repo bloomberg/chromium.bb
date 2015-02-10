@@ -25,6 +25,7 @@ var FileAsyncData;
  * @param {!FileOperationManager} fileOperationManager File operation manager
  *     instance.
  * @param {!MetadataCache} metadataCache Metadata cache service.
+ * @param {!FileSystemMetadata} fileSystemMetadata Metadata cache service.
  * @param {!DirectoryModel} directoryModel Directory model instance.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!FileSelectionHandler} selectionHandler Selection handler.
@@ -38,6 +39,7 @@ function FileTransferController(doc,
                                 progressCenter,
                                 fileOperationManager,
                                 metadataCache,
+                                fileSystemMetadata,
                                 directoryModel,
                                 volumeManager,
                                 selectionHandler) {
@@ -68,6 +70,13 @@ function FileTransferController(doc,
    * @const
    */
   this.metadataCache_ = metadataCache;
+
+  /**
+   * @type {!FileSystemMetadata}
+   * @private
+   * @const
+   */
+  this.fileSystemMetadata_ = fileSystemMetadata;
 
   /**
    * @type {!DirectoryModel}
@@ -388,6 +397,8 @@ FileTransferController.prototype.getMultiProfileShareEntries_ =
       // TODO(mtomasz): Move conversion from entry to url to custom bindings.
       // crbug.com/345527.
       var urls = util.entriesToURLs(entries);
+      // Do not use metadata cache here because the urls come from the different
+      // profile.
       chrome.fileManagerPrivate.getEntryProperties(urls, callback);
     }).then(function(metadatas) {
       return entries.filter(function(entry, i) {
@@ -1108,18 +1119,18 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
     this.preloadThumbnailImage_(entries[0]);
   }
 
-  this.metadataCache_.get(entries, 'external', function(metadataList) {
-    // |Copy| is the only menu item affected by allDriveFilesAvailable_.
-    // It could be open right now, update its UI.
-    this.copyCommand_.disabled = !this.canCopyOrDrag_();
-
-    for (var i = 0; i < entries.length; i++) {
-      if (entries[i].isFile) {
-        asyncData[entries[i].toURL()].externalFileUrl =
-            metadataList[i] ? metadataList[i].externalFileUrl : null;
-      }
-    }
-  }.bind(this));
+  this.fileSystemMetadata_.get(entries, ['externalFileUrl']).then(
+      function(metadataList) {
+        // |Copy| is the only menu item affected by allDriveFilesAvailable_.
+        // It could be open right now, update its UI.
+        this.copyCommand_.disabled = !this.canCopyOrDrag_();
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isFile) {
+            asyncData[entries[i].toURL()].externalFileUrl =
+                metadataList[i].externalFileUrl;
+          }
+        }
+      }.bind(this));
 };
 
 /**

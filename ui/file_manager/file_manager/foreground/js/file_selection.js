@@ -114,17 +114,15 @@ FileSelection.prototype.completeInit = function() {
       this.allDriveFilesPresent = true;
       return this.tasks.init(this.entries);
     } else {
-      this.asyncInitPromise_ = new Promise(function(fulfill) {
-        this.fileManager_.metadataCache.get(this.entries, 'external', fulfill);
-      }.bind(this)).then(function(props) {
-        var present = props.filter(function(p) {
-          return p && p.availableOffline;
-        });
+      this.asyncInitPromise_ = this.fileManager_.getFileSystemMetadata().get(
+          this.entries,
+          ['availableOffline', 'contentMimeType']).then(function(props) {
+        var present = props.filter(function(p) { return p.availableOffline; });
         this.allDriveFilesPresent = present.length == props.length;
         // Collect all of the mime types and push that info into the
         // selection.
         this.mimeTypes = props.map(function(value) {
-          return (value && value.contentMimeType) || '';
+          return value.contentMimeType || '';
         });
         return this.tasks.init(this.entries, this.mimeTypes);
       }.bind(this));

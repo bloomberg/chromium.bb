@@ -9,7 +9,7 @@
  * @param {DialogType} dialogType Dialog type.
  * @param {!DialogFooter} dialogFooter Dialog footer.
  * @param {!DirectoryModel} directoryModel Directory model.
- * @param {!MetadataCache} metadataCache Metadata cache.
+ * @param {!FileSystemMetadata} fileSystemMetadata Metadata cache.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {!FileFilter} fileFilter File filter model.
  * @param {!NamingController} namingController Naming controller.
@@ -23,7 +23,7 @@ function DialogActionController(
     dialogType,
     dialogFooter,
     directoryModel,
-    metadataCache,
+    fileSystemMetadata,
     volumeManager,
     fileFilter,
     namingController,
@@ -51,11 +51,11 @@ function DialogActionController(
   this.directoryModel_ = directoryModel;
 
   /**
-   * @type {!MetadataCache}
+   * @type {!FileSystemMetadata}
    * @const
    * @private
    */
-  this.metadataCache_ = metadataCache;
+  this.fileSystemMetadata_ = fileSystemMetadata;
 
   /**
    * @type {!VolumeManagerWrapper}
@@ -357,7 +357,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
 
   var onProperties = function(properties) {
     for (var i = 0; i < properties.length; i++) {
-      if (!properties[i] || properties[i].present) {
+      if (properties[i].present) {
         // For files already in GCache, we don't get any transfer updates.
         filesTotal--;
       }
@@ -369,7 +369,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
 
   // TODO(mtomasz): Use Entry instead of URLs, if possible.
   util.URLsToEntries(selection.urls, function(entries) {
-    this.metadataCache_.get(entries, 'external', onProperties);
+    this.fileSystemMetadata_.get(entries, ['present']).then(onProperties);
   }.bind(this));
 };
 

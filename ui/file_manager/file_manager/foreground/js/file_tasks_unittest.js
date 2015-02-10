@@ -54,7 +54,8 @@ function getMockFileManager() {
     taskController: {
       openSuggestAppsDialog: function(
           entry, onSuccess, onCancelled, onFailure) {}
-    }
+    },
+    getFileSystemMetadata: function() {}
   };
 }
 

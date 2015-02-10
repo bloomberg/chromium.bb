@@ -505,6 +505,7 @@ FileManager.prototype = /** @struct */ {
         assert(this.backgroundPage_.background.progressCenter),
         assert(this.fileOperationManager_),
         assert(this.metadataCache_),
+        assert(this.fileSystemMetadata_),
         assert(this.directoryModel_),
         assert(this.volumeManager_),
         assert(this.selectionHandler_));
@@ -936,7 +937,7 @@ FileManager.prototype = /** @struct */ {
         this.dialogType,
         this.ui_.dialogFooter,
         this.directoryModel_,
-        this.metadataCache_,
+        this.fileSystemMetadata_,
         this.volumeManager_,
         this.fileFilter_,
         this.namingController_,

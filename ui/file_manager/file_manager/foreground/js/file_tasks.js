@@ -13,19 +13,24 @@ function FileTasks(fileManager) {
   this.fileManager_ = fileManager;
 
   /**
-   * @type {Array.<!Object>}
-   * @private
+   * @private {Array<!Object>}
    */
   this.tasks_ = null;
 
+  /**
+   * @private {Object}
+   */
   this.defaultTask_ = null;
+
+  /**
+   * @private {Array<!Entry>}
+   */
   this.entries_ = null;
 
   /**
    * List of invocations to be called once tasks are available.
    *
-   * @private
-   * @type {Array.<Object>}
+   * @private {Array.<Object>}
    */
   this.pendingInvocations_ = [];
 }
@@ -475,6 +480,7 @@ FileTasks.prototype.executeInternal_ = function(taskId, entries) {
 /**
  * Checks whether the remote files are available right now.
  *
+ * Must not call before initialization.
  * @param {function()} callback The callback.
  * @private
  */
@@ -488,31 +494,33 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
   };
 
   var fm = this.fileManager_;
-  var entries = this.entries_;
+  var fileSystemMetadata = this.fileManager_.getFileSystemMetadata();
+  var entries = assert(this.entries_);
 
   var isDriveOffline = fm.volumeManager.getDriveConnectionState().type ===
       VolumeManagerCommon.DriveConnectionType.OFFLINE;
 
   if (fm.isOnDrive() && isDriveOffline) {
-    fm.metadataCache_.get(entries, 'external', function(props) {
-      if (areAll(props, 'availableOffline')) {
-        callback();
-        return;
-      }
+    fileSystemMetadata.get(entries, ['availableOffline', 'hosted']).then(
+        function(props) {
+          if (areAll(props, 'availableOffline')) {
+            callback();
+            return;
+          }
 
-      fm.ui.alertDialog.showHtml(
-          loadTimeData.getString('OFFLINE_HEADER'),
-          props[0].hosted ?
-              loadTimeData.getStringF(
-                  entries.length === 1 ?
-                      'HOSTED_OFFLINE_MESSAGE' :
-                      'HOSTED_OFFLINE_MESSAGE_PLURAL') :
-              loadTimeData.getStringF(
-                  entries.length === 1 ?
-                      'OFFLINE_MESSAGE' :
-                      'OFFLINE_MESSAGE_PLURAL',
-                  loadTimeData.getString('OFFLINE_COLUMN_LABEL')),
-          null, null, null);
+          fm.ui.alertDialog.showHtml(
+              loadTimeData.getString('OFFLINE_HEADER'),
+              props[0].hosted ?
+                  loadTimeData.getStringF(
+                      entries.length === 1 ?
+                          'HOSTED_OFFLINE_MESSAGE' :
+                          'HOSTED_OFFLINE_MESSAGE_PLURAL') :
+                  loadTimeData.getStringF(
+                      entries.length === 1 ?
+                          'OFFLINE_MESSAGE' :
+                          'OFFLINE_MESSAGE_PLURAL',
+                      loadTimeData.getString('OFFLINE_COLUMN_LABEL')),
+              null, null, null);
     });
     return;
   }
@@ -521,27 +529,26 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
       VolumeManagerCommon.DriveConnectionType.METERED;
 
   if (fm.isOnDrive() && isOnMetered) {
-    fm.metadataCache_.get(entries, 'external', function(driveProps) {
-      if (areAll(driveProps, 'availableWhenMetered')) {
-        callback();
-        return;
-      }
+    fileSystemMetadata.get(entries, ['availableWhenMetered', 'size']).then(
+        function(props) {
+          if (areAll(props, 'availableWhenMetered')) {
+            callback();
+            return;
+          }
 
-      fm.metadataCache_.get(entries, 'filesystem', function(fileProps) {
-        var sizeToDownload = 0;
-        for (var i = 0; i !== entries.length; i++) {
-          if (!driveProps[i].availableWhenMetered)
-            sizeToDownload += fileProps[i].size;
-        }
-        fm.ui.confirmDialog.show(
-            loadTimeData.getStringF(
-                entries.length === 1 ?
-                    'CONFIRM_MOBILE_DATA_USE' :
-                    'CONFIRM_MOBILE_DATA_USE_PLURAL',
-                util.bytesToString(sizeToDownload)),
-            callback, null, null);
-      });
-    });
+          var sizeToDownload = 0;
+          for (var i = 0; i !== entries.length; i++) {
+            if (!props[i].availableWhenMetered)
+              sizeToDownload += props[i].size;
+          }
+          fm.ui.confirmDialog.show(
+              loadTimeData.getStringF(
+                  entries.length === 1 ?
+                      'CONFIRM_MOBILE_DATA_USE' :
+                      'CONFIRM_MOBILE_DATA_USE_PLURAL',
+                  util.bytesToString(sizeToDownload)),
+              callback, null, null);
+        });
     return;
   }
 

@@ -52,7 +52,8 @@ function testDoEntryAction(callback) {
           },
           isOnDrive: function() {
             return true;
-          }
+          },
+          getFileSystemMetadata: function() {}
         });
       });
 
