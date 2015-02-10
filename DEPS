@@ -34,7 +34,7 @@ vars = {
   'llvm_url': 'http://src.chromium.org/llvm-project',
   'llvm_git': 'https://llvm.googlesource.com',
   'webkit_trunk': 'http://src.chromium.org/blink/trunk',
-  'webkit_revision': 'b4339a56b804fa049f75ed5e5ea68a7569c5afea', # from svn revision 189865
+  'webkit_revision': 'e99a4f4610993f22f3a0eb2a2d399c46ac3da5ab', # from svn revision 189870
   'chromium_git': 'https://chromium.googlesource.com',
   'chromiumos_git': 'https://chromium.googlesource.com/chromiumos',
   'pdfium_git': 'https://pdfium.googlesource.com',
