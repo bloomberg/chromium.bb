@@ -24,7 +24,8 @@ class SpinningBallsPage(page_module.Page):
         "document.readyState == 'complete'")
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginInteraction('RunSmoothAllActions')
+    interaction = action_runner.BeginInteraction(
+        'RunSmoothAllActions', is_fast=True)
     action_runner.Wait(15)
     interaction.End()
 
