@@ -50,10 +50,11 @@ namespace blink {
 class ConsoleMessage;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebServiceWorkerNetworkProvider;
+class WebSharedWorkerClient;
 class WebString;
 class WebURL;
 class WebView;
-class WebSharedWorkerClient;
 class WorkerInspectorProxy;
 
 // This class is used by the worker process code to talk to the SharedWorker implementation.
@@ -83,7 +84,10 @@ public:
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) override;
+    virtual void willSendRequest(WebLocalFrame*, unsigned identifier, WebURLRequest&, const WebURLResponse& redirectResponse) override;
     virtual void didFinishDocumentLoad(WebLocalFrame*) override;
+    virtual bool isControlledByServiceWorker(WebDataSource&) override;
+    virtual int64_t serviceWorkerID(WebDataSource&) override;
 
     // WebDevToolsAgentClient overrides.
     virtual void sendProtocolMessage(int callId, const WebString&, const WebString&) override;
@@ -137,6 +141,9 @@ private:
     WebView* m_webView;
     WebFrame* m_mainFrame;
     bool m_askedToTerminate;
+
+    // This one is bound to and used only on the main thread.
+    OwnPtr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
     OwnPtr<WorkerInspectorProxy> m_workerInspectorProxy;
 

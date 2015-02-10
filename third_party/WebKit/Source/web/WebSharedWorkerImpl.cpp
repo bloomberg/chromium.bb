@@ -63,6 +63,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebFrame.h"
+#include "public/web/WebServiceWorkerNetworkProvider.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
@@ -238,10 +239,19 @@ void WebSharedWorkerImpl::loadShadowPage()
     webFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_url), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
+void WebSharedWorkerImpl::willSendRequest(
+    WebLocalFrame* frame, unsigned, WebURLRequest& request,
+    const WebURLResponse& redirectResponse)
+{
+    if (m_networkProvider)
+        m_networkProvider->willSendRequest(frame->dataSource(), request);
+}
+
 void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
 {
     ASSERT(!m_loadingDocument);
     ASSERT(!m_mainScriptLoader);
+    m_networkProvider = adoptPtr(client()->createServiceWorkerNetworkProvider(frame->dataSource()));
     m_mainScriptLoader = Loader::create();
     m_loadingDocument = toWebLocalFrameImpl(frame)->frame()->document();
     m_mainScriptLoader->load(
@@ -249,6 +259,18 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         m_url,
         bind(&WebSharedWorkerImpl::didReceiveScriptLoaderResponse, this),
         bind(&WebSharedWorkerImpl::onScriptLoaderFinished, this));
+}
+
+bool WebSharedWorkerImpl::isControlledByServiceWorker(WebDataSource& dataSource)
+{
+    return m_networkProvider && m_networkProvider->isControlledByServiceWorker(dataSource);
+}
+
+int64_t WebSharedWorkerImpl::serviceWorkerID(WebDataSource& dataSource)
+{
+    if (!m_networkProvider)
+        return -1;
+    return m_networkProvider->serviceWorkerID(dataSource);
 }
 
 void WebSharedWorkerImpl::sendProtocolMessage(int callId, const WebString& message, const WebString& state)
