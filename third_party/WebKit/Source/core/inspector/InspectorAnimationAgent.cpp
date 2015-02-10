@@ -34,7 +34,6 @@ InspectorAnimationAgent::InspectorAnimationAgent(InspectorDOMAgent* domAgent)
     : InspectorBaseAgent<InspectorAnimationAgent>("Animation")
     , m_domAgent(domAgent)
     , m_frontend(nullptr)
-    , m_element(nullptr)
 {
 }
 
@@ -281,30 +280,8 @@ void InspectorAnimationAgent::getAnimationPlayerState(ErrorString* errorString, 
     *isRunning = player->playing();
 }
 
-void InspectorAnimationAgent::startListening(ErrorString* errorString, int nodeId, bool includeSubtreeAnimations)
-{
-    Element* element = m_domAgent->assertElement(errorString, nodeId);
-    if (!element)
-        return;
-    m_element = element;
-    m_includeSubtree = includeSubtreeAnimations;
-}
-
-void InspectorAnimationAgent::stopListening(ErrorString*)
-{
-    m_element = nullptr;
-}
-
 void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
 {
-    if (!m_element)
-        return;
-    Animation* animation = toAnimation(player.source());
-
-    bool inSubtree = m_includeSubtree ? m_element->contains(animation->target()) : m_element->isSameNode(animation->target());
-    if (!inSubtree)
-        return;
-
     m_idToAnimationPlayer.set(playerId(player), &player);
     m_frontend->animationPlayerCreated(buildObjectForAnimationPlayer(player));
 }

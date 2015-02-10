@@ -39,8 +39,6 @@ public:
     virtual void playAnimationPlayer(ErrorString*, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
     virtual void setAnimationPlayerCurrentTime(ErrorString*, const String& id, double currentTime, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
     virtual void getAnimationPlayerState(ErrorString*, const String& id, double* currentTime, bool* isRunning) override;
-    virtual void startListening(ErrorString*, int nodeId, bool includeSubtreeAnimations) override;
-    virtual void stopListening(ErrorString*) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimationPlayer(AnimationPlayer&);
@@ -65,9 +63,6 @@ private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     InspectorFrontend::Animation* m_frontend;
     WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer> > m_idToAnimationPlayer;
-
-    RawPtrWillBeMember<Element> m_element;
-    bool m_includeSubtree;
 };
 
 }
