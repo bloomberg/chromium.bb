@@ -78,10 +78,12 @@
       "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
+      "base_unittests",
       {
-        "test": "base_unittests",
+        "test": "browser_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 3
         }
       },
       "cacheinvalidation_unittests",
