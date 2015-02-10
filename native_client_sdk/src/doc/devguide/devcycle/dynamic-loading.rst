@@ -308,15 +308,14 @@ Deploying a dynamically linked application
 
 As described above, an application's manifest file must explicitly list all the
 executable code modules that the application directly depends on, including
-modules from the application itself (.nexe and .so files), modules from the
-Native Client SDK (e.g., libppapi_cpp.so), and perhaps also modules from
-`naclports <http://code.google.com/p/naclports/>`_ or from
-`middleware systems <../../community/middleware>`_ that
-the application uses. You must provide all of those modules as part of the
-application deployment process.
+modules from the application itself (``.nexe`` and ``.so`` files), modules from
+the Native Client SDK (e.g., ``libppapi_cpp.so``), and perhaps also modules from
+`naclports <http://code.google.com/p/naclports/>`_ or from `middleware systems
+<../../community/middleware>`_ that the application uses. You must provide all
+of those modules as part of the application deployment process.
 
-As explained in :doc:`Distributing Your Application
-<../distributing>`, there are two basic ways to deploy an application:
+As explained in :doc:`Distributing Your Application <../distributing>`, there
+are two basic ways to deploy a `Chrome app </apps>`_:
 
 * **hosted application:** all modules are hosted together on a web server of
   your choice
@@ -324,21 +323,24 @@ As explained in :doc:`Distributing Your Application
 * **packaged application:** all modules are packaged into one file, hosted in
   the Chrome Web Store, and downloaded to the user's machine
 
+The web store documentation contains a handy guide to `help you choose which to
+use <https://developer.chrome.com/webstore/choosing>`_.
+
 You must deploy all the modules listed in your application's manifest file for
 either the hosted application or the packaged application case. For hosted
 applications, you must upload the modules to your web server. For packaged
-applications, you must include the modules in the application's Chrome Web
-Store .crx file. Modules should use URLs/names that are consistent with those
-in the Native Client manifest file, and be named relative to the location of
-the manifest file. Remember that some of the libraries named in the manifest
-file may be located in directories you specified with the -L option to
+applications, you must include the modules in the application's Chrome Web Store
+.crx file. Modules should use URLs/names that are consistent with those in the
+Native Client manifest file, and be named relative to the location of the
+manifest file. Remember that some of the libraries named in the manifest file
+may be located in directories you specified with the ``-L`` option to
 ``create_nmf.py``. You are free to rename/rearrange files and directories
 referenced by the Native Client manifest file, so long as the modules are
-available in the locations indicated by the manifest file. If you move or
-rename modules, it may be easier to re-run ``create_nmf.py`` to generate a new
-manifest file rather than edit the original manifest file. For hosted
-applications, you can check for name mismatches during testing by watching the
-request log of the web server hosting your test deployment.
+available in the locations indicated by the manifest file. If you move or rename
+modules, it may be easier to re-run ``create_nmf.py`` to generate a new manifest
+file rather than edit the original manifest file. For hosted applications, you
+can check for name mismatches during testing by watching the request log of the
+web server hosting your test deployment.
 
 Opening a shared library at runtime
 ===================================

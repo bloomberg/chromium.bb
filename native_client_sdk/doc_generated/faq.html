@@ -421,10 +421,10 @@ source change.</p>
 <ul class="small-gap">
 <li>Code that does direct <a class="reference external" href="pepper_stable/cpp/classpp_1_1_t_c_p_socket">TCP</a> or
 <a class="reference external" href="pepper_stable/cpp/classpp_1_1_u_d_p_socket">UDP</a> networking. For security
-reasons these APIs are only available to <a class="reference external" href="/apps/about_apps">packaged applications</a> after asking for the appropriate permissions, not on the
-open web. Native Client is otherwise restricted to the networking APIs
-available in the browser. You may want to use to <a class="reference external" href="nacl_io">nacl_io library</a>
-to use POSIX-like sockets.</li>
+reasons these APIs are only available to <a class="reference external" href="/apps">Chrome apps</a> after asking
+for the appropriate permissions, not on the open web. Native Client is
+otherwise restricted to the networking APIs available in the browser. You may
+want to use to <a class="reference external" href="nacl_io">nacl_io library</a> to use POSIX-like sockets.</li>
 <li>Code that creates processes, including UNIX <code>fork</code>, won&#8217;t function
 as-is. However, threads are supported. You can nonetheless create new
 <code>&lt;embed&gt;</code> tags in your HTML page to launch new PNaCl processes. You can even

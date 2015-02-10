@@ -4,25 +4,25 @@
 <span id="devcycle-running"></span><h1 id="running"><span id="devcycle-running"></span>Running</h1>
 <div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
-<li><a class="reference internal" href="#introduction" id="id5">Introduction</a></li>
-<li><a class="reference internal" href="#portable-native-client-pnacl-applications" id="id6">Portable Native Client (PNaCl) applications</a></li>
-<li><a class="reference internal" href="#native-client-applications-and-the-chrome-web-store" id="id7">Native Client applications and the Chrome Web Store</a></li>
-<li><p class="first"><a class="reference internal" href="#prerequisites" id="id8">Prerequisites</a></p>
+<li><a class="reference internal" href="#introduction" id="id6">Introduction</a></li>
+<li><a class="reference internal" href="#portable-native-client-pnacl-applications" id="id7">Portable Native Client (PNaCl) applications</a></li>
+<li><a class="reference internal" href="#native-client-applications-and-the-chrome-web-store" id="id8">Native Client applications and the Chrome Web Store</a></li>
+<li><p class="first"><a class="reference internal" href="#prerequisites" id="id9">Prerequisites</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#browser-and-pepper-versions" id="id9">Browser and Pepper versions</a></li>
-<li><a class="reference internal" href="#chrome-cache" id="id10">Chrome Cache</a></li>
+<li><a class="reference internal" href="#browser-and-pepper-versions" id="id10">Browser and Pepper versions</a></li>
+<li><a class="reference internal" href="#chrome-cache" id="id11">Chrome Cache</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#requirements" id="id11">Requirements</a></p>
+<li><p class="first"><a class="reference internal" href="#requirements" id="id12">Requirements</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#native-client-flag" id="id12">Native Client flag</a></li>
-<li><a class="reference internal" href="#web-server" id="id13">Web server</a></li>
+<li><a class="reference internal" href="#native-client-flag" id="id13">Native Client flag</a></li>
+<li><a class="reference internal" href="#web-server" id="id14">Web server</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#technique-1-local-server" id="id14">Technique 1: Local server</a></li>
-<li><a class="reference internal" href="#technique-2-packaged-application-loaded-as-an-unpacked-extension" id="id15">Technique 2: Packaged application loaded as an unpacked extension</a></li>
-<li><a class="reference internal" href="#technique-3-hosted-application-loaded-as-an-unpacked-extension" id="id16">Technique 3: Hosted application loaded as an unpacked extension</a></li>
-<li><a class="reference internal" href="#technique-4-chrome-web-store-application-with-trusted-testers" id="id17">Technique 4: Chrome Web Store application with trusted testers</a></li>
+<li><a class="reference internal" href="#technique-1-local-server" id="id15">Technique 1: Local server</a></li>
+<li><a class="reference internal" href="#technique-2-packaged-application-loaded-as-an-unpacked-extension" id="id16">Technique 2: Packaged application loaded as an unpacked extension</a></li>
+<li><a class="reference internal" href="#technique-3-hosted-application-loaded-as-an-unpacked-extension" id="id17">Technique 3: Hosted application loaded as an unpacked extension</a></li>
+<li><a class="reference internal" href="#technique-4-chrome-web-store-application-with-trusted-testers" id="id18">Technique 4: Chrome Web Store application with trusted testers</a></li>
 </ul>
 
 </div><h2 id="introduction">Introduction</h2>
@@ -50,16 +50,21 @@ Store (CWS)</strong>. Applications in the CWS are one of three types:</p>
 <ul class="small-gap">
 <li>A <strong>hosted application</strong> is an application that you host on a server of your
 choice. To distribute an application as a hosted application, you upload
-application metadata to the CWS.</li>
+application metadata to the CWS. Learn more on the <a class="reference external" href="/apps">Chrome App</a>
+documentation page.</li>
 <li>A <strong>packaged application</strong> is an application that is hosted in the CWS and
 downloaded to the user&#8217;s machine. To distribute an application as a packaged
 application, you upload the entire application, including all application
-assets and metadata, to the CWS.</li>
+assets and metadata, to the CWS. Learn more on the <a class="reference external" href="/apps">Chrome App</a>
+documentation page.</li>
 <li>An <strong>extension</strong> is a packaged application that has a tiny UI component
 (extensions are typically used to extend the functionality of the Chrome
 browser). To distribute an application as an extension, you upload the entire
-application, including all application assets and metadata, to the CWS.</li>
+application, including all application assets and metadata, to the CWS. Learn
+more on the <a class="reference external" href="/extensions">Chrome extensions</a> documentation page.</li>
 </ul>
+<p>The web store documentation contains a handy guide to <a class="reference external" href="https://developer.chrome.com/webstore/choosing">help you choose which to
+use</a>.</p>
 <p>It&#8217;s clearly not convenient to package and upload files to the Chrome Web Store
 every time you want to run a new build of your application, but there are four
 alternative techniques you can use to run the application during development.
@@ -166,7 +171,7 @@ using, type <code>about:version</code> in the Chrome address bar.</p>
 you are developing a Native Client application in order to make sure Chrome
 loads new versions of your application. Follow the instructions <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html#tutorial-step-3"><em>in the
 tutorial</em></a>.</p>
-<h2 id="requirements"><span id="id1"></span>Requirements</h2>
+<h2 id="requirements"><span id="id2"></span>Requirements</h2>
 <h3 id="native-client-flag"><span id="flag"></span>Native Client flag</h3>
 <p>Native Client is automatically enabled for applications that are installed from
 the Chrome Web Store. To enable Native Client for applications that are not
@@ -194,7 +199,7 @@ outside the Chrome Web Store, you may need to enable the Native Client plugin:</
 the Native Client plugin. You do not need to relaunch Chrome after enabling
 the Native Client plugin.</li>
 </ol>
-<h3 id="web-server"><span id="id2"></span>Web server</h3>
+<h3 id="web-server"><span id="id3"></span>Web server</h3>
 <p>For security reasons, Native Client applications must come from a server (you
 can&#8217;t simply drag HTML files into your browser). The Native Client SDK comes
 with a lightweight Python web server that you can run to serve your application
@@ -313,7 +318,7 @@ Click the icon to launch the app.</li>
 <p>For additional information about how to create CWS metadata and load your
 application into Chrome (including troubleshooting information), see the
 <a class="reference external" href="/webstore/get_started_simple">Chrome Web Store Tutorial: Getting Started</a>.</p>
-<p>See also <a class="reference internal" href="/native-client/sdk/examples.html#run-sdk-examples-as-packaged"><em>Run the SDK examples as packaged apps</em></a>.</p>
+<p>See also <a class="reference internal" href="/native-client/sdk/examples.html#run-sdk-examples-as-packaged"><em>Run the SDK examples as Chrome apps</em></a>.</p>
 <h2 id="technique-3-hosted-application-loaded-as-an-unpacked-extension">Technique 3: Hosted application loaded as an unpacked extension</h2>
 <p>For development purposes, Chrome lets you load a hosted application as an
 unpacked extension. To load and run your hosted application as an unpacked

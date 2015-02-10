@@ -16,8 +16,7 @@ This tutorial shows how to convert the finished PNaCl web application from
 :doc:`Part 1 <tutorial-part1>` to use the Native Client SDK build system and
 common JavaScript files. It also demonstrates some techniques to make your web
 application `Content Security Policy (CSP)-compliant
-</apps/contentSecurityPolicy>`_, which is necessary for `Chrome Apps
-</apps/about_apps>`_.
+</apps/contentSecurityPolicy>`_, which is necessary for `Chrome Apps </apps>`_.
 
 Using the Native Client SDK build system makes it easy to build with all of the
 SDK toolchains, and switch between the Debug and Release configurations. It
@@ -232,8 +231,7 @@ Making index.html work for Chrome Apps
 
 This section describes the changes necessary to make the HTML and JavaScript in
 part1 CSP-compliant. This is required if you want to build a `Chrome App
-</apps/about_apps>`_, but is not necessary if you want to use PNaCl on the open
-web.
+</apps>`_, but is not necessary if you want to use PNaCl on the open web.
 
 CSP rules
 ---------

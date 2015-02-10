@@ -45,8 +45,7 @@ well. Here are a few pointers to relevant documentation:
 
 * `CWS Overview </webstore>`_
 * `Choosing an App Type </webstore/choosing>`_
-* `Getting started with packaged apps </apps/about_apps>`_
-* `Hosted apps <https://developers.google.com/chrome/apps/docs/developers_guide>`_
+* `Getting started with Chrome apps </apps>`_
 * `Chrome extensions </extensions>`_
 
 In this document, we'll focus only on distribution issues specific to
@@ -54,15 +53,14 @@ applications that contain NaCl modules.
 
 .. _distributing_packaged:
 
-Packaged application
---------------------
+Chrome apps
+-----------
 
-A packaged application is a special zip file (with a .crx extension) hosted in
-the Chrome Web Store. This file contains all of the application parts: A Chrome
-Web Store manifest file (manifest.json), an icon, and all of the regular Native
-Client application files. Refer to
-`Packaged Apps </apps/about_apps>`_
-for more information about creating a packaged application.
+A Chrome app is a special zip file (with a .crx extension) hosted in the Chrome
+Web Store. This file contains all of the application parts: A Chrome Web Store
+manifest file (manifest.json), an icon, and all of the regular Native Client
+application files. Refer to `Chrome Apps </apps>`_ for more information about
+creating a Chrome app.
 
 Reducing the size of the user download package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -74,7 +72,7 @@ Reducing the size of the user download package
    Packaging an app in a multi-platform zip file can significantly reduce the
    download and storage requirements for the app.
 
-As described above, to upload a packaged app to the CWS you have to create a zip
+As described above, to upload a Chrome app to the CWS you have to create a zip
 file with all the resources that your app needs, including .nexe files for
 multiple architectures (x86-64, x86-32, and ARM). Prior to Chrome 28, when users
 installed your app they had to download a .crx file from the CWS with all the
@@ -239,8 +237,8 @@ Here is how to use this feature:
 
 .. _additional_considerations_packaged:
 
-Additional considerations for a packaged application
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Additional considerations for a Chrome app
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * In the description of your application in the CWS, make sure to mention that
   your application is a Native Client application that only works with the
@@ -263,7 +261,7 @@ Additional considerations for a packaged application
   API, you must set the 'unlimitedStorage' permission in your Chrome Web
   Store manifest file, just as you would for a JavaScript application that
   uses the HTML5 File API.
-* For packaged applications, you can only use in-app purchases.
+* For Chrome apps, you can only use in-app purchases.
 * You can place your application in the Google Web Store with access only to
   certain people for testing. See `Publishing to test accounts
   </webstore/publish>`_ for more information.
@@ -282,7 +280,8 @@ be served from the same domain, and the Chrome Web Store manifest file must
 specify the correct, verified domain. Other files can be served from the same
 or another domain.
 
-In addition, see :ref:`Additional considerations for a packaged application <additional_considerations_packaged>`.
+In addition, see :ref:`Additional considerations for a Chrome apps
+<additional_considerations_packaged>`.
 
 Registering Native Client modules to handle MIME types
 ------------------------------------------------------

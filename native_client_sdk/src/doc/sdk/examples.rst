@@ -202,22 +202,21 @@ executable.
     
 .. _run_sdk_examples_as_packaged:
 
-Run the SDK examples as packaged apps
--------------------------------------
+Run the SDK examples as Chrome apps
+-----------------------------------
 
-Each example can also be launched as a packaged application. A packaged
-application is a special zip file (with a .crx extension) hosted in the Chrome
-Web Store. This file contains all of the application parts: A Chrome Web Store
-manifest file (``manifest.json``), an icon, and all of the regular Native Client
-application files. Refer to `What are Chrome Apps </apps/about_apps>`_ for more
-information about creating a packaged application.
+Each example can also be launched as a Chrome apps. A Chrome app is a special
+zip file (with a .crx extension) hosted in the Chrome Web Store. This file
+contains all of the application parts: A Chrome Web Store manifest file
+(``manifest.json``), an icon, and all of the regular Native Client application
+files. Refer to `What are Chrome Apps </apps>`_ for more information about
+creating a Chrome app.
 
 Some Pepper features, such as `TCP
 <pepper_stable/cpp/classpp_1_1_t_c_p_socket>`_ or `UDP
 <pepper_stable/cpp/classpp_1_1_u_d_p_socket>`_ socket access, are only allowed
-in `packaged applications </apps/about_apps>`_. The examples that use these
-features must be run as `packaged applications </apps/about_apps>`_, by using
-the following command::
+in `Chrome apps </apps>`_. The examples that use these features must be run as
+`Chrome apps </apps>`_, by using the following command::
 
   $ make run_package
 

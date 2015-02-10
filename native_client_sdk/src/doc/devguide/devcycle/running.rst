@@ -45,17 +45,23 @@ Store (CWS)**. Applications in the CWS are one of three types:
 
 * A **hosted application** is an application that you host on a server of your
   choice. To distribute an application as a hosted application, you upload
-  application metadata to the CWS.
+  application metadata to the CWS. Learn more on the `Chrome App </apps>`_
+  documentation page.
 
 * A **packaged application** is an application that is hosted in the CWS and
   downloaded to the user's machine. To distribute an application as a packaged
   application, you upload the entire application, including all application
-  assets and metadata, to the CWS.
+  assets and metadata, to the CWS. Learn more on the `Chrome App </apps>`_
+  documentation page.
 
 * An **extension** is a packaged application that has a tiny UI component
   (extensions are typically used to extend the functionality of the Chrome
   browser). To distribute an application as an extension, you upload the entire
-  application, including all application assets and metadata, to the CWS.
+  application, including all application assets and metadata, to the CWS. Learn
+  more on the `Chrome extensions </extensions>`_ documentation page.
+
+The web store documentation contains a handy guide to `help you choose which to
+use <https://developer.chrome.com/webstore/choosing>`_.
 
 It's clearly not convenient to package and upload files to the Chrome Web Store
 every time you want to run a new build of your application, but there are four

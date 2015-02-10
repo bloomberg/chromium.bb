@@ -4,13 +4,13 @@
 <span id="distributing"></span><h1 id="distributing-your-application"><span id="distributing"></span>Distributing Your Application</h1>
 <div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
-<li><a class="reference internal" href="#portable-native-client" id="id1">Portable Native Client</a></li>
-<li><p class="first"><a class="reference internal" href="#non-portable-native-client" id="id2">Non-portable Native Client</a></p>
+<li><a class="reference internal" href="#portable-native-client" id="id2">Portable Native Client</a></li>
+<li><p class="first"><a class="reference internal" href="#non-portable-native-client" id="id3">Non-portable Native Client</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#packaged-application" id="id3">Packaged application</a></li>
-<li><a class="reference internal" href="#extension" id="id4">Extension</a></li>
-<li><a class="reference internal" href="#hosted-application" id="id5">Hosted application</a></li>
-<li><a class="reference internal" href="#registering-native-client-modules-to-handle-mime-types" id="id6">Registering Native Client modules to handle MIME types</a></li>
+<li><a class="reference internal" href="#chrome-apps" id="id4">Chrome apps</a></li>
+<li><a class="reference internal" href="#extension" id="id5">Extension</a></li>
+<li><a class="reference internal" href="#hosted-application" id="id6">Hosted application</a></li>
+<li><a class="reference internal" href="#registering-native-client-modules-to-handle-mime-types" id="id7">Registering Native Client modules to handle MIME types</a></li>
 </ul>
 </li>
 </ul>
@@ -41,26 +41,24 @@ well. Here are a few pointers to relevant documentation:</p>
 <ul class="small-gap">
 <li><a class="reference external" href="/webstore">CWS Overview</a></li>
 <li><a class="reference external" href="/webstore/choosing">Choosing an App Type</a></li>
-<li><a class="reference external" href="/apps/about_apps">Getting started with packaged apps</a></li>
-<li><a class="reference external" href="https://developers.google.com/chrome/apps/docs/developers_guide">Hosted apps</a></li>
+<li><a class="reference external" href="/apps">Getting started with Chrome apps</a></li>
 <li><a class="reference external" href="/extensions">Chrome extensions</a></li>
 </ul>
 <p>In this document, we&#8217;ll focus only on distribution issues specific to
 applications that contain NaCl modules.</p>
-<h3 id="packaged-application"><span id="distributing-packaged"></span>Packaged application</h3>
-<p>A packaged application is a special zip file (with a .crx extension) hosted in
-the Chrome Web Store. This file contains all of the application parts: A Chrome
-Web Store manifest file (manifest.json), an icon, and all of the regular Native
-Client application files. Refer to
-<a class="reference external" href="/apps/about_apps">Packaged Apps</a>
-for more information about creating a packaged application.</p>
+<h3 id="chrome-apps"><span id="distributing-packaged"></span>Chrome apps</h3>
+<p>A Chrome app is a special zip file (with a .crx extension) hosted in the Chrome
+Web Store. This file contains all of the application parts: A Chrome Web Store
+manifest file (manifest.json), an icon, and all of the regular Native Client
+application files. Refer to <a class="reference external" href="/apps">Chrome Apps</a> for more information about
+creating a Chrome app.</p>
 <h4 id="reducing-the-size-of-the-user-download-package">Reducing the size of the user download package</h4>
 <aside class="note">
 <strong>Tip:</strong>
 Packaging an app in a multi-platform zip file can significantly reduce the
 download and storage requirements for the app.
 </aside>
-<p>As described above, to upload a packaged app to the CWS you have to create a zip
+<p>As described above, to upload a Chrome app to the CWS you have to create a zip
 file with all the resources that your app needs, including .nexe files for
 multiple architectures (x86-64, x86-32, and ARM). Prior to Chrome 28, when users
 installed your app they had to download a .crx file from the CWS with all the
@@ -226,7 +224,7 @@ function getPath(name) {
 <li><p class="first">Test your app, create a zip file, and upload the app to the CWS as before.</p>
 </li>
 </ol>
-<h4 id="additional-considerations-for-a-packaged-application"><span id="additional-considerations-packaged"></span>Additional considerations for a packaged application</h4>
+<h4 id="additional-considerations-for-a-chrome-app"><span id="additional-considerations-packaged"></span>Additional considerations for a Chrome app</h4>
 <ul class="small-gap">
 <li>In the description of your application in the CWS, make sure to mention that
 your application is a Native Client application that only works with the
@@ -247,7 +245,7 @@ example:</p>
 API, you must set the &#8216;unlimitedStorage&#8217; permission in your Chrome Web
 Store manifest file, just as you would for a JavaScript application that
 uses the HTML5 File API.</li>
-<li>For packaged applications, you can only use in-app purchases.</li>
+<li>For Chrome apps, you can only use in-app purchases.</li>
 <li>You can place your application in the Google Web Store with access only to
 certain people for testing. See <a class="reference external" href="/webstore/publish">Publishing to test accounts</a> for more information.</li>
 </ul>
@@ -259,7 +257,7 @@ apply to extensions as well.</p>
 be served from the same domain, and the Chrome Web Store manifest file must
 specify the correct, verified domain. Other files can be served from the same
 or another domain.</p>
-<p>In addition, see <a class="reference internal" href="#additional-considerations-packaged"><em>Additional considerations for a packaged application</em></a>.</p>
+<p>In addition, see <a class="reference internal" href="#additional-considerations-packaged"><em>Additional considerations for a Chrome apps</em></a>.</p>
 <h3 id="registering-native-client-modules-to-handle-mime-types">Registering Native Client modules to handle MIME types</h3>
 <p>If you want Chrome to use a Native Client module to display a particular type
 of content, you can associate the MIME type of that content with the Native

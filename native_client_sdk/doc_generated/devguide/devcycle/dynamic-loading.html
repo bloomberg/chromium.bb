@@ -314,34 +314,35 @@ the list of shared library dependencies using tools such as <code>objdump_</code
 <h3 id="deploying-a-dynamically-linked-application">Deploying a dynamically linked application</h3>
 <p>As described above, an application&#8217;s manifest file must explicitly list all the
 executable code modules that the application directly depends on, including
-modules from the application itself (.nexe and .so files), modules from the
-Native Client SDK (e.g., libppapi_cpp.so), and perhaps also modules from
-<a class="reference external" href="http://code.google.com/p/naclports/">naclports</a> or from
-<a class="reference external" href="../../community/middleware">middleware systems</a> that
-the application uses. You must provide all of those modules as part of the
-application deployment process.</p>
-<p>As explained in <a class="reference internal" href="/native-client/devguide/distributing.html"><em>Distributing Your Application</em></a>, there are two basic ways to deploy an application:</p>
+modules from the application itself (<code>.nexe</code> and <code>.so</code> files), modules from
+the Native Client SDK (e.g., <code>libppapi_cpp.so</code>), and perhaps also modules from
+<a class="reference external" href="http://code.google.com/p/naclports/">naclports</a> or from <a class="reference external" href="../../community/middleware">middleware systems</a> that the application uses. You must provide all
+of those modules as part of the application deployment process.</p>
+<p>As explained in <a class="reference internal" href="/native-client/devguide/distributing.html"><em>Distributing Your Application</em></a>, there
+are two basic ways to deploy a <a class="reference external" href="/apps">Chrome app</a>:</p>
 <ul class="small-gap">
 <li><strong>hosted application:</strong> all modules are hosted together on a web server of
 your choice</li>
 <li><strong>packaged application:</strong> all modules are packaged into one file, hosted in
 the Chrome Web Store, and downloaded to the user&#8217;s machine</li>
 </ul>
+<p>The web store documentation contains a handy guide to <a class="reference external" href="https://developer.chrome.com/webstore/choosing">help you choose which to
+use</a>.</p>
 <p>You must deploy all the modules listed in your application&#8217;s manifest file for
 either the hosted application or the packaged application case. For hosted
 applications, you must upload the modules to your web server. For packaged
-applications, you must include the modules in the application&#8217;s Chrome Web
-Store .crx file. Modules should use URLs/names that are consistent with those
-in the Native Client manifest file, and be named relative to the location of
-the manifest file. Remember that some of the libraries named in the manifest
-file may be located in directories you specified with the -L option to
+applications, you must include the modules in the application&#8217;s Chrome Web Store
+.crx file. Modules should use URLs/names that are consistent with those in the
+Native Client manifest file, and be named relative to the location of the
+manifest file. Remember that some of the libraries named in the manifest file
+may be located in directories you specified with the <code>-L</code> option to
 <code>create_nmf.py</code>. You are free to rename/rearrange files and directories
 referenced by the Native Client manifest file, so long as the modules are
-available in the locations indicated by the manifest file. If you move or
-rename modules, it may be easier to re-run <code>create_nmf.py</code> to generate a new
-manifest file rather than edit the original manifest file. For hosted
-applications, you can check for name mismatches during testing by watching the
-request log of the web server hosting your test deployment.</p>
+available in the locations indicated by the manifest file. If you move or rename
+modules, it may be easier to re-run <code>create_nmf.py</code> to generate a new manifest
+file rather than edit the original manifest file. For hosted applications, you
+can check for name mismatches during testing by watching the request log of the
+web server hosting your test deployment.</p>
 <h3 id="opening-a-shared-library-at-runtime">Opening a shared library at runtime</h3>
 <p>Native Client supports a version of the POSIX standard <code>dlopen()</code> interface
 for opening libraries explicitly, after an application is already running.

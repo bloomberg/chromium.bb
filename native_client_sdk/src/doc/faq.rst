@@ -495,11 +495,10 @@ The following kinds of code may be more challenging to port:
 
 * Code that does direct `TCP <pepper_stable/cpp/classpp_1_1_t_c_p_socket>`_ or
   `UDP <pepper_stable/cpp/classpp_1_1_u_d_p_socket>`_ networking. For security
-  reasons these APIs are only available to `packaged applications
-  </apps/about_apps>`_ after asking for the appropriate permissions, not on the
-  open web. Native Client is otherwise restricted to the networking APIs
-  available in the browser. You may want to use to `nacl_io library <nacl_io>`_
-  to use POSIX-like sockets.
+  reasons these APIs are only available to `Chrome apps </apps>`_ after asking
+  for the appropriate permissions, not on the open web. Native Client is
+  otherwise restricted to the networking APIs available in the browser. You may
+  want to use to `nacl_io library <nacl_io>`_ to use POSIX-like sockets.
 * Code that creates processes, including UNIX ``fork``, won't function
   as-is. However, threads are supported. You can nonetheless create new
   ``<embed>`` tags in your HTML page to launch new PNaCl processes. You can even

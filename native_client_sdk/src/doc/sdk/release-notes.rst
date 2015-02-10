@@ -206,8 +206,8 @@ PNaCl (15 May 2013)
   files produced by earlier versions of the pnacl toolchain (that is,
   executables compiled with the ``pepper_28`` bundle or earlier).
 * To run an application with a PNaCl module, you must launch Chrome 29 with the
-  ``--enable-pnacl`` flag (for `packaged apps </apps/about_apps>`_), or the
-  ``--enable-nacl`` flag (for other apps).
+  ``--enable-pnacl`` flag (for `Chrome apps </apps>`_), or the ``--enable-nacl``
+  flag (for other apps).
 * When you launch Chrome with the ``--enable-pnacl`` flag, Chrome loads a PNaCl
   translator in the background. Wait about a minute after you launch Chrome and
   check `chrome://nacl <chrome://nacl>`_ to verify that the translator loaded.

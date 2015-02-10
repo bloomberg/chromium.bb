@@ -33,7 +33,7 @@
 <p>This tutorial shows how to convert the finished PNaCl web application from
 <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html"><em>Part 1</em></a> to use the Native Client SDK build system and
 common JavaScript files. It also demonstrates some techniques to make your web
-application <a class="reference external" href="/apps/contentSecurityPolicy">Content Security Policy (CSP)-compliant</a>, which is necessary for <a class="reference external" href="/apps/about_apps">Chrome Apps</a>.</p>
+application <a class="reference external" href="/apps/contentSecurityPolicy">Content Security Policy (CSP)-compliant</a>, which is necessary for <a class="reference external" href="/apps">Chrome Apps</a>.</p>
 <p>Using the Native Client SDK build system makes it easy to build with all of the
 SDK toolchains, and switch between the Debug and Release configurations. It
 also simplifies the makefiles for your project, as we&#8217;ll see in the next
@@ -202,8 +202,7 @@ $(eval $(call NMF_RULE,$(TARGET),))
 </pre>
 <h2 id="making-index-html-work-for-chrome-apps">Making index.html work for Chrome Apps</h2>
 <p>This section describes the changes necessary to make the HTML and JavaScript in
-part1 CSP-compliant. This is required if you want to build a <a class="reference external" href="/apps/about_apps">Chrome App</a>, but is not necessary if you want to use PNaCl on the open
-web.</p>
+part1 CSP-compliant. This is required if you want to build a <a class="reference external" href="/apps">Chrome App</a>, but is not necessary if you want to use PNaCl on the open web.</p>
 <h3 id="csp-rules">CSP rules</h3>
 <p><a class="reference external" href="/apps/contentSecurityPolicy#what">Chrome Apps CSP</a> restricts you from doing
 the following:</p>
