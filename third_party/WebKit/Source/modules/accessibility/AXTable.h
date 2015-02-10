@@ -60,8 +60,8 @@ public:
     virtual bool isAriaTable() const { return false; }
     virtual bool supportsSelectedRows() { return false; }
 
-    AccessibilityChildrenVector& columns();
-    AccessibilityChildrenVector& rows();
+    const AccessibilityChildrenVector& columns();
+    const AccessibilityChildrenVector& rows();
 
     unsigned columnCount();
     unsigned rowCount();

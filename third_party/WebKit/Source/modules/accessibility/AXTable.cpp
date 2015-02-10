@@ -449,14 +449,14 @@ AXObject* AXTable::headerContainer()
     return m_headerContainer.get();
 }
 
-AXObject::AccessibilityChildrenVector& AXTable::columns()
+const AXObject::AccessibilityChildrenVector& AXTable::columns()
 {
     updateChildrenIfNecessary();
 
     return m_columns;
 }
 
-AXObject::AccessibilityChildrenVector& AXTable::rows()
+const AXObject::AccessibilityChildrenVector& AXTable::rows()
 {
     updateChildrenIfNecessary();
 
