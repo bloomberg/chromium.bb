@@ -289,7 +289,7 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
 
     int delay_micros = base::RandInt(-50000, 50000);
     base::TimeDelta delay = base::TimeDelta::FromMilliseconds(delay_micros);
-    total_latency += latency + delay;
+    total_latency += latency;
 
     cast_environment_->Logging()->InsertFrameEventWithDelay(
         receiver_clock_.NowTicks(),

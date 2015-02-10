@@ -577,9 +577,7 @@ void StatsEventSubscriber::RecordE2ELatency(const FrameEvent& frame_event) {
   if (it == recent_frame_infos_.end())
     return;
 
-  // Playout time is event time + playout delay.
-  base::TimeTicks playout_time =
-      frame_event.timestamp + frame_event.delay_delta - receiver_offset;
+  base::TimeTicks playout_time = frame_event.timestamp - receiver_offset;
   base::TimeDelta latency = playout_time - it->second.capture_time;
   total_e2e_latency_ += latency;
   e2e_latency_datapoints_++;
