@@ -85,8 +85,6 @@ PopupListBox::PopupListBox(PopupMenuClient* client, bool deviceSupportsTouch, Po
 
 PopupListBox::~PopupListBox()
 {
-    clear();
-
     // Oilpan: the scrollbars of the ScrollView are self-sufficient,
     // capable of detaching themselves from their animator on
     // finalization.
@@ -726,7 +724,7 @@ void PopupListBox::hidePopup()
 
 void PopupListBox::updateFromElement()
 {
-    clear();
+    m_items.clear();
 
     int size = m_popupClient->listSize();
     for (int i = 0; i < size; ++i) {
@@ -737,7 +735,7 @@ void PopupListBox::updateFromElement()
             type = PopupItem::TypeGroup;
         else
             type = PopupItem::TypeOption;
-        m_items.append(new PopupItem(m_popupClient->itemText(i), type));
+        m_items.append(adoptPtr(new PopupItem(m_popupClient->itemText(i), type)));
         m_items[i]->enabled = isSelectableItem(i);
         PopupMenuStyle style = m_popupClient->itemStyle(i);
         m_items[i]->textDirection = style.textDirection();
@@ -846,12 +844,6 @@ void PopupListBox::layout()
         scrollToRevealSelection();
 
     invalidate();
-}
-
-void PopupListBox::clear()
-{
-    deleteAllValues(m_items);
-    m_items.clear();
 }
 
 bool PopupListBox::isPointInBounds(const IntPoint& point)

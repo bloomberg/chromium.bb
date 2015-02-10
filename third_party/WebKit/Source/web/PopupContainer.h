@@ -103,9 +103,6 @@ public:
     // Refresh the popup values from the PopupMenuClient.
     IntRect refresh(const IntRect& targetControlRect);
 
-    // The menu per-item data.
-    const Vector<PopupItem*>& popupData() const;
-
     // The height of a row in the menu.
     int menuItemHeight() const;
 

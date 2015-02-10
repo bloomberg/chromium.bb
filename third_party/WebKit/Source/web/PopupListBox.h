@@ -135,9 +135,6 @@ public:
     // Updates our internal list to match the client.
     void updateFromElement();
 
-    // Frees any allocated resources used in a particular popup session.
-    void clear();
-
     // Sets the index of the option that is displayed in the <select> widget in the page
     void setOriginalIndex(int);
 
@@ -175,7 +172,7 @@ public:
 
     void disconnectClient() { m_popupClient = 0; }
 
-    const Vector<PopupItem*>& items() const { return m_items; }
+    const Vector<OwnPtr<PopupItem>>& items() const { return m_items; }
 
     virtual int popupContentHeight() const override;
 
@@ -283,7 +280,7 @@ private:
     int m_maxHeight;
 
     // A list of the options contained within the <select>
-    Vector<PopupItem*> m_items;
+    Vector<OwnPtr<PopupItem>> m_items;
 
     // The <select> PopupMenuClient that opened us.
     PopupMenuClient* m_popupClient;

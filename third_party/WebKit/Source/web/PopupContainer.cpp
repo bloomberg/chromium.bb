@@ -479,11 +479,6 @@ PopupMenuStyle PopupContainer::menuStyle() const
     return m_listBox->m_popupClient->menuStyle();
 }
 
-const WTF::Vector<PopupItem*>& PopupContainer:: popupData() const
-{
-    return m_listBox->items();
-}
-
 String PopupContainer::getSelectedItemToolTip()
 {
     // We cannot use m_popupClient->selectedIndex() to choose tooltip message,
@@ -510,8 +505,7 @@ void PopupContainer::popupOpened(const IntRect& bounds)
 
 void PopupContainer::getPopupMenuInfo(WebPopupMenuInfo* info)
 {
-    const Vector<PopupItem*>& inputItems = popupData();
-
+    const Vector<OwnPtr<PopupItem>>& inputItems = m_listBox->items();
     WebVector<WebMenuItemInfo> outputItems(inputItems.size());
 
     for (size_t i = 0; i < inputItems.size(); ++i) {
