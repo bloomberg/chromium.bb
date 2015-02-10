@@ -48,14 +48,6 @@ class ScopedPangoFontDescription {
 // They are shared with internal skia interfaces.
 // ----------------------------------------------------------------------------
 
-// Configures |layout| for the passed-in parameters.
-void SetUpPangoLayout(
-    PangoLayout* layout,
-    const base::string16& text,
-    const FontList& font_list,
-    base::i18n::TextDirection text_direction,
-    int flags);
-
 // Returns the size in pixels for the specified |pango_font|.
 int GetPangoFontSizeInPixels(PangoFontDescription* pango_font);
 

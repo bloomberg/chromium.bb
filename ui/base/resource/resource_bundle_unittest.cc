@@ -378,19 +378,18 @@ TEST_F(ResourceBundleTest, FontListReload) {
       .Times(16)
       .WillRepeatedly(Return(test_font));
 
-  std::string expected = "test font, 12px";
   EXPECT_CALL(delegate, GetLocalizedStringMock(IDS_UI_FONT_FAMILY_CROS))
-      .WillOnce(Return(base::UTF8ToUTF16(expected)));
-
+      .WillOnce(Return(base::UTF8ToUTF16("test font, 12px")));
   resource_bundle->ReloadFonts();
-  EXPECT_EQ(expected, gfx::FontList().GetFontDescriptionString());
+  // Don't test the font name; it'll get mapped to something else by Fontconfig.
+  EXPECT_EQ(12, gfx::FontList().GetPrimaryFont().GetFontSize());
+  EXPECT_EQ(gfx::Font::NORMAL, gfx::FontList().GetPrimaryFont().GetStyle());
 
-  expected = "test font 2, 12px";
   EXPECT_CALL(delegate, GetLocalizedStringMock(IDS_UI_FONT_FAMILY_CROS))
-      .WillOnce(Return(base::UTF8ToUTF16(expected)));
-
+      .WillOnce(Return(base::UTF8ToUTF16("test font 2, Bold 10px")));
   resource_bundle->ReloadFonts();
-  EXPECT_EQ(expected, gfx::FontList().GetFontDescriptionString());
+  EXPECT_EQ(10, gfx::FontList().GetPrimaryFont().GetFontSize());
+  EXPECT_EQ(gfx::Font::BOLD, gfx::FontList().GetPrimaryFont().GetStyle());
 }
 #endif
 

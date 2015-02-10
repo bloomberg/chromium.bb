@@ -17,19 +17,33 @@ namespace gfx {
 class FontListImpl;
 
 // FontList represents a list of fonts and provides metrics which are common
-// in the fonts.  FontList is copyable and it's quite cheap to copy.
+// across the fonts.  FontList is copyable and quite cheap to copy.
 //
-// The format of font description string complies with that of Pango detailed at
+// The format of font description strings is a subset of that used by Pango, as
+// described at
 // http://developer.gnome.org/pango/stable/pango-Fonts.html#pango-font-description-from-string
-// The format is "<FONT_FAMILY_LIST>,[STYLES] <SIZE>" where
-//     FONT_FAMILY_LIST is a comma-separated list of font family names,
-//     STYLES is a space-separated list of style names ("Bold" and "Italic"),
-//     SIZE is a font size in pixel with the suffix "px".
-// Here are examples of font description string:
-//     "Arial, Helvetica, Bold Italic 14px"
-//     "Arial, 14px"
+//
+// Pango font description strings should not be passed directly into FontLists.
+//
+// The format is "<FONT_FAMILY_LIST>,[STYLES] <SIZE>", where:
+// - FONT_FAMILY_LIST is a comma-separated list of font family names,
+// - STYLES is an optional space-separated list of style names (case-sensitive
+//   "Bold" and "Italic" are supported), and
+// - SIZE is an integer font size in pixels with the suffix "px".
+//
+// Here are examples of valid font description strings:
+// - "Arial, Helvetica, Bold Italic 14px"
+// - "Arial, 14px"
 class GFX_EXPORT FontList {
  public:
+  // Parses a FontList description string into |families_out|, |style_out| (a
+  // bitfield of gfx::Font::Style values), and |size_pixels_out|. Returns true
+  // if the string is properly-formed.
+  static bool ParseDescription(const std::string& description,
+                               std::vector<std::string>* families_out,
+                               int* style_out,
+                               int* size_pixels_out);
+
   // Creates a font list with default font names, size and style, which are
   // specified by SetDefaultFontDescription().
   FontList();
@@ -127,11 +141,6 @@ class GFX_EXPORT FontList {
 
   // Returns the |gfx::Font::FontStyle| style flags for this font list.
   int GetFontStyle() const;
-
-  // Returns a string representing font names, styles, and size. If the FontList
-  // is initialized by a vector of Font, use the first font's style and size
-  // for the description.
-  const std::string& GetFontDescriptionString() const;
 
   // Returns the font size in pixels.
   int GetFontSize() const;

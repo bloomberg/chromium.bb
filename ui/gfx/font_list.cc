@@ -5,6 +5,8 @@
 #include "ui/gfx/font_list.h"
 
 #include "base/lazy_instance.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "ui/gfx/font_list_impl.h"
 
@@ -22,6 +24,52 @@ bool g_default_impl_initialized = false;
 }  // namespace
 
 namespace gfx {
+
+// static
+bool FontList::ParseDescription(const std::string& description,
+                                std::vector<std::string>* families_out,
+                                int* style_out,
+                                int* size_pixels_out) {
+  DCHECK(families_out);
+  DCHECK(style_out);
+  DCHECK(size_pixels_out);
+
+  base::SplitString(description, ',', families_out);
+  if (families_out->empty())
+    return false;
+  for (auto& family : *families_out)
+    base::TrimWhitespaceASCII(family, base::TRIM_ALL, &family);
+
+  // The last item is "[STYLE1] [STYLE2] [...] SIZE".
+  std::vector<std::string> styles;
+  base::SplitStringAlongWhitespace(families_out->back(), &styles);
+  families_out->pop_back();
+  if (styles.empty())
+    return false;
+
+  // The size takes the form "<INT>px".
+  std::string size_string = styles.back();
+  styles.pop_back();
+  if (!EndsWith(size_string, "px", true /* case_sensitive */))
+    return false;
+  size_string.resize(size_string.size() - 2);
+  if (!base::StringToInt(size_string, size_pixels_out) ||
+      *size_pixels_out <= 0)
+    return false;
+
+  // Font supports BOLD and ITALIC; underline is supported via RenderText.
+  *style_out = gfx::Font::NORMAL;
+  for (const auto& style_string : styles) {
+    if (style_string == "Bold")
+      *style_out |= gfx::Font::BOLD;
+    else if (style_string == "Italic")
+      *style_out |= gfx::Font::ITALIC;
+    else
+      return false;
+  }
+
+  return true;
+}
 
 FontList::FontList() : impl_(GetDefaultImpl()) {}
 
@@ -109,10 +157,6 @@ int FontList::GetExpectedTextWidth(int length) const {
 
 int FontList::GetFontStyle() const {
   return impl_->GetFontStyle();
-}
-
-const std::string& FontList::GetFontDescriptionString() const {
-  return impl_->GetFontDescriptionString();
 }
 
 int FontList::GetFontSize() const {

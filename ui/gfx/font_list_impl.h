@@ -70,11 +70,6 @@ class FontListImpl : public base::RefCounted<FontListImpl> {
   // Returns the |gfx::Font::FontStyle| style flags for this font list.
   int GetFontStyle() const;
 
-  // Returns a string representing font names, styles, and size. If the
-  // FontListImpl is initialized by a vector of Font, use the first font's style
-  // and size for the description.
-  const std::string& GetFontDescriptionString() const;
-
   // Returns the font size in pixels.
   int GetFontSize() const;
 
@@ -107,6 +102,8 @@ class FontListImpl : public base::RefCounted<FontListImpl> {
   // If FontListImpl is constructed with a vector of font,
   // |font_description_string_| is not initialized during construction. Instead,
   // it is computed lazily when user asked to get the font description string.
+  //
+  // TODO(derat): Remove laziness so that this can be removed.
   mutable std::string font_description_string_;
 
   // The cached common height and baseline of the fonts in the font list.
