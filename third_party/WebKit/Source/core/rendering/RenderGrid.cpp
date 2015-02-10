@@ -590,6 +590,11 @@ double RenderGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, c
     return availableLogicalSpaceIgnoringFractionTracks / accumulatedFractions;
 }
 
+bool RenderGrid::hasDefiniteLogicalSize(GridTrackSizingDirection direction) const
+{
+    return (direction == ForRows) ? hasDefiniteLogicalHeight() : hasDefiniteLogicalWidth();
+}
+
 GridTrackSize RenderGrid::gridTrackSize(GridTrackSizingDirection direction, size_t i) const
 {
     bool isForColumns = direction == ForColumns;
@@ -598,10 +603,7 @@ GridTrackSize RenderGrid::gridTrackSize(GridTrackSizingDirection direction, size
 
     // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto> (or in
     // the case of minmax() as min-content for the first position and max-content for the second).
-    Length logicalSize = isForColumns ? style()->logicalWidth() : style()->logicalHeight();
-    // FIXME: isIntrinsicOrAuto() does not fulfil the 'indefinite size' description as it does not include <percentage>
-    // of indefinite sizes. This is a broather issue as Length does not have the required context to support it.
-    if (logicalSize.isIntrinsicOrAuto()) {
+    if (!hasDefiniteLogicalSize(direction)) {
         const GridLength& oldMinTrackBreadth = trackSize.minTrackBreadth();
         const GridLength& oldMaxTrackBreadth = trackSize.maxTrackBreadth();
         return GridTrackSize(oldMinTrackBreadth.isPercentage() ? Length(MinContent) : oldMinTrackBreadth, oldMaxTrackBreadth.isPercentage() ? Length(MaxContent) : oldMaxTrackBreadth);

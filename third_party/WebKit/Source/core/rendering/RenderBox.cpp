@@ -4176,6 +4176,40 @@ void RenderBox::clearLayoutOverflow()
     m_overflow->setLayoutOverflow(noOverflowRect());
 }
 
+bool RenderBox::logicalWidthIsResolvableFromBlock(const RenderBlock* containingBlock)
+{
+    const RenderBlock* cb = containingBlock;
+    while (!cb->isRenderView() && !cb->isOutOfFlowPositioned() && (cb->style()->logicalWidth().isAuto() || cb->isAnonymousBlock()))
+        cb = cb->containingBlock();
+    // Doesn't anonymousBlocks have all of them cb->style()->logicalWidth().isAuto()
+
+    if (cb->style()->logicalWidth().isFixed())
+        return true;
+    if (cb->isRenderView())
+        return true;
+    if (cb->isOutOfFlowPositioned())
+        return true;
+    if (cb->style()->logicalWidth().isPercent())
+        return logicalWidthIsResolvableFromBlock(cb->containingBlock());
+
+    return false;
+}
+
+bool RenderBox::hasDefiniteLogicalWidth() const
+{
+    const Length& logicalWidth = style()->logicalWidth();
+    if (logicalWidth.isIntrinsic() || logicalWidth.isLegacyIntrinsic())
+        return false;
+    if (logicalWidth.isFixed())
+        return true;
+    // The size of the containing block of an absolutely positioned element is always definite with respect to that
+    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
+    if (isOutOfFlowPositioned())
+        return true;
+
+    return RenderBox::logicalWidthIsResolvableFromBlock(containingBlock());
+}
+
 inline static bool percentageLogicalHeightIsResolvable(const RenderBox* box)
 {
     return RenderBox::percentageLogicalHeightIsResolvableFromBlock(box->containingBlock(), box->isOutOfFlowPositioned());
@@ -4223,6 +4257,21 @@ bool RenderBox::percentageLogicalHeightIsResolvableFromBlock(const RenderBlock* 
     }
 
     return false;
+}
+
+bool RenderBox::hasDefiniteLogicalHeight() const
+{
+    const Length& logicalHeight = style()->logicalHeight();
+    if (logicalHeight.isIntrinsicOrAuto())
+        return false;
+    if (logicalHeight.isFixed())
+        return true;
+    // The size of the containing block of an absolutely positioned element is always definite with respect to that
+    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
+    if (isOutOfFlowPositioned())
+        return true;
+
+    return percentageLogicalHeightIsResolvable(this);
 }
 
 bool RenderBox::hasUnsplittableScrollingOverflow() const

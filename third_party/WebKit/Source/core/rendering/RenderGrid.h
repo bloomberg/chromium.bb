@@ -160,6 +160,8 @@ private:
         return m_grid.size();
     }
 
+    bool hasDefiniteLogicalSize(GridTrackSizingDirection) const;
+
     typedef Vector<Vector<GridCell> > GridRepresentation;
     GridRepresentation m_grid;
     bool m_gridIsDirty;
