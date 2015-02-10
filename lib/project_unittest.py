@@ -26,10 +26,12 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
     """Creates a new project."""
     self.project = project.Project(self.tempdir, initial_config={'name': 'foo'})
 
-  def SetupLegacyProject(self):
+  def SetupLegacyProject(self, project_dir=None, project_name='foo'):
     """Sets up a legacy project layout."""
-    layout_conf = 'repo-name = foo\n'
-    osutils.WriteFile(os.path.join(self.tempdir, 'metadata', 'layout.conf'),
+    if project_dir is None:
+      project_dir = self.tempdir
+    layout_conf = 'repo-name = %s\n' % project_name
+    osutils.WriteFile(os.path.join(project_dir, 'metadata', 'layout.conf'),
                       layout_conf, makedirs=True)
 
   def testLayoutFormat(self):
@@ -143,3 +145,13 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
     self.project = project.Project(self.tempdir)
     with self.assertRaises(project.ProjectFeatureNotSupported):
       self.project.UpdateConfig({'name': 'bar'})
+
+  def testInherits(self):
+    """Tests the containment checking works as intended."""
+    self.CreateNewProject()
+    bar_overlay = os.path.join(self.tempdir, 'bar')
+    self.SetupLegacyProject(project_dir=bar_overlay, project_name='bar')
+    with mock.patch('chromite.lib.portage_util.FindOverlays',
+                    return_value=[bar_overlay]):
+      self.assertTrue(self.project.Inherits('bar'))
+      self.assertFalse(self.project.Inherits('baz'))

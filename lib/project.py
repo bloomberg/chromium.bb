@@ -146,6 +146,41 @@ class Project(object):
 
     self._WriteParents([m + ':base' for m in deps])
 
+  def Inherits(self, project_name):
+    """Checks whether this project contains |project_name|.
+
+    Args:
+      project_name: The name of the project to check containment.
+
+    Returns:
+      Whether |project_name| is contained in this project.
+    """
+    return bool('name' in self.config and
+                _FindProjectInOverlays(project_name, self.config['name']))
+
+
+def _FindProjectInOverlays(name, base=None):
+  """Returns the parent project of |base| called |name|.
+
+  Args:
+    name: Overlay/project name to look for.
+    base: Base project/overlay name to scan from; if None, uses |name|.
+
+  Returns:
+    The project associated to |name| if one exists, otherwise None.
+  """
+  if base is None:
+    base = name
+  for overlay in portage_util.FindOverlays('both', base):
+    try:
+      p = Project(overlay)
+      if p.config.get('name') == name:
+        return p
+    except ProjectNotFound:
+      pass
+
+  return None
+
 
 def FindProjectInPath(path=None):
   """Returns the root directory of the project containing a path.
@@ -173,18 +208,9 @@ def FindProjectByName(name):
   """Returns the project associated to |name|.
 
   Args:
-    name: project name
+    name: A project name.
 
   Returns:
-    The project associated to the name if it exists.
-    None if no project exist with that name.
+    The project associated to |name| if one exists, otherwise None.
   """
-  for overlay in portage_util.FindOverlays('both', name):
-    try:
-      p = Project(overlay)
-      if p.config.get('name') == name:
-        return p
-    except ProjectNotFound:
-      pass
-
-  return None
+  return _FindProjectInOverlays(name)
