@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace aura {
 class Window;
@@ -26,12 +27,30 @@ class Widget;
 
 namespace ash {
 
-class OverviewWindowButton;
-
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
                                       public aura::WindowObserver {
  public:
+  class OverviewLabelButton : public views::LabelButton {
+   public:
+    OverviewLabelButton(views::ButtonListener* listener,
+                        const base::string16& text);
+
+    ~OverviewLabelButton() override;
+
+    void set_top_padding(int top_padding) { top_padding_ = top_padding; }
+
+   protected:
+    // views::LabelButton:
+    gfx::Rect GetChildAreaBounds() override;
+
+   private:
+    // Padding on top of the button.
+    int top_padding_;
+
+    DISALLOW_COPY_AND_ASSIGN(OverviewLabelButton);
+  };
+
   explicit WindowSelectorItem(aura::Window* window);
   ~WindowSelectorItem() override;
 
@@ -94,6 +113,13 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Changes the opacity of all the windows the item owns.
   void SetOpacity(float opacity);
 
+  // Updates the window label bounds.
+  void UpdateWindowLabel(const gfx::Rect& window_bounds,
+                         OverviewAnimationType animation_type);
+
+  // Creates the window label.
+  void CreateWindowLabel(const base::string16& title);
+
   // Updates the close button's bounds. Any change in bounds will be animated
   // from the current bounds to the new bounds as per the |animation_type|.
   void UpdateCloseButtonLayout(OverviewAnimationType animation_type);
@@ -119,15 +145,18 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // a window layer for display on another monitor.
   bool in_bounds_update_;
 
+  // Label under the window displaying its active tab name.
+  scoped_ptr<views::Widget> window_label_;
+
+  // View for the label under the window.
+  OverviewLabelButton* window_label_button_view_;
+
   // The close buttons widget container.
   views::Widget close_button_widget_;
 
   // An easy to access close button for the window in this item. Owned by the
   // close_button_widget_.
   views::ImageButton* close_button_;
-
-  // Button that handles window activation.
-  scoped_ptr<OverviewWindowButton> overview_window_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

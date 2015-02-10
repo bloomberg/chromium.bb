@@ -19,7 +19,6 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/overview_window_button.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -216,8 +215,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   views::LabelButton* GetLabelButtonView(ash::WindowSelectorItem* window) {
-    return static_cast<views::LabelButton*>(
-        window->overview_window_button_->window_label_->GetContentsView());
+    return window->window_label_button_view_;
   }
 
   // Tests that a window is contained within a given WindowSelectorItem, and
@@ -373,12 +371,13 @@ TEST_F(WindowSelectorTest, ClickOnWindowDuringTouch) {
                                            window1_bounds.CenterPoint());
 
   // Clicking on |window2| while touching on |window1| should not cause a
-  // crash, and |window2| should be selected.
+  // crash, overview mode should be disengaged and |window2| should be active.
   const int kTouchId = 19;
   event_generator.PressTouchId(kTouchId);
   event_generator.MoveMouseToCenterOf(window2.get());
   event_generator.ClickLeftButton();
   EXPECT_FALSE(IsSelecting());
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
   event_generator.ReleaseTouchId(kTouchId);
 
   ToggleOverview();
@@ -927,14 +926,8 @@ TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
 
   // Labels are located based on target_bounds, not the actual window item
   // bounds.
-  gfx::Rect target_bounds(window_item->target_bounds());
-  gfx::Rect expected_label_bounds(target_bounds.x(),
-                                  target_bounds.bottom() - label->
-                                      GetPreferredSize().height(),
-                                  target_bounds.width(),
-                                  label->GetPreferredSize().height());
-  gfx::Rect real_label_bounds = label->GetWidget()->GetNativeWindow()->bounds();
-  EXPECT_EQ(real_label_bounds, expected_label_bounds);
+  gfx::Rect label_bounds = label->GetWidget()->GetNativeWindow()->bounds();
+  EXPECT_EQ(label_bounds, window_item->target_bounds());
 }
 
 // Tests that overview updates the window positions if the display orientation

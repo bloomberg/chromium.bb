@@ -11,10 +11,10 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overview/overview_animation_type.h"
-#include "ash/wm/overview/overview_window_button.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +27,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -40,6 +41,21 @@ namespace {
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
 static const int kWindowMargin = 30;
+
+// Foreground label color.
+static const SkColor kLabelColor = SK_ColorWHITE;
+
+// Label shadow color.
+static const SkColor kLabelShadow = 0xB0000000;
+
+// Vertical padding for the label, on top of it.
+static const int kVerticalLabelPadding = 20;
+
+// Solid shadow length from the label
+static const int kVerticalShadowOffset = 1;
+
+// Amount of blur applied to the label shadow
+static const int kShadowBlur = 10;
 
 // Opacity for dimmed items.
 static const float kDimmedItemOpacity = 0.5f;
@@ -82,13 +98,29 @@ OverviewCloseButton::~OverviewCloseButton() {
 
 }  // namespace
 
+WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
+    views::ButtonListener* listener,
+    const base::string16& text)
+    : LabelButton(listener, text) {
+}
+
+WindowSelectorItem::OverviewLabelButton::~OverviewLabelButton() {
+}
+
+gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
+  gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(0, top_padding_, 0, 0);
+  return bounds;
+}
+
 WindowSelectorItem::WindowSelectorItem(aura::Window* window)
     : dimmed_(false),
       root_window_(window->GetRootWindow()),
       transform_window_(window),
       in_bounds_update_(false),
-      close_button_(new OverviewCloseButton(this)),
-      overview_window_button_(new OverviewWindowButton(window)) {
+      window_label_button_view_(nullptr),
+      close_button_(new OverviewCloseButton(this)) {
+  CreateWindowLabel(window->title());
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -111,8 +143,6 @@ WindowSelectorItem::WindowSelectorItem(aura::Window* window)
   close_button_widget_.GetNativeWindow()->SetBounds(close_button_rect);
 
   GetWindow()->AddObserver(this);
-
-  UpdateCloseButtonAccessibilityName();
 }
 
 WindowSelectorItem::~WindowSelectorItem() {
@@ -146,8 +176,6 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
   target_bounds_ = target_bounds;
 
-  overview_window_button_->SetBounds(target_bounds, animation_type);
-
   gfx::Rect inset_bounds(target_bounds);
   inset_bounds.Inset(kWindowMargin, kWindowMargin);
   SetItemBounds(inset_bounds, animation_type);
@@ -155,6 +183,7 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // SetItemBounds is called before UpdateCloseButtonLayout so the close button
   // can properly use the updated windows bounds.
   UpdateCloseButtonLayout(animation_type);
+  UpdateWindowLabel(target_bounds, animation_type);
 }
 
 void WindowSelectorItem::RecomputeWindowTransforms() {
@@ -168,7 +197,7 @@ void WindowSelectorItem::RecomputeWindowTransforms() {
 }
 
 void WindowSelectorItem::SendFocusAlert() const {
-  overview_window_button_->SendFocusAlert();
+  window_label_button_view_->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {
@@ -178,7 +207,12 @@ void WindowSelectorItem::SetDimmed(bool dimmed) {
 
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  transform_window_.Close();
+  if (sender == close_button_) {
+    transform_window_.Close();
+    return;
+  }
+  CHECK(sender == window_label_button_view_);
+  wm::GetWindowState(transform_window_.window())->Activate();
 }
 
 void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {
@@ -189,7 +223,7 @@ void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {
 void WindowSelectorItem::OnWindowTitleChanged(aura::Window* window) {
   // TODO(flackr): Maybe add the new title to a vector of titles so that we can
   // filter any of the titles the window had while in the overview session.
-  overview_window_button_->SetLabelText(window->title());
+  window_label_button_view_->SetText(window->title());
   UpdateCloseButtonAccessibilityName();
 }
 
@@ -210,10 +244,66 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
 }
 
 void WindowSelectorItem::SetOpacity(float opacity) {
-  overview_window_button_->SetOpacity(opacity);
+  window_label_->GetNativeWindow()->layer()->SetOpacity(opacity);
   close_button_widget_.GetNativeWindow()->layer()->SetOpacity(opacity);
 
   transform_window_.SetOpacity(opacity);
+}
+
+void WindowSelectorItem::UpdateWindowLabel(
+    const gfx::Rect& window_bounds,
+    OverviewAnimationType animation_type) {
+  // If the root window has changed, force the window label to be recreated
+  // and faded in on the new root window.
+  DCHECK(!window_label_ ||
+         window_label_->GetNativeWindow()->GetRootWindow() == root_window_);
+
+  if (!window_label_->IsVisible()) {
+    window_label_->Show();
+    ScopedOverviewAnimationSettings::SetupFadeInAfterLayout(
+        window_label_->GetNativeWindow());
+  }
+
+  gfx::Rect converted_bounds =
+      ScreenUtil::ConvertRectFromScreen(root_window_, window_bounds);
+  gfx::Rect label_bounds(converted_bounds.x(), converted_bounds.y(),
+                         converted_bounds.width(), converted_bounds.height());
+  window_label_button_view_->set_top_padding(label_bounds.height() -
+                                             kVerticalLabelPadding);
+  ScopedOverviewAnimationSettings animation_settings(
+      animation_type, window_label_->GetNativeWindow());
+
+  window_label_->GetNativeWindow()->SetBounds(label_bounds);
+}
+
+void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
+  window_label_.reset(new views::Widget);
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.parent =
+      Shell::GetContainer(root_window_, kShellWindowId_OverlayContainer);
+  params.visible_on_all_workspaces = true;
+  window_label_->set_focus_on_creation(false);
+  window_label_->Init(params);
+  window_label_button_view_ = new OverviewLabelButton(this, title);
+  window_label_button_view_->SetBorder(views::Border::NullBorder());
+  window_label_button_view_->SetTextColor(views::LabelButton::STATE_NORMAL,
+                                          kLabelColor);
+  window_label_button_view_->SetTextColor(views::LabelButton::STATE_HOVERED,
+                                          kLabelColor);
+  window_label_button_view_->SetTextColor(views::LabelButton::STATE_PRESSED,
+                                          kLabelColor);
+  window_label_button_view_->set_animate_on_state_change(false);
+  window_label_button_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  window_label_button_view_->SetTextShadows(gfx::ShadowValues(
+      1, gfx::ShadowValue(gfx::Point(0, kVerticalShadowOffset), kShadowBlur,
+                          kLabelShadow)));
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  window_label_button_view_->SetFontList(
+      bundle.GetFontList(ui::ResourceBundle::BoldFont));
+  window_label_->SetContentsView(window_label_button_view_);
 }
 
 void WindowSelectorItem::UpdateCloseButtonLayout(
