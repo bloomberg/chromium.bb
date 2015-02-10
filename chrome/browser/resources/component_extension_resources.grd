@@ -194,6 +194,9 @@
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_CSS" file="pdf/elements/viewer-password-screen/viewer-password-screen.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML" file="pdf/elements/viewer-password-screen/viewer-password-screen.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="pdf/elements/viewer-password-screen/viewer-password-screen.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_CSS" file="pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_HTML" file="pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_JS" file="pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PROGRESS_BAR_CSS" file="pdf/elements/viewer-progress-bar/viewer-progress-bar.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PROGRESS_BAR_HTML" file="pdf/elements/viewer-progress-bar/viewer-progress-bar.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PROGRESS_BAR_JS" file="pdf/elements/viewer-progress-bar/viewer-progress-bar.js" type="BINDATA" />

@@ -15,7 +15,7 @@ Polymer('viewer-bookmark', {
 
   onClick: function() {
     if (this.bookmark.hasOwnProperty('page'))
-      this.fire('changePage', {page: this.bookmark.page});
+      this.fire('change-page', {page: this.bookmark.page});
   },
 
 });

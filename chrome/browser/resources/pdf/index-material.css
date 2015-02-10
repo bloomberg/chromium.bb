@@ -16,39 +16,10 @@ body {
   margin: 0;
 }
 
-core-toolbar {
-  background-color: transparent;
-  color: rgb(241, 241, 241);
-  font-size: 1.5em;
-  height: 56px;
-  padding-left: 1em;
-  padding-right: 1em;
-  z-index: 3;
-}
-
-core-toolbar /deep/ ::selection {
-  background: rgb(187, 222, 251);
-}
-
-#toolbar-shadow {
+viewer-pdf-toolbar {
   position: fixed;
   width: 100%;
   z-index: 4;
-}
-
-#progress-bar {
-  height: 56px;
-  position: absolute;
-  width: 100%;
-  z-index: 3;
-}
-
-paper-progress::shadow #activeProgress {
-  background-color: rgb(33, 150, 243);
-}
-
-paper-progress::shadow #progressContainer {
-  background-color: rgb(100, 181, 246);
 }
 
 #plugin {

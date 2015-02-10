@@ -5,18 +5,34 @@
 var DIGIT_LENGTH = 0.6;
 
 Polymer('viewer-page-selector', {
-  // The current entry in the input field (1-based).
+  /**
+   * @type {string}
+   * The current entry in the input field (1-based).
+   */
   pageNo: '1',
-  // The index of the current page being viewed (0-based).
+
+  /**
+   * @type {number}
+   * The index of the current page being viewed (0-based).
+   */
   index: 0,
+
+  /**
+   * @type {number}
+   * The number of pages the document contains.
+   */
   docLength: 1,
-  // The submitted input from the user (1-based).
+
+  /**
+   * @type {string}
+   * The submitted input from the user (1-based).
+   */
   chosenPageNo: '1',
 
   chosenPageNoChanged: function() {
     var page = parseInt(this.chosenPageNo);
     if (!isNaN(page)) {
-      this.fire('changePage', {page: page - 1});
+      this.fire('change-page', {page: page - 1});
     } else {
       // Repopulate the input.
       this.indexChanged();

@@ -1,0 +1,32 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+paper-progress {
+  height: 56px;
+  position: absolute;
+  width: 100%;
+  z-index: 3;
+}
+
+paper-progress::shadow #activeProgress {
+  background-color: rgb(33, 150, 243);
+}
+
+paper-progress::shadow #progressContainer {
+  background-color: rgb(100, 181, 246);
+}
+
+core-toolbar {
+  background-color: transparent;
+  color: rgb(241, 241, 241);
+  font-size: 1.5em;
+  height: 56px;
+  padding-left: 1em;
+  padding-right: 1em;
+  z-index: 3;
+}
+
+core-toolbar /deep/ ::selection {
+  background: rgb(187, 222, 251);
+}

@@ -86,7 +86,8 @@ function PDFViewer(streamDetails) {
   this.passwordScreen_.addEventListener('password-submitted',
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
-  this.bookmarksPane = $('bookmarks-pane');
+  this.materialToolbar_ = $('material-toolbar');
+  this.bookmarksPane_ = $('bookmarks-pane');
 
   // Create the viewport.
   this.viewport_ = new Viewport(window,
@@ -118,7 +119,7 @@ function PDFViewer(streamDetails) {
 
   document.title = getFilenameFromURL(this.streamDetails_.originalUrl);
   if (this.isMaterial_)
-    $('title').textContent = document.title;
+    this.materialToolbar_.docTitle = document.title;
   this.plugin_.setAttribute('src', this.streamDetails_.originalUrl);
   this.plugin_.setAttribute('stream-url', this.streamDetails_.streamUrl);
   var headers = '';
@@ -132,15 +133,6 @@ function PDFViewer(streamDetails) {
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
-  this.pageIndicator_.addEventListener('changePage', function(e) {
-    this.viewport_.goToPage(e.detail.page);
-  }.bind(this));
-
-  if (this.isMaterial_) {
-    this.bookmarksPane.addEventListener('changePage', function(e) {
-      this.viewport_.goToPage(e.detail.page);
-    }.bind(this));
-  }
 
   // Setup the button event listeners.
   $('fit-to-width-button').addEventListener('click',
@@ -151,14 +143,21 @@ function PDFViewer(streamDetails) {
       this.viewport_.zoomIn.bind(this.viewport_));
   $('zoom-out-button').addEventListener('click',
       this.viewport_.zoomOut.bind(this.viewport_));
-  $('save-button').addEventListener('click', this.save_.bind(this));
-  $('print-button').addEventListener('click', this.print_.bind(this));
+
   if (this.isMaterial_) {
-    $('bookmarks-button').addEventListener('click', function() {
-      this.bookmarksPane.toggle();
+    this.materialToolbar_.addEventListener('save', this.save_.bind(this));
+    this.materialToolbar_.addEventListener('print', this.print_.bind(this));
+    this.materialToolbar_.addEventListener('toggle-bookmarks', function() {
+      this.bookmarksPane_.toggle();
     }.bind(this));
-    $('rotate-right-button').addEventListener('click',
+    this.materialToolbar_.addEventListener('rotate-right',
         this.rotateClockwise_.bind(this));
+    document.body.addEventListener('change-page', function(e) {
+      this.viewport_.goToPage(e.detail.page);
+    }.bind(this));
+  } else {
+    $('save-button').addEventListener('click', this.save_.bind(this));
+    $('print-button').addEventListener('click', this.print_.bind(this));
   }
 
   // Setup the keyboard event listener.
@@ -290,7 +289,7 @@ PDFViewer.prototype = {
         return;
       case 71: // g key.
         if (this.isMaterial_ && (e.ctrlKey || e.metaKey)) {
-          this.pageIndicator_.select();
+          this.materialToolbar_.selectPageNumber();
           // To prevent the default "find text" behaviour in Chrome.
           e.preventDefault();
         }
@@ -392,7 +391,7 @@ PDFViewer.prototype = {
    */
   updateProgress_: function(progress) {
     if (this.isMaterial_)
-      this.progressBar_.value = progress;
+      this.materialToolbar_.loadProgress = progress;
     else
       this.progressBar_.progress = progress;
 
@@ -409,7 +408,7 @@ PDFViewer.prototype = {
       // Document load complete.
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
-      if (this.isMaterial_)
+      if (!this.isMaterial_)
         this.pageIndicator_.style.visibility = 'visible';
       this.handleURLParams_();
       this.loaded_ = true;
@@ -450,7 +449,7 @@ PDFViewer.prototype = {
           this.passwordScreen_.accept();
 
         if (this.isMaterial_) {
-          this.pageIndicator_.docLength =
+          this.materialToolbar_.docLength =
               this.documentDimensions_.pageDimensions.length;
         } else {
           this.pageIndicator_.initialFadeIn();
@@ -504,9 +503,11 @@ PDFViewer.prototype = {
         break;
       case 'setTranslatedStrings':
         this.passwordScreen_.text = message.data.getPasswordString;
-        this.progressBar_.text = message.data.loadingString;
-        if (!this.isPrintPreview_)
-          this.progressBar_.style.visibility = 'visible';
+        if (!this.isMaterial_) {
+          this.progressBar_.text = message.data.loadingString;
+          if (!this.isPrintPreview_)
+            this.progressBar_.style.visibility = 'visible';
+        }
         this.errorScreen_.text = message.data.loadFailedString;
         break;
       case 'cancelStreamUrl':
@@ -515,7 +516,7 @@ PDFViewer.prototype = {
       case 'bookmarks':
         this.bookmarks_ = message.data.bookmarks;
         if (this.isMaterial_)
-          this.bookmarksPane.bookmarks = message.data.bookmarks;
+          this.bookmarksPane_.bookmarks = message.data.bookmarks;
         break;
     }
   },
@@ -608,7 +609,11 @@ PDFViewer.prototype = {
 
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();
-    this.pageIndicator_.index = visiblePage;
+    if (this.isMaterial_)
+      this.materialToolbar_.pageIndex = visiblePage;
+    else
+      this.pageIndicator_.index = visiblePage;
+
     if (!this.isMaterial_) {
       if (this.documentDimensions_.pageDimensions.length > 1 &&
           hasScrollbars.vertical) {
@@ -700,7 +705,8 @@ PDFViewer.prototype = {
         if (saveButton)
           saveButton.parentNode.removeChild(saveButton);
 
-        this.pageIndicator_.pageLabels = message.data.pageNumbers;
+        if (!this.isMaterial_)
+          this.pageIndicator_.pageLabels = message.data.pageNumbers;
 
         this.plugin_.postMessage({
           type: 'resetPrintPreviewMode',
