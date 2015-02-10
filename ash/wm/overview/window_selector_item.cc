@@ -101,7 +101,8 @@ OverviewCloseButton::~OverviewCloseButton() {
 WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
     views::ButtonListener* listener,
     const base::string16& text)
-    : LabelButton(listener, text) {
+    : LabelButton(listener, text),
+      top_padding_(0) {
 }
 
 WindowSelectorItem::OverviewLabelButton::~OverviewLabelButton() {
