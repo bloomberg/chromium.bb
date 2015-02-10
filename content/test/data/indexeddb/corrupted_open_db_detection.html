@@ -167,10 +167,12 @@ var tests = {
     });
   },
   failGetBlobJournal: function() {
-    // Get() #1 the actual get, #2 is for the journal.
-    testXhr("/corrupt/test/fail?class=LevelDBTransaction&method=Get&instNum=2", function() {
+    // Get() #1 is the put (GetNewVersionNumber)
+    // Get() #2 is the blob key generator (GetBlobKeyGeneratorCurrentNumber)
+    // Get() #3 is the journal (GetPrimaryBlobJournal)
+    testXhr("/corrupt/test/fail?class=LevelDBTransaction&method=Get&instNum=3", function() {
       tests.testCommon('readwrite');
-      request.onsuccess = unexpectedSuccessCallback;
+      request = objectStore.put({blob: new Blob(['abc'])}, 'key-0');
       request.onerror = requestError;
       db.onclose = function databaseClosed(event) {
         shouldBe("numTransactionErrors", "0");
@@ -178,7 +180,6 @@ var tests = {
 
         done("Closed as expected");
       };
-      request = objectStore.get('key-0');
     });
   },
   clearObjectStore: function() {

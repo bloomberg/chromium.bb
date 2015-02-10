@@ -4131,10 +4131,11 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   DCHECK_GT(backing_store_->committing_transaction_count_, 0UL);
   --backing_store_->committing_transaction_count_;
 
-  // Read the persisted states of the primary/live blob journals,
-  // so that they can be updated correctly by the transaction.
-  BlobJournalType primary_journal, live_journal;
-  {
+  BlobJournalType primary_journal, live_journal, saved_primary_journal,
+      dead_blobs;
+  if (!blob_change_map_.empty()) {
+    // Read the persisted states of the primary/live blob journals,
+    // so that they can be updated correctly by the transaction.
     scoped_refptr<LevelDBTransaction> journal_transaction =
         IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
             backing_store_->db_.get());
@@ -4144,30 +4145,29 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
     s = GetLiveBlobJournal(journal_transaction.get(), &live_journal);
     if (!s.ok())
       return s;
-  }
 
-  // Remove newly added blobs from the journal - they will be accounted
-  // for in blob entry tables in the transaction.
-  {
+    // Remove newly added blobs from the journal - they will be accounted
+    // for in blob entry tables in the transaction.
     std::sort(primary_journal.begin(), primary_journal.end());
     std::sort(blobs_to_write_.begin(), blobs_to_write_.end());
     BlobJournalType new_journal = base::STLSetDifference<BlobJournalType>(
         primary_journal, blobs_to_write_);
     primary_journal.swap(new_journal);
-  }
 
-  // Append newly deleted blobs to appropriate primary/live journals.
-  BlobJournalType saved_primary_journal = primary_journal;
-  BlobJournalType dead_blobs, live_blobs;
-  if (!blobs_to_remove_.empty()) {
-    DCHECK(!backing_store_->is_incognito());
-    PartitionBlobsToRemove(&dead_blobs, &live_blobs);
+    // Append newly deleted blobs to appropriate primary/live journals.
+    saved_primary_journal = primary_journal;
+    BlobJournalType live_blobs;
+    if (!blobs_to_remove_.empty()) {
+      DCHECK(!backing_store_->is_incognito());
+      PartitionBlobsToRemove(&dead_blobs, &live_blobs);
+    }
+    primary_journal.insert(primary_journal.end(), dead_blobs.begin(),
+                           dead_blobs.end());
+    live_journal.insert(live_journal.end(), live_blobs.begin(),
+                        live_blobs.end());
+    UpdatePrimaryBlobJournal(transaction_.get(), primary_journal);
+    UpdateLiveBlobJournal(transaction_.get(), live_journal);
   }
-  primary_journal.insert(primary_journal.end(), dead_blobs.begin(),
-                         dead_blobs.end());
-  live_journal.insert(live_journal.end(), live_blobs.begin(), live_blobs.end());
-  UpdatePrimaryBlobJournal(transaction_.get(), primary_journal);
-  UpdateLiveBlobJournal(transaction_.get(), live_journal);
 
   // Actually commit. If this succeeds, the journals will appropriately
   // reflect pending blob work - dead files that should be deleted
@@ -4202,6 +4202,8 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   // from the persisted primary journal.
   if (dead_blobs.empty())
     return leveldb::Status::OK();
+
+  DCHECK(!blob_change_map_.empty());
 
   s = backing_store_->CleanUpBlobJournalEntries(dead_blobs);
   if (!s.ok()) {
