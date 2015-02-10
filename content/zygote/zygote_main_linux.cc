@@ -646,13 +646,9 @@ bool ZygoteMain(const MainFunctionParams& params,
   extra_fds.push_back(sancov_socket_fds[1]);
 #endif
 
-  const int sandbox_flags = linux_sandbox->GetStatus();
-
-  const bool setuid_sandbox_engaged = sandbox_flags & kSandboxLinuxSUID;
+  int sandbox_flags = linux_sandbox->GetStatus();
+  bool setuid_sandbox_engaged = sandbox_flags & kSandboxLinuxSUID;
   CHECK_EQ(using_setuid_sandbox, setuid_sandbox_engaged);
-
-  const bool namespace_sandbox_engaged = sandbox_flags & kSandboxLinuxUserNS;
-  CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
 
   Zygote zygote(sandbox_flags, fork_delegates.Pass(), extra_children,
                 extra_fds);
