@@ -26,7 +26,7 @@ NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
 {
 }
 
-void NavigatorBeacon::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorBeacon)
 {
     WillBeHeapSupplement<Navigator>::trace(visitor);
 }
