@@ -658,6 +658,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEventDispatchEvent::da
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("type", event.type());
+    setCallStack(value.get());
     return value.release();
 }
 
