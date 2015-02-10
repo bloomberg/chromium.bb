@@ -41,14 +41,12 @@ int HostProcessMain();
 #if defined(OS_WIN)
 int DaemonProcessMain();
 int DesktopProcessMain();
-int ElevatedControllerMain();
 int RdpDesktopSessionMain();
 #endif  // defined(OS_WIN)
 
 const char kElevateSwitchName[] = "elevate";
 const char kProcessTypeSwitchName[] = "type";
 
-const char kProcessTypeController[] = "controller";
 const char kProcessTypeDaemon[] = "daemon";
 const char kProcessTypeDesktop[] = "desktop";
 const char kProcessTypeHost[] = "host";
@@ -144,8 +142,6 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
     main_routine = &DaemonProcessMain;
   } else if (process_type == kProcessTypeDesktop) {
     main_routine = &DesktopProcessMain;
-  } else if (process_type == kProcessTypeController) {
-    main_routine = &ElevatedControllerMain;
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
 #endif  // defined(OS_WIN)

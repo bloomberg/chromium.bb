@@ -7,65 +7,6 @@ import "ocidl.idl";
 
 [
   object,
-  uuid(e051a481-6345-4ba1-bdb1-cf7929955268),
-  dual,
-  nonextensible,
-  helpstring("IDaemonControl Interface"),
-  pointer_default(unique)
-]
-interface IDaemonControl : IDispatch {
-  [ id(1), helpstring("Returns a filtered copy of the daemon's configuration. "
-                      "Only 'host_id' and 'xmpp_login' values are returned, "
-                      "because any other values may contain security-sensitive "
-                      "information.") ]
-  HRESULT GetConfig([out, retval] BSTR* config_out);
-
-  [ id(2), helpstring("Returns a string representing the version of "
-                      "the daemon.") ]
-  HRESULT GetVersion([out, retval] BSTR* version_out);
-
-  [ id(3), helpstring("Replaces the existing daemon's configuration with "
-                      "the specified settings.") ]
-  HRESULT SetConfig([in] BSTR config);
-
-  [ id(4), helpstring("Sets the owner window for any windows shown by "
-                      "the daemon controller.") ]
-  HRESULT SetOwnerWindow([in] LONG_PTR owner_window);
-
-  [ id(5), helpstring("Starts the daemon.") ]
-  HRESULT StartDaemon();
-
-  [ id(6), helpstring("Stops the daemon.") ]
-  HRESULT StopDaemon();
-
-  [ id(7), helpstring("Modifies the existing daemon's configuration by "
-                      "merging it with the specified settings. The 'host_id' "
-                      "and 'xmpp_login' values cannot be modified, and must "
-                      "not be passed to this method.") ]
-  HRESULT UpdateConfig([in] BSTR config);
-};
-
-[
-  object,
-  uuid(655bd819-c08c-4b04-80c2-f160739ff6ef),
-  dual,
-  nonextensible,
-  helpstring("IDaemonControl2 Interface"),
-  pointer_default(unique)
-]
-interface IDaemonControl2 : IDaemonControl {
-  [ id(8), helpstring("Retrieves the user's consent to collect crash dumps "
-                      "and gather usage statistics.") ]
-  HRESULT GetUsageStatsConsent([out] BOOL* allowed,
-                               [out] BOOL* set_by_policy);
-
-  [ id(9), helpstring("Records the user's consent to collect crash dumps "
-                      "and gather usage statistics.") ]
-  HRESULT SetUsageStatsConsent([in] BOOL allowed);
-};
-
-[
-  object,
   uuid(b59b96da-83cb-40ee-9b91-c377400fc3e3),
   nonextensible,
   helpstring("IRdpDesktopSessionEventHandler Interface"),
@@ -113,14 +54,6 @@ interface IRdpDesktopSession : IUnknown {
 ]
 library ChromotingLib {
   importlib("stdole2.tlb");
-
-  [
-    uuid(@DAEMON_CONTROLLER_CLSID@),
-    helpstring("ElevatedController Class")
-  ]
-  coclass ElevatedController {
-    [default] interface IDaemonControl2;
-  };
 
   [
     uuid(@RDP_DESKTOP_SESSION_CLSID@),

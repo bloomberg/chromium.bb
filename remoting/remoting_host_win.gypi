@@ -209,8 +209,6 @@
             'host/win/chromoting_module.h',
             'host/win/core.cc',
             'host/win/core_resource.h',
-            'host/win/elevated_controller.cc',
-            'host/win/elevated_controller.h',
             'host/win/host_service.cc',
             'host/win/host_service.h',
             'host/win/omaha.cc',

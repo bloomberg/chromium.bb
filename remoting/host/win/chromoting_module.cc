@@ -4,8 +4,6 @@
 
 #include "remoting/host/win/chromoting_module.h"
 
-#include <sddl.h>
-
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -16,24 +14,11 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/win/com_security.h"
-#include "remoting/host/win/elevated_controller.h"
 #include "remoting/host/win/rdp_desktop_session.h"
 
 namespace remoting {
 
 namespace {
-
-// A security descriptor allowing local processes running under SYSTEM, built-in
-// administrators and interactive users to call COM methods.
-const wchar_t kElevatedControllerSd[] =
-    SDDL_OWNER L":" SDDL_BUILTIN_ADMINISTRATORS
-    SDDL_GROUP L":" SDDL_BUILTIN_ADMINISTRATORS
-    SDDL_DACL L":"
-    SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL, SDDL_LOCAL_SYSTEM)
-    SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL,
-             SDDL_BUILTIN_ADMINISTRATORS)
-    SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL, SDDL_INTERACTIVE);
 
 // Holds a reference to the task runner used by the module.
 base::LazyInstance<scoped_refptr<AutoThreadTaskRunner> > g_module_task_runner =
@@ -193,24 +178,6 @@ HRESULT ChromotingModule::RevokeClassObjects() {
   }
 
   return S_OK;
-}
-
-// Elevated controller entry point.
-int ElevatedControllerMain() {
-  ATL::_ATL_OBJMAP_ENTRY elevated_controller_entry[] = {
-    OBJECT_ENTRY(__uuidof(ElevatedController), ElevatedController)
-  };
-
-  ChromotingModule module(elevated_controller_entry,
-                          elevated_controller_entry + 1);
-
-  if (!InitializeComSecurity(base::WideToUTF8(kElevatedControllerSd), "", true))
-    return kInitializationFailed;
-
-  if (!module.Run())
-    return kInitializationFailed;
-
-  return kSuccessExitCode;
 }
 
 // RdpClient entry point.

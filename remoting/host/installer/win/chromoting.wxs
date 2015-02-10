@@ -41,12 +41,7 @@
   <?define ChromotingTypelib = "{b6396c45-b0cc-456b-9f49-f12964ee6df4}" ?>
 
   <!-- AppIDs used by the COM components. -->
-  <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
   <?define RdpAppid = "{52e6fd1a-f16e-49c0-aacb-5436a915448b}" ?>
-
-  <?define ControllerClass = "ElevatedController Class" ?>
-  <?define ControllerProgid =
-      "ChromotingElevatedController.ElevatedController" ?>
 
   <?define IRdpDesktopSessionId = "{6a7699f0-ee43-43e7-aa30-a6738f9bd470}" ?>
   <?define IRdpDesktopSessionEventHandlerId =
@@ -72,10 +67,6 @@
   <?define RdpSd = "010014807800000088000000140000003000000002001C000100000011001400040000000101000000000010002000000200480003000000000014000B000000010100000000000512000000000018000B00000001020000000000052000000020020000000014000B0000000101000000000005130000000102000000000005200000002002000001020000000000052000000020020000" ?>
 
   <!-- Verify that all required parameters are defined. -->
-  <?ifndef ControllerClsid ?>
-    <?error ControllerClsid must be defined ?>
-  <?endif?>
-
   <?ifndef RdpDesktopSessionClsid ?>
     <?error RdpDesktopSessionClsid must be defined ?>
   <?endif?>
@@ -302,11 +293,6 @@
         <RegistryKey Root="HKLM"
                      Key="SOFTWARE\Classes">
           <RegistryKey Key="AppId">
-            <RegistryKey Key="$(var.ControllerAppid)" Action="create">
-              <RegistryValue Type="string"
-                             Value="ChromotingElevatedController"/>
-            </RegistryKey>
-
             <RegistryKey Key="$(var.RdpAppid)" Action="create">
               <RegistryValue Type="string"
                              Value="ChromotingRdpDesktopSession"/>
@@ -323,74 +309,7 @@
 
           </RegistryKey>
 
-          <RegistryKey Key="$(var.ControllerProgid)" Action="create">
-            <RegistryValue Type="string"
-                           Value="$(var.ControllerClass)"/>
-
-            <RegistryKey Key="CLSID" Action="create">
-              <RegistryValue Type="string"
-                             Value="$(var.ControllerClsid)"/>
-            </RegistryKey>
-
-            <RegistryKey Key="CurVer" Action="create">
-              <RegistryValue Type="string"
-                             Value="$(var.ControllerProgid).$(var.Version)"/>
-            </RegistryKey>
-          </RegistryKey>
-
-          <RegistryKey Key="$(var.ControllerProgid).$(var.Version)"
-                       Action="create">
-            <RegistryValue Type="string"
-                           Value="$(var.ControllerClass)"/>
-
-            <RegistryKey Key="CLSID" Action="create">
-              <RegistryValue Type="string"
-                             Value="$(var.ControllerClsid)"/>
-            </RegistryKey>
-          </RegistryKey>
-
           <RegistryKey Key="CLSID">
-            <RegistryKey Key="$(var.ControllerClsid)" Action="create">
-              <RegistryValue Type="string"
-                             Value="$(var.ControllerClass)"/>
-
-              <RegistryValue Type="string"
-                             Name="AppID"
-                             Value="$(var.ControllerAppid)"/>
-
-              <RegistryValue Type="string"
-                             Name="LocalizedString"
-                             Value="@[binaries]$(var.CoreBinary),-103"/>
-
-              <RegistryKey Key="LocalServer32" Action="create">
-                <RegistryValue Type="string"
-                               Value="[binaries]$(var.HostBinary) --type=controller"/>
-              </RegistryKey>
-
-              <RegistryKey Key="ProgID" Action="create">
-                <RegistryValue Type="string"
-                               Value="$(var.ControllerProgid).$(var.Version)"/>
-              </RegistryKey>
-
-              <RegistryKey Key="TypeLib" Action="create">
-                <RegistryValue Type="string"
-                               Value="$(var.ChromotingTypelib)"/>
-              </RegistryKey>
-
-              <RegistryKey Key="VersionIndependentProgID" Action="create">
-                <RegistryValue Type="string"
-                               Value="$(var.ControllerProgid)"/>
-              </RegistryKey>
-
-              <RegistryKey Key="Elevation" Action="create">
-                <RegistryValue Type="integer"
-                               Name="Enabled"
-                               Value="1"/>
-                <RegistryValue Type="string"
-                               Name="IconReference"
-                               Value="@[binaries]$(var.CoreBinary),-104"/>
-              </RegistryKey>
-            </RegistryKey>
             <RegistryKey Key="$(var.RdpDesktopSessionClsid)" Action="create">
               <RegistryValue Type="string"
                              Value="RdpDesktopSession Class"/>
@@ -626,8 +545,7 @@
          installation that is configured to start the service automatically.
 
          Here we check the startup type before making any changes, then restart
-         the service and change its startup type as needed once the installation
-         is finished. -->
+         the service as needed once the installation is finished. -->
     <Property Id="CHROMOTING_SERVICE_START_TYPE">
       <RegistrySearch Id="chromoting_service_start_type"
                       Root="HKLM"
@@ -640,13 +558,16 @@
                   Property="auto_start_service"
                   Value="[CHROMOTING_SERVICE_START_TYPE]" />
 
-    <CustomAction Id="set_auto_start_service"
+    <CustomAction Id="start_chromoting_service"
                   Impersonate="no"
                   Execute="deferred"
                   Script="jscript">
       <![CDATA[
-        var controller = new ActiveXObject("$(var.ControllerProgid)");
-        controller.StartDaemon();
+        var ADS_SERVICE_STOPPED = 0x00000001;
+        var service = GetObject("WinNT://./$(var.ServiceName),Service");
+        if (service.Status == ADS_SERVICE_STOPPED) {
+          service.Start();
+        }
       ]]>
     </CustomAction>
 
@@ -696,7 +617,7 @@
 
     <InstallExecuteSequence>
       <Custom Action="query_auto_start_service" Before="InstallInitialize"/>
-      <Custom Action="set_auto_start_service" After="StartServices">
+      <Custom Action="start_chromoting_service" After="StartServices">
         <![CDATA[NOT REMOVE AND (auto_start_service = "#2")]]>
       </Custom>
 
