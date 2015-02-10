@@ -45,8 +45,7 @@ SVGPaintContext::~SVGPaintContext()
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->filter() == m_filter);
 
         RenderDrawingRecorder recorder(m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteRect());
-        if (!recorder.canUseCachedDrawing())
-            m_filter->finishEffect(m_object, m_originalPaintInfo->context);
+        m_filter->finishEffect(m_object, m_originalPaintInfo->context);
 
         // Reset the paint info after the filter effect has been completed.
         // This isn't strictly required (e.g., m_paintInfo.rect is not used
