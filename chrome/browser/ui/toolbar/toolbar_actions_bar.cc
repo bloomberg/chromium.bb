@@ -706,10 +706,15 @@ void ToolbarActionsBar::ToolbarExtensionRemoved(
   if (iter == toolbar_actions_.end())
     return;
 
-  delegate_->RemoveViewForAction(*iter);
+  // The action should outlive the UI element (which is owned by the delegate),
+  // so we can't delete it just yet. But we should remove it from the list of
+  // actions so that any width calculations are correct.
+  scoped_ptr<ToolbarActionViewController> removed_action(*iter);
+  toolbar_actions_.weak_erase(iter);
+  delegate_->RemoveViewForAction(removed_action.get());
   if (tab_order_helper_)
-    tab_order_helper_->ActionRemoved(*iter);
-  toolbar_actions_.erase(iter);
+    tab_order_helper_->ActionRemoved(removed_action.get());
+  removed_action.reset();
 
   // If the extension is being upgraded we don't want the bar to shrink
   // because the icon is just going to get re-added to the same location.
