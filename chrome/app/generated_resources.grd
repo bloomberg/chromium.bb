@@ -12824,8 +12824,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <!-- Desktop notifications -->
       <if expr="enable_notifications">
-        <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for desktop notifications.">
-          Allow <ph name="site">$1<ex>mail.google.com</ex></ph> to show desktop notifications?
+        <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for Web Notifications.">
+          <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
         </message>
         <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site would like to:' in a permissions request">
           Notifications
