@@ -5,9 +5,9 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "content/public/test/browser_test_utils.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 
 namespace {
 

@@ -14,7 +14,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "url/gurl.h"
 
 namespace content {

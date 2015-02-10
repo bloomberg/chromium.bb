@@ -23,8 +23,8 @@
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/renderer/nacl_helper.h"
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 #endif
 
 using blink::WebFrame;

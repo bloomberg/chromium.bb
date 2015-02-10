@@ -9,12 +9,12 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
 
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "ppapi/c/private/pp_file_handle.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 
 #define SRPC_PLUGIN_DEBUG 1
 

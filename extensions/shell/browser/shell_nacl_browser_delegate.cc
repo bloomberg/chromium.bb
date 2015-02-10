@@ -22,7 +22,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/shell/common/version.h"  // Generated file.
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "url/gurl.h"
 
 using content::BrowserContext;

@@ -67,7 +67,6 @@
 #include "ppapi/c/private/ppb_image_capture_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
 #include "ppapi/c/private/ppb_platform_verification_private.h"
@@ -187,7 +186,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NaCl_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1;
@@ -3647,135 +3645,6 @@ static int32_t Pnacl_M33_PPB_IsolatedFileSystem_Private_Open(PP_Instance instanc
 
 /* End wrapper methods for PPB_IsolatedFileSystem_Private_0_2 */
 
-/* Begin wrapper methods for PPB_NaCl_Private_1_0 */
-
-static void Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr(PP_Instance instance, PP_Bool main_service_runtime, const char* alleged_url, const struct PP_NaClFileInfo* nexe_file_info, PP_Bool uses_nonsfi_mode, PP_NaClAppProcessType process_type, void* imc_handle, struct PP_CompletionCallback* callback) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->LaunchSelLdr(instance, main_service_runtime, alleged_url, nexe_file_info, uses_nonsfi_mode, process_type, imc_handle, *callback);
-}
-
-static int32_t Pnacl_M25_PPB_NaCl_Private_UrandomFD(void) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->UrandomFD();
-}
-
-static int32_t Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->BrokerDuplicateHandle(source_handle, process_id, target_handle, desired_access, options);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_GetReadExecPnaclFd(const char* url, struct PP_NaClFileInfo* out_file_info) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->GetReadExecPnaclFd(url, out_file_info);
-}
-
-static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->CreateTemporaryFile(instance);
-}
-
-static int32_t Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors(void) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetNumberOfProcessors();
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance instance, PP_Bool success, int32_t opt_level, int64_t pexe_size, int64_t compile_time_us) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ReportTranslationFinished(instance, success, opt_level, pexe_size, compile_time_us);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_DispatchEvent(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->DispatchEvent(instance, event_type, resource_url, length_is_computable, loaded_bytes, total_bytes);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_NaClError error, const char* error_message) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ReportLoadError(instance, error, error_message);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_InstanceCreated(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->InstanceCreated(instance);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->InstanceDestroyed(instance);
-}
-
-static const char* Pnacl_M25_PPB_NaCl_Private_GetSandboxArch(void) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetSandboxArch();
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_Vlog(const char* message) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->Vlog(message);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_InitializePlugin(PP_Instance instance, uint32_t argc, const char* argn[], const char* argv[]) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->InitializePlugin(instance, argc, argn, argv);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_RequestNaClManifest(PP_Instance instance, struct PP_CompletionCallback* callback) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->RequestNaClManifest(instance, *callback);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_GetManifestBaseURL(struct PP_Var* _struct_result, PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  *_struct_result = iface->GetManifestBaseURL(instance);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest(PP_Instance instance, const char* program_url) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ProcessNaClManifest(instance, program_url);
-}
-
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL(PP_Instance instance, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options, PP_Bool* uses_nonsfi_mode) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetManifestProgramURL(instance, full_url, pnacl_options, uses_nonsfi_mode);
-}
-
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo(PP_Instance instance, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetPnaclResourceInfo(instance, llc_tool_name, ld_tool_name);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs(struct PP_Var* _struct_result) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  *_struct_result = iface->GetCpuFeatureAttrs();
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_DownloadNexe(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback* callback) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->DownloadNexe(instance, url, file_info, *callback);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_ReportSelLdrStatus(PP_Instance instance, int32_t load_status, int32_t max_status) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ReportSelLdrStatus(instance, load_status, max_status);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_LogTranslateTime(const char* histogram_name, int64_t time_us) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->LogTranslateTime(histogram_name, time_us);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_SetPNaClStartTime(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetPNaClStartTime(instance);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_StreamPexe(PP_Instance instance, const char* pexe_url, int32_t opt_level, const struct PPP_PexeStreamHandler_1_0* stream_handler, void* stream_handler_user_data) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->StreamPexe(instance, pexe_url, opt_level, stream_handler, stream_handler_user_data);
-}
-
-/* End wrapper methods for PPB_NaCl_Private_1_0 */
-
 /* Begin wrapper methods for PPB_NetAddress_Private_0_1 */
 
 static PP_Bool Pnacl_M17_PPB_NetAddress_Private_AreEqual(const struct PP_NetAddress_Private* addr1, const struct PP_NetAddress_Private* addr2) {
@@ -5640,34 +5509,6 @@ static const struct PPB_IsolatedFileSystem_Private_0_2 Pnacl_Wrappers_PPB_Isolat
     .Open = (int32_t (*)(PP_Instance instance, PP_IsolatedFileSystemType_Private type, PP_Resource* file_system, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_IsolatedFileSystem_Private_Open
 };
 
-static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
-    .LaunchSelLdr = (void (*)(PP_Instance instance, PP_Bool main_service_runtime, const char* alleged_url, const struct PP_NaClFileInfo* nexe_file_info, PP_Bool uses_nonsfi_mode, PP_NaClAppProcessType process_type, void* imc_handle, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr,
-    .UrandomFD = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_UrandomFD,
-    .BrokerDuplicateHandle = (int32_t (*)(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options))&Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle,
-    .GetReadExecPnaclFd = (void (*)(const char* url, struct PP_NaClFileInfo* out_file_info))&Pnacl_M25_PPB_NaCl_Private_GetReadExecPnaclFd,
-    .CreateTemporaryFile = (PP_FileHandle (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile,
-    .GetNumberOfProcessors = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors,
-    .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success, int32_t opt_level, int64_t pexe_size, int64_t compile_time_us))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
-    .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
-    .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
-    .InstanceCreated = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceCreated,
-    .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
-    .GetSandboxArch = (const char* (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetSandboxArch,
-    .Vlog = (void (*)(const char* message))&Pnacl_M25_PPB_NaCl_Private_Vlog,
-    .InitializePlugin = (void (*)(PP_Instance instance, uint32_t argc, const char* argn[], const char* argv[]))&Pnacl_M25_PPB_NaCl_Private_InitializePlugin,
-    .RequestNaClManifest = (void (*)(PP_Instance instance, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_RequestNaClManifest,
-    .GetManifestBaseURL = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetManifestBaseURL,
-    .ProcessNaClManifest = (void (*)(PP_Instance instance, const char* program_url))&Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest,
-    .GetManifestProgramURL = (PP_Bool (*)(PP_Instance instance, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options, PP_Bool* uses_nonsfi_mode))&Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL,
-    .GetPnaclResourceInfo = (PP_Bool (*)(PP_Instance instance, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name))&Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo,
-    .GetCpuFeatureAttrs = (struct PP_Var (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs,
-    .DownloadNexe = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadNexe,
-    .ReportSelLdrStatus = (void (*)(PP_Instance instance, int32_t load_status, int32_t max_status))&Pnacl_M25_PPB_NaCl_Private_ReportSelLdrStatus,
-    .LogTranslateTime = (void (*)(const char* histogram_name, int64_t time_us))&Pnacl_M25_PPB_NaCl_Private_LogTranslateTime,
-    .SetPNaClStartTime = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_SetPNaClStartTime,
-    .StreamPexe = (void (*)(PP_Instance instance, const char* pexe_url, int32_t opt_level, const struct PPP_PexeStreamHandler_1_0* stream_handler, void* stream_handler_user_data))&Pnacl_M25_PPB_NaCl_Private_StreamPexe
-};
-
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {
     .AreEqual = (PP_Bool (*)(const struct PP_NetAddress_Private* addr1, const struct PP_NetAddress_Private* addr2))&Pnacl_M17_PPB_NetAddress_Private_AreEqual,
     .AreHostsEqual = (PP_Bool (*)(const struct PP_NetAddress_Private* addr1, const struct PP_NetAddress_Private* addr2))&Pnacl_M17_PPB_NetAddress_Private_AreHostsEqual,
@@ -6433,12 +6274,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Privat
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NaCl_Private_1_0 = {
-  .iface_macro = PPB_NACL_PRIVATE_INTERFACE_1_0,
-  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_NaCl_Private_1_0,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1 = {
   .iface_macro = PPB_NETADDRESS_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_NetAddress_Private_0_1,
@@ -6660,7 +6495,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
   &Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2,
-  &Pnacl_WrapperInfo_PPB_NaCl_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1,

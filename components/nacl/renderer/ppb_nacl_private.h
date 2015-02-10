@@ -1,12 +1,9 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-/* From private/ppb_nacl_private.idl modified Sun Feb  8 11:33:30 2015. */
-
-#ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
-#define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
+#ifndef COMPONENTS_NACL_RENDERER_PPB_NACL_PRIVATE_H_
+#define COMPONENTS_NACL_RENDERER_PPB_NACL_PRIVATE_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -14,19 +11,21 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/private/ppp_pexe_stream_handler.h"
-
-#define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
-#define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
-
-/**
- * @file
- * This file contains NaCl private interfaces. This interface is not versioned
- * and is for internal Chrome use. It may change without notice. */
-
-
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/private/ppb_instance_private.h"
+#include "ppapi/c/private/ppp_pexe_stream_handler.h"
+
+// This file defines an interface that is used by the code in
+// components/nacl/renderer/plugin/.  It is defined as a PPAPI PPB_*
+// interface for historical reasons: The code in plugin/ used to live
+// outside the Chromium repo.
+//
+// In the future, we may integrate the code in nacl/renderer/plugin/ more
+// closely with nacl/renderer/.  This could include having plugin/ call the
+// functions below directly, rather than providing these functions via the
+// PPB_NaCl_Private interface struct.
+
+#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl_Private"
 
 /**
  * @addtogroup Enums
@@ -205,8 +204,7 @@ struct PP_NaClFileInfo {
  * @addtogroup Interfaces
  * @{
  */
-/* PPB_NaCl_Private */
-struct PPB_NaCl_Private_1_0 {
+struct PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
    * and writes a NaClHandle to imc_handle. Returns PP_EXTERNAL_PLUGIN_FAILED on
    * failure.
@@ -353,8 +351,6 @@ struct PPB_NaCl_Private_1_0 {
                      const struct PPP_PexeStreamHandler_1_0* stream_handler,
                      void* stream_handler_user_data);
 };
-
-typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;
 /**
  * @}
  */

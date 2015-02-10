@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "ppapi/c/pp_array_output.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace nacl {

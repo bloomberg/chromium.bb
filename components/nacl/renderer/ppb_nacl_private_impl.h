@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#include "ppapi/c/private/ppb_nacl_private.h"
+#include "components/nacl/renderer/ppb_nacl_private.h"
 
 namespace nacl {
 

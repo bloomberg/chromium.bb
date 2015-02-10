@@ -120,7 +120,6 @@
       'c/private/ppb_input_event_private.h',
       'c/private/ppb_instance_private.h',
       'c/private/ppb_isolated_file_system_private.h',
-      'c/private/ppb_nacl_private.h',
       'c/private/ppb_net_address_private.h',
       'c/private/ppb_output_protection_private.h',
       'c/private/ppb_pdf.h',

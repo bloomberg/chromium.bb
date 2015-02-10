@@ -5,9 +5,9 @@
 #ifndef PPAPI_COMPONENTS_NACL_RENDERER_PLUGIN_SEL_LDR_LAUNCHER_CHROME_H_
 #define PPAPI_COMPONENTS_NACL_RENDERER_PLUGIN_SEL_LDR_LAUNCHER_CHROME_H_
 
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {

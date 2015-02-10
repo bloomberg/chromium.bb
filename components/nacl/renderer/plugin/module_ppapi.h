@@ -7,7 +7,7 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_MODULE_PPAPI_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_MODULE_PPAPI_H_
 
-#include "ppapi/c/private/ppb_nacl_private.h"
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
 
 namespace plugin {

@@ -29,7 +29,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern.h"
 #endif
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "url/gurl.h"
 
 namespace {

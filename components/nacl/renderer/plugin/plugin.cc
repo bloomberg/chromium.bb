@@ -13,6 +13,7 @@
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
 #include "components/nacl/renderer/plugin/utility.h"
+#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -21,7 +22,6 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
 
 namespace plugin {
