@@ -42,6 +42,9 @@ class DebuggerApiTest : public ExtensionApiTest {
   base::CommandLine* command_line() const { return command_line_; }
 
  private:
+  testing::AssertionResult RunAttachFunctionOnTarget(
+      const std::string& debuggee_target, const std::string& expected_error);
+
   // The command-line for the test process, preserved in order to modify
   // mid-test.
   base::CommandLine* command_line_;
@@ -72,40 +75,74 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Attach by tabId.
   int tab_id = SessionTabHelper::IdForTab(web_contents);
+  std::string debugee_by_tab = base::StringPrintf("{\"tabId\": %d}", tab_id);
+  testing::AssertionResult result =
+      RunAttachFunctionOnTarget(debugee_by_tab, expected_error);
+  if (!result)
+    return result;
+
+  // Attach by targetId.
+  scoped_refptr<DebuggerGetTargetsFunction> get_targets_function =
+      new DebuggerGetTargetsFunction();
+  scoped_ptr<base::Value> value(
+      extension_function_test_utils::RunFunctionAndReturnSingleResult(
+          get_targets_function.get(), "[]", browser()));
+  base::ListValue* targets = nullptr;
+  EXPECT_TRUE(value->GetAsList(&targets));
+
+  std::string debugger_target_id;
+  for (size_t i = 0; i < targets->GetSize(); ++i) {
+    base::DictionaryValue* target_dict = nullptr;
+    EXPECT_TRUE(targets->GetDictionary(i, &target_dict));
+    int id = -1;
+    if (target_dict->GetInteger("tabId", &id) && id == tab_id) {
+      EXPECT_TRUE(target_dict->GetString("id", &debugger_target_id));
+      break;
+    }
+  }
+  EXPECT_TRUE(!debugger_target_id.empty());
+
+  std::string debugee_by_target_id =
+      base::StringPrintf("{\"targetId\": \"%s\"}", debugger_target_id.c_str());
+  return RunAttachFunctionOnTarget(debugee_by_target_id, expected_error);
+}
+
+testing::AssertionResult DebuggerApiTest::RunAttachFunctionOnTarget(
+    const std::string& debuggee_target, const std::string& expected_error) {
   scoped_refptr<DebuggerAttachFunction> attach_function =
       new DebuggerAttachFunction();
   attach_function->set_extension(extension_.get());
-  std::string args = base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id);
 
-  if (!expected_error.empty()) {
-    std::string actual_error =
-        extension_function_test_utils::RunFunctionAndReturnError(
-            attach_function.get(), args, browser());
-    if (actual_error != expected_error) {
-      return testing::AssertionFailure() << "Did not get correct error: "
-          << "expected: " << expected_error << ", found: " << actual_error;
-    }
+  std::string actual_error;
+  if (!RunFunction(attach_function.get(),
+                   base::StringPrintf("[%s, \"1.1\"]", debuggee_target.c_str()),
+                   browser(),
+                   extension_function_test_utils::NONE)) {
+    actual_error = attach_function->GetError();
   } else {
-    if (!RunFunction(attach_function.get(),
-                     args,
-                     browser(),
-                     extension_function_test_utils::NONE)) {
-      return testing::AssertionFailure() << "Could not run function: "
-          << attach_function->GetError();
-    }
-
     // Clean up and detach.
     scoped_refptr<DebuggerDetachFunction> detach_function =
         new DebuggerDetachFunction();
     detach_function->set_extension(extension_.get());
     if (!RunFunction(detach_function.get(),
-                     base::StringPrintf("[{\"tabId\": %d}]", tab_id),
+                     base::StringPrintf("[%s]", debuggee_target.c_str()),
                      browser(),
                      extension_function_test_utils::NONE)) {
-      return testing::AssertionFailure() << "Could not detach: "
-          << detach_function->GetError();
+      return testing::AssertionFailure() << "Could not detach from "
+          << debuggee_target << " : " << detach_function->GetError();
     }
+  }
+
+  if (expected_error.empty() && !actual_error.empty()) {
+    return testing::AssertionFailure() << "Could not attach to "
+        << debuggee_target << " : " << actual_error;
+  } else if (actual_error != expected_error) {
+    return testing::AssertionFailure() << "Did not get correct error upon "
+        << "attach to " << debuggee_target << " : "
+        << "expected: " << expected_error << ", found: " << actual_error;
   }
   return testing::AssertionSuccess();
 }

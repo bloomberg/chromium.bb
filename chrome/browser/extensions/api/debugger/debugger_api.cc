@@ -529,6 +529,15 @@ bool DebuggerFunction::InitAgentHost() {
     }
   } else if (debuggee_.target_id) {
     agent_host_ = DevToolsAgentHost::GetForId(*debuggee_.target_id);
+    if (agent_host_.get()) {
+      if (PermissionsData::IsRestrictedUrl(agent_host_->GetURL(),
+                                           agent_host_->GetURL(),
+                                           extension(),
+                                           &error_)) {
+        agent_host_ = nullptr;
+        return false;
+      }
+    }
   } else {
     error_ = keys::kInvalidTargetError;
     return false;
