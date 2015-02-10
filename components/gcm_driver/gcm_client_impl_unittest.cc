@@ -5,6 +5,8 @@
 #include "components/gcm_driver/gcm_client_impl.h"
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -44,6 +46,8 @@ enum LastEvent {
 
 const uint64 kDeviceAndroidId = 54321;
 const uint64 kDeviceSecurityToken = 12345;
+const uint64 kDeviceAndroidId2 = 11111;
+const uint64 kDeviceSecurityToken2 = 2222;
 const int64 kSettingsCheckinInterval = 16 * 60 * 60;
 const char kAppId[] = "app_id";
 const char kSender[] = "project_id";
@@ -334,6 +338,10 @@ class GCMClientImplTest : public testing::Test,
     return gcm_client_->gservices_settings_;
   }
 
+  const base::FilePath& temp_directory_path() const {
+    return temp_directory_.path();
+  }
+
   int64 CurrentTime();
 
   // Tooling.
@@ -601,6 +609,32 @@ TEST_F(GCMClientImplTest, LoadingCompleted) {
   EXPECT_TRUE(device_checkin_info().last_checkin_accounts.empty());
   EXPECT_TRUE(device_checkin_info().accounts_set);
   EXPECT_TRUE(device_checkin_info().account_tokens.empty());
+}
+
+TEST_F(GCMClientImplTest, LoadingBusted) {
+  // Close the GCM store.
+  gcm_client()->Stop();
+  PumpLoopUntilIdle();
+
+  // Mess up the store.
+  base::FilePath store_file_path =
+      temp_directory_path().Append(FILE_PATH_LITERAL("CURRENT"));
+  ASSERT_TRUE(base::AppendToFile(store_file_path, "A", 1));
+
+  // Restart GCM client. The store should be reset and the loading should
+  // complete successfully.
+  reset_last_event();
+  BuildGCMClient(base::TimeDelta());
+  InitializeGCMClient();
+  StartGCMClient();
+  CompleteCheckin(kDeviceAndroidId2,
+                  kDeviceSecurityToken2,
+                  std::string(),
+                  std::map<std::string, std::string>());
+
+  EXPECT_EQ(LOADING_COMPLETED, last_event());
+  EXPECT_EQ(kDeviceAndroidId2, mcs_client()->last_android_id());
+  EXPECT_EQ(kDeviceSecurityToken2, mcs_client()->last_security_token());
 }
 
 TEST_F(GCMClientImplTest, RegisterApp) {

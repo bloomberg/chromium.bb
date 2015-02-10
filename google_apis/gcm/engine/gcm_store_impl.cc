@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,6 +29,28 @@
 namespace gcm {
 
 namespace {
+
+// This enum is used in an UMA histogram (GCMLoadStatus enum defined in
+// tools/metrics/histograms/histogram.xml). Hence the entries here shouldn't
+// be deleted or re-ordered and new ones should be added to the end.
+enum LoadStatus {
+  LOADING_SUCCEEDED,
+  RELOADING_OPEN_STORE,
+  OPENING_STORE_FAILED,
+  LOADING_DEVICE_CREDENTIALS_FAILED,
+  LOADING_REGISTRATION_FAILED,
+  LOADING_INCOMING_MESSAGES_FAILED,
+  LOADING_OUTGOING_MESSAGES_FAILED,
+  LOADING_LAST_CHECKIN_INFO_FAILED,
+  LOADING_GSERVICE_SETTINGS_FAILED,
+  LOADING_ACCOUNT_MAPPING_FAILED,
+  LOADING_LAST_TOKEN_TIME_FAILED,
+
+  // NOTE: always keep this entry at the end. Add new status types only
+  // immediately above this line. Make sure to update the corresponding
+  // histogram enum accordingly.
+  LOAD_STATUS_COUNT
+};
 
 // Limit to the number of outstanding messages per app.
 const int kMessagesPerAppLimit = 20;
@@ -178,6 +200,7 @@ class GCMStoreImpl::Backend
   friend class base::RefCountedThreadSafe<Backend>;
   ~Backend();
 
+  LoadStatus OpenStoreAndLoadData(LoadResult* result);
   bool LoadDeviceCredentials(uint64* android_id, uint64* security_token);
   bool LoadRegistrations(RegistrationInfoMap* registrations);
   bool LoadIncomingMessages(std::vector<std::string>* incoming_messages);
@@ -207,14 +230,11 @@ GCMStoreImpl::Backend::Backend(
 
 GCMStoreImpl::Backend::~Backend() {}
 
-void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
-  scoped_ptr<LoadResult> result(new LoadResult());
+LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(LoadResult* result) {
+  LoadStatus load_status;
   if (db_.get()) {
     LOG(ERROR) << "Attempting to reload open database.";
-    foreground_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(callback,
-                                                 base::Passed(&result)));
-    return;
+    return RELOADING_OPEN_STORE;
   }
 
   leveldb::Options options;
@@ -222,28 +242,44 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
   leveldb::DB* db;
   leveldb::Status status =
       leveldb::DB::Open(options, path_.AsUTF8Unsafe(), &db);
-  UMA_HISTOGRAM_BOOLEAN("GCM.LoadSucceeded", status.ok());
   if (!status.ok()) {
     LOG(ERROR) << "Failed to open database " << path_.value() << ": "
                << status.ToString();
-    foreground_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(callback,
-                                                 base::Passed(&result)));
-    return;
+    return OPENING_STORE_FAILED;
   }
-  db_.reset(db);
 
+  db_.reset(db);
   if (!LoadDeviceCredentials(&result->device_android_id,
-                             &result->device_security_token) ||
-      !LoadRegistrations(&result->registrations) ||
-      !LoadIncomingMessages(&result->incoming_messages) ||
-      !LoadOutgoingMessages(&result->outgoing_messages) ||
-      !LoadLastCheckinInfo(&result->last_checkin_time,
-                           &result->last_checkin_accounts) ||
-      !LoadGServicesSettings(&result->gservices_settings,
-                             &result->gservices_digest) ||
-      !LoadAccountMappingInfo(&result->account_mappings) ||
-      !LoadLastTokenFetchTime(&result->last_token_fetch_time)) {
+                             &result->device_security_token)) {
+    return LOADING_DEVICE_CREDENTIALS_FAILED;
+  }
+  if (!LoadRegistrations(&result->registrations))
+    return LOADING_REGISTRATION_FAILED;
+  if (!LoadIncomingMessages(&result->incoming_messages))
+    return LOADING_INCOMING_MESSAGES_FAILED;
+  if (!LoadOutgoingMessages(&result->outgoing_messages))
+    return LOADING_OUTGOING_MESSAGES_FAILED;
+  if (!LoadLastCheckinInfo(&result->last_checkin_time,
+                           &result->last_checkin_accounts)) {
+    return LOADING_LAST_CHECKIN_INFO_FAILED;
+  }
+  if (!LoadGServicesSettings(&result->gservices_settings,
+                             &result->gservices_digest)) {
+    return load_status = LOADING_GSERVICE_SETTINGS_FAILED;
+  }
+  if (!LoadAccountMappingInfo(&result->account_mappings))
+    return LOADING_ACCOUNT_MAPPING_FAILED;
+  if (!LoadLastTokenFetchTime(&result->last_token_fetch_time))
+     return LOADING_LAST_TOKEN_TIME_FAILED;
+
+  return LOADING_SUCCEEDED;
+}
+
+void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
+  scoped_ptr<LoadResult> result(new LoadResult());
+  LoadStatus load_status = OpenStoreAndLoadData(result.get());
+  UMA_HISTOGRAM_ENUMERATION("GCM.LoadStatus", load_status, LOAD_STATUS_COUNT);
+  if (load_status != LOADING_SUCCEEDED) {
     result->Reset();
     foreground_task_runner_->PostTask(FROM_HERE,
                                       base::Bind(callback,

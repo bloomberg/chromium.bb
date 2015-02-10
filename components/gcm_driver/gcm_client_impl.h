@@ -198,8 +198,8 @@ class GCMClientImpl
   void OnFirstTimeDeviceCheckinCompleted(const CheckinInfo& checkin_info);
   // Starts a login on mcs_client_.
   void StartMCSLogin();
-  // Resets state to before initialization.
-  void ResetState();
+  // Resets the GCM store when it is corrupted.
+  void ResetStore();
   // Sets state to ready. This will initiate the MCS login and notify the
   // delegates.
   void OnReady(const std::vector<AccountMapping>& account_mappings,
@@ -236,6 +236,9 @@ class GCMClientImpl
 
   // Callback for store operation where result does not matter.
   void IgnoreWriteResultCallback(bool success);
+
+  // Callback for resetting the GCM store.
+  void ResetStoreCallback(bool success);
 
   // Completes the registration request.
   void OnRegisterCompleted(const std::string& app_id,
@@ -302,6 +305,10 @@ class GCMClientImpl
 
   // Data loaded from the GCM store.
   scoped_ptr<GCMStore::LoadResult> load_result_;
+
+  // Tracks if the GCM store has been reset. This is used to prevent from
+  // resetting and loading from the store again and again.
+  bool gcm_store_reset_;
 
   scoped_refptr<net::HttpNetworkSession> network_session_;
   net::BoundNetLog net_log_;

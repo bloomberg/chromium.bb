@@ -9931,7 +9931,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GCM.LoadStatus" enum="GCMLoadStatus">
+  <owner>jianli@chromium.org</owner>
+  <summary>Status code of loading from the persistent GCM store.</summary>
+</histogram>
+
 <histogram name="GCM.LoadSucceeded" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated as of 2/2015.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Success indicates successfully loading an initialized persistent GCM store
@@ -10001,6 +10009,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="GCM.RegistrationSenderIdCount">
   <owner>jianli@chromium.org</owner>
   <summary>Number of sender IDs specified in a registration request.</summary>
+</histogram>
+
+<histogram name="GCM.ResetStore" enum="GCMResetStoreError">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Reports the problem encountered when resetting the GCM store.
+  </summary>
 </histogram>
 
 <histogram name="GCM.RestoredIncomingMessages">
@@ -49117,6 +49132,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="HTTP Post failed"/>
 </enum>
 
+<enum name="GCMLoadStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Reloading open store"/>
+  <int value="2" label="Store open failed"/>
+  <int value="3" label="Loading device credentials failed"/>
+  <int value="4" label="Loading registrations failed"/>
+  <int value="5" label="Loading incoming messages failed"/>
+  <int value="6" label="Loading outgoing messages failed"/>
+  <int value="7" label="Loading last checkin info failed"/>
+  <int value="8" label="Loading gservice settings failed"/>
+  <int value="9" label="Loading account mapping failed"/>
+  <int value="10" label="Loading last token time failed"/>
+</enum>
+
 <enum name="GCMOutgoingMessageTTLCategory" type="int">
   <int value="0" label="Zero"/>
   <int value="1" label="Less than or equal to 1 minute"/>
@@ -49138,6 +49167,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="HTTP not OK"/>
   <int value="8" label="Response parsing failed"/>
   <int value="9" label="Reached maximum number of retries"/>
+</enum>
+
+<enum name="GCMResetStoreError" type="int">
+  <int value="0" label="Destroying store failed"/>
+  <int value="1" label="Infinite store reset"/>
 </enum>
 
 <enum name="GCMUnregistrationRequestStatus" type="int">

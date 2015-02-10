@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -56,6 +56,15 @@ enum OutgoingMessageTTLCategory {
   // immediately above this line. Make sure to update the corresponding
   // histogram enum accordingly.
   TTL_CATEGORY_COUNT
+};
+
+enum ResetStoreError {
+  DESTROYING_STORE_FAILED,
+  INFINITE_STORE_RESET,
+  // NOTE: always keep this entry at the end. Add new value only immediately
+  // above this line. Make sure to update the corresponding histogram enum
+  // accordingly.
+  RESET_STORE_ERROR_COUNT
 };
 
 const int kMaxRegistrationRetries = 5;
@@ -179,6 +188,10 @@ void RecordOutgoingMessageToUMA(
                             TTL_CATEGORY_COUNT);
 }
 
+void RecordResetStoreErrorToUMA(ResetStoreError error) {
+  UMA_HISTOGRAM_ENUMERATION("GCM.ResetStore", error, RESET_STORE_ERROR_COUNT);
+}
+
 }  // namespace
 
 GCMInternalsBuilder::GCMInternalsBuilder() {}
@@ -245,6 +258,7 @@ GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
       delegate_(NULL),
       start_mode_(DELAYED_START),
       clock_(internals_builder_->BuildClock()),
+      gcm_store_reset_(false),
       url_request_context_getter_(NULL),
       pending_registration_requests_deleter_(&pending_registration_requests_),
       pending_unregistration_requests_deleter_(
@@ -316,9 +330,10 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   DCHECK_EQ(LOADING, state_);
 
   if (!result->success) {
-    ResetState();
+    ResetStore();
     return;
   }
+  gcm_store_reset_ = false;
 
   registrations_ = result->registrations;
   device_checkin_info_.android_id = result->device_android_id;
@@ -426,9 +441,21 @@ void GCMClientImpl::StartMCSLogin() {
                      device_checkin_info_.secret);
 }
 
-void GCMClientImpl::ResetState() {
-  state_ = UNINITIALIZED;
-  // TODO(fgorski): reset all of the necessart objects and start over.
+void GCMClientImpl::ResetStore() {
+  DCHECK_EQ(LOADING, state_);
+
+  // If already being reset, don't do it again. We want to prevent from
+  // resetting and loading from the store again and again.
+  if (gcm_store_reset_) {
+    RecordResetStoreErrorToUMA(INFINITE_STORE_RESET);
+    state_ = UNINITIALIZED;
+    return;
+  }
+  gcm_store_reset_ = true;
+
+  // Destroy the GCM store to start over.
+  gcm_store_->Destroy(base::Bind(&GCMClientImpl::ResetStoreCallback,
+                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMClientImpl::SetAccountTokens(
@@ -625,6 +652,18 @@ void GCMClientImpl::DefaultStoreCallback(bool success) {
 void GCMClientImpl::IgnoreWriteResultCallback(bool success) {
   // TODO(fgorski): Ignoring the write result for now to make sure
   // sync_intergration_tests are not broken.
+}
+
+void GCMClientImpl::ResetStoreCallback(bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to reset GCM store";
+    RecordResetStoreErrorToUMA(DESTROYING_STORE_FAILED);
+    state_ = UNINITIALIZED;
+    return;
+  }
+
+  state_ = INITIALIZED;
+  Start(start_mode_);
 }
 
 void GCMClientImpl::Stop() {
