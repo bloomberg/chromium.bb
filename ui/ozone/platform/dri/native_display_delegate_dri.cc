@@ -67,7 +67,7 @@ class DisplaySnapshotComparator {
 }  // namespace
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
-    DriWrapper* dri,
+    const scoped_refptr<DriWrapper>& dri,
     ScreenManager* screen_manager)
     : dri_(dri), screen_manager_(screen_manager) {
   // TODO(dnicoara): Remove when async display configuration is supported.
@@ -146,7 +146,7 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
       GetAvailableDisplayControllerInfos(dri_->get_fd());
   for (size_t i = 0; i < displays.size(); ++i) {
     DisplaySnapshotDri* display = new DisplaySnapshotDri(
-        dri_, displays[i]->connector(), displays[i]->crtc(), i);
+        dri_.get(), displays[i]->connector(), displays[i]->crtc(), i);
 
     // If the display exists make sure to sync up the new snapshot with the old
     // one to keep the user configured details.

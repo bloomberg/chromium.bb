@@ -34,8 +34,9 @@ uint8_t GetColorDepth(SkColorType type) {
 
 }  // namespace
 
-DriBuffer::DriBuffer(DriWrapper* dri)
-    : dri_(dri), handle_(0), framebuffer_(0) {}
+DriBuffer::DriBuffer(const scoped_refptr<DriWrapper>& dri)
+    : dri_(dri), handle_(0), framebuffer_(0) {
+}
 
 DriBuffer::~DriBuffer() {
   if (!surface_)
@@ -100,8 +101,9 @@ DriBufferGenerator::DriBufferGenerator() {
 
 DriBufferGenerator::~DriBufferGenerator() {}
 
-scoped_refptr<ScanoutBuffer> DriBufferGenerator::Create(DriWrapper* drm,
-                                                        const gfx::Size& size) {
+scoped_refptr<ScanoutBuffer> DriBufferGenerator::Create(
+    const scoped_refptr<DriWrapper>& drm,
+    const gfx::Size& size) {
   scoped_refptr<DriBuffer> buffer(new DriBuffer(drm));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
   if (!buffer->Initialize(info))

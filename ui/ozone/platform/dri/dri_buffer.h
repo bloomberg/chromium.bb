@@ -20,7 +20,7 @@ class DriWrapper;
 // draw into using Skia.
 class OZONE_EXPORT DriBuffer : public ScanoutBuffer {
  public:
-  DriBuffer(DriWrapper* dri);
+  DriBuffer(const scoped_refptr<DriWrapper>& dri);
 
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
@@ -36,7 +36,7 @@ class OZONE_EXPORT DriBuffer : public ScanoutBuffer {
  protected:
   ~DriBuffer() override;
 
-  DriWrapper* dri_;  // Not owned.
+  scoped_refptr<DriWrapper> dri_;
 
   // Wrapper around the native pixel memory.
   skia::RefPtr<SkSurface> surface_;
@@ -60,7 +60,7 @@ class OZONE_EXPORT DriBufferGenerator : public ScanoutBufferGenerator {
   ~DriBufferGenerator() override;
 
   // ScanoutBufferGenerator:
-  scoped_refptr<ScanoutBuffer> Create(DriWrapper* drm,
+  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DriWrapper>& drm,
                                       const gfx::Size& size) override;
 
  private:

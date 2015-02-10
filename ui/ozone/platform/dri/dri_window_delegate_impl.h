@@ -25,7 +25,7 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
                                            public DisplayChangeObserver {
  public:
   DriWindowDelegateImpl(gfx::AcceleratedWidget widget,
-                        DriWrapper* drm,
+                        const scoped_refptr<DriWrapper>& drm,
                         DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager);
   ~DriWindowDelegateImpl() override;
@@ -56,7 +56,7 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
 
   gfx::AcceleratedWidget widget_;
 
-  DriWrapper* drm_;                           // Not owned.
+  scoped_refptr<DriWrapper> drm_;
   DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.
 

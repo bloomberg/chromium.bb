@@ -12,7 +12,7 @@
 
 namespace ui {
 
-CrtcController::CrtcController(DriWrapper* drm,
+CrtcController::CrtcController(const scoped_refptr<DriWrapper>& drm,
                                uint32_t crtc,
                                uint32_t connector)
     : drm_(drm),

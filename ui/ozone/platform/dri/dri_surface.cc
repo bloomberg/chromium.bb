@@ -21,7 +21,7 @@ namespace ui {
 
 namespace {
 
-scoped_refptr<DriBuffer> AllocateBuffer(DriWrapper* dri,
+scoped_refptr<DriBuffer> AllocateBuffer(const scoped_refptr<DriWrapper>& dri,
                                         const gfx::Size& size) {
   scoped_refptr<DriBuffer> buffer(new DriBuffer(dri));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
@@ -34,7 +34,8 @@ scoped_refptr<DriBuffer> AllocateBuffer(DriWrapper* dri,
 
 }  // namespace
 
-DriSurface::DriSurface(DriWindowDelegate* window_delegate, DriWrapper* dri)
+DriSurface::DriSurface(DriWindowDelegate* window_delegate,
+                       const scoped_refptr<DriWrapper>& dri)
     : window_delegate_(window_delegate),
       dri_(dri),
       buffers_(),

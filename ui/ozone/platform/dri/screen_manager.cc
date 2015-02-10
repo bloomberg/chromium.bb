@@ -23,7 +23,7 @@ namespace {
 
 // Copies the contents of the saved framebuffer from the CRTCs in |controller|
 // to the new modeset buffer |buffer|.
-void FillModesetBuffer(DriWrapper* dri,
+void FillModesetBuffer(const scoped_refptr<DriWrapper>& dri,
                        HardwareDisplayController* controller,
                        ScanoutBuffer* buffer) {
   DriConsoleBuffer modeset_buffer(dri, buffer->GetFramebufferId());
@@ -59,7 +59,7 @@ void FillModesetBuffer(DriWrapper* dri,
 
 }  // namespace
 
-ScreenManager::ScreenManager(DriWrapper* dri,
+ScreenManager::ScreenManager(const scoped_refptr<DriWrapper>& dri,
                              ScanoutBufferGenerator* buffer_generator)
     : dri_(dri), buffer_generator_(buffer_generator) {
 }
@@ -67,7 +67,7 @@ ScreenManager::ScreenManager(DriWrapper* dri,
 ScreenManager::~ScreenManager() {
 }
 
-void ScreenManager::AddDisplayController(DriWrapper* dri,
+void ScreenManager::AddDisplayController(const scoped_refptr<DriWrapper>& dri,
                                          uint32_t crtc,
                                          uint32_t connector) {
   HardwareDisplayControllers::iterator it = FindDisplayController(crtc);
@@ -242,8 +242,8 @@ bool ScreenManager::ModesetDisplayController(
     const drmModeModeInfo& mode) {
   controller->set_origin(origin);
   // Create a surface suitable for the current controller.
-  scoped_refptr<ScanoutBuffer> buffer =
-      buffer_generator_->Create(dri_, gfx::Size(mode.hdisplay, mode.vdisplay));
+  scoped_refptr<ScanoutBuffer> buffer = buffer_generator_->Create(
+      dri_.get(), gfx::Size(mode.hdisplay, mode.vdisplay));
 
   if (!buffer.get()) {
     LOG(ERROR) << "Failed to create scanout buffer";

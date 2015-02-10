@@ -24,7 +24,6 @@ class MockDriWrapper : public ui::DriWrapper {
                  bool use_sync_flips,
                  std::vector<uint32_t> crtcs,
                  size_t planes_per_crtc);
-  ~MockDriWrapper() override;
 
   int get_get_crtc_call_count() const { return get_crtc_call_count_; }
   int get_set_crtc_call_count() const { return set_crtc_call_count_; }
@@ -38,7 +37,6 @@ class MockDriWrapper : public ui::DriWrapper {
   int get_page_flip_call_count() const { return page_flip_call_count_; }
   int get_overlay_flip_call_count() const { return overlay_flip_call_count_; }
   int get_overlay_clear_call_count() const { return overlay_clear_call_count_; }
-  void fail_init() { fd_ = -1; }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
   void set_add_framebuffer_expectation(bool state) {
@@ -104,6 +102,8 @@ class MockDriWrapper : public ui::DriWrapper {
                          void* pixels) override;
 
  private:
+  ~MockDriWrapper() override;
+
   int get_crtc_call_count_;
   int set_crtc_call_count_;
   int restore_crtc_call_count_;

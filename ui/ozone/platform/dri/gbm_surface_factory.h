@@ -18,7 +18,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   GbmSurfaceFactory(bool allow_surfaceless);
   ~GbmSurfaceFactory() override;
 
-  void InitializeGpu(GbmWrapper* gbm,
+  void InitializeGpu(const scoped_refptr<GbmWrapper>& gbm,
                      DriWindowDelegateManager* window_manager);
 
   // DriSurfaceFactory:
@@ -49,7 +49,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   bool CanCreateNativePixmap(BufferUsage usage) override;
 
  private:
-  GbmWrapper* gbm_;                // Not owned.
+  scoped_refptr<GbmWrapper> gbm_;
   bool allow_surfaceless_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceFactory);

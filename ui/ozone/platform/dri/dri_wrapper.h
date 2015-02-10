@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -35,14 +36,13 @@ class HardwareDisplayPlaneManager;
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class OZONE_EXPORT DriWrapper {
+class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
  public:
   typedef base::Callback<void(unsigned int /* frame */,
                               unsigned int /* seconds */,
                               unsigned int /* useconds */)> PageFlipCallback;
 
   DriWrapper(const char* device_path);
-  virtual ~DriWrapper();
 
   // Open device.
   virtual void Initialize();
@@ -160,6 +160,10 @@ class OZONE_EXPORT DriWrapper {
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
  protected:
+  friend class base::RefCountedThreadSafe<DriWrapper>;
+
+  virtual ~DriWrapper();
+
   // The file descriptor associated with this wrapper. All DRM operations will
   // be performed using this FD.
   // TODO(dnicoara) Make this a base::File

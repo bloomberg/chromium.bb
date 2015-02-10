@@ -27,11 +27,11 @@ class GbmBufferBase : public ScanoutBuffer {
   gfx::Size GetSize() const override;
 
  protected:
-  GbmBufferBase(DriWrapper* dri, gbm_bo* bo, bool scanout);
+  GbmBufferBase(const scoped_refptr<DriWrapper>& dri, gbm_bo* bo, bool scanout);
   ~GbmBufferBase() override;
 
  private:
-  DriWrapper* dri_;
+  scoped_refptr<DriWrapper> dri_;
   gbm_bo* bo_;
   uint32_t framebuffer_;
 

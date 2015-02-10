@@ -74,10 +74,11 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
   GbmBufferGenerator() {}
   ~GbmBufferGenerator() override {}
 
-  scoped_refptr<ScanoutBuffer> Create(DriWrapper* drm,
+  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DriWrapper>& drm,
                                       const gfx::Size& size) override {
-    return GbmBuffer::CreateBuffer(static_cast<GbmWrapper*>(drm),
-                                   SurfaceFactoryOzone::RGBA_8888, size, true);
+    scoped_refptr<GbmWrapper> gbm(static_cast<GbmWrapper*>(drm.get()));
+    return GbmBuffer::CreateBuffer(gbm, SurfaceFactoryOzone::RGBA_8888, size,
+                                   true);
   }
 
  protected:
@@ -152,29 +153,27 @@ class OzonePlatformGbm : public OzonePlatform {
   void InitializeGPU() override {
     gl_api_loader_.reset(new GlApiLoader());
     // Async page flips are supported only on surfaceless mode.
-    gbm_.reset(new GbmWrapper(kDefaultGraphicsCardPath));
+    gbm_ = new GbmWrapper(kDefaultGraphicsCardPath);
     gbm_->Initialize();
     buffer_generator_.reset(new GbmBufferGenerator());
-    screen_manager_.reset(
-        new ScreenManager(gbm_.get(), buffer_generator_.get()));
+    screen_manager_.reset(new ScreenManager(gbm_, buffer_generator_.get()));
     window_delegate_manager_.reset(new DriWindowDelegateManager());
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
-    surface_factory_ozone_->InitializeGpu(gbm_.get(),
-                                          window_delegate_manager_.get());
+    surface_factory_ozone_->InitializeGpu(gbm_, window_delegate_manager_.get());
     scoped_ptr<NativeDisplayDelegateDri> ndd(
-        new NativeDisplayDelegateDri(gbm_.get(), screen_manager_.get()));
+        new NativeDisplayDelegateDri(gbm_, screen_manager_.get()));
     ndd->Initialize();
     gpu_platform_support_.reset(
-        new DriGpuPlatformSupport(gbm_.get(), window_delegate_manager_.get(),
+        new DriGpuPlatformSupport(gbm_, window_delegate_manager_.get(),
                                   screen_manager_.get(), ndd.Pass()));
   }
 
  private:
   bool use_surfaceless_;
   scoped_ptr<GlApiLoader> gl_api_loader_;
-  scoped_ptr<GbmWrapper> gbm_;
+  scoped_refptr<GbmWrapper> gbm_;
   scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;

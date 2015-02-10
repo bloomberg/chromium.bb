@@ -21,7 +21,9 @@ const uint8_t kPixelDepth = 32;
 
 }  // namespace
 
-GbmBufferBase::GbmBufferBase(DriWrapper* dri, gbm_bo* bo, bool scanout)
+GbmBufferBase::GbmBufferBase(const scoped_refptr<DriWrapper>& dri,
+                             gbm_bo* bo,
+                             bool scanout)
     : dri_(dri), bo_(bo), framebuffer_(0) {
   if (scanout && !dri_->AddFramebuffer(gbm_bo_get_width(bo),
                                        gbm_bo_get_height(bo),

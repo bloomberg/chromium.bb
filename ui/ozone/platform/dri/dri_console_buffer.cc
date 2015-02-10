@@ -14,7 +14,8 @@
 
 namespace ui {
 
-DriConsoleBuffer::DriConsoleBuffer(DriWrapper* dri, uint32_t framebuffer)
+DriConsoleBuffer::DriConsoleBuffer(const scoped_refptr<DriWrapper>& dri,
+                                   uint32_t framebuffer)
     : dri_(dri),
       handle_(0),
       framebuffer_(framebuffer),

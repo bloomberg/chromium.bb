@@ -148,7 +148,7 @@ bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
 
 void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
   owned_hardware_planes_.add(
-      controller->drm(),
+      controller->drm().get(),
       scoped_ptr<HardwareDisplayPlaneList>(new HardwareDisplayPlaneList()));
   controller->AddObserver(this);
   crtc_controllers_.push_back(controller.release());
@@ -172,7 +172,7 @@ scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
         }
       }
       if (!found)
-        owned_hardware_planes_.erase(controller->drm());
+        owned_hardware_planes_.erase(controller->drm().get());
 
       controller->RemoveObserver(this);
       // If a display configuration happens mid page flip we want to make sure
@@ -281,7 +281,7 @@ bool HardwareDisplayController::ActualSchedulePageFlip() {
   bool status = true;
   for (size_t i = 0; i < crtc_controllers_.size(); ++i) {
     status &= crtc_controllers_[i]->SchedulePageFlip(
-        owned_hardware_planes_.get(crtc_controllers_[i]->drm()),
+        owned_hardware_planes_.get(crtc_controllers_[i]->drm().get()),
         pending_planes);
   }
 

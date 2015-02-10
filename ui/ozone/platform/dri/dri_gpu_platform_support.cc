@@ -169,7 +169,7 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 }
 
 DriGpuPlatformSupport::DriGpuPlatformSupport(
-    DriWrapper* drm,
+    const scoped_refptr<DriWrapper>& drm,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager,
     scoped_ptr<NativeDisplayDelegateDri> ndd)

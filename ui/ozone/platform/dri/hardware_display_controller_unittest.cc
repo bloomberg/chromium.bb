@@ -58,7 +58,7 @@ class HardwareDisplayControllerTest : public testing::Test {
 
  protected:
   scoped_ptr<ui::HardwareDisplayController> controller_;
-  scoped_ptr<ui::MockDriWrapper> drm_;
+  scoped_refptr<ui::MockDriWrapper> drm_;
 
   int page_flips_;
 
@@ -70,7 +70,7 @@ void HardwareDisplayControllerTest::SetUp() {
   std::vector<uint32_t> crtcs;
   crtcs.push_back(kPrimaryCrtc);
   crtcs.push_back(kSecondaryCrtc);
-  drm_.reset(new ui::MockDriWrapper(3, false, crtcs, kPlanesPerCrtc));
+  drm_ = new ui::MockDriWrapper(3, false, crtcs, kPlanesPerCrtc);
   controller_.reset(new ui::HardwareDisplayController(
       scoped_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kPrimaryCrtc, kPrimaryConnector))));
@@ -78,7 +78,7 @@ void HardwareDisplayControllerTest::SetUp() {
 
 void HardwareDisplayControllerTest::TearDown() {
   controller_.reset();
-  drm_.reset();
+  drm_ = nullptr;
 }
 
 void HardwareDisplayControllerTest::PageFlipCallback() {

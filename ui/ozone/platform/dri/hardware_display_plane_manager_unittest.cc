@@ -232,23 +232,24 @@ TEST_F(HardwareDisplayPlaneManagerTest, SharedPlanes) {
 TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   std::vector<uint32_t> crtcs;
   crtcs.push_back(100);
-  ui::MockDriWrapper drm(3, false, crtcs, 2);
+  scoped_refptr<ui::MockDriWrapper> drm =
+      new ui::MockDriWrapper(3, false, crtcs, 2);
   ui::OverlayPlaneList assigns;
   scoped_refptr<FakeScanoutBuffer> fake_buffer = new FakeScanoutBuffer();
   assigns.push_back(ui::OverlayPlane(fake_buffer));
   assigns.push_back(ui::OverlayPlane(fake_buffer));
   ui::HardwareDisplayPlaneList hdpl;
-  ui::CrtcController crtc(&drm, crtcs[0], 0);
-  EXPECT_TRUE(drm.plane_manager()->AssignOverlayPlanes(&hdpl, assigns, crtcs[0],
-                                                       &crtc));
-  EXPECT_TRUE(drm.plane_manager()->Commit(&hdpl));
+  ui::CrtcController crtc(drm, crtcs[0], 0);
+  EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
+                                                        crtcs[0], &crtc));
+  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl));
   assigns.clear();
   assigns.push_back(ui::OverlayPlane(fake_buffer));
-  EXPECT_TRUE(drm.plane_manager()->AssignOverlayPlanes(&hdpl, assigns, crtcs[0],
-                                                       &crtc));
-  EXPECT_EQ(0, drm.get_overlay_clear_call_count());
-  EXPECT_TRUE(drm.plane_manager()->Commit(&hdpl));
-  EXPECT_EQ(1, drm.get_overlay_clear_call_count());
+  EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
+                                                        crtcs[0], &crtc));
+  EXPECT_EQ(0, drm->get_overlay_clear_call_count());
+  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl));
+  EXPECT_EQ(1, drm->get_overlay_clear_call_count());
 }
 
 }  // namespace

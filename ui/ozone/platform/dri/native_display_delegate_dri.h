@@ -19,7 +19,8 @@ class ScreenManager;
 
 class NativeDisplayDelegateDri : public NativeDisplayDelegate {
  public:
-  NativeDisplayDelegateDri(DriWrapper* dri, ScreenManager* screen_manager);
+  NativeDisplayDelegateDri(const scoped_refptr<DriWrapper>& dri,
+                           ScreenManager* screen_manager);
   ~NativeDisplayDelegateDri() override;
 
   DisplaySnapshot* FindDisplaySnapshot(int64_t id);
@@ -65,7 +66,7 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
       const std::vector<DisplaySnapshotDri*>& new_displays,
       const std::vector<DisplaySnapshotDri*>& old_displays) const;
 
-  DriWrapper* dri_;                // Not owned.
+  scoped_refptr<DriWrapper> dri_;
   ScreenManager* screen_manager_;  // Not owned.
   // Modes can be shared between different displays, so we need to keep track
   // of them independently for cleanup.

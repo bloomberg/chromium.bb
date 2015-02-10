@@ -61,7 +61,7 @@ class DriWindowDelegateImplTest : public testing::Test {
 
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<ui::MockDriWrapper> dri_;
+  scoped_refptr<ui::MockDriWrapper> dri_;
   scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
   scoped_ptr<MockScreenManager> screen_manager_;
   scoped_ptr<ui::DriWindowDelegateManager> window_delegate_manager_;
@@ -72,7 +72,7 @@ class DriWindowDelegateImplTest : public testing::Test {
 
 void DriWindowDelegateImplTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
-  dri_.reset(new ui::MockDriWrapper(3));
+  dri_ = new ui::MockDriWrapper(3);
   buffer_generator_.reset(new ui::DriBufferGenerator());
   screen_manager_.reset(
       new MockScreenManager(dri_.get(), buffer_generator_.get()));

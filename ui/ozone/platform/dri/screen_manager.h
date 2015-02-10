@@ -28,12 +28,15 @@ class ScanoutBufferGenerator;
 // Responsible for keeping track of active displays and configuring them.
 class OZONE_EXPORT ScreenManager {
  public:
-  ScreenManager(DriWrapper* dri, ScanoutBufferGenerator* surface_generator);
+  ScreenManager(const scoped_refptr<DriWrapper>& dri,
+                ScanoutBufferGenerator* surface_generator);
   virtual ~ScreenManager();
 
   // Register a display controller. This must be called before trying to
   // configure it.
-  void AddDisplayController(DriWrapper* dri, uint32_t crtc, uint32_t connector);
+  void AddDisplayController(const scoped_refptr<DriWrapper>& dri,
+                            uint32_t crtc,
+                            uint32_t connector);
 
   // Remove a display controller from the list of active controllers. The
   // controller is removed since it was disconnected.
@@ -88,7 +91,7 @@ class OZONE_EXPORT ScreenManager {
                         uint32_t crtc,
                         uint32_t connector);
 
-  DriWrapper* dri_;  // Not owned.
+  scoped_refptr<DriWrapper> dri_;             // Not owned.
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.
   // List of display controllers (active and disabled).
   HardwareDisplayControllers controllers_;

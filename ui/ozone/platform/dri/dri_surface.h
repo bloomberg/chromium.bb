@@ -23,7 +23,8 @@ class HardwareDisplayController;
 
 class OZONE_EXPORT DriSurface : public SurfaceOzoneCanvas {
  public:
-  DriSurface(DriWindowDelegate* window_delegate, DriWrapper* dri);
+  DriSurface(DriWindowDelegate* window_delegate,
+             const scoped_refptr<DriWrapper>& dri);
   ~DriSurface() override;
 
   // SurfaceOzoneCanvas:
@@ -37,9 +38,8 @@ class OZONE_EXPORT DriSurface : public SurfaceOzoneCanvas {
 
   DriWindowDelegate* window_delegate_;
 
-  // Stores the connection to the graphics card. Pointer not owned by this
-  // class.
-  DriWrapper* dri_;
+  // Stores the connection to the graphics card.
+  scoped_refptr<DriWrapper> dri_;
 
   // The actual buffers used for painting.
   scoped_refptr<DriBuffer> buffers_[2];

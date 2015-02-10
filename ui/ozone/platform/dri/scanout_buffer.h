@@ -36,8 +36,9 @@ class ScanoutBufferGenerator {
  public:
   virtual ~ScanoutBufferGenerator() {}
 
-  virtual scoped_refptr<ScanoutBuffer> Create(DriWrapper* drm,
-                                              const gfx::Size& size) = 0;
+  virtual scoped_refptr<ScanoutBuffer> Create(
+      const scoped_refptr<DriWrapper>& drm,
+      const gfx::Size& size) = 0;
 };
 
 }  // namespace ui

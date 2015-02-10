@@ -69,7 +69,7 @@ class DriSurfaceTest : public testing::Test {
 
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<ui::MockDriWrapper> drm_;
+  scoped_refptr<ui::MockDriWrapper> drm_;
   scoped_ptr<MockDriWindowDelegate> window_delegate_;
   scoped_ptr<ui::DriSurface> surface_;
 
@@ -81,7 +81,7 @@ void DriSurfaceTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   std::vector<uint32_t> crtcs;
   crtcs.push_back(kDefaultCrtc);
-  drm_.reset(new ui::MockDriWrapper(3, true, crtcs, kPlanesPerCrtc));
+  drm_ = new ui::MockDriWrapper(3, true, crtcs, kPlanesPerCrtc);
   window_delegate_.reset(new MockDriWindowDelegate(drm_.get()));
   surface_.reset(new ui::DriSurface(window_delegate_.get(), drm_.get()));
   surface_->ResizeCanvas(gfx::Size(kDefaultMode.hdisplay,
@@ -91,7 +91,7 @@ void DriSurfaceTest::SetUp() {
 void DriSurfaceTest::TearDown() {
   surface_.reset();
   window_delegate_.reset();
-  drm_.reset();
+  drm_ = nullptr;
   message_loop_.reset();
 }
 

@@ -75,7 +75,7 @@ GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
 GbmSurfaceFactory::~GbmSurfaceFactory() {}
 
 void GbmSurfaceFactory::InitializeGpu(
-    GbmWrapper* gbm,
+    const scoped_refptr<GbmWrapper>& gbm,
     DriWindowDelegateManager* window_manager) {
   gbm_ = gbm;
   window_manager_ = window_manager;
@@ -151,7 +151,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     return NULL;
 
   scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(buffer));
-  if (!pixmap->Initialize(gbm_))
+  if (!pixmap->Initialize())
     return NULL;
 
   return pixmap;

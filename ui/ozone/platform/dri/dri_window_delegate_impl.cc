@@ -43,7 +43,7 @@ void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
 
 DriWindowDelegateImpl::DriWindowDelegateImpl(
     gfx::AcceleratedWidget widget,
-    DriWrapper* drm,
+    const scoped_refptr<DriWrapper>& drm,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager)
     : widget_(widget),

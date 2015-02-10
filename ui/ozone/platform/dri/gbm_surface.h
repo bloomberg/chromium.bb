@@ -26,7 +26,8 @@ class GbmWrapper;
 // surface and is updated via an EGLSurface.
 class GbmSurface : public GbmSurfaceless {
  public:
-  GbmSurface(DriWindowDelegate* window_delegate, GbmWrapper* gbm);
+  GbmSurface(DriWindowDelegate* window_delegate,
+             const scoped_refptr<GbmWrapper>& gbm);
   ~GbmSurface() override;
 
   bool Initialize();
@@ -41,7 +42,7 @@ class GbmSurface : public GbmSurfaceless {
   void OnSwapBuffersCallback(const SwapCompletionCallback& callback,
                              gbm_bo* pending_buffer);
 
-  GbmWrapper* gbm_;  // Not owned.
+  scoped_refptr<GbmWrapper> gbm_;
 
   // The native GBM surface. In EGL this represents the EGLNativeWindowType.
   gbm_surface* native_surface_;

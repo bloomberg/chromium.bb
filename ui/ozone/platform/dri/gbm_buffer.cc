@@ -30,7 +30,9 @@ int GetGbmFormatFromBufferFormat(SurfaceFactoryOzone::BufferFormat fmt) {
 
 }  // namespace
 
-GbmBuffer::GbmBuffer(GbmWrapper* gbm, gbm_bo* bo, bool scanout)
+GbmBuffer::GbmBuffer(const scoped_refptr<GbmWrapper>& gbm,
+                     gbm_bo* bo,
+                     bool scanout)
     : GbmBufferBase(gbm, bo, scanout) {
 }
 
@@ -41,7 +43,7 @@ GbmBuffer::~GbmBuffer() {
 
 // static
 scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
-    GbmWrapper* gbm,
+    const scoped_refptr<GbmWrapper>& gbm,
     SurfaceFactoryOzone::BufferFormat format,
     const gfx::Size& size,
     bool scanout) {
@@ -60,11 +62,11 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   return buffer;
 }
 
-GbmPixmap::GbmPixmap(scoped_refptr<GbmBuffer> buffer)
+GbmPixmap::GbmPixmap(const scoped_refptr<GbmBuffer>& buffer)
     : buffer_(buffer), dma_buf_(-1) {
 }
 
-bool GbmPixmap::Initialize(GbmWrapper* gbm) {
+bool GbmPixmap::Initialize() {
   // We want to use the GBM API because it's going to call into libdrm
   // which might do some optimizations on buffer allocation,
   // especially when sharing buffers via DMABUF.

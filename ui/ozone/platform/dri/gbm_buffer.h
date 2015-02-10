@@ -21,13 +21,13 @@ class GbmWrapper;
 class GbmBuffer : public GbmBufferBase {
  public:
   static scoped_refptr<GbmBuffer> CreateBuffer(
-      GbmWrapper* gbm,
+      const scoped_refptr<GbmWrapper>& gbm,
       SurfaceFactoryOzone::BufferFormat format,
       const gfx::Size& size,
       bool scanout);
 
  private:
-  GbmBuffer(GbmWrapper* gbm, gbm_bo* bo, bool scanout);
+  GbmBuffer(const scoped_refptr<GbmWrapper>& gbm, gbm_bo* bo, bool scanout);
   ~GbmBuffer() override;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
@@ -35,8 +35,8 @@ class GbmBuffer : public GbmBufferBase {
 
 class GbmPixmap : public NativePixmap {
  public:
-  GbmPixmap(scoped_refptr<GbmBuffer> buffer);
-  bool Initialize(GbmWrapper* gbm);
+  GbmPixmap(const scoped_refptr<GbmBuffer>& buffer);
+  bool Initialize();
 
   // NativePixmap:
   void* GetEGLClientBuffer() override;
