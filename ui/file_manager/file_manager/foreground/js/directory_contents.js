@@ -569,7 +569,30 @@ function FileListContext(fileFilter, metadataCache, fileSystemMetadata) {
    * @type {FileFilter}
    */
   this.fileFilter = fileFilter;
+
+  /**
+   * @public {!Array<string>}
+   * @const
+   */
+  this.prefetchPropertyNames = FileListContext.createPrefetchPropertyNames_();
 }
+
+/**
+ * @return {!Array<string>}
+ * @private
+ */
+FileListContext.createPrefetchPropertyNames_ = function() {
+  var set = {};
+  for (var i = 0;
+       i < ListContainer.METADATA_PREFETCH_PROPERTY_NAMES.length;
+       i++) {
+    set[ListContainer.METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
+  }
+  for (var i = 0; i < Command.METADATA_PREFETCH_PROPERTY_NAMES.length; i++) {
+    set[Command.METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
+  }
+  return Object.keys(set);
+};
 
 /**
  * This class is responsible for scanning directory (or search results),
@@ -937,11 +960,11 @@ DirectoryContents.prototype.prefetchMetadata =
     this.context_.metadataCache.getLatest(entries, TYPES, callback);
     this.context_.fileSystemMetadata.notifyEntriesChanged(entries);
     this.context_.fileSystemMetadata.get(
-        entries, ListContainer.METADATA_PROPERTY_NAMES);
+        entries, this.context_.prefetchPropertyNames);
   } else {
     this.context_.metadataCache.get(entries, TYPES, callback);
     this.context_.fileSystemMetadata.get(
-        entries, ListContainer.METADATA_PROPERTY_NAMES);
+        entries, this.context_.prefetchPropertyNames);
   }
 };
 

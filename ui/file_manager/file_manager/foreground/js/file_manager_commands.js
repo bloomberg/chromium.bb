@@ -18,6 +18,16 @@ cr.ui.Command.prototype.setHidden = function(value) {
 var Command = function() {};
 
 /**
+ * Metadata property names used by Command.
+ * These metadata is expected to be cached.
+ * @const {!Array<string>}
+ */
+Command.METADATA_PREFETCH_PROPERTY_NAMES = [
+  'hosted',
+  'pinned'
+];
+
+/**
  * Handles the execute event.
  * @param {!Event} event Command event.
  * @param {!FileManager} fileManager FileManager.
@@ -119,8 +129,9 @@ CommandUtil.getPinTargetEntries = function() {
     hasDirectory = hasDirectory || entry.isDirectory;
     if (!entry || hasDirectory)
       return false;
-    var metadata = fileManager.metadataCache_.getCached(entry, 'external');
-    if (!metadata || metadata.hosted)
+    var metadata = fileManager.getFileSystemMetadata().getCache(
+        [entry], ['hosted', 'pinned'])[0];
+    if (metadata.hosted)
       return false;
     entry.pinned = metadata.pinned;
     return true;
@@ -873,6 +884,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
       return;
     var currentEntry;
     var error = false;
+    var fileSystemMetadata = fileManager.getFileSystemMetadata();
     var steps = {
       // Pick an entry and pin it.
       start: function() {
@@ -891,16 +903,18 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
         // Convert to boolean.
         error = !!chrome.runtime.lastError;
         if (error && pin) {
-          fileManager.metadataCache_.getOne(
-              currentEntry, 'filesystem', steps.showError);
+          fileSystemMetadata.get([currentEntry], ['size']).then(
+              function(results) {
+                steps.showError(results[0].size);
+              });
+          return;
         }
-        fileManager.metadataCache_.clear(currentEntry, 'external');
-        fileManager.metadataCache_.getOne(
-            currentEntry, 'external', steps.updateUI.bind(this));
+        fileSystemMetadata.notifyEntriesChanged([currentEntry]);
+        fileSystemMetadata.get([currentEntry], ['pinned']).then(steps.updateUI);
       },
 
       // Update the user interface according to the cache state.
-      updateUI: function(drive /* not used */) {
+      updateUI: function() {
         fileManager.ui.listContainer.currentView.updateListItemsMetadata(
             'external', [currentEntry]);
         if (!error)
@@ -908,12 +922,12 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
       },
 
       // Show the error
-      showError: function(filesystem) {
+      showError: function(size) {
         fileManager.ui.alertDialog.showHtml(
             str('DRIVE_OUT_OF_SPACE_HEADER'),
             strf('DRIVE_OUT_OF_SPACE_MESSAGE',
                  unescape(currentEntry.name),
-                 util.bytesToString(filesystem.size)),
+                 util.bytesToString(size)),
             null, null, null);
       }
     };

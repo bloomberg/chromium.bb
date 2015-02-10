@@ -1292,6 +1292,13 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
+   * @return {!FileSystemMetadata}
+   */
+  FileManager.prototype.getFileSystemMetadata = function() {
+    return assert(this.fileSystemMetadata_);
+  };
+
+  /**
    * Outputs the current state for debugging.
    */
   FileManager.prototype.debugMe = function() {

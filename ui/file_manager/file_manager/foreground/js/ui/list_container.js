@@ -136,7 +136,7 @@ ListContainer.ListType = {
  * These metadata is expected to be cached.
  * @const {!Array<string>}
  */
-ListContainer.METADATA_PROPERTY_NAMES = [
+ListContainer.METADATA_PREFETCH_PROPERTY_NAMES = [
   'availableOffline',
   'customIconUrl',
   'hosted',
