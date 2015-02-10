@@ -4,8 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Script to install everything needed to build chromium on android that
-# requires sudo privileges.
+# Script to install everything needed to build chromium on android, including
+# items requiring sudo privileges.
 # See http://code.google.com/p/chromium/wiki/AndroidBuildInstructions
 
 # This script installs the sun-java6 packages (bin, jre and jdk). Sun requires
@@ -92,21 +92,9 @@ then
   fi
 fi
 
+# Install SDK packages for android
 if test "$skip_inst_sdk_packages" != 1; then
-  echo 'checking for sdk packages install'
-  # Use absolute path to call 'android' so script can be run from any directory.
-  cwd=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-  # Get the SDK extras packages to install from the DEPS file 'sdkextras' hook.
-  packages="$(python ${cwd}/get_sdk_extras_packages.py)"
-  for package in "${packages}"; do
-    pkg_id=$(${cwd}/../third_party/android_tools/sdk/tools/android list sdk | \
-                  grep -i "$package," | \
-                  awk '/^[ ]*[0-9]*- / {gsub("-",""); print $1}')
-    if [[ -n ${pkg_id} ]]; then
-      ${cwd}/../third_party/android_tools/sdk/tools/android update sdk --no-ui \
-         --filter ${pkg_id}
-    fi
-  done
+  "$(dirname "${BASH_SOURCE[0]}")/install-android-sdks.sh"
 fi
 
 echo "install-build-deps-android.sh complete."
