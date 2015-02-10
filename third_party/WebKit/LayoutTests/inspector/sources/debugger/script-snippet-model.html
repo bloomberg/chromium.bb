@@ -201,8 +201,6 @@ function test()
         {
             function evaluateSnippetAndReloadPage(uiSourceCode, callback)
             {
-                // JSC does not support compile-and-run for snippet evaluation, so different platforms have slightly different codeflow here, hence two sniffers.
-                InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_printResult", snippetFinished);
                 InspectorTest.addSniffer(WebInspector.ScriptSnippetModel.prototype, "_printRunScriptResult", snippetFinished);
                 WebInspector.scriptSnippetModel.evaluateScriptSnippet(WebInspector.context.flavor(WebInspector.ExecutionContext), uiSourceCode);
 
