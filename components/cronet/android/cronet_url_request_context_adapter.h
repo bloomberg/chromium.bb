@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CRONET_ANDROID_CRONET_URL_REQUEST_CONTEXT_ADAPTER_H_
 #define COMPONENTS_CRONET_ANDROID_CRONET_URL_REQUEST_CONTEXT_ADAPTER_H_
 
+#include <queue>
 #include <string>
 
 #include "base/callback.h"
@@ -22,6 +23,7 @@ class SingleThreadTaskRunner;
 namespace net {
 class NetLogLogger;
 class URLRequestContext;
+class ProxyConfigService;
 }  // namespace net
 
 namespace cronet {
@@ -31,20 +33,27 @@ struct URLRequestContextConfig;
 // Adapter between Java CronetUrlRequestContext and net::URLRequestContext.
 class CronetURLRequestContextAdapter {
  public:
-  CronetURLRequestContextAdapter();
+  explicit CronetURLRequestContextAdapter(
+      scoped_ptr<URLRequestContextConfig> context_config);
 
   ~CronetURLRequestContextAdapter();
 
-  void Initialize(scoped_ptr<URLRequestContextConfig> config,
-                  const base::Closure& java_init_network_thread);
+  // Called on main Java thread to initialize URLRequestContext.
+  void InitRequestContextOnMainThread(
+      const base::Closure& java_init_network_thread);
 
   // Releases all resources for the request context and deletes the object.
   // Blocks until network thread is destroyed after running all pending tasks.
   void Destroy();
 
-  net::URLRequestContext* GetURLRequestContext();
+  // Posts a task that might depend on the context being initialized
+  // to the network thread.
+  void PostTaskToNetworkThread(const tracked_objects::Location& posted_from,
+                               const base::Closure& callback);
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const;
+  bool IsOnNetworkThread() const;
+
+  net::URLRequestContext* GetURLRequestContext();
 
   void StartNetLogToFile(const std::string& file_name);
 
@@ -53,12 +62,24 @@ class CronetURLRequestContextAdapter {
   // Default net::LOAD flags used to create requests.
   int default_load_flags() const { return default_load_flags_; }
 
+  // Called on main Java thread to initialize URLRequestContext.
+  void InitRequestContextOnMainThread();
+
  private:
   // Initializes |context_| on the Network thread.
   void InitializeOnNetworkThread(
       scoped_ptr<URLRequestContextConfig> config,
       const base::Closure& java_init_network_thread);
+
+  // Runs a task that might depend on the context being initialized.
+  // This method should only be run on the network thread.
+  void RunTaskAfterContextInitOnNetworkThread(
+      const base::Closure& task_to_run_after_context_init);
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const;
+
   void StartNetLogToFileOnNetworkThread(const std::string& file_name);
+
   void StopNetLogOnNetworkThread();
 
   // Network thread is owned by |this|, but is destroyed from java thread.
@@ -66,6 +87,14 @@ class CronetURLRequestContextAdapter {
   // |net_log_logger_| and |context_| should only be accessed on network thread.
   scoped_ptr<net::NetLogLogger> net_log_logger_;
   scoped_ptr<net::URLRequestContext> context_;
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+
+  // Context config is only valid untng context is initialized.
+  scoped_ptr<URLRequestContextConfig> context_config_;
+
+  // A queue of tasks that need to be run after context has been initialized.
+  std::queue<base::Closure> tasks_waiting_for_context_;
+  bool is_context_initialized_;
   int default_load_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextAdapter);

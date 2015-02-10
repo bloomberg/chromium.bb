@@ -83,7 +83,7 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   // Methods called on any thread.
 
   // Posts tasks to network thread.
-  bool PostTaskToNetworkThread(const tracked_objects::Location& from_here,
+  void PostTaskToNetworkThread(const tracked_objects::Location& from_here,
                                const base::Closure& task);
 
   // Returns true if called on network thread.

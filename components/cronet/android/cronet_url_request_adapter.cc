@@ -47,15 +47,15 @@ void CronetURLRequestAdapter::DisableCache() {
   load_flags_ |= net::LOAD_DISABLE_CACHE;
 }
 
-bool CronetURLRequestAdapter::PostTaskToNetworkThread(
+void CronetURLRequestAdapter::PostTaskToNetworkThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   DCHECK(!IsOnNetworkThread());
-  return context_->GetNetworkTaskRunner()->PostTask(from_here, task);
+  context_->PostTaskToNetworkThread(from_here, task);
 }
 
 bool CronetURLRequestAdapter::IsOnNetworkThread() const {
-  return context_->GetNetworkTaskRunner()->BelongsToCurrentThread();
+  return context_->IsOnNetworkThread();
 }
 
 void CronetURLRequestAdapter::Start() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRONET_ANDROID_CRONET_LOADER_H_
-#define COMPONENTS_CRONET_ANDROID_CRONET_LOADER_H_
+#ifndef COMPONENTS_CRONET_ANDROID_CRONET_LIBRARY_LOADER_H_
+#define COMPONENTS_CRONET_ANDROID_CRONET_LIBRARY_LOADER_H_
 
 #include <jni.h>
 
@@ -14,4 +14,4 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved);
 
 }  // namespace cronet
 
-#endif  // COMPONENTS_CRONET_ANDROID_CRONET_LOADER_H_
+#endif  // COMPONENTS_CRONET_ANDROID_CRONET_LIBRARY_LOADER_H_

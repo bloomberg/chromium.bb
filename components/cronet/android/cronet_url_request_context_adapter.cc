@@ -108,8 +108,15 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
 
 namespace cronet {
 
-CronetURLRequestContextAdapter::CronetURLRequestContextAdapter()
-    : default_load_flags_(0) {
+CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
+    scoped_ptr<URLRequestContextConfig> context_config)
+    : network_thread_(new base::Thread("network")),
+      context_config_(context_config.Pass()),
+      is_context_initialized_(false),
+      default_load_flags_(net::LOAD_NORMAL) {
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  network_thread_->StartWithOptions(options);
 }
 
 CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
@@ -117,19 +124,15 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
   StopNetLogOnNetworkThread();
 }
 
-void CronetURLRequestContextAdapter::Initialize(
-    scoped_ptr<URLRequestContextConfig> config,
+void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
     const base::Closure& java_init_network_thread) {
-  network_thread_ = new base::Thread("network");
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  network_thread_->StartWithOptions(options);
-
+  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
+      GetNetworkTaskRunner(), nullptr));
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,
                  base::Unretained(this),
-                 Passed(&config),
+                 Passed(&context_config_),
                  java_init_network_thread));
 }
 
@@ -137,6 +140,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     scoped_ptr<URLRequestContextConfig> config,
     const base::Closure& java_init_network_thread) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  DCHECK(!is_context_initialized_);
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
   context_builder.set_network_delegate(new BasicNetworkDelegate());
@@ -196,6 +200,12 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 
   java_init_network_thread.Run();
+
+  is_context_initialized_ = true;
+  while (!tasks_waiting_for_context_.empty()) {
+    tasks_waiting_for_context_.front().Run();
+    tasks_waiting_for_context_.pop();
+  }
 }
 
 void CronetURLRequestContextAdapter::Destroy() {
@@ -213,6 +223,30 @@ net::URLRequestContext* CronetURLRequestContextAdapter::GetURLRequestContext() {
     LOG(ERROR) << "URLRequestContext is not set up";
   }
   return context_.get();
+}
+
+void CronetURLRequestContextAdapter::PostTaskToNetworkThread(
+    const tracked_objects::Location& posted_from,
+    const base::Closure& callback) {
+  GetNetworkTaskRunner()->PostTask(
+      posted_from, base::Bind(&CronetURLRequestContextAdapter::
+                                  RunTaskAfterContextInitOnNetworkThread,
+                              base::Unretained(this), callback));
+}
+
+void CronetURLRequestContextAdapter::RunTaskAfterContextInitOnNetworkThread(
+    const base::Closure& task_to_run_after_context_init) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  if (is_context_initialized_) {
+    DCHECK(tasks_waiting_for_context_.empty());
+    task_to_run_after_context_init.Run();
+    return;
+  }
+  tasks_waiting_for_context_.push(task_to_run_after_context_init);
+}
+
+bool CronetURLRequestContextAdapter::IsOnNetworkThread() const {
+  return GetNetworkTaskRunner()->BelongsToCurrentThread();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

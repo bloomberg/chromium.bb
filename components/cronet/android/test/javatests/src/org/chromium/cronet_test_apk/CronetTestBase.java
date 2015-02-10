@@ -87,6 +87,15 @@ public class CronetTestBase extends
         return getActivity();
     }
 
+    // Helper method to tell the activity to skip factory init in onCreate().
+    protected CronetTestActivity skipFactoryInitInOnCreate() {
+        String[] commandLineArgs = {
+                CronetTestActivity.LIBRARY_INIT_KEY, CronetTestActivity.LIBRARY_INIT_SKIP};
+        CronetTestActivity activity =
+                launchCronetTestAppWithUrlAndCommandLineArgs(null, commandLineArgs);
+        return activity;
+    }
+
     /**
      * Waits for the Active shell to finish loading. This times out after
      * WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT milliseconds and it shouldn't be

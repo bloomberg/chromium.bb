@@ -33,7 +33,8 @@ bool CronetUrlRequestContextRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-// Sets global user-agent to be used for all subsequent requests.
+// Creates RequestContextAdater if config is valid URLRequestContextConfig,
+// returns 0 otherwise.
 static jlong CreateRequestContextAdapter(JNIEnv* env,
                                          jobject jcaller,
                                          jobject japp_context,
@@ -45,19 +46,8 @@ static jlong CreateRequestContextAdapter(JNIEnv* env,
   if (!context_config->LoadFromJSON(config_string))
     return 0;
 
-  // Set application context.
-  base::android::ScopedJavaLocalRef<jobject> scoped_context(env, japp_context);
-  base::android::InitApplicationContext(env, scoped_context);
-
-  base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
-  jcaller_ref.Reset(env, jcaller);
-
   CronetURLRequestContextAdapter* context_adapter =
-      new CronetURLRequestContextAdapter();
-  base::Closure init_java_network_thread = base::Bind(&initJavaNetworkThread,
-                                                      jcaller_ref);
-  context_adapter->Initialize(context_config.Pass(), init_java_network_thread);
-
+      new CronetURLRequestContextAdapter(context_config.Pass());
   return reinterpret_cast<jlong>(context_adapter);
 }
 
@@ -104,6 +94,24 @@ static jint SetMinLogLevel(JNIEnv* env, jobject jcaller, jint jlog_level) {
   // MinLogLevel is global, shared by all URLRequestContexts.
   logging::SetMinLogLevel(static_cast<int>(jlog_level));
   return old_log_level;
+}
+
+// Called on application's main Java thread.
+static void InitRequestContextOnMainThread(JNIEnv* env,
+                                           jobject jcaller,
+                                           jlong jurl_request_context_adapter) {
+  if (jurl_request_context_adapter == 0)
+    return;
+
+  CronetURLRequestContextAdapter* context_adapter =
+      reinterpret_cast<CronetURLRequestContextAdapter*>(
+          jurl_request_context_adapter);
+
+  base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
+  jcaller_ref.Reset(env, jcaller);
+  base::Closure init_java_network_thread = base::Bind(&initJavaNetworkThread,
+                                                      jcaller_ref);
+  context_adapter->InitRequestContextOnMainThread(init_java_network_thread);
 }
 
 }  // namespace cronet

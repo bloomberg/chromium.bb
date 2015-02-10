@@ -19,15 +19,13 @@ import java.util.HashMap;
 public class ContextInitTest extends CronetTestBase {
     // URL used for base tests.
     private static final String URL = "http://127.0.0.1:8000";
+    // URL used for tests that return HTTP not found (404).
+    private static final String URL_404 = "http://127.0.0.1:8000/notfound404";
 
     @SmallTest
     @Feature({"Cronet"})
     public void testInitFactoryAndStartRequest() {
         CronetTestActivity activity = skipFactoryInitInOnCreate();
-        // Make sure the activity was created as expected.
-        assertNotNull(activity);
-        // Make sure the factory is not created.
-        assertNull(activity.mRequestFactory);
 
         // Immediately make a request after initializing the factory.
         HttpUrlRequestFactory factory = activity.initRequestFactory();
@@ -40,10 +38,6 @@ public class ContextInitTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testInitFactoryStartRequestAndCancel() {
         CronetTestActivity activity = skipFactoryInitInOnCreate();
-        // Make sure the activity was created as expected.
-        assertNotNull(activity);
-        // Make sure the factory is not created.
-        assertNull(activity.mRequestFactory);
 
         // Make a request and cancel it after initializing the factory.
         HttpUrlRequestFactory factory = activity.initRequestFactory();
@@ -61,14 +55,10 @@ public class ContextInitTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testInitFactoryStartTwoRequests() throws Exception {
         CronetTestActivity activity = skipFactoryInitInOnCreate();
-        // Make sure the activity was created as expected.
-        assertNotNull(activity);
-        // Make sure the factory is not created.
-        assertNull(activity.mRequestFactory);
 
         // Make two request right after initializing the factory.
         int[] statusCodes = {0, 0};
-        String[] urls = {URL, "http://127.0.0.1:8000/test"};
+        String[] urls = {URL, URL_404};
         HttpUrlRequestFactory factory = activity.initRequestFactory();
         for (int i = 0; i < 2; i++) {
             TestHttpUrlRequestListener listener = makeRequest(factory, urls[i]);
@@ -102,14 +92,9 @@ public class ContextInitTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testInitTwoFactoriesSimultaneously() throws Exception {
         final CronetTestActivity activity = skipFactoryInitInOnCreate();
-        // Make sure the activity was created as expected.
-        assertNotNull(activity);
-        // Make sure the factory is not created.
-        assertNull(activity.mRequestFactory);
 
         RequestThread thread1 = new RequestThread(activity, URL);
-        RequestThread thread2 = new RequestThread(activity,
-                "http://127.0.0.1:8000/notfound");
+        RequestThread thread2 = new RequestThread(activity, URL_404);
 
         thread1.start();
         thread2.start();
@@ -123,14 +108,9 @@ public class ContextInitTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testInitTwoFactoriesInSequence() throws Exception {
         final CronetTestActivity activity = skipFactoryInitInOnCreate();
-        // Make sure the activity was created as expected.
-        assertNotNull(activity);
-        // Make sure the factory is not created.
-        assertNull(activity.mRequestFactory);
 
         RequestThread thread1 = new RequestThread(activity, URL);
-        RequestThread thread2 = new RequestThread(activity,
-                "http://127.0.0.1:8000/notfound");
+        RequestThread thread2 = new RequestThread(activity, URL_404);
 
         thread1.start();
         thread1.join();
@@ -138,16 +118,6 @@ public class ContextInitTest extends CronetTestBase {
         thread2.join();
         assertEquals(200, thread1.mListener.mHttpStatusCode);
         assertEquals(404, thread2.mListener.mHttpStatusCode);
-    }
-
-    // Helper method to tell the activity to skip factory init in onCreate().
-    private CronetTestActivity skipFactoryInitInOnCreate() {
-        String[] commandLineArgs = {
-                CronetTestActivity.SKIP_FACTORY_INIT_KEY, "skip" };
-        CronetTestActivity activity =
-                launchCronetTestAppWithUrlAndCommandLineArgs(null,
-                                                             commandLineArgs);
-        return activity;
     }
 
     // Helper function to make a request.

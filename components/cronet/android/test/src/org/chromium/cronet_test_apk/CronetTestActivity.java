@@ -34,7 +34,16 @@ public class CronetTestActivity extends Activity {
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
     public static final String POST_DATA_KEY = "postData";
     public static final String CONFIG_KEY = "config";
-    public static final String SKIP_FACTORY_INIT_KEY = "skipFactoryInit";
+    public static final String LIBRARY_INIT_KEY = "libraryInit";
+    /**
+      * Skip library initialization.
+      */
+    public static final String LIBRARY_INIT_SKIP = "skip";
+
+    /**
+      * Initialize Cronet Async API only.
+      */
+    public static final String LIBRARY_INIT_CRONET_ONLY = "cronetOnly";
 
     public CronetURLStreamHandlerFactory mStreamHandlerFactory;
     public UrlRequestContext mUrlRequestContext;
@@ -66,31 +75,28 @@ public class CronetTestActivity extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try {
-            System.loadLibrary("cronet_tests");
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, "libcronet_test initialization failed.", e);
-            finish();
+        String initString = getCommandLineArg(LIBRARY_INIT_KEY);
+        if (LIBRARY_INIT_SKIP.equals(initString)) {
             return;
         }
 
-        String skipInitString = getCommandLineArg(SKIP_FACTORY_INIT_KEY);
-        if (skipInitString != null) {
+        mUrlRequestContext = initRequestContext();
+        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(
+                getApplicationContext(), null);
+        mHistogramManager = HistogramManager.createHistogramManager();
+
+        if (LIBRARY_INIT_CRONET_ONLY.equals(initString)) {
             return;
         }
+
         mRequestFactory = initRequestFactory();
-        if (mRequestFactory == null) {
-            return;
-        }
-
         String appUrl = getUrlFromIntent(getIntent());
         if (appUrl != null) {
             startWithURL(appUrl);
         }
     }
 
-    // Helper function to initialize request factory. Also used in testing.
-    public HttpUrlRequestFactory initRequestFactory() {
+    UrlRequestContextConfig getContextConfig() {
         UrlRequestContextConfig config = new UrlRequestContextConfig();
         config.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY,
                                100 * 1024)
@@ -112,17 +118,17 @@ public class CronetTestActivity extends Activity {
 
         // Setting this here so it isn't overridden on the command line
         config.setLibraryName("cronet_tests");
+        return config;
+    }
 
-        mUrlRequestContext = UrlRequestContext.createContext(
-                getApplicationContext(), config);
+    // Helper function to initialize request context. Also used in testing.
+    public UrlRequestContext initRequestContext() {
+        return UrlRequestContext.createContext(getApplicationContext(), getContextConfig());
+    }
 
-        mHistogramManager = HistogramManager.createHistogramManager();
-
-        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(
-                getApplicationContext(), config);
-
-        return HttpUrlRequestFactory.createFactory(getApplicationContext(),
-                                                   config);
+    // Helper function to initialize request factory. Also used in testing.
+    public HttpUrlRequestFactory initRequestFactory() {
+        return HttpUrlRequestFactory.createFactory(getApplicationContext(), getContextConfig());
     }
 
     private static String getUrlFromIntent(Intent intent) {

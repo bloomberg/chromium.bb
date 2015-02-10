@@ -4,6 +4,9 @@
 
 package org.chromium.cronet_test_apk;
 
+import android.os.ConditionVariable;
+import android.os.Handler;
+import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
@@ -13,6 +16,7 @@ import org.chromium.cronet_test_apk.TestUrlRequestListener.ResponseStep;
 import org.chromium.net.ExtendedResponseInfo;
 import org.chromium.net.ResponseInfo;
 import org.chromium.net.UrlRequest;
+import org.chromium.net.UrlRequestContext;
 import org.chromium.net.UrlRequestContextConfig;
 import org.chromium.net.UrlRequestException;
 
@@ -26,12 +30,39 @@ import java.util.Arrays;
 public class CronetUrlRequestContextTest extends CronetTestBase {
     // URLs used for tests.
     private static final String TEST_URL = "http://127.0.0.1:8000";
+    private static final String URL_404 = "http://127.0.0.1:8000/notfound404";
     private static final String MOCK_CRONET_TEST_FAILED_URL =
             "http://mock.failed.request/-2";
     private static final String MOCK_CRONET_TEST_SUCCESS_URL =
             "http://mock.http/success.txt";
 
     CronetTestActivity mActivity;
+
+    static class RequestThread extends Thread {
+        public TestUrlRequestListener mListener;
+
+        final CronetTestActivity mActivity;
+        final String mUrl;
+        final ConditionVariable mRunBlocker;
+
+        public RequestThread(CronetTestActivity activity, String url,
+                ConditionVariable runBlocker) {
+            mActivity = activity;
+            mUrl = url;
+            mRunBlocker = runBlocker;
+        }
+
+        @Override
+        public void run() {
+            mRunBlocker.block();
+            UrlRequestContext requestContext = mActivity.initRequestContext();
+            mListener = new TestUrlRequestListener();
+            UrlRequest urlRequest =
+                    requestContext.createRequest(mUrl, mListener, mListener.getExecutor());
+            urlRequest.start();
+            mListener.blockForDone();
+        }
+    }
 
     /**
      * Listener that shutdowns the request context when request has succeeded
@@ -115,6 +146,87 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         }
         listener.openBlockedStep();
         listener.blockForDone();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testShutdownDuringInit() throws Exception {
+        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+        final ConditionVariable block = new ConditionVariable(false);
+
+        // Post a task to main thread to block until shutdown is called to test
+        // scenario when shutdown is called right after construction before
+        // context is fully initialized on the main thread.
+        Runnable blockingTask = new Runnable() {
+            public void run() {
+                try {
+                    block.block();
+                } catch (Exception e) {
+                    fail("Caught " + e.getMessage());
+                }
+            }
+        };
+        // Ensure that test is not running on the main thread.
+        assertTrue(Looper.getMainLooper() != Looper.myLooper());
+        new Handler(Looper.getMainLooper()).post(blockingTask);
+
+        // Create new request context, but its initialization on the main thread
+        // will be stuck behind blockingTask.
+        final UrlRequestContext requestContext = activity.initRequestContext();
+        // Unblock the main thread, so context gets initialized and shutdown on
+        // it.
+        block.open();
+        // Shutdown will wait for init to complete on main thread.
+        requestContext.shutdown();
+        // Verify that context is shutdown.
+        try {
+            requestContext.stopNetLog();
+            fail("Should throw an exception.");
+        } catch (Exception e) {
+            assertEquals("Context is shut down.", e.getMessage());
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testInitAndShutdownOnMainThread() throws Exception {
+        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+        final ConditionVariable block = new ConditionVariable(false);
+
+        // Post a task to main thread to init and shutdown on the main thread.
+        Runnable blockingTask = new Runnable() {
+            public void run() {
+                // Create new request context, loading the library.
+                final UrlRequestContext requestContext = activity.initRequestContext();
+                // Shutdown right after init.
+                requestContext.shutdown();
+                // Verify that context is shutdown.
+                try {
+                    requestContext.stopNetLog();
+                    fail("Should throw an exception.");
+                } catch (Exception e) {
+                    assertEquals("Context is shut down.", e.getMessage());
+                }
+                block.open();
+            }
+        };
+        new Handler(Looper.getMainLooper()).post(blockingTask);
+        // Wait for shutdown to complete on main thread.
+        block.block();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testMultipleShutdown() throws Exception {
+        mActivity = launchCronetTestApp();
+        try {
+            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mUrlRequestContext.shutdown();
+            fail("Should throw an exception");
+        } catch (Exception e) {
+            assertEquals("Context is shut down.",
+                         e.getMessage());
+        }
     }
 
     @SmallTest
@@ -218,10 +330,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File directory = new File(PathUtils.getDataDirectory(
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
-        mActivity.mUrlRequestContext.stopNetLog();
-        assertTrue(file.exists());
-        assertTrue(file.length() == 0);
+        try {
+            mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
+            fail("Should throw an exception.");
+        } catch (Exception e) {
+            assertEquals("Context is shut down.", e.getMessage());
+        }
         assertTrue(file.delete());
         assertTrue(!file.exists());
     }
@@ -311,7 +425,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequest.start();
         listener.blockForDone();
         assertEquals(expectCached, listener.mResponseInfo.wasCached());
-        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
     }
 
     @SmallTest
@@ -388,7 +501,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     // TODO(mef): Simple cache uses global thread pool that is not affected by
     // shutdown of UrlRequestContext. This test can be flaky unless that thread
-    // pool is destroyed and recreated. Enable the test when crbug.com/442321 is fixed.
+    // pool is shutdown and recreated. Enable the test when crbug.com/442321 is fixed.
     @SmallTest
     @Feature({"Cronet"})
     public void disabled_testEnableHttpCacheDiskNewContext() throws Exception {
@@ -414,5 +527,77 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 getInstrumentation().getTargetContext().getApplicationContext(),
                 config);
         checkRequestCaching(url, true);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testInitContextAndStartRequest() {
+        CronetTestActivity activity = skipFactoryInitInOnCreate();
+
+        // Immediately make a request after initializing the context.
+        UrlRequestContext requestContext = activity.initRequestContext();
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest =
+                requestContext.createRequest(TEST_URL, listener, listener.getExecutor());
+        urlRequest.start();
+        listener.blockForDone();
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testInitContextStartTwoRequests() throws Exception {
+        CronetTestActivity activity = skipFactoryInitInOnCreate();
+
+        // Make two requests after initializing the context.
+        UrlRequestContext requestContext = activity.initRequestContext();
+        int[] statusCodes = {0, 0};
+        String[] urls = {TEST_URL, URL_404};
+        for (int i = 0; i < 2; i++) {
+            TestUrlRequestListener listener = new TestUrlRequestListener();
+            UrlRequest urlRequest =
+                    requestContext.createRequest(urls[i], listener, listener.getExecutor());
+            urlRequest.start();
+            listener.blockForDone();
+            statusCodes[i] = listener.mResponseInfo.getHttpStatusCode();
+        }
+        assertEquals(200, statusCodes[0]);
+        assertEquals(404, statusCodes[1]);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testInitTwoContextsSimultaneously() throws Exception {
+        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+
+        // Threads will block on runBlocker to ensure simultaneous execution.
+        ConditionVariable runBlocker = new ConditionVariable(false);
+        RequestThread thread1 = new RequestThread(activity, TEST_URL, runBlocker);
+        RequestThread thread2 = new RequestThread(activity, URL_404, runBlocker);
+
+        thread1.start();
+        thread2.start();
+        runBlocker.open();
+        thread1.join();
+        thread2.join();
+        assertEquals(200, thread1.mListener.mResponseInfo.getHttpStatusCode());
+        assertEquals(404, thread2.mListener.mResponseInfo.getHttpStatusCode());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testInitTwoContextsInSequence() throws Exception {
+        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+
+        ConditionVariable runBlocker = new ConditionVariable(true);
+        RequestThread thread1 = new RequestThread(activity, TEST_URL, runBlocker);
+        RequestThread thread2 = new RequestThread(activity, URL_404, runBlocker);
+
+        thread1.start();
+        thread1.join();
+        thread2.start();
+        thread2.join();
+        assertEquals(200, thread1.mListener.mResponseInfo.getHttpStatusCode());
+        assertEquals(404, thread2.mListener.mResponseInfo.getHttpStatusCode());
     }
 }
