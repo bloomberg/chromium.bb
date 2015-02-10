@@ -38,11 +38,15 @@ class RenderServletTest(unittest.TestCase):
     self.assertEqual(
         Response.Redirect('https://developer.chrome.com/extensions',
             permanent=False),
-        self._Render('/chrome/extensions', host='http://code.google.com'))
+        self._Render('/chrome/extensions', host='code.google.com'))
     self.assertEqual(
         Response.Redirect('https://developer.chrome.com/extensions',
             permanent=False),
-        self._Render('/chrome/extensions', host='https://code.google.com'))
+        self._Render('/chrome/extensions', host='code.google.com'))
+    self.assertEqual(
+        Response.Redirect('https://developer.chrome.com/devtools/docs/network',
+            permanent=False),
+        self._Render('/chrome/devtools/docs/network', host='code.google.com'))
 
   def testNotFound(self):
     def create_404_response(real_path):

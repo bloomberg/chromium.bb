@@ -33,7 +33,7 @@ class AppEngineHandler(webapp2.RequestHandler):
       for argument in self.request.arguments():
         arguments[argument] = self.request.get(argument)
       request = Request(self.request.path,
-                        self.request.url[:-len(self.request.path)],
+                        self.request.host,
                         self.request.headers,
                         arguments)
       response = Handler(request).Get()

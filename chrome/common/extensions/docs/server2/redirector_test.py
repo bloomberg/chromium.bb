@@ -12,7 +12,7 @@ from redirector import Redirector
 from test_file_system import TestFileSystem
 from third_party.json_schema_compiler.json_parse import Parse
 
-HOST = 'http://localhost/'
+HOST = 'localhost/'
 
 file_system = TestFileSystem({
   'redirects.json': json.dumps({
@@ -180,10 +180,7 @@ class RedirectorTest(unittest.TestCase):
   def testOldHosts(self):
     self.assertEqual(
         'https://developer.chrome.com/',
-        self._redirector.Redirect('http://code.google.com', ''))
-    self.assertEqual(
-        'https://developer.chrome.com/',
-        self._redirector.Redirect('https://code.google.com', ''))
+        self._redirector.Redirect('code.google.com', ''))
 
   def testRefresh(self):
     self._redirector.Refresh().Get()

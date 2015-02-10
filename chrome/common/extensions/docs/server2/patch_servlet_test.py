@@ -18,7 +18,7 @@ from test_util import DisableLogging
 
 
 
-_ALLOWED_HOST = 'https://chrome-apps-doc.appspot.com'
+_ALLOWED_HOST = 'chrome-apps-doc.appspot.com'
 
 
 def _CheckURLsArePatched(content, patch_servlet_path):
@@ -154,13 +154,13 @@ class PatchServletTest(unittest.TestCase):
             from_host, from_path, redirect_url, to_url))
       return (True, '%s/%s redirected to %s' % (
           from_host, from_path, redirect_url))
-    self.assertTrue(*is_redirect('http://developer.chrome.com', '12345',
-                                 '%s/_patch/12345' % _ALLOWED_HOST))
-    self.assertTrue(*is_redirect('http://developers.google.com', '12345',
-                                 '%s/_patch/12345' % _ALLOWED_HOST))
-    self.assertFalse(*is_redirect('http://chrome-apps-doc.appspot.com', '12345',
+    self.assertTrue(*is_redirect('developer.chrome.com', '12345',
+                                 'https://%s/_patch/12345' % _ALLOWED_HOST))
+    self.assertTrue(*is_redirect('developers.google.com', '12345',
+                                 'https://%s/_patch/12345' % _ALLOWED_HOST))
+    self.assertFalse(*is_redirect('chrome-apps-doc.appspot.com', '12345',
                                   None))
-    self.assertFalse(*is_redirect('http://some-other-app.appspot.com', '12345',
+    self.assertFalse(*is_redirect('some-other-app.appspot.com', '12345',
                                   None))
 
 if __name__ == '__main__':

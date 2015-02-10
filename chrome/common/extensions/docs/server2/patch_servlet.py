@@ -4,7 +4,6 @@
 
 from fnmatch import fnmatch
 import logging
-from urlparse import urlparse
 
 from appengine_url_fetcher import AppEngineUrlFetcher
 from caching_rietveld_patcher import CachingRietveldPatcher
@@ -84,14 +83,14 @@ class PatchServlet(Servlet):
 
   def Get(self):
     if (not IsDevServer() and
-        not fnmatch(urlparse(self._request.host).netloc, '*.appspot.com')):
+        not fnmatch(self._request.host, '*.appspot.com')):
       # Only allow patches on appspot URLs; it doesn't matter if appspot.com is
       # XSS'ed, but it matters for chrome.com.
-      redirect_host = 'https://chrome-apps-doc.appspot.com'
+      redirect_host = 'chrome-apps-doc.appspot.com'
       logging.info('Redirecting from XSS-able host %s to %s' % (
           self._request.host, redirect_host))
       return Response.Redirect(
-          '%s/_patch/%s' % (redirect_host, self._request.path))
+          'https://%s/_patch/%s' % (redirect_host, self._request.path))
 
     path_with_issue = self._request.path.lstrip('/')
     if '/' in path_with_issue:

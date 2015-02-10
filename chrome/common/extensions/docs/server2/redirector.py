@@ -93,7 +93,7 @@ class Redirector(object):
     developer.chrome.com, retaining elements like the channel and https, if
     used.
     '''
-    if urlsplit(host).hostname != 'code.google.com':
+    if host != 'code.google.com':
       return None
 
     path = path.split('/')

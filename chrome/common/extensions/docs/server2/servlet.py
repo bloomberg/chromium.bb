@@ -28,14 +28,15 @@ class Request(object):
   '''
   def __init__(self, path, host, headers, arguments={}):
     self.path = path.lstrip('/')
-    self.host = host.rstrip('/')
+    assert not '/' in host, 'Host "%s" should not contain a slash' % host
+    self.host = host
     self.headers = RequestHeaders(headers)
     self.arguments = arguments
 
   @staticmethod
   def ForTest(path, host=None, headers=None, arguments=None):
     return Request(path,
-                   host or 'http://developer.chrome.com',
+                   host or 'developer.chrome.com',
                    headers or {},
                    arguments or {})
 
