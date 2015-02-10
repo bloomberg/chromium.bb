@@ -83,13 +83,13 @@ void ManagePasswordsTest::SetupBlackistedPassword() {
 
 void ManagePasswordsTest::SetupChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
-    ScopedVector<autofill::PasswordForm> federated_credentials) {
+    ScopedVector<autofill::PasswordForm> federated_credentials,
+    const GURL& origin) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
   map[kTestUsername] = test_form();
   GetController()->OnChooseCredentials(
-      local_credentials.Pass(),
-      federated_credentials.Pass(),
+      local_credentials.Pass(), federated_credentials.Pass(), origin,
       base::Bind(&ManagePasswordsTest::OnChooseCredential, this));
   GetController()->UpdateIconAndBubbleState(view());
 }

@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
   GURL avatar_url("https://google.com/avatar.png");
   test_form()->avatar_url = avatar_url;
   local_credentials.push_back(new autofill::PasswordForm(*test_form()));
-
+  GURL origin("https://example.com");
   // Prepare to capture the network request.
   TestURLFetcherCallback url_callback;
   net::FakeURLFetcherFactory factory(
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
   EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
 
   SetupChooseCredentials(local_credentials.Pass(),
-                         ScopedVector<autofill::PasswordForm>());
+                         ScopedVector<autofill::PasswordForm>(), origin);
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   EXPECT_CALL(*this, OnChooseCredential(
       Field(&password_manager::CredentialInfo::type,

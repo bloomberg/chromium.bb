@@ -326,15 +326,15 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   local_credentials.push_back(new autofill::PasswordForm(test_form()));
   ScopedVector<autofill::PasswordForm> federated_credentials;
+  GURL origin("http://example.com");
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      local_credentials.Pass(),
-      federated_credentials.Pass(),
+      local_credentials.Pass(), federated_credentials.Pass(), origin,
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE,
             controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
-  EXPECT_EQ(test_form().origin, controller()->origin());
+  EXPECT_EQ(origin, controller()->origin());
   EXPECT_EQ(autofill::ConstPasswordFormMap(), controller()->best_matches());
 
   ManagePasswordsIconMock mock;
@@ -356,14 +356,16 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialFederated) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   ScopedVector<autofill::PasswordForm> federated_credentials;
   federated_credentials.push_back(new autofill::PasswordForm(test_form()));
+  GURL origin("http://example.com");
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      local_credentials.Pass(), federated_credentials.Pass(),
+      local_credentials.Pass(), federated_credentials.Pass(), origin,
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE,
             controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(autofill::ConstPasswordFormMap(), controller()->best_matches());
+  EXPECT_EQ(origin, controller()->origin());
 
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
@@ -383,14 +385,14 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   local_credentials.push_back(new autofill::PasswordForm(test_form()));
   ScopedVector<autofill::PasswordForm> federated_credentials;
+  GURL origin("http://example.com");
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      local_credentials.Pass(),
-      federated_credentials.Pass(),
+      local_credentials.Pass(), federated_credentials.Pass(), origin,
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE,
             controller()->state());
-
+  EXPECT_EQ(origin, controller()->origin());
   controller()->ManagePasswordsUIController::ChooseCredential(
       test_form(), password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());

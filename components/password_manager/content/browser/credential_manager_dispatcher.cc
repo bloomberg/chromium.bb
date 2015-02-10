@@ -105,7 +105,7 @@ void CredentialManagerDispatcher::PendingRequestTask::OnGetPasswordStoreResults(
 
   if (zero_click_only_ ||
       !dispatcher_->client()->PromptUserToChooseCredentials(
-          local_results.Pass(), federated_results.Pass(),
+          local_results.Pass(), federated_results.Pass(), origin_,
           base::Bind(&CredentialManagerDispatcher::SendCredential,
                      base::Unretained(dispatcher_), id_))) {
     dispatcher_->SendCredential(id_, CredentialInfo());

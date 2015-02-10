@@ -51,6 +51,7 @@ class ManagePasswordsUIController
   bool OnChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_credentials,
       ScopedVector<autofill::PasswordForm> federated_credentials,
+      const GURL& origin,
       base::Callback<void(const password_manager::CredentialInfo&)> callback);
 
   // Called when the password will be saved automatically, but we still wish to

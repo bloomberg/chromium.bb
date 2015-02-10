@@ -88,6 +88,7 @@ class PasswordManagerClient {
   virtual bool PromptUserToChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,
+      const GURL& origin,
       base::Callback<void(const CredentialInfo&)> callback) = 0;
 
   // Called when a password is saved in an automated fashion. Embedder may

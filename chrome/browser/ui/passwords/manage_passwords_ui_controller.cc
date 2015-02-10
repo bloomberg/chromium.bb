@@ -118,15 +118,11 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
 bool ManagePasswordsUIController::OnChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
     ScopedVector<autofill::PasswordForm> federated_credentials,
-    base::Callback<void(const password_manager::CredentialInfo&)> callback){
+    const GURL& origin,
+    base::Callback<void(const password_manager::CredentialInfo&)> callback) {
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
   form_manager_.reset();
-  // TODO(melandory): fix the crash when |local_credentials| is empty.
-  // By providing origin explicitly.
-  if (!local_credentials.empty())
-    origin_ = local_credentials[0]->origin;
-  else
-    origin_ = GURL();
+  origin_ = origin;
   local_credentials_forms_.swap(local_credentials);
   federated_credentials_forms_.swap(federated_credentials);
   // The map is useless because usernames may overlap.

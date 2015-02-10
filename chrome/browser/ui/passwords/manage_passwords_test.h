@@ -15,6 +15,7 @@
 
 class ManagePasswordsUIController;
 class ManagePasswordsIcon;
+class GURL;
 
 // Test class for the various password management view bits and pieces. Sets
 // up a ManagePasswordsUIControllerMock, and provides some helper methods
@@ -48,7 +49,8 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   // Put the controller, icon, and bubble into a choosing credential state.
   void SetupChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_credentials,
-      ScopedVector<autofill::PasswordForm> federated_credentials);
+      ScopedVector<autofill::PasswordForm> federated_credentials,
+      const GURL& origin);
 
   // Get samples for |histogram|.
   base::HistogramSamples* GetSamples(const char* histogram);

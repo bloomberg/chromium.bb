@@ -210,11 +210,12 @@ bool ChromePasswordManagerClient::PromptUserToSavePassword(
 bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_forms,
     ScopedVector<autofill::PasswordForm> federated_forms,
+    const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   return manage_passwords_ui_controller->OnChooseCredentials(
-      local_forms.Pass(), federated_forms.Pass(), callback);
+      local_forms.Pass(), federated_forms.Pass(), origin, callback);
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(
