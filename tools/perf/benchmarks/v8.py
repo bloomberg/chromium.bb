@@ -3,20 +3,40 @@
 # found in the LICENSE file.
 
 import page_sets
-from telemetry.web_perf import timeline_based_measurement
+from measurements import v8_gc_times
 from telemetry import benchmark
 
 
 @benchmark.Disabled('win')  # crbug.com/416502
 class V8GarbageCollectionCases(benchmark.Benchmark):
-  """Measure V8 metrics on the garbage collection cases."""
-  def CreateTimelineBasedMeasurementOptions(self):
-    # TODO(ernstm): Remove v8-overhead when benchmark relevant v8 events become
-    # available in the 'benchmark' category.
-    return timeline_based_measurement.Options(overhead_level='v8-overhead')
+  """Measure V8 GC metrics on the garbage collection cases."""
+  test = v8_gc_times.V8GCTimes
+  page_set = page_sets.GarbageCollectionCasesPageSet
 
   @classmethod
   def Name(cls):
     return 'v8.garbage_collection_cases'
 
-  page_set = page_sets.GarbageCollectionCasesPageSet
+@benchmark.Disabled('win')  # crbug.com/416502
+class V8Top25(benchmark.Benchmark):
+  """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  test = v8_gc_times.V8GCTimes
+  page_set = page_sets.Top25SmoothPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'v8.top_25_smooth'
+
+@benchmark.Enabled('android')
+class V8KeyMobileSites(benchmark.Benchmark):
+  """Measures V8 GC metrics on the while scrolling down key mobile sites.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  test = v8_gc_times.V8GCTimes
+  page_set = page_sets.KeyMobileSitesSmoothPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'v8.key_mobile_sites_smooth'
