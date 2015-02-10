@@ -296,6 +296,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_DISPLAY:
         result += " display=" + value;
         break;
+      case AX_ATTR_DROPEFFECT:
+        result += " dropeffect=" + value;
+        break;
       case AX_ATTR_HELP:
         result += " help=" + value;
         break;

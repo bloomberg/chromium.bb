@@ -109,6 +109,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { @"AXARIABusy", @"ariaBusy" },
     { @"AXARIALive", @"ariaLive" },
     { @"AXARIARelevant", @"ariaRelevant" },
+    { @"AXDropEffects", @"dropeffect" },
     { @"AXGrabbed", @"grabbed" },
     { @"AXInvalid", @"invalid" },
     { @"AXLoaded", @"loaded" },
@@ -326,6 +327,11 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (id)disclosedRows {
   // The rows that are considered inside this row.
   return nil;
+}
+
+- (NSString*)dropeffect {
+  return NSStringForStringAttribute(
+      browserAccessibility_, ui::AX_ATTR_DROPEFFECT);
 }
 
 - (NSNumber*)enabled {
@@ -1416,6 +1422,14 @@ NSDictionary* attributeToMethodNameMap = nil;
         @"AXARIABusy",
         nil]];
   }
+
+  if (browserAccessibility_->HasStringAttribute(
+          ui::AX_ATTR_DROPEFFECT)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXDropEffects",
+        nil]];
+  }
+
   // Add aria-grabbed attribute only if it has true.
   if (browserAccessibility_->HasBoolAttribute(ui::AX_ATTR_GRABBED)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:

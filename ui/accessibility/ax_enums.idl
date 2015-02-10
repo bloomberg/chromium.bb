@@ -233,6 +233,7 @@
     container_live_status,
     description,
     display,
+    dropeffect,
     help,
     html_tag,
     // Only used when invalid_state == invalid_state_other.

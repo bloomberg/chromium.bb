@@ -580,6 +580,11 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         ui::AX_ATTR_DESCRIBEDBY_IDS, describedby, dst);
   }
 
+  if (src.ariaDropEffect().length()) {
+    dst->AddStringAttribute(ui::AX_ATTR_DROPEFFECT,
+        UTF16ToUTF8(src.ariaDropEffect()));
+  }
+
   WebVector<WebAXObject> flowTo;
   if (src.ariaFlowTo(flowTo))
     AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, flowTo, dst);

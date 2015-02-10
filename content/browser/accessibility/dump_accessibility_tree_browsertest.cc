@@ -237,6 +237,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDocument) {
   RunAriaTest(FILE_PATH_LITERAL("aria-document.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDropEffect) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-dropeffect.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaExpanded) {
   RunAriaTest(FILE_PATH_LITERAL("aria-expanded.html"));
 }
