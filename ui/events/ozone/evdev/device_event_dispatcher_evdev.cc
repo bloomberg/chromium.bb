@@ -6,8 +6,11 @@
 
 namespace ui {
 
-KeyEventParams::KeyEventParams(int device_id, unsigned int code, bool down)
-    : device_id(device_id), code(code), down(down) {
+KeyEventParams::KeyEventParams(int device_id,
+                               unsigned int code,
+                               bool down,
+                               base::TimeDelta timestamp)
+    : device_id(device_id), code(code), down(down), timestamp(timestamp) {
 }
 
 KeyEventParams::KeyEventParams(const KeyEventParams& other) = default;

@@ -15,6 +15,8 @@
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/gfx/geometry/size.h"
 
+struct input_event;
+
 namespace ui {
 enum class DomCode;
 
@@ -62,6 +64,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Allows all keys to be processed.
   virtual void AllowAllKeys();
+
+  // Helper to generate a base::TimeDelta from an input_event's time
+  static base::TimeDelta TimeDeltaFromInputEvent(const input_event& event);
 
  protected:
   // base::MessagePumpLibevent::Watcher:

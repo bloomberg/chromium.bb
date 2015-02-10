@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <linux/input.h>
+
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 
 #include "base/files/file_path.h"
@@ -65,4 +67,9 @@ void EventConverterEvdev::AllowAllKeys() {
   NOTREACHED();
 }
 
+base::TimeDelta EventConverterEvdev::TimeDeltaFromInputEvent(
+    const input_event& event) {
+  return base::TimeDelta::FromMicroseconds(event.time.tv_sec * 1000000 +
+                                           event.time.tv_usec);
+}
 }  // namespace ui

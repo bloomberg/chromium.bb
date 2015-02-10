@@ -120,7 +120,8 @@ void EventConverterEvdevImpl::ConvertKeyEvent(const input_event& input) {
       EvdevCodeToNativeCode(input.code));
   if (!allowed_keys_ || allowed_keys_->count(key_code)) {
     dispatcher_->DispatchKeyEvent(
-        KeyEventParams(id_, input.code, input.value != kKeyReleaseValue));
+        KeyEventParams(id_, input.code, input.value != kKeyReleaseValue,
+        TimeDeltaFromInputEvent(input)));
   }
 }
 

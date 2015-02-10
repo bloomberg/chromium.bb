@@ -34,7 +34,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   ~KeyboardEvdev();
 
   // Handlers for raw key presses & releases.
-  void OnKeyChange(unsigned int code, bool down);
+  void OnKeyChange(unsigned int code, bool down, base::TimeDelta timestamp);
 
   // Handle Caps Lock modifier.
   void SetCapsLockEnabled(bool enabled);
@@ -54,7 +54,10 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void StopKeyRepeat();
   void OnRepeatDelayTimeout();
   void OnRepeatIntervalTimeout();
-  void DispatchKey(unsigned int key, bool down, bool repeat);
+  void DispatchKey(unsigned int key,
+                   bool down,
+                   bool repeat,
+                   base::TimeDelta timestamp);
 
   // Aggregated key state. There is only one bit of state per key; we do not
   // attempt to count presses of the same key on multiple keyboards.

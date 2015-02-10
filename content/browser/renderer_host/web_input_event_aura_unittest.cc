@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom3/dom_key.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
@@ -89,7 +90,7 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
     // Press left Ctrl.
     ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
                        ui::DomCode::CONTROL_LEFT, ui::EF_CONTROL_DOWN,
-                       ui::DomKey::CONTROL, 0);
+                       ui::DomKey::CONTROL, 0, ui::EventTimeForNow());
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
     // ui::VKEY_LCONTROL, instead of ui::VKEY_CONTROL, should be filled.
     EXPECT_EQ(ui::VKEY_LCONTROL, webkit_event.windowsKeyCode);
@@ -98,7 +99,7 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
     // Press right Ctrl.
     ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
                        ui::DomCode::CONTROL_RIGHT, ui::EF_CONTROL_DOWN,
-                       ui::DomKey::CONTROL, 0);
+                       ui::DomKey::CONTROL, 0, ui::EventTimeForNow());
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
     // ui::VKEY_RCONTROL, instead of ui::VKEY_CONTROL, should be filled.
     EXPECT_EQ(ui::VKEY_RCONTROL, webkit_event.windowsKeyCode);

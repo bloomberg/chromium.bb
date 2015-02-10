@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
@@ -76,6 +77,10 @@ void OnGestureReadyHelper(void* client_data, const Gesture* gesture) {
 base::TimeDelta StimeToTimedelta(stime_t timestamp) {
   return base::TimeDelta::FromMicroseconds(timestamp *
                                            base::Time::kMicrosecondsPerSecond);
+}
+
+base::TimeDelta TimeValToTimeDelta(const timeval& tv) {
+  return base::TimeDelta::FromMicroseconds(tv.tv_sec * 1000000 + tv.tv_usec);
 }
 
 // Number of fingers for scroll gestures.
@@ -441,7 +446,8 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
         continue;
 
       // Dispatch key press or release to keyboard.
-      dispatcher_->DispatchKeyEvent(KeyEventParams(id_, key, value));
+      dispatcher_->DispatchKeyEvent(
+          KeyEventParams(id_, key, value, TimeValToTimeDelta(time)));
     }
   }
 

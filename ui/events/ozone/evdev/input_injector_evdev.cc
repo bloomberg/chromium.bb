@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
@@ -73,8 +74,8 @@ void InputInjectorEvdev::InjectKeyPress(DomCode physical_key, bool down) {
   int native_keycode = KeycodeConverter::DomCodeToNativeKeycode(physical_key);
   int evdev_code = NativeCodeToEvdevCode(native_keycode);
 
-  dispatcher_->DispatchKeyEvent(
-      KeyEventParams(kDeviceIdForInjection, evdev_code, down));
+  dispatcher_->DispatchKeyEvent(KeyEventParams(
+      kDeviceIdForInjection, evdev_code, down, EventTimeForNow()));
 }
 
 }  // namespace ui

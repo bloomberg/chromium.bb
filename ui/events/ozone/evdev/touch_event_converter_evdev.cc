@@ -247,8 +247,7 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
           LOG(ERROR) << "failed to re-initialize device info";
         }
       } else {
-        ReportEvents(base::TimeDelta::FromMicroseconds(
-            input.time.tv_sec * 1000000 + input.time.tv_usec));
+        ReportEvents(EventConverterEvdev::TimeDeltaFromInputEvent(input));
       }
       if (is_type_a_)
         current_slot_ = 0;

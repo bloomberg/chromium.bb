@@ -705,8 +705,9 @@ KeyEvent::KeyEvent(EventType type,
                    DomCode code,
                    int flags,
                    DomKey key,
-                   base::char16 character)
-    : Event(type, EventTimeForNow(), flags),
+                   base::char16 character,
+                   base::TimeDelta time_stamp)
+    : Event(type, time_stamp, flags),
       key_code_(key_code),
       code_(code),
       is_char_(false),

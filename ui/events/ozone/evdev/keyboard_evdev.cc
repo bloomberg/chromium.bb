@@ -6,6 +6,7 @@
 
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
@@ -66,7 +67,9 @@ KeyboardEvdev::KeyboardEvdev(EventModifiersEvdev* modifiers,
 KeyboardEvdev::~KeyboardEvdev() {
 }
 
-void KeyboardEvdev::OnKeyChange(unsigned int key, bool down) {
+void KeyboardEvdev::OnKeyChange(unsigned int key,
+                                bool down,
+                                base::TimeDelta timestamp) {
   if (key > KEY_MAX)
     return;
 
@@ -80,7 +83,7 @@ void KeyboardEvdev::OnKeyChange(unsigned int key, bool down) {
     key_state_.reset(key);
 
   UpdateKeyRepeat(key, down);
-  DispatchKey(key, down, false /* repeat */);
+  DispatchKey(key, down, false /* repeat */, timestamp);
 }
 
 void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
@@ -149,7 +152,8 @@ void KeyboardEvdev::StopKeyRepeat() {
 }
 
 void KeyboardEvdev::OnRepeatDelayTimeout() {
-  DispatchKey(repeat_key_, true /* down */, true /* repeat */);
+  DispatchKey(repeat_key_, true /* down */, true /* repeat */,
+              EventTimeForNow());
 
   repeat_interval_timer_.Start(
       FROM_HERE, repeat_interval_,
@@ -158,10 +162,14 @@ void KeyboardEvdev::OnRepeatDelayTimeout() {
 }
 
 void KeyboardEvdev::OnRepeatIntervalTimeout() {
-  DispatchKey(repeat_key_, true /* down */, true /* repeat */);
+  DispatchKey(repeat_key_, true /* down */, true /* repeat */,
+              EventTimeForNow());
 }
 
-void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
+void KeyboardEvdev::DispatchKey(unsigned int key,
+                                bool down,
+                                bool repeat,
+                                base::TimeDelta timestamp) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
   // DomCode constants are not included here because of conflicts with
@@ -181,7 +189,7 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
     UpdateModifier(ModifierDomKeyToEventFlag(dom_key), down);
 
   KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
-                 modifiers_->GetModifierFlags(), dom_key, character);
+                 modifiers_->GetModifierFlags(), dom_key, character, timestamp);
   if (platform_keycode)
     event.set_platform_keycode(platform_keycode);
   callback_.Run(&event);

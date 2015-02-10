@@ -30,6 +30,7 @@
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -312,12 +313,10 @@ bool InputMethodEngine::SendKeyEvents(
         ch = key_char[0];
     }
     ui::KeyEvent ui_event(
-        type,
-        key_code,
-        ui::KeycodeConverter::CodeStringToDomCode(event.code.c_str()),
-        flags,
-        ui::KeycodeConverter::KeyStringToDomKey(event.key.c_str()),
-        ch);
+        type, key_code,
+        ui::KeycodeConverter::CodeStringToDomCode(event.code.c_str()), flags,
+        ui::KeycodeConverter::KeyStringToDomKey(event.key.c_str()), ch,
+        ui::EventTimeForNow());
     base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
                                                         &ui_event);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&ui_event);

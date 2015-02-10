@@ -20,13 +20,17 @@
 namespace ui {
 
 struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
-  KeyEventParams(int device_id, unsigned int code, bool down);
+  KeyEventParams(int device_id,
+                 unsigned int code,
+                 bool down,
+                 base::TimeDelta timestamp);
   KeyEventParams(const KeyEventParams& other);
   ~KeyEventParams();
 
   int device_id;
   unsigned int code;
   bool down;
+  base::TimeDelta timestamp;
 };
 
 struct EVENTS_OZONE_EVDEV_EXPORT MouseMoveEventParams {
