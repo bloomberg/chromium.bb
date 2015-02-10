@@ -55,4 +55,3 @@
     'lib/main/webview_entry_point.cc',
   ],
 }
-
