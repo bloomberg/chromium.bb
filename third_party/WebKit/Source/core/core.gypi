@@ -47,7 +47,6 @@
             'dom/ClientRect.idl',
             'dom/ClientRectList.idl',
             'dom/Comment.idl',
-            'dom/CommonDefinitions.idl',
             'dom/DOMError.idl',
             'dom/DOMException.idl',
             'dom/DOMImplementation.idl',
@@ -533,6 +532,10 @@
             'storage/StorageEvent.idl',
             'svg/SVGZoomEvent.idl',
             'xmlhttprequest/XMLHttpRequestProgressEvent.idl',
+        ],
+        # IDL files that only have typedefs/enums.
+        'core_typedefs_enums_only_idl_files': [
+            'dom/CommonDefinitions.idl',
         ],
         'webcore_rendering_files': [
             'layout/BidiRun.h',

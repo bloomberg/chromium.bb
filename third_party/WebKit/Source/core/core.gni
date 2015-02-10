@@ -33,6 +33,10 @@ core_dependency_idl_files =
 # Interfaces that inherit from Event, including Event itself.
 core_event_idl_files = get_path_info(_gypi.core_event_idl_files, "abspath")
 
+# IDL files that only have typedefs/enums.
+core_typedefs_enums_only_idl_files =
+  get_path_info(_gypi.core_typedefs_enums_only_idl_files, "abspath")
+
 webcore_non_rendering_files =
   get_path_info(_gypi.webcore_non_rendering_files, "abspath")
 webcore_rendering_files =

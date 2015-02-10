@@ -29,7 +29,9 @@ core_interface_idl_files =
 # Static IDL files
 core_static_interface_idl_files =
   core_definition_idl_files +
-  core_testing_definition_idl_files
+  core_testing_definition_idl_files +
+  core_typedefs_enums_only_idl_files
+
 core_static_dependency_idl_files =
   core_dependency_idl_files +
   webcore_testing_dependency_idl_files

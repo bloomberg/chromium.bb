@@ -11,6 +11,9 @@
   ],
 
   'variables': {
+    # IDL files that are processed by the blink's code generator. The code
+    # generator will generate corresponding .h/.cpp files. Do not add IDL files
+    # which won't have .h/.cpp files.
     'core_definition_idl_files': [
       '<@(core_dictionary_idl_files)',
       '<@(core_idl_files)',
@@ -70,6 +73,7 @@
     'core_static_interface_idl_files': [
       '<@(core_definition_idl_files)',
       '<@(core_testing_definition_idl_files)',
+      '<@(core_typedefs_enums_only_idl_files)',
     ],
     'core_static_dependency_idl_files': [
       '<@(core_dependency_idl_files)',
