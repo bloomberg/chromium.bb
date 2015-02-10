@@ -59,7 +59,6 @@ enum CdmMessageType {
 
 // An interface that represents a CDM in the Encrypted Media Extensions (EME)
 // spec (https://w3c.github.io/encrypted-media/). See media/base/media_keys.h.
-[Client=ContentDecryptionModuleClient]
 interface ContentDecryptionModule {
   // See media::MediaKeys::SessionType.
   enum SessionType {

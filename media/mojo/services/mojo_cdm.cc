@@ -52,7 +52,9 @@ MojoCdm::MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
   DCHECK(!session_keys_change_cb_.is_null());
   DCHECK(!session_expiration_update_cb_.is_null());
 
-  remote_cdm_.set_client(this);
+  // TODO(xhwang): Client syntax has been removed, so a new mechanism for client
+  // discovery must be added to this interface.  See http://crbug.com/451321.
+  NOTREACHED();
 }
 
 MojoCdm::~MojoCdm() {
