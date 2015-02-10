@@ -1358,6 +1358,28 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 }
 
+TEST_F(RenderTextTest, MinLineHeight) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+
+  render_text->SetText(ASCIIToUTF16("Hello!"));
+  SizeF default_size = render_text->GetStringSizeF();
+  ASSERT_NE(0, default_size.height());
+  ASSERT_NE(0, default_size.width());
+
+  render_text->SetMinLineHeight(default_size.height() / 2);
+  // MacOSX does not recompute the bounds properly, so invoke ResetLayout()
+  // explicitly.
+  // TODO(mukai): fix this.
+  render_text->ResetLayout();
+  EXPECT_EQ(default_size.ToString(), render_text->GetStringSizeF().ToString());
+
+  render_text->SetMinLineHeight(default_size.height() * 2);
+  render_text->ResetLayout();
+  SizeF taller_size = render_text->GetStringSizeF();
+  EXPECT_EQ(default_size.height() * 2, taller_size.height());
+  EXPECT_EQ(default_size.width(), taller_size.width());
+}
+
 TEST_F(RenderTextTest, SetFontList) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("Arial,Symbol, 13px"));

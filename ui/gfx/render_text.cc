@@ -508,6 +508,14 @@ void RenderText::SetMultiline(bool multiline) {
   }
 }
 
+void RenderText::SetMinLineHeight(int line_height) {
+  if (min_line_height_ == line_height)
+    return;
+  min_line_height_ = line_height;
+  cached_bounds_and_offset_valid_ = false;
+  lines_.clear();
+}
+
 void RenderText::SetElideBehavior(ElideBehavior elide_behavior) {
   // TODO(skanuj) : Add a test for triggering layout change.
   if (elide_behavior_ != elide_behavior) {
@@ -924,6 +932,7 @@ RenderText::RenderText()
       truncate_length_(0),
       elide_behavior_(NO_ELIDE),
       replace_newline_chars_with_symbols_(true),
+      min_line_height_(0),
       multiline_(false),
       background_is_transparent_(false),
       clip_to_display_rect_(true),

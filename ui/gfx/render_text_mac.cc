@@ -155,7 +155,9 @@ void RenderTextMac::EnsureLayout() {
   CGFloat font_list_baseline = font_list().GetBaseline();
   ascent = std::max(ascent, font_list_baseline);
   descent = std::max(descent, font_list_height - font_list_baseline);
-  string_size_ = SizeF(width, ascent + descent + leading);
+  string_size_ =
+      SizeF(width, std::max(ascent + descent + leading,
+                            static_cast<CGFloat>(min_line_height())));
   common_baseline_ = ascent;
 }
 

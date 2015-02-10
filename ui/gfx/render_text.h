@@ -259,6 +259,10 @@ class GFX_EXPORT RenderText {
   bool multiline() const { return multiline_; }
   void SetMultiline(bool multiline);
 
+  // TODO(ckocagil): Add vertical alignment and line spacing support instead.
+  int min_line_height() const { return min_line_height_; }
+  void SetMinLineHeight(int line_height);
+
   // Set the maximum length of the displayed layout text, not the actual text.
   // A |length| of 0 forgoes a hard limit, but does not guarantee proper
   // functionality of very long strings. Applies to subsequent SetText calls.
@@ -578,6 +582,7 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, TruncatedText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, TruncatedObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, MinLineHeight);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffset);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL);
@@ -694,6 +699,9 @@ class GFX_EXPORT RenderText {
 
   // Whether newline characters should be replaced with newline symbols.
   bool replace_newline_chars_with_symbols_;
+
+  // The minimum height a line should have.
+  int min_line_height_;
 
   // Whether the text should be broken into multiple lines. Uses the width of
   // |display_rect_| as the width cap.

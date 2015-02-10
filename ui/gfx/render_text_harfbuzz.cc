@@ -922,8 +922,8 @@ void RenderTextHarfBuzz::EnsureLayout() {
 
     HarfBuzzLineBreaker line_breaker(
         display_rect().width(), font_list().GetBaseline(),
-        font_list().GetHeight(), multiline(), GetLayoutText(),
-        multiline() ? &GetLineBreaks() : nullptr, runs_);
+        std::max(font_list().GetHeight(), min_line_height()), multiline(),
+        GetLayoutText(), multiline() ? &GetLineBreaks() : nullptr, runs_);
 
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
     tracked_objects::ScopedTracker tracking_profile3(
