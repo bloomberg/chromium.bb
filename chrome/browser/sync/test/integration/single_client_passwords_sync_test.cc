@@ -6,7 +6,7 @@
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/password_manager/core/browser/password_form_data.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;

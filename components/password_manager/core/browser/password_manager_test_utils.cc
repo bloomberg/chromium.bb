@@ -2,21 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
+
+#include <set>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/core/browser/password_form_data.h"
 
 using autofill::PasswordForm;
 
 namespace password_manager {
 
-scoped_ptr<PasswordForm> CreatePasswordFormFromData(
+const char kTestingAvatarUrlSpec[] = "https://accounts.google.com/Avatar";
+const char kTestingFederationUrlSpec[] = "https://accounts.google.com/login";
+const int kTestingDaysAfterPasswordsAreSynced = 1;
+
+scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
     const PasswordFormData& form_data) {
   scoped_ptr<PasswordForm> form(new PasswordForm());
   form->scheme = form_data.scheme;
   form->preferred = form_data.preferred;
   form->ssl_valid = form_data.ssl_valid;
   form->date_created = base::Time::FromDoubleT(form_data.creation_time);
+  form->date_synced =
+      form->date_created +
+      base::TimeDelta::FromDays(kTestingDaysAfterPasswordsAreSynced);
   if (form_data.signon_realm)
     form->signon_realm = std::string(form_data.signon_realm);
   if (form_data.origin)
@@ -31,11 +41,15 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromData(
     form->password_element = base::WideToUTF16(form_data.password_element);
   if (form_data.username_value) {
     form->username_value = base::WideToUTF16(form_data.username_value);
+    form->display_name = form->username_value;
+    form->skip_zero_click = true;
     if (form_data.password_value)
       form->password_value = base::WideToUTF16(form_data.password_value);
   } else {
     form->blacklisted_by_user = true;
   }
+  form->avatar_url = GURL(kTestingAvatarUrlSpec);
+  form->federation_url = GURL(kTestingFederationUrlSpec);
   return form.Pass();
 }
 

@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "components/password_manager/core/browser/password_form_data.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -137,7 +137,8 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   // Build the forms vector and add the forms to the store.
   ScopedVector<PasswordForm> all_forms;
   for (size_t i = 0; i < arraysize(form_data); ++i) {
-    all_forms.push_back(CreatePasswordFormFromData(form_data[i]).release());
+    all_forms.push_back(
+        CreatePasswordFormFromDataForTesting(form_data[i]).release());
     store->AddLogin(*all_forms.back());
   }
   base::MessageLoop::current()->RunUntilIdle();

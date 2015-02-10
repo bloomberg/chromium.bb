@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/login_database.h"
-#include "components/password_manager/core/browser/password_form_data.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -121,7 +121,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   ScopedVector<PasswordForm> expected_forms;
   for (unsigned int i = 0; i < arraysize(form_data); ++i) {
     expected_forms.push_back(
-        CreatePasswordFormFromData(form_data[i]).release());
+        CreatePasswordFormFromDataForTesting(form_data[i]).release());
     store->AddLogin(*expected_forms.back());
   }
 
@@ -147,7 +147,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   scoped_ptr<PasswordForm> form =
-      CreatePasswordFormFromData(CreateTestPasswordFormData());
+      CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
 
   MockPasswordStoreObserver observer;
   store->AddObserver(&observer);
@@ -210,7 +210,7 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Add a new autofillable login + a blacklisted login.
   scoped_ptr<PasswordForm> form =
-      CreatePasswordFormFromData(CreateTestPasswordFormData());
+      CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
   scoped_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
   blacklisted_form->signon_realm = "http://foo.example.com";
   blacklisted_form->origin = GURL("http://foo.example.com/origin");

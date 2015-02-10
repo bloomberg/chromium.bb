@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_DATA_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_DATA_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_TEST_UTILS_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_TEST_UTILS_H_
 
-#include <ostream>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/password_form.h"
@@ -14,6 +14,12 @@
 // TODO(sync): This file must eventually be refactored away -- crbug.com/87185.
 
 namespace password_manager {
+
+// These constants are used by CreatePasswordFormFromDataForTesting to supply
+// values not covered by PasswordFormData.
+extern const char kTestingAvatarUrlSpec[];
+extern const char kTestingFederationUrlSpec[];
+extern const int kTestingDaysAfterPasswordsAreSynced;
 
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
@@ -33,7 +39,7 @@ struct PasswordFormData {
 };
 
 // Creates and returns a new PasswordForm built from form_data.
-scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromData(
+scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromDataForTesting(
     const PasswordFormData& form_data);
 
 // Checks whether two vectors of PasswordForms contain equivalent elements,
@@ -51,4 +57,4 @@ MATCHER_P(ContainsSamePasswordForms, forms, "") {
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_DATA_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_TEST_UTILS_H_

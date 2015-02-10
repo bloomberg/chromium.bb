@@ -19,7 +19,7 @@
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/os_crypt/ie7_password_win.h"
-#include "components/password_manager/core/browser/password_form_data.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
@@ -230,7 +230,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form = CreatePasswordFormFromData(form_data);
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(form_data);
 
   // The returned form will not have 'action' or '*_element' fields set. This
   // is because credentials imported from IE don't have this information.
@@ -247,7 +248,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
     true, false, 1,
   };
   ScopedVector<autofill::PasswordForm> expected_forms;
-  expected_forms.push_back(CreatePasswordFormFromData(expected_form_data));
+  expected_forms.push_back(
+      CreatePasswordFormFromDataForTesting(expected_form_data));
 
   // The IE7 password should be returned.
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
@@ -274,7 +276,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form = CreatePasswordFormFromData(form_data);
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(form_data);
 
   MockPasswordStoreConsumer consumer;
   store_->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &consumer);
@@ -322,7 +325,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form = CreatePasswordFormFromData(form_data);
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(form_data);
 
   PasswordFormData expected_form_data = {
     PasswordForm::SCHEME_HTML,
@@ -337,7 +341,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
     true, false, 1,
   };
   ScopedVector<autofill::PasswordForm> expected_forms;
-  expected_forms.push_back(CreatePasswordFormFromData(expected_form_data));
+  expected_forms.push_back(
+      CreatePasswordFormFromDataForTesting(expected_form_data));
 
   // The IE7 password should be returned.
   EXPECT_CALL(password_consumer,
@@ -376,7 +381,8 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form = CreatePasswordFormFromData(form_data);
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(form_data);
 
   MockPasswordStoreConsumer consumer;
 

@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/password_manager/core/browser/password_form_data.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -237,7 +237,7 @@ void InitExpectedForms(bool autofillable,
         autofillable,
         false,
         static_cast<double>(i + 1)};
-    forms->push_back(CreatePasswordFormFromData(data).release());
+    forms->push_back(CreatePasswordFormFromDataForTesting(data).release());
   }
 }
 
@@ -296,7 +296,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
       L"password_element",             L"username_value",
       L"password_value",               true,
       false,                           1};
-  scoped_ptr<PasswordForm> form = CreatePasswordFormFromData(form_data);
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(form_data);
 
   MockPasswordStoreObserver observer;
   store->AddObserver(&observer);
