@@ -1,5 +1,4 @@
 include_rules = [
   "-components/devtools_bridge",
   "+components/web_contents_delegate_android",
-  "+cc/layers/layer.h"
 ]

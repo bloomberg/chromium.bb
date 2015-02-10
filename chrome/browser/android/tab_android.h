@@ -25,10 +25,6 @@ class GURL;
 class Profile;
 class SkBitmap;
 
-namespace cc {
-class Layer;
-}
-
 namespace chrome {
 struct NavigateParams;
 }
@@ -36,7 +32,6 @@ struct NavigateParams;
 namespace chrome {
 namespace android {
 class ChromeWebContentsDelegateAndroid;
-class TabContentManager;
 }
 }
 
@@ -82,9 +77,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // Return the WebContents, if any, currently owned by this TabAndroid.
   content::WebContents* web_contents() const { return web_contents_.get(); }
-
-  // Return the cc::Layer that represents the content for this TabAndroid.
-  scoped_refptr<cc::Layer> GetContentLayer() const;
 
   // Return specific id information regarding this TabAndroid.
   const SessionID& session_id() const { return session_tab_id_; }
@@ -194,20 +186,6 @@ class TabAndroid : public CoreTabHelperDelegate,
                                       jobject obj,
                                       jobject delegate);
 
-  // TODO(dtrainor): Remove this, pull content_layer() on demand.
-  void AttachToTabContentManager(JNIEnv* env,
-                                 jobject obj,
-                                 jobject jtab_content_manager);
-
-  void AttachOverlayContentViewCore(JNIEnv* env,
-                                    jobject obj,
-                                    jobject jcontent_view_core,
-                                    jboolean visible);
-
-  void DetachOverlayContentViewCore(JNIEnv* env,
-                                    jobject obj,
-                                    jobject jcontent_view_core);
-
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 
@@ -223,9 +201,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   SessionID session_window_id_;
 
   content::NotificationRegistrar notification_registrar_;
-
-  scoped_refptr<cc::Layer> content_layer_;
-  chrome::android::TabContentManager* tab_content_manager_;
 
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<chrome::android::ChromeWebContentsDelegateAndroid>
