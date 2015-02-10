@@ -1004,23 +1004,17 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   uint32 output_surface_id = next_output_surface_id_++;
   if (command_line.HasSwitch(switches::kEnableDelegatedRenderer)) {
     DCHECK(compositor_deps_->GetCompositorImplThreadTaskRunner());
-    return scoped_ptr<cc::OutputSurface>(
-        new DelegatedCompositorOutputSurface(routing_id(),
-                                             output_surface_id,
-                                             context_provider,
-                                             frame_swap_message_queue_));
+    return scoped_ptr<cc::OutputSurface>(new DelegatedCompositorOutputSurface(
+        routing_id(), output_surface_id, context_provider, nullptr,
+        frame_swap_message_queue_));
   }
   if (!context_provider.get()) {
     scoped_ptr<cc::SoftwareOutputDevice> software_device(
         new CompositorSoftwareOutputDevice());
 
-    return scoped_ptr<cc::OutputSurface>(
-        new CompositorOutputSurface(routing_id(),
-                                    output_surface_id,
-                                    NULL,
-                                    software_device.Pass(),
-                                    frame_swap_message_queue_,
-                                    true));
+    return scoped_ptr<cc::OutputSurface>(new CompositorOutputSurface(
+        routing_id(), output_surface_id, nullptr, nullptr,
+        software_device.Pass(), frame_swap_message_queue_, true));
   }
 
   if (command_line.HasSwitch(cc::switches::kCompositeToMailbox)) {
@@ -1031,22 +1025,16 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     cc::ResourceFormat format = cc::RGBA_8888;
     if (base::SysInfo::IsLowEndDevice())
       format = cc::RGB_565;
-    return scoped_ptr<cc::OutputSurface>(
-        new MailboxOutputSurface(routing_id(),
-                                 output_surface_id,
-                                 context_provider,
-                                 scoped_ptr<cc::SoftwareOutputDevice>(),
-                                 frame_swap_message_queue_,
-                                 format));
+    return scoped_ptr<cc::OutputSurface>(new MailboxOutputSurface(
+        routing_id(), output_surface_id, context_provider, nullptr,
+        scoped_ptr<cc::SoftwareOutputDevice>(), frame_swap_message_queue_,
+        format));
   }
   bool use_swap_compositor_frame_message = false;
-  return scoped_ptr<cc::OutputSurface>(
-      new CompositorOutputSurface(routing_id(),
-                                  output_surface_id,
-                                  context_provider,
-                                  scoped_ptr<cc::SoftwareOutputDevice>(),
-                                  frame_swap_message_queue_,
-                                  use_swap_compositor_frame_message));
+  return scoped_ptr<cc::OutputSurface>(new CompositorOutputSurface(
+      routing_id(), output_surface_id, context_provider, nullptr,
+      scoped_ptr<cc::SoftwareOutputDevice>(), frame_swap_message_queue_,
+      use_swap_compositor_frame_message));
 }
 
 void RenderWidget::OnSwapBuffersAborted() {
