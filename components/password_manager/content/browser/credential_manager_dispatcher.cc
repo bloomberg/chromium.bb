@@ -204,6 +204,7 @@ void CredentialManagerDispatcher::OnNotifyFailedSignIn(int request_id,
 void CredentialManagerDispatcher::OnNotifySignedIn(
     int request_id,
     const password_manager::CredentialInfo& credential) {
+  DCHECK(credential.type != CredentialType::CREDENTIAL_TYPE_EMPTY);
   DCHECK(request_id);
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedIn(

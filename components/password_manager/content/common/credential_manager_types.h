@@ -64,7 +64,7 @@ struct CredentialInfo {
 };
 
 // Create a new autofill::PasswordForm object based on |info|, valid in the
-// context of |origin|.
+// context of |origin|. Returns an empty scoped_ptr for CREDENTIAL_TYPE_EMPTY.
 scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
     const CredentialInfo& info,
     const GURL& origin);

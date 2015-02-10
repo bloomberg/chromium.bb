@@ -61,14 +61,23 @@ CredentialInfo::~CredentialInfo() {
 scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
     const CredentialInfo& info,
     const GURL& origin) {
-  scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm);
+  scoped_ptr<autofill::PasswordForm> form;
+  if (info.type == CredentialType::CREDENTIAL_TYPE_EMPTY)
+    return form.Pass();
+
+  form.reset(new autofill::PasswordForm);
   form->avatar_url = info.avatar;
   form->display_name = info.name;
   form->federation_url = info.federation;
   form->origin = origin;
   form->password_value = info.password;
+  form->username_value = info.id;
   form->scheme = autofill::PasswordForm::SCHEME_HTML;
-  form->signon_realm = origin.spec();
+
+  form->signon_realm =
+      info.type == CredentialType::CREDENTIAL_TYPE_LOCAL
+          ? origin.spec()
+          : "federation://" + origin.host() + "/" + info.federation.host();
   form->username_value = info.id;
   return form.Pass();
 }
