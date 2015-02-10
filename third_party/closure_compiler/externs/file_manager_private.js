@@ -68,7 +68,8 @@ var ProfileInfo;
  *   isParentDevice: (boolean|undefined),
  *   isReadOnly: boolean,
  *   hasMedia: boolean,
- *   mountCondition: (string|undefined)
+ *   mountCondition: (string|undefined),
+ *   mountContext: (string|undefined)
  * }}
  */
 var VolumeMetadata;
