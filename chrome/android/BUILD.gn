@@ -98,6 +98,7 @@ android_library("chrome_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
     "//ui/android:ui_java_resources",
+    google_play_services_library,
   ]
 
   srcjar_deps = [

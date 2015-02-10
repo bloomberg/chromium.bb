@@ -20,6 +20,11 @@ if (is_android) {
     default_android_sdk_build_tools_version = "21.0.1"
   }
 
+  if (!defined(google_play_services_library)) {
+    google_play_services_library =
+        "//third_party/android_tools:google_play_services_default_java"
+  }
+
   declare_args() {
     android_sdk_root = default_android_sdk_root
     android_sdk_version = default_android_sdk_version
