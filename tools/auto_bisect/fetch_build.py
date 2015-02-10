@@ -32,6 +32,11 @@ PERF_BUILDER = 'perf'
 FULL_BUILDER = 'full'
 ANDROID_CHROME_PERF_BUILDER = 'android-chrome-perf'
 
+# Maximum time in seconds to wait after posting build request to the try server.
+MAX_MAC_BUILD_TIME = 14400
+MAX_WIN_BUILD_TIME = 14400
+MAX_LINUX_BUILD_TIME = 14400
+
 
 def GetBucketAndRemotePath(revision, builder_type=PERF_BUILDER,
                            target_arch='ia32', target_platform='chromium',
@@ -59,6 +64,15 @@ def GetBucketAndRemotePath(revision, builder_type=PERF_BUILDER,
   bucket = build_archive.BucketName()
   remote_path = build_archive.FilePath(revision, deps_patch_sha=deps_patch_sha)
   return bucket, remote_path
+
+
+def GetBuilderNameAndBuildTime(builder_type=PERF_BUILDER, target_arch='ia32',
+                               target_platform='chromium', extra_src=None):
+  """Gets builder bot name and build time in seconds based on platform."""
+  build_archive = BuildArchive.Create(
+      builder_type, target_arch=target_arch, target_platform=target_platform,
+      extra_src=extra_src)
+  return build_archive.GetBuilderName(), build_archive.GetBuilderBuildTime()
 
 
 class BuildArchive(object):
@@ -154,6 +168,19 @@ class BuildArchive(object):
       return 'mac'
     raise NotImplementedError('Unknown platform "%s".' % sys.platform)
 
+  def GetBuilderName(self):
+    raise NotImplementedError()
+
+  def GetBuilderBuildTime(self):
+    """Returns the time to wait for a build after requesting one."""
+    if self._platform in ('win', 'win64'):
+      return MAX_WIN_BUILD_TIME
+    if self._platform in ('linux', 'android'):
+      return MAX_LINUX_BUILD_TIME
+    if self._platform == 'mac':
+      return MAX_MAC_BUILD_TIME
+    raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
+
 
 class PerfBuildArchive(BuildArchive):
 
@@ -175,6 +202,20 @@ class PerfBuildArchive(BuildArchive):
     }
     assert self._platform in platform_to_directory
     return platform_to_directory.get(self._platform)
+
+  def GetBuilderName(self):
+    """Gets builder bot name based on platform."""
+    if self._platform == 'win64':
+      return 'win_x64_perf_bisect_builder'
+    elif self._platform == 'win':
+      return 'win_perf_bisect_builder'
+    elif self._platform == 'linux':
+      return 'linux_perf_bisect_builder'
+    elif self._platform == 'android':
+      return 'android_perf_bisect_builder'
+    elif self._platform == 'mac':
+      return 'mac_perf_bisect_builder'
+    raise NotImplementedError('Unsupported platform "%s".' % sys.platform)
 
 
 class FullBuildArchive(BuildArchive):
@@ -206,6 +247,10 @@ class FullBuildArchive(BuildArchive):
     assert self._platform in platform_to_directory
     return platform_to_directory.get(self._platform)
 
+  def GetBuilderName(self):
+    """Gets builder bot name based on platform."""
+    # TODO(qyearsley): Change this name when more platforms are supported.
+    return 'bisect_builder'
 
 class AndroidChromeBuildArchive(BuildArchive):
   """Represents a place where builds of android-chrome type are stored.
@@ -242,6 +287,10 @@ class AndroidChromeBuildArchive(BuildArchive):
   def _ArchiveDirectory(self):
     """Returns the directory name to download builds from."""
     return self._extra_src.GetArchiveDirectory()
+
+  def GetBuilderName(self):
+    """Returns the builder name extra source."""
+    return self._extra_src.GetBuilderName()
 
 
 def BuildIsAvailable(bucket_name, remote_path):

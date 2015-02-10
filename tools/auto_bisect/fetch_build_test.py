@@ -74,6 +74,16 @@ class BuildArchiveTest(unittest.TestCase):
     self.assertEqual('android_main_rel/full-build-linux_1234567890abcdef.zip',
         archive.FilePath('1234567890abcdef'))
 
+  def test_FullBuildArchive_Linux_BuilderName(self):
+    archive = fetch_build.FullBuildArchive()
+    archive._platform = 'linux'
+    self.assertEqual('bisect_builder', archive.GetBuilderName())
+
+  def test_FullBuildArchive_Windows_BuildTime(self):
+    archive = fetch_build.FullBuildArchive()
+    archive._platform = 'win'
+    self.assertEqual(14400, archive.GetBuilderBuildTime())
+
   def test_PerfBuildArchive_Linux(self):
     archive = fetch_build.PerfBuildArchive()
     archive._platform = 'linux'
@@ -105,6 +115,56 @@ class BuildArchiveTest(unittest.TestCase):
         'Linux Builder/full-build-linux_123456'
         '_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.zip',
         archive.FilePath(123456, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+
+  def test_PerfBuildArchive_64BitWindows_BuilderName(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'win64'
+    self.assertEqual('win_x64_perf_bisect_builder', archive.GetBuilderName())
+
+  def test_PerfBuildArchive_64BitWindows_BuildTime(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'win64'
+    self.assertEqual(14400, archive.GetBuilderBuildTime())
+
+  def test_PerfBuildArchive_Windows_BuilderName(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'win'
+    self.assertEqual('win_perf_bisect_builder', archive.GetBuilderName())
+
+  def test_PerfBuildArchive_Windows_BuildTime(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'win'
+    self.assertEqual(14400, archive.GetBuilderBuildTime())
+
+  def test_PerfBuildArchive_Linux_BuilderName(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'linux'
+    self.assertEqual('linux_perf_bisect_builder', archive.GetBuilderName())
+
+  def test_PerfBuildArchive_Linux_BuildTime(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'linux'
+    self.assertEqual(14400, archive.GetBuilderBuildTime())
+
+  def test_PerfBuildArchive_Android_BuilderName(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'android'
+    self.assertEqual('android_perf_bisect_builder', archive.GetBuilderName())
+
+  def test_PerfBuildArchive_Android_BuildTime(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'android'
+    self.assertEqual(14400, archive.GetBuilderBuildTime())
+
+  def test_PerfBuildArchive_Mac_BuilderName(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'mac'
+    self.assertEqual('mac_perf_bisect_builder', archive.GetBuilderName())
+
+  def test_PerfBuildArchive_mac_BuildTime(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'mac'
+    self.assertEqual(14400, archive.GetBuilderBuildTime())
 
 
 class UnzipTest(unittest.TestCase):

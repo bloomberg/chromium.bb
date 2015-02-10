@@ -76,13 +76,6 @@ BUILD_RESULT_SUCCEED = 0
 BUILD_RESULT_FAIL = 1
 BUILD_RESULT_SKIPPED = 2
 
-# Maximum time in seconds to wait after posting build request to the try server.
-# TODO: Change these values based on the actual time taken by buildbots on
-# the try server.
-MAX_MAC_BUILD_TIME = 14400
-MAX_WIN_BUILD_TIME = 14400
-MAX_LINUX_BUILD_TIME = 14400
-
 # The confidence percentage we require to consider the initial range a
 # regression based on the test results of the inital good and bad revisions.
 REGRESSION_CONFIDENCE = 80
@@ -594,40 +587,6 @@ def _PrepareBisectBranch(parent_branch, new_branch):
     raise RunGitError('Error in git branch --set-upstream-to')
 
 
-def _GetBuilderName(builder_type, target_platform):
-  """Gets builder bot name and build time in seconds based on platform."""
-  # TODO(prasadv, qyearsley): Make this a method of BuildArchive
-  # (which may be renamed to BuilderTryBot or Builder).
-  if builder_type == fetch_build.FULL_BUILDER:
-    # The following builder is on tryserver.chromium.linux.
-    # TODO(qyearsley): Change this name when more platforms are supported.
-    return 'bisect_builder'
-  if builder_type == fetch_build.PERF_BUILDER:
-    if bisect_utils.IsWindowsHost():
-      return 'win_perf_bisect_builder'
-    if bisect_utils.IsLinuxHost():
-      if target_platform == 'android':
-        return 'android_perf_bisect_builder'
-      return 'linux_perf_bisect_builder'
-    if bisect_utils.IsMacHost():
-      return 'mac_perf_bisect_builder'
-    raise NotImplementedError('Unsupported platform "%s".' % sys.platform)
-  raise NotImplementedError('Unsupported builder type "%s".' % builder_type)
-
-
-def _GetBuilderBuildTime():
-  """Returns the time to wait for a build after requesting one."""
-  # TODO(prasadv, qyearsley): Make this a method of BuildArchive
-  # (which may be renamed to BuilderTryBot or Builder).
-  if bisect_utils.IsWindowsHost():
-    return MAX_WIN_BUILD_TIME
-  if bisect_utils.IsLinuxHost():
-    return MAX_LINUX_BUILD_TIME
-  if bisect_utils.IsMacHost():
-    return MAX_MAC_BUILD_TIME
-  raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
-
-
 def _StartBuilderTryJob(
     builder_type, git_revision, builder_name, job_name, patch=None):
   """Attempts to run a try job from the current directory.
@@ -946,9 +905,10 @@ class BisectPerformanceMetrics(object):
     # Revert any changes to DEPS file.
     bisect_utils.CheckRunGit(['reset', '--hard', 'HEAD'], cwd=self.src_cwd)
 
-    builder_name = _GetBuilderName(
-        self.opts.builder_type, self.opts.target_platform)
-    build_timeout = _GetBuilderBuildTime()
+    builder_name, build_timeout = fetch_build.GetBuilderNameAndBuildTime(
+        builder_type=self.opts.builder_type,
+        target_arch=self.opts.target_arch,
+        target_platform=self.opts.target_platform)
 
     try:
       _StartBuilderTryJob(self.opts.builder_type, git_revision, builder_name,

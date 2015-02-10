@@ -199,6 +199,9 @@ def _CreateBisectOptionsFromConfig(config):
   if config.has_key('improvement_direction'):
     opts_dict['improvement_direction'] = int(config['improvement_direction'])
 
+  if config.has_key('target_arch'):
+    opts_dict['target_arch'] = config['target_arch']
+
   if config.has_key('bug_id') and str(config['bug_id']).isdigit():
     opts_dict['bug_id'] = config['bug_id']
 
@@ -499,6 +502,7 @@ def _RunBisectionScript(
       ('improvement_direction', '--improvement_direction'),
       ('bug_id', '--bug_id'),
       ('builder_type', '--builder_type'),
+      ('target_arch', '--target_arch'),
   ]
   for config_key, flag in options:
     if config.has_key(config_key):
