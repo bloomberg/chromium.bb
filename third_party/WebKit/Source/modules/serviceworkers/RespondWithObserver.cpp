@@ -57,9 +57,9 @@ public:
     }
     DEFINE_INLINE_TRACE()
     {
-        BodyStreamBuffer::Observer::trace(visitor);
         visitor->trace(m_buffer);
         visitor->trace(m_outStream);
+        BodyStreamBuffer::Observer::trace(visitor);
     }
     void start()
     {

@@ -176,9 +176,9 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        BlobHandleCreatorClient::trace(visitor);
         visitor->trace(m_resolver);
         visitor->trace(m_cache);
+        BlobHandleCreatorClient::trace(visitor);
     }
 
 private:
