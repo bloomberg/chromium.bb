@@ -170,8 +170,8 @@ class RemoteDeviceTestRun(test_run.TestRun):
     """
     if results_path:
       logging.info('Downloading results to %s.' % results_path)
-      if not os.path.exists(os.path.basename(results_path)):
-        os.makedirs(os.path.basename(results_path))
+      if not os.path.exists(os.path.dirname(results_path)):
+        os.makedirs(os.path.dirname(results_path))
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):
         appurify_sanitized.utils.wget(self._results['results']['url'],
