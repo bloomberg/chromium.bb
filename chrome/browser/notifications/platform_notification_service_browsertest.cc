@@ -7,7 +7,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +23,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/filename_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 // -----------------------------------------------------------------------------
@@ -81,6 +86,7 @@ void InfoBarResponder::Respond(ConfirmInfoBarDelegate* delegate) {
 
 class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
  public:
+  PlatformNotificationServiceBrowserTest();
   ~PlatformNotificationServiceBrowserTest() override {}
 
   // InProcessBrowserTest overrides.
@@ -98,6 +104,8 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   // Returns the UI Manager on which notifications will be displayed.
   StubNotificationUIManager* ui_manager() const { return ui_manager_.get(); }
 
+  const base::FilePath& server_root() const { return server_root_; }
+
   // Navigates the browser to the test page indicated by |path|.
   void NavigateToTestPage(const std::string& path) const;
 
@@ -105,7 +113,12 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   // will be returned, indicating whether the script was executed successfully.
   bool RunScript(const std::string& script, std::string* result) const;
 
+  net::HostPortPair ServerHostPort() const;
+  GURL TestPageUrl() const;
+
  private:
+  const base::FilePath server_root_;
+  const std::string test_page_url_;
   scoped_ptr<StubNotificationUIManager> ui_manager_;
   scoped_ptr<net::SpawnedTestServer> https_server_;
 };
@@ -113,11 +126,15 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 // -----------------------------------------------------------------------------
 
 namespace {
+const char kTestFileName[] = "notifications/platform_notification_service.html";
+}
 
-const char kTestPageUrl[] =
-    "files/notifications/platform_notification_service.html";
-
-}  // namespace
+PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
+    : server_root_(FILE_PATH_LITERAL("chrome/test/data")),
+      // The test server has a base directory that doesn't exist in the
+      // filesystem.
+      test_page_url_(std::string("files/") + kTestFileName) {
+}
 
 void PlatformNotificationServiceBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
@@ -131,9 +148,8 @@ void PlatformNotificationServiceBrowserTest::SetUp() {
   ui_manager_.reset(new StubNotificationUIManager);
   https_server_.reset(new net::SpawnedTestServer(
       net::SpawnedTestServer::TYPE_HTTPS,
-      net::BaseTestServer::SSLOptions(
-          net::BaseTestServer::SSLOptions::CERT_OK),
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/"))));
+      net::BaseTestServer::SSLOptions(net::BaseTestServer::SSLOptions::CERT_OK),
+      server_root_));
   ASSERT_TRUE(https_server_->Start());
 
   service()->SetNotificationUIManagerForTesting(ui_manager_.get());
@@ -142,7 +158,7 @@ void PlatformNotificationServiceBrowserTest::SetUp() {
 }
 
 void PlatformNotificationServiceBrowserTest::SetUpOnMainThread() {
-  NavigateToTestPage(kTestPageUrl);
+  NavigateToTestPage(test_page_url_);
 
   InProcessBrowserTest::SetUpOnMainThread();
 }
@@ -162,6 +178,15 @@ bool PlatformNotificationServiceBrowserTest::RunScript(
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
       script,
       result);
+}
+
+net::HostPortPair PlatformNotificationServiceBrowserTest::ServerHostPort()
+    const {
+  return https_server_->host_port_pair();
+}
+
+GURL PlatformNotificationServiceBrowserTest::TestPageUrl() const {
+  return https_server_->GetURL(test_page_url_);
 }
 
 // -----------------------------------------------------------------------------
@@ -229,4 +254,63 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ("action_close", script_result);
 
   ASSERT_EQ(0u, ui_manager()->GetNotificationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       TestDisplayOriginContextMessage) {
+  std::string script_result;
+
+  // Creates a simple notification.
+  InfoBarResponder accepting_responder(browser(), true);
+  ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
+  ASSERT_EQ("granted", script_result);
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification()", &script_result));
+
+  net::HostPortPair host_port = ServerHostPort();
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+
+  EXPECT_EQ(base::UTF8ToUTF16(host_port.ToString()),
+            notification.context_message());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       CheckFilePermissionNotGranted) {
+  // TODO(dewittj): This test verifies that a bug exists in Chrome; the test
+  // will fail if the bug is fixed.  The
+  // |PlatformNotificationServiceImpl::WebOriginDisplayName| function needs
+  // to be updated to properly display file:// URL origins.
+  // See crbug.com/402191.
+  std::string script_result;
+
+  InfoBarResponder accepting_responder_web(browser(), true);
+
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(notification_service);
+  message_center::NotifierId web_notifier(TestPageUrl());
+  EXPECT_FALSE(notification_service->IsNotifierEnabled(web_notifier));
+  ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
+  EXPECT_EQ("granted", script_result);
+
+  EXPECT_TRUE(notification_service->IsNotifierEnabled(web_notifier));
+
+  base::FilePath dir_source_root;
+  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
+  base::FilePath full_file_path =
+      dir_source_root.Append(server_root()).AppendASCII(kTestFileName);
+  GURL file_url(net::FilePathToFileURL(full_file_path));
+  ui_test_utils::NavigateToURL(browser(), file_url);
+
+  message_center::NotifierId file_notifier(file_url);
+  EXPECT_FALSE(notification_service->IsNotifierEnabled(file_notifier));
+
+  InfoBarResponder accepting_responder_file(browser(), true);
+  ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
+  EXPECT_EQ("granted", script_result);
+
+  EXPECT_FALSE(notification_service->IsNotifierEnabled(file_notifier))
+      << "If this test fails, you may have fixed a bug preventing file origins "
+      << "from sending their origin from Blink; if so you need to update the "
+      << "display function for notification origins to show the file path.";
 }

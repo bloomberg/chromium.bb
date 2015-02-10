@@ -396,8 +396,7 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
         application_id.service_worker_registration_id,
         application_id.origin,
         SkBitmap() /* icon */,
-        notification_data,
-        content::ChildProcessHost::kInvalidUniqueID /* render_process_id */);
+        notification_data);
   }
 }
 

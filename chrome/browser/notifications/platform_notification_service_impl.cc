@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
@@ -12,13 +13,16 @@
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/common/platform_notification_data.h"
+#include "net/base/net_util.h"
 #include "ui/message_center/notifier_settings.h"
+#include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -191,7 +195,6 @@ void PlatformNotificationServiceImpl::DisplayNotification(
     const SkBitmap& icon,
     const content::PlatformNotificationData& notification_data,
     scoped_ptr<content::DesktopNotificationDelegate> delegate,
-    int render_process_id,
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -200,7 +203,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
 
   NotificationObjectProxy* proxy = new NotificationObjectProxy(delegate.Pass());
   Notification notification = CreateNotificationFromData(
-      profile, origin, icon, notification_data, proxy, render_process_id);
+      profile, origin, icon, notification_data, proxy);
 
   GetNotificationUIManager()->Add(notification, profile);
   if (cancel_callback)
@@ -218,8 +221,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     int64 service_worker_registration_id,
     const GURL& origin,
     const SkBitmap& icon,
-    const content::PlatformNotificationData& notification_data,
-    int render_process_id) {
+    const content::PlatformNotificationData& notification_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -232,7 +234,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
       notification_data);
 
   Notification notification = CreateNotificationFromData(
-      profile, origin, icon, notification_data, delegate, render_process_id);
+      profile, origin, icon, notification_data, delegate);
 
   GetNotificationUIManager()->Add(notification, profile);
 
@@ -257,10 +259,8 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     const GURL& origin,
     const SkBitmap& icon,
     const content::PlatformNotificationData& notification_data,
-    NotificationDelegate* delegate,
-    int render_process_id) const {
-  base::string16 display_source = DisplayNameForOriginInProcessId(
-      profile, origin, render_process_id);
+    NotificationDelegate* delegate) const {
+  base::string16 display_source = DisplayNameForOrigin(profile, origin);
 
   // TODO(peter): Icons for Web Notifications are currently always requested for
   // 1x scale, whereas the displays on which they can be displayed can have a
@@ -269,6 +269,8 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   Notification notification(origin, notification_data.title,
       notification_data.body, gfx::Image::CreateFrom1xBitmap(icon),
       display_source, notification_data.tag, delegate);
+
+  notification.set_context_message(display_source);
 
   // Web Notifications do not timeout.
   notification.set_never_timeout(true);
@@ -289,32 +291,50 @@ void PlatformNotificationServiceImpl::SetNotificationUIManagerForTesting(
   notification_ui_manager_for_tests_ = manager;
 }
 
-base::string16 PlatformNotificationServiceImpl::DisplayNameForOriginInProcessId(
-    Profile* profile, const GURL& origin, int process_id) const {
+base::string16 PlatformNotificationServiceImpl::DisplayNameForOrigin(
+    Profile* profile,
+    const GURL& origin) const {
 #if defined(ENABLE_EXTENSIONS)
   // If the source is an extension, lookup the display name.
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    extensions::InfoMap* extension_info_map =
-        extensions::ExtensionSystem::Get(profile)->info_map();
-    if (extension_info_map) {
-      extensions::ExtensionSet extensions;
-      extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-          origin,
-          process_id,
-          extensions::APIPermission::kNotifications,
-          &extensions);
-      DesktopNotificationService* desktop_notification_service =
-          DesktopNotificationServiceFactory::GetForProfile(profile);
-      DCHECK(desktop_notification_service);
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+            origin.host(), extensions::ExtensionRegistry::EVERYTHING);
+    DCHECK(extension);
 
-      for (const auto& extension : extensions) {
-        NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
-        if (desktop_notification_service->IsNotifierEnabled(notifier_id))
-          return base::UTF8ToUTF16(extension->name());
-      }
-    }
+    return base::UTF8ToUTF16(extension->name());
   }
 #endif
 
-  return base::UTF8ToUTF16(origin.host());
+  std::string languages =
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+
+  return WebOriginDisplayName(origin, languages);
+}
+
+// static
+base::string16 PlatformNotificationServiceImpl::WebOriginDisplayName(
+    const GURL& origin,
+    const std::string& languages) {
+  if (origin.SchemeIsHTTPOrHTTPS()) {
+    base::string16 formatted_origin;
+    if (origin.SchemeIs(url::kHttpScheme)) {
+      const url::Parsed& parsed = origin.parsed_for_possibly_invalid_spec();
+      const std::string& spec = origin.possibly_invalid_spec();
+      formatted_origin.append(
+          spec.begin(),
+          spec.begin() +
+              parsed.CountCharactersBefore(url::Parsed::USERNAME, true));
+    }
+    formatted_origin.append(net::IDNToUnicode(origin.host(), languages));
+    if (origin.has_port()) {
+      formatted_origin.push_back(':');
+      formatted_origin.append(base::UTF8ToUTF16(origin.port()));
+    }
+    return formatted_origin;
+  }
+
+  // TODO(dewittj): Once file:// URLs are passed in to the origin
+  // GURL here, begin returning the path as the display name.
+  return net::FormatUrl(origin, languages);
 }

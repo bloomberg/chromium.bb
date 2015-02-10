@@ -66,7 +66,6 @@ void LayoutTestNotificationManager::DisplayNotification(
     const SkBitmap& icon,
     const PlatformNotificationData& notification_data,
     scoped_ptr<DesktopNotificationDelegate> delegate,
-    int render_process_id,
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string title = base::UTF16ToUTF8(notification_data.title);
@@ -87,8 +86,7 @@ void LayoutTestNotificationManager::DisplayPersistentNotification(
     int64 service_worker_registration_id,
     const GURL& origin,
     const SkBitmap& icon,
-    const PlatformNotificationData& notification_data,
-    int render_process_id) {
+    const PlatformNotificationData& notification_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string title = base::UTF16ToUTF8(notification_data.title);
 

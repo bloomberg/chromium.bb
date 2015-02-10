@@ -135,7 +135,7 @@ void DesktopNotificationService::RequestNotificationPermission(
 }
 
 bool DesktopNotificationService::IsNotifierEnabled(
-    const NotifierId& notifier_id) {
+    const NotifierId& notifier_id) const {
   switch (notifier_id.type) {
     case NotifierId::APPLICATION:
       return disabled_extension_ids_.find(notifier_id.id) ==

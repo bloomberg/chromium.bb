@@ -63,15 +63,13 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
                            const SkBitmap& icon,
                            const PlatformNotificationData& notification_data,
                            scoped_ptr<DesktopNotificationDelegate> delegate,
-                           int render_process_id,
                            base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       BrowserContext* browser_context,
       int64 service_worker_registration_id,
       const GURL& origin,
       const SkBitmap& icon,
-      const PlatformNotificationData& notification_data,
-      int render_process_id) override;
+      const PlatformNotificationData& notification_data) override;
   void ClosePersistentNotification(
       BrowserContext* browser_context,
       const std::string& persistent_notification_id) override;

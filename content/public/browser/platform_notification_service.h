@@ -55,7 +55,6 @@ class CONTENT_EXPORT PlatformNotificationService {
       const SkBitmap& icon,
       const PlatformNotificationData& notification_data,
       scoped_ptr<DesktopNotificationDelegate> delegate,
-      int render_process_id,
       base::Closure* cancel_callback) = 0;
 
   // Displays the persistent notification described in |notification_data| to
@@ -65,8 +64,7 @@ class CONTENT_EXPORT PlatformNotificationService {
       int64 service_worker_registration_id,
       const GURL& origin,
       const SkBitmap& icon,
-      const PlatformNotificationData& notification_data,
-      int render_process_id) = 0;
+      const PlatformNotificationData& notification_data) = 0;
 
   // Closes the persistent notification identified by
   // |persistent_notification_id|. This method must be called on the UI thread.

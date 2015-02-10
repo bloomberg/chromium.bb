@@ -94,7 +94,6 @@ void NotificationMessageFilter::OnShowPlatformNotification(
                                icon,
                                notification_data,
                                delegate.Pass(),
-                               process_id_,
                                &close_closure);
 
   if (!close_closure.is_null())
@@ -116,11 +115,8 @@ void NotificationMessageFilter::OnShowPersistentNotification(
     return;
 
   service->DisplayPersistentNotification(browser_context_,
-                                         service_worker_registration_id,
-                                         origin,
-                                         icon,
-                                         notification_data,
-                                         process_id_);
+                                         service_worker_registration_id, origin,
+                                         icon, notification_data);
 }
 
 void NotificationMessageFilter::OnClosePlatformNotification(

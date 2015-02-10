@@ -65,7 +65,7 @@ class DesktopNotificationService : public PermissionContextBase
 
   // Returns true if the notifier with |notifier_id| is allowed to send
   // notifications.
-  bool IsNotifierEnabled(const message_center::NotifierId& notifier_id);
+  bool IsNotifierEnabled(const message_center::NotifierId& notifier_id) const;
 
   // Updates the availability of the notifier.
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,

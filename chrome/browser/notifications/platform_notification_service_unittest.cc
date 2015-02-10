@@ -81,7 +81,6 @@ class PlatformNotificationServiceTest : public testing::Test {
                                    SkBitmap(),
                                    notification_data,
                                    make_scoped_ptr(delegate),
-                                   0 /* render_process_id */,
                                    close_closure);
 
     return delegate;
@@ -132,12 +131,9 @@ TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
   notification_data.title = base::ASCIIToUTF16("My notification's title");
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
-  service()->DisplayPersistentNotification(profile(),
-                                           42 /* sw_registration_id */,
-                                           GURL("https://chrome.com/"),
-                                           SkBitmap(),
-                                           notification_data,
-                                           0 /* render_process_id */);
+  service()->DisplayPersistentNotification(
+      profile(), 42 /* sw_registration_id */, GURL("https://chrome.com/"),
+      SkBitmap(), notification_data);
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
 
@@ -165,7 +161,6 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
                                  SkBitmap(),
                                  notification_data,
                                  make_scoped_ptr(delegate),
-                                 0 /* render_process_id */,
                                  nullptr);
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
@@ -180,14 +175,53 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
 
 TEST_F(PlatformNotificationServiceTest, DisplayNameForOrigin) {
   base::string16 display_name =
-      service()->DisplayNameForOriginInProcessId(profile(),
-                                                 GURL("https://chrome.com/"),
-                                                 0 /* render_process_id */);
+      service()->DisplayNameForOrigin(profile(), GURL("https://chrome.com/"));
 
   EXPECT_EQ(base::ASCIIToUTF16("chrome.com"), display_name);
 
   // TODO(peter): Include unit tests for the extension-name translation
   // functionality of DisplayNameForOriginInProcessId.
+}
+
+TEST_F(PlatformNotificationServiceTest, TestWebOriginDisplayName) {
+  std::string language("en-us");
+
+  GURL https_origin("https://mail.google.com/");
+  base::string16 expected_display_name = base::ASCIIToUTF16("mail.google.com");
+  EXPECT_EQ(expected_display_name,
+            PlatformNotificationServiceImpl::WebOriginDisplayName(https_origin,
+                                                                  language));
+
+  GURL https_origin_standard_port("https://mail.google.com:443/");
+  expected_display_name = base::ASCIIToUTF16("mail.google.com");
+  EXPECT_EQ(expected_display_name,
+            PlatformNotificationServiceImpl::WebOriginDisplayName(
+                https_origin_standard_port, language));
+
+  GURL https_origin_nonstandard_port("https://mail.google.com:444/");
+  expected_display_name = base::ASCIIToUTF16("mail.google.com:444");
+  EXPECT_EQ(expected_display_name,
+            PlatformNotificationServiceImpl::WebOriginDisplayName(
+                https_origin_nonstandard_port, language));
+
+  GURL http_origin("http://mail.google.com/");
+  expected_display_name = base::ASCIIToUTF16("http://mail.google.com");
+  EXPECT_EQ(expected_display_name,
+            PlatformNotificationServiceImpl::WebOriginDisplayName(http_origin,
+                                                                  language));
+
+  GURL http_origin_standard_port("http://mail.google.com:80/");
+  expected_display_name = base::ASCIIToUTF16("http://mail.google.com");
+  EXPECT_EQ(expected_display_name,
+            PlatformNotificationServiceImpl::WebOriginDisplayName(
+                http_origin_standard_port, language));
+
+  GURL http_origin_nonstandard_port("http://mail.google.com:81/");
+  expected_display_name = base::ASCIIToUTF16("http://mail.google.com:81");
+  EXPECT_EQ(expected_display_name,
+            PlatformNotificationServiceImpl::WebOriginDisplayName(
+                http_origin_nonstandard_port, language));
+  // TODO(dewittj): Add file origin once it's supported.
 }
 
 TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
@@ -206,12 +240,9 @@ TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
   // Ensure that there is at least some time between the two calls.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
 
-  service()->DisplayPersistentNotification(profile(),
-                                           42 /* sw_registration_id */,
-                                           origin,
-                                           SkBitmap(),
-                                           content::PlatformNotificationData(),
-                                           0 /* render_process_id */);
+  service()->DisplayPersistentNotification(
+      profile(), 42 /* sw_registration_id */, origin, SkBitmap(),
+      content::PlatformNotificationData());
 
   base::Time after_persistent_notification =
       profile()->GetHostContentSettingsMap()->GetLastUsage(
