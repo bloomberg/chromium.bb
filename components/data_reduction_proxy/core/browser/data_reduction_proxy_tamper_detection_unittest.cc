@@ -311,56 +311,6 @@ TEST_F(DataReductionProxyTamperDetectionTest, Via) {
       true,
       false,
     },
-    // Same to above test cases, but with deprecated data reduciton proxy Via
-    // header.
-    {
-      "Checks the case that Chrome Compression Proxy occurs at the last.",
-      "HTTP/1.1 200 OK\n"
-      "Via: a, b, c, 1.1 Chrome Compression Proxy\n",
-      "",
-      false,
-      true,
-    },
-    {
-      "Checks when there is intermediary.",
-      "HTTP/1.1 200 OK\n"
-      "Via: a, b,  c,   1.1 Chrome Compression Proxy,    xyz\n",
-      "",
-      true,
-      true,
-    },
-    {
-      "Checks the case of empty Via header.",
-      "HTTP/1.1 200 OK\n"
-      "Via:  \n",
-      "",
-      true,
-      false,
-    },
-    {
-      "Checks the case that only the data reduction proxy's Via header occurs.",
-      "HTTP/1.1 200 OK\n"
-      "Via:  1.1 Chrome Compression Proxy    \n",
-      "",
-      false,
-      true,
-    },
-    {
-      "Checks the case that there are ' ', i.e., empty value after the data"
-      "reduction proxy's Via header.",
-      "HTTP/1.1 200 OK\n"
-      "Via:  1.1 Chrome Compression Proxy  ,  , \n",
-      "",
-      false,
-      true,
-    },
-    {
-      "Checks the case when there is no Via header",
-      "HTTP/1.1 200 OK\n",
-      "",
-      true,
-      false,
-    },
   };
 
   for (size_t i = 0; i < arraysize(test); ++i) {

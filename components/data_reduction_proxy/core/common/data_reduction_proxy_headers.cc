@@ -190,17 +190,6 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
     }
   }
 
-  // TODO(bengr): Remove deprecated header value.
-  const char kDeprecatedDataReductionProxyViaValue[] =
-      "1.1 Chrome Compression Proxy";
-  iter = NULL;
-  while (headers->EnumerateHeader(&iter, "via", &value))
-    if (value == kDeprecatedDataReductionProxyViaValue) {
-      if (has_intermediary)
-        *has_intermediary = !(headers->EnumerateHeader(&iter, "via", &value));
-      return true;
-    }
-
   return false;
 }
 

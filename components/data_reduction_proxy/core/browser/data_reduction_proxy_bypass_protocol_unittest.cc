@@ -417,19 +417,6 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       -1,
       BYPASS_EVENT_TYPE_MAX,
     },
-    // Valid data reduction proxy response with older, but still valid via
-    // header.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Via: 1.1 Chrome Compression Proxy\r\n\r\n",
-      false,
-      false,
-      0u,
-      true,
-      -1,
-      BYPASS_EVENT_TYPE_MAX
-    },
     // Valid data reduction proxy response with chained via header,
     // no bypass message.
     { "GET",

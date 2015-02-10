@@ -473,48 +473,9 @@ TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
     },
     { "HTTP/1.1 200 OK\n"
       "Via: 1.1 Chrome Compression Proxy\n",
-      true,
-      true,
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Foo-Bar, 1.1 Chrome Compression Proxy\n",
-      true,
-      true,
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Chrome Compression Proxy, 1.1 Bar-Foo\n",
-      true,
-      false,
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 chrome compression proxy\n",
       false,
       false,
       false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Foo-Bar\n"
-      "Via: 1.1 Chrome Compression Proxy\n",
-      true,
-      true,
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Chrome Compression Proxy\n"
-      "Via: 1.1 Foo-Bar\n",
-      true,
-      false,
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Chrome Compression Proxy\n"
-      "Via: 1.1 Foo-Bar\n",
-      true,
-      false,
-      true,
     },
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
