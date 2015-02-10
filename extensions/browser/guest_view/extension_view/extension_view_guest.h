@@ -28,8 +28,10 @@ class ExtensionViewGuest
   void NavigateGuest(const std::string& src, bool force_navigation);
 
   // GuestViewBase implementation.
+  bool CanRunInDetachedState() const override;
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
+  void DidInitialize(const base::DictionaryValue& create_params) override;
   void DidAttachToEmbedder() override;
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;

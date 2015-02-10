@@ -52,6 +52,10 @@ void ExtensionViewGuest::NavigateGuest(const std::string& src,
 }
 
 // GuestViewBase implementation.
+bool ExtensionViewGuest::CanRunInDetachedState() const {
+  return true;
+}
+
 void ExtensionViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
@@ -73,6 +77,14 @@ void ExtensionViewGuest::CreateWebContents(
   WebContents::CreateParams params(browser_context(), view_site_instance);
   params.guest_delegate = this;
   callback.Run(WebContents::Create(params));
+}
+
+void ExtensionViewGuest::DidInitialize(
+    const base::DictionaryValue& create_params) {
+  extension_function_dispatcher_.reset(
+      new extensions::ExtensionFunctionDispatcher(browser_context(), this));
+
+  ApplyAttributes(create_params);
 }
 
 void ExtensionViewGuest::DidAttachToEmbedder() {
