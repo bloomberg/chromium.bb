@@ -31,6 +31,7 @@
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceMeasure.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -105,6 +106,7 @@ void UserTiming::mark(const String& markName, ExceptionState& exceptionState)
         return;
     }
 
+    TRACE_EVENT_COPY_MARK("blink.user_timing", markName.utf8().data());
     double startTime = m_performance->now();
     insertPerformanceEntry(m_marksMap, PerformanceMark::create(markName, startTime));
     blink::Platform::current()->histogramCustomCounts("PLT.UserTiming_Mark", static_cast<int>(startTime), 0, 600000, 100);
@@ -154,6 +156,7 @@ void UserTiming::measure(const String& measureName, const String& startMark, con
             return;
     }
 
+    TRACE_EVENT_COPY_MEASURE("blink.user_timing", measureName.utf8().data(), startMark.utf8().data(), endMark.utf8().data());
     insertPerformanceEntry(m_measuresMap, PerformanceMeasure::create(measureName, startTime, endTime));
     if (endTime >= startTime)
         blink::Platform::current()->histogramCustomCounts("PLT.UserTiming_MeasureDuration", static_cast<int>(endTime - startTime), 0, 600000, 100);
