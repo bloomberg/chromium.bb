@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 
-#include "base/android/jni_android.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
