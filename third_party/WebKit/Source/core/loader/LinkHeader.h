@@ -21,6 +21,7 @@ public:
     enum LinkParameterName {
         LinkParameterUnknown,
         LinkParameterRel,
+        LinkParameterAnchor,
     };
 
 private:

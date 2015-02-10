@@ -114,6 +114,8 @@ static LinkHeader::LinkParameterName paramterNameFromString(String name)
     // FIXME: Add support for more header parameters as neccessary.
     if (equalIgnoringCase(name, "rel"))
         return LinkHeader::LinkParameterRel;
+    else if (equalIgnoringCase(name, "anchor"))
+        return LinkHeader::LinkParameterAnchor;
     return LinkHeader::LinkParameterUnknown;
 }
 
@@ -213,6 +215,8 @@ void LinkHeader::setValue(LinkParameterName name, String value)
     // FIXME: Add support for more header parameters as neccessary.
     if (name == LinkParameterRel && !m_rel)
         m_rel = value.lower();
+    else if (name == LinkParameterAnchor)
+        m_isValid = false;
 }
 
 template <typename CharType>
@@ -232,7 +236,7 @@ LinkHeader::LinkHeader(CharType*& position, CharType* end)
         return;
     }
 
-    while (position < end) {
+    while (m_isValid && position < end) {
         if (!parseParameterDelimiter(position, end, m_isValid)) {
             findNextHeader(position, end);
             return;
