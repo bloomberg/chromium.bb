@@ -1112,39 +1112,32 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_Focus_InputMethod) {
                   "window.runCommand('testInputMethodRunNextStep', 2);"));
 
     // Wait for the next step to complete.
-    EXPECT_TRUE(next_step_listener.WaitUntilSatisfied());
+    ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
   }
 
-  // Moving focus causes IME cancel, and the composition will be committed
-  // in first <input> in the <webview>, not in the second <input>.
-  {
-    next_step_listener.Reset();
-    ui::CompositionText composition;
-    composition.text = base::UTF8ToUTF16("InputTest789");
-    text_input_client->SetCompositionText(composition);
-    EXPECT_TRUE(content::ExecuteScript(
-                    embedder_web_contents,
-                    "window.runCommand('testInputMethodRunNextStep', 3);"));
-
-    // Wait for the next step to complete.
-    EXPECT_TRUE(next_step_listener.WaitUntilSatisfied());
-  }
+  // TODO(lazyboy): http://crbug.com/457007, Add a step or a separate test to
+  // check the following, currently it turns this test to be flaky:
+  // If we move the focus from the first <input> to the second one after we
+  // have some composition text set but *not* committed (by calling
+  // text_input_client->SetCompositionText()), then it would cause IME cancel
+  // and the onging composition is committed in the first <input> in the
+  // <webview>, not the second one.
 
   // Tests ExtendSelectionAndDelete message works in <webview>.
   {
     next_step_listener.Reset();
 
     // At this point we have set focus on first <input> in the <webview>,
-    // and the value it contains is 'InputTestABC' with caret set after 'T'.
-    // Now we delete 'Test' in 'InputTestABC', as the caret is after 'T':
+    // and the value it contains is 'InputTest456' with caret set after 'T'.
+    // Now we delete 'Test' in 'InputTest456', as the caret is after 'T':
     // delete before 1 character ('T') and after 3 characters ('est').
     text_input_client->ExtendSelectionAndDelete(1, 3);
     EXPECT_TRUE(content::ExecuteScript(
                     embedder_web_contents,
-                    "window.runCommand('testInputMethodRunNextStep', 4);"));
+                    "window.runCommand('testInputMethodRunNextStep', 3);"));
 
     // Wait for the next step to complete.
-    EXPECT_TRUE(next_step_listener.WaitUntilSatisfied());
+    ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
   }
 }
 #endif

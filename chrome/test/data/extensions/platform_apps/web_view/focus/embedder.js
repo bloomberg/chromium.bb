@@ -233,12 +233,19 @@ FocusRestoredTestHelper.prototype.passStep_ = function(passed) {
 function InputMethodTestHelper() {
   // Total number of steps for this test that we run thru
   // testInputMethodRunNextStep.
-  this.TOTAL_STEPS = 4;
+  this.TOTAL_STEPS = 3;
   // Currently running step index.
   this.step_ = 0;
   // True iff post message handler has been regsitered.
   this.messageHandlerRegistered_ = false;
   this.doneCallback_ = null;
+};
+
+InputMethodTestHelper.prototype.registerMessageHandler = function() {
+  if (!this.messageHandlerRegistered_) {
+    window.addEventListener('message', this.messageHandler_.bind(this));
+    this.messageHandlerRegistered_ = true;
+  }
 };
 
 InputMethodTestHelper.prototype.passStep_ = function(passed) {
@@ -261,19 +268,12 @@ InputMethodTestHelper.prototype.runStep = function(step, doneCallback) {
   }
   this.step_ = step;
 
-  if (!this.messageHandlerRegistered_) {
-    this.messageHandlerRegistered_ = true;
-    window.addEventListener('message', this.messageHandler_.bind(this));
-  }
-
   var msgToSend = '';
   if (step == 1) {
     msgToSend = 'request-waitForOnInput';
   } else if (step == 2) {
-    msgToSend = 'request-waitForOnInput';
+    msgToSend = 'request-waitForOnInputAndSelect';
   } else if (step == 3) {
-    msgToSend = 'request-moveFocus';
-  } else if (step == 4) {
     msgToSend = 'request-valueAfterExtendSelection';
   }
   if (!msgToSend) {
@@ -287,22 +287,24 @@ InputMethodTestHelper.prototype.runStep = function(step, doneCallback) {
 InputMethodTestHelper.prototype.messageHandler_ = function(e) {
   var data = JSON.parse(e.data);
   LOG('InputMethodTestHelper.message, data: ' + data);
+
+  if (data[0]=='response-seenFocus') {
+    embedder.test.succeed();
+    return;
+  }
+
   switch (this.step_) {
     case 1:
       this.passStep_(data[0] == 'response-waitForOnInput' &&
                      data[1] == 'InputTest123');
       break;
     case 2:
-      this.passStep_(data[0] == 'response-waitForOnInput' &&
+      this.passStep_(data[0] == 'response-waitForOnInputAndSelect' &&
                      data[1] == 'InputTest456');
       break;
     case 3:
-      this.passStep_(data[0] == 'response-movedFocus' &&
-                     data[1] == 'InputTest789');
-      break;
-    case 4:
       this.passStep_(data[0] == 'response-valueAfterExtendSelection' &&
-                     data[1] == 'InputABC');
+                     data[1] == 'Input456');
       break;
     default:
       LOG('Unexpected message: ' + data);
@@ -406,18 +408,23 @@ function testInputMethod() {
   g_webview = webview;
   document.body.appendChild(webview);
 
-  webview.focus();
+  var onChannelEstablished = function(webview) {};
 
-  var onChannelEstablished = function(webview) {
-    var msg = ['request-waitForFocus'];
-    webview.contentWindow.postMessage(JSON.stringify(msg), '*');
-  };
+  if (!g_inputMethodTestHelper) {
+    g_inputMethodTestHelper = new InputMethodTestHelper();
+  }
+
   embedder.waitForResponseFromGuest_(
       webview,
       'inject_input_method.js',
       onChannelEstablished,
-      'response-seenFocus',
-      function(data) { embedder.test.succeed(); });
+      'response-inputMethodPreparedForFocus',
+      function(data) {
+        g_inputMethodTestHelper.registerMessageHandler();
+        webview.focus();
+        webview.contentWindow.postMessage(
+            JSON.stringify(['request-waitForFocus']), '*');
+      });
 }
 
 // Runs additional test steps for testInputMethod.
