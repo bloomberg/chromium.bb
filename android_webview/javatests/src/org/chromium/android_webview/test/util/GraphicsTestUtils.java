@@ -8,6 +8,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.AwTestBase;
+import org.chromium.base.ThreadUtils;
+
+import java.util.concurrent.Callable;
 
 /**
  * Graphics-related test utils.
@@ -37,6 +41,26 @@ public class GraphicsTestUtils {
     public static Bitmap drawAwContents(
             AwContents awContents, int width, int height, float dx, float dy) {
         return doDrawAwContents(awContents, width, height, dx, dy);
+    }
+
+    public static int sampleBackgroundColorOnUiThread(final AwContents awContents)
+            throws Exception {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return drawAwContents(awContents, 10, 10, 0, 0).getPixel(0, 0);
+            }
+        });
+    }
+
+    public static void pollForBackgroundColor(final AwContents awContents, final int c)
+            throws Throwable {
+        AwTestBase.poll(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return sampleBackgroundColorOnUiThread(awContents) == c;
+            }
+        });
     }
 
     private static Bitmap doDrawAwContents(
