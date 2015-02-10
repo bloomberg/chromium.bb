@@ -93,6 +93,13 @@ void FileDownloader::didFail(
     // It's a WebKit error.
     status_ = ACCESS_DENIED;
   }
+
+  // Delete url_loader to prevent didFinishLoading from being called, which
+  // some implementations of blink::WebURLLoader will do after calling didFail.
+  url_loader_.reset();
+
+  status_cb_.Run(status_, file_.Pass(), http_status_code_);
+  delete this;
 }
 
 }  // namespace nacl
