@@ -393,22 +393,20 @@ FileFilter.prototype.filter = function(entry) {
 
 /**
  * File list.
- * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {!FileSystemMetadata} fileSystemMetadata
  * @constructor
  * @extends {cr.ui.ArrayDataModel}
  */
-function FileListModel(metadataCache) {
+function FileListModel(fileSystemMetadata) {
   cr.ui.ArrayDataModel.call(this, []);
 
   /**
-   * Metadata cache.
-   * @type {MetadataCache}
-   * @private
+   * @private {!FileSystemMetadata}
+   * @const
    */
-  this.metadataCache_ = metadataCache;
+  this.fileSystemMetadata_ = fileSystemMetadata;
 
   // Initialize compare functions.
-  // TODO(hirono): Use new metadata cache for sorting.
   this.setCompareFunction('name',
       /** @type {function(*, *): number} */ (this.compareName_.bind(this)));
   this.setCompareFunction('modificationTime',
@@ -484,11 +482,10 @@ FileListModel.prototype.compareMtime_ = function(a, b) {
   if (a.isDirectory !== b.isDirectory)
     return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
-  var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
-  var aTime = aCachedFilesystem ? aCachedFilesystem.modificationTime : 0;
-
-  var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
-  var bTime = bCachedFilesystem ? bCachedFilesystem.modificationTime : 0;
+  var properties =
+      this.fileSystemMetadata_.getCache([a, b], ['modificationTime']);
+  var aTime = properties[0].modificationTime || 0;
+  var bTime = properties[1].modificationTime || 0;
 
   if (aTime > bTime)
     return 1;
@@ -511,11 +508,9 @@ FileListModel.prototype.compareSize_ = function(a, b) {
   if (a.isDirectory !== b.isDirectory)
     return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
-  var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
-  var aSize = aCachedFilesystem ? aCachedFilesystem.size : 0;
-
-  var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
-  var bSize = bCachedFilesystem ? bCachedFilesystem.size : 0;
+  var properties = this.fileSystemMetadata_.getCache([a, b], ['size']);
+  var aSize = properties[0].size || 0;
+  var bSize = properties[1].size || 0;
 
   return aSize !== bSize ? aSize - bSize : util.compareName(a, b);
 };
@@ -552,7 +547,7 @@ function FileListContext(fileFilter, metadataCache, fileSystemMetadata) {
   /**
    * @type {FileListModel}
    */
-  this.fileList = new FileListModel(metadataCache);
+  this.fileList = new FileListModel(fileSystemMetadata);
 
   /**
    * @type {MetadataCache}
@@ -788,7 +783,7 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
   }
 
   if (removedUrls.length > 0) {
-    this.fileList_.metadataCache_.clearByUrl(removedUrls, '*');
+    this.context_.metadataCache.clearByUrl(removedUrls, '*');
     this.context_.fileSystemMetadata.notifyEntriesRemoved(removedUrls);
   }
 
