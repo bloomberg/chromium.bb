@@ -140,9 +140,10 @@ WebThreadImpl::~WebThreadImpl() {
 }
 
 WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
-    : main_thread_task_runner_(main_thread_task_runner),
-      thread_id_(base::PlatformThread::CurrentId()) {}
+    scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
+    : owning_thread_task_runner_(owning_thread_task_runner),
+      thread_id_(base::PlatformThread::CurrentId()) {
+}
 
 void WebThreadImplForMessageLoop::postTask(Task* task) {
   postDelayedTask(task, 0);
@@ -156,7 +157,7 @@ void WebThreadImplForMessageLoop::postTask(
 
 void WebThreadImplForMessageLoop::postDelayedTask(Task* task,
                                                   long long delay_ms) {
-  main_thread_task_runner_->PostDelayedTask(
+  owning_thread_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
       base::TimeDelta::FromMilliseconds(delay_ms));
@@ -168,7 +169,7 @@ void WebThreadImplForMessageLoop::postDelayedTask(
     long long delay_ms) {
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
-  main_thread_task_runner_->PostDelayedTask(
+  owning_thread_task_runner_->PostDelayedTask(
       location,
       base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
       base::TimeDelta::FromMilliseconds(delay_ms));
@@ -188,7 +189,7 @@ void WebThreadImplForMessageLoop::exitRunLoop() {
 }
 
 bool WebThreadImplForMessageLoop::isCurrentThread() const {
-  return main_thread_task_runner_->BelongsToCurrentThread();
+  return owning_thread_task_runner_->BelongsToCurrentThread();
 }
 
 blink::PlatformThreadId WebThreadImplForMessageLoop::threadId() const {
