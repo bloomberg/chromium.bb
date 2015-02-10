@@ -740,6 +740,7 @@ FileManager.prototype = /** @struct */ {
     assert(this.volumeManager_);
     assert(this.historyLoader_);
     assert(this.dialogDom_);
+    assert(this.fileSystemMetadata_);
 
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;
@@ -753,6 +754,7 @@ FileManager.prototype = /** @struct */ {
     FileTable.decorate(
         table,
         this.metadataCache_,
+        this.fileSystemMetadata_,
         this.volumeManager_,
         this.historyLoader_,
         this.dialogType == DialogType.FULL_PAGE);

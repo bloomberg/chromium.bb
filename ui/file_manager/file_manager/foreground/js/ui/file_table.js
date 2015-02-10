@@ -252,17 +252,21 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
 /**
  * Decorates the element.
  * @param {!Element} self Table to decorate.
- * @param {MetadataCache} metadataCache To retrieve metadata.
+ * @param {MetadataCache} metadataCache To retrieve thumbnails.
+ * @param {!FileSystemMetadata} fileSystemMetadata To retrieve
+ *     metadata.
  * @param {VolumeManagerWrapper} volumeManager To retrieve volume info.
  * @param {!importer.HistoryLoader} historyLoader
  * @param {boolean} fullPage True if it's full page File Manager,
  *                           False if a file open/save dialog.
  */
-FileTable.decorate =
-    function(self, metadataCache, volumeManager, historyLoader, fullPage) {
+FileTable.decorate = function(
+    self, metadataCache, fileSystemMetadata, volumeManager, historyLoader,
+    fullPage) {
   cr.ui.Table.decorate(self);
   self.__proto__ = FileTable.prototype;
   self.metadataCache_ = metadataCache;
+  self.fileSystemMetadata_ = fileSystemMetadata;
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
 
@@ -529,31 +533,18 @@ FileTable.prototype.renderSize_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.updateSize_ = function(div, entry) {
-  var filesystemProps = this.metadataCache_.getCached(entry, 'filesystem');
-  if (!filesystemProps) {
+  var metadata = this.fileSystemMetadata_.getCache(
+      [entry], ['size', 'hosted'])[0];
+  var size = metadata.size;
+  if (size === null || size === undefined) {
     div.textContent = '...';
-    return;
-  } else if (filesystemProps.size === -1) {
+  } else if (size === -1) {
     div.textContent = '--';
-    return;
-  } else if (filesystemProps.size === 0 &&
-             FileType.isHosted(entry)) {
-    var externalProps = this.metadataCache_.getCached(entry, 'external');
-    if (!externalProps) {
-      var locationInfo = this.volumeManager_.getLocationInfo(entry);
-      if (locationInfo && locationInfo.isDriveBased) {
-        // Should not reach here, since we already have size metadata.
-        // Putting dots just in case.
-        div.textContent = '...';
-        return;
-      }
-    } else if (externalProps.hosted) {
-      div.textContent = '--';
-      return;
-    }
+  } else if (size === 0 && metadata.hosted) {
+    div.textContent = '--';
+  } else {
+    div.textContent = util.bytesToString(size);
   }
-
-  div.textContent = util.bytesToString(filesystemProps.size);
 };
 
 /**
@@ -672,13 +663,14 @@ FileTable.prototype.renderDate_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.updateDate_ = function(div, entry) {
-  var filesystemProps = this.metadataCache_.getCached(entry, 'filesystem');
-  if (!filesystemProps) {
+  var modTime = this.fileSystemMetadata_.getCache(
+      [entry], ['modificationTime'])[0].modificationTime;
+
+  if (!modTime) {
     div.textContent = '...';
     return;
   }
 
-  var modTime = filesystemProps.modificationTime;
   var today = new Date();
   today.setHours(0);
   today.setMinutes(0);
@@ -746,8 +738,10 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
   } else if (type === 'external') {
     // The cell name does not matter as the entire list item is needed.
     forEachCell('.table-row-cell > .date', function(item, entry, listItem) {
-      var props = this.metadataCache_.getCached(entry, 'external');
-      filelist.updateListItemExternalProps(listItem, props);
+      filelist.updateListItemExternalProps(
+          listItem,
+          this.fileSystemMetadata_.getCache(
+              [entry], ['availableOffline', 'customIconUrl'])[0]);
     });
   } else if (type === 'import-history') {
     forEachCell('.table-row-cell > .status', function(item, entry, unused) {
@@ -765,7 +759,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
  */
 FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
   var item = baseRenderFunction(entry, this);
-  filelist.decorateListItem(item, entry, this.metadataCache_);
+  filelist.decorateListItem(item, entry, this.fileSystemMetadata_);
   return item;
 };
 
@@ -858,16 +852,24 @@ FileTable.prototype.relayoutImmediately_ = function() {
  * Common item decoration for table's and grid's items.
  * @param {cr.ui.ListItem} li List item.
  * @param {Entry} entry The entry.
- * @param {MetadataCache} metadataCache Cache to retrieve metadada.
+ * @param {!FileSystemMetadata|MetadataCache} fileSystemMetadata Cache to
+ *     retrieve metadada. TODO(hirono): Stop to take old MetadataCache here.
  */
-filelist.decorateListItem = function(li, entry, metadataCache) {
+filelist.decorateListItem = function(li, entry, fileSystemMetadata) {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
   // The metadata may not yet be ready. In that case, the list item will be
   // updated when the metadata is ready via updateListItemsMetadata. For files
   // not on an external backend, externalProps is not available.
-  var externalProps = metadataCache.getCached(entry, 'external');
-  if (externalProps)
+  if (fileSystemMetadata instanceof FileSystemMetadata) {
+    var externalProps = fileSystemMetadata.getCache(
+        [entry], ['hosted', 'availableOffline'])[0];
     filelist.updateListItemExternalProps(li, externalProps);
+  } else {
+    var metadataCache = fileSystemMetadata;
+    var externalProps = metadataCache.getCached(entry, 'external');
+    if (externalProps)
+      filelist.updateListItemExternalProps(li, externalProps);
+  }
 
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.

@@ -28,6 +28,11 @@ FileSystemMetadataProvider.prototype.getImpl = function(requests) {
   return Promise.all(requests.map(function(request) {
     return new Promise(function(fulfill, reject) {
       request.entry.getMetadata(fulfill, reject);
+    }).then(function(properties) {
+      return {
+        modificationTime: properties.modificationTime,
+        size: request.entry.isDirectory ? -1 : properties.size
+      };
     });
   }));
 };
