@@ -111,7 +111,8 @@ function generateId() {
  */
 function onToken(token) {
   var getUserInfo = function() {
-    remoting.OAuth2Api.getUserInfo(
+    var oauth2Api = new remoting.OAuth2ApiImpl();
+    oauth2Api.getUserInfo(
         onUserInfo, onUserInfo.bind(null, 'unknown', 'unknown'), token);
   };
   if (!token) {
