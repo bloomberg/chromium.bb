@@ -349,20 +349,22 @@ body.selecting .dialog-header {
 
 #cloud-import-details {
   background-color: white;
-  height: 300px;
+  box-sizing: border-box;
+  height: 320px;
   opacity: .85;
   padding: 10px;
   position: absolute;
   right: 0px;
   top: 49px;
-  transition: all 0.2s ease;
-  width: 250px;
+  transform: translateX(0);
+  transition: transform 0.2s ease;
+  width: 270px;
   z-index: 5;
 }
 
 #cloud-import-details.offscreen {
   opacity: 0;
-  right: -202px;
+  transform: translateX(270px);  /* Keep in sync with width. */
 }
 
 #cloud-import-details div {
