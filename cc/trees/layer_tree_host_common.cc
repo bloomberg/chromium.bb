@@ -21,6 +21,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/transform_util.h"
 
 namespace cc {
 
@@ -1271,11 +1272,6 @@ static void PreCalculateMetaInformation(
       recursive_data->layer_or_descendant_has_input_handler;
 }
 
-static void RoundTranslationComponents(gfx::Transform* transform) {
-  transform->matrix().set(0, 3, MathUtil::Round(transform->matrix().get(0, 3)));
-  transform->matrix().set(1, 3, MathUtil::Round(transform->matrix().get(1, 3)));
-}
-
 template <typename LayerType>
 struct SubtreeGlobals {
   LayerSorter* layer_sorter;
@@ -1701,7 +1697,7 @@ static void CalculateDrawPropertiesInternal(
     // blurriness.  To avoid side-effects, do this only if the transform is
     // simple.
     gfx::Vector2dF previous_translation = combined_transform.To2dTranslation();
-    RoundTranslationComponents(&combined_transform);
+    combined_transform.RoundTranslationComponents();
     gfx::Vector2dF current_translation = combined_transform.To2dTranslation();
 
     // This rounding changes the scroll delta, and so must be included
@@ -2491,6 +2487,12 @@ static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
          std::abs(r1.height() - r2.height()) <= tolerance;
 }
 
+static bool ApproximatelyEqual(const gfx::Transform& a,
+                               const gfx::Transform& b) {
+  static const float tolerance = 0.01f;
+  return gfx::MatrixDistance(a, b) < tolerance;
+}
+
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
   UpdateRenderSurfaces(inputs->root_layer,
@@ -2520,8 +2522,8 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   DCHECK(inputs->root_layer->render_surface());
 
   if (inputs->verify_property_trees) {
-    // TODO(ajuma): Can we efficiently cache some of this rather than
-    // starting from scratch every frame?
+    // The translation from layer to property trees is an intermediate state. We
+    // will eventually get these data passed directly to the compositor.
     TransformTree transform_tree;
     ClipTree clip_tree;
     ComputeVisibleRectsUsingPropertyTrees(
@@ -2530,23 +2532,24 @@ void LayerTreeHostCommon::CalculateDrawProperties(
         gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
         &transform_tree, &clip_tree);
 
-    bool failed = false;
     LayerIterator<Layer> it, end;
     for (it = LayerIterator<Layer>::Begin(inputs->render_surface_layer_list),
         end = LayerIterator<Layer>::End(inputs->render_surface_layer_list);
          it != end; ++it) {
       Layer* current_layer = *it;
-      if (it.represents_itself()) {
-        if (!failed && current_layer->DrawsContent() &&
-            !ApproximatelyEqual(
-                current_layer->visible_content_rect(),
-                current_layer->visible_rect_from_property_trees())) {
-          failed = true;
-        }
-      }
-    }
+      if (!it.represents_itself() || !current_layer->DrawsContent())
+        continue;
 
-    CHECK(!failed);
+      const bool visible_rects_match =
+          ApproximatelyEqual(current_layer->visible_content_rect(),
+                             current_layer->visible_rect_from_property_trees());
+      CHECK(visible_rects_match);
+
+      const bool draw_transforms_match = ApproximatelyEqual(
+          current_layer->draw_transform(),
+          current_layer->draw_transform_from_property_trees(transform_tree));
+      CHECK(draw_transforms_match);
+    }
   }
 }
 

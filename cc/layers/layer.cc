@@ -1299,13 +1299,24 @@ gfx::Transform Layer::screen_space_transform_from_property_trees(
 
 gfx::Transform Layer::draw_transform_from_property_trees(
     const TransformTree& tree) const {
-  gfx::Transform xform(1, 0, 0, 1, offset_to_transform_parent().x(),
-                       offset_to_transform_parent().y());
-  if (transform_tree_index() >= 0) {
-    const TransformNode* node = tree.Node(transform_tree_index());
-    gfx::Transform ssxform;
-    tree.ComputeTransform(node->id, node->data.target_id, &ssxform);
-    xform.ConcatTransform(ssxform);
+  const TransformNode* node = tree.Node(transform_tree_index());
+  // TODO(vollick): ultimately we'll need to find this information (whether or
+  // not we establish a render surface) somewhere other than the layer.
+  const TransformNode* target_node =
+      has_render_surface_ ? node : tree.Node(node->data.content_target_id);
+
+  gfx::Transform xform;
+  const bool owns_non_root_surface = parent() && render_surface();
+  if (!owns_non_root_surface) {
+    // If you're not the root, or you don't own a surface, you need to apply
+    // your local offset.
+    xform = node->data.to_target;
+    xform.Translate(offset_to_transform_parent().x(),
+                    offset_to_transform_parent().y());
+  } else {
+    // Surfaces need to apply their sublayer scale.
+    xform.Scale(target_node->data.sublayer_scale.x(),
+                target_node->data.sublayer_scale.y());
   }
   xform.Scale(1.0 / contents_scale_x(), 1.0 / contents_scale_y());
   return xform;

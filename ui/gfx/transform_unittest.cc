@@ -2704,6 +2704,30 @@ TEST(XFormTest, TransformBoxReverse) {
   EXPECT_FALSE(singular.TransformBoxReverse(&box));
 }
 
+TEST(XFormTest, RoundTranslationComponents) {
+  Transform translation;
+  Transform expected;
+
+  translation.RoundTranslationComponents();
+  EXPECT_EQ(expected.ToString(), translation.ToString());
+
+  translation.Translate(1.0f, 1.0f);
+  expected.Translate(1.0f, 1.0f);
+  translation.RoundTranslationComponents();
+  EXPECT_EQ(expected.ToString(), translation.ToString());
+
+  translation.Translate(0.5f, 0.4f);
+  expected.Translate(1.0f, 0.0f);
+  translation.RoundTranslationComponents();
+  EXPECT_EQ(expected.ToString(), translation.ToString());
+
+  // Rounding should only affect 2d translation components.
+  translation.Translate3d(0.f, 0.f, 0.5f);
+  expected.Translate3d(0.f, 0.f, 0.5f);
+  translation.RoundTranslationComponents();
+  EXPECT_EQ(expected.ToString(), translation.ToString());
+}
+
 }  // namespace
 
 }  // namespace gfx

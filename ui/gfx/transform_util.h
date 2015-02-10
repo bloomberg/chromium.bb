@@ -65,6 +65,9 @@ GFX_EXPORT bool SnapTransform(Transform* out,
 GFX_EXPORT Transform TransformAboutPivot(const gfx::Point& pivot,
                                          const gfx::Transform& transform);
 
+// Computes the Frobenius norm of (a - b).
+GFX_EXPORT float MatrixDistance(const Transform& a, const Transform& b);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_TRANSFORM_UTIL_H_

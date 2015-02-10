@@ -515,4 +515,20 @@ std::string DecomposedTransform::ToString() const {
       quaternion[3]);
 }
 
+float MatrixDistance(const Transform& a, const Transform& b) {
+  double sum = 0.0;
+
+  const SkMatrix44& a_data = a.matrix();
+  const SkMatrix44& b_data = b.matrix();
+
+  for (int row = 0; row < 4; ++row) {
+    for (int col = 0; col < 4; ++col) {
+      double diff = a_data.get(row, col) - b_data.get(row, col);
+      sum += diff * diff;
+    }
+  }
+
+  return static_cast<float>(std::sqrt(sum));
+}
+
 }  // namespace gfx

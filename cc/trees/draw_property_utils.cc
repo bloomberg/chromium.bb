@@ -250,8 +250,8 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
 }
 
 void ComputeTransforms(TransformTree* transform_tree) {
-  for (int i = 0; i < static_cast<int>(transform_tree->size()); ++i)
-    transform_tree->UpdateScreenSpaceTransform(i);
+  for (int i = 1; i < static_cast<int>(transform_tree->size()); ++i)
+    transform_tree->UpdateTransforms(i);
 }
 
 void ComputeVisibleRectsUsingPropertyTrees(

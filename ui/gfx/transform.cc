@@ -40,6 +40,12 @@ inline bool ApproximatelyOne(SkMScalar x, SkMScalar tolerance) {
   return std::abs(x - SkDoubleToMScalar(1.0)) <= tolerance;
 }
 
+static float Round(float f) {
+  if (f == 0.f)
+    return f;
+  return (f > 0.f) ? std::floor(f + 0.5f) : std::ceil(f - 0.5f);
+}
+
 }  // namespace
 
 Transform::Transform(SkMScalar col1row1,
@@ -491,6 +497,11 @@ bool Transform::Blend(const Transform& from, double progress) {
 
   matrix_ = ComposeTransform(to_decomp).matrix();
   return true;
+}
+
+void Transform::RoundTranslationComponents() {
+  matrix_.set(0, 3, Round(matrix_.get(0, 3)));
+  matrix_.set(1, 3, Round(matrix_.get(1, 3)));
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,

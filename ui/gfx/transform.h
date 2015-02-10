@@ -236,6 +236,8 @@ class GFX_EXPORT Transform {
   // DecomposedTransform.
   bool Blend(const Transform& from, double progress);
 
+  void RoundTranslationComponents();
+
   // Returns |this| * |other|.
   Transform operator*(const Transform& other) const {
     return Transform(*this, other);

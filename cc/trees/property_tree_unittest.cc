@@ -12,9 +12,9 @@ namespace cc {
 TEST(PropertyTreeTest, ComputeTransformRoot) {
   TransformTree tree;
   TransformNode& root = *tree.Node(0);
-  root.data.to_parent.Translate(2, 2);
-  root.data.from_parent.Translate(-2, -2);
-  tree.UpdateScreenSpaceTransform(0);
+  root.data.local.Translate(2, 2);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
 
   gfx::Transform expected;
   gfx::Transform transform;
@@ -39,16 +39,16 @@ TEST(PropertyTreeTest, ComputeTransformRoot) {
 TEST(PropertyTreeTest, ComputeTransformChild) {
   TransformTree tree;
   TransformNode& root = *tree.Node(0);
-  root.data.to_parent.Translate(2, 2);
-  root.data.from_parent.Translate(-2, -2);
-  tree.UpdateScreenSpaceTransform(0);
+  root.data.local.Translate(2, 2);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
 
   TransformNode child;
-  child.data.to_parent.Translate(3, 3);
-  child.data.from_parent.Translate(-3, -3);
+  child.data.local.Translate(3, 3);
+  child.data.target_id = 0;
 
   tree.Insert(child, 0);
-  tree.UpdateScreenSpaceTransform(1);
+  tree.UpdateTransforms(1);
 
   gfx::Transform expected;
   gfx::Transform transform;
@@ -83,23 +83,23 @@ TEST(PropertyTreeTest, ComputeTransformChild) {
 TEST(PropertyTreeTest, ComputeTransformSibling) {
   TransformTree tree;
   TransformNode& root = *tree.Node(0);
-  root.data.to_parent.Translate(2, 2);
-  root.data.from_parent.Translate(-2, -2);
-  tree.UpdateScreenSpaceTransform(0);
+  root.data.local.Translate(2, 2);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
 
   TransformNode child;
-  child.data.to_parent.Translate(3, 3);
-  child.data.from_parent.Translate(-3, -3);
+  child.data.local.Translate(3, 3);
+  child.data.target_id = 0;
 
   TransformNode sibling;
-  sibling.data.to_parent.Translate(7, 7);
-  sibling.data.from_parent.Translate(-7, -7);
+  sibling.data.local.Translate(7, 7);
+  sibling.data.target_id = 0;
 
   tree.Insert(child, 0);
   tree.Insert(sibling, 0);
 
-  tree.UpdateScreenSpaceTransform(1);
-  tree.UpdateScreenSpaceTransform(2);
+  tree.UpdateTransforms(1);
+  tree.UpdateTransforms(2);
 
   gfx::Transform expected;
   gfx::Transform transform;
@@ -128,32 +128,29 @@ TEST(PropertyTreeTest, ComputeTransformSiblingSingularAncestor) {
   // |sibling|.
   TransformTree tree;
   TransformNode& root = *tree.Node(0);
-  root.data.to_parent.Translate(2, 2);
-  root.data.from_parent.Translate(-2, -2);
-  tree.UpdateScreenSpaceTransform(0);
+  root.data.local.Translate(2, 2);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
 
   TransformNode singular;
-  singular.data.to_parent.matrix().set(2, 2, 0.0);
-  singular.data.is_invertible = false;
-  singular.data.ancestors_are_invertible = false;
+  singular.data.local.matrix().set(2, 2, 0.0);
+  singular.data.target_id = 0;
 
   TransformNode child;
-  child.data.to_parent.Translate(3, 3);
-  child.data.from_parent.Translate(-3, -3);
-  child.data.ancestors_are_invertible = false;
+  child.data.local.Translate(3, 3);
+  child.data.target_id = 0;
 
   TransformNode sibling;
-  sibling.data.to_parent.Translate(7, 7);
-  sibling.data.from_parent.Translate(-7, -7);
-  sibling.data.ancestors_are_invertible = false;
+  sibling.data.local.Translate(7, 7);
+  sibling.data.target_id = 0;
 
   tree.Insert(singular, 0);
   tree.Insert(child, 1);
   tree.Insert(sibling, 1);
 
-  tree.UpdateScreenSpaceTransform(1);
-  tree.UpdateScreenSpaceTransform(2);
-  tree.UpdateScreenSpaceTransform(3);
+  tree.UpdateTransforms(1);
+  tree.UpdateTransforms(2);
+  tree.UpdateTransforms(3);
 
   gfx::Transform expected;
   gfx::Transform transform;
@@ -174,16 +171,16 @@ TEST(PropertyTreeTest, ComputeTransformSiblingSingularAncestor) {
 TEST(PropertyTreeTest, MultiplicationOrder) {
   TransformTree tree;
   TransformNode& root = *tree.Node(0);
-  root.data.to_parent.Translate(2, 2);
-  root.data.from_parent.Translate(-2, -2);
-  tree.UpdateScreenSpaceTransform(0);
+  root.data.local.Translate(2, 2);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
 
   TransformNode child;
-  child.data.to_parent.Scale(2, 2);
-  child.data.from_parent.Scale(0.5, 0.5);
+  child.data.local.Scale(2, 2);
+  child.data.target_id = 0;
 
   tree.Insert(child, 0);
-  tree.UpdateScreenSpaceTransform(1);
+  tree.UpdateTransforms(1);
 
   gfx::Transform expected;
   expected.Translate(2, 2);

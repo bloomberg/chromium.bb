@@ -192,5 +192,19 @@ TEST(TransformUtilTest, TransformAboutPivot) {
   EXPECT_EQ(Point(-11, -20).ToString(), point.ToString());
 }
 
+TEST(TransformUtilTest, MatrixDistance) {
+  Transform a;
+  Transform b(0, 1, 1, 1,
+              1, 0, 1, 1,
+              1, 1, 0, 1,
+              1, 1, 1, 0);
+  // Each entry in |a| should be 1 away from the corresponding entry in |b|.
+  // This means the matrix distance should be sqrt(num_entries) = 4.
+  EXPECT_EQ(4, MatrixDistance(a, b));
+
+  Transform c = b;
+  EXPECT_EQ(0, MatrixDistance(b, c));
+}
+
 }  // namespace
 }  // namespace gfx

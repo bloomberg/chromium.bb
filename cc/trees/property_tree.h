@@ -26,13 +26,42 @@ struct CC_EXPORT TransformNodeData {
   TransformNodeData();
   ~TransformNodeData();
 
+  // The local transform information is combined to form to_parent (ignoring
+  // snapping) as follows:
+  //
+  //   to_parent = M_post_local * T_scroll * M_local * M_pre_local.
+  //
+  // The pre/post may seem odd when read LTR, but we multiply our points from
+  // the right, so the pre_local matrix affects the result "first". This lines
+  // up with the notions of pre/post used in skia and gfx::Transform.
+  //
+  // TODO(vollick): The values labeled with "will be moved..." take up a lot of
+  // space, but are only necessary for animated or scrolled nodes (otherwise
+  // we'll just use the baked to_parent). These values will be ultimately stored
+  // directly on the transform/scroll display list items when that's possible,
+  // or potentially in a scroll tree.
+  //
+  // TODO(vollick): will be moved when accelerated effects are implemented.
+  gfx::Transform pre_local;
+  gfx::Transform local;
+  gfx::Transform post_local;
+
   gfx::Transform to_parent;
   gfx::Transform from_parent;
+
+  gfx::Transform to_target;
+  gfx::Transform from_target;
 
   gfx::Transform to_screen;
   gfx::Transform from_screen;
 
   int target_id;
+  // This id is used for all content that draws into a render surface associated
+  // with this transform node.
+  int content_target_id;
+
+  // TODO(vollick): will be moved when accelerated effects are implemented.
+  bool needs_local_transform_update;
 
   bool is_invertible;
   bool ancestors_are_invertible;
@@ -41,6 +70,16 @@ struct CC_EXPORT TransformNodeData {
   bool to_screen_is_animated;
 
   bool flattens;
+  bool scrolls;
+
+  bool needs_sublayer_scale;
+  // This is used as a fallback when we either cannot adjust raster scale or if
+  // the raster scale cannot be extracted from the screen space transform.
+  float layer_scale_factor;
+  gfx::Vector2dF sublayer_scale;
+
+  // TODO(vollick): will be moved when accelerated effects are implemented.
+  gfx::Vector2dF scroll_offset;
 
   void set_to_parent(const gfx::Transform& transform) {
     to_parent = transform;
@@ -105,9 +144,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // aligned with respect to one another.
   bool Are2DAxisAligned(int source_id, int dest_id) const;
 
-  // This recomputes the screen space transform (and its inverse) for the node
-  // at |id|.
-  void UpdateScreenSpaceTransform(int id);
+  // Updates the parent, target, and screen space transforms and snapping.
+  void UpdateTransforms(int id);
 
  private:
   // Returns true iff the node at |desc_id| is a descendant of the node at
@@ -130,6 +168,16 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   bool CombineInversesBetween(int source_id,
                               int dest_id,
                               gfx::Transform* transform) const;
+
+  void UpdateLocalTransform(TransformNode* node);
+  void UpdateScreenSpaceTransform(TransformNode* node,
+                                  TransformNode* parent_node,
+                                  TransformNode* target_node);
+  void UpdateSublayerScale(TransformNode* node);
+  void UpdateTargetSpaceTransform(TransformNode* node,
+                                  TransformNode* target_node);
+  void UpdateIsAnimated(TransformNode* node, TransformNode* parent_node);
+  void UpdateSnapping(TransformNode* node);
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};
