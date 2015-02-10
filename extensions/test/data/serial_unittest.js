@@ -63,7 +63,7 @@ function serializeRoundTrip() {
   return requireAsync('serial_service').then(function(serialService) {
     function serializeConnections(connections) {
       var serializedConnections = [];
-      for (var connection in connections.values()) {
+      for (var connection of connections.values()) {
         serializedConnections.push(serializeConnection(connection));
       }
       return Promise.all(serializedConnections);
@@ -212,7 +212,7 @@ function disconnect() {
 }
 
 function checkClientConnectionInfo(connectionInfo) {
-  test.assertFalse(connectionInfo.persistent);
+  test.assertTrue(connectionInfo.persistent);
   test.assertEq('test connection', connectionInfo.name);
   test.assertEq(12345, connectionInfo.receiveTimeout);
   test.assertEq(6789, connectionInfo.sendTimeout);
@@ -836,4 +836,53 @@ unittestBindings.exportTests([
     var buffer = new ArrayBuffer(1);
     serial.send(-1, buffer, test.callbackFail('Serial connection not found.'));
   },
+
+  function testSendAndStash() {
+    connect()
+        .then(setPaused(true))
+        .then(sendData)
+        .then(expectSendResult(4))
+        .then(test.succeed, test.fail);
+  },
+
+  function testRestoreAndReceive() {
+    connectionId = 0;
+    Promise.all([
+        utils.promise(serial.setPaused, connectionId, false),
+        listenOnce(serial.onReceive).then(checkReceivedData),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
+  function testRestoreAndReceiveErrorSetUp() {
+    connect().then(test.succeed, test.fail);
+  },
+
+  function testRestoreAndReceiveError() {
+    connectionId = 0;
+    Promise.all([
+        utils.promise(serial.setPaused, connectionId, false),
+        listenOnce(serial.onReceiveError)
+            .then(checkReceiveError('device_lost')),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
+  function testStashNoConnections() {
+    connect({persistent: false}).then(test.succeed, test.fail);
+  },
+
+  function testRestoreNoConnections() {
+    connect()
+        .then(function(connectionInfo) {
+          test.assertEq(0, connectionInfo.connectionId);
+          return connectionInfo;
+        })
+        .then(checkConnectionInfo)
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
 ], test.runTests, exports);

@@ -5,6 +5,7 @@
 #include "device/serial/serial_device_enumerator.h"
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
+#include "extensions/browser/mojo/stash_backend.h"
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "extensions/renderer/api_test_base.h"
 #include "grit/extensions_renderer_resources.h"
@@ -406,13 +407,24 @@ class SerialApiTest : public ApiTestBase {
 
   void SetUp() override {
     ApiTestBase::SetUp();
-    env()->RegisterModule("serial", IDR_SERIAL_CUSTOM_BINDINGS_JS);
-    service_provider()->AddService<device::serial::SerialService>(base::Bind(
-        &SerialApiTest::CreateSerialService, base::Unretained(this)));
-    service_provider()->IgnoreServiceRequests<KeepAlive>();
+    stash_backend_.reset(new StashBackend(base::Closure()));
+    PrepareEnvironment(api_test_env(), stash_backend_.get());
+  }
+
+  void PrepareEnvironment(ApiTestEnvironment* environment,
+                          StashBackend* stash_backend) {
+    environment->env()->RegisterModule("serial", IDR_SERIAL_CUSTOM_BINDINGS_JS);
+    environment->service_provider()->AddService<device::serial::SerialService>(
+        base::Bind(&SerialApiTest::CreateSerialService,
+                   base::Unretained(this)));
+    environment->service_provider()->AddService(base::Bind(
+        &StashBackend::BindToRequest, base::Unretained(stash_backend)));
+    environment->service_provider()->IgnoreServiceRequests<KeepAlive>();
   }
 
   scoped_refptr<TestIoHandlerBase> io_handler_;
+
+  scoped_ptr<StashBackend> stash_backend_;
 
  private:
   scoped_refptr<device::SerialIoHandler> GetIoHandler() {
@@ -638,6 +650,38 @@ TEST_F(SerialApiTest, SetPausedUnknownConnectionId) {
 
 TEST_F(SerialApiTest, SendUnknownConnectionId) {
   RunTest("serial_unittest.js", "testSendUnknownConnectionId");
+}
+
+TEST_F(SerialApiTest, StashAndRestoreDuringEcho) {
+  ASSERT_NO_FATAL_FAILURE(RunTest("serial_unittest.js", "testSendAndStash"));
+  env()->context()->DispatchOnUnloadEvent();
+  scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
+  ApiTestEnvironment new_api_test_env(new_env.get());
+  PrepareEnvironment(&new_api_test_env, stash_backend_.get());
+  new_api_test_env.RunTest("serial_unittest.js", "testRestoreAndReceive");
+}
+
+TEST_F(SerialApiTest, StashAndRestoreDuringEchoError) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DEVICE_LOST);
+  ASSERT_NO_FATAL_FAILURE(
+      RunTest("serial_unittest.js", "testRestoreAndReceiveErrorSetUp"));
+  env()->context()->DispatchOnUnloadEvent();
+  scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
+  ApiTestEnvironment new_api_test_env(new_env.get());
+  PrepareEnvironment(&new_api_test_env, stash_backend_.get());
+  new_api_test_env.RunTest("serial_unittest.js", "testRestoreAndReceiveError");
+}
+
+TEST_F(SerialApiTest, StashAndRestoreNoConnections) {
+  ASSERT_NO_FATAL_FAILURE(
+      RunTest("serial_unittest.js", "testStashNoConnections"));
+  env()->context()->DispatchOnUnloadEvent();
+  io_handler_ = nullptr;
+  scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
+  ApiTestEnvironment new_api_test_env(new_env.get());
+  PrepareEnvironment(&new_api_test_env, stash_backend_.get());
+  new_api_test_env.RunTest("serial_unittest.js", "testRestoreNoConnections");
 }
 
 }  // namespace extensions

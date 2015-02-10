@@ -44,6 +44,27 @@ function forwardToConnection(methodName) {
   };
 }
 
+function addEventListeners(connection, id) {
+  connection.onData = function(data) {
+    eventBindings.dispatchEvent(
+        'serial.onReceive', [{connectionId: id, data: data}]);
+  };
+  connection.onError = function(error) {
+    eventBindings.dispatchEvent(
+        'serial.onReceiveError', [{connectionId: id, error: error}]);
+  };
+}
+
+serialServicePromise.then(function(serialService) {
+  return serialService.getConnections().then(function(connections) {
+    for (var entry of connections) {
+      var connection = entry[1];
+      addEventListeners(connection, entry[0]);
+      connection.resumeReceives();
+    };
+  });
+});
+
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   apiFunctions.setHandleRequestWithPromise('getDevices', function() {
@@ -56,15 +77,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     return serialServicePromise.then(function(serialService) {
       return serialService.createConnection(path, options);
     }).then(function(result) {
-      var id = result.info.connectionId;
-      result.connection.onData = function(data) {
-        eventBindings.dispatchEvent(
-            'serial.onReceive', [{connectionId: id, data: data}]);
-      };
-      result.connection.onError = function(error) {
-        eventBindings.dispatchEvent(
-            'serial.onReceiveError', [{connectionId: id, error: error}]);
-      };
+      addEventListeners(result.connection, result.info.connectionId);
       return result.info;
     }).catch (function(e) {
       throw new Error('Failed to connect to the port.');

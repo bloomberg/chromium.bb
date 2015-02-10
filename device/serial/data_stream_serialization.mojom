@@ -30,7 +30,7 @@ struct SerializedDataReceiver {
   // data.
   DataSource source;
   // DataSourceClient&
-  handle<message_pipe> source_client;
+  handle<message_pipe> client;
 
   // The error to report for a receive in progress when a fatal error occurs.
   int32 fatal_error_value;
