@@ -17,7 +17,7 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     SurfaceManager* surface_manager,
     SurfaceIdAllocator* allocator,
     const scoped_refptr<ContextProvider>& context_provider)
-    : OutputSurface(context_provider),
+    : OutputSurface(context_provider, nullptr),
       display_client_(NULL),
       surface_manager_(surface_manager),
       factory_(surface_manager, this),

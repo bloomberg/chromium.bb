@@ -46,11 +46,6 @@ class CC_EXPORT OutputSurface {
     DEFAULT_MAX_FRAMES_PENDING = 2
   };
 
-  OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
-                const scoped_refptr<ContextProvider>& worker_context_provider,
-                scoped_ptr<SoftwareOutputDevice> software_device);
-  OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
-                const scoped_refptr<ContextProvider>& worker_context_provider);
   explicit OutputSurface(
       const scoped_refptr<ContextProvider>& context_provider);
 
@@ -99,9 +94,6 @@ class CC_EXPORT OutputSurface {
   // In the event of a lost context, the entire output surface should be
   // recreated.
   ContextProvider* context_provider() const { return context_provider_.get(); }
-  ContextProvider* worker_context_provider() const {
-    return worker_context_provider_.get();
-  }
   SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }
@@ -164,7 +156,6 @@ class CC_EXPORT OutputSurface {
 
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
-  scoped_refptr<ContextProvider> worker_context_provider_;
   scoped_ptr<SoftwareOutputDevice> software_device_;
   scoped_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
   gfx::Size surface_size_;
