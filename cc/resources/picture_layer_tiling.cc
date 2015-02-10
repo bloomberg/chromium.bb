@@ -23,7 +23,8 @@
 namespace cc {
 namespace {
 
-const float kSoonBorderDistanceInScreenPixels = 312.f;
+const float kSoonBorderDistanceViewportPercentage = 0.15f;
+const float kMaxSoonBorderDistanceInScreenPixels = 312.f;
 
 }  // namespace
 
@@ -81,6 +82,17 @@ PictureLayerTiling::PictureLayerTiling(
 PictureLayerTiling::~PictureLayerTiling() {
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
     it->second->set_shared(false);
+}
+
+// static
+float PictureLayerTiling::CalculateSoonBorderDistance(
+    const gfx::Rect& visible_rect_in_content_space,
+    float content_to_screen_scale) {
+  float max_dimension = std::max(visible_rect_in_content_space.width(),
+                                 visible_rect_in_content_space.height());
+  return std::min(
+      kMaxSoonBorderDistanceInScreenPixels / content_to_screen_scale,
+      max_dimension * kSoonBorderDistanceViewportPercentage);
 }
 
 Tile* PictureLayerTiling::CreateTile(int i,
@@ -605,7 +617,8 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
   // Calculate the soon border rect.
   float content_to_screen_scale = ideal_contents_scale / contents_scale_;
   gfx::Rect soon_border_rect = visible_rect_in_content_space;
-  float border = kSoonBorderDistanceInScreenPixels / content_to_screen_scale;
+  float border = CalculateSoonBorderDistance(visible_rect_in_content_space,
+                                             content_to_screen_scale);
   soon_border_rect.Inset(-border, -border, -border, -border);
 
   last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;

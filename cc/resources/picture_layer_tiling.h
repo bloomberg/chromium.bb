@@ -60,6 +60,10 @@ class CC_EXPORT PictureLayerTiling {
 
   ~PictureLayerTiling();
 
+  static float CalculateSoonBorderDistance(
+      const gfx::Rect& visible_rect_in_content_space,
+      float content_to_screen_scale);
+
   // Create a tiling with no tiles. CreateTile() must be called to add some.
   static scoped_ptr<PictureLayerTiling> Create(
       float contents_scale,

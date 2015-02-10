@@ -691,10 +691,11 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   tiling->ComputeTilePriorityRects(viewport, 1.f, 1.0, Occlusion());
   tiling->UpdateAllTilePrioritiesForTesting();
 
-  gfx::Rect soon_rect = viewport;
-  soon_rect.Inset(-312.f, -312.f, -312.f, -312.f);
-  gfx::Rect soon_rect_in_content_space =
-      gfx::ToEnclosedRect(gfx::ScaleRect(soon_rect, 0.25f));
+  // Compute the soon border.
+  float inset = PictureLayerTiling::CalculateSoonBorderDistance(
+      viewport_in_content_space, 1.0f / 0.25f);
+  gfx::Rect soon_rect_in_content_space = viewport_in_content_space;
+  soon_rect_in_content_space.Inset(-inset, -inset);
 
   // Sanity checks.
   for (int i = 0; i < 47; ++i) {
@@ -763,10 +764,11 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
       gfx::ToEnclosedRect(gfx::ScaleRect(viewport, 0.25f));
   gfx::Rect skewport = tiling->ComputeSkewport(2.0, viewport_in_content_space);
 
-  soon_rect = viewport;
-  soon_rect.Inset(-312.f, -312.f, -312.f, -312.f);
-  soon_rect_in_content_space =
-      gfx::ToEnclosedRect(gfx::ScaleRect(soon_rect, 0.25f));
+  // Compute the soon border.
+  inset = PictureLayerTiling::CalculateSoonBorderDistance(
+      viewport_in_content_space, 1.0f / 0.25f);
+  soon_rect_in_content_space = viewport_in_content_space;
+  soon_rect_in_content_space.Inset(-inset, -inset);
 
   EXPECT_EQ(0, skewport.x());
   EXPECT_EQ(10, skewport.y());

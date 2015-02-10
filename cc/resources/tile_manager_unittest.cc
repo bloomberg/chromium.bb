@@ -696,8 +696,9 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     queue->Pop();
   }
 
+  // Ensure that the distance is decreasing many more times than increasing.
   EXPECT_EQ(3, distance_increasing);
-  EXPECT_EQ(16, distance_decreasing);
+  EXPECT_EQ(17, distance_decreasing);
   EXPECT_EQ(tile_count, smoothness_tiles.size());
   EXPECT_EQ(all_tiles, smoothness_tiles);
 
@@ -735,8 +736,9 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     queue->Pop();
   }
 
+  // Ensure that the distance is decreasing many more times than increasing.
   EXPECT_EQ(3, distance_increasing);
-  EXPECT_EQ(16, distance_decreasing);
+  EXPECT_EQ(17, distance_decreasing);
   EXPECT_EQ(tile_count, new_content_tiles.size());
   EXPECT_EQ(all_tiles, new_content_tiles);
 }
@@ -1069,11 +1071,12 @@ TEST_F(TileManagerTilePriorityQueueTest,
        RasterTilePriorityQueueStaticViewport) {
   FakePictureLayerTilingClient client;
 
-  gfx::Rect viewport(50, 50, 100, 100);
-  gfx::Size layer_bounds(800, 800);
+  gfx::Rect viewport(50, 50, 500, 500);
+  gfx::Size layer_bounds(1600, 1600);
 
+  float inset = PictureLayerTiling::CalculateSoonBorderDistance(viewport, 1.0f);
   gfx::Rect soon_rect = viewport;
-  soon_rect.Inset(-312.f, -312.f, -312.f, -312.f);
+  soon_rect.Inset(-inset, -inset);
 
   client.SetTileSize(gfx::Size(30, 30));
   client.set_tree(ACTIVE_TREE);
@@ -1093,7 +1096,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   tiling_set->UpdateTilePriorities(viewport, 1.0f, 1.0, Occlusion(), true);
   std::vector<Tile*> all_tiles = tiling->AllTilesForTesting();
   // Sanity check.
-  EXPECT_EQ(841u, all_tiles.size());
+  EXPECT_EQ(3364u, all_tiles.size());
 
   // The explanation of each iteration is as follows:
   // 1. First iteration tests that we can get all of the tiles correctly.
@@ -1205,8 +1208,10 @@ TEST_F(TileManagerTilePriorityQueueTest,
   tiling_set->UpdateTilePriorities(moved_viewport, 1.0f, 2.0, Occlusion(),
                                    true);
 
+  float inset =
+      PictureLayerTiling::CalculateSoonBorderDistance(moved_viewport, 1.0f);
   gfx::Rect soon_rect = moved_viewport;
-  soon_rect.Inset(-312.f, -312.f, -312.f, -312.f);
+  soon_rect.Inset(-inset, -inset);
 
   // There are 3 bins in TilePriority.
   bool have_tiles[3] = {};

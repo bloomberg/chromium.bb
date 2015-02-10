@@ -3144,8 +3144,6 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
 
     if (tile->required_for_activation() ==
             last_tile->required_for_activation() &&
-        priority.priority_bin ==
-            last_tile->priority(PENDING_TREE).priority_bin &&
         std::abs(tile->contents_scale() - last_tile->contents_scale()) <
             std::numeric_limits<float>::epsilon()) {
       if (priority.distance_to_visible <=
