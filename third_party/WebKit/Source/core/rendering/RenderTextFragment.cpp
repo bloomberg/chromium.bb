@@ -137,7 +137,15 @@ UChar RenderTextFragment::previousCharacter() const
 // at the node for the remaining text to find our content.
 Text* RenderTextFragment::associatedTextNode() const
 {
-    Node* node = m_isRemainingTextRenderer ? this->node() : this->firstLetterPseudoElement();
+    Node* node = this->firstLetterPseudoElement();
+    if (m_isRemainingTextRenderer || !node) {
+        // If we don't have a node, then we aren't part of a first-letter pseudo
+        // element, so use the actual node. Likewise, if we have a node, but
+        // we're the remainingTextRenderer for a pseudo element use the real
+        // text node.
+        node = this->node();
+    }
+
     if (!node)
         return nullptr;
 
