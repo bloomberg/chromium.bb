@@ -44,7 +44,6 @@
       'enable_oilpan%': 0,
       'blink_gc_profiling%': 0,
       'blink_logging_always_on%': 0,
-      'link_core_modules_separately%': 0,
     },
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
@@ -91,14 +90,6 @@
           'LOG_DISABLED=0',
         ],
       }],
-      ['link_core_modules_separately==1', {
-        'feature_defines': [
-          'LINK_CORE_MODULES_SEPARATELY',
-        ],
-      }],
     ],
-
-    # shared build only. If set to 1, link web, core and modules separately.
-    'link_core_modules_separately%': '<(link_core_modules_separately)',
   },
 }
