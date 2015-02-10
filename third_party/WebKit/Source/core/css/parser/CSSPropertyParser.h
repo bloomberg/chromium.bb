@@ -23,32 +23,27 @@
 #ifndef CSSPropertyParser_h
 #define CSSPropertyParser_h
 
-// FIXME: Way too many.
-#include "core/CSSPropertyNames.h"
-#include "core/CSSValueKeywords.h"
-#include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
-#include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertySourceData.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSParserValues.h"
-#include "platform/graphics/Color.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/Vector.h"
+#include "platform/Length.h"
 
 namespace blink {
 
 class CSSBorderImageSliceValue;
-class CSSPrimitiveValue;
-class CSSValue;
-class CSSValueList;
 class CSSBasicShape;
 class CSSBasicShapeInset;
+class CSSGradientValue;
 class CSSGridLineNamesValue;
 class CSSLineBoxContainValue;
+struct CSSParserString;
+struct CSSParserValue;
+class CSSParserValueList;
+class CSSPrimitiveValue;
+class CSSProperty;
+class CSSValue;
+class CSSValueList;
 class StylePropertyShorthand;
 
 // Inputs: PropertyID, isImportant bool, CSSParserValueList.
