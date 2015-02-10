@@ -83,4 +83,6 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 }  // namespace banners
 
+bool RegisterAppBannerInfoBarDelegate(JNIEnv* env);
+
 #endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_
