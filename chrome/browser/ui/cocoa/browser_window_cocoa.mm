@@ -10,6 +10,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -84,7 +85,44 @@ const int kBookmarkAppBubbleViewHeight = 46;
 
 const int kIconPreviewTargetSize = 128;
 
+base::string16 TrimText(NSString* controlText) {
+  base::string16 text = base::SysNSStringToUTF16(controlText);
+  base::TrimWhitespace(text, base::TRIM_ALL, &text);
+  return text;
+}
+
 }  // namespace
+
+@interface TextRequiringDelegate : NSObject<NSTextFieldDelegate> {
+ @private
+  // Disable |control_| when text changes to just whitespace or empty string.
+  NSControl* control_;
+}
+- (id)initWithControl:(NSControl*)control text:(NSString*)text;
+- (void)controlTextDidChange:(NSNotification*)notification;
+@end
+
+@interface TextRequiringDelegate ()
+- (void)validateText:(NSString*)text;
+@end
+
+@implementation TextRequiringDelegate
+- (id)initWithControl:(NSControl*)control text:(NSString*)text {
+  if ((self = [super init])) {
+    control_ = control;
+    [self validateText:text];
+  }
+  return self;
+}
+
+- (void)controlTextDidChange:(NSNotification*)notification {
+  [self validateText:[[notification object] stringValue]];
+}
+
+- (void)validateText:(NSString*)text {
+  [control_ setEnabled:TrimText(text).empty() ? NO : YES];
+}
+@end
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller)
@@ -524,6 +562,10 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   [[app_title cell] setWraps:NO];
   [[app_title cell] setScrollable:YES];
   [app_title setStringValue:original_title];
+  base::scoped_nsobject<TextRequiringDelegate> delegate(
+      [[TextRequiringDelegate alloc] initWithControl:continue_button
+                                                text:[app_title stringValue]]);
+  [app_title setDelegate:delegate];
 
   base::scoped_nsobject<NSView> view([[NSView alloc]
       initWithFrame:NSMakeRect(0, 0, kBookmarkAppBubbleViewWidth,
@@ -545,12 +587,15 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
     }
   }
 
-  if ([alert runModal] == NSAlertFirstButtonReturn) {
+  NSInteger response = [alert runModal];
+
+  // Prevent |app_title| from accessing |delegate| after it's destroyed.
+  [app_title setDelegate:nil];
+
+  if (response == NSAlertFirstButtonReturn) {
     WebApplicationInfo updated_info = web_app_info;
     updated_info.open_as_window = [open_as_window_checkbox state] == NSOnState;
-
-    NSString* new_title = [app_title stringValue];
-    updated_info.title = base::SysNSStringToUTF16(new_title);
+    updated_info.title = TrimText([app_title stringValue]);
 
     callback.Run(true, updated_info);
     return;
