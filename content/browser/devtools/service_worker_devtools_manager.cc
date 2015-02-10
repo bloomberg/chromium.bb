@@ -64,7 +64,7 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
     return debug_service_worker_on_start_;
   }
   WorkerRestarted(id, it);
-  return true;
+  return it->second->IsAttached();
 }
 
 void ServiceWorkerDevToolsManager::WorkerStopIgnored(int worker_process_id,
