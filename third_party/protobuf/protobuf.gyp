@@ -53,6 +53,7 @@
               # normal protoc target under the condition that "OS==iOS".
               'target_name': 'compile_protoc',
               'type': 'none',
+              'toolsets': ['host'],
               'includes': ['../../build/ios/mac_build.gypi'],
               'actions': [
                 {
@@ -239,6 +240,7 @@
               ],
             }, {  # else, OS=="ios" and "<(GENERATOR)"!="ninja"
               'type': 'none',
+              'toolsets': ['host'],
               'dependencies': [
                 'compile_protoc',
               ],

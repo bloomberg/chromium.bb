@@ -136,6 +136,7 @@
         {
           'target_name': 'iossim',
           'type': 'none',
+          'toolsets': ['host'],
           'variables': {
             # Gyp to rerun
             're_run_targets': [

@@ -59,7 +59,6 @@
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_environment_unittests',
-            '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_perftests',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_unittests',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_utility_unittests',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_system_unittests',
