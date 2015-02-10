@@ -4181,7 +4181,6 @@ bool RenderBox::logicalWidthIsResolvableFromBlock(const RenderBlock* containingB
     const RenderBlock* cb = containingBlock;
     while (!cb->isRenderView() && !cb->isOutOfFlowPositioned() && (cb->style()->logicalWidth().isAuto() || cb->isAnonymousBlock()))
         cb = cb->containingBlock();
-    // Doesn't anonymousBlocks have all of them cb->style()->logicalWidth().isAuto()
 
     if (cb->style()->logicalWidth().isFixed())
         return true;
