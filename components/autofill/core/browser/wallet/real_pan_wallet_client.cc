@@ -24,11 +24,12 @@ namespace wallet {
 namespace {
 
 const char kUnmaskCardRequestFormat[] =
-    "requestContentType=application/json; charset=utf-8&request=%s&cvc=%s";
+    "requestContentType=application/json; charset=utf-8&request=%s"
+    "&s7e_13_cvc=%s";
 
 const char kUnmaskCardRequestUrl[] =
     "https://sandbox.google.com/payments/apis-secure/creditcardservice"
-    "/getrealpan?s7e=cvc";
+    "/getrealpan?s7e_suffix=chromewallet";
 
 const char kTokenServiceConsumerId[] = "real_pan_wallet_client";
 const char kWalletOAuth2Scope[] =
@@ -64,7 +65,7 @@ void RealPanWalletClient::UnmaskCard(const CreditCard& card,
   request_->SetRequestContext(context_getter_.get());
 
   base::DictionaryValue request_dict;
-  request_dict.SetString("encrypted_cvc", "__param:cvc");
+  request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
   request_dict.SetString("credit_card_token", card.server_id());
   request_dict.SetString("risk_data_base64", risk_data);
 
