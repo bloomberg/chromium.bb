@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function setUp() {
-}
-
 function testLRUCache() {
   var cache = new LRUCache(3);
 
@@ -164,4 +161,18 @@ function testSizeCalculationByRandomInput() {
     cache.remove(keys[i]);
   }
   assertEquals(0, cache.size());
+}
+
+function testSetMaxSize() {
+  var cache = new LRUCache(10);
+  cache.put('a', 'valueA');
+  cache.put('b', 'valueB');
+  cache.put('c', 'valueC');
+  assertEquals('valueA', cache.peek('a'));
+  assertEquals('valueB', cache.peek('b'));
+  assertEquals('valueC', cache.peek('c'));
+  cache.setMaxSize(1);
+  assertEquals(null, cache.peek('a'));
+  assertEquals(null, cache.peek('b'));
+  assertEquals('valueC', cache.peek('c'));
 }
