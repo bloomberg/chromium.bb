@@ -318,4 +318,9 @@ void WebRuntimeFeatures::enablePushMessagingData(bool enable)
     RuntimeEnabledFeatures::setPushMessagingDataEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableUnsafeES3APIs(bool enable)
+{
+    RuntimeEnabledFeatures::setUnsafeES3APIsEnabled(enable);
+}
+
 } // namespace blink

@@ -115,6 +115,9 @@ public:
 
     static unsigned getWebGLVersion(const CanvasRenderingContext*);
 
+    static PassOwnPtr<blink::WebGraphicsContext3D> createWebGraphicsContext3D(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
+    static void forceNextWebGLContextCreationToFail();
+
     int drawingBufferWidth() const;
     int drawingBufferHeight() const;
 
@@ -420,6 +423,8 @@ protected:
     virtual void setIsHidden(bool) override;
     bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
     virtual blink::WebLayer* platformLayer() const override;
+
+    bool isWebGL2OrHigher() { return version() >= 2; }
 
     void addSharedObject(WebGLSharedObject*);
     void addContextObject(WebGLContextObject*);

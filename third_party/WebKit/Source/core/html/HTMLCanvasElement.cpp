@@ -40,6 +40,7 @@
 #include "core/html/ImageData.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/WebGL2RenderingContext.h"
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLContextEvent.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
@@ -209,6 +210,7 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
         Context2d = 0,
         ContextExperimentalWebgl = 2,
         ContextWebgl = 3,
+        ContextWebgl2 = 4,
         ContextTypeCount,
     };
 
@@ -229,11 +231,25 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
     }
 
     // Accept the the provisional "experimental-webgl" or official "webgl" context ID.
-    if (type == "webgl" || type == "experimental-webgl") {
-        ContextType contextType = (type == "webgl") ? ContextWebgl : ContextExperimentalWebgl;
+    ContextType contextType = Context2d;
+    bool is3dContext = true;
+    if (type == "experimental-webgl")
+        contextType = ContextExperimentalWebgl;
+    else if (type == "webgl")
+        contextType = ContextWebgl;
+    else if (type == "webgl2")
+        contextType = ContextWebgl2;
+    else
+        is3dContext = false;
+
+    if (is3dContext) {
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
-            m_context = WebGLRenderingContext::create(this, attributes);
+            if (contextType == ContextWebgl2) {
+                m_context = WebGL2RenderingContext::create(this, attributes);
+            } else {
+                m_context = WebGLRenderingContext::create(this, attributes);
+            }
             LayoutStyle* style = computedStyle();
             if (style && m_context)
                 toWebGLRenderingContext(m_context.get())->setFilterLevel(style->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);

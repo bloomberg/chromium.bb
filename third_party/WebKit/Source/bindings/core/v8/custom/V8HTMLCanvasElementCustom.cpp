@@ -34,14 +34,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8CanvasRenderingContext2D.h"
 #include "bindings/core/v8/V8Node.h"
-#include "bindings/core/v8/V8WebGLRenderingContext.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "core/html/canvas/Canvas2DContextAttributes.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/WebGLContextAttributes.h"
-#include "core/inspector/InspectorCanvasInstrumentation.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 

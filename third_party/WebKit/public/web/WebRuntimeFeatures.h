@@ -153,6 +153,8 @@ public:
 
     BLINK_EXPORT static void enablePushMessagingData(bool);
 
+    BLINK_EXPORT static void enableUnsafeES3APIs(bool);
+
 private:
     WebRuntimeFeatures();
 };

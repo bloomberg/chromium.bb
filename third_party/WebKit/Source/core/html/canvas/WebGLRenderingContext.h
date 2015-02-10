@@ -34,7 +34,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassOwnPtrWillBeRawPtr<WebGLRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&);
-    static void forceNextWebGLContextCreationToFail();
     virtual ~WebGLRenderingContext();
 
     virtual unsigned version() const override { return 1; }

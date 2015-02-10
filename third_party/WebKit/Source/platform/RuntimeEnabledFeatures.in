@@ -147,6 +147,7 @@ ThreadedParserDataReceiver
 // touchscreen) in ApplyWebPreferences.
 Touch status=stable
 TouchIconLoading
+UnsafeES3APIs
 UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
