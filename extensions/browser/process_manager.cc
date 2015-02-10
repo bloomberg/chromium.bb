@@ -119,7 +119,7 @@ class IncognitoProcessManager : public ProcessManager {
   ~IncognitoProcessManager() override {}
   bool CreateBackgroundHost(const Extension* extension,
                             const GURL& url) override;
-  SiteInstance* GetSiteInstanceForURL(const GURL& url) override;
+  scoped_refptr<SiteInstance> GetSiteInstanceForURL(const GURL& url) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IncognitoProcessManager);
@@ -356,7 +356,7 @@ bool ProcessManager::CreateBackgroundHost(const Extension* extension,
     return true;  // TODO(kalman): return false here? It might break things...
 
   ExtensionHost* host =
-      new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
+      new ExtensionHost(extension, GetSiteInstanceForURL(url).get(), url,
                         VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   host->CreateRenderViewSoon();
   OnBackgroundHostCreated(host);
@@ -467,8 +467,9 @@ bool ProcessManager::RegisterRenderViewHost(RenderViewHost* render_view_host) {
   return true;
 }
 
-SiteInstance* ProcessManager::GetSiteInstanceForURL(const GURL& url) {
-  return site_instance_->GetRelatedSiteInstance(url);
+scoped_refptr<SiteInstance> ProcessManager::GetSiteInstanceForURL(
+    const GURL& url) {
+  return make_scoped_refptr(site_instance_->GetRelatedSiteInstance(url));
 }
 
 bool ProcessManager::IsBackgroundHostClosing(const std::string& extension_id) {
@@ -1030,7 +1031,8 @@ bool IncognitoProcessManager::CreateBackgroundHost(const Extension* extension,
   return false;
 }
 
-SiteInstance* IncognitoProcessManager::GetSiteInstanceForURL(const GURL& url) {
+scoped_refptr<SiteInstance> IncognitoProcessManager::GetSiteInstanceForURL(
+    const GURL& url) {
   const Extension* extension =
       extension_registry_->enabled_extensions().GetExtensionOrAppByURL(url);
   if (extension && !IncognitoInfo::IsSplitMode(extension)) {

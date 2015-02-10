@@ -127,18 +127,19 @@ void MimeHandlerViewGuest::CreateWebContents(
   // Use the mime handler extension's SiteInstance to create the guest so it
   // goes under the same process as the extension.
   ProcessManager* process_manager = ProcessManager::Get(browser_context());
-  content::SiteInstance* guest_site_instance =
+  scoped_refptr<content::SiteInstance> guest_site_instance =
       process_manager->GetSiteInstanceForURL(stream_->handler_url());
 
   // Clear the zoom level for the mime handler extension. The extension is
   // responsible for managing its own zoom. This is necessary for OOP PDF, as
   // otherwise the UI is zoomed and the calculations to determine the PDF size
   // mix zoomed and unzoomed units.
-  content::HostZoomMap::Get(guest_site_instance)
+  content::HostZoomMap::Get(guest_site_instance.get())
       ->SetZoomLevelForHostAndScheme(kExtensionScheme, stream_->extension_id(),
                                      0);
 
-  WebContents::CreateParams params(browser_context(), guest_site_instance);
+  WebContents::CreateParams params(browser_context(),
+                                   guest_site_instance.get());
   params.guest_delegate = this;
   callback.Run(WebContents::Create(params));
 }

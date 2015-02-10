@@ -33,13 +33,13 @@ ExtensionViewHost* CreateViewHostForExtension(const Extension* extension,
   DCHECK(profile);
   // A NULL browser may only be given for dialogs.
   DCHECK(browser || view_type == VIEW_TYPE_EXTENSION_DIALOG);
-  content::SiteInstance* site_instance =
+  scoped_refptr<content::SiteInstance> site_instance =
       ProcessManager::Get(profile)->GetSiteInstanceForURL(url);
   ExtensionViewHost* host =
 #if defined(OS_MACOSX)
-      new ExtensionViewHostMac(extension, site_instance, url, view_type);
+      new ExtensionViewHostMac(extension, site_instance.get(), url, view_type);
 #else
-      new ExtensionViewHost(extension, site_instance, url, view_type);
+      new ExtensionViewHost(extension, site_instance.get(), url, view_type);
 #endif
   host->CreateView(browser);
   return host;

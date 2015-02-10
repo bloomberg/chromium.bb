@@ -176,7 +176,7 @@ static base::StaticAtomicSequenceNumber g_channel_id_overflow_count;
 static content::RenderProcessHost* GetExtensionProcess(
     BrowserContext* context,
     const std::string& extension_id) {
-  SiteInstance* site_instance =
+  scoped_refptr<SiteInstance> site_instance =
       ProcessManager::Get(context)->GetSiteInstanceForURL(
           Extension::GetBaseURLFromExtensionId(extension_id));
   return site_instance->HasProcess() ? site_instance->GetProcess() : NULL;

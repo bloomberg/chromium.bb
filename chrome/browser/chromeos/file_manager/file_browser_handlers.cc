@@ -67,7 +67,8 @@ int ExtractProcessFromExtensionId(Profile* profile,
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(profile);
 
-  SiteInstance* site_instance = manager->GetSiteInstanceForURL(extension_url);
+  scoped_refptr<SiteInstance> site_instance =
+      manager->GetSiteInstanceForURL(extension_url);
   if (!site_instance || !site_instance->HasProcess())
     return -1;
   content::RenderProcessHost* process = site_instance->GetProcess();

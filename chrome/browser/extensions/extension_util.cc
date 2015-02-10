@@ -318,7 +318,7 @@ bool IsExtensionIdle(const std::string& extension_id,
     if (host)
       return false;
 
-    content::SiteInstance* site_instance =
+    scoped_refptr<content::SiteInstance> site_instance =
         process_manager->GetSiteInstanceForURL(
             Extension::GetBaseURLFromExtensionId(id));
     if (site_instance && site_instance->HasProcess())
