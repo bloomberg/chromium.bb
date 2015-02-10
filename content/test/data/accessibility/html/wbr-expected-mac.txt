@@ -1,7 +1,7 @@
 # The spec states that <wbr> should have a role of AXGroup, but that seems
 # wrong, so we assume this is correct.
 AXWebArea
-    AXGroup
-        AXStaticText AXValue='Supercali'
-        AXStaticText AXValue='fragilistic'
-        AXStaticText AXValue='expialidocious'
+++AXGroup
+++++AXStaticText AXValue='Supercali'
+++++AXStaticText AXValue='fragilistic'
+++++AXStaticText AXValue='expialidocious'

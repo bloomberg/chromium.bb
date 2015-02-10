@@ -1,8 +1,8 @@
 AXWebArea
-    AXGroup
-        AXCheckBox AXDescription='Title0'
-        AXCheckBox AXTitle='Label1' AXHelp='Title1'
-        AXCheckBox AXDescription='AriaLabel2' AXHelp='Title2'
-        AXCheckBox AXDescription='LabelledBy3' AXHelp='Title3'
-        AXCheckBox AXDescription='LabelledBy4' AXHelp='DescribedBy4'
-        AXCheckBox AXHelp='DescribedBy5'
+++AXGroup
+++++AXCheckBox AXDescription='Title0'
+++++AXCheckBox AXTitle='Label1' AXHelp='Title1'
+++++AXCheckBox AXDescription='AriaLabel2' AXHelp='Title2'
+++++AXCheckBox AXDescription='LabelledBy3' AXHelp='Title3'
+++++AXCheckBox AXDescription='LabelledBy4' AXHelp='DescribedBy4'
+++++AXCheckBox AXHelp='DescribedBy5'

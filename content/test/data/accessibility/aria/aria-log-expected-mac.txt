@@ -1,2 +1,2 @@
 AXWebArea
-    AXGroup AXSubrole=AXApplicationLog
+++AXGroup AXSubrole=AXApplicationLog

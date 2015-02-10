@@ -1,5 +1,5 @@
 AXWebArea
-    AXGroup
-        AXStaticText AXValue='One word is '
-        AXStaticText AXValue='emphasized'
-        AXStaticText AXValue='.'
+++AXGroup
+++++AXStaticText AXValue='One word is '
+++++AXStaticText AXValue='emphasized'
+++++AXStaticText AXValue='.'

@@ -17,7 +17,8 @@
 
 namespace content {
 namespace {
-const int kIndentSpaces = 4;
+const char kIndentSymbol = '+';
+const int kIndentSymbolCount = 2;
 const char* kSkipString = "@NO_DUMP";
 const char* kChildrenDictAttr = "children";
 }
@@ -76,7 +77,8 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
 
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     const base::DictionaryValue& dict, base::string16* contents, int depth) {
-  base::string16 indent = base::string16(depth * kIndentSpaces, ' ');
+  base::string16 indent = base::string16(depth * kIndentSymbolCount,
+                                         kIndentSymbol);
   base::string16 line = indent + ToString(dict);
   if (line.find(base::ASCIIToUTF16(kSkipString)) != base::string16::npos)
     return;

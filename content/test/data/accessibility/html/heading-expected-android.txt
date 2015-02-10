@@ -1,7 +1,7 @@
 android.webkit.WebView focusable focused scrollable
-    android.view.View clickable heading name='Heading 1'
-    android.view.View clickable heading name='Heading 2'
-    android.view.View clickable heading name='Heading 3'
-    android.view.View clickable heading name='Heading 4'
-    android.view.View clickable heading name='Heading 5'
-    android.view.View clickable heading name='Heading 6'
+++android.view.View clickable heading name='Heading 1'
+++android.view.View clickable heading name='Heading 2'
+++android.view.View clickable heading name='Heading 3'
+++android.view.View clickable heading name='Heading 4'
+++android.view.View clickable heading name='Heading 5'
+++android.view.View clickable heading name='Heading 6'

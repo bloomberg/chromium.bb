@@ -1,8 +1,8 @@
 AXWebArea
-    AXGroup
-        AXStaticText AXValue='Test for modal dialog opened in an iframe. '
-        AXGroup
-            AXUnknown
-                AXWebArea
-                    AXGroup AXSubrole=AXApplicationDialog
-                        AXStaticText AXValue='Text in the dialog.'
+++AXGroup
+++++AXStaticText AXValue='Test for modal dialog opened in an iframe. '
+++++AXGroup
+++++++AXUnknown
+++++++++AXWebArea
+++++++++++AXGroup AXSubrole=AXApplicationDialog
+++++++++++++AXStaticText AXValue='Text in the dialog.'

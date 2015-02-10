@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-    android.view.View clickable focusable name='Focusable div'
+++android.view.View clickable focusable name='Focusable div'

@@ -1,2 +1,2 @@
 AXWebArea
-    AXStaticText AXValue='With aria-role none'
+++AXStaticText AXValue='With aria-role none'

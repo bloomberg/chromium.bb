@@ -1,3 +1,3 @@
 AXWebArea
-    AXGroup AXTitle='Focusable div'
-        AXStaticText AXValue='Focusable div'
+++AXGroup AXTitle='Focusable div'
+++++AXStaticText AXValue='Focusable div'

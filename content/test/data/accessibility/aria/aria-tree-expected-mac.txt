@@ -1,2 +1,2 @@
 AXWebArea AXRoleDescription='HTML content'
-    AXOutline AXRoleDescription='outline'
+++AXOutline AXRoleDescription='outline'
