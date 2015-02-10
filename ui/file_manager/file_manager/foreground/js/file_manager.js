@@ -737,6 +737,7 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.initAdditionalUI_ = function(callback) {
     assert(this.metadataCache_);
+    assert(this.fileSystemMetadata_);
     assert(this.volumeManager_);
     assert(this.historyLoader_);
     assert(this.dialogDom_);
@@ -762,6 +763,7 @@ FileManager.prototype = /** @struct */ {
     FileGrid.decorate(
         grid,
         this.metadataCache_,
+        this.fileSystemMetadata_,
         this.volumeManager_,
         this.historyLoader_);
 

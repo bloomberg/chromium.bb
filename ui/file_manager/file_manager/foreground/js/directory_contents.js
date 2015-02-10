@@ -937,11 +937,11 @@ DirectoryContents.prototype.prefetchMetadata =
     this.context_.metadataCache.getLatest(entries, TYPES, callback);
     this.context_.fileSystemMetadata.notifyEntriesChanged(entries);
     this.context_.fileSystemMetadata.get(
-        entries, FileTable.METADATA_PROPERTY_NAMES);
+        entries, ListContainer.METADATA_PROPERTY_NAMES);
   } else {
     this.context_.metadataCache.get(entries, TYPES, callback);
     this.context_.fileSystemMetadata.get(
-        entries, FileTable.METADATA_PROPERTY_NAMES);
+        entries, ListContainer.METADATA_PROPERTY_NAMES);
   }
 };
 

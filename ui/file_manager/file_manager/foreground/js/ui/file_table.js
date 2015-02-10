@@ -232,19 +232,6 @@ function FileTable() {
 }
 
 /**
- * Metadata property names used by FileTable.
- * These metadata is expected to be cached.
- * @const {!Array<string>}
- */
-FileTable.METADATA_PROPERTY_NAMES = [
-  'size',
-  'modificationTime',
-  'hosted',
-  'availableOffline',
-  'customIconUrl'
-];
-
-/**
  * Inherits from cr.ui.Table.
  */
 FileTable.prototype.__proto__ = cr.ui.Table.prototype;
@@ -852,24 +839,17 @@ FileTable.prototype.relayoutImmediately_ = function() {
  * Common item decoration for table's and grid's items.
  * @param {cr.ui.ListItem} li List item.
  * @param {Entry} entry The entry.
- * @param {!FileSystemMetadata|MetadataCache} fileSystemMetadata Cache to
- *     retrieve metadada. TODO(hirono): Stop to take old MetadataCache here.
+ * @param {!FileSystemMetadata} fileSystemMetadata Cache to
+ *     retrieve metadada.
  */
 filelist.decorateListItem = function(li, entry, fileSystemMetadata) {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
   // The metadata may not yet be ready. In that case, the list item will be
   // updated when the metadata is ready via updateListItemsMetadata. For files
   // not on an external backend, externalProps is not available.
-  if (fileSystemMetadata instanceof FileSystemMetadata) {
-    var externalProps = fileSystemMetadata.getCache(
-        [entry], ['hosted', 'availableOffline'])[0];
-    filelist.updateListItemExternalProps(li, externalProps);
-  } else {
-    var metadataCache = fileSystemMetadata;
-    var externalProps = metadataCache.getCached(entry, 'external');
-    if (externalProps)
-      filelist.updateListItemExternalProps(li, externalProps);
-  }
+  var externalProps = fileSystemMetadata.getCache(
+      [entry], ['hosted', 'availableOffline'])[0];
+  filelist.updateListItemExternalProps(li, externalProps);
 
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.

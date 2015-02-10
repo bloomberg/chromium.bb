@@ -31,16 +31,17 @@ FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
 /**
  * Decorates an HTML element to be a FileGrid.
  * @param {!Element} self The grid to decorate.
- * @param {MetadataCache} metadataCache Metadata cache to find entries
- *                                      metadata.
+ * @param {MetadataCache} metadataCache Metadata cache for thumbnails.
+ * @param {!FileSystemMetadata} fileSystemMetadata File system metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  */
-FileGrid.decorate =
-    function(self, metadataCache, volumeManager, historyLoader) {
+FileGrid.decorate = function(
+    self, metadataCache, fileSystemMetadata, volumeManager, historyLoader) {
   cr.ui.Grid.decorate(self);
   self.__proto__ = FileGrid.prototype;
   self.metadataCache_ = metadataCache;
+  self.fileSystemMetadata_ = fileSystemMetadata;
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
 
@@ -100,14 +101,16 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
     if (!entry || urls.indexOf(entry.toURL()) === -1)
       continue;
 
-    FileGrid.decorateThumbnailBox(box,
-                                  entry,
-                                  this.metadataCache_,
-                                  this.volumeManager_,
-                                  this.historyLoader_,
-                                  ThumbnailLoader.FillMode.OVER_FILL,
-                                  FileGrid.ThumbnailQuality.LOW,
-                                  /* animation */ false);
+    FileGrid.decorateThumbnailBox_(
+        box,
+        entry,
+        this.metadataCache_,
+        this.fileSystemMetadata_,
+        this.volumeManager_,
+        this.historyLoader_,
+        ThumbnailLoader.FillMode.OVER_FILL,
+        FileGrid.ThumbnailQuality.LOW,
+        /* animation */ false);
   }
 };
 
@@ -134,24 +137,27 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  * Decorates thumbnail.
  * @param {cr.ui.ListItem} li List item.
  * @param {Entry} entry Entry to render a thumbnail for.
- * @param {MetadataCache} metadataCache To retrieve metadata.
+ * @param {MetadataCache} metadataCache To retrieve thumbnail.
+ * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  * @param {FileGrid.Item} previousItem Existing grid item. Usually it is the
  *     item used for the same entry before calling redraw() method. If it is
  *     non-null, the item show the thumbnail immediately until the new thumbanil
  *     is loaded.
+ * @private
  */
-FileGrid.decorateThumbnail = function(
+FileGrid.decorateThumbnail_ = function(
     li,
     entry,
     metadataCache,
+    fileSystemMetadata,
     volumeManager,
     historyLoader,
     previousItem) {
   li.className = 'thumbnail-item';
   if (entry)
-    filelist.decorateListItem(li, entry, metadataCache);
+    filelist.decorateListItem(li, entry, fileSystemMetadata);
 
   var frame = li.ownerDocument.createElement('div');
   frame.className = 'thumbnail-frame';
@@ -175,10 +181,11 @@ FileGrid.decorateThumbnail = function(
     shouldLoadThumbnail = !!entry;
   }
   if (shouldLoadThumbnail) {
-    FileGrid.decorateThumbnailBox(
+    FileGrid.decorateThumbnailBox_(
         box,
         entry,
         metadataCache,
+        fileSystemMetadata,
         volumeManager,
         historyLoader,
         ThumbnailLoader.FillMode.OVER_FILL,
@@ -209,7 +216,8 @@ FileGrid.decorateThumbnail = function(
  *
  * @param {Element} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
- * @param {MetadataCache} metadataCache To retrieve metadata.
+ * @param {MetadataCache} metadataCache To retrieve thumbnail.
+ * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
@@ -217,11 +225,11 @@ FileGrid.decorateThumbnail = function(
  * @param {boolean} animation Whther to use fadein animation or not.
  * @param {function(HTMLImageElement)=} opt_imageLoadCallback Callback called
  *     when the image has been loaded before inserting it into the DOM.
+ * @private
  */
-FileGrid.decorateThumbnailBox = function(
-    box, entry, metadataCache, volumeManager, historyLoader, fillMode, quality,
-    animation, opt_imageLoadCallback) {
-  var locationInfo = volumeManager.getLocationInfo(entry);
+FileGrid.decorateThumbnailBox_ = function(
+    box, entry, metadataCache, fileSystemMetadata, volumeManager, historyLoader,
+    fillMode, quality, animation, opt_imageLoadCallback) {
   box.className = 'img-container';
 
   if (importer.isEligibleEntry(volumeManager, entry)) {
@@ -234,12 +242,9 @@ FileGrid.decorateThumbnailBox = function(
 
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
-    if (locationInfo && locationInfo.isDriveBased) {
-      metadataCache.getOne(entry, 'external', function(metadata) {
-        if (metadata.shared)
-          box.classList.add('shared');
-      });
-    }
+
+    var shared = !!fileSystemMetadata.getCache([entry], ['shared'])[0].shared;
+    box.classList.toggle('shared', shared);
 
     if (opt_imageLoadCallback)
       setTimeout(opt_imageLoadCallback, 0, null /* callback parameter */);
@@ -360,10 +365,11 @@ FileGrid.Item.decorate = function(li, entry, grid, previousItem) {
   li = /** @type {!FileGrid.Item} */ (li);
   // TODO(mtomasz): Pass the metadata cache and the volume manager directly
   // instead of accessing private members of grid.
-  FileGrid.decorateThumbnail(
+  FileGrid.decorateThumbnail_(
       li,
       entry,
       grid.metadataCache_,
+      grid.fileSystemMetadata_,
       grid.volumeManager_,
       grid.historyLoader_,
       previousItem);
