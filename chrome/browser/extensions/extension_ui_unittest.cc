@@ -374,13 +374,13 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
   EXPECT_FALSE(result);
 
-  // If we grant the extension all urls, then it should no longer "want" it,
-  // since it is back in its normal state (with the switch off).
+  // If we grant the extension all urls, then the checkbox should still be
+  // there, since it has an explicitly-set user preference.
   util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
   value.reset(handler()->CreateExtensionDetailValue(
       all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
   EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
-  EXPECT_FALSE(result);
+  EXPECT_TRUE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
   EXPECT_TRUE(result);
 

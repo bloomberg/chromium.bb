@@ -80,6 +80,12 @@ void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
                                   content::BrowserContext* context,
                                   bool allowed);
 
+// Returns true if the user has set an explicit preference for the specified
+// extension being allowed to script on all urls; this is set to be true
+// whenever SetAllowedScriptingOnAllUrls() is called.
+bool HasSetAllowedScriptingOnAllUrls(const std::string& extension_id,
+                                     content::BrowserContext* context);
+
 // Returns true if the --scripts-require-action flag would possibly affect
 // the given |extension| and |permissions|. We pass in the |permissions|
 // explicitly, as we may need to check with permissions other than the ones

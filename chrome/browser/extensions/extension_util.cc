@@ -42,6 +42,10 @@ namespace {
 const char kExtensionAllowedOnAllUrlsPrefName[] =
     "extension_can_script_all_urls";
 
+// The entry into the prefs for when a user has explicitly set the "extension
+// allowed on all urls" pref.
+const char kHasSetScriptOnAllUrlsPrefName[] = "has_set_script_all_urls";
+
 // Returns true if |extension| should always be enabled in incognito mode.
 bool IsWhitelistedForIncognito(const Extension* extension) {
   return FeatureProvider::GetBehaviorFeature(
@@ -221,8 +225,22 @@ bool AllowedScriptingOnAllUrls(const std::string& extension_id,
 void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
                                   content::BrowserContext* context,
                                   bool allowed) {
-  if (allowed != AllowedScriptingOnAllUrls(extension_id, context))
+  if (allowed != AllowedScriptingOnAllUrls(extension_id, context)) {
     SetAllowedScriptingOnAllUrlsHelper(context, extension_id, allowed, true);
+    ExtensionPrefs::Get(context)->UpdateExtensionPref(
+        extension_id,
+        kHasSetScriptOnAllUrlsPrefName,
+        new base::FundamentalValue(true));
+  }
+}
+
+bool HasSetAllowedScriptingOnAllUrls(const std::string& extension_id,
+                                     content::BrowserContext* context) {
+  bool did_set = false;
+  return ExtensionPrefs::Get(context)->ReadPrefAsBoolean(
+      extension_id,
+      kHasSetScriptOnAllUrlsPrefName,
+      &did_set) && did_set;
 }
 
 bool DefaultAllowedScriptingOnAllUrls() {

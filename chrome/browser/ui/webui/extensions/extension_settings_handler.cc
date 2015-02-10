@@ -336,21 +336,22 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->Set("dependentExtensions", dependents_list);
 
   // We show the "all urls" checkbox if:
-  // - The feature is enabled for the given extension.
+  // - The feature is enabled for the given extension, or has been set in the
+  //   past.
   // - The extension has access to enough urls that we can't just let it run
   //   on those specified in the permissions.
+  content::BrowserContext* context = extension_service_->GetBrowserContext();
   bool show_all_urls =
       (FeatureSwitch::scripts_require_action()->IsEnabled() &&
        util::ScriptsMayRequireActionForExtension(
            extension,
            extension->permissions_data()->active_permissions().get())) ||
-      extension->permissions_data()->HasWithheldImpliedAllHosts();
+      extension->permissions_data()->HasWithheldImpliedAllHosts() ||
+      util::HasSetAllowedScriptingOnAllUrls(extension->id(), context);
   extension_data->SetBoolean("showAllUrls", show_all_urls);
   extension_data->SetBoolean(
       "allowAllUrls",
-      util::AllowedScriptingOnAllUrls(
-          extension->id(),
-          extension_service_->GetBrowserContext()));
+      util::AllowedScriptingOnAllUrls(extension->id(), context));
 
   base::string16 location_text;
   if (extension->location() == Manifest::INTERNAL &&
