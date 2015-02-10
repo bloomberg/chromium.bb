@@ -299,9 +299,8 @@ AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* err
 void InspectorAnimationAgent::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_idToAnimationPlayer);
     visitor->trace(m_domAgent);
-    visitor->trace(m_element);
+    visitor->trace(m_idToAnimationPlayer);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
