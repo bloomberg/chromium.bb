@@ -6,15 +6,13 @@
 -->
 
 <resources>
-    <style name="BaseTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">#4285F4</item>
-        <item name="colorPrimaryDark">#3367D6</item>
+    <style name="BaseTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="colorPrimary">#E0E0E0</item>
+        <item name="colorPrimaryDark">#616161</item>
     </style>
-    <style name="BaseTheme.NoTitle" parent="@style/BaseTheme">
-        <item name="android:actionBarStyle">@style/BaseActionBar.NoTitle</item>
-    </style>
-    <style name="BaseActionBar.NoTitle" parent="@style/Widget.AppCompat.ActionBar">
-        <item name="android:displayOptions">showHome</item>
+    <style name="BaseTheme.NavigationDrawer" parent="@style/BaseTheme">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
     <style name="EmptyStateText" parent="@android:style/TextAppearance.Large">

@@ -19,8 +19,10 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.v7.app.ActionBar;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -105,6 +107,8 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
      */
     private boolean mWaitingForAuthToken = false;
 
+    private ActionBarDrawerToggle mDrawerToggle;
+
     /** Shows a warning explaining that a Google account is required, then closes the activity. */
     private void showNoAccountsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -160,6 +164,9 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         mTriedNewAuthToken = false;
         mHostListLoader = new HostListLoader();
 
@@ -170,8 +177,38 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
 
         findViewById(R.id.host_setup_link_android).setOnClickListener(this);
 
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
+                R.string.open_navigation_drawer, R.string.close_navigation_drawer);
+        drawerLayout.setDrawerListener(mDrawerToggle);
+
+        ListView navigationMenu = (ListView) findViewById(R.id.navigation_menu);
+        String[] navigationMenuItems = new String[] {
+            getString(R.string.actionbar_help)
+        };
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.navigation_list_item,
+                navigationMenuItems);
+        navigationMenu.setAdapter(adapter);
+        navigationMenu.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position,
+                            long id) {
+                        HelpActivity.launch(Chromoting.this, HELP_URL);
+                    }
+                });
+
+        // Make the navigation drawer icon visible in the ActionBar.
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         // Bring native components online.
         JniInterface.loadLibrary(this);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
     }
 
     @Override
@@ -213,23 +250,13 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
             mAccount = mAccounts[0];
         }
 
-        ActionBar actionBar = getSupportActionBar();
-        if (mAccounts.length == 1) {
-            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE,
-                    ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
-            actionBar.setTitle(R.string.mode_me2me);
-            actionBar.setSubtitle(mAccount.name);
-        } else {
-            mAccountsAdapter = new AccountsAdapter(this, mAccounts);
-            Spinner accountsSpinner = new Spinner(actionBar.getThemedContext(), null,
-                    android.R.attr.actionDropDownStyle);
-            accountsSpinner.setAdapter(mAccountsAdapter);
-            actionBar.setCustomView(accountsSpinner);
-            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
-                    ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
-            accountsSpinner.setOnItemSelectedListener(this);
-            accountsSpinner.setSelection(index);
-        }
+        getSupportActionBar().setTitle(R.string.mode_me2me);
+
+        mAccountsAdapter = new AccountsAdapter(this, mAccounts);
+        Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
+        accountsSpinner.setAdapter(mAccountsAdapter);
+        accountsSpinner.setOnItemSelectedListener(this);
+        accountsSpinner.setSelection(index);
 
         refreshHostList();
     }
@@ -246,11 +273,7 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        // Reload the spinner resources, since the font sizes are dependent on the screen
-        // orientation.
-        if (mAccounts.length != 1) {
-            mAccountsAdapter.notifyDataSetChanged();
-        }
+        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     /** Called to initialize the action bar. */
@@ -270,13 +293,13 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         int id = item.getItemId();
         if (id == R.id.actionbar_directoryrefresh) {
             refreshHostList();
-            return true;
-        }
-        if (id == R.id.actionbar_help) {
-            HelpActivity.launch(this, HELP_URL);
             return true;
         }
         return super.onOptionsItemSelected(item);
