@@ -158,12 +158,17 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     //    (Passed with the execution context in step 7.)
 
     // 6. Let promise be a new promise.
+    Document* document = toDocument(scriptState->executionContext());
+    if (!document->page()) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState, DOMException::create(InvalidStateError, "Document does not have a page."));
+    }
+
     MediaKeySystemAccessInitializer* initializer = new MediaKeySystemAccessInitializer(scriptState, keySystem, supportedConfigurations);
     ScriptPromise promise = initializer->promise();
 
     // 7. Asynchronously determine support, and if allowed, create and
     //    initialize the MediaKeySystemAccess object.
-    Document* document = toDocument(scriptState->executionContext());
     MediaKeysController* controller = MediaKeysController::from(document->page());
     WebEncryptedMediaClient* mediaClient = controller->encryptedMediaClient(scriptState->executionContext());
     mediaClient->requestMediaKeySystemAccess(WebEncryptedMediaRequest(initializer));
