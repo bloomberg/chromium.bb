@@ -128,14 +128,17 @@ void DataReductionProxySettings::InitPrefMembers() {
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
     PrefService* prefs,
+    scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
     net::URLRequestContextGetter* url_request_context_getter,
     net::NetLog* net_log,
     DataReductionProxyEventStore* event_store) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs);
+  DCHECK(!statistics_prefs_);
   DCHECK(url_request_context_getter);
   DCHECK(event_store);
   prefs_ = prefs;
+  statistics_prefs_ = statistics_prefs.Pass();
   url_request_context_getter_ = url_request_context_getter;
   net_log_ = net_log;
   event_store_ = event_store;
@@ -151,8 +154,25 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
 }
 
 void DataReductionProxySettings::SetDataReductionProxyStatisticsPrefs(
-    DataReductionProxyStatisticsPrefs* statistics_prefs) {
-  statistics_prefs_ = statistics_prefs;
+    scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs) {
+  statistics_prefs_ = statistics_prefs.Pass();
+}
+
+void DataReductionProxySettings::EnableCompressionStatisticsLogging(
+    PrefService* prefs,
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    const base::TimeDelta& commit_delay) {
+  DCHECK(!statistics_prefs_);
+  statistics_prefs_.reset(
+      new DataReductionProxyStatisticsPrefs(
+          prefs, ui_task_runner, commit_delay));
+}
+
+base::WeakPtr<DataReductionProxyStatisticsPrefs>
+DataReductionProxySettings::statistics_prefs() {
+  if (statistics_prefs_)
+    return statistics_prefs_->GetWeakPtr();
+  return base::WeakPtr<DataReductionProxyStatisticsPrefs>();
 }
 
 void DataReductionProxySettings::SetOnDataReductionEnabledCallback(

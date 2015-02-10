@@ -36,6 +36,7 @@ class URLRequestContextGetter;
 namespace data_reduction_proxy {
 
 class DataReductionProxyEventStore;
+class DataReductionProxyStatisticsPrefs;
 
 // The number of days of bandwidth usage statistics that are tracked.
 const unsigned int kNumDaysInHistory = 60;
@@ -83,14 +84,19 @@ class DataReductionProxySettings
   // |DataReductionProxySettings| instance.
   void InitDataReductionProxySettings(
       PrefService* prefs,
+      scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
       net::URLRequestContextGetter* url_request_context_getter,
       net::NetLog* net_log,
       DataReductionProxyEventStore* event_store);
 
-  // Sets the |statistics_prefs_| to be used for data reduction proxy pref reads
-  // and writes.
-  void SetDataReductionProxyStatisticsPrefs(
-      DataReductionProxyStatisticsPrefs* statistics_prefs);
+  // Constructs statistics prefs. This should not be called if a valid
+  // statistics prefs is passed into the constructor.
+  void EnableCompressionStatisticsLogging(
+      PrefService* prefs,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      const base::TimeDelta& commit_delay);
+
+  base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs();
 
   // Sets the |on_data_reduction_proxy_enabled_| callback and runs to register
   // the DataReductionProxyEnabled synthetic field trial.
@@ -162,6 +168,10 @@ class DataReductionProxySettings
   DataReductionProxyEventStore* GetEventStore() const {
     return event_store_;
   }
+
+  // Used for testing.
+  void SetDataReductionProxyStatisticsPrefs(
+      scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs);
 
  protected:
   void InitPrefMembers();
@@ -283,7 +293,7 @@ class DataReductionProxySettings
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;
 
   PrefService* prefs_;
-  DataReductionProxyStatisticsPrefs* statistics_prefs_;
+  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
 
   net::URLRequestContextGetter* url_request_context_getter_;
 

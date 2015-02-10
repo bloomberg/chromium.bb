@@ -55,14 +55,6 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     base::Time now,
     DataReductionProxyStatisticsPrefs* prefs);
 
-// Records daily data savings statistics to prefs and reports data savings UMA.
-void UpdateContentLengthPrefs(
-    int received_content_length,
-    int original_content_length,
-    bool data_reduction_proxy_enabled,
-    DataReductionProxyRequestType request_type,
-    DataReductionProxyStatisticsPrefs* prefs);
-
 }  // namespace data_reduction_proxy
 
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_METRICS_H_

@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
@@ -52,11 +53,11 @@ class DataReductionProxyIOData {
   // Destroys the statistics preferences.
   void ShutdownOnUIThread();
 
-  // Constructs statistics prefs. This is not necessary if a valid statistics
-  // prefs is passed into the constructor.
-  void EnableCompressionStatisticsLogging(
-      PrefService* prefs,
-      const base::TimeDelta& commit_delay);
+  void SetDataReductionProxyStatisticsPrefs(
+      base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs);
+
+  // Passes ownership of |statistics_prefs_|.
+  scoped_ptr<DataReductionProxyStatisticsPrefs> PassStatisticsPrefs();
 
   // Creates an interceptor suitable for following the Data Reduction Proxy
   // bypass protocol.
@@ -79,10 +80,6 @@ class DataReductionProxyIOData {
 
   DataReductionProxyEventStore* event_store() const {
     return event_store_.get();
-  }
-
-  DataReductionProxyStatisticsPrefs* statistics_prefs() const {
-    return statistics_prefs_.get();
   }
 
   DataReductionProxyAuthRequestHandler* auth_request_handler() const {
@@ -110,7 +107,10 @@ class DataReductionProxyIOData {
   scoped_ptr<DataReductionProxyParams> params_;
 
   // Tracker of compression statistics to be displayed to the user.
-  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
+  base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
+  // |temporary_statistics_prefs_| is used only until DataReductionProxySettings
+  // initialization and is dead after.
+  scoped_ptr<DataReductionProxyStatisticsPrefs> temporary_statistics_prefs_;
 
   // Tracker of Data Reduction Proxy-related events, e.g., for logging.
   scoped_ptr<DataReductionProxyEventStore> event_store_;

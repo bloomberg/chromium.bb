@@ -466,32 +466,4 @@ void UpdateContentLengthPrefsForDataReductionProxy(
   }
 }
 
-void UpdateContentLengthPrefs(int received_content_length,
-                              int original_content_length,
-                              bool data_reduction_proxy_enabled,
-                              DataReductionProxyRequestType request_type,
-                              DataReductionProxyStatisticsPrefs* prefs) {
-  DCHECK(prefs);
-  int64 total_received = prefs->GetInt64(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength);
-  int64 total_original = prefs->GetInt64(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength);
-  total_received += received_content_length;
-  total_original += original_content_length;
-  prefs->SetInt64(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength,
-      total_received);
-  prefs->SetInt64(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength,
-      total_original);
-
-  UpdateContentLengthPrefsForDataReductionProxy(
-      received_content_length,
-      original_content_length,
-      data_reduction_proxy_enabled,
-      request_type,
-      base::Time::Now(),
-      prefs);
-}
-
 }  // namespace data_reduction_proxy

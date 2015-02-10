@@ -9,12 +9,17 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "net/proxy/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,7 +80,13 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
   EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
   EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
   settings_.reset(settings);
-  settings_->SetDataReductionProxyStatisticsPrefs(statistics_prefs_.get());
+  settings_->SetDataReductionProxyStatisticsPrefs(
+      scoped_ptr<DataReductionProxyStatisticsPrefs>(
+          new DataReductionProxyStatisticsPrefs(
+              &pref_service_,
+              scoped_refptr<base::TestSimpleTaskRunner>(
+                  new base::TestSimpleTaskRunner()),
+              base::TimeDelta())));
 }
 
 template <class C>
