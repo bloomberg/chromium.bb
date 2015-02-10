@@ -365,6 +365,14 @@ ELF::Phdr* FindFirstLoadSegment(ELF::Phdr* program_headers,
 
 // Helper for ResizeSection().  Find the PT_GNU_STACK segment, and check
 // that it contains what we expect so we can restore it on unpack if needed.
+//
+// Note: GNU LD and Gold on aarch64 differ in p_align of PT_GNU_STACK (16 vs.
+// 0). This fact is ignored when unpacking, so a Gold-linked DSO would not
+// remain bit-identical after packing-unpacking cycle. Modifying p_align is safe
+// because the Android dynamic linker ignores PT_GNU_STACK segment.
+//
+// To produce bit-idential unpacked DSOs the linker could be detected by the
+// presence of .note.gnu.gold-version section. It is not done for simplicity.
 ELF::Phdr* FindUnusedGnuStackSegment(ELF::Phdr* program_headers,
                                      size_t count) {
   ELF::Phdr* unused_segment = NULL;
@@ -378,8 +386,7 @@ ELF::Phdr* FindUnusedGnuStackSegment(ELF::Phdr* program_headers,
         program_header->p_paddr == 0 &&
         program_header->p_filesz == 0 &&
         program_header->p_memsz == 0 &&
-        program_header->p_flags == (PF_R | PF_W) &&
-        program_header->p_align == ELF::kGnuStackSegmentAlignment) {
+        program_header->p_flags == (PF_R | PF_W)) {
       unused_segment = program_header;
     }
   }
