@@ -7,12 +7,14 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 // A listener interface used for receiving updates on screen availability
 // associated with a presentation URL from an embedder.
 // See also PresentationServiceDelegate.
-class PresentationScreenAvailabilityListener {
+class CONTENT_EXPORT PresentationScreenAvailabilityListener {
  public:
   virtual ~PresentationScreenAvailabilityListener() {}
 

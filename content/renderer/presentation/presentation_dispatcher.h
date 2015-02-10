@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 
+#include "base/compiler_specific.h"
+#include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationClient.h"
@@ -13,9 +15,9 @@ namespace content {
 
 // PresentationDispatcher is a delegate for Presentation API messages used by
 // Blink. It forwards the calls to the Mojo PresentationService.
-class PresentationDispatcher
+class CONTENT_EXPORT PresentationDispatcher
     : public RenderFrameObserver,
-      public blink::WebPresentationClient {
+      public NON_EXPORTED_BASE(blink::WebPresentationClient) {
  public:
   explicit PresentationDispatcher(RenderFrame* render_frame);
   ~PresentationDispatcher() override;

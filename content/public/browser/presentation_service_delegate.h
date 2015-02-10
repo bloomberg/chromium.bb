@@ -5,16 +5,18 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 class PresentationScreenAvailabilityListener;
 
 // An interface implemented by embedders to handle presentation API calls
 // forwarded from PresentationServiceImpl.
-class PresentationServiceDelegate {
+class CONTENT_EXPORT PresentationServiceDelegate {
  public:
   // Observer interface to listen for changes to PresentationServiceDelegate.
-  class Observer {
+  class CONTENT_EXPORT Observer {
    public:
     // Called when the PresentationServiceDelegate is being destroyed.
     virtual void OnDelegateDestroyed() = 0;
@@ -22,6 +24,8 @@ class PresentationServiceDelegate {
    protected:
     virtual ~Observer() {}
   };
+
+  virtual ~PresentationServiceDelegate() {}
 
   // Registers an observer with this class to listen for updates to this class.
   // This class does not own the observer.
@@ -55,9 +59,6 @@ class PresentationServiceDelegate {
   virtual void RemoveAllScreenAvailabilityListeners(
       int render_process_id,
       int render_frame_id) = 0;
-
- protected:
-  virtual ~PresentationServiceDelegate() {}
 };
 
 }  // namespace content
