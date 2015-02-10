@@ -6,11 +6,9 @@
 #define CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_AGENT_H_
 
 #include <string>
-#include <vector>
 
 #include "base/atomicops.h"
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -19,8 +17,6 @@
 namespace blink {
 class WebDevToolsAgent;
 }
-
-struct GpuTaskInfo;
 
 namespace content {
 
@@ -31,7 +27,6 @@ class RenderViewImpl;
 // agents infrastructure are flowing through this communication agent.
 // There is a corresponding DevToolsClient object on the client side.
 class DevToolsAgent : public RenderFrameObserver,
-                      public base::SupportsWeakPtr<DevToolsAgent>,
                       public blink::WebDevToolsAgentClient {
  public:
   explicit DevToolsAgent(RenderFrame* main_render_frame);
@@ -76,8 +71,6 @@ class DevToolsAgent : public RenderFrameObserver,
                              TraceEventCallback cb) override;
   void enableTracing(const blink::WebString& category_filter) override;
   void disableTracing() override;
-  void startGPUEventsRecording() override;
-  void stopGPUEventsRecording() override;
 
   void enableDeviceEmulation(
       const blink::WebDeviceEmulationParams& params) override;
@@ -91,7 +84,6 @@ class DevToolsAgent : public RenderFrameObserver,
   void OnInspectElement(const std::string& host_id, int x, int y);
   void OnAddMessageToConsole(ConsoleMessageLevel level,
                              const std::string& message);
-  void OnGpuTasksChunk(const std::vector<GpuTaskInfo>& tasks);
   void ContinueProgram();
   void OnSetupDevToolsClient();
 
@@ -111,7 +103,6 @@ class DevToolsAgent : public RenderFrameObserver,
 
   bool is_attached_;
   bool is_devtools_client_;
-  int32 gpu_route_id_;
   bool paused_in_mouse_move_;
   RenderFrame* main_render_frame_;
 

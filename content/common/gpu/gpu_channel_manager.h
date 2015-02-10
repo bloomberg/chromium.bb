@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/gpu/devtools_gpu_instrumentation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -94,10 +93,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
 
-  GpuEventsDispatcher* gpu_devtools_events_dispatcher() {
-    return &gpu_devtools_events_dispatcher_;
-  }
-
   GpuChannel* LookupChannel(int32 client_id);
 
   gpu::SyncPointManager* sync_point_manager() {
@@ -156,7 +151,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   GpuMemoryManager gpu_memory_manager_;
-  GpuEventsDispatcher gpu_devtools_events_dispatcher_;
   GpuWatchdog* watchdog_;
   scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;

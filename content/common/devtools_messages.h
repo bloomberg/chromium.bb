@@ -120,22 +120,3 @@ IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
 // Transport from Inspector frontend to frontend host.
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_DispatchOnEmbedder,
                     std::string /* message */)
-
-//-----------------------------------------------------------------------------
-// These are messages sent from the GPU process to the inspected renderer.
-
-IPC_STRUCT_BEGIN(GpuTaskInfo)
-  IPC_STRUCT_MEMBER(double, timestamp)
-  IPC_STRUCT_MEMBER(int, phase)
-  IPC_STRUCT_MEMBER(bool, foreign)
-  IPC_STRUCT_MEMBER(uint64, gpu_memory_used_bytes)
-  IPC_STRUCT_MEMBER(uint64, gpu_memory_limit_bytes)
-IPC_STRUCT_END()
-
-// Recorded events are passed in chunks to the renderer process.
-IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_GpuTasksChunk,
-                    std::vector<GpuTaskInfo> /* gpu_tasks */)
-
-//-----------------------------------------------------------------------------
-// These are messages sent from the inspected page renderer to the worker
-// renderer.

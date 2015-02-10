@@ -13,12 +13,11 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/devtools/devtools_agent_filter.h"
 #include "content/renderer/devtools/devtools_client.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -80,7 +79,6 @@ DevToolsAgent::DevToolsAgent(RenderFrame* main_render_frame)
     : RenderFrameObserver(main_render_frame),
       is_attached_(false),
       is_devtools_client_(false),
-      gpu_route_id_(MSG_ROUTING_NONE),
       paused_in_mouse_move_(false),
       main_render_frame_(main_render_frame) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
@@ -106,7 +104,6 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_AddMessageToConsole,
                         OnAddMessageToConsole)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_GpuTasksChunk, OnGpuTasksChunk)
     IPC_MESSAGE_HANDLER(DevToolsMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -201,46 +198,6 @@ void DevToolsAgent::TraceEventCallbackWrapper(
     double timestamp_seconds = (timestamp - base::TimeTicks()).InSecondsF();
     callback(phase, category_group_enabled, name, id, num_args,
              arg_names, arg_types, arg_values, flags, timestamp_seconds);
-  }
-}
-
-void DevToolsAgent::startGPUEventsRecording() {
-  GpuChannelHost* gpu_channel_host =
-      RenderThreadImpl::current()->GetGpuChannel();
-  if (!gpu_channel_host)
-    return;
-  DCHECK(gpu_route_id_ == MSG_ROUTING_NONE);
-  int32 route_id = gpu_channel_host->GenerateRouteID();
-  bool succeeded = false;
-  gpu_channel_host->Send(
-      new GpuChannelMsg_DevToolsStartEventsRecording(route_id, &succeeded));
-  DCHECK(succeeded);
-  if (succeeded) {
-    gpu_route_id_ = route_id;
-    gpu_channel_host->AddRoute(gpu_route_id_, AsWeakPtr());
-  }
-}
-
-void DevToolsAgent::stopGPUEventsRecording() {
-  GpuChannelHost* gpu_channel_host =
-      RenderThreadImpl::current()->GetGpuChannel();
-  if (!gpu_channel_host || gpu_route_id_ == MSG_ROUTING_NONE)
-    return;
-  gpu_channel_host->Send(new GpuChannelMsg_DevToolsStopEventsRecording());
-  gpu_channel_host->RemoveRoute(gpu_route_id_);
-  gpu_route_id_ = MSG_ROUTING_NONE;
-}
-
-void DevToolsAgent::OnGpuTasksChunk(const std::vector<GpuTaskInfo>& tasks) {
-  WebDevToolsAgent* web_agent = GetWebAgent();
-  if (!web_agent)
-    return;
-  for (size_t i = 0; i < tasks.size(); i++) {
-    const GpuTaskInfo& task = tasks[i];
-    WebDevToolsAgent::GPUEvent event(
-        task.timestamp, task.phase, task.foreign, task.gpu_memory_used_bytes);
-    event.limitGPUMemoryBytes = task.gpu_memory_limit_bytes;
-    web_agent->processGPUEvent(event);
   }
 }
 

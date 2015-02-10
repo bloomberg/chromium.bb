@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/common/gpu/devtools_gpu_instrumentation.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
@@ -219,9 +218,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                "GPUTask",
                "data",
                DevToolsChannelData::CreateForChannel(channel()));
-  // TODO(yurys): remove devtools_gpu_instrumentation call once DevTools
-  // Timeline migrates to tracing crbug.com/361045.
-  devtools_gpu_instrumentation::ScopedGpuTask task(channel());
   FastSetActiveURL(active_url_, active_url_hash_);
 
   bool have_context = false;

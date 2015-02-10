@@ -47,7 +47,6 @@ class MessageFilter;
 }
 
 namespace content {
-class DevToolsGpuAgent;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
 class GpuWatchdog;
@@ -186,8 +185,6 @@ class GpuChannel : public IPC::Listener, public IPC::Sender,
       int32 route_id,
       bool* succeeded);
   void OnDestroyCommandBuffer(int32 route_id);
-  void OnDevToolsStartEventsRecording(int32 route_id, bool* succeeded);
-  void OnDevToolsStopEventsRecording();
 
   // Decrement the count of unhandled IPC messages and defer preemption.
   void MessageProcessed();
@@ -242,7 +239,6 @@ class GpuChannel : public IPC::Listener, public IPC::Sender,
 
   scoped_refptr<GpuChannelMessageFilter> filter_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
-  scoped_ptr<DevToolsGpuAgent> devtools_gpu_agent_;
 
   size_t num_stubs_descheduled_;
 

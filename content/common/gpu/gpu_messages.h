@@ -447,15 +447,6 @@ IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Sent by DevTools agent in the inspected renderer process to initiate GPU
-// instrumentation events recording.
-IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_DevToolsStartEventsRecording,
-                            int32, /* route_id */
-                            bool /* succeeded */)
-
-// The message is sent when DevTools want to stop events recording.
-IPC_MESSAGE_CONTROL0(GpuChannelMsg_DevToolsStopEventsRecording)
-
 #if defined(OS_ANDROID)
 //------------------------------------------------------------------------------
 // Stream Texture Messages

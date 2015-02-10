@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/devtools_gpu_agent.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -458,8 +457,6 @@ void GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
   io_message_loop_ = io_message_loop;
   channel_->AddFilter(filter_.get());
   pending_valuebuffer_state_ = new gpu::ValueStateMap();
-
-  devtools_gpu_agent_.reset(new DevToolsGpuAgent(this));
 }
 
 std::string GpuChannel::GetChannelName() {
@@ -675,10 +672,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_DevToolsStartEventsRecording,
-                        OnDevToolsStartEventsRecording)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_DevToolsStopEventsRecording,
-                        OnDevToolsStopEventsRecording)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << msg.type();
@@ -798,15 +791,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
     // This stub won't get a chance to reschedule, so update the count now.
     StubSchedulingChanged(true);
   }
-}
-
-void GpuChannel::OnDevToolsStartEventsRecording(int32 route_id,
-                                                bool* succeeded) {
-  *succeeded = devtools_gpu_agent_->StartEventsRecording(route_id);
-}
-
-void GpuChannel::OnDevToolsStopEventsRecording() {
-  devtools_gpu_agent_->StopEventsRecording();
 }
 
 void GpuChannel::MessageProcessed() {
