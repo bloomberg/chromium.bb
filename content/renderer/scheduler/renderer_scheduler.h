@@ -47,7 +47,7 @@ class CONTENT_EXPORT RendererScheduler {
   // Tells the scheduler that the system received an input event. Called by the
   // compositor (impl) thread.
   virtual void DidReceiveInputEventOnCompositorThread(
-      blink::WebInputEvent::Type type) = 0;
+      const blink::WebInputEvent& web_input_event) = 0;
 
   // Tells the scheduler that the system is displaying an input animation (e.g.
   // a fling). Called by the compositor (impl) thread.

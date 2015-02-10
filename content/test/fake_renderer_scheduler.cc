@@ -39,7 +39,7 @@ void FakeRendererScheduler::DidCommitFrameToCompositor() {
 }
 
 void FakeRendererScheduler::DidReceiveInputEventOnCompositorThread(
-    blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& web_input_event) {
 }
 
 void FakeRendererScheduler::DidAnimateForInputOnCompositorThread() {

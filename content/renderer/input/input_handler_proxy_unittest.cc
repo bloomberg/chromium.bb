@@ -30,6 +30,7 @@ using blink::WebPoint;
 using blink::WebSize;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
+using testing::Field;
 
 namespace content {
 namespace {
@@ -180,7 +181,7 @@ class MockInputHandlerProxyClient
 
   MOCK_METHOD1(DidOverscroll, void(const DidOverscrollParams&));
   virtual void DidStopFlinging() override {}
-  virtual void DidReceiveInputEvent(blink::WebInputEvent::Type) override {}
+  virtual void DidReceiveInputEvent(const blink::WebInputEvent&) override {}
   virtual void DidAnimateForInput() override {}
 
  private:
@@ -193,7 +194,7 @@ class MockInputHandlerProxyClientWithDidReceiveInputEvent
   MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
   virtual ~MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
 
-  MOCK_METHOD1(DidReceiveInputEvent, void(blink::WebInputEvent::Type type));
+  MOCK_METHOD1(DidReceiveInputEvent, void(const blink::WebInputEvent&));
   MOCK_METHOD0(DidAnimateForInput, void());
 
  private:
@@ -2092,7 +2093,9 @@ TEST_F(InputHandlerProxyTest, DidReceiveInputEvent) {
   wheel.type = WebInputEvent::MouseWheel;
   wheel.scrollByPage = true;
 
-  EXPECT_CALL(mock_client, DidReceiveInputEvent(WebInputEvent::MouseWheel));
+  EXPECT_CALL(mock_client,
+              DidReceiveInputEvent(
+                  Field(&WebInputEvent::type, WebInputEvent::MouseWheel)));
 
   input_handler_->HandleInputEvent(wheel);
   testing::Mock::VerifyAndClearExpectations(&mock_client);
@@ -2113,7 +2116,8 @@ TEST_F(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
   EXPECT_CALL(mock_input_handler_, ScrollEnd());
   EXPECT_CALL(mock_client,
-      DidReceiveInputEvent(WebInputEvent::GestureFlingStart));
+              DidReceiveInputEvent(Field(&WebInputEvent::type,
+                                         WebInputEvent::GestureFlingStart)));
   EXPECT_EQ(InputHandlerProxy::DID_HANDLE,
       input_handler_->HandleInputEvent(gesture_));
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);

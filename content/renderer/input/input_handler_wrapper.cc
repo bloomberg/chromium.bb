@@ -58,8 +58,8 @@ void InputHandlerWrapper::DidStopFlinging() {
 }
 
 void InputHandlerWrapper::DidReceiveInputEvent(
-    blink::WebInputEvent::Type type) {
-  input_handler_manager_->DidReceiveInputEvent(type);
+    const blink::WebInputEvent& web_input_event) {
+  input_handler_manager_->DidReceiveInputEvent(web_input_event);
 }
 
 void InputHandlerWrapper::DidAnimateForInput() {

@@ -22,7 +22,7 @@ class NullRendererScheduler : public RendererScheduler {
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void DidCommitFrameToCompositor() override;
   void DidReceiveInputEventOnCompositorThread(
-      blink::WebInputEvent::Type type) override;
+      const blink::WebInputEvent& web_input_event) override;
   void DidAnimateForInputOnCompositorThread() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;

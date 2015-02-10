@@ -72,7 +72,7 @@ class InputHandlerManager {
   void DidStopFlinging(int routing_id);
 
   // Called from the compositor's thread.
-  void DidReceiveInputEvent(blink::WebInputEvent::Type type);
+  void DidReceiveInputEvent(const blink::WebInputEvent& web_input_event);
 
   // Called from the compositor's thread.
   void DidAnimateForInput();

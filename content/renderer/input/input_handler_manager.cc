@@ -161,8 +161,8 @@ void InputHandlerManager::DidStopFlinging(int routing_id) {
 }
 
 void InputHandlerManager::DidReceiveInputEvent(
-    blink::WebInputEvent::Type type) {
-  renderer_scheduler_->DidReceiveInputEventOnCompositorThread(type);
+    const blink::WebInputEvent& web_input_event) {
+  renderer_scheduler_->DidReceiveInputEventOnCompositorThread(web_input_event);
 }
 
 void InputHandlerManager::DidAnimateForInput() {

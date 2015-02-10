@@ -72,7 +72,7 @@ void NullRendererScheduler::DidCommitFrameToCompositor() {
 }
 
 void NullRendererScheduler::DidReceiveInputEventOnCompositorThread(
-    blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& web_input_event) {
 }
 
 void NullRendererScheduler::DidAnimateForInputOnCompositorThread() {

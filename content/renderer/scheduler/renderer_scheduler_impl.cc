@@ -120,14 +120,23 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
 }
 
 void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
-    blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& web_input_event) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread");
-  // Ignore mouse events because on windows these can very frequent.
+  // We regard MouseMove events with the left mouse button down as a signal
+  // that the user is doing something requiring a smooth frame rate.
+  if (web_input_event.type == blink::WebInputEvent::MouseMove &&
+      (web_input_event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
+    UpdateForInputEvent();
+    return;
+  }
+  // Ignore all other mouse events because they probably don't signal user
+  // interaction needing a smooth framerate. NOTE isMouseEventType returns false
+  // for mouse wheel events, hence we regard them as user input.
   // Ignore keyboard events because it doesn't really make sense to enter
   // compositor priority for them.
-  if (blink::WebInputEvent::isMouseEventType(type) ||
-      blink::WebInputEvent::isKeyboardEventType(type)) {
+  if (blink::WebInputEvent::isMouseEventType(web_input_event.type) ||
+      blink::WebInputEvent::isKeyboardEventType(web_input_event.type)) {
     return;
   }
   UpdateForInputEvent();

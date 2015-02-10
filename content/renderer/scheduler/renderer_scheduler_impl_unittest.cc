@@ -12,6 +12,22 @@
 
 namespace content {
 
+namespace {
+class FakeInputEvent : public blink::WebInputEvent {
+ public:
+  explicit FakeInputEvent(blink::WebInputEvent::Type event_type)
+      : WebInputEvent(sizeof(FakeInputEvent)) {
+    type = event_type;
+  }
+
+  FakeInputEvent(blink::WebInputEvent::Type event_type, int event_modifiers)
+      : WebInputEvent(sizeof(FakeInputEvent)) {
+    type = event_type;
+    modifiers = event_modifiers;
+  }
+};
+};  // namespace
+
 class RendererSchedulerImplTest : public testing::Test {
  public:
   RendererSchedulerImplTest()
@@ -132,7 +148,7 @@ void PostingYieldingTestTask(
   task_runner->PostTask(FROM_HERE, base::Bind(NullTask));
   if (simulate_input) {
     scheduler->DidReceiveInputEventOnCompositorThread(
-        blink::WebInputEvent::GestureFlingStart);
+        FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   }
   *should_yield_after = scheduler->ShouldYieldForHighPriorityWork();
 }
@@ -144,7 +160,7 @@ void AnticipationTestTask(RendererSchedulerImpl* scheduler,
   *is_anticipated_before = scheduler->IsHighPriorityWorkAnticipated();
   if (simulate_input) {
     scheduler->DidReceiveInputEventOnCompositorThread(
-        blink::WebInputEvent::GestureFlingStart);
+        FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   }
   *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
 }
@@ -349,7 +365,7 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy) {
       base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
-      blink::WebInputEvent::GestureFlingStart);
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(order, testing::ElementsAre(
@@ -385,7 +401,7 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
 }
 
 TEST_F(RendererSchedulerImplTest,
-       DidReceiveInputEventOnCompositorThread_IgnoresMouseEvents) {
+       DidReceiveInputEventOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
   std::vector<std::string> order;
 
   idle_task_runner_->PostIdleTask(
@@ -405,12 +421,72 @@ TEST_F(RendererSchedulerImplTest,
       base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
-      blink::WebInputEvent::MouseMove);
+      FakeInputEvent(blink::WebInputEvent::MouseMove));
   EnableIdleTasks();
   RunUntilIdle();
   // Note compositor tasks are not prioritized.
   EXPECT_THAT(order, testing::ElementsAre(std::string("D1"), std::string("C1"),
                                           std::string("D2"), std::string("C2"),
+                                          std::string("I1")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       DidReceiveInputEventOnCompositorThread_MouseMove_WhenMouseDown) {
+  std::vector<std::string> order;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+
+  scheduler_->DidReceiveInputEventOnCompositorThread(FakeInputEvent(
+      blink::WebInputEvent::MouseMove, blink::WebInputEvent::LeftButtonDown));
+  EnableIdleTasks();
+  RunUntilIdle();
+  // Note compositor tasks are prioritized.
+  EXPECT_THAT(order, testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                          std::string("D1"), std::string("D2"),
+                                          std::string("I1")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       DidReceiveInputEventOnCompositorThread_MouseWheel) {
+  std::vector<std::string> order;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::MouseWheel));
+  EnableIdleTasks();
+  RunUntilIdle();
+  // Note compositor tasks are prioritized.
+  EXPECT_THAT(order, testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                          std::string("D1"), std::string("D2"),
                                           std::string("I1")));
 }
 
@@ -435,7 +511,7 @@ TEST_F(RendererSchedulerImplTest,
       base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
-      blink::WebInputEvent::KeyDown);
+      FakeInputEvent(blink::WebInputEvent::KeyDown));
   EnableIdleTasks();
   RunUntilIdle();
   // Note compositor tasks are not prioritized.
@@ -462,7 +538,7 @@ TEST_F(RendererSchedulerImplTest,
       base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
-      blink::WebInputEvent::GestureFlingStart);
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   RunUntilIdle();
   // Ensure that the default D1 task gets to run at some point before the final
   // C2 compositor task.
@@ -487,7 +563,7 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicyEnds) {
       base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
-      blink::WebInputEvent::GestureFlingStart);
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   RunUntilIdle();
   EXPECT_THAT(order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
