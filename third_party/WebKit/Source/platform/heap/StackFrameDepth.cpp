@@ -61,4 +61,52 @@ size_t StackFrameDepth::getUnderestimatedStackSize()
 #endif
 }
 
+void* StackFrameDepth::getStackStart()
+{
+#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
+    pthread_attr_t attr;
+    int error;
+#if OS(FREEBSD)
+    pthread_attr_init(&attr);
+    error = pthread_attr_get_np(pthread_self(), &attr);
+#else
+    error = pthread_getattr_np(pthread_self(), &attr);
+#endif
+    if (!error) {
+        void* base;
+        size_t size;
+        error = pthread_attr_getstack(&attr, &base, &size);
+        RELEASE_ASSERT(!error);
+        pthread_attr_destroy(&attr);
+        return reinterpret_cast<uint8_t*>(base) + size;
+    }
+#if OS(FREEBSD)
+    pthread_attr_destroy(&attr);
+#endif
+#if defined(__GLIBC__)
+    // pthread_getattr_np can fail for the main thread. In this case
+    // just like NaCl we rely on the __libc_stack_end to give us
+    // the start of the stack.
+    // See https://code.google.com/p/nativeclient/issues/detail?id=3431.
+    return __libc_stack_end;
+#else
+    ASSERT_NOT_REACHED();
+    return nullptr;
+#endif
+#elif OS(MACOSX)
+    return pthread_get_stackaddr_np(pthread_self());
+#elif OS(WIN) && COMPILER(MSVC)
+    // On Windows stack limits for the current thread are available in
+    // the thread information block (TIB). Its fields can be accessed through
+    // FS segment register on x86 and GS segment register on x86_64.
+#ifdef _WIN64
+    return reinterpret_cast<void*>(__readgsqword(offsetof(NT_TIB64, StackBase)));
+#else
+    return reinterpret_cast<void*>(__readfsdword(offsetof(NT_TIB, StackBase)));
+#endif
+#else
+#error Unsupported getStackStart on this platform.
+#endif
+}
+
 } // namespace blink
