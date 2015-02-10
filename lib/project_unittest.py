@@ -20,10 +20,21 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
   # pylint: disable=protected-access
 
   def setUp(self):
+    self.project = None
+
+  def CreateNewProject(self):
+    """Creates a new project."""
     self.project = project.Project(self.tempdir, initial_config={'name': 'foo'})
+
+  def SetupLegacyProject(self):
+    """Sets up a legacy project layout."""
+    layout_conf = 'repo-name = foo\n'
+    osutils.WriteFile(os.path.join(self.tempdir, 'metadata', 'layout.conf'),
+                      layout_conf, makedirs=True)
 
   def testLayoutFormat(self):
     """Test that layout.conf is correctly formatted."""
+    self.CreateNewProject()
     content = {'repo-name': 'hello',
                'bar': 'foo'}
     self.project._WriteLayoutConf(content)
@@ -39,6 +50,7 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
 
   def testWriteParents(self):
     """Test that the parent file is correctly formatted."""
+    self.CreateNewProject()
     parents = ['hello:bonjour',
                'foo:bar']
 
@@ -50,6 +62,7 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
 
   def testConfigurationGenerated(self):
     """Test that portage's files are generated when project.json changes."""
+    self.CreateNewProject()
     sample_config = {'name': 'hello',
                      'dependencies': []}
 
@@ -60,6 +73,7 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
 
   def testFindProjectInPath(self):
     """Test that we can infer the current project from the current directory."""
+    self.CreateNewProject()
     os.remove(os.path.join(self.tempdir, 'project.json'))
     project_dir = os.path.join(self.tempdir, 'foo', 'bar', 'project')
     content = {'name': 'hello'}
@@ -93,9 +107,39 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
 
   def testProjectCreation(self):
     """Test that project initialization throws the right errors."""
+    self.CreateNewProject()
     with self.assertRaises(project.ProjectAlreadyExists):
       project.Project(self.tempdir, initial_config={})
 
     nonexistingproject = os.path.join(self.tempdir, 'foo')
     with self.assertRaises(project.ProjectNotFound):
       project.Project(nonexistingproject)
+
+  def testLoadNonExistingProjectFails(self):
+    """Tests that trying to load a non-existing project fails."""
+    self.assertRaises(project.ProjectNotFound, project.Project, self.tempdir)
+
+  def testLoadExistingNormalProjectSucceeds(self):
+    """Tests that loading an existing project works."""
+    self.CreateNewProject()
+    self.project = project.Project(self.tempdir, allow_legacy=False)
+    self.assertEquals('foo', self.project.config.get('name'))
+
+  def testLoadExistingLegacyProjectFailsIfNotAllowed(self):
+    """Tests that loading a legacy project fails when not allowed."""
+    self.SetupLegacyProject()
+    with self.assertRaises(project.ProjectNotFound):
+      project.Project(self.tempdir, allow_legacy=False)
+
+  def testLoadExistingLegacyProjectSucceeds(self):
+    """Tests that loading a legacy project fails when not allowed."""
+    self.SetupLegacyProject()
+    self.project = project.Project(self.tempdir)
+    self.assertEquals('foo', self.project.config.get('name'))
+
+  def testLegacyProjectUpdateConfigFails(self):
+    """Tests that a legacy project config cannot be updated."""
+    self.SetupLegacyProject()
+    self.project = project.Project(self.tempdir)
+    with self.assertRaises(project.ProjectFeatureNotSupported):
+      self.project.UpdateConfig({'name': 'bar'})
