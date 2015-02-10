@@ -988,8 +988,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(IN_GUEST_MODE, "restoreGeometry")));
 
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Slow tests are disabled on debug and msan build.
+// http://crbug.com/327719, 457365
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
 #define MAYBE_Traverse DISABLED_Traverse
 #else
 #define MAYBE_Traverse Traverse
