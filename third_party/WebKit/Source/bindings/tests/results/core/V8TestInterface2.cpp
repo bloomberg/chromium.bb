@@ -236,7 +236,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->keys(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -256,7 +256,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->values(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -276,7 +276,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->entries(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -312,7 +312,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    impl->forEach(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
+    impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -326,10 +326,39 @@ static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "has", "TestInterface2", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+    TestInterfaceEmpty* value;
+    {
+        value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    bool result = impl->hasForBinding(scriptState, value, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8SetReturnValueBool(info, result);
+}
+
+static void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterface2V8Internal::hasMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    v8SetReturnValueString(info, impl->stringifierMethod(), info.GetIsolate());
+    v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -585,6 +614,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] =
     {"values", TestInterface2V8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"entries", TestInterface2V8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"forEach", TestInterface2V8Internal::forEachMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"has", TestInterface2V8Internal::hasMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"toString", TestInterface2V8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 

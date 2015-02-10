@@ -15,7 +15,7 @@ namespace blink {
 template <typename KeyType, typename ValueType>
 class Iterable {
 public:
-    Iterator* keys(ScriptState* scriptState, ExceptionState& exceptionState)
+    Iterator* keysForBinding(ScriptState* scriptState, ExceptionState& exceptionState)
     {
         IterationSource* source = this->startIteration(scriptState, exceptionState);
         if (!source)
@@ -23,7 +23,7 @@ public:
         return new IterableIterator<KeySelector>(source);
     }
 
-    Iterator* values(ScriptState* scriptState, ExceptionState& exceptionState)
+    Iterator* valuesForBinding(ScriptState* scriptState, ExceptionState& exceptionState)
     {
         IterationSource* source = this->startIteration(scriptState, exceptionState);
         if (!source)
@@ -31,7 +31,7 @@ public:
         return new IterableIterator<ValueSelector>(source);
     }
 
-    Iterator* entries(ScriptState* scriptState, ExceptionState& exceptionState)
+    Iterator* entriesForBinding(ScriptState* scriptState, ExceptionState& exceptionState)
     {
         IterationSource* source = this->startIteration(scriptState, exceptionState);
         if (!source)
@@ -39,7 +39,7 @@ public:
         return new IterableIterator<EntrySelector>(source);
     }
 
-    void forEach(ScriptState* scriptState, const ScriptValue& thisValue, const ScriptValue& callback, const ScriptValue& thisArg, ExceptionState& exceptionState)
+    void forEachForBinding(ScriptState* scriptState, const ScriptValue& thisValue, const ScriptValue& callback, const ScriptValue& thisArg, ExceptionState& exceptionState)
     {
         IterationSource* source = this->startIteration(scriptState, exceptionState);
 
@@ -154,7 +154,7 @@ class ValueIterable : public Iterable<unsigned, ValueType> {
 public:
     Iterator* iterator(ScriptState* scriptState, ExceptionState& exceptionState)
     {
-        return this->values(scriptState, exceptionState);
+        return this->valuesForBinding(scriptState, exceptionState);
     }
 
     class IterationSource : public Iterable<unsigned, ValueType>::IterationSource {
@@ -192,7 +192,7 @@ class PairIterable : public Iterable<KeyType, ValueType> {
 public:
     Iterator* iterator(ScriptState* scriptState, ExceptionState& exceptionState)
     {
-        return this->entries(scriptState, exceptionState);
+        return this->entriesForBinding(scriptState, exceptionState);
     }
 };
 

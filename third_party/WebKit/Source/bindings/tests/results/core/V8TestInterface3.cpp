@@ -58,7 +58,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestInterface3", info.Holder(), info.GetIsolate());
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->values(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -78,7 +78,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestInterface3", info.Holder(), info.GetIsolate());
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->entries(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -114,7 +114,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    impl->forEach(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
+    impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;

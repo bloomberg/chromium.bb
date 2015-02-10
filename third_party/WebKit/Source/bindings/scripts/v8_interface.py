@@ -322,7 +322,7 @@ def interface_context(interface):
                             if operation.name])
     compute_method_overloads_context(interface, methods)
 
-    def generated_method(return_type, name, arguments=None, extended_attributes=None):
+    def generated_method(return_type, name, arguments=None, extended_attributes=None, implemented_as=None):
         operation = IdlOperation(interface.idl_name)
         operation.idl_type = return_type
         operation.name = name
@@ -330,6 +330,9 @@ def interface_context(interface):
             operation.arguments = arguments
         if extended_attributes:
             operation.extended_attributes.update(extended_attributes)
+        if implemented_as is None:
+            implemented_as = name + 'ForBinding'
+        operation.extended_attributes['ImplementedAs'] = implemented_as
         return v8_methods.method_context(interface, operation)
 
     def generated_argument(idl_type, name, is_optional=False, extended_attributes=None):
@@ -375,13 +378,14 @@ def interface_context(interface):
             'CallWith': ['ScriptState', 'ThisValue'],
         })
 
-        def generated_iterator_method(name):
+        def generated_iterator_method(name, implemented_as=None):
             return generated_method(
                 return_type=IdlType('Iterator'),
                 name=name,
-                extended_attributes=used_extended_attributes)
+                extended_attributes=used_extended_attributes,
+                implemented_as=implemented_as)
 
-        iterator_method = generated_iterator_method('iterator')
+        iterator_method = generated_iterator_method('iterator', implemented_as='iterator')
 
         if interface.iterable or interface.maplike or interface.setlike:
             implicit_methods = [
@@ -398,6 +402,52 @@ def interface_context(interface):
                                  extended_attributes=forEach_extended_attributes),
             ]
 
+            if interface.maplike:
+                key_argument = generated_argument(interface.maplike.key_type, 'key')
+                value_argument = generated_argument(interface.maplike.value_type, 'value')
+
+                implicit_methods.extend([
+                    generated_method(IdlType('boolean'), 'has',
+                                     arguments=[key_argument],
+                                     extended_attributes=used_extended_attributes),
+                    generated_method(IdlType('any'), 'get',
+                                     arguments=[key_argument],
+                                     extended_attributes=used_extended_attributes),
+                ])
+
+                if not interface.maplike.is_read_only:
+                    implicit_methods.extend([
+                        generated_method(IdlType('void'), 'clear',
+                                         extended_attributes=used_extended_attributes),
+                        generated_method(IdlType('boolean'), 'delete',
+                                         arguments=[key_argument],
+                                         extended_attributes=used_extended_attributes),
+                        generated_method(IdlType(interface.name), 'set',
+                                         arguments=[key_argument, value_argument],
+                                         extended_attributes=used_extended_attributes),
+                    ])
+
+            if interface.setlike:
+                value_argument = generated_argument(interface.setlike.value_type, 'value')
+
+                implicit_methods.extend([
+                    generated_method(IdlType('boolean'), 'has',
+                                     arguments=[value_argument],
+                                     extended_attributes=used_extended_attributes),
+                ])
+
+                if not interface.setlike.is_read_only:
+                    implicit_methods.extend([
+                        generated_method(IdlType(interface.name), 'add',
+                                         arguments=[value_argument],
+                                         extended_attributes=used_extended_attributes),
+                        generated_method(IdlType('void'), 'clear',
+                                         extended_attributes=used_extended_attributes),
+                        generated_method(IdlType('boolean'), 'delete',
+                                         arguments=[value_argument],
+                                         extended_attributes=used_extended_attributes),
+                    ])
+
             methods_by_name = {}
             for method in methods:
                 methods_by_name.setdefault(method['name'], []).append(method)
@@ -409,8 +459,7 @@ def interface_context(interface):
                 methods.append(implicit_method)
 
         # FIXME: maplike<> and setlike<> should also imply the presence of a
-        # subset of keys(), values(), entries(), forEach(), has(), get(), add(),
-        # set(), delete() and clear(), and a 'size' attribute.
+        # 'size' attribute.
 
     # Stringifier
     if interface.stringifier:
@@ -423,7 +472,8 @@ def interface_context(interface):
         methods.append(generated_method(
             return_type=IdlType('DOMString'),
             name='toString',
-            extended_attributes=stringifier_ext_attrs))
+            extended_attributes=stringifier_ext_attrs,
+            implemented_as='toString'))
 
     conditionally_enabled_methods = []
     custom_registration_methods = []

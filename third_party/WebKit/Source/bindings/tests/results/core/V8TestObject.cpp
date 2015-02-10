@@ -10730,7 +10730,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->keys(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -10750,7 +10750,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->values(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -10770,7 +10770,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->entries(scriptState, exceptionState);
+    RawPtr<Iterator> result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -10806,7 +10806,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    impl->forEach(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
+    impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -10820,10 +10820,147 @@ static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "has", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int key;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(key, toInt32(info[0], exceptionState), exceptionState);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    bool result = impl->hasForBinding(scriptState, key, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8SetReturnValueBool(info, result);
+}
+
+static void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::hasMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "get", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int key;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(key, toInt32(info[0], exceptionState), exceptionState);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptValue result = impl->getForBinding(scriptState, key, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8SetReturnValue(info, result.v8Value());
+}
+
+static void getMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::getMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "clear", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    impl->clearForBinding(scriptState, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+}
+
+static void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::clearMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "delete", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int key;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(key, toInt32(info[0], exceptionState), exceptionState);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    bool result = impl->deleteForBinding(scriptState, key, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8SetReturnValueBool(info, result);
+}
+
+static void deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::deleteMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "set", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int key;
+    V8StringResource<> value;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(key, toInt32(info[0], exceptionState), exceptionState);
+        TOSTRING_VOID_INTERNAL(value, info[1]);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    RefPtr<TestObject> result = impl->setForBinding(scriptState, key, value, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8SetReturnValue(info, result.release());
+}
+
+static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::setMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValueString(info, impl->stringifierAttribute(), info.GetIsolate());
+    v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -11252,6 +11389,11 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"values", TestObjectV8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"entries", TestObjectV8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"forEach", TestObjectV8Internal::forEachMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"has", TestObjectV8Internal::hasMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"get", TestObjectV8Internal::getMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"clear", TestObjectV8Internal::clearMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"delete", TestObjectV8Internal::deleteMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"set", TestObjectV8Internal::setMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"toString", TestObjectV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 
