@@ -2,11 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(ppi): Switch this file back to using absolute paths to refer to the Mojo
-# SDK once it is no longer being used to build the network service impl in
-# Mojo.
-import("../mojo_sdk_root.gni")
-import("$mojo_sdk_root/mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -77,7 +73,6 @@ source_set("lib") {
   ]
 
   deps = [
-    "$mojo_sdk_root/mojo/public/cpp/bindings",
     "//base",
     "//mojo/application",
     "//mojo/common",
@@ -85,6 +80,7 @@ source_set("lib") {
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//net",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
 }
@@ -98,12 +94,12 @@ source_set("sources") {
 
   deps = [
     ":lib",
-    "$mojo_sdk_root/mojo/public/c/system:for_shared_library",
-    "$mojo_sdk_root/mojo/public/cpp/bindings:bindings",
     "//base",
     "//mojo/application",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
   ]
 }
 
@@ -119,8 +115,6 @@ mojo_native_application("apptests") {
   deps = [
     ":lib",
     ":network",
-    "$mojo_sdk_root/mojo/public/cpp/bindings",
-    "$mojo_sdk_root/mojo/public/cpp/bindings:callback",
     "//base",
     "//mojo/application",
     "//mojo/application:test_support",
@@ -130,5 +124,7 @@ mojo_native_application("apptests") {
     "//net",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
   ]
 }
