@@ -452,7 +452,7 @@ bool PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
   // only have one or two tilings (high and low res), so only clean up the
   // active layer. This cleans it up here in case AppendQuads didn't run.
   // If it did run, this would not remove any additional tilings.
-  if (GetTree() == ACTIVE_TREE)
+  if (layer_tree_impl()->IsActiveTree())
     CleanUpTilingsOnActiveLayer(last_append_quads_tilings_);
 
   UpdateIdealScales();

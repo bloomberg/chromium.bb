@@ -1229,11 +1229,12 @@ void LayerTreeHostImpl::GetPictureLayerImplPairs(
     // If the current tree is ACTIVE_TREE, then always generate a layer_pair.
     // If current tree is PENDING_TREE, then only generate a layer_pair if
     // there is no twin layer.
-    if (layer->GetTree() == ACTIVE_TREE) {
-      DCHECK_IMPLIES(twin_layer, twin_layer->GetTree() == PENDING_TREE);
+    if (layer->layer_tree_impl()->IsActiveTree()) {
+      DCHECK_IMPLIES(twin_layer,
+                     twin_layer->layer_tree_impl()->IsPendingTree());
       layer_pairs->push_back(PictureLayerImpl::Pair(layer, twin_layer));
     } else if (!twin_layer) {
-      DCHECK(layer->GetTree() == PENDING_TREE);
+      DCHECK(layer->layer_tree_impl()->IsPendingTree());
       layer_pairs->push_back(PictureLayerImpl::Pair(NULL, layer));
     }
   }
