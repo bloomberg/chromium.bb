@@ -43,6 +43,8 @@ class PepperFileChooserHostTest : public RenderViewTest {
   void TearDown() override {
     globals_.GetResourceTracker()->DidDeleteInstance(pp_instance_);
 
+    // Turn locking back to the default for tests that run later.
+    ppapi::ProxyLock::EnableLockingOnThreadForTest();
     RenderViewTest::TearDown();
   }
 

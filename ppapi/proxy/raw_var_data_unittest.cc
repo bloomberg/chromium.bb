@@ -38,7 +38,6 @@ class RawVarDataTest : public testing::Test {
 
   // testing::Test implementation.
   virtual void SetUp() {
-    ProxyLock::EnableLockingOnThreadForTest();
     ProxyLock::Acquire();
   }
   virtual void TearDown() {
