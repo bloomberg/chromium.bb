@@ -20,7 +20,7 @@ namespace {
 const char kSearchKeyword[] = "adipiscing";
 
 #if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_FindAndCopy FindAndCopy
+#define MAYBE_FindAndCopy DISABLED_FindAndCopy
 #else
 // TODO(thestig): http://crbug.com/79837, http://crbug.com/329912
 #define MAYBE_FindAndCopy DISABLED_FindAndCopy
