@@ -5,11 +5,14 @@
      found in the LICENSE file.
 -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/actionbar_feedback"
-            android:title="@string/actionbar_feedback"
-            android:showAsAction="ifRoom|withText"/>
-    <item android:id="@+id/actionbar_play_store"
-            android:title="@string/actionbar_play_store"
-            android:showAsAction="never"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/actionbar_feedback"
+        android:title="@string/actionbar_feedback"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/actionbar_play_store"
+        android:title="@string/actionbar_play_store"
+        app:showAsAction="never"/>
 </menu>

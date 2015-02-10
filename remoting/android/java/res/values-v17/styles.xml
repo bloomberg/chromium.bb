@@ -6,16 +6,21 @@
 -->
 
 <resources>
-    <style name="MainTheme" parent="@android:style/Theme.Holo">
-        <item name="android:actionBarStyle">@style/MainActionBar</item>
+    <style name="BaseTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">#4285F4</item>
+        <item name="colorPrimaryDark">#3367D6</item>
     </style>
-    <style name="MainActionBar" parent="@android:style/Widget.Holo.ActionBar">
+    <style name="BaseTheme.NoTitle" parent="@style/BaseTheme">
+        <item name="android:actionBarStyle">@style/BaseActionBar.NoTitle</item>
+    </style>
+    <style name="BaseActionBar.NoTitle" parent="@style/Widget.AppCompat.ActionBar">
         <item name="android:displayOptions">showHome</item>
     </style>
-    <style name="EmptyStateText" parent="@android:style/TextAppearance.Holo.Large">
+
+    <style name="EmptyStateText" parent="@android:style/TextAppearance.Large">
         <item name="android:textColor">#888</item>
     </style>
-    <style name="EmptyStateText.Hyperlink">
+    <style name="EmptyStateText.Hyperlink" parent="@style/EmptyStateText">
         <item name="android:textColor">@android:color/holo_blue_light</item>
         <item name="android:textStyle">italic</item>
     </style>

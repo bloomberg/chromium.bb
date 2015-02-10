@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -30,7 +31,7 @@ import org.chromium.ui.UiUtils;
 /**
  * The Activity for showing the Help screen.
  */
-public class HelpActivity extends Activity {
+public class HelpActivity extends ActionBarActivity {
     private static final String PLAY_STORE_URL = "market://details?id=";
 
     private static final String FEEDBACK_PACKAGE = "com.google.android.gms";
@@ -113,7 +114,7 @@ public class HelpActivity extends Activity {
         WebView webView = new WebView(this);
         setContentView(webView);
 
-        getActionBar().setTitle(getString(R.string.actionbar_help_title));
+        getSupportActionBar().setTitle(getString(R.string.actionbar_help_title));
 
         CharSequence appName = getTitle();
         CharSequence versionName = null;
@@ -125,7 +126,7 @@ public class HelpActivity extends Activity {
         }
 
         CharSequence subtitle = TextUtils.concat(appName, " ", versionName);
-        getActionBar().setSubtitle(subtitle);
+        getSupportActionBar().setSubtitle(subtitle);
 
         // This line ensures the WebView remains embedded in this activity and doesn't launch an
         // external Chrome browser.

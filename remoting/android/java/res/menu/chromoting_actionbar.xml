@@ -6,16 +6,19 @@
 -->
 
 <!--Action bar buttons for the Android app's host listing-->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/actionbar_directoryrefresh"
-            android:title="@string/tooltip_refresh"
-            android:icon="@android:drawable/ic_popup_sync"
-            android:showAsAction="ifRoom"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/actionbar_directoryrefresh"
+        android:title="@string/tooltip_refresh"
+        android:icon="@android:drawable/ic_popup_sync"
+        app:showAsAction="ifRoom"/>
     <!--
         The Help option must be the final menu item and it must only appear in
         the action-bar overflow menu.
     -->
-    <item android:id="@+id/actionbar_help"
-            android:title="@string/actionbar_help"
-            android:showAsAction="never"/>
+    <item
+        android:id="@+id/actionbar_help"
+        android:title="@string/actionbar_help"
+        app:showAsAction="never"/>
 </menu>

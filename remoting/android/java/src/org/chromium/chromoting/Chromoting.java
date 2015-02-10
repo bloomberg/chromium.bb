@@ -11,8 +11,6 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -21,6 +19,8 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,7 +40,7 @@ import java.util.Arrays;
  * The user interface for querying and displaying a user's host list from the directory server. It
  * also requests and renews authentication tokens using the system account manager.
  */
-public class Chromoting extends Activity implements JniInterface.ConnectionListener,
+public class Chromoting extends ActionBarActivity implements JniInterface.ConnectionListener,
         AccountManagerCallback<Bundle>, AdapterView.OnItemSelectedListener, HostListLoader.Callback,
         View.OnClickListener {
     /** Only accounts of this type will be selectable for authentication. */
@@ -213,18 +213,19 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             mAccount = mAccounts[0];
         }
 
+        ActionBar actionBar = getSupportActionBar();
         if (mAccounts.length == 1) {
-            getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE,
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE,
                     ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
-            getActionBar().setTitle(R.string.mode_me2me);
-            getActionBar().setSubtitle(mAccount.name);
+            actionBar.setTitle(R.string.mode_me2me);
+            actionBar.setSubtitle(mAccount.name);
         } else {
             mAccountsAdapter = new AccountsAdapter(this, mAccounts);
-            Spinner accountsSpinner = new Spinner(getActionBar().getThemedContext(), null,
+            Spinner accountsSpinner = new Spinner(actionBar.getThemedContext(), null,
                     android.R.attr.actionDropDownStyle);
             accountsSpinner.setAdapter(mAccountsAdapter);
-            getActionBar().setCustomView(accountsSpinner);
-            getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
+            actionBar.setCustomView(accountsSpinner);
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
                     ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
             accountsSpinner.setOnItemSelectedListener(this);
             accountsSpinner.setSelection(index);
