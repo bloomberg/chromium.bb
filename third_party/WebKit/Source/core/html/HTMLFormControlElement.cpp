@@ -69,9 +69,9 @@ HTMLFormControlElement::~HTMLFormControlElement()
 {
 #if !ENABLE(OILPAN)
 #if ENABLE(ASSERT)
-    // valid() doesn't return a correct result because vtbl of a subclass was
-    // gone. Recalculate m_isValid to avoid an assertion failure in
-    // isValidElement().
+    // Recalculate m_willValidate and m_isValid for the vtbl change in order to
+    // avoid assertion failures in isValidElement() called in setForm(0).
+    setNeedsWillValidateCheck();
     setNeedsValidityCheck();
 #endif
     setForm(0);
