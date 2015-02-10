@@ -201,12 +201,16 @@ def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_section_map,
   success = True
   unknown_symbol_warnings = WarningCollector(300)
   symbol_not_found_warnings = WarningCollector(300)
+  output_sections = set()
   for offset in offsets:
     try:
       symbol_infos = _FindSymbolInfosAtOffset(offset_to_symbol_infos, offset)
       for symbol_info in symbol_infos:
         if symbol_info.name in symbol_to_section_map:
-          output_file.write(symbol_to_section_map[symbol_info.name] + '\n')
+          section = symbol_to_section_map[symbol_info.name]
+          if not section in output_sections:
+            output_file.write(section + '\n')
+            output_sections.add(section)
         else:
           unknown_symbol_warnings.Write(
               'No known section for symbol ' + symbol_info.name)
