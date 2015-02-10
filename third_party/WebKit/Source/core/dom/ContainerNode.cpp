@@ -60,10 +60,6 @@ using namespace HTMLNames;
 static void dispatchChildInsertionEvents(Node&);
 static void dispatchChildRemovalEvents(Node&);
 
-#if ENABLE(ASSERT)
-unsigned EventDispatchForbiddenScope::s_count = 0;
-#endif
-
 static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes, ExceptionState& exceptionState)
 {
     if (node.isDocumentFragment()) {

@@ -5,6 +5,8 @@
 #ifndef EventDispatchForbiddenScope_h
 #define EventDispatchForbiddenScope_h
 
+#include "platform/PlatformExport.h"
+#include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 #include "wtf/TemporaryChange.h"
 
@@ -52,7 +54,7 @@ public:
     };
 
 private:
-    static unsigned s_count;
+    PLATFORM_EXPORT static unsigned s_count;
 };
 
 #else
