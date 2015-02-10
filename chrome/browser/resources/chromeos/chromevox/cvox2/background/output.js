@@ -183,6 +183,12 @@ Output.RULES = {
           '$find({"state": {"selected": true, "invisible": false}}, ' +
               '@describe_index($indexInParent, $parentChildCount)) '
     }
+  },
+  alert: {
+    default: {
+      speak: '!doNotInterrupt ' +
+          '@aria_role_alert $name $earcon(ALERT_NONMODAL) $descendants'
+    }
   }
 };
 
