@@ -122,11 +122,12 @@ class View {
   // Focus.
   void SetFocus();
 
-  // Embedding.
+  // Embedding. See view_manager.mojom for details.
   void Embed(const String& url);
   void Embed(const String& url,
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
+  void Embed(ViewManagerClientPtr client);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.

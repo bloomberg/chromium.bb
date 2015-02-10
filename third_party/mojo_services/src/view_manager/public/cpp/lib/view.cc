@@ -379,6 +379,10 @@ void View::Embed(const String& url,
       ->Embed(url, id_, services.Pass(), exposed_services.Pass());
 }
 
+void View::Embed(ViewManagerClientPtr client) {
+  static_cast<ViewManagerClientImpl*>(manager_)->Embed(id_, client.Pass());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // View, protected:
 

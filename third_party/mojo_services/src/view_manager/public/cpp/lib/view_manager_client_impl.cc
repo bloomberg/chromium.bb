@@ -204,8 +204,13 @@ void ViewManagerClientImpl::Embed(const String& url,
                                   InterfaceRequest<ServiceProvider> services,
                                   ServiceProviderPtr exposed_services) {
   DCHECK(service_);
-  service_->Embed(url, view_id, services.Pass(), exposed_services.Pass(),
-                  ActionCompletedCallback());
+  service_->EmbedUrl(url, view_id, services.Pass(), exposed_services.Pass(),
+                     ActionCompletedCallback());
+}
+
+void ViewManagerClientImpl::Embed(Id view_id, ViewManagerClientPtr client) {
+  DCHECK(service_);
+  service_->Embed(view_id, client.Pass(), ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::AddView(View* view) {

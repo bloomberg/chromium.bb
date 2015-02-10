@@ -105,63 +105,63 @@ class EmbedderTest : public testing::Test {
   ~EmbedderTest() override {}
 
  protected:
-  base::TestIOThread* test_io_thread() { return &test_io_thread_; }
+  scoped_refptr<base::TaskRunner> test_io_task_runner() {
+    return test_io_thread_.task_runner();
+  }
 
  private:
+  void SetUp() override { test::InitWithSimplePlatformSupport(); }
+
+  void TearDown() override { EXPECT_TRUE(test::Shutdown()); }
+
   base::TestIOThread test_io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbedderTest);
 };
 
 TEST_F(EmbedderTest, ChannelsBasic) {
-  mojo::embedder::test::InitWithSimplePlatformSupport();
+  PlatformChannelPair channel_pair;
+  ScopedTestChannel server_channel(test_io_task_runner(),
+                                   channel_pair.PassServerHandle());
+  MojoHandle server_mp = server_channel.bootstrap_message_pipe();
+  EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
+  ScopedTestChannel client_channel(test_io_task_runner(),
+                                   channel_pair.PassClientHandle());
+  MojoHandle client_mp = client_channel.bootstrap_message_pipe();
+  EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);
 
-  {
-    PlatformChannelPair channel_pair;
-    ScopedTestChannel server_channel(test_io_thread()->task_runner(),
-                                     channel_pair.PassServerHandle());
-    MojoHandle server_mp = server_channel.bootstrap_message_pipe();
-    EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
-    ScopedTestChannel client_channel(test_io_thread()->task_runner(),
-                                     channel_pair.PassClientHandle());
-    MojoHandle client_mp = client_channel.bootstrap_message_pipe();
-    EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);
+  // We can write to a message pipe handle immediately.
+  const char kHello[] = "hello";
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoWriteMessage(server_mp, kHello, static_cast<uint32_t>(sizeof(kHello)),
+                       nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    // We can write to a message pipe handle immediately.
-    const char kHello[] = "hello";
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp, kHello,
-                               static_cast<uint32_t>(sizeof(kHello)), nullptr,
-                               0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // Now wait for the other side to become readable.
+  MojoHandleSignalsState state;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+  EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
-    // Now wait for the other side to become readable.
-    MojoHandleSignalsState state;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
-    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+  char buffer[1000] = {};
+  uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(client_mp, buffer, &num_bytes, nullptr, nullptr,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kHello), num_bytes);
+  EXPECT_STREQ(kHello, buffer);
 
-    char buffer[1000] = {};
-    uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp, buffer, &num_bytes, nullptr, nullptr,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    EXPECT_EQ(sizeof(kHello), num_bytes);
-    EXPECT_STREQ(kHello, buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
 
-    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
-    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
-
-    // By this point, these waits should basically be no-ops (since we've waited
-    // for the client message pipe to become readable, which implies that both
-    // the server and client channels were completely created).
-    server_channel.WaitForChannelCreationCompletion();
-    client_channel.WaitForChannelCreationCompletion();
-    EXPECT_TRUE(server_channel.channel_info());
-    EXPECT_TRUE(client_channel.channel_info());
-  }
-
-  EXPECT_TRUE(test::Shutdown());
+  // By this point, these waits should basically be no-ops (since we've waited
+  // for the client message pipe to become readable, which implies that both
+  // the server and client channels were completely created).
+  server_channel.WaitForChannelCreationCompletion();
+  client_channel.WaitForChannelCreationCompletion();
+  EXPECT_TRUE(server_channel.channel_info());
+  EXPECT_TRUE(client_channel.channel_info());
 }
 
 class TestAsyncWaiter {
@@ -202,183 +202,169 @@ void CloseScopedHandle(ScopedMessagePipeHandle handle) {
 }
 
 TEST_F(EmbedderTest, AsyncWait) {
-  mojo::embedder::test::InitWithSimplePlatformSupport();
+  ScopedMessagePipeHandle client_mp;
+  ScopedMessagePipeHandle server_mp;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mojo::CreateMessagePipe(nullptr, &client_mp, &server_mp));
 
-  {
-    ScopedMessagePipeHandle client_mp;
-    ScopedMessagePipeHandle server_mp;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              mojo::CreateMessagePipe(nullptr, &client_mp, &server_mp));
+  TestAsyncWaiter waiter;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                      base::Bind(&TestAsyncWaiter::Awake,
+                                 base::Unretained(&waiter))));
 
-    TestAsyncWaiter waiter;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-                        base::Bind(&TestAsyncWaiter::Awake,
-                                   base::Unretained(&waiter))));
+  test_io_task_runner()->PostTask(FROM_HERE,
+                                  base::Bind(&WriteHello, server_mp.get()));
+  EXPECT_TRUE(waiter.TryWait());
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.wait_result());
 
-    test_io_thread()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&WriteHello, server_mp.get()));
-    EXPECT_TRUE(waiter.TryWait());
-    EXPECT_EQ(MOJO_RESULT_OK, waiter.wait_result());
+  // If message is in the queue, it does't allow us to wait.
+  TestAsyncWaiter waiter_that_doesnt_wait;
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                      base::Bind(&TestAsyncWaiter::Awake,
+                                 base::Unretained(&waiter_that_doesnt_wait))));
 
-    // If message is in the queue, it does't allow us to wait.
-    TestAsyncWaiter waiter_that_doesnt_wait;
-    EXPECT_EQ(
-        MOJO_RESULT_ALREADY_EXISTS,
-        AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-                  base::Bind(&TestAsyncWaiter::Awake,
-                             base::Unretained(&waiter_that_doesnt_wait))));
+  char buffer[1000];
+  uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  CHECK_EQ(MOJO_RESULT_OK,
+           ReadMessageRaw(client_mp.get(), buffer, &num_bytes, nullptr, nullptr,
+                          MOJO_READ_MESSAGE_FLAG_NONE));
 
-    char buffer[1000];
-    uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    CHECK_EQ(MOJO_RESULT_OK,
-             ReadMessageRaw(client_mp.get(), buffer, &num_bytes, nullptr,
-                            nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+  TestAsyncWaiter unsatisfiable_waiter;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                      base::Bind(&TestAsyncWaiter::Awake,
+                                 base::Unretained(&unsatisfiable_waiter))));
 
-    TestAsyncWaiter unsatisfiable_waiter;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-                        base::Bind(&TestAsyncWaiter::Awake,
-                                   base::Unretained(&unsatisfiable_waiter))));
+  test_io_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&CloseScopedHandle, base::Passed(server_mp.Pass())));
 
-    test_io_thread()->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&CloseScopedHandle, base::Passed(server_mp.Pass())));
-
-    EXPECT_TRUE(unsatisfiable_waiter.TryWait());
-    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              unsatisfiable_waiter.wait_result());
-  }
-
-  EXPECT_TRUE(test::Shutdown());
+  EXPECT_TRUE(unsatisfiable_waiter.TryWait());
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            unsatisfiable_waiter.wait_result());
 }
 
 TEST_F(EmbedderTest, ChannelsHandlePassing) {
-  mojo::embedder::test::InitWithSimplePlatformSupport();
+  PlatformChannelPair channel_pair;
+  ScopedTestChannel server_channel(test_io_task_runner(),
+                                   channel_pair.PassServerHandle());
+  MojoHandle server_mp = server_channel.bootstrap_message_pipe();
+  EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
+  ScopedTestChannel client_channel(test_io_task_runner(),
+                                   channel_pair.PassClientHandle());
+  MojoHandle client_mp = client_channel.bootstrap_message_pipe();
+  EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);
 
-  {
-    PlatformChannelPair channel_pair;
-    ScopedTestChannel server_channel(test_io_thread()->task_runner(),
-                                     channel_pair.PassServerHandle());
-    MojoHandle server_mp = server_channel.bootstrap_message_pipe();
-    EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
-    ScopedTestChannel client_channel(test_io_thread()->task_runner(),
-                                     channel_pair.PassClientHandle());
-    MojoHandle client_mp = client_channel.bootstrap_message_pipe();
-    EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);
+  MojoHandle h0, h1;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &h0, &h1));
 
-    MojoHandle h0, h1;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &h0, &h1));
+  // Write a message to |h0| (attaching nothing).
+  const char kHello[] = "hello";
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(h0, kHello, static_cast<uint32_t>(sizeof(kHello)),
+                             nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    // Write a message to |h0| (attaching nothing).
-    const char kHello[] = "hello";
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWriteMessage(h0, kHello, static_cast<uint32_t>(sizeof(kHello)),
-                         nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // Write one message to |server_mp|, attaching |h1|.
+  const char kWorld[] = "world!!!";
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoWriteMessage(server_mp, kWorld, static_cast<uint32_t>(sizeof(kWorld)),
+                       &h1, 1, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  h1 = MOJO_HANDLE_INVALID;
 
-    // Write one message to |server_mp|, attaching |h1|.
-    const char kWorld[] = "world!!!";
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp, kWorld,
-                               static_cast<uint32_t>(sizeof(kWorld)), &h1, 1,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
-    h1 = MOJO_HANDLE_INVALID;
+  // Write another message to |h0|.
+  const char kFoo[] = "foo";
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(h0, kFoo, static_cast<uint32_t>(sizeof(kFoo)),
+                             nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    // Write another message to |h0|.
-    const char kFoo[] = "foo";
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h0, kFoo, static_cast<uint32_t>(sizeof(kFoo)),
-                               nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // Wait for |client_mp| to become readable.
+  MojoHandleSignalsState state;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+  EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
-    // Wait for |client_mp| to become readable.
-    MojoHandleSignalsState state;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
-    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+  // Read a message from |client_mp|.
+  char buffer[1000] = {};
+  uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  MojoHandle handles[10] = {};
+  uint32_t num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(client_mp, buffer, &num_bytes, handles,
+                            &num_handles, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kWorld), num_bytes);
+  EXPECT_STREQ(kWorld, buffer);
+  EXPECT_EQ(1u, num_handles);
+  EXPECT_NE(handles[0], MOJO_HANDLE_INVALID);
+  h1 = handles[0];
 
-    // Read a message from |client_mp|.
-    char buffer[1000] = {};
-    uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    MojoHandle handles[10] = {};
-    uint32_t num_handles = arraysize(handles);
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp, buffer, &num_bytes, handles,
-                              &num_handles, MOJO_READ_MESSAGE_FLAG_NONE));
-    EXPECT_EQ(sizeof(kWorld), num_bytes);
-    EXPECT_STREQ(kWorld, buffer);
-    EXPECT_EQ(1u, num_handles);
-    EXPECT_NE(handles[0], MOJO_HANDLE_INVALID);
-    h1 = handles[0];
+  // Wait for |h1| to become readable.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+  EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
-    // Wait for |h1| to become readable.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
-    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+  // Read a message from |h1|.
+  memset(buffer, 0, sizeof(buffer));
+  num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  memset(handles, 0, sizeof(handles));
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(h1, buffer, &num_bytes, handles, &num_handles,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kHello), num_bytes);
+  EXPECT_STREQ(kHello, buffer);
+  EXPECT_EQ(0u, num_handles);
 
-    // Read a message from |h1|.
-    memset(buffer, 0, sizeof(buffer));
-    num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    memset(handles, 0, sizeof(handles));
-    num_handles = arraysize(handles);
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(h1, buffer, &num_bytes, handles, &num_handles,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    EXPECT_EQ(sizeof(kHello), num_bytes);
-    EXPECT_STREQ(kHello, buffer);
-    EXPECT_EQ(0u, num_handles);
+  // Wait for |h1| to become readable (again).
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+  EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
-    // Wait for |h1| to become readable (again).
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
-    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+  // Read the second message from |h1|.
+  memset(buffer, 0, sizeof(buffer));
+  num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(h1, buffer, &num_bytes, nullptr, nullptr,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kFoo), num_bytes);
+  EXPECT_STREQ(kFoo, buffer);
 
-    // Read the second message from |h1|.
-    memset(buffer, 0, sizeof(buffer));
-    num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(h1, buffer, &num_bytes, nullptr, nullptr,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    EXPECT_EQ(sizeof(kFoo), num_bytes);
-    EXPECT_STREQ(kFoo, buffer);
+  // Write a message to |h1|.
+  const char kBarBaz[] = "barbaz";
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoWriteMessage(h1, kBarBaz, static_cast<uint32_t>(sizeof(kBarBaz)),
+                       nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    // Write a message to |h1|.
-    const char kBarBaz[] = "barbaz";
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWriteMessage(h1, kBarBaz, static_cast<uint32_t>(sizeof(kBarBaz)),
-                         nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // Wait for |h0| to become readable.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
+  EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
-    // Wait for |h0| to become readable.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
-    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+  // Read a message from |h0|.
+  memset(buffer, 0, sizeof(buffer));
+  num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(h0, buffer, &num_bytes, nullptr, nullptr,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kBarBaz), num_bytes);
+  EXPECT_STREQ(kBarBaz, buffer);
 
-    // Read a message from |h0|.
-    memset(buffer, 0, sizeof(buffer));
-    num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(h0, buffer, &num_bytes, nullptr, nullptr,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    EXPECT_EQ(sizeof(kBarBaz), num_bytes);
-    EXPECT_STREQ(kBarBaz, buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h0));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 
-    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
-    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
-    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h0));
-    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
-
-    server_channel.WaitForChannelCreationCompletion();
-    client_channel.WaitForChannelCreationCompletion();
-    EXPECT_TRUE(server_channel.channel_info());
-    EXPECT_TRUE(client_channel.channel_info());
-  }
-
-  EXPECT_TRUE(test::Shutdown());
+  server_channel.WaitForChannelCreationCompletion();
+  client_channel.WaitForChannelCreationCompletion();
+  EXPECT_TRUE(server_channel.channel_info());
+  EXPECT_TRUE(client_channel.channel_info());
 }
 
 // The sequence of messages sent is:
@@ -403,13 +389,12 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 #define MAYBE_MultiprocessChannels MultiprocessChannels
 #endif  // defined(OS_ANDROID)
 TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
-  mojo::embedder::test::InitWithSimplePlatformSupport();
   mojo::test::MultiprocessTestHelper multiprocess_test_helper;
   multiprocess_test_helper.StartChild("MultiprocessChannelsClient");
 
   {
     ScopedTestChannel server_channel(
-        test_io_thread()->task_runner(),
+        test_io_task_runner(),
         multiprocess_test_helper.server_platform_handle.Pass());
     MojoHandle server_mp = server_channel.bootstrap_message_pipe();
     EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
@@ -516,7 +501,6 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
   }
 
   EXPECT_TRUE(multiprocess_test_helper.WaitForChildTestShutdown());
-  EXPECT_TRUE(test::Shutdown());
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
@@ -525,7 +509,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
   EXPECT_TRUE(client_platform_handle.is_valid());
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  mojo::embedder::test::InitWithSimplePlatformSupport();
+  test::InitWithSimplePlatformSupport();
 
   {
     ScopedTestChannel client_channel(test_io_thread.task_runner(),

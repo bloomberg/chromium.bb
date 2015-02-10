@@ -32,7 +32,6 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   // ApplicationConnection overrides.
   void AddServiceConnector(ServiceConnectorBase* service_connector) override;
   const std::string& GetRemoteApplicationURL() override;
-  ApplicationConnection* ConnectToApplication(const std::string& url) override;
   ServiceProvider* GetServiceProvider() override;
 
   virtual void RemoveServiceConnector(ServiceConnectorBase* service_connector);

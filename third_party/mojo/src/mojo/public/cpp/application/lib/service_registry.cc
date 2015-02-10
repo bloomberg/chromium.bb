@@ -71,11 +71,6 @@ ServiceProvider* ServiceRegistry::GetServiceProvider() {
   return remote_service_provider_.get();
 }
 
-ApplicationConnection* ServiceRegistry::ConnectToApplication(
-    const std::string& url) {
-  return application_impl_->ConnectToApplication(url);
-}
-
 void ServiceRegistry::ConnectToService(const mojo::String& service_name,
                                        ScopedMessagePipeHandle client_handle) {
   if (name_to_service_connector_.find(service_name) ==

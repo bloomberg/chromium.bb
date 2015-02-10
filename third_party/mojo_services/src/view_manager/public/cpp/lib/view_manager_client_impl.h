@@ -64,6 +64,7 @@ class ViewManagerClientImpl : public ViewManager,
              Id view_id,
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
+  void Embed(Id view_id, ViewManagerClientPtr client);
 
   void set_change_acked_callback(const base::Callback<void(void)>& callback) {
     change_acked_callback_ = callback;

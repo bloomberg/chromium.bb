@@ -57,19 +57,6 @@ class ApplicationConnection {
   // The url identifying the application on the other end of this connection.
   virtual const std::string& GetRemoteApplicationURL() = 0;
 
-  // Establishes a new connection to an application.
-  // TODO(davemoore): Would it be better to expose the ApplicationImpl?
-  virtual ApplicationConnection* ConnectToApplication(
-      const std::string& url) = 0;
-
-  // Connect to application identified by |application_url| and connect to
-  // the service implementation of the interface identified by |Interface|.
-  template <typename Interface>
-  void ConnectToService(const std::string& application_url,
-                        InterfacePtr<Interface>* ptr) {
-    ConnectToApplication(application_url)->ConnectToService(ptr);
-  }
-
   // Raw ServiceProvider interface to remote application.
   virtual ServiceProvider* GetServiceProvider() = 0;
 

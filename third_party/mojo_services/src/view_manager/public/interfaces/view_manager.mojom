@@ -105,10 +105,18 @@ interface ViewManagerService {
   // Shows the surface in the specified view.
   SetViewSurfaceId(uint32 view_id, SurfaceId surface_id) => (bool success);
 
-  // Embeds the app for |url| in the specified view. More specifically this
-  // creates a new connection to the specified url, expecting to get a
-  // ViewManagerClient and configures it with the root view |view|. Fails
-  // if |view| was not created by this connection.
+  // A connection may grant access to a view from another connection by way of
+  // the embed functions. There are two variants of this call:
+  //
+  // . EmbedUrl: the ViewManager connects to the app at the supplied url and
+  //   asks it for a ViewManagerClient.
+  // . With the second variant a ViewManagerClient is directly supplied.
+  //
+  // In both cases the new ViewManagerClient is configured with a root of
+  // |view_id|.
+  //
+  // The caller must have created |view_id|. If not the request fails and the
+  // response is false.
   //
   // A view may only be a root of one connection at a time. Subsequent calls to
   // Embed() for the same view result in the view being removed from the
@@ -129,10 +137,11 @@ interface ViewManagerService {
   // if a different app is subsequently embedded at |view_id| the
   // ServiceProvider connections to its client in the embedded app and any
   // services it provided are not broken and continue to be valid.
-  Embed(string url,
-        uint32 view_id,
-        ServiceProvider&? services,
-        ServiceProvider? exposed_services) => (bool success);
+  EmbedUrl(string url,
+           uint32 view_id,
+           ServiceProvider&? services,
+           ServiceProvider? exposed_services) => (bool success);
+  Embed(uint32 view_id, ViewManagerClient client) => (bool success);
 };
 
 // Changes to views are not sent to the connection that originated the
