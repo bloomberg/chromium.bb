@@ -1902,3 +1902,6 @@ crbug.com/452967 [ Mac ] svg/W3C-SVG-1.1/color-prop-02-f.svg [ Pass Failure Imag
 crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/456412 [ XP ] inspector/sources/debugger/script-snippet-model.html [ Pass Failure ]
+
+crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Failure ]
+crbug.com/457137 [ Linux ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
