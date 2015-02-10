@@ -40,10 +40,6 @@ struct WebFileInfo {
     // with a quiet NaN value representing "not known."
     double modificationTime;
 
-    // FIXME: unused, remove once embedder has stopped updating (and expecting)
-    // this field.
-    double modificationTimeMS;
-
     // The length of the file in bytes.
     // The value -1 means that the length is not set.
     long long length;
@@ -60,7 +56,6 @@ struct WebFileInfo {
 
     WebFileInfo()
         : modificationTime(0.0)
-        , modificationTimeMS(0.0)
         , length(-1)
         , type(TypeUnknown)
     {
