@@ -134,7 +134,7 @@ bool PushMessagingGetChannelIdFunction::RunAsync() {
     }
   }
 
-  DVLOG(2) << "Logged in profile name: " << GetProfile()->GetProfileName();
+  DVLOG(2) << "Logged in profile name: " << GetProfile()->GetProfileUserName();
 
   StartAccessTokenFetch();
   return true;
@@ -162,7 +162,7 @@ void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
   CHECK(invalidation_provider);
   invalidation_provider->GetInvalidationService()->GetIdentityProvider()->
       RemoveActiveAccountRefreshTokenObserver(this);
-  DVLOG(2) << "Newly logged in: " << GetProfile()->GetProfileName();
+  DVLOG(2) << "Newly logged in: " << GetProfile()->GetProfileUserName();
   StartAccessTokenFetch();
 }
 

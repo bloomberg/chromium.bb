@@ -31,7 +31,7 @@ class FakeProfile : public Profile {
   FakeProfile(const std::string& name, const base::FilePath& path);
 
   // Profile overrides.
-  std::string GetProfileName() override;
+  std::string GetProfileUserName() override;
   ProfileType GetProfileType() const override;
   base::FilePath GetPath() const override;
   scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(

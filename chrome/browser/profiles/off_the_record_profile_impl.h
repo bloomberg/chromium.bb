@@ -37,7 +37,7 @@ class OffTheRecordProfileImpl : public Profile {
   void Init();
 
   // Profile implementation.
-  std::string GetProfileName() override;
+  std::string GetProfileUserName() override;
   ProfileType GetProfileType() const override;
   Profile* GetOffTheRecordProfile() override;
   void DestroyOffTheRecordProfile() override;

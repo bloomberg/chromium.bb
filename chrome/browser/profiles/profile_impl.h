@@ -93,7 +93,7 @@ class ProfileImpl : public Profile {
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   // Note that this implementation returns the Google-services username, if any,
   // not the Chrome user's display name.
-  std::string GetProfileName() override;
+  std::string GetProfileUserName() override;
   ProfileType GetProfileType() const override;
   bool IsOffTheRecord() const override;
   Profile* GetOffTheRecordProfile() override;

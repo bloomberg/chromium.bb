@@ -117,7 +117,8 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
     : error_controller_(controller),
       profile_(profile) {
   // Create a unique notification ID for this profile.
-  notification_id_ = kProfileSigninNotificationId + profile->GetProfileName();
+  notification_id_ =
+      kProfileSigninNotificationId + profile->GetProfileUserName();
 
   error_controller_->AddObserver(this);
   OnErrorChanged();

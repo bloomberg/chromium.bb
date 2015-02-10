@@ -174,7 +174,7 @@ void VolumeInfoToVolumeMetadata(
 
   // TODO(kinaba): fill appropriate information once multi-profile support is
   // implemented.
-  volume_metadata->profile.display_name = profile->GetProfileName();
+  volume_metadata->profile.display_name = profile->GetProfileUserName();
   volume_metadata->profile.is_current_profile = true;
 
   if (!volume_info.source_path.empty()) {

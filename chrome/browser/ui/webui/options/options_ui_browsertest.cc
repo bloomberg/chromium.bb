@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, VerifyUnmanagedSignout) {
 
   sign_out_waiter.Wait();
 
-  EXPECT_TRUE(browser()->profile()->GetProfileName() != user);
+  EXPECT_TRUE(browser()->profile()->GetProfileUserName() != user);
   EXPECT_FALSE(signin->IsAuthenticated());
 }
 

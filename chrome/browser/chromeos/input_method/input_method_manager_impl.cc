@@ -130,7 +130,7 @@ std::string InputMethodManagerImpl::StateImpl::Dump() const {
   std::ostringstream os;
 
   os << "################# "
-     << (profile ? profile->GetProfileName() : std::string("NULL"))
+     << (profile ? profile->GetProfileUserName() : std::string("NULL"))
      << " #################\n";
 
   os << "previous_input_method: '"

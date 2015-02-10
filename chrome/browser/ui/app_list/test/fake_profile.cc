@@ -13,7 +13,7 @@ FakeProfile::FakeProfile(const std::string& name, const base::FilePath& path)
       path_(path) {
 }
 
-std::string FakeProfile::GetProfileName() {
+std::string FakeProfile::GetProfileUserName() {
   return name_;
 }
 

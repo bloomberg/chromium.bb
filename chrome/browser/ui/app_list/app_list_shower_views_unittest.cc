@@ -152,9 +152,9 @@ TEST_F(AppListShowerUnitTest, CloseAppListClearsProfile) {
 
 TEST_F(AppListShowerUnitTest, SwitchingProfiles) {
   shower_->ShowForProfile(profile1_.get());
-  EXPECT_EQ("p1", shower_->profile()->GetProfileName());
+  EXPECT_EQ("p1", shower_->profile()->GetProfileUserName());
   shower_->ShowForProfile(profile2_.get());
-  EXPECT_EQ("p2", shower_->profile()->GetProfileName());
+  EXPECT_EQ("p2", shower_->profile()->GetProfileUserName());
 
   // Shouldn't create new view for second profile - it should switch in place.
   EXPECT_EQ(1, views_created_);

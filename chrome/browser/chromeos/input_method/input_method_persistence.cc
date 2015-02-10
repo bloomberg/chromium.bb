@@ -79,7 +79,7 @@ static void SetUserLRUInputMethod(
   PrefService* const local_state = g_browser_process->local_state();
 
   SetUserLRUInputMethodPreference(
-      profile->GetProfileName(), input_method, local_state);
+      profile->GetProfileUserName(), input_method, local_state);
 }
 
 void PersistUserInputMethod(const std::string& input_method,

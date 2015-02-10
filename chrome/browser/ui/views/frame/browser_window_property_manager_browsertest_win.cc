@@ -215,10 +215,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   content::RunMessageLoop();
 
   // The default profile's name should be part of the relaunch name.
-  WaitAndValidateBrowserWindowProperties(
-      base::Bind(&ValidateBrowserWindowProperties,
-                 browser(),
-                 base::UTF8ToUTF16(browser()->profile()->GetProfileName())));
+  WaitAndValidateBrowserWindowProperties(base::Bind(
+      &ValidateBrowserWindowProperties,
+      browser(),
+      base::UTF8ToUTF16(browser()->profile()->GetProfileUserName())));
 
   // The second profile's name should be part of the relaunch name.
   Browser* profile2_browser =

@@ -160,7 +160,7 @@ bool MultiProfileUserController::IsUserAllowedInSession(
 
 void MultiProfileUserController::StartObserving(Profile* user_profile) {
   // Profile name could be empty during tests.
-  if (user_profile->GetProfileName().empty())
+  if (user_profile->GetProfileUserName().empty())
     return;
 
   scoped_ptr<PrefChangeRegistrar> registrar(new PrefChangeRegistrar);
@@ -218,7 +218,7 @@ void MultiProfileUserController::CheckSessionUsers() {
 
 void MultiProfileUserController::OnUserPrefChanged(
     Profile* user_profile) {
-  std::string user_email = user_profile->GetProfileName();
+  std::string user_email = user_profile->GetProfileUserName();
   CHECK(!user_email.empty());
   user_email = gaia::CanonicalizeEmail(user_email);
 

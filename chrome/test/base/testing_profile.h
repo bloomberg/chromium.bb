@@ -237,7 +237,7 @@ class TestingProfile : public Profile {
   TestingProfile* AsTestingProfile() override;
 
   // Profile
-  std::string GetProfileName() override;
+  std::string GetProfileUserName() override;
   ProfileType GetProfileType() const override;
 
   // DEPRECATED, because it's fragile to change a profile from non-incognito

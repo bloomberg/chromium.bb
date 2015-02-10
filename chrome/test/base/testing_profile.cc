@@ -694,7 +694,7 @@ TestingProfile* TestingProfile::AsTestingProfile() {
   return this;
 }
 
-std::string TestingProfile::GetProfileName() {
+std::string TestingProfile::GetProfileUserName() {
   return profile_name_;
 }
 

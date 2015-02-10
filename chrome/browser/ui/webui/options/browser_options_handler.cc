@@ -535,7 +535,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
 #if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromWebUI(web_ui());
-  std::string username = profile->GetProfileName();
+  std::string username = profile->GetProfileUserName();
   if (username.empty()) {
     user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);

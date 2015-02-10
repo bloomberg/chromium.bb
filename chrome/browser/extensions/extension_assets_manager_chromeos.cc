@@ -280,7 +280,7 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
     InstallExtensionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const std::string& user_id = profile->GetProfileName();
+  const std::string& user_id = profile->GetProfileUserName();
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager) {
     NOTREACHED();
@@ -409,7 +409,7 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
   for (size_t i = 0; i < pending_installs.size(); i++) {
     ExtensionAssetsManagerHelper::PendingInstallInfo& info =
         pending_installs[i];
-      users->AppendString(info.profile->GetProfileName());
+      users->AppendString(info.profile->GetProfileUserName());
 
     ExtensionAssetsManagerChromeOS::GetFileTaskRunner(info.profile)->PostTask(
         FROM_HERE,
@@ -450,7 +450,7 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
     versions.push_back(it.key());
   }
 
-  base::StringValue user_name(profile->GetProfileName());
+  base::StringValue user_name(profile->GetProfileUserName());
   for (std::vector<std::string>::const_iterator it = versions.begin();
        it != versions.end(); it++) {
     base::DictionaryValue* version_info = NULL;

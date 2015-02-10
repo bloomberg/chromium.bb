@@ -20,7 +20,8 @@
 namespace multi_user_util {
 
 std::string GetUserIDFromProfile(Profile* profile) {
-  return GetUserIDFromEmail(profile->GetOriginalProfile()->GetProfileName());
+  return GetUserIDFromEmail(
+      profile->GetOriginalProfile()->GetProfileUserName());
 }
 
 std::string GetUserIDFromEmail(const std::string& email) {

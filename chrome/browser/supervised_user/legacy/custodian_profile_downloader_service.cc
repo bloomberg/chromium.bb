@@ -31,7 +31,7 @@ void CustodianProfileDownloaderService::DownloadProfile(
   }
 
   download_callback_ = callback;
-  std::string current_email = custodian_profile_->GetProfileName();
+  std::string current_email = custodian_profile_->GetProfileUserName();
   if (gaia::AreEmailsSame(last_downloaded_profile_email_, current_email)) {
     // Profile was previously downloaded successfully, use it as it is unlikely
     // that we will need to download it again.

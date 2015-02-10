@@ -754,7 +754,7 @@ ProfileImpl::~ProfileImpl() {
     SetExitType(EXIT_NORMAL);
 }
 
-std::string ProfileImpl::GetProfileName() {
+std::string ProfileImpl::GetProfileUserName() {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(this);
   if (signin_manager)

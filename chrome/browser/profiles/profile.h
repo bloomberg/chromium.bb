@@ -151,9 +151,9 @@ class Profile : public content::BrowserContext {
   // operations should be performed.
   virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() = 0;
 
-  // Returns the name associated with this profile. This name is displayed in
-  // the browser frame.
-  virtual std::string GetProfileName() = 0;
+  // Returns the username associated with this profile, if any. In non-test
+  // implementations, this is usually the Google-services email address.
+  virtual std::string GetProfileUserName() = 0;
 
   // Returns the profile type.
   virtual ProfileType GetProfileType() const = 0;

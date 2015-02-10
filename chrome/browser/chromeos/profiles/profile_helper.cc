@@ -267,7 +267,7 @@ user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
       return const_cast<user_manager::User*>(
           user_manager::UserManager::Get()->GetPrimaryUser());
 
-    const std::string& user_name = profile->GetProfileName();
+    const std::string& user_name = profile->GetProfileUserName();
     for (user_manager::UserList::const_iterator it =
              user_list_for_testing_.begin();
          it != user_list_for_testing_.end();

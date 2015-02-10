@@ -386,7 +386,7 @@ class IncidentReportingServiceTest : public testing::Test {
         FROM_HERE,
         base::Bind(&TestingProfileManager::DeleteTestingProfile,
                    base::Unretained(&profile_manager_),
-                   profile->GetProfileName()));
+                   profile->GetProfileUserName()));
   }
 
   // A callback run by the test fixture when a profile is added. An incident
@@ -395,7 +395,9 @@ class IncidentReportingServiceTest : public testing::Test {
     // The instance must have already been created.
     ASSERT_TRUE(instance_);
     // Add a test incident to the service if requested.
-    switch (profile_properties_[profile->GetProfileName()].on_addition_action) {
+    OnProfileAdditionAction action =
+        profile_properties_[profile->GetProfileUserName()].on_addition_action;
+    switch (action) {
       case ON_PROFILE_ADDITION_ADD_INCIDENT:
         AddTestIncident(profile);
         break;
@@ -404,9 +406,7 @@ class IncidentReportingServiceTest : public testing::Test {
         AddTestIncident(profile);
         break;
       default:
-        ASSERT_EQ(
-            ON_PROFILE_ADDITION_NO_ACTION,
-            profile_properties_[profile->GetProfileName()].on_addition_action);
+        ASSERT_EQ(ON_PROFILE_ADDITION_NO_ACTION, action);
         break;
     }
   }
