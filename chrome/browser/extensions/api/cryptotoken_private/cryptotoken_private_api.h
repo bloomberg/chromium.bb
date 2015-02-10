@@ -38,6 +38,20 @@ class CryptotokenPrivateRequestPermissionFunction
   void OnInfobarResponse(cryptotoken_private::PermissionResult result);
 };
 
+class CryptotokenPrivateCanOriginAssertAppIdFunction
+    : public UIThreadExtensionFunction {
+  public:
+    CryptotokenPrivateCanOriginAssertAppIdFunction();
+    DECLARE_EXTENSION_FUNCTION("cryptotokenPrivate.canOriginAssertAppId",
+                               CRYPTOTOKENPRIVATE_CANORIGINASSERTAPPID)
+  protected:
+    ~CryptotokenPrivateCanOriginAssertAppIdFunction() override {}
+    ResponseAction Run() override;
+
+  private:
+    ChromeExtensionFunctionDetails chrome_details_;
+};
+
 }  // namespace api
 }  // namespace extensions
 
