@@ -144,6 +144,39 @@ static bool parseParameterName(CharType*& position, CharType* end, LinkHeader::L
 
 // Before:
 //
+// <cat.jpg>; rel="preload"; type="image/jpeg";
+//                ^                            ^
+//            position                        end
+//
+// After (if the parameter starts with a quote, otherwise the method returns false)
+//
+// <cat.jpg>; rel="preload"; type="image/jpeg";
+//                         ^                   ^
+//                     position               end
+template <typename CharType>
+static bool skipQuotesIfNeeded(CharType*& position, CharType* end, bool& completeQuotes)
+{
+    ASSERT(position <= end);
+    unsigned char quote;
+    completeQuotes = false;
+    if (skipExactly<CharType>(position, end, '\''))
+        quote = '\'';
+    else if (skipExactly<CharType>(position, end, '"'))
+        quote = '"';
+    else
+        return false;
+
+    while (!completeQuotes && position < end) {
+        skipUntil(position, end, static_cast<CharType>(quote));
+        if (*(position - 1) != '\\')
+            completeQuotes = true;
+        completeQuotes = skipExactly(position, end, static_cast<CharType>(quote)) && completeQuotes;
+    }
+    return true;
+}
+
+// Before:
+//
 // <cat.jpg>; rel=preload; foo=bar
 //                ^               ^
 //            position            end
@@ -157,13 +190,22 @@ template <typename CharType>
 static bool parseParameterValue(CharType*& position, CharType* end, String& value)
 {
     CharType* valueStart = position;
-    skipWhile<CharType, isValidParameterValueChar>(position, end);
     CharType* valueEnd = position;
+    bool completeQuotes;
+    bool hasQuotes = skipQuotesIfNeeded(position, end, completeQuotes);
+    if (!hasQuotes) {
+        skipWhile<CharType, isValidParameterValueChar>(position, end);
+    }
+    valueEnd = position;
     skipWhile<CharType, isWhitespace>(position, end);
-    if ((valueEnd == valueStart) || (position != end && !isValidParameterValueEnd(*position)))
+    if ((!completeQuotes && valueStart == valueEnd) || (position != end && !isValidParameterValueEnd(*position)))
         return false;
+    if (hasQuotes)
+        ++valueStart;
+    if (completeQuotes)
+        --valueEnd;
     value = String(valueStart, valueEnd - valueStart);
-    return true;
+    return !hasQuotes || completeQuotes;
 }
 
 void LinkHeader::setValue(LinkParameterName name, String value)
