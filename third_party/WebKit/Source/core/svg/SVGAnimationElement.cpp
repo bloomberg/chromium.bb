@@ -373,7 +373,7 @@ bool SVGAnimationElement::isTargetAttributeCSSProperty(SVGElement* targetElement
 
 SVGAnimationElement::ShouldApplyAnimation SVGAnimationElement::shouldApplyAnimation(SVGElement* targetElement, const QualifiedName& attributeName)
 {
-    if (!hasValidAttributeType() || !targetElement || attributeName == anyQName())
+    if (!hasValidAttributeType() || !targetElement || attributeName == anyQName() || !targetElement->inActiveDocument())
         return DontApplyAnimation;
 
     // Always animate CSS properties, using the ApplyCSSAnimation code path, regardless of the attributeType value.
@@ -654,6 +654,9 @@ void SVGAnimationElement::updateAnimation(float percent, unsigned repeatCount, S
 void SVGAnimationElement::computeCSSPropertyValue(SVGElement* element, CSSPropertyID id, String& value)
 {
     ASSERT(element);
+    // FIXME: StyleEngine doesn't support document without a frame.
+    // Refer to comment in Element::computedStyle.
+    ASSERT(element->inActiveDocument());
 
     // Don't include any properties resulting from CSS Transitions/Animations or SMIL animations, as we want to retrieve the "base value".
     element->setUseOverrideComputedStyle(true);
