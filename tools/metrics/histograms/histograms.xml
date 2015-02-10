@@ -7874,6 +7874,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     units="Number of Actions">
   <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <obsolete>
+    Deprecated 2/2014.
+  </obsolete>
   <summary>
     The number of extensions which would display an Active Script Running
     indiciation to the user. Recorded at page close.

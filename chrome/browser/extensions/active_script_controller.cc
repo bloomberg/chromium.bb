@@ -287,10 +287,6 @@ void ActiveScriptController::NotifyChange(const Extension* extension) {
 }
 
 void ActiveScriptController::LogUMA() const {
-  UMA_HISTOGRAM_COUNTS_100(
-      "Extensions.ActiveScriptController.ShownActiveScriptsOnPage",
-      pending_requests_.size());
-
   // We only log the permitted extensions metric if the feature was used at all
   // on the page, because otherwise the data will be boring.
   if (was_used_on_page_) {
