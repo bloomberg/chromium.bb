@@ -8,8 +8,12 @@
 
 namespace ui {
 
-GbmWrapper::GbmWrapper(const char* device_path)
+GbmWrapper::GbmWrapper(const base::FilePath& device_path)
     : DriWrapper(device_path), device_(nullptr) {
+}
+
+GbmWrapper::GbmWrapper(const base::FilePath& device_path, base::File file)
+    : DriWrapper(device_path, file.Pass()), device_(nullptr) {
 }
 
 GbmWrapper::~GbmWrapper() {

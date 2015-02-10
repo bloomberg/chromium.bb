@@ -19,9 +19,8 @@ class CrtcController;
 // The real DriWrapper makes actual DRM calls which we can't use in unit tests.
 class MockDriWrapper : public ui::DriWrapper {
  public:
-  MockDriWrapper(int fd);
-  MockDriWrapper(int fd,
-                 bool use_sync_flips,
+  MockDriWrapper();
+  MockDriWrapper(bool use_sync_flips,
                  std::vector<uint32_t> crtcs,
                  size_t planes_per_crtc);
 

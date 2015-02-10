@@ -48,7 +48,7 @@ const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : dri_(new DriWrapper(kDefaultGraphicsCardPath)),
+      : dri_(new DriWrapper(base::FilePath(kDefaultGraphicsCardPath))),
         buffer_generator_(new DriBufferGenerator()),
         screen_manager_(new ScreenManager(buffer_generator_.get())),
         device_manager_(CreateDeviceManager()) {}

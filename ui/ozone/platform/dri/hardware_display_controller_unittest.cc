@@ -70,7 +70,7 @@ void HardwareDisplayControllerTest::SetUp() {
   std::vector<uint32_t> crtcs;
   crtcs.push_back(kPrimaryCrtc);
   crtcs.push_back(kSecondaryCrtc);
-  drm_ = new ui::MockDriWrapper(3, false, crtcs, kPlanesPerCrtc);
+  drm_ = new ui::MockDriWrapper(false, crtcs, kPlanesPerCrtc);
   controller_.reset(new ui::HardwareDisplayController(
       scoped_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kPrimaryCrtc, kPrimaryConnector))));

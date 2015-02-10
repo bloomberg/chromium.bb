@@ -39,8 +39,8 @@ class MockHardwareDisplayPlaneManager
 
 }  // namespace
 
-MockDriWrapper::MockDriWrapper(int fd)
-    : DriWrapper(""),
+MockDriWrapper::MockDriWrapper()
+    : DriWrapper(base::FilePath(), base::File()),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -53,15 +53,13 @@ MockDriWrapper::MockDriWrapper(int fd)
       page_flip_expectation_(true),
       create_dumb_buffer_expectation_(true),
       current_framebuffer_(0) {
-  fd_ = fd;
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
 }
 
-MockDriWrapper::MockDriWrapper(int fd,
-                               bool use_sync_flips,
+MockDriWrapper::MockDriWrapper(bool use_sync_flips,
                                std::vector<uint32_t> crtcs,
                                size_t planes_per_crtc)
-    : DriWrapper(""),
+    : DriWrapper(base::FilePath(), base::File()),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -76,13 +74,11 @@ MockDriWrapper::MockDriWrapper(int fd,
       create_dumb_buffer_expectation_(true),
       use_sync_flips_(use_sync_flips),
       current_framebuffer_(0) {
-  fd_ = fd;
   plane_manager_.reset(
       new MockHardwareDisplayPlaneManager(this, crtcs, planes_per_crtc));
 }
 
 MockDriWrapper::~MockDriWrapper() {
-  fd_ = -1;
 }
 
 ScopedDrmCrtcPtr MockDriWrapper::GetCrtc(uint32_t crtc_id) {

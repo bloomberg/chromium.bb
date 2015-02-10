@@ -154,7 +154,7 @@ class OzonePlatformGbm : public OzonePlatform {
   void InitializeGPU() override {
     gl_api_loader_.reset(new GlApiLoader());
     // Async page flips are supported only on surfaceless mode.
-    gbm_ = new GbmWrapper(kDefaultGraphicsCardPath);
+    gbm_ = new GbmWrapper(base::FilePath(kDefaultGraphicsCardPath));
     gbm_->Initialize();
     buffer_generator_.reset(new GbmBufferGenerator());
     screen_manager_.reset(new ScreenManager(buffer_generator_.get()));

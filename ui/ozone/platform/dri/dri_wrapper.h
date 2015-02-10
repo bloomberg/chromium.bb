@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -42,7 +44,8 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
                               unsigned int /* seconds */,
                               unsigned int /* useconds */)> PageFlipCallback;
 
-  DriWrapper(const char* device_path);
+  DriWrapper(const base::FilePath& device_path);
+  DriWrapper(const base::FilePath& device_path, base::File file);
 
   // Open device.
   virtual void Initialize();
@@ -155,7 +158,7 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
   virtual bool SetMaster();
   virtual bool DropMaster();
 
-  int get_fd() const { return fd_; }
+  int get_fd() const { return file_.GetPlatformFile(); }
 
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
@@ -164,18 +167,16 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
 
   virtual ~DriWrapper();
 
-  // The file descriptor associated with this wrapper. All DRM operations will
-  // be performed using this FD.
-  // TODO(dnicoara) Make this a base::File
-  int fd_;
-
   scoped_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
  private:
   class IOWatcher;
 
   // Path to DRM device.
-  const char* device_path_;
+  const base::FilePath device_path_;
+
+  // DRM device.
+  base::File file_;
 
   // Helper thread to perform IO listener operations.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

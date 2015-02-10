@@ -233,7 +233,7 @@ TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   std::vector<uint32_t> crtcs;
   crtcs.push_back(100);
   scoped_refptr<ui::MockDriWrapper> drm =
-      new ui::MockDriWrapper(3, false, crtcs, 2);
+      new ui::MockDriWrapper(false, crtcs, 2);
   ui::OverlayPlaneList assigns;
   scoped_refptr<FakeScanoutBuffer> fake_buffer = new FakeScanoutBuffer();
   assigns.push_back(ui::OverlayPlane(fake_buffer));

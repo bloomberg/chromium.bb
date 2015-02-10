@@ -13,7 +13,8 @@ namespace ui {
 
 class GbmWrapper : public DriWrapper {
  public:
-  GbmWrapper(const char* device_path);
+  GbmWrapper(const base::FilePath& device_path);
+  GbmWrapper(const base::FilePath& device_path, base::File file);
   ~GbmWrapper() override;
 
   gbm_device* device() const { return device_; }
