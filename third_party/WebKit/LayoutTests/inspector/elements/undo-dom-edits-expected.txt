@@ -64,7 +64,10 @@ Initial:
       </div>
   </div>
 Post-action:
-+ <div id="testEditAsHTML">…</div>
+- <div id="testEditAsHTML">
+    + <div id="node-to-edit-as-html">…</div>
+      <span>Second node</span>
+  </div>
 == Expanded: ==
 - <div id="testEditAsHTML">
     - <div id="node-to-edit-as-html">
@@ -73,7 +76,9 @@ Post-action:
       <span>Second node</span>
   </div>
 Post-undo (initial):
-+ <div id="testEditAsHTML">…</div>
+- <div id="testEditAsHTML">
+    + <div id="node-to-edit-as-html">…</div>
+  </div>
 == Expanded: ==
 - <div id="testEditAsHTML">
     - <div id="node-to-edit-as-html">
@@ -81,7 +86,10 @@ Post-undo (initial):
       </div>
   </div>
 Post-redo (action):
-+ <div id="testEditAsHTML">…</div>
+- <div id="testEditAsHTML">
+    + <div id="node-to-edit-as-html">…</div>
+      <span>Second node</span>
+  </div>
 == Expanded: ==
 - <div id="testEditAsHTML">
     - <div id="node-to-edit-as-html">
