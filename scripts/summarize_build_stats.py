@@ -42,10 +42,12 @@ class CLStatsEngine(object):
   BOT_TYPE = constants.CQ
   GET_SHEETS_VERSION = False
 
-  def __init__(self, email, db, ss_key=gather_builder_stats.CQ_SS_KEY):
+  def __init__(self, email, db, ss_key=gather_builder_stats.CQ_SS_KEY,
+               annotations_from_cidb=False):
     self.email = email
     self.db = db
     self.ss_key = ss_key
+    self.annotations_from_cidb = annotations_from_cidb
     self.actions = []
     self.builds = []
     self.per_patch_actions = {}
@@ -55,7 +57,7 @@ class CLStatsEngine(object):
     self.summary = {}
     self.builds_by_build_id = {}
 
-  def GatherFailureReasons(self, creds):
+  def GatherFailureReasonsFromSpreadSheet(self, creds):
     """Gather the reasons why our builds failed and the blamed bugs or CLs.
 
     Args:
@@ -78,6 +80,29 @@ class CLStatsEngine(object):
         self.reasons[build_number] = str(row[ss_failure_category])
         self.blames[build_number] = self.ProcessBlameString(
             str(row[ss_failure_blame]))
+
+  def GatherBuildAnnotations(self):
+    """Gather the failure annotations for builds from cidb."""
+    annotations_by_builds = self.db.GetAnnotationsForBuilds(
+        [b['id'] for b in self.builds])
+    for b in self.builds:
+      build_id = b['id']
+      build_number = b['build_number']
+      annotations = annotations_by_builds.get(build_id, [])
+      if not annotations:
+        self.reasons[build_number] = 'None'
+        self.blames[build_number] = []
+      else:
+        # TODO(pprabhu) crbug.com/458275
+        # We currently squash together multiple annotations into one to ease
+        # co-existence with the spreadsheet based logic. Once we've moved off of
+        # using the spreadsheet, we should update all uses of the annotations to
+        # expect one or more annotations.
+        self.reasons[build_number] = '; '.join(
+            a['failure_category'] for a in annotations)
+        self.blames[build_number] = []
+        for annotation in annotations:
+          self.blames[build_number] += annotation
 
   def CollateActions(self, actions):
     """Collates a list of actions into per-patch and per-cl actions.
@@ -189,7 +214,10 @@ class CLStatsEngine(object):
       self.builds.sort(key=lambda x: x['build_number'])
 
     self.actions = self.db.GetActionHistory(start_date, end_date)
-    self.GatherFailureReasons(creds)
+    if self.annotations_from_cidb:
+      self.GatherBuildAnnotations()
+    else:
+      self.GatherFailureReasonsFromSpreadSheet(creds)
 
     self.builds_by_build_id.update(
         {b['id'] : b for b in self.builds})
@@ -588,6 +616,11 @@ def _CheckOptions(options):
                          options.start_date)
     return False
 
+  if not options.email and not options.annotations_from_cidb:
+    cros_build_lib.Error('--email is required if not using '
+                         '--annotations-from-cidb.')
+    return False
+
   return True
 
 
@@ -616,6 +649,9 @@ def GetParser():
                                          '(inclusive).')
   parser.add_argument('--end-date', action='store', type='date', default=None,
                       help='Limit scope to an end date in the past.')
+  parser.add_argument('--annotations-from-cidb', action='store_true',
+                      default=False,
+                      help='Gather annotations from CIDB (experimental)')
 
   # TODO(pprabhu) Remove the following options once we move off of
   # gather_builder_stats.
@@ -654,13 +690,17 @@ def main(argv):
       start_date = end_date - datetime.timedelta(days=1)
 
   # TODO(pprabhu) Remove this once we remove the dependence on spreadsheet.
-  creds = gather_builder_stats.PrepareCreds(options.email)
+  if not options.annotations_from_cidb:
+    creds = gather_builder_stats.PrepareCreds(options.email)
+  else:
+    creds = None
 
   # CL stats engine uses the CQ spreadsheet to fetch failure reasons
   cl_stats_engine = CLStatsEngine(
       options.email,
       db=db,
-      ss_key=options.ss_key or gather_builder_stats.CQ_SS_KEY)
+      ss_key=options.ss_key or gather_builder_stats.CQ_SS_KEY,
+      annotations_from_cidb=options.annotations_from_cidb)
   cl_stats_engine.Gather(start_date, end_date,
                          starting_build_number=options.starting_build,
                          creds=creds)

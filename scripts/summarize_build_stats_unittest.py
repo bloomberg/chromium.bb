@@ -174,7 +174,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                 '_FetchBuildData', side_effect=[cq_builddata, pre_cq_builddata])
       stack.Add(mock.patch.object, gather_builder_stats, 'PrepareCreds')
       stack.Add(mock.patch.object, summarize_build_stats.CLStatsEngine,
-                'GatherFailureReasons')
+                'GatherFailureReasonsFromSpreadSheet')
       cl_stats = summarize_build_stats.CLStatsEngine('foo@bar.com',
                                                      self.fake_db)
       cl_stats.Gather(datetime.date.today(), datetime.date.today())

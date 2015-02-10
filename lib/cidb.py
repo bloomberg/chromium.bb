@@ -912,7 +912,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('date(start_time) >= date("%s")' %
                            start_date.strftime(self._DATE_FORMAT))
     if end_date is not None:
-      where_clauses.append('date(finish_time) <= date("%s")' %
+      where_clauses.append('date(start_time) <= date("%s")' %
                            end_date.strftime(self._DATE_FORMAT))
     if starting_build_number is not None:
       where_clauses.append('build_number >= %d' % starting_build_number)
@@ -929,6 +929,35 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
     return [dict(zip(columns, values)) for values in results]
+
+  @minimum_schema(26)
+  def GetAnnotationsForBuilds(self, build_ids):
+    """Returns the annotations for given build_ids.
+
+    Args:
+      build_ids: list of build_ids for which annotations are requested.
+
+    Returns:
+      {id: annotations} where annotations is itself a list of dicts containing
+      annotations. Valid keys in annotations are [failure_category,
+      failure_message, blame_url, notes].
+    """
+    columns_to_report = ['failure_category', 'failure_message',
+                         'blame_url', 'notes']
+    where_or_clauses = []
+    for build_id in build_ids:
+      where_or_clauses.append('build_id = %s' % build_id)
+    annotations = self._SelectWhere('annotationsTable',
+                                    ' OR '.join(where_or_clauses),
+                                    ['build_id'] + columns_to_report)
+
+    results = {}
+    for annotation in annotations:
+      build_id = annotation['build_id']
+      if build_id not in results:
+        results[build_id] = []
+      results[build_id].append(annotation)
+    return results
 
   @minimum_schema(11)
   def GetActionsForChanges(self, changes):
