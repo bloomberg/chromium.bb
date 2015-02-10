@@ -8579,10 +8579,10 @@ I don't think this site should be blocked!
           Use a number to indicate how many copies to print (1 or more).
         </message>
         <message name="IDS_PRINT_PREVIEW_INCREMENT_TITLE" desc="Title shown when the user hovers mouse over the increment button. Also added for improved accessibility">
-          Increment
+          More copies
         </message>
         <message name="IDS_PRINT_PREVIEW_DECREMENT_TITLE" desc="Title shown when the user hovers mouse over the decrement button. Also added for improved accessibility">
-          Decrement
+          Less copies
         </message>
         <message name="IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL" desc="ARIA label used by screen reader to explain the purpose of the page selection textbox">
           Print Specific Pages
