@@ -148,7 +148,8 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
             return false;
         LinkRelAttribute relAttribute(header.rel());
         KURL url = document->completeURL(header.url());
-        dnsPrefetchIfNeeded(relAttribute, url, *document);
+        if (RuntimeEnabledFeatures::linkHeaderEnabled())
+            dnsPrefetchIfNeeded(relAttribute, url, *document);
 
         if (RuntimeEnabledFeatures::linkPreconnectEnabled())
             preconnectIfNeeded(relAttribute, url, *document);
