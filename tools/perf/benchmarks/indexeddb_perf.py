@@ -24,7 +24,6 @@ import os
 
 from metrics import memory
 from metrics import power
-from metrics import v8_object_stats
 from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry.core import util
@@ -32,17 +31,12 @@ from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.value import scalar
 
-_V8_COUNTER_NAMES = [
-    'V8.OsMemoryAllocated',
-  ]
-
 class _IndexedDbMeasurement(page_test.PageTest):
   def __init__(self):
     super(_IndexedDbMeasurement, self).__init__(
         action_name_to_run='RunPageInteractions')
     self._memory_metric = None
     self._power_metric = None
-    self._v8_object_stats_metric = None
 
   def WillStartBrowser(self, platform):
     """Initialize metrics once right before the browser has been launched."""
@@ -51,13 +45,10 @@ class _IndexedDbMeasurement(page_test.PageTest):
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""
     self._memory_metric = memory.MemoryMetric(browser)
-    self._v8_object_stats_metric = (
-      v8_object_stats.V8ObjectStatsMetric(_V8_COUNTER_NAMES))
 
   def DidNavigateToPage(self, page, tab):
     self._memory_metric.Start(page, tab)
     self._power_metric.Start(page, tab)
-    self._v8_object_stats_metric.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
@@ -66,11 +57,9 @@ class _IndexedDbMeasurement(page_test.PageTest):
 
     self._power_metric.Stop(page, tab)
     self._memory_metric.Stop(page, tab)
-    self._v8_object_stats_metric.Stop(page, tab)
 
     self._memory_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
-    self._v8_object_stats_metric.AddResults(tab, results)
 
     js_get_results = "JSON.stringify(automation.getResults());"
     result_dict = json.loads(tab.EvaluateJavaScript(js_get_results))
@@ -90,7 +79,6 @@ class _IndexedDbMeasurement(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
     power.PowerMetric.CustomizeBrowserOptions(options)
-    v8_object_stats.V8ObjectStatsMetric.CustomizeBrowserOptions(options)
 
 class IndexedDb(benchmark.Benchmark):
   """Chromium's IndexedDB Performance tests."""

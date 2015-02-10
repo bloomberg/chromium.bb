@@ -16,10 +16,6 @@ class _PageCycler(benchmark.Benchmark):
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
-    parser.add_option('--v8-object-stats',
-        action='store_true',
-        help='Enable detailed V8 object statistics.')
-
     parser.add_option('--report-speed-index',
         action='store_true',
         help='Enable the speed index metric.')
@@ -32,7 +28,6 @@ class _PageCycler(benchmark.Benchmark):
         page_repeat = options.page_repeat,
         pageset_repeat = options.pageset_repeat,
         cold_load_percent = options.cold_load_percent,
-        record_v8_object_stats = options.v8_object_stats,
         report_speed_index = options.report_speed_index)
 
 
@@ -158,7 +153,6 @@ class PageCyclerNetsimTop10(_PageCycler):
         page_repeat = options.page_repeat,
         pageset_repeat = options.pageset_repeat,
         cold_load_percent = options.cold_load_percent,
-        record_v8_object_stats = options.v8_object_stats,
         report_speed_index = options.report_speed_index,
         clear_cache_before_each_run = True)
 

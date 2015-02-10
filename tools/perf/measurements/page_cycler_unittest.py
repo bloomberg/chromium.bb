@@ -105,13 +105,11 @@ class FakePlatform(object):
 class PageCyclerUnitTest(unittest.TestCase):
 
   def SetUpCycler(self, page_repeat=1, pageset_repeat=10, cold_load_percent=50,
-                  record_v8_object_stats=False, report_speed_index=False,
-                  setup_memory_module=False):
+                  report_speed_index=False, setup_memory_module=False):
     cycler = page_cycler.PageCycler(
         page_repeat = page_repeat,
         pageset_repeat = pageset_repeat,
         cold_load_percent = cold_load_percent,
-        record_v8_object_stats = record_v8_object_stats,
         report_speed_index = report_speed_index)
     options = browser_options.BrowserFinderOptions()
     options.browser_options.platform = FakePlatform()
