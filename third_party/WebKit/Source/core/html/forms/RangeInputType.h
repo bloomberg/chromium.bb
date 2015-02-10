@@ -73,6 +73,9 @@ private:
     void updateTickMarkValues();
     virtual Decimal findClosestTickMarkValue(const Decimal&) override;
 
+    // InputTypeView function:
+    virtual void updateView() override;
+
     bool m_tickMarkValuesDirty;
     Vector<Decimal> m_tickMarkValues;
 };

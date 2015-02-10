@@ -273,17 +273,19 @@ void RangeInputType::sanitizeValueInResponseToMinOrMaxAttributeChange()
 {
     if (element().hasDirtyValue())
         element().setValue(element().value());
-
-    sliderThumbElement()->setPositionFromValue();
+    element().updateView();
 }
 
 void RangeInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
     InputType::setValue(value, valueChanged, eventBehavior);
 
-    if (!valueChanged)
-        return;
+    if (valueChanged)
+        element().updateView();
+}
 
+void RangeInputType::updateView()
+{
     sliderThumbElement()->setPositionFromValue();
 }
 
