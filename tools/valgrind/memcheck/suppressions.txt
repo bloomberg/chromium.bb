@@ -3398,13 +3398,31 @@
    fun:_ZN8remoting13ClipboardAura4Core20InjectClipboardEventERKNS_8protocol14ClipboardEventE
 }
 {
-   bug_431213
+   bug_431213_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3gin22CreateFunctionTemplateIF*LocalINS6_16FunctionTemplateEEEPNS6_7IsolateEN4base8CallbackIT_EEi
    fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsIMN*CreateTemplateEPN2v87IsolateES6_
    fun:_ZN3gin21ObjectTemplateBuilder9SetMethodIMN*0_RKN4base16BasicStringPieceISsEERKT_
    fun:_ZN*24GetObjectTemplateBuilderEPN2v87IsolateE
+}
+{
+   bug_431213_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gin22CreateFunctionTemplateIF*IsolateEN4base8CallbackIT_EEi
+   fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsIF*
+   fun:_ZN3gin21ObjectTemplateBuilder9SetMethod*RKN4base16BasicStringPieceISsEERKT_
+   fun:_ZN4mojo2js*GetModuleEPN2v87IsolateE
+}
+{
+   bug_431213_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gin22CreateFunctionTemplateIF*IsolateEN4base8CallbackIT_EEi
+   fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsI*
+   fun:_ZN3gin21ObjectTemplateBuilder9SetMethod*RKN4base16BasicStringPieceISsEERKT_
+   fun:_ZN10extensions19TestServiceProvider24GetObjectTemplateBuilderEPN2v87IsolateE
 }
 {
    bug_436110
