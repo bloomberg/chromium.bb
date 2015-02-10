@@ -18,7 +18,6 @@
 #include "media/filters/renderer_impl.h"
 #include "media/filters/video_renderer_impl.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
-#include "media/mojo/services/mojo_demuxer_stream_adapter.h"
 #include "media/mojo/services/renderer_config.h"
 
 namespace media {

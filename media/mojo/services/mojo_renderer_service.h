@@ -26,7 +26,6 @@ namespace media {
 
 class AudioRendererSink;
 class DemuxerStreamProviderShim;
-class MojoDemuxerStreamAdapter;
 class Renderer;
 
 // A mojo::MediaRenderer implementation that uses media::AudioRenderer to
