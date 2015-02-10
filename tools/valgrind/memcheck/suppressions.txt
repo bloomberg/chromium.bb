@@ -3425,6 +3425,15 @@
    fun:_ZN10extensions19TestServiceProvider24GetObjectTemplateBuilderEPN2v87IsolateE
 }
 {
+   bug_431213_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gin22CreateFunctionTemplateIF*IsolateEN4base8CallbackIT_EEi
+   fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsI*
+   fun:_ZN3gin21ObjectTemplateBuilder9SetMethod*RKN4base16BasicStringPieceISsEERKT_
+   fun:_ZN10extensions12_GLOBAL__N_111TestNatives24GetObjectTemplateBuilderEPN2v87IsolateE
+}
+{
    bug_436110
    Memcheck:Param
    socketcall.sendto(msg)
