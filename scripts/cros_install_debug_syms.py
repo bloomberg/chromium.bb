@@ -29,7 +29,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import gs
-from portage import create_trees
+
+if cros_build_lib.IsInsideChroot():
+  from portage import create_trees
 
 
 DEBUG_SYMS_EXT = '.debug.tbz2'
@@ -269,9 +271,12 @@ def GetMatchingCPV(package, vardb):
 def main(argv):
   options = ParseArgs(argv)
 
-  cros_build_lib.AssertInsideChroot()
+  if not cros_build_lib.IsInsideChroot():
+    raise commandline.ChrootRequiredError()
+
   if os.geteuid() != 0:
-    cros_build_lib.Die('This script must be ran as root.')
+    cros_build_lib.SudoRunCommand(sys.argv)
+    return
 
   # sysroot must have a trailing / as the tree dictionary produced by
   # create_trees in indexed with a trailing /.
