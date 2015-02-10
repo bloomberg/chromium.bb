@@ -101,8 +101,6 @@ source_set("google_apis") {
     "gaia/identity_provider.h",
     "gaia/merge_session_helper.cc",
     "gaia/merge_session_helper.h",
-    "gaia/oauth_request_signer.cc",
-    "gaia/oauth_request_signer.h",
     "gaia/oauth2_access_token_consumer.h",
     "gaia/oauth2_access_token_fetcher.cc",
     "gaia/oauth2_access_token_fetcher.h",
@@ -116,6 +114,8 @@ source_set("google_apis") {
     "gaia/oauth2_token_service.h",
     "gaia/oauth2_token_service_request.cc",
     "gaia/oauth2_token_service_request.h",
+    "gaia/oauth_request_signer.cc",
+    "gaia/oauth_request_signer.h",
     "gaia/ubertoken_fetcher.cc",
     "gaia/ubertoken_fetcher.h",
     "google_api_keys.cc",
@@ -199,18 +199,18 @@ source_set("test_support") {
 if (!is_win || link_chrome_on_windows) {
   test("google_apis_unittest") {
     sources = [
-      "google_api_keys_unittest.cc",
       "gaia/gaia_auth_fetcher_unittest.cc",
       "gaia/gaia_auth_util_unittest.cc",
       "gaia/gaia_oauth_client_unittest.cc",
       "gaia/google_service_auth_error_unittest.cc",
       "gaia/merge_session_helper_unittest.cc",
-      "gaia/oauth_request_signer_unittest.cc",
       "gaia/oauth2_access_token_fetcher_impl_unittest.cc",
       "gaia/oauth2_api_call_flow_unittest.cc",
       "gaia/oauth2_mint_token_flow_unittest.cc",
       "gaia/oauth2_token_service_unittest.cc",
+      "gaia/oauth_request_signer_unittest.cc",
       "gaia/ubertoken_fetcher_unittest.cc",
+      "google_api_keys_unittest.cc",
     ]
 
     configs += [ ":key_defines" ]
