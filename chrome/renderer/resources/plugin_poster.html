@@ -12,28 +12,41 @@ function notifyDidFinishLoading() {
 <link rel="stylesheet" href="plugin_placeholders.css"></link>
 <style>
 #outer {
+  border: none;
   cursor: pointer;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+#shielding {
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }
 
 #plugin_icon {
-  opacity: 0.2;
+  opacity: 0.8;
 }
 
-#outer:hover #plugin_icon {
-  opacity: 1.0;
+#plugin_icon:hover {
+  opacity: 0.95;
 }
 
 #inner {
-  margin-top: -23px;
+  margin-top: -25px;
 }
 </style>
 </head>
 
-<body i18n-values=".style.background-image:background" onload="notifyDidFinishLoading();">
-  <div i18n-values="title:name" id="outer" onclick="plugin.load()">
-    <div id="inner">
-      <div><img id="plugin_icon" src="play.png" /></div>
-      <p id="debug"> </p>
+<body onload="notifyDidFinishLoading();">
+  <div i18n-values="title:name;.style.background-image:background" id="outer"
+       onclick="plugin.load()">
+    <div id="shielding">
+      <div id="inner">
+        <div><img id="plugin_icon" src="plugin_power_saver_play.png" /></div>
+      </div>
     </div>
   </div>
 </body>
