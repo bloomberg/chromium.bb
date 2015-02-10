@@ -415,11 +415,10 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   }
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
+  if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
+      plugin_setting == CONTENT_SETTING_ASK) {
     status->value =
         ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
-  } else if (plugin_setting == CONTENT_SETTING_ASK) {
-    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
     status->value =
         is_managed ? ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy
@@ -549,7 +548,6 @@ void PluginInfoMessageFilter::Context::MaybeGrantAccess(
     const ChromeViewHostMsg_GetPluginInfo_Status& status,
     const base::FilePath& path) const {
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-      status.value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay ||
       status.value ==
           ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) {
     ChromePluginServiceFilter::GetInstance()->AuthorizePlugin(
