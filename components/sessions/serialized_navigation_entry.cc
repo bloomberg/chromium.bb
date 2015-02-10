@@ -36,6 +36,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   SerializedNavigationEntry navigation;
   navigation.index_ = index;
   navigation.unique_id_ = sync_data.unique_id();
+  navigation.encoded_page_state_ = sync_data.state();
   if (sync_data.has_correct_referrer_policy()) {
     navigation.referrer_url_ = GURL(sync_data.referrer());
     navigation.referrer_policy_ = sync_data.correct_referrer_policy();
@@ -48,10 +49,12 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
       navigation.referrer_url_ = GURL();
     }
     navigation.referrer_policy_ = mapped_referrer_policy;
+    navigation.encoded_page_state_ =
+        SerializedNavigationDriver::Get()->StripReferrerFromPageState(
+            navigation.encoded_page_state_);
   }
   navigation.virtual_url_ = GURL(sync_data.virtual_url());
   navigation.title_ = base::UTF8ToUTF16(sync_data.title());
-  navigation.encoded_page_state_ = sync_data.state();
 
   uint32 transition = 0;
   if (sync_data.has_page_transition()) {
@@ -319,6 +322,9 @@ bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
         referrer_url_ = GURL();
       }
       referrer_policy_ = mapped_referrer_policy;
+      encoded_page_state_ =
+          SerializedNavigationDriver::Get()->StripReferrerFromPageState(
+              encoded_page_state_);
     }
   }
 

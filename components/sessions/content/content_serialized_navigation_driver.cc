@@ -107,11 +107,15 @@ void ContentSerializedNavigationDriver::Sanitize(
     navigation->referrer_url_ = GURL();
     navigation->referrer_policy_ = GetDefaultReferrerPolicy();
     navigation->encoded_page_state_ =
-        content::PageState::CreateFromEncodedData(
-            navigation->encoded_page_state_)
-            .RemoveReferrer()
-            .ToEncodedData();
+        StripReferrerFromPageState(navigation->encoded_page_state_);
   }
+}
+
+std::string ContentSerializedNavigationDriver::StripReferrerFromPageState(
+      const std::string& page_state) const {
+  return content::PageState::CreateFromEncodedData(page_state)
+      .RemoveReferrer()
+      .ToEncodedData();
 }
 
 }  // namespace sessions

@@ -31,6 +31,8 @@ class IOSSerializedNavigationDriver
   std::string GetSanitizedPageStateForPickle(
       const SerializedNavigationEntry* navigation) const override;
   void Sanitize(SerializedNavigationEntry* navigation) const override;
+  std::string StripReferrerFromPageState(
+      const std::string& page_state) const override;
 
  private:
   IOSSerializedNavigationDriver();

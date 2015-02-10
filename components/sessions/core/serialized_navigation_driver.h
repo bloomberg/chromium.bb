@@ -45,6 +45,10 @@ class SESSIONS_EXPORT_PRIVATE SerializedNavigationDriver {
   // Sanitizes the data in the given |navigation| to be more robust against
   // faulty data written by older versions.
   virtual void Sanitize(SerializedNavigationEntry* navigation) const = 0;
+
+  // Removes the referrer from the encoded page state.
+  virtual std::string StripReferrerFromPageState(
+      const std::string& page_state) const = 0;
 };
 
 }  // namespace sessions

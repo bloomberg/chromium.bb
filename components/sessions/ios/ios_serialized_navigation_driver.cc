@@ -130,4 +130,9 @@ void IOSSerializedNavigationDriver::Sanitize(
   }
 }
 
+std::string IOSSerializedNavigationDriver::StripReferrerFromPageState(
+      const std::string& page_state) const {
+  return std::string();
+}
+
 }  // namespace sessions
