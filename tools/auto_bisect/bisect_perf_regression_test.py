@@ -197,6 +197,12 @@ class BisectPerfRegressionTest(unittest.TestCase):
   def tearDown(self):
     os.chdir(self.cwd)
 
+  def testBisectOptionsCanPrintHelp(self):
+    """Tests that the argument parser can be made and can print help."""
+    bisect_options = bisect_perf_regression.BisectOptions()
+    parser = bisect_options._CreateCommandLineParser()
+    parser.format_help()
+
   def testParseDEPSStringManually(self):
     """Tests DEPS parsing."""
     deps_file_contents = """
@@ -665,4 +671,3 @@ class GitTryJobTestCases(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
-

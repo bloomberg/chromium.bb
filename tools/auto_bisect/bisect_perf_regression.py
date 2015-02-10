@@ -2578,10 +2578,9 @@ class BisectOptions(object):
                             ' --max_time_minutes. Values will be clamped to '
                             'range [1, 60]. Default value is 20.')
     group.add_argument('-t', '--truncate_percent', type=int, default=25,
-                       help='The highest/lowest % are discarded to form a '
-                            'truncated mean. Values will be clamped to range '
-                            '[0, 25]. Default value is 25 (highest/lowest 25% '
-                            'will be discarded).')
+                       help='The highest/lowest percent are discarded to form '
+                            'a truncated mean. Values will be clamped to range '
+                            '[0, 25]. Default value is 25 percent.')
     group.add_argument('--bisect_mode', default=bisect_utils.BISECT_MODE_MEAN,
                        choices=[bisect_utils.BISECT_MODE_MEAN,
                                 bisect_utils.BISECT_MODE_STD_DEV,
@@ -2670,9 +2669,9 @@ class BisectOptions(object):
     """Creates a parser with bisect options.
 
     Returns:
-      An instance of optparse.OptionParser.
+      An instance of argparse.ArgumentParser.
     """
-    usage = ('%prog [options] [-- chromium-options]\n'
+    usage = ('%(prog)s [options] [-- chromium-options]\n'
              'Perform binary search on revision history to find a minimal '
              'range of revisions where a performance metric regressed.\n')
 
