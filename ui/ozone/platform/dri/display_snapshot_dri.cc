@@ -67,7 +67,7 @@ bool IsAspectPreserving(DriWrapper* drm, drmModeConnector* connector) {
 
 }  // namespace
 
-DisplaySnapshotDri::DisplaySnapshotDri(DriWrapper* drm,
+DisplaySnapshotDri::DisplaySnapshotDri(const scoped_refptr<DriWrapper>& drm,
                                        drmModeConnector* connector,
                                        drmModeCrtc* crtc,
                                        uint32_t index)
@@ -75,12 +75,13 @@ DisplaySnapshotDri::DisplaySnapshotDri(DriWrapper* drm,
                       gfx::Point(crtc->x, crtc->y),
                       gfx::Size(connector->mmWidth, connector->mmHeight),
                       GetDisplayType(connector),
-                      IsAspectPreserving(drm, connector),
+                      IsAspectPreserving(drm.get(), connector),
                       false,
                       std::string(),
                       std::vector<const DisplayMode*>(),
                       nullptr,
                       nullptr),
+      drm_(drm),
       connector_(connector->connector_id),
       crtc_(crtc->crtc_id),
       dpms_property_(drm->GetProperty(connector, "DPMS")) {

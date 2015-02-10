@@ -131,8 +131,9 @@ void NativeDisplayDelegateDri::ForceDPMSOn() {
   for (size_t i = 0; i < cached_displays_.size(); ++i) {
     DisplaySnapshotDri* dri_output = cached_displays_[i];
     if (dri_output->dpms_property())
-      dri_->SetProperty(dri_output->connector(),
-                        dri_output->dpms_property()->prop_id, DRM_MODE_DPMS_ON);
+      dri_output->drm()->SetProperty(dri_output->connector(),
+                                     dri_output->dpms_property()->prop_id,
+                                     DRM_MODE_DPMS_ON);
   }
 }
 
@@ -199,8 +200,9 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
     }
   } else {
     if (dri_output.dpms_property()) {
-      dri_->SetProperty(dri_output.connector(),
-                        dri_output.dpms_property()->prop_id, DRM_MODE_DPMS_OFF);
+      dri_output.drm()->SetProperty(dri_output.connector(),
+                                    dri_output.dpms_property()->prop_id,
+                                    DRM_MODE_DPMS_OFF);
     }
 
     if (!screen_manager_->DisableDisplayController(dri_output.crtc())) {
@@ -227,14 +229,15 @@ bool NativeDisplayDelegateDri::GetHDCPState(const DisplaySnapshot& output,
   const DisplaySnapshotDri& dri_output =
       static_cast<const DisplaySnapshotDri&>(output);
 
-  ScopedDrmConnectorPtr connector(dri_->GetConnector(dri_output.connector()));
+  ScopedDrmConnectorPtr connector(
+      dri_output.drm()->GetConnector(dri_output.connector()));
   if (!connector) {
     LOG(ERROR) << "Failed to get connector " << dri_output.connector();
     return false;
   }
 
   ScopedDrmPropertyPtr hdcp_property(
-      dri_->GetProperty(connector.get(), kContentProtection));
+      dri_output.drm()->GetProperty(connector.get(), kContentProtection));
   if (!hdcp_property) {
     LOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
     return false;
@@ -262,20 +265,21 @@ bool NativeDisplayDelegateDri::SetHDCPState(const DisplaySnapshot& output,
   const DisplaySnapshotDri& dri_output =
       static_cast<const DisplaySnapshotDri&>(output);
 
-  ScopedDrmConnectorPtr connector(dri_->GetConnector(dri_output.connector()));
+  ScopedDrmConnectorPtr connector(
+      dri_output.drm()->GetConnector(dri_output.connector()));
   if (!connector) {
     LOG(ERROR) << "Failed to get connector " << dri_output.connector();
     return false;
   }
 
   ScopedDrmPropertyPtr hdcp_property(
-      dri_->GetProperty(connector.get(), kContentProtection));
+      dri_output.drm()->GetProperty(connector.get(), kContentProtection));
   if (!hdcp_property) {
     LOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
     return false;
   }
 
-  return dri_->SetProperty(
+  return dri_output.drm()->SetProperty(
       dri_output.connector(), hdcp_property->prop_id,
       GetContentProtectionValue(hdcp_property.get(), state));
 }
@@ -320,7 +324,8 @@ void NativeDisplayDelegateDri::NotifyScreenManager(
                      DisplaySnapshotComparator(new_displays[i]));
 
     if (it == old_displays.end())
-      screen_manager_->AddDisplayController(dri_, new_displays[i]->crtc(),
+      screen_manager_->AddDisplayController(new_displays[i]->drm(),
+                                            new_displays[i]->crtc(),
                                             new_displays[i]->connector());
   }
 }

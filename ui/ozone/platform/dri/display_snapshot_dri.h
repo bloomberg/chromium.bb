@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRI_DISPLAY_SNAPSHOT_DRI_H_
 #define UI_OZONE_PLATFORM_DRI_DISPLAY_SNAPSHOT_DRI_H_
 
+#include "base/memory/ref_counted.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
 
@@ -14,12 +15,13 @@ class DriWrapper;
 
 class DisplaySnapshotDri : public DisplaySnapshot {
  public:
-  DisplaySnapshotDri(DriWrapper* drm,
+  DisplaySnapshotDri(const scoped_refptr<DriWrapper>& drm,
                      drmModeConnector* connector,
                      drmModeCrtc* crtc,
                      uint32_t index);
   ~DisplaySnapshotDri() override;
 
+  scoped_refptr<DriWrapper> drm() const { return drm_; }
   // Native properties of a display used by the DRI implementation in
   // configuring this display.
   uint32_t connector() const { return connector_; }
@@ -30,6 +32,7 @@ class DisplaySnapshotDri : public DisplaySnapshot {
   std::string ToString() const override;
 
  private:
+  scoped_refptr<DriWrapper> drm_;
   uint32_t connector_;
   uint32_t crtc_;
   ScopedDrmPropertyPtr dpms_property_;
