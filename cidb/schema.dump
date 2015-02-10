@@ -168,6 +168,35 @@ CREATE TABLE `failureTable` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+DROP TABLE IF EXISTS `failureView`;
+/*!50001 DROP VIEW IF EXISTS `failureView`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `failureView` (
+  `id` tinyint NOT NULL,
+  `build_stage_id` tinyint NOT NULL,
+  `outer_failure_id` tinyint NOT NULL,
+  `exception_type` tinyint NOT NULL,
+  `exception_message` tinyint NOT NULL,
+  `exception_category` tinyint NOT NULL,
+  `extra_info` tinyint NOT NULL,
+  `timestamp` tinyint NOT NULL,
+  `stage_name` tinyint NOT NULL,
+  `board` tinyint NOT NULL,
+  `stage_status` tinyint NOT NULL,
+  `build_id` tinyint NOT NULL,
+  `build_config` tinyint NOT NULL,
+  `build_status` tinyint NOT NULL,
+  `build_final` tinyint NOT NULL,
+  `full_version` tinyint NOT NULL,
+  `chrome_version` tinyint NOT NULL,
+  `sdk_version` tinyint NOT NULL,
+  `milestone_version` tinyint NOT NULL,
+  `master_build_id` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+
 DROP TABLE IF EXISTS `schemaVersionTable`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -178,6 +207,22 @@ CREATE TABLE `schemaVersionTable` (
   PRIMARY KEY (`schemaVersion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+
+/*!50001 DROP TABLE IF EXISTS `failureView`*/;
+/*!50001 DROP VIEW IF EXISTS `failureView`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = latin1 */;
+/*!50001 SET character_set_results     = latin1 */;
+/*!50001 SET collation_connection      = latin1_swedish_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `failureView` AS select `f`.`id` AS `id`,`f`.`build_stage_id` AS `build_stage_id`,`f`.`outer_failure_id` AS `outer_failure_id`,`f`.`exception_type` AS `exception_type`,`f`.`exception_message` AS `exception_message`,`f`.`exception_category` AS `exception_category`,`f`.`extra_info` AS `extra_info`,`f`.`timestamp` AS `timestamp`,`bs`.`name` AS `stage_name`,`bs`.`board` AS `board`,`bs`.`status` AS `stage_status`,`b`.`id` AS `build_id`,`b`.`build_config` AS `build_config`,`b`.`status` AS `build_status`,`b`.`final` AS `build_final`,`b`.`full_version` AS `full_version`,`b`.`chrome_version` AS `chrome_version`,`b`.`sdk_version` AS `sdk_version`,`b`.`milestone_version` AS `milestone_version`,`b`.`master_build_id` AS `master_build_id` from ((`failureTable` `f` join `buildStageTable` `bs` on((`f`.`build_stage_id` = `bs`.`id`))) join `buildTable` `b` on((`bs`.`build_id` = `b`.`id`))) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

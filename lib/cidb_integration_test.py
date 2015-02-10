@@ -388,7 +388,7 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
 
   def runTest(self):
     """Test basic buildStageTable and failureTable functionality."""
-    self._PrepareFreshDatabase(32)
+    self._PrepareFreshDatabase()
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -423,7 +423,6 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
       e = ValueError('The value was erroneous.')
       bot_db.InsertFailure(build_stage_id, type(e).__name__, str(e), category)
       self.assertTrue(bot_db.HasBuildStageFailed(build_stage_id))
-
 
 class BuildTableTest(CIDBIntegrationTest):
   """Test buildTable functionality not tested by the DataSeries tests."""
