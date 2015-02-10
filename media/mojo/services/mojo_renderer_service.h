@@ -38,7 +38,8 @@ class MEDIA_EXPORT MojoRendererService
   ~MojoRendererService() override;
 
   // mojo::MediaRenderer implementation.
-  void Initialize(mojo::DemuxerStreamPtr audio,
+  void Initialize(mojo::MediaRendererClientPtr client,
+                  mojo::DemuxerStreamPtr audio,
                   mojo::DemuxerStreamPtr video,
                   const mojo::Closure& callback) override;
   void Flush(const mojo::Closure& callback) override;
@@ -94,6 +95,8 @@ class MEDIA_EXPORT MojoRendererService
 
   base::RepeatingTimer<MojoRendererService> time_update_timer_;
   uint64_t last_media_time_usec_;
+
+  mojo::MediaRendererClientPtr client_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
   base::WeakPtrFactory<MojoRendererService> weak_factory_;

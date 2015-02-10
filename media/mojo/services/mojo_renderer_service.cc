@@ -69,13 +69,13 @@ MojoRendererService::MojoRendererService()
 MojoRendererService::~MojoRendererService() {
 }
 
-void MojoRendererService::Initialize(mojo::DemuxerStreamPtr audio,
+void MojoRendererService::Initialize(mojo::MediaRendererClientPtr client,
+                                     mojo::DemuxerStreamPtr audio,
                                      mojo::DemuxerStreamPtr video,
                                      const mojo::Closure& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
-  DCHECK(client());
-
+  client_ = client.Pass();
   state_ = STATE_INITIALIZING;
   stream_provider_.reset(new DemuxerStreamProviderShim(
       audio.Pass(),
@@ -149,7 +149,7 @@ void MojoRendererService::UpdateMediaTime(bool force) {
   if (!force && media_time == last_media_time_usec_)
     return;
 
-  client()->OnTimeUpdate(media_time, media_time);
+  client_->OnTimeUpdate(media_time, media_time);
   last_media_time_usec_ = media_time;
 }
 
@@ -169,20 +169,20 @@ void MojoRendererService::SchedulePeriodicMediaTimeUpdates() {
 void MojoRendererService::OnBufferingStateChanged(
     BufferingState new_buffering_state) {
   DVLOG(2) << __FUNCTION__ << "(" << new_buffering_state << ") ";
-  client()->OnBufferingStateChange(
+  client_->OnBufferingStateChange(
       static_cast<mojo::BufferingState>(new_buffering_state));
 }
 
 void MojoRendererService::OnRendererEnded() {
   DVLOG(1) << __FUNCTION__;
   CancelPeriodicMediaTimeUpdates();
-  client()->OnEnded();
+  client_->OnEnded();
 }
 
 void MojoRendererService::OnError(PipelineStatus error) {
   DVLOG(1) << __FUNCTION__;
   state_ = STATE_ERROR;
-  client()->OnError();
+  client_->OnError();
 }
 
 void MojoRendererService::OnFlushCompleted(const mojo::Closure& callback) {

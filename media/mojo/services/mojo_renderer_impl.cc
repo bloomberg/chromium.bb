@@ -21,7 +21,8 @@ MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     mojo::MediaRendererPtr remote_media_renderer)
     : task_runner_(task_runner),
-      remote_media_renderer_pipe_(remote_media_renderer.PassMessagePipe()),
+      remote_media_renderer_(remote_media_renderer.Pass()),
+      binding_(this),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
 }
@@ -44,15 +45,6 @@ void MojoRendererImpl::Initialize(
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
-
-  // Bind the mojo InterfacePtr to the message pipe on the
-  // current thread so we can use it. The MojoRendererImpl object
-  // is constructed on another thread so we can't do it in the
-  // constructor and must pass a message pipe around since
-  // InterfacePtr's are tied to the message loop they were created on.
-  remote_media_renderer_.Bind(remote_media_renderer_pipe_.Pass());
-  DCHECK(remote_media_renderer_);
-  remote_media_renderer_.set_client(this);
 
   demuxer_stream_provider_ = demuxer_stream_provider;
   init_cb_ = init_cb;
@@ -79,7 +71,10 @@ void MojoRendererImpl::Initialize(
         ->DidConnect();
   }
 
+  mojo::MediaRendererClientPtr client_ptr;
+  binding_.Bind(GetProxy(&client_ptr));
   remote_media_renderer_->Initialize(
+      client_ptr.Pass(),
       audio_stream.Pass(),
       video_stream.Pass(),
       BindToCurrentLoop(base::Bind(&MojoRendererImpl::OnInitialized,

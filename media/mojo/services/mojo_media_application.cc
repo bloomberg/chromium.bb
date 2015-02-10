@@ -55,6 +55,6 @@ class MojoMediaApplication
 }  // namespace media
 
 MojoResult MojoMain(MojoHandle mojo_handle) {
-  mojo::ApplicationRunnerChromium runner(new media::MojoMediaApplication);
+  mojo::ApplicationRunnerChromium runner(new media::MojoMediaApplication());
   return runner.Run(mojo_handle);
 }
