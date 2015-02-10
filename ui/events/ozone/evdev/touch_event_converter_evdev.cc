@@ -81,6 +81,7 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
       dispatcher_(dispatcher),
       syn_dropped_(false),
       is_type_a_(false),
+      touch_points_(0),
       current_slot_(0) {
 }
 
@@ -96,6 +97,8 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   x_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_X) - x_min_tuxels_ + 1;
   y_min_tuxels_ = info.GetAbsMinimum(ABS_MT_POSITION_Y);
   y_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_Y) - y_min_tuxels_ + 1;
+  touch_points_ =
+      std::min<int>(info.GetAbsMaximum(ABS_MT_SLOT) + 1, MAX_FINGERS);
 
   // Apply --touch-calibration.
   if (type() == INPUT_DEVICE_INTERNAL) {
@@ -114,8 +117,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
 
   native_size_ = gfx::Size(x_num_tuxels_, y_num_tuxels_);
 
-  events_.resize(
-      std::min<int>(info.GetAbsMaximum(ABS_MT_SLOT) + 1, MAX_FINGERS));
+  events_.resize(touch_points_);
   for (size_t i = 0; i < events_.size(); ++i) {
     events_[i].finger_ = info.GetSlotValue(ABS_MT_TRACKING_ID, i);
     events_[i].type_ =
@@ -143,6 +145,10 @@ bool TouchEventConverterEvdev::HasTouchscreen() const {
 
 gfx::Size TouchEventConverterEvdev::GetTouchscreenSize() const {
   return native_size_;
+}
+
+int TouchEventConverterEvdev::GetTouchPoints() const {
+  return touch_points_;
 }
 
 void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {

@@ -58,6 +58,11 @@ gfx::Size EventConverterEvdev::GetTouchscreenSize() const {
   return gfx::Size();
 }
 
+int EventConverterEvdev::GetTouchPoints() const {
+  NOTREACHED();
+  return 0;
+}
+
 void EventConverterEvdev::SetAllowedKeys(
     scoped_ptr<std::set<DomCode>> allowed_keys) {
   NOTREACHED();

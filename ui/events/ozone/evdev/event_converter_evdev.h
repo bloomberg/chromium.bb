@@ -59,6 +59,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // touchscreen device.
   virtual gfx::Size GetTouchscreenSize() const;
 
+  // Returns the number of touch points this device supports. Should not be
+  // called unless HasTouchscreen() returns true
+  virtual int GetTouchPoints() const;
+
   // Sets which keyboard keys should be processed.
   virtual void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys);
 

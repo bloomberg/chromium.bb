@@ -35,6 +35,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // EventConverterEvdev:
   bool HasTouchscreen() const override;
   gfx::Size GetTouchscreenSize() const override;
+  int GetTouchPoints() const override;
 
   // Unsafe part of initialization.
   virtual void Initialize(const EventDeviceInfo& info);
@@ -93,6 +94,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Size of the touchscreen as reported by the driver.
   gfx::Size native_size_;
+
+  // Number of touch points reported by driver
+  int touch_points_;
 
   // Touch point currently being updated from the /dev/input/event* stream.
   size_t current_slot_;
