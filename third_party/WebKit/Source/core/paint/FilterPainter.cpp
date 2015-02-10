@@ -58,7 +58,7 @@ FilterPainter::FilterPainter(Layer& renderLayer, GraphicsContext* context, const
     ASSERT(m_renderer);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         // FIXME: verify whether this FilterOperations object and the ImageFilter object constructed above represent the same effect.
-        FilterOperations filterOperations(renderLayer.computeFilterOperations(m_renderer->style()));
+        FilterOperations filterOperations(renderLayer.computeFilterOperations(m_renderer->styleRef()));
         OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), imageFilter, rootRelativeBounds, filterOperations);
 
         ASSERT(context->displayItemList());

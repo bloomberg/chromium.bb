@@ -225,7 +225,7 @@ void RenderSVGResourceContainer::registerResource()
 
         StyleDifference diff;
         diff.setNeedsFullLayout();
-        SVGResourcesCache::clientStyleChanged(renderer, diff, renderer->style());
+        SVGResourcesCache::clientStyleChanged(renderer, diff, renderer->styleRef());
         renderer->setNeedsLayoutAndFullPaintInvalidation();
     }
 }

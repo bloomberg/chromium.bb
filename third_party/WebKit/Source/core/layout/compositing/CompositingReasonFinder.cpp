@@ -81,52 +81,52 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
 
     CompositingReasons reasons = CompositingReasonNone;
 
-    LayoutStyle* style = renderer->style();
+    const LayoutStyle& style = renderer->styleRef();
 
     if (requiresCompositingForTransform(renderer))
         reasons |= CompositingReason3DTransform;
 
-    if (style->backfaceVisibility() == BackfaceVisibilityHidden)
+    if (style.backfaceVisibility() == BackfaceVisibilityHidden)
         reasons |= CompositingReasonBackfaceVisibilityHidden;
 
     if (requiresCompositingForAnimation(style))
         reasons |= CompositingReasonActiveAnimation;
 
-    if (style->hasWillChangeCompositingHint() && !style->subtreeWillChangeContents())
+    if (style.hasWillChangeCompositingHint() && !style.subtreeWillChangeContents())
         reasons |= CompositingReasonWillChangeCompositingHint;
 
-    if (style->hasInlineTransform())
+    if (style.hasInlineTransform())
         reasons |= CompositingReasonInlineTransform;
 
-    if (style->transformStyle3D() == TransformStyle3DPreserve3D)
+    if (style.transformStyle3D() == TransformStyle3DPreserve3D)
         reasons |= CompositingReasonPreserve3DWith3DDescendants;
 
-    if (style->hasPerspective())
+    if (style.hasPerspective())
         reasons |= CompositingReasonPerspectiveWith3DDescendants;
 
     // Ignore scroll-blocks-on on the document element, because it will get propagated to
     // the RenderView (by Document::inheritHtmlAndBodyElementStyles) and we don't want to
     // create two composited layers.
-    if (style->hasScrollBlocksOn() && !renderer->isDocumentElement())
+    if (style.hasScrollBlocksOn() && !renderer->isDocumentElement())
         reasons |= CompositingReasonScrollBlocksOn;
 
     // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
-    ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || style->hasBlendMode()) == renderer->createsGroup());
+    ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || style.hasBlendMode()) == renderer->createsGroup());
 
-    if (style->hasMask())
+    if (style.hasMask())
         reasons |= CompositingReasonMaskWithCompositedDescendants;
 
-    if (style->hasFilter())
+    if (style.hasFilter())
         reasons |= CompositingReasonFilterWithCompositedDescendants;
 
     // See Layer::updateTransform for an explanation of why we check both.
-    if (renderer->hasTransformRelatedProperty() && style->hasTransform())
+    if (renderer->hasTransformRelatedProperty() && style.hasTransform())
         reasons |= CompositingReasonTransformWithCompositedDescendants;
 
     if (renderer->isTransparent())
         reasons |= CompositingReasonOpacityWithCompositedDescendants;
 
-    if (style->hasBlendMode())
+    if (style.hasBlendMode())
         reasons |= CompositingReasonBlendingWithCompositedDescendants;
 
     if (renderer->hasReflection())
@@ -170,12 +170,12 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     return directReasons;
 }
 
-bool CompositingReasonFinder::requiresCompositingForAnimation(LayoutStyle* style) const
+bool CompositingReasonFinder::requiresCompositingForAnimation(const LayoutStyle& style) const
 {
-    if (style->subtreeWillChangeContents())
-        return style->isRunningAnimationOnCompositor();
+    if (style.subtreeWillChangeContents())
+        return style.isRunningAnimationOnCompositor();
 
-    return style->shouldCompositeForCurrentAnimations();
+    return style.shouldCompositeForCurrentAnimations();
 }
 
 bool CompositingReasonFinder::requiresCompositingForPositionFixed(const Layer* layer) const
@@ -192,16 +192,16 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutO
     // Note that the other requires* functions run at LayoutObject::styleDidChange time and so can rely
     // only on the style of their object.  This function runs at CompositingRequirementsUpdater::update
     // time, and so can consider the style of other objects.
-    LayoutStyle* style = renderer->style();
+    const LayoutStyle& style = renderer->styleRef();
 
     // We should only get here by CompositingReasonScrollBlocksOn being a potential compositing reason.
-    ASSERT(style->hasScrollBlocksOn() && !renderer->isDocumentElement());
+    ASSERT(style.hasScrollBlocksOn() && !renderer->isDocumentElement());
 
     // scroll-blocks-on style is propagated from the document element to the document.
     ASSERT(!renderer->isRenderView()
         || !renderer->document().documentElement()
         || !renderer->document().documentElement()->renderer()
-        || renderer->document().documentElement()->renderer()->style()->scrollBlocksOn() == style->scrollBlocksOn());
+        || renderer->document().documentElement()->renderer()->style()->scrollBlocksOn() == style.scrollBlocksOn());
 
     // When a scroll occurs, it's the union of all bits set on the target element's containing block
     // chain that determines the behavior.  Thus we really only need a new layer if this object contains
@@ -216,7 +216,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutO
         if (const FrameView* parentFrame = toRenderView(renderer)->frameView()->parentFrameView()) {
             if (const RenderView* parentRenderer = parentFrame->renderView()) {
                 // Does this frame contain only blocks-on bits already present in the parent frame?
-                if (!(style->scrollBlocksOn() & ~parentRenderer->style()->scrollBlocksOn()))
+                if (!(style.scrollBlocksOn() & ~parentRenderer->style()->scrollBlocksOn()))
                     return false;
             }
         } else {

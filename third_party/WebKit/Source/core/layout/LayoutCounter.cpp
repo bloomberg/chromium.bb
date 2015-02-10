@@ -111,10 +111,9 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
     // We must have a generating node or else we cannot have a counter.
     if (!generatingNode)
         return false;
-    LayoutStyle* style = object.style();
-    ASSERT(style);
+    const LayoutStyle& style = object.styleRef();
 
-    switch (style->styleType()) {
+    switch (style.styleType()) {
     case NOPSEUDO:
         // Sometimes nodes have more then one renderer. Only the first one gets the counter
         // LayoutTests/http/tests/css/counter-crash.html
@@ -128,7 +127,7 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
         return false; // Counters are forbidden from all other pseudo elements.
     }
 
-    const CounterDirectives directives = style->getCounterDirectives(identifier);
+    const CounterDirectives directives = style.getCounterDirectives(identifier);
     if (directives.isDefined()) {
         value = directives.combinedValue();
         isReset = directives.isReset();
@@ -547,13 +546,13 @@ void LayoutCounter::rendererSubtreeAttached(LayoutObject* renderer)
         updateCounters(*descendant);
 }
 
-void LayoutCounter::rendererStyleChanged(LayoutObject& renderer, const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
+void LayoutCounter::rendererStyleChanged(LayoutObject& renderer, const LayoutStyle* oldStyle, const LayoutStyle& newStyle)
 {
     Node* node = renderer.generatingNode();
     if (!node || node->needsAttach())
         return; // cannot have generated content or if it can have, it will be handled during attaching
     const CounterDirectiveMap* oldCounterDirectives = oldStyle ? oldStyle->counterDirectives() : 0;
-    const CounterDirectiveMap* newCounterDirectives = newStyle ? newStyle->counterDirectives() : 0;
+    const CounterDirectiveMap* newCounterDirectives = newStyle.counterDirectives();
     if (oldCounterDirectives) {
         if (newCounterDirectives) {
             CounterDirectiveMap::const_iterator newMapEnd = newCounterDirectives->end();

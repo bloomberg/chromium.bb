@@ -340,14 +340,14 @@ void Layer::updateTransformationMatrix()
     }
 }
 
-void Layer::updateTransform(const LayoutStyle* oldStyle, LayoutStyle* newStyle)
+void Layer::updateTransform(const LayoutStyle* oldStyle, const LayoutStyle& newStyle)
 {
-    if (oldStyle && newStyle->transformDataEquivalent(*oldStyle))
+    if (oldStyle && newStyle.transformDataEquivalent(*oldStyle))
         return;
 
     // hasTransform() on the renderer is also true when there is transform-style: preserve-3d or perspective set,
     // so check style too.
-    bool hasTransform = renderer()->hasTransformRelatedProperty() && newStyle->hasTransform();
+    bool hasTransform = renderer()->hasTransformRelatedProperty() && newStyle.hasTransform();
     bool had3DTransform = has3DTransform();
 
     bool hadTransform = m_transform;
@@ -900,8 +900,8 @@ TransformationMatrix Layer::perspectiveTransform() const
     if (!renderer()->hasTransformRelatedProperty())
         return TransformationMatrix();
 
-    LayoutStyle* style = renderer()->style();
-    if (!style->hasPerspective())
+    const LayoutStyle& style = renderer()->styleRef();
+    if (!style.hasPerspective())
         return TransformationMatrix();
 
     // Maybe fetch the perspective from the backing?
@@ -909,8 +909,8 @@ TransformationMatrix Layer::perspectiveTransform() const
     const float boxWidth = borderBox.width();
     const float boxHeight = borderBox.height();
 
-    float perspectiveOriginX = floatValueForLength(style->perspectiveOriginX(), boxWidth);
-    float perspectiveOriginY = floatValueForLength(style->perspectiveOriginY(), boxHeight);
+    float perspectiveOriginX = floatValueForLength(style.perspectiveOriginX(), boxWidth);
+    float perspectiveOriginY = floatValueForLength(style.perspectiveOriginY(), boxHeight);
 
     // A perspective origin of 0,0 makes the vanishing point in the center of the element.
     // We want it to be in the top-left, so subtract half the height and width.
@@ -919,7 +919,7 @@ TransformationMatrix Layer::perspectiveTransform() const
 
     TransformationMatrix t;
     t.translate(perspectiveOriginX, perspectiveOriginY);
-    t.applyPerspective(style->perspective());
+    t.applyPerspective(style.perspective());
     t.translate(-perspectiveOriginX, -perspectiveOriginY);
 
     return t;
@@ -931,9 +931,9 @@ FloatPoint Layer::perspectiveOrigin() const
         return FloatPoint();
 
     const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
-    LayoutStyle* style = renderer()->style();
+    const LayoutStyle& style = renderer()->styleRef();
 
-    return FloatPoint(floatValueForLength(style->perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style->perspectiveOriginY(), borderBox.height().toFloat()));
+    return FloatPoint(floatValueForLength(style.perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style.perspectiveOriginY(), borderBox.height().toFloat()));
 }
 
 static inline bool isFixedPositionedContainer(Layer* layer)
@@ -2700,9 +2700,9 @@ bool Layer::hasVisibleBoxDecorations() const
     return hasBoxDecorationsOrBackground() || hasOverflowControls();
 }
 
-void Layer::updateFilters(const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
+void Layer::updateFilters(const LayoutStyle* oldStyle, const LayoutStyle& newStyle)
 {
-    if (!newStyle->hasFilter() && (!oldStyle || !oldStyle->hasFilter()))
+    if (!newStyle.hasFilter() && (!oldStyle || !oldStyle->hasFilter()))
         return;
 
     updateOrRemoveFilterClients();
@@ -2756,7 +2756,7 @@ bool Layer::attemptDirectCompositingUpdate(StyleDifference diff, const LayoutSty
     if (diff.opacityChanged() && m_renderer->style()->hasOpacity() != oldStyle->hasOpacity())
         return false;
 
-    updateTransform(oldStyle, renderer()->style());
+    updateTransform(oldStyle, renderer()->styleRef());
 
     // FIXME: Consider introducing a smaller graphics layer update scope
     // that just handles transforms and opacity. GraphicsLayerUpdateLocal
@@ -2789,8 +2789,8 @@ void Layer::styleChanged(StyleDifference diff, const LayoutStyle* oldStyle)
 
     updateDescendantDependentFlags();
 
-    updateTransform(oldStyle, renderer()->style());
-    updateFilters(oldStyle, renderer()->style());
+    updateTransform(oldStyle, renderer()->styleRef());
+    updateFilters(oldStyle, renderer()->styleRef());
 
     setNeedsCompositingInputsUpdate();
 }
@@ -2803,9 +2803,9 @@ bool Layer::scrollsOverflow() const
     return false;
 }
 
-FilterOperations Layer::computeFilterOperations(const LayoutStyle* style)
+FilterOperations Layer::computeFilterOperations(const LayoutStyle& style)
 {
-    const FilterOperations& filters = style->filter();
+    const FilterOperations& filters = style.filter();
     if (filters.hasReferenceFilter()) {
         for (size_t i = 0; i < filters.size(); ++i) {
             FilterOperation* filterOperation = filters.operations().at(i).get();
@@ -2813,7 +2813,7 @@ FilterOperations Layer::computeFilterOperations(const LayoutStyle* style)
                 continue;
             ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
-            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(style->effectiveZoom());
+            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(style.effectiveZoom());
             referenceFilter->setLastEffect(ReferenceFilterBuilder::build(referenceFilter.get(), renderer(), referenceFilter->sourceGraphic(),
                 referenceOperation));
             referenceOperation->setFilter(referenceFilter.release());
@@ -2858,7 +2858,7 @@ void Layer::updateOrRemoveFilterEffectRenderer()
 
     // If the filter fails to build, remove it from the layer. It will still attempt to
     // go through regular processing (e.g. compositing), but never apply anything.
-    if (!filterInfo->renderer()->build(renderer(), computeFilterOperations(renderer()->style())))
+    if (!filterInfo->renderer()->build(renderer(), computeFilterOperations(renderer()->styleRef())))
         filterInfo->setRenderer(nullptr);
 }
 

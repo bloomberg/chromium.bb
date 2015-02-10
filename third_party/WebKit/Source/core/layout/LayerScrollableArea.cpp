@@ -254,14 +254,14 @@ bool LayerScrollableArea::isScrollCornerVisible() const
     return !scrollCornerRect().isEmpty();
 }
 
-static int cornerStart(const LayoutStyle* style, int minX, int maxX, int thickness)
+static int cornerStart(const LayoutStyle& style, int minX, int maxX, int thickness)
 {
-    if (style->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        return minX + style->borderLeftWidth();
-    return maxX - thickness - style->borderRightWidth();
+    if (style.shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+        return minX + style.borderLeftWidth();
+    return maxX - thickness - style.borderRightWidth();
 }
 
-static IntRect cornerRect(const LayoutStyle* style, const Scrollbar* horizontalScrollbar, const Scrollbar* verticalScrollbar, const IntRect& bounds)
+static IntRect cornerRect(const LayoutStyle& style, const Scrollbar* horizontalScrollbar, const Scrollbar* verticalScrollbar, const IntRect& bounds)
 {
     int horizontalThickness;
     int verticalThickness;
@@ -281,7 +281,7 @@ static IntRect cornerRect(const LayoutStyle* style, const Scrollbar* horizontalS
         verticalThickness = horizontalScrollbar->height();
     }
     return IntRect(cornerStart(style, bounds.x(), bounds.maxX(), horizontalThickness),
-        bounds.maxY() - verticalThickness - style->borderBottomWidth(),
+        bounds.maxY() - verticalThickness - style.borderBottomWidth(),
         horizontalThickness, verticalThickness);
 }
 
@@ -296,7 +296,7 @@ IntRect LayerScrollableArea::scrollCornerRect() const
     bool hasVerticalBar = verticalScrollbar();
     bool hasResizer = box().style()->resize() != RESIZE_NONE;
     if ((hasHorizontalBar && hasVerticalBar) || (hasResizer && (hasHorizontalBar || hasVerticalBar)))
-        return cornerRect(box().style(), horizontalScrollbar(), verticalScrollbar(), box().pixelSnappedBorderBoxRect());
+        return cornerRect(box().styleRef(), horizontalScrollbar(), verticalScrollbar(), box().pixelSnappedBorderBoxRect());
     return IntRect();
 }
 
@@ -1102,7 +1102,7 @@ IntRect LayerScrollableArea::resizerCornerRect(const IntRect& bounds, ResizerHit
 {
     if (box().style()->resize() == RESIZE_NONE)
         return IntRect();
-    IntRect corner = cornerRect(box().style(), horizontalScrollbar(), verticalScrollbar(), bounds);
+    IntRect corner = cornerRect(box().styleRef(), horizontalScrollbar(), verticalScrollbar(), bounds);
 
     if (resizerHitTestType == ResizerForTouch) {
         // We make the resizer virtually larger for touch hit testing. With the

@@ -348,20 +348,18 @@ bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(LayoutObject* object
     return pointInClippingArea(object, localPoint);
 }
 
-void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext* context, const LayoutStyle& style, const LayoutObject* object)
+void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const LayoutStyle& style, const LayoutObject& object)
 {
-    ASSERT(context);
-    ASSERT(object);
-    ASSERT(object->node());
-    ASSERT(object->node()->isSVGElement());
+    ASSERT(object.node());
+    ASSERT(object.node()->isSVGElement());
 
     const SVGLayoutStyle& svgStyle = style.svgStyle();
 
-    SVGLengthContext lengthContext(toSVGElement(object->node()));
-    context->setStrokeThickness(svgStyle.strokeWidth()->value(lengthContext));
-    context->setLineCap(svgStyle.capStyle());
-    context->setLineJoin(svgStyle.joinStyle());
-    context->setMiterLimit(svgStyle.strokeMiterLimit());
+    SVGLengthContext lengthContext(toSVGElement(object.node()));
+    context.setStrokeThickness(svgStyle.strokeWidth()->value(lengthContext));
+    context.setLineCap(svgStyle.capStyle());
+    context.setLineJoin(svgStyle.joinStyle());
+    context.setMiterLimit(svgStyle.strokeMiterLimit());
 
     RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
     DashArray dashArray;
@@ -371,24 +369,21 @@ void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext* context, const
         for (; it != itEnd; ++it)
             dashArray.append(it->value(lengthContext));
     }
-    context->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
+    context.setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, const LayoutStyle* style, const LayoutObject* object)
+void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, const LayoutStyle& style, const LayoutObject& object)
 {
-    ASSERT(strokeData);
-    ASSERT(style);
-    ASSERT(object);
-    ASSERT(object->node());
-    ASSERT(object->node()->isSVGElement());
+    ASSERT(object.node());
+    ASSERT(object.node()->isSVGElement());
 
-    const SVGLayoutStyle& svgStyle = style->svgStyle();
+    const SVGLayoutStyle& svgStyle = style.svgStyle();
 
-    SVGLengthContext lengthContext(toSVGElement(object->node()));
-    strokeData->setThickness(svgStyle.strokeWidth()->value(lengthContext));
-    strokeData->setLineCap(svgStyle.capStyle());
-    strokeData->setLineJoin(svgStyle.joinStyle());
-    strokeData->setMiterLimit(svgStyle.strokeMiterLimit());
+    SVGLengthContext lengthContext(toSVGElement(object.node()));
+    strokeData.setThickness(svgStyle.strokeWidth()->value(lengthContext));
+    strokeData.setLineCap(svgStyle.capStyle());
+    strokeData.setLineJoin(svgStyle.joinStyle());
+    strokeData.setMiterLimit(svgStyle.strokeMiterLimit());
 
     RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
     DashArray dashArray;
@@ -398,18 +393,18 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
         for (; it != itEnd; ++it)
             dashArray.append(it->value(lengthContext));
     }
-    strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
+    strokeData.setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
 bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
 {
     ASSERT(paintInfo.context == stateSaver.context());
 
-    GraphicsContext* context = paintInfo.context;
+    GraphicsContext& context = *paintInfo.context;
     if (paintInfo.isRenderingClipPathAsMaskImage()) {
         if (resourceMode == ApplyToStrokeMode)
             return false;
-        context->setFillColor(SVGLayoutStyle::initialFillPaintColor());
+        context.setFillColor(SVGLayoutStyle::initialFillPaintColor());
         return true;
     }
 
@@ -422,12 +417,12 @@ bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
 
     const SVGLayoutStyle& svgStyle = style.svgStyle();
     float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity() : svgStyle.strokeOpacity();
-    paintServer.apply(*context, resourceMode, paintAlpha, stateSaver);
+    paintServer.apply(context, resourceMode, paintAlpha, stateSaver);
 
     if (resourceMode == ApplyToFillMode)
-        context->setFillRule(svgStyle.fillRule());
+        context.setFillRule(svgStyle.fillRule());
     else
-        applyStrokeStyleToContext(context, style, &renderer);
+        applyStrokeStyleToContext(context, style, renderer);
 
     return true;
 }
@@ -439,12 +434,11 @@ bool SVGLayoutSupport::isRenderableTextNode(const LayoutObject* object)
     return object->isSVGInlineText() && !toRenderSVGInlineText(object)->hasEmptyText();
 }
 
-bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const LayoutStyle* style)
+bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const LayoutStyle& style)
 {
-    ASSERT(style);
-    const SVGLayoutStyle& svgStyle = style->svgStyle();
+    const SVGLayoutStyle& svgStyle = style.svgStyle();
 
-    return style->hasIsolation() || style->opacity() < 1 || style->hasBlendMode()
+    return style.hasIsolation() || style.opacity() < 1 || style.hasBlendMode()
         || svgStyle.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();
 }
 
@@ -454,7 +448,7 @@ bool SVGLayoutSupport::willIsolateBlendingDescendantsForObject(const LayoutObjec
         return false;
     if (!object->isSVGRoot() && !object->isSVGContainer())
         return false;
-    return willIsolateBlendingDescendantsForStyle(object->style());
+    return willIsolateBlendingDescendantsForStyle(object->styleRef());
 }
 
 bool SVGLayoutSupport::isIsolationRequired(const LayoutObject* object)

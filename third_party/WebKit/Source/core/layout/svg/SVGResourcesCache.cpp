@@ -36,13 +36,12 @@ SVGResourcesCache::~SVGResourcesCache()
 {
 }
 
-void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const LayoutStyle* style)
+void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const LayoutStyle& style)
 {
     ASSERT(object);
-    ASSERT(style);
     ASSERT(!m_cache.contains(object));
 
-    const SVGLayoutStyle& svgStyle = style->svgStyle();
+    const SVGLayoutStyle& svgStyle = style.svgStyle();
 
     // Build a list of all resources associated with the passed LayoutObject
     OwnPtr<SVGResources> newResources = SVGResources::buildResources(object, svgStyle);
@@ -113,7 +112,7 @@ static inline bool rendererCanHaveResources(LayoutObject* renderer)
     return renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGInlineText();
 }
 
-void SVGResourcesCache::clientStyleChanged(LayoutObject* renderer, StyleDifference diff, const LayoutStyle* newStyle)
+void SVGResourcesCache::clientStyleChanged(LayoutObject* renderer, StyleDifference diff, const LayoutStyle& newStyle)
 {
     ASSERT(renderer);
     ASSERT(renderer->node());
@@ -138,7 +137,7 @@ void SVGResourcesCache::clientStyleChanged(LayoutObject* renderer, StyleDifferen
     RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 }
 
-void SVGResourcesCache::clientWasAddedToTree(LayoutObject* renderer, const LayoutStyle* newStyle)
+void SVGResourcesCache::clientWasAddedToTree(LayoutObject* renderer, const LayoutStyle& newStyle)
 {
     if (!renderer->node())
         return;

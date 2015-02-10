@@ -123,13 +123,13 @@ void RenderSVGInline::styleDidChange(StyleDifference diff, const LayoutStyle* ol
         setNeedsBoundariesUpdate();
 
     RenderInline::styleDidChange(diff, oldStyle);
-    SVGResourcesCache::clientStyleChanged(this, diff, style());
+    SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
 void RenderSVGInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderInline::addChild(child, beforeChild);
-    SVGResourcesCache::clientWasAddedToTree(child, child->style());
+    SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
 
     if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(this))
         textRenderer->subtreeChildWasAdded(child);

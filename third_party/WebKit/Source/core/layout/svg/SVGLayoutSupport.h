@@ -78,8 +78,8 @@ public:
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
 
     // Shared between SVG renderers and resources.
-    static void applyStrokeStyleToContext(GraphicsContext*, const LayoutStyle&, const LayoutObject*);
-    static void applyStrokeStyleToStrokeData(StrokeData*, const LayoutStyle*, const LayoutObject*);
+    static void applyStrokeStyleToContext(GraphicsContext&, const LayoutStyle&, const LayoutObject&);
+    static void applyStrokeStyleToStrokeData(StrokeData&, const LayoutStyle&, const LayoutObject&);
 
     // Update the GC state (on |paintInfo.context|) for painting |renderer|
     // using |style|. |resourceMode| is used to decide between fill/stroke.
@@ -97,7 +97,7 @@ public:
     static bool isRenderableTextNode(const LayoutObject*);
 
     // Determines whether a svg node should isolate or not based on LayoutStyle.
-    static bool willIsolateBlendingDescendantsForStyle(const LayoutStyle*);
+    static bool willIsolateBlendingDescendantsForStyle(const LayoutStyle&);
     static bool willIsolateBlendingDescendantsForObject(const LayoutObject*);
     template<typename LayoutObjectType>
     static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);

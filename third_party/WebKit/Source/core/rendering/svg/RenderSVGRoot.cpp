@@ -231,7 +231,7 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const LayoutStyle* oldS
     }
 
     RenderReplaced::styleDidChange(diff, oldStyle);
-    SVGResourcesCache::clientStyleChanged(this, diff, style());
+    SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
 bool RenderSVGRoot::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
@@ -242,7 +242,7 @@ bool RenderSVGRoot::isChildAllowed(LayoutObject* child, const LayoutStyle&) cons
 void RenderSVGRoot::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderReplaced::addChild(child, beforeChild);
-    SVGResourcesCache::clientWasAddedToTree(child, child->style());
+    SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
 
     bool shouldIsolateDescendants = (child->isBlendingAllowed() && child->style()->hasBlendMode()) || child->hasNonIsolatedBlendingDescendants();
     if (shouldIsolateDescendants)
@@ -284,7 +284,7 @@ void RenderSVGRoot::descendantIsolationRequirementsChanged(DescendantIsolationSt
 void RenderSVGRoot::insertedIntoTree()
 {
     RenderReplaced::insertedIntoTree();
-    SVGResourcesCache::clientWasAddedToTree(this, style());
+    SVGResourcesCache::clientWasAddedToTree(this, styleRef());
 }
 
 void RenderSVGRoot::willBeRemovedFromTree()

@@ -171,9 +171,9 @@ public:
     // This means we can safely use the same style in all cases to simplify our code.
     // FIXME: Eventually this function should replaced by style() once we support direction
     // on all table parts and writing-mode on cells.
-    const LayoutStyle* styleForCellFlow() const
+    const LayoutStyle& styleForCellFlow() const
     {
-        return row()->style();
+        return row()->styleRef();
     }
 
     const BorderValue& borderAdjoiningTableStart() const

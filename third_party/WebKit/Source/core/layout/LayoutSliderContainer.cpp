@@ -58,9 +58,9 @@ inline static Decimal sliderPosition(HTMLInputElement* element)
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
     ASSERT(input->renderer());
-    LayoutStyle* sliderStyle = input->renderer()->style();
+    const LayoutStyle& sliderStyle = input->renderer()->styleRef();
 
-    return sliderStyle->appearance() == SliderVerticalPart;
+    return sliderStyle.appearance() == SliderVerticalPart;
 }
 
 void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const

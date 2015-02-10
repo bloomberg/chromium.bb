@@ -42,7 +42,7 @@ public:
     static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
 
     // Called from all SVG renderers addChild() methods.
-    static void clientWasAddedToTree(LayoutObject*, const LayoutStyle* newStyle);
+    static void clientWasAddedToTree(LayoutObject*, const LayoutStyle& newStyle);
 
     // Called from all SVG renderers removeChild() methods.
     static void clientWillBeRemovedFromTree(LayoutObject*);
@@ -54,13 +54,13 @@ public:
     static void clientLayoutChanged(LayoutObject*);
 
     // Called from all SVG renderers styleDidChange() methods.
-    static void clientStyleChanged(LayoutObject*, StyleDifference, const LayoutStyle* newStyle);
+    static void clientStyleChanged(LayoutObject*, StyleDifference, const LayoutStyle& newStyle);
 
     // Called from RenderSVGResourceContainer::willBeDestroyed().
     static void resourceDestroyed(RenderSVGResourceContainer*);
 
 private:
-    void addResourcesFromLayoutObject(LayoutObject*, const LayoutStyle*);
+    void addResourcesFromLayoutObject(LayoutObject*, const LayoutStyle&);
     void removeResourcesFromLayoutObject(LayoutObject*);
 
     typedef HashMap<const LayoutObject*, OwnPtr<SVGResources>> CacheMap;

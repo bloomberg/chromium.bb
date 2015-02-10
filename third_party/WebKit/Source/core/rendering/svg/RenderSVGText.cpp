@@ -490,7 +490,7 @@ void RenderSVGText::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderSVGBlock::addChild(child, beforeChild);
 
-    SVGResourcesCache::clientWasAddedToTree(child, child->style());
+    SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
     subtreeChildWasAdded(child);
 }
 

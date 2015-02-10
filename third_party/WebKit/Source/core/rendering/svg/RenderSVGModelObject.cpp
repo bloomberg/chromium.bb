@@ -110,7 +110,7 @@ void RenderSVGModelObject::styleDidChange(StyleDifference diff, const LayoutStyl
     }
 
     LayoutObject::styleDidChange(diff, oldStyle);
-    SVGResourcesCache::clientStyleChanged(this, diff, style());
+    SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
 bool RenderSVGModelObject::nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)

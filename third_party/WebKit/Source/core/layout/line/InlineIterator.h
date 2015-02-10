@@ -133,8 +133,8 @@ static inline void notifyObserverEnteredObject(Observer* observer, LayoutObject*
     if (!observer || !object || !object->isRenderInline())
         return;
 
-    LayoutStyle* style = object->style();
-    EUnicodeBidi unicodeBidi = style->unicodeBidi();
+    const LayoutStyle& style = object->styleRef();
+    EUnicodeBidi unicodeBidi = style.unicodeBidi();
     if (unicodeBidi == UBNormal) {
         // http://dev.w3.org/csswg/css3-writing-modes/#unicode-bidi
         // "The element does not open an additional level of embedding with respect to the bidirectional algorithm."
@@ -151,7 +151,7 @@ static inline void notifyObserverEnteredObject(Observer* observer, LayoutObject*
     }
 
     if (!observer->inIsolate())
-        observer->embed(embedCharFromDirection(style->direction(), unicodeBidi), FromStyleOrDOM);
+        observer->embed(embedCharFromDirection(style.direction(), unicodeBidi), FromStyleOrDOM);
 }
 
 template <class Observer>

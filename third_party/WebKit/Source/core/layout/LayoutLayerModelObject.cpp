@@ -91,7 +91,7 @@ void LayoutLayerModelObject::styleWillChange(StyleDifference diff, const LayoutS
 {
     s_wasFloating = isFloating();
 
-    if (LayoutStyle* oldStyle = style()) {
+    if (const LayoutStyle* oldStyle = style()) {
         if (parent() && diff.needsPaintInvalidationLayer()) {
             if (oldStyle->hasAutoClip() != newStyle.hasAutoClip()
                 || oldStyle->clip() != newStyle.clip())

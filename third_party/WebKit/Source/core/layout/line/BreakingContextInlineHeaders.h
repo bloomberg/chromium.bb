@@ -153,14 +153,14 @@ private:
     TrailingObjects m_trailingObjects;
 };
 
-inline bool shouldCollapseWhiteSpace(const LayoutStyle* style, const LineInfo& lineInfo, WhitespacePosition whitespacePosition)
+inline bool shouldCollapseWhiteSpace(const LayoutStyle& style, const LineInfo& lineInfo, WhitespacePosition whitespacePosition)
 {
     // CSS2 16.6.1
     // If a space (U+0020) at the beginning of a line has 'white-space' set to 'normal', 'nowrap', or 'pre-line', it is removed.
     // If a space (U+0020) at the end of a line has 'white-space' set to 'normal', 'nowrap', or 'pre-line', it is also removed.
     // If spaces (U+0020) or tabs (U+0009) at the end of a line have 'white-space' set to 'pre-wrap', UAs may visually collapse them.
-    return style->collapseWhiteSpace()
-        || (whitespacePosition == TrailingWhitespace && style->whiteSpace() == PRE_WRAP && (!lineInfo.isEmpty() || !lineInfo.previousLineBrokeCleanly()));
+    return style.collapseWhiteSpace()
+        || (whitespacePosition == TrailingWhitespace && style.whiteSpace() == PRE_WRAP && (!lineInfo.isEmpty() || !lineInfo.previousLineBrokeCleanly()));
 }
 
 inline bool requiresLineBoxForContent(RenderInline* flow, const LineInfo& lineInfo)
@@ -190,7 +190,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
     if (it.object()->isRenderInline() && !alwaysRequiresLineBox(it.object()) && !requiresLineBoxForContent(toRenderInline(it.object()), lineInfo))
         return false;
 
-    if (!shouldCollapseWhiteSpace(it.object()->style(), lineInfo, whitespacePosition) || it.object()->isBR())
+    if (!shouldCollapseWhiteSpace(it.object()->styleRef(), lineInfo, whitespacePosition) || it.object()->isBR())
         return true;
 
     UChar current = it.current();
@@ -883,13 +883,13 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
     }
 }
 
-inline IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, LayoutStyle* style)
+inline IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, const LayoutStyle& style)
 {
     IndentTextOrNot shouldIndentText = DoNotIndentText;
-    if (isFirstLine || (isAfterHardLineBreak && style->textIndentLine()) == TextIndentEachLine)
+    if (isFirstLine || (isAfterHardLineBreak && style.textIndentLine()) == TextIndentEachLine)
         shouldIndentText = IndentText;
 
-    if (style->textIndentType() == TextIndentHanging)
+    if (style.textIndentType() == TextIndentHanging)
         shouldIndentText = shouldIndentText == IndentText ? DoNotIndentText : IndentText;
 
     return shouldIndentText;

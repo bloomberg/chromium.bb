@@ -337,7 +337,7 @@ public:
     bool containsDirtyOverlayScrollbars() const { return m_containsDirtyOverlayScrollbars; }
     void setContainsDirtyOverlayScrollbars(bool dirtyScrollbars) { m_containsDirtyOverlayScrollbars = dirtyScrollbars; }
 
-    FilterOperations computeFilterOperations(const LayoutStyle*);
+    FilterOperations computeFilterOperations(const LayoutStyle&);
     bool paintsWithFilters() const;
     FilterEffectRenderer* filterRenderer() const
     {
@@ -356,7 +356,7 @@ public:
     bool hasFilterInfo() const { return m_hasFilterInfo; }
     void setHasFilterInfo(bool hasFilterInfo) { m_hasFilterInfo = hasFilterInfo; }
 
-    void updateFilters(const LayoutStyle* oldStyle, const LayoutStyle* newStyle);
+    void updateFilters(const LayoutStyle* oldStyle, const LayoutStyle& newStyle);
 
     Node* enclosingElement() const;
 
@@ -590,7 +590,7 @@ private:
     void dirtyAncestorChainVisibleDescendantStatus();
 
     bool attemptDirectCompositingUpdate(StyleDifference, const LayoutStyle* oldStyle);
-    void updateTransform(const LayoutStyle* oldStyle, LayoutStyle* newStyle);
+    void updateTransform(const LayoutStyle* oldStyle, const LayoutStyle& newStyle);
 
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.

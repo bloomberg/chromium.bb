@@ -116,16 +116,16 @@ static inline bool isAcceleratedCanvas(const LayoutObject* renderer)
     return false;
 }
 
-static bool hasBoxDecorationsOrBackgroundImage(const LayoutStyle* style)
+static bool hasBoxDecorationsOrBackgroundImage(const LayoutStyle& style)
 {
-    return style->hasBoxDecorations() || style->hasBackgroundImage();
+    return style.hasBoxDecorations() || style.hasBackgroundImage();
 }
 
 static bool contentLayerSupportsDirectBackgroundComposition(const LayoutObject* renderer)
 {
     // No support for decorations - border, border-radius or outline.
     // Only simple background - solid color or transparent.
-    if (hasBoxDecorationsOrBackgroundImage(renderer->style()))
+    if (hasBoxDecorationsOrBackgroundImage(renderer->styleRef()))
         return false;
 
     // If there is no background, there is nothing to support.
@@ -228,16 +228,16 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
         m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
 #endif
 
-    updateOpacity(renderer()->style());
-    updateTransform(renderer()->style());
-    updateFilters(renderer()->style());
+    updateOpacity(renderer()->styleRef());
+    updateTransform(renderer()->styleRef());
+    updateFilters(renderer()->styleRef());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
-        updateLayerBlendMode(renderer()->style());
+        updateLayerBlendMode(renderer()->styleRef());
         updateIsRootForIsolatedGroup();
     }
 
-    updateScrollBlocksOn(renderer()->style());
+    updateScrollBlocksOn(renderer()->styleRef());
 }
 
 void CompositedLayerMapping::destroyGraphicsLayers()
@@ -259,32 +259,32 @@ void CompositedLayerMapping::destroyGraphicsLayers()
     m_scrollingBlockSelectionLayer = nullptr;
 }
 
-void CompositedLayerMapping::updateOpacity(const LayoutStyle* style)
+void CompositedLayerMapping::updateOpacity(const LayoutStyle& style)
 {
-    m_graphicsLayer->setOpacity(compositingOpacity(style->opacity()));
+    m_graphicsLayer->setOpacity(compositingOpacity(style.opacity()));
 }
 
-void CompositedLayerMapping::updateTransform(const LayoutStyle* style)
+void CompositedLayerMapping::updateTransform(const LayoutStyle& style)
 {
     // FIXME: This could use m_owningLayer.transform(), but that currently has transform-origin
     // baked into it, and we don't want that.
     TransformationMatrix t;
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        style->applyTransform(t, LayoutSize(toRenderBox(renderer())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
+        style.applyTransform(t, LayoutSize(toRenderBox(renderer())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 
     m_graphicsLayer->setTransform(t);
 }
 
-void CompositedLayerMapping::updateFilters(const LayoutStyle* style)
+void CompositedLayerMapping::updateFilters(const LayoutStyle& style)
 {
     m_graphicsLayer->setFilters(owningLayer().computeFilterOperations(style));
 }
 
-void CompositedLayerMapping::updateLayerBlendMode(const LayoutStyle* style)
+void CompositedLayerMapping::updateLayerBlendMode(const LayoutStyle& style)
 {
-    setBlendMode(style->blendMode());
+    setBlendMode(style.blendMode());
 }
 
 void CompositedLayerMapping::updateIsRootForIsolatedGroup()
@@ -297,14 +297,14 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
     m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
 }
 
-void CompositedLayerMapping::updateScrollBlocksOn(const LayoutStyle* style)
+void CompositedLayerMapping::updateScrollBlocksOn(const LayoutStyle& style)
 {
     // Note that blink determines the default scroll blocking policy, even
     // when the scroll-blocks-on CSS feature isn't enabled.
     WebScrollBlocksOn blockingMode = WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent;
 
     if (RuntimeEnabledFeatures::cssScrollBlocksOnEnabled())
-        blockingMode = style->scrollBlocksOn();
+        blockingMode = style.scrollBlocksOn();
 
     m_graphicsLayer->setScrollBlocksOn(blockingMode);
 }
@@ -448,7 +448,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         layerConfigChanged = true;
 
     bool hasPerspective = false;
-    if (LayoutStyle* style = renderer->style())
+    // FIXME: Can |style| be really null that late in the DocumentCycle?
+    if (const LayoutStyle* style = renderer->style())
         hasPerspective = style->hasPerspective();
     bool needsChildTransformLayer = hasPerspective && (layerForChildrenTransform() == m_childTransformLayer.get()) && renderer->isBox();
     if (updateChildTransformLayer(needsChildTransformLayer))
@@ -659,14 +660,14 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
     if (!renderer()->style()->isRunningTransformAnimationOnCompositor())
-        updateTransform(renderer()->style());
+        updateTransform(renderer()->styleRef());
 
     // Set opacity, if it is not animating.
     if (!renderer()->style()->isRunningOpacityAnimationOnCompositor())
-        updateOpacity(renderer()->style());
+        updateOpacity(renderer()->styleRef());
 
     if (!renderer()->style()->isRunningFilterAnimationOnCompositor())
-        updateFilters(renderer()->style());
+        updateFilters(renderer()->styleRef());
 
     // We compute everything relative to the enclosing compositing layer.
     IntRect ancestorCompositingBounds;
@@ -714,7 +715,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
         m_owningLayer.scrollableArea()->positionOverflowControls(IntSize());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
-        updateLayerBlendMode(renderer()->style());
+        updateLayerBlendMode(renderer()->styleRef());
         updateIsRootForIsolatedGroup();
     }
 
@@ -729,7 +730,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
     updateScrollParent(compositor()->preferCompositingToLCDTextEnabled() ? m_owningLayer.scrollParent() : 0);
     registerScrollingLayers();
 
-    updateScrollBlocksOn(renderer()->style());
+    updateScrollBlocksOn(renderer()->styleRef());
 
     updateCompositingReasons();
 }
@@ -1466,7 +1467,8 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
     // so that the transform propagates to child layers correctly.
     if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
         bool hasPerspective = false;
-        if (LayoutStyle* style = m_owningLayer.renderer()->style())
+        // FIXME: Can |style| be really null here?
+        if (const LayoutStyle* style = m_owningLayer.renderer()->style())
             hasPerspective = style->hasPerspective();
         if (hasPerspective)
             childTransformLayer->setShouldFlattenTransform(false);
@@ -1811,13 +1813,13 @@ bool CompositedLayerMapping::containsPaintedContent() const
         LayoutObject* rootObject = layoutObject->document().documentElement() ? layoutObject->document().documentElement()->renderer() : 0;
         // Reject anything that has a border, a border-radius or outline,
         // or is not a simple background (no background, or solid color).
-        if (rootObject && hasBoxDecorationsOrBackgroundImage(rootObject->style()))
+        if (rootObject && hasBoxDecorationsOrBackgroundImage(rootObject->styleRef()))
             return true;
 
         // Now look at the body's renderer.
         HTMLElement* body = layoutObject->document().body();
         LayoutObject* bodyObject = isHTMLBodyElement(body) ? body->renderer() : 0;
-        if (bodyObject && hasBoxDecorationsOrBackgroundImage(bodyObject->style()))
+        if (bodyObject && hasBoxDecorationsOrBackgroundImage(bodyObject->styleRef()))
             return true;
     }
 
@@ -1893,12 +1895,12 @@ void CompositedLayerMapping::updateImageContents()
 
 FloatPoint3D CompositedLayerMapping::computeTransformOrigin(const IntRect& borderBox) const
 {
-    LayoutStyle* style = renderer()->style();
+    const LayoutStyle& style = renderer()->styleRef();
 
     FloatPoint3D origin;
-    origin.setX(floatValueForLength(style->transformOriginX(), borderBox.width()));
-    origin.setY(floatValueForLength(style->transformOriginY(), borderBox.height()));
-    origin.setZ(style->transformOriginZ());
+    origin.setX(floatValueForLength(style.transformOriginX(), borderBox.width()));
+    origin.setY(floatValueForLength(style.transformOriginY(), borderBox.height()));
+    origin.setZ(style.transformOriginZ());
 
     return origin;
 }

@@ -89,7 +89,7 @@ void RenderSVGBlock::styleDidChange(StyleDifference diff, const LayoutStyle* old
     }
 
     RenderBlock::styleDidChange(diff, oldStyle);
-    SVGResourcesCache::clientStyleChanged(this, diff, style());
+    SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
 void RenderSVGBlock::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const

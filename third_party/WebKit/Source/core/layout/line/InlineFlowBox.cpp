@@ -120,19 +120,19 @@ void InlineFlowBox::addToLine(InlineBox* child)
     }
 
     if (descendantsHaveSameLineHeightAndBaseline() && !child->renderer().isOutOfFlowPositioned()) {
-        LayoutStyle* parentStyle = renderer().style(isFirstLineStyle());
-        LayoutStyle* childStyle = child->renderer().style(isFirstLineStyle());
+        const LayoutStyle& parentStyle = renderer().styleRef(isFirstLineStyle());
+        const LayoutStyle& childStyle = child->renderer().styleRef(isFirstLineStyle());
         bool shouldClearDescendantsHaveSameLineHeightAndBaseline = false;
         if (child->renderer().isReplaced()) {
             shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
         } else if (child->isText()) {
             if (child->renderer().isBR() || child->renderer().parent() != renderer()) {
-                if (!parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle->font().fontMetrics())
-                    || parentStyle->lineHeight() != childStyle->lineHeight()
-                    || (parentStyle->verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle->verticalAlign() != BASELINE)
+                if (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
+                    || parentStyle.lineHeight() != childStyle.lineHeight()
+                    || (parentStyle.verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle.verticalAlign() != BASELINE)
                     shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
             }
-            if (childStyle->hasTextCombine() || childStyle->textEmphasisMark() != TextEmphasisMarkNone)
+            if (childStyle.hasTextCombine() || childStyle.textEmphasisMark() != TextEmphasisMarkNone)
                 shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
         } else {
             if (child->renderer().isBR()) {
@@ -144,10 +144,10 @@ void InlineFlowBox::addToLine(InlineBox* child)
                 InlineFlowBox* childFlowBox = toInlineFlowBox(child);
                 // Check the child's bit, and then also check for differences in font, line-height, vertical-align
                 if (!childFlowBox->descendantsHaveSameLineHeightAndBaseline()
-                    || !parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle->font().fontMetrics())
-                    || parentStyle->lineHeight() != childStyle->lineHeight()
-                    || (parentStyle->verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle->verticalAlign() != BASELINE
-                    || childStyle->hasBorder() || childStyle->hasPadding() || childStyle->hasTextCombine())
+                    || !parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
+                    || parentStyle.lineHeight() != childStyle.lineHeight()
+                    || (parentStyle.verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle.verticalAlign() != BASELINE
+                    || childStyle.hasBorder() || childStyle.hasPadding() || childStyle.hasTextCombine())
                     shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
             }
         }
@@ -158,8 +158,8 @@ void InlineFlowBox::addToLine(InlineBox* child)
 
     if (!child->renderer().isOutOfFlowPositioned()) {
         if (child->isText()) {
-            LayoutStyle* childStyle = child->renderer().style(isFirstLineStyle());
-            if (childStyle->letterSpacing() < 0 || childStyle->textShadow() || childStyle->textEmphasisMark() != TextEmphasisMarkNone || childStyle->textStrokeWidth())
+            const LayoutStyle& childStyle = child->renderer().styleRef(isFirstLineStyle());
+            if (childStyle.letterSpacing() < 0 || childStyle.textShadow() || childStyle.textEmphasisMark() != TextEmphasisMarkNone || childStyle.textStrokeWidth())
                 child->clearKnownToHaveNoOverflow();
         } else if (child->renderer().isReplaced()) {
             RenderBox& box = toRenderBox(child->renderer());
@@ -778,9 +778,9 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
     if (!parent())
         return;
 
-    LayoutStyle* style = renderer().style(isFirstLineStyle());
-    WritingMode writingMode = style->writingMode();
-    ShadowList* boxShadow = style->boxShadow();
+    const LayoutStyle& style = renderer().styleRef(isFirstLineStyle());
+    WritingMode writingMode = style.writingMode();
+    ShadowList* boxShadow = style.boxShadow();
     if (!boxShadow)
         return;
 
@@ -800,13 +800,13 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
     if (!parent())
         return;
 
-    LayoutStyle* style = renderer().style(isFirstLineStyle());
-    if (!style->hasBorderImageOutsets())
+    const LayoutStyle& style = renderer().styleRef(isFirstLineStyle());
+    if (!style.hasBorderImageOutsets())
         return;
 
     // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite border that applies, since
     // the line is "upside down" in terms of block coordinates. vertical-rl and horizontal-bt are the flipped line modes.
-    LayoutRectOutsets logicalOutsets = style->borderImageOutsets().logicalOutsetsWithFlippedLines(style->writingMode());
+    LayoutRectOutsets logicalOutsets = style.borderImageOutsets().logicalOutsetsWithFlippedLines(style.writingMode());
 
     if (!includeLogicalLeftEdge())
         logicalOutsets.setLeft(LayoutUnit());
@@ -824,11 +824,11 @@ inline void InlineFlowBox::addOutlineVisualOverflow(LayoutRect& logicalVisualOve
     if (!parent())
         return;
 
-    LayoutStyle* style = renderer().style(isFirstLineStyle());
-    if (!style->hasOutline())
+    const LayoutStyle& style = renderer().styleRef(isFirstLineStyle());
+    if (!style.hasOutline())
         return;
 
-    logicalVisualOverflow.inflate(style->outlineSize());
+    logicalVisualOverflow.inflate(style.outlineSize());
 }
 
 inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, LayoutRect& logicalVisualOverflow)
@@ -1237,13 +1237,13 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
         }
 
         if (curr->isInlineTextBox()) {
-            LayoutStyle* style = curr->renderer().style(isFirstLineStyle());
-            if (style->textEmphasisMark() != TextEmphasisMarkNone && style->textEmphasisPosition() == TextEmphasisPositionUnder) {
-                if (!style->isFlippedLinesWritingMode()) {
-                    LayoutUnit bottomOfEmphasisMark = curr->logicalBottom() + style->font().emphasisMarkHeight(style->textEmphasisMarkString());
+            const LayoutStyle& style = curr->renderer().styleRef(isFirstLineStyle());
+            if (style.textEmphasisMark() != TextEmphasisMarkNone && style.textEmphasisPosition() == TextEmphasisPositionUnder) {
+                if (!style.isFlippedLinesWritingMode()) {
+                    LayoutUnit bottomOfEmphasisMark = curr->logicalBottom() + style.font().emphasisMarkHeight(style.textEmphasisMarkString());
                     result = std::max(result, bottomOfEmphasisMark - allowedPosition);
                 } else {
-                    LayoutUnit topOfEmphasisMark = curr->logicalTop() - style->font().emphasisMarkHeight(style->textEmphasisMarkString());
+                    LayoutUnit topOfEmphasisMark = curr->logicalTop() - style.font().emphasisMarkHeight(style.textEmphasisMarkString());
                     result = std::max(result, allowedPosition - topOfEmphasisMark);
                 }
             }

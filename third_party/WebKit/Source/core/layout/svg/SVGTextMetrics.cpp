@@ -64,8 +64,7 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
 
 TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
 {
-    LayoutStyle* style = text->style();
-    ASSERT(style);
+    const LayoutStyle& style = text->styleRef();
 
     TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
         , 0 // length, will be set below if non-zero.
@@ -73,7 +72,7 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
         , 0 // padding, only relevant for justified text, not relevant for SVG
         , TextRun::AllowTrailingExpansion
         , textDirection
-        , isOverride(style->unicodeBidi()) /* directionalOverride */);
+        , isOverride(style.unicodeBidi()) /* directionalOverride */);
 
     if (length) {
         if (text->is8Bit())

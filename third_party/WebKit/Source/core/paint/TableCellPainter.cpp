@@ -135,7 +135,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (recorder.canUseCachedDrawing())
         return;
 
-    const LayoutStyle& styleForCellFlow = *m_layoutTableCell.styleForCellFlow();
+    const LayoutStyle& styleForCellFlow = m_layoutTableCell.styleForCellFlow();
     CollapsedBorderValue leftVal = cachedCollapsedLeftBorder(styleForCellFlow);
     CollapsedBorderValue rightVal = cachedCollapsedRightBorder(styleForCellFlow);
     CollapsedBorderValue topVal = cachedCollapsedTopBorder(styleForCellFlow);

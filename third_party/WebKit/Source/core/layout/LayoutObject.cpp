@@ -1792,7 +1792,7 @@ void LayoutObject::styleDidChange(StyleDifference diff, const LayoutStyle* oldSt
         return;
 
     if (diff.needsFullLayout()) {
-        LayoutCounter::rendererStyleChanged(*this, oldStyle, m_style.get());
+        LayoutCounter::rendererStyleChanged(*this, oldStyle, *m_style);
 
         // If the object already needs layout, then setNeedsLayout won't do
         // any work. But if the containing block has changed, then we may need

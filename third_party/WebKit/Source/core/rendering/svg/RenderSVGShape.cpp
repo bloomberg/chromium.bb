@@ -76,7 +76,7 @@ bool RenderSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
 {
     ASSERT(m_path);
     StrokeData strokeData;
-    SVGLayoutSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
+    SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this);
 
     if (hasNonScalingStroke()) {
         AffineTransform nonScalingTransform = nonScalingStrokeTransform();
@@ -233,7 +233,7 @@ FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
 
     if (style()->svgStyle().hasStroke()) {
         StrokeData strokeData;
-        SVGLayoutSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
+        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this);
         if (hasNonScalingStroke()) {
             AffineTransform nonScalingTransform = nonScalingStrokeTransform();
             if (nonScalingTransform.isInvertible()) {

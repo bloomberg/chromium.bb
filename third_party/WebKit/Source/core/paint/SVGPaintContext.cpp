@@ -109,13 +109,12 @@ void SVGPaintContext::applyCompositingIfNecessary()
     if (m_object->isSVGRoot())
         return;
 
-    LayoutStyle* style = m_object->style();
-    ASSERT(style);
-    float opacity = style->opacity();
-    bool hasBlendMode = style->hasBlendMode() && m_object->isBlendingAllowed();
+    const LayoutStyle& style = m_object->styleRef();
+    float opacity = style.opacity();
+    bool hasBlendMode = style.hasBlendMode() && m_object->isBlendingAllowed();
     if (opacity < 1 || hasBlendMode) {
         m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo.context, m_object->displayItemClient(), m_paintInfo.phase, m_object->paintInvalidationRectInLocalCoordinates()));
-        WebBlendMode blendMode = hasBlendMode ? style->blendMode() : WebBlendModeNormal;
+        WebBlendMode blendMode = hasBlendMode ? style.blendMode() : WebBlendModeNormal;
         CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo.context->compositeOperationDeprecated();
         m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, m_object->displayItemClient(), compositeOp, blendMode, opacity, compositeOp));
     }

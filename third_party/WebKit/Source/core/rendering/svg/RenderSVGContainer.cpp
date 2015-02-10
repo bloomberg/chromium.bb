@@ -77,7 +77,7 @@ void RenderSVGContainer::layout()
 void RenderSVGContainer::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderSVGModelObject::addChild(child, beforeChild);
-    SVGResourcesCache::clientWasAddedToTree(child, child->style());
+    SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
 
     bool shouldIsolateDescendants = (child->isBlendingAllowed() && child->style()->hasBlendMode()) || child->hasNonIsolatedBlendingDescendants();
     if (shouldIsolateDescendants)
@@ -104,7 +104,7 @@ void RenderSVGContainer::styleDidChange(StyleDifference diff, const LayoutStyle*
 {
     RenderSVGModelObject::styleDidChange(diff, oldStyle);
 
-    bool hadIsolation = oldStyle && !isSVGHiddenContainer() && SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(oldStyle);
+    bool hadIsolation = oldStyle && !isSVGHiddenContainer() && SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(*oldStyle);
     bool isolationChanged = hadIsolation == !SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this);
 
     if (!parent() || !isolationChanged)

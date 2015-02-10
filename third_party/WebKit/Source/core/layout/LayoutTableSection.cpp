@@ -1145,8 +1145,8 @@ int LayoutTableSection::calcBlockDirectionOuterBorder(BlockBorderSide side) cons
         const CellStruct& current = cellAt(side == BorderBefore ? 0 : m_grid.size() - 1, c);
         if (current.inColSpan || !current.hasCells())
             continue;
-        const LayoutStyle* primaryCellStyle = current.primaryCell()->style();
-        const BorderValue& cb = side == BorderBefore ? primaryCellStyle->borderBefore() : primaryCellStyle->borderAfter(); // FIXME: Make this work with perpendicular and flipped cells.
+        const LayoutStyle& primaryCellStyle = current.primaryCell()->styleRef();
+        const BorderValue& cb = side == BorderBefore ? primaryCellStyle.borderBefore() : primaryCellStyle.borderAfter(); // FIXME: Make this work with perpendicular and flipped cells.
         // FIXME: Don't repeat for the same col group
         LayoutTableCol* colGroup = table()->colElement(c);
         if (colGroup) {
@@ -1203,10 +1203,10 @@ int LayoutTableSection::calcInlineDirectionOuterBorder(InlineBorderSide side) co
         if (!current.hasCells())
             continue;
         // FIXME: Don't repeat for the same cell
-        const LayoutStyle* primaryCellStyle = current.primaryCell()->style();
-        const LayoutStyle* primaryCellParentStyle = current.primaryCell()->parent()->style();
-        const BorderValue& cb = side == BorderStart ? primaryCellStyle->borderStart() : primaryCellStyle->borderEnd(); // FIXME: Make this work with perpendicular and flipped cells.
-        const BorderValue& rb = side == BorderStart ? primaryCellParentStyle->borderStart() : primaryCellParentStyle->borderEnd();
+        const LayoutStyle& primaryCellStyle = current.primaryCell()->styleRef();
+        const LayoutStyle& primaryCellParentStyle = current.primaryCell()->parent()->styleRef();
+        const BorderValue& cb = side == BorderStart ? primaryCellStyle.borderStart() : primaryCellStyle.borderEnd(); // FIXME: Make this work with perpendicular and flipped cells.
+        const BorderValue& rb = side == BorderStart ? primaryCellParentStyle.borderStart() : primaryCellParentStyle.borderEnd();
         if (cb.style() == BHIDDEN || rb.style() == BHIDDEN)
             continue;
         allHidden = false;
