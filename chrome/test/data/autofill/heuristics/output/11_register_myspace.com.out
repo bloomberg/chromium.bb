@@ -1,7 +1,7 @@
-UNKNOWN_TYPE | accountType | Account TypeWhat's this? | 2 | accountType_1-default
-UNKNOWN_TYPE | accountType | Personal | 7 | accountType_1-default
-UNKNOWN_TYPE | accountType | Musician | 15 | accountType_1-default
-UNKNOWN_TYPE | accountType | Comedian | 9 | accountType_1-default
+UNKNOWN_TYPE | accountType | Personal | 2 | accountType_1-default
+UNKNOWN_TYPE | accountType | Musician | 7 | accountType_1-default
+UNKNOWN_TYPE | accountType | Comedian | 15 | accountType_1-default
+UNKNOWN_TYPE | accountType | Filmmaker | 9 | accountType_1-default
 NAME_FIRST | tbxFirstName | First Name |  | accountType_1-default
 NAME_LAST | tbxLastName | Last Name |  | accountType_1-default
 UNKNOWN_TYPE | tbxMusicianName | Artist Name |  | accountType_1-default
@@ -13,5 +13,5 @@ UNKNOWN_TYPE | tbxPassword1 | Confirm Password |  | accountType_1-default
 UNKNOWN_TYPE | ddlMonth | Birthday |  | accountType_1-default
 UNKNOWN_TYPE | ddlDay |  |  | accountType_1-default
 UNKNOWN_TYPE | ddlYear |  |  | accountType_1-default
-UNKNOWN_TYPE | rblGender | Gender | M | accountType_1-default
-UNKNOWN_TYPE | rblGender | Male | F | accountType_1-default
+UNKNOWN_TYPE | rblGender | Male | M | accountType_1-default
+UNKNOWN_TYPE | rblGender | Female | F | accountType_1-default

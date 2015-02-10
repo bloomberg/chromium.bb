@@ -7,8 +7,8 @@ ADDRESS_HOME_STATE | BillingState | State | CA | BillingFirstName_1-default
 ADDRESS_HOME_ZIP | BillingZipCode | Zip | 95014 | BillingFirstName_1-default
 PHONE_HOME_WHOLE_NUMBER | BillingDaytimePhone | Day Phone | 4088737223 | BillingFirstName_1-default
 PHONE_HOME_WHOLE_NUMBER | BillingEveningPhone | Evening Phone |  | BillingFirstName_1-default
-UNKNOWN_TYPE | checkbox2 | *Required Field | on | BillingFirstName_1-default
-UNKNOWN_TYPE | diffShip | *Required Field | on | BillingFirstName_1-default
+UNKNOWN_TYPE | checkbox2 | This order is being sent as a gift | on | BillingFirstName_1-default
+UNKNOWN_TYPE | diffShip | My shipping address is the same as my billing address | on | BillingFirstName_1-default
 NAME_FIRST | ShippingFirstName | First Name |  | ShippingFirstName_1-default
 NAME_LAST | ShippingLastName | Last Name |  | ShippingFirstName_1-default
 ADDRESS_HOME_LINE1 | lineone | Address Line 1 | 7540 Donegal Dr | ShippingFirstName_1-default
@@ -24,9 +24,9 @@ CREDIT_CARD_EXP_MONTH | exp_month | Expiration Date: | 0 | ShippingFirstName_1-c
 CREDIT_CARD_EXP_4_DIGIT_YEAR | exp_year | Expiration Date: |  | ShippingFirstName_1-cc
 UNKNOWN_TYPE | CC |  | PayPal | ShippingFirstName_1-default
 UNKNOWN_TYPE | CC |  | bml | ShippingFirstName_1-default
-UNKNOWN_TYPE | UsePromoCode | See Terms | on | ShippingFirstName_1-default
+UNKNOWN_TYPE | UsePromoCode | Use Promo Code | on | ShippingFirstName_1-default
 UNKNOWN_TYPE | PromoCode | See Terms |  | ShippingFirstName_1-default
-UNKNOWN_TYPE | UseGiftCards | See Terms | on | ShippingFirstName_1-default
+UNKNOWN_TYPE | UseGiftCards | Use Gift Card | on | ShippingFirstName_1-default
 UNKNOWN_TYPE | GiftCardNumber0 | Gift Card 1: |  | ShippingFirstName_1-default
 UNKNOWN_TYPE | PINNumber0 | PIN: |  | ShippingFirstName_1-default
 UNKNOWN_TYPE | GiftCardNumber1 | Gift Card 2: |  | ShippingFirstName_1-default

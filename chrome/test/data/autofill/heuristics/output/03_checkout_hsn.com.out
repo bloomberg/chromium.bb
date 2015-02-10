@@ -1,4 +1,4 @@
-UNKNOWN_TYPE | Body$BillingIsShippingCheckboxB | Enter billing information (as it appears on your statement) | on | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingIsShippingCheckboxB | Use my billing address as my shipping address. | on | Body$BillingIsShippingCheckboxB_1-default
 NAME_FIRST | Body$BillingAddress$_firstName | First Name |  | Body$BillingIsShippingCheckboxB_1-default
 NAME_LAST | Body$BillingAddress$_lastName | Last Name |  | Body$BillingIsShippingCheckboxB_1-default
 ADDRESS_HOME_LINE1 | Body$BillingAddress$_address1 | Address Line 1 |  | Body$BillingIsShippingCheckboxB_1-default
@@ -14,10 +14,10 @@ PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_Alt1Phone | Alternate Phone2(opt
 UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | H | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | M | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | W | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$MobileAlerts | Enter billing information (as it appears on your statement) | on | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$MobileAlerts | Send me special promotion mobile alerts | on | Body$BillingIsShippingCheckboxB_1-default
 EMAIL_ADDRESS | Body$NewEmailAddress2 | Email Address |  | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$WeeklyNewsletterSignup12 | Email Address | on | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$TSNewsletterSignup2 | Email Address | on | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$WeeklyNewsletterSignup12 | Email me weekly HSN newsletters and special offers | on | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$TSNewsletterSignup2 | Email me the daily Today's Special | on | Body$BillingIsShippingCheckboxB_1-default
 NAME_FIRST | Body$ShippingAddress$_firstName | First Name |  | Body$BillingIsShippingCheckboxB_1-default
 NAME_LAST | Body$ShippingAddress$_lastName | Last Name |  | Body$BillingIsShippingCheckboxB_1-default
 ADDRESS_HOME_LINE1 | Body$ShippingAddress$_address1 | Address Line 1 |  | Body$BillingIsShippingCheckboxB_1-default
@@ -26,15 +26,15 @@ ADDRESS_HOME_CITY | Body$ShippingAddress$_city | City |  | Body$BillingIsShippin
 ADDRESS_HOME_STATE | Body$ShippingAddress$_state | State |    | Body$BillingIsShippingCheckboxB_1-default
 ADDRESS_HOME_ZIP | Body$ShippingAddress$_zipcode | Zip Code |  | Body$BillingIsShippingCheckboxB_1-default
 PHONE_HOME_WHOLE_NUMBER | Body$ShippingAddress$_telephone | Phone Number |  | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | PaymentTypeSelection |  | 0 | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | PaymentTypeSelection | Pay with a Credit or Debit Card | 0 | Body$BillingIsShippingCheckboxB_1-default
 CREDIT_CARD_NUMBER | Body$CCNumber | Card Number |  | Body$BillingIsShippingCheckboxB_1-cc
 CREDIT_CARD_EXP_MONTH | Body$CCExpirationDateMonth | Expiration Date | 0 | Body$BillingIsShippingCheckboxB_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | Body$CCExpirationDateYear | Expiration Date | 0 | Body$BillingIsShippingCheckboxB_1-cc
 CREDIT_CARD_NAME | Body$CCNameOnCard | Name on Card |  | Body$BillingIsShippingCheckboxB_1-cc
-UNKNOWN_TYPE | IsDebitCard | Is this a Debit Card? | 1 | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | IsDebitCard | Yes | 0 | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$SaveCC4Later | Is this a Debit Card? | on | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | PaymentTypeSelection | OR | 1 | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | IsDebitCard | Yes | 1 | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | IsDebitCard | No | 0 | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$SaveCC4Later | Save information for future purchases | on | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | PaymentTypeSelection | Pay with PayPal | 1 | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$NewPassword | Create Password (optional) |  | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$RepeatNewPassword | Repeat Password (optional) |  | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$NewPasswordHint | Password Hint (optional) |  | Body$BillingIsShippingCheckboxB_1-default

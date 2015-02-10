@@ -1,4 +1,4 @@
-UNKNOWN_TYPE |  | Billing Information | on | _1-default
+UNKNOWN_TYPE |  | My billing address and delivery address are the same. | on | _1-default
 UNKNOWN_TYPE | billTitle | Title: | Ms. | _1-default
 NAME_FIRST | billFirstName |  | Shorty | _1-default
 NAME_LAST | billLastName | Last Name: | Nge | _1-default

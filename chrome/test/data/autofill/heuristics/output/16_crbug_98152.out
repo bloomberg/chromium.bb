@@ -4,7 +4,7 @@ CREDIT_CARD_EXP_MONTH | CCForm.expirationMonth | Expiration date | 9 | CCForm.ca
 CREDIT_CARD_EXP_4_DIGIT_YEAR | CCForm.expirationYear | Expiration date | 2011 | CCForm.cardType_1-cc
 CREDIT_CARD_NAME | CCForm.name | Name as it appears on card |  | CCForm.cardType_1-cc
 CREDIT_CARD_VERIFICATION_CODE | CCForm.cid |  |  | CCForm.cardType_1-cc
-UNKNOWN_TYPE | isBillingAddress | Make the most of your shopping experience with the Walmart Discover® or Walmart Credit Card®. Learn More or Apply Now. Debit cards (also called check cards, ATM cards or bank cards) are accepted if they have a Visa or MasterCard logo. | on | CCForm.cardType_1-default
+UNKNOWN_TYPE | isBillingAddress | Same as Shipping address | on | CCForm.cardType_1-default
 COMPANY_NAME | CCForm.companyName | Company Name |  | CCForm.cardType_1-default
 ADDRESS_HOME_LINE1 | addressForm.street1 | Address Line 1 |  | CCForm.cardType_1-default
 ADDRESS_HOME_LINE2 | addressForm.street2 | Address Line 2 |  | CCForm.cardType_1-default

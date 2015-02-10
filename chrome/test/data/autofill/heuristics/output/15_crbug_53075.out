@@ -13,7 +13,7 @@ ADDRESS_HOME_CITY | ecomms_town | Town / City: |  | ecomms_company_name_1-defaul
 ADDRESS_HOME_STATE | ecomms_county | County: |  | ecomms_company_name_1-default
 ADDRESS_HOME_ZIP | ecomms_postcode | Postcode: |  | ecomms_company_name_1-default
 ADDRESS_HOME_COUNTRY | ecomms_country | Country: | 224 | ecomms_company_name_1-default
-UNKNOWN_TYPE | delivery_address | Address Details Address1: Address2: Town / City: County: | 1 | ecomms_company_name_1-default
+UNKNOWN_TYPE | delivery_address | specify a different delivery address | 1 | ecomms_company_name_1-default
 UNKNOWN_TYPE | del_title | Title: |  | ecomms_company_name_1-default
 NAME_FIRST | del_first_name | First Name: |  | ecomms_company_name_1-default
 NAME_LAST | del_last_name | Last Name: |  | ecomms_company_name_1-default

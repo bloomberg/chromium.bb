@@ -230,24 +230,18 @@ base::string16 FindChildText(const WebNode& node) {
   return node_text;
 }
 
-// Helper for |InferLabelForElement()| that infers a label, if possible, from
-// a previous sibling of |element|,
-// e.g. Some Text <input ...>
-// or   Some <span>Text</span> <input ...>
-// or   <p>Some Text</p><input ...>
-// or   <label>Some Text</label> <input ...>
-// or   Some Text <img><input ...>
-// or   <b>Some Text</b><br/> <input ...>.
-base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
+// Shared function for InferLabelFromPrevious() and InferLabelFromNext().
+base::string16 InferLabelFromSibling(const WebFormControlElement& element,
+                                     bool forward) {
   base::string16 inferred_label;
-  WebNode previous = element;
+  WebNode sibling = element;
   while (true) {
-    previous = previous.previousSibling();
-    if (previous.isNull())
+    sibling = forward ? sibling.nextSibling() : sibling.previousSibling();
+    if (sibling.isNull())
       break;
 
     // Skip over comments.
-    WebNode::NodeType node_type = previous.nodeType();
+    WebNode::NodeType node_type = sibling.nodeType();
     if (node_type == WebNode::CommentNode)
       continue;
 
@@ -264,12 +258,12 @@ base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
     CR_DEFINE_STATIC_LOCAL(WebString, kStrong, ("strong"));
     CR_DEFINE_STATIC_LOCAL(WebString, kSpan, ("span"));
     CR_DEFINE_STATIC_LOCAL(WebString, kFont, ("font"));
-    if (previous.isTextNode() ||
-        HasTagName(previous, kBold) || HasTagName(previous, kStrong) ||
-        HasTagName(previous, kSpan) || HasTagName(previous, kFont)) {
-      base::string16 value = FindChildText(previous);
+    if (sibling.isTextNode() ||
+        HasTagName(sibling, kBold) || HasTagName(sibling, kStrong) ||
+        HasTagName(sibling, kSpan) || HasTagName(sibling, kFont)) {
+      base::string16 value = FindChildText(sibling);
       // A text node's value will be empty if it is for a line break.
-      bool add_space = previous.isTextNode() && value.empty();
+      bool add_space = sibling.isTextNode() && value.empty();
       inferred_label =
           CombineAndCollapseWhitespace(value, inferred_label, add_space);
       continue;
@@ -286,20 +280,38 @@ base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
     // label text, so skip over them.
     CR_DEFINE_STATIC_LOCAL(WebString, kImage, ("img"));
     CR_DEFINE_STATIC_LOCAL(WebString, kBreak, ("br"));
-    if (HasTagName(previous, kImage) || HasTagName(previous, kBreak))
+    if (HasTagName(sibling, kImage) || HasTagName(sibling, kBreak))
       continue;
 
     // We only expect <p> and <label> tags to contain the full label text.
     CR_DEFINE_STATIC_LOCAL(WebString, kPage, ("p"));
     CR_DEFINE_STATIC_LOCAL(WebString, kLabel, ("label"));
-    if (HasTagName(previous, kPage) || HasTagName(previous, kLabel))
-      inferred_label = FindChildText(previous);
+    if (HasTagName(sibling, kPage) || HasTagName(sibling, kLabel))
+      inferred_label = FindChildText(sibling);
 
     break;
   }
 
   base::TrimWhitespace(inferred_label, base::TRIM_ALL, &inferred_label);
   return inferred_label;
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
+// a previous sibling of |element|,
+// e.g. Some Text <input ...>
+// or   Some <span>Text</span> <input ...>
+// or   <p>Some Text</p><input ...>
+// or   <label>Some Text</label> <input ...>
+// or   Some Text <img><input ...>
+// or   <b>Some Text</b><br/> <input ...>.
+base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
+  return InferLabelFromSibling(element, false /* forward? */);
+}
+
+// Same as InferLabelFromPrevious(), but in the other direction.
+// Useful for cases like: <span><input type="checkbox">Label For Checkbox</span>
+base::string16 InferLabelFromNext(const WebFormControlElement& element) {
+  return InferLabelFromSibling(element, true /* forward? */);
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -475,7 +487,14 @@ bool ClosestAncestorIsDivAndNotTD(const WebFormControlElement& element) {
 // Infers corresponding label for |element| from surrounding context in the DOM,
 // e.g. the contents of the preceding <p> tag or text element.
 base::string16 InferLabelForElement(const WebFormControlElement& element) {
-  base::string16 inferred_label = InferLabelFromPrevious(element);
+  base::string16 inferred_label;
+  if (IsCheckableElement(toWebInputElement(&element))) {
+    inferred_label = InferLabelFromNext(element);
+    if (!inferred_label.empty())
+      return inferred_label;
+  }
+
+  inferred_label = InferLabelFromPrevious(element);
   if (!inferred_label.empty())
     return inferred_label;
 

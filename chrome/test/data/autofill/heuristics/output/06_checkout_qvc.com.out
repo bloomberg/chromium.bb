@@ -25,5 +25,5 @@ ADDRESS_HOME_CITY | ShiptoCity | City: |  | EmailAddress_1-default
 ADDRESS_HOME_STATE | ShiptoState | State/Province: | AL | EmailAddress_1-default
 ADDRESS_HOME_ZIP | ShiptoZipCode | * Postal Code: |  | EmailAddress_1-default
 ADDRESS_HOME_COUNTRY | ShiptoCountry | * Country: | US | EmailAddress_1-default
-UNKNOWN_TYPE | ShiptoRadiobutton | Use this address for: | ThisOrderOnly | EmailAddress_1-default
-UNKNOWN_TYPE | ShiptoRadiobutton | This order only | PermanentShipto | EmailAddress_1-default
+UNKNOWN_TYPE | ShiptoRadiobutton | This order only | ThisOrderOnly | EmailAddress_1-default
+UNKNOWN_TYPE | ShiptoRadiobutton | (Permanent Ship-To)**All future orders | PermanentShipto | EmailAddress_1-default

@@ -3,4 +3,4 @@ NAME_LAST | lname | * Last Name |  | fname_1-default
 EMAIL_ADDRESS | emLogin | * E-mail address |  | fname_1-default
 UNKNOWN_TYPE | pw | * Password |  | fname_1-default
 UNKNOWN_TYPE | verifypw | * Re-Confirm Password |  | fname_1-default
-UNKNOWN_TYPE | wantMsg |  | on | fname_1-default
+UNKNOWN_TYPE | wantMsg | I'd like to hear about new product information, special discounts and offers exclusive to Epson customers only. Please sign me up! | on | fname_1-default

@@ -10,8 +10,8 @@ UNKNOWN_TYPE | mothername | : |  | name_1-default
 UNKNOWN_TYPE | DOB_Day | : |  | name_1-default
 UNKNOWN_TYPE | DOB_Month | : |  | name_1-default
 UNKNOWN_TYPE | DOB_Year | : |  | name_1-default
-UNKNOWN_TYPE | gender | : | m | name_1-default
-UNKNOWN_TYPE | gender | Male | f | name_1-default
+UNKNOWN_TYPE | gender | Male | m | name_1-default
+UNKNOWN_TYPE | gender | Female | f | name_1-default
 ADDRESS_HOME_COUNTRY | country | : | 99 | name_1-default
 ADDRESS_HOME_CITY | city | : |  | name_1-default
 UNKNOWN_TYPE | othercity | City : |  | name_1-default
