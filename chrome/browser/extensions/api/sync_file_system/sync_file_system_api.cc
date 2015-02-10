@@ -47,10 +47,12 @@ sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
     Profile* profile) {
   sync_file_system::SyncFileSystemService* service =
       SyncFileSystemServiceFactory::GetForProfile(profile);
-  DCHECK(service);
+  if (!service)
+    return nullptr;
   ExtensionSyncEventObserver* observer =
       ExtensionSyncEventObserver::GetFactoryInstance()->Get(profile);
-  DCHECK(observer);
+  if (!observer)
+    return nullptr;
   observer->InitializeForService(service);
   return service;
 }
@@ -116,7 +118,8 @@ bool SyncFileSystemRequestFileSystemFunction::RunAsync() {
   // SyncFileSystem initialization is done in OpenFileSystem below, but we call
   // GetSyncFileSystemService here too to initialize sync event observer for
   // extensions API.
-  GetSyncFileSystemService(GetProfile());
+  if (!GetSyncFileSystemService(GetProfile()))
+    return false;
 
   // Initializes sync context for this extension and continue to open
   // a new file system.
@@ -178,7 +181,12 @@ bool SyncFileSystemGetFileStatusFunction::RunAsync() {
   storage::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
-  GetSyncFileSystemService(GetProfile())->GetFileSyncStatus(
+  sync_file_system::SyncFileSystemService* sync_file_system_service =
+      GetSyncFileSystemService(GetProfile());
+  if (!sync_file_system_service)
+    return false;
+
+  sync_file_system_service->GetFileSyncStatus(
       file_system_url,
       Bind(&SyncFileSystemGetFileStatusFunction::DidGetFileStatus, this));
   return true;
@@ -223,6 +231,9 @@ bool SyncFileSystemGetFileStatusesFunction::RunAsync() {
   file_sync_statuses_.clear();
   sync_file_system::SyncFileSystemService* sync_file_system_service =
       GetSyncFileSystemService(GetProfile());
+  if (!sync_file_system_service)
+    return false;
+
   for (unsigned int i = 0; i < num_expected_results_; i++) {
     std::string url;
     file_entry_urls->GetString(i, &url);
@@ -364,6 +375,8 @@ bool SyncFileSystemGetConflictResolutionPolicyFunction::RunSync() {
 bool SyncFileSystemGetServiceStatusFunction::RunSync() {
   sync_file_system::SyncFileSystemService* service =
       GetSyncFileSystemService(GetProfile());
+  if (!service)
+    return false;
   results_ = api::sync_file_system::GetServiceStatus::Results::Create(
       SyncServiceStateToExtensionEnum(service->GetSyncServiceState()));
   return true;
