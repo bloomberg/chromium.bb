@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/display/display_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
@@ -178,6 +179,29 @@ TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
   UpdateDisplay("400x400");
   EXPECT_GT(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_GT(baseline, alignment_delegate()->GetBaseLine());
+}
+
+TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  const gfx::Rect toast_size(0, 0, 10, 10);
+  UpdateDisplay("600x600");
+  int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
+  int baseline = alignment_delegate()->GetBaseLine();
+
+  // Emulate the docked mode; enter to an extended mode, then invoke
+  // OnNativeDisplaysChanged() with the info for the secondary display only.
+  UpdateDisplay("600x600,800x800");
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  std::vector<DisplayInfo> new_info;
+  new_info.push_back(
+      display_manager->GetDisplayInfo(display_manager->GetDisplayAt(1u).id()));
+  display_manager->OnNativeDisplaysChanged(new_info);
+
+  EXPECT_LT(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
+  EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, TrayHeight) {
