@@ -99,7 +99,6 @@
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/media_log.h"
-#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
@@ -1942,27 +1941,6 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       frame, client, weak_factory_.GetWeakPtr(), media_renderer_factory.Pass(),
       cdm_factory.Pass(), params);
 #endif  // defined(OS_ANDROID)
-}
-
-// TODO(jrummell): remove once blink uses encryptedMediaClient().
-blink::WebContentDecryptionModule*
-RenderFrameImpl::createContentDecryptionModule(
-    blink::WebLocalFrame* frame,
-    const blink::WebSecurityOrigin& security_origin,
-    const blink::WebString& key_system) {
-  DCHECK(!frame_ || frame_ == frame);
-
-#if defined(ENABLE_PEPPER_CDMS)
-  RenderCdmFactory cdm_factory(
-      base::Bind(&PepperCdmWrapperImpl::Create, frame));
-#elif defined(ENABLE_BROWSER_CDMS)
-  RenderCdmFactory cdm_factory(GetCdmManager());
-#else
-  RenderCdmFactory cdm_factory;
-#endif
-
-  return media::WebContentDecryptionModuleImpl::Create(
-      &cdm_factory, security_origin, key_system);
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(

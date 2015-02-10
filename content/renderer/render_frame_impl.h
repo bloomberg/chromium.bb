@@ -344,11 +344,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebContentDecryptionModule* initial_cdm);
-  // TODO(jrummell): remove once blink uses encryptedMediaClient().
-  virtual blink::WebContentDecryptionModule* createContentDecryptionModule(
-      blink::WebLocalFrame* frame,
-      const blink::WebSecurityOrigin& security_origin,
-      const blink::WebString& key_system);
   virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebLocalFrame* frame,
       blink::WebApplicationCacheHostClient* client);
