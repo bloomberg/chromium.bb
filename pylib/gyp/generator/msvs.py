@@ -2624,6 +2624,10 @@ def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
       ]
     ]
 
+  if os.environ.get('PROCESSOR_ARCHITECTURE') == 'AMD64' or \
+     os.environ.get('PROCESSOR_ARCHITEW6432') == 'AMD64':
+    properties[0].append(['PreferredToolArchitecture', 'x64'])
+
   if spec.get('msvs_enable_winrt'):
     properties[0].append(['DefaultLanguage', 'en-US'])
     properties[0].append(['AppContainerApplication', 'true'])
