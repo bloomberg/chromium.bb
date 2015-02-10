@@ -318,7 +318,11 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
         notification_needed = false;
         break;
       }
+#if defined(OS_ANDROID)
     }
+#else
+    }
+#endif
   }
 
   // Don't track push messages that didn't show a notification but were exempt
