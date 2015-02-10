@@ -16,5 +16,12 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1 and fastbuild==0', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/angle_unittests.dSYM/',
+        ],
+      },
+    }],
   ],
 }

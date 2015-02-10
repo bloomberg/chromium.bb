@@ -86,15 +86,17 @@
         ],
       },
     }],
-    ['OS=="mac" and asan==1', {
+    ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/content_browsertests.dSYM/',
+          '<(PRODUCT_DIR)/Content Shell Framework.framework.dSYM/',
+          '<(PRODUCT_DIR)/Content Shell Helper.app.dSYM/',
           '<(PRODUCT_DIR)/Content Shell.app.dSYM/',
+          '<(PRODUCT_DIR)/content_browsertests.dSYM/',
           '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
           '<(PRODUCT_DIR)/npapi_test_plugin.plugin.dSYM/',
-          '<(PRODUCT_DIR)/test_netscape_plugin.plugin.dSYM/',
           '<(PRODUCT_DIR)/ppapi_tests.plugin.dSYM/',
+          '<(PRODUCT_DIR)/test_netscape_plugin.plugin.dSYM/',
         ],
       },
     }],

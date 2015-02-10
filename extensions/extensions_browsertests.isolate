@@ -58,6 +58,13 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1 and fastbuild==0', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/extensions_browsertests.dSYM/',
+        ],
+      },
+    }],
     ['OS=="win" and target_arch=="ia32"', {
       'variables': {
         'files': [

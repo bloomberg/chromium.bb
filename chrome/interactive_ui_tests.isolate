@@ -70,10 +70,15 @@
         ],
       },
     }],
-    ['OS=="mac" and asan==1', {
+    ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
+          '<(PRODUCT_DIR)/<(mac_product_name).app.dSYM/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
           '<(PRODUCT_DIR)/interactive_ui_tests.dSYM/',
+          '<(PRODUCT_DIR)/osmesa.so.dSYM/',
+          '<(PRODUCT_DIR)/ppapi_tests.plugin.dSYM/',
         ],
       },
     }],

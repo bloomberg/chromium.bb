@@ -65,6 +65,14 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1 and fastbuild==0', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/events_unittests.dSYM/',
+          '<(PRODUCT_DIR)/osmesa.so.dSYM/',
+        ],
+      },
+    }],
   ],
   'includes': [
     '../../base/base.isolate',

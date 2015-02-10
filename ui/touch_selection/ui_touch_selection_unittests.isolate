@@ -51,6 +51,13 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1 and fastbuild==0', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ui_touch_selection_unittests.dSYM/',
+        ],
+      },
+    }],
   ],
   'includes': [
     '../../base/base.isolate',

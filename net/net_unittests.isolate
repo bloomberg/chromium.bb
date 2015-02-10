@@ -34,7 +34,7 @@
         'read_only': 1,
       },
     }],
-    ['OS=="mac" and asan==1', {
+    ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/net_unittests.dSYM/',

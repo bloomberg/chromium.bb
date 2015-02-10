@@ -97,10 +97,12 @@
         ],
       },
     }],
-    ['OS=="mac" and asan==1', {
+    ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/content_unittests.dSYM/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
+          '<(PRODUCT_DIR)/osmesa.so.dSYM/',
         ],
       },
     }],
