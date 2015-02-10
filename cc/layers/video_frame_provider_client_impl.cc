@@ -39,15 +39,32 @@ VideoFrameProviderClientImpl::VideoFrameProviderClientImpl(
       0.0, 0.0, 0.0, 1.0);
 }
 
+void VideoFrameProviderClientImpl::SetActiveVideoLayer(
+    VideoLayerImpl* video_layer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(video_layer);
+  active_video_layer_ = video_layer;
+}
+
 void VideoFrameProviderClientImpl::Stop() {
+  // It's called when the main thread is blocked, so lock isn't needed.
   if (!provider_)
     return;
+  DCHECK(thread_checker_.CalledOnValidThread());
   provider_->SetVideoFrameProviderClient(nullptr);
   provider_ = nullptr;
 }
 
+bool VideoFrameProviderClientImpl::Stopped() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // |provider_| is changed while the main thread is blocked, and not changed
+  // thereafter, so lock isn't needed.
+  return !provider_;
+}
+
 scoped_refptr<media::VideoFrame>
 VideoFrameProviderClientImpl::AcquireLockAndCurrentFrame() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   provider_lock_.Acquire();  // Balanced by call to ReleaseLock().
   if (!provider_)
     return nullptr;
@@ -57,11 +74,13 @@ VideoFrameProviderClientImpl::AcquireLockAndCurrentFrame() {
 
 void VideoFrameProviderClientImpl::PutCurrentFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   provider_lock_.AssertAcquired();
   provider_->PutCurrentFrame(frame);
 }
 
 void VideoFrameProviderClientImpl::ReleaseLock() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   provider_lock_.AssertAcquired();
   provider_lock_.Release();
 }
@@ -78,11 +97,13 @@ void VideoFrameProviderClientImpl::DidReceiveFrame() {
                "VideoFrameProviderClientImpl::DidReceiveFrame",
                "active_video_layer",
                !!active_video_layer_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (active_video_layer_)
     active_video_layer_->SetNeedsRedraw();
 }
 
 void VideoFrameProviderClientImpl::DidUpdateMatrix(const float* matrix) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   stream_texture_matrix_ = gfx::Transform(
       matrix[0], matrix[4], matrix[8], matrix[12],
       matrix[1], matrix[5], matrix[9], matrix[13],

@@ -72,7 +72,7 @@ void VideoLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 }
 
 void VideoLayerImpl::DidBecomeActive() {
-  provider_client_impl_->set_active_video_layer(this);
+  provider_client_impl_->SetActiveVideoLayer(this);
 }
 
 bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
