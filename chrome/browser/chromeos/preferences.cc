@@ -384,10 +384,16 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   UserSessionManager* session_manager = UserSessionManager::GetInstance();
   DCHECK(session_manager);
   ime_state_ = session_manager->GetDefaultIMEState(profile);
-  input_method_manager_->SetState(ime_state_);
 
   // Initialize preferences to currently saved state.
   ApplyPreferences(REASON_INITIALIZATION, "");
+
+  // Note that |ime_state_| was modified by ApplyPreferences(), and
+  // SetState() is modifying |current_input_method_| (via
+  // PersistUserInputMethod() ). This way SetState() here may be called only
+  // after ApplyPreferences().
+  input_method_manager_->SetState(ime_state_);
+
   input_method_syncer_.reset(
       new input_method::InputMethodSyncer(prefs, ime_state_));
   input_method_syncer_->Initialize();
