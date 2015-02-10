@@ -95,8 +95,12 @@ TEST_F(GetPathInfoTest, OutDir) {
   EXPECT_EQ("//out/Debug/obj/src/foo", Call(".", "out_dir"));
   EXPECT_EQ("//out/Debug/obj/src/foo", Call("bar", "out_dir"));
   EXPECT_EQ("//out/Debug/obj/foo", Call("//foo/bar.txt", "out_dir"));
-  // System paths go into the root obj directory.
-  EXPECT_EQ("//out/Debug/obj", Call("/foo/bar.txt", "out_dir"));
+  // System paths go into the ABS_PATH obj directory.
+  EXPECT_EQ("//out/Debug/obj/ABS_PATH/foo", Call("/foo/bar.txt", "out_dir"));
+#if defined(OS_WIN)
+  EXPECT_EQ("//out/Debug/obj/ABS_PATH/C/foo",
+            Call("/C:/foo/bar.txt", "out_dir"));
+#endif
 }
 
 // Note build dir is "//out/Debug/".

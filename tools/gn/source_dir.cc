@@ -82,8 +82,15 @@ SourceFile SourceDir::ResolveRelativeFile(
             p.as_string()).value());
     NormalizePath(&absolute);
     if (!MakeAbsolutePathRelativeIfPossible(source_root, absolute,
-                                            &ret.value_))
-      ret.value_ = absolute;
+                                            &ret.value_)) {
+#if defined(OS_WIN)
+      // On Windows we'll accept "C:\foo" as an absolute path, which we want
+      // to convert to "/C:..." here.
+      if (absolute[0] != '/')
+        ret.value_ = "/";
+#endif
+      ret.value_.append(absolute.data(), absolute.size());
+    }
     return ret;
   }
 
@@ -134,8 +141,14 @@ SourceDir SourceDir::ResolveRelativeDir(
         FilePathToUTF8(Resolve(UTF8ToFilePath(source_root)).AppendASCII(
             p.as_string()).value());
     NormalizePath(&absolute);
-    if (!MakeAbsolutePathRelativeIfPossible(source_root, absolute, &ret.value_))
-      ret.value_ = absolute;
+    if (!MakeAbsolutePathRelativeIfPossible(source_root, absolute,
+                                            &ret.value_)) {
+#if defined(OS_WIN)
+      if (absolute[0] != '/')  // See the file case for why we do this check.
+        ret.value_ = "/";
+#endif
+      ret.value_.append(absolute.data(), absolute.size());
+    }
     if (!EndsWithSlash(ret.value_))
       ret.value_.push_back('/');
     return ret;

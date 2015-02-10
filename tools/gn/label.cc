@@ -5,7 +5,9 @@
 #include "tools/gn/label.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "tools/gn/err.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/value.h"
 
@@ -93,8 +95,23 @@ bool Resolve(const SourceDir& current_dir,
              Err* err) {
   // To workaround the problem that StringPiece operator[] doesn't return a ref.
   const char* input_str = input.data();
-
-  size_t path_separator = input.find_first_of(":(");
+  size_t offset = 0;
+#if defined(OS_WIN)
+  if (IsPathAbsolute(input)) {
+    if (input[0] != '/') {
+      *err = Err(original_value, "Bad absolute path.",
+                 "Absolute paths must be of the form /C:\\ but this is \"" +
+                     input.as_string() + "\".");
+      return false;
+    }
+    if (input.size() > 3 && input[2] == ':' && IsSlash(input[3]) &&
+        IsAsciiAlpha(input[1])) {
+      // Skip over the drive letter colon.
+      offset = 3;
+    }
+  }
+#endif
+  size_t path_separator = input.find_first_of(":(", offset);
   base::StringPiece location_piece;
   base::StringPiece name_piece;
   base::StringPiece toolchain_piece;

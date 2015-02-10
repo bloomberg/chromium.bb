@@ -520,6 +520,22 @@ void ConvertPathToSystem(std::string* path) {
 
 std::string MakeRelativePath(const std::string& input,
                              const std::string& dest) {
+#if defined(OS_WIN)
+  // Make sure that absolute |input| path starts with a slash if |dest| path
+  // does. Otherwise skipping common prefixes won't work properly. Ensure the
+  // same for |dest| path too.
+  if (IsPathAbsolute(input) && !IsSlash(input[0]) && IsSlash(dest[0])) {
+    std::string corrected_input(1, dest[0]);
+    corrected_input.append(input);
+    return MakeRelativePath(corrected_input, dest);
+  }
+  if (IsPathAbsolute(dest) && !IsSlash(dest[0]) && IsSlash(input[0])) {
+    std::string corrected_dest(1, input[0]);
+    corrected_dest.append(dest);
+    return MakeRelativePath(input, corrected_dest);
+  }
+#endif
+
   std::string ret;
 
   // Skip the common prefixes of the source and dest as long as they end in
@@ -732,6 +748,19 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
       size_t build_dir_size = build_dir.size();
       result.value().append(&source_dir.value()[build_dir_size],
                             source_dir.value().size() - build_dir_size);
+    } else {
+      result.value().append("ABS_PATH");
+#if defined(OS_WIN)
+      // Windows absolute path contains ':' after drive letter. Remove it to
+      // avoid inserting ':' in the middle of path (eg. "ABS_PATH/C:/").
+      std::string src_dir_value = source_dir.value();
+      const auto colon_pos = src_dir_value.find(':');
+      if (colon_pos != std::string::npos)
+        src_dir_value.erase(src_dir_value.begin() + colon_pos);
+#else
+      const std::string& src_dir_value = source_dir.value();
+#endif
+      result.value().append(src_dir_value);
     }
   }
   return result;

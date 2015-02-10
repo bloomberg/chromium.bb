@@ -505,6 +505,22 @@ TEST(FilesystemUtils, GetOutDirForSourceDir) {
   EXPECT_EQ("two/obj/foo/bar/",
             GetOutputDirForSourceDirAsOutputFile(
                 &other_settings, SourceDir("//foo/bar/")).value());
+
+  // Absolute source path
+  EXPECT_EQ("//out/Debug/obj/ABS_PATH/abs/",
+            GetOutputDirForSourceDir(
+                &default_settings, SourceDir("/abs")).value());
+  EXPECT_EQ("obj/ABS_PATH/abs/",
+            GetOutputDirForSourceDirAsOutputFile(
+                &default_settings, SourceDir("/abs")).value());
+#if defined(OS_WIN)
+  EXPECT_EQ("//out/Debug/obj/ABS_PATH/C/abs/",
+            GetOutputDirForSourceDir(
+                &default_settings, SourceDir("/C:/abs")).value());
+  EXPECT_EQ("obj/ABS_PATH/C/abs/",
+            GetOutputDirForSourceDirAsOutputFile(
+                &default_settings, SourceDir("/C:/abs")).value());
+#endif
 }
 
 TEST(FilesystemUtils, GetGenDirForSourceDir) {
