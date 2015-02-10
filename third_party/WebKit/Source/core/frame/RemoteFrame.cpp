@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/frame/RemoteFrame.h"
 
+#include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/frame/RemoteDOMWindow.h"
@@ -48,7 +49,10 @@ DOMWindow* RemoteFrame::domWindow() const
 
 WindowProxy* RemoteFrame::windowProxy(DOMWrapperWorld& world)
 {
-    return m_windowProxyManager->windowProxy(world);
+    WindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
+    ASSERT(windowProxy);
+    windowProxy->initializeIfNeeded();
+    return windowProxy;
 }
 
 void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
