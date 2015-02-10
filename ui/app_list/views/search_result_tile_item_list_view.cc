@@ -28,7 +28,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kTileSpacing));
   for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
-    SearchResultTileItemView* tile_item = new SearchResultTileItemView();
+    SearchResultTileItemView* tile_item = new SearchResultTileItemView(this);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);

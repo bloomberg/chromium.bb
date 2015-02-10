@@ -108,7 +108,7 @@ StartPageView::StartPageTilesContainer::StartPageTilesContainer(
 
   // Add SearchResultTileItemViews to the container.
   for (size_t i = 0; i < kNumStartPageTiles; ++i) {
-    SearchResultTileItemView* tile_item = new SearchResultTileItemView();
+    SearchResultTileItemView* tile_item = new SearchResultTileItemView(this);
     AddChildView(tile_item);
     tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
     search_result_tile_views_.push_back(tile_item);

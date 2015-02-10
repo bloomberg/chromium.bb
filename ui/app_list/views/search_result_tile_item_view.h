@@ -16,6 +16,7 @@ class MenuRunner;
 namespace app_list {
 
 class SearchResult;
+class SearchResultContainerView;
 
 // A TileItemView that displays a search result.
 class APP_LIST_EXPORT SearchResultTileItemView
@@ -23,7 +24,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
       public views::ContextMenuController,
       public SearchResultObserver {
  public:
-  SearchResultTileItemView();
+  explicit SearchResultTileItemView(
+      SearchResultContainerView* result_container);
   ~SearchResultTileItemView() override;
 
   void SetSearchResult(SearchResult* item);
@@ -42,6 +44,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
                               ui::MenuSourceType source_type) override;
 
  private:
+  SearchResultContainerView* result_container_;  // Parent view
+
   // Owned by the model provided by the AppListViewDelegate.
   SearchResult* item_;
 

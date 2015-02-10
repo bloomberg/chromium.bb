@@ -29,6 +29,7 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   TileItemView();
   ~TileItemView() override;
 
+  bool selected() { return selected_; }
   void SetSelected(bool selected);
 
   // Informs the TileItemView of its parent's background color. The controls

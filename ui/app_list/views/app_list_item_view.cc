@@ -350,12 +350,12 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect rect(GetContentsBounds());
-  if (is_highlighted_ && !is_installing_) {
+  if (apps_grid_view_->IsSelectedView(this)) {
+    canvas->FillRect(rect, kSelectedColor);
+  } else if (is_highlighted_ && !is_installing_) {
     canvas->FillRect(rect, kHighlightedColor);
     return;
   }
-  if (apps_grid_view_->IsSelectedView(this))
-    canvas->FillRect(rect, kSelectedColor);
 
   if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
     DCHECK(apps_grid_view_->model()->folders_enabled());
@@ -379,6 +379,8 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
   if (!menu_model)
     return;
 
+  if (!apps_grid_view_->IsSelectedView(this))
+    apps_grid_view_->ClearAnySelectedView();
   context_menu_runner_.reset(
       new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
   if (context_menu_runner_->RunMenuAt(GetWidget(),
@@ -468,6 +470,9 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
     if (!apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, event))
       return true;
   }
+
+  if (!apps_grid_view_->IsSelectedView(this))
+    apps_grid_view_->ClearAnySelectedView();
 
   // Shows dragging UI when it's confirmed without waiting for the timer.
   if (ui_state_ != UI_STATE_DRAGGING &&

@@ -5,11 +5,14 @@
 #include "ui/app_list/views/search_result_tile_item_view.h"
 
 #include "ui/app_list/search_result.h"
+#include "ui/app_list/views/search_result_container_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace app_list {
 
-SearchResultTileItemView::SearchResultTileItemView() : item_(NULL) {
+SearchResultTileItemView::SearchResultTileItemView(
+    SearchResultContainerView* result_container)
+    : result_container_(result_container), item_(NULL) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
@@ -81,6 +84,9 @@ void SearchResultTileItemView::ShowContextMenuForView(
   ui::MenuModel* menu_model = item_->GetContextMenuModel();
   if (!menu_model)
     return;
+
+  if (!selected())
+    result_container_->ClearSelectedIndex();
 
   context_menu_runner_.reset(
       new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
