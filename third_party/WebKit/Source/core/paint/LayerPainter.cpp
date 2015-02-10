@@ -106,7 +106,7 @@ class ClipPathHelper {
 public:
     ClipPathHelper(GraphicsContext* context, const Layer& renderLayer, const LayerPaintingInfo& paintingInfo, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed,
         const LayoutPoint& offsetFromRoot, PaintLayerFlags paintFlags)
-        : m_resourceClipper(0), m_clipStateSaver(*context, false), m_renderLayer(renderLayer), m_context(context)
+        : m_resourceClipper(0), m_renderLayer(renderLayer), m_context(context)
     {
         const LayoutStyle& style = renderLayer.renderer()->styleRef();
 
@@ -122,8 +122,6 @@ public:
         if (style.clipPath()->type() == ClipPathOperation::SHAPE) {
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style.clipPath());
             if (clipPath->isValid()) {
-                m_clipStateSaver.save();
-
                 if (!rootRelativeBoundsComputed) {
                     rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
@@ -137,9 +135,6 @@ public:
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
             Element* element = document.getElementById(referenceClipPathOperation->fragment());
             if (isSVGClipPathElement(element) && element->renderer()) {
-                // FIXME: Saving at this point is not required in the 'mask'-
-                // case, or if the clip ends up empty.
-                m_clipStateSaver.save();
                 if (!rootRelativeBoundsComputed) {
                     rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
@@ -162,7 +157,6 @@ public:
     }
 private:
     LayoutSVGResourceClipper* m_resourceClipper;
-    GraphicsContextStateSaver m_clipStateSaver;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
     LayoutSVGResourceClipper::ClipperState m_clipperState;
     const Layer& m_renderLayer;
