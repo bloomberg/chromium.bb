@@ -347,17 +347,6 @@ public:
 
     virtual void viewport(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) = 0;
 
-    // Support for buffer creation and deletion.
-    virtual void genBuffers(WGC3Dsizei count, WebGLId* ids) { }
-    virtual void genFramebuffers(WGC3Dsizei count, WebGLId* ids) { }
-    virtual void genRenderbuffers(WGC3Dsizei count, WebGLId* ids) { }
-    virtual void genTextures(WGC3Dsizei count, WebGLId* ids) { }
-
-    virtual void deleteBuffers(WGC3Dsizei count, WebGLId* ids) { }
-    virtual void deleteFramebuffers(WGC3Dsizei count, WebGLId* ids) { }
-    virtual void deleteRenderbuffers(WGC3Dsizei count, WebGLId* ids) { }
-    virtual void deleteTextures(WGC3Dsizei count, WebGLId* ids) { }
-
     virtual WebGLId createBuffer() = 0;
     virtual WebGLId createFramebuffer() = 0;
     virtual WebGLId createRenderbuffer() = 0;
