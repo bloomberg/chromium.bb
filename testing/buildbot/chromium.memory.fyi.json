@@ -58,21 +58,6 @@
       "wm_unittests"
     ]
   },
-  "Linux MSan Browser (1)": {
-    "gtest_tests": [
-      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
-    ]
-  },
-  "Linux MSan Browser (2)": {
-    "gtest_tests": [
-      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
-    ]
-  },
-  "Linux MSan Browser (3)": {
-    "gtest_tests": [
-      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
-    ]
-  },
   "Linux ChromeOS MSan Tests": {
     "gtest_tests": [
       "accessibility_unittests",
@@ -129,21 +114,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ]
-  },
-  "Linux ChromeOS MSan Browser (1)": {
-    "gtest_tests": [
-      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
-    ]
-  },
-  "Linux ChromeOS MSan Browser (2)": {
-    "gtest_tests": [
-      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
-    ]
-  },
-  "Linux ChromeOS MSan Browser (3)": {
-    "gtest_tests": [
-      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   }
 }
