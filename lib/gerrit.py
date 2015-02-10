@@ -16,8 +16,6 @@ from chromite.lib import gob_util
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 
-gob_util.LOGGER = cros_build_lib.logger
-
 
 class GerritException(Exception):
   """Base exception, thrown for gerrit failures"""
