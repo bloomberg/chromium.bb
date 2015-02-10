@@ -20,7 +20,7 @@ namespace media {
 // takes a mojo::DemuxerStreamPtr and exposes it as a DemuxerStream for use by
 // media components.
 class MojoDemuxerStreamAdapter : public DemuxerStream,
-                                 public mojo::DemuxerStreamClient {
+                                 public mojo::DemuxerStreamObserver {
  public:
   // |demuxer_stream| is connected to the mojo::DemuxerStream that |this| will
   //     become the client of.
@@ -41,7 +41,6 @@ class MojoDemuxerStreamAdapter : public DemuxerStream,
   VideoRotation video_rotation() override;
 
   // mojo::DemuxerStreamClient implementation.
-  void OnStreamReady(mojo::ScopedDataPipeConsumerHandle pipe) override;
   void OnAudioDecoderConfigChanged(mojo::AudioDecoderConfigPtr config) override;
   void OnVideoDecoderConfigChanged(mojo::VideoDecoderConfigPtr config) override;
 
@@ -51,8 +50,11 @@ class MojoDemuxerStreamAdapter : public DemuxerStream,
   void OnBufferReady(mojo::DemuxerStream::Status status,
                      mojo::MediaDecoderBufferPtr buffer);
 
+  void OnStreamReady(mojo::ScopedDataPipeConsumerHandle pipe);
+
   // See constructor for descriptions.
   mojo::DemuxerStreamPtr demuxer_stream_;
+  mojo::Binding<DemuxerStreamObserver> binding_;
   base::Closure stream_ready_cb_;
 
   // The last ReadCB received through a call to Read().

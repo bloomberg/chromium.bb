@@ -38,10 +38,10 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     // Send the config change so our client can read it once it parses the
     // Status obtained via Run() below.
     if (stream_->type() == media::DemuxerStream::AUDIO) {
-      client()->OnAudioDecoderConfigChanged(
+      observer_->OnAudioDecoderConfigChanged(
           mojo::AudioDecoderConfig::From(stream_->audio_decoder_config()));
     } else if (stream_->type() == media::DemuxerStream::VIDEO) {
-      client()->OnVideoDecoderConfigChanged(
+      observer_->OnVideoDecoderConfigChanged(
           mojo::VideoDecoderConfig::From(stream_->video_decoder_config()));
     } else {
       NOTREACHED() << "Unsupported config change encountered for type: "
@@ -77,15 +77,20 @@ void MojoDemuxerStreamImpl::OnBufferReady(
                mojo::MediaDecoderBuffer::From(buffer));
 }
 
-void MojoDemuxerStreamImpl::DidConnect() {
+void MojoDemuxerStreamImpl::Initialize(
+    mojo::DemuxerStreamObserverPtr observer,
+    const mojo::Callback<void(mojo::ScopedDataPipeConsumerHandle)>& callback) {
+  DCHECK(observer);
+  observer_ = observer.Pass();
+
   // This is called when our DemuxerStreamClient has connected itself and is
   // ready to receive messages.  Send an initial config and notify it that
   // we are now ready for business.
   if (stream_->type() == media::DemuxerStream::AUDIO) {
-    client()->OnAudioDecoderConfigChanged(
+    observer_->OnAudioDecoderConfigChanged(
         mojo::AudioDecoderConfig::From(stream_->audio_decoder_config()));
   } else if (stream_->type() == media::DemuxerStream::VIDEO) {
-    client()->OnVideoDecoderConfigChanged(
+    observer_->OnVideoDecoderConfigChanged(
         mojo::VideoDecoderConfig::From(stream_->video_decoder_config()));
   }
 
@@ -107,7 +112,7 @@ void MojoDemuxerStreamImpl::DidConnect() {
 
   mojo::DataPipe data_pipe(options);
   stream_pipe_ = data_pipe.producer_handle.Pass();
-  client()->OnStreamReady(data_pipe.consumer_handle.Pass());
+  callback.Run(data_pipe.consumer_handle.Pass());
 }
 
 }  // namespace media
