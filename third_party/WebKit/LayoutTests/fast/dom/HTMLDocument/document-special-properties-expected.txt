@@ -73,5 +73,5 @@ Numeric 13: undefined
 
 Conflicting image: single IMG(name)
 Conflicting image (custom property): single IMG(name)
-Conflicting iframe: single WINDOW
+Conflicting iframe: single OTHER
 

@@ -128,7 +128,7 @@ interface Document : Node {
 
     [PerWorldBindings] NodeList getElementsByName(DOMString elementName);
 
-    [PutForwards=href] readonly attribute Location location;
+    [PutForwards=href, Unforgeable] readonly attribute Location location;
 
     // IE extensions
     [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;
