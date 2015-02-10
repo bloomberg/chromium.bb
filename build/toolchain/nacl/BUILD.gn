@@ -126,8 +126,9 @@ nacl_toolchain("irt_x86") {
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
   readelf = toolprefix + "readelf"
-  # Link with cc to avoid including any C++ libs.
-  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cc} --readelf-cmd=${readelf}"
+  # Some IRT implementations (notably, Chromium's) contain C++ code,
+  # so we need to link w/ the C++ linker.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
 
   # TODO(ncbray): depend on link script
   deps = [
@@ -146,8 +147,9 @@ nacl_toolchain("irt_x64") {
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
   readelf = toolprefix + "readelf"
-  # Link with cc to avoid including any C++ libs.
-  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cc} --readelf-cmd=${readelf}"
+  # Some IRT implementations (notably, Chromium's) contain C++ code,
+  # so we need to link w/ the C++ linker.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
 
   # TODO(ncbray): depend on link script
   deps = [
@@ -166,8 +168,9 @@ nacl_toolchain("irt_arm") {
   cxx = toolprefix + "g++"
   ar = toolprefix + "ar"
   readelf = toolprefix + "readelf"
-  # Link with cc to avoid including any C++ libs.
-  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cc} --readelf-cmd=${readelf}"
+  # Some IRT implementations (notably, Chromium's) contain C++ code,
+  # so we need to link w/ the C++ linker.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
 
   # TODO(ncbray): depend on link script
   deps = [

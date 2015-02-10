@@ -88,12 +88,6 @@ static_library("sel") {
     sources += [
       "linux/nacl_signal.c",
     ]
-    if (cpu_arch == "x86") {
-      sources += ["linux/nacl_signal_32.c"]
-    }
-    if (cpu_arch == "x64") {
-      sources += ["linux/nacl_signal_64.c"]
-    }
   }
 
   if (os == "mac") {

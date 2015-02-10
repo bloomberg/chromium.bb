@@ -1,0 +1,22 @@
+# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("sel_ldr_launcher_base") {
+  sources = [
+    "sel_ldr_launcher.h",
+    "sel_ldr_launcher_base.cc",
+  ]
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+    "//native_client/src/shared/gio",
+    "//native_client/src/shared/imc",
+    "//native_client/src/shared/serialization",
+    "//native_client/src/shared/srpc:nonnacl_srpc",
+    "//native_client/src/trusted/desc:nrd_xfer",
+    "//native_client/src/trusted/service_runtime:env_cleanser",
+    "//native_client/src/trusted/service_runtime:nacl_error_code",
+  ]
+}
+
