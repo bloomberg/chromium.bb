@@ -105,7 +105,6 @@ AM_CONDITIONAL(MS_LIB_AVAILABLE, test x$ms_librarian = xyes)
 
 AC_CHECK_DECL([__SUNPRO_C], [SUNCC="yes"], [SUNCC="no"])
 WARN_CFLAGS=""
-WERROR_CFLAGS="-Werror"
 WARNING_CPP_DIRECTIVE="no"
 if test "x$GCC" = "xyes"; then
 	WARN_CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
@@ -114,8 +113,6 @@ if test "x$GCC" = "xyes"; then
 	WARNING_CPP_DIRECTIVE="yes"
 elif test "x$SUNCC" = "xyes"; then
 	WARN_CFLAGS="-v -fd"
-	WERROR_CFLAGS="-errtags \
-	-errwarn=%all,no%E_OLD_STYLE_FUNC_DEF,no%E_STATEMENT_NOT_REACHED"
 	WARNING_CPP_DIRECTIVE="yes"
 fi
 if test "x$WARNING_CPP_DIRECTIVE" = "xyes"; then
@@ -167,38 +164,6 @@ dnl AC_CHECK_FUNCS doesn't check for header files.
 dnl posix_fadvise() may be not available in older libc.
 AC_CHECK_SYMBOL([posix_fadvise], [fcntl.h], [fc_func_posix_fadvise=1], [fc_func_posix_fadvise=0])
 AC_DEFINE_UNQUOTED([HAVE_POSIX_FADVISE], [$fc_func_posix_fadvise], [Define to 1 if you have the 'posix_fadvise' function.])
-if test "$os_win32" = "no"; then
-	AC_MSG_CHECKING([for scandir])
-	fc_saved_CFLAGS="$CFLAGS"
-	CFLAGS="$CFLAGS $WARN_CFLAGS $WERROR_CFLAGS"
-	AC_TRY_COMPILE([
-		#include <dirent.h>
-		int main(void);
-	], [
-		int (* comp) (const struct dirent **, const struct dirent **) = 0;
-		struct dirent **d;
-		return scandir(".", &d, 0, comp) >= 0;
-	], [
-		AC_MSG_RESULT([yes])
-		AC_DEFINE([HAVE_SCANDIR], [1], [Define to 1 if you have the 'scandir' function.])
-	], [
-		AC_TRY_COMPILE([
-			#include <dirent.h>
-			int main(void);
-		], [
-			int (* comp) (const void *, const void *) = 0;
-			struct dirent **d;
-			return scandir(".", &d, 0, comp) >= 0;
-		], [
-			AC_MSG_RESULT([yes])
-			AC_DEFINE([HAVE_SCANDIR_VOID_P], [1], [Define to 1 if you have the 'scandir' function with int (* compar)(const void *, const void *)])
-		],[
-			AC_MSG_ERROR([
-*** No scandir function available.])
-		])
-	])
-fi
-CFLAGS="$fc_saved_CFLAGS"
 
 #
 if test "x$ac_cv_func_fstatvfs" = "xyes"; then
