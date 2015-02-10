@@ -202,4 +202,29 @@ Test: record processing order
     timeByCategory : {
     }
 }
+Test: commits without activation
+{
+    cpuTime : 0
+    duration : 14.001
+    endTime : 1014.001
+    startTime : 1000
+    timeByCategory : {
+    }
+}
+{
+    cpuTime : 0
+    duration : 16
+    endTime : 1030.001
+    startTime : 1014.001
+    timeByCategory : {
+    }
+}
+{
+    cpuTime : 0
+    duration : 16
+    endTime : 1046.001
+    startTime : 1030.001
+    timeByCategory : {
+    }
+}
 
