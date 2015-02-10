@@ -66,8 +66,10 @@ const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
 const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 
-// Maximum write buffer size of devtools http/websocket connectinos.
-const int32 kSendBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
+// Maximum write buffer size of devtools http/websocket connections.
+// TODO(rmcilroy/pfieldman): Reduce this back to 100Mb when we have
+// added back pressure on the TraceComplete message protocol - crbug.com/456845.
+const int32 kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
 
 class BrowserTarget;
 class DevToolsAgentHostClientImpl;
