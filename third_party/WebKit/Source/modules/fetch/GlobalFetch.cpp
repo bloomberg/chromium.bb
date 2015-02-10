@@ -49,7 +49,7 @@ public:
         return m_fetchManager->fetch(scriptState, r->request());
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_fetchManager);
         visitor->trace(m_stopDetector);
@@ -67,7 +67,7 @@ private:
 
         void stop() override { m_fetchManager->stop(); }
 
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             visitor->trace(m_fetchManager);
             ActiveDOMObject::trace(visitor);

@@ -355,7 +355,7 @@ String Response::internalContentTypeForBuffer() const
     return m_response->internalContentTypeForBuffer();
 }
 
-void Response::trace(Visitor* visitor)
+DEFINE_TRACE(Response)
 {
     Body::trace(visitor);
     visitor->trace(m_response);

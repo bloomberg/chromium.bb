@@ -58,7 +58,7 @@ public:
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
     bool hasBody() const { return m_request->blobDataHandle(); }
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     // The 'FetchRequestData' object is shared between requests, as it is

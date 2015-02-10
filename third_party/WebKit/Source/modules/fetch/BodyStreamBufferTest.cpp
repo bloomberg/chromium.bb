@@ -28,7 +28,7 @@ public:
     {
     }
     ~MockObserver() override { }
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         BodyStreamBuffer::Observer::trace(visitor);
     }
@@ -51,7 +51,7 @@ public:
     {
     }
     virtual ~BlobHandleCallback() override { }
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_exception);
         BodyStreamBuffer::BlobHandleCreatorClient::trace(visitor);

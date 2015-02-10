@@ -68,7 +68,7 @@ FetchRequestData::FetchRequestData()
 {
 }
 
-void FetchRequestData::trace(Visitor* visitor)
+DEFINE_TRACE(FetchRequestData)
 {
     visitor->trace(m_headerList);
 }

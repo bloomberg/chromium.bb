@@ -24,14 +24,14 @@ public:
         virtual void onWrite() = 0;
         virtual void onClose() = 0;
         virtual void onError() = 0;
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
     class BlobHandleCreatorClient : public GarbageCollectedFinalized<BlobHandleCreatorClient> {
     public:
         virtual ~BlobHandleCreatorClient() { }
         virtual void didCreateBlobHandle(PassRefPtr<BlobDataHandle>) = 0;
         virtual void didFail(PassRefPtrWillBeRawPtr<DOMException>) = 0;
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
     BodyStreamBuffer();
     ~BodyStreamBuffer() { }
@@ -60,7 +60,7 @@ public:
     bool registerObserver(Observer*);
     void unregisterObserver();
     bool isObserverRegistered() const { return m_observer.get(); }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Deque<RefPtr<DOMArrayBuffer>> m_queue;

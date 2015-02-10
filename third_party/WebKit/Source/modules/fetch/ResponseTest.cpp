@@ -47,7 +47,7 @@ public:
     {
     }
     ~BlobHandleCreatorClient() override { }
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_exception);
         BodyStreamBuffer::BlobHandleCreatorClient::trace(visitor);

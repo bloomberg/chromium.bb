@@ -39,7 +39,7 @@ public:
     }
 
     ~Loader() override;
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didReceiveData(const char*, unsigned) override;
@@ -84,7 +84,7 @@ FetchManager::Loader::~Loader()
     ASSERT(!m_loader);
 }
 
-void FetchManager::Loader::trace(Visitor* visitor)
+DEFINE_TRACE(FetchManager::Loader)
 {
     visitor->trace(m_fetchManager);
     visitor->trace(m_resolver);
@@ -428,7 +428,7 @@ void FetchManager::onLoaderFinished(Loader* loader)
     p->dispose();
 }
 
-void FetchManager::trace(Visitor* visitor)
+DEFINE_TRACE(FetchManager)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_executionContext);

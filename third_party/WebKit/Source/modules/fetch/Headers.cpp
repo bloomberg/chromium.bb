@@ -36,7 +36,7 @@ public:
         return true;
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_headers);
         PairIterable<String, String>::IterationSource::trace(visitor);
@@ -318,7 +318,7 @@ Headers::Headers(FetchHeaderList* headerList)
 {
 }
 
-void Headers::trace(Visitor* visitor)
+DEFINE_TRACE(Headers)
 {
     visitor->trace(m_headerList);
 }

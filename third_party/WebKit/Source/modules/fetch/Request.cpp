@@ -392,7 +392,7 @@ String Request::contentTypeForBuffer() const
     return String();
 }
 
-void Request::trace(Visitor* visitor)
+DEFINE_TRACE(Request)
 {
     Body::trace(visitor);
     visitor->trace(m_request);

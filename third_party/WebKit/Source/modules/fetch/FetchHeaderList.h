@@ -44,7 +44,7 @@ public:
     static bool isValidHeaderName(const String&);
     static bool isValidHeaderValue(const String&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     FetchHeaderList();

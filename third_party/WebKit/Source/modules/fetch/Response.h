@@ -65,7 +65,7 @@ public:
     BodyStreamBuffer* internalBuffer() const;
     String internalContentTypeForBuffer() const;
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit Response(const Response&);

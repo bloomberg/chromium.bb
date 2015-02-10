@@ -84,7 +84,7 @@ public:
     PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
     void setBlobDataHandle(PassRefPtr<BlobDataHandle> blobHandle) { m_blobDataHandle = blobHandle; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     FetchRequestData();

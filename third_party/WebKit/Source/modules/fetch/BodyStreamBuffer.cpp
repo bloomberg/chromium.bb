@@ -21,7 +21,7 @@ public:
         m_blobData->setContentType(contentType);
     }
     ~BlobCreator() override { }
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_buffer);
         visitor->trace(m_client);
@@ -98,7 +98,7 @@ public:
         m_outBuffer2->error(m_inBuffer->exception());
         cleanup();
     }
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         BodyStreamBuffer::Observer::trace(visitor);
         visitor->trace(m_inBuffer);
@@ -198,7 +198,7 @@ void BodyStreamBuffer::unregisterObserver()
     m_observer.clear();
 }
 
-void BodyStreamBuffer::trace(Visitor* visitor)
+DEFINE_TRACE(BodyStreamBuffer)
 {
     visitor->trace(m_exception);
     visitor->trace(m_observer);

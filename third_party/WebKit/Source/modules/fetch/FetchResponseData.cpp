@@ -249,7 +249,7 @@ void FetchResponseData::replaceBodyStreamBuffer(BodyStreamBuffer* buffer)
     }
 }
 
-void FetchResponseData::trace(Visitor* visitor)
+DEFINE_TRACE(FetchResponseData)
 {
     visitor->trace(m_headerList);
     visitor->trace(m_internalResponse);

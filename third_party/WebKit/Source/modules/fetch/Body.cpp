@@ -38,7 +38,7 @@ public:
         m_body->didBlobHandleReceiveError(exception);
         m_body = nullptr;
     }
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         BodyStreamBuffer::BlobHandleCreatorClient::trace(visitor);
         visitor->trace(m_body);
@@ -126,7 +126,7 @@ public:
             m_stream->close();
         return m_drainingStreamBuffer;
     }
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_body);
         visitor->trace(m_bodyStreamBuffer);
@@ -386,7 +386,7 @@ bool Body::hasPendingActivity() const
     return false;
 }
 
-void Body::trace(Visitor* visitor)
+DEFINE_TRACE(Body)
 {
     visitor->trace(m_resolver);
     visitor->trace(m_stream);

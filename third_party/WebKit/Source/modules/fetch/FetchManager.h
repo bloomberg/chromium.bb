@@ -26,7 +26,7 @@ public:
     void stop();
     bool isStopped() const { return m_isStopped; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     class Loader;

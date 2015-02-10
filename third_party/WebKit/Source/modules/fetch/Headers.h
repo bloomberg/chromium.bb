@@ -52,7 +52,7 @@ public:
     void fillWith(const Dictionary&, ExceptionState&);
 
     FetchHeaderList* headerList() const { return m_headerList; }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Headers();

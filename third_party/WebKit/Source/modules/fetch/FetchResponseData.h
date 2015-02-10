@@ -63,7 +63,7 @@ public:
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     FetchResponseData(Type, unsigned short, AtomicString);
