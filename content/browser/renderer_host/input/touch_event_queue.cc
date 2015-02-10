@@ -367,6 +367,7 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       dispatching_touch_ack_(NULL),
       dispatching_touch_(false),
       has_handlers_(true),
+      has_handler_for_current_sequence_(false),
       drop_remaining_touches_in_sequence_(false),
       touchmove_slop_suppressor_(new TouchMoveSlopSuppressor),
       send_touch_events_async_(false),
@@ -534,13 +535,13 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
 void TouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.type == blink::WebInputEvent::GestureScrollBegin) {
-    if (!touch_consumer_states_.is_empty() &&
+    if (has_handler_for_current_sequence_ &&
         !drop_remaining_touches_in_sequence_) {
       DCHECK(!touchmove_slop_suppressor_->suppressing_touchmoves())
           <<  "A touch handler should be offered a touchmove before scrolling.";
     }
-    if (!drop_remaining_touches_in_sequence_ &&
-        touch_consumer_states_.is_empty()) {
+    if (!has_handler_for_current_sequence_ &&
+        !drop_remaining_touches_in_sequence_) {
       // If no touch points have a consumer, prevent all subsequent touch events
       // received during the scroll from reaching the renderer. This ensures
       // that the first touchstart the renderer sees in any given sequence can
@@ -683,14 +684,8 @@ void TouchEventQueue::SendTouchEventImmediately(
 
 TouchEventQueue::PreFilterResult
 TouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
-  if (timeout_handler_ && timeout_handler_->FilterEvent(event))
-    return ACK_WITH_NO_CONSUMER_EXISTS;
-
-  if (touchmove_slop_suppressor_->FilterEvent(event))
-    return ACK_WITH_NOT_CONSUMED;
-
   if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
-    touch_consumer_states_.clear();
+    has_handler_for_current_sequence_ = false;
     send_touch_events_async_ = false;
     pending_async_touchmove_.reset();
     last_sent_touchevent_.reset();
@@ -703,22 +698,41 @@ TouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
     }
   }
 
+  if (timeout_handler_ && timeout_handler_->FilterEvent(event))
+    return ACK_WITH_NO_CONSUMER_EXISTS;
+
+  if (touchmove_slop_suppressor_->FilterEvent(event))
+    return ACK_WITH_NOT_CONSUMED;
+
   if (drop_remaining_touches_in_sequence_ &&
       event.type != WebInputEvent::TouchCancel) {
     return ACK_WITH_NO_CONSUMER_EXISTS;
   }
 
-  if (event.type == WebInputEvent::TouchStart)
-    return has_handlers_ ? FORWARD_TO_RENDERER : ACK_WITH_NO_CONSUMER_EXISTS;
+  if (event.type == WebInputEvent::TouchStart) {
+    return (has_handlers_ || has_handler_for_current_sequence_)
+               ? FORWARD_TO_RENDERER
+               : ACK_WITH_NO_CONSUMER_EXISTS;
+  }
 
-  for (unsigned int i = 0; i < event.touchesLength; ++i) {
-    const WebTouchPoint& point = event.touches[i];
-    // If a point has been stationary, then don't take it into account.
-    if (point.state == WebTouchPoint::StateStationary)
-      continue;
+  if (has_handler_for_current_sequence_) {
+    // Only forward a touch if it has a non-stationary pointer that is active
+    // in the current touch sequence.
+    for (size_t i = 0; i < event.touchesLength; ++i) {
+      const WebTouchPoint& point = event.touches[i];
+      if (point.state == WebTouchPoint::StateStationary)
+        continue;
 
-    if (touch_consumer_states_.has_bit(point.id))
-      return FORWARD_TO_RENDERER;
+      // |last_sent_touchevent_| will be non-null as long as there is an
+      // active touch sequence being forwarded to the renderer.
+      if (!last_sent_touchevent_)
+        continue;
+
+      for (size_t j = 0; j < last_sent_touchevent_->touchesLength; ++j) {
+        if (point.id == last_sent_touchevent_->touches[j].id)
+          return FORWARD_TO_RENDERER;
+      }
+    }
   }
 
   return ACK_WITH_NO_CONSUMER_EXISTS;
@@ -726,29 +740,13 @@ TouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
 
 void TouchEventQueue::UpdateTouchConsumerStates(const WebTouchEvent& event,
                                                 InputEventAckState ack_result) {
-  // Update the ACK status for each touch point in the ACKed event.
-  if (event.type == WebInputEvent::TouchEnd ||
-      event.type == WebInputEvent::TouchCancel) {
-    // The points have been released. Erase the ACK states.
-    for (unsigned i = 0; i < event.touchesLength; ++i) {
-      const WebTouchPoint& point = event.touches[i];
-      if (point.state == WebTouchPoint::StateReleased ||
-          point.state == WebTouchPoint::StateCancelled)
-        touch_consumer_states_.clear_bit(point.id);
-    }
-  } else if (event.type == WebInputEvent::TouchStart) {
+  if (event.type == WebInputEvent::TouchStart) {
     if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
       send_touch_events_async_ = false;
-
-    for (unsigned i = 0; i < event.touchesLength; ++i) {
-      const WebTouchPoint& point = event.touches[i];
-      if (point.state == WebTouchPoint::StatePressed) {
-        if (ack_result != INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)
-          touch_consumer_states_.mark_bit(point.id);
-        else
-          touch_consumer_states_.clear_bit(point.id);
-      }
-    }
+    has_handler_for_current_sequence_ |=
+        ack_result != INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  } else if (WebTouchEventTraits::IsTouchSequenceEnd(event)) {
+    has_handler_for_current_sequence_ = false;
   }
 }
 

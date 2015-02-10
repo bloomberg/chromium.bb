@@ -14,7 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/gesture_detection/bitset_32.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace content {
@@ -164,12 +163,6 @@ class CONTENT_EXPORT TouchEventQueue {
   typedef std::deque<CoalescedWebTouchEvent*> TouchQueue;
   TouchQueue touch_queue_;
 
-  // Maps whether each active pointer has a consumer (i.e., a touch point has a
-  // valid consumer iff |touch_consumer_states[pointer.id]| is true.).
-  // TODO(jdduke): Consider simply tracking whether *any* touchstart had a
-  // consumer, crbug.com/416497.
-  ui::BitSet32 touch_consumer_states_;
-
   // Position of the first touch in the most recent sequence forwarded to the
   // client.
   gfx::PointF touch_sequence_start_position_;
@@ -185,6 +178,9 @@ class CONTENT_EXPORT TouchEventQueue {
 
   // Whether the renderer has at least one touch handler.
   bool has_handlers_;
+
+  // Whether any pointer in the touch sequence reported having a consumer.
+  bool has_handler_for_current_sequence_;
 
   // Whether to allow any remaining touches for the current sequence. Note that
   // this is a stricter condition than an empty |touch_consumer_states_|, as it

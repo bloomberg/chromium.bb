@@ -371,10 +371,9 @@ TEST_F(TouchEventQueueTest, BasicMultiTouch) {
   EXPECT_EQ(kPointerCount - 1, GetAndResetSentEventCount());
 }
 
-// Tests that the touch-queue continues delivering events for an active pointer
-// after all handlers are removed, but acks new pointers immediately as having
-// no consumer.
-TEST_F(TouchEventQueueTest, NoNewTouchesForwardedAfterHandlersRemoved) {
+// Tests that the touch-queue continues delivering events for an active touch
+// sequence after all handlers are removed.
+TEST_F(TouchEventQueueTest, TouchesForwardedIfHandlerRemovedDuringSequence) {
   OnHasTouchEventHandlers(true);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -396,21 +395,27 @@ TEST_F(TouchEventQueueTest, NoNewTouchesForwardedAfterHandlersRemoved) {
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
 
-  // Try forwarding a new pointer. It should be rejected immediately.
+  // Try forwarding a new pointer. It should be forwarded as usual.
   PressTouchPoint(2, 2);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 
-  // Further events for the pointer without a handler should not be forwarded.
+  // Further events for any pointer should be forwarded, even for pointers that
+  // reported no consumer.
   MoveTouchPoint(1, 3, 3);
   ReleaseTouchPoint(1);
-  EXPECT_EQ(2U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Events for the first pointer, that had a handler, should be forwarded, even
-  // if the renderer reports that no handlers exist.
+  // Events for the first pointer, that had a handler, should be forwarded.
   MoveTouchPoint(0, 4, 4);
   ReleaseTouchPoint(0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -728,113 +733,56 @@ TEST_F(TouchEventQueueTest, NoConsumer) {
 }
 
 TEST_F(TouchEventQueueTest, ConsumerIgnoreMultiFinger) {
-  // Press two touch points and move them around a bit. The renderer consumes
-  // the events for the first touch point, but returns NO_CONSUMER_EXISTS for
-  // the second touch point.
-
+  // Interleave three pointer press, move and release events.
   PressTouchPoint(1, 1);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-
   MoveTouchPoint(0, 5, 5);
-
   PressTouchPoint(10, 10);
-
-  MoveTouchPoint(0, 2, 2);
-
-  MoveTouchPoint(1, 4, 10);
-
-  MoveTouchPoints(0, 10, 10, 1, 20, 20);
+  MoveTouchPoint(1, 15, 15);
+  PressTouchPoint(20, 20);
+  MoveTouchPoint(2, 25, 25);
+  ReleaseTouchPoint(2);
+  MoveTouchPoint(1, 20, 20);
+  ReleaseTouchPoint(1);
+  MoveTouchPoint(0, 10, 10);
+  ReleaseTouchPoint(0);
 
   // Since the first touch-press is still pending ACK, no other event should
   // have been sent to the renderer.
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
-  // The queue includes the two presses, the first touch-move of the first
-  // point, and a coalesced touch-move of both points.
-  EXPECT_EQ(4U, queued_event_count());
+  EXPECT_EQ(11U, queued_event_count());
 
   // ACK the first press as CONSUMED. This should cause the first touch-move of
   // the first touch-point to be dispatched.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(3U, queued_event_count());
+  EXPECT_EQ(10U, queued_event_count());
 
   // ACK the first move as CONSUMED.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_EQ(9U, queued_event_count());
 
-  // ACK the second press as NO_CONSUMER_EXISTS. This will dequeue the coalesced
-  // touch-move event (which contains both touch points). Although the second
-  // touch-point does not need to be sent to the renderer, the first touch-point
-  // did move, and so the coalesced touch-event will be sent to the renderer.
+  // ACK the second press as NO_CONSUMER_EXISTS. The second pointer's touchmove
+  // should still be forwarded, despite lacking a direct consumer.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(8U, queued_event_count());
 
   // ACK the coalesced move as NOT_CONSUMED.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
-
-  // Move just the second touch point. Because the first touch point did not
-  // move, this event should not reach the renderer.
-  MoveTouchPoint(1, 30, 30);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
-
-  // Move just the first touch point. This should reach the renderer.
-  MoveTouchPoint(0, 10, 10);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(7U, queued_event_count());
 
-  // Move both fingers. This event should reach the renderer (after the ACK of
-  // the previous move event is received), because the first touch point did
-  // move.
-  MoveTouchPoints(0, 15, 15, 1, 25, 25);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, queued_event_count());
-
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
-
-  // Release the first finger. Then move the second finger around some, then
-  // press another finger. Once the release event is ACKed, the move events of
-  // the second finger should be immediately released to the view, and the
-  // touch-press event should be dispatched to the renderer.
-  ReleaseTouchPoint(0);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, queued_event_count());
-
-  MoveTouchPoint(1, 40, 40);
-
-  MoveTouchPoint(1, 50, 50);
-
-  PressTouchPoint(1, 1);
-
-  MoveTouchPoint(1, 30, 30);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(4U, queued_event_count());
-
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(2U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
-
-  // ACK the press with NO_CONSUMED_EXISTS. This should release the queued
-  // touch-move events to the view.
+  // All remaining touch events should be forwarded, even if the third pointer
+  // press also reports no consumer.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
+  EXPECT_EQ(6U, queued_event_count());
 
-  ReleaseTouchPoint(2);
-  ReleaseTouchPoint(1);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
+  while (queued_event_count())
+    SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  EXPECT_EQ(6U, GetAndResetSentEventCount());
 }
 
 // Tests that touch-event's enqueued via a touch ack are properly handled.
