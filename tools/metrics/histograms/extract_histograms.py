@@ -355,6 +355,12 @@ def _UpdateHistogramsWithSuffixes(tree, histograms):
         have_errors = True
         continue
 
+    obsolete_nodes = histogram_suffixes.getElementsByTagName('obsolete')
+    obsolete_reason = None
+    if obsolete_nodes:
+      # There can be at most 1 obsolete element per histogram_suffixes node
+      obsolete_reason = _JoinChildNodes(obsolete_nodes[0])
+
     name = histogram_suffixes.getAttribute('name')
     suffix_nodes = histogram_suffixes.getElementsByTagName(suffix_tag)
     suffix_labels = {}
@@ -409,6 +415,11 @@ def _UpdateHistogramsWithSuffixes(tree, histograms):
           # owners of its parents.
           if owners:
             histograms[new_histogram_name]['owners'] = owners
+
+          # If the suffix has an obsolete tag, all histograms it generates
+          # inherit it.
+          if obsolete_reason:
+            histograms[new_histogram_name]['obsolete'] = obsolete_reason
 
         except Error:
           have_errors = True
