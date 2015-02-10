@@ -45,7 +45,7 @@ public:
     Gamepad* item(unsigned index);
     unsigned length() const { return WebGamepads::itemsLengthCap; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     GamepadList();

@@ -51,7 +51,7 @@ public:
     static GamepadList* getGamepads(Navigator&);
     GamepadList* gamepads();
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     void didConnectOrDisconnectGamepad(unsigned index, const WebGamepad&, bool connected);
 

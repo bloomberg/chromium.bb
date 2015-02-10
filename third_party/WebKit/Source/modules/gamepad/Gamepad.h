@@ -67,7 +67,7 @@ public:
     const GamepadButtonVector& buttons() const { return m_buttons; }
     void setButtons(unsigned count, const WebGamepadButton* data);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Gamepad();

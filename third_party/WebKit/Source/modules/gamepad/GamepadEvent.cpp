@@ -33,7 +33,7 @@ const AtomicString& GamepadEvent::interfaceName() const
     return EventNames::GamepadEvent;
 }
 
-void GamepadEvent::trace(Visitor* visitor)
+DEFINE_TRACE(GamepadEvent)
 {
     visitor->trace(m_gamepad);
     Event::trace(visitor);

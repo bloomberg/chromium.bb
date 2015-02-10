@@ -102,7 +102,7 @@ GamepadList* NavigatorGamepad::gamepads()
     return m_gamepads.get();
 }
 
-void NavigatorGamepad::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorGamepad)
 {
     visitor->trace(m_gamepads);
     visitor->trace(m_pendingEvents);

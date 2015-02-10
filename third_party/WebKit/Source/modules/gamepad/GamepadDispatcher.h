@@ -29,7 +29,7 @@ public:
 
     const ConnectionChange& latestConnectionChange() const { return m_latestChange; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     GamepadDispatcher();

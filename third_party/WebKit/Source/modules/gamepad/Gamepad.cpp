@@ -58,7 +58,7 @@ void Gamepad::setButtons(unsigned count, const WebGamepadButton* data)
     }
 }
 
-void Gamepad::trace(Visitor* visitor)
+DEFINE_TRACE(Gamepad)
 {
     visitor->trace(m_buttons);
 }

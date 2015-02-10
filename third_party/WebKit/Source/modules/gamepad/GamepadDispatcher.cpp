@@ -30,7 +30,7 @@ GamepadDispatcher::~GamepadDispatcher()
 {
 }
 
-void GamepadDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(GamepadDispatcher)
 {
     PlatformEventDispatcher::trace(visitor);
 }

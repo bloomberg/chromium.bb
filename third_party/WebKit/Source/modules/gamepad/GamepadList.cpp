@@ -44,7 +44,7 @@ Gamepad* GamepadList::item(unsigned index)
     return index < length() ? m_items[index].get() : 0;
 }
 
-void GamepadList::trace(Visitor* visitor)
+DEFINE_TRACE(GamepadList)
 {
     for (unsigned index = 0; index < WebGamepads::itemsLengthCap; index++) {
         visitor->trace(m_items[index]);

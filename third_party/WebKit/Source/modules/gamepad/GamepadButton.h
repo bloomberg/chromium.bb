@@ -22,7 +22,7 @@ public:
     bool pressed() const { return m_pressed; }
     void setPressed(bool val) { m_pressed = val; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     GamepadButton();
