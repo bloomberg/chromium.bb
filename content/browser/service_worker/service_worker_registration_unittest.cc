@@ -65,11 +65,6 @@ class ServiceWorkerRegistrationTest : public testing::Test {
       NOTREACHED();
     }
 
-    void OnRegistrationFinishedUninstalling(
-        ServiceWorkerRegistration* registration) override {
-      NOTREACHED();
-    }
-
     void OnUpdateFound(ServiceWorkerRegistration* registration) override {
       NOTREACHED();
     }

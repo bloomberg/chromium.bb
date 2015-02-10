@@ -34,8 +34,7 @@ class ServiceWorkerStorage;
 //  - designating the new version to be the 'active' version
 //  - updating storage
 class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
-                                 public EmbeddedWorkerInstance::Listener,
-                                 public ServiceWorkerRegistration::Listener {
+                                 public EmbeddedWorkerInstance::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const std::string& status_message,
@@ -78,7 +77,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   enum Phase {
     INITIAL,
     START,
-    WAIT_FOR_UNINSTALL,
     REGISTER,
     UPDATE,
     INSTALL,
@@ -97,8 +95,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
     // Holds the version created by this job. It can be the 'installing',
     // 'waiting', or 'active' version depending on the phase.
     scoped_refptr<ServiceWorkerVersion> new_version;
-
-    scoped_refptr<ServiceWorkerRegistration> uninstalling_registration;
   };
 
   void set_registration(
@@ -106,9 +102,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   ServiceWorkerRegistration* registration();
   void set_new_version(ServiceWorkerVersion* version);
   ServiceWorkerVersion* new_version();
-  void set_uninstalling_registration(
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
-  ServiceWorkerRegistration* uninstalling_registration();
 
   void SetPhase(Phase phase);
 
@@ -118,9 +111,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   void ContinueWithUpdate(
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
-  void RegisterAndContinue(ServiceWorkerStatusCode status);
-  void WaitForUninstall(
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+  void RegisterAndContinue();
   void ContinueWithRegistrationForSameScriptUrl(
       const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
       ServiceWorkerStatusCode status);
@@ -143,10 +134,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   // EmbeddedWorkerInstance::Listener override of OnPausedAfterDownload.
   void OnPausedAfterDownload() override;
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  // ServiceWorkerRegistration::Listener overrides
-  void OnRegistrationFinishedUninstalling(
-      ServiceWorkerRegistration* registration) override;
 
   void OnCompareScriptResourcesComplete(
       ServiceWorkerStatusCode status,

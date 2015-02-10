@@ -152,18 +152,6 @@ ServiceWorkerVersion* ServiceWorkerRegisterJob::new_version() {
   return internal_.new_version.get();
 }
 
-void ServiceWorkerRegisterJob::set_uninstalling_registration(
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
-  internal_.uninstalling_registration = registration;
-}
-
-ServiceWorkerRegistration*
-ServiceWorkerRegisterJob::uninstalling_registration() {
-  DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
-  return internal_.uninstalling_registration.get();
-}
-
 void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
   switch (phase) {
     case INITIAL:
@@ -172,11 +160,8 @@ void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
     case START:
       DCHECK(phase_ == INITIAL) << phase_;
       break;
-    case WAIT_FOR_UNINSTALL:
-      DCHECK(phase_ == START) << phase_;
-      break;
     case REGISTER:
-      DCHECK(phase_ == START || phase_ == WAIT_FOR_UNINSTALL) << phase_;
+      DCHECK(phase_ == START) << phase_;
       break;
     case UPDATE:
       DCHECK(phase_ == START || phase_ == REGISTER) << phase_;
@@ -209,7 +194,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
   }
 
   if (!existing_registration.get() || existing_registration->is_uninstalled()) {
-    RegisterAndContinue(SERVICE_WORKER_OK);
+    RegisterAndContinue();
     return;
   }
 
@@ -223,17 +208,6 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
         existing_registration));
     return;
   }
-
-  if (existing_registration->is_uninstalling()) {
-    // "Wait until the Record {[[key]], [[value]]} entry of its
-    // [[ScopeToRegistrationMap]] where registation.scope matches entry.[[key]]
-    // is deleted."
-    WaitForUninstall(existing_registration);
-    return;
-  }
-
-  // "Set registration.[[Uninstalling]] to false."
-  DCHECK(!existing_registration->is_uninstalling());
 
   // "Return the result of running the [[Update]] algorithm, or its equivalent,
   // passing registration as the argument."
@@ -271,25 +245,13 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
 }
 
 // Creates a new ServiceWorkerRegistration.
-void ServiceWorkerRegisterJob::RegisterAndContinue(
-    ServiceWorkerStatusCode status) {
+void ServiceWorkerRegisterJob::RegisterAndContinue() {
   SetPhase(REGISTER);
-  if (status != SERVICE_WORKER_OK) {
-    Complete(status);
-    return;
-  }
 
   set_registration(new ServiceWorkerRegistration(
       pattern_, context_->storage()->NewRegistrationId(), context_));
   AssociateProviderHostsToRegistration(registration());
   UpdateAndContinue();
-}
-
-void ServiceWorkerRegisterJob::WaitForUninstall(
-    const scoped_refptr<ServiceWorkerRegistration>& existing_registration) {
-  SetPhase(WAIT_FOR_UNINSTALL);
-  set_uninstalling_registration(existing_registration);
-  uninstalling_registration()->AddListener(this);
 }
 
 void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
@@ -537,15 +499,6 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
 
 bool ServiceWorkerRegisterJob::OnMessageReceived(const IPC::Message& message) {
   return false;
-}
-
-void ServiceWorkerRegisterJob::OnRegistrationFinishedUninstalling(
-    ServiceWorkerRegistration* existing_registration) {
-  DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
-  DCHECK_EQ(existing_registration, uninstalling_registration());
-  existing_registration->RemoveListener(this);
-  set_uninstalling_registration(NULL);
-  RegisterAndContinue(SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(

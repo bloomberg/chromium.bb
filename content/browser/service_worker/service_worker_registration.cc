@@ -156,6 +156,12 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
 void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   DCHECK(waiting_version());
   should_activate_when_ready_ = true;
+
+  if (is_uninstalling_) {
+    context_->storage()->NotifyDoneUninstallingRegistration(this);
+    is_uninstalling_ = false;
+  }
+
   if (!active_version() || !active_version()->HasControllee() ||
       waiting_version()->skip_waiting())
     ActivateWaitingVersion();
@@ -352,9 +358,6 @@ void ServiceWorkerRegistration::Clear() {
     FOR_EACH_OBSERVER(Listener, listeners_,
                       OnVersionAttributesChanged(this, mask, info));
   }
-
-  FOR_EACH_OBSERVER(
-      Listener, listeners_, OnRegistrationFinishedUninstalling(this));
 }
 
 void ServiceWorkerRegistration::OnRestoreFinished(

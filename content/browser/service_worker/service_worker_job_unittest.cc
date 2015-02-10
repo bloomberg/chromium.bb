@@ -128,6 +128,7 @@ class ServiceWorkerJobTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> FindRegistrationForPattern(
       const GURL& pattern,
       ServiceWorkerStatusCode expected_status = SERVICE_WORKER_OK);
+  scoped_ptr<ServiceWorkerProviderHost> CreateControllee();
 
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -174,6 +175,15 @@ ServiceWorkerJobTest::FindRegistrationForPattern(
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   return registration;
+}
+
+scoped_ptr<ServiceWorkerProviderHost> ServiceWorkerJobTest::CreateControllee() {
+  return scoped_ptr<ServiceWorkerProviderHost>(
+      new ServiceWorkerProviderHost(33 /* dummy render_process id */,
+                                    MSG_ROUTING_NONE /* render_frame_id */,
+                                    1 /* dummy provider_id */,
+                                    helper_->context()->AsWeakPtr(),
+                                    NULL));
 }
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
@@ -680,12 +690,7 @@ TEST_F(ServiceWorkerJobTest,
                      GURL("http://www.example.com/service_worker.js"));
   ASSERT_TRUE(registration.get());
 
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      new ServiceWorkerProviderHost(33 /* dummy render process id */,
-                                    MSG_ROUTING_NONE /* render_frame_id */,
-                                    1 /* dummy provider_id */,
-                                    context()->AsWeakPtr(),
-                                    NULL));
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   registration->active_version()->AddControllee(host.get());
 
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
@@ -854,11 +859,6 @@ class UpdateJobTestHelper
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
-    NOTREACHED();
-  }
-
-  void OnRegistrationFinishedUninstalling(
-      ServiceWorkerRegistration* registration) override {
     NOTREACHED();
   }
 
@@ -1047,12 +1047,7 @@ TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {
                      GURL("http://www.example.com/service_worker.js"));
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      new ServiceWorkerProviderHost(33 /* dummy render_process id */,
-                                    MSG_ROUTING_NONE /* render_frame_id */,
-                                    1 /* dummy provider_id */,
-                                    helper_->context()->AsWeakPtr(),
-                                    NULL));
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   ServiceWorkerVersion* active_version = registration->active_version();
   active_version->AddControllee(host.get());
   job_coordinator()->Unregister(GURL("http://www.example.com/one/"),
@@ -1070,6 +1065,191 @@ TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {
   EXPECT_EQ(active_version, registration->active_version());
   EXPECT_EQ(NULL, registration->waiting_version());
   EXPECT_EQ(NULL, registration->installing_version());
+}
+
+TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
+  GURL pattern("http://www.example.com/one/");
+  GURL script1("http://www.example.com/service_worker.js");
+  GURL script2("http://www.example.com/service_worker.js?new");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script1);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
+  old_version->AddControllee(host.get());
+  RunUnregisterJob(pattern);
+
+  // Register another script.
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_EQ(old_version, registration->active_version());
+
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      registration->waiting_version();
+
+  // Verify the new version is installed but not activated yet.
+  EXPECT_EQ(NULL, registration->installing_version());
+  EXPECT_TRUE(new_version);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
+
+  old_version->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
+
+  // Verify the new version is activated.
+  EXPECT_EQ(NULL, registration->installing_version());
+  EXPECT_EQ(NULL, registration->waiting_version());
+  EXPECT_EQ(new_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
+}
+
+TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
+  GURL pattern("http://www.example.com/one/");
+  GURL script1("http://www.example.com/service_worker.js");
+  GURL script2("http://www.example.com/service_worker.js?new");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script1);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
+  old_version->AddControllee(host.get());
+  RunUnregisterJob(pattern);
+
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  EXPECT_EQ(registration, FindRegistrationForPattern(pattern));
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      registration->waiting_version();
+  ASSERT_TRUE(new_version);
+
+  // Unregister the registration (but it's still live).
+  RunUnregisterJob(pattern);
+  // Now it's not found in the storage.
+  RunUnregisterJob(pattern, SERVICE_WORKER_ERROR_NOT_FOUND);
+
+  FindRegistrationForPattern(pattern, SERVICE_WORKER_ERROR_NOT_FOUND);
+  EXPECT_TRUE(registration->is_uninstalling());
+  EXPECT_EQ(old_version, registration->active_version());
+
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, old_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, old_version->status());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
+
+  old_version->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_TRUE(registration->is_uninstalled());
+
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, old_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, new_version->status());
+}
+
+TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
+  GURL pattern("http://www.example.com/one/");
+  GURL script1("http://www.example.com/service_worker.js");
+  GURL script2("http://www.example.com/service_worker.js?new");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script1);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
+  old_version->AddControllee(host.get());
+  RunUnregisterJob(pattern);
+
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      registration->waiting_version();
+  ASSERT_TRUE(new_version);
+
+  RunUnregisterJob(pattern);
+
+  EXPECT_TRUE(registration->is_uninstalling());
+
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_EQ(new_version, registration->waiting_version());
+
+  old_version->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
+
+  // Verify the new version is activated.
+  EXPECT_EQ(NULL, registration->installing_version());
+  EXPECT_EQ(NULL, registration->waiting_version());
+  EXPECT_EQ(new_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
+}
+
+TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
+  GURL pattern("http://www.example.com/one/");
+  GURL script1("http://www.example.com/service_worker.js?first");
+  GURL script2("http://www.example.com/service_worker.js?second");
+  GURL script3("http://www.example.com/service_worker.js?third");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script1);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> first_version =
+      registration->active_version();
+  first_version->AddControllee(host.get());
+  RunUnregisterJob(pattern);
+
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  scoped_refptr<ServiceWorkerVersion> second_version =
+      registration->waiting_version();
+  ASSERT_TRUE(second_version);
+
+  RunUnregisterJob(pattern);
+
+  EXPECT_TRUE(registration->is_uninstalling());
+
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script3));
+
+  scoped_refptr<ServiceWorkerVersion> third_version =
+      registration->waiting_version();
+  ASSERT_TRUE(third_version);
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, second_version->status());
+
+  first_version->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
+
+  // Verify the new version is activated.
+  EXPECT_EQ(NULL, registration->installing_version());
+  EXPECT_EQ(NULL, registration->waiting_version());
+  EXPECT_EQ(third_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, third_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, third_version->status());
 }
 
 }  // namespace content
