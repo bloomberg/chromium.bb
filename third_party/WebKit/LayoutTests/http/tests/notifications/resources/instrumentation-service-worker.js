@@ -1,5 +1,4 @@
-// Allows the controlling document to instrument Web Notification behavior
-// within a Service Worker by sending commands.
+// Allows a document to exercise the Notifications API within a service worker by sending commands.
 var messagePort = null;
 
 addEventListener('message', function(workerEvent) {
@@ -12,14 +11,18 @@ addEventListener('message', function(workerEvent) {
 
         switch (event.data.command) {
             case 'permission':
-                messagePort.postMessage({ command: 'permission', value: Notification.permission });
+                messagePort.postMessage({ command: event.data.command,
+                                          value: Notification.permission });
                 break;
 
             case 'show':
                 registration.showNotification(event.data.title, event.data.options).then(function() {
-                    messagePort.postMessage({ command: 'show', success: true });
+                    messagePort.postMessage({ command: event.data.command,
+                                              success: true });
                 }, function(error) {
-                    messagePort.postMessage({ command: 'show', success: false, message: error.message });
+                    messagePort.postMessage({ command: event.data.command,
+                                              success: false,
+                                              message: error.message });
                 });
                 break;
 
