@@ -71,6 +71,30 @@ class TestServiceProvider : public gin::Wrappable<TestServiceProvider> {
       service_factories_;
 };
 
+// An environment for unit testing apps/extensions API custom bindings
+// implemented on Mojo services. This augments a ModuleSystemTestEnvironment
+// with a TestServiceProvider and other modules available in a real extensions
+// environment.
+class ApiTestEnvironment {
+ public:
+  explicit ApiTestEnvironment(ModuleSystemTestEnvironment* environment);
+  ~ApiTestEnvironment();
+  void RunTest(const std::string& file_name, const std::string& test_name);
+  TestServiceProvider* service_provider() { return service_provider_; }
+  ModuleSystemTestEnvironment* env() { return env_; }
+
+ private:
+  void RegisterModules();
+  void InitializeEnvironment();
+  void RunTestInner(const std::string& test_name,
+                    const base::Closure& quit_closure);
+  void RunPromisesAgain();
+
+  ModuleSystemTestEnvironment* env_;
+  TestServiceProvider* service_provider_;
+  scoped_ptr<V8SchemaRegistry> v8_schema_registry_;
+};
+
 // A base class for unit testing apps/extensions API custom bindings implemented
 // on Mojo services. To use:
 // 1. Register test Mojo service implementations on service_provider().
@@ -85,18 +109,15 @@ class ApiTestBase : public ModuleSystemTest {
   ~ApiTestBase() override;
   void SetUp() override;
   void RunTest(const std::string& file_name, const std::string& test_name);
-  TestServiceProvider* service_provider() { return service_provider_; }
+
+  ApiTestEnvironment* api_test_env() { return test_env_.get(); }
+  TestServiceProvider* service_provider() {
+    return test_env_->service_provider();
+  }
 
  private:
-  void RegisterModules();
-  void InitializeEnvironment();
-  void RunTestInner(const std::string& test_name,
-                    const base::Closure& quit_closure);
-  void RunPromisesAgain();
-
   base::MessageLoop message_loop_;
-  TestServiceProvider* service_provider_;
-  scoped_ptr<V8SchemaRegistry> v8_schema_registry_;
+  scoped_ptr<ApiTestEnvironment> test_env_;
 };
 
 }  // namespace extensions

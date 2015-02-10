@@ -642,6 +642,9 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(
       std::make_pair("device/serial/data_stream_serialization.mojom",
                      IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS));
+  resources.push_back(std::make_pair("stash_client", IDR_STASH_CLIENT_JS));
+  resources.push_back(
+      std::make_pair("extensions/common/mojo/stash.mojom", IDR_STASH_MOJOM_JS));
 
   // Custom bindings.
   resources.push_back(
