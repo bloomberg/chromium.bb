@@ -902,6 +902,10 @@ void WebViewGuest::NavigateGuest(const std::string& src,
 
 bool WebViewGuest::HandleKeyboardShortcuts(
     const content::NativeWebKeyboardEvent& event) {
+  // <webview> outside of Chrome Apps do not handle keyboard shortcuts.
+  if (!in_extension())
+    return false;
+
   if (event.type != blink::WebInputEvent::RawKeyDown)
     return false;
 
@@ -1197,9 +1201,8 @@ void WebViewGuest::RequestNewWindowPermission(
 }
 
 GURL WebViewGuest::ResolveURL(const std::string& src) {
-  if (!in_extension()) {
+  if (!in_extension())
     return GURL(src);
-  }
 
   GURL default_url(base::StringPrintf("%s://%s/",
                                       kExtensionScheme,
