@@ -43,7 +43,7 @@ class _SessionRestoreTest(benchmark.Benchmark):
     return session_restore.SessionRestore(cold=is_cold)
 
   def CreatePageSet(self, options):
-    return page_sets.Typical25PageSet(make_pages_with_no_interactions=True)
+    return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
 # crbug.com/325479, crbug.com/381990
 @benchmark.Disabled('android', 'linux', 'reference')

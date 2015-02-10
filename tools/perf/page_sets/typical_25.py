@@ -26,7 +26,7 @@ class Typical25PageSet(page_set_module.PageSet):
 
   """ Pages designed to represent the median, not highly optimized web """
 
-  def __init__(self, make_pages_with_no_interactions=False):
+  def __init__(self, run_no_page_interactions=False):
     super(Typical25PageSet, self).__init__(
       user_agent_type='desktop',
       archive_data_file='data/typical_25.json',
@@ -75,4 +75,4 @@ class Typical25PageSet(page_set_module.PageSet):
 
     for url in urls_list:
       self.AddUserStory(
-        Typical25Page(url, self, make_pages_with_no_interactions))
+        Typical25Page(url, self, run_no_page_interactions))

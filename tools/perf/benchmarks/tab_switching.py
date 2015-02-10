@@ -37,7 +37,7 @@ class TabSwitchingTypical25(benchmark.Benchmark):
   test = tab_switching.TabSwitching
 
   def CreatePageSet(self, options):
-    return page_sets.Typical25PageSet(make_pages_with_no_interactions=True)
+    return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
   @classmethod
   def Name(cls):
