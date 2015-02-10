@@ -242,14 +242,11 @@ TileItemView* StartPageView::all_apps_button() const {
 }
 
 void StartPageView::OnShow() {
-  DCHECK(app_list_main_view_->contents_view()->ShouldShowCustomPageClickzone());
   UpdateCustomPageClickzoneVisibility();
   tiles_container_->ClearSelectedIndex();
 }
 
 void StartPageView::OnHide() {
-  DCHECK(
-      !app_list_main_view_->contents_view()->ShouldShowCustomPageClickzone());
   UpdateCustomPageClickzoneVisibility();
 }
 

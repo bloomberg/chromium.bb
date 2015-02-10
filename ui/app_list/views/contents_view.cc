@@ -523,10 +523,16 @@ void ContentsView::SelectedPageChanged(int old_selected, int new_selected) {
   if (!start_page_view_)
     return;
 
-  if (ShouldShowCustomPageClickzone())
+  if (new_selected == GetPageIndexForState(AppListModel::STATE_START)) {
     start_page_view_->OnShow();
-  else
+    // Show or hide the custom page view, based on whether it is enabled.
+    if (custom_page_view_) {
+      custom_page_view_->SetVisible(
+          app_list_main_view_->model()->custom_launcher_page_enabled());
+    }
+  } else {
     start_page_view_->OnHide();
+  }
 }
 
 void ContentsView::TransitionStarted() {

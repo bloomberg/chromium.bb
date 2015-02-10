@@ -235,6 +235,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
 
   EXPECT_TRUE(custom_page_click_zone->GetLayer()->visible());
   EXPECT_TRUE(model->custom_launcher_page_enabled());
+  EXPECT_TRUE(custom_page_view->visible());
   {
     ExtensionTestMessageListener listener("launcherPageDisabled", false);
     custom_page_frame->ExecuteJavaScript(kLauncherPageDisableScript);
@@ -242,6 +243,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
     listener.WaitUntilSatisfied();
     EXPECT_FALSE(custom_page_click_zone->GetLayer()->visible());
     EXPECT_FALSE(model->custom_launcher_page_enabled());
+    EXPECT_FALSE(custom_page_view->visible());
   }
 
   {
@@ -251,5 +253,6 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
     listener.WaitUntilSatisfied();
     EXPECT_TRUE(custom_page_click_zone->GetLayer()->visible());
     EXPECT_TRUE(model->custom_launcher_page_enabled());
+    EXPECT_TRUE(custom_page_view->visible());
   }
 }

@@ -313,9 +313,21 @@ void AppListMainView::InitWidgets() {
 }
 
 void AppListMainView::OnCustomLauncherPageEnabledStateChanged(bool enabled) {
+  if (enabled) {
+    // Make the custom page view visible again.
+    contents_view_->custom_page_view()->SetVisible(true);
+  } else if (contents_view_->IsStateActive(
+                 AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
+    // Animate to the start page if currently on the custom page view. The view
+    // will hide on animation completion.
+    contents_view_->SetActivePage(
+        contents_view_->GetPageIndexForState(AppListModel::STATE_START));
+  } else {
+    // Hide the view immediately otherwise.
+    contents_view_->custom_page_view()->SetVisible(false);
+  }
   // Allow the start page to update |custom_page_clickzone_|.
-  if (contents_view_->IsStateActive(AppListModel::STATE_START))
-    contents_view_->start_page_view()->UpdateCustomPageClickzoneVisibility();
+  contents_view_->start_page_view()->UpdateCustomPageClickzoneVisibility();
 }
 
 void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
