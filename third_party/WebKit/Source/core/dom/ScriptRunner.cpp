@@ -118,6 +118,32 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
     }
 }
 
+void ScriptRunner::movePendingAsyncScript(Document& oldDocument, Document& newDocument, ScriptLoader* scriptLoader)
+{
+    RefPtrWillBeRawPtr<Document> newContextDocument = newDocument.contextDocument().get();
+    if (!newContextDocument) {
+        // Document's contextDocument() method will return no Document if the
+        // following conditions both hold:
+        //
+        //   - The Document wasn't created with an explicit context document
+        //     and that document is otherwise kept alive.
+        //   - The Document itself is detached from its frame.
+        //
+        // The script element's loader is in that case moved to document() and
+        // its script runner, which is the non-null Document that contextDocument()
+        // would return if not detached.
+        ASSERT(!newDocument.frame());
+        newContextDocument = &newDocument;
+    }
+    RefPtrWillBeRawPtr<Document> oldContextDocument = oldDocument.contextDocument().get();
+    if (!oldContextDocument) {
+        ASSERT(!oldDocument.frame());
+        oldContextDocument = &oldDocument;
+    }
+    if (oldContextDocument != newContextDocument)
+        oldContextDocument->scriptRunner()->movePendingAsyncScript(newContextDocument->scriptRunner(), scriptLoader);
+}
+
 void ScriptRunner::movePendingAsyncScript(ScriptRunner* newRunner, ScriptLoader* scriptLoader)
 {
     if (m_pendingAsyncScripts.contains(scriptLoader)) {

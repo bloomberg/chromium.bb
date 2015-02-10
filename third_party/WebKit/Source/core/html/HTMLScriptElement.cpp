@@ -73,22 +73,7 @@ void HTMLScriptElement::childrenChanged(const ChildrenChange& change)
 
 void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
 {
-    RefPtrWillBeRawPtr<Document> contextDocument = document().contextDocument().get();
-    if (!contextDocument) {
-        // Document's contextDocument() method will return no Document if the
-        // following conditions both hold:
-        //
-        //   - The Document wasn't created with an explicit context document
-        //     and that document is otherwise kept alive.
-        //   - The Document itself is detached from its frame.
-        //
-        // The script element's loader is in that case moved to document() and
-        // its script runner, which is the non-null Document that contextDocument()
-        // would return if not detached.
-        ASSERT(!document().frame());
-        contextDocument = &document();
-    }
-    oldDocument.scriptRunner()->movePendingAsyncScript(contextDocument->scriptRunner(), m_loader.get());
+    ScriptRunner::movePendingAsyncScript(oldDocument, document(), m_loader.get());
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 

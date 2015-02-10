@@ -56,7 +56,7 @@ public:
     void notifyScriptReady(ScriptLoader*, ExecutionType);
     void notifyScriptLoadError(ScriptLoader*, ExecutionType);
 
-    void movePendingAsyncScript(ScriptRunner*, ScriptLoader*);
+    static void movePendingAsyncScript(Document&, Document&, ScriptLoader*);
 
     void trace(Visitor*);
 
@@ -66,6 +66,8 @@ private:
     void timerFired(Timer<ScriptRunner>*);
 
     void addPendingAsyncScript(ScriptLoader*);
+
+    void movePendingAsyncScript(ScriptRunner*, ScriptLoader*);
 
     RawPtrWillBeMember<Document> m_document;
     WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > m_scriptsToExecuteInOrder;
