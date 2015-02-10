@@ -720,11 +720,11 @@ void WebGL2RenderingContextBase::clearBufferfi(GLenum buffer, GLint drawbuffer, 
     webContext()->clearBufferfi(buffer, drawbuffer, depth, stencil);
 }
 
-PassRefPtr<WebGLQuery> WebGL2RenderingContextBase::createQuery()
+PassRefPtrWillBeRawPtr<WebGLQuery> WebGL2RenderingContextBase::createQuery()
 {
     if (isContextLost())
         return nullptr;
-    RefPtr<WebGLQuery> o = WebGLQuery::create(this);
+    RefPtrWillBeRawPtr<WebGLQuery> o = WebGLQuery::create(this);
     addSharedObject(o.get());
     return o;
 }
@@ -758,7 +758,7 @@ void WebGL2RenderingContextBase::endQuery(GLenum target)
     webContext()->endQueryEXT(target);
 }
 
-PassRefPtr<WebGLQuery> WebGL2RenderingContextBase::getQuery(GLenum target, GLenum pname)
+PassRefPtrWillBeRawPtr<WebGLQuery> WebGL2RenderingContextBase::getQuery(GLenum target, GLenum pname)
 {
     if (isContextLost())
         return nullptr;
@@ -776,11 +776,11 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(ScriptState* scriptSta
     return ScriptValue::createNull(scriptState);
 }
 
-PassRefPtr<WebGLSampler> WebGL2RenderingContextBase::createSampler()
+PassRefPtrWillBeRawPtr<WebGLSampler> WebGL2RenderingContextBase::createSampler()
 {
     if (isContextLost())
         return nullptr;
-    RefPtr<WebGLSampler> o = WebGLSampler::create(this);
+    RefPtrWillBeRawPtr<WebGLSampler> o = WebGLSampler::create(this);
     addSharedObject(o.get());
     return o;
 }
@@ -853,12 +853,12 @@ ScriptValue WebGL2RenderingContextBase::getSamplerParameter(ScriptState* scriptS
     }
 }
 
-PassRefPtr<WebGLSync> WebGL2RenderingContextBase::fenceSync(GLenum condition, GLbitfield flags)
+PassRefPtrWillBeRawPtr<WebGLSync> WebGL2RenderingContextBase::fenceSync(GLenum condition, GLbitfield flags)
 {
     if (isContextLost())
         return nullptr;
 
-    RefPtr<WebGLSync> o = WebGLFenceSync::create(this, condition, flags);
+    RefPtrWillBeRawPtr<WebGLSync> o = WebGLFenceSync::create(this, condition, flags);
     addSharedObject(o.get());
     return o.release();
 }
@@ -903,11 +903,11 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(ScriptState* scriptStat
     return ScriptValue::createNull(scriptState);
 }
 
-PassRefPtr<WebGLTransformFeedback> WebGL2RenderingContextBase::createTransformFeedback()
+PassRefPtrWillBeRawPtr<WebGLTransformFeedback> WebGL2RenderingContextBase::createTransformFeedback()
 {
     if (isContextLost())
         return nullptr;
-    RefPtr<WebGLTransformFeedback> o = WebGLTransformFeedback::create(this);
+    RefPtrWillBeRawPtr<WebGLTransformFeedback> o = WebGLTransformFeedback::create(this);
     addSharedObject(o.get());
     return o;
 }
@@ -957,7 +957,7 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(WebGLProgram* program
     notImplemented();
 }
 
-PassRefPtr<WebGLActiveInfo> WebGL2RenderingContextBase::getTransformFeedbackVarying(WebGLProgram* program, GLuint index)
+PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGL2RenderingContextBase::getTransformFeedbackVarying(WebGLProgram* program, GLuint index)
 {
     if (isContextLost() || !validateWebGLObject("getTransformFeedbackVarying", program))
         return nullptr;
@@ -1096,12 +1096,12 @@ void WebGL2RenderingContextBase::uniformBlockBinding(WebGLProgram* program, GLui
     webContext()->uniformBlockBinding(objectOrZero(program), uniformBlockIndex, uniformBlockBinding);
 }
 
-PassRefPtr<WebGLVertexArrayObjectOES> WebGL2RenderingContextBase::createVertexArray()
+PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> WebGL2RenderingContextBase::createVertexArray()
 {
     if (isContextLost())
         return nullptr;
 
-    RefPtr<WebGLVertexArrayObjectOES> o = WebGLVertexArrayObjectOES::create(this, WebGLVertexArrayObjectOES::VaoTypeUser);
+    RefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> o = WebGLVertexArrayObjectOES::create(this, WebGLVertexArrayObjectOES::VaoTypeUser);
     addContextObject(o.get());
     return o.release();
 }

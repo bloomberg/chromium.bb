@@ -24,8 +24,8 @@ public:
 protected:
     WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);
 
-    RefPtr<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-    RefPtr<WebGLDebugShaders> m_webglDebugShaders;
+    RefPtrWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
+    RefPtrWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContext, CanvasRenderingContext, context,

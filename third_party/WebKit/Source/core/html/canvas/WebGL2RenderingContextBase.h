@@ -104,16 +104,16 @@ public:
     void clearBufferfi(GLenum, GLint, GLfloat, GLint);
 
     /* Query Objects */
-    PassRefPtr<WebGLQuery> createQuery();
+    PassRefPtrWillBeRawPtr<WebGLQuery> createQuery();
     void deleteQuery(WebGLQuery*);
     GLboolean isQuery(WebGLQuery*);
     void beginQuery(GLenum, WebGLQuery*);
     void endQuery(GLenum);
-    PassRefPtr<WebGLQuery> getQuery(GLenum, GLenum);
+    PassRefPtrWillBeRawPtr<WebGLQuery> getQuery(GLenum, GLenum);
     ScriptValue getQueryParameter(ScriptState*, WebGLQuery*, GLenum);
 
     /* Sampler Objects */
-    PassRefPtr<WebGLSampler> createSampler();
+    PassRefPtrWillBeRawPtr<WebGLSampler> createSampler();
     void deleteSampler(WebGLSampler*);
     GLboolean isSampler(WebGLSampler*);
     void bindSampler(GLuint, WebGLSampler*);
@@ -122,7 +122,7 @@ public:
     ScriptValue getSamplerParameter(ScriptState*, WebGLSampler*, GLenum);
 
     /* Sync objects */
-    PassRefPtr<WebGLSync> fenceSync(GLenum, GLbitfield);
+    PassRefPtrWillBeRawPtr<WebGLSync> fenceSync(GLenum, GLbitfield);
     GLboolean isSync(WebGLSync*);
     void deleteSync(WebGLSync*);
     GLenum clientWaitSync(WebGLSync*, GLbitfield, GLuint);
@@ -131,14 +131,14 @@ public:
     ScriptValue getSyncParameter(ScriptState*, WebGLSync*, GLenum);
 
     /* Transform Feedback */
-    PassRefPtr<WebGLTransformFeedback> createTransformFeedback();
+    PassRefPtrWillBeRawPtr<WebGLTransformFeedback> createTransformFeedback();
     void deleteTransformFeedback(WebGLTransformFeedback*);
     GLboolean isTransformFeedback(WebGLTransformFeedback*);
     void bindTransformFeedback(GLenum, WebGLTransformFeedback*);
     void beginTransformFeedback(GLenum);
     void endTransformFeedback();
     void transformFeedbackVaryings(WebGLProgram*, const Vector<String>&, GLenum);
-    PassRefPtr<WebGLActiveInfo> getTransformFeedbackVarying(WebGLProgram*, GLuint);
+    PassRefPtrWillBeRawPtr<WebGLActiveInfo> getTransformFeedbackVarying(WebGLProgram*, GLuint);
     void pauseTransformFeedback();
     void resumeTransformFeedback();
 
@@ -154,7 +154,7 @@ public:
     void uniformBlockBinding(WebGLProgram*, GLuint, GLuint);
 
     /* Vertex Array Objects */
-    PassRefPtr<WebGLVertexArrayObjectOES> createVertexArray();
+    PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> createVertexArray();
     void deleteVertexArray(WebGLVertexArrayObjectOES*);
     GLboolean isVertexArray(WebGLVertexArrayObjectOES*);
     void bindVertexArray(WebGLVertexArrayObjectOES*);
