@@ -8,10 +8,16 @@ window.iframeLoaded = function() {
 
   var iframe = document.getElementsByTagName('iframe')[0];
   var oldScreen = iframe.contentWindow.screen;
+  var oldOrient = oldScreen.orientation;
 
   iframe.remove();
 
-  oldScreen.orientation.unlock();
+  // The screen.orientation object will not be exposed once the
+  // screen has become detached, but probe for it regardless to
+  // verify that such post-detach use doesn't crash.
+  oldOrient = oldScreen.orientation || oldOrient;
+
+  oldOrient.unlock();
   document.location.hash = '#done';
 }
 
