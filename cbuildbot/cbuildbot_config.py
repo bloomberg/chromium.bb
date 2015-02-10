@@ -73,9 +73,13 @@ def OverrideConfigForTrybot(build_config, options):
   """
   copy_config = copy.deepcopy(build_config)
   for my_config in [copy_config] + copy_config['child_configs']:
-    my_config['uprev'] = True
-    if my_config['internal']:
-      my_config['overlays'] = constants.BOTH_OVERLAYS
+    # For all builds except PROJECT_SDK, force uprev. This is so patched in
+    # changes are always built. PROEJCT_SDK_TYPE uses a minilayout, and uprev
+    # doesn't work for minilayout (crbug.com/458661).
+    if my_config['build_type'] != constants.PROJECT_SDK_TYPE:
+      my_config['uprev'] = True
+      if my_config['internal']:
+        my_config['overlays'] = constants.BOTH_OVERLAYS
 
     # Most users don't have access to the internal repositories so disable
     # them so that we use the external chromium prebuilts.
