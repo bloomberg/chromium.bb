@@ -696,6 +696,7 @@ void LayoutStyle::updatePropertySpecificDifferences(const LayoutStyle& other, St
 
     if (!diff.needsPaintInvalidation()) {
         if (inherited->color != other.inherited->color
+            || inherited->visitedLinkColor != other.inherited->visitedLinkColor
             || inherited_flags.m_textUnderline != other.inherited_flags.m_textUnderline
             || visual->textDecoration != other.visual->textDecoration) {
             diff.setTextOrColorChanged();
