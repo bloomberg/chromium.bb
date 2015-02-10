@@ -216,8 +216,8 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
   }
 
   // Check the stored prefs.
-  // TODO(pkasting): http://b/1119651 This kind of thing should go in the
-  // preferences on the profile, not in the local state.
+  // TODO(pkasting): This kind of thing should go in the preferences on the
+  // profile, not in the local state. http://crbug.com/457254
   PrefService* pref = g_browser_process->local_state();
   if (pref) {  // May be NULL during testing.
     DictionaryPrefUpdate update_excluded_schemas(pref, prefs::kExcludedSchemes);
@@ -237,8 +237,8 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
                                             BlockState state) {
   // Set in the stored prefs.
-  // TODO(pkasting): http://b/1119651 This kind of thing should go in the
-  // preferences on the profile, not in the local state.
+  // TODO(pkasting): This kind of thing should go in the preferences on the
+  // profile, not in the local state. http://crbug.com/457254
   PrefService* pref = g_browser_process->local_state();
   if (pref) {  // May be NULL during testing.
     DictionaryPrefUpdate update_excluded_schemas(pref, prefs::kExcludedSchemes);
