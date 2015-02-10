@@ -21,10 +21,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourceFilter_h
-#define RenderSVGResourceFilter_h
+#ifndef LayoutSVGResourceFilter_h
+#define LayoutSVGResourceFilter_h
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
@@ -69,17 +69,17 @@ private:
     FilterData() : m_state(Initial) { }
 };
 
-class RenderSVGResourceFilter final : public RenderSVGResourceContainer {
+class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
 public:
-    explicit RenderSVGResourceFilter(SVGFilterElement*);
+    explicit LayoutSVGResourceFilter(SVGFilterElement*);
 
-    virtual ~RenderSVGResourceFilter();
+    virtual ~LayoutSVGResourceFilter();
     virtual void destroy() override;
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
-    virtual const char* renderName() const override { return "RenderSVGResourceFilter"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilter || RenderSVGResourceContainer::isOfType(type); }
+    virtual const char* renderName() const override { return "LayoutSVGResourceFilter"; }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilter || LayoutSVGResourceContainer::isOfType(type); }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
@@ -98,15 +98,15 @@ public:
 
     void primitiveAttributeChanged(LayoutObject*, const QualifiedName&);
 
-    static const RenderSVGResourceType s_resourceType = FilterResourceType;
-    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
+    static const LayoutSVGResourceType s_resourceType = FilterResourceType;
+    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
     typedef WillBePersistentHeapHashMap<LayoutObject*, OwnPtrWillBeMember<FilterData>> FilterMap;
     FilterMap m_filter;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGResourceFilter, isSVGResourceFilter());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, isSVGResourceFilter());
 
 }
 

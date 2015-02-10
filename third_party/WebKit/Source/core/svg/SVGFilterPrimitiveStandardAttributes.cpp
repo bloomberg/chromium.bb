@@ -23,8 +23,8 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
-#include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceFilterPrimitive.h"
 #include "core/svg/SVGLength.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
@@ -125,7 +125,7 @@ void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* f
 
 LayoutObject* SVGFilterPrimitiveStandardAttributes::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGResourceFilterPrimitive(this);
+    return new LayoutSVGResourceFilterPrimitive(this);
 }
 
 bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const LayoutStyle& style)
@@ -145,7 +145,7 @@ void SVGFilterPrimitiveStandardAttributes::invalidate()
 void SVGFilterPrimitiveStandardAttributes::primitiveAttributeChanged(const QualifiedName& attribute)
 {
     if (LayoutObject* primitiveRenderer = renderer())
-        static_cast<RenderSVGResourceFilterPrimitive*>(primitiveRenderer)->primitiveAttributeChanged(attribute);
+        static_cast<LayoutSVGResourceFilterPrimitive*>(primitiveRenderer)->primitiveAttributeChanged(attribute);
 }
 
 void invalidateFilterPrimitiveParent(SVGElement* element)
@@ -162,7 +162,7 @@ void invalidateFilterPrimitiveParent(SVGElement* element)
     if (!renderer || !renderer->isSVGResourceFilterPrimitive())
         return;
 
-    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 }
 
 }

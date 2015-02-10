@@ -17,17 +17,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourceClipper_h
-#define RenderSVGResourceClipper_h
+#ifndef LayoutSVGResourceClipper_h
+#define LayoutSVGResourceClipper_h
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGClipPathElement.h"
 
 class SkPicture;
 
 namespace blink {
 
-class RenderSVGResourceClipper final : public RenderSVGResourceContainer {
+class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
 public:
     enum ClipperState {
         ClipperNotApplied,
@@ -35,10 +35,10 @@ public:
         ClipperAppliedMask
     };
 
-    explicit RenderSVGResourceClipper(SVGClipPathElement*);
-    virtual ~RenderSVGResourceClipper();
+    explicit LayoutSVGResourceClipper(SVGClipPathElement*);
+    virtual ~LayoutSVGResourceClipper();
 
-    virtual const char* renderName() const override { return "RenderSVGResourceClipper"; }
+    virtual const char* renderName() const override { return "LayoutSVGResourceClipper"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
@@ -50,14 +50,14 @@ public:
     void postApplyStatefulResource(LayoutObject*, GraphicsContext*&, ClipperState&);
 
     // clipPath can be clipped too, but don't have a boundingBox or paintInvalidationRect. So we can't call
-    // applyResource directly and use the rects from the object, since they are empty for RenderSVGResources
+    // applyResource directly and use the rects from the object, since they are empty for LayoutSVGResources
     // FIXME: We made applyClippingToContext public because we cannot call applyResource on HTML elements (it asserts on LayoutObject::objectBoundingBox)
     bool applyClippingToContext(LayoutObject*, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
 
     FloatRect resourceBoundingBox(const LayoutObject*);
 
-    static const RenderSVGResourceType s_resourceType = ClipperResourceType;
-    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
+    static const LayoutSVGResourceType s_resourceType = ClipperResourceType;
+    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
     bool hitTestClipContent(const FloatRect&, const FloatPoint&);
 
@@ -76,7 +76,7 @@ private:
     bool m_inClipExpansion;
 };
 
-DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(RenderSVGResourceClipper, ClipperResourceType);
+DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceClipper, ClipperResourceType);
 
 }
 

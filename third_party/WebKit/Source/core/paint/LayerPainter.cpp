@@ -10,6 +10,7 @@
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/Layer.h"
 #include "core/layout/PaintInfo.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/page/Page.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FilterPainter.h"
@@ -19,7 +20,6 @@
 #include "core/paint/Transform3DRecorder.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -116,7 +116,7 @@ public:
         if (!renderLayer.renderer()->hasClipPath() || (renderLayer.needsCompositedScrolling() && !(paintFlags & PaintLayerPaintingChildClippingMaskPhase)))
             return;
 
-        m_clipperState = RenderSVGResourceClipper::ClipperNotApplied;
+        m_clipperState = LayoutSVGResourceClipper::ClipperNotApplied;
 
         ASSERT(style.clipPath());
         if (style.clipPath()->type() == ClipPathOperation::SHAPE) {
@@ -145,7 +145,7 @@ public:
                     rootRelativeBoundsComputed = true;
                 }
 
-                m_resourceClipper = toRenderSVGResourceClipper(toRenderSVGResourceContainer(element->renderer()));
+                m_resourceClipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->renderer()));
                 if (!m_resourceClipper->applyClippingToContext(renderLayer.renderer(), rootRelativeBounds,
                     paintingInfo.paintDirtyRect, context, m_clipperState)) {
                     // No need to post-apply the clipper if this failed.
@@ -161,10 +161,10 @@ public:
             m_resourceClipper->postApplyStatefulResource(m_renderLayer.renderer(), m_context, m_clipperState);
     }
 private:
-    RenderSVGResourceClipper* m_resourceClipper;
+    LayoutSVGResourceClipper* m_resourceClipper;
     GraphicsContextStateSaver m_clipStateSaver;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
-    RenderSVGResourceClipper::ClipperState m_clipperState;
+    LayoutSVGResourceClipper::ClipperState m_clipperState;
     const Layer& m_renderLayer;
     GraphicsContext* m_context;
 };

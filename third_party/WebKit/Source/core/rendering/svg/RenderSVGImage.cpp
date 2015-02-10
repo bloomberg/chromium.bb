@@ -29,12 +29,12 @@
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/PointerEventsHitRules.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGImagePainter.h"
 #include "core/rendering/RenderImageResource.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/LengthFunctions.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -179,7 +179,7 @@ void RenderSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
         resources->removeClientFromCache(this);
 
     // Eventually notify parent resources, that we've changed.
-    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(this, false);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(this, false);
 
     // Update the SVGImageCache sizeAndScales entry in case image loading finished after layout.
     // (https://bugs.webkit.org/show_bug.cgi?id=99489)

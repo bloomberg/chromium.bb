@@ -4,8 +4,8 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGContainer {g} at (82,20) size 361x265
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-        RenderSVGResourceFilter {filter} [id="null"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-        RenderSVGResourceFilter {filter} [id="nullreg"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+        LayoutSVGResourceFilter {filter} [id="null"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+        LayoutSVGResourceFilter {filter} [id="nullreg"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
       RenderSVGContainer {g} at (90,20) size 80x115
         RenderSVGEllipse {circle} at (100,30) size 60x60 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=60.00] [r=30.00]
         RenderSVGEllipse {circle} at (90,20) size 80x80 [fill={[type=SOLID] [color=#000000]}] [cx=130.00] [cy=60.00] [r=40.00]
@@ -15,7 +15,7 @@ layer at (0,0) size 480x360
       RenderSVGContainer {g} at (82,162) size 96x123
         RenderSVGEllipse {circle} at (100,180) size 60x60 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=210.00] [r=30.00]
         RenderSVGEllipse {circle} at (82,162) size 96x96 [fill={[type=SOLID] [color=#000000]}] [cx=130.00] [cy=210.00] [r=40.00]
-          [filter="null"] RenderSVGResourceFilter {filter} at (82,162) size 96x96
+          [filter="null"] LayoutSVGResourceFilter {filter} at (82,162) size 96x96
         RenderSVGText {text} at (90,262) size 80x23 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 80x23
             chunk 1 (middle anchor) text run 1 at (90.29,280.00) startOffset 0 endOffset 11 width 79.42: "Null filter"
@@ -28,7 +28,7 @@ layer at (0,0) size 480x360
       RenderSVGContainer {g} at (217,180) size 226x105
         RenderSVGEllipse {circle} at (300,180) size 60x60 [fill={[type=SOLID] [color=#FF0000]}] [cx=330.00] [cy=210.00] [r=30.00]
         RenderSVGEllipse {circle} at (322,202) size 16x16 [fill={[type=SOLID] [color=#000000]}] [cx=330.00] [cy=210.00] [r=40.00]
-          [filter="nullreg"] RenderSVGResourceFilter {filter} at (322,202) size 16x16
+          [filter="nullreg"] LayoutSVGResourceFilter {filter} at (322,202) size 16x16
         RenderSVGText {text} at (217,262) size 226x23 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 225x23
             chunk 1 (middle anchor) text run 1 at (217.80,280.00) startOffset 0 endOffset 29 width 224.40: "Null with small region filter"

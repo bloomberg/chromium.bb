@@ -31,7 +31,7 @@
 namespace blink {
 
 class Document;
-class RenderSVGResourceContainer;
+class LayoutSVGResourceContainer;
 class SubtreeLayoutScope;
 class SVGResourcesCache;
 class SVGSVGElement;
@@ -47,9 +47,9 @@ public:
     void addTimeContainer(SVGSVGElement*);
     void removeTimeContainer(SVGSVGElement*);
 
-    void addResource(const AtomicString& id, RenderSVGResourceContainer*);
+    void addResource(const AtomicString& id, LayoutSVGResourceContainer*);
     void removeResource(const AtomicString& id);
-    RenderSVGResourceContainer* resourceById(const AtomicString& id) const;
+    LayoutSVGResourceContainer* resourceById(const AtomicString& id) const;
 
     static void serviceOnAnimationFrame(Document&, double monotonicAnimationStartTime);
 
@@ -80,7 +80,7 @@ public:
 private:
     RawPtrWillBeMember<Document> m_document;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_timeContainers; // For SVG 1.2 support this will need to be made more general.
-    HashMap<AtomicString, RenderSVGResourceContainer*> m_resources;
+    HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
     WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> > m_pendingResources; // Resources that are pending.
     WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
     OwnPtr<SVGResourcesCache> m_resourcesCache;

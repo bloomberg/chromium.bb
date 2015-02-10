@@ -26,17 +26,17 @@
 #define SVGPaintContext_h
 
 #include "core/layout/PaintInfo.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
-#include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
 class LayoutObject;
-class RenderSVGResourceFilter;
-class RenderSVGResourceMasker;
+class LayoutSVGResourceFilter;
+class LayoutSVGResourceMasker;
 class SVGResources;
 
 class SVGPaintContext {
@@ -48,7 +48,7 @@ public:
         , m_originalPaintInfo(&paintInfo)
         , m_filter(nullptr)
         , m_clipper(nullptr)
-        , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
+        , m_clipperState(LayoutSVGResourceClipper::ClipperNotApplied)
         , m_masker(nullptr)
 #if ENABLE(ASSERT)
         , m_applyClipMaskAndFilterIfNecessaryCalled(false)
@@ -81,10 +81,10 @@ private:
     RawPtrWillBeMember<LayoutObject> m_object;
     PaintInfo m_paintInfo;
     const PaintInfo* m_originalPaintInfo;
-    RawPtrWillBeMember<RenderSVGResourceFilter> m_filter;
-    RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
-    RenderSVGResourceClipper::ClipperState m_clipperState;
-    RawPtrWillBeMember<RenderSVGResourceMasker> m_masker;
+    RawPtrWillBeMember<LayoutSVGResourceFilter> m_filter;
+    RawPtrWillBeMember<LayoutSVGResourceClipper> m_clipper;
+    LayoutSVGResourceClipper::ClipperState m_clipperState;
+    RawPtrWillBeMember<LayoutSVGResourceMasker> m_masker;
     OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<FloatClipRecorder> m_clipRecorder;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;

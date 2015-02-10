@@ -26,7 +26,7 @@
 #include "core/svg/SVGFilterElement.h"
 
 #include "core/XLinkNames.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/svg/SVGParserUtilities.h"
 
 namespace blink {
@@ -122,7 +122,7 @@ void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::heightAttr)
         updateRelativeLengthsInformation();
 
-    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
@@ -140,7 +140,7 @@ void SVGFilterElement::childrenChanged(const ChildrenChange& change)
 
 LayoutObject* SVGFilterElement::createRenderer(const LayoutStyle&)
 {
-    RenderSVGResourceFilter* renderer = new RenderSVGResourceFilter(this);
+    LayoutSVGResourceFilter* renderer = new LayoutSVGResourceFilter(this);
 
     for (const RefPtrWillBeMember<Node>& node : m_clientsToAdd)
         renderer->addClientLayer(node.get());

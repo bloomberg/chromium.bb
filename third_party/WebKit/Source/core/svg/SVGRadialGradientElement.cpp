@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/svg/SVGRadialGradientElement.h"
 
-#include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
+#include "core/layout/svg/LayoutSVGResourceRadialGradient.h"
 #include "core/svg/RadialGradientAttributes.h"
 
 namespace blink {
@@ -97,14 +97,14 @@ void SVGRadialGradientElement::svgAttributeChanged(const QualifiedName& attrName
 
     updateRelativeLengthsInformation();
 
-    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
 
 LayoutObject* SVGRadialGradientElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGResourceRadialGradient(this);
+    return new LayoutSVGResourceRadialGradient(this);
 }
 
 static void setGradientAttributes(SVGGradientElement* element, RadialGradientAttributes& attributes, bool isRadial = true)

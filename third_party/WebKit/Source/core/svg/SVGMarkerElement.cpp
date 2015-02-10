@@ -24,7 +24,7 @@
 #include "core/svg/SVGMarkerElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/svg/RenderSVGResourceMarker.h"
+#include "core/layout/svg/LayoutSVGResourceMarker.h"
 #include "core/svg/SVGAngleTearOff.h"
 
 namespace blink {
@@ -117,7 +117,7 @@ void SVGMarkerElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::markerHeightAttr)
         updateRelativeLengthsInformation();
 
-    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
@@ -151,7 +151,7 @@ void SVGMarkerElement::setOrientToAngle(PassRefPtrWillBeRawPtr<SVGAngleTearOff> 
 
 LayoutObject* SVGMarkerElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGResourceMarker(this);
+    return new LayoutSVGResourceMarker(this);
 }
 
 bool SVGMarkerElement::selfHasRelativeLengths() const

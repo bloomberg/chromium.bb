@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2010 University of Szeged
  * Copyright (C) 2010 Zoltan Herczeg
- * Copyright (C) 2011 Renata Hodovan (reni@webkit.org)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,35 +24,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef LayoutSVGResourceFilterPrimitive_h
+#define LayoutSVGResourceFilterPrimitive_h
 
-#include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
 
 namespace blink {
 
-void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
-{
-    RenderSVGHiddenContainer::styleDidChange(diff, oldStyle);
-
-    LayoutObject* filter = parent();
-    if (!filter)
-        return;
-    ASSERT(filter->isSVGResourceFilter());
-
-    if (!oldStyle)
-        return;
-
-    const SVGLayoutStyle& newStyle = this->style()->svgStyle();
-    ASSERT(element());
-    if (isSVGFEFloodElement(*element())) {
-        if (newStyle.floodColor() != oldStyle->svgStyle().floodColor())
-            toRenderSVGResourceFilter(filter)->primitiveAttributeChanged(this, SVGNames::flood_colorAttr);
-        if (newStyle.floodOpacity() != oldStyle->svgStyle().floodOpacity())
-            toRenderSVGResourceFilter(filter)->primitiveAttributeChanged(this, SVGNames::flood_opacityAttr);
-    } else if (isSVGFEDiffuseLightingElement(*element()) || isSVGFESpecularLightingElement(*element())) {
-        if (newStyle.lightingColor() != oldStyle->svgStyle().lightingColor())
-            toRenderSVGResourceFilter(filter)->primitiveAttributeChanged(this, SVGNames::lighting_colorAttr);
+class LayoutSVGResourceFilterPrimitive final : public RenderSVGHiddenContainer {
+public:
+    explicit LayoutSVGResourceFilterPrimitive(SVGElement* filterPrimitiveElement)
+        : RenderSVGHiddenContainer(filterPrimitiveElement)
+    {
     }
-}
+
+    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override { return false; }
+
+    virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
+
+    virtual const char* renderName() const override { return "LayoutSVGResourceFilterPrimitive"; }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || RenderSVGHiddenContainer::isOfType(type); }
+
+    inline void primitiveAttributeChanged(const QualifiedName& attribute)
+    {
+        LayoutObject* filter = parent();
+        if (!filter || !filter->isSVGResourceFilter())
+            return;
+        toLayoutSVGResourceFilter(filter)->primitiveAttributeChanged(this, attribute);
+    }
+};
 
 } // namespace blink
+
+#endif // LayoutSVGResourceFilterPrimitive_h

@@ -21,9 +21,9 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 
 #include "core/HTMLNames.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCycleSolver.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const
     solver.resolveCycles();
 
     // Walk resources and register the render object at each resources.
-    HashSet<RenderSVGResourceContainer*> resourceSet;
+    HashSet<LayoutSVGResourceContainer*> resourceSet;
     resources->buildSetOfResources(resourceSet);
 
     for (auto* resourceContainer : resourceSet)
@@ -70,7 +70,7 @@ void SVGResourcesCache::removeResourcesFromLayoutObject(LayoutObject* object)
         return;
 
     // Walk resources and register the render object at each resources.
-    HashSet<RenderSVGResourceContainer*> resourceSet;
+    HashSet<LayoutSVGResourceContainer*> resourceSet;
     resources->buildSetOfResources(resourceSet);
 
     for (auto* resourceContainer : resourceSet)
@@ -134,14 +134,14 @@ void SVGResourcesCache::clientStyleChanged(LayoutObject* renderer, StyleDifferen
         cache->addResourcesFromLayoutObject(renderer, newStyle);
     }
 
-    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 }
 
 void SVGResourcesCache::clientWasAddedToTree(LayoutObject* renderer, const LayoutStyle& newStyle)
 {
     if (!renderer->node())
         return;
-    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 
     if (!rendererCanHaveResources(renderer))
         return;
@@ -153,7 +153,7 @@ void SVGResourcesCache::clientWillBeRemovedFromTree(LayoutObject* renderer)
 {
     if (!renderer->node())
         return;
-    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 
     if (!rendererCanHaveResources(renderer))
         return;
@@ -173,7 +173,7 @@ void SVGResourcesCache::clientDestroyed(LayoutObject* renderer)
     cache->removeResourcesFromLayoutObject(renderer);
 }
 
-void SVGResourcesCache::resourceDestroyed(RenderSVGResourceContainer* resource)
+void SVGResourcesCache::resourceDestroyed(LayoutSVGResourceContainer* resource)
 {
     ASSERT(resource);
     SVGResourcesCache* cache = resourcesCacheFromLayoutObject(resource);

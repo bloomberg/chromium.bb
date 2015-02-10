@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourcePattern.h"
+#include "core/layout/svg/LayoutSVGResourcePattern.h"
 
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -41,8 +41,8 @@ public:
     AffineTransform transform;
 };
 
-RenderSVGResourcePattern::RenderSVGResourcePattern(SVGPatternElement* node)
-    : RenderSVGResourcePaintServer(node)
+LayoutSVGResourcePattern::LayoutSVGResourcePattern(SVGPatternElement* node)
+    : LayoutSVGResourcePaintServer(node)
     , m_shouldCollectPatternAttributes(true)
 #if ENABLE(OILPAN)
     , m_attributesWrapper(PatternAttributesWrapper::create())
@@ -50,21 +50,21 @@ RenderSVGResourcePattern::RenderSVGResourcePattern(SVGPatternElement* node)
 {
 }
 
-void RenderSVGResourcePattern::removeAllClientsFromCache(bool markForInvalidation)
+void LayoutSVGResourcePattern::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_patternMap.clear();
     m_shouldCollectPatternAttributes = true;
     markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourcePattern::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
+void LayoutSVGResourcePattern::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     m_patternMap.remove(client);
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-PatternData* RenderSVGResourcePattern::patternForRenderer(const LayoutObject& object)
+PatternData* LayoutSVGResourcePattern::patternForRenderer(const LayoutObject& object)
 {
     ASSERT(!m_shouldCollectPatternAttributes);
 
@@ -77,7 +77,7 @@ PatternData* RenderSVGResourcePattern::patternForRenderer(const LayoutObject& ob
     return m_patternMap.set(&object, buildPatternData(object)).storedValue->value.get();
 }
 
-PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const LayoutObject& object)
+PassOwnPtr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutObject& object)
 {
     // If we couldn't determine the pattern content element root, stop here.
     const PatternAttributes& attributes = this->attributes();
@@ -121,7 +121,7 @@ PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const LayoutO
     return patternData.release();
 }
 
-SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const LayoutObject& object)
+SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(const LayoutObject& object)
 {
     clearInvalidationMask();
 
@@ -156,7 +156,7 @@ SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const LayoutObject& 
     return SVGPaintServer(patternData->pattern);
 }
 
-PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect& tileBounds,
+PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect& tileBounds,
     const AffineTransform& tileTransform) const
 {
     ASSERT(!m_shouldCollectPatternAttributes);
@@ -173,8 +173,8 @@ PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect&
     recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
 
     ASSERT(attributes().patternContentElement());
-    RenderSVGResourceContainer* patternRenderer =
-        toRenderSVGResourceContainer(attributes().patternContentElement()->renderer());
+    LayoutSVGResourceContainer* patternRenderer =
+        toLayoutSVGResourceContainer(attributes().patternContentElement()->renderer());
     ASSERT(patternRenderer);
     ASSERT(!patternRenderer->needsLayout());
 

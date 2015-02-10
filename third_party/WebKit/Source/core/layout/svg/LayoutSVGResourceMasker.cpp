@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
 
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -30,29 +30,29 @@
 
 namespace blink {
 
-RenderSVGResourceMasker::RenderSVGResourceMasker(SVGMaskElement* node)
-    : RenderSVGResourceContainer(node)
+LayoutSVGResourceMasker::LayoutSVGResourceMasker(SVGMaskElement* node)
+    : LayoutSVGResourceContainer(node)
 {
 }
 
-RenderSVGResourceMasker::~RenderSVGResourceMasker()
+LayoutSVGResourceMasker::~LayoutSVGResourceMasker()
 {
 }
 
-void RenderSVGResourceMasker::removeAllClientsFromCache(bool markForInvalidation)
+void LayoutSVGResourceMasker::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_maskContentPicture.clear();
     m_maskContentBoundaries = FloatRect();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceMasker::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
+void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceMasker::prepareEffect(LayoutObject* object, GraphicsContext* context)
+bool LayoutSVGResourceMasker::prepareEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -71,7 +71,7 @@ bool RenderSVGResourceMasker::prepareEffect(LayoutObject* object, GraphicsContex
     return true;
 }
 
-void RenderSVGResourceMasker::finishEffect(LayoutObject* object, GraphicsContext* context)
+void LayoutSVGResourceMasker::finishEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -102,7 +102,7 @@ void RenderSVGResourceMasker::finishEffect(LayoutObject* object, GraphicsContext
     context->endLayer();
 }
 
-void RenderSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, const FloatRect& targetBoundingBox)
+void LayoutSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, const FloatRect& targetBoundingBox)
 {
     ASSERT(context);
 
@@ -122,7 +122,7 @@ void RenderSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, cons
     context->drawPicture(m_maskContentPicture.get());
 }
 
-void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
+void LayoutSVGResourceMasker::createPicture(GraphicsContext* context)
 {
     ASSERT(context);
 
@@ -144,7 +144,7 @@ void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
     m_maskContentPicture = context->endRecording();
 }
 
-void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
+void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
 {
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         LayoutObject* renderer = childElement->renderer();
@@ -152,12 +152,12 @@ void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
             continue;
         const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
-             continue;
+            continue;
         m_maskContentBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));
     }
 }
 
-FloatRect RenderSVGResourceMasker::resourceBoundingBox(const LayoutObject* object)
+FloatRect LayoutSVGResourceMasker::resourceBoundingBox(const LayoutObject* object)
 {
     SVGMaskElement* maskElement = toSVGMaskElement(element());
     ASSERT(maskElement);

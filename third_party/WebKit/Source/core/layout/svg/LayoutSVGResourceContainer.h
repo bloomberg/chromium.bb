@@ -17,15 +17,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourceContainer_h
-#define RenderSVGResourceContainer_h
+#ifndef LayoutSVGResourceContainer_h
+#define LayoutSVGResourceContainer_h
 
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {
 
-enum RenderSVGResourceType {
+enum LayoutSVGResourceType {
     MaskerResourceType,
     MarkerResourceType,
     PatternResourceType,
@@ -37,10 +37,10 @@ enum RenderSVGResourceType {
 
 class Layer;
 
-class RenderSVGResourceContainer : public RenderSVGHiddenContainer {
+class LayoutSVGResourceContainer : public RenderSVGHiddenContainer {
 public:
-    explicit RenderSVGResourceContainer(SVGElement*);
-    virtual ~RenderSVGResourceContainer();
+    explicit LayoutSVGResourceContainer(SVGElement*);
+    virtual ~LayoutSVGResourceContainer();
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) = 0;
@@ -49,11 +49,11 @@ public:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || RenderSVGHiddenContainer::isOfType(type); }
 
-    virtual RenderSVGResourceType resourceType() const = 0;
+    virtual LayoutSVGResourceType resourceType() const = 0;
 
     bool isSVGPaintServer() const
     {
-        RenderSVGResourceType resourceType = this->resourceType();
+        LayoutSVGResourceType resourceType = this->resourceType();
         return resourceType == PatternResourceType
             || resourceType == LinearGradientResourceType
             || resourceType == RadialGradientResourceType;
@@ -106,31 +106,31 @@ private:
     HashSet<Layer*> m_clientLayers;
 };
 
-inline RenderSVGResourceContainer* getRenderSVGResourceContainerById(TreeScope& treeScope, const AtomicString& id)
+inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(TreeScope& treeScope, const AtomicString& id)
 {
     if (id.isEmpty())
         return 0;
 
-    if (RenderSVGResourceContainer* renderResource = treeScope.document().accessSVGExtensions().resourceById(id))
+    if (LayoutSVGResourceContainer* renderResource = treeScope.document().accessSVGExtensions().resourceById(id))
         return renderResource;
 
     return 0;
 }
 
 template<typename Renderer>
-Renderer* getRenderSVGResourceById(TreeScope& treeScope, const AtomicString& id)
+Renderer* getLayoutSVGResourceById(TreeScope& treeScope, const AtomicString& id)
 {
-    if (RenderSVGResourceContainer* container = getRenderSVGResourceContainerById(treeScope, id)) {
+    if (LayoutSVGResourceContainer* container = getLayoutSVGResourceContainerById(treeScope, id)) {
         if (container->resourceType() == Renderer::s_resourceType)
             return static_cast<Renderer*>(container);
     }
     return 0;
 }
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGResourceContainer, isSVGResourceContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer, isSVGResourceContainer());
 
-#define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
-    DEFINE_TYPE_CASTS(thisType, RenderSVGResourceContainer, resource, resource->resourceType() == typeName, resource.resourceType() == typeName)
+#define DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
+    DEFINE_TYPE_CASTS(thisType, LayoutSVGResourceContainer, resource, resource->resourceType() == typeName, resource.resourceType() == typeName)
 
 }
 

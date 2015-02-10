@@ -8,13 +8,13 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,180) size 784x90
       RenderBlock (anonymous) at (0,270) size 784x0
         RenderSVGRoot {svg} at (8,278) size 0x0
-          RenderSVGResourceFilter {filter} [id="cut1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="cut1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feOffset dx="0.00" dy="0.00"]
               [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="cut2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="cut2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feOffset dx="0.00" dy="0.00"]
               [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="cut3"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="cut3"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feOffset dx="0.00" dy="0.00"]
               [SourceGraphic]
         RenderText {#text} at (0,0) size 0x0

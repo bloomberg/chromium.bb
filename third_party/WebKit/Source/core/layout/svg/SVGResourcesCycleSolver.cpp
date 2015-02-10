@@ -23,13 +23,13 @@
 // Set to a value > 0, to debug the resource cache.
 #define DEBUG_CYCLE_DETECTION 0
 
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGResourceMarker.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/rendering/svg/RenderSVGResourceClipper.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
-#include "core/rendering/svg/RenderSVGResourceMarker.h"
-#include "core/rendering/svg/RenderSVGResourceMasker.h"
-#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 
 namespace blink {
 
@@ -48,7 +48,7 @@ SVGResourcesCycleSolver::~SVGResourcesCycleSolver()
 struct ActiveFrame {
     typedef SVGResourcesCycleSolver::ResourceSet ResourceSet;
 
-    ActiveFrame(ResourceSet& activeSet, RenderSVGResourceContainer* resource)
+    ActiveFrame(ResourceSet& activeSet, LayoutSVGResourceContainer* resource)
         : m_activeSet(activeSet)
         , m_resource(resource)
     {
@@ -60,10 +60,10 @@ struct ActiveFrame {
     }
 
     ResourceSet& m_activeSet;
-    RenderSVGResourceContainer* m_resource;
+    LayoutSVGResourceContainer* m_resource;
 };
 
-bool SVGResourcesCycleSolver::resourceContainsCycles(RenderSVGResourceContainer* resource)
+bool SVGResourcesCycleSolver::resourceContainsCycles(LayoutSVGResourceContainer* resource)
 {
     // If we've traversed this sub-graph before and no cycles were observed, then
     // reuse that result.
@@ -107,7 +107,7 @@ void SVGResourcesCycleSolver::resolveCycles()
     // If the starting LayoutObject is a resource container itself, then add it
     // to the active set (to break direct self-references.)
     if (m_renderer->isSVGResourceContainer())
-        m_activeResources.add(toRenderSVGResourceContainer(m_renderer));
+        m_activeResources.add(toLayoutSVGResourceContainer(m_renderer));
 
     ResourceSet localResources;
     m_resources->buildSetOfResources(localResources);
@@ -124,7 +124,7 @@ void SVGResourcesCycleSolver::resolveCycles()
     m_activeResources.clear();
 }
 
-void SVGResourcesCycleSolver::breakCycle(RenderSVGResourceContainer* resourceLeadingToCycle)
+void SVGResourcesCycleSolver::breakCycle(LayoutSVGResourceContainer* resourceLeadingToCycle)
 {
     ASSERT(resourceLeadingToCycle);
     if (resourceLeadingToCycle == m_resources->linkedResource()) {

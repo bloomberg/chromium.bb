@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (23,86) size 354x165
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGResourcePattern {pattern} [id="dot"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
+      LayoutSVGResourcePattern {pattern} [id="dot"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
         RenderSVGEllipse {circle} at (10,40) size 20x20 [fill={[type=SOLID] [color=#000000]}] [cx=20.00] [cy=50.00] [r=10.00]
     RenderSVGText {text} at (23,86) size 354x17 contains 1 chunk(s)
       RenderSVGInlineText {#text} at (0,0) size 353x17

@@ -21,31 +21,31 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourceGradient.h"
+#include "core/layout/svg/LayoutSVGResourceGradient.h"
 
 namespace blink {
 
-RenderSVGResourceGradient::RenderSVGResourceGradient(SVGGradientElement* node)
-    : RenderSVGResourcePaintServer(node)
+LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
+    : LayoutSVGResourcePaintServer(node)
     , m_shouldCollectGradientAttributes(true)
 {
 }
 
-void RenderSVGResourceGradient::removeAllClientsFromCache(bool markForInvalidation)
+void LayoutSVGResourceGradient::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_gradientMap.clear();
     m_shouldCollectGradientAttributes = true;
     markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceGradient::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
+void LayoutSVGResourceGradient::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     m_gradientMap.remove(client);
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-SVGPaintServer RenderSVGResourceGradient::preparePaintServer(const LayoutObject& object)
+SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject& object)
 {
     clearInvalidationMask();
 
@@ -99,7 +99,7 @@ SVGPaintServer RenderSVGResourceGradient::preparePaintServer(const LayoutObject&
     return SVGPaintServer(gradientData->gradient);
 }
 
-bool RenderSVGResourceGradient::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     if (child->isSVGGradientStop())
         return true;
@@ -107,10 +107,10 @@ bool RenderSVGResourceGradient::isChildAllowed(LayoutObject* child, const Layout
     if (!child->isSVGResourceContainer())
         return false;
 
-    return toRenderSVGResourceContainer(child)->isSVGPaintServer();
+    return toLayoutSVGResourceContainer(child)->isSVGPaintServer();
 }
 
-void RenderSVGResourceGradient::addStops(GradientData* gradientData, const Vector<Gradient::ColorStop>& stops) const
+void LayoutSVGResourceGradient::addStops(GradientData* gradientData, const Vector<Gradient::ColorStop>& stops) const
 {
     ASSERT(gradientData->gradient);
 
@@ -119,7 +119,7 @@ void RenderSVGResourceGradient::addStops(GradientData* gradientData, const Vecto
         gradientData->gradient->addColorStop(*it);
 }
 
-GradientSpreadMethod RenderSVGResourceGradient::platformSpreadMethodFromSVGType(SVGSpreadMethodType method) const
+GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(SVGSpreadMethodType method) const
 {
     switch (method) {
     case SVGSpreadMethodUnknown:

@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 450x500
   RenderSVGRoot {svg} at (0,0) size 448x498
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGResourceFilter {filter} [id="blur"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
+      LayoutSVGResourceFilter {filter} [id="blur"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
         [feGaussianBlur stdDeviation="0.04, 0.04"]
           [SourceGraphic]
       RenderSVGPath {path} at (14,0) size 122x45 [transform={m=((0.00,0.00)(0.00,0.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#008000] [stroke width=5.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
@@ -131,9 +131,9 @@ layer at (0,0) size 450x500
               chunk 1 text run 1 at (0.90,7.90) startOffset 0 endOffset 21 width 2.50: "and placed on a path."
         RenderSVGContainer {g} at (0,364) size 281x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(1.50,9.00)}]
           RenderSVGText {text} at (0,-1) size 3x2 contains 1 chunk(s)
-            [filter="blur"] RenderSVGResourceFilter {filter} at (0,-1.60) size 4x2
+            [filter="blur"] LayoutSVGResourceFilter {filter} at (0,-1.60) size 4x2
             RenderSVGInlineText {#text} at (0,0) size 3x1
-              [filter="blur"] RenderSVGResourceFilter {filter} at (0,-1.60) size 4x2
+              [filter="blur"] LayoutSVGResourceFilter {filter} at (0,-1.60) size 4x2
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 2.61: "Shadow"
           RenderSVGText {text} at (0,-1) size 3x2 contains 1 chunk(s)
             RenderSVGInlineText {#text} at (0,0) size 3x1

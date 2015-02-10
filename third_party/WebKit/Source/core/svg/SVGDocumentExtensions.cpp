@@ -57,7 +57,7 @@ void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element)
     m_timeContainers.remove(element);
 }
 
-void SVGDocumentExtensions::addResource(const AtomicString& id, RenderSVGResourceContainer* resource)
+void SVGDocumentExtensions::addResource(const AtomicString& id, LayoutSVGResourceContainer* resource)
 {
     ASSERT(resource);
 
@@ -76,7 +76,7 @@ void SVGDocumentExtensions::removeResource(const AtomicString& id)
     m_resources.remove(id);
 }
 
-RenderSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicString& id) const
+LayoutSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicString& id) const
 {
     if (id.isEmpty())
         return 0;

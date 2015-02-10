@@ -29,13 +29,13 @@
 #include "core/layout/Layer.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/RenderSVGResourceClipper.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
-#include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGText.h"
@@ -300,13 +300,13 @@ void SVGLayoutSupport::intersectPaintInvalidationRectWithResources(const LayoutO
     if (!resources)
         return;
 
-    if (RenderSVGResourceFilter* filter = resources->filter())
+    if (LayoutSVGResourceFilter* filter = resources->filter())
         paintInvalidationRect = filter->resourceBoundingBox(renderer);
 
-    if (RenderSVGResourceClipper* clipper = resources->clipper())
+    if (LayoutSVGResourceClipper* clipper = resources->clipper())
         paintInvalidationRect.intersect(clipper->resourceBoundingBox(renderer));
 
-    if (RenderSVGResourceMasker* masker = resources->masker())
+    if (LayoutSVGResourceMasker* masker = resources->masker())
         paintInvalidationRect.intersect(masker->resourceBoundingBox(renderer));
 }
 
@@ -334,7 +334,7 @@ bool SVGLayoutSupport::pointInClippingArea(LayoutObject* object, const FloatPoin
     if (!resources)
         return true;
 
-    if (RenderSVGResourceClipper* clipper = resources->clipper())
+    if (LayoutSVGResourceClipper* clipper = resources->clipper())
         return clipper->hitTestClipContent(object->objectBoundingBox(), point);
 
     return true;
@@ -396,7 +396,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
     strokeData.setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& renderer, RenderSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
+bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& renderer, LayoutSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
 {
     ASSERT(paintInfo.context == stateSaver.context());
 

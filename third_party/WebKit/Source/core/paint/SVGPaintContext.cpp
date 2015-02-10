@@ -28,12 +28,12 @@
 #include "core/frame/FrameHost.h"
 #include "core/layout/Layer.h"
 #include "core/layout/PaintInfo.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
-#include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "platform/FloatConversion.h"
 
 namespace blink {
@@ -125,7 +125,7 @@ bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
     // resources->clipper() corresponds to the non-prefixed 'clip-path' whereas
     // m_object->style()->clipPath() corresponds to '-webkit-clip-path'.
     // FIXME: We should unify the clip-path and -webkit-clip-path codepaths.
-    if (RenderSVGResourceClipper* clipper = resources ? resources->clipper() : nullptr) {
+    if (LayoutSVGResourceClipper* clipper = resources ? resources->clipper() : nullptr) {
         if (!clipper->applyStatefulResource(m_object, m_paintInfo.context, m_clipperState))
             return false;
         m_clipper = clipper;
@@ -143,7 +143,7 @@ bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
 
 bool SVGPaintContext::applyMaskIfNecessary(SVGResources* resources)
 {
-    if (RenderSVGResourceMasker* masker = resources ? resources->masker() : nullptr) {
+    if (LayoutSVGResourceMasker* masker = resources ? resources->masker() : nullptr) {
         if (!masker->prepareEffect(m_object, m_paintInfo.context))
             return false;
         m_masker = masker;
@@ -156,7 +156,7 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
     if (!resources) {
         if (m_object->style()->svgStyle().hasFilter())
             return false;
-    } else if (RenderSVGResourceFilter* filter = resources->filter()) {
+    } else if (LayoutSVGResourceFilter* filter = resources->filter()) {
         m_filter = filter;
         GraphicsContext* filterContext = filter->prepareEffect(m_object, m_paintInfo.context);
         if (!filterContext)
@@ -180,7 +180,7 @@ bool SVGPaintContext::isIsolationInstalled() const
         return true;
     if (m_masker || m_filter)
         return true;
-    if (m_clipper && m_clipperState == RenderSVGResourceClipper::ClipperAppliedMask)
+    if (m_clipper && m_clipperState == LayoutSVGResourceClipper::ClipperAppliedMask)
         return true;
     return false;
 }

@@ -24,7 +24,7 @@
 #ifndef SVGLayoutSupport_h
 #define SVGLayoutSupport_h
 
-#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 
 namespace blink {
 
@@ -84,7 +84,7 @@ public:
     // Update the GC state (on |paintInfo.context|) for painting |renderer|
     // using |style|. |resourceMode| is used to decide between fill/stroke.
     // Previous state will be saved (if needed) using |stateSaver|.
-    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const LayoutStyle&, LayoutObject&, RenderSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
+    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const LayoutStyle&, LayoutObject&, LayoutSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
 
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(LayoutObject*);

@@ -19,10 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourceGradient_h
-#define RenderSVGResourceGradient_h
+#ifndef LayoutSVGResourceGradient_h
+#define LayoutSVGResourceGradient_h
 
-#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/svg/SVGGradientElement.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Gradient.h"
@@ -38,9 +38,9 @@ public:
     AffineTransform userspaceTransform;
 };
 
-class RenderSVGResourceGradient : public RenderSVGResourcePaintServer {
+class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
 public:
-    explicit RenderSVGResourceGradient(SVGGradientElement*);
+    explicit LayoutSVGResourceGradient(SVGGradientElement*);
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override final;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override final;

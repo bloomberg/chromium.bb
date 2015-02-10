@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
 
 #include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
@@ -40,30 +40,30 @@
 
 namespace blink {
 
-RenderSVGResourceClipper::RenderSVGResourceClipper(SVGClipPathElement* node)
-    : RenderSVGResourceContainer(node)
+LayoutSVGResourceClipper::LayoutSVGResourceClipper(SVGClipPathElement* node)
+    : LayoutSVGResourceContainer(node)
     , m_inClipExpansion(false)
 {
 }
 
-RenderSVGResourceClipper::~RenderSVGResourceClipper()
+LayoutSVGResourceClipper::~LayoutSVGResourceClipper()
 {
 }
 
-void RenderSVGResourceClipper::removeAllClientsFromCache(bool markForInvalidation)
+void LayoutSVGResourceClipper::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_clipContentPicture.clear();
     m_clipBoundaries = FloatRect();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceClipper::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
+void LayoutSVGResourceClipper::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceClipper::applyStatefulResource(LayoutObject* object, GraphicsContext*& context, ClipperState& clipperState)
+bool LayoutSVGResourceClipper::applyStatefulResource(LayoutObject* object, GraphicsContext*& context, ClipperState& clipperState)
 {
     ASSERT(object);
     ASSERT(context);
@@ -73,7 +73,7 @@ bool RenderSVGResourceClipper::applyStatefulResource(LayoutObject* object, Graph
     return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperState);
 }
 
-bool RenderSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, GraphicsContext* context,
+bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, GraphicsContext* context,
     const AffineTransform& animatedLocalTransform, const FloatRect& objectBoundingBox) {
     // If the current clip-path gets clipped itself, we have to fallback to masking.
     if (!style()->svgStyle().clipperResource().isEmpty())
@@ -93,7 +93,7 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
         SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
         const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
-             continue;
+            continue;
         const SVGLayoutStyle& svgStyle = style->svgStyle();
         // Current shape in clip-path gets clipped too. Fallback to masking.
         if (!svgStyle.clipperResource().isEmpty())
@@ -143,7 +143,7 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
     return true;
 }
 
-bool RenderSVGResourceClipper::applyClippingToContext(LayoutObject* target, const FloatRect& targetBoundingBox,
+bool LayoutSVGResourceClipper::applyClippingToContext(LayoutObject* target, const FloatRect& targetBoundingBox,
     const FloatRect& paintInvalidationRect, GraphicsContext* context, ClipperState& clipperState)
 {
     ASSERT(target);
@@ -181,7 +181,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(LayoutObject* target, cons
 
         // clipPath can also be clipped by another clipPath.
         SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
-        RenderSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
+        LayoutSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
         ClipperState clipPathClipperState = ClipperNotApplied;
         if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
             // FIXME: Awkward state micro-management. Ideally, GraphicsContextStateSaver should
@@ -205,7 +205,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(LayoutObject* target, cons
     return true;
 }
 
-void RenderSVGResourceClipper::postApplyStatefulResource(LayoutObject* target, GraphicsContext*& context, ClipperState& clipperState)
+void LayoutSVGResourceClipper::postApplyStatefulResource(LayoutObject* target, GraphicsContext*& context, ClipperState& clipperState)
 {
     switch (clipperState) {
     case ClipperAppliedPath:
@@ -230,7 +230,7 @@ void RenderSVGResourceClipper::postApplyStatefulResource(LayoutObject* target, G
     }
 }
 
-void RenderSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, const FloatRect& targetBoundingBox)
+void LayoutSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, const FloatRect& targetBoundingBox)
 {
     ASSERT(context);
 
@@ -249,7 +249,7 @@ void RenderSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, con
     context->drawPicture(m_clipContentPicture.get());
 }
 
-void RenderSVGResourceClipper::createPicture(GraphicsContext* context)
+void LayoutSVGResourceClipper::createPicture(GraphicsContext* context)
 {
     ASSERT(context);
     ASSERT(frame());
@@ -301,7 +301,7 @@ void RenderSVGResourceClipper::createPicture(GraphicsContext* context)
     m_clipContentPicture = context->endRecording();
 }
 
-void RenderSVGResourceClipper::calculateClipContentPaintInvalidationRect()
+void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()
 {
     // This is a rough heuristic to appraise the clip size and doesn't consider clip on clip.
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
@@ -312,13 +312,13 @@ void RenderSVGResourceClipper::calculateClipContentPaintInvalidationRect()
             continue;
         const LayoutStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
-             continue;
+            continue;
         m_clipBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));
     }
     m_clipBoundaries = toSVGClipPathElement(element())->calculateAnimatedLocalTransform().mapRect(m_clipBoundaries);
 }
 
-bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundingBox, const FloatPoint& nodeAtPoint)
+bool LayoutSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundingBox, const FloatPoint& nodeAtPoint)
 {
     FloatPoint point = nodeAtPoint;
     if (!SVGLayoutSupport::pointInClippingArea(this, point))
@@ -352,7 +352,7 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
     return false;
 }
 
-FloatRect RenderSVGResourceClipper::resourceBoundingBox(const LayoutObject* object)
+FloatRect LayoutSVGResourceClipper::resourceBoundingBox(const LayoutObject* object)
 {
     // Resource was not layouted yet. Give back the boundingBox of the object.
     if (selfNeedsLayout())

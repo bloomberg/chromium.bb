@@ -21,12 +21,12 @@ layer at (0,0) size 800x600
       RenderSVGText {text} at (0,-15) size 73x19 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,0) size 73x19
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 12 width 73.00: "focused text"
-    RenderSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
+    LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
       RenderSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
     RenderSVGImage {image} at (0,0) size 5x5
-      [clipPath="clip"] RenderSVGResourceClipper {clipPath} at (0,0) size 100x100
+      [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 100x100
     RenderSVGImage {image} at (143,393) size 151x151 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(200.00,400.00)}]
-      [clipPath="clip"] RenderSVGResourceClipper {clipPath} at (0,0) size 100x100
+      [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 100x100
     RenderSVGContainer {g} at (303,393) size 151x151 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(360.00,400.00)}]
       RenderSVGImage {image} at (303,393) size 151x151
-        [clipPath="clip"] RenderSVGResourceClipper {clipPath} at (0,0) size 100x100
+        [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 100x100

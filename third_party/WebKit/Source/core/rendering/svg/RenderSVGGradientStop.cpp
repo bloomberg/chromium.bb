@@ -21,7 +21,7 @@
 
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGStopElement.h"
 
@@ -52,7 +52,7 @@ void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const LayoutSty
     if (!renderer)
         return;
 
-    RenderSVGResourceContainer* container = toRenderSVGResourceContainer(renderer);
+    LayoutSVGResourceContainer* container = toLayoutSVGResourceContainer(renderer);
     container->removeAllClientsFromCache();
 }
 

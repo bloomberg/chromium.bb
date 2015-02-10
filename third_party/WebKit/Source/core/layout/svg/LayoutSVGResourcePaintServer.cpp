@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/svg/SVGResources.h"
@@ -48,7 +48,7 @@ SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern)
 {
 }
 
-void SVGPaintServer::apply(GraphicsContext& context, RenderSVGResourceMode resourceMode, float paintAlpha, GraphicsContextStateSaver& stateSaver)
+void SVGPaintServer::apply(GraphicsContext& context, LayoutSVGResourceMode resourceMode, float paintAlpha, GraphicsContextStateSaver& stateSaver)
 {
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
@@ -81,7 +81,7 @@ void SVGPaintServer::prependTransform(const AffineTransform& transform)
         m_gradient->setGradientSpaceTransform(transform * m_gradient->gradientSpaceTransform());
 }
 
-static SVGPaintDescription requestPaint(const LayoutObject& object, const LayoutStyle& style, RenderSVGResourceMode mode)
+static SVGPaintDescription requestPaint(const LayoutObject& object, const LayoutStyle& style, LayoutSVGResourceMode mode)
 {
     // If we have no style at all, ignore it.
     const SVGLayoutStyle& svgStyle = style.svgStyle();
@@ -131,7 +131,7 @@ static SVGPaintDescription requestPaint(const LayoutObject& object, const Layout
         return SVGPaintDescription(color);
     }
 
-    RenderSVGResourcePaintServer* uriResource = 0;
+    LayoutSVGResourcePaintServer* uriResource = 0;
     if (SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&object))
         uriResource = applyToFill ? resources->fill() : resources->stroke();
 
@@ -153,7 +153,7 @@ static SVGPaintDescription requestPaint(const LayoutObject& object, const Layout
     return SVGPaintDescription(uriResource);
 }
 
-SVGPaintServer SVGPaintServer::requestForRenderer(const LayoutObject& renderer, const LayoutStyle& style, RenderSVGResourceMode resourceMode)
+SVGPaintServer SVGPaintServer::requestForRenderer(const LayoutObject& renderer, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
 {
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
@@ -170,21 +170,21 @@ SVGPaintServer SVGPaintServer::requestForRenderer(const LayoutObject& renderer, 
     return invalid();
 }
 
-bool SVGPaintServer::existsForRenderer(const LayoutObject& renderer, const LayoutStyle& style, RenderSVGResourceMode resourceMode)
+bool SVGPaintServer::existsForRenderer(const LayoutObject& renderer, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
 {
     return requestPaint(renderer, style, resourceMode).isValid;
 }
 
-RenderSVGResourcePaintServer::RenderSVGResourcePaintServer(SVGElement* element)
-    : RenderSVGResourceContainer(element)
+LayoutSVGResourcePaintServer::LayoutSVGResourcePaintServer(SVGElement* element)
+    : LayoutSVGResourceContainer(element)
 {
 }
 
-RenderSVGResourcePaintServer::~RenderSVGResourcePaintServer()
+LayoutSVGResourcePaintServer::~LayoutSVGResourcePaintServer()
 {
 }
 
-SVGPaintDescription RenderSVGResourcePaintServer::requestPaintDescription(const LayoutObject& renderer, const LayoutStyle& style, RenderSVGResourceMode resourceMode)
+SVGPaintDescription LayoutSVGResourcePaintServer::requestPaintDescription(const LayoutObject& renderer, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
 {
     return requestPaint(renderer, style, resourceMode);
 }

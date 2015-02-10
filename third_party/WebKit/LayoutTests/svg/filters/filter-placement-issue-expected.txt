@@ -3,27 +3,27 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (86,0) size 199x432
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGResourceFilter {filter} [id="shadow1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+      LayoutSVGResourceFilter {filter} [id="shadow1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feComposite operation="OVER"]
           [SourceGraphic]
           [feOffset dx="0.00" dy="0.00"]
             [SourceGraphic]
-      RenderSVGResourceFilter {filter} [id="shadow2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+      LayoutSVGResourceFilter {filter} [id="shadow2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feComposite operation="OVER"]
           [SourceGraphic]
           [feOffset dx="0.00" dy="0.00"]
             [SourceGraphic]
-      RenderSVGResourceFilter {filter} [id="shadow3"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+      LayoutSVGResourceFilter {filter} [id="shadow3"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feComposite operation="OVER"]
           [SourceGraphic]
           [feOffset dx="0.00" dy="0.00"]
             [SourceGraphic]
-      RenderSVGResourceFilter {filter} [id="shadow4"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+      LayoutSVGResourceFilter {filter} [id="shadow4"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feComposite operation="OVER"]
           [SourceGraphic]
           [feOffset dx="0.00" dy="0.00"]
             [SourceGraphic]
-      RenderSVGResourceFilter {filter} [id="diff"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+      LayoutSVGResourceFilter {filter} [id="diff"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feComposite operation="ARITHMETIC" k1="0.00" k2="-1.00" k3="1.00" k4="0.00"]
           [feOffset dx="0.00" dy="300.00"]
             [SourceGraphic]
@@ -55,9 +55,9 @@ layer at (0,0) size 800x600
         RenderSVGRect {rect} at (1,1) size 169x94 [stroke={[type=SOLID] [color=#008000] [stroke width=4.00]}] [x=3.00] [y=3.00] [width=165.00] [height=90.00]
     RenderSVGContainer {g} at (86,0) size 199x432
       RenderSVGContainer {g} at (86,0) size 199x432
-        [filter="diff"] RenderSVGResourceFilter {filter} at (86.50,-36) size 198x468
+        [filter="diff"] LayoutSVGResourceFilter {filter} at (86.50,-36) size 198x468
         RenderSVGContainer {g} at (103,3) size 198x108 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
-          [filter="shadow1"] RenderSVGResourceFilter {filter} at (3,3) size 198x108
+          [filter="shadow1"] LayoutSVGResourceFilter {filter} at (3,3) size 198x108
           RenderSVGContainer {use} at (101,1) size 169x94
             RenderSVGContainer {g} at (101,1) size 169x94
               RenderSVGRect {rect} at (115,20) size 9x31 [fill={[type=SOLID] [color=#FF0000]}] [x=15.10] [y=20.10] [width=8.00] [height=30.00]
@@ -82,7 +82,7 @@ layer at (0,0) size 800x600
               RenderSVGRect {rect} at (251,56) size 8x30 [fill={[type=SOLID] [color=#FF0000]}] [x=151.00] [y=56.00] [width=8.00] [height=30.00]
               RenderSVGRect {rect} at (101,1) size 169x94 [stroke={[type=SOLID] [color=#008000] [stroke width=4.00]}] [x=3.00] [y=3.00] [width=165.00] [height=90.00]
         RenderSVGContainer {g} at (103,103) size 159x85 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,100.00)}]
-          [filter="shadow2"] RenderSVGResourceFilter {filter} at (3,3) size 158.40x84.60
+          [filter="shadow2"] LayoutSVGResourceFilter {filter} at (3,3) size 158.40x84.60
           RenderSVGContainer {use} at (101,101) size 169x94
             RenderSVGContainer {g} at (101,101) size 169x94
               RenderSVGRect {rect} at (115,120) size 9x31 [fill={[type=SOLID] [color=#FF0000]}] [x=15.10] [y=20.10] [width=8.00] [height=30.00]
@@ -107,7 +107,7 @@ layer at (0,0) size 800x600
               RenderSVGRect {rect} at (251,156) size 8x30 [fill={[type=SOLID] [color=#FF0000]}] [x=151.00] [y=56.00] [width=8.00] [height=30.00]
               RenderSVGRect {rect} at (101,101) size 169x94 [stroke={[type=SOLID] [color=#008000] [stroke width=4.00]}] [x=3.00] [y=3.00] [width=165.00] [height=90.00]
         RenderSVGContainer {g} at (109,206) size 156x86 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,200.00)}]
-          [filter="shadow3"] RenderSVGResourceFilter {filter} at (9.60,6.60) size 155.10x84.60
+          [filter="shadow3"] LayoutSVGResourceFilter {filter} at (9.60,6.60) size 155.10x84.60
           RenderSVGContainer {use} at (101,201) size 169x94
             RenderSVGContainer {g} at (101,201) size 169x94
               RenderSVGRect {rect} at (115,220) size 9x31 [fill={[type=SOLID] [color=#FF0000]}] [x=15.10] [y=20.10] [width=8.00] [height=30.00]
@@ -132,7 +132,7 @@ layer at (0,0) size 800x600
               RenderSVGRect {rect} at (251,256) size 8x30 [fill={[type=SOLID] [color=#FF0000]}] [x=151.00] [y=56.00] [width=8.00] [height=30.00]
               RenderSVGRect {rect} at (101,201) size 169x94 [stroke={[type=SOLID] [color=#008000] [stroke width=4.00]}] [x=3.00] [y=3.00] [width=165.00] [height=90.00]
         RenderSVGContainer {g} at (109,306) size 199x109 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,300.00)}]
-          [filter="shadow4"] RenderSVGResourceFilter {filter} at (9.60,6.60) size 198x108
+          [filter="shadow4"] LayoutSVGResourceFilter {filter} at (9.60,6.60) size 198x108
           RenderSVGContainer {use} at (101,301) size 169x94
             RenderSVGContainer {g} at (101,301) size 169x94
               RenderSVGRect {rect} at (115,320) size 9x31 [fill={[type=SOLID] [color=#FF0000]}] [x=15.10] [y=20.10] [width=8.00] [height=30.00]

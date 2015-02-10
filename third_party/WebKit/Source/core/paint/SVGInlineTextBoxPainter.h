@@ -6,7 +6,7 @@
 #define SVGInlineTextBoxPainter_h
 
 #include "core/layout/style/LayoutStyleConstants.h"
-#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 
 namespace blink {
 
@@ -32,8 +32,8 @@ private:
     bool shouldPaintSelection() const;
     void paintTextFragments(const PaintInfo&, LayoutObject&);
     void paintDecoration(const PaintInfo&, TextDecoration, const SVGTextFragment&);
-    void paintTextWithShadows(const PaintInfo&, const LayoutStyle&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, RenderSVGResourceMode);
-    void paintText(const PaintInfo&, const LayoutStyle&, const LayoutStyle& selectionStyle, const SVGTextFragment&, RenderSVGResourceMode, bool shouldPaintSelection);
+    void paintTextWithShadows(const PaintInfo&, const LayoutStyle&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, LayoutSVGResourceMode);
+    void paintText(const PaintInfo&, const LayoutStyle&, const LayoutStyle& selectionStyle, const SVGTextFragment&, LayoutSVGResourceMode, bool shouldPaintSelection);
 
     SVGInlineTextBox& m_svgInlineTextBox;
 };

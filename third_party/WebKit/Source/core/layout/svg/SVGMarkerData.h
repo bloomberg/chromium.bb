@@ -45,7 +45,7 @@ struct MarkerPosition {
     float angle;
 };
 
-class RenderSVGResourceMarker;
+class LayoutSVGResourceMarker;
 
 class SVGMarkerData {
 public:
@@ -79,7 +79,7 @@ public:
         m_positions.append(MarkerPosition(EndMarker, m_origin, currentAngle(EndMarker)));
     }
 
-    static inline RenderSVGResourceMarker* markerForType(const SVGMarkerType& type, RenderSVGResourceMarker* markerStart, RenderSVGResourceMarker* markerMid, RenderSVGResourceMarker* markerEnd)
+    static inline LayoutSVGResourceMarker* markerForType(const SVGMarkerType& type, LayoutSVGResourceMarker* markerStart, LayoutSVGResourceMarker* markerMid, LayoutSVGResourceMarker* markerEnd)
     {
         switch (type) {
         case StartMarker:

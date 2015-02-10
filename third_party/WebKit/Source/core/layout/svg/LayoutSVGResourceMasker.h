@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourceMasker_h
-#define RenderSVGResourceMasker_h
+#ifndef LayoutSVGResourceMasker_h
+#define LayoutSVGResourceMasker_h
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGMaskElement.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/geometry/FloatRect.h"
@@ -36,12 +36,12 @@ namespace blink {
 
 class GraphicsContext;
 
-class RenderSVGResourceMasker final : public RenderSVGResourceContainer {
+class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
 public:
-    explicit RenderSVGResourceMasker(SVGMaskElement*);
-    virtual ~RenderSVGResourceMasker();
+    explicit LayoutSVGResourceMasker(SVGMaskElement*);
+    virtual ~LayoutSVGResourceMasker();
 
-    virtual const char* renderName() const override { return "RenderSVGResourceMasker"; }
+    virtual const char* renderName() const override { return "LayoutSVGResourceMasker"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
@@ -54,8 +54,8 @@ public:
     SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(element())->maskUnits()->currentValue()->enumValue(); }
     SVGUnitTypes::SVGUnitType maskContentUnits() const { return toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue(); }
 
-    static const RenderSVGResourceType s_resourceType = MaskerResourceType;
-    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
+    static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
+    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
     void calculateMaskContentPaintInvalidationRect();
@@ -66,7 +66,7 @@ private:
     FloatRect m_maskContentBoundaries;
 };
 
-DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(RenderSVGResourceMasker, MaskerResourceType);
+DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMasker, MaskerResourceType);
 
 }
 

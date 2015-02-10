@@ -29,12 +29,12 @@
 namespace blink {
 
 class LayoutObject;
-class RenderSVGResourceClipper;
-class RenderSVGResourceContainer;
-class RenderSVGResourceFilter;
-class RenderSVGResourceMarker;
-class RenderSVGResourceMasker;
-class RenderSVGResourcePaintServer;
+class LayoutSVGResourceClipper;
+class LayoutSVGResourceContainer;
+class LayoutSVGResourceFilter;
+class LayoutSVGResourceMarker;
+class LayoutSVGResourceMasker;
+class LayoutSVGResourcePaintServer;
 class SVGElement;
 class SVGLayoutStyle;
 
@@ -50,13 +50,13 @@ public:
     static bool supportsMarkers(const SVGElement&);
 
     // Ordinary resources
-    RenderSVGResourceClipper* clipper() const { return m_clipperFilterMaskerData ? m_clipperFilterMaskerData->clipper : 0; }
-    RenderSVGResourceMarker* markerStart() const { return m_markerData ? m_markerData->markerStart : 0; }
-    RenderSVGResourceMarker* markerMid() const { return m_markerData ? m_markerData->markerMid : 0; }
-    RenderSVGResourceMarker* markerEnd() const { return m_markerData ? m_markerData->markerEnd : 0; }
-    RenderSVGResourceMasker* masker() const { return m_clipperFilterMaskerData ? m_clipperFilterMaskerData->masker : 0; }
+    LayoutSVGResourceClipper* clipper() const { return m_clipperFilterMaskerData ? m_clipperFilterMaskerData->clipper : 0; }
+    LayoutSVGResourceMarker* markerStart() const { return m_markerData ? m_markerData->markerStart : 0; }
+    LayoutSVGResourceMarker* markerMid() const { return m_markerData ? m_markerData->markerMid : 0; }
+    LayoutSVGResourceMarker* markerEnd() const { return m_markerData ? m_markerData->markerEnd : 0; }
+    LayoutSVGResourceMasker* masker() const { return m_clipperFilterMaskerData ? m_clipperFilterMaskerData->masker : 0; }
 
-    RenderSVGResourceFilter* filter() const
+    LayoutSVGResourceFilter* filter() const
     {
         if (m_clipperFilterMaskerData)
             return m_clipperFilterMaskerData->filter;
@@ -64,17 +64,17 @@ public:
     }
 
     // Paint servers
-    RenderSVGResourcePaintServer* fill() const { return m_fillStrokeData ? m_fillStrokeData->fill : 0; }
-    RenderSVGResourcePaintServer* stroke() const { return m_fillStrokeData ? m_fillStrokeData->stroke : 0; }
+    LayoutSVGResourcePaintServer* fill() const { return m_fillStrokeData ? m_fillStrokeData->fill : 0; }
+    LayoutSVGResourcePaintServer* stroke() const { return m_fillStrokeData ? m_fillStrokeData->stroke : 0; }
 
     // Chainable resources - linked through xlink:href
-    RenderSVGResourceContainer* linkedResource() const { return m_linkedResource; }
+    LayoutSVGResourceContainer* linkedResource() const { return m_linkedResource; }
 
-    void buildSetOfResources(HashSet<RenderSVGResourceContainer*>&);
+    void buildSetOfResources(HashSet<LayoutSVGResourceContainer*>&);
 
     // Methods operating on all cached resources
     void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) const;
-    void resourceDestroyed(RenderSVGResourceContainer*);
+    void resourceDestroyed(LayoutSVGResourceContainer*);
 
 #ifndef NDEBUG
     void dump(const LayoutObject*);
@@ -96,15 +96,15 @@ private:
     void resetStroke();
     void resetLinkedResource();
 
-    bool setClipper(RenderSVGResourceClipper*);
-    bool setFilter(RenderSVGResourceFilter*);
-    bool setMarkerStart(RenderSVGResourceMarker*);
-    bool setMarkerMid(RenderSVGResourceMarker*);
-    bool setMarkerEnd(RenderSVGResourceMarker*);
-    bool setMasker(RenderSVGResourceMasker*);
-    bool setFill(RenderSVGResourcePaintServer*);
-    bool setStroke(RenderSVGResourcePaintServer*);
-    bool setLinkedResource(RenderSVGResourceContainer*);
+    bool setClipper(LayoutSVGResourceClipper*);
+    bool setFilter(LayoutSVGResourceFilter*);
+    bool setMarkerStart(LayoutSVGResourceMarker*);
+    bool setMarkerMid(LayoutSVGResourceMarker*);
+    bool setMarkerEnd(LayoutSVGResourceMarker*);
+    bool setMasker(LayoutSVGResourceMasker*);
+    bool setFill(LayoutSVGResourcePaintServer*);
+    bool setStroke(LayoutSVGResourcePaintServer*);
+    bool setLinkedResource(LayoutSVGResourceContainer*);
 
     // From SVG 1.1 2nd Edition
     // clipper: 'container elements' and 'graphics elements'
@@ -126,9 +126,9 @@ private:
             return adoptPtr(new ClipperFilterMaskerData);
         }
 
-        RenderSVGResourceClipper* clipper;
-        RenderSVGResourceFilter* filter;
-        RenderSVGResourceMasker* masker;
+        LayoutSVGResourceClipper* clipper;
+        LayoutSVGResourceFilter* filter;
+        LayoutSVGResourceMasker* masker;
     };
 
     // From SVG 1.1 2nd Edition
@@ -148,9 +148,9 @@ private:
             return adoptPtr(new MarkerData);
         }
 
-        RenderSVGResourceMarker* markerStart;
-        RenderSVGResourceMarker* markerMid;
-        RenderSVGResourceMarker* markerEnd;
+        LayoutSVGResourceMarker* markerStart;
+        LayoutSVGResourceMarker* markerMid;
+        LayoutSVGResourceMarker* markerEnd;
     };
 
     // From SVG 1.1 2nd Edition
@@ -171,14 +171,14 @@ private:
             return adoptPtr(new FillStrokeData);
         }
 
-        RenderSVGResourcePaintServer* fill;
-        RenderSVGResourcePaintServer* stroke;
+        LayoutSVGResourcePaintServer* fill;
+        LayoutSVGResourcePaintServer* stroke;
     };
 
     OwnPtr<ClipperFilterMaskerData> m_clipperFilterMaskerData;
     OwnPtr<MarkerData> m_markerData;
     OwnPtr<FillStrokeData> m_fillStrokeData;
-    RenderSVGResourceContainer* m_linkedResource;
+    LayoutSVGResourceContainer* m_linkedResource;
 };
 
 }

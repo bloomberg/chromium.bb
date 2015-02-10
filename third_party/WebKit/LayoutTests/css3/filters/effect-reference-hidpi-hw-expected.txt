@@ -5,11 +5,11 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderSVGRoot {svg} at (8,8) size 0x0
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-          RenderSVGResourceFilter {filter} [id="displacement"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="displacement"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feDisplacementMap scale="10.00" xChannelSelector="RED" yChannelSelector="GREEN"]
               [SourceGraphic]
               [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="turbulence"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="turbulence"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0

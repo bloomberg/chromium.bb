@@ -34,8 +34,8 @@
 #include "core/fetch/DocumentResourceReference.h"
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/Layer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
@@ -134,7 +134,7 @@ void LayerFilterInfo::updateReferenceFilterClients(const FilterOperations& opera
             if (!isSVGFilterElement(filter))
                 continue;
             if (filter->renderer())
-                toRenderSVGResourceContainer(filter->renderer())->addClientLayer(m_layer);
+                toLayoutSVGResourceContainer(filter->renderer())->addClientLayer(m_layer);
             else
                 toSVGFilterElement(filter)->addClient(m_layer->renderer()->node());
             m_internalSVGReferences.append(filter);
@@ -150,7 +150,7 @@ void LayerFilterInfo::removeReferenceFilterClients()
     for (size_t i = 0; i < m_internalSVGReferences.size(); ++i) {
         Element* filter = m_internalSVGReferences.at(i).get();
         if (filter->renderer())
-            toRenderSVGResourceContainer(filter->renderer())->removeClientLayer(m_layer);
+            toLayoutSVGResourceContainer(filter->renderer())->removeClientLayer(m_layer);
         else
             toSVGFilterElement(filter)->removeClient(m_layer->renderer()->node());
     }

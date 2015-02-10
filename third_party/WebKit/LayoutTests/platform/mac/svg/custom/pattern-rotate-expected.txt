@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (10,19) size 296x214
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGResourcePattern {pattern} [id="simpledots"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]
+      LayoutSVGResourcePattern {pattern} [id="simpledots"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]
         RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.25] [cy=0.25] [r=0.15]
         RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#008000]}] [cx=0.75] [cy=0.25] [r=0.15]
         RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#0000FF]}] [cx=0.25] [cy=0.75] [r=0.15]

@@ -30,7 +30,7 @@ namespace blink {
 
 class LayoutObject;
 class LayoutStyle;
-class RenderSVGResourceContainer;
+class LayoutSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCache {
@@ -47,7 +47,7 @@ public:
     // Called from all SVG renderers removeChild() methods.
     static void clientWillBeRemovedFromTree(LayoutObject*);
 
-    // Called from all SVG renderers destroy() methods - except for RenderSVGResourceContainer.
+    // Called from all SVG renderers destroy() methods - except for LayoutSVGResourceContainer.
     static void clientDestroyed(LayoutObject*);
 
     // Called from all SVG renderers layout() methods.
@@ -56,8 +56,8 @@ public:
     // Called from all SVG renderers styleDidChange() methods.
     static void clientStyleChanged(LayoutObject*, StyleDifference, const LayoutStyle& newStyle);
 
-    // Called from RenderSVGResourceContainer::willBeDestroyed().
-    static void resourceDestroyed(RenderSVGResourceContainer*);
+    // Called from LayoutSVGResourceContainer::willBeDestroyed().
+    static void resourceDestroyed(LayoutSVGResourceContainer*);
 
 private:
     void addResourcesFromLayoutObject(LayoutObject*, const LayoutStyle&);

@@ -40,7 +40,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElementRareData.h"
@@ -421,7 +421,7 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
     LayoutObject* renderer = this->renderer();
     if (renderer && selfHasRelativeLengths()) {
         if (renderer->isSVGResourceContainer())
-            toRenderSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
+            toLayoutSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
         else
             renderer->setNeedsLayoutAndFullPaintInvalidation(MarkContainingBlockChain, layoutScope);
     }
@@ -875,7 +875,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
         LayoutObject* object = renderer();
         // Notify resources about id changes, this is important as we cache resources by id in SVGDocumentExtensions
         if (object && object->isSVGResourceContainer())
-            toRenderSVGResourceContainer(object)->idChanged();
+            toLayoutSVGResourceContainer(object)->idChanged();
         if (inDocument())
             buildPendingResourcesIfNeeded();
         invalidateInstances();
@@ -959,7 +959,7 @@ bool SVGElement::hasFocusEventListeners() const
 void SVGElement::markForLayoutAndParentResourceInvalidation(LayoutObject* renderer)
 {
     ASSERT(renderer);
-    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, true);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, true);
 }
 
 void SVGElement::invalidateInstances()

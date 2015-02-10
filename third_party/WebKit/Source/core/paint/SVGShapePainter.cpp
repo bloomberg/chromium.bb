@@ -6,6 +6,7 @@
 #include "core/paint/SVGShapePainter.h"
 
 #include "core/layout/PaintInfo.h"
+#include "core/layout/svg/LayoutSVGResourceMarker.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGMarkerData.h"
 #include "core/layout/svg/SVGResources.h"
@@ -17,7 +18,6 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/svg/RenderSVGPath.h"
-#include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -159,21 +159,21 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo)
     if (!resources)
         return;
 
-    RenderSVGResourceMarker* markerStart = resources->markerStart();
-    RenderSVGResourceMarker* markerMid = resources->markerMid();
-    RenderSVGResourceMarker* markerEnd = resources->markerEnd();
+    LayoutSVGResourceMarker* markerStart = resources->markerStart();
+    LayoutSVGResourceMarker* markerMid = resources->markerMid();
+    LayoutSVGResourceMarker* markerEnd = resources->markerEnd();
     if (!markerStart && !markerMid && !markerEnd)
         return;
 
     float strokeWidth = m_renderSVGShape.strokeWidth();
     unsigned size = markerPositions->size();
     for (unsigned i = 0; i < size; ++i) {
-        if (RenderSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd))
+        if (LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd))
             paintMarker(paintInfo, *marker, (*markerPositions)[i], strokeWidth);
     }
 }
 
-void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, RenderSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
+void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
 {
     // An empty viewBox disables rendering.
     SVGMarkerElement* markerElement = toSVGMarkerElement(marker.element());

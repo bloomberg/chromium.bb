@@ -26,7 +26,7 @@
 namespace blink {
 
 class LayoutObject;
-class RenderSVGResourceContainer;
+class LayoutSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCycleSolver {
@@ -37,11 +37,11 @@ public:
 
     void resolveCycles();
 
-    typedef HashSet<RenderSVGResourceContainer*> ResourceSet;
+    typedef HashSet<LayoutSVGResourceContainer*> ResourceSet;
 
 private:
-    bool resourceContainsCycles(RenderSVGResourceContainer*);
-    void breakCycle(RenderSVGResourceContainer*);
+    bool resourceContainsCycles(LayoutSVGResourceContainer*);
+    void breakCycle(LayoutSVGResourceContainer*);
 
     LayoutObject* m_renderer;
     SVGResources* m_resources;

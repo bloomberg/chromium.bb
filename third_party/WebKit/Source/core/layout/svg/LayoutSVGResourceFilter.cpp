@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
 
 #include "core/dom/ElementTraversal.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
@@ -42,33 +42,33 @@ void FilterData::trace(Visitor* visitor)
 #endif
 }
 
-RenderSVGResourceFilter::RenderSVGResourceFilter(SVGFilterElement* node)
-    : RenderSVGResourceContainer(node)
+LayoutSVGResourceFilter::LayoutSVGResourceFilter(SVGFilterElement* node)
+    : LayoutSVGResourceContainer(node)
 {
 }
 
-RenderSVGResourceFilter::~RenderSVGResourceFilter()
+LayoutSVGResourceFilter::~LayoutSVGResourceFilter()
 {
 }
 
-void RenderSVGResourceFilter::destroy()
+void LayoutSVGResourceFilter::destroy()
 {
     m_filter.clear();
-    RenderSVGResourceContainer::destroy();
+    LayoutSVGResourceContainer::destroy();
 }
 
-bool RenderSVGResourceFilter::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGResourceFilter::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isSVGResourceFilterPrimitive();
 }
 
-void RenderSVGResourceFilter::removeAllClientsFromCache(bool markForInvalidation)
+void LayoutSVGResourceFilter::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_filter.clear();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceFilter::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
+void LayoutSVGResourceFilter::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
 
@@ -77,7 +77,7 @@ void RenderSVGResourceFilter::removeClientFromCache(LayoutObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-PassRefPtrWillBeRawPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter* filter)
+PassRefPtrWillBeRawPtr<SVGFilterBuilder> LayoutSVGResourceFilter::buildPrimitives(SVGFilter* filter)
 {
     SVGFilterElement* filterElement = toSVGFilterElement(element());
     FloatRect targetBoundingBox = filter->targetBoundingBox();
@@ -205,7 +205,7 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-GraphicsContext* RenderSVGResourceFilter::prepareEffect(LayoutObject* object, GraphicsContext* context)
+GraphicsContext* LayoutSVGResourceFilter::prepareEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -251,7 +251,7 @@ GraphicsContext* RenderSVGResourceFilter::prepareEffect(LayoutObject* object, Gr
     return beginRecordingContent(context, data);
 }
 
-void RenderSVGResourceFilter::finishEffect(LayoutObject* object, GraphicsContext* context)
+void LayoutSVGResourceFilter::finishEffect(LayoutObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -277,7 +277,7 @@ void RenderSVGResourceFilter::finishEffect(LayoutObject* object, GraphicsContext
         paintFilteredContent(context, filterData, toSVGFilterElement(element()));
 }
 
-FloatRect RenderSVGResourceFilter::resourceBoundingBox(const LayoutObject* object)
+FloatRect LayoutSVGResourceFilter::resourceBoundingBox(const LayoutObject* object)
 {
     if (SVGFilterElement* element = toSVGFilterElement(this->element()))
         return SVGLengthContext::resolveRectangle<SVGFilterElement>(element, element->filterUnits()->currentValue()->enumValue(), object->objectBoundingBox());
@@ -285,7 +285,7 @@ FloatRect RenderSVGResourceFilter::resourceBoundingBox(const LayoutObject* objec
     return FloatRect();
 }
 
-void RenderSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, const QualifiedName& attribute)
+void LayoutSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, const QualifiedName& attribute)
 {
     FilterMap::iterator it = m_filter.begin();
     FilterMap::iterator end = m_filter.end();

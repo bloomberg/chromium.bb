@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (0,0) size 800x600
       RenderSVGRoot {svg} at (0,0) size 200x100
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-          RenderSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 1.00 1.00 0.00 0.00 0.00 1.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
               [SourceGraphic]
         RenderSVGForeignObject {foreignObject} at (0,0) size 200x100

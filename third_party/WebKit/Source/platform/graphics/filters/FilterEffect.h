@@ -115,7 +115,7 @@ public:
 
     virtual TextStream& externalRepresentation(TextStream&, int indention = 0) const;
 
-    // The following functions are SVG specific and will move to RenderSVGResourceFilterPrimitive.
+    // The following functions are SVG specific and will move to LayoutSVGResourceFilterPrimitive.
     // See bug https://bugs.webkit.org/show_bug.cgi?id=45614.
     bool hasX() const { return m_hasX; }
     void setHasX(bool value) { m_hasX = value; }
@@ -180,11 +180,11 @@ private:
     FloatRect m_maxEffectRect;
     RawPtrWillBeMember<Filter> m_filter;
 
-    // The following member variables are SVG specific and will move to RenderSVGResourceFilterPrimitive.
+    // The following member variables are SVG specific and will move to LayoutSVGResourceFilterPrimitive.
     // See bug https://bugs.webkit.org/show_bug.cgi?id=45614.
 
     // The subregion of a filter primitive according to the SVG Filter specification in local coordinates.
-    // This is SVG specific and needs to move to RenderSVGResourceFilterPrimitive.
+    // This is SVG specific and needs to move to LayoutSVGResourceFilterPrimitive.
     FloatRect m_filterPrimitiveSubregion;
 
     // x, y, width and height of the actual SVGFE*Element. Is needed to determine the subregion of the

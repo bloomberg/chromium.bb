@@ -3,10 +3,10 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGContainer {g} at (19,9) size 442x281
-      RenderSVGResourceLinearGradient {linearGradient} [id="defs1"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
-      RenderSVGResourceLinearGradient {linearGradient} [id="defs2"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="defs1"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="defs2"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
         RenderSVGGradientStop {stop} [offset=1.00] [color=#000000]
-      RenderSVGResourceLinearGradient {linearGradient} [id="defs3"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="defs3"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
         RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFF00]
         RenderSVGGradientStop {stop} [offset=0.25] [color=#FF0000]
         RenderSVGGradientStop {stop} [offset=0.50] [color=#008000]

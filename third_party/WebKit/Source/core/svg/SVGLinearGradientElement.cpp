@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/svg/SVGLinearGradientElement.h"
 
-#include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
+#include "core/layout/svg/LayoutSVGResourceLinearGradient.h"
 #include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/SVGLength.h"
 
@@ -85,14 +85,14 @@ void SVGLinearGradientElement::svgAttributeChanged(const QualifiedName& attrName
 
     updateRelativeLengthsInformation();
 
-    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
 
 LayoutObject* SVGLinearGradientElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGResourceLinearGradient(this);
+    return new LayoutSVGResourceLinearGradient(this);
 }
 
 static void setGradientAttributes(SVGGradientElement* element, LinearGradientAttributes& attributes, bool isLinear = true)

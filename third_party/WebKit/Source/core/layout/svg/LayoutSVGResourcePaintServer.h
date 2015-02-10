@@ -17,17 +17,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourcePaintServer_h
-#define RenderSVGResourcePaintServer_h
+#ifndef LayoutSVGResourcePaintServer_h
+#define LayoutSVGResourcePaintServer_h
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/Pattern.h"
 
 namespace blink {
 
-enum RenderSVGResourceMode {
+enum LayoutSVGResourceMode {
     ApplyToFillMode,
     ApplyToStrokeMode,
 };
@@ -35,7 +35,7 @@ enum RenderSVGResourceMode {
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class LayoutObject;
-class RenderSVGResourcePaintServer;
+class LayoutSVGResourcePaintServer;
 class LayoutStyle;
 
 class SVGPaintServer {
@@ -44,10 +44,10 @@ public:
     explicit SVGPaintServer(PassRefPtr<Gradient>);
     explicit SVGPaintServer(PassRefPtr<Pattern>);
 
-    static SVGPaintServer requestForRenderer(const LayoutObject&, const LayoutStyle&, RenderSVGResourceMode);
-    static bool existsForRenderer(const LayoutObject&, const LayoutStyle&, RenderSVGResourceMode);
+    static SVGPaintServer requestForRenderer(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
+    static bool existsForRenderer(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
 
-    void apply(GraphicsContext&, RenderSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
+    void apply(GraphicsContext&, LayoutSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
 
     static SVGPaintServer invalid() { return SVGPaintServer(Color(Color::transparent)); }
     bool isValid() const { return m_color != Color::transparent; }
@@ -65,27 +65,27 @@ private:
 struct SVGPaintDescription {
     SVGPaintDescription() : resource(nullptr), isValid(false), hasFallback(false) { }
     SVGPaintDescription(Color color) : resource(nullptr), color(color), isValid(true), hasFallback(false) { }
-    SVGPaintDescription(RenderSVGResourcePaintServer* resource) : resource(resource), isValid(true), hasFallback(false) { ASSERT(resource); }
-    SVGPaintDescription(RenderSVGResourcePaintServer* resource, Color fallbackColor) : resource(resource), color(fallbackColor), isValid(true), hasFallback(true) { ASSERT(resource); }
+    SVGPaintDescription(LayoutSVGResourcePaintServer* resource) : resource(resource), isValid(true), hasFallback(false) { ASSERT(resource); }
+    SVGPaintDescription(LayoutSVGResourcePaintServer* resource, Color fallbackColor) : resource(resource), color(fallbackColor), isValid(true), hasFallback(true) { ASSERT(resource); }
 
-    RenderSVGResourcePaintServer* resource;
+    LayoutSVGResourcePaintServer* resource;
     Color color;
     bool isValid;
     bool hasFallback;
 };
 
-class RenderSVGResourcePaintServer : public RenderSVGResourceContainer {
+class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
 public:
-    RenderSVGResourcePaintServer(SVGElement*);
-    virtual ~RenderSVGResourcePaintServer();
+    LayoutSVGResourcePaintServer(SVGElement*);
+    virtual ~LayoutSVGResourcePaintServer();
 
     virtual SVGPaintServer preparePaintServer(const LayoutObject&) = 0;
 
     // Helper utilities used in to access the underlying resources for DRT.
-    static SVGPaintDescription requestPaintDescription(const LayoutObject&, const LayoutStyle&, RenderSVGResourceMode);
+    static SVGPaintDescription requestPaintDescription(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
 };
 
-DEFINE_TYPE_CASTS(RenderSVGResourcePaintServer, RenderSVGResourceContainer, resource, resource->isSVGPaintServer(), resource.isSVGPaintServer());
+DEFINE_TYPE_CASTS(LayoutSVGResourcePaintServer, LayoutSVGResourceContainer, resource, resource->isSVGPaintServer(), resource.isSVGPaintServer());
 
 }
 

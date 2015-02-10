@@ -29,10 +29,10 @@
 
 #include "core/rendering/svg/RenderSVGPath.h"
 
+#include "core/layout/svg/LayoutSVGResourceMarker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/SVGSubpathData.h"
-#include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/svg/SVGGraphicsElement.h"
 
 namespace blink {
@@ -124,15 +124,15 @@ FloatRect RenderSVGPath::markerRect(float strokeWidth) const
     SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
     ASSERT(resources);
 
-    RenderSVGResourceMarker* markerStart = resources->markerStart();
-    RenderSVGResourceMarker* markerMid = resources->markerMid();
-    RenderSVGResourceMarker* markerEnd = resources->markerEnd();
+    LayoutSVGResourceMarker* markerStart = resources->markerStart();
+    LayoutSVGResourceMarker* markerMid = resources->markerMid();
+    LayoutSVGResourceMarker* markerEnd = resources->markerEnd();
     ASSERT(markerStart || markerMid || markerEnd);
 
     FloatRect boundaries;
     unsigned size = m_markerPositions.size();
     for (unsigned i = 0; i < size; ++i) {
-        if (RenderSVGResourceMarker* marker = SVGMarkerData::markerForType(m_markerPositions[i].type, markerStart, markerMid, markerEnd))
+        if (LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType(m_markerPositions[i].type, markerStart, markerMid, markerEnd))
             boundaries.unite(marker->markerBoundaries(marker->markerTransformation(m_markerPositions[i].origin, m_markerPositions[i].angle, strokeWidth)));
     }
     return boundaries;
@@ -163,7 +163,7 @@ void RenderSVGPath::processMarkerPositions()
     SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
     ASSERT(resources);
 
-    RenderSVGResourceMarker* markerStart = resources->markerStart();
+    LayoutSVGResourceMarker* markerStart = resources->markerStart();
 
     SVGMarkerData markerData(m_markerPositions, markerStart ? markerStart->orientType() == SVGMarkerOrientAutoStartReverse : false);
     path().apply(&markerData, SVGMarkerData::updateFromPathElement);

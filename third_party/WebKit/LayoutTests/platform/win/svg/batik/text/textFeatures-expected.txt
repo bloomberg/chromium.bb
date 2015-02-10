@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 450x500
   RenderSVGRoot {svg} at (0,0) size 450x498
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGResourceFilter {filter} [id="blur"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
+      LayoutSVGResourceFilter {filter} [id="blur"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
         [feGaussianBlur stdDeviation="2.00, 2.00"]
           [SourceGraphic]
     RenderSVGContainer {g} at (45,36) size 405x453
@@ -146,9 +146,9 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (45.00,475.00) startOffset 0 endOffset 25 width 145.00: "filtered and transformed."
         RenderSVGContainer {g} at (171,389) size 279x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,475.00)}]
           RenderSVGText {text} at (0,-36) size 129x45 contains 1 chunk(s)
-            [filter="blur"] RenderSVGResourceFilter {filter} at (0,-80) size 200x100
+            [filter="blur"] LayoutSVGResourceFilter {filter} at (0,-80) size 200x100
             RenderSVGInlineText {#text} at (0,0) size 129x44
-              [filter="blur"] RenderSVGResourceFilter {filter} at (0,-80) size 200x100
+              [filter="blur"] LayoutSVGResourceFilter {filter} at (0,-80) size 200x100
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 128.88: "Shadow"
           RenderSVGText {text} at (0,-36) size 129x45 contains 1 chunk(s)
             RenderSVGInlineText {#text} at (0,0) size 129x45

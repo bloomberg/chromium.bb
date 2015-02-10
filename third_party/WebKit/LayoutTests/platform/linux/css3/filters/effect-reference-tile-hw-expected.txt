@@ -5,19 +5,19 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderSVGRoot {svg} at (8,118) size 0x0
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-          RenderSVGResourceFilter {filter} [id="non-integer-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="non-integer-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
               [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
                 [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="shrink-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="shrink-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
               [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
                 [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="zero-src-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="zero-src-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
               [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
                 [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="zero-dst-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="zero-dst-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
               [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
                 [SourceGraphic]

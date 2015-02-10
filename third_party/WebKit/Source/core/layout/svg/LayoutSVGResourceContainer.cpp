@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/rendering/svg/RenderSVGResourceClipper.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
-#include "core/rendering/svg/RenderSVGResourceMasker.h"
 
 #include "wtf/TemporaryChange.h"
 
@@ -37,7 +37,7 @@ static inline SVGDocumentExtensions& svgExtensionsFromElement(SVGElement* elemen
     return element->document().accessSVGExtensions();
 }
 
-RenderSVGResourceContainer::RenderSVGResourceContainer(SVGElement* node)
+LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
     : RenderSVGHiddenContainer(node)
     , m_isInLayout(false)
     , m_id(node->getIdAttribute())
@@ -47,11 +47,11 @@ RenderSVGResourceContainer::RenderSVGResourceContainer(SVGElement* node)
 {
 }
 
-RenderSVGResourceContainer::~RenderSVGResourceContainer()
+LayoutSVGResourceContainer::~LayoutSVGResourceContainer()
 {
 }
 
-void RenderSVGResourceContainer::layout()
+void LayoutSVGResourceContainer::layout()
 {
     // FIXME: Investigate a way to detect and break resource layout dependency cycles early.
     // Then we can remove this method altogether, and fall back onto RenderSVGHiddenContainer::layout().
@@ -66,7 +66,7 @@ void RenderSVGResourceContainer::layout()
     clearInvalidationMask();
 }
 
-void RenderSVGResourceContainer::willBeDestroyed()
+void LayoutSVGResourceContainer::willBeDestroyed()
 {
     SVGResourcesCache::resourceDestroyed(this);
     RenderSVGHiddenContainer::willBeDestroyed();
@@ -74,7 +74,7 @@ void RenderSVGResourceContainer::willBeDestroyed()
         svgExtensionsFromElement(element()).removeResource(m_id);
 }
 
-void RenderSVGResourceContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderSVGHiddenContainer::styleDidChange(diff, oldStyle);
 
@@ -84,7 +84,7 @@ void RenderSVGResourceContainer::styleDidChange(StyleDifference diff, const Layo
     }
 }
 
-void RenderSVGResourceContainer::idChanged()
+void LayoutSVGResourceContainer::idChanged()
 {
     // Invalidate all our current clients.
     removeAllClientsFromCache();
@@ -97,7 +97,7 @@ void RenderSVGResourceContainer::idChanged()
     registerResource();
 }
 
-void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode mode)
+void LayoutSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode mode)
 {
     if ((m_clients.isEmpty() && m_clientLayers.isEmpty()) || m_isInvalidating)
         return;
@@ -114,14 +114,14 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
     for (HashSet<LayoutObject*>::iterator it = m_clients.begin(); it != end; ++it) {
         LayoutObject* client = *it;
         if (client->isSVGResourceContainer()) {
-            toRenderSVGResourceContainer(client)->removeAllClientsFromCache(markForInvalidation);
+            toLayoutSVGResourceContainer(client)->removeAllClientsFromCache(markForInvalidation);
             continue;
         }
 
         if (markForInvalidation)
             markClientForInvalidation(client, mode);
 
-        RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(client, needsLayout);
+        LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(client, needsLayout);
     }
 
     markAllClientLayersForInvalidation();
@@ -129,14 +129,14 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
     m_isInvalidating = false;
 }
 
-void RenderSVGResourceContainer::markAllClientLayersForInvalidation()
+void LayoutSVGResourceContainer::markAllClientLayersForInvalidation()
 {
     HashSet<Layer*>::iterator layerEnd = m_clientLayers.end();
     for (HashSet<Layer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
         (*it)->filterNeedsPaintInvalidation();
 }
 
-void RenderSVGResourceContainer::markClientForInvalidation(LayoutObject* client, InvalidationMode mode)
+void LayoutSVGResourceContainer::markClientForInvalidation(LayoutObject* client, InvalidationMode mode)
 {
     ASSERT(client);
     ASSERT(!m_clients.isEmpty());
@@ -154,21 +154,21 @@ void RenderSVGResourceContainer::markClientForInvalidation(LayoutObject* client,
     }
 }
 
-void RenderSVGResourceContainer::addClient(LayoutObject* client)
+void LayoutSVGResourceContainer::addClient(LayoutObject* client)
 {
     ASSERT(client);
     m_clients.add(client);
     clearInvalidationMask();
 }
 
-void RenderSVGResourceContainer::removeClient(LayoutObject* client)
+void LayoutSVGResourceContainer::removeClient(LayoutObject* client)
 {
     ASSERT(client);
     removeClientFromCache(client, false);
     m_clients.remove(client);
 }
 
-void RenderSVGResourceContainer::addClientLayer(Node* node)
+void LayoutSVGResourceContainer::addClientLayer(Node* node)
 {
     ASSERT(node);
     if (!node->renderer() || !node->renderer()->hasLayer())
@@ -177,20 +177,20 @@ void RenderSVGResourceContainer::addClientLayer(Node* node)
     clearInvalidationMask();
 }
 
-void RenderSVGResourceContainer::addClientLayer(Layer* client)
+void LayoutSVGResourceContainer::addClientLayer(Layer* client)
 {
     ASSERT(client);
     m_clientLayers.add(client);
     clearInvalidationMask();
 }
 
-void RenderSVGResourceContainer::removeClientLayer(Layer* client)
+void LayoutSVGResourceContainer::removeClientLayer(Layer* client)
 {
     ASSERT(client);
     m_clientLayers.remove(client);
 }
 
-void RenderSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutScope* layoutScope)
+void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutScope* layoutScope)
 {
     if (selfNeedsLayout())
         return;
@@ -201,7 +201,7 @@ void RenderSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutSc
         removeAllClientsFromCache();
 }
 
-void RenderSVGResourceContainer::registerResource()
+void LayoutSVGResourceContainer::registerResource()
 {
     SVGDocumentExtensions& extensions = svgExtensionsFromElement(element());
     if (!extensions.hasPendingResource(m_id)) {
@@ -234,13 +234,13 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
 {
     ASSERT(object);
     if (SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object)) {
-        if (RenderSVGResourceFilter* filter = resources->filter())
+        if (LayoutSVGResourceFilter* filter = resources->filter())
             filter->removeClientFromCache(object);
 
-        if (RenderSVGResourceMasker* masker = resources->masker())
+        if (LayoutSVGResourceMasker* masker = resources->masker())
             masker->removeClientFromCache(object);
 
-        if (RenderSVGResourceClipper* clipper = resources->clipper())
+        if (LayoutSVGResourceClipper* clipper = resources->clipper())
             clipper->removeClientFromCache(object);
     }
 
@@ -254,7 +254,7 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
     // reference graph adjustments on changes, so we need to break possible cycles here.
     // This strong reference is safe, as it is guaranteed that this set will be emptied
     // at the end of recursion.
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement>> SVGElementSet;
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGElementSet>, invalidatingDependencies, (adoptPtrWillBeNoop(new SVGElementSet)));
 
     SVGElementSet::iterator end = dependencies->end();
@@ -265,13 +265,13 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
                 continue;
             }
 
-            RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, needsLayout);
+            LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, needsLayout);
             invalidatingDependencies->remove(*it);
         }
     }
 }
 
-void RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(LayoutObject* object, bool needsLayout)
+void LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(LayoutObject* object, bool needsLayout)
 {
     ASSERT(object);
     ASSERT(object->node());
@@ -288,7 +288,7 @@ void RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(Layo
 
         if (current->isSVGResourceContainer()) {
             // This will process the rest of the ancestors.
-            toRenderSVGResourceContainer(current)->removeAllClientsFromCache();
+            toLayoutSVGResourceContainer(current)->removeAllClientsFromCache();
             break;
         }
 

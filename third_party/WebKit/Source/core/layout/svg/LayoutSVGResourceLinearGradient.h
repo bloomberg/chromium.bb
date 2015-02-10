@@ -18,25 +18,25 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourceLinearGradient_h
-#define RenderSVGResourceLinearGradient_h
+#ifndef LayoutSVGResourceLinearGradient_h
+#define LayoutSVGResourceLinearGradient_h
 
-#include "core/rendering/svg/RenderSVGResourceGradient.h"
+#include "core/layout/svg/LayoutSVGResourceGradient.h"
 #include "core/svg/LinearGradientAttributes.h"
 
 namespace blink {
 
 class SVGLinearGradientElement;
 
-class RenderSVGResourceLinearGradient final : public RenderSVGResourceGradient {
+class LayoutSVGResourceLinearGradient final : public LayoutSVGResourceGradient {
 public:
-    explicit RenderSVGResourceLinearGradient(SVGLinearGradientElement*);
-    virtual ~RenderSVGResourceLinearGradient();
+    explicit LayoutSVGResourceLinearGradient(SVGLinearGradientElement*);
+    virtual ~LayoutSVGResourceLinearGradient();
 
-    virtual const char* renderName() const override { return "RenderSVGResourceLinearGradient"; }
+    virtual const char* renderName() const override { return "LayoutSVGResourceLinearGradient"; }
 
-    static const RenderSVGResourceType s_resourceType = LinearGradientResourceType;
-    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
+    static const LayoutSVGResourceType s_resourceType = LinearGradientResourceType;
+    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
     virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return attributes().gradientUnits(); }
     virtual void calculateGradientTransform(AffineTransform& transform) override { transform = attributes().gradientTransform(); }
@@ -66,4 +66,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderSVGResourceLinearGradient_h
+#endif // LayoutSVGResourceLinearGradient_h

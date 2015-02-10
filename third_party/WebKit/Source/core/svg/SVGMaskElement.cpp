@@ -25,7 +25,7 @@
 
 #include "core/svg/SVGMaskElement.h"
 
-#include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
 
 namespace blink {
 
@@ -105,7 +105,7 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::heightAttr)
         updateRelativeLengthsInformation();
 
-    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
@@ -123,7 +123,7 @@ void SVGMaskElement::childrenChanged(const ChildrenChange& change)
 
 LayoutObject* SVGMaskElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGResourceMasker(this);
+    return new LayoutSVGResourceMasker(this);
 }
 
 bool SVGMaskElement::selfHasRelativeLengths() const

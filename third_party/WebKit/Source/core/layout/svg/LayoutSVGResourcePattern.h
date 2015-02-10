@@ -19,10 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourcePattern_h
-#define RenderSVGResourcePattern_h
+#ifndef LayoutSVGResourcePattern_h
+#define LayoutSVGResourcePattern_h
 
-#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/svg/PatternAttributes.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -38,19 +38,19 @@ class FloatRect;
 class SVGPatternElement;
 struct PatternData;
 
-class RenderSVGResourcePattern final : public RenderSVGResourcePaintServer {
+class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
 public:
-    explicit RenderSVGResourcePattern(SVGPatternElement*);
+    explicit LayoutSVGResourcePattern(SVGPatternElement*);
 
-    virtual const char* renderName() const override { return "RenderSVGResourcePattern"; }
+    virtual const char* renderName() const override { return "LayoutSVGResourcePattern"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     virtual SVGPaintServer preparePaintServer(const LayoutObject&) override;
 
-    static const RenderSVGResourceType s_resourceType = PatternResourceType;
-    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
+    static const LayoutSVGResourceType s_resourceType = PatternResourceType;
+    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const LayoutObject&);
@@ -73,7 +73,7 @@ private:
     // FIXME: we can almost do away with this per-object map, but not quite: the tile size can be
     // relative to the client bounding box, and it gets captured in the cached Pattern shader.
     // Hence, we need one Pattern shader per client. The display list OTOH is the same => we
-    // should be able to cache a single display list per RenderSVGResourcePattern + one
+    // should be able to cache a single display list per LayoutSVGResourcePattern + one
     // Pattern(shader) for each client -- this would avoid re-recording when multiple clients
     // share the same pattern.
     HashMap<const LayoutObject*, OwnPtr<PatternData>> m_patternMap;

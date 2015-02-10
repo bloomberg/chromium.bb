@@ -4,7 +4,7 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGContainer {g} at (49,81) size 376x172
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-        RenderSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
+        LayoutSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
           RenderSVGGradientStop {stop} [offset=0.00] [color=#000000]
           RenderSVGGradientStop {stop} [offset=1.00] [color=#FFFFFF]
       RenderSVGContainer {g} at (49,81) size 146x146 [transform={m=((0.30,0.00)(0.00,0.30)) t=(50.00,100.00)}]

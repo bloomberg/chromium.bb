@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResourceMarker.h"
+#include "core/layout/svg/LayoutSVGResourceMarker.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
@@ -28,16 +28,16 @@
 
 namespace blink {
 
-RenderSVGResourceMarker::RenderSVGResourceMarker(SVGMarkerElement* node)
-    : RenderSVGResourceContainer(node)
+LayoutSVGResourceMarker::LayoutSVGResourceMarker(SVGMarkerElement* node)
+    : LayoutSVGResourceContainer(node)
 {
 }
 
-RenderSVGResourceMarker::~RenderSVGResourceMarker()
+LayoutSVGResourceMarker::~LayoutSVGResourceMarker()
 {
 }
 
-void RenderSVGResourceMarker::layout()
+void LayoutSVGResourceMarker::layout()
 {
     ASSERT(needsLayout());
     if (m_isInLayout)
@@ -53,18 +53,18 @@ void RenderSVGResourceMarker::layout()
     clearInvalidationMask();
 }
 
-void RenderSVGResourceMarker::removeAllClientsFromCache(bool markForInvalidation)
+void LayoutSVGResourceMarker::removeAllClientsFromCache(bool markForInvalidation)
 {
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceMarker::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
+void LayoutSVGResourceMarker::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-FloatRect RenderSVGResourceMarker::markerBoundaries(const AffineTransform& markerTransformation) const
+FloatRect LayoutSVGResourceMarker::markerBoundaries(const AffineTransform& markerTransformation) const
 {
     FloatRect coordinates = RenderSVGContainer::paintInvalidationRectInLocalCoordinates();
 
@@ -74,7 +74,7 @@ FloatRect RenderSVGResourceMarker::markerBoundaries(const AffineTransform& marke
     return markerTransformation.mapRect(coordinates);
 }
 
-const AffineTransform& RenderSVGResourceMarker::localToParentTransform() const
+const AffineTransform& LayoutSVGResourceMarker::localToParentTransform() const
 {
     m_localToParentTransform = AffineTransform::translation(m_viewport.x(), m_viewport.y()) * viewportTransform();
     return m_localToParentTransform;
@@ -82,7 +82,7 @@ const AffineTransform& RenderSVGResourceMarker::localToParentTransform() const
     // return viewportTranslation * localTransform() * viewportTransform();
 }
 
-FloatPoint RenderSVGResourceMarker::referencePoint() const
+FloatPoint LayoutSVGResourceMarker::referencePoint() const
 {
     SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
@@ -91,7 +91,7 @@ FloatPoint RenderSVGResourceMarker::referencePoint() const
     return FloatPoint(marker->refX()->currentValue()->value(lengthContext), marker->refY()->currentValue()->value(lengthContext));
 }
 
-float RenderSVGResourceMarker::angle() const
+float LayoutSVGResourceMarker::angle() const
 {
     SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
@@ -103,7 +103,7 @@ float RenderSVGResourceMarker::angle() const
     return angle;
 }
 
-AffineTransform RenderSVGResourceMarker::markerTransformation(const FloatPoint& origin, float autoAngle, float strokeWidth) const
+AffineTransform LayoutSVGResourceMarker::markerTransformation(const FloatPoint& origin, float autoAngle, float strokeWidth) const
 {
     SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
@@ -118,7 +118,7 @@ AffineTransform RenderSVGResourceMarker::markerTransformation(const FloatPoint& 
     return transform;
 }
 
-AffineTransform RenderSVGResourceMarker::markerContentTransformation(const AffineTransform& contentTransformation, const FloatPoint& origin, float strokeWidth) const
+AffineTransform LayoutSVGResourceMarker::markerContentTransformation(const AffineTransform& contentTransformation, const FloatPoint& origin, float strokeWidth) const
 {
     // The 'origin' coordinate maps to SVGs refX/refY, given in coordinates relative to the viewport established by the marker
     FloatPoint mappedOrigin = viewportTransform().mapPoint(origin);
@@ -131,7 +131,7 @@ AffineTransform RenderSVGResourceMarker::markerContentTransformation(const Affin
     return transformation;
 }
 
-AffineTransform RenderSVGResourceMarker::viewportTransform() const
+AffineTransform LayoutSVGResourceMarker::viewportTransform() const
 {
     SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
@@ -139,7 +139,7 @@ AffineTransform RenderSVGResourceMarker::viewportTransform() const
     return marker->viewBoxToViewTransform(m_viewport.width(), m_viewport.height());
 }
 
-void RenderSVGResourceMarker::calcViewport()
+void LayoutSVGResourceMarker::calcViewport()
 {
     if (!selfNeedsLayout())
         return;

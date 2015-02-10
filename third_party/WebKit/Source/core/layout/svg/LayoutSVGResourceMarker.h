@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResourceMarker_h
-#define RenderSVGResourceMarker_h
+#ifndef LayoutSVGResourceMarker_h
+#define LayoutSVGResourceMarker_h
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGMarkerElement.h"
 #include "platform/geometry/FloatRect.h"
@@ -30,12 +30,12 @@ namespace blink {
 
 class LayoutObject;
 
-class RenderSVGResourceMarker final : public RenderSVGResourceContainer {
+class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
 public:
-    explicit RenderSVGResourceMarker(SVGMarkerElement*);
-    virtual ~RenderSVGResourceMarker();
+    explicit LayoutSVGResourceMarker(SVGMarkerElement*);
+    virtual ~LayoutSVGResourceMarker();
 
-    virtual const char* renderName() const override { return "RenderSVGResourceMarker"; }
+    virtual const char* renderName() const override { return "LayoutSVGResourceMarker"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
@@ -56,8 +56,8 @@ public:
 
     const FloatRect& viewport() const { return m_viewport; }
 
-    static const RenderSVGResourceType s_resourceType = MarkerResourceType;
-    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
+    static const LayoutSVGResourceType s_resourceType = MarkerResourceType;
+    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
     // Generates a transformation matrix usable to render marker content. Handles scaling the marker content
@@ -70,7 +70,7 @@ private:
     FloatRect m_viewport;
 };
 
-DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(RenderSVGResourceMarker, MarkerResourceType);
+DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMarker, MarkerResourceType);
 
 }
 

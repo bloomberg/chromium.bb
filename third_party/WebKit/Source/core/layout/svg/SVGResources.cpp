@@ -22,11 +22,11 @@
 
 #include "core/SVGNames.h"
 #include "core/layout/style/SVGLayoutStyle.h"
-#include "core/rendering/svg/RenderSVGResourceClipper.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
-#include "core/rendering/svg/RenderSVGResourceMarker.h"
-#include "core/rendering/svg/RenderSVGResourceMasker.h"
-#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
+#include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGResourceMarker.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
@@ -164,13 +164,13 @@ static inline bool svgPaintTypeHasURL(SVGPaintType paintType)
     return false;
 }
 
-static inline RenderSVGResourcePaintServer* paintingResourceFromSVGPaint(TreeScope& treeScope, const SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
+static inline LayoutSVGResourcePaintServer* paintingResourceFromSVGPaint(TreeScope& treeScope, const SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
 {
     if (!svgPaintTypeHasURL(paintType))
         return nullptr;
 
     id = SVGURIReference::fragmentIdentifierFromIRIString(paintUri, treeScope);
-    RenderSVGResourceContainer* container = getRenderSVGResourceContainerById(treeScope, id);
+    LayoutSVGResourceContainer* container = getLayoutSVGResourceContainerById(treeScope, id);
     if (!container) {
         hasPendingResource = true;
         return nullptr;
@@ -179,7 +179,7 @@ static inline RenderSVGResourcePaintServer* paintingResourceFromSVGPaint(TreeSco
     if (!container->isSVGPaintServer())
         return nullptr;
 
-    return toRenderSVGResourcePaintServer(container);
+    return toLayoutSVGResourcePaintServer(container);
 }
 
 static inline void registerPendingResource(SVGDocumentExtensions& extensions, const AtomicString& id, SVGElement* element)
@@ -225,34 +225,34 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
     if (clipperFilterMaskerTags().contains(tagName)) {
         if (style.hasClipper()) {
             AtomicString id = style.clipperResource();
-            if (!ensureResources(resources).setClipper(getRenderSVGResourceById<RenderSVGResourceClipper>(treeScope, id)))
+            if (!ensureResources(resources).setClipper(getLayoutSVGResourceById<LayoutSVGResourceClipper>(treeScope, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style.hasFilter()) {
             AtomicString id = style.filterResource();
-            if (!ensureResources(resources).setFilter(getRenderSVGResourceById<RenderSVGResourceFilter>(treeScope, id)))
+            if (!ensureResources(resources).setFilter(getLayoutSVGResourceById<LayoutSVGResourceFilter>(treeScope, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style.hasMasker()) {
             AtomicString id = style.maskerResource();
-            if (!ensureResources(resources).setMasker(getRenderSVGResourceById<RenderSVGResourceMasker>(treeScope, id)))
+            if (!ensureResources(resources).setMasker(getLayoutSVGResourceById<LayoutSVGResourceMasker>(treeScope, id)))
                 registerPendingResource(extensions, id, element);
         }
     }
 
     if (style.hasMarkers() && supportsMarkers(*element)) {
         const AtomicString& markerStartId = style.markerStartResource();
-        if (!ensureResources(resources).setMarkerStart(getRenderSVGResourceById<RenderSVGResourceMarker>(treeScope, markerStartId)))
+        if (!ensureResources(resources).setMarkerStart(getLayoutSVGResourceById<LayoutSVGResourceMarker>(treeScope, markerStartId)))
             registerPendingResource(extensions, markerStartId, element);
 
         const AtomicString& markerMidId = style.markerMidResource();
-        if (!ensureResources(resources).setMarkerMid(getRenderSVGResourceById<RenderSVGResourceMarker>(treeScope, markerMidId)))
+        if (!ensureResources(resources).setMarkerMid(getLayoutSVGResourceById<LayoutSVGResourceMarker>(treeScope, markerMidId)))
             registerPendingResource(extensions, markerMidId, element);
 
         const AtomicString& markerEndId = style.markerEndResource();
-        if (!ensureResources(resources).setMarkerEnd(getRenderSVGResourceById<RenderSVGResourceMarker>(treeScope, style.markerEndResource())))
+        if (!ensureResources(resources).setMarkerEnd(getLayoutSVGResourceById<LayoutSVGResourceMarker>(treeScope, style.markerEndResource())))
             registerPendingResource(extensions, markerEndId, element);
     }
 
@@ -260,7 +260,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
         if (style.hasFill()) {
             bool hasPendingResource = false;
             AtomicString id;
-            RenderSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.fillPaintType(), style.fillPaintUri(), id, hasPendingResource);
+            LayoutSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.fillPaintType(), style.fillPaintUri(), id, hasPendingResource);
             if (!ensureResources(resources).setFill(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
             }
@@ -269,7 +269,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
         if (style.hasStroke()) {
             bool hasPendingResource = false;
             AtomicString id;
-            RenderSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.strokePaintType(), style.strokePaintUri(), id, hasPendingResource);
+            LayoutSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.strokePaintType(), style.strokePaintUri(), id, hasPendingResource);
             if (!ensureResources(resources).setStroke(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
             }
@@ -278,7 +278,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
 
     if (chainableResourceTags().contains(tagName)) {
         AtomicString id = targetReferenceFromResource(*element);
-        if (!ensureResources(resources).setLinkedResource(getRenderSVGResourceContainerById(treeScope, id)))
+        if (!ensureResources(resources).setLinkedResource(getLayoutSVGResourceContainerById(treeScope, id)))
             registerPendingResource(extensions, id, element);
     }
 
@@ -288,27 +288,27 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
 void SVGResources::layoutIfNeeded()
 {
     if (m_clipperFilterMaskerData) {
-        if (RenderSVGResourceClipper* clipper = m_clipperFilterMaskerData->clipper)
+        if (LayoutSVGResourceClipper* clipper = m_clipperFilterMaskerData->clipper)
             clipper->layoutIfNeeded();
-        if (RenderSVGResourceMasker* masker = m_clipperFilterMaskerData->masker)
+        if (LayoutSVGResourceMasker* masker = m_clipperFilterMaskerData->masker)
             masker->layoutIfNeeded();
-        if (RenderSVGResourceFilter* filter = m_clipperFilterMaskerData->filter)
+        if (LayoutSVGResourceFilter* filter = m_clipperFilterMaskerData->filter)
             filter->layoutIfNeeded();
     }
 
     if (m_markerData) {
-        if (RenderSVGResourceMarker* marker = m_markerData->markerStart)
+        if (LayoutSVGResourceMarker* marker = m_markerData->markerStart)
             marker->layoutIfNeeded();
-        if (RenderSVGResourceMarker* marker = m_markerData->markerMid)
+        if (LayoutSVGResourceMarker* marker = m_markerData->markerMid)
             marker->layoutIfNeeded();
-        if (RenderSVGResourceMarker* marker = m_markerData->markerEnd)
+        if (LayoutSVGResourceMarker* marker = m_markerData->markerEnd)
             marker->layoutIfNeeded();
     }
 
     if (m_fillStrokeData) {
-        if (RenderSVGResourcePaintServer* fill = m_fillStrokeData->fill)
+        if (LayoutSVGResourcePaintServer* fill = m_fillStrokeData->fill)
             fill->layoutIfNeeded();
-        if (RenderSVGResourcePaintServer* stroke = m_fillStrokeData->stroke)
+        if (LayoutSVGResourcePaintServer* stroke = m_fillStrokeData->stroke)
             stroke->layoutIfNeeded();
     }
 
@@ -355,7 +355,7 @@ void SVGResources::removeClientFromCache(LayoutObject* object, bool markForInval
     }
 }
 
-void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
+void SVGResources::resourceDestroyed(LayoutSVGResourceContainer* resource)
 {
     ASSERT(resource);
     if (!hasResourceData())
@@ -430,7 +430,7 @@ void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
     }
 }
 
-void SVGResources::buildSetOfResources(HashSet<RenderSVGResourceContainer*>& set)
+void SVGResources::buildSetOfResources(HashSet<LayoutSVGResourceContainer*>& set)
 {
     if (!hasResourceData())
         return;
@@ -469,7 +469,7 @@ void SVGResources::buildSetOfResources(HashSet<RenderSVGResourceContainer*>& set
     }
 }
 
-bool SVGResources::setClipper(RenderSVGResourceClipper* clipper)
+bool SVGResources::setClipper(LayoutSVGResourceClipper* clipper)
 {
     if (!clipper)
         return false;
@@ -490,7 +490,7 @@ void SVGResources::resetClipper()
     m_clipperFilterMaskerData->clipper = nullptr;
 }
 
-bool SVGResources::setFilter(RenderSVGResourceFilter* filter)
+bool SVGResources::setFilter(LayoutSVGResourceFilter* filter)
 {
     if (!filter)
         return false;
@@ -511,7 +511,7 @@ void SVGResources::resetFilter()
     m_clipperFilterMaskerData->filter = nullptr;
 }
 
-bool SVGResources::setMarkerStart(RenderSVGResourceMarker* markerStart)
+bool SVGResources::setMarkerStart(LayoutSVGResourceMarker* markerStart)
 {
     if (!markerStart)
         return false;
@@ -532,7 +532,7 @@ void SVGResources::resetMarkerStart()
     m_markerData->markerStart = nullptr;
 }
 
-bool SVGResources::setMarkerMid(RenderSVGResourceMarker* markerMid)
+bool SVGResources::setMarkerMid(LayoutSVGResourceMarker* markerMid)
 {
     if (!markerMid)
         return false;
@@ -553,7 +553,7 @@ void SVGResources::resetMarkerMid()
     m_markerData->markerMid = nullptr;
 }
 
-bool SVGResources::setMarkerEnd(RenderSVGResourceMarker* markerEnd)
+bool SVGResources::setMarkerEnd(LayoutSVGResourceMarker* markerEnd)
 {
     if (!markerEnd)
         return false;
@@ -574,7 +574,7 @@ void SVGResources::resetMarkerEnd()
     m_markerData->markerEnd = nullptr;
 }
 
-bool SVGResources::setMasker(RenderSVGResourceMasker* masker)
+bool SVGResources::setMasker(LayoutSVGResourceMasker* masker)
 {
     if (!masker)
         return false;
@@ -595,7 +595,7 @@ void SVGResources::resetMasker()
     m_clipperFilterMaskerData->masker = nullptr;
 }
 
-bool SVGResources::setFill(RenderSVGResourcePaintServer* fill)
+bool SVGResources::setFill(LayoutSVGResourcePaintServer* fill)
 {
     if (!fill)
         return false;
@@ -614,7 +614,7 @@ void SVGResources::resetFill()
     m_fillStrokeData->fill = nullptr;
 }
 
-bool SVGResources::setStroke(RenderSVGResourcePaintServer* stroke)
+bool SVGResources::setStroke(LayoutSVGResourcePaintServer* stroke)
 {
     if (!stroke)
         return false;
@@ -633,7 +633,7 @@ void SVGResources::resetStroke()
     m_fillStrokeData->stroke = nullptr;
 }
 
-bool SVGResources::setLinkedResource(RenderSVGResourceContainer* linkedResource)
+bool SVGResources::setLinkedResource(LayoutSVGResourceContainer* linkedResource)
 {
     if (!linkedResource)
         return false;
@@ -660,27 +660,27 @@ void SVGResources::dump(const LayoutObject* object)
 
     fprintf(stderr, "\n | List of resources:\n");
     if (m_clipperFilterMaskerData) {
-        if (RenderSVGResourceClipper* clipper = m_clipperFilterMaskerData->clipper)
+        if (LayoutSVGResourceClipper* clipper = m_clipperFilterMaskerData->clipper)
             fprintf(stderr, " |-> Clipper    : %p (node=%p)\n", clipper, clipper->element());
-        if (RenderSVGResourceFilter* filter = m_clipperFilterMaskerData->filter)
+        if (LayoutSVGResourceFilter* filter = m_clipperFilterMaskerData->filter)
             fprintf(stderr, " |-> Filter     : %p (node=%p)\n", filter, filter->element());
-        if (RenderSVGResourceMasker* masker = m_clipperFilterMaskerData->masker)
+        if (LayoutSVGResourceMasker* masker = m_clipperFilterMaskerData->masker)
             fprintf(stderr, " |-> Masker     : %p (node=%p)\n", masker, masker->element());
     }
 
     if (m_markerData) {
-        if (RenderSVGResourceMarker* markerStart = m_markerData->markerStart)
+        if (LayoutSVGResourceMarker* markerStart = m_markerData->markerStart)
             fprintf(stderr, " |-> MarkerStart: %p (node=%p)\n", markerStart, markerStart->element());
-        if (RenderSVGResourceMarker* markerMid = m_markerData->markerMid)
+        if (LayoutSVGResourceMarker* markerMid = m_markerData->markerMid)
             fprintf(stderr, " |-> MarkerMid  : %p (node=%p)\n", markerMid, markerMid->element());
-        if (RenderSVGResourceMarker* markerEnd = m_markerData->markerEnd)
+        if (LayoutSVGResourceMarker* markerEnd = m_markerData->markerEnd)
             fprintf(stderr, " |-> MarkerEnd  : %p (node=%p)\n", markerEnd, markerEnd->element());
     }
 
     if (m_fillStrokeData) {
-        if (RenderSVGResourcePaintServer* fill = m_fillStrokeData->fill)
+        if (LayoutSVGResourcePaintServer* fill = m_fillStrokeData->fill)
             fprintf(stderr, " |-> Fill       : %p (node=%p)\n", fill, fill->element());
-        if (RenderSVGResourcePaintServer* stroke = m_fillStrokeData->stroke)
+        if (LayoutSVGResourcePaintServer* stroke = m_fillStrokeData->stroke)
             fprintf(stderr, " |-> Stroke     : %p (node=%p)\n", stroke, stroke->element());
     }
 

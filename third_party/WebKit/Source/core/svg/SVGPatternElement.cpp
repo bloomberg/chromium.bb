@@ -24,7 +24,7 @@
 
 #include "core/XLinkNames.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/rendering/svg/RenderSVGResourcePattern.h"
+#include "core/layout/svg/LayoutSVGResourcePattern.h"
 #include "core/svg/PatternAttributes.h"
 #include "platform/transforms/AffineTransform.h"
 
@@ -108,7 +108,7 @@ void SVGPatternElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::heightAttr)
         updateRelativeLengthsInformation();
 
-    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
@@ -126,7 +126,7 @@ void SVGPatternElement::childrenChanged(const ChildrenChange& change)
 
 LayoutObject* SVGPatternElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGResourcePattern(this);
+    return new LayoutSVGResourcePattern(this);
 }
 
 static void setPatternAttributes(const SVGPatternElement* element, PatternAttributes& attributes)

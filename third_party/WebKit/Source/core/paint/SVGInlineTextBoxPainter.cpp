@@ -291,7 +291,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
 
 void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, const LayoutStyle& style,
     TextRun& textRun, const SVGTextFragment& fragment, int startPosition, int endPosition,
-    RenderSVGResourceMode resourceMode)
+    LayoutSVGResourceMode resourceMode)
 {
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(m_svgInlineTextBox.renderer());
 
@@ -349,7 +349,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
 
 void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const LayoutStyle& style,
     const LayoutStyle& selectionStyle, const SVGTextFragment& fragment,
-    RenderSVGResourceMode resourceMode, bool shouldPaintSelection)
+    LayoutSVGResourceMode resourceMode, bool shouldPaintSelection)
 {
     int startPosition = 0;
     int endPosition = 0;

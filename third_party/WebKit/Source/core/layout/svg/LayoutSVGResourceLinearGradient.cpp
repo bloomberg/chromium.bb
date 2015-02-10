@@ -20,25 +20,25 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
+#include "core/layout/svg/LayoutSVGResourceLinearGradient.h"
 
 #include "core/svg/SVGLinearGradientElement.h"
 
 namespace blink {
 
-RenderSVGResourceLinearGradient::RenderSVGResourceLinearGradient(SVGLinearGradientElement* node)
-    : RenderSVGResourceGradient(node)
+LayoutSVGResourceLinearGradient::LayoutSVGResourceLinearGradient(SVGLinearGradientElement* node)
+    : LayoutSVGResourceGradient(node)
 #if ENABLE(OILPAN)
     , m_attributesWrapper(LinearGradientAttributesWrapper::create())
 #endif
 {
 }
 
-RenderSVGResourceLinearGradient::~RenderSVGResourceLinearGradient()
+LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient()
 {
 }
 
-bool RenderSVGResourceLinearGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
+bool LayoutSVGResourceLinearGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
 {
 #if ENABLE(OILPAN)
     m_attributesWrapper->set(LinearGradientAttributes());
@@ -48,17 +48,17 @@ bool RenderSVGResourceLinearGradient::collectGradientAttributes(SVGGradientEleme
     return toSVGLinearGradientElement(gradientElement)->collectGradientAttributes(mutableAttributes());
 }
 
-FloatPoint RenderSVGResourceLinearGradient::startPoint(const LinearGradientAttributes& attributes) const
+FloatPoint LayoutSVGResourceLinearGradient::startPoint(const LinearGradientAttributes& attributes) const
 {
     return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), attributes.x1(), attributes.y1());
 }
 
-FloatPoint RenderSVGResourceLinearGradient::endPoint(const LinearGradientAttributes& attributes) const
+FloatPoint LayoutSVGResourceLinearGradient::endPoint(const LinearGradientAttributes& attributes) const
 {
     return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), attributes.x2(), attributes.y2());
 }
 
-void RenderSVGResourceLinearGradient::buildGradient(GradientData* gradientData) const
+void LayoutSVGResourceLinearGradient::buildGradient(GradientData* gradientData) const
 {
     const LinearGradientAttributes& attributes = this->attributes();
     gradientData->gradient = Gradient::create(startPoint(attributes), endPoint(attributes));

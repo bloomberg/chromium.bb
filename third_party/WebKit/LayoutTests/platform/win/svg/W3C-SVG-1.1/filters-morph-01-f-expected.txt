@@ -8,16 +8,16 @@ layer at (0,0) size 480x360
           chunk 1 (middle anchor) text run 1 at (150.69,16.00) startOffset 0 endOffset 27 width 178.62: "Filter Effect: feMorphology"
       RenderSVGContainer {g} at (38,22) size 394x271 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,-6.00)}]
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-          RenderSVGResourceFilter {filter} [id="erode1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="erode1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feMorphology operator="ERODE" radius="1.00, 1.00"]
               [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="erode2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="erode2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feMorphology operator="ERODE" radius="2.00, 2.00"]
               [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="dilate1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="dilate1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feMorphology operator="DILATE" radius="1.00, 1.00"]
               [SourceGraphic]
-          RenderSVGResourceFilter {filter} [id="dilate2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+          LayoutSVGResourceFilter {filter} [id="dilate2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feMorphology operator="DILATE" radius="3.00, 3.00"]
               [SourceGraphic]
           RenderSVGContainer {g} at (0,0) size 149x118
@@ -30,7 +30,7 @@ layer at (0,0) size 480x360
         RenderSVGContainer {g} at (38,22) size 394x271
           RenderSVGContainer {g} at (38,22) size 139x131
             RenderSVGContainer {use} at (38,22) size 139x117 [transform={m=((1.00,0.00)(0.00,1.00)) t=(35.00,25.00)}]
-              [filter="erode1"] RenderSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
+              [filter="erode1"] LayoutSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
               RenderSVGContainer {g} at (34,18) size 150x125
                 RenderSVGContainer {g} at (34,18) size 150x125
                   RenderSVGContainer {g} at (34,18) size 150x125
@@ -43,7 +43,7 @@ layer at (0,0) size 480x360
                 chunk 1 (middle anchor) text run 1 at (43.89,156.00) startOffset 0 endOffset 19 width 132.23: "type=erode radius=1"
           RenderSVGContainer {g} at (293,22) size 139x131 [transform={m=((1.00,0.00)(0.00,1.00)) t=(255.00,0.00)}]
             RenderSVGContainer {use} at (293,22) size 139x117 [transform={m=((1.00,0.00)(0.00,1.00)) t=(35.00,25.00)}]
-              [filter="erode2"] RenderSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
+              [filter="erode2"] LayoutSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
               RenderSVGContainer {g} at (289,18) size 150x125
                 RenderSVGContainer {g} at (289,18) size 150x125
                   RenderSVGContainer {g} at (289,18) size 150x125
@@ -56,7 +56,7 @@ layer at (0,0) size 480x360
                 chunk 1 (middle anchor) text run 1 at (43.89,156.00) startOffset 0 endOffset 19 width 132.23: "type=erode radius=2"
           RenderSVGContainer {g} at (38,162) size 139x131 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,140.00)}]
             RenderSVGContainer {use} at (38,162) size 139x117 [transform={m=((1.00,0.00)(0.00,1.00)) t=(35.00,25.00)}]
-              [filter="dilate1"] RenderSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
+              [filter="dilate1"] LayoutSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
               RenderSVGContainer {g} at (34,158) size 150x125
                 RenderSVGContainer {g} at (34,158) size 150x125
                   RenderSVGContainer {g} at (34,158) size 150x125
@@ -69,7 +69,7 @@ layer at (0,0) size 480x360
                 chunk 1 (middle anchor) text run 1 at (43.88,156.00) startOffset 0 endOffset 20 width 132.23: "type=dilate radius=1"
           RenderSVGContainer {g} at (293,162) size 139x131 [transform={m=((1.00,0.00)(0.00,1.00)) t=(255.00,140.00)}]
             RenderSVGContainer {use} at (293,162) size 139x117 [transform={m=((1.00,0.00)(0.00,1.00)) t=(35.00,25.00)}]
-              [filter="dilate2"] RenderSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
+              [filter="dilate2"] LayoutSVGResourceFilter {filter} at (3.59,3.58) size 137.73x116.11
               RenderSVGContainer {g} at (289,158) size 150x125
                 RenderSVGContainer {g} at (289,158) size 150x125
                   RenderSVGContainer {g} at (289,158) size 150x125
