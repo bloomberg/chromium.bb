@@ -27,6 +27,9 @@ namespace sandbox {
 
 namespace {
 
+// These tests fail under ThreadSanitizer, see http://crbug.com/342305
+#if !defined(THREAD_SANITIZER)
+
 int GetRaceTestIterations() {
   if (IsRunningOnValgrind()) {
     return 2;
@@ -50,9 +53,6 @@ class ScopedProcSelfTask {
   int fd_;
   DISALLOW_COPY_AND_ASSIGN(ScopedProcSelfTask);
 };
-
-// These tests fail under ThreadSanitizer, see http://crbug.com/342305
-#if !defined(THREAD_SANITIZER)
 
 TEST(ThreadHelpers, IsSingleThreadedBasic) {
   ScopedProcSelfTask task;
