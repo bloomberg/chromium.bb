@@ -4,6 +4,9 @@
 
 #include "cc/blink/web_layer_impl.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
@@ -356,6 +359,16 @@ WebVector<WebRect> WebLayerImpl::nonFastScrollableRegion() const {
     ++i;
   }
   return result;
+}
+
+void WebLayerImpl::setFrameTimingRequests(
+    const WebVector<std::pair<int64_t, WebRect>>& requests) {
+  std::vector<cc::FrameTimingRequest> frame_timing_requests(requests.size());
+  for (size_t i = 0; i < requests.size(); ++i) {
+    frame_timing_requests.push_back(cc::FrameTimingRequest(
+        requests[i].first, gfx::Rect(requests[i].second)));
+  }
+  layer_->SetFrameTimingRequests(frame_timing_requests);
 }
 
 void WebLayerImpl::setTouchEventHandlerRegion(const WebVector<WebRect>& rects) {

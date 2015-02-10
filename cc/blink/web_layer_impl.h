@@ -6,6 +6,7 @@
 #define CC_BLINK_WEB_LAYER_IMPL_H_
 
 #include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -125,6 +126,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual blink::WebVector<blink::WebRect> touchEventHandlerRegion() const;
   virtual void setScrollBlocksOn(blink::WebScrollBlocksOn);
   virtual blink::WebScrollBlocksOn scrollBlocksOn() const;
+  virtual void setFrameTimingRequests(
+      const blink::WebVector<std::pair<int64_t, blink::WebRect>>& requests);
   virtual void setIsContainerForFixedPositionLayers(bool is_container);
   virtual bool isContainerForFixedPositionLayers() const;
   virtual void setPositionConstraint(
