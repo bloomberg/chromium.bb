@@ -80,11 +80,6 @@ struct NaClDebugCallbacks {
   void (*process_exit_hook)(void);
 };
 
-enum NaClResourcePhase {
-  NACL_RESOURCE_PHASE_START,
-  NACL_RESOURCE_PHASE_RUNTIME_HOST
-};
-
 #if NACL_WINDOWS
 enum NaClDebugExceptionHandlerState {
   NACL_DEBUG_EXCEPTION_HANDLER_NOT_STARTED,
@@ -246,7 +241,6 @@ struct NaClApp {
   struct NaClSecureService          *secure_service;
 
   struct NaClResourceNaClApp        resources;
-  enum NaClResourcePhase            resource_phase;
 
   struct NaClDescQuotaInterface     *desc_quota_interface;
 

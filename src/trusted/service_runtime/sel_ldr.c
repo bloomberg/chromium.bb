@@ -178,7 +178,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->secure_service = NULL;
   nap->main_exe_prevalidated = 0;
 
-  nap->resource_phase = NACL_RESOURCE_PHASE_START;
   if (!NaClResourceNaClAppInit(&nap->resources, nap)) {
     goto cleanup_dynamic_load_mutex;
   }
@@ -692,25 +691,29 @@ static struct {
 };
 
 /*
- * File redirection is impossible if an outer sandbox is in place.
- * For the command-line embedding, we sometimes have an outer sandbox:
- * on OSX, it is enabled after loading the file is loaded.  On the
- * other hand, device redirection (DEBUG_ONLY:dev://postmessage) is
- * impossible until the reverse channel setup has occurred.
+ * Process I/O redirection/inheritance from the environment.
  *
- * Because of this, we run NaClProcessRedirControl twice: once to
- * process default inheritance, file redirection early on, and once
- * after the reverse channel is in place to handle the device
- * redirection.  We try to hide knowledge about which redirection
- * control values can be handled in which phases by allowing the
- * NaClResourceOpen to fail, and only in the last phase do we check
- * that the redirection succeeded in *some* phase.
+ * File redirection is impossible if an outer sandbox is in place.  For the
+ * command-line embedding, we sometimes have an outer sandbox: on OSX, it is
+ * enabled after loading the file is loaded. We handle this situation by
+ * allowing the NaClAppInitialDescriptorHookup to fail in which case in falls
+ * back to default inheritance. This means dup'ing descriptors 0-2 and making
+ * them available to the NaCl App.
+ *
+ * When standard input is inherited, this could result in a NaCl module
+ * competing for input from the terminal; for graphical / browser plugin
+ * environments, this never is allowed to happen, and having this is useful for
+ * debugging, and for potential standalone text-mode applications of NaCl.
+ *
+ * TODO(bsy): consider whether default inheritance should occur only
+ * in debug mode.
  */
-static void NaClProcessRedirControl(struct NaClApp *nap) {
-
+void NaClAppInitialDescriptorHookup(struct NaClApp *nap) {
   size_t          ix;
   char const      *env;
   struct NaClDesc *ndp;
+
+  NaClLog(4, "Processing I/O redirection/inheritance from environment\n");
 
   for (ix = 0; ix < NACL_ARRAY_SIZE(g_nacl_redir_control); ++ix) {
     ndp = NULL;
@@ -727,7 +730,7 @@ static void NaClProcessRedirControl(struct NaClApp *nap) {
     if (NULL != ndp) {
       NaClLog(4, "Setting descriptor %d\n", (int) ix);
       NaClAppSetDesc(nap, (int) ix, ndp);
-    } else if (NACL_RESOURCE_PHASE_START == nap->resource_phase) {
+    } else {
       /*
        * Environment not set or redirect failed -- handle default inheritance.
        */
@@ -735,26 +738,7 @@ static void NaClProcessRedirControl(struct NaClApp *nap) {
                             g_nacl_redir_control[ix].nacl_flags, (int) ix);
     }
   }
-}
 
-/*
- * Process default descriptor inheritance.  This means dup'ing
- * descriptors 0-2 and making them available to the NaCl App.
- *
- * When standard input is inherited, this could result in a NaCl
- * module competing for input from the terminal; for graphical /
- * browser plugin environments, this never is allowed to happen, and
- * having this is useful for debugging, and for potential standalone
- * text-mode applications of NaCl.
- *
- * TODO(bsy): consider whether default inheritance should occur only
- * in debug mode.
- */
-void NaClAppInitialDescriptorHookup(struct NaClApp  *nap) {
-
-  NaClLog(4, "Processing I/O redirection/inheritance from environment\n");
-  nap->resource_phase = NACL_RESOURCE_PHASE_START;
-  NaClProcessRedirControl(nap);
   NaClLog(4, "... done.\n");
 }
 

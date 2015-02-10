@@ -147,19 +147,10 @@ static struct NaClDesc *NaClResourceNaClAppFileOpen(
     int nacl_flags,
     int mode,
     int allow_debug) {
-  struct NaClResourceNaClApp *self = (struct NaClResourceNaClApp *) vself;
   struct NaClDesc *rv = NULL;
-
-  /*
-   * Initialization order requires that file opens occur only early,
-   * in NACl_RESOURCE_PHASE_START, because otherwise (in the OSX case)
-   * the sandbox gets enabled after the reverse channel is set up, and
-   * the ability to open files go away.
-   */
+  UNREFERENCED_PARAMETER(vself);
   UNREFERENCED_PARAMETER(allow_debug);
-  if (self->nap->resource_phase != NACL_RESOURCE_PHASE_START) {
-    return NULL;
-  }
+
   if (0 == strcmp(resource_locator, NACL_RESOURCE_FILE_DEV_NULL)) {
     rv = NaClResourceNullFactory();
     if (NULL == rv) {
