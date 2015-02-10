@@ -3342,13 +3342,11 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
 
     while (m_valueList->current()) {
         // Handle leading <custom-ident>*.
-        if (m_valueList->current()->unit == CSSParserValue::ValueList) {
-            if (trailingIdentWasAdded) {
-                // A row's trailing ident must be concatenated with the next row's leading one.
-                parseGridLineNames(*m_valueList, *templateRows, toCSSGridLineNamesValue(templateRows->item(templateRows->length() - 1)));
-            } else {
-                parseGridLineNames(*m_valueList, *templateRows);
-            }
+        if (trailingIdentWasAdded) {
+            // A row's trailing ident must be concatenated with the next row's leading one.
+            maybeParseGridLineNames(*m_valueList, *templateRows, toCSSGridLineNamesValue(templateRows->item(templateRows->length() - 1)));
+        } else {
+            maybeParseGridLineNames(*m_valueList, *templateRows);
         }
 
         // Handle a template-area's row.
@@ -3367,9 +3365,9 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
         }
 
         // This will handle the trailing/leading <custom-ident>* in the grammar.
-        trailingIdentWasAdded = false;
-        if (m_valueList->current() && m_valueList->current()->unit == CSSParserValue::ValueList)
-            trailingIdentWasAdded = parseGridLineNames(*m_valueList, *templateRows);
+        const CSSParserValue* current = m_valueList->current();
+        trailingIdentWasAdded = current && current->unit == CSSParserValue::ValueList && current->valueList->size() > 0;
+        maybeParseGridLineNames(*m_valueList, *templateRows);
     }
 
     // [<track-list> /]?
@@ -3557,14 +3555,15 @@ bool CSSPropertyParser::parseSingleGridAreaLonghand(RefPtrWillBeRawPtr<CSSValue>
     return true;
 }
 
-bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSValueList& valueList, CSSGridLineNamesValue* previousNamedAreaTrailingLineNames)
+void CSSPropertyParser::maybeParseGridLineNames(CSSParserValueList& inputList, CSSValueList& valueList, CSSGridLineNamesValue* previousNamedAreaTrailingLineNames)
 {
-    ASSERT(inputList.current() && inputList.current()->unit == CSSParserValue::ValueList);
+    if (!inputList.current() || inputList.current()->unit != CSSParserValue::ValueList)
+        return;
 
     CSSParserValueList* identList = inputList.current()->valueList;
     if (!identList->size()) {
         inputList.next();
-        return false;
+        return;
     }
 
     // Need to ensure the identList is at the heading index, since the parserList might have been rewound.
@@ -3574,7 +3573,10 @@ bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
     if (!lineNames)
         lineNames = CSSGridLineNamesValue::create();
     while (CSSParserValue* identValue = identList->current()) {
-        ASSERT(identValue->unit == CSSPrimitiveValue::CSS_IDENT);
+        if (identValue->unit != CSSPrimitiveValue::CSS_IDENT) {
+            ASSERT(RuntimeEnabledFeatures::newCSSParserEnabled());
+            return;
+        }
         RefPtrWillBeRawPtr<CSSPrimitiveValue> lineName = createPrimitiveStringValue(identValue);
         lineNames->append(lineName.release());
         identList->next();
@@ -3583,7 +3585,6 @@ bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
         valueList.append(lineNames.release());
 
     inputList.next();
-    return true;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
@@ -3598,9 +3599,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
 
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     // Handle leading  <ident>*.
-    value = m_valueList->current();
-    if (value && value->unit == CSSParserValue::ValueList)
-        parseGridLineNames(*m_valueList, *values);
+    maybeParseGridLineNames(*m_valueList, *values);
 
     bool seenTrackSizeOrRepeatFunction = false;
     while (CSSParserValue* currentValue = m_valueList->current()) {
@@ -3618,9 +3617,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
             seenTrackSizeOrRepeatFunction = true;
         }
         // This will handle the trailing <ident>* in the grammar.
-        value = m_valueList->current();
-        if (value && value->unit == CSSParserValue::ValueList)
-            parseGridLineNames(*m_valueList, *values);
+        maybeParseGridLineNames(*m_valueList, *values);
     }
 
     // We should have found a <track-size> or else it is not a valid <track-list>
@@ -3644,9 +3641,7 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
     arguments->next(); // Skip the comma.
 
     // Handle leading <ident>*.
-    CSSParserValue* currentValue = arguments->current();
-    if (currentValue && currentValue->unit == CSSParserValue::ValueList)
-        parseGridLineNames(*arguments, *repeatedValues);
+    maybeParseGridLineNames(*arguments, *repeatedValues);
 
     size_t numberOfTracks = 0;
     while (arguments->current()) {
@@ -3658,9 +3653,7 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
         ++numberOfTracks;
 
         // This takes care of any trailing <ident>* in the grammar.
-        currentValue = arguments->current();
-        if (currentValue && currentValue->unit == CSSParserValue::ValueList)
-            parseGridLineNames(*arguments, *repeatedValues);
+        maybeParseGridLineNames(*arguments, *repeatedValues);
     }
 
     // We should have found at least one <track-size> or else it is not a valid <track-list>.
