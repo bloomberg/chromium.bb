@@ -59,9 +59,8 @@ void FillModesetBuffer(const scoped_refptr<DriWrapper>& dri,
 
 }  // namespace
 
-ScreenManager::ScreenManager(const scoped_refptr<DriWrapper>& dri,
-                             ScanoutBufferGenerator* buffer_generator)
-    : dri_(dri), buffer_generator_(buffer_generator) {
+ScreenManager::ScreenManager(ScanoutBufferGenerator* buffer_generator)
+    : buffer_generator_(buffer_generator) {
 }
 
 ScreenManager::~ScreenManager() {
@@ -167,12 +166,6 @@ bool ScreenManager::DisableDisplayController(uint32_t crtc) {
 
 HardwareDisplayController* ScreenManager::GetDisplayController(
     const gfx::Rect& bounds) {
-  // TODO(dnicoara): Remove hack once TestScreen uses a simple Ozone display
-  // configuration reader and ScreenManager is called from there to create the
-  // one display needed by the content_shell target.
-  if (controllers_.empty())
-    ForceInitializationOfPrimaryDisplay();
-
   HardwareDisplayControllers::iterator it =
       FindActiveDisplayControllerByLocation(bounds);
   if (it != controllers_.end())
@@ -214,43 +207,24 @@ ScreenManager::FindActiveDisplayControllerByLocation(const gfx::Rect& bounds) {
   return controllers_.end();
 }
 
-void ScreenManager::ForceInitializationOfPrimaryDisplay() {
-  LOG(WARNING) << "Forcing initialization of primary display.";
-  ScopedVector<HardwareDisplayControllerInfo> displays =
-      GetAvailableDisplayControllerInfos(dri_->get_fd());
-
-  if (displays.empty())
-    return;
-
-  ScopedDrmPropertyPtr dpms(
-      dri_->GetProperty(displays[0]->connector(), "DPMS"));
-
-  AddDisplayController(dri_, displays[0]->crtc()->crtc_id,
-                       displays[0]->connector()->connector_id);
-  if (ConfigureDisplayController(
-          displays[0]->crtc()->crtc_id, displays[0]->connector()->connector_id,
-          gfx::Point(), displays[0]->connector()->modes[0])) {
-    if (dpms)
-      dri_->SetProperty(displays[0]->connector()->connector_id, dpms->prop_id,
-                        DRM_MODE_DPMS_ON);
-  }
-}
-
 bool ScreenManager::ModesetDisplayController(
     HardwareDisplayController* controller,
     const gfx::Point& origin,
     const drmModeModeInfo& mode) {
+  DCHECK(!controller->crtc_controllers().empty());
+  scoped_refptr<DriWrapper> drm = controller->crtc_controllers()[0]->drm();
   controller->set_origin(origin);
+
   // Create a surface suitable for the current controller.
-  scoped_refptr<ScanoutBuffer> buffer = buffer_generator_->Create(
-      dri_.get(), gfx::Size(mode.hdisplay, mode.vdisplay));
+  scoped_refptr<ScanoutBuffer> buffer =
+      buffer_generator_->Create(drm, gfx::Size(mode.hdisplay, mode.vdisplay));
 
   if (!buffer.get()) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return false;
   }
 
-  FillModesetBuffer(dri_, controller, buffer.get());
+  FillModesetBuffer(drm, controller, buffer.get());
 
   if (!controller->Modeset(OverlayPlane(buffer), mode)) {
     LOG(ERROR) << "Failed to modeset controller";

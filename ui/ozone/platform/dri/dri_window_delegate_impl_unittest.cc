@@ -29,26 +29,7 @@ const drmModeModeInfo kDefaultMode =
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 const uint32_t kDefaultCrtc = 1;
 const uint32_t kDefaultConnector = 2;
-
-class MockScreenManager : public ui::ScreenManager {
- public:
-  MockScreenManager(ui::DriWrapper* dri,
-                    ui::ScanoutBufferGenerator* buffer_generator)
-      : ScreenManager(dri, buffer_generator), dri_(dri) {}
-  ~MockScreenManager() override {}
-
-  // Normally we'd use DRM to figure out the controller configuration. But we
-  // can't use DRM in unit tests, so we just create a fake configuration.
-  void ForceInitializationOfPrimaryDisplay() override {
-    ConfigureDisplayController(kDefaultCrtc, kDefaultConnector, gfx::Point(),
-                               kDefaultMode);
-  }
-
- private:
-  ui::DriWrapper* dri_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(MockScreenManager);
-};
+const int kDefaultCursorSize = 64;
 
 }  // namespace
 
@@ -63,7 +44,7 @@ class DriWindowDelegateImplTest : public testing::Test {
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<ui::MockDriWrapper> dri_;
   scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
-  scoped_ptr<MockScreenManager> screen_manager_;
+  scoped_ptr<ui::ScreenManager> screen_manager_;
   scoped_ptr<ui::DriWindowDelegateManager> window_delegate_manager_;
 
  private:
@@ -74,8 +55,11 @@ void DriWindowDelegateImplTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   dri_ = new ui::MockDriWrapper(3);
   buffer_generator_.reset(new ui::DriBufferGenerator());
-  screen_manager_.reset(
-      new MockScreenManager(dri_.get(), buffer_generator_.get()));
+  screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
+  screen_manager_->AddDisplayController(dri_, kDefaultCrtc, kDefaultConnector);
+  screen_manager_->ConfigureDisplayController(kDefaultCrtc, kDefaultConnector,
+                                              gfx::Point(), kDefaultMode);
+
   window_delegate_manager_.reset(new ui::DriWindowDelegateManager());
 
   scoped_ptr<ui::DriWindowDelegate> window_delegate(
@@ -107,9 +91,19 @@ TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
       ->SetCursor(cursor_bitmaps, gfx::Point(4, 2), 0);
 
   SkBitmap cursor;
-  // Buffers 0 and 1 are the cursor buffers.
-  cursor.setInfo(dri_->buffers()[1]->getCanvas()->imageInfo());
-  EXPECT_TRUE(dri_->buffers()[1]->getCanvas()->readPixels(&cursor, 0, 0));
+  std::vector<skia::RefPtr<SkSurface>> cursor_buffers;
+  for (const skia::RefPtr<SkSurface>& cursor_buffer : dri_->buffers()) {
+    if (cursor_buffer->width() == kDefaultCursorSize &&
+        cursor_buffer->height() == kDefaultCursorSize) {
+      cursor_buffers.push_back(cursor_buffer);
+    }
+  }
+
+  EXPECT_EQ(2u, cursor_buffers.size());
+
+  // Buffers 1 is the cursor backbuffer we just drew in.
+  cursor.setInfo(cursor_buffers[1]->getCanvas()->imageInfo());
+  EXPECT_TRUE(cursor_buffers[1]->getCanvas()->readPixels(&cursor, 0, 0));
 
   // Check that the frontbuffer is displaying the right image as set above.
   for (int i = 0; i < cursor.height(); ++i) {

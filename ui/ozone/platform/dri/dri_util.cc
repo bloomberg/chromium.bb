@@ -11,6 +11,9 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/screen_manager.h"
+
 namespace ui {
 
 namespace {
@@ -133,6 +136,28 @@ bool MapDumbBuffer(int fd,
   }
 
   return true;
+}
+
+void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DriWrapper>& drm,
+                                         ScreenManager* screen_manager) {
+  LOG(WARNING) << "Forcing initialization of primary display.";
+  ScopedVector<HardwareDisplayControllerInfo> displays =
+      GetAvailableDisplayControllerInfos(drm->get_fd());
+
+  if (displays.empty())
+    return;
+
+  ScopedDrmPropertyPtr dpms(drm->GetProperty(displays[0]->connector(), "DPMS"));
+
+  screen_manager->AddDisplayController(drm, displays[0]->crtc()->crtc_id,
+                                       displays[0]->connector()->connector_id);
+  if (screen_manager->ConfigureDisplayController(
+          displays[0]->crtc()->crtc_id, displays[0]->connector()->connector_id,
+          gfx::Point(), displays[0]->connector()->modes[0])) {
+    if (dpms)
+      drm->SetProperty(displays[0]->connector()->connector_id, dpms->prop_id,
+                       DRM_MODE_DPMS_ON);
+  }
 }
 
 }  // namespace ui

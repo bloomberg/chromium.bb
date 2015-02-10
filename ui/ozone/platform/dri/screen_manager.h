@@ -28,8 +28,7 @@ class ScanoutBufferGenerator;
 // Responsible for keeping track of active displays and configuring them.
 class OZONE_EXPORT ScreenManager {
  public:
-  ScreenManager(const scoped_refptr<DriWrapper>& dri,
-                ScanoutBufferGenerator* surface_generator);
+  ScreenManager(ScanoutBufferGenerator* surface_generator);
   virtual ~ScreenManager();
 
   // Register a display controller. This must be called before trying to
@@ -61,11 +60,6 @@ class OZONE_EXPORT ScreenManager {
   void AddObserver(DisplayChangeObserver* observer);
   void RemoveObserver(DisplayChangeObserver* observer);
 
-  // On non CrOS builds there is no display configurator to look-up available
-  // displays and initialize the HDCs. In such cases this is called internally
-  // to initialize a display.
-  virtual void ForceInitializationOfPrimaryDisplay();
-
  private:
   typedef ScopedVector<HardwareDisplayController> HardwareDisplayControllers;
 
@@ -91,7 +85,6 @@ class OZONE_EXPORT ScreenManager {
                         uint32_t crtc,
                         uint32_t connector);
 
-  scoped_refptr<DriWrapper> dri_;             // Not owned.
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.
   // List of display controllers (active and disabled).
   HardwareDisplayControllers controllers_;

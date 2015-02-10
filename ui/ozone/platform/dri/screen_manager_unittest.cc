@@ -19,18 +19,6 @@ const uint32_t kPrimaryConnector = 2;
 const uint32_t kSecondaryCrtc = 3;
 const uint32_t kSecondaryConnector = 4;
 
-class MockScreenManager : public ui::ScreenManager {
- public:
-  MockScreenManager(const scoped_refptr<ui::DriWrapper>& dri,
-                    ui::ScanoutBufferGenerator* buffer_generator)
-      : ScreenManager(dri, buffer_generator) {}
-
-  void ForceInitializationOfPrimaryDisplay() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockScreenManager);
-};
-
 class TestDisplayChangeObserver : public ui::DisplayChangeObserver {
  public:
   TestDisplayChangeObserver()
@@ -77,7 +65,7 @@ class ScreenManagerTest : public testing::Test {
   void SetUp() override {
     dri_ = new ui::MockDriWrapper(3);
     buffer_generator_.reset(new ui::DriBufferGenerator());
-    screen_manager_.reset(new MockScreenManager(dri_, buffer_generator_.get()));
+    screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
     screen_manager_->AddObserver(&observer_);
   }
   void TearDown() override {
@@ -89,7 +77,7 @@ class ScreenManagerTest : public testing::Test {
  protected:
   scoped_refptr<ui::MockDriWrapper> dri_;
   scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
-  scoped_ptr<MockScreenManager> screen_manager_;
+  scoped_ptr<ui::ScreenManager> screen_manager_;
 
   TestDisplayChangeObserver observer_;
 

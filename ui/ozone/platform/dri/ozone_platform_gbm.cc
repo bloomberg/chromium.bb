@@ -19,6 +19,7 @@
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
+#include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
@@ -156,7 +157,11 @@ class OzonePlatformGbm : public OzonePlatform {
     gbm_ = new GbmWrapper(kDefaultGraphicsCardPath);
     gbm_->Initialize();
     buffer_generator_.reset(new GbmBufferGenerator());
-    screen_manager_.reset(new ScreenManager(gbm_, buffer_generator_.get()));
+    screen_manager_.reset(new ScreenManager(buffer_generator_.get()));
+    // This makes sure that simple targets that do not handle display
+    // configuration can still use the primary display.
+    ForceInitializationOfPrimaryDisplay(gbm_, screen_manager_.get());
+
     window_delegate_manager_.reset(new DriWindowDelegateManager());
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));

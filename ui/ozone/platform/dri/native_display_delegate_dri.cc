@@ -70,8 +70,6 @@ NativeDisplayDelegateDri::NativeDisplayDelegateDri(
     const scoped_refptr<DriWrapper>& dri,
     ScreenManager* screen_manager)
     : dri_(dri), screen_manager_(screen_manager) {
-  // TODO(dnicoara): Remove when async display configuration is supported.
-  screen_manager_->ForceInitializationOfPrimaryDisplay();
 }
 
 NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {

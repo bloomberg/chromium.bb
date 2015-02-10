@@ -16,6 +16,7 @@
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
@@ -49,7 +50,7 @@ class OzonePlatformDri : public OzonePlatform {
   OzonePlatformDri()
       : dri_(new DriWrapper(kDefaultGraphicsCardPath)),
         buffer_generator_(new DriBufferGenerator()),
-        screen_manager_(new ScreenManager(dri_.get(), buffer_generator_.get())),
+        screen_manager_(new ScreenManager(buffer_generator_.get())),
         device_manager_(CreateDeviceManager()) {}
   ~OzonePlatformDri() override {}
 
@@ -89,6 +90,9 @@ class OzonePlatformDri : public OzonePlatform {
   }
   void InitializeUI() override {
     dri_->Initialize();
+    // This makes sure that simple targets that do not handle display
+    // configuration can still use the primary display.
+    ForceInitializationOfPrimaryDisplay(dri_, screen_manager_.get());
     display_manager_.reset(new DisplayManager());
     surface_factory_ozone_.reset(
         new DriSurfaceFactory(dri_.get(), &window_delegate_manager_));
