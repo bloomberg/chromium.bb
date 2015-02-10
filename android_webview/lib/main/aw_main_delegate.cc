@@ -93,20 +93,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // In multi-process mode this code would live in
   // AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess.
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#ifdef __LP64__
-  const char kNativesFileName[] = "natives_blob_64.bin";
-  const char kSnapshotFileName[] = "snapshot_blob_64.bin";
-#else
-  const char kNativesFileName[] = "natives_blob_32.bin";
-  const char kSnapshotFileName[] = "snapshot_blob_32.bin";
-#endif // __LP64__
-  // TODO(gsennton) we should use
-  // gin::IsolateHolder::kNativesFileName/kSnapshotFileName
-  // here when those files have arch specific names http://crbug.com/455699
   CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
-      kV8NativesDataDescriptor, kNativesFileName));
+      kV8NativesDataDescriptor, gin::IsolateHolder::kNativesFileName));
   CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
-      kV8SnapshotDataDescriptor, kSnapshotFileName));
+      kV8SnapshotDataDescriptor, gin::IsolateHolder::kSnapshotFileName));
 #endif
   // TODO(mkosiba): make this CHECK when the android_webview_build uses an asset
   // from the .apk too.

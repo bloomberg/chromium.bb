@@ -18,34 +18,36 @@
         'native_lib_target': 'libstandalonelibwebviewchromium',
         'resource_dir': 'test/shell/res',
         'extensions_to_not_compress': 'pak,dat,bin',
-        'asset_location': '<(PRODUCT_DIR)/android_webview_apk/assets',
         'extra_native_libs': ['<(SHARED_LIB_DIR)/libdrawgl.>(android_product_extension)'],
-        'snapshot_copy_files': '<(snapshot_copy_files)',
         'additional_input_paths': [
-          '<(asset_location)/webviewchromium.pak',
-          '<(asset_location)/en-US.pak',
-          '<(asset_location)/asset_file.html',
-          '<(asset_location)/cookie_test.html',
-          '<(asset_location)/asset_icon.png',
-          '<(asset_location)/full_screen_video.js',
-          '<(asset_location)/full_screen_video_test.html',
-          '<(asset_location)/full_screen_video_inside_div_test.html',
-          '<(asset_location)/multiple_videos_test.html',
-          '<(asset_location)/video.mp4',
-          '<@(snapshot_additional_input_paths)',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/en-US.pak',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/asset_file.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/cookie_test.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/asset_icon.png',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video.js',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video_test.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video_inside_div_test.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/multiple_videos_test.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/video.mp4',
         ],
         'conditions': [
           ['icu_use_data_file_flag==1', {
             'additional_input_paths': [
-              '<(asset_location)/icudtl.dat',
+              '<(PRODUCT_DIR)/icudtl.dat',
+            ],
+          }],
+          ['v8_use_external_startup_data==1', {
+            'additional_input_paths': [
+              '<(PRODUCT_DIR)/natives_blob.bin',
+              '<(PRODUCT_DIR)/snapshot_blob.bin',
             ],
           }],
         ],
-        'includes': [ 'snapshot_copying.gypi' ],
       },
       'copies': [
         {
-          'destination': '<(asset_location)',
+          'destination': '<(PRODUCT_DIR)/android_webview_apk/assets',
           'files': [
             '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
             '<(PRODUCT_DIR)/android_webview_assets/locales/en-US.pak',
@@ -57,12 +59,17 @@
             '<(java_in_dir)/assets/full_screen_video_inside_div_test.html',
             '<(java_in_dir)/assets/multiple_videos_test.html',
             '<(java_in_dir)/assets/video.mp4',
-            '<@(snapshot_copy_files)',
           ],
           'conditions': [
             ['icu_use_data_file_flag==1', {
               'files': [
                 '<(PRODUCT_DIR)/icudtl.dat',
+              ],
+            }],
+            ['v8_use_external_startup_data==1', {
+              'files': [
+                '<(PRODUCT_DIR)/natives_blob.bin',
+                '<(PRODUCT_DIR)/snapshot_blob.bin',
               ],
             }],
           ],
