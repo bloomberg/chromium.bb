@@ -39,14 +39,16 @@ public class VisualStateTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                awContents.flushVisualState(new AwContents.VisualStateFlushCallback() {
+                final long requestId = 20;
+                awContents.flushVisualState(requestId, new AwContents.VisualStateFlushCallback() {
                     @Override
-                    public void onComplete() {
+                    public void onComplete(long id) {
+                        assertEquals(requestId, id);
                         ch.notifyCalled();
                     }
 
                     @Override
-                    public void onFailure() {
+                    public void onFailure(long id) {
                         fail("onFailure received");
                     }
                 });
@@ -71,20 +73,24 @@ public class VisualStateTest extends AwTestBase {
                     @Override
                     public void onPageFinished(String url) {
                         if (bluePageUrl.getUrl().equals(url)) {
-                            awContentsRef.get().flushVisualState(new VisualStateFlushCallback() {
-                                @Override
-                                public void onFailure() {
-                                    fail("onFailure received");
-                                }
+                            final long requestId = 10;
+                            awContentsRef.get().flushVisualState(requestId,
+                                    new VisualStateFlushCallback() {
+                                        @Override
+                                        public void onFailure(long id) {
+                                            fail("onFailure received");
+                                        }
 
-                                @Override
-                                public void onComplete() {
-                                    Bitmap blueScreenshot = GraphicsTestUtils.drawAwContents(
-                                            awContentsRef.get(), 1, 1);
-                                    assertEquals(Color.BLUE, blueScreenshot.getPixel(0, 0));
-                                    testFinishedSignal.countDown();
-                                }
-                            });
+                                        @Override
+                                        public void onComplete(long id) {
+                                            assertEquals(requestId, id);
+                                            Bitmap blueScreenshot = GraphicsTestUtils
+                                                    .drawAwContents(
+                                                            awContentsRef.get(), 1, 1);
+                                            assertEquals(Color.BLUE, blueScreenshot.getPixel(0, 0));
+                                            testFinishedSignal.countDown();
+                                        }
+                                    });
                         }
                     }
                 });

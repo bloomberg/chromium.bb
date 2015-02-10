@@ -1036,6 +1036,7 @@ void AwContents::EnableOnNewPicture(JNIEnv* env,
 
 namespace {
 void FlushVisualStateCallback(const JavaObjectWeakGlobalRef& java_ref,
+                              long request_id,
                               ScopedJavaGlobalRef<jobject>* callback,
                               bool result) {
   JNIEnv* env = AttachCurrentThread();
@@ -1043,16 +1044,18 @@ void FlushVisualStateCallback(const JavaObjectWeakGlobalRef& java_ref,
   if (obj.is_null())
      return;
   Java_AwContents_flushVisualStateCallback(
-      env, obj.obj(), callback->obj(), result);
+      env, obj.obj(), callback->obj(), request_id, result);
 }
 }  // namespace
 
-void AwContents::FlushVisualState(JNIEnv* env, jobject obj, jobject callback) {
+void AwContents::FlushVisualState(
+    JNIEnv* env, jobject obj, long request_id, jobject callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, callback);
-  web_contents_->GetMainFrame()->FlushVisualState(base::Bind(
-      &FlushVisualStateCallback, java_ref_, base::Owned(j_callback)));
+  web_contents_->GetMainFrame()->FlushVisualState(
+      base::Bind(&FlushVisualStateCallback, java_ref_, request_id,
+                 base::Owned(j_callback)));
 }
 
 void AwContents::ClearView(JNIEnv* env, jobject obj) {
