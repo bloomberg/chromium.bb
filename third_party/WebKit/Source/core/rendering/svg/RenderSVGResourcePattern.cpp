@@ -23,7 +23,8 @@
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
 #include "core/dom/ElementTraversal.h"
-#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGPatternElement.h"
@@ -182,7 +183,7 @@ PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect&
     {
         TransformRecorder transformRecorder(recordingContext, patternRenderer->displayItemClient(), tileTransform);
         for (LayoutObject* child = patternRenderer->firstChild(); child; child = child->nextSibling())
-            SVGLayoutContext::renderSubtree(&recordingContext, child);
+            SVGPaintContext::paintSubtree(&recordingContext, child);
     }
 
     if (displayItemList)

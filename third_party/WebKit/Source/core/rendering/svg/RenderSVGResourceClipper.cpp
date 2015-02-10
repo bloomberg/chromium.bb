@@ -27,7 +27,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/PaintInfo.h"
-#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"

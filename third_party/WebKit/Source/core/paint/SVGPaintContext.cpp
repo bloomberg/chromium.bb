@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/paint/SVGPaintContext.h"
 
 #include "core/frame/FrameHost.h"
 #include "core/layout/Layer.h"
@@ -38,7 +38,7 @@
 
 namespace blink {
 
-SVGLayoutContext::~SVGLayoutContext()
+SVGPaintContext::~SVGPaintContext()
 {
     if (m_filter) {
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
@@ -68,7 +68,7 @@ SVGLayoutContext::~SVGLayoutContext()
     }
 }
 
-bool SVGLayoutContext::applyClipMaskAndFilterIfNecessary()
+bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
 {
 #if ENABLE(ASSERT)
     ASSERT(!m_applyClipMaskAndFilterIfNecessaryCalled);
@@ -102,7 +102,7 @@ bool SVGLayoutContext::applyClipMaskAndFilterIfNecessary()
     return true;
 }
 
-void SVGLayoutContext::applyCompositingIfNecessary()
+void SVGPaintContext::applyCompositingIfNecessary()
 {
     ASSERT(!m_paintInfo.isRenderingClipPathAsMaskImage());
 
@@ -122,7 +122,7 @@ void SVGLayoutContext::applyCompositingIfNecessary()
     }
 }
 
-bool SVGLayoutContext::applyClipIfNecessary(SVGResources* resources)
+bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
 {
     // resources->clipper() corresponds to the non-prefixed 'clip-path' whereas
     // m_object->style()->clipPath() corresponds to '-webkit-clip-path'.
@@ -143,7 +143,7 @@ bool SVGLayoutContext::applyClipIfNecessary(SVGResources* resources)
     return true;
 }
 
-bool SVGLayoutContext::applyMaskIfNecessary(SVGResources* resources)
+bool SVGPaintContext::applyMaskIfNecessary(SVGResources* resources)
 {
     if (RenderSVGResourceMasker* masker = resources ? resources->masker() : nullptr) {
         if (!masker->prepareEffect(m_object, m_paintInfo.context))
@@ -153,7 +153,7 @@ bool SVGLayoutContext::applyMaskIfNecessary(SVGResources* resources)
     return true;
 }
 
-bool SVGLayoutContext::applyFilterIfNecessary(SVGResources* resources)
+bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
 {
     if (!resources) {
         if (m_object->style()->svgStyle().hasFilter())
@@ -176,7 +176,7 @@ bool SVGLayoutContext::applyFilterIfNecessary(SVGResources* resources)
     return true;
 }
 
-bool SVGLayoutContext::isIsolationInstalled() const
+bool SVGPaintContext::isIsolationInstalled() const
 {
     if (m_compositingRecorder)
         return true;
@@ -187,67 +187,7 @@ bool SVGLayoutContext::isIsolationInstalled() const
     return false;
 }
 
-static AffineTransform& currentContentTransformation()
-{
-    DEFINE_STATIC_LOCAL(AffineTransform, s_currentContentTransformation, ());
-    return s_currentContentTransformation;
-}
-
-SubtreeContentTransformScope::SubtreeContentTransformScope(const AffineTransform& subtreeContentTransformation)
-{
-    AffineTransform& contentTransformation = currentContentTransformation();
-    m_savedContentTransformation = contentTransformation;
-    contentTransformation = subtreeContentTransformation * contentTransformation;
-}
-
-SubtreeContentTransformScope::~SubtreeContentTransformScope()
-{
-    currentContentTransformation() = m_savedContentTransformation;
-}
-
-float SVGLayoutContext::calculateScreenFontSizeScalingFactor(const LayoutObject* renderer)
-{
-    // FIXME: trying to compute a device space transform at record time is wrong. All clients
-    // should be updated to avoid relying on this information, and the method should be removed.
-
-    ASSERT(renderer);
-    // We're about to possibly clear renderer, so save the deviceScaleFactor now.
-    float deviceScaleFactor = renderer->document().frameHost()->deviceScaleFactor();
-
-    // Walk up the render tree, accumulating SVG transforms.
-    AffineTransform ctm = currentContentTransformation();
-    while (renderer) {
-        ctm = renderer->localToParentTransform() * ctm;
-        if (renderer->isSVGRoot())
-            break;
-        renderer = renderer->parent();
-    }
-
-    // Continue walking up the layer tree, accumulating CSS transforms.
-    // FIXME: this queries layer compositing state - which is not
-    // supported during layout. Hence, the result may not include all CSS transforms.
-    Layer* layer = renderer ? renderer->enclosingLayer() : 0;
-    while (layer && layer->isAllowedToQueryCompositingState()) {
-        // We can stop at compositing layers, to match the backing resolution.
-        // FIXME: should we be computing the transform to the nearest composited layer,
-        // or the nearest composited layer that does not paint into its ancestor?
-        // I think this is the nearest composited ancestor since we will inherit its
-        // transforms in the composited layer tree.
-        if (layer->compositingState() != NotComposited)
-            break;
-
-        if (TransformationMatrix* layerTransform = layer->transform())
-            ctm = layerTransform->toAffineTransform() * ctm;
-
-        layer = layer->parent();
-    }
-
-    ctm.scale(deviceScaleFactor);
-
-    return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
-}
-
-void SVGLayoutContext::renderSubtree(GraphicsContext* context, LayoutObject* item)
+void SVGPaintContext::paintSubtree(GraphicsContext* context, LayoutObject* item)
 {
     ASSERT(context);
     ASSERT(item);

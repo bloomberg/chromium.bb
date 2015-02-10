@@ -6,7 +6,6 @@
 #include "core/paint/SVGShapePainter.h"
 
 #include "core/layout/PaintInfo.h"
-#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGMarkerData.h"
 #include "core/layout/svg/SVGResources.h"
@@ -15,6 +14,7 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGContainerPainter.h"
+#include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
@@ -57,26 +57,26 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
 
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGShape.displayItemClient(), m_renderSVGShape.localTransform());
     {
-        SVGLayoutContext renderingContext(m_renderSVGShape, paintInfoBeforeFiltering);
-        if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
-            RenderDrawingRecorder recorder(renderingContext.paintInfo().context, m_renderSVGShape, renderingContext.paintInfo().phase, boundingBox);
+        SVGPaintContext paintContext(m_renderSVGShape, paintInfoBeforeFiltering);
+        if (paintContext.applyClipMaskAndFilterIfNecessary()) {
+            RenderDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGShape, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 const SVGLayoutStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
                 if (svgStyle.shapeRendering() == SR_CRISPEDGES)
-                    renderingContext.paintInfo().context->setShouldAntialias(false);
+                    paintContext.paintInfo().context->setShouldAntialias(false);
 
                 for (int i = 0; i < 3; i++) {
                     switch (svgStyle.paintOrderType(i)) {
                     case PT_FILL: {
-                        GraphicsContextStateSaver stateSaver(*renderingContext.paintInfo().context, false);
-                        if (!SVGLayoutSupport::updateGraphicsContext(renderingContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToFillMode))
+                        GraphicsContextStateSaver stateSaver(*paintContext.paintInfo().context, false);
+                        if (!SVGLayoutSupport::updateGraphicsContext(paintContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToFillMode))
                             break;
-                        fillShape(renderingContext.paintInfo().context);
+                        fillShape(paintContext.paintInfo().context);
                         break;
                     }
                     case PT_STROKE:
                         if (svgStyle.hasVisibleStroke()) {
-                            GraphicsContextStateSaver stateSaver(*renderingContext.paintInfo().context, false);
+                            GraphicsContextStateSaver stateSaver(*paintContext.paintInfo().context, false);
                             AffineTransform nonScalingTransform;
                             const AffineTransform* additionalPaintServerTransform = 0;
 
@@ -89,13 +89,13 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
                                 additionalPaintServerTransform = &nonScalingTransform;
                             }
 
-                            if (!SVGLayoutSupport::updateGraphicsContext(renderingContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToStrokeMode, additionalPaintServerTransform))
+                            if (!SVGLayoutSupport::updateGraphicsContext(paintContext.paintInfo(), stateSaver, m_renderSVGShape.styleRef(), m_renderSVGShape, ApplyToStrokeMode, additionalPaintServerTransform))
                                 break;
-                            strokeShape(renderingContext.paintInfo().context);
+                            strokeShape(paintContext.paintInfo().context);
                         }
                         break;
                     case PT_MARKERS:
-                        paintMarkers(renderingContext.paintInfo());
+                        paintMarkers(paintContext.paintInfo());
                         break;
                     default:
                         ASSERT_NOT_REACHED();

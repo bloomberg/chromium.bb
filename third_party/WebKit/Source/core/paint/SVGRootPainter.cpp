@@ -6,10 +6,10 @@
 #include "core/paint/SVGRootPainter.h"
 
 #include "core/layout/PaintInfo.h"
-#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGSVGElement.h"
@@ -56,11 +56,11 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     // SVG doesn't use paintOffset internally but we need to bake it into the paint rect.
     paintInfoBeforeFiltering.rect.move(-adjustedPaintOffset.x(), -adjustedPaintOffset.y());
 
-    SVGLayoutContext renderingContext(m_renderSVGRoot, paintInfoBeforeFiltering);
-    if (renderingContext.paintInfo().phase == PaintPhaseForeground && !renderingContext.applyClipMaskAndFilterIfNecessary())
+    SVGPaintContext paintContext(m_renderSVGRoot, paintInfoBeforeFiltering);
+    if (paintContext.paintInfo().phase == PaintPhaseForeground && !paintContext.applyClipMaskAndFilterIfNecessary())
         return;
 
-    BoxPainter(m_renderSVGRoot).paint(renderingContext.paintInfo(), LayoutPoint());
+    BoxPainter(m_renderSVGRoot).paint(paintContext.paintInfo(), LayoutPoint());
 }
 
 } // namespace blink

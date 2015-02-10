@@ -6,11 +6,11 @@
 #include "core/paint/SVGContainerPainter.h"
 
 #include "core/layout/PaintInfo.h"
-#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
@@ -40,15 +40,15 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
             clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer.displayItemClient(), paintInfoBeforeFiltering.phase, viewport));
         }
 
-        SVGLayoutContext renderingContext(m_renderSVGContainer, paintInfoBeforeFiltering);
+        SVGPaintContext paintContext(m_renderSVGContainer, paintInfoBeforeFiltering);
         bool continueRendering = true;
-        if (renderingContext.paintInfo().phase == PaintPhaseForeground)
-            continueRendering = renderingContext.applyClipMaskAndFilterIfNecessary();
+        if (paintContext.paintInfo().phase == PaintPhaseForeground)
+            continueRendering = paintContext.applyClipMaskAndFilterIfNecessary();
 
         if (continueRendering) {
-            renderingContext.paintInfo().updatePaintingRootForChildren(&m_renderSVGContainer);
+            paintContext.paintInfo().updatePaintingRootForChildren(&m_renderSVGContainer);
             for (LayoutObject* child = m_renderSVGContainer.firstChild(); child; child = child->nextSibling())
-                child->paint(renderingContext.paintInfo(), IntPoint());
+                child->paint(paintContext.paintInfo(), IntPoint());
         }
     }
 

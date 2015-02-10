@@ -103,9 +103,20 @@ public:
     static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);
     static bool isIsolationRequired(const LayoutObject*);
 
+    static float calculateScreenFontSizeScalingFactor(const LayoutObject*);
+
 private:
     static void updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, LayoutObject* other, FloatRect otherBoundingBox);
     static bool layoutSizeOfNearestViewportChanged(const LayoutObject* start);
+};
+
+class SubtreeContentTransformScope {
+public:
+    SubtreeContentTransformScope(const AffineTransform&);
+    ~SubtreeContentTransformScope();
+
+private:
+    AffineTransform m_savedContentTransformation;
 };
 
 template <typename LayoutObjectType>

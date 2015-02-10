@@ -26,7 +26,7 @@
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/paint/SVGPaintContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -175,7 +175,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(LayoutObject* re
     context->save();
     context->beginRecording(bounds);
     context->concatCTM(transform);
-    SVGLayoutContext::renderSubtree(context, renderer);
+    SVGPaintContext::paintSubtree(context, renderer);
     RefPtr<const SkPicture> picture = context->endRecording();
     context->restore();
     RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(picture.get(), dstRect));

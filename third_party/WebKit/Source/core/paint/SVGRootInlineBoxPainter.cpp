@@ -6,13 +6,13 @@
 #include "core/paint/SVGRootInlineBoxPainter.h"
 
 #include "core/layout/PaintInfo.h"
-#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
+#include "core/paint/SVGPaintContext.h"
 
 namespace blink {
 
@@ -36,10 +36,10 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    SVGLayoutContext renderingContext(m_svgRootInlineBox.renderer(), paintInfoBeforeFiltering);
-    if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
+    SVGPaintContext paintContext(m_svgRootInlineBox.renderer(), paintInfoBeforeFiltering);
+    if (paintContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(renderingContext.paintInfo(), paintOffset, 0, 0);
+            child->paint(paintContext.paintInfo(), paintOffset, 0, 0);
     }
 }
 

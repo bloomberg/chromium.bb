@@ -7,11 +7,11 @@
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/PaintInfo.h"
-#include "core/layout/svg/SVGLayoutContext.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
@@ -35,21 +35,21 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGImage.displayItemClient(), m_renderSVGImage.localToParentTransform());
     {
-        SVGLayoutContext renderingContext(m_renderSVGImage, paintInfoBeforeFiltering);
-        if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
-            RenderDrawingRecorder recorder(renderingContext.paintInfo().context, m_renderSVGImage, renderingContext.paintInfo().phase, boundingBox);
+        SVGPaintContext paintContext(m_renderSVGImage, paintInfoBeforeFiltering);
+        if (paintContext.applyClipMaskAndFilterIfNecessary()) {
+            RenderDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGImage, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
-                    paintForeground(renderingContext.paintInfo());
+                    paintForeground(paintContext.paintInfo());
                 } else {
                     RefPtr<const SkPicture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
                     if (!bufferedForeground) {
-                        renderingContext.paintInfo().context->beginRecording(m_renderSVGImage.objectBoundingBox());
-                        paintForeground(renderingContext.paintInfo());
-                        bufferedForeground = renderingContext.paintInfo().context->endRecording();
+                        paintContext.paintInfo().context->beginRecording(m_renderSVGImage.objectBoundingBox());
+                        paintForeground(paintContext.paintInfo());
+                        bufferedForeground = paintContext.paintInfo().context->endRecording();
                     }
 
-                    renderingContext.paintInfo().context->drawPicture(bufferedForeground.get());
+                    paintContext.paintInfo().context->drawPicture(bufferedForeground.get());
                 }
             }
         }

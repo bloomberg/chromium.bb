@@ -21,7 +21,8 @@
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 
 #include "core/dom/ElementTraversal.h"
-#include "core/layout/svg/SVGLayoutContext.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/SVGPaintContext.h"
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/transforms/AffineTransform.h"
@@ -138,7 +139,7 @@ void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        SVGLayoutContext::renderSubtree(context, renderer);
+        SVGPaintContext::paintSubtree(context, renderer);
     }
     m_maskContentPicture = context->endRecording();
 }

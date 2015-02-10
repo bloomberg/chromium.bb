@@ -22,8 +22,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGLayoutContext_h
-#define SVGLayoutContext_h
+#ifndef SVGPaintContext_h
+#define SVGPaintContext_h
 
 #include "core/layout/PaintInfo.h"
 #include "core/paint/CompositingRecorder.h"
@@ -39,19 +39,10 @@ class RenderSVGResourceFilter;
 class RenderSVGResourceMasker;
 class SVGResources;
 
-class SubtreeContentTransformScope {
-public:
-    SubtreeContentTransformScope(const AffineTransform&);
-    ~SubtreeContentTransformScope();
-
-private:
-    AffineTransform m_savedContentTransformation;
-};
-
-class SVGLayoutContext {
+class SVGPaintContext {
     STACK_ALLOCATED();
 public:
-    SVGLayoutContext(LayoutObject& object, const PaintInfo& paintInfo)
+    SVGPaintContext(LayoutObject& object, const PaintInfo& paintInfo)
         : m_object(&object)
         , m_paintInfo(paintInfo)
         , m_originalPaintInfo(&paintInfo)
@@ -64,16 +55,14 @@ public:
 #endif
     { }
 
-    ~SVGLayoutContext();
+    ~SVGPaintContext();
 
     PaintInfo& paintInfo() { return m_paintInfo; }
 
     // Return true if these operations aren't necessary or if they are successfully applied.
     bool applyClipMaskAndFilterIfNecessary();
 
-    static void renderSubtree(GraphicsContext*, LayoutObject*);
-
-    static float calculateScreenFontSizeScalingFactor(const LayoutObject*);
+    static void paintSubtree(GraphicsContext*, LayoutObject*);
 
 private:
     void applyCompositingIfNecessary();
@@ -106,4 +95,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGLayoutContext_h
+#endif // SVGPaintContext_h

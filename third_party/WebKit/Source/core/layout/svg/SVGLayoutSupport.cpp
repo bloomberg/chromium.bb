@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/layout/Layer.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
@@ -459,6 +460,66 @@ bool SVGLayoutSupport::willIsolateBlendingDescendantsForObject(const LayoutObjec
 bool SVGLayoutSupport::isIsolationRequired(const LayoutObject* object)
 {
     return willIsolateBlendingDescendantsForObject(object) && object->hasNonIsolatedBlendingDescendants();
+}
+
+static AffineTransform& currentContentTransformation()
+{
+    DEFINE_STATIC_LOCAL(AffineTransform, s_currentContentTransformation, ());
+    return s_currentContentTransformation;
+}
+
+SubtreeContentTransformScope::SubtreeContentTransformScope(const AffineTransform& subtreeContentTransformation)
+{
+    AffineTransform& contentTransformation = currentContentTransformation();
+    m_savedContentTransformation = contentTransformation;
+    contentTransformation = subtreeContentTransformation * contentTransformation;
+}
+
+SubtreeContentTransformScope::~SubtreeContentTransformScope()
+{
+    currentContentTransformation() = m_savedContentTransformation;
+}
+
+float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject* renderer)
+{
+    // FIXME: trying to compute a device space transform at record time is wrong. All clients
+    // should be updated to avoid relying on this information, and the method should be removed.
+
+    ASSERT(renderer);
+    // We're about to possibly clear renderer, so save the deviceScaleFactor now.
+    float deviceScaleFactor = renderer->document().frameHost()->deviceScaleFactor();
+
+    // Walk up the render tree, accumulating SVG transforms.
+    AffineTransform ctm = currentContentTransformation();
+    while (renderer) {
+        ctm = renderer->localToParentTransform() * ctm;
+        if (renderer->isSVGRoot())
+            break;
+        renderer = renderer->parent();
+    }
+
+    // Continue walking up the layer tree, accumulating CSS transforms.
+    // FIXME: this queries layer compositing state - which is not
+    // supported during layout. Hence, the result may not include all CSS transforms.
+    Layer* layer = renderer ? renderer->enclosingLayer() : 0;
+    while (layer && layer->isAllowedToQueryCompositingState()) {
+        // We can stop at compositing layers, to match the backing resolution.
+        // FIXME: should we be computing the transform to the nearest composited layer,
+        // or the nearest composited layer that does not paint into its ancestor?
+        // I think this is the nearest composited ancestor since we will inherit its
+        // transforms in the composited layer tree.
+        if (layer->compositingState() != NotComposited)
+            break;
+
+        if (TransformationMatrix* layerTransform = layer->transform())
+            ctm = layerTransform->toAffineTransform() * ctm;
+
+        layer = layer->parent();
+    }
+
+    ctm.scale(deviceScaleFactor);
+
+    return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
 }
 
 }
