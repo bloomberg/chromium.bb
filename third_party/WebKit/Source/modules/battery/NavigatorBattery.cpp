@@ -46,7 +46,7 @@ NavigatorBattery& NavigatorBattery::from(Navigator& navigator)
     return *supplement;
 }
 
-void NavigatorBattery::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorBattery)
 {
     visitor->trace(m_batteryManager);
     WillBeHeapSupplement<Navigator>::trace(visitor);

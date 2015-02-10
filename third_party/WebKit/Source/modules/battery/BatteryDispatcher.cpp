@@ -24,7 +24,7 @@ BatteryDispatcher::~BatteryDispatcher()
 {
 }
 
-void BatteryDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(BatteryDispatcher)
 {
     visitor->trace(m_batteryStatus);
     PlatformEventDispatcher::trace(visitor);

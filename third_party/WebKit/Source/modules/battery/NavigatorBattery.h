@@ -25,7 +25,7 @@ public:
     static ScriptPromise getBattery(ScriptState*, Navigator&);
     ScriptPromise getBattery(ScriptState*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     NavigatorBattery();

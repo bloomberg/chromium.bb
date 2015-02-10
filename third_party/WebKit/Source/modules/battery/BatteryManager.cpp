@@ -151,7 +151,7 @@ bool BatteryManager::hasPendingActivity() const
     return m_state == Resolved && hasEventListeners();
 }
 
-void BatteryManager::trace(Visitor* visitor)
+DEFINE_TRACE(BatteryManager)
 {
     visitor->trace(m_resolver);
     visitor->trace(m_batteryStatus);

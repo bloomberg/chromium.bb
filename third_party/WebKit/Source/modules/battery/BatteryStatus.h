@@ -21,7 +21,7 @@ public:
     double dischargingTime() const  { return m_dischargingTime; }
     double level() const  { return m_level; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     BatteryStatus();

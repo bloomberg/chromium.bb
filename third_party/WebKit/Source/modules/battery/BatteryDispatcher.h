@@ -25,7 +25,7 @@ public:
     // Inherited from WebBatteryStatusListener.
     virtual void updateBatteryStatus(const WebBatteryStatus&) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     BatteryDispatcher();
