@@ -466,7 +466,6 @@
       'browser/media/webrtc_identity_store_unittest.cc',
       'browser/net/sqlite_persistent_cookie_store_unittest.cc',
       'browser/notification_service_impl_unittest.cc',
-      'browser/presentation/presentation_service_impl_unittest.cc',
       'browser/power_monitor_message_broadcaster_unittest.cc',
       'browser/power_usage_monitor_impl_unittest.cc',
       'browser/power_profiler/power_profiler_service_unittest.cc',

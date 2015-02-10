@@ -1400,8 +1400,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
                  base::Unretained(permission_service_context_.get())));
 
   GetServiceRegistry()->AddService<presentation::PresentationService>(
-      base::Bind(&PresentationServiceImpl::CreateMojoService,
-                 base::Unretained(this)));
+      base::Bind(&PresentationServiceImpl::CreateMojoService));
 
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
   GetServiceRegistry()->AddService<mojo::MediaRenderer>(
