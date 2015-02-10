@@ -9,7 +9,7 @@ namespace profiles {
 
 // Different views that can be displayed in the profile chooser bubble.
 enum BubbleViewMode {
-  // Shows a "fast profile switcher" view.
+  // Shows the default avatar bubble.
   BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
   // Shows a list of accounts for the active user.
   BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
@@ -23,6 +23,8 @@ enum BubbleViewMode {
   BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
   // Shows a view for switching user.
   BUBBLE_VIEW_MODE_SWITCH_USER,
+  // Shows a "fast profile switcher" view.
+  BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER,
 };
 
 // Tutorial modes that can be displayed in the profile chooser bubble.

@@ -79,6 +79,11 @@ const int kLargeImageSide = 88;
 
 const int kVerticalSpacing = 16;
 
+bool IsProfileChooser(profiles::BubbleViewMode mode) {
+  return mode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
+      mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
+}
+
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
 views::GridLayout* CreateSingleColumnLayout(views::View* view, int width) {
@@ -585,7 +590,7 @@ void ProfileChooserView::ResetView() {
 void ProfileChooserView::Init() {
   // If view mode is PROFILE_CHOOSER but there is an auth error, force
   // ACCOUNT_MANAGEMENT mode.
-  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
+  if (IsProfileChooser(view_mode_) &&
       HasAuthError(browser_->profile()) &&
       switches::IsEnableAccountConsistency() &&
       avatar_menu_->GetItemAt(avatar_menu_->GetActiveProfileIndex()).
@@ -602,7 +607,7 @@ void ProfileChooserView::Init() {
 
 void ProfileChooserView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
-  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
+  if (IsProfileChooser(view_mode_) ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
     // Refresh the view with the new menu. We can't just update the local copy
     // as this may have been triggered by a sign out action, in which case
@@ -891,10 +896,9 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
   return false;
 }
 
-views::View* ProfileChooserView::CreateProfileChooserView(
+void ProfileChooserView::PopulateCompleteProfileChooserView(
+    views::GridLayout* layout,
     AvatarMenu* avatar_menu) {
-  views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
   // Separate items into active and alternatives.
   Indexes other_profiles;
   views::View* tutorial_view = NULL;
@@ -907,7 +911,7 @@ views::View* ProfileChooserView::CreateProfileChooserView(
       option_buttons_view = CreateOptionsView(
           item.signed_in && profiles::IsLockAvailable(browser_->profile()));
       current_profile_view = CreateCurrentProfileView(item, false);
-      if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+      if (IsProfileChooser(view_mode_)) {
         switch (tutorial_mode_) {
           case profiles::TUTORIAL_MODE_NONE:
           case profiles::TUTORIAL_MODE_WELCOME_UPGRADE:
@@ -947,7 +951,7 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view);
 
-  if (view_mode_ != profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+  if (!IsProfileChooser(view_mode_)) {
     DCHECK(current_profile_accounts);
     layout->StartRow(0, 0);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
@@ -962,10 +966,11 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     layout->AddView(CreateSupervisedUserDisclaimerView());
   }
 
-  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+  if (IsProfileChooser(view_mode_)) {
     layout->StartRow(1, 0);
-    if (switches::IsFastUserSwitching())
+    if (switches::IsFastUserSwitching()) {
       layout->AddView(CreateOtherProfilesView(other_profiles));
+    }
   }
 
   layout->StartRow(0, 0);
@@ -975,6 +980,32 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     layout->StartRow(0, 0);
     layout->AddView(option_buttons_view);
   }
+}
+
+void ProfileChooserView::PopulateMinimalProfileChooserView(
+    views::GridLayout* layout,
+    AvatarMenu* avatar_menu) {
+  Indexes other_profiles;
+  for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
+    if (!item.active) {
+      other_profiles.push_back(i);
+    }
+  }
+
+  layout->StartRow(1, 0);
+  layout->AddView(CreateOtherProfilesView(other_profiles));
+}
+
+views::View* ProfileChooserView::CreateProfileChooserView(
+    AvatarMenu* avatar_menu) {
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+
+  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER)
+    PopulateMinimalProfileChooserView(layout, avatar_menu);
+  else
+    PopulateCompleteProfileChooserView(layout, avatar_menu);
 
   return view;
 }
@@ -1162,7 +1193,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     layout->StartRow(1, 0);
     if (switches::IsEnableAccountConsistency()) {
       base::string16 link_title = l10n_util::GetStringUTF16(
-          view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
+          IsProfileChooser(view_mode_) ?
               IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON :
               IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON);
       manage_accounts_link_ = CreateLink(link_title, this);

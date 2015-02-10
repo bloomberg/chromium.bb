@@ -327,9 +327,19 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
   } else if (sender == close_button_) {
     frame()->Close();
   } else if (sender == new_avatar_button()) {
-    browser_view()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-        signin::ManageAccountsParams());
+    DCHECK(event.IsMouseEvent());
+    bool isRightClick =
+        static_cast<const ui::MouseEvent&>(event).IsRightMouseButton();
+
+    BrowserWindow::AvatarBubbleMode mode = isRightClick ?
+        BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH :
+        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
+
+    if (switches::IsFastUserSwitching() || !isRightClick) {
+      browser_view()->ShowAvatarBubbleFromAvatarButton(
+          mode,
+          signin::ManageAccountsParams());
+    }
   }
 }
 

@@ -1211,6 +1211,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       subView = [self buildSwitchUserView];
       break;
     case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
+    case profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER:
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT:
       subView = [self buildProfileChooserView];
       break;
@@ -1243,6 +1244,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[NSMutableArray alloc] init]);
   // Local and guest profiles cannot lock their profile.
   bool displayLock = false;
+  bool isFastProfileChooser =
+      viewMode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
 
   // Loop over the profiles in reverse, so that they are sorted by their
   // y-coordinate, and separate them into active and "other" profiles.
@@ -1278,19 +1281,21 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // overlap the bubble's rounded corners.
   CGFloat yOffset = 1;
 
-  // Option buttons.
-  NSRect rect = NSMakeRect(0, yOffset, kFixedMenuWidth, 0);
-  NSView* optionsView = [self createOptionsViewWithRect:rect
-                                            displayLock:displayLock];
-  [container addSubview:optionsView];
-  rect.origin.y = NSMaxY([optionsView frame]);
+  if (!isFastProfileChooser) {
+    // Option buttons.
+    NSRect rect = NSMakeRect(0, yOffset, kFixedMenuWidth, 0);
+    NSView* optionsView = [self createOptionsViewWithRect:rect
+                                              displayLock:displayLock];
+    [container addSubview:optionsView];
+    rect.origin.y = NSMaxY([optionsView frame]);
 
-  NSBox* separator = [self horizontalSeparatorWithFrame:rect];
-  [container addSubview:separator];
-  yOffset = NSMaxY([separator frame]);
+    NSBox* separator = [self horizontalSeparatorWithFrame:rect];
+    [container addSubview:separator];
+    yOffset = NSMaxY([separator frame]);
+  }
 
-  if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
-      switches::IsFastUserSwitching()) {
+  if ((viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
+       switches::IsFastUserSwitching()) || isFastProfileChooser) {
     // Other profiles switcher. The profiles have already been sorted
     // by their y-coordinate, so they can be added in the existing order.
     for (NSView *otherProfileView in otherProfiles.get()) {
@@ -1333,14 +1338,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // Active profile card.
-  if (currentProfileView) {
+  if (!isFastProfileChooser && currentProfileView) {
     yOffset += kVerticalSpacing;
     [currentProfileView setFrameOrigin:NSMakePoint(0, yOffset)];
     [container addSubview:currentProfileView];
     yOffset = NSMaxY([currentProfileView frame]) + kVerticalSpacing;
   }
 
-  if (tutorialView) {
+  if (!isFastProfileChooser && tutorialView) {
     [tutorialView setFrameOrigin:NSMakePoint(0, yOffset)];
     [container addSubview:tutorialView];
     yOffset = NSMaxY([tutorialView frame]);

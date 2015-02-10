@@ -210,8 +210,14 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
 }
 
 - (IBAction)buttonClicked:(id)sender {
+  BrowserWindow::AvatarBubbleMode mode =
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
+
+  if ([NSEvent modifierFlags] & NSCommandKeyMask)
+    mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
+
   [self showAvatarBubbleAnchoredAt:button_
-                          withMode:BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT
+                          withMode:mode
                    withServiceType:signin::GAIA_SERVICE_TYPE_NONE];
 }
 
