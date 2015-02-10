@@ -57,6 +57,15 @@ enum VolumeType {
   NUM_VOLUME_TYPE,
 };
 
+// Says how was the mount performed, whether due to user interaction, or
+// automatic. User interaction includes both hardware (pluggins a USB stick)
+// or software (mounting a ZIP archive) interaction.
+enum MountContext {
+  MOUNT_CONTEXT_USER,
+  MOUNT_CONTEXT_AUTO,
+  MOUNT_CONTEXT_UNKNOWN
+};
+
 struct VolumeInfo {
   VolumeInfo();
   ~VolumeInfo();
@@ -92,6 +101,10 @@ struct VolumeInfo {
 
   // The mounting condition. See the enum for the details.
   chromeos::disks::MountCondition mount_condition;
+
+  // The context of the mount. Whether mounting was performed due to a user
+  // interaction or not.
+  MountContext mount_context;
 
   // Path of the system device this device's block is a part of.
   // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/)
@@ -187,6 +200,7 @@ class VolumeManager : public KeyedService,
   void OnProvidedFileSystemMount(
       const chromeos::file_system_provider::ProvidedFileSystemInfo&
           file_system_info,
+      chromeos::file_system_provider::MountContext context,
       base::File::Error error) override;
   void OnProvidedFileSystemUnmount(
       const chromeos::file_system_provider::ProvidedFileSystemInfo&

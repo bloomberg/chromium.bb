@@ -48,17 +48,22 @@ class LoggingObserver : public Observer {
   class Event {
    public:
     Event(const ProvidedFileSystemInfo& file_system_info,
+          MountContext context,
           base::File::Error error)
-        : file_system_info_(file_system_info), error_(error) {}
+        : file_system_info_(file_system_info),
+          context_(context),
+          error_(error) {}
     ~Event() {}
 
-    const ProvidedFileSystemInfo& file_system_info() {
+    const ProvidedFileSystemInfo& file_system_info() const {
       return file_system_info_;
     }
-    base::File::Error error() { return error_; }
+    MountContext context() const { return context_; }
+    base::File::Error error() const { return error_; }
 
    private:
     ProvidedFileSystemInfo file_system_info_;
+    MountContext context_;
     base::File::Error error_;
   };
 
@@ -67,18 +72,23 @@ class LoggingObserver : public Observer {
 
   // file_system_provider::Observer overrides.
   void OnProvidedFileSystemMount(const ProvidedFileSystemInfo& file_system_info,
+                                 MountContext context,
                                  base::File::Error error) override {
-    mounts.push_back(Event(file_system_info, error));
+    mounts.push_back(Event(file_system_info, context, error));
   }
 
   void OnProvidedFileSystemUnmount(
       const ProvidedFileSystemInfo& file_system_info,
       base::File::Error error) override {
-    unmounts.push_back(Event(file_system_info, error));
+    // TODO(mtomasz): Split these events, as mount context doesn't make sense
+    // for unmounting.
+    unmounts.push_back(Event(file_system_info, MOUNT_CONTEXT_USER, error));
   }
 
   std::vector<Event> mounts;
   std::vector<Event> unmounts;
+
+  DISALLOW_COPY_AND_ASSIGN(LoggingObserver);
 };
 
 // Fake implementation of the registry, since it's already tested separately.
@@ -230,6 +240,7 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   EXPECT_FALSE(observer.mounts[0].file_system_info().writable());
   EXPECT_FALSE(observer.mounts[0].file_system_info().supports_notify_tag());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
+  EXPECT_EQ(MOUNT_CONTEXT_USER, observer.mounts[0].context());
   ASSERT_EQ(0u, observer.unmounts.size());
 
   std::vector<ProvidedFileSystemInfo> file_system_info_list =
@@ -417,6 +428,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
 
   ASSERT_EQ(1u, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
+  EXPECT_EQ(MOUNT_CONTEXT_RESTORE, observer.mounts[0].context());
 
   EXPECT_EQ(file_system_info.extension_id(),
             observer.mounts[0].file_system_info().extension_id());

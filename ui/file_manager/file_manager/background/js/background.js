@@ -129,6 +129,11 @@ function FileBrowserBackground() {
   chrome.contextMenus.onClicked.addListener(
       this.onContextMenuClicked_.bind(this));
 
+  // Handle newly mounted FSP file systems. Workaround for crbug.com/456648.
+  // TODO(mtomasz): Replace this hack with a proper solution.
+  chrome.fileManagerPrivate.onMountCompleted.addListener(
+      this.onMountCompleted_.bind(this));
+
   this.queue.run(function(callback) {
     this.stringDataPromise.then(function(strings) {
       // Init string data.
@@ -232,20 +237,41 @@ FileBrowserBackground.prototype.handleViewEvent_ =
                 console.error('Got view event with invalid volume id.');
               }
             } else if (event.volumeId) {
-              volumeManager.volumeInfoList.whenVolumeInfoReady(event.volumeId)
-                  .then(
-                      function(volume) {
-                        this.navigateToVolume_(volume, event.filePath);
-                      }.bind(this))
-                  .catch(
-                      function(e) {
-                        console.error(
-                            'Unable to find volume for id: ' + event.volumeId +
-                            '. Error: ' + e.message);
-                      });
+              this.navigateToVolumeWhenReady_(event.volumeId);
             } else {
               console.error('Got view event with no actionable destination.');
             }
+          }.bind(this));
+};
+
+/**
+ * Opens the volume root (or opt directoryPath) in main UI.
+ *
+ * @param {!string} volumeId ID of the volume to navigate to.
+ * @param {!string=} opt_directoryPath Optional path to be opened.
+ * @private
+ */
+FileBrowserBackground.prototype.navigateToVolumeWhenReady_ =
+    function(volumeId, opt_directoryPath) {
+  VolumeManager.getInstance()
+      .then(
+          /**
+           * Retrieves the root file entry of the volume on the requested
+           * device.
+           * @param {!VolumeManager} volumeManager
+           */
+          function(volumeManager) {
+            volumeManager.volumeInfoList.whenVolumeInfoReady(volumeId)
+                .then(
+                    function(volume) {
+                      this.navigateToVolume_(volume, opt_directoryPath);
+                    }.bind(this))
+                .catch(
+                    function(e) {
+                      console.error(
+                          'Unable to find volume for id: ' + volumeId +
+                          '. Error: ' + e.message);
+                    });
           }.bind(this));
 };
 
@@ -367,17 +393,14 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         for (var key in window.background.appWindows) {
           if (!key.match(FILES_ID_PATTERN))
             continue;
-
           var contentWindow = window.background.appWindows[key].contentWindow;
           if (!contentWindow.appState)
             continue;
-
           // Different current directories.
           if (opt_appState.currentDirectoryURL !==
                   contentWindow.appState.currentDirectoryURL) {
             continue;
           }
-
           // Selection URL specified, and it is different.
           if (opt_appState.selectionURL &&
                   opt_appState.selectionURL !==
@@ -551,15 +574,35 @@ FileBrowserBackground.prototype.onContextMenuClicked_ = function(info) {
   if (info.menuItemId == 'new-window') {
     // Find the focused window (if any) and use it's current url for the
     // new window. If not found, then launch with the default url.
+    this.findFocusedWindow_().then(function(key) {
+      if (!key) {
+        launchFileManager(appState);
+        return;
+      }
+      var appState = {
+        // Do not clone the selection url, only the current directory.
+        currentDirectoryURL: window.background.appWindows[key].
+            contentWindow.appState.currentDirectoryURL
+      };
+      launchFileManager(appState);
+    }).catch(function(error) {
+      console.error(error.stack || error);
+    });
+  }
+};
+
+/**
+ * Looks for a focused window.
+ *
+ * @return {!Promise.<?string>} Promise fulfilled with a key of the focused
+ *     window, or null if not found.
+ */
+FileBrowserBackground.prototype.findFocusedWindow_ = function() {
+  return new Promise(function(fulfill, reject) {
     for (var key in window.background.appWindows) {
       try {
         if (window.background.appWindows[key].contentWindow.isFocused()) {
-          var appState = {
-            // Do not clone the selection url, only the current directory.
-            currentDirectoryURL: window.background.appWindows[key].
-                contentWindow.appState.currentDirectoryURL
-          };
-          launchFileManager(appState);
+          fulfill(key);
           return;
         }
       } catch (ignore) {
@@ -567,10 +610,32 @@ FileBrowserBackground.prototype.onContextMenuClicked_ = function(info) {
         // Therefore, wrapped with a try-catch block.
       }
     }
+    fulfill(null);
+  });
+};
 
-    // Launch with the default URL.
-    launchFileManager();
-  }
+/**
+ * Handles mounted FSP volumes and fires Files app. This is a quick fix for
+ * crbug.com/456648.
+ * @param {!Object} event Event details.
+ * @private
+ */
+FileBrowserBackground.prototype.onMountCompleted_ = function(event) {
+  // If there is no focused window, then create a new one opened on the
+  // mounted FSP volume.
+  this.findFocusedWindow_().then(function(key) {
+    if (key === null &&
+        event.eventType === 'mount' &&
+        (event.status === 'success' ||
+         event.status === 'error_path_already_mounted') &&
+        event.volumeMetadata.mountContext === 'user' &&
+        event.volumeMetadata.volumeType ===
+            VolumeManagerCommon.VolumeType.PROVIDED) {
+      this.navigateToVolumeWhenReady_(event.volumeMetadata.volumeId);
+    }
+  }.bind(this)).catch(function(error) {
+    console.error(error.stack || error);
+  });
 };
 
 /**

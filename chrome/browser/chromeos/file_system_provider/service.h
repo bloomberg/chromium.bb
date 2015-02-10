@@ -151,6 +151,12 @@ class Service : public KeyedService,
       ProvidedFileSystemMap;
   typedef std::map<std::string, FileSystemKey> MountPointNameToKeyMap;
 
+  // Mounts the file system in the specified context. See MountFileSystem() for
+  // more information.
+  base::File::Error MountFileSystemInternal(const std::string& extension_id,
+                                            const MountOptions& options,
+                                            MountContext context);
+
   // Called when the providing extension accepts or refuses a unmount request.
   // If |error| is equal to FILE_OK, then the request is accepted.
   void OnRequestUnmountStatus(const ProvidedFileSystemInfo& file_system_info,

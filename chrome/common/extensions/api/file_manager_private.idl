@@ -18,6 +18,9 @@ enum DeviceType { usb, sd, optical, mobile, unknown };
 // supported.
 enum MountCondition { unknown, unsupported };
 
+// Additional information of the context the volume was mounted.
+enum MountContext { user, auto };
+
 // Is the event raised for mounting or unmounting.
 enum MountCompletedEventType { mount, unmount };
 
@@ -289,6 +292,9 @@ dictionary VolumeMetadata {
   // Additional data about mount, for example, that the filesystem is not
   // supported.
   MountCondition? mountCondition;
+
+  // Context in which the volume has been mounted.
+  MountContext? mountContext;
 };
 
 // Payload data for mount event.

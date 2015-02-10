@@ -276,6 +276,18 @@ void VolumeInfoToVolumeMetadata(
           file_manager_private::MOUNT_CONDITION_UNSUPPORTED;
       break;
   }
+
+  // If the context is known, then pass it.
+  switch (volume_info.mount_context) {
+    case MOUNT_CONTEXT_USER:
+      volume_metadata->mount_context = file_manager_private::MOUNT_CONTEXT_USER;
+      break;
+    case MOUNT_CONTEXT_AUTO:
+      volume_metadata->mount_context = file_manager_private::MOUNT_CONTEXT_AUTO;
+      break;
+    case MOUNT_CONTEXT_UNKNOWN:
+      break;
+  }
 }
 
 base::FilePath GetLocalPathFromURL(content::RenderViewHost* render_view_host,

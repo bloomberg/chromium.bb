@@ -100,24 +100,30 @@ void Service::SetRegistryForTesting(scoped_ptr<RegistryInterface> registry) {
 
 base::File::Error Service::MountFileSystem(const std::string& extension_id,
                                            const MountOptions& options) {
+  return MountFileSystemInternal(extension_id, options, MOUNT_CONTEXT_USER);
+}
+
+base::File::Error Service::MountFileSystemInternal(
+    const std::string& extension_id,
+    const MountOptions& options,
+    MountContext context) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If already exists a file system provided by the same extension with this
   // id, then abort.
   if (GetProvidedFileSystem(extension_id, options.file_system_id)) {
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
-                                                base::File::FILE_ERROR_EXISTS));
+    FOR_EACH_OBSERVER(
+        Observer, observers_,
+        OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
+                                  base::File::FILE_ERROR_EXISTS));
     return base::File::FILE_ERROR_EXISTS;
   }
 
   // Restrict number of file systems to prevent system abusing.
   if (file_system_map_.size() + 1 > kMaxFileSystems) {
     FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
+        Observer, observers_,
+        OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
                                   base::File::FILE_ERROR_TOO_MANY_OPENED));
     return base::File::FILE_ERROR_TOO_MANY_OPENED;
   }
@@ -138,9 +144,8 @@ base::File::Error Service::MountFileSystem(const std::string& extension_id,
               storage::FlushPolicy::FLUSH_ON_COMPLETION),
           mount_path)) {
     FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
+        Observer, observers_,
+        OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
                                   base::File::FILE_ERROR_INVALID_OPERATION));
     return base::File::FILE_ERROR_INVALID_OPERATION;
   }
@@ -164,10 +169,9 @@ base::File::Error Service::MountFileSystem(const std::string& extension_id,
       FileSystemKey(extension_id, options.file_system_id);
   registry_->RememberFileSystem(file_system_info, *file_system->GetWatchers());
 
-  FOR_EACH_OBSERVER(
-      Observer,
-      observers_,
-      OnProvidedFileSystemMount(file_system_info, base::File::FILE_OK));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnProvidedFileSystemMount(file_system_info, context,
+                                              base::File::FILE_OK));
 
   return base::File::FILE_OK;
 }
@@ -295,8 +299,9 @@ void Service::OnExtensionLoaded(content::BrowserContext* browser_context,
       registry_->RestoreFileSystems(extension->id());
 
   for (const auto& restored_file_system : *restored_file_systems) {
-    const base::File::Error result = MountFileSystem(
-        restored_file_system.extension_id, restored_file_system.options);
+    const base::File::Error result = MountFileSystemInternal(
+        restored_file_system.extension_id, restored_file_system.options,
+        MOUNT_CONTEXT_RESTORE);
     if (result != base::File::FILE_OK) {
       LOG(ERROR) << "Failed to restore a provided file system from "
                  << "registry: " << restored_file_system.extension_id << ", "
