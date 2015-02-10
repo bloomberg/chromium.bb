@@ -18,7 +18,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -137,6 +136,14 @@ bool IsRemoraRequisition() {
       ->GetDeviceCloudPolicyManager()
       ->IsRemoraRequisition();
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+void InitializeCrashReporter() {
+  // The crash reporter initialization needs IO to complete.
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  breakpad::InitCrashReporter(std::string());
+}
+#endif
 
 }  // namespace
 
@@ -595,11 +602,11 @@ void WizardController::InitiateMetricsReportingChangeCallback(bool enabled) {
   if (!enabled)
     return;
 #if defined(GOOGLE_CHROME_BUILD)
-  // The crash reporter initialization needs IO to complete.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  breakpad::InitCrashReporter(std::string());
+  if (!content::BrowserThread::PostBlockingPoolTask(
+          FROM_HERE, base::Bind(&InitializeCrashReporter))) {
+    LOG(ERROR) << "Failed to start crash reporter initialization.";
+  }
 #endif
-
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
