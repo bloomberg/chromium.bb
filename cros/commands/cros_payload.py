@@ -15,10 +15,6 @@ from chromite.cbuildbot import constants
 # Needed for the dev.host.lib import below.
 sys.path.insert(0, os.path.join(constants.SOURCE_ROOT, 'src', 'platform'))
 
-# TODO(alliewood)(chromium:454629) update once update_payload is moved
-# into chromite
-from dev.host.lib import update_payload
-
 
 def DisplayValue(key, value):
   """Print out a key, value pair with values left-aligned."""
@@ -71,8 +67,11 @@ Example:
 
   def Run(self):
     """Parse the update payload and display information from it."""
+    # TODO(alliewood)(chromium:454629) update once update_payload is moved
+    # into chromite. google.protobuf may not be available outside the chroot.
+    from dev.host.lib import update_payload
+
     self.payload = update_payload.Payload(self.options.payload_file)
     self.payload.Init()
     self._DisplayHeader()
     self._DisplayManifest()
-
