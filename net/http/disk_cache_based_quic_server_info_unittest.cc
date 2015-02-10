@@ -437,7 +437,7 @@ TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReadyAfterDeleteCache) {
     RemoveMockTransaction(&kHostInfoTransaction1);
   }
   // Cancel the callback after Cache is deleted.
-  quic_server_info->CancelWaitForDataReadyCallback();
+  quic_server_info->ResetWaitForDataReadyCallback();
 }
 
 // Test Start() followed by Persist() without calling WaitForDataReady.

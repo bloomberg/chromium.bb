@@ -45,6 +45,10 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   // but, obviously, a callback will never be made.
   virtual int WaitForDataReady(const CompletionCallback& callback) = 0;
 
+  // Reset's WaitForDataReady callback. This method shouldn't have any side
+  // effects (could be called even if HttpCache doesn't exist).
+  virtual void ResetWaitForDataReadyCallback() = 0;
+
   // Cancel's WaitForDataReady callback. |callback| passed in WaitForDataReady
   // will not be called.
   virtual void CancelWaitForDataReadyCallback() = 0;

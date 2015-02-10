@@ -101,13 +101,15 @@ int DiskCacheBasedQuicServerInfo::WaitForDataReady(
   return ERR_IO_PENDING;
 }
 
+void DiskCacheBasedQuicServerInfo::ResetWaitForDataReadyCallback() {
+  DCHECK(CalledOnValidThread());
+  wait_for_ready_callback_.Reset();
+}
+
 void DiskCacheBasedQuicServerInfo::CancelWaitForDataReadyCallback() {
   DCHECK(CalledOnValidThread());
 
-  // TODO(rtenneti): crbug.com/456524. Implement a better fix. During shutdown,
-  // HttpCache could be deleted and leads to crash because backend_ is deleted.
-  // Temporary weekend fix is to return without collecting data in histograms.
-  // RecordQuicServerInfoStatus(QUIC_SERVER_INFO_WAIT_FOR_DATA_READY_CANCEL);
+  RecordQuicServerInfoStatus(QUIC_SERVER_INFO_WAIT_FOR_DATA_READY_CANCEL);
   if (!wait_for_ready_callback_.is_null()) {
     RecordLastFailure();
     wait_for_ready_callback_.Reset();

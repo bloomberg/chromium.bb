@@ -153,6 +153,8 @@ class MockQuicServerInfo : public QuicServerInfo {
     return ERR_IO_PENDING;
   }
 
+  void ResetWaitForDataReadyCallback() override {}
+
   void CancelWaitForDataReadyCallback() override {}
 
   bool IsDataReady() override { return false; }

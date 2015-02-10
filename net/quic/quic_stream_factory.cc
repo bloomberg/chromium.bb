@@ -248,7 +248,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
 QuicStreamFactory::Job::~Job() {
   // If disk cache has a pending WaitForDataReadyCallback, cancel that callback.
   if (server_info_)
-    server_info_->CancelWaitForDataReadyCallback();
+    server_info_->ResetWaitForDataReadyCallback();
 }
 
 int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
