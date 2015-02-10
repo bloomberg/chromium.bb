@@ -2554,8 +2554,8 @@ extern OMXResult (*omxSP_FFTInv_CCSToR_F32)(
 #define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_Sfs
 #else
 /* Build-time non-NEON selection. */
-#define omxSP_FFTFwd_RToCCS_F32 omxSP_FFTFwd_CCSToR_F32_vfp
-#define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_vfp
+#define omxSP_FFTFwd_RToCCS_F32 omxSP_FFTFwd_RToCCS_F32_Sfs_vfp
+#define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_Sfs_vfp
 #endif  /* defined(DL_ARM_NEON_OPTIONAL) */
 
 #if defined(DL_ARM_NEON_OPTIONAL) || !defined(DL_ARM_NEON)
