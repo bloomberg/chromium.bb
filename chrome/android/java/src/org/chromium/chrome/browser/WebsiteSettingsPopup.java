@@ -87,9 +87,18 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // The profile to use when getting the end index for the origin.
         private Profile mProfile = null;
 
+        // The maximum number of lines currently shown in the view
+        private int mCurrentMaxLines = Integer.MAX_VALUE;
+
         /** Constructor for inflating from XML. */
         public ElidedUrlTextView(Context context, AttributeSet attrs) {
             super(context, attrs);
+        }
+
+        @Override
+        public void setMaxLines(int maxlines) {
+            super.setMaxLines(maxlines);
+            mCurrentMaxLines = maxlines;
         }
 
         @Override
@@ -145,7 +154,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         private boolean updateMaxLines() {
             int maxLines = Integer.MAX_VALUE;
             if (mIsShowingTruncatedText) maxLines = mTruncatedUrlLinesToDisplay;
-            if (maxLines != getMaxLines()) {
+            if (maxLines != mCurrentMaxLines) {
                 setMaxLines(maxLines);
                 return true;
             }
