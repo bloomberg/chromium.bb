@@ -184,15 +184,33 @@ SET character_set_client = utf8;
   `stage_name` tinyint NOT NULL,
   `board` tinyint NOT NULL,
   `stage_status` tinyint NOT NULL,
+  `stage_last_updated` tinyint NOT NULL,
+  `stage_start_time` tinyint NOT NULL,
+  `stage_finish_time` tinyint NOT NULL,
+  `stage_final` tinyint NOT NULL,
   `build_id` tinyint NOT NULL,
+  `build_last_updated` tinyint NOT NULL,
+  `master_build_id` tinyint NOT NULL,
+  `buildbot_generation` tinyint NOT NULL,
+  `builder_name` tinyint NOT NULL,
+  `waterfall` tinyint NOT NULL,
+  `build_number` tinyint NOT NULL,
   `build_config` tinyint NOT NULL,
+  `bot_hostname` tinyint NOT NULL,
+  `build_start_time` tinyint NOT NULL,
+  `build_finish_time` tinyint NOT NULL,
   `build_status` tinyint NOT NULL,
-  `build_final` tinyint NOT NULL,
-  `full_version` tinyint NOT NULL,
+  `build_type` tinyint NOT NULL,
   `chrome_version` tinyint NOT NULL,
-  `sdk_version` tinyint NOT NULL,
   `milestone_version` tinyint NOT NULL,
-  `master_build_id` tinyint NOT NULL
+  `platform_version` tinyint NOT NULL,
+  `full_version` tinyint NOT NULL,
+  `sdk_version` tinyint NOT NULL,
+  `toolchain_url` tinyint NOT NULL,
+  `build_final` tinyint NOT NULL,
+  `metadata_url` tinyint NOT NULL,
+  `summary` tinyint NOT NULL,
+  `deadline` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -219,7 +237,7 @@ CREATE TABLE `schemaVersionTable` (
 /*!50001 SET collation_connection      = latin1_swedish_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `failureView` AS select `f`.`id` AS `id`,`f`.`build_stage_id` AS `build_stage_id`,`f`.`outer_failure_id` AS `outer_failure_id`,`f`.`exception_type` AS `exception_type`,`f`.`exception_message` AS `exception_message`,`f`.`exception_category` AS `exception_category`,`f`.`extra_info` AS `extra_info`,`f`.`timestamp` AS `timestamp`,`bs`.`name` AS `stage_name`,`bs`.`board` AS `board`,`bs`.`status` AS `stage_status`,`b`.`id` AS `build_id`,`b`.`build_config` AS `build_config`,`b`.`status` AS `build_status`,`b`.`final` AS `build_final`,`b`.`full_version` AS `full_version`,`b`.`chrome_version` AS `chrome_version`,`b`.`sdk_version` AS `sdk_version`,`b`.`milestone_version` AS `milestone_version`,`b`.`master_build_id` AS `master_build_id` from ((`failureTable` `f` join `buildStageTable` `bs` on((`f`.`build_stage_id` = `bs`.`id`))) join `buildTable` `b` on((`bs`.`build_id` = `b`.`id`))) */;
+/*!50001 VIEW `failureView` AS select `f`.`id` AS `id`,`f`.`build_stage_id` AS `build_stage_id`,`f`.`outer_failure_id` AS `outer_failure_id`,`f`.`exception_type` AS `exception_type`,`f`.`exception_message` AS `exception_message`,`f`.`exception_category` AS `exception_category`,`f`.`extra_info` AS `extra_info`,`f`.`timestamp` AS `timestamp`,`bs`.`name` AS `stage_name`,`bs`.`board` AS `board`,`bs`.`status` AS `stage_status`,`bs`.`last_updated` AS `stage_last_updated`,`bs`.`start_time` AS `stage_start_time`,`bs`.`finish_time` AS `stage_finish_time`,`bs`.`final` AS `stage_final`,`b`.`id` AS `build_id`,`b`.`last_updated` AS `build_last_updated`,`b`.`master_build_id` AS `master_build_id`,`b`.`buildbot_generation` AS `buildbot_generation`,`b`.`builder_name` AS `builder_name`,`b`.`waterfall` AS `waterfall`,`b`.`build_number` AS `build_number`,`b`.`build_config` AS `build_config`,`b`.`bot_hostname` AS `bot_hostname`,`b`.`start_time` AS `build_start_time`,`b`.`finish_time` AS `build_finish_time`,`b`.`status` AS `build_status`,`b`.`build_type` AS `build_type`,`b`.`chrome_version` AS `chrome_version`,`b`.`milestone_version` AS `milestone_version`,`b`.`platform_version` AS `platform_version`,`b`.`full_version` AS `full_version`,`b`.`sdk_version` AS `sdk_version`,`b`.`toolchain_url` AS `toolchain_url`,`b`.`final` AS `build_final`,`b`.`metadata_url` AS `metadata_url`,`b`.`summary` AS `summary`,`b`.`deadline` AS `deadline` from ((`failureTable` `f` join `buildStageTable` `bs` on((`f`.`build_stage_id` = `bs`.`id`))) join `buildTable` `b` on((`bs`.`build_id` = `b`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
