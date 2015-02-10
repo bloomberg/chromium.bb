@@ -19,33 +19,34 @@ using ::testing::SaveArg;
 
 namespace media {
 
-class MockClient : public media::VideoCaptureDevice::Client {
+namespace {
+
+class MockClient : public VideoCaptureDevice::Client {
  public:
   MOCK_METHOD2(ReserveOutputBuffer,
-               scoped_refptr<Buffer>(media::VideoFrame::Format format,
+               scoped_refptr<Buffer>(VideoFrame::Format format,
                                      const gfx::Size& dimensions));
   MOCK_METHOD0(OnErr, void());
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
       : main_thread_(base::MessageLoopProxy::current()), frame_cb_(frame_cb) {}
 
-  virtual void OnError(const std::string& error_message) override {
+  void OnError(const std::string& error_message) override {
     OnErr();
   }
 
-  virtual void OnIncomingCapturedData(const uint8* data,
-                                      int length,
-                                      const VideoCaptureFormat& format,
-                                      int rotation,
-                                      base::TimeTicks timestamp) override {
+  void OnIncomingCapturedData(const uint8* data,
+                              int length,
+                              const VideoCaptureFormat& format,
+                              int rotation,
+                              base::TimeTicks timestamp) override {
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
   }
 
-  virtual void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<Buffer>& buffer,
-      const media::VideoCaptureFormat& buffer_format,
-      const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks timestamp) override {
+  void OnIncomingCapturedVideoFrame(const scoped_refptr<Buffer>& buffer,
+                                    const VideoCaptureFormat& buffer_format,
+                                    const scoped_refptr<VideoFrame>& frame,
+                                    base::TimeTicks timestamp) override {
     NOTREACHED();
   }
 
@@ -58,10 +59,10 @@ class DeviceEnumerationListener :
     public base::RefCounted<DeviceEnumerationListener> {
  public:
   MOCK_METHOD1(OnEnumeratedDevicesCallbackPtr,
-               void(media::VideoCaptureDevice::Names* names));
+               void(VideoCaptureDevice::Names* names));
   // GMock doesn't support move-only arguments, so we use this forward method.
   void OnEnumeratedDevicesCallback(
-      scoped_ptr<media::VideoCaptureDevice::Names> names) {
+      scoped_ptr<VideoCaptureDevice::Names> names) {
     OnEnumeratedDevicesCallbackPtr(names.release());
   }
 
@@ -70,9 +71,11 @@ class DeviceEnumerationListener :
   virtual ~DeviceEnumerationListener() {}
 };
 
+}  // namespace
+
 class FakeVideoCaptureDeviceTest : public testing::Test {
  protected:
-  typedef media::VideoCaptureDevice::Client Client;
+  typedef VideoCaptureDevice::Client Client;
 
   FakeVideoCaptureDeviceTest()
       : loop_(new base::MessageLoop()),
@@ -82,8 +85,6 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
         video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {
     device_enumeration_listener_ = new DeviceEnumerationListener();
   }
-
-  void SetUp() override {}
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;
@@ -95,8 +96,8 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
     run_loop_->Run();
   }
 
-  scoped_ptr<media::VideoCaptureDevice::Names> EnumerateDevices() {
-    media::VideoCaptureDevice::Names* names;
+  scoped_ptr<VideoCaptureDevice::Names> EnumerateDevices() {
+    VideoCaptureDevice::Names* names;
     EXPECT_CALL(*device_enumeration_listener_.get(),
                 OnEnumeratedDevicesCallbackPtr(_)).WillOnce(SaveArg<0>(&names));
 
@@ -104,7 +105,7 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
         base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
                    device_enumeration_listener_));
     base::MessageLoop::current()->RunUntilIdle();
-    return scoped_ptr<media::VideoCaptureDevice::Names>(names);
+    return scoped_ptr<VideoCaptureDevice::Names>(names);
   }
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
@@ -119,9 +120,9 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
 };
 
 TEST_F(FakeVideoCaptureDeviceTest, Capture) {
-  scoped_ptr<media::VideoCaptureDevice::Names> names(EnumerateDevices());
+  scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
 
-  ASSERT_GT(static_cast<int>(names->size()), 0);
+  ASSERT_FALSE(names->empty());
 
   scoped_ptr<VideoCaptureDevice> device(
       video_capture_device_factory_->Create(names->front()));
@@ -145,28 +146,26 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
 
   VideoCaptureFormats supported_formats;
-  VideoCaptureDevice::Names::iterator names_iterator;
 
-  for (names_iterator = names->begin(); names_iterator != names->end();
-       ++names_iterator) {
+  for (const auto& names_iterator : *names) {
     video_capture_device_factory_->GetDeviceSupportedFormats(
-        *names_iterator, &supported_formats);
-    EXPECT_EQ(supported_formats.size(), 4u);
+        names_iterator, &supported_formats);
+    ASSERT_EQ(supported_formats.size(), 4u);
     EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
     EXPECT_EQ(supported_formats[0].frame_size.height(), 240);
-    EXPECT_EQ(supported_formats[0].pixel_format, media::PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[0].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[0].frame_rate, 20);
     EXPECT_EQ(supported_formats[1].frame_size.width(), 640);
     EXPECT_EQ(supported_formats[1].frame_size.height(), 480);
-    EXPECT_EQ(supported_formats[1].pixel_format, media::PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[1].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[1].frame_rate, 20);
     EXPECT_EQ(supported_formats[2].frame_size.width(), 1280);
     EXPECT_EQ(supported_formats[2].frame_size.height(), 720);
-    EXPECT_EQ(supported_formats[2].pixel_format, media::PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[2].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[2].frame_rate, 20);
     EXPECT_EQ(supported_formats[3].frame_size.width(), 1920);
     EXPECT_EQ(supported_formats[3].frame_size.height(), 1080);
-    EXPECT_EQ(supported_formats[3].pixel_format, media::PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[3].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[3].frame_rate, 20);
   }
 }
@@ -182,7 +181,7 @@ TEST_F(FakeVideoCaptureDeviceTest, DISABLED_CaptureVariableResolution) {
   capture_params.resolution_change_policy =
       RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT;
 
-  ASSERT_GT(static_cast<int>(names->size()), 0);
+  ASSERT_FALSE(names->empty());
 
   scoped_ptr<VideoCaptureDevice> device(
       video_capture_device_factory_->Create(names->front()));
@@ -195,8 +194,7 @@ TEST_F(FakeVideoCaptureDeviceTest, DISABLED_CaptureVariableResolution) {
   static_cast<FakeVideoCaptureDevice*>(device.get())->
       PopulateVariableFormatsRoster(formats);
 
-  EXPECT_CALL(*client_, OnErr())
-      .Times(0);
+  EXPECT_CALL(*client_, OnErr()).Times(0);
   int action_count = 200;
 
   device->AllocateAndStart(capture_params, client_.Pass());
