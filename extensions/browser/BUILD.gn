@@ -469,6 +469,8 @@ source_set("browser") {
       "install/extension_install_ui.cc",
       "install/extension_install_ui.h",
       "install_flag.h",
+      "io_thread_extension_message_filter.cc",
+      "io_thread_extension_message_filter.h",
       "lazy_background_task_queue.cc",
       "lazy_background_task_queue.h",
       "management_policy.cc",

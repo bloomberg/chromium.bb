@@ -789,6 +789,8 @@
         'browser/install/extension_install_ui.cc',
         'browser/install/extension_install_ui.h',
         'browser/install_flag.h',
+        'browser/io_thread_extension_message_filter.cc',
+        'browser/io_thread_extension_message_filter.h',
         'browser/file_highlighter.cc',
         'browser/file_highlighter.h',
         'browser/file_reader.cc',

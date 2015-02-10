@@ -24,6 +24,7 @@
 #include "extensions/browser/api/system_info/system_info_api.h"
 #include "extensions/browser/api/usb/usb_event_router.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
+#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
@@ -44,6 +45,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   core_api::TCPServerSocketEventDispatcher::GetFactoryInstance();
   core_api::TCPSocketEventDispatcher::GetFactoryInstance();
   core_api::UDPSocketEventDispatcher::GetFactoryInstance();
+  ExtensionMessageFilter::EnsureShutdownNotifierFactoryBuilt();
   ExtensionPrefsFactory::GetInstance();
   HidDeviceManager::GetFactoryInstance();
   IdleManagerFactory::GetInstance();

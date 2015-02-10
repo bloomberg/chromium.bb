@@ -23,10 +23,10 @@
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/extension_function_registry.h"
-#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
@@ -119,7 +119,7 @@ void CommonResponseCallback(IPC::Sender* ipc_sender,
 }
 
 void IOThreadResponseCallback(
-    const base::WeakPtr<ExtensionMessageFilter>& ipc_sender,
+    const base::WeakPtr<IOThreadExtensionMessageFilter>& ipc_sender,
     int routing_id,
     int request_id,
     ExtensionFunction::ResponseType type,
@@ -224,7 +224,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     InfoMap* extension_info_map,
     void* profile_id,
     int render_process_id,
-    base::WeakPtr<ExtensionMessageFilter> ipc_sender,
+    base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
     int routing_id,
     const ExtensionHostMsg_Request_Params& params) {
   const Extension* extension =

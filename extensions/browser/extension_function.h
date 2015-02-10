@@ -41,7 +41,7 @@ class WebContents;
 
 namespace extensions {
 class ExtensionFunctionDispatcher;
-class ExtensionMessageFilter;
+class IOThreadExtensionMessageFilter;
 class QuotaLimitHeuristic;
 }
 
@@ -529,13 +529,14 @@ class IOThreadExtensionFunction : public ExtensionFunction {
   IOThreadExtensionFunction* AsIOThreadExtensionFunction() override;
 
   void set_ipc_sender(
-      base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender,
+      base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender,
       int routing_id) {
     ipc_sender_ = ipc_sender;
     routing_id_ = routing_id;
   }
 
-  base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender_weak() const {
+  base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender_weak()
+      const {
     return ipc_sender_;
   }
 
@@ -560,7 +561,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
   void SendResponse(bool success) override;
 
  private:
-  base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender_;
+  base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender_;
   int routing_id_;
 
   scoped_refptr<const extensions::InfoMap> extension_info_map_;

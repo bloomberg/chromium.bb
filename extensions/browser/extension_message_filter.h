@@ -11,18 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "url/gurl.h"
 
-struct ExtensionHostMsg_Request_Params;
-
-namespace base {
-class DictionaryValue;
-}
+class GURL;
 
 namespace content {
 class BrowserContext;
-class WebContents;
 }
 
 namespace gfx {
@@ -31,11 +26,12 @@ class Size;
 
 namespace extensions {
 
-class InfoMap;
+class ExtensionSystem;
+class ProcessManager;
 
 // This class filters out incoming extension-specific IPC messages from the
-// renderer process. It is created on the UI thread. Messages may be handled on
-// the IO thread or the UI thread.
+// renderer process. It is created and destroyed on the UI thread and handles
+// messages there.
 class ExtensionMessageFilter : public content::BrowserMessageFilter {
  public:
   ExtensionMessageFilter(int render_process_id,
@@ -43,11 +39,15 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
 
   int render_process_id() { return render_process_id_; }
 
+  static void EnsureShutdownNotifierFactoryBuilt();
+
  private:
-  friend class content::BrowserThread;
   friend class base::DeleteHelper<ExtensionMessageFilter>;
+  friend class content::BrowserThread;
 
   ~ExtensionMessageFilter() override;
+
+  void ShutdownOnUIThread();
 
   // content::BrowserMessageFilter implementation.
   void OverrideThreadForMessage(const IPC::Message& message,
@@ -83,22 +83,13 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionSuspendAck(const std::string& extension_id);
   void OnExtensionTransferBlobsAck(const std::vector<std::string>& blob_uuids);
 
-  // Message handlers on the IO thread.
-  void OnExtensionGenerateUniqueID(int* unique_id);
-  void OnExtensionResumeRequests(int route_id);
-  void OnExtensionRequestForIOThread(
-      int routing_id,
-      const ExtensionHostMsg_Request_Params& params);
-
   const int render_process_id_;
 
-  // Should only be accessed on the UI thread.
-  content::BrowserContext* browser_context_;
+  scoped_ptr<KeyedServiceShutdownNotifier::Subscription> shutdown_notifier_;
 
-  scoped_refptr<extensions::InfoMap> extension_info_map_;
-
-  // Weak pointers produced by this factory are bound to the IO thread.
-  base::WeakPtrFactory<ExtensionMessageFilter> weak_ptr_factory_;
+  // Owned by the browser context; should only be accessed on the UI thread.
+  ExtensionSystem* extension_system_;
+  ProcessManager* process_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageFilter);
 };
