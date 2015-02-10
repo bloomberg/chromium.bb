@@ -1597,3 +1597,54 @@ TEST_F(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
   // Verify no notifications are fired during shutdown either.
   ClosePasswordStore();
 }
+
+// Add a facebook form to the store but not to the keychain. The form is to be
+// implicitly deleted. However, the observers shouldn't get notified about
+// deletion of non-existent forms like m.facebook.com.
+TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
+  testing::StrictMock<MockPasswordStoreObserver> mock_observer;
+  store()->AddObserver(&mock_observer);
+
+  // 1. Add a password for www.facebook.com to the LoginDatabase.
+  PasswordFormData www_form_data = {
+    PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+    "http://www.facebook.com/index.html", "login",
+    L"username", L"password", L"submit", L"joe_user", L"", true, false, 1
+  };
+  scoped_ptr<PasswordForm> www_form(
+      CreatePasswordFormFromDataForTesting(www_form_data));
+  login_db()->AddLogin(*www_form);
+
+  // 2. Get a PSL-matched password for m.facebook.com. The observer isn't
+  // notified because the form isn't in the database.
+  PasswordForm m_form(*www_form);
+  m_form.signon_realm = "http://m.facebook.com";
+  m_form.origin = GURL("http://m.facebook.com/index.html");
+
+  MockPasswordStoreConsumer consumer;
+  ON_CALL(consumer, OnGetPasswordStoreResultsConstRef(_))
+      .WillByDefault(QuitUIMessageLoop());
+  EXPECT_CALL(mock_observer, OnLoginsChanged(_)).Times(0);
+  // The PSL-matched form isn't returned because there is no actual password in
+  // the keychain.
+  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
+  store_->GetLogins(m_form, PasswordStore::ALLOW_PROMPT, &consumer);
+  base::MessageLoop::current()->Run();
+  ScopedVector<autofill::PasswordForm> all_forms;
+  EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
+  EXPECT_EQ(1u, all_forms.size());
+  all_forms.clear();
+  ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // 3. Get a password for www.facebook.com. The form is implicitly removed and
+  // the observer is notified.
+  password_manager::PasswordStoreChangeList list;
+  list.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, *www_form));
+  EXPECT_CALL(mock_observer, OnLoginsChanged(list));
+  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
+  store_->GetLogins(*www_form, PasswordStore::ALLOW_PROMPT, &consumer);
+  base::MessageLoop::current()->Run();
+  EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
+  EXPECT_EQ(0u, all_forms.size());
+}

@@ -97,9 +97,9 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   bool DatabaseHasFormMatchingKeychainForm(
       const autofill::PasswordForm& form);
 
-  // Removes the given forms from the database.
-  void RemoveDatabaseForms(
-      const std::vector<autofill::PasswordForm*>& forms);
+  // Removes the given forms from the database. After the call |forms| contains
+  // only those forms which were successfully removed.
+  void RemoveDatabaseForms(ScopedVector<autofill::PasswordForm>* forms);
 
   // Removes the given forms from the Keychain.
   void RemoveKeychainForms(

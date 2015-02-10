@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
@@ -52,7 +53,7 @@ class LoginDatabase {
 
   // Removes |form| from the list of remembered password forms. Returns true if
   // |form| was successfully removed from the database.
-  bool RemoveLogin(const autofill::PasswordForm& form);
+  bool RemoveLogin(const autofill::PasswordForm& form) WARN_UNUSED_RESULT;
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded

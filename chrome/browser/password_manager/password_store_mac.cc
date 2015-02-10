@@ -1080,7 +1080,7 @@ void PasswordStoreMac::GetLoginsImpl(
   AppendSecondToFirst(&matched_forms, &keychain_forms);
 
   if (!database_forms.empty()) {
-    RemoveDatabaseForms(database_forms.get());
+    RemoveDatabaseForms(&database_forms);
     NotifyLoginsChanged(FormsToRemoveChangeList(database_forms.get()));
   }
 
@@ -1114,7 +1114,7 @@ bool PasswordStoreMac::FillAutofillableLogins(
                                                   forms);
 
   if (!database_forms.empty()) {
-    RemoveDatabaseForms(database_forms.get());
+    RemoveDatabaseForms(&database_forms);
     NotifyLoginsChanged(FormsToRemoveChangeList(database_forms.get()));
   }
 
@@ -1156,12 +1156,15 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
 }
 
 void PasswordStoreMac::RemoveDatabaseForms(
-    const std::vector<PasswordForm*>& forms) {
+  ScopedVector<autofill::PasswordForm>* forms) {
   DCHECK(login_metadata_db_);
-  for (std::vector<PasswordForm*>::const_iterator i = forms.begin();
-       i != forms.end(); ++i) {
-    login_metadata_db_->RemoveLogin(**i);
-  }
+  ScopedVector<autofill::PasswordForm> removed_forms;
+  MoveAllFormsOut(forms, [this, &removed_forms](
+                             scoped_ptr<autofill::PasswordForm> form) {
+    if (login_metadata_db_->RemoveLogin(*form))
+      removed_forms.push_back(form.release());
+  });
+  removed_forms.swap(*forms);
 }
 
 void PasswordStoreMac::RemoveKeychainForms(
@@ -1188,7 +1191,7 @@ void PasswordStoreMac::CleanOrphanedForms(
                                                   &forms_with_keychain_entry);
 
   // Clean up any orphaned database entries.
-  RemoveDatabaseForms(database_forms.get());
+  RemoveDatabaseForms(&database_forms);
 
   // Move the orphaned DB forms to the output parameter.
   AppendSecondToFirst(orphaned_forms, &database_forms);
