@@ -496,6 +496,7 @@ public class WebsitePreferences extends PreferenceFragment
         ListView listView = (ListView) getView().findViewById(android.R.id.list);
         mEmptyView = (TextView) getView().findViewById(android.R.id.empty);
         listView.setEmptyView(mEmptyView);
+        listView.setDivider(null);
 
         // Read which category, if any, we should be showing.
         if (getArguments() != null) {
