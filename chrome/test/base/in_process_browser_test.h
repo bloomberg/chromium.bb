@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,6 +149,13 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // the navigation to complete, and show the browser's window.
   void AddBlankTabAndShow(Browser* browser);
 
+  // Enables running of accessibility audit for a particular test case.
+  //  - Call in test body to enable/disable for one test case.
+  //  - Call in SetUpOnMainThread to enable for all test cases.
+  void EnableAccessibilityChecksForTestCase(bool enabled) {
+    run_accessibility_checks_for_test_case_ = enabled;
+  }
+
 #if !defined OS_MACOSX
   // Return a CommandLine object that is used to relaunch the browser_test
   // binary as a browser process. This function is deliberately not defined on
@@ -178,6 +186,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     multi_desktop_test_ = multi_desktop_test;
   }
 
+  // Runs accessibility checks and sets |error_message| if it fails.
+  bool RunAccessibilityChecks(std::string* error_message);
+
  private:
   // Creates a user data directory for the test if one is needed. Returns true
   // if successful.
@@ -206,6 +217,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // True if this is a multi-desktop test (in which case this browser test will
   // not ensure that Browsers are only created on the tested desktop).
   bool multi_desktop_test_;
+
+  // True if the accessibility test should run for a particular test case.
+  // This is reset for every test case.
+  bool run_accessibility_checks_for_test_case_;
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;

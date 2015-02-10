@@ -112,11 +112,50 @@ void SingleDesktopTestObserver::OnBrowserAdded(Browser* browser) {
 
 }  // namespace
 
+// Library used for testing accessibility.
+const base::FilePath::CharType kAXSTesting[] =
+    FILE_PATH_LITERAL("third_party/accessibility-audit/axs_testing.js");
+// JavaScript snippet to configure and run the accessibility audit.
+const char kAccessibilityTestString[] =
+    "var config = new axs.AuditConfiguration();"
+    "/* Disable warning about rules that cannot be checked. */"
+    "config.showUnsupportedRulesWarning = false;"
+    "config.auditRulesToIgnore = ["
+    "  /*"
+    "   * The 'elements with meaningful background image' accessibility"
+    "   * audit (AX_IMAGE_01) does not apply, since Chrome doesn't"
+    "   * disable background images in high-contrast mode like some"
+    "   * browsers do."
+    "   */"
+    "  'elementsWithMeaningfulBackgroundImage',"
+    "  /*"
+    "   * Most WebUI pages are inside an IFrame, so the 'web page should"
+    "   * have a title that describes topic or purpose' test (AX_TITLE_01)"
+    "   * generally does not apply."
+    "   */"
+    "  'pageWithoutTitle',"
+    "  /*"
+    "   * Enable when crbug.com/267035 is fixed."
+    "   * Until then it's just noise."
+    "   */"
+    "  'lowContrastElements'"
+    "];"
+    "var result = axs.Audit.run(config);"
+    "var error = '';"
+    "for (var i = 0; i < result.length; ++i) {"
+    "  if (result[i].result == axs.constants.AuditResult.FAIL) {"
+    "    error = axs.Audit.createReport(result);"
+    "    break;"
+    "  }"
+    "}"
+    "domAutomationController.send(error);";
+
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       exit_when_last_browser_closes_(true),
       open_about_blank_on_browser_launch_(true),
-      multi_desktop_test_(false)
+      multi_desktop_test_(false),
+      run_accessibility_checks_for_test_case_(false)
 #if defined(OS_MACOSX)
       , autorelease_pool_(NULL)
 #endif  // OS_MACOSX
@@ -258,6 +297,56 @@ void InProcessBrowserTest::PrepareTestCommandLine(
 
   if (open_about_blank_on_browser_launch_ && command_line->GetArgs().empty())
     command_line->AppendArg(url::kAboutBlankURL);
+}
+
+bool InProcessBrowserTest::RunAccessibilityChecks(std::string* error_message) {
+  if (!browser()) {
+    *error_message = "browser is NULL";
+    return false;
+  }
+  auto tab_strip = browser()->tab_strip_model();
+  if (!tab_strip) {
+    *error_message = "tab_strip is NULL";
+    return false;
+  }
+  auto web_contents = tab_strip->GetActiveWebContents();
+  if (!web_contents) {
+    *error_message = "web_contents is NULL";
+    return false;
+  }
+  auto focused_frame = web_contents->GetFocusedFrame();
+  if (!focused_frame) {
+    *error_message = "focused_frame is NULL";
+    return false;
+  }
+
+  // Load accessibility library.
+  base::FilePath src_dir;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
+    *error_message = "PathService::Get failed";
+    return false;
+  }
+  base::FilePath script_path = src_dir.Append(kAXSTesting);
+  std::string script;
+  if (!base::ReadFileToString(script_path, &script)) {
+    *error_message = "Could not read accessibility library";
+    return false;
+  }
+  if (!content::ExecuteScript(web_contents, script)) {
+    *error_message = "Failed to load accessibility library";
+    return false;
+  }
+
+  // Run accessibility audit.
+  if (!content::ExecuteScriptAndExtractString(focused_frame,
+                                              kAccessibilityTestString,
+                                              error_message)) {
+    *error_message = "Failed to run accessibility audit";
+    return false;
+  }
+
+  // Test result should be empty if there are no errors.
+  return error_message->empty();
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {
@@ -434,6 +523,11 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // browser.
   content::RunAllPendingInMessageLoop();
 
+  // run_accessibility_checks_for_test_case_ must be set before calling
+  // SetUpOnMainThread or RunTestOnMainThread so that one or all tests can
+  // enable/disable the accessibility audit.
+  run_accessibility_checks_for_test_case_ = false;
+
   SetUpOnMainThread();
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
@@ -444,6 +538,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
 #endif
+
+  if (run_accessibility_checks_for_test_case_) {
+    std::string error_message;
+    EXPECT_TRUE(RunAccessibilityChecks(&error_message));
+    EXPECT_EQ("", error_message);
+  }
 
   // Invoke cleanup and quit even if there are failures. This is similar to
   // gtest in that it invokes TearDown even if Setup fails.

@@ -18,6 +18,11 @@ class BookmarksTest : public InProcessBrowserTest {
  public:
   BookmarksTest() {}
 
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    EnableAccessibilityChecksForTestCase(true);
+  }
+
   void OpenBookmarksManager() {
     content::TestNavigationObserver navigation_observer(
         browser()->tab_strip_model()->GetActiveWebContents(), 2);
