@@ -2725,6 +2725,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.MachineIdRegen.AgeSeconds" units="seconds">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of seconds of uptime since the last time the ChromeOS machine-id
+    was regenerated. This is reported every time the machine-id is regenerated
+    except for the first time since reboot.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.MachineIdRegen.Reason" enum="ChromeOSMachineIdReason">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The reason why the ChromeOS machine-id was regenerated. This is reported
+    when the machine-id is re-generated.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.MemoryPressureLevel"
     enum="ChromeOSMemoryPressureLevel">
   <owner>xdai@chromium.org</owner>
@@ -44088,6 +44105,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Reading"/>
 </enum>
 
+<enum name="ChromeOSMachineIdReason" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Network"/>
+  <int value="2" label="Periodic"/>
+</enum>
+
 <enum name="ChromeOSMemoryPressureLevel" type="int">
   <int value="0" label="No memory pressure"/>
   <int value="1" label="Medium memory pressure"/>
@@ -59892,6 +59915,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="WriteFailure"
       label="failure rate of writing a certificate to the disk cache"/>
   <affected-histogram name="DiskBasedCertCache.CertIo"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ChromeOS.MachineIdRegen.AgeSeconds">
+  <suffix name="Network"/>
+  <suffix name="Periodic"/>
+  <suffix name="Unknown"/>
+  <affected-histogram name="ChromeOS.MachineIdRegen.AgeSeconds"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CloudPrintRequests" separator=".">
