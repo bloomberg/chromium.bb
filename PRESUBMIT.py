@@ -1732,7 +1732,7 @@ def GetPreferredTryMasters(project, change):
          not re.search(r'(^|[\\\/_])devtools[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'android_aosp',
-        'android_dbg_tests_recipe',
+        'android_rel_tests_recipe',
     ])
   if all(re.search(r'[\\\/_]ios[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
