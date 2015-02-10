@@ -235,6 +235,23 @@ test(function() {
           },
           'new Response with headers with an invalid value should throw');
       });
+
+    VALID_REASON_PHRASE.forEach(function(text) {
+        // new Response() must succeed with a valid statusText.
+        var response = new Response(new Blob(), {statusText: text});
+        assert_equals(response.statusText, text,
+          'Response.statusText must match: ' + text);
+      });
+
+    INVALID_REASON_PHRASE.forEach(function(text) {
+        assert_throws(
+          {name: 'TypeError'},
+          function() {
+            new Response(new Blob(), {statusText: text});
+          },
+          'new Response with invalid statusText (' + text +
+          ') must throw');
+      });
   }, 'Response throw error test');
 
 done();

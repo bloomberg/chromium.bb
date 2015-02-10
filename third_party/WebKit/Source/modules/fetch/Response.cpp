@@ -60,6 +60,23 @@ FetchResponseData* createFetchResponseDataFromWebResponse(const WebServiceWorker
     return response;
 }
 
+// Check whether |statusText| is a ByteString and
+// matches the Reason-Phrase token production.
+// RFC 2616: https://tools.ietf.org/html/rfc2616
+// RFC 7230: https://tools.ietf.org/html/rfc7230
+// "reason-phrase = *( HTAB / SP / VCHAR / obs-text )"
+bool isValidReasonPhrase(const String& statusText)
+{
+    for (unsigned i = 0; i < statusText.length(); ++i) {
+        UChar c = statusText[i];
+        if (!(c == 0x09 // HTAB
+            || (0x20 <= c && c <= 0x7E) // SP / VCHAR
+            || (0x80 <= c && c <= 0xFF))) // obs-text
+            return false;
+    }
+    return true;
+}
+
 }
 
 Response* Response::create(ExecutionContext* context, ExceptionState& exceptionState)
@@ -141,8 +158,12 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
         return 0;
     }
 
-    // FIXME: "2. If |init|'s statusText member does not match the Reason-Phrase
-    //        token production, throw a TypeError."
+    // "2. If |init|'s statusText member does not match the Reason-Phrase
+    // token production, throw a TypeError."
+    if (!isValidReasonPhrase(responseInit.statusText)) {
+        exceptionState.throwTypeError("Invalid statusText");
+        return 0;
+    }
 
     // "3. Let |r| be a new Response object, associated with a new response,
     // Headers object, and Body object."

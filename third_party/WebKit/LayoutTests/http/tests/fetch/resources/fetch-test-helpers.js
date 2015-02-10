@@ -109,3 +109,30 @@ var NON_SIMPLE_HEADERS =
   [['X-Fetch-Test', 'test'],
    ['X-Fetch-Test2', 'test2'],
    ['Content-Type', 'foo/bar']];
+
+// ResponseInit's statusText must match Reason-Phrase.
+// https://fetch.spec.whatwg.org/#dom-response Step 2.
+var INVALID_REASON_PHRASE = [
+  // \x00-\x1F (except for \t) and \x7f are invalid.
+  '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
+  '\x08', '\x0a', '\x0b', '\x0c', '\x0d', '\x0e', '\x0f',
+  '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17',
+  '\x18', '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', '\x7f',
+  // non-ByteString.
+  '\u0100', '\u3042',
+  // Strings that contain characters above.
+  'invalid \r reason-phrase', 'invalid \n reason-phrase',
+  'invalid \0 reason-phrase', 'invalid\r\n reason-phrase',
+  'test\r', 'test\n', 'test\r\n', 'test\0',
+  '\0'.repeat(100000), '\r\n'.repeat(50000),
+  'x'.repeat(100000) + '\0'];
+
+var VALID_REASON_PHRASE = [
+  '\t', ' ', '"', '(', ')', ',', '/', ':', ';', '<', '=', '>', '?', '@', '[',
+  '\\', ']', '{', '}',
+  '!', '#', '$', '%', '&', '\'', '*', '+', '-', '.', '^', '_', '`', '|', '~',
+  // non-CHAR
+  '\x80', '\xff',
+  // Valid strings.
+  '', '0123456789', '404 Not Found', 'HTTP/1.1 404 Not Found', 'AZ\u00ffaz',
+  'x'.repeat(100000)];
