@@ -57,6 +57,7 @@ void H264Decoder::Reset() {
   ref_pic_list_b1_.clear();
   dpb_.Clear();
   parser_.Reset();
+  accelerator_->Reset();
   last_output_poc_ = std::numeric_limits<int>::min();
 
   // If we are in kDecoding, we can resume without processing an SPS.

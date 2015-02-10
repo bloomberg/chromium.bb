@@ -264,6 +264,8 @@ class V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator
   bool SubmitDecode(const scoped_refptr<H264Picture>& pic) override;
   bool OutputPicture(const scoped_refptr<H264Picture>& pic) override;
 
+  void Reset() override;
+
  private:
   // Max size of reference list.
   static const size_t kDPBIndicesListSize = 32;
@@ -2074,9 +2076,7 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitDecode(
   ext_ctrls.config_store = dec_surface->config_store();
   v4l2_dec_->SubmitExtControls(&ext_ctrls);
 
-  num_slices_ = 0;
-  memset(&v4l2_decode_param_, 0, sizeof(v4l2_decode_param_));
-  memset(&v4l2_slice_params_, 0, sizeof(v4l2_slice_params_));
+  Reset();
 
   v4l2_dec_->DecodeSurface(dec_surface);
   return true;
@@ -2088,6 +2088,12 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::OutputPicture(
       H264PictureToV4L2DecodeSurface(pic);
   v4l2_dec_->SurfaceReady(dec_surface);
   return true;
+}
+
+void V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::Reset() {
+  num_slices_ = 0;
+  memset(&v4l2_decode_param_, 0, sizeof(v4l2_decode_param_));
+  memset(&v4l2_slice_params_, 0, sizeof(v4l2_slice_params_));
 }
 
 scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>

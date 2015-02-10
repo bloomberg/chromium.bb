@@ -89,6 +89,10 @@ class CONTENT_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // Return true if successful.
     virtual bool OutputPicture(const scoped_refptr<H264Picture>& pic) = 0;
 
+    // Reset any current state that may be cached in the accelerator, dropping
+    // any cached parameters/slices that have not been committed yet.
+    virtual void Reset() = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(H264Accelerator);
   };
