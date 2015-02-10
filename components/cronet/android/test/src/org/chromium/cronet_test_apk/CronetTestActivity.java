@@ -82,7 +82,7 @@ public class CronetTestActivity extends Activity {
 
         mUrlRequestContext = initRequestContext();
         mStreamHandlerFactory = new CronetURLStreamHandlerFactory(
-                getApplicationContext(), null);
+                getApplicationContext(), getContextConfig());
         mHistogramManager = HistogramManager.createHistogramManager();
 
         if (LIBRARY_INIT_CRONET_ONLY.equals(initString)) {
