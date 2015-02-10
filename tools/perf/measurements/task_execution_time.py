@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import namedtuple
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
 from telemetry.page import page_test
@@ -10,14 +9,12 @@ from telemetry.timeline.model import TimelineModel
 from telemetry.util import statistics
 from telemetry.value import scalar
 
-# Set up named tuple to use as dictionary key.
-TaskKey = namedtuple('TaskKey', 'name section')
-
 
 class TaskExecutionTime(page_test.PageTest):
 
   IDLE_SECTION_TRIGGER = 'SingleThreadIdleTaskRunner::RunTask'
   IDLE_SECTION = 'IDLE'
+  NORMAL_SECTION = 'NORMAL'
 
   _TIME_OUT_IN_SECONDS = 60
   _NUMBER_OF_RESULTS_TO_DISPLAY = 10
@@ -76,22 +73,17 @@ class TaskExecutionTime(page_test.PageTest):
     if process is None:
       return
 
-    tasks = TaskExecutionTime._GetTasksForThread(process, thread_name)
+    sections = TaskExecutionTime._GetSectionsForThread(process, thread_name)
 
-    # Pull out all the unique sections used by the returned tasks.
-    sections = set([key.section for key in tasks.iterkeys()])
+    self._ReportSectionPercentages(sections.values(),
+                                   '%s:%s' % (process.name, thread_name))
 
-    # Remove sections we don't care about (currently just Idle tasks).
-    if TaskExecutionTime.IDLE_SECTION in sections:
-      sections.remove(TaskExecutionTime.IDLE_SECTION)
-
-    # Create top N list for each section. Note: This nested loop (n-squared)
-    # solution will become inefficient as the number of sections grows.
-    # Consider a refactor to pre-split the tasks into section buckets if this
-    # happens and performance becomes an isssue.
-    for section in sections:
-      task_list = [tasks[key] for key in tasks if key.section == section]
-      self._AddSlowestTasksToResults(task_list)
+    # Create list with top |_NUMBER_OF_RESULTS_TO_DISPLAY| for each section.
+    for section in sections.itervalues():
+      if section.name == TaskExecutionTime.IDLE_SECTION:
+        # Skip sections we don't report.
+        continue
+      self._AddSlowestTasksToResults(section.tasks.values())
 
   def _AddSlowestTasksToResults(self, tasks):
     sorted_tasks = sorted(
@@ -107,20 +99,39 @@ class TaskExecutionTime(page_test.PageTest):
           task.median_self_duration,
           description='Slowest tasks'))
 
-  @staticmethod
-  def _GetTasksForThread(process, target_thread):
-    task_durations = {}
+  def _ReportSectionPercentages(self, section_values, metric_prefix):
+    all_sectionstotal_duration = sum(
+        section.total_duration for section in section_values)
 
-    for thread in process.threads.values():
+    if not all_sectionstotal_duration:
+      # Nothing was recorded, so early out.
+      return
+
+    for section in section_values:
+      section_name = section.name or TaskExecutionTime.NORMAL_SECTION
+      section_percentage_of_total = (
+          (section.total_duration * 100.0) / all_sectionstotal_duration)
+      self._results.AddValue(scalar.ScalarValue(
+          self._results.current_page,
+          '%s:Section_%s' % (metric_prefix, section_name),
+          '%',
+          section_percentage_of_total,
+          description='Idle task percentage'))
+
+  @staticmethod
+  def _GetSectionsForThread(process, target_thread):
+    sections = {}
+
+    for thread in process.threads.itervalues():
       if thread.name != target_thread:
         continue
       for task_slice in thread.IterAllSlices():
         _ProcessTasksForThread(
-            task_durations,
-            process.name + ':' + thread.name,
+            sections,
+            '%s:%s' % (process.name, thread.name),
             task_slice)
 
-    return task_durations
+    return sections
 
   @staticmethod
   def GetExpectedResultCount():
@@ -128,10 +139,10 @@ class TaskExecutionTime(page_test.PageTest):
 
 
 def _ProcessTasksForThread(
-    task_durations,
+    sections,
     thread_name,
     task_slice,
-    section=None):
+    section_name=None):
   if task_slice.self_thread_time is None:
     # Early out if this slice is a TRACE_EVENT_INSTANT, as it has no duration.
     return
@@ -144,13 +155,13 @@ def _ProcessTasksForThread(
   # recorded as an idle event).
 
   if task_slice.name == TaskExecutionTime.IDLE_SECTION_TRIGGER:
-    section = TaskExecutionTime.IDLE_SECTION
+    section_name = TaskExecutionTime.IDLE_SECTION
 
   # Add the thread name and section (e.g. 'Idle') to the test name
   # so it is human-readable.
   reported_name = thread_name + ':'
-  if section:
-    reported_name += section + ':'
+  if section_name:
+    reported_name += section_name + ':'
 
   if 'src_func' in task_slice.args:
     # Data contains the name of the timed function, use it as the name.
@@ -166,33 +177,23 @@ def _ProcessTasksForThread(
   # Replace any '.'s with '_'s as V8 uses them and it confuses the dashboard.
   reported_name = reported_name.replace('.', '_')
 
-  # Use the name and section as the key to bind identical entries. The section
-  # is tracked separately so results can be easily split up across section
-  # boundaries (e.g. Idle Vs Not-idle) for top-10 generation even if the name
-  # of the task is identical.
-  dictionary_key = TaskKey(reported_name, section)
-  self_duration = task_slice.self_thread_time
+  # If this task is in a new section create a section object and add it to the
+  # section dictionary.
+  if section_name not in sections:
+    sections[section_name] = Section(section_name)
 
-  if dictionary_key in task_durations:
-    # Task_durations already contains an entry for this (e.g. from an earlier
-    # slice), add the new duration so we can calculate a median value later on.
-    task_durations[dictionary_key].Update(self_duration)
-  else:
-    # This is a new task so create a new entry for it.
-    task_durations[dictionary_key] = SliceNameAndDurations(
-        reported_name,
-        self_duration)
+  sections[section_name].AddTask(reported_name, task_slice.self_thread_time)
 
   # Process sub slices recursively, passing the current section down.
   for sub_slice in task_slice.sub_slices:
     _ProcessTasksForThread(
-        task_durations,
+        sections,
         thread_name,
         sub_slice,
-        section)
+        section_name)
 
 
-class SliceNameAndDurations:
+class NameAndDurations(object):
 
   def __init__(self, name, self_duration):
     self.name = name
@@ -204,3 +205,24 @@ class SliceNameAndDurations:
   @property
   def median_self_duration(self):
     return statistics.Median(self.self_durations)
+
+
+class Section(object):
+
+  def __init__(self, name):
+    # A section holds a dictionary, keyed on task name, of all the tasks that
+    # exist within it and the total duration of those tasks.
+    self.name = name
+    self.tasks = {}
+    self.total_duration = 0
+
+  def AddTask(self, name, duration):
+    if name in self.tasks:
+      # section_tasks already contains an entry for this (e.g. from an earlier
+      # slice), add the new duration so we can calculate a median value later.
+      self.tasks[name].Update(duration)
+    else:
+      # This is a new task so create a new entry for it.
+      self.tasks[name] = NameAndDurations(name, duration)
+    # Accumulate total duration for all tasks in this section.
+    self.total_duration += duration

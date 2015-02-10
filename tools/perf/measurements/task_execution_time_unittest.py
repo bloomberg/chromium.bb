@@ -31,14 +31,18 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
+    self._first_thread_name = (
+        task_execution_time.TaskExecutionTime._RENDERER_THREADS[0])
+    self._measurement = None
+    self._page_set = None
 
   @decorators.Enabled('android')
   def testSomeResultsReturnedFromDummyPage(self):
-    ps = self.CreateEmptyPageSet()
-    ps.AddUserStory(TestTaskExecutionTimePage(ps, ps.base_dir))
-    measurement = task_execution_time.TaskExecutionTime()
+    self._GenerateDataForEmptyPageSet()
 
-    results = self.RunMeasurement(measurement, ps, options=self._options)
+    results = self.RunMeasurement(self._measurement,
+                                  self._page_set,
+                                  options=self._options)
 
     self.assertGreater(len(results.all_page_specific_values), 0)
 
@@ -57,95 +61,54 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
        updated to use the appropriate technique for assertaining this data
        (and this test changed in the same way).
     """
-    ps = self.CreateEmptyPageSet()
-    ps.AddUserStory(TestTaskExecutionTimePage(ps, ps.base_dir))
-    measurement = task_execution_time.TaskExecutionTime()
+    self._GenerateDataForEmptyPageSet()
 
-    self.RunMeasurement(measurement, ps, options=self._options)
+    self.RunMeasurement(self._measurement,
+                        self._page_set,
+                        options=self._options)
 
     required_keywords = {'src_func': 0, 'class': 0, 'line': 0}
 
     # Check all slices and count the uses of the required keywords.
-    for thread in measurement._renderer_process.threads.values():
+    for thread in self._measurement._renderer_process.threads.itervalues():
       for slice_info in thread.IterAllSlices():
         _CheckSliceForKeywords(slice_info, required_keywords)
 
     # Confirm that all required keywords have at least one instance.
-    for use_counts in required_keywords.values():
+    for use_counts in required_keywords.itervalues():
       self.assertGreater(use_counts, 0)
 
-  def testMockedResults(self):
-    task_execution_time_metric = task_execution_time.TaskExecutionTime()
-    ps = self.CreateEmptyPageSet()
-    page = TestTaskExecutionTimePage(ps, ps.base_dir)
-    ps.AddUserStory(page)
+  def testMockedResultsCorrectlyReturned(self):
+    data = self._GenerateResultsFromMockedData()
 
-    # Get the name of a thread used by task_execution_time metric and set up
-    # some dummy execution data pretending to be from that thread & process.
-    first_thread_name = task_execution_time_metric._RENDERER_THREADS[0]
-    data = TaskExecutionTestData(first_thread_name)
-    task_execution_time_metric._renderer_process = data._renderer_process
+    # Confirm we get back 4 results (3 tasks and a section-use %).
+    self.assertEqual(len(data.results.all_page_specific_values), 4)
 
-    # Pretend we're about to run the tests to silence lower level asserts.
-    data.results.WillRunPage(page)
-    data.AddSlice('fast', 0, 1)
-    data.AddSlice('medium', 0, 500)
-    data.AddSlice('slow', 0, 1000)
+    # Check that the 3 tasks we added exist in the resulting output
+    # sorted.
+    task_prefix = 'process 1:%s:' % (self._first_thread_name)
+    slow_result = self._findResultFromName(task_prefix + 'slow', data)
+    self.assertEqual(slow_result.value, 1000)
 
-    # Run the code we are testing.
-    task_execution_time_metric.ValidateAndMeasurePage(None, None, data.results)
+    medium_result = self._findResultFromName(task_prefix + 'medium', data)
+    self.assertEqual(medium_result.value, 500)
 
-    # Confirm we get back 3 results that are correctly sorted and named.
-    self.assertEqual(len(data.results.all_page_specific_values), 3)
-    self.assertEqual(
-        data.results.all_page_specific_values[0].name,
-        'process 1:' + first_thread_name + ':slow')
-    self.assertEqual(
-        data.results.all_page_specific_values[1].name,
-        'process 1:' + first_thread_name + ':medium')
-    self.assertEqual(
-        data.results.all_page_specific_values[2].name,
-        'process 1:' + first_thread_name + ':fast')
-    self.assertEqual(data.results.all_page_specific_values[0].value, 1000)
-    self.assertEqual(data.results.all_page_specific_values[1].value, 500)
-    self.assertEqual(data.results.all_page_specific_values[2].value, 1)
+    fast_result = self._findResultFromName(task_prefix + 'fast', data)
+    self.assertEqual(fast_result.value, 1)
+
+  def testNonIdlePercentagesAreCorrect(self):
+    data = self._GenerateResultsFromMockedData()
+
+    # Confirm that 100% of tasks are in the normal section.
+    percentage_result = self._findResultFromName(
+        'process 1:%s:Section_%s' % (
+            self._first_thread_name,
+            task_execution_time.TaskExecutionTime.NORMAL_SECTION),
+        data)
+    self.assertEqual(percentage_result.value, 100)
 
   def testIdleTasksAreReported(self):
-    task_execution_time_metric = task_execution_time.TaskExecutionTime()
-    ps = self.CreateEmptyPageSet()
-    page = TestTaskExecutionTimePage(ps, ps.base_dir)
-    ps.AddUserStory(page)
-
-    # Get the name of a thread used by task_execution_time metric and set up
-    # some dummy execution data pretending to be from that thread & process.
-    first_thread_name = task_execution_time_metric._RENDERER_THREADS[0]
-    data = TaskExecutionTestData(first_thread_name)
-    task_execution_time_metric._renderer_process = data._renderer_process
-
-    # Pretend we're about to run the tests to silence lower level asserts.
-    data.results.WillRunPage(page)
-
-    # Make a slice that looks like an idle task parent.
-    slice_start_time = 0
-    slice_duration = 1000
-    parent_slice = data.AddSlice(
-        task_execution_time_metric.IDLE_SECTION_TRIGGER,
-        slice_start_time,
-        slice_duration)
-    # Add a sub-slice, this should be reported back as occuring in idle time.
-    sub_slice = slice_data.Slice(
-        None,
-        'category',
-        'slow_sub_slice',
-        slice_start_time,
-        slice_duration)
-    parent_slice.sub_slices.append(sub_slice)
-
-    # Add a non-idle task.
-    data.AddSlice('not_idle', slice_start_time, slice_duration)
-
-    # Run the code we are testing.
-    task_execution_time_metric.ValidateAndMeasurePage(None, None, data.results)
+    data = self._GenerateResultsFromMockedIdleData()
 
     # The 'slow_sub_slice' should be inside the Idle section and therefore
     # removed from the results.
@@ -158,11 +121,119 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
     for result in data.results.all_page_specific_values:
       if 'not_idle' in result.name:
         self.assertTrue(
-            task_execution_time_metric.IDLE_SECTION
+            task_execution_time.TaskExecutionTime.IDLE_SECTION
             not in result.name)
         break
     else:
       self.fail('Task was incorrectly marked as Idle')
+
+  def testIdlePercentagesAreCorrect(self):
+    data = self._GenerateResultsFromMockedIdleData()
+
+    # Check the percentage section usage is correctly calculated.
+    # Total = 1000 (idle) + 250 (normal), so normal = (250 * 100) / 1250 = 20%.
+    normal_percentage_result = self._findResultFromName(
+        'process 1:%s:Section_%s' % (
+            self._first_thread_name,
+            task_execution_time.TaskExecutionTime.NORMAL_SECTION),
+        data)
+    self.assertEqual(normal_percentage_result.value, 20)
+    # Check the percentage section usage is correctly calculated.
+    idle_percentage_result = self._findResultFromName(
+        'process 1:%s:Section_%s' % (
+            self._first_thread_name,
+            task_execution_time.TaskExecutionTime.IDLE_SECTION),
+        data)
+    self.assertEqual(idle_percentage_result.value, 80)
+
+  def testTopNTasksAreCorrectlyReported(self):
+    data = self._GenerateDataForEmptyPageSet()
+
+    # Add too many increasing-durtation tasks and confirm we only get the
+    # slowest _NUMBER_OF_RESULTS_TO_DISPLAY tasks reported back.
+    duration = 0
+    extra = 5
+    for duration in xrange(
+        task_execution_time.TaskExecutionTime._NUMBER_OF_RESULTS_TO_DISPLAY +
+        extra):
+      data.AddSlice('task' + str(duration), 0, duration)
+
+    # Run the code we are testing.
+    self._measurement.ValidateAndMeasurePage(None, None, data.results)
+
+    # Check that the last (i.e. biggest) _NUMBER_OF_RESULTS_TO_DISPLAY get
+    # returned in the results.
+    for duration in xrange(
+        extra,
+        extra +
+        task_execution_time.TaskExecutionTime._NUMBER_OF_RESULTS_TO_DISPLAY):
+      self._findResultFromName(
+          'process 1:%s:task%s' % (self._first_thread_name, str(duration)),
+          data)
+
+  def _findResultFromName(self, name, data):
+    for result in data.results.all_page_specific_values:
+      if result.name == name:
+        return result
+    self.fail('Expected result "%s" missing.' % (name))
+
+  def _GenerateResultsFromMockedData(self):
+    data = self._GenerateDataForEmptyPageSet()
+
+    data.AddSlice('fast', 0, 1)
+    data.AddSlice('medium', 0, 500)
+    data.AddSlice('slow', 0, 1000)
+
+    # Run the code we are testing and return results.
+    self._measurement.ValidateAndMeasurePage(None, None, data.results)
+    return data
+
+  def _GenerateResultsFromMockedIdleData(self):
+    data = self._GenerateDataForEmptyPageSet()
+
+    # Make a slice that looks like an idle task parent.
+    slice_start_time = 0
+    slow_slice_duration = 1000
+    fast_slice_duration = 250
+    parent_slice = data.AddSlice(
+        task_execution_time.TaskExecutionTime.IDLE_SECTION_TRIGGER,
+        slice_start_time,
+        slow_slice_duration)
+    # Add a sub-slice, this should be reported back as occuring in idle time.
+    sub_slice = slice_data.Slice(
+        None,
+        'category',
+        'slow_sub_slice',
+        slice_start_time,
+        slow_slice_duration,
+        slice_start_time,
+        slow_slice_duration,
+        [])
+    parent_slice.sub_slices.append(sub_slice)
+
+    # Add a non-idle task.
+    data.AddSlice('not_idle', slice_start_time, fast_slice_duration)
+
+    # Run the code we are testing.
+    self._measurement.ValidateAndMeasurePage(None, None, data.results)
+
+    return data
+
+  def _GenerateDataForEmptyPageSet(self):
+    self._measurement = task_execution_time.TaskExecutionTime()
+    self._page_set = self.CreateEmptyPageSet()
+    page = TestTaskExecutionTimePage(self._page_set, self._page_set.base_dir)
+    self._page_set.AddUserStory(page)
+
+    # Get the name of a thread used by task_execution_time metric and set up
+    # some dummy execution data pretending to be from that thread & process.
+    data = TaskExecutionTestData(self._first_thread_name)
+    self._measurement._renderer_process = data._renderer_process
+
+    # Pretend we are about to run the tests to silence lower level asserts.
+    data.results.WillRunPage(page)
+
+    return data
 
 
 def _CheckSliceForKeywords(slice_info, required_keywords):
@@ -182,16 +253,10 @@ class TaskExecutionTestData(object):
     self._renderer_thread = self._renderer_process.GetOrCreateThread(2)
     self._renderer_thread.name = thread_name
     self._results = page_test_results.PageTestResults()
-    self._metric = None
-    self._ps = None
 
   @property
   def results(self):
     return self._results
-
-  @property
-  def metric(self):
-    return self._metric
 
   def AddSlice(self, name, timestamp, duration):
     new_slice = slice_data.Slice(
