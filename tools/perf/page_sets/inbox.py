@@ -50,10 +50,12 @@ class InboxPage(page_module.Page):
     action_runner.MouseClick(_SCROLL_LIST_ITEM % 'fullItemHeader_')
 
   def _WaitForInitialSync(self, action_runner):
-    action_runner.Wait(60)
+    # This wait is to make sure that the actual background sync starts
+    # properly and we are  not capturing the initial default synced status.
+    action_runner.Wait(120)
     action_runner.WaitForJavaScriptCondition(
         'window.BT_events && '
-        'BT_events.ITEMS_LOADED && BT_events.INITIAL_SYNC_COMPLETE')
+        'BT_events.ITEMS_LOADED && BT_events.INITIAL_SYNC_COMPLETE', 90)
 
   def _OpenAndCloseEmail(self, action_runner):
     self._ClickToOpenItem(action_runner)
