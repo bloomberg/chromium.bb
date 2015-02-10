@@ -14,10 +14,10 @@ enum LinuxSandboxStatus {
   // SUID sandbox active.
   kSandboxLinuxSUID = 1 << 0,
 
-  // Sandbox is using a new PID namespace.
+  // SUID sandbox is using the PID namespace.
   kSandboxLinuxPIDNS = 1 << 1,
 
-  // Sandbox is using a new network namespace.
+  // SUID sandbox is using the network namespace.
   kSandboxLinuxNetNS = 1 << 2,
 
   // seccomp-bpf sandbox active.
@@ -28,9 +28,6 @@ enum LinuxSandboxStatus {
 
   // seccomp-bpf sandbox is active and the kernel supports TSYNC.
   kSandboxLinuxSeccompTSYNC = 1 << 5,
-
-  // User namespace sandbox active.
-  kSandboxLinuxUserNS = 1 << 6,
 
   // A flag that denotes an invalid sandbox status.
   kSandboxLinuxInvalid = 1 << 31,
