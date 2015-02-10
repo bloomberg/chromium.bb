@@ -15975,6 +15975,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.NoProxy.BytesAfterCompression" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The uncompressed number of bytes received per request that was compressed.
@@ -15984,6 +15987,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.NoProxy.BytesBeforeCompression" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The compressed number of bytes received per request that was compressed.
@@ -15993,6 +15999,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.NoProxy.ShouldHaveBeenCompressed" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The uncompressed number of bytes received per request that was not
@@ -16002,6 +16011,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.Proxy.BytesAfterCompression" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The uncompressed number of bytes received per request that was compressed.
@@ -16010,6 +16022,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.Proxy.BytesBeforeCompression" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The compressed number of bytes received per request that was compressed.
@@ -16018,6 +16033,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.Proxy.ShouldHaveBeenCompressed" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The uncompressed number of bytes received per request that was not
@@ -16027,6 +16045,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.SSL.BytesAfterCompression" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The uncompressed number of bytes received per request that was compressed.
@@ -16035,6 +16056,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.SSL.BytesBeforeCompression" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The compressed number of bytes received per request that was compressed.
@@ -16043,6 +16067,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Compress.SSL.ShouldHaveBeenCompressed" units="bytes">
+  <obsolete>
+    Removed as of 02/2015
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The uncompressed number of bytes received per request that was not

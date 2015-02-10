@@ -136,9 +136,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void UpdatePacketReadTimes() override;
   void RecordPacketStats(FilterContext::StatisticSelector statistic) const;
 
-  void RecordCompressionHistograms();
-  bool IsCompressibleContent() const;
-
   // Starts the transaction if extensions using the webrequest API do not
   // object.
   void StartTransaction();

@@ -1452,88 +1452,6 @@ void URLRequestHttpJob::RecordPacketStats(
   }
 }
 
-// The common type of histogram we use for all compression-tracking histograms.
-#define COMPRESSION_HISTOGRAM(name, sample) \
-    do { \
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.Compress." name, sample, \
-                                  500, 1000000, 100); \
-    } while (0)
-
-void URLRequestHttpJob::RecordCompressionHistograms() {
-  DCHECK(request_);
-  if (!request_)
-    return;
-
-  if (is_cached_content_ ||                // Don't record cached content
-      !GetStatus().is_success() ||         // Don't record failed content
-      !IsCompressibleContent() ||          // Only record compressible content
-      !prefilter_bytes_read())       // Zero-byte responses aren't useful.
-    return;
-
-  // Miniature requests aren't really compressible. Don't count them.
-  const int kMinSize = 16;
-  if (prefilter_bytes_read() < kMinSize)
-    return;
-
-  // Only record for http or https urls.
-  bool is_http = request_->url().SchemeIs("http");
-  bool is_https = request_->url().SchemeIs("https");
-  if (!is_http && !is_https)
-    return;
-
-  int compressed_B = prefilter_bytes_read();
-  int decompressed_B = postfilter_bytes_read();
-  bool was_filtered = HasFilter();
-
-  // We want to record how often downloaded resources are compressed.
-  // But, we recognize that different protocols may have different
-  // properties. So, for each request, we'll put it into one of 3
-  // groups:
-  //      a) SSL resources
-  //         Proxies cannot tamper with compression headers with SSL.
-  //      b) Non-SSL, loaded-via-proxy resources
-  //         In this case, we know a proxy might have interfered.
-  //      c) Non-SSL, loaded-without-proxy resources
-  //         In this case, we know there was no explicit proxy. However,
-  //         it is possible that a transparent proxy was still interfering.
-  //
-  // For each group, we record the same 3 histograms.
-
-  if (is_https) {
-    if (was_filtered) {
-      COMPRESSION_HISTOGRAM("SSL.BytesBeforeCompression", compressed_B);
-      COMPRESSION_HISTOGRAM("SSL.BytesAfterCompression", decompressed_B);
-    } else {
-      COMPRESSION_HISTOGRAM("SSL.ShouldHaveBeenCompressed", decompressed_B);
-    }
-    return;
-  }
-
-  if (request_->was_fetched_via_proxy()) {
-    if (was_filtered) {
-      COMPRESSION_HISTOGRAM("Proxy.BytesBeforeCompression", compressed_B);
-      COMPRESSION_HISTOGRAM("Proxy.BytesAfterCompression", decompressed_B);
-    } else {
-      COMPRESSION_HISTOGRAM("Proxy.ShouldHaveBeenCompressed", decompressed_B);
-    }
-    return;
-  }
-
-  if (was_filtered) {
-    COMPRESSION_HISTOGRAM("NoProxy.BytesBeforeCompression", compressed_B);
-    COMPRESSION_HISTOGRAM("NoProxy.BytesAfterCompression", decompressed_B);
-  } else {
-    COMPRESSION_HISTOGRAM("NoProxy.ShouldHaveBeenCompressed", decompressed_B);
-  }
-}
-
-bool URLRequestHttpJob::IsCompressibleContent() const {
-  std::string mime_type;
-  return GetMimeType(&mime_type) &&
-      (IsSupportedJavascriptMimeType(mime_type.c_str()) ||
-       IsSupportedNonImageMimeType(mime_type.c_str()));
-}
-
 void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
   if (start_time_.is_null())
     return;
@@ -1569,7 +1487,6 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
   RecordPerfHistograms(reason);
   if (reason == FINISHED) {
     request_->set_received_response_content_length(prefilter_bytes_read());
-    RecordCompressionHistograms();
   }
 }
 
