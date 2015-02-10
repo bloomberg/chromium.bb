@@ -23,26 +23,26 @@ class PixelTestsPageSet(page_set_module.PageSet):
 
   """ Some basic test cases for GPU. """
 
-  def __init__(self):
+  def __init__(self, base_name='Pixel'):
     super(PixelTestsPageSet, self).__init__(
       user_agent_type='desktop')
-    # self.AddUserStory(PixelTestsPage(
-    #   url='file://../../data/gpu/pixel_canvas2d.html',
-    #   name='Pixel.Canvas2DRedBox',
-    #   test_rect=[0, 0, 300, 300],
-    #   revision=4,
-    #   page_set=self))
+    self.AddUserStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_canvas2d.html',
+      name=base_name + '.Canvas2DRedBox',
+      test_rect=[0, 0, 300, 300],
+      revision=4,
+      page_set=self))
 
     self.AddUserStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_css3d.html',
-      name='Pixel.CSS3DBlueBox',
+      name=base_name + '.CSS3DBlueBox',
       test_rect=[0, 0, 300, 300],
       revision=12,
       page_set=self))
 
     self.AddUserStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_webgl.html',
-      name='Pixel.WebGLGreenTriangle',
+      name=base_name + '.WebGLGreenTriangle',
       test_rect=[0, 0, 300, 300],
       revision=9,
       page_set=self))

@@ -9,9 +9,10 @@ from gpu_test_expectations import GpuTestExpectations
 class TraceTestExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Sample Usage:
-    # self.Fail('Pixel.Canvas2DRedBox',
+    # self.Fail('TraceTest.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
+    self.Skip('TraceTest.Canvas2DRedBox')
     pass
 
 class DeviceTraceTestExpectations(GpuTestExpectations):

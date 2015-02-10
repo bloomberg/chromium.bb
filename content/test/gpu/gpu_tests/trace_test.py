@@ -76,7 +76,7 @@ class _TraceTestBase(benchmark.Benchmark):
   """Base class for the trace tests."""
   def CreatePageSet(self, options):
     # Utilize pixel tests page set as a set of simple pages to load.
-    page_set = page_sets.PixelTestsPageSet()
+    page_set = page_sets.PixelTestsPageSet(base_name=self.name)
     for page in page_set.pages:
       page.script_to_evaluate_on_commit = test_harness_script
     return page_set
@@ -85,6 +85,7 @@ class _TraceTestBase(benchmark.Benchmark):
 class TraceTest(_TraceTestBase):
   """Tests GPU traces are plumbed through properly."""
   test = _TraceValidator
+  name = 'TraceTest'
 
   @classmethod
   def Name(cls):
@@ -97,6 +98,7 @@ class TraceTest(_TraceTestBase):
 class DeviceTraceTest(_TraceTestBase):
   """Tests GPU Device traces show up on devices that support it."""
   test = _DeviceTraceValidator
+  name = 'DeviceTraceTest'
 
   @classmethod
   def Name(cls):
