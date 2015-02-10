@@ -245,6 +245,7 @@ list > .heading:hover {
 
 list .deletable-item {
   -webkit-box-align: center;
+  outline: none;
 }
 
 list .deletable-item > :first-child {

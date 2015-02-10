@@ -938,6 +938,7 @@
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
       'browser/ui/webui/options/autofill_options_interactive_uitest.cc',
+      'browser/ui/webui/options/language_dictionary_interactive_uitest.cc',
       'browser/ui/webui/options/language_options_interactive_uitest.cc',
       'browser/ui/views/accessibility/navigation_accessibility_uitest_win.cc',
       'test/base/interactive_test_utils.cc',

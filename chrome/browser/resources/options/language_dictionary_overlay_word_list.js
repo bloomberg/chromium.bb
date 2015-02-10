@@ -62,6 +62,24 @@ cr.define('options.dictionary_words', function() {
       return this.querySelector('input').value.length > 0;
     },
 
+    /** @override */
+    updateLeadState: function() {
+      InlineEditableItem.prototype.updateLeadState.call(this);
+
+      // Allow focusing the list item itself if not editable.
+      if (!this.editable)
+        this.tabIndex = this.lead ? 0 : -1;
+    },
+
+    /** @override */
+    updateEditState: function() {
+      InlineEditableItem.prototype.updateEditState.call(this);
+
+      // Focus the list item itself if not editable.
+      if (!this.editable && this.selected && this.lead)
+        this.focus();
+    },
+
     /**
      * Adds a word to the dictionary.
      * @param {Event} e Edit committed event.
