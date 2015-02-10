@@ -586,7 +586,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     [[[view animationForKey:@"frameOrigin"] delegate] invalidate];
   }
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [tabStripView_ removeAllToolTips];
   [super dealloc];
 }
 
@@ -839,9 +838,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   // Cancel any pending tab transition.
   hoverTabSelector_->CancelTabTransition();
 
-  if ([hoveredTab_ isEqual:sender]) {
-    hoveredTab_ = nil;
-  }
+  if ([hoveredTab_ isEqual:sender])
+    [self setHoveredTab:nil];
 
   NSInteger index = [self modelIndexForTabView:sender];
   if (!tabStripModel_->ContainsIndex(index))
@@ -1052,10 +1050,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   CGFloat tabWidthAccumulatedFraction = 0;
   NSInteger laidOutNonMiniTabs = 0;
 
-  // Remove all the tooltip rects on the tab strip so that we can re-apply
-  // them to correspond with the new tab positions.
-  [tabStripView_ removeAllToolTips];
-
   for (TabController* tab in tabArray_.get()) {
     // Ignore a tab that is going through a close animation.
     if ([closingControllers_ containsObject:tab])
@@ -1173,25 +1167,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
     offset += NSWidth(tabFrame);
     offset -= kTabOverlap;
-
-    // Create a rect which starts at the point where the tab overlap will end so
-    // that as the mouse cursor crosses over the boundary it will get updated.
-    // The inset is based on a multiplier of the height.
-    float insetWidth = NSHeight(tabFrame) * [TabView insetMultiplier];
-    // NSInsetRect will also expose the "insetWidth" at the right of the tab.
-    NSRect tabToolTipRect = NSInsetRect(tabFrame, insetWidth, 0);
-    [tabStripView_ addToolTipRect:tabToolTipRect owner:self userData:nil];
-
-    // Also create two more rects in the remaining space so that the tooltip
-    // is more likely to get updated crossing tabs.
-    // These rects "cover" the right edge of the previous tab that was exposed
-    // since the tabs overlap.
-    tabToolTipRect = tabFrame;
-    tabToolTipRect.size.width = insetWidth / 2.0;
-    [tabStripView_ addToolTipRect:tabToolTipRect owner:self userData:nil];
-
-    tabToolTipRect = NSOffsetRect(tabToolTipRect, insetWidth / 2.0, 0);
-    [tabStripView_ addToolTipRect:tabToolTipRect owner:self userData:nil];
   }
 
   // Hide the new tab button if we're explicitly told to. It may already
@@ -1240,21 +1215,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
   [dragBlockingView_ setFrame:enclosingRect];
 
-  // Add a catch-all tooltip rect which will handle any remaining tab strip
-  // region not covered by tab-specific rects.
-  [tabStripView_ addToolTipRect:enclosingRect owner:self userData:nil];
-
   // Mark that we've successfully completed layout of at least one tab.
   initialLayoutComplete_ = YES;
-}
-
-// Return the current hovered tab's tooltip when requested by the tooltip
-// manager.
-- (NSString*) view:(NSView*)view
-  stringForToolTip:(NSToolTipTag)tag
-             point:(NSPoint)point
-          userData:(void*)data {
-  return [hoveredTab_ toolTipText];
 }
 
 // When we're told to layout from the public API we usually want to animate,
@@ -1461,7 +1423,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   [controller setTarget:nil];
 
   if ([hoveredTab_ isEqual:tab])
-    hoveredTab_ = nil;
+    [self setHoveredTab:nil];
 
   NSValue* identifier = [NSValue valueWithPointer:tab];
   [targetFrames_ removeObjectForKey:identifier];
@@ -1887,9 +1849,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   }
 
   if (hoveredTab_ != tabView) {
-    [hoveredTab_ mouseExited:nil];  // We don't pass event because moved events
-    [tabView mouseEntered:nil];  // don't have valid tracking areas
-    hoveredTab_ = tabView;
+    [self setHoveredTab:tabView];
   } else {
     [hoveredTab_ mouseMoved:event];
   }
@@ -1913,8 +1873,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     mouseInside_ = NO;
     [self setTabTrackingAreasEnabled:NO];
     availableResizeWidth_ = kUseFullAvailableWidth;
-    [hoveredTab_ mouseExited:event];
-    hoveredTab_ = nil;
+    [self setHoveredTab:nil];
     [self layoutTabs];
   } else if ([area isEqual:newTabTrackingArea_]) {
     // If the mouse is moved quickly enough, it is possible for the mouse to
@@ -1922,6 +1881,35 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     // Since this would result in the new tab button incorrectly staying in the
     // hover state, disable the hover image on every mouse exit.
     [self setNewTabButtonHoverState:NO];
+  }
+}
+
+- (TabView*)hoveredTab {
+  return hoveredTab_;
+}
+
+- (void)setHoveredTab:(TabView*)newHoveredTab {
+  if (hoveredTab_) {
+    [hoveredTab_ mouseExited:nil];
+    [toolTipView_ setFrame:NSZeroRect];
+  }
+
+  hoveredTab_ = newHoveredTab;
+
+  if (newHoveredTab) {
+    [newHoveredTab mouseEntered:nil];
+
+    // Use a transparent subview to show the hovered tab's tooltip while the
+    // mouse pointer is inside the tab's custom shape.
+    if (!toolTipView_)
+      toolTipView_.reset([[NSView alloc] init]);
+    [toolTipView_ setToolTip:[newHoveredTab toolTipText]];
+    [toolTipView_ setFrame:[newHoveredTab frame]];
+    if (![toolTipView_ superview]) {
+      [tabStripView_ addSubview:toolTipView_
+                     positioned:NSWindowBelow
+                     relativeTo:nil];
+    }
   }
 }
 

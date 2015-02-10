@@ -122,6 +122,10 @@ class WebContents;
   base::scoped_nsobject<CrTrackingArea> trackingArea_;
   TabView* hoveredTab_;  // weak. Tab that the mouse is hovering over
 
+  // A transparent subview of |tabStripView_| used to show the hovered tab's
+  // tooltip text.
+  base::scoped_nsobject<NSView> toolTipView_;
+
   // Array of subviews which are permanent (and which should never be removed),
   // such as the new-tab button, but *not* the tabs themselves.
   base::scoped_nsobject<NSMutableArray> permanentSubviews_;
@@ -147,6 +151,8 @@ class WebContents;
 
 @property(nonatomic) CGFloat leftIndentForControls;
 @property(nonatomic) CGFloat rightIndentForControls;
+
+@property(assign, nonatomic) TabView* hoveredTab;
 
 // Initialize the controller with a view and browser that contains
 // everything else we'll need. |switchView| is the view whose contents get

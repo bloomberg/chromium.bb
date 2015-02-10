@@ -27,9 +27,6 @@
 const int kMaskHeight = 29;  // Height of the mask bitmap.
 const int kFillHeight = 25;  // Height of the "mask on" part of the mask bitmap.
 
-// Constants for inset and control points for tab shape.
-const CGFloat kInsetMultiplier = 2.0/3.0;
-
 // The amount of time in seconds during which each type of glow increases, holds
 // steady, and decreases, respectively.
 const NSTimeInterval kHoverShowDuration = 0.2;
@@ -62,10 +59,6 @@ const CGFloat kRapidCloseDist = 2.5;
 @synthesize hoverAlpha = hoverAlpha_;
 @synthesize alertAlpha = alertAlpha_;
 @synthesize closing = closing_;
-
-+ (CGFloat)insetMultiplier {
-  return kInsetMultiplier;
-}
 
 - (id)initWithFrame:(NSRect)frame
          controller:(TabController*)controller
@@ -480,16 +473,12 @@ const CGFloat kRapidCloseDist = 2.5;
   [super setFrameOrigin:origin];
 }
 
-// Override this to catch the text so that we can choose when to display it.
-- (void)setToolTip:(NSString*)string {
-  toolTipText_.reset([string retain]);
+- (void)setToolTipText:(NSString*)string {
+  toolTipText_.reset([string copy]);
 }
 
 - (NSString*)toolTipText {
-  if (!toolTipText_.get()) {
-    return @"";
-  }
-  return toolTipText_.get();
+  return toolTipText_;
 }
 
 - (void)viewDidMoveToWindow {

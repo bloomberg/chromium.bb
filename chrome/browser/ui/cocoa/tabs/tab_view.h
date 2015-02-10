@@ -103,13 +103,13 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 // clicks inside it from sending messages.
 @property(assign, nonatomic, getter=isClosing) BOOL closing;
 
+// The tool tip text for this tab view.
+@property(copy, nonatomic) NSString* toolTipText;
+
 // Designated initializer.
 - (id)initWithFrame:(NSRect)frame
          controller:(TabController*)controller
         closeButton:(HoverCloseButton*)closeButton;
-
-// Returns the inset multiplier used to compute the inset of the top of the tab.
-+ (CGFloat)insetMultiplier;
 
 // Enables/Disables tracking regions for the tab.
 - (void)setTrackingEnabled:(BOOL)enabled;
@@ -121,9 +121,6 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 // Stop showing the "alert" glow; this won't immediately wipe out any glow, but
 // will make it fade away.
 - (void)cancelAlert;
-
-// Returns the tool tip text for this tab view.
-- (NSString*)toolTipText;
 
 @end
 

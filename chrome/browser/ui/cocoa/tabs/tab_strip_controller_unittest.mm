@@ -205,23 +205,15 @@ TEST_F(TabStripControllerTest, RearrangeTabs) {
   // TODO(pinkerton): Implement http://crbug.com/10899
 }
 
-TEST_F(TabStripControllerTest, CorrectToolTipMouseHoverBehavior) {
-  // Set tab 1 tooltip.
+TEST_F(TabStripControllerTest, CorrectMouseHoverBehavior) {
   TabView* tab1 = CreateTab();
-  [tab1 setToolTip:@"Tab1"];
-
-  // Set tab 2 tooltip.
   TabView* tab2 = CreateTab();
-  [tab2 setToolTip:@"Tab2"];
 
   EXPECT_FALSE([tab1 controller].selected);
   EXPECT_TRUE([tab2 controller].selected);
 
-  // Check that there's no tooltip yet.
-  EXPECT_FALSE([controller_ view:nil
-                stringForToolTip:nil
-                           point:NSZeroPoint
-                        userData:nil]);
+  // Check that there's no hovered tab yet.
+  EXPECT_FALSE([controller_ hoveredTab]);
 
   // Set up mouse event on overlap of tab1 + tab2.
   const CGFloat min_y = NSMinY([tab_strip_.get() frame]) + 1;
@@ -231,32 +223,19 @@ TEST_F(TabStripControllerTest, CorrectToolTipMouseHoverBehavior) {
       cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(280, min_y),
                                                 NSMouseMoved, 0);
   [controller_.get() mouseMoved:event];
-  EXPECT_STREQ("Tab2",
-      [[controller_ view:nil
-        stringForToolTip:nil
-                   point:NSZeroPoint
-                userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
-
+  EXPECT_EQ(tab2, [controller_ hoveredTab]);
 
   // Hover over tab 1.
   event = cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(260, min_y),
                                                     NSMouseMoved, 0);
   [controller_.get() mouseMoved:event];
-  EXPECT_STREQ("Tab1",
-      [[controller_ view:nil
-        stringForToolTip:nil
-                   point:NSZeroPoint
-                userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
+  EXPECT_EQ(tab1, [controller_ hoveredTab]);
 
   // Hover over tab 2.
   event = cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(290, min_y),
                                                     NSMouseMoved, 0);
   [controller_.get() mouseMoved:event];
-  EXPECT_STREQ("Tab2",
-      [[controller_ view:nil
-        stringForToolTip:nil
-                   point:NSZeroPoint
-                userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
+  EXPECT_EQ(tab2, [controller_ hoveredTab]);
 }
 
 TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
