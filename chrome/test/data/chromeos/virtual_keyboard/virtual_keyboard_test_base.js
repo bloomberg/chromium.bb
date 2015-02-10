@@ -188,7 +188,7 @@ function setUp() {
     layout: 'qwerty',
     a11ymode: false,
     experimental: false,
-    gesturetyping: false,
+    features: [],
   });
 
   chrome.inputMethodPrivate.getCurrentInputMethod.setCallbackData('us:en');

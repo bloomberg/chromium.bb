@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
@@ -28,6 +30,10 @@ aura::Window* GetKeyboardContainer() {
   return controller ? controller->GetContainerWindow() : nullptr;
 }
 
+std::string GenerateFeatureFlag(std::string feature, bool enabled) {
+  return feature + (enabled ? "-enabled" : "-disabled");
+}
+
 }  // namespace
 
 namespace extensions {
@@ -37,9 +43,16 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   results->SetString("layout", keyboard::GetKeyboardLayout());
   results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
+  // TODO(rsadam): Deprecate this, and rely on features.
   results->SetBoolean("experimental",
                       keyboard::IsExperimentalInputViewEnabled());
-  results->SetBoolean("gesturetyping", keyboard::IsGestureTypingEnabled());
+  scoped_ptr<base::ListValue> features(new base::ListValue());
+  features->AppendString(
+      GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
+  features->AppendString(GenerateFeatureFlag("experimental",
+      keyboard::IsExperimentalInputViewEnabled()));
+  // TODO(rsadam): Populate features with more inputview features.
+  results->Set("features", features.Pass());
   return true;
 }
 

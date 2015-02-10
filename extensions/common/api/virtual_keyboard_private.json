@@ -144,9 +144,10 @@
                     "type": "boolean",
                     "description": "True if experimental features are enabled."
                   },
-                  "gesturetyping": {
-                    "type": "boolean",
-                    "description": "True if gesture typing is enabled."
+                  "features": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "List of experimental feature flags."
                   }
                 }
               }

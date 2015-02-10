@@ -63,7 +63,7 @@ if (!chrome.virtualKeyboardPrivate) {
       layout: 'qwerty',
       a11ymode: false,
       experimental: false,
-      gesturetyping: false
+      features: []
     });
   };
 
