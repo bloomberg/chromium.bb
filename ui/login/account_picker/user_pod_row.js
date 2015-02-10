@@ -2756,12 +2756,9 @@ cr.define('login', function() {
       if (podToFocus) {
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
-        if (!podToFocus.multiProfilesPolicyApplied)
-          podToFocus.reset(true);  // Reset and give focus.
-        else {
+        if (podToFocus.multiProfilesPolicyApplied)
           podToFocus.userTypeBubbleElement.classList.add('bubble-shown');
-          podToFocus.focus();
-        }
+        podToFocus.focus();
 
         // focusPod() automatically loads wallpaper
         if (!podToFocus.user.isApp)
