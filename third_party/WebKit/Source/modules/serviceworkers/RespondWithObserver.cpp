@@ -55,7 +55,7 @@ public:
         m_outStream->abort();
         cleanup();
     }
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         BodyStreamBuffer::Observer::trace(visitor);
         visitor->trace(m_buffer);
@@ -97,7 +97,7 @@ public:
         return self->bindToV8Function();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_observer);
         ScriptFunction::trace(visitor);
@@ -237,7 +237,7 @@ RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID,
 {
 }
 
-void RespondWithObserver::trace(Visitor* visitor)
+DEFINE_TRACE(RespondWithObserver)
 {
     ContextLifecycleObserver::trace(visitor);
 }

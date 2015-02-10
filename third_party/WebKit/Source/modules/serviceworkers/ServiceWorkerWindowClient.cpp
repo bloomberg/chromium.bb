@@ -81,7 +81,7 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState)
     return promise;
 }
 
-void ServiceWorkerWindowClient::trace(Visitor* visitor)
+DEFINE_TRACE(ServiceWorkerWindowClient)
 {
     ServiceWorkerClient::trace(visitor);
 }

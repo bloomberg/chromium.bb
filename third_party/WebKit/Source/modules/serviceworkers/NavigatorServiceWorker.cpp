@@ -72,7 +72,7 @@ void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()
     }
 }
 
-void NavigatorServiceWorker::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorServiceWorker)
 {
     visitor->trace(m_serviceWorker);
     WillBeHeapSupplement<Navigator>::trace(visitor);

@@ -65,7 +65,7 @@ public:
 
     void willBeDetachedFromFrame();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     PassRefPtrWillBeRawPtr<ServiceWorker> controller() { return m_controller.get(); }
     ScriptPromise ready(ScriptState*);

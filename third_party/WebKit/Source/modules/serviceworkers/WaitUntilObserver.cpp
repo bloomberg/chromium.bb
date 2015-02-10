@@ -34,7 +34,7 @@ public:
         return self->bindToV8Function();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_observer);
         ScriptFunction::trace(visitor);
@@ -164,7 +164,7 @@ void WaitUntilObserver::consumeWindowInteraction(Timer<WaitUntilObserver>*)
     executionContext()->consumeWindowInteraction();
 }
 
-void WaitUntilObserver::trace(Visitor* visitor)
+DEFINE_TRACE(WaitUntilObserver)
 {
     ContextLifecycleObserver::trace(visitor);
 }

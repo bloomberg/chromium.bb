@@ -60,7 +60,7 @@ FetchEvent::FetchEvent(RespondWithObserver* observer, Request* request)
 {
 }
 
-void FetchEvent::trace(Visitor* visitor)
+DEFINE_TRACE(FetchEvent)
 {
     visitor->trace(m_request);
     visitor->trace(m_observer);

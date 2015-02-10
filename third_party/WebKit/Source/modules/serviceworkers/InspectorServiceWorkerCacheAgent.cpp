@@ -300,7 +300,7 @@ InspectorServiceWorkerCacheAgent::InspectorServiceWorkerCacheAgent(ServiceWorker
 
 InspectorServiceWorkerCacheAgent::~InspectorServiceWorkerCacheAgent() { }
 
-void InspectorServiceWorkerCacheAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorServiceWorkerCacheAgent)
 {
     InspectorBaseAgent::trace(visitor);
 }

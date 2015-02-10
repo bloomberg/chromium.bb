@@ -32,7 +32,7 @@ public:
     ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
 
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     class Callbacks;

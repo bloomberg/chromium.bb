@@ -71,7 +71,7 @@ InstallEvent::InstallEvent(const AtomicString& type, const InstallEventInit& ini
 {
 }
 
-void InstallEvent::trace(Visitor* visitor)
+DEFINE_TRACE(InstallEvent)
 {
     ExtendableEvent::trace(visitor);
 }

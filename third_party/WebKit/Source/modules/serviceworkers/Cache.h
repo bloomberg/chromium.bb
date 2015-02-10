@@ -47,7 +47,7 @@ public:
 
     static WebServiceWorkerCache::QueryParams toWebQueryParams(const CacheQueryOptions&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     class AsyncPutBatch;

@@ -34,7 +34,7 @@ public:
 
     void setIsReload(bool);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     FetchEvent();

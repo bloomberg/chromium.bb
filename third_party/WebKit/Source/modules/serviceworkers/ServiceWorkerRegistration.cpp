@@ -165,7 +165,7 @@ void ServiceWorkerRegistration::dispose()
     m_outerRegistration.clear();
 }
 
-void ServiceWorkerRegistration::trace(Visitor* visitor)
+DEFINE_TRACE(ServiceWorkerRegistration)
 {
     visitor->trace(m_installing);
     visitor->trace(m_waiting);

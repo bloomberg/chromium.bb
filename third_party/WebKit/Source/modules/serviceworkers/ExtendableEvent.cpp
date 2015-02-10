@@ -81,7 +81,7 @@ const AtomicString& ExtendableEvent::interfaceName() const
     return EventNames::ExtendableEvent;
 }
 
-void ExtendableEvent::trace(Visitor* visitor)
+DEFINE_TRACE(ExtendableEvent)
 {
     visitor->trace(m_observer);
     Event::trace(visitor);

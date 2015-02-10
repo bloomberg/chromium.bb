@@ -33,7 +33,7 @@ public:
     String frameType() const;
     ScriptPromise focus(ScriptState*);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ServiceWorkerWindowClient(const WebServiceWorkerClientInfo&);

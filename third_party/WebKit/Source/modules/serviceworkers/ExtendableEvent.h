@@ -51,7 +51,7 @@ public:
     void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
 
     virtual const AtomicString& interfaceName() const override;
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     ExtendableEvent();

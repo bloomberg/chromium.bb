@@ -25,7 +25,7 @@ public:
     ScriptPromise openWindow(ScriptState*, const String& url);
     ScriptPromise claim(ScriptState*);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     ServiceWorkerClients();

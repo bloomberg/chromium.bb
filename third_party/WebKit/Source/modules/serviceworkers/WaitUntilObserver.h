@@ -39,7 +39,7 @@ public:
     // the given promise is resolved or rejected.
     void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     class ThenFunction;

@@ -174,7 +174,7 @@ public:
         cleanup();
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         BlobHandleCreatorClient::trace(visitor);
         visitor->trace(m_resolver);

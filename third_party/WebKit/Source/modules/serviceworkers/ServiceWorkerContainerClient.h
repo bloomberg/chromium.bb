@@ -31,7 +31,7 @@ public:
     static const char* supplementName();
     static ServiceWorkerContainerClient* from(ExecutionContext*);
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         DocumentSupplement::trace(visitor);
         WillBeHeapSupplement<WorkerClients>::trace(visitor);

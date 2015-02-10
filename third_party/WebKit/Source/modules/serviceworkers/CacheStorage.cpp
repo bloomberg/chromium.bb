@@ -268,7 +268,7 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* r
     return promise;
 }
 
-void CacheStorage::trace(Visitor* visitor)
+DEFINE_TRACE(CacheStorage)
 {
     visitor->trace(m_nameToCacheMap);
 }

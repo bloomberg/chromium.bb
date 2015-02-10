@@ -28,7 +28,7 @@ public:
     String url() const { return m_url; }
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);

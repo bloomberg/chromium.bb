@@ -34,7 +34,7 @@ public:
     void responseWasRejected();
     void responseWasFulfilled(const ScriptValue&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     class ThenFunction;

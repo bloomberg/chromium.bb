@@ -91,7 +91,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(sync);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Timeout before a service worker that was given window interaction
     // permission loses them. The unit is seconds.

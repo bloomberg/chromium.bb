@@ -26,7 +26,7 @@ public:
 
     static ServiceWorkerContainer* serviceWorker(Navigator&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit NavigatorServiceWorker(Navigator&);

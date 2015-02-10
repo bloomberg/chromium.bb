@@ -193,7 +193,7 @@ void ServiceWorkerGlobalScope::dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Ev
     observer->didDispatchEvent(m_hadErrorInTopLevelEventHandler);
 }
 
-void ServiceWorkerGlobalScope::trace(Visitor* visitor)
+DEFINE_TRACE(ServiceWorkerGlobalScope)
 {
     visitor->trace(m_clients);
     visitor->trace(m_registration);
