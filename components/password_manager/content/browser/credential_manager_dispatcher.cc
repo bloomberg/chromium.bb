@@ -43,6 +43,7 @@ class CredentialManagerDispatcher::PendingRequestTask
   }
 
   int id() const { return id_; }
+  const GURL& origin() const { return origin_; }
 
   // PasswordStoreConsumer implementation.
   void OnGetPasswordStoreResults(
@@ -312,9 +313,18 @@ void CredentialManagerDispatcher::SendCredential(int request_id,
                                                  const CredentialInfo& info) {
   DCHECK(pending_request_);
   DCHECK_EQ(pending_request_->id(), request_id);
-  // TODO(mkwst): We need to update the underlying PasswordForm if the user
-  // has enabled zeroclick globally, and clicks through a non-zeroclick form
-  // for an origin.
+
+  if (PasswordStore* store = GetPasswordStore()) {
+    if (info.type != CredentialType::CREDENTIAL_TYPE_EMPTY &&
+        IsZeroClickAllowed()) {
+      scoped_ptr<autofill::PasswordForm> form(
+          CreatePasswordFormFromCredentialInfo(info,
+                                               pending_request_->origin()));
+      form->skip_zero_click = false;
+      store->UpdateLogin(*form);
+    }
+  }
+
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_SendCredential(
           web_contents()->GetRenderViewHost()->GetRoutingID(),

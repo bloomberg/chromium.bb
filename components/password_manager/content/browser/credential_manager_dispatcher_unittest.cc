@@ -486,6 +486,47 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }
 
+TEST_F(CredentialManagerDispatcherTest, ResetSkipZeroClickAfterPrompt) {
+  // Turn on the global zero-click flag, and add two credentials in separate
+  // origins, both set to skip zero-click.
+  client_->set_zero_click_enabled(true);
+  form_.skip_zero_click = true;
+  store_->AddLogin(form_);
+  cross_origin_form_.skip_zero_click = true;
+  store_->AddLogin(cross_origin_form_);
+
+  // Execute the PasswordStore asynchronousness to ensure everything is
+  // written before proceeding.
+  RunAllPendingTasks();
+
+  // Sanity check.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(2U, passwords.size());
+  EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
+  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_TRUE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
+
+  // Trigger a request which should return the credential found in |form_|, and
+  // wait for it to process.
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+  RunAllPendingTasks();
+
+  // Check that the form in the database has been updated. `OnRequestCredential`
+  // generates a call to prompt the user to choose a credential.
+  // TestPasswordManagerClient mocks a user choice, and when users choose a
+  // credential (and have the global zero-click flag enabled), we make sure that
+  // they'll be logged in again next time.
+  EXPECT_TRUE(client_->did_prompt_user_to_choose());
+  passwords = store_->stored_passwords();
+  EXPECT_EQ(2U, passwords.size());
+  EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_TRUE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
+}
+
 TEST_F(CredentialManagerDispatcherTest, IncognitoRequestCredential) {
   client_->set_off_the_record(true);
   store_->AddLogin(form_);
