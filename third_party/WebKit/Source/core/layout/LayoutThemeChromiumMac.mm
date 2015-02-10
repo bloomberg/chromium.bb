@@ -36,6 +36,7 @@
 #import "core/layout/Layer.h"
 #import "core/layout/LayoutSlider.h"
 #import "core/layout/PaintInfo.h"
+#import "core/layout/style/AuthorStyleInfo.h"
 #import "core/layout/style/ShadowList.h"
 #import "core/rendering/RenderMedia.h"
 #import "core/rendering/RenderMediaControls.h"
@@ -469,11 +470,10 @@ Color LayoutThemeChromiumMac::systemColor(CSSValueID cssValueId) const
     return color;
 }
 
-bool LayoutThemeChromiumMac::isControlStyled(const LayoutStyle& style, const CachedUAStyle* uaStyle) const
+bool LayoutThemeChromiumMac::isControlStyled(const LayoutStyle& style, const AuthorStyleInfo& authorStyle) const
 {
-    ASSERT(uaStyle);
     if (style.appearance() == TextFieldPart || style.appearance() == TextAreaPart)
-        return style.border() != uaStyle->border || style.boxShadow();
+        return authorStyle.specifiesBorder() || style.boxShadow();
 
     // FIXME: This is horrible, but there is not much else that can be done.
     // Menu lists cannot draw properly when scaled. They can't really draw
@@ -487,7 +487,7 @@ bool LayoutThemeChromiumMac::isControlStyled(const LayoutStyle& style, const Cac
     if (style.appearance() == SearchFieldPart && style.effectiveZoom() != 1)
         return true;
 
-    return LayoutTheme::isControlStyled(style, uaStyle);
+    return LayoutTheme::isControlStyled(style, authorStyle);
 }
 
 const int sliderThumbShadowBlur = 1;

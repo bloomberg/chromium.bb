@@ -151,7 +151,7 @@ static bool hasWillChangeThatCreatesStackingContext(const LayoutStyle& style)
     return false;
 }
 
-void StyleAdjuster::adjustLayoutStyle(LayoutStyle& style, const LayoutStyle& parentStyle, Element *e, const CachedUAStyle* cachedUAStyle)
+void StyleAdjuster::adjustLayoutStyle(LayoutStyle& style, const LayoutStyle& parentStyle, Element *e, const AuthorStyleInfo& authorStyle)
 {
     if (style.display() != NONE) {
         if (e && e->isHTMLElement())
@@ -216,7 +216,7 @@ void StyleAdjuster::adjustLayoutStyle(LayoutStyle& style, const LayoutStyle& par
 
     // Let the theme also have a crack at adjusting the style.
     if (style.hasAppearance())
-        LayoutTheme::theme().adjustStyle(style, e, cachedUAStyle);
+        LayoutTheme::theme().adjustStyle(style, e, authorStyle);
 
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
     if (style.hasPseudoStyle(FIRST_LETTER) || style.transitions() || style.animations())

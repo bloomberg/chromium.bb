@@ -44,6 +44,7 @@
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/PaintInfo.h"
+#include "core/layout/style/AuthorStyleInfo.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -87,8 +88,10 @@ LayoutTheme::LayoutTheme()
 {
 }
 
-void LayoutTheme::adjustStyle(LayoutStyle& style, Element* e, const CachedUAStyle* uaStyle)
+void LayoutTheme::adjustStyle(LayoutStyle& style, Element* e, const AuthorStyleInfo& authorStyle)
 {
+    ASSERT(style.hasAppearance());
+
     // Force inline and table display styles to be inline-block (except for table- which is block)
     ControlPart part = style.appearance();
     if (style.display() == INLINE || style.display() == INLINE_TABLE || style.display() == TABLE_ROW_GROUP
@@ -99,7 +102,7 @@ void LayoutTheme::adjustStyle(LayoutStyle& style, Element* e, const CachedUAStyl
     else if (style.display() == LIST_ITEM || style.display() == TABLE)
         style.setDisplay(BLOCK);
 
-    if (uaStyle && isControlStyled(style, uaStyle)) {
+    if (isControlStyled(style, authorStyle)) {
         if (part == MenulistPart) {
             style.setAppearance(MenulistButtonPart);
             part = MenulistButtonPart;
@@ -545,25 +548,8 @@ bool LayoutTheme::isControlContainer(ControlPart appearance) const
     return appearance != CheckboxPart && appearance != RadioPart;
 }
 
-static bool isBackgroundOrBorderStyled(const LayoutStyle& style, const CachedUAStyle* uaStyle)
+bool LayoutTheme::isControlStyled(const LayoutStyle& style, const AuthorStyleInfo& authorStyle) const
 {
-    // Code below excludes the background-repeat from comparison by resetting it
-    FillLayer backgroundCopy = uaStyle->backgroundLayers;
-    FillLayer backgroundLayersCopy = style.backgroundLayers();
-    backgroundCopy.setRepeatX(NoRepeatFill);
-    backgroundCopy.setRepeatY(NoRepeatFill);
-    backgroundLayersCopy.setRepeatX(NoRepeatFill);
-    backgroundLayersCopy.setRepeatY(NoRepeatFill);
-    // Test the style to see if the UA border and background match.
-    return style.border() != uaStyle->border
-        || backgroundLayersCopy != backgroundCopy
-        || style.visitedDependentColor(CSSPropertyBackgroundColor) != uaStyle->backgroundColor;
-}
-
-bool LayoutTheme::isControlStyled(const LayoutStyle& style, const CachedUAStyle* uaStyle) const
-{
-    ASSERT(uaStyle);
-
     switch (style.appearance()) {
     case PushButtonPart:
     case SquareButtonPart:
@@ -574,13 +560,13 @@ bool LayoutTheme::isControlStyled(const LayoutStyle& style, const CachedUAStyle*
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
-        return isBackgroundOrBorderStyled(style, uaStyle);
+        return authorStyle.specifiesBackground() || authorStyle.specifiesBorder();
 
     case MenulistPart:
     case SearchFieldPart:
     case TextAreaPart:
     case TextFieldPart:
-        return isBackgroundOrBorderStyled(style, uaStyle) || style.boxShadow();
+        return authorStyle.specifiesBackground() || authorStyle.specifiesBorder() || style.boxShadow();
 
     case SliderHorizontalPart:
     case SliderVerticalPart:

@@ -38,7 +38,7 @@ public:
 
     virtual void adjustPaintInvalidationRect(const LayoutObject*, IntRect&) override;
 
-    virtual bool isControlStyled(const LayoutStyle&, const CachedUAStyle*) const override;
+    virtual bool isControlStyled(const LayoutStyle&, const AuthorStyleInfo&) const override;
 
     virtual Color platformActiveSelectionBackgroundColor() const override;
     virtual Color platformInactiveSelectionBackgroundColor() const override;

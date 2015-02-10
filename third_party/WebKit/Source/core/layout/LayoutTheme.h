@@ -29,7 +29,6 @@
 #include "platform/ThemeTypes.h"
 #endif
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/CachedUAStyle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -37,6 +36,7 @@
 
 namespace blink {
 
+class AuthorStyleInfo;
 class Element;
 class FileList;
 class HTMLInputElement;
@@ -62,7 +62,7 @@ public:
     // metrics and defaults given the contents of the style.  This includes sophisticated operations like
     // selection of control size based off the font, the disabling of appearance when certain other properties like
     // "border" are set, or if the appearance is not supported by the theme.
-    void adjustStyle(LayoutStyle&, Element*, const CachedUAStyle*);
+    void adjustStyle(LayoutStyle&, Element*, const AuthorStyleInfo&);
 
     // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates
@@ -91,7 +91,7 @@ public:
     bool isControlContainer(ControlPart) const;
 
     // Whether or not the control has been styled enough by the author to disable the native appearance.
-    virtual bool isControlStyled(const LayoutStyle&, const CachedUAStyle*) const;
+    virtual bool isControlStyled(const LayoutStyle&, const AuthorStyleInfo&) const;
 
     // Some controls may spill out of their containers (e.g., the check on an OS X checkbox). When these controls issues paint invalidations,
     // the theme needs to communicate this inflated rect to the engine so that it can invalidate the whole control.

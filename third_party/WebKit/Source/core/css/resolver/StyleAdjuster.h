@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class CachedUAStyle;
+class AuthorStyleInfo;
 class Element;
 class HTMLElement;
 class LayoutStyle;
@@ -41,7 +41,7 @@ public:
         : m_useQuirksModeStyles(useQuirksModeStyles)
     { }
 
-    void adjustLayoutStyle(LayoutStyle& styleToAdjust, const LayoutStyle& parentStyle, Element*, const CachedUAStyle*);
+    void adjustLayoutStyle(LayoutStyle& styleToAdjust, const LayoutStyle& parentStyle, Element*, const AuthorStyleInfo&);
 
 private:
     void adjustStyleForFirstLetter(LayoutStyle&);

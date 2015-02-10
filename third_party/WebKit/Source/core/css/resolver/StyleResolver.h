@@ -34,6 +34,8 @@
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResourceLoader.h"
+#include "core/layout/style/AuthorStyleInfo.h"
+#include "core/layout/style/CachedUAStyle.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"

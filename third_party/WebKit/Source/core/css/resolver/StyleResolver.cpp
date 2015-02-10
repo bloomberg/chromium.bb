@@ -526,10 +526,32 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForDocument(Document& document)
     return documentStyle.release();
 }
 
+static AuthorStyleInfo authorStyleInfo(StyleResolverState& state)
+{
+    const CachedUAStyle* cachedUAStyle = state.cachedUAStyle();
+
+    if (!cachedUAStyle)
+        return AuthorStyleInfo();
+
+    // Exclude background-repeat from comparison by resetting it.
+    FillLayer backgroundCopy = cachedUAStyle->backgroundLayers;
+    FillLayer backgroundLayersCopy = state.style()->backgroundLayers();
+    backgroundCopy.setRepeatX(NoRepeatFill);
+    backgroundCopy.setRepeatY(NoRepeatFill);
+    backgroundLayersCopy.setRepeatX(NoRepeatFill);
+    backgroundLayersCopy.setRepeatY(NoRepeatFill);
+
+    bool backgroundChanged = backgroundLayersCopy != backgroundCopy
+        || state.style()->visitedDependentColor(CSSPropertyBackgroundColor) != cachedUAStyle->backgroundColor;
+    bool borderChanged = state.style()->border() != cachedUAStyle->border;
+
+    return AuthorStyleInfo(backgroundChanged, borderChanged);
+}
+
 void StyleResolver::adjustLayoutStyle(StyleResolverState& state, Element* element)
 {
     StyleAdjuster adjuster(document().inQuirksMode());
-    adjuster.adjustLayoutStyle(state.mutableStyleRef(), *state.parentStyle(), element, state.cachedUAStyle());
+    adjuster.adjustLayoutStyle(state.mutableStyleRef(), *state.parentStyle(), element, authorStyleInfo(state));
 }
 
 // Start loading resources referenced by this style.
