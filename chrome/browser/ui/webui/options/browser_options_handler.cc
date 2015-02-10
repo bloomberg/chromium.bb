@@ -1310,6 +1310,10 @@ scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
 
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
+    // The items in |profile_value| are also described in
+    // chrome/browser/resources/options/browser_options.js in a @typedef for
+    // Profile. Please update it whenever you add or remove any keys here.
+
     base::DictionaryValue* profile_value = new base::DictionaryValue();
     profile_value->SetString("name", cache.GetNameOfProfileAtIndex(i));
     base::FilePath profile_path = cache.GetPathOfProfileAtIndex(i);

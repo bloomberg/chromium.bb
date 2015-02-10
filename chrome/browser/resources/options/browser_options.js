@@ -27,6 +27,17 @@ options.SyncStatus;
  */
 options.ExtensionData;
 
+/**
+ * @typedef {{name: string,
+ *            filePath: string,
+ *            isCurrentProfile: boolean,
+ *            isSupervised: boolean,
+ *            isChild: boolean,
+ *            iconUrl: string}}
+ * @see chrome/browser/ui/webui/options/browser_options_handler.cc
+ */
+options.Profile;
+
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var Page = cr.ui.pageManager.Page;
@@ -1459,9 +1470,8 @@ cr.define('options', function() {
 
     /**
      * Adds all |profiles| to the list.
-     * @param {Array.<{name: string, filePath: string,
-     *     isCurrentProfile: boolean, isSupervised: boolean}>} profiles An array
-     *     of profile info objects.
+     * @param {Array.<!options.Profile>} profiles An array of profile info
+     *     objects.
      * @private
      */
     setProfilesInfo_: function(profiles) {
@@ -1520,7 +1530,7 @@ cr.define('options', function() {
 
     /**
     * Reports successful profile creation to the "create" overlay.
-     * @param {Object} profileInfo An object of the form:
+     * @param {options.Profile} profileInfo An object of the form:
      *     profileInfo = {
      *       name: "Profile Name",
      *       filePath: "/path/to/profile/data/on/disk"
@@ -1534,7 +1544,7 @@ cr.define('options', function() {
 
     /**
      * Returns the currently active profile for this browser window.
-     * @return {Object} A profile info object.
+     * @return {options.Profile} A profile info object.
      * @private
      */
     getCurrentProfile_: function() {
