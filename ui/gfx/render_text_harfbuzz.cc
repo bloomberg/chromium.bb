@@ -222,8 +222,7 @@ class HarfBuzzLineBreaker {
                       const base::string16& text,
                       const BreakList<size_t>* words,
                       const ScopedVector<internal::TextRunHarfBuzz>& runs)
-      : max_width_((max_width == 0) ? std::numeric_limits<size_t>::max()
-                                    : max_width),
+      : max_width_((max_width == 0) ? SK_ScalarMax : SkIntToScalar(max_width)),
         min_baseline_(min_baseline),
         min_height_(min_height),
         multiline_(multiline),
@@ -242,12 +241,14 @@ class HarfBuzzLineBreaker {
   void AddRun(int run_index) {
     const internal::TextRunHarfBuzz* run = runs_[run_index];
     base::char16 first_char = text_[run->range.start()];
-    if (multiline_ && first_char == '\n')
+    if (multiline_ && first_char == '\n') {
       AdvanceLine();
-    else if (multiline_ && (line_x_ + run->width) > max_width_)
+    } else if (multiline_ && (line_x_ + SkFloatToScalar(run->width)) >
+               max_width_) {
       BreakRun(run_index);
-    else
+    } else {
       AddSegment(run_index, run->range, run->width);
+    }
   }
 
   // Finishes line breaking and outputs the results. Can be called at most once.
@@ -304,7 +305,7 @@ class HarfBuzzLineBreaker {
                        size_t* next_char) {
     DCHECK(words_);
     DCHECK(run.range.Contains(Range(start_char, start_char + 1)));
-    SkScalar available_width = SkIntToScalar(max_width_ - line_x_);
+    SkScalar available_width = max_width_ - line_x_;
     BreakList<size_t>::const_iterator word = words_->GetBreak(start_char);
     BreakList<size_t>::const_iterator next_word = word + 1;
     // Width from |std::max(word->first, start_char)| to the current character.
@@ -357,10 +358,10 @@ class HarfBuzzLineBreaker {
   void UpdateRTLSegmentRanges() {
     if (rtl_segments_.empty())
       return;
-    int x = SegmentFromHandle(rtl_segments_[0])->x_range.start();
+    float x = SegmentFromHandle(rtl_segments_[0])->x_range.start();
     for (size_t i = rtl_segments_.size(); i > 0; --i) {
       internal::LineSegment* segment = SegmentFromHandle(rtl_segments_[i - 1]);
-      const size_t segment_width = segment->x_range.length();
+      const float segment_width = segment->width;
       segment->x_range = Range(x, x + segment_width);
       x += segment_width;
     }
@@ -396,7 +397,10 @@ class HarfBuzzLineBreaker {
     internal::LineSegment segment;
     segment.run = run_index;
     segment.char_range = char_range;
-    segment.x_range = Range(text_x_, text_x_ + width);
+    segment.x_range = Range(
+        SkScalarCeilToInt(text_x_),
+        SkScalarCeilToInt(text_x_ + SkFloatToScalar(width)));
+    segment.width = width;
 
     internal::Line* line = &lines_.back();
     line->segments.push_back(segment);
@@ -421,11 +425,11 @@ class HarfBuzzLineBreaker {
       if (char_range.end() == run.range.end())
         UpdateRTLSegmentRanges();
     }
-    text_x_ += width;
-    line_x_ += width;
+    text_x_ += SkFloatToScalar(width);
+    line_x_ += SkFloatToScalar(width);
   }
 
-  const size_t max_width_;
+  const SkScalar max_width_;
   const int min_baseline_;
   const float min_height_;
   const bool multiline_;
@@ -437,8 +441,8 @@ class HarfBuzzLineBreaker {
   std::vector<internal::Line> lines_;
 
   // Text space and line space x coordinates of the next segment to be added.
-  int text_x_;
-  int line_x_;
+  SkScalar text_x_;
+  SkScalar line_x_;
 
   float max_descent_;
   float max_ascent_;
@@ -988,14 +992,14 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
             positions[colored_glyphs.start() - glyphs_range.start()].x());
         int end_x = SkScalarRoundToInt(
             (colored_glyphs.end() == glyphs_range.end())
-                ? (segment.x_range.length() + preceding_segment_widths +
+                ? (SkFloatToScalar(segment.width) + preceding_segment_widths +
                    SkIntToScalar(origin.x()))
                 : positions[colored_glyphs.end() - glyphs_range.start()].x());
         renderer.DrawDecorations(start_x, origin.y(), end_x - start_x,
                                  run.underline, run.strike,
                                  run.diagonal_strike);
       }
-      preceding_segment_widths += SkIntToScalar(segment.x_range.length());
+      preceding_segment_widths += SkFloatToScalar(segment.width);
     }
   }
 

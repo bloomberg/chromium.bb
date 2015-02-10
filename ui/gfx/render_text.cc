@@ -372,7 +372,7 @@ void StyleIterator::UpdatePosition(size_t position) {
     style_[i] = styles_[i].GetBreak(position);
 }
 
-LineSegment::LineSegment() : run(0) {}
+LineSegment::LineSegment() : width(0), run(0) {}
 
 LineSegment::~LineSegment() {}
 

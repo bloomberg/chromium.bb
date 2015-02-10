@@ -147,6 +147,11 @@ struct LineSegment {
   // The character range this segment corresponds to.
   Range char_range;
 
+  // The width of this line segment in text space. This could be slightly
+  // different from x_range.length().
+  // TODO(mukai): Fix Range to support float values and merge it into x_range.
+  float width;
+
   // Index of the text run that generated this segment.
   size_t run;
 };
