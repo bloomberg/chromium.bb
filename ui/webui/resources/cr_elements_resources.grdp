@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_BUTTON_CSS"
+             file="../../webui/resources/cr_elements/cr_toggle_button/cr-toggle-button.css"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_BUTTON_HTML"
+             file="../../webui/resources/cr_elements/cr_toggle_button/cr-toggle-button.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_BUTTON_JS"
+             file="../../webui/resources/cr_elements/cr_toggle_button/cr-toggle-button.js"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_EVENTS_HTML"
+             file="../../webui/resources/cr_elements/cr_events/cr-events.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_EVENTS_JS"
+             file="../../webui/resources/cr_elements/cr_events/cr-events.js"
+             type="chrome_html" />
+</grit-part>

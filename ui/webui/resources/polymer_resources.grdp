@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <structure name="IDR_POLYMER_CORE_A11Y_KEYS_CORE_A11Y_KEYS_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/core-a11y-keys/core-a11y-keys-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_A11Y_KEYS_CORE_A11Y_KEYS_HTML"
+             file="../../../third_party/polymer/components-chromium/core-a11y-keys/core-a11y-keys.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_ANIMATED_PAGES_CORE_ANIMATED_PAGES_CSS"
              file="../../../third_party/polymer/components-chromium/core-animated-pages/core-animated-pages.css"
              type="chrome_html" />
@@ -255,11 +261,29 @@
   <structure name="IDR_POLYMER_PAPER_PROGRESS_PAPER_PROGRESS_HTML"
              file="../../../third_party/polymer/components-chromium/paper-progress/paper-progress.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_RADIO_BUTTON_PAPER_RADIO_BUTTON_CSS"
+             file="../../../third_party/polymer/components-chromium/paper-radio-button/paper-radio-button.css"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_RADIO_BUTTON_PAPER_RADIO_BUTTON_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/paper-radio-button/paper-radio-button-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_RADIO_BUTTON_PAPER_RADIO_BUTTON_HTML"
+             file="../../../third_party/polymer/components-chromium/paper-radio-button/paper-radio-button.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_PAPER_RIPPLE_PAPER_RIPPLE_EXTRACTED_JS"
              file="../../../third_party/polymer/components-chromium/paper-ripple/paper-ripple-extracted.js"
              type="chrome_html" />
   <structure name="IDR_POLYMER_PAPER_RIPPLE_PAPER_RIPPLE_HTML"
              file="../../../third_party/polymer/components-chromium/paper-ripple/paper-ripple.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_TOGGLE_BUTTON_PAPER_TOGGLE_BUTTON_CSS"
+             file="../../../third_party/polymer/components-chromium/paper-toggle-button/paper-toggle-button.css"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_TOGGLE_BUTTON_PAPER_TOGGLE_BUTTON_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/paper-toggle-button/paper-toggle-button-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_TOGGLE_BUTTON_PAPER_TOGGLE_BUTTON_HTML"
+             file="../../../third_party/polymer/components-chromium/paper-toggle-button/paper-toggle-button.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_PAPER_SHADOW_PAPER_SHADOW_CSS"
              file="../../../third_party/polymer/components-chromium/paper-shadow/paper-shadow.css"
