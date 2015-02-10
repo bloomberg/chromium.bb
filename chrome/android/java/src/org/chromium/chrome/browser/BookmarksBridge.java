@@ -304,6 +304,14 @@ public class BookmarksBridge {
     }
 
     /**
+     * @return The BookmarkId for root folder node
+     */
+    public BookmarkId getRootFolderId() {
+        assert mIsNativeBookmarkModelLoaded;
+        return nativeGetRootFolderId(mNativeBookmarksBridge);
+    }
+
+    /**
      * @return The BookmarkId for Mobile folder node
      */
     public BookmarkId getMobileFolderId() {
@@ -322,7 +330,6 @@ public class BookmarksBridge {
     /**
      * @return BokmarkId representing special "desktop" folder, namely "bookmark bar".
      */
-    @VisibleForTesting
     public BookmarkId getDesktopFolderId() {
         assert mIsNativeBookmarkModelLoaded;
         return nativeGetDesktopFolderId(mNativeBookmarksBridge);
@@ -691,6 +698,7 @@ public class BookmarksBridge {
             boolean getNormal, List<BookmarkId> bookmarksList);
     private native void nativeGetAllFoldersWithDepths(long nativeBookmarksBridge,
             List<BookmarkId> folderList, List<Integer> depthList);
+    private native BookmarkId nativeGetRootFolderId(long nativeBookmarksBridge);
     private native BookmarkId nativeGetMobileFolderId(long nativeBookmarksBridge);
     private native BookmarkId nativeGetOtherFolderId(long nativeBookmarksBridge);
     private native BookmarkId nativeGetDesktopFolderId(long nativeBookmarksBridge);

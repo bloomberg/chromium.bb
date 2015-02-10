@@ -62,6 +62,9 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
                                jobject j_folders_obj,
                                jobject j_depths_obj);
 
+  base::android::ScopedJavaLocalRef<jobject> GetRootFolderId(JNIEnv* env,
+                                                             jobject obj);
+
   base::android::ScopedJavaLocalRef<jobject> GetMobileFolderId(JNIEnv* env,
                                                                jobject obj);
 

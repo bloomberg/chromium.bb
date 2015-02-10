@@ -338,6 +338,15 @@ void BookmarksBridge::GetAllFoldersWithDepths(JNIEnv* env,
   }
 }
 
+ScopedJavaLocalRef<jobject> BookmarksBridge::GetRootFolderId(JNIEnv* env,
+                                                             jobject obj) {
+  const BookmarkNode* root_node = bookmark_model_->root_node();
+  ScopedJavaLocalRef<jobject> folder_id_obj =
+      JavaBookmarkIdCreateBookmarkId(
+          env, root_node->id(), GetBookmarkType(root_node));
+  return folder_id_obj;
+}
+
 ScopedJavaLocalRef<jobject> BookmarksBridge::GetMobileFolderId(JNIEnv* env,
                                                                jobject obj) {
   const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
