@@ -57,11 +57,11 @@ int PLATFORM_EXPORT clampedAlphaForBlending(float);
 
 // Multiply a color's alpha channel by an additional alpha factor where
 // alpha is in the range [0, 1].
-SkColor PLATFORM_EXPORT multiplyAlpha(SkColor, float);
+SkColor PLATFORM_EXPORT scaleAlpha(SkColor, float);
 
 // Multiply a color's alpha channel by an additional alpha factor where
 // alpha is in the range [0, 256].
-SkColor PLATFORM_EXPORT multiplyAlpha(SkColor, int);
+SkColor PLATFORM_EXPORT scaleAlpha(SkColor, int);
 
 inline SkPaint::FilterLevel WebCoreInterpolationQualityToSkFilterLevel(InterpolationQuality quality)
 {

@@ -370,12 +370,12 @@ int clampedAlphaForBlending(float alpha)
     return roundedAlpha;
 }
 
-SkColor multiplyAlpha(SkColor color, float alpha)
+SkColor scaleAlpha(SkColor color, float alpha)
 {
-    return multiplyAlpha(color, clampedAlphaForBlending(alpha));
+    return scaleAlpha(color, clampedAlphaForBlending(alpha));
 }
 
-SkColor multiplyAlpha(SkColor color, int alpha)
+SkColor scaleAlpha(SkColor color, int alpha)
 {
     int a = (SkColorGetA(color) * alpha) >> 8;
     return (color & 0x00FFFFFF) | (a << 24);

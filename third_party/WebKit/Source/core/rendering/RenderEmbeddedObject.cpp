@@ -142,7 +142,7 @@ void RenderEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const Layou
     GraphicsContext* context = paintInfo.context;
     GraphicsContextStateSaver stateSaver(*context);
     context->clip(contentRect);
-    context->setFillColor(multiplyAlpha(Color::white, replacementTextRoundedRectOpacity));
+    context->setFillColor(scaleAlpha(Color::white, replacementTextRoundedRectOpacity));
     context->fillPath(path);
 
     const FontMetrics& fontMetrics = font.fontMetrics();
@@ -150,7 +150,7 @@ void RenderEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const Layou
     float labelY = roundf(replacementTextRect.location().y() + (replacementTextRect.size().height() - fontMetrics.height()) / 2 + fontMetrics.ascent());
     TextRunPaintInfo runInfo(run);
     runInfo.bounds = replacementTextRect;
-    context->setFillColor(multiplyAlpha(Color::black, replacementTextTextOpacity));
+    context->setFillColor(scaleAlpha(Color::black, replacementTextTextOpacity));
     context->drawBidiText(font, runInfo, FloatPoint(labelX, labelY));
 }
 

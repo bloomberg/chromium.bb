@@ -102,7 +102,7 @@ void GraphicsContextState::setStrokeGradient(const PassRefPtr<Gradient> gradient
     m_strokeColor = Color::black;
     m_strokePattern.clear();
     m_strokeGradient = gradient;
-    m_strokePaint.setColor(multiplyAlpha(applyAlpha(SK_ColorBLACK), alpha));
+    m_strokePaint.setColor(scaleAlpha(applyAlpha(SK_ColorBLACK), alpha));
     m_strokePaint.setShader(m_strokeGradient->shader());
 }
 
@@ -118,7 +118,7 @@ void GraphicsContextState::setStrokePattern(const PassRefPtr<Pattern> pattern, f
     m_strokeColor = Color::black;
     m_strokeGradient.clear();
     m_strokePattern = pattern;
-    m_strokePaint.setColor(multiplyAlpha(applyAlpha(SK_ColorBLACK), alpha));
+    m_strokePaint.setColor(scaleAlpha(applyAlpha(SK_ColorBLACK), alpha));
     m_strokePaint.setShader(m_strokePattern->shader());
 }
 
@@ -161,7 +161,7 @@ void GraphicsContextState::setFillGradient(const PassRefPtr<Gradient> gradient, 
     m_fillColor = Color::black;
     m_fillPattern.clear();
     m_fillGradient = gradient;
-    m_fillPaint.setColor(multiplyAlpha(applyAlpha(SK_ColorBLACK), alpha));
+    m_fillPaint.setColor(scaleAlpha(applyAlpha(SK_ColorBLACK), alpha));
     m_fillPaint.setShader(m_fillGradient->shader());
 }
 
@@ -177,7 +177,7 @@ void GraphicsContextState::setFillPattern(const PassRefPtr<Pattern> pattern, flo
     m_fillColor = Color::black;
     m_fillGradient.clear();
     m_fillPattern = pattern;
-    m_fillPaint.setColor(multiplyAlpha(applyAlpha(SK_ColorBLACK), alpha));
+    m_fillPaint.setColor(scaleAlpha(applyAlpha(SK_ColorBLACK), alpha));
     m_fillPaint.setShader(m_fillPattern->shader());
 }
 

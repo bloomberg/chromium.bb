@@ -155,7 +155,7 @@ private:
     // color to produce a new output color.
     SkColor applyAlpha(SkColor color) const
     {
-        return multiplyAlpha(color, m_alpha);
+        return scaleAlpha(color, m_alpha);
     }
 
     // These are mutbale to enable gradient updates when the paints are fetched for use.

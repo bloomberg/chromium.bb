@@ -61,14 +61,14 @@ void SVGPaintServer::apply(GraphicsContext& context, RenderSVGResourceMode resou
         else if (m_gradient)
             context.setFillGradient(m_gradient, paintAlpha);
         else
-            context.setFillColor(multiplyAlpha(m_color.rgb(), paintAlpha));
+            context.setFillColor(scaleAlpha(m_color.rgb(), paintAlpha));
     } else {
         if (m_pattern)
             context.setStrokePattern(m_pattern, paintAlpha);
         else if (m_gradient)
             context.setStrokeGradient(m_gradient, paintAlpha);
         else
-            context.setStrokeColor(multiplyAlpha(m_color.rgb(), paintAlpha));
+            context.setStrokeColor(scaleAlpha(m_color.rgb(), paintAlpha));
     }
 }
 
