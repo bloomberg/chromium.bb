@@ -2561,7 +2561,7 @@ AtomicString Element::computeInheritedLanguage() const
             value = toDocument(n)->contentLanguage();
         }
 
-        n = n->parentNode();
+        n = n->parentOrShadowHostNode();
     } while (n && value.isNull());
 
     return value;
