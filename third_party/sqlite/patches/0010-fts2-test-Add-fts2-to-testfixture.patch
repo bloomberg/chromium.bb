@@ -1,0 +1,107 @@
+From 81db1d3f04472b2d5f247d0cd69e3e8368862234 Mon Sep 17 00:00:00 2001
+From: Scott Hess <shess@chromium.org>
+Date: Fri, 16 Jan 2015 13:07:04 -0800
+Subject: [PATCH 10/16] [fts2][test] Add fts2 to testfixture.
+
+TODO(shess): The main.mk change to build a.out is because under OSX gcc
+is a wrapper for clang, and it reports an error about having multiple
+outputs.  Figure out a less hacky solution.
+---
+ third_party/sqlite/src/Makefile.linux-gcc        |  1 +
+ third_party/sqlite/src/ext/fts2/fts2.c           |  6 ++++--
+ third_party/sqlite/src/ext/fts2/fts2_tokenizer.c |  4 +++-
+ third_party/sqlite/src/main.mk                   | 20 +++++++++++++++++++-
+ 4 files changed, 27 insertions(+), 4 deletions(-)
+
+diff --git a/third_party/sqlite/src/Makefile.linux-gcc b/third_party/sqlite/src/Makefile.linux-gcc
+index f60f1a1..026c03c 100644
+--- a/third_party/sqlite/src/Makefile.linux-gcc
++++ b/third_party/sqlite/src/Makefile.linux-gcc
+@@ -67,6 +67,7 @@ OPTS = -DNDEBUG=1
+ # These flags match those for SQLITE_CFLAGS in config.mk.
+ 
+ OPTS += -DSQLITE_CORE
++OPTS += -DSQLITE_ENABLE_FTS2 -DSQLITE_ENABLE_BROKEN_FTS2
+ OPTS += -DSQLITE_DEFAULT_FILE_PERMISSIONS=0600
+ OPTS += -DHAVE_USLEEP=1
+ 
+diff --git a/third_party/sqlite/src/ext/fts2/fts2.c b/third_party/sqlite/src/ext/fts2/fts2.c
+index 0405fb7..dd75b4a 100644
+--- a/third_party/sqlite/src/ext/fts2/fts2.c
++++ b/third_party/sqlite/src/ext/fts2/fts2.c
+@@ -310,8 +310,10 @@
+ #include "fts2_hash.h"
+ #include "fts2_tokenizer.h"
+ #include "sqlite3.h"
+-#include "sqlite3ext.h"
+-SQLITE_EXTENSION_INIT1
++#ifndef SQLITE_CORE
++# include "sqlite3ext.h"
++  SQLITE_EXTENSION_INIT1
++#endif
+ 
+ 
+ /* TODO(shess) MAN, this thing needs some refactoring.  At minimum, it
+diff --git a/third_party/sqlite/src/ext/fts2/fts2_tokenizer.c b/third_party/sqlite/src/ext/fts2/fts2_tokenizer.c
+index a3d6a63..36d89eb 100644
+--- a/third_party/sqlite/src/ext/fts2/fts2_tokenizer.c
++++ b/third_party/sqlite/src/ext/fts2/fts2_tokenizer.c
+@@ -28,7 +28,9 @@
+ 
+ #include "sqlite3.h"
+ #include "sqlite3ext.h"
+-SQLITE_EXTENSION_INIT3
++#ifndef SQLITE_CORE
++  SQLITE_EXTENSION_INIT1
++#endif
+ 
+ #include "fts2_hash.h"
+ #include "fts2_tokenizer.h"
+diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
+index 54b5b35..7cb6362 100644
+--- a/third_party/sqlite/src/main.mk
++++ b/third_party/sqlite/src/main.mk
+@@ -72,6 +72,12 @@ LIBOBJ+= vdbe.o parse.o \
+ 	 vdbetrace.o wal.o walker.o where.o utf.o vtab.o
+ 
+ 
++LIBOBJ+= fts2.o \
++         fts2_hash.o \
++         fts2_icu.o \
++         fts2_porter.o \
++         fts2_tokenizer.o \
++         fts2_tokenizer1.o
+ 
+ # All of the source code files.
+ #
+@@ -337,6 +343,17 @@ TESTSRC2 = \
+   $(TOP)/ext/fts3/fts3_write.c \
+   $(TOP)/ext/async/sqlite3async.c
+ 
++TESTSRC2 += \
++  $(TOP)/ext/fts2/fts2.c \
++  $(TOP)/ext/fts2/fts2.h \
++  $(TOP)/ext/fts2/fts2_hash.c \
++  $(TOP)/ext/fts2/fts2_hash.h \
++  $(TOP)/ext/fts2/fts2_icu.c \
++  $(TOP)/ext/fts2/fts2_porter.c \
++  $(TOP)/ext/fts2/fts2_tokenizer.h \
++  $(TOP)/ext/fts2/fts2_tokenizer.c \
++  $(TOP)/ext/fts2/fts2_tokenizer1.c
++
+ # Header files used by all library source files.
+ #
+ HDR = \
+@@ -593,7 +610,8 @@ TESTFIXTURE_FLAGS += -DSQLITE_SERVER=1 -DSQLITE_PRIVATE="" -DSQLITE_CORE
+ testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
+ 	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
+ 		$(TESTSRC) $(TESTSRC2) $(TOP)/src/tclsqlite.c                \
+-		-o testfixture$(EXE) $(LIBTCL) libsqlite3.a $(THREADLIB) $(TLIBS)
++		$(LIBTCL) libsqlite3.a $(THREADLIB) $(TLIBS)
++	mv a.out testfixture$(EXE)
+ 
+ amalgamation-testfixture$(EXE): sqlite3.c $(TESTSRC) $(TOP)/src/tclsqlite.c
+ 	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
+-- 
+2.2.1
+

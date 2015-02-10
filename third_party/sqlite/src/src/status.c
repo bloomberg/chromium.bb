@@ -208,13 +208,50 @@ int sqlite3_db_status(
 
       db->pnBytesFreed = &nByte;
       for(pVdbe=db->pVdbe; pVdbe; pVdbe=pVdbe->pNext){
-        sqlite3VdbeDeleteObject(db, pVdbe);
+        sqlite3VdbeClearObject(db, pVdbe);
+        sqlite3DbFree(db, pVdbe);
       }
       db->pnBytesFreed = 0;
 
-      *pHighwater = 0;
+      *pHighwater = 0;  /* IMP: R-64479-57858 */
       *pCurrent = nByte;
 
+      break;
+    }
+
+    /*
+    ** Set *pCurrent to the total cache hits or misses encountered by all
+    ** pagers the database handle is connected to. *pHighwater is always set 
+    ** to zero.
+    */
+    case SQLITE_DBSTATUS_CACHE_HIT:
+    case SQLITE_DBSTATUS_CACHE_MISS:
+    case SQLITE_DBSTATUS_CACHE_WRITE:{
+      int i;
+      int nRet = 0;
+      assert( SQLITE_DBSTATUS_CACHE_MISS==SQLITE_DBSTATUS_CACHE_HIT+1 );
+      assert( SQLITE_DBSTATUS_CACHE_WRITE==SQLITE_DBSTATUS_CACHE_HIT+2 );
+
+      for(i=0; i<db->nDb; i++){
+        if( db->aDb[i].pBt ){
+          Pager *pPager = sqlite3BtreePager(db->aDb[i].pBt);
+          sqlite3PagerCacheStat(pPager, op, resetFlag, &nRet);
+        }
+      }
+      *pHighwater = 0; /* IMP: R-42420-56072 */
+                       /* IMP: R-54100-20147 */
+                       /* IMP: R-29431-39229 */
+      *pCurrent = nRet;
+      break;
+    }
+
+    /* Set *pCurrent to non-zero if there are unresolved deferred foreign
+    ** key constraints.  Set *pCurrent to zero if all foreign key constraints
+    ** have been satisfied.  The *pHighwater is always set to zero.
+    */
+    case SQLITE_DBSTATUS_DEFERRED_FKS: {
+      *pHighwater = 0;  /* IMP: R-11967-56545 */
+      *pCurrent = db->nDeferredImmCons>0 || db->nDeferredCons>0;
       break;
     }
 

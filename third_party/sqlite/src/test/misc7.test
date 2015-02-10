@@ -15,9 +15,11 @@
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 
-do_test misc7-1-misuse {
-  c_misuse_test
-} {}
+if {[clang_sanitize_address]==0} {
+  do_test misc7-1-misuse {
+    c_misuse_test
+  } {}
+}
 
 do_test misc7-2 {
   c_realloc_test
@@ -30,7 +32,7 @@ do_test misc7-3 {
 # Try to open a directory:
 #
 do_test misc7-4 {
-  file delete mydir
+  delete_file mydir
   file mkdir mydir
   set rc [catch {
     sqlite3 db2 ./mydir
@@ -41,7 +43,7 @@ do_test misc7-4 {
 # Try to open a file with a directory where its journal file should be.
 #
 do_test misc7-5 {
-  file delete mydir
+  delete_file mydir
   file mkdir mydir-journal
   sqlite3 db2 ./mydir
   catchsql {
@@ -151,9 +153,15 @@ db2 close
 # Test that nothing goes horribly wrong when attaching a database
 # after the omit_readlock pragma has been exercised.
 #
+# Note:  The PRAGMA omit_readlock was an early hack to disable the
+# fcntl() calls for read-only databases so that read-only databases could
+# be read on broken NFS systems.  That pragma has now been removed.
+# (Use the unix-none VFS as a replacement, if needed.)  But these tests
+# do not really depend on omit_readlock, so we left them in place.
+#
 do_test misc7-7.1 {
-  file delete -force test2.db
-  file delete -force test2.db-journal
+  forcedelete test2.db
+  forcedelete test2.db-journal
   execsql {
     PRAGMA omit_readlock = 1;
     ATTACH 'test2.db' AS aux;
@@ -254,8 +262,8 @@ ifcapable vtab {
 }
 
 db close
-file delete -force test.db
-file delete -force test.db-journal
+forcedelete test.db
+forcedelete test.db-journal
 sqlite3 db test.db
 
 ifcapable explain {
@@ -263,23 +271,23 @@ ifcapable explain {
     CREATE TABLE abc(a PRIMARY KEY, b, c);
     EXPLAIN QUERY PLAN SELECT * FROM abc AS t2 WHERE rowid = 1;
   } {
-    0 0 0 {SEARCH TABLE abc AS t2 USING INTEGER PRIMARY KEY (rowid=?) (~1 rows)}
+    0 0 0 {SEARCH TABLE abc AS t2 USING INTEGER PRIMARY KEY (rowid=?)}
   }
   do_execsql_test misc7-14.2 {
     EXPLAIN QUERY PLAN SELECT * FROM abc AS t2 WHERE a = 1;
   } {0 0 0 
-     {SEARCH TABLE abc AS t2 USING INDEX sqlite_autoindex_abc_1 (a=?) (~1 rows)}
+     {SEARCH TABLE abc AS t2 USING INDEX sqlite_autoindex_abc_1 (a=?)}
   }
   do_execsql_test misc7-14.3 {
     EXPLAIN QUERY PLAN SELECT * FROM abc AS t2 ORDER BY a;
   } {0 0 0 
-     {SCAN TABLE abc AS t2 USING INDEX sqlite_autoindex_abc_1 (~1000000 rows)}
+     {SCAN TABLE abc AS t2 USING INDEX sqlite_autoindex_abc_1}
   }
 }
 
 db close
-file delete -force test.db
-file delete -force test.db-journal
+forcedelete test.db
+forcedelete test.db-journal
 sqlite3 db test.db
 
 #--------------------------------------------------------------------
@@ -323,8 +331,8 @@ do_test misc7-15.2 {
 } {}
 
 db close
-file delete -force test.db
-file delete -force test.db-journal
+forcedelete test.db
+forcedelete test.db-journal
 sqlite3 db test.db
 
 do_ioerr_test misc7-16 -sqlprep {
@@ -349,7 +357,7 @@ do_ioerr_test misc7-16 -sqlprep {
     COMMIT;
   }} msg]
 
-  if {!$rc || ($rc && [string first "columns" $msg]==0)} {
+  if {!$rc || ($rc && [string first "UNIQUE" $msg]==0)} {
     set msg
   } else {
     error $msg
@@ -371,7 +379,7 @@ do_test misc7-16.X {
 # These tests do not work on windows due to restrictions in the
 # windows file system.
 #
-if {$tcl_platform(platform)!="windows" && $tcl_platform(platform)!="os2"} {
+if {$tcl_platform(platform)!="windows"} {
 
   # Some network filesystems (ex: AFP) do not support setting read-only
   # permissions.  Only run these tests if full unix permission setting
@@ -385,15 +393,15 @@ if {$tcl_platform(platform)!="windows" && $tcl_platform(platform)!="os2"} {
         BEGIN;
         DELETE FROM t3 WHERE (oid%3)==0;
       }
-      copy_file test.db bak.db
-      copy_file test.db-journal bak.db-journal
+      forcecopy test.db bak.db
+      forcecopy test.db-journal bak.db-journal
       execsql {
         COMMIT;
       }
     
       db close
-      copy_file bak.db test.db
-      copy_file bak.db-journal test.db-journal
+      forcecopy bak.db test.db
+      forcecopy bak.db-journal test.db-journal
       sqlite3 db test.db
     
       catch {file attributes test.db-journal -permissions r--------}
@@ -477,13 +485,41 @@ do_test misc7-20.1 {
 # Try to open a really long file name.
 #
 do_test misc7-21.1 {
-  set zFile [file join [pwd] "[string repeat abcde 104].db"]
+  set zFile [file join [get_pwd] "[string repeat abcde 104].db"]
   set rc [catch {sqlite3 db2 $zFile} msg]
   list $rc $msg
 } {1 {unable to open database file}}
 
+# Try to do hot-journal rollback with a read-only connection. The 
+# error code should be SQLITE_READONLY_ROLLBACK.
+#
+do_test misc7-22.1 {
+  db close
+  forcedelete test.db copy.db-journal
+  sqlite3 db test.db
+  execsql {
+    CREATE TABLE t1(a, b);
+    INSERT INTO t1 VALUES(1, 2);
+    INSERT INTO t1 VALUES(3, 4);
+  }
+  db close
+  sqlite3 db test.db -readonly 1
+  catchsql {
+    INSERT INTO t1 VALUES(5, 6);
+  }
+} {1 {attempt to write a readonly database}}
+do_test misc7-22.2 { execsql { SELECT * FROM t1 } } {1 2 3 4}
+do_test misc7-22.3 { 
+  set fd [open test.db-journal w]
+  puts $fd [string repeat abc 1000]
+  close $fd
+  catchsql { SELECT * FROM t1 }
+} {1 {attempt to write a readonly database}}
+do_test misc7-22.4 { 
+  sqlite3_extended_errcode db
+} SQLITE_READONLY_ROLLBACK
 
 db close
-file delete -force test.db
+forcedelete test.db
 
 finish_test

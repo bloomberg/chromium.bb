@@ -16,6 +16,7 @@
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
+set testprefix pragma
 
 # Do not use a codec for tests in this file, as the database file is
 # manipulated directly using tcl scripts (using the [hexio_write] command).
@@ -40,6 +41,9 @@ do_not_use_codec
 # pragma-15.*: Test that the value set using the cache_size pragma is not
 #              reset when the schema is reloaded.
 # pragma-16.*: Test proxy locking
+# pragma-20.*: Test data_store_directory.
+# pragma-22.*: Test that "PRAGMA [db].integrity_check" respects the "db"
+#              directive - if it is present.
 #
 
 ifcapable !pragma {
@@ -51,8 +55,8 @@ ifcapable !pragma {
 # that the "all.test" script does.
 #
 db close
-file delete test.db test.db-journal
-file delete test3.db test3.db-journal
+delete_file test.db test.db-journal
+delete_file test3.db test3.db-journal
 sqlite3 db test.db; set DB [sqlite3_connection_pointer db]
 
 
@@ -99,7 +103,7 @@ do_test pragma-1.5 {
     PRAGMA default_cache_size;
     PRAGMA synchronous;
   }
-} [list 4321 $DFLT_CACHE_SZ 0]
+} [list -4321 $DFLT_CACHE_SZ 0]
 do_test pragma-1.6 {
   execsql {
     PRAGMA synchronous=ON;
@@ -107,7 +111,7 @@ do_test pragma-1.6 {
     PRAGMA default_cache_size;
     PRAGMA synchronous;
   }
-} [list 4321 $DFLT_CACHE_SZ 1]
+} [list -4321 $DFLT_CACHE_SZ 1]
 do_test pragma-1.7 {
   db close
   sqlite3 db test.db
@@ -221,8 +225,8 @@ do_test pragma-1.18 {
 # Test modifying the safety_level of an attached database.
 ifcapable pager_pragmas&&attach {
   do_test pragma-2.1 {
-    file delete -force test2.db
-    file delete -force test2.db-journal
+    forcedelete test2.db
+    forcedelete test2.db-journal
     execsql {
       ATTACH 'test2.db' AS aux;
     } 
@@ -255,7 +259,7 @@ ifcapable pager_pragmas&&attach {
 #
 do_test pragma-3.1 {
   db close
-  file delete -force test.db test.db-journal
+  forcedelete test.db test.db-journal
   sqlite3 db test.db
   execsql {
     PRAGMA auto_vacuum=OFF;
@@ -281,38 +285,38 @@ ifcapable attach {
       db close
       sqlite3 db test.db
       execsql {PRAGMA integrity_check}
-    } {{rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2}}
+    } {{row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2}}
     do_test pragma-3.3 {
       execsql {PRAGMA integrity_check=1}
-    } {{rowid 1 missing from index i2}}
+    } {{row 1 missing from index i2}}
     do_test pragma-3.4 {
       execsql {
         ATTACH DATABASE 'test.db' AS t2;
         PRAGMA integrity_check
       }
-    } {{rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2}}
+    } {{row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2}}
     do_test pragma-3.5 {
       execsql {
         PRAGMA integrity_check=4
       }
-    } {{rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2} {rowid 1 missing from index i2}}
+    } {{row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {row 1 missing from index i2}}
     do_test pragma-3.6 {
       execsql {
         PRAGMA integrity_check=xyz
       }
-    } {{rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2}}
+    } {{row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2}}
     do_test pragma-3.7 {
       execsql {
         PRAGMA integrity_check=0
       }
-    } {{rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2}}
+    } {{row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2}}
   
     # Add additional corruption by appending unused pages to the end of
     # the database file testerr.db
     #
     do_test pragma-3.8 {
       execsql {DETACH t2}
-      file delete -force testerr.db testerr.db-journal
+      forcedelete testerr.db testerr.db-journal
       set out [open testerr.db w]
       fconfigure $out -translation binary
       set in [open test.db r]
@@ -329,6 +333,9 @@ ifcapable attach {
     do_test pragma-3.8.1 {
       execsql {PRAGMA quick_check}
     } {ok}
+    do_test pragma-3.8.2 {
+      execsql {PRAGMA QUICK_CHECK}
+    } {ok}
     do_test pragma-3.9 {
       execsql {
         ATTACH 'testerr.db' AS t2;
@@ -337,7 +344,7 @@ ifcapable attach {
     } {{*** in database t2 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2}}
+Page 6 is never used} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2}}
     do_test pragma-3.10 {
       execsql {
         PRAGMA integrity_check=1
@@ -351,7 +358,7 @@ Page 4 is never used}}
     } {{*** in database t2 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from index i2}}
+Page 6 is never used} {row 1 missing from index i2} {row 2 missing from index i2}}
     do_test pragma-3.12 {
       execsql {
         PRAGMA integrity_check=4
@@ -359,7 +366,7 @@ Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from inde
     } {{*** in database t2 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2}}
+Page 6 is never used} {row 1 missing from index i2}}
     do_test pragma-3.13 {
       execsql {
         PRAGMA integrity_check=3
@@ -383,10 +390,10 @@ Page 5 is never used}}
     } {{*** in database t2 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2} {*** in database t3 ***
+Page 6 is never used} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {*** in database t3 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2}}
+Page 6 is never used} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2}}
     do_test pragma-3.16 {
       execsql {
         PRAGMA integrity_check(10)
@@ -394,10 +401,10 @@ Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from inde
     } {{*** in database t2 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2} {*** in database t3 ***
+Page 6 is never used} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {*** in database t3 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2}}
+Page 6 is never used} {row 1 missing from index i2}}
     do_test pragma-3.17 {
       execsql {
         PRAGMA integrity_check=8
@@ -405,7 +412,7 @@ Page 6 is never used} {rowid 1 missing from index i2}}
     } {{*** in database t2 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2} {rowid 2 missing from index i2} {wrong # of entries in index i2} {*** in database t3 ***
+Page 6 is never used} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {*** in database t3 ***
 Page 4 is never used
 Page 5 is never used}}
     do_test pragma-3.18 {
@@ -415,16 +422,41 @@ Page 5 is never used}}
     } {{*** in database t2 ***
 Page 4 is never used
 Page 5 is never used
-Page 6 is never used} {rowid 1 missing from index i2}}
+Page 6 is never used} {row 1 missing from index i2}}
   }
   do_test pragma-3.19 {
     catch {db close}
-    file delete -force test.db test.db-journal
+    forcedelete test.db test.db-journal
     sqlite3 db test.db
     db eval {PRAGMA integrity_check}
   } {ok}
 }
-#exit
+
+# Verify that PRAGMA integrity_check catches UNIQUE and NOT NULL
+# constraint violations.
+#
+do_execsql_test pragma-3.20 {
+  CREATE TABLE t1(a,b);
+  CREATE INDEX t1a ON t1(a);
+  INSERT INTO t1 VALUES(1,1),(2,2),(3,3),(2,4),(NULL,5),(NULL,6);
+  PRAGMA writable_schema=ON;
+  UPDATE sqlite_master SET sql='CREATE UNIQUE INDEX t1a ON t1(a)'
+   WHERE name='t1a';
+  UPDATE sqlite_master SET sql='CREATE TABLE t1(a NOT NULL,b)'
+   WHERE name='t1';
+  PRAGMA writable_schema=OFF;
+  ALTER TABLE t1 RENAME TO t1x;
+  PRAGMA integrity_check;
+} {{non-unique entry in index t1a} {NULL value in t1x.a} {non-unique entry in index t1a} {NULL value in t1x.a}}
+do_execsql_test pragma-3.21 {
+  PRAGMA integrity_check(3);
+} {{non-unique entry in index t1a} {NULL value in t1x.a} {non-unique entry in index t1a}}
+do_execsql_test pragma-3.22 {
+  PRAGMA integrity_check(2);
+} {{non-unique entry in index t1a} {NULL value in t1x.a}}
+do_execsql_test pragma-3.21 {
+  PRAGMA integrity_check(1);
+} {{non-unique entry in index t1a}}
 
 # Test modifying the cache_size of an attached database.
 ifcapable pager_pragmas&&attach {
@@ -527,12 +559,20 @@ do_test pragma-6.2.2 {
       b DEFAULT (5+3),
       c TEXT,
       d INTEGER DEFAULT NULL,
-      e TEXT DEFAULT ''
+      e TEXT DEFAULT '',
+      UNIQUE(b,c,d),
+      PRIMARY KEY(e,b,c)
     );
     PRAGMA table_info(t5);
   }
-} {0 a TEXT 0 CURRENT_TIMESTAMP 0 1 b {} 0 5+3 0 2 c TEXT 0 <<NULL>> 0 3 d INTEGER 0 NULL 0 4 e TEXT 0 '' 0}
+} {0 a TEXT 0 CURRENT_TIMESTAMP 0 1 b {} 0 5+3 2 2 c TEXT 0 <<NULL>> 3 3 d INTEGER 0 NULL 0 4 e TEXT 0 '' 1}
 db nullvalue {}
+do_test pragma-6.2.3 {
+  execsql {
+    CREATE TABLE t2_3(a,b INTEGER PRIMARY KEY,c);
+    pragma table_info(t2_3)
+  }
+} {0 a {} 0 {} 0 1 b INTEGER 0 {} 1 2 c {} 0 {} 0}
 ifcapable {foreignkey} {
   do_test pragma-6.3.1 {
     execsql {
@@ -741,8 +781,8 @@ do_test pragma-8.1.10 {
 } SQLITE_SCHEMA
 
 # Make sure the schema-version can be manipulated in an attached database.
-file delete -force test2.db
-file delete -force test2.db-journal
+forcedelete test2.db
+forcedelete test2.db-journal
 ifcapable attach {
   do_test pragma-8.1.11 {
     execsql {
@@ -921,6 +961,16 @@ proc check_temp_store {} {
   return "unknown"
 }
 
+# Application_ID
+#
+do_test pragma-8.3.1 {
+  execsql {
+    PRAGMA application_id;
+  }
+} {0}
+do_test pragma-8.3.2 {
+  execsql {PRAGMA Application_ID(12345); PRAGMA application_id;}
+} {12345}
 
 # Test temp_store and temp_store_directory pragmas
 #
@@ -987,7 +1037,7 @@ do_test pragma-9.4 {
 } {}
 ifcapable wsd {
   do_test pragma-9.5 {
-    set pwd [string map {' ''} [file nativename [pwd]]]
+    set pwd [string map {' ''} [file nativename [get_pwd]]]
     execsql "
       PRAGMA temp_store_directory='$pwd';
     "
@@ -996,7 +1046,7 @@ ifcapable wsd {
     execsql { 
       PRAGMA temp_store_directory;
     }
-  } [list [file nativename [pwd]]]
+  } [list [file nativename [get_pwd]]]
   do_test pragma-9.7 {
     catchsql { 
       PRAGMA temp_store_directory='/NON/EXISTENT/PATH/FOOBAR';
@@ -1205,7 +1255,7 @@ do_test pragma-13.1 {
 
 ifcapable pager_pragmas {
   db close
-  file delete -force test.db
+  forcedelete test.db
   sqlite3 db test.db
 
   do_test pragma-14.1 {
@@ -1219,6 +1269,9 @@ ifcapable pager_pragmas {
       PRAGMA page_count;
     }
   } {2}
+  do_test pragma-14.2uc {
+    execsql {pragma PAGE_COUNT}
+  } {2}
 
   do_test pragma-14.3 {
     execsql { 
@@ -1226,6 +1279,9 @@ ifcapable pager_pragmas {
       CREATE TABLE def(a, b, c);
       PRAGMA page_count;
     }
+  } {3}
+  do_test pragma-14.3uc {
+    execsql {pragma PAGE_COUNT}
   } {3}
 
   do_test pragma-14.4 {
@@ -1241,7 +1297,7 @@ ifcapable pager_pragmas {
   } {2}
 
   do_test pragma-14.6 {
-    file delete -force test2.db
+    forcedelete test2.db
     sqlite3 db2 test2.db
     execsql {
       PRAGMA auto_vacuum = 0;
@@ -1255,6 +1311,9 @@ ifcapable pager_pragmas {
       ATTACH 'test2.db' AS aux;
       PRAGMA aux.page_count;
     } 
+  } {5}
+  do_test pragma-14.6uc {
+    execsql {pragma AUX.PAGE_COUNT}
   } {5}
 }
 
@@ -1477,4 +1536,181 @@ foreach {temp_setting val} {
   } $val
 }
 
+# The SQLITE_FCNTL_PRAGMA logic, with error handling.
+#
+db close
+testvfs tvfs
+sqlite3 db test.db -vfs tvfs
+do_test pragma-19.1 {
+  catchsql {PRAGMA error}
+} {1 {SQL logic error or missing database}}
+do_test pragma-19.2 {
+  catchsql {PRAGMA error='This is the error message'}
+} {1 {This is the error message}}
+do_test pragma-19.3 {
+  catchsql {PRAGMA error='7 This is the error message'}
+} {1 {This is the error message}}
+do_test pragma-19.4 {
+  catchsql {PRAGMA error=7}
+} {1 {out of memory}}
+do_test pragma-19.5 {
+  file tail [lindex [execsql {PRAGMA filename}] 0]
+} {test.db}
+
+if {$tcl_platform(platform)=="windows"} {
+# Test data_store_directory pragma
+#
+db close
+sqlite3 db test.db
+file mkdir data_dir
+do_test pragma-20.1 {
+  catchsql {PRAGMA data_store_directory}
+} {0 {}}
+do_test pragma-20.2 {
+  set pwd [string map {' ''} [file nativename [get_pwd]]]
+  catchsql "PRAGMA data_store_directory='$pwd';"
+} {0 {}}
+do_test pragma-20.3 {
+  catchsql {PRAGMA data_store_directory}
+} [list 0 [list [file nativename [get_pwd]]]]
+do_test pragma-20.4 {
+  set pwd [string map {' ''} [file nativename \
+    [file join [get_pwd] data_dir]]]
+  catchsql "PRAGMA data_store_directory='$pwd';"
+} {0 {}}
+do_test pragma-20.5 {
+  sqlite3 db2 test2.db
+  catchsql "PRAGMA database_list;" db2
+} [list 0 [list 0 main [file nativename \
+    [file join [get_pwd] data_dir test2.db]]]]
+catch {db2 close}
+do_test pragma-20.6 {
+  sqlite3 db2 [file join [get_pwd] test2.db]
+  catchsql "PRAGMA database_list;" db2
+} [list 0 [list 0 main [file nativename \
+    [file join [get_pwd] test2.db]]]]
+catch {db2 close}
+do_test pragma-20.7 {
+  catchsql "PRAGMA data_store_directory='';"
+} {0 {}}
+do_test pragma-20.8 {
+  catchsql {PRAGMA data_store_directory}
+} {0 {}}
+
+forcedelete data_dir
+} ;# endif windows
+
+database_may_be_corrupt
+
+do_test 21.1 {
+  # Create a corrupt database in testerr.db. And a non-corrupt at test.db.
+  #
+  db close
+  forcedelete test.db
+  sqlite3 db test.db
+  execsql { 
+    PRAGMA page_size = 1024;
+    PRAGMA auto_vacuum = 0;
+    CREATE TABLE t1(a PRIMARY KEY, b);
+    INSERT INTO t1 VALUES(1, 1);
+  }
+  for {set i 0} {$i < 10} {incr i} {
+    execsql { INSERT INTO t1 SELECT a + (1 << $i), b + (1 << $i) FROM t1 }
+  }
+  db close
+  forcecopy test.db testerr.db
+  hexio_write testerr.db 15000 [string repeat 55 100]
+} {100}
+
+set mainerr {*** in database main ***
+Multiple uses for byte 672 of page 15}
+set auxerr {*** in database aux ***
+Multiple uses for byte 672 of page 15}
+
+set mainerr {/{\*\*\* in database main \*\*\*
+Multiple uses for byte 672 of page 15}.*/}
+set auxerr {/{\*\*\* in database aux \*\*\*
+Multiple uses for byte 672 of page 15}.*/}
+
+do_test 22.2 {
+  catch { db close }
+  sqlite3 db testerr.db
+  execsql { PRAGMA integrity_check }
+} $mainerr
+
+do_test 22.3.1 {
+  catch { db close }
+  sqlite3 db test.db
+  execsql { 
+    ATTACH 'testerr.db' AS 'aux';
+    PRAGMA integrity_check;
+  }
+} $auxerr
+do_test 22.3.2 {
+  execsql { PRAGMA main.integrity_check; }
+} {ok}
+do_test 22.3.3 {
+  execsql { PRAGMA aux.integrity_check; }
+} $auxerr
+
+do_test 22.4.1 {
+  catch { db close }
+  sqlite3 db testerr.db
+  execsql { 
+    ATTACH 'test.db' AS 'aux';
+    PRAGMA integrity_check;
+  }
+} $mainerr
+do_test 22.4.2 {
+  execsql { PRAGMA main.integrity_check; }
+} $mainerr
+do_test 22.4.3 {
+  execsql { PRAGMA aux.integrity_check; }
+} {ok}
+
+db close
+forcedelete test.db test.db-wal test.db-journal
+sqlite3 db test.db
+sqlite3 db2 test.db
+do_test 23.1 {
+  db eval {
+    CREATE TABLE t1(a INTEGER PRIMARY KEY,b,c,d);
+    CREATE INDEX i1 ON t1(b,c);
+    CREATE INDEX i2 ON t1(c,d);
+    CREATE TABLE t2(x INTEGER REFERENCES t1);
+  }
+  db2 eval {SELECT name FROM sqlite_master}
+} {t1 i1 i2 t2}
+do_test 23.2 {
+  db eval {
+    DROP INDEX i2;
+    CREATE INDEX i2 ON t1(c,d,b);
+  }
+  db2 eval {PRAGMA index_info(i2)}
+} {0 2 c 1 3 d 2 1 b}
+do_test 23.3 {
+  db eval {
+    CREATE INDEX i3 ON t1(d,b,c);
+  }
+  db2 eval {PRAGMA index_list(t1)}
+} {0 i3 0 1 i2 0 2 i1 0}
+do_test 23.4 {
+  db eval {
+    ALTER TABLE t1 ADD COLUMN e;
+  }
+  db2 eval {
+    PRAGMA table_info(t1);
+  }
+} {/4 e {} 0 {} 0/}
+do_test 23.5 {
+  db eval {
+    DROP TABLE t2;
+    CREATE TABLE t2(x, y INTEGER REFERENCES t1);
+  }
+  db2 eval {
+    PRAGMA foreign_key_list(t2);
+  }
+} {0 0 t1 y {} {NO ACTION} {NO ACTION} NONE}
+
+database_never_corrupt
 finish_test

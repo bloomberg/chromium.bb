@@ -10,6 +10,11 @@
 #include "base/basictypes.h"
 #include "sql/connection.h"
 
+// This is not strictly necessary for the operation of ScopedErrorIgnorer, but
+// the class is not useful without the SQLite error codes.
+#include "third_party/sqlite/sqlite3.h"
+
+// TODO(shess): sql::test:: seems like it could be in order for this.
 namespace sql {
 
 // sql::Connection and sql::Statement treat most SQLite errors as
@@ -42,6 +47,10 @@ class ScopedErrorIgnorer {
 
   // Record an error and check if it should be ignored.
   bool ShouldIgnore(int err);
+
+  // Expose sqlite3_libversion_number() so that clients don't have to add a
+  // dependency on third_party/sqlite.
+  static int SQLiteLibVersionNumber();
 
  private:
   // Storage for callback passed to Connection::SetErrorIgnorer().

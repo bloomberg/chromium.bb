@@ -13,7 +13,6 @@
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/sqlite/sqlite3.h"
 
 using base::ASCIIToUTF16;
 
@@ -349,7 +348,15 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
 
   {
     sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_IOERR_SHORT_READ);
+
+    // Earlier versions of Chromium compiled against SQLite 3.6.7.3, which
+    // returned SQLITE_IOERR_SHORT_READ in this case.  Some platforms may still
+    // compile against an earlier SQLite via USE_SYSTEM_SQLITE.
+    if (ignore_errors.SQLiteLibVersionNumber() < 3008007) {
+      ignore_errors.IgnoreError(SQLITE_IOERR_SHORT_READ);
+    } else {
+      ignore_errors.IgnoreError(SQLITE_NOTADB);
+    }
 
     // Try and open the file. As it's not a database, we should end up deleting
     // it and creating a new, valid file, so everything should actually

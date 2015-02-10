@@ -1,0 +1,53 @@
+From 971ef3e0fc917c25d7c0037de0c7a6df80068368 Mon Sep 17 00:00:00 2001
+From: Scott Hess <shess@chromium.org>
+Date: Mon, 22 Dec 2014 14:06:33 -0800
+Subject: [PATCH 11/16] [fts2] Disable fts2_tokenizer for security reasons.
+
+This was a leftover bit from merging the Gears SQLite into Chromium's version.
+
+Original commit URL, which also shifted directory structure:
+    http://src.chromium.org/viewvc/chrome?revision=7623&view=revision
+---
+ third_party/sqlite/src/ext/fts2/fts2.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/third_party/sqlite/src/ext/fts2/fts2.c b/third_party/sqlite/src/ext/fts2/fts2.c
+index dd75b4a..944f324 100644
+--- a/third_party/sqlite/src/ext/fts2/fts2.c
++++ b/third_party/sqlite/src/ext/fts2/fts2.c
+@@ -37,6 +37,20 @@
+ ** This is an SQLite module implementing full-text search.
+ */
+ 
++/* TODO(shess): To make it easier to spot changes without groveling
++** through changelogs, I've defined GEARS_FTS2_CHANGES to call them
++** out, and I will document them here.  On imports, these changes
++** should be reviewed to make sure they are still present, or are
++** dropped as appropriate.
++**
++** SQLite core adds the custom function fts2_tokenizer() to be used
++** for defining new tokenizers.  The second parameter is a vtable
++** pointer encoded as a blob.  Obviously this cannot be exposed to
++** Gears callers for security reasons.  It could be suppressed in the
++** authorizer, but for now I have simply commented the definition out.
++*/
++#define GEARS_FTS2_CHANGES 1
++
+ /*
+ ** The code in this file is only compiled if:
+ **
+@@ -6822,7 +6836,11 @@ int sqlite3Fts2Init(sqlite3 *db){
+   ** module with sqlite.
+   */
+   if( SQLITE_OK==rc 
++#if GEARS_FTS2_CHANGES && !SQLITE_TEST
++      /* fts2_tokenizer() disabled for security reasons. */
++#else
+    && SQLITE_OK==(rc = sqlite3Fts2InitHashTable(db, pHash, "fts2_tokenizer"))
++#endif
+    && SQLITE_OK==(rc = sqlite3_overload_function(db, "snippet", -1))
+    && SQLITE_OK==(rc = sqlite3_overload_function(db, "offsets", -1))
+    && SQLITE_OK==(rc = sqlite3_overload_function(db, "optimize", -1))
+-- 
+2.2.1
+

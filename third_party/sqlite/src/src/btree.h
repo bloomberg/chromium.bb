@@ -42,6 +42,7 @@ typedef struct BtShared BtShared;
 
 
 int sqlite3BtreeOpen(
+  sqlite3_vfs *pVfs,       /* VFS to use with this b-tree */
   const char *zFilename,   /* Name of database file to open */
   sqlite3 *db,             /* Associated database connection */
   Btree **ppBtree,         /* Return open Btree* here */
@@ -56,14 +57,16 @@ int sqlite3BtreeOpen(
 ** pager.h.
 */
 #define BTREE_OMIT_JOURNAL  1  /* Do not create or use a rollback journal */
-#define BTREE_NO_READLOCK   2  /* Omit readlocks on readonly files */
-#define BTREE_MEMORY        4  /* This is an in-memory DB */
-#define BTREE_SINGLE        8  /* The file contains at most 1 b-tree */
-#define BTREE_UNORDERED    16  /* Use of a hash implementation is OK */
+#define BTREE_MEMORY        2  /* This is an in-memory DB */
+#define BTREE_SINGLE        4  /* The file contains at most 1 b-tree */
+#define BTREE_UNORDERED     8  /* Use of a hash implementation is OK */
 
 int sqlite3BtreeClose(Btree*);
 int sqlite3BtreeSetCacheSize(Btree*,int);
-int sqlite3BtreeSetSafetyLevel(Btree*,int,int,int);
+#if SQLITE_MAX_MMAP_SIZE>0
+  int sqlite3BtreeSetMmapLimit(Btree*,sqlite3_int64);
+#endif
+int sqlite3BtreeSetPagerFlags(Btree*,unsigned);
 int sqlite3BtreeSyncDisabled(Btree*);
 int sqlite3BtreeSetPageSize(Btree *p, int nPagesize, int nReserve, int eFix);
 int sqlite3BtreeGetPageSize(Btree*);
@@ -71,13 +74,16 @@ int sqlite3BtreeMaxPageCount(Btree*,int);
 u32 sqlite3BtreeLastPage(Btree*);
 int sqlite3BtreeSecureDelete(Btree*,int);
 int sqlite3BtreeGetReserve(Btree*);
+#if defined(SQLITE_HAS_CODEC) || defined(SQLITE_DEBUG)
+int sqlite3BtreeGetReserveNoMutex(Btree *p);
+#endif
 int sqlite3BtreeSetAutoVacuum(Btree *, int);
 int sqlite3BtreeGetAutoVacuum(Btree *);
 int sqlite3BtreeBeginTrans(Btree*,int);
 int sqlite3BtreeCommitPhaseOne(Btree*, const char *zMaster);
 int sqlite3BtreeCommitPhaseTwo(Btree*, int);
 int sqlite3BtreeCommit(Btree*);
-int sqlite3BtreeRollback(Btree*);
+int sqlite3BtreeRollback(Btree*,int,int);
 int sqlite3BtreeBeginStmt(Btree*,int);
 int sqlite3BtreeCreateTable(Btree*, int*, int flags);
 int sqlite3BtreeIsInTrans(Btree*);
@@ -109,10 +115,13 @@ int sqlite3BtreeIncrVacuum(Btree *);
 
 int sqlite3BtreeDropTable(Btree*, int, int*);
 int sqlite3BtreeClearTable(Btree*, int, int*);
-void sqlite3BtreeTripAllCursors(Btree*, int);
+int sqlite3BtreeClearTableOfCursor(BtCursor*);
+int sqlite3BtreeTripAllCursors(Btree*, int, int);
 
 void sqlite3BtreeGetMeta(Btree *pBtree, int idx, u32 *pValue);
 int sqlite3BtreeUpdateMeta(Btree*, int idx, u32 value);
+
+int sqlite3BtreeNewDb(Btree *p);
 
 /*
 ** The second parameter to sqlite3BtreeGetMeta or sqlite3BtreeUpdateMeta
@@ -134,6 +143,13 @@ int sqlite3BtreeUpdateMeta(Btree*, int idx, u32 value);
 #define BTREE_TEXT_ENCODING       5
 #define BTREE_USER_VERSION        6
 #define BTREE_INCR_VACUUM         7
+#define BTREE_APPLICATION_ID      8
+
+/*
+** Values that may be OR'd together to form the second argument of an
+** sqlite3BtreeCursorHints() call.
+*/
+#define BTREE_BULKLOAD 0x00000001
 
 int sqlite3BtreeCursor(
   Btree*,                              /* BTree containing table to open */
@@ -153,7 +169,8 @@ int sqlite3BtreeMovetoUnpacked(
   int bias,
   int *pRes
 );
-int sqlite3BtreeCursorHasMoved(BtCursor*, int*);
+int sqlite3BtreeCursorHasMoved(BtCursor*);
+int sqlite3BtreeCursorRestore(BtCursor*, int*);
 int sqlite3BtreeDelete(BtCursor*);
 int sqlite3BtreeInsert(BtCursor*, const void *pKey, i64 nKey,
                                   const void *pData, int nData,
@@ -165,21 +182,20 @@ int sqlite3BtreeEof(BtCursor*);
 int sqlite3BtreePrevious(BtCursor*, int *pRes);
 int sqlite3BtreeKeySize(BtCursor*, i64 *pSize);
 int sqlite3BtreeKey(BtCursor*, u32 offset, u32 amt, void*);
-const void *sqlite3BtreeKeyFetch(BtCursor*, int *pAmt);
-const void *sqlite3BtreeDataFetch(BtCursor*, int *pAmt);
+const void *sqlite3BtreeKeyFetch(BtCursor*, u32 *pAmt);
+const void *sqlite3BtreeDataFetch(BtCursor*, u32 *pAmt);
 int sqlite3BtreeDataSize(BtCursor*, u32 *pSize);
 int sqlite3BtreeData(BtCursor*, u32 offset, u32 amt, void*);
-void sqlite3BtreeSetCachedRowid(BtCursor*, sqlite3_int64);
-sqlite3_int64 sqlite3BtreeGetCachedRowid(BtCursor*);
 
 char *sqlite3BtreeIntegrityCheck(Btree*, int *aRoot, int nRoot, int, int*);
 struct Pager *sqlite3BtreePager(Btree*);
 
 int sqlite3BtreePutData(BtCursor*, u32 offset, u32 amt, void*);
-void sqlite3BtreeCacheOverflow(BtCursor *);
+void sqlite3BtreeIncrblobCursor(BtCursor *);
 void sqlite3BtreeClearCursor(BtCursor *);
-
 int sqlite3BtreeSetVersion(Btree *pBt, int iVersion);
+void sqlite3BtreeCursorHints(BtCursor *, unsigned int mask);
+int sqlite3BtreeIsReadonly(Btree *pBt);
 
 #ifndef NDEBUG
 int sqlite3BtreeCursorIsValid(BtCursor*);

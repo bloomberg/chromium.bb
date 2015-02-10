@@ -19,6 +19,10 @@ source $testdir/tester.tcl
 #
 do_not_use_codec
 
+# These tests deal with corrupt database files
+#
+database_may_be_corrupt
+
 #--------------------------------------------------------------------------
 # OVERVIEW
 #
@@ -85,7 +89,7 @@ do_test corruptD-1.0 {
     DELETE FROM t1 WHERE a = 30;
     DELETE FROM t1 WHERE a = 40;
   }
-  copy_file test.db test.bu
+  forcecopy test.db test.bu
 } {}
 
 proc incr_change_counter {} {
@@ -96,7 +100,7 @@ proc incr_change_counter {} {
 
 proc restore_file {} {
   db close
-  copy_file test.bu test.db
+  forcecopy test.bu test.db
   sqlite3 db test.db
 }
 
@@ -107,12 +111,12 @@ proc restore_file {} {
 do_test corruptD-1.1.1 {
   incr_change_counter
   hexio_write test.db [expr 1024+1] FFFF
-  catchsql { SELECT * FROM t1 }
+  catchsql { SELECT * FROM t1 ORDER BY rowid }
 } {1 {database disk image is malformed}}
 do_test corruptD-1.1.2 {
   incr_change_counter
   hexio_write test.db [expr 1024+1] [hexio_render_int32 1021]
-  catchsql { SELECT * FROM t1 }
+  catchsql { SELECT * FROM t1 ORDER BY rowid }
 } {1 {database disk image is malformed}}
 
 #-------------------------------------------------------------------------

@@ -1,7 +1,7 @@
-From 6125c2ecdd580204a0dddd543f1609818e06a73b Mon Sep 17 00:00:00 2001
+From 3418fd3e3a60fe9f8b6c52f2aad93dcdf3b7af93 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Fri, 16 Jan 2015 10:24:30 -0800
-Subject: [PATCH 01/23] [test] SQLite tests compiling on Linux.
+Subject: [PATCH 01/16] [test] SQLite tests compiling on Linux.
 
 ---
  third_party/sqlite/src/Makefile.linux-gcc | 42 ++++++++++++++++++++++---------

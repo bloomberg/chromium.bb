@@ -205,6 +205,7 @@ do_test malloc5-4.1 {
     execsql "INSERT INTO abc VALUES($i, $i, '[string repeat X 100]');"
   }
   execsql {COMMIT;}
+  db cache flush
   sqlite3_release_memory
   sqlite3_memory_highwater 1
   execsql {SELECT * FROM abc}
@@ -213,13 +214,14 @@ do_test malloc5-4.1 {
   expr $nMaxBytes > 1000000
 } {1}
 do_test malloc5-4.2 {
+  db cache flush
   sqlite3_release_memory
   sqlite3_soft_heap_limit 100000
   sqlite3_memory_highwater 1
   execsql {SELECT * FROM abc}
   set nMaxBytes [sqlite3_memory_highwater 1]
   puts -nonewline " (Highwater mark: $nMaxBytes) "
-  expr $nMaxBytes <= 100000
+  expr $nMaxBytes <= 110000
 } {1}
 do_test malloc5-4.3 {
   # Check that the content of table abc is at least roughly as expected.
@@ -275,7 +277,7 @@ proc nPage {db} {
   set stats(page)
 }
 db close
-file delete -force test.db test.db-journal test2.db test2.db-journal
+forcedelete test.db test.db-journal test2.db test2.db-journal
 
 # This block of test-cases (malloc5-6.1.*) prepares two database files
 # for the subsequent tests.
@@ -304,7 +306,7 @@ do_test malloc5-6.1.1 {
         SELECT randstr(50,50), randstr(75,75), randstr(100,100) FROM abc;
     COMMIT;
   } 
-  copy_file test.db test2.db
+  forcecopy test.db test2.db
   sqlite3 db2 test2.db
   list \
     [expr ([file size test.db]/1024)>20] [expr ([file size test2.db]/1024)>20]
@@ -352,7 +354,7 @@ do_test malloc5-6.3.1 {
 do_test malloc5-6.3.2 {
   # Try to release 7700 bytes. This should release all the 
   # non-dirty pages held by db2.
-  sqlite3_release_memory [expr 7*1100]
+  sqlite3_release_memory [expr 7*1132]
   list [nPage db] [nPage db2]
 } {10 3}
 do_test malloc5-6.3.3 {
@@ -366,7 +368,7 @@ do_test malloc5-6.3.4 {
   # the rest of the db cache. But the db2 cache remains intact, because
   # SQLite tries to avoid calling sync().
   if {$::tcl_platform(wordSize)==8} {
-    sqlite3_release_memory 10177
+    sqlite3_release_memory 10500
   } else {
     sqlite3_release_memory 9900
   }

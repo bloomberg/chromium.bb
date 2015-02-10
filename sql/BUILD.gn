@@ -49,6 +49,7 @@ source_set("test_support") {
     ":sql",
     "//base",
     "//testing/gtest",
+    "//third_party/sqlite",
   ]
 }
 

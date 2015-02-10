@@ -94,9 +94,9 @@ for {set i 1} {$i < 50} {incr i} {
   
   # Check that the file-system in its current state can be recovered.
   # 
-  file copy -force test.db test2.db
-  file copy -force test.db-wal test2.db-wal
-  file delete -force test2.db-journal
+  forcecopy test.db test2.db
+  forcecopy test.db-wal test2.db-wal
+  forcedelete test2.db-journal
   sqlite3 db2 test2.db
   do_test wal3-1.$i.5 {
     execsql { SELECT count(*) FROM t1 } db2
@@ -208,7 +208,7 @@ foreach {tn syncmode synccount} {
     lappend ::syncs [file tail $filename] $flags
   }
   do_test wal3-3.$tn {
-    file delete -force test.db test.db-wal test.db-journal
+    forcedelete test.db test.db-wal test.db-journal
   
     testvfs T
     T filter {} 
@@ -217,6 +217,7 @@ foreach {tn syncmode synccount} {
   
     execsql "PRAGMA synchronous = $syncmode"
     execsql { PRAGMA journal_mode = WAL }
+    execsql { CREATE TABLE filler(a,b,c); }
 
     set ::syncs [list]
     T filter xSync
@@ -411,7 +412,7 @@ T delete
 catch {db close}
 testvfs T -default 1
 do_test wal3-6.1.1 {
-  file delete -force test.db test.db-journal test.db wal
+  forcedelete test.db test.db-journal test.db wal
   sqlite3 db test.db
   execsql { PRAGMA auto_vacuum = off }
   execsql { PRAGMA journal_mode = WAL }
@@ -428,7 +429,7 @@ do_test wal3-6.1.2 {
 } {o t t f}
 do_test wal3-6.1.3 {
   execsql { PRAGMA wal_checkpoint } db2
-} {0 7 7}
+} {0 4 4}
 
 # At this point the log file has been fully checkpointed. However, 
 # connection [db3] holds a lock that prevents the log from being wrapped.
@@ -492,7 +493,7 @@ db2 close
 db close
 
 do_test wal3-6.2.1 {
-  file delete -force test.db test.db-journal test.db wal
+  forcedelete test.db test.db-journal test.db wal
   sqlite3 db test.db
   sqlite3 db2 test.db
   execsql { PRAGMA auto_vacuum = off }
@@ -517,7 +518,7 @@ proc lock_callback {method file handle spec} {
 }
 do_test wal3-6.2.2 {
   execsql { PRAGMA wal_checkpoint }
-} {0 7 7}
+} {0 4 4}
 do_test wal3-6.2.3 {
   set ::R
 } {h h l b}
@@ -558,7 +559,7 @@ T delete
 catch {db close}
 testvfs T -default 1
 do_test wal3-7.1.1 {
-  file delete -force test.db test.db-journal test.db wal
+  forcedelete test.db test.db-journal test.db wal
   sqlite3 db test.db
   execsql {
     PRAGMA journal_mode = WAL;
@@ -615,7 +616,7 @@ T delete
 #-------------------------------------------------------------------------
 # 
 do_test wal3-8.1 {
-  file delete -force test.db test.db-journal test.db wal
+  forcedelete test.db test.db-journal test.db wal
   sqlite3 db test.db
   sqlite3 db2 test.db
   execsql {
@@ -627,7 +628,7 @@ do_test wal3-8.1 {
     INSERT INTO b VALUES('Markazi');
     PRAGMA wal_checkpoint;
   }
-} {wal 0 9 9}
+} {wal 0 5 5}
 do_test wal3-8.2 {
   execsql { SELECT * FROM b }
 } {Tehran Qom Markazi}
@@ -654,7 +655,7 @@ T filter xShmLock
 T script lock_callback
 
 proc lock_callback {method file handle spec} {
-  if {$spec == "4 1 unlock exclusive"} {
+  if {$spec == "1 7 unlock exclusive"} {
     T filter {}
     set ::r [catchsql { SELECT * FROM b } db2]
   }
@@ -707,9 +708,9 @@ T delete
 # and continues.
 #
 set nConn 50
-if { [string match *BSD $tcl_platform(os)] } { set nConn 35 }
+if { [string match *BSD $tcl_platform(os)] } { set nConn 25 }
 do_test wal3-9.0 {
-  file delete -force test.db test.db-journal test.db wal
+  forcedelete test.db test.db-journal test.db wal
   sqlite3 db test.db
   execsql {
     PRAGMA page_size = 1024;
@@ -784,4 +785,3 @@ do_multiclient_test tn {
 }
 
 finish_test
-

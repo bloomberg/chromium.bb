@@ -10,7 +10,7 @@
 **
 *************************************************************************
 **
-** This file contains definitions of global variables and contants.
+** This file contains definitions of global variables and constants.
 */
 #include "sqliteInt.h"
 
@@ -129,7 +129,20 @@ const unsigned char sqlite3CtypeMap[256] = {
 };
 #endif
 
+/* EVIDENCE-OF: R-02982-34736 In order to maintain full backwards
+** compatibility for legacy applications, the URI filename capability is
+** disabled by default.
+**
+** EVIDENCE-OF: R-38799-08373 URI filenames can be enabled or disabled
+** using the SQLITE_USE_URI=1 or SQLITE_USE_URI=0 compile-time options.
+*/
+#ifndef SQLITE_USE_URI
+# define  SQLITE_USE_URI 0
+#endif
 
+#ifndef SQLITE_ALLOW_COVERING_INDEX_SCAN
+# define SQLITE_ALLOW_COVERING_INDEX_SCAN 1
+#endif
 
 /*
 ** The following singleton contains the global configuration for
@@ -139,15 +152,20 @@ SQLITE_WSD struct Sqlite3Config sqlite3Config = {
    SQLITE_DEFAULT_MEMSTATUS,  /* bMemstat */
    1,                         /* bCoreMutex */
    SQLITE_THREADSAFE==1,      /* bFullMutex */
+   SQLITE_USE_URI,            /* bOpenUri */
+   SQLITE_ALLOW_COVERING_INDEX_SCAN,   /* bUseCis */
    0x7ffffffe,                /* mxStrlen */
-   100,                       /* szLookaside */
+   0,                         /* neverCorrupt */
+   128,                       /* szLookaside */
    500,                       /* nLookaside */
    {0,0,0,0,0,0,0,0},         /* m */
    {0,0,0,0,0,0,0,0,0},       /* mutex */
-   {0,0,0,0,0,0,0,0,0,0,0},   /* pcache */
+   {0,0,0,0,0,0,0,0,0,0,0,0,0},/* pcache2 */
    (void*)0,                  /* pHeap */
    0,                         /* nHeap */
    0, 0,                      /* mnHeap, mxHeap */
+   SQLITE_DEFAULT_MMAP_SIZE,  /* szMmap */
+   SQLITE_MAX_MMAP_SIZE,      /* mxMmap */
    (void*)0,                  /* pScratch */
    0,                         /* szScratch */
    0,                         /* nScratch */
@@ -162,12 +180,23 @@ SQLITE_WSD struct Sqlite3Config sqlite3Config = {
    0,                         /* isMutexInit */
    0,                         /* isMallocInit */
    0,                         /* isPCacheInit */
-   0,                         /* pInitMutex */
    0,                         /* nRefInitMutex */
+   0,                         /* pInitMutex */
    0,                         /* xLog */
    0,                         /* pLogArg */
+#ifdef SQLITE_ENABLE_SQLLOG
+   0,                         /* xSqllog */
+   0,                         /* pSqllogArg */
+#endif
+#ifdef SQLITE_VDBE_COVERAGE
+   0,                         /* xVdbeBranch */
+   0,                         /* pVbeBranchArg */
+#endif
+#ifndef SQLITE_OMIT_BUILTIN_TEST
+   0,                         /* xTestCallback */
+#endif
+   0                          /* bLocaltimeFault */
 };
-
 
 /*
 ** Hash table for global functions - functions common to all

@@ -1,0 +1,29 @@
+From 087238f08e5ba1e3651e36d37709ed8ce41b2679 Mon Sep 17 00:00:00 2001
+From: Scott Hess <shess@chromium.org>
+Date: Fri, 9 Jan 2015 11:27:59 -0800
+Subject: [PATCH 12/16] [fts2][backport] ICU tokenizer iterate by UTF16.
+
+This issue was discovered in Gears and is upstream at:
+    http://www.sqlite.org/src/info/892b74116a
+
+No original review URL because this was part of the initial Chromium commit.
+---
+ third_party/sqlite/src/ext/fts2/fts2_icu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/ext/fts2/fts2_icu.c b/third_party/sqlite/src/ext/fts2/fts2_icu.c
+index 2670301..6b6b195 100644
+--- a/third_party/sqlite/src/ext/fts2/fts2_icu.c
++++ b/third_party/sqlite/src/ext/fts2/fts2_icu.c
+@@ -198,7 +198,7 @@ static int icuNext(
+ 
+     while( iStart<iEnd ){
+       int iWhite = iStart;
+-      U8_NEXT(pCsr->aChar, iWhite, pCsr->nChar, c);
++      U16_NEXT(pCsr->aChar, iWhite, pCsr->nChar, c);
+       if( u_isspace(c) ){
+         iStart = iWhite;
+       }else{
+-- 
+2.2.1
+

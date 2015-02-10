@@ -52,6 +52,7 @@
         'sql',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        '../third_party/sqlite/sqlite.gyp:sqlite',
       ],
       'export_dependent_settings': [
         'sql',

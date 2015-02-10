@@ -31,7 +31,7 @@ TCC = @CC@ @CPPFLAGS@ @CFLAGS@ -I. -I${TOP}/src -I${TOP}/ext/rtree
 # Define this for the autoconf-based build, so that the code knows it can
 # include the generated config.h
 # 
-TCC += -D_HAVE_SQLITE_CONFIG_H
+TCC += -D_HAVE_SQLITE_CONFIG_H -DBUILD_sqlite
 
 # Define -DNDEBUG to compile without debugging (i.e., for production usage)
 # Omitting the define will cause extra debugging code to be inserted and
@@ -45,7 +45,7 @@ TCC += @TCL_INCLUDE_SPEC@
 
 # The library that programs using TCL must link against.
 #
-LIBTCL = @TCL_LIB_SPEC@ @TCL_LIBS@
+LIBTCL = @TCL_LIB_SPEC@
 
 # Compiler options needed for programs that use the readline() library.
 #
@@ -165,20 +165,22 @@ LIBOBJS0 = alter.lo analyze.lo attach.lo auth.lo \
          backup.lo bitvec.lo btmutex.lo btree.lo build.lo \
          callback.lo complete.lo ctime.lo date.lo delete.lo \
          expr.lo fault.lo fkey.lo \
-         fts3.lo fts3_aux.lo fts3_expr.lo fts3_hash.lo fts3_icu.lo fts3_porter.lo \
-         fts3_snippet.lo fts3_tokenizer.lo fts3_tokenizer1.lo fts3_write.lo \
+         fts3.lo fts3_aux.lo fts3_expr.lo fts3_hash.lo fts3_icu.lo \
+         fts3_porter.lo fts3_snippet.lo fts3_tokenizer.lo fts3_tokenizer1.lo \
+         fts3_tokenize_vtab.lo \
+         fts3_unicode.lo fts3_unicode2.lo fts3_write.lo \
          func.lo global.lo hash.lo \
          icu.lo insert.lo journal.lo legacy.lo loadext.lo \
          main.lo malloc.lo mem0.lo mem1.lo mem2.lo mem3.lo mem5.lo \
          memjournal.lo \
-         mutex.lo mutex_noop.lo mutex_os2.lo mutex_unix.lo mutex_w32.lo \
-         notify.lo opcodes.lo os.lo os_os2.lo os_unix.lo os_win.lo \
+         mutex.lo mutex_noop.lo mutex_unix.lo mutex_w32.lo \
+         notify.lo opcodes.lo os.lo os_unix.lo os_win.lo \
          pager.lo parse.lo pcache.lo pcache1.lo pragma.lo prepare.lo printf.lo \
          random.lo resolve.lo rowset.lo rtree.lo select.lo status.lo \
-         table.lo tokenize.lo trigger.lo \
+         table.lo threads.lo tokenize.lo trigger.lo \
          update.lo util.lo vacuum.lo \
-         vdbe.lo vdbeapi.lo vdbeaux.lo vdbeblob.lo vdbemem.lo vdbetrace.lo \
-         wal.lo walker.lo where.lo utf.lo vtab.lo
+         vdbe.lo vdbeapi.lo vdbeaux.lo vdbeblob.lo vdbemem.lo vdbesort.lo \
+         vdbetrace.lo wal.lo walker.lo where.lo utf.lo vtab.lo
 
 # Object files for the amalgamation.
 #
@@ -231,16 +233,16 @@ SRC = \
   $(TOP)/src/mutex.c \
   $(TOP)/src/mutex.h \
   $(TOP)/src/mutex_noop.c \
-  $(TOP)/src/mutex_os2.c \
   $(TOP)/src/mutex_unix.c \
   $(TOP)/src/mutex_w32.c \
   $(TOP)/src/notify.c \
   $(TOP)/src/os.c \
   $(TOP)/src/os.h \
   $(TOP)/src/os_common.h \
-  $(TOP)/src/os_os2.c \
+  $(TOP)/src/os_setup.h \
   $(TOP)/src/os_unix.c \
   $(TOP)/src/os_win.c \
+  $(TOP)/src/os_win.h \
   $(TOP)/src/pager.c \
   $(TOP)/src/pager.h \
   $(TOP)/src/parse.y \
@@ -262,6 +264,7 @@ SRC = \
   $(TOP)/src/sqliteInt.h \
   $(TOP)/src/sqliteLimit.h \
   $(TOP)/src/table.c \
+  $(TOP)/src/threads.c \
   $(TOP)/src/tclsqlite.c \
   $(TOP)/src/tokenize.c \
   $(TOP)/src/trigger.c \
@@ -275,13 +278,15 @@ SRC = \
   $(TOP)/src/vdbeaux.c \
   $(TOP)/src/vdbeblob.c \
   $(TOP)/src/vdbemem.c \
+  $(TOP)/src/vdbesort.c \
   $(TOP)/src/vdbetrace.c \
   $(TOP)/src/vdbeInt.h \
   $(TOP)/src/vtab.c \
   $(TOP)/src/wal.c \
   $(TOP)/src/wal.h \
   $(TOP)/src/walker.c \
-  $(TOP)/src/where.c
+  $(TOP)/src/where.c \
+  $(TOP)/src/whereInt.h
 
 # Source code for extensions
 #
@@ -317,6 +322,9 @@ SRC += \
   $(TOP)/ext/fts3/fts3_tokenizer.h \
   $(TOP)/ext/fts3/fts3_tokenizer.c \
   $(TOP)/ext/fts3/fts3_tokenizer1.c \
+  $(TOP)/ext/fts3/fts3_tokenize_vtab.c \
+  $(TOP)/ext/fts3/fts3_unicode.c \
+  $(TOP)/ext/fts3/fts3_unicode2.c \
   $(TOP)/ext/fts3/fts3_write.c
 SRC += \
   $(TOP)/ext/icu/sqliteicu.h \
@@ -356,8 +364,8 @@ TESTSRC = \
   $(TOP)/src/test_config.c \
   $(TOP)/src/test_demovfs.c \
   $(TOP)/src/test_devsym.c \
+  $(TOP)/src/test_fs.c \
   $(TOP)/src/test_func.c \
-  $(TOP)/src/test_fuzzer.c \
   $(TOP)/src/test_hexio.c \
   $(TOP)/src/test_init.c \
   $(TOP)/src/test_intarray.c \
@@ -378,8 +386,24 @@ TESTSRC = \
   $(TOP)/src/test_tclvar.c \
   $(TOP)/src/test_thread.c \
   $(TOP)/src/test_vfs.c \
-  $(TOP)/src/test_wholenumber.c \
-  $(TOP)/src/test_wsd.c
+  $(TOP)/src/test_wsd.c       \
+  $(TOP)/ext/fts3/fts3_term.c \
+  $(TOP)/ext/fts3/fts3_test.c 
+
+# Statically linked extensions
+#
+TESTSRC += \
+  $(TOP)/ext/misc/amatch.c \
+  $(TOP)/ext/misc/closure.c \
+  $(TOP)/ext/misc/fileio.c \
+  $(TOP)/ext/misc/fuzzer.c \
+  $(TOP)/ext/misc/ieee754.c \
+  $(TOP)/ext/misc/nextchar.c \
+  $(TOP)/ext/misc/percentile.c \
+  $(TOP)/ext/misc/regexp.c \
+  $(TOP)/ext/misc/spellfix.c \
+  $(TOP)/ext/misc/totype.c \
+  $(TOP)/ext/misc/wholenumber.c
 
 # Source code to the library files needed by the test fixture
 #
@@ -395,9 +419,9 @@ TESTSRC2 = \
   $(TOP)/src/func.c \
   $(TOP)/src/insert.c \
   $(TOP)/src/wal.c \
+  $(TOP)/src/main.c \
   $(TOP)/src/mem5.c \
   $(TOP)/src/os.c \
-  $(TOP)/src/os_os2.c \
   $(TOP)/src/os_unix.c \
   $(TOP)/src/os_win.c \
   $(TOP)/src/pager.c \
@@ -421,6 +445,7 @@ TESTSRC2 = \
   $(TOP)/ext/fts3/fts3.c \
   $(TOP)/ext/fts3/fts3_aux.c \
   $(TOP)/ext/fts3/fts3_expr.c \
+  $(TOP)/ext/fts3/fts3_term.c \
   $(TOP)/ext/fts3/fts3_tokenizer.c \
   $(TOP)/ext/fts3/fts3_write.c \
   $(TOP)/ext/async/sqlite3async.c
@@ -437,6 +462,8 @@ HDR = \
    opcodes.h \
    $(TOP)/src/os.h \
    $(TOP)/src/os_common.h \
+   $(TOP)/src/os_setup.h \
+   $(TOP)/src/os_win.h \
    $(TOP)/src/pager.h \
    $(TOP)/src/pcache.h \
    parse.h  \
@@ -446,6 +473,7 @@ HDR = \
    $(TOP)/src/sqliteLimit.h \
    $(TOP)/src/vdbe.h \
    $(TOP)/src/vdbeInt.h \
+   $(TOP)/src/whereInt.h \
    config.h
 
 # Header files used by extensions
@@ -482,11 +510,11 @@ sqlite3.pc: $(TOP)/sqlite3.pc.in
 	./config.status
 
 libsqlite3.la:	$(LIBOBJ)
-	$(LTLINK) -o $@ $(LIBOBJ) $(TLIBS) \
+	$(LTLINK) -no-undefined -o $@ $(LIBOBJ) $(TLIBS) \
 		${ALLOWRELEASE} -rpath "$(libdir)" -version-info "8:6:8"
 
 libtclsqlite3.la:	tclsqlite.lo libsqlite3.la
-	$(LTLINK) -o $@ tclsqlite.lo \
+	$(LTLINK) -no-undefined -o $@ tclsqlite.lo \
 		libsqlite3.la @TCL_STUB_LIB_SPEC@ $(TLIBS) \
 		-rpath "$(TCLLIBDIR)" \
 		-version-info "8:6:8" \
@@ -496,6 +524,11 @@ sqlite3$(TEXE):	$(TOP)/src/shell.c libsqlite3.la sqlite3.h
 	$(LTLINK) $(READLINE_FLAGS) \
 		-o $@ $(TOP)/src/shell.c libsqlite3.la \
 		$(LIBREADLINE) $(TLIBS) -rpath "$(libdir)"
+
+mptester$(EXE):	sqlite3.c $(TOP)/mptest/mptest.c
+	$(LTLINK) -o $@ -I. $(TOP)/mptest/mptest.c sqlite3.c \
+		$(TLIBS) -rpath "$(libdir)"
+
 
 # This target creates a directory named "tsrc" and fills it with
 # copies of all of the C source code and header files needed to
@@ -508,12 +541,22 @@ sqlite3$(TEXE):	$(TOP)/src/shell.c libsqlite3.la sqlite3.h
 	mkdir tsrc
 	cp -f $(SRC) tsrc
 	rm tsrc/sqlite.h.in tsrc/parse.y
-	$(TCLSH_CMD) $(TOP)/tool/vdbe-compress.tcl <tsrc/vdbe.c >vdbe.new
+	$(TCLSH_CMD) $(TOP)/tool/vdbe-compress.tcl $(OPTS) <tsrc/vdbe.c >vdbe.new
 	mv vdbe.new tsrc/vdbe.c
 	touch .target_source
 
 sqlite3.c:	.target_source $(TOP)/tool/mksqlite3c.tcl
 	$(TCLSH_CMD) $(TOP)/tool/mksqlite3c.tcl
+	cp tsrc/shell.c tsrc/sqlite3ext.h .
+
+tclsqlite3.c:	sqlite3.c
+	echo '#ifndef USE_SYSTEM_SQLITE' >tclsqlite3.c
+	cat sqlite3.c >>tclsqlite3.c
+	echo '#endif /* USE_SYSTEM_SQLITE */' >>tclsqlite3.c
+	cat $(TOP)/src/tclsqlite.c >>tclsqlite3.c
+
+sqlite3-all.c:	sqlite3.c $(TOP)/tool/split-sqlite3c.tcl
+	$(TCLSH_CMD) $(TOP)/tool/split-sqlite3c.tcl
 
 # Rule to build the amalgamation
 #
@@ -642,9 +685,6 @@ mutex.lo:	$(TOP)/src/mutex.c $(HDR)
 mutex_noop.lo:	$(TOP)/src/mutex_noop.c $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/mutex_noop.c
 
-mutex_os2.lo:	$(TOP)/src/mutex_os2.c $(HDR)
-	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/mutex_os2.c
-
 mutex_unix.lo:	$(TOP)/src/mutex_unix.c $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/mutex_unix.c
 
@@ -672,9 +712,6 @@ os_unix.lo:	$(TOP)/src/os_unix.c $(HDR)
 os_win.lo:	$(TOP)/src/os_win.c $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/os_win.c
 
-os_os2.lo:	$(TOP)/src/os_os2.c $(HDR)
-	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/os_os2.c
-
 pragma.lo:	$(TOP)/src/pragma.c $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/pragma.c
 
@@ -701,6 +738,9 @@ status.lo:	$(TOP)/src/status.c $(HDR)
 
 table.lo:	$(TOP)/src/table.c $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/table.c
+
+threads.lo:	$(TOP)/src/threads.c $(HDR)
+	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/threads.c
 
 tokenize.lo:	$(TOP)/src/tokenize.c keywordhash.h $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/tokenize.c
@@ -735,6 +775,9 @@ vdbeblob.lo:	$(TOP)/src/vdbeblob.c $(HDR)
 vdbemem.lo:	$(TOP)/src/vdbemem.c $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/vdbemem.c
 
+vdbesort.lo:	$(TOP)/src/vdbesort.c $(HDR)
+	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/vdbesort.c
+
 vdbetrace.lo:	$(TOP)/src/vdbetrace.c $(HDR)
 	$(LTCOMPILE) $(TEMP_STORE) -c $(TOP)/src/vdbetrace.c
 
@@ -766,7 +809,7 @@ tclsqlite3$(TEXE):	tclsqlite-shell.lo libsqlite3.la
 # Rules to build opcodes.c and opcodes.h
 #
 opcodes.c:	opcodes.h $(TOP)/mkopcodec.awk
-	sort -n -b -k 3 opcodes.h | $(NAWK) -f $(TOP)/mkopcodec.awk >opcodes.c
+	$(NAWK) -f $(TOP)/mkopcodec.awk opcodes.h >opcodes.c
 
 opcodes.h:	parse.h $(TOP)/src/vdbe.c $(TOP)/mkopcodeh.awk
 	cat parse.h $(TOP)/src/vdbe.c | $(NAWK) -f $(TOP)/mkopcodeh.awk >opcodes.h
@@ -783,7 +826,7 @@ parse.c:	$(TOP)/src/parse.y lemon$(BEXE) $(TOP)/addopcodes.awk
 	$(NAWK) -f $(TOP)/addopcodes.awk parse.h.temp >parse.h
 
 sqlite3.h:	$(TOP)/src/sqlite.h.in $(TOP)/manifest.uuid $(TOP)/VERSION
-	tclsh $(TOP)/tool/mksqlite3h.tcl $(TOP) >sqlite3.h
+	$(TCLSH_CMD) $(TOP)/tool/mksqlite3h.tcl $(TOP) >sqlite3.h
 
 keywordhash.h:	$(TOP)/tool/mkkeywordhash.c
 	$(BCC) -o mkkeywordhash$(BEXE) $(OPT_FEATURE_FLAGS) $(OPTS) $(TOP)/tool/mkkeywordhash.c
@@ -829,17 +872,26 @@ fts3_hash.lo:	$(TOP)/ext/fts3/fts3_hash.c $(HDR) $(EXTHDR)
 fts3_icu.lo:	$(TOP)/ext/fts3/fts3_icu.c $(HDR) $(EXTHDR)
 	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_icu.c
 
-fts3_snippet.lo:	$(TOP)/ext/fts3/fts3_snippet.c $(HDR) $(EXTHDR)
-	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_snippet.c
-
 fts3_porter.lo:	$(TOP)/ext/fts3/fts3_porter.c $(HDR) $(EXTHDR)
 	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_porter.c
+
+fts3_snippet.lo:	$(TOP)/ext/fts3/fts3_snippet.c $(HDR) $(EXTHDR)
+	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_snippet.c
 
 fts3_tokenizer.lo:	$(TOP)/ext/fts3/fts3_tokenizer.c $(HDR) $(EXTHDR)
 	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_tokenizer.c
 
 fts3_tokenizer1.lo:	$(TOP)/ext/fts3/fts3_tokenizer1.c $(HDR) $(EXTHDR)
 	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_tokenizer1.c
+
+fts3_tokenize_vtab.lo:	$(TOP)/ext/fts3/fts3_tokenize_vtab.c $(HDR) $(EXTHDR)
+	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_tokenize_vtab.c
+
+fts3_unicode.lo:	$(TOP)/ext/fts3/fts3_unicode.c $(HDR) $(EXTHDR)
+	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_unicode.c
+
+fts3_unicode2.lo:	$(TOP)/ext/fts3/fts3_unicode2.c $(HDR) $(EXTHDR)
+	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_unicode2.c
 
 fts3_write.lo:	$(TOP)/ext/fts3/fts3_write.c $(HDR) $(EXTHDR)
 	$(LTCOMPILE) -DSQLITE_CORE -c $(TOP)/ext/fts3/fts3_write.c
@@ -857,10 +909,12 @@ rtree.lo:	$(TOP)/ext/rtree/rtree.c $(HDR) $(EXTHDR)
 #
 TESTFIXTURE_FLAGS  = -DTCLSH=1 -DSQLITE_TEST=1 -DSQLITE_CRASH_TEST=1
 TESTFIXTURE_FLAGS += -DSQLITE_SERVER=1 -DSQLITE_PRIVATE="" -DSQLITE_CORE 
+TESTFIXTURE_FLAGS += -DBUILD_sqlite
 
 TESTFIXTURE_SRC0 = $(TESTSRC2) libsqlite3.la
 TESTFIXTURE_SRC1 = sqlite3.c
-TESTFIXTURE_SRC = $(TESTSRC) $(TOP)/src/tclsqlite.c $(TESTFIXTURE_SRC$(USE_AMALGAMATION))
+TESTFIXTURE_SRC = $(TESTSRC) $(TOP)/src/tclsqlite.c
+TESTFIXTURE_SRC += $(TESTFIXTURE_SRC$(USE_AMALGAMATION))
 
 testfixture$(TEXE):	$(TESTFIXTURE_SRC)
 	$(LTLINK) -DSQLITE_NO_SYNC=1 $(TEMP_STORE) $(TESTFIXTURE_FLAGS) \
@@ -873,21 +927,46 @@ fulltest:	testfixture$(TEXE) sqlite3$(TEXE)
 soaktest:	testfixture$(TEXE) sqlite3$(TEXE)
 	./testfixture$(TEXE) $(TOP)/test/all.test -soak=1
 
+fulltestonly:	testfixture$(TEXE) sqlite3$(TEXE)
+	./testfixture$(TEXE) $(TOP)/test/full.test
+
 test:	testfixture$(TEXE) sqlite3$(TEXE)
 	./testfixture$(TEXE) $(TOP)/test/veryquick.test
 
-sqlite3_analyzer$(TEXE):	$(TESTFIXTURE_SRC) $(TOP)/tool/spaceanal.tcl
-	sed \
-	  -e '/^#/d' \
-	  -e 's,\\,\\\\,g' \
-	  -e 's,",\\",g' \
-	  -e 's,^,",' \
-	  -e 's,$$,\\n",' \
-	  $(TOP)/tool/spaceanal.tcl >spaceanal_tcl.h
-	$(LTLINK) -DTCLSH=2 -DSQLITE_TEST=1 -DSQLITE_CRASH_TEST=1 \
-		-DSQLITE_SERVER=1 -DSQLITE_PRIVATE="" -DSQLITE_CORE \
-		$(TEMP_STORE) -o $@ $(TESTFIXTURE_SRC) $(LIBTCL) $(TLIBS)
+sqlite3_analyzer.c: sqlite3.c $(TOP)/src/test_stat.c $(TOP)/src/tclsqlite.c $(TOP)/tool/spaceanal.tcl
+	echo "#define TCLSH 2" > $@
+	cat sqlite3.c $(TOP)/src/test_stat.c $(TOP)/src/tclsqlite.c >> $@
+	echo "static const char *tclsh_main_loop(void){" >> $@
+	echo "static const char *zMainloop = " >> $@
+	$(NAWK) -f $(TOP)/tool/tostr.awk $(TOP)/tool/spaceanal.tcl >> $@
+	echo "; return zMainloop; }" >> $@
 
+sqlite3_analyzer$(TEXE): sqlite3_analyzer.c
+	$(LTLINK) sqlite3_analyzer.c -o $@ $(LIBTCL) $(TLIBS)
+
+showdb$(TEXE):	$(TOP)/tool/showdb.c sqlite3.lo
+	$(LTLINK) -o $@ $(TOP)/tool/showdb.c sqlite3.lo $(TLIBS)
+
+showstat4$(TEXE):	$(TOP)/tool/showstat4.c sqlite3.lo
+	$(LTLINK) -o $@ $(TOP)/tool/showstat4.c sqlite3.lo $(TLIBS)
+
+showjournal$(TEXE):	$(TOP)/tool/showjournal.c sqlite3.lo
+	$(LTLINK) -o $@ $(TOP)/tool/showjournal.c sqlite3.lo $(TLIBS)
+
+showwal$(TEXE):	$(TOP)/tool/showwal.c sqlite3.lo
+	$(LTLINK) -o $@ $(TOP)/tool/showwal.c sqlite3.lo $(TLIBS)
+
+rollback-test$(TEXE):	$(TOP)/tool/rollback-test.c sqlite3.lo
+	$(LTLINK) -o $@ $(TOP)/tool/rollback-test.c sqlite3.lo $(TLIBS)
+
+LogEst$(TEXE):	$(TOP)/tool/logest.c sqlite3.h
+	$(LTLINK) -I. -o $@ $(TOP)/tool/logest.c
+
+wordcount$(TEXE):	$(TOP)/test/wordcount.c sqlite3.c
+	$(LTLINK) -o $@ $(TOP)/test/wordcount.c sqlite3.c $(TLIBS)
+
+speedtest1$(TEXE):	$(TOP)/test/wordcount.c sqlite3.lo
+	$(LTLINK) -o $@ $(TOP)/test/speedtest1.c sqlite3.lo $(TLIBS)
 
 # Standard install and cleanup targets
 #
@@ -918,12 +997,21 @@ clean:
 	rm -rf .libs .deps
 	rm -f lemon$(BEXE) lempar.c parse.* sqlite*.tar.gz
 	rm -f mkkeywordhash$(BEXE) keywordhash.h
-	rm -f $(PUBLISH)
 	rm -f *.da *.bb *.bbg gmon.out
+	rm -rf quota2a quota2b quota2c
 	rm -rf tsrc .target_source
+	rm -f tclsqlite3$(TEXE)
 	rm -f testfixture$(TEXE) test.db
-	rm -f sqlite3.dll sqlite3.lib sqlite3.def
+	rm -f LogEst$(TEXE) fts3view$(TEXE) rollback-test$(TEXE) showdb$(TEXE)
+	rm -f showjournal$(TEXE) showstat4$(TEXE) showwal$(TEXE) speedtest1$(TEXE)
+	rm -f wordcount$(TEXE)
+	rm -f sqlite3.dll sqlite3.lib sqlite3.exp sqlite3.def
 	rm -f sqlite3.c
+	rm -f sqlite3rc.h
+	rm -f shell.c sqlite3ext.h
+	rm -f sqlite3_analyzer$(TEXE) sqlite3_analyzer.c
+	rm -f sqlite-*-output.vsix
+	rm -f mptester mptester.exe
 
 distclean:	clean
 	rm -f config.log config.status libtool Makefile sqlite3.pc

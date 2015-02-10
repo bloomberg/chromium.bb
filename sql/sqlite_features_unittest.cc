@@ -45,13 +45,8 @@ class SQLiteFeaturesTest : public testing::Test {
     db_.Close();
   }
 
-  void VerifyAndClearLastError(int expected_error) {
-    EXPECT_EQ(expected_error, error_);
-    error_ = SQLITE_OK;
-    sql_text_.clear();
-  }
-
   sql::Connection& db() { return db_; }
+  int error() { return error_; }
 
  private:
   base::ScopedTempDir temp_dir_;
@@ -147,8 +142,10 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
       "    pid INTEGER NOT NULL REFERENCES parents(id) ON DELETE CASCADE)"));
 
   // Inserting without a matching parent should fail with constraint violation.
-  EXPECT_FALSE(db().Execute("INSERT INTO children VALUES (10, 1)"));
-  VerifyAndClearLastError(SQLITE_CONSTRAINT);
+  // Mask off any extended error codes for USE_SYSTEM_SQLITE.
+  int insertErr = db().ExecuteAndReturnErrorCode(
+      "INSERT INTO children VALUES (10, 1)");
+  EXPECT_EQ(SQLITE_CONSTRAINT, (insertErr&0xff));
 
   size_t rows;
   EXPECT_TRUE(sql::test::CountTableRows(&db(), "children", &rows));

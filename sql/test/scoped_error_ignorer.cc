@@ -9,6 +9,11 @@
 
 namespace sql {
 
+// static
+int ScopedErrorIgnorer::SQLiteLibVersionNumber() {
+  return sqlite3_libversion_number();
+}
+
 ScopedErrorIgnorer::ScopedErrorIgnorer()
     : checked_(false) {
   callback_ =

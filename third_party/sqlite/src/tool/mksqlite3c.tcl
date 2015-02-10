@@ -23,13 +23,18 @@
 #
 
 # Begin by reading the "sqlite3.h" header file.  Extract the version number
-# from in this file.  The versioon number is needed to generate the header
+# from in this file.  The version number is needed to generate the header
 # comment of the amalgamation.
 #
 if {[lsearch $argv --nostatic]>=0} {
   set addstatic 0
 } else {
   set addstatic 1
+}
+if {[lsearch $argv --linemacros]>=0} {
+  set linemacros 1
+} else {
+  set linemacros 0
 }
 set in [open tsrc/sqlite3.h]
 set cnt 0
@@ -46,6 +51,8 @@ close $in
 # of the file.
 #
 set out [open sqlite3.c w]
+# Force the output to use unix line endings, even on Windows.
+fconfigure $out -translation lf
 set today [clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S UTC" -gmt 1]
 puts $out [subst \
 {/******************************************************************************
@@ -96,8 +103,9 @@ foreach hdr {
    mutex.h
    opcodes.h
    os_common.h
+   os_setup.h
+   os_win.h
    os.h
-   os_os2.h
    pager.h
    parse.h
    pcache.h
@@ -110,6 +118,7 @@ foreach hdr {
    vdbe.h
    vdbeInt.h
    wal.h
+   whereInt.h
 } {
   set available_hdr($hdr) 1
 }
@@ -131,12 +140,14 @@ proc section_comment {text} {
 
 # Read the source file named $filename and write it into the
 # sqlite3.c output file.  If any #include statements are seen,
-# process them approprately.
+# process them appropriately.
 #
 proc copy_file {filename} {
-  global seen_hdr available_hdr out addstatic
+  global seen_hdr available_hdr out addstatic linemacros
+  set ln 0
   set tail [file tail $filename]
   section_comment "Begin file $tail"
+  if {$linemacros} {puts $out "#line 1 \"$filename\""}
   set in [open $filename r]
   set varpattern {^[a-zA-Z][a-zA-Z_0-9 *]+(sqlite3[_a-zA-Z0-9]+)(\[|;| =)}
   set declpattern {[a-zA-Z][a-zA-Z_0-9 ]+ \**(sqlite3[_a-zA-Z0-9]+)\(}
@@ -146,6 +157,7 @@ proc copy_file {filename} {
   set declpattern ^$declpattern
   while {![eof $in]} {
     set line [gets $in]
+    incr ln
     if {[regexp {^\s*#\s*include\s+["<]([^">]+)[">]} $line all hdr]} {
       if {[info exists available_hdr($hdr)]} {
         if {$available_hdr($hdr)} {
@@ -155,14 +167,25 @@ proc copy_file {filename} {
           section_comment "Include $hdr in the middle of $tail"
           copy_file tsrc/$hdr
           section_comment "Continuing where we left off in $tail"
+          if {$linemacros} {puts $out "#line [expr {$ln+1}] \"$filename\""}
         }
       } elseif {![info exists seen_hdr($hdr)]} {
-        set seen_hdr($hdr) 1
+        if {![regexp {/\*\s+amalgamator:\s+dontcache\s+\*/} $line]} {
+          set seen_hdr($hdr) 1
+        }
         puts $out $line
+      } elseif {[regexp {/\*\s+amalgamator:\s+keep\s+\*/} $line]} {
+        # This include file must be kept because there was a "keep"
+        # directive inside of a line comment.
+        puts $out $line
+      } else {
+        # Comment out the entire line, replacing any nested comment
+        # begin/end markers with the harmless substring "**".
+        puts $out "/* [string map [list /* ** */ **] $line] */"
       }
     } elseif {[regexp {^#ifdef __cplusplus} $line]} {
       puts $out "#if 0"
-    } elseif {[regexp {^#line} $line]} {
+    } elseif {!$linemacros && [regexp {^#line} $line]} {
       # Skip #line directives.
     } elseif {$addstatic && ![regexp {^(static|typedef)} $line]} {
       regsub {^SQLITE_API } $line {} line
@@ -225,18 +248,17 @@ foreach file {
    mem5.c
    mutex.c
    mutex_noop.c
-   mutex_os2.c
    mutex_unix.c
    mutex_w32.c
    malloc.c
    printf.c
    random.c
+   threads.c
    utf.c
    util.c
    hash.c
    opcodes.c
 
-   os_os2.c
    os_unix.c
    os_win.c
 
@@ -257,6 +279,7 @@ foreach file {
    vdbetrace.c
    vdbe.c
    vdbeblob.c
+   vdbesort.c
    journal.c
    memjournal.c
 
@@ -302,8 +325,11 @@ foreach file {
    fts3_porter.c
    fts3_tokenizer.c
    fts3_tokenizer1.c
+   fts3_tokenize_vtab.c
    fts3_write.c
    fts3_snippet.c
+   fts3_unicode.c
+   fts3_unicode2.c
 
    rtree.c
    icu.c

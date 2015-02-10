@@ -1,6 +1,6 @@
 Name: sqlite
 URL: http://sqlite.org/
-Version: 3.7.6.3
+Version: 3.8.7.4
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -50,7 +50,7 @@ or OSX.  They may assume a modern version of git (I'm using 2.2.1).
 # Everything based in sqlite subdir.
 cd third_party/sqlite
 
-BASE=3070603
+BASE=3080704
 
 #### Create a reference branch.
 git checkout -b sqlite_${BASE} master
@@ -126,7 +126,7 @@ git commit -m "Reset to sqlite-src-${BASE}"
 #### Convert patches into CLs.
 git checkout -b sqlite_${BASE}_patched master
 git rebase sqlite_${BASE}
-git am patches/*.patch
+git am --keep-non-patch patches/*.patch
 git diff master
 # This branch should be identical to master.
 
@@ -147,8 +147,7 @@ git add -f sqlite-src-${VERSION}/
 egrep --exclude="*.eps" --exclude="*.ico" --exclude="*.jpg" \
       --exclude="*.gif" --exclude="*.tiff" --exclude="*.vsix" -URl '\r' . | \
     LANG=C xargs sed -i~ -e $'s/\r$//'
-git commit -m "Begin import of sqlite-src-${VERSION}"es
-sqlite-src-${VERSION}
+git commit -m "Begin import of sqlite-src-${VERSION}" sqlite-src-${VERSION}
 rm -rf src
 cp -a sqlite-src-${VERSION} src
 # -f includes ignored files, of which there are a couple.
@@ -222,24 +221,28 @@ above may require some adaptation of the build files.
 cd third_party/sqlite/src
 mkdir build
 cd build
-make -f ../Makefile.linux-gcc testfixture sqlite3
-# NOTE(shess): 64-bit builds under 3.7.6.3 show various warnings.  AFAICT they
-# don't impact test operation.  Later versions are better so I'm not fixing it.
+make -j -f ../Makefile.linux-gcc testfixture sqlite3
 make -f ../Makefile.linux-gcc test > /tmp/test.log
 egrep 'errors out of' /tmp/test.log 
 # Show broken tests:
 egrep 'Failures on these tests:' /tmp/test.log
 # Broken tests will also show lines ending in "..." instead of "... Ok".
 
-In version Right now on OSX, I see no failures:
-  0 errors out of 77849 tests
+In version 3.8.7.4 on OSX 10.9.5, I see:
+   6 errors out of 138390 tests
+The failed tests are:
+   pager4-1.3 pager4-1.4 pager4-1.5 pager4-1.9 pager4-1.10 pager4-1.11
+This is due to the change in os_unix.c fileHasMoved() to support WebDatabase.
+Commenting out the early return allows them to succeed.
 
-In version 3.7.6.3 on Ubuntu 14.04 I see some failures:
- 83 errors out of 78604 tests
- - precision in formatting numbers in enc4.test.
- - case sensitivity in nan.test.
- - oserror-1.1.[1-3] fail because there are too many fds available.  Fixed with
-   "ulimit -n 1024".
+In version 3.8.7.4 on Ubuntu 14.04 I see:
+   9 errors out of 138920 tests
+The failed tests are:
+   oserror-1.1.1 oserror-1.1.2 oserror-1.1.3
+   pager4-1.3 pager4-1.4 pager4-1.5 pager4-1.9 pager4-1.10 pager4-1.11
+The oserror tests fail because there are too many fds available, and can be
+fixed by running "ulimit -n 1024" before the test.  The pager4 tests are failing
+for the same reason as above.
 
 --
 

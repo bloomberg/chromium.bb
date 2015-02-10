@@ -60,12 +60,14 @@ static Tcl_ObjCmdProc blocking_prepare_v2_proc;
 int Sqlitetest1_Init(Tcl_Interp *);
 int Sqlite3_Init(Tcl_Interp *);
 
+/* Functions from main.c */
+extern const char *sqlite3ErrName(int);
+
 /* Functions from test1.c */
-void *sqlite3TestTextToPtr(const char *);
-const char *sqlite3TestErrorName(int);
-int getDbPointer(Tcl_Interp *, const char *, sqlite3 **);
-int sqlite3TestMakePointerStr(Tcl_Interp *, char *, void *);
-int sqlite3TestErrCode(Tcl_Interp *, sqlite3 *, int);
+extern void *sqlite3TestTextToPtr(const char *);
+extern int getDbPointer(Tcl_Interp *, const char *, sqlite3 **);
+extern int sqlite3TestMakePointerStr(Tcl_Interp *, char *, void *);
+extern int sqlite3TestErrCode(Tcl_Interp *, sqlite3 *, int);
 
 /*
 ** Handler for events of type EvalEvent.
@@ -273,7 +275,6 @@ static int sqlthread_open(
 
   const char *zFilename;
   sqlite3 *db;
-  int rc;
   char zBuf[100];
   extern void Md5_Register(sqlite3*);
 
@@ -281,7 +282,23 @@ static int sqlthread_open(
   UNUSED_PARAMETER(objc);
 
   zFilename = Tcl_GetString(objv[2]);
-  rc = sqlite3_open(zFilename, &db);
+  sqlite3_open(zFilename, &db);
+#ifdef SQLITE_HAS_CODEC
+  if( db && objc>=4 ){
+    const char *zKey;
+    int nKey;
+    int rc;
+    zKey = Tcl_GetStringFromObj(objv[3], &nKey);
+    rc = sqlite3_key(db, zKey, nKey);
+    if( rc!=SQLITE_OK ){
+      char *zErrMsg = sqlite3_mprintf("error %d: %s", rc, sqlite3_errmsg(db));
+      sqlite3_close(db);
+      Tcl_AppendResult(interp, zErrMsg, (char*)0);
+      sqlite3_free(zErrMsg);
+      return TCL_ERROR;
+    }
+  }
+#endif
   Md5_Register(db);
   sqlite3_busy_handler(db, xBusy, 0);
   
@@ -305,7 +322,7 @@ static int sqlthread_id(
   Tcl_Obj *CONST objv[]
 ){
   Tcl_ThreadId id = Tcl_GetCurrentThread();
-  Tcl_SetObjResult(interp, Tcl_NewIntObj((int)id));
+  Tcl_SetObjResult(interp, Tcl_NewIntObj(SQLITE_PTR_TO_INT(id)));
   UNUSED_PARAMETER(clientData);
   UNUSED_PARAMETER(objc);
   UNUSED_PARAMETER(objv);
@@ -349,7 +366,7 @@ static int sqlthread_proc(
   if( rc!=TCL_OK ) return rc;
   pSub = &aSub[iIndex];
 
-  if( objc!=(pSub->nArg+2) ){
+  if( objc<(pSub->nArg+2) ){
     Tcl_WrongNumArgs(interp, 2, objv, pSub->zUsage);
     return TCL_ERROR;
   }
@@ -404,9 +421,9 @@ static int clock_seconds_proc(
 */
 typedef struct UnlockNotification UnlockNotification;
 struct UnlockNotification {
-  int fired;                           /* True after unlock event has occured */
-  pthread_cond_t cond;                 /* Condition variable to wait on */
-  pthread_mutex_t mutex;               /* Mutex to protect structure */
+  int fired;                         /* True after unlock event has occurred */
+  pthread_cond_t cond;               /* Condition variable to wait on */
+  pthread_mutex_t mutex;             /* Mutex to protect structure */
 };
 
 /*
@@ -544,7 +561,7 @@ static int blocking_step_proc(
   pStmt = (sqlite3_stmt*)sqlite3TestTextToPtr(Tcl_GetString(objv[1]));
   rc = sqlite3_blocking_step(pStmt);
 
-  Tcl_SetResult(interp, (char *)sqlite3TestErrorName(rc), 0);
+  Tcl_SetResult(interp, (char *)sqlite3ErrName(rc), 0);
   return TCL_OK;
 }
 
@@ -591,7 +608,7 @@ static int blocking_prepare_v2_proc(
   }
   if( rc!=SQLITE_OK ){
     assert( pStmt==0 );
-    sprintf(zBuf, "%s ", (char *)sqlite3TestErrorName(rc));
+    sprintf(zBuf, "%s ", (char *)sqlite3ErrName(rc));
     Tcl_AppendResult(interp, zBuf, sqlite3_errmsg(db), 0);
     return TCL_ERROR;
   }

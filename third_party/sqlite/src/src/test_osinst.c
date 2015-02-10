@@ -70,6 +70,12 @@
 */
 
 #include "sqlite3.h"
+
+#include "os_setup.h"
+#if SQLITE_OS_WIN
+#  include "os_win.h"
+#endif
+
 #include <string.h>
 #include <assert.h>
 
@@ -221,7 +227,6 @@ static sqlite3_uint64 vfslog_time(){
   return sTime.tv_usec + (sqlite3_uint64)sTime.tv_sec * 1000000;
 }
 #elif SQLITE_OS_WIN
-#include <windows.h>
 #include <time.h>
 static sqlite3_uint64 vfslog_time(){
   FILETIME ft;
@@ -242,7 +247,7 @@ static sqlite3_uint64 vfslog_time(){
 }
 #endif
 
-static void vfslog_call(sqlite3_vfs *, int, int, int, int, int, int);
+static void vfslog_call(sqlite3_vfs *, int, int, sqlite3_int64, int, int, int);
 static void vfslog_string(sqlite3_vfs *, const char *);
 
 /*
@@ -389,7 +394,11 @@ static int vfslogCheckReservedLock(sqlite3_file *pFile, int *pResOut){
 */
 static int vfslogFileControl(sqlite3_file *pFile, int op, void *pArg){
   VfslogFile *p = (VfslogFile *)pFile;
-  return p->pReal->pMethods->xFileControl(p->pReal, op, pArg);
+  int rc = p->pReal->pMethods->xFileControl(p->pReal, op, pArg);
+  if( op==SQLITE_FCNTL_VFSNAME && rc==SQLITE_OK ){
+    *(char**)pArg = sqlite3_mprintf("vfslog/%z", *(char**)pArg);
+  }
+  return rc;
 }
 
 /*
@@ -644,7 +653,7 @@ static void vfslog_call(
   sqlite3_vfs *pVfs,
   int eEvent,
   int iFileid,
-  int nClick,
+  sqlite3_int64 nClick,
   int return_code,
   int size,
   int offset
@@ -657,7 +666,7 @@ static void vfslog_call(
   zRec = (unsigned char *)&p->aBuf[p->nBuf];
   put32bits(&zRec[0], eEvent);
   put32bits(&zRec[4], iFileid);
-  put32bits(&zRec[8], nClick);
+  put32bits(&zRec[8], (unsigned int)(nClick&0xffff));
   put32bits(&zRec[12], return_code);
   put32bits(&zRec[16], size);
   put32bits(&zRec[20], offset);
@@ -667,7 +676,7 @@ static void vfslog_call(
 static void vfslog_string(sqlite3_vfs *pVfs, const char *zStr){
   VfslogVfs *p = (VfslogVfs *)pVfs;
   unsigned char *zRec;
-  int nStr = zStr ? strlen(zStr) : 0;
+  int nStr = zStr ? (int)strlen(zStr) : 0;
   if( (4+nStr+p->nBuf)>sizeof(p->aBuf) ){
     vfslog_flush(p);
   }
@@ -716,7 +725,7 @@ int sqlite3_vfslog_new(
     return SQLITE_ERROR;
   }
 
-  nVfs = strlen(zVfs);
+  nVfs = (int)strlen(zVfs);
   nByte = sizeof(VfslogVfs) + pParent->szOsFile + nVfs+1+pParent->mxPathname+1;
   p = (VfslogVfs *)sqlite3_malloc(nByte);
   memset(p, 0, nByte);
@@ -1039,7 +1048,7 @@ static int vlogColumn(
     }
     case 1: {
       char *zStr = pCsr->zTransient;
-      if( val!=0 && val<pCsr->nFile ){
+      if( val!=0 && val<(unsigned)pCsr->nFile ){
         zStr = pCsr->azFile[val];
       }
       sqlite3_result_text(ctx, zStr, -1, SQLITE_TRANSIENT);

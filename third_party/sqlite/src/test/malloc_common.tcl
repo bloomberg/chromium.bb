@@ -93,6 +93,14 @@ set FAULTSIM(cantopen-persistent) [list      \
   -injectuninstall cantopen_injectuninstall  \
 ]
 
+set FAULTSIM(interrupt) [list                 \
+  -injectinstall   interrupt_injectinstall    \
+  -injectstart     interrupt_injectstart      \
+  -injectstop      interrupt_injectstop       \
+  -injecterrlist   {{1 interrupted} {1 interrupt}}        \
+  -injectuninstall interrupt_injectuninstall  \
+]
+
 
 
 #--------------------------------------------------------------------------
@@ -113,7 +121,9 @@ set FAULTSIM(cantopen-persistent) [list      \
 proc do_faultsim_test {name args} {
   global FAULTSIM
   
-  set DEFAULT(-faults)        [array names FAULTSIM]
+  foreach n [array names FAULTSIM] {
+    if {$n != "interrupt"} {lappend DEFAULT(-faults) $n}
+  }
   set DEFAULT(-prep)          ""
   set DEFAULT(-body)          ""
   set DEFAULT(-test)          ""
@@ -255,6 +265,22 @@ proc cantopen_injectstop {} {
   shmfault cantopen
 }
 
+# The following procs are used as [do_one_faultsim_test] callbacks 
+# when injecting SQLITE_INTERRUPT error faults into test cases.
+#
+proc interrupt_injectinstall {} {
+}
+proc interrupt_injectuninstall {} {
+}
+proc interrupt_injectstart {iFail} {
+  set ::sqlite_interrupt_count $iFail
+}
+proc interrupt_injectstop {} {
+  set res [expr $::sqlite_interrupt_count<=0]
+  set ::sqlite_interrupt_count 0
+  set res
+}
+
 # This command is not called directly. It is used by the 
 # [faultsim_test_result] command created by [do_faultsim_test] and used
 # by -test scripts.
@@ -264,7 +290,7 @@ proc faultsim_test_result_int {args} {
   set t [list $testrc $testresult]
   set r $args
   if { ($testnfail==0 && $t != [lindex $r 0]) || [lsearch $r $t]<0 } {
-    error "nfail=$testnfail rc=$testrc result=$testresult"
+    error "nfail=$testnfail rc=$testrc result=$testresult list=$r"
   }
 }
 
@@ -383,6 +409,7 @@ proc do_malloc_test {tn args} {
 
   if {[string is integer $tn]} {
     set tn malloc-$tn
+    catch { set tn $::testprefix-$tn }
   }
   if {[info exists ::mallocopts(-start)]} {
     set start $::mallocopts(-start)
@@ -408,7 +435,7 @@ proc do_malloc_test {tn args} {
       set zRepeat "transient"
       if {$::iRepeat} {set zRepeat "persistent"}
       restore_prng_state
-      foreach file [glob -nocomplain test.db-mj*] {file delete -force $file}
+      foreach file [glob -nocomplain test.db-mj*] {forcedelete $file}
 
       do_test ${tn}.${zRepeat}.${::n} {
   
@@ -425,7 +452,7 @@ proc do_malloc_test {tn args} {
         forcedelete test2.db-journal
         forcedelete test2.db-wal
         if {[info exists ::mallocopts(-testdb)]} {
-          file copy $::mallocopts(-testdb) test.db
+          copy_file $::mallocopts(-testdb) test.db
         }
         catch { sqlite3 db test.db }
         if {[info commands db] ne ""} {

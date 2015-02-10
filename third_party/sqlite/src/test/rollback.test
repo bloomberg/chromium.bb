@@ -54,17 +54,17 @@ ifcapable conflict {
     catchsql {
       INSERT INTO t3 SELECT a FROM t1;
     }
-  } {1 {column a is not unique}}
+  } {1 {UNIQUE constraint failed: t3.a}}
   
   # Try to continue with the SELECT statement
   #
   do_test rollback-1.5 {
     sqlite3_step $STMT
-  } {SQLITE_ERROR}
+  } {SQLITE_ROW}
 
   # Restart the SELECT statement
   #
-  do_test rollback-1.6 { sqlite3_reset $STMT } {SQLITE_ABORT}
+  do_test rollback-1.6 { sqlite3_reset $STMT } {SQLITE_OK}
 } else {
   do_test rollback-1.6 { sqlite3_reset $STMT } {SQLITE_OK}
 }
@@ -88,8 +88,8 @@ if {$tcl_platform(platform) == "unix"
       BEGIN;
       INSERT INTO t3 VALUES('hello world');
     }
-    file copy -force test.db testA.db
-    file copy -force test.db-journal testA.db-journal
+    forcecopy test.db testA.db
+    forcecopy test.db-journal testA.db-journal
     execsql {
       COMMIT;
     }

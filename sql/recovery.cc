@@ -366,15 +366,10 @@ bool Recovery::AutoRecoverTable(const char* table_name,
     const bool default_is_null = (default_type == COLUMN_TYPE_NULL);
     const int pk_column = s.ColumnInt(5);
 
-    if (pk_column > 0) {
-      // TODO(shess): http://www.sqlite.org/pragma.html#pragma_table_info
-      // documents column 5 as the index of the column in the primary key
-      // (zero for not in primary key).  I find that it is always 1 for
-      // columns in the primary key.  Since this code is very dependent on
-      // that pragma, review if the implementation changes.
-      DCHECK_EQ(1, pk_column);
+    // http://www.sqlite.org/pragma.html#pragma_table_info documents column 5 as
+    // the 1-based index of the column in the primary key, otherwise 0.
+    if (pk_column > 0)
       ++pk_column_count;
-    }
 
     // Construct column declaration as "name type [optional constraint]".
     std::string column_decl = column_name;

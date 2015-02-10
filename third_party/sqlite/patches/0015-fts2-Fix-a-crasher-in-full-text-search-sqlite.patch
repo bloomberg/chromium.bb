@@ -1,0 +1,89 @@
+From ab29deaf1d9911e7dfc5f12e1fb131f800c9d4fd Mon Sep 17 00:00:00 2001
+From: cpu <cpu@chromium.org>
+Date: Mon, 14 Sep 2009 17:37:35 +0000
+Subject: [PATCH 15/16] [fts2] Fix a crasher in full text search (sqlite)
+
+- If the xxx_segdir table gets corrupted, you can have non-contiguous indexes (idx).
+- This causes an assertion in debug, and a crash later on on release
+
+With this change it will return 'corrupted db'
+
+We shall wait to get a couple more fixes to upstream to sqlite org.
+
+BUG=21377
+TEST=see bug
+
+Original review URL: https://codereview.chromium.org/203046
+
+===
+
+Also slipstreams:
+
+fixup [open][fts2] Tweak Carlos' change to cater for the additional cases:
+- More (ordered) segments than we expect - would previously cause stack-based
+buffer overflow.
+- Less segments than we expect, where the missing segments are a strict
+truncation rather than missing in the middle.
+
+BUG=NONE
+TEST=NONE
+
+Original review URL: https://codereview.chromium.org/209001/
+---
+ third_party/sqlite/src/ext/fts2/fts2.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/third_party/sqlite/src/ext/fts2/fts2.c b/third_party/sqlite/src/ext/fts2/fts2.c
+index 5cb3fc6..a78e3d3 100644
+--- a/third_party/sqlite/src/ext/fts2/fts2.c
++++ b/third_party/sqlite/src/ext/fts2/fts2.c
+@@ -1838,7 +1838,7 @@ static const char *const fulltext_zStatement[MAX_STMT] = {
+   /* SEGDIR_MAX_INDEX */ "select max(idx) from %_segdir where level = ?",
+   /* SEGDIR_SET */ "insert into %_segdir values (?, ?, ?, ?, ?, ?)",
+   /* SEGDIR_SELECT_LEVEL */
+-  "select start_block, leaves_end_block, root from %_segdir "
++  "select start_block, leaves_end_block, root, idx from %_segdir "
+   " where level = ? order by idx",
+   /* SEGDIR_SPAN */
+   "select min(start_block), max(end_block) from %_segdir "
+@@ -5287,16 +5287,19 @@ static int leavesReadersInit(fulltext_vtab *v, int iLevel,
+     sqlite_int64 iEnd = sqlite3_column_int64(s, 1);
+     const char *pRootData = sqlite3_column_blob(s, 2);
+     int nRootData = sqlite3_column_bytes(s, 2);
++    sqlite_int64 iIndex = sqlite3_column_int64(s, 3);
+ 
+     /* Corrupt if we get back different types than we stored. */
++    /* Also corrupt if the index is not sequential starting at 0. */
+     if( sqlite3_column_type(s, 0)!=SQLITE_INTEGER ||
+         sqlite3_column_type(s, 1)!=SQLITE_INTEGER ||
+-        sqlite3_column_type(s, 2)!=SQLITE_BLOB ){
++        sqlite3_column_type(s, 2)!=SQLITE_BLOB ||
++        i!=iIndex ||
++        i>=MERGE_COUNT ){
+       rc = SQLITE_CORRUPT_BKPT;
+       break;
+     }
+ 
+-    assert( i<MERGE_COUNT );
+     rc = leavesReaderInit(v, i, iStart, iEnd, pRootData, nRootData,
+                           &pReaders[i]);
+     if( rc!=SQLITE_OK ) break;
+@@ -5391,10 +5394,14 @@ static int segmentMerge(fulltext_vtab *v, int iLevel){
+   memset(&lrs, '\0', sizeof(lrs));
+   rc = leavesReadersInit(v, iLevel, lrs, &i);
+   if( rc!=SQLITE_OK ) return rc;
+-  assert( i==MERGE_COUNT );
+ 
+   leafWriterInit(iLevel+1, idx, &writer);
+ 
++  if( i!=MERGE_COUNT ){
++    rc = SQLITE_CORRUPT_BKPT;
++    goto err;
++  }
++
+   /* Since leavesReaderReorder() pushes readers at eof to the end,
+   ** when the first reader is empty, all will be empty.
+   */
+-- 
+2.2.1
+

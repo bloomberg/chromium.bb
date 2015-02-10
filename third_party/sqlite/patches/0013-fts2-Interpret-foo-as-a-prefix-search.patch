@@ -1,0 +1,48 @@
+From b3310ec4e29ca2ef45e36a7b188503cd2637c8ba Mon Sep 17 00:00:00 2001
+From: Matt Perry <mpcomplete@google.com>
+Date: Wed, 17 Dec 2008 00:50:50 +0000
+Subject: [PATCH 13/16] [fts2] Interpret "foo*" as a prefix search.
+
+By default it interpreted it as "foo *" (two tokens).
+
+Original review URL: http://codereview.chromium.org/14176
+---
+ third_party/sqlite/src/ext/fts2/fts2.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/third_party/sqlite/src/ext/fts2/fts2.c b/third_party/sqlite/src/ext/fts2/fts2.c
+index 944f324..1c68af5 100644
+--- a/third_party/sqlite/src/ext/fts2/fts2.c
++++ b/third_party/sqlite/src/ext/fts2/fts2.c
+@@ -3558,6 +3558,7 @@ static int tokenizeSegment(
+   int firstIndex = pQuery->nTerms;
+   int iCol;
+   int nTerm = 1;
++  int iEndLast = -1;
+   
+   int rc = pModule->xOpen(pTokenizer, pSegment, nSegment, &pCursor);
+   if( rc!=SQLITE_OK ) return rc;
+@@ -3582,6 +3583,20 @@ static int tokenizeSegment(
+       pQuery->nextIsOr = 1;
+       continue;
+     }
++
++    /*
++     * The ICU tokenizer considers '*' a break character, so the code below
++     * sets isPrefix correctly, but since that code doesn't eat the '*', the
++     * ICU tokenizer returns it as the next token.  So eat it here until a
++     * better solution presents itself.
++     */
++    if( pQuery->nTerms>0 && nToken==1 && pSegment[iBegin]=='*' &&
++        iEndLast==iBegin){
++      pQuery->pTerms[pQuery->nTerms-1].isPrefix = 1;
++      continue;
++    }
++    iEndLast = iEnd;
++
+     queryAdd(pQuery, pToken, nToken);
+     if( !inPhrase && iBegin>0 && pSegment[iBegin-1]=='-' ){
+       pQuery->pTerms[pQuery->nTerms-1].isNot = 1;
+-- 
+2.2.1
+
