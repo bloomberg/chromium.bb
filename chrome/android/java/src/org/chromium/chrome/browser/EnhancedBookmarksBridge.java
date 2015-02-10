@@ -13,6 +13,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -246,6 +247,14 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
+     * Parses the web content of a tab, and stores salient images to local database.
+     * @param webContents Contents of the tab that the user is currently in.
+     */
+    public void fetchImageForTab(WebContents webContents) {
+        nativeFetchImageForTab(mNativeEnhancedBookmarksBridge, webContents);
+    }
+
+    /**
      * Get all filters associated with the given bookmark.
      *
      * @param bookmark The bookmark to find filters for.
@@ -310,6 +319,8 @@ public final class EnhancedBookmarksBridge {
     private native BookmarkId nativeAddBookmark(long nativeEnhancedBookmarksBridge,
             BookmarkId parent, int index, String title, String url);
     private native void nativeSendSearchRequest(long nativeEnhancedBookmarksBridge, String query);
-    private static native void nativeSalientImageForUrl(long nativeEnhancedBookmarksBridge,
+    private native void nativeSalientImageForUrl(long nativeEnhancedBookmarksBridge,
             String url, SalientImageCallback callback);
+    private native void nativeFetchImageForTab(long nativeEnhancedBookmarksBridge,
+            WebContents webContents);
 }

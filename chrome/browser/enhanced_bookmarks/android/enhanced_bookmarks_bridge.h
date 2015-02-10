@@ -15,7 +15,7 @@
 namespace enhanced_bookmarks {
 
 class BookmarkServerClusterService;
-class BookmarkImageService;
+class BookmarkImageServiceAndroid;
 
 namespace android {
 
@@ -29,6 +29,8 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
                           jobject obj,
                           jstring j_url,
                           jobject j_callback);
+
+  void FetchImageForTab(JNIEnv* env, jobject obj, jobject j_web_contents);
 
   base::android::ScopedJavaLocalRef<jstring> GetBookmarkDescription(
       JNIEnv* env,
@@ -85,9 +87,9 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
   bool IsEditable(const bookmarks::BookmarkNode* node) const;
 
   JavaObjectWeakGlobalRef weak_java_ref_;
-  EnhancedBookmarkModel* enhanced_bookmark_model_;  // weak
-  BookmarkServerClusterService* cluster_service_;   // weak
-  BookmarkImageService* bookmark_image_service_;    // weak
+  EnhancedBookmarkModel* enhanced_bookmark_model_;         // weak
+  BookmarkServerClusterService* cluster_service_;          // weak
+  BookmarkImageServiceAndroid* bookmark_image_service_;    // weak
   scoped_ptr<BookmarkServerSearchService> search_service_;
   Profile* profile_;                       // weak
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarksBridge);
