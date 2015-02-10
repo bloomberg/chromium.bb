@@ -768,6 +768,10 @@ const LayerTreeSettings& LayerTreeImpl::settings() const {
   return layer_tree_host_impl_->settings();
 }
 
+const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
+  return layer_tree_host_impl_->debug_state();
+}
+
 const RendererCapabilitiesImpl& LayerTreeImpl::GetRendererCapabilities() const {
   return layer_tree_host_impl_->GetRendererCapabilities();
 }
@@ -802,6 +806,14 @@ MemoryHistory* LayerTreeImpl::memory_history() const {
 
 gfx::Size LayerTreeImpl::device_viewport_size() const {
   return layer_tree_host_impl_->device_viewport_size();
+}
+
+float LayerTreeImpl::device_scale_factor() const {
+  return layer_tree_host_impl_->device_scale_factor();
+}
+
+DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
+  return layer_tree_host_impl_->debug_rect_history();
 }
 
 bool LayerTreeImpl::IsActiveTree() const {
@@ -909,18 +921,6 @@ bool LayerTreeImpl::create_low_res_tiling() const {
 
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->SetNeedsRedraw();
-}
-
-const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
-  return layer_tree_host_impl_->debug_state();
-}
-
-float LayerTreeImpl::device_scale_factor() const {
-  return layer_tree_host_impl_->device_scale_factor();
-}
-
-DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
-  return layer_tree_host_impl_->debug_rect_history();
 }
 
 AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {

@@ -72,6 +72,7 @@ class CC_EXPORT LayerTreeImpl {
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;
+  const LayerTreeDebugState& debug_state() const;
   const RendererCapabilitiesImpl& GetRendererCapabilities() const;
   ContextProvider* context_provider() const;
   OutputSurface* output_surface() const;
@@ -81,6 +82,8 @@ class CC_EXPORT LayerTreeImpl {
   PaintTimeCounter* paint_time_counter() const;
   MemoryHistory* memory_history() const;
   gfx::Size device_viewport_size() const;
+  float device_scale_factor() const;
+  DebugRectHistory* debug_rect_history() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;
   bool IsRecycleTree() const;
@@ -108,11 +111,8 @@ class CC_EXPORT LayerTreeImpl {
   // ---------------------------------------------------------------------------
   void SetNeedsRedraw();
 
-  // TODO(nduca): These are implemented in cc files temporarily, but will become
-  // trivial accessors in a followup patch.
-  const LayerTreeDebugState& debug_state() const;
-  float device_scale_factor() const;
-  DebugRectHistory* debug_rect_history() const;
+  // Tracing methods.
+  // ---------------------------------------------------------------------------
   void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
