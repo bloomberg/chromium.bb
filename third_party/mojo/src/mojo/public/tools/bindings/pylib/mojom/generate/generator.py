@@ -12,14 +12,20 @@ import module as mojom
 import mojom.fileutil as fileutil
 import pack
 
+def _GetDataHeader(exported, struct):
+  struct.packed = pack.PackedStruct(struct)
+  struct.bytes = pack.GetByteLayout(struct.packed)
+  struct.versions = pack.GetVersionInfo(struct.packed)
+  struct.exported = exported
+  return struct
+
 def GetStructFromMethod(method):
   """Converts a method's parameters into the fields of a struct."""
   params_class = "%s_%s_Params" % (method.interface.name, method.name)
   struct = mojom.Struct(params_class, module=method.interface.module)
   for param in method.parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
-  struct.packed = pack.PackedStruct(struct)
-  return struct
+  return _GetDataHeader(False, struct)
 
 def GetResponseStructFromMethod(method):
   """Converts a method's response_parameters into the fields of a struct."""
@@ -27,14 +33,7 @@ def GetResponseStructFromMethod(method):
   struct = mojom.Struct(params_class, module=method.interface.module)
   for param in method.response_parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
-  struct.packed = pack.PackedStruct(struct)
-  return struct
-
-def GetDataHeader(exported, struct):
-  struct.packed = pack.PackedStruct(struct)
-  struct.bytes = pack.GetByteLayout(struct.packed)
-  struct.exported = exported
-  return struct
+  return _GetDataHeader(False, struct)
 
 def ExpectedArraySize(kind):
   if mojom.IsArrayKind(kind):
@@ -47,6 +46,10 @@ def StudlyCapsToCamel(studly):
 def CamelCaseToAllCaps(camel_case):
   return '_'.join(
       word for word in re.split(r'([A-Z][^A-Z]+)', camel_case) if word).upper()
+
+def UnderToCamel(under):
+  """Converts underscore_separated strings to CamelCase strings."""
+  return ''.join(word.capitalize() for word in under.split('_'))
 
 def WriteFile(contents, full_path):
   # Make sure the containing directory exists.
@@ -71,10 +74,10 @@ class Generator(object):
         result.append(GetStructFromMethod(method))
         if method.response_parameters != None:
           result.append(GetResponseStructFromMethod(method))
-    return map(partial(GetDataHeader, False), result)
+    return result
 
   def GetStructs(self):
-    return map(partial(GetDataHeader, True), self.module.structs)
+    return map(partial(_GetDataHeader, True), self.module.structs)
 
   # Prepend the filename with a directory that matches the directory of the
   # original .mojom file, relative to the import root.

@@ -32,6 +32,9 @@ type messagePipe struct {
 }
 
 func (h *messagePipe) ReadMessage(flags MojoReadMessageFlags) (MojoResult, []byte, []UntypedHandle) {
+	h.core.mu.Lock()
+	defer h.core.mu.Unlock()
+
 	cParams := C.MallocReadMessageParams()
 	defer C.FreeReadMessageParams(cParams)
 	*cParams.num_bytes = 0
@@ -52,12 +55,15 @@ func (h *messagePipe) ReadMessage(flags MojoReadMessageFlags) (MojoResult, []byt
 	cHandles := *(*[]MojoHandle)(newUnsafeSlice(unsafe.Pointer(cArrays.handles), handlesLen))
 	handles := []UntypedHandle{}
 	for i := 0; i < handlesLen; i++ {
-		handles = append(handles, &untypedHandleImpl{baseHandle{cHandles[i]}})
+		handles = append(handles, h.core.AcquireNativeHandle(cHandles[i]))
 	}
 	return MojoResult(result), bytes, handles
 }
 
 func (h *messagePipe) WriteMessage(bytes []byte, handles []UntypedHandle, flags MojoWriteMessageFlags) MojoResult {
+	h.core.mu.Lock()
+	defer h.core.mu.Unlock()
+
 	cArrays := C.MallocMessageArrays(C.uint32_t(len(bytes)), C.uint32_t(len(handles)))
 	defer C.FreeMessageArrays(cArrays)
 	cBytes := *(*[]byte)(newUnsafeSlice(unsafe.Pointer(cArrays.bytes), len(bytes)))

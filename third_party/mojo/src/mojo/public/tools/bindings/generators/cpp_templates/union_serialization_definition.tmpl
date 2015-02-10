@@ -30,9 +30,10 @@ void Serialize_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
 {%  for field in union.fields %}
       case {{union.name}}::Tag::{{field.name|upper}}:
 {%    if field.kind|is_string_kind %}
-        Serialize_(input_acc.data()->{{field.name}}, buf, &result->data.{{field.name}}.ptr);
+        {{field.kind|cpp_field_type}}* {{field.name}}_ptr = reinterpret_cast<{{field.kind|cpp_field_type}}*>(&result->data.f_{{field.name}});
+        Serialize_(*(input_acc.data()->{{field.name}}), buf, &{{field.name}}_ptr->ptr);
 {%    else %}
-        result->data.{{field.name}} = input_acc.data()->{{field.name}};
+        result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}
         break;
 {%- endfor %}
@@ -53,9 +54,10 @@ void Deserialize_(internal::{{union.name}}_Data* input,
       case {{union.name}}::Tag::{{field.name|upper}}:
 {%    if field.kind|is_string_kind %}
         result_acc.SwitchActive({{union.name}}::Tag::{{field.name|upper}});
-        Deserialize_(input->data.{{field.name}}.ptr, &result_acc.data()->{{field.name}});
+        {{field.kind|cpp_field_type}}* {{field.name}}_ptr = reinterpret_cast<{{field.kind|cpp_field_type}}*>(&input->data.f_{{field.name}});
+        Deserialize_({{field.name}}_ptr->ptr, result_acc.data()->{{field.name}});
 {%    else %}
-        result->set_{{field.name}}(input->data.{{field.name}});
+        result->set_{{field.name}}(input->data.f_{{field.name}});
 {%-   endif %}
         break;
 {%- endfor %}

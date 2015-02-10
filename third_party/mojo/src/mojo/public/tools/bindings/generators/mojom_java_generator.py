@@ -23,8 +23,6 @@ from mojom.generate.template_expander import UseJinja
 
 GENERATOR_PREFIX = 'java'
 
-_HEADER_SIZE = 8
-
 _spec_to_java_type = {
   mojom.BOOL.spec: 'boolean',
   mojom.DCPIPE.spec: 'org.chromium.mojo.system.DataPipe.ConsumerHandle',
@@ -348,14 +346,6 @@ def IsPointerArrayKind(kind):
   sub_kind = kind.kind
   return mojom.IsObjectKind(sub_kind)
 
-def GetResponseStructFromMethod(method):
-  return generator.GetDataHeader(
-      False, generator.GetResponseStructFromMethod(method))
-
-def GetStructFromMethod(method):
-  return generator.GetDataHeader(
-      False, generator.GetStructFromMethod(method))
-
 def GetConstantsMainEntityName(module):
   if module.attributes and 'JavaConstantsClassName' in module.attributes:
     return ParseStringAttribute(module.attributes['JavaConstantsClassName'])
@@ -420,9 +410,8 @@ class Generator(generator.Generator):
     'method_ordinal_name': GetMethodOrdinalName,
     'name': GetNameForElement,
     'new_array': NewArray,
-    'response_struct_from_method': GetResponseStructFromMethod,
-    'struct_from_method': GetStructFromMethod,
-    'struct_size': lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
+    'response_struct_from_method': generator.GetResponseStructFromMethod,
+    'struct_from_method': generator.GetStructFromMethod,
   }
 
   def GetJinjaExports(self):

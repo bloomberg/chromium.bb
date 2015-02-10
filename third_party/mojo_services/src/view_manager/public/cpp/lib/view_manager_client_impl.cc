@@ -93,12 +93,12 @@ class RootObserver : public ViewObserver {
   DISALLOW_COPY_AND_ASSIGN(RootObserver);
 };
 
-ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
-                                             Shell* shell,
-                                             ScopedMessagePipeHandle handle,
-                                             bool delete_on_error)
-    : connected_(false),
-      connection_id_(0),
+ViewManagerClientImpl::ViewManagerClientImpl(
+    ViewManagerDelegate* delegate,
+    Shell* shell,
+    InterfaceRequest<ViewManagerClient> request,
+    bool delete_on_error)
+    : connection_id_(0),
       next_id_(1),
       delegate_(delegate),
       root_(nullptr),
@@ -106,8 +106,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
       focused_view_(nullptr),
       activated_view_(nullptr),
       wm_observer_binding_(this),
-      binding_(this, handle.Pass()),
-      service_(binding_.client()),
+      binding_(this, request.Pass()),
       delete_on_error_(delete_on_error) {
 }
 
@@ -133,17 +132,17 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
 }
 
 void ViewManagerClientImpl::DestroyView(Id view_id) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->DeleteView(view_id, ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::AddChild(Id child_id, Id parent_id) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->AddView(parent_id, child_id, ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::RemoveChild(Id child_id, Id parent_id) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->RemoveViewFromParent(child_id, ActionCompletedCallback());
 }
 
@@ -151,7 +150,7 @@ void ViewManagerClientImpl::Reorder(
     Id view_id,
     Id relative_view_id,
     OrderDirection direction) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->ReorderView(view_id, relative_view_id, direction,
                         ActionCompletedCallback());
 }
@@ -161,12 +160,12 @@ bool ViewManagerClientImpl::OwnsView(Id id) const {
 }
 
 void ViewManagerClientImpl::SetBounds(Id view_id, const Rect& bounds) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->SetViewBounds(view_id, bounds.Clone(), ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
-  DCHECK(connected_);
+  DCHECK(service_);
   if (surface_id.is_null())
     return;
   service_->SetViewSurfaceId(
@@ -181,7 +180,7 @@ void ViewManagerClientImpl::SetFocus(Id view_id) {
 }
 
 void ViewManagerClientImpl::SetVisible(Id view_id, bool visible) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->SetViewVisibility(view_id, visible, ActionCompletedCallback());
 }
 
@@ -189,7 +188,7 @@ void ViewManagerClientImpl::SetProperty(
     Id view_id,
     const std::string& name,
     const std::vector<uint8_t>& data) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->SetViewProperty(view_id,
                             String(name),
                             Array<uint8_t>::From(data),
@@ -204,7 +203,7 @@ void ViewManagerClientImpl::Embed(const String& url,
                                   Id view_id,
                                   InterfaceRequest<ServiceProvider> services,
                                   ServiceProviderPtr exposed_services) {
-  DCHECK(connected_);
+  DCHECK(service_);
   service_->Embed(url, view_id, services.Pass(), exposed_services.Pass(),
                   ActionCompletedCallback());
 }
@@ -220,11 +219,17 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
     views_.erase(it);
 }
 
+void ViewManagerClientImpl::SetViewManagerService(
+    ViewManagerServicePtr service) {
+  DCHECK(!service_);
+  DCHECK(service);
+  service_ = service.Pass();
+}
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManager implementation:
 
 Id ViewManagerClientImpl::CreateViewOnServer() {
-  DCHECK(connected_);
+  DCHECK(service_);
   const Id view_id = MakeTransportId(connection_id_, ++next_id_);
   service_->CreateView(view_id, ActionCompletedCallbackWithErrorCode());
   return view_id;
@@ -260,11 +265,14 @@ void ViewManagerClientImpl::OnEmbed(
     ConnectionSpecificId connection_id,
     const String& creator_url,
     ViewDataPtr root_data,
+    ViewManagerServicePtr view_manager_service,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
     ScopedMessagePipeHandle window_manager_pipe) {
-  DCHECK(!connected_);
-  connected_ = true;
+  if (view_manager_service) {
+    DCHECK(!service_);
+    service_ = view_manager_service.Pass();
+  }
   connection_id_ = connection_id;
   creator_url_ = String::From(creator_url);
 

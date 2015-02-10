@@ -9,3 +9,33 @@
 //
 
 package {{package}}
+
+import (
+	"fmt"
+
+	"mojo/public/go/bindings"
+	"mojo/public/go/system"
+)
+
+var _ = fmt.Errorf
+var _ = bindings.NewEncoder
+var _ = system.GetCore
+
+{% import "enum.tmpl" as enum_macros %}
+{% import "interface.tmpl" as interface_macros %}
+{% import "struct.tmpl" as struct_macros %}
+
+{#- Enum definitions #}
+{% for enum in enums %}
+{{enum_macros.define(enum)}}
+{%- endfor %}
+
+{#- Interface definitions #}
+{% for interface in interfaces %}
+{{interface_macros.define(interface)}}
+{%- endfor %}
+
+{#- Struct definitions #}
+{% for struct in structs %}
+{{struct_macros.define(struct)}}
+{%- endfor %}

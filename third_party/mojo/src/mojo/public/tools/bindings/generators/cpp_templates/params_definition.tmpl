@@ -29,5 +29,5 @@ class {{class_name}} {
     header_.num_fields = {{struct.packed.packed_fields|length}};
   }
 };
-static_assert(sizeof({{class_name}}) == {{struct.packed|struct_size}},
+static_assert(sizeof({{class_name}}) == {{struct.versions[-1].num_bytes}},
               "Bad sizeof({{class_name}})");

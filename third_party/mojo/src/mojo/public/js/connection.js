@@ -140,10 +140,13 @@ define("mojo/public/js/connection", [
   }
 
   // Return a handle for a message pipe that's connected to a stub for
-  // localInterface. The stub delegates to impl. Used by generated code for
-  // outgoing interface parameters: the caller specifies impl, and the generated
-  // code sends the handle returned by this function.
-  function bindImpl(impl, localInterface) {
+  // localInterface. Used by generated code for outgoing interface
+  // parameters: the caller  is given the generated stub via
+  // |stubCallback(stub)| and the generated code sends the handle
+  // returned by this function. The caller is responsible for managing
+  // the lifetime of the stub and for setting it's implementation
+  // delegate with: StubBindings(stub).delegate = myImpl;
+  function bindImpl(stubCallback, localInterface) {
     var messagePipe = core.createMessagePipe();
     if (messagePipe.result != core.RESULT_OK)
       throw new Error("createMessagePipe failed " + messagePipe.result);
@@ -152,8 +155,8 @@ define("mojo/public/js/connection", [
     var router = new Router(messagePipe.handle0);
     var connection = new BaseConnection(stub, undefined, router);
     StubBindings(stub).connection = connection;
-    if (impl)
-      StubBindings(stub).delegate = impl;
+    if (stubCallback)
+      stubCallback(stub);
 
     return messagePipe.handle1;
   }

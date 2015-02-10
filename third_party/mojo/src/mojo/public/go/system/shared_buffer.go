@@ -31,6 +31,9 @@ type sharedBuffer struct {
 }
 
 func (h *sharedBuffer) DuplicateBufferHandle(opts *DuplicateBufferHandleOptions) (MojoResult, SharedBufferHandle) {
+	h.core.mu.Lock()
+	defer h.core.mu.Unlock()
+
 	cParams := C.MallocDuplicateBufferHandleParams()
 	defer C.FreeDuplicateBufferHandleParams(cParams)
 	result := C.MojoDuplicateBufferHandle(h.mojoHandle.cValue(), opts.cValue(cParams.opts), cParams.duplicate)
@@ -38,6 +41,9 @@ func (h *sharedBuffer) DuplicateBufferHandle(opts *DuplicateBufferHandleOptions)
 }
 
 func (h *sharedBuffer) MapBuffer(offset uint64, numBytes int, flags MojoMapBufferFlags) (MojoResult, []byte) {
+	h.core.mu.Lock()
+	defer h.core.mu.Unlock()
+
 	cParams := C.MallocMapBufferParams()
 	defer C.FreeMapBufferParams(cParams)
 	result := C.MojoMapBuffer(h.mojoHandle.cValue(), C.uint64_t(offset), C.uint64_t(numBytes), cParams.buffer, flags.cValue())
@@ -48,5 +54,8 @@ func (h *sharedBuffer) MapBuffer(offset uint64, numBytes int, flags MojoMapBuffe
 }
 
 func (h *sharedBuffer) UnmapBuffer(buffer []byte) MojoResult {
+	h.core.mu.Lock()
+	defer h.core.mu.Unlock()
+
 	return MojoResult(C.MojoUnmapBuffer(unsafe.Pointer(&buffer[0])))
 }

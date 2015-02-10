@@ -26,6 +26,9 @@ typedef uint64_t ChannelId;
 namespace embedder {
 
 class PlatformSupport;
+// TODO(vtl): Remove these (see below).
+class MasterProcessDelegate;
+class SlaveProcessDelegate;
 
 // This is a type that's opaque to users of the embedder API (which only
 // gives/takes |ChannelInfo*|s). We make it a struct to make it
@@ -48,6 +51,12 @@ extern system::Core* g_core;
 // Instance of |ChannelManager| used by the channel management functions
 // (|mojo::embedder::CreateChannel()|, etc.).
 extern system::ChannelManager* g_channel_manager;
+
+// TODO(vtl): Remove these: We'll eventually really want to hold on to a
+// |MasterConnectionManager*| or a |SlaveConnectionManager*|. For now, keep
+// these around as globals to avoid triggering leak detectors.
+extern MasterProcessDelegate* g_master_process_delegate;
+extern SlaveProcessDelegate* g_slave_process_delegate;
 
 }  // namespace internal
 

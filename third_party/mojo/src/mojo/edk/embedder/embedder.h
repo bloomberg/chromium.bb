@@ -18,15 +18,42 @@ namespace mojo {
 namespace embedder {
 
 struct Configuration;
+class MasterProcessDelegate;
 class PlatformSupport;
+class SlaveProcessDelegate;
+
+// Returns the global configuration. In general, you should not need to change
+// the configuration, but if you do you must do it before calling |Init()|.
+MOJO_SYSTEM_IMPL_EXPORT Configuration* GetConfiguration();
 
 // Must be called first, or just after setting configuration parameters, to
 // initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
 
-// Returns the global configuration. In general, you should not need to change
-// the configuration, but if you do you must do it before calling |Init()|.
-MOJO_SYSTEM_IMPL_EXPORT Configuration* GetConfiguration();
+// Initializes a master process. To be called after |Init()|.
+// |master_process_delegate| should live forever (or until after
+// |mojo::embedder::test::Shutdown()|); its methods will be called using
+// |delegate_thread_task_runner|, which must be the task runner for the thread
+// calling |InitMaster()|. |io_thread_task_runner| should be the task runner for
+// some I/O thread; this should be the same as that provided to
+// |CreateChannel()| (or on which |CreateChannelOnIOThread()| is called).
+// TODO(vtl): Remove the |io_thread_task_runner| argument from
+// |CreateChannel()| (and eventually |CreateChannel()| altogether) and require
+// that either this or |InitSlave()| be called. Currently, |CreateChannel()| can
+// be used with different I/O threads, but this capability will be removed.
+MOJO_SYSTEM_IMPL_EXPORT void InitMaster(
+    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
+    MasterProcessDelegate* master_process_delegate,
+    scoped_refptr<base::TaskRunner> io_thread_task_runner);
+
+// Initializes a slave process. Similar to |InitMaster()| (see above).
+// |platform_handle| should be connected to the handle passed to |AddSlave()|.
+// TODO(vtl): |AddSlave()| doesn't exist yet.
+MOJO_SYSTEM_IMPL_EXPORT void InitSlave(
+    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
+    SlaveProcessDelegate* slave_process_delegate,
+    scoped_refptr<base::TaskRunner> io_thread_task_runner,
+    ScopedPlatformHandle platform_handle);
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
 // message pipes (etc.) can be multiplexed. It must "live" on some I/O thread.

@@ -36,9 +36,6 @@ class {{struct|name}}(object):
 class {{interface|name}}(object):
   __metaclass__ = _reflection.MojoInterfaceType
   DESCRIPTOR = {
-{%  if interface.client %}
-    'client': lambda: {{interface.qualified_client|fully_qualified_name}},
-{%  endif %}
     'fully_qualified_name': '{% if namespace %}{{namespace|replace(".","::")}}::{% endif %}{{interface|fully_qualified_name|replace(".","::")}}',
     'methods': [
 {%  for method in interface.methods %}

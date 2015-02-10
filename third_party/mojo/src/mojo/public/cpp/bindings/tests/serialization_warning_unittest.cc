@@ -46,6 +46,18 @@ class SerializationWarningTest : public testing::Test {
   template <typename T>
   void TestWarning(StructPtr<T> obj,
                    mojo::internal::ValidationError expected_warning) {
+    TestStructWarningImpl<T>(obj.Pass(), expected_warning);
+  }
+
+  template <typename T>
+  void TestWarning(InlinedStructPtr<T> obj,
+                   mojo::internal::ValidationError expected_warning) {
+    TestStructWarningImpl<T>(obj.Pass(), expected_warning);
+  }
+
+  template <typename T, typename TPtr>
+  void TestStructWarningImpl(TPtr obj,
+                             mojo::internal::ValidationError expected_warning) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::FixedBuffer buf(GetSerializedSize_(obj));

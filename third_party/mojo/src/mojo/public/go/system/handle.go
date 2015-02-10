@@ -61,6 +61,7 @@ type UntypedHandle interface {
 }
 
 type baseHandle struct {
+	core       *coreImpl
 	mojoHandle MojoHandle
 }
 
@@ -69,6 +70,9 @@ func (h *baseHandle) invalidate() {
 }
 
 func (h *baseHandle) Close() MojoResult {
+	h.core.mu.Lock()
+	defer h.core.mu.Unlock()
+
 	mojoHandle := h.mojoHandle
 	h.invalidate()
 	return MojoResult(C.MojoClose(mojoHandle.cValue()))
