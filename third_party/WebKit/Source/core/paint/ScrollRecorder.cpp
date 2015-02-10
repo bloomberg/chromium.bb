@@ -22,8 +22,8 @@ ScrollRecorder::ScrollRecorder(GraphicsContext* context, DisplayItemClient clien
         ASSERT(m_context->displayItemList());
         m_context->displayItemList()->add(BeginScrollDisplayItem::create(m_client, m_beginItemType, currentOffset));
     } else {
-        BeginScrollDisplayItem clipDisplayItem(m_client, m_beginItemType, currentOffset);
-        clipDisplayItem.replay(m_context);
+        BeginScrollDisplayItem scrollDisplayItem(m_client, m_beginItemType, currentOffset);
+        scrollDisplayItem.replay(m_context);
     }
 }
 
