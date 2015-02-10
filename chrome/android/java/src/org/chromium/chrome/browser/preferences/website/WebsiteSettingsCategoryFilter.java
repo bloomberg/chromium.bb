@@ -17,7 +17,7 @@ public class WebsiteSettingsCategoryFilter {
     private static final String FILTER_DEVICE_LOCATION = "device_location";
     private static final String FILTER_USE_STORAGE = "use_storage";
     private static final String FILTER_POPUPS = "popups";
-    private static final String FILTER_PUSH_NOTIFICATIONS = "push_notifications";
+    public static final String FILTER_PUSH_NOTIFICATIONS = "push_notifications";
 
     public WebsiteSettingsCategoryFilter() {
     }
