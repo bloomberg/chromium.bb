@@ -159,6 +159,16 @@ struct NET_EXPORT SSLConfig {
   NextProtoVector next_protos;
 
   scoped_refptr<X509Certificate> client_cert;
+
+  // Information about how to proceed with fastradio padding.
+  // |fastradio_padding_enabled| determines if the feature is enabled globally.
+  // |fastradio_padding_eligible| determines if the endpoint associated with
+  // this config should use it.
+  // |fastradio_padding_eligible| can be true when |fastradio_padding_enabled|
+  // is false: in this case, fastradio padding would not be enabled, but
+  // metrics can be collected for experiments.
+  bool fastradio_padding_enabled;
+  bool fastradio_padding_eligible;
 };
 
 }  // namespace net

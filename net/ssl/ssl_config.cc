@@ -29,7 +29,9 @@ SSLConfig::SSLConfig()
       send_client_cert(false),
       verify_ev_cert(false),
       version_fallback(false),
-      cert_io_enabled(true) {
+      cert_io_enabled(true),
+      fastradio_padding_enabled(false),
+      fastradio_padding_eligible(false) {
 }
 
 SSLConfig::~SSLConfig() {}

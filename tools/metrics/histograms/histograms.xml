@@ -19455,6 +19455,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_Connection_Error_FastRadioPadding"
+    enum="NetErrorCodes">
+  <owner>jeremyim@chromium.org</owner>
+  <summary>
+    Counts of specific error codes returned when opening an SSL connection for
+    an endpoint which is eligible for fastradio padding.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSL_Connection_Latency" units="milliseconds">
   <obsolete>
     Replaced by Net.SSL_Connection_Latency_2 on 2014-10-21.

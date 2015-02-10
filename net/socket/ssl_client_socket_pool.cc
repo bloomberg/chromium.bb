@@ -552,6 +552,12 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     }
   }
 
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error", std::abs(result));
+  if (params_->ssl_config().fastradio_padding_eligible) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error_FastRadioPadding",
+                                std::abs(result));
+  }
+
   if (result == OK || IsCertificateError(result)) {
     SetSocket(ssl_socket_.Pass());
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
