@@ -169,6 +169,12 @@ void ChromeSigninClient::OnSignedOut() {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+
+  // If sign out occurs because Sync setup was in progress and the Profile got
+  // deleted, then the profile's no longer in the ProfileInfoCache.
+  if (index == std::string::npos)
+    return;
+
   cache.SetLocalAuthCredentialsOfProfileAtIndex(index, std::string());
   cache.SetUserNameOfProfileAtIndex(index, base::string16());
   cache.SetProfileSigninRequiredAtIndex(index, false);
