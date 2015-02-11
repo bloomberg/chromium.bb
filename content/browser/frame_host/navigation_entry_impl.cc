@@ -125,6 +125,7 @@ const base::string16& NavigationEntryImpl::GetTitle() const {
 }
 
 void NavigationEntryImpl::SetPageState(const PageState& state) {
+  CHECK(state.ToEncodedData().empty() || state.IsValid());
   page_state_ = state;
 }
 
