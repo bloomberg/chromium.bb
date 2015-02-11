@@ -29,11 +29,6 @@ class WebContentDecryptionModuleSessionImpl;
 class MEDIA_EXPORT WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
-  // TODO(jrummell): Remove once WebContentDecryptionModuleResult always passed.
-  static WebContentDecryptionModuleImpl* Create(
-      CdmFactory* cdm_factory,
-      const blink::WebSecurityOrigin& security_origin,
-      const base::string16& key_system);
   static void Create(CdmFactory* cdm_factory,
                      const blink::WebSecurityOrigin& security_origin,
                      const base::string16& key_system,
@@ -43,9 +38,6 @@ class MEDIA_EXPORT WebContentDecryptionModuleImpl
 
   // blink::WebContentDecryptionModule implementation.
   virtual blink::WebContentDecryptionModuleSession* createSession();
-  // TODO(jrummell): Remove this method once blink updated.
-  virtual blink::WebContentDecryptionModuleSession* createSession(
-      blink::WebContentDecryptionModuleSession::Client* client);
 
   virtual void setServerCertificate(
       const uint8* server_certificate,

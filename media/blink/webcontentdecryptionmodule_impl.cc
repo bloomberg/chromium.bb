@@ -22,42 +22,6 @@
 
 namespace media {
 
-// TODO(jrummell): Remove once WebContentDecryptionModuleResult always passed.
-WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
-    CdmFactory* cdm_factory,
-    const blink::WebSecurityOrigin& security_origin,
-    const base::string16& key_system) {
-  DCHECK(!security_origin.isNull());
-  DCHECK(!key_system.empty());
-
-  // TODO(ddorwin): Guard against this in supported types check and remove this.
-  // Chromium only supports ASCII key systems.
-  if (!base::IsStringASCII(key_system)) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  std::string key_system_ascii = base::UTF16ToASCII(key_system);
-  if (!IsConcreteSupportedKeySystem(key_system_ascii))
-    return NULL;
-
-  // If unique security origin, don't try to create the CDM.
-  if (security_origin.isUnique() || security_origin.toString() == "null") {
-    DLOG(ERROR) << "CDM use not allowed for unique security origin.";
-    return NULL;
-  }
-
-  scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
-  GURL security_origin_as_gurl(security_origin.toString());
-
-  if (!adapter->Initialize(
-          cdm_factory, key_system_ascii, security_origin_as_gurl)) {
-    return NULL;
-  }
-
-  return new WebContentDecryptionModuleImpl(adapter);
-}
-
 void WebContentDecryptionModuleImpl::Create(
     media::CdmFactory* cdm_factory,
     const blink::WebSecurityOrigin& security_origin,
@@ -123,14 +87,6 @@ WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() {
 blink::WebContentDecryptionModuleSession*
 WebContentDecryptionModuleImpl::createSession() {
   return adapter_->CreateSession();
-}
-
-blink::WebContentDecryptionModuleSession*
-WebContentDecryptionModuleImpl::createSession(
-    blink::WebContentDecryptionModuleSession::Client* client) {
-  WebContentDecryptionModuleSessionImpl* session = adapter_->CreateSession();
-  session->setClientInterface(client);
-  return session;
 }
 
 void WebContentDecryptionModuleImpl::setServerCertificate(
