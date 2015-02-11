@@ -6740,7 +6740,7 @@ protected:
         registerMockedHttpURLLoad("subframe-c.html");
         registerMockedHttpURLLoad("subframe-hello.html");
 
-        m_webViewHelper.initializeAndLoad(m_baseURL + "frame-a-b-c.html");
+        m_webViewHelper.initializeAndLoad(m_baseURL + "frame-a-b-c.html", true);
     }
 
     void reset() { m_webViewHelper.reset(); }
@@ -6953,6 +6953,41 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterRemoteToLocalSwap)
     localFrame->initializeToReplaceRemoteFrame(remoteFrame);
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(WebStandardCommit, client.historyCommitType());
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
+
+class RemoteNavigationClient : public FrameTestHelpers::TestWebRemoteFrameClient {
+public:
+    void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) override
+    {
+        m_lastRequest = request;
+    }
+
+    const WebURLRequest& lastRequest() const { return m_lastRequest; }
+
+private:
+    WebURLRequest m_lastRequest;
+};
+
+TEST_F(WebFrameSwapTest, NavigateRemoteFrameViaLocation)
+{
+    RemoteNavigationClient client;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(&client);
+    WebFrame* targetFrame = mainFrame()->firstChild();
+    ASSERT_TRUE(targetFrame);
+    targetFrame->swap(remoteFrame);
+    ASSERT_TRUE(mainFrame()->firstChild());
+    ASSERT_EQ(mainFrame()->firstChild(), remoteFrame);
+
+    remoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://127.0.0.1"));
+    mainFrame()->executeScript(WebScriptSource(
+        "document.getElementsByTagName('iframe')[0].contentWindow.location = 'data:text/html,hi'"));
+    ASSERT_FALSE(client.lastRequest().isNull());
+    EXPECT_EQ(WebURL(toKURL("data:text/html,hi")), client.lastRequest().url());
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.

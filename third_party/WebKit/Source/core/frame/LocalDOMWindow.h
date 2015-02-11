@@ -91,7 +91,6 @@ public:
     BarProp* statusbar() const override;
     BarProp* toolbar() const override;
     Navigator* navigator() const override;
-    Location* location() const override;
     bool offscreenBuffering() const override;
     int outerHeight() const override;
     int outerWidth() const override;
@@ -289,7 +288,6 @@ private:
     mutable RefPtrWillBeMember<BarProp> m_toolbar;
     mutable RefPtrWillBeMember<Console> m_console;
     mutable RefPtrWillBeMember<Navigator> m_navigator;
-    mutable RefPtrWillBeMember<Location> m_location;
     mutable RefPtrWillBeMember<StyleMedia> m_media;
 
     String m_status;

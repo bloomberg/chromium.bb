@@ -643,12 +643,13 @@ void LocalDOMWindow::reset()
     m_console = nullptr;
     m_navigator = nullptr;
     m_performance = nullptr;
-    m_location = nullptr;
     m_media = nullptr;
     m_applicationCache = nullptr;
 #if ENABLE(ASSERT)
     m_hasBeenReset = true;
 #endif
+
+    resetLocation();
 
     LocalDOMWindow::notifyContextDestroyed();
 }
@@ -781,13 +782,6 @@ Performance* LocalDOMWindow::performance() const
     if (!m_performance)
         m_performance = Performance::create(frame());
     return m_performance.get();
-}
-
-Location* LocalDOMWindow::location() const
-{
-    if (!m_location)
-        m_location = Location::create(frame());
-    return m_location.get();
 }
 
 void LocalDOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, LocalDOMWindow* source, ExceptionState& exceptionState)
@@ -1832,7 +1826,6 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_toolbar);
     visitor->trace(m_console);
     visitor->trace(m_navigator);
-    visitor->trace(m_location);
     visitor->trace(m_media);
     visitor->trace(m_applicationCache);
     visitor->trace(m_performance);

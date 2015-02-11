@@ -40,17 +40,23 @@ namespace blink {
 
 class LocalDOMWindow;
 class ExceptionState;
-class LocalFrame;
+class Frame;
 class KURL;
 
-class Location final : public RefCountedWillBeGarbageCollected<Location>, public ScriptWrappable, public DOMWindowProperty {
+// This class corresponds to the JS Location API, which is the only DOM API besides Window that is operable
+// in a RemoteFrame. Rather than making DOMWindowProperty support RemoteFrames and generating a lot
+// code churn, Location is implemented as a one-off with some custom lifetime management code. Namely,
+// it needs a manual call to reset() from DOMWindow::reset() to ensure it doesn't retain a stale Frame pointer.
+class Location final : public RefCountedWillBeGarbageCollected<Location>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Location);
 public:
-    static PassRefPtrWillBeRawPtr<Location> create(LocalFrame* frame)
+    static PassRefPtrWillBeRawPtr<Location> create(Frame* frame)
     {
         return adoptRefWillBeNoop(new Location(frame));
     }
+
+    Frame* frame() const { return m_frame.get(); }
+    void reset() { m_frame = nullptr; }
 
     void setHref(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
     String href() const;
@@ -77,15 +83,17 @@ public:
 
     PassRefPtrWillBeRawPtr<DOMStringList> ancestorOrigins() const;
 
-    virtual void trace(Visitor*) override;
+    virtual void trace(Visitor*);
 
 private:
-    explicit Location(LocalFrame*);
+    explicit Location(Frame*);
 
     enum class SetLocation { Normal, ReplaceThisFrame };
     void setLocation(const String&, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, SetLocation = SetLocation::Normal);
 
     const KURL& url() const;
+
+    RawPtrWillBeMember<Frame> m_frame;
 };
 
 } // namespace blink

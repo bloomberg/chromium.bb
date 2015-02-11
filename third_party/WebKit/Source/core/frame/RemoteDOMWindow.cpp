@@ -87,12 +87,6 @@ Navigator* RemoteDOMWindow::navigator() const
     return nullptr;
 }
 
-Location* RemoteDOMWindow::location() const
-{
-    // FIXME: Implement.
-    return nullptr;
-}
-
 bool RemoteDOMWindow::offscreenBuffering() const
 {
     ASSERT_NOT_REACHED();

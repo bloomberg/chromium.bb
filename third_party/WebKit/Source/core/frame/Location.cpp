@@ -42,21 +42,19 @@
 
 namespace blink {
 
-Location::Location(LocalFrame* frame)
-    : DOMWindowProperty(frame)
+Location::Location(Frame* frame)
+    : m_frame(frame)
 {
 }
 
 void Location::trace(Visitor* visitor)
 {
-    DOMWindowProperty::trace(visitor);
+    visitor->trace(m_frame);
 }
 
 inline const KURL& Location::url() const
 {
-    ASSERT(m_frame);
-
-    const KURL& url = m_frame->document()->url();
+    const KURL& url = toLocalFrame(m_frame)->document()->url();
     if (!url.isValid())
         return blankURL(); // Use "about:blank" while the page is still loading (before we have a frame).
 
@@ -149,7 +147,7 @@ void Location::setProtocol(LocalDOMWindow* callingWindow, LocalDOMWindow* entere
 {
     if (!m_frame)
         return;
-    KURL url = m_frame->document()->url();
+    KURL url = toLocalFrame(m_frame)->document()->url();
     if (!url.setProtocol(protocol)) {
         exceptionState.throwDOMException(SyntaxError, "'" + protocol + "' is an invalid protocol.");
         return;
@@ -161,7 +159,7 @@ void Location::setHost(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWin
 {
     if (!m_frame)
         return;
-    KURL url = m_frame->document()->url();
+    KURL url = toLocalFrame(m_frame)->document()->url();
     url.setHostAndPort(host);
     setLocation(url.string(), callingWindow, enteredWindow);
 }
@@ -170,7 +168,7 @@ void Location::setHostname(LocalDOMWindow* callingWindow, LocalDOMWindow* entere
 {
     if (!m_frame)
         return;
-    KURL url = m_frame->document()->url();
+    KURL url = toLocalFrame(m_frame)->document()->url();
     url.setHost(hostname);
     setLocation(url.string(), callingWindow, enteredWindow);
 }
@@ -179,7 +177,7 @@ void Location::setPort(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWin
 {
     if (!m_frame)
         return;
-    KURL url = m_frame->document()->url();
+    KURL url = toLocalFrame(m_frame)->document()->url();
     url.setPort(portString);
     setLocation(url.string(), callingWindow, enteredWindow);
 }
@@ -188,7 +186,7 @@ void Location::setPathname(LocalDOMWindow* callingWindow, LocalDOMWindow* entere
 {
     if (!m_frame)
         return;
-    KURL url = m_frame->document()->url();
+    KURL url = toLocalFrame(m_frame)->document()->url();
     url.setPath(pathname);
     setLocation(url.string(), callingWindow, enteredWindow);
 }
@@ -197,7 +195,7 @@ void Location::setSearch(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredW
 {
     if (!m_frame)
         return;
-    KURL url = m_frame->document()->url();
+    KURL url = toLocalFrame(m_frame)->document()->url();
     url.setQuery(search);
     setLocation(url.string(), callingWindow, enteredWindow);
 }
@@ -206,7 +204,7 @@ void Location::setHash(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWin
 {
     if (!m_frame)
         return;
-    KURL url = m_frame->document()->url();
+    KURL url = toLocalFrame(m_frame)->document()->url();
     String oldFragmentIdentifier = url.fragmentIdentifier();
     String newFragmentIdentifier = hash;
     if (hash[0] == '#')
@@ -238,7 +236,7 @@ void Location::reload(LocalDOMWindow* callingWindow)
 {
     if (!m_frame)
         return;
-    if (protocolIsJavaScript(m_frame->document()->url()))
+    if (protocolIsJavaScript(toLocalFrame(m_frame)->document()->url()))
         return;
     m_frame->reload(NormalReload, ClientRedirect);
 }

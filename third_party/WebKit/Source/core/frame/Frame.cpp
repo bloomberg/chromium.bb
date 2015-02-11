@@ -75,6 +75,7 @@ void Frame::trace(Visitor* visitor)
 void Frame::detach()
 {
     ASSERT(m_client);
+    domWindow()->resetLocation();
     disconnectOwnerElement();
     // After this, we must no longer talk to the client since this clears
     // its owning reference back to our owning LocalFrame.

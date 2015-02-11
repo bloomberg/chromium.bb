@@ -7,6 +7,7 @@
 
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
+#include "core/frame/Location.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollableArea.h"
 
@@ -26,7 +27,6 @@ class Element;
 class Frame;
 class History;
 class LocalDOMWindow;
-class Location;
 class MediaQueryList;
 class Navigator;
 class Performance;
@@ -43,11 +43,10 @@ class DOMWindow : public EventTargetWithInlineData, public RefCountedWillBeNoBas
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(DOMWindow);
 public:
+    virtual ~DOMWindow();
+
     // RefCountedWillBeGarbageCollectedFinalized overrides:
-    void trace(Visitor* visitor) override
-    {
-        EventTargetWithInlineData::trace(visitor);
-    }
+    void trace(Visitor*) override;
 
     virtual bool isLocalDOMWindow() const { return false; }
     virtual bool isRemoteDOMWindow() const { return false; }
@@ -65,8 +64,7 @@ public:
     virtual BarProp* toolbar() const = 0;
     virtual Navigator* navigator() const = 0;
     Navigator* clientInformation() const { return navigator(); }
-    // FIXME: Temporary, until window.location is implemented for remote frames.
-    virtual Location* location() const = 0;
+    Location* location() const;
 
     virtual bool offscreenBuffering() const = 0;
 
@@ -198,6 +196,8 @@ public:
     // See https://bugs.webkit.org/show_bug.cgi?id=62054
     bool isCurrentlyDisplayedInFrame() const;
 
+    void resetLocation();
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
@@ -215,6 +215,9 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
+
+private:
+    mutable RefPtrWillBeMember<Location> m_location;
 };
 
 } // namespace blink

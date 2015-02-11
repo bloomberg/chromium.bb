@@ -8,10 +8,22 @@
 #include "core/dom/SecurityContext.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameClient.h"
+#include "core/frame/Location.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
+
+DOMWindow::~DOMWindow()
+{
+}
+
+Location* DOMWindow::location() const
+{
+    if (!m_location)
+        m_location = Location::create(frame());
+    return m_location.get();
+}
 
 bool DOMWindow::closed() const
 {
@@ -90,6 +102,22 @@ bool DOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const String& u
             return false;
     }
     return true;
+}
+
+void DOMWindow::resetLocation()
+{
+    // Location needs to be reset manually because it doesn't inherit from DOMWindowProperty.
+    // DOMWindowProperty is local-only, and Location needs to support remote windows, too.
+    if (m_location) {
+        m_location->reset();
+        m_location = nullptr;
+    }
+}
+
+void DOMWindow::trace(Visitor* visitor)
+{
+    visitor->trace(m_location);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace blink
