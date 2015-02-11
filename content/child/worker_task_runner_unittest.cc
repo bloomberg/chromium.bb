@@ -5,6 +5,7 @@
 #include "content/child/worker_task_runner.h"
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,6 +20,9 @@ class WorkerTaskRunnerTest : public testing::Test {
     task_runner_.OnWorkerRunLoopStopped(blink::WebWorkerRunLoop());
   }
   WorkerTaskRunner task_runner_;
+
+ private:
+  base::MessageLoop message_loop_;
 };
 
 class MockObserver : public WorkerTaskRunner::Observer {

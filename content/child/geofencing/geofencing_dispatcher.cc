@@ -10,7 +10,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_thread_task_runner.h"
 #include "content/common/geofencing_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"

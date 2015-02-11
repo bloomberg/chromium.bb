@@ -8,11 +8,16 @@
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebWorkerRunLoop.h"
+
+namespace base {
+class TaskRunner;
+}
 
 namespace content {
 
@@ -39,18 +44,28 @@ class CONTENT_EXPORT WorkerTaskRunner {
   void OnWorkerRunLoopStarted(const blink::WebWorkerRunLoop& loop);
   void OnWorkerRunLoopStopped(const blink::WebWorkerRunLoop& loop);
 
+  base::TaskRunner* GetTaskRunnerFor(int worker_id);
+
  private:
   friend class WorkerTaskRunnerTest;
 
-  typedef std::map<base::PlatformThreadId, blink::WebWorkerRunLoop> IDToLoopMap;
+  using IDToTaskRunnerMap = std::map<base::PlatformThreadId, base::TaskRunner*>;
 
   ~WorkerTaskRunner();
+
+  // It is possible for an IPC message to arrive for a worker thread that has
+  // already gone away. In such cases, it is still necessary to provide a
+  // task-runner for that particular thread, because otherwise the message will
+  // end up being handled as per usual in the main-thread, causing incorrect
+  // results. |task_runner_for_dead_worker_| is used to handle such messages,
+  // which silently discards all the tasks it receives.
+  scoped_refptr<base::TaskRunner> task_runner_for_dead_worker_;
 
   struct ThreadLocalState;
   base::ThreadLocalPointer<ThreadLocalState> current_tls_;
 
-  IDToLoopMap loop_map_;
-  base::Lock loop_map_lock_;
+  IDToTaskRunnerMap task_runner_map_;
+  base::Lock task_runner_map_lock_;
 };
 
 }  // namespace content

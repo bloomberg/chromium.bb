@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_thread_task_runner.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "third_party/WebKit/public/platform/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/WebBluetoothError.h"
