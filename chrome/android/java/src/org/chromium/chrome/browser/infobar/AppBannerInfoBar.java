@@ -69,8 +69,8 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
         mIconView = layout.getIcon();
 
         Resources res = getContext().getResources();
-        int iconSize = res.getDimensionPixelSize(R.dimen.app_banner_infobar_icon_size);
-        int iconSpacing = res.getDimensionPixelSize(R.dimen.app_banner_infobar_icon_spacing);
+        int iconSize = res.getDimensionPixelSize(R.dimen.app_banner_icon_size);
+        int iconSpacing = res.getDimensionPixelSize(R.dimen.app_banner_icon_spacing);
         layout.setIconSizeAndSpacing(iconSize, iconSize, iconSpacing);
 
         mTitleView = (ViewGroup) LayoutInflater.from(getContext()).inflate(

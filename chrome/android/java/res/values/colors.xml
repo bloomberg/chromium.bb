@@ -28,11 +28,8 @@
     <color name="accessibility_tab_switcher_list_item">#252525</color>
     <color name="accessibility_close_undo_text">#3adaff</color>
 
-    <!--  App banner colors -->
+    <!-- App banner colors -->
     <color name="app_banner_install_button_bg">#689f38</color>
-    <color name="app_banner_install_button_fg">#ffffff</color>
-    <color name="app_banner_open_button_fg">#777777</color>
-    <color name="app_banner_card_highlight">#33999999</color>
 
     <!--  Website Settings Popup colors -->
     <color name="website_settings_popup_button_text">#444444</color>
