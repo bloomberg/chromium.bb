@@ -531,7 +531,7 @@ void V4L2ImageProcessor::Dequeue() {
     memset(&dqbuf, 0, sizeof(dqbuf));
     memset(&planes, 0, sizeof(planes));
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    dqbuf.memory = V4L2_MEMORY_DMABUF;
+    dqbuf.memory = V4L2_MEMORY_MMAP;
     dqbuf.m.planes = planes;
     dqbuf.length = output_planes_count_;
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
