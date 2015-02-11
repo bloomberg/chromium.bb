@@ -77,7 +77,14 @@ MotionEventWeb::Action MotionEventWeb::GetAction() const {
   return cached_action_;
 }
 
-int MotionEventWeb::GetActionIndex() const { return cached_action_index_; }
+int MotionEventWeb::GetActionIndex() const {
+  DCHECK(cached_action_ == ACTION_POINTER_UP ||
+         cached_action_ == ACTION_POINTER_DOWN)
+      << "Invalid action for GetActionIndex(): " << cached_action_;
+  DCHECK_GE(cached_action_index_, 0);
+  DCHECK_LT(cached_action_index_, static_cast<int>(event_.touchesLength));
+  return cached_action_index_;
+}
 
 size_t MotionEventWeb::GetPointerCount() const { return event_.touchesLength; }
 
