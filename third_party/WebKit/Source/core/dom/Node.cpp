@@ -919,7 +919,11 @@ void Node::detach(const AttachContext& context)
     DocumentLifecycle::DetachScope willDetach(document().lifecycle());
 
 #if ENABLE(ASSERT)
-    ASSERT(!detachingNode);
+    // The detaching might trigger destruction of a popup menu window,
+    // with ensuing detachment of its Nodes. In a separate document, so
+    // don't assert for these, but do set detachingNode to the most recent
+    // Node being detached.
+    ASSERT(!detachingNode || detachingNode->document() != document());
     detachingNode = this;
 #endif
 

@@ -234,11 +234,12 @@ void PopupMenuImpl::setValue(const String& value)
 
 void PopupMenuImpl::didClosePopup()
 {
-    if (m_indexToSetOnClose >= 0)
+    if (m_client && m_indexToSetOnClose >= 0)
         m_client->valueChanged(m_indexToSetOnClose);
     m_indexToSetOnClose = -1;
     m_popup = nullptr;
-    m_client->popupDidHide();
+    if (m_client)
+        m_client->popupDidHide();
 }
 
 Element& PopupMenuImpl::ownerElement()
