@@ -109,7 +109,7 @@
       ],
       'actions': [
         {
-          'action_name': 'repack_cast_shell_pack',
+          'action_name': 'repack_cast_shell_pak',
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
