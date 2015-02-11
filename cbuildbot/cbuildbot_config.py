@@ -2070,7 +2070,6 @@ internal_paladin.add_config('wolf-tot-paladin',
   boards=['wolf'],
   do_not_apply_cq_patches=True,
   prebuilts=False,
-  hw_tests=HWTestConfig.SharedPoolCQ(suite_min_duts=20),
 )
 
 _paladin_boards = _all_boards
