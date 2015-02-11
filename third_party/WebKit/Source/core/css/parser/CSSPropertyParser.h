@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class BorderImageParseContext;
 class CSSBorderImageSliceValue;
 class CSSBasicShape;
 class CSSBasicShapeInset;
@@ -352,6 +353,12 @@ private:
     int colorIntFromValue(CSSParserValue*);
     bool isCalculation(CSSParserValue*);
 
+    bool buildBorderImageParseContext(CSSPropertyID, BorderImageParseContext&);
+
+    bool parseDeprecatedGradientColorStop(CSSParserValue*, CSSGradientColorStop&);
+
+    void commitBorderImageProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
+
 private:
     // Inputs:
     CSSParserValueList* m_valueList;
@@ -367,16 +374,6 @@ private:
     CSSPropertyID m_currentShorthand;
     bool m_implicitShorthand;
     RefPtrWillBeMember<CSSCalcValue> m_parsedCalculation;
-
-    // FIXME: There is probably a small set of APIs we could expose for these
-    // classes w/o needing to make them friends.
-    friend class ShadowParseContext;
-    friend class BorderImageParseContext;
-    friend class BorderImageSliceParseContext;
-    friend class BorderImageQuadParseContext;
-    friend class TransformOperationInfo;
-    friend bool parseDeprecatedGradientColorStop(CSSPropertyParser*, CSSParserValue*, CSSGradientColorStop&);
-    friend PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGradientColorOrKeyword(CSSPropertyParser*, CSSParserValue*);
 };
 
 CSSPropertyID cssPropertyID(const CSSParserString&);

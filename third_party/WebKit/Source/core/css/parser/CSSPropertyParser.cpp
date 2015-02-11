@@ -5417,9 +5417,8 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
 class ShadowParseContext {
     STACK_ALLOCATED();
 public:
-    ShadowParseContext(CSSPropertyID prop, CSSPropertyParser* parser)
+    ShadowParseContext(CSSPropertyID prop)
         : property(prop)
-        , m_parser(parser)
         , allowX(true)
         , allowY(false)
         , allowBlur(false)
@@ -5460,30 +5459,28 @@ public:
         allowStyle = property == CSSPropertyWebkitBoxShadow || property == CSSPropertyBoxShadow;
     }
 
-    void commitLength(CSSParserValue* v)
+    void commitLength(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val)
     {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> val = m_parser->createPrimitiveNumericValue(v);
-
         if (allowX) {
-            x = val.release();
+            x = val;
             allowX = false;
             allowY = true;
             allowColor = false;
             allowStyle = false;
             allowBreak = false;
         } else if (allowY) {
-            y = val.release();
+            y = val;
             allowY = false;
             allowBlur = true;
             allowColor = true;
             allowStyle = property == CSSPropertyWebkitBoxShadow || property == CSSPropertyBoxShadow;
             allowBreak = true;
         } else if (allowBlur) {
-            blur = val.release();
+            blur = val;
             allowBlur = false;
             allowSpread = property == CSSPropertyWebkitBoxShadow || property == CSSPropertyBoxShadow;
         } else if (allowSpread) {
-            spread = val.release();
+            spread = val;
             allowSpread = false;
         }
     }
@@ -5516,7 +5513,6 @@ public:
     }
 
     CSSPropertyID property;
-    CSSPropertyParser* m_parser;
 
     RefPtrWillBeMember<CSSValueList> values;
     RefPtrWillBeMember<CSSPrimitiveValue> x;
@@ -5537,7 +5533,7 @@ public:
 
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserValueList* valueList, CSSPropertyID propId)
 {
-    ShadowParseContext context(propId, this);
+    ShadowParseContext context(propId);
     for (CSSParserValue* val = valueList->current(); val; val = valueList->next()) {
         // Check for a comma break first.
         if (val->unit == CSSParserValue::Operator) {
@@ -5558,7 +5554,8 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserVal
                 return nullptr;
 
             // A length is allowed here.  Construct the value and add it.
-            context.commitLength(val);
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(val);
+            context.commitLength(length.release());
         } else if (val->id == CSSValueInset) {
             if (!context.allowStyle)
                 return nullptr;
@@ -5806,34 +5803,6 @@ public:
         return createBorderImageValue(m_image, m_imageSlice.get(), m_borderWidth.get(), m_outset.get(), m_repeat.get());
     }
 
-    void commitMaskBoxImage(CSSPropertyParser* parser, bool important)
-    {
-        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSource, parser, m_image, important);
-        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSlice, parser, m_imageSlice.get(), important);
-        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageWidth, parser, m_borderWidth.get(), important);
-        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageOutset, parser, m_outset.get(), important);
-        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageRepeat, parser, m_repeat.get(), important);
-    }
-
-    void commitBorderImage(CSSPropertyParser* parser, bool important)
-    {
-        commitBorderImageProperty(CSSPropertyBorderImageSource, parser, m_image, important);
-        commitBorderImageProperty(CSSPropertyBorderImageSlice, parser, m_imageSlice.get(), important);
-        commitBorderImageProperty(CSSPropertyBorderImageWidth, parser, m_borderWidth.get(), important);
-        commitBorderImageProperty(CSSPropertyBorderImageOutset, parser, m_outset.get(), important);
-        commitBorderImageProperty(CSSPropertyBorderImageRepeat, parser, m_repeat, important);
-    }
-
-    void commitBorderImageProperty(CSSPropertyID propId, CSSPropertyParser* parser, PassRefPtrWillBeRawPtr<CSSValue> value, bool important)
-    {
-        if (value)
-            parser->addProperty(propId, value, important);
-        else
-            parser->addProperty(propId, cssValuePool().createImplicitInitialValue(), important, true);
-    }
-
-    static bool buildFromParser(CSSPropertyParser&, CSSPropertyID, BorderImageParseContext&);
-
     bool m_canAdvance;
 
     bool m_allowCommit;
@@ -5853,10 +5822,10 @@ public:
     RefPtrWillBeMember<CSSValue> m_repeat;
 };
 
-bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSPropertyID propId, BorderImageParseContext& context)
+bool CSSPropertyParser::buildBorderImageParseContext(CSSPropertyID propId, BorderImageParseContext& context)
 {
-    CSSPropertyParser::ShorthandScope scope(&parser, propId);
-    while (CSSParserValue* val = parser.m_valueList->current()) {
+    CSSPropertyParser::ShorthandScope scope(this, propId);
+    while (CSSParserValue* val = m_valueList->current()) {
         context.setCanAdvance(false);
 
         if (!context.canAdvance() && context.allowForwardSlashOperator() && isForwardSlashOperator(val))
@@ -5864,15 +5833,15 @@ bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSProp
 
         if (!context.canAdvance() && context.allowImage()) {
             if (val->unit == CSSPrimitiveValue::CSS_URI) {
-                context.commitImage(parser.createCSSImageValueWithReferrer(val->string, parser.m_context.completeURL(val->string)));
+                context.commitImage(createCSSImageValueWithReferrer(val->string, m_context.completeURL(val->string)));
             } else if (isGeneratedImageValue(val)) {
                 RefPtrWillBeRawPtr<CSSValue> value = nullptr;
-                if (parser.parseGeneratedImage(parser.m_valueList, value))
+                if (parseGeneratedImage(m_valueList, value))
                     context.commitImage(value.release());
                 else
                     return false;
             } else if (val->unit == CSSParserValue::Function && val->function->id == CSSValueWebkitImageSet) {
-                RefPtrWillBeRawPtr<CSSValue> value = parser.parseImageSet(parser.m_valueList);
+                RefPtrWillBeRawPtr<CSSValue> value = parseImageSet(m_valueList);
                 if (value)
                     context.commitImage(value.release());
                 else
@@ -5883,47 +5852,63 @@ bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSProp
 
         if (!context.canAdvance() && context.allowImageSlice()) {
             RefPtrWillBeRawPtr<CSSBorderImageSliceValue> imageSlice = nullptr;
-            if (parser.parseBorderImageSlice(propId, imageSlice))
+            if (parseBorderImageSlice(propId, imageSlice))
                 context.commitImageSlice(imageSlice.release());
         }
 
         if (!context.canAdvance() && context.allowRepeat()) {
             RefPtrWillBeRawPtr<CSSValue> repeat = nullptr;
-            if (parser.parseBorderImageRepeat(repeat))
+            if (parseBorderImageRepeat(repeat))
                 context.commitRepeat(repeat.release());
         }
 
         if (!context.canAdvance() && context.allowWidth()) {
             RefPtrWillBeRawPtr<CSSPrimitiveValue> borderWidth = nullptr;
-            if (parser.parseBorderImageWidth(borderWidth))
+            if (parseBorderImageWidth(borderWidth))
                 context.commitBorderWidth(borderWidth.release());
         }
 
         if (!context.canAdvance() && context.requireOutset()) {
             RefPtrWillBeRawPtr<CSSPrimitiveValue> borderOutset = nullptr;
-            if (parser.parseBorderImageOutset(borderOutset))
+            if (parseBorderImageOutset(borderOutset))
                 context.commitBorderOutset(borderOutset.release());
         }
 
         if (!context.canAdvance())
             return false;
 
-        parser.m_valueList->next();
+        m_valueList->next();
     }
 
     return context.allowCommit();
 }
 
+void CSSPropertyParser::commitBorderImageProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important)
+{
+    if (value)
+        addProperty(propId, value, important);
+    else
+        addProperty(propId, cssValuePool().createImplicitInitialValue(), important, true);
+}
+
 bool CSSPropertyParser::parseBorderImageShorthand(CSSPropertyID propId, bool important)
 {
     BorderImageParseContext context;
-    if (BorderImageParseContext::buildFromParser(*this, propId, context)) {
+    if (buildBorderImageParseContext(propId, context)) {
         switch (propId) {
         case CSSPropertyWebkitMaskBoxImage:
-            context.commitMaskBoxImage(this, important);
+            commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSource, context.m_image, important);
+            commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSlice, context.m_imageSlice.get(), important);
+            commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageWidth, context.m_borderWidth.get(), important);
+            commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageOutset, context.m_outset.get(), important);
+            commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageRepeat, context.m_repeat.get(), important);
             return true;
         case CSSPropertyBorderImage:
-            context.commitBorderImage(this, important);
+            commitBorderImageProperty(CSSPropertyBorderImageSource, context.m_image, important);
+            commitBorderImageProperty(CSSPropertyBorderImageSlice, context.m_imageSlice.get(), important);
+            commitBorderImageProperty(CSSPropertyBorderImageWidth, context.m_borderWidth.get(), important);
+            commitBorderImageProperty(CSSPropertyBorderImageOutset, context.m_outset.get(), important);
+            commitBorderImageProperty(CSSPropertyBorderImageRepeat, context.m_repeat, important);
             return true;
         default:
             ASSERT_NOT_REACHED();
@@ -5936,7 +5921,7 @@ bool CSSPropertyParser::parseBorderImageShorthand(CSSPropertyID propId, bool imp
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseBorderImage(CSSPropertyID propId)
 {
     BorderImageParseContext context;
-    if (BorderImageParseContext::buildFromParser(*this, propId, context)) {
+    if (buildBorderImageParseContext(propId, context)) {
         return context.commitCSSValue();
     }
     return nullptr;
@@ -5982,9 +5967,8 @@ bool CSSPropertyParser::parseBorderImageRepeat(RefPtrWillBeRawPtr<CSSValue>& res
 class BorderImageSliceParseContext {
     STACK_ALLOCATED();
 public:
-    BorderImageSliceParseContext(CSSPropertyParser* parser)
-    : m_parser(parser)
-    , m_allowNumber(true)
+    BorderImageSliceParseContext()
+    : m_allowNumber(true)
     , m_allowFill(true)
     , m_allowFinalCommit(false)
     , m_fill(false)
@@ -5995,9 +5979,8 @@ public:
     bool allowFinalCommit() const { return m_allowFinalCommit; }
     CSSPrimitiveValue* top() const { return m_top.get(); }
 
-    void commitNumber(CSSParserValue* v)
+    void commitNumber(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val)
     {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> val = m_parser->createPrimitiveNumericValue(v);
         if (!m_top)
             m_top = val;
         else if (!m_right)
@@ -6043,8 +6026,6 @@ public:
     }
 
 private:
-    CSSPropertyParser* m_parser;
-
     bool m_allowNumber;
     bool m_allowFill;
     bool m_allowFinalCommit;
@@ -6059,11 +6040,11 @@ private:
 
 bool CSSPropertyParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBeRawPtr<CSSBorderImageSliceValue>& result)
 {
-    BorderImageSliceParseContext context(this);
+    BorderImageSliceParseContext context;
     for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->next()) {
         // FIXME calc() http://webkit.org/b/16662 : calc is parsed but values are not created yet.
         if (context.allowNumber() && !isCalculation(val) && validUnit(val, FInteger | FNonNeg | FPercent)) {
-            context.commitNumber(val);
+            context.commitNumber(createPrimitiveNumericValue(val));
         } else if (context.allowFill() && val->id == CSSValueFill) {
             context.commitFill();
         } else if (!inShorthand()) {
@@ -6095,9 +6076,8 @@ bool CSSPropertyParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBe
 class BorderImageQuadParseContext {
     STACK_ALLOCATED();
 public:
-    BorderImageQuadParseContext(CSSPropertyParser* parser)
-    : m_parser(parser)
-    , m_allowNumber(true)
+    BorderImageQuadParseContext()
+    : m_allowNumber(true)
     , m_allowFinalCommit(false)
     { }
 
@@ -6105,14 +6085,8 @@ public:
     bool allowFinalCommit() const { return m_allowFinalCommit; }
     CSSPrimitiveValue* top() const { return m_top.get(); }
 
-    void commitNumber(CSSParserValue* v)
+    void commitNumber(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val)
     {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> val = nullptr;
-        if (v->id == CSSValueAuto)
-            val = cssValuePool().createIdentifierValue(v->id);
-        else
-            val = m_parser->createPrimitiveNumericValue(v);
-
         if (!m_top)
             m_top = val;
         else if (!m_right)
@@ -6158,8 +6132,6 @@ public:
     }
 
 private:
-    CSSPropertyParser* m_parser;
-
     bool m_allowNumber;
     bool m_allowFinalCommit;
 
@@ -6171,10 +6143,13 @@ private:
 
 bool CSSPropertyParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
 {
-    BorderImageQuadParseContext context(this);
+    BorderImageQuadParseContext context;
     for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->next()) {
         if (context.allowNumber() && (validUnit(val, validUnits, HTMLStandardMode) || val->id == CSSValueAuto)) {
-            context.commitNumber(val);
+            if (val->id == CSSValueAuto)
+                context.commitNumber(cssValuePool().createIdentifierValue(val->id));
+            else
+                context.commitNumber(createPrimitiveNumericValue(val));
         } else if (!inShorthand()) {
             // If we're not parsing a shorthand then we are invalid.
             return false;
@@ -6312,7 +6287,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientPoint(CS
     return result;
 }
 
-bool parseDeprecatedGradientColorStop(CSSPropertyParser* p, CSSParserValue* a, CSSGradientColorStop& stop)
+bool CSSPropertyParser::parseDeprecatedGradientColorStop(CSSParserValue* a, CSSGradientColorStop& stop)
 {
     if (a->unit != CSSParserValue::Function)
         return false;
@@ -6340,7 +6315,7 @@ bool parseDeprecatedGradientColorStop(CSSPropertyParser* p, CSSParserValue* a, C
         if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu)
             stop.m_color = cssValuePool().createIdentifierValue(id);
         else
-            stop.m_color = p->parseColor(args->current());
+            stop.m_color = parseColor(args->current());
         if (!stop.m_color)
             return false;
     }
@@ -6367,7 +6342,7 @@ bool parseDeprecatedGradientColorStop(CSSPropertyParser* p, CSSParserValue* a, C
         if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu)
             stop.m_color = cssValuePool().createIdentifierValue(id);
         else
-            stop.m_color = p->parseColor(stopArg);
+            stop.m_color = parseColor(stopArg);
         if (!stop.m_color)
             return false;
     }
@@ -6496,7 +6471,7 @@ bool CSSPropertyParser::parseDeprecatedGradient(CSSParserValueList* valueList, R
 
         // The function name needs to be one of "from", "to", or "color-stop."
         CSSGradientColorStop stop;
-        if (!parseDeprecatedGradientColorStop(this, a, stop))
+        if (!parseDeprecatedGradientColorStop(a, stop))
             return false;
         result->addStop(stop);
 
@@ -6526,15 +6501,6 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueFromSideKeyword(CSSParserV
             return nullptr;
     }
     return cssValuePool().createIdentifierValue(a->id);
-}
-
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGradientColorOrKeyword(CSSPropertyParser* p, CSSParserValue* value)
-{
-    CSSValueID id = value->id;
-    if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu || id == CSSValueCurrentcolor)
-        return cssValuePool().createIdentifierValue(id);
-
-    return p->parseColor(value);
 }
 
 bool CSSPropertyParser::parseDeprecatedLinearGradient(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
@@ -6941,7 +6907,12 @@ bool CSSPropertyParser::parseGradientColorStops(CSSParserValueList* valueList, C
         // <color-stop> = <color> [ <percentage> | <length> ]?
         // <color-hint> = <length> | <percentage>
         CSSGradientColorStop stop;
-        stop.m_color = parseGradientColorOrKeyword(this, a);
+        CSSValueID id = a->id;
+        if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu || id == CSSValueCurrentcolor)
+            stop.m_color = cssValuePool().createIdentifierValue(id);
+        else
+            stop.m_color = parseColor(a);
+
 
         // Two hints in a row are not allowed.
         if (!stop.m_color && (!supportsColorHints || previousStopWasColorHint))
