@@ -891,7 +891,7 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
     }
 }
 
-void FrameView::layout(bool allowSubtree)
+void FrameView::layout()
 {
     // We should never layout a Document which is not in a LocalFrame.
     ASSERT(m_frame);
@@ -921,11 +921,6 @@ void FrameView::layout(bool allowSubtree)
     RELEASE_ASSERT(!isPainting());
 
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "beginData", InspectorLayoutEvent::beginData(this));
-
-    if (!allowSubtree && isSubtreeLayout()) {
-        m_layoutSubtreeRoot->markContainingBlocksForLayout(false);
-        m_layoutSubtreeRoot = nullptr;
-    }
 
     performPreLayoutTasks();
 
@@ -2692,11 +2687,6 @@ void FrameView::disposeAutoSizeInfo()
     m_autoSizeInfo.clear();
 }
 
-void FrameView::forceLayout(bool allowSubtree)
-{
-    layout(allowSubtree);
-}
-
 void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor)
 {
     // Dumping externalRepresentation(m_frame->renderer()).ascii() is a good trick to see
@@ -2710,7 +2700,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
         renderView->setLogicalWidth(flooredPageLogicalWidth);
         renderView->setPageLogicalHeight(flooredPageLogicalHeight);
         renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-        forceLayout();
+        layout();
 
         // If we don't fit in the given page width, we'll lay out again. If we don't fit in the
         // page width when shrunk, we will lay out at maximum shrink and clip extra content.
@@ -2730,7 +2720,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             renderView->setLogicalWidth(flooredPageLogicalWidth);
             renderView->setPageLogicalHeight(flooredPageLogicalHeight);
             renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-            forceLayout();
+            layout();
 
             const LayoutRect& updatedDocumentRect = renderView->documentRect();
             LayoutUnit docLogicalHeight = horizontalWritingMode ? updatedDocumentRect.height() : updatedDocumentRect.width();

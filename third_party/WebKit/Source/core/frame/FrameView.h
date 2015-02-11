@@ -95,7 +95,7 @@ public:
     void setContentsSize(const IntSize&);
     IntPoint clampOffsetAtScale(const IntPoint& offset, float scale) const;
 
-    void layout(bool allowSubtree = true);
+    void layout();
     bool didFirstLayout() const;
     void scheduleRelayout();
     void scheduleRelayoutOfSubtree(LayoutObject*);
@@ -241,7 +241,6 @@ public:
     void enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
     void disableAutoSizeMode() { disposeAutoSizeInfo(); }
 
-    void forceLayout(bool allowSubtree = false);
     void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor);
 
     bool scrollToFragment(const KURL&);
