@@ -577,10 +577,7 @@ WebVector<WebIconURL> WebLocalFrameImpl::iconURLs(int iconTypesMask) const
 
 void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 {
-    if (!frame())
-        return;
-
-    frame()->setRemotePlatformLayer(webLayer);
+    ASSERT_NOT_REACHED();
 }
 
 void WebLocalFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)

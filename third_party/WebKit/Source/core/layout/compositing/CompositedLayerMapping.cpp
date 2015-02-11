@@ -30,6 +30,7 @@
 #include "core/HTMLNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -519,9 +520,11 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (WebLayer* layer = platformLayerForPlugin(renderer)) {
         m_graphicsLayer->setContentsToPlatformLayer(layer);
     } else if (renderer->node() && renderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(renderer->node())->contentFrame()) {
-        WebLayer* layer = toHTMLFrameOwnerElement(renderer->node())->contentFrame()->remotePlatformLayer();
-        if (layer)
+        Frame* frame = toHTMLFrameOwnerElement(renderer->node())->contentFrame();
+        if (frame->isRemoteFrame()) {
+            WebLayer* layer = toRemoteFrame(frame)->remotePlatformLayer();
             m_graphicsLayer->setContentsToPlatformLayer(layer);
+        }
     } else if (renderer->isVideo()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer->node());
         m_graphicsLayer->setContentsToPlatformLayer(mediaElement->platformLayer());

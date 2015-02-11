@@ -49,7 +49,6 @@ class Page;
 class RenderPart;
 class SecurityContext;
 class Settings;
-class WebLayer;
 class WindowProxy;
 
 class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
@@ -99,17 +98,7 @@ public:
 
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
-    // FIXME: These should move to RemoteFrame when that is instantiated.
-    void setRemotePlatformLayer(WebLayer*);
-    WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
-
     Settings* settings() const; // can be null
-
-    // FIXME: This method identifies a LocalFrame that is acting as a RemoteFrame.
-    // It is necessary only until we can instantiate a RemoteFrame, at which point
-    // it can be removed and its callers can be converted to use the isRemoteFrame()
-    // method.
-    bool isRemoteFrameTemporary() const { return m_remotePlatformLayer; }
 
     // isLoading() is true when the embedder should think a load is in progress.
     // In the case of LocalFrames, it means that the frame has sent a didStartLoading()
@@ -129,8 +118,6 @@ protected:
 
 private:
     FrameClient* m_client;
-    WebLayer* m_remotePlatformLayer;
-
     bool m_isLoading;
 };
 

@@ -116,7 +116,7 @@ bool RenderPart::requiresAcceleratedCompositing() const
         return false;
 
     HTMLFrameOwnerElement* element = toHTMLFrameOwnerElement(node());
-    if (element->contentFrame() && element->contentFrame()->remotePlatformLayer())
+    if (element->contentFrame() && element->contentFrame()->isRemoteFrame())
         return true;
 
     if (Document* contentDocument = element->contentDocument()) {
@@ -148,10 +148,6 @@ bool RenderPart::nodeAtPointOverWidget(const HitTestRequest& request, HitTestRes
 bool RenderPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     if (!widget() || !widget()->isFrameView() || !request.allowsChildFrameContent())
-        return nodeAtPointOverWidget(request, result, locationInContainer, accumulatedOffset, action);
-
-    // FIXME: Until RemoteFrames use RemoteFrameViews, we need an explicit check here.
-    if (toFrameView(widget())->frame().isRemoteFrameTemporary())
         return nodeAtPointOverWidget(request, result, locationInContainer, accumulatedOffset, action);
 
     FrameView* childFrameView = toFrameView(widget());

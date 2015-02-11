@@ -12,7 +12,11 @@
 #include "core/frame/RemoteFrameClient.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/Layer.h"
+#include "core/rendering/RenderPart.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebLayer.h"
 
 namespace blink {
 
@@ -21,6 +25,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client, FrameHost* host, Fram
     , m_securityContext(RemoteSecurityContext::create())
     , m_domWindow(RemoteDOMWindow::create(*this))
     , m_windowProxyManager(WindowProxyManager::create(*this))
+    , m_remotePlatformLayer(nullptr)
 {
 }
 
@@ -83,6 +88,16 @@ RemoteSecurityContext* RemoteFrame::securityContext() const
     return m_securityContext.get();
 }
 
+void RemoteFrame::disconnectOwnerElement()
+{
+    // The RemotePlatformLayer needs to be cleared in disconnectOwnerElement()
+    // because it must happen on WebFrame::swap() and Frame::detach().
+    if (m_remotePlatformLayer)
+        setRemotePlatformLayer(nullptr);
+
+    Frame::disconnectOwnerElement();
+}
+
 void RemoteFrame::forwardInputEvent(Event* event)
 {
     remoteFrameClient()->forwardInputEvent(event);
@@ -124,6 +139,20 @@ void RemoteFrame::createView()
 RemoteFrameClient* RemoteFrame::remoteFrameClient() const
 {
     return static_cast<RemoteFrameClient*>(client());
+}
+
+void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
+{
+    if (m_remotePlatformLayer)
+        GraphicsLayer::unregisterContentsLayer(m_remotePlatformLayer);
+    m_remotePlatformLayer = layer;
+    if (m_remotePlatformLayer)
+        GraphicsLayer::registerContentsLayer(layer);
+
+    ASSERT(owner());
+    toHTMLFrameOwnerElement(owner())->setNeedsCompositingUpdate();
+    if (RenderPart* renderer = ownerRenderer())
+        renderer->layer()->updateSelfPaintingLayer();
 }
 
 } // namespace blink

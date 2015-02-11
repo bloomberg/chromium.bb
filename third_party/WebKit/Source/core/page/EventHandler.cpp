@@ -981,10 +981,6 @@ static LocalFrame* subframeForTargetNode(Node* node)
     if (!renderer || !renderer->isRenderPart())
         return nullptr;
 
-    // FIXME: This explicit check is needed only until RemoteFrames have RemoteFrameViews.
-    if (isHTMLFrameElementBase(node) && toHTMLFrameElementBase(node)->contentFrame() && toHTMLFrameElementBase(node)->contentFrame()->isRemoteFrameTemporary())
-        return nullptr;
-
     Widget* widget = toRenderPart(renderer)->widget();
     if (!widget || !widget->isFrameView())
         return nullptr;
