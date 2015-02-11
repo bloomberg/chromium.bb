@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_unittest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -45,17 +46,12 @@ class AudioInputVolumeTest : public ::testing::Test {
   {
   }
 
-  bool CanRunAudioTests() {
+  bool HasCoreAudioAndInputDevices() {
 #if defined(OS_WIN)
     // TODO(henrika): add support for volume control on Windows XP as well.
-    // For now, we might as well signal false already here to avoid running
-    // these tests on Windows XP.
     if (!CoreAudioUtil::IsSupported())
       return false;
 #endif
-    if (!audio_manager_)
-      return false;
-
     return audio_manager_->HasAudioInputDevices();
   }
 
@@ -106,8 +102,7 @@ class AudioInputVolumeTest : public ::testing::Test {
 #endif
 
 TEST_F(AudioInputVolumeTest, MAYBE_InputVolumeTest) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices());
 
   // Retrieve a list of all available input devices.
   AudioDeviceNames device_names;

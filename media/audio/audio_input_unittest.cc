@@ -12,6 +12,7 @@
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_unittest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -58,12 +59,8 @@ class AudioInputTest : public testing::Test {
   ~AudioInputTest() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
-  AudioManager* audio_manager() { return audio_manager_.get(); }
-
-  bool CanRunAudioTests() {
-    bool has_input = audio_manager()->HasAudioInputDevices();
-    LOG_IF(WARNING, !has_input) << "No input devices detected";
-    return has_input;
+  bool InputDevicesAvailable() {
+    return audio_manager_->HasAudioInputDevices();
   }
 
   void MakeAudioInputStreamOnAudioThread() {
@@ -106,29 +103,29 @@ class AudioInputTest : public testing::Test {
   }
 
   void MakeAudioInputStream() {
-    DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
-    AudioParameters params = audio_manager()->GetInputStreamParameters(
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+    AudioParameters params = audio_manager_->GetInputStreamParameters(
         AudioManagerBase::kDefaultDeviceId);
-    audio_input_stream_ = audio_manager()->MakeAudioInputStream(params,
+    audio_input_stream_ = audio_manager_->MakeAudioInputStream(params,
         AudioManagerBase::kDefaultDeviceId);
     EXPECT_TRUE(audio_input_stream_);
   }
 
   void OpenAndClose() {
-    DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Close();
     audio_input_stream_ = NULL;
   }
 
   void OpenAndStart(AudioInputStream::AudioInputCallback* sink) {
-    DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Start(sink);
   }
 
   void OpenStopAndClose() {
-    DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Stop();
     audio_input_stream_->Close();
@@ -136,7 +133,7 @@ class AudioInputTest : public testing::Test {
   }
 
   void StopAndClose() {
-    DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     audio_input_stream_->Stop();
     audio_input_stream_->Close();
     audio_input_stream_ = NULL;
@@ -144,9 +141,9 @@ class AudioInputTest : public testing::Test {
 
   // Synchronously runs the provided callback/closure on the audio thread.
   void RunOnAudioThread(const base::Closure& closure) {
-    if (!audio_manager()->GetTaskRunner()->BelongsToCurrentThread()) {
+    if (!audio_manager_->GetTaskRunner()->BelongsToCurrentThread()) {
       base::WaitableEvent event(false, false);
-      audio_manager()->GetTaskRunner()->PostTask(
+      audio_manager_->GetTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(&AudioInputTest::RunOnAudioThreadImpl,
                      base::Unretained(this),
@@ -160,7 +157,7 @@ class AudioInputTest : public testing::Test {
 
   void RunOnAudioThreadImpl(const base::Closure& closure,
                             base::WaitableEvent* event) {
-    DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     closure.Run();
     event->Signal();
   }
@@ -175,8 +172,7 @@ class AudioInputTest : public testing::Test {
 
 // Test create and close of an AudioInputStream without recording audio.
 TEST_F(AudioInputTest, CreateAndClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   CloseAudioInputStreamOnAudioThread();
 }
@@ -189,8 +185,7 @@ TEST_F(AudioInputTest, CreateAndClose) {
 #endif
 // Test create, open and close of an AudioInputStream without recording audio.
 TEST_F(AudioInputTest, MAYBE_OpenAndClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   OpenAndCloseAudioInputStreamOnAudioThread();
 }
@@ -203,8 +198,7 @@ TEST_F(AudioInputTest, MAYBE_OpenAndClose) {
 #endif
 // Test create, open, stop and close of an AudioInputStream without recording.
 TEST_F(AudioInputTest, MAYBE_OpenStopAndClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   OpenStopAndCloseAudioInputStreamOnAudioThread();
 }
@@ -219,8 +213,7 @@ TEST_F(AudioInputTest, MAYBE_OpenStopAndClose) {
 // Very simple test which starts capturing during half a second and verifies
 // that recording starts.
 TEST_F(AudioInputTest, MAYBE_Record) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
 
   TestInputCallback test_callback;

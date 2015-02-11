@@ -8,6 +8,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,21 +28,18 @@ class CoreAudioUtilWinTest : public ::testing::Test {
   }
   virtual ~CoreAudioUtilWinTest() {}
 
-  bool CanRunAudioTest() {
-    bool core_audio = CoreAudioUtil::IsSupported();
-    if (!core_audio)
+  bool DevicesAvailable() {
+    if (!CoreAudioUtil::IsSupported())
       return false;
-    int capture_devices = CoreAudioUtil::NumberOfActiveDevices(eCapture);
-    int render_devices = CoreAudioUtil::NumberOfActiveDevices(eRender);
-    return ((capture_devices > 0) && (render_devices > 0));
+    return CoreAudioUtil::NumberOfActiveDevices(eCapture) > 0 &&
+           CoreAudioUtil::NumberOfActiveDevices(eRender) > 0;
   }
 
   ScopedCOMInitializer com_init_;
 };
 
 TEST_F(CoreAudioUtilWinTest, NumberOfActiveDevices) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   int render_devices = CoreAudioUtil::NumberOfActiveDevices(eRender);
   EXPECT_GT(render_devices, 0);
@@ -52,8 +50,7 @@ TEST_F(CoreAudioUtilWinTest, NumberOfActiveDevices) {
 }
 
 TEST_F(CoreAudioUtilWinTest, CreateDeviceEnumerator) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   ScopedComPtr<IMMDeviceEnumerator> enumerator =
       CoreAudioUtil::CreateDeviceEnumerator();
@@ -61,8 +58,7 @@ TEST_F(CoreAudioUtilWinTest, CreateDeviceEnumerator) {
 }
 
 TEST_F(CoreAudioUtilWinTest, CreateDefaultDevice) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   struct {
     EDataFlow flow;
@@ -91,8 +87,7 @@ TEST_F(CoreAudioUtilWinTest, CreateDefaultDevice) {
 }
 
 TEST_F(CoreAudioUtilWinTest, CreateDevice) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   // Get name and ID of default device used for playback.
   ScopedComPtr<IMMDevice> default_render_device =
@@ -116,8 +111,7 @@ TEST_F(CoreAudioUtilWinTest, CreateDevice) {
 }
 
 TEST_F(CoreAudioUtilWinTest, GetDefaultDeviceName) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   struct {
     EDataFlow flow;
@@ -143,8 +137,7 @@ TEST_F(CoreAudioUtilWinTest, GetDefaultDeviceName) {
 }
 
 TEST_F(CoreAudioUtilWinTest, GetAudioControllerID) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   ScopedComPtr<IMMDeviceEnumerator> enumerator(
       CoreAudioUtil::CreateDeviceEnumerator());
@@ -170,8 +163,7 @@ TEST_F(CoreAudioUtilWinTest, GetAudioControllerID) {
 }
 
 TEST_F(CoreAudioUtilWinTest, GetFriendlyName) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   // Get name and ID of default device used for recording.
   ScopedComPtr<IMMDevice> audio_device =
@@ -195,8 +187,7 @@ TEST_F(CoreAudioUtilWinTest, GetFriendlyName) {
 }
 
 TEST_F(CoreAudioUtilWinTest, DeviceIsDefault) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   // Verify that the default render device is correctly identified as a
   // default device.
@@ -211,8 +202,7 @@ TEST_F(CoreAudioUtilWinTest, DeviceIsDefault) {
 }
 
 TEST_F(CoreAudioUtilWinTest, CreateDefaultClient) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   EDataFlow data[] = {eRender, eCapture};
 
@@ -224,8 +214,7 @@ TEST_F(CoreAudioUtilWinTest, CreateDefaultClient) {
 }
 
 TEST_F(CoreAudioUtilWinTest, CreateClient) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   EDataFlow data[] = {eRender, eCapture};
 
@@ -241,8 +230,7 @@ TEST_F(CoreAudioUtilWinTest, CreateClient) {
 }
 
 TEST_F(CoreAudioUtilWinTest, GetSharedModeMixFormat) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   ScopedComPtr<IMMDevice> device;
   ScopedComPtr<IAudioClient> client;
@@ -263,8 +251,7 @@ TEST_F(CoreAudioUtilWinTest, GetSharedModeMixFormat) {
 }
 
 TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   // The preferred channel layout should always be supported. Being supported
   // means that it is possible to initialize a shared mode stream with the
@@ -290,8 +277,7 @@ TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
 }
 
 TEST_F(CoreAudioUtilWinTest, GetDevicePeriod) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   EDataFlow data[] = {eRender, eCapture};
 
@@ -314,8 +300,7 @@ TEST_F(CoreAudioUtilWinTest, GetDevicePeriod) {
 }
 
 TEST_F(CoreAudioUtilWinTest, GetPreferredAudioParameters) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   EDataFlow data[] = {eRender, eCapture};
 
@@ -333,8 +318,7 @@ TEST_F(CoreAudioUtilWinTest, GetPreferredAudioParameters) {
 }
 
 TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   ScopedComPtr<IAudioClient> client;
   client = CoreAudioUtil::CreateDefaultClient(eRender, eConsole);
@@ -396,8 +380,7 @@ TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
 }
 
 TEST_F(CoreAudioUtilWinTest, CreateRenderAndCaptureClients) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   EDataFlow data[] = {eRender, eCapture};
 
@@ -442,8 +425,7 @@ TEST_F(CoreAudioUtilWinTest, CreateRenderAndCaptureClients) {
 }
 
 TEST_F(CoreAudioUtilWinTest, FillRenderEndpointBufferWithSilence) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   // Create default clients using the default mixing format for shared mode.
   ScopedComPtr<IAudioClient> client(
@@ -478,13 +460,10 @@ TEST_F(CoreAudioUtilWinTest, FillRenderEndpointBufferWithSilence) {
   EXPECT_EQ(num_queued_frames, endpoint_buffer_size);
 }
 
-// This test can only succeed on a machine that has audio hardware
-// that has both input and output devices.  Currently this is the case
-// with our test bots and the CanRunAudioTest() method should make sure
-// that the test won't run in unsupported environments, but be warned.
+// This test can only run on a machine that has audio hardware
+// that has both input and output devices.
 TEST_F(CoreAudioUtilWinTest, GetMatchingOutputDeviceID) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   bool found_a_pair = false;
 
@@ -513,8 +492,7 @@ TEST_F(CoreAudioUtilWinTest, GetMatchingOutputDeviceID) {
 }
 
 TEST_F(CoreAudioUtilWinTest, GetDefaultOutputDeviceID) {
-  if (!CanRunAudioTest())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
   std::string default_device_id(CoreAudioUtil::GetDefaultOutputDeviceID());
   EXPECT_FALSE(default_device_id.empty());

@@ -105,4 +105,9 @@ const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 // Enables support for inband text tracks in media content.
 const char kEnableInbandTextTracks[] = "enable-inband-text-tracks";
 
+// When running tests on a system without the required hardware or libraries,
+// this flag will cause the tests to fail. Otherwise, they silently succeed.
+const char kRequireAudioHardwareForTesting[] =
+    "require-audio-hardware-for-testing";
+
 }  // namespace switches

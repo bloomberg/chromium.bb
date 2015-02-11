@@ -53,6 +53,8 @@ MEDIA_EXPORT extern const char kUseFileForFakeAudioCapture[];
 
 MEDIA_EXPORT extern const char kEnableInbandTextTracks[];
 
+MEDIA_EXPORT extern const char kRequireAudioHardwareForTesting[];
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

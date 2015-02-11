@@ -19,6 +19,7 @@
 #include "media/audio/android/audio_manager_android.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/seekable_buffer.h"
@@ -730,8 +731,7 @@ TEST_F(AudioAndroidOutputTest, GetDefaultOutputStreamParameters) {
 
 // Verify input device enumeration.
 TEST_F(AudioAndroidInputTest, GetAudioInputDeviceNames) {
-  if (!audio_manager()->HasAudioInputDevices())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioInputDevices());
   AudioDeviceNames devices;
   RunOnAudioThread(
       base::Bind(&AudioManager::GetAudioInputDeviceNames,
@@ -742,8 +742,7 @@ TEST_F(AudioAndroidInputTest, GetAudioInputDeviceNames) {
 
 // Verify output device enumeration.
 TEST_F(AudioAndroidOutputTest, GetAudioOutputDeviceNames) {
-  if (!audio_manager()->HasAudioOutputDevices())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioOutputDevices());
   AudioDeviceNames devices;
   RunOnAudioThread(
       base::Bind(&AudioManager::GetAudioOutputDeviceNames,

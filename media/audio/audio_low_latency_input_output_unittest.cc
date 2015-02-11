@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -113,16 +114,6 @@ class AudioLowLatencyInputOutputTest : public testing::Test {
 
   AudioManager* audio_manager() { return &mock_audio_manager_; }
   base::MessageLoopForUI* message_loop() { return &message_loop_; }
-
-  // Convenience method which ensures that we are not running on the build
-  // bots and that at least one valid input and output device can be found.
-  bool CanRunAudioTests() {
-    bool input = audio_manager()->HasAudioInputDevices();
-    bool output = audio_manager()->HasAudioOutputDevices();
-    LOG_IF(WARNING, !input) << "No input device detected.";
-    LOG_IF(WARNING, !output) << "No output device detected.";
-    return input && output;
-  }
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -384,8 +375,8 @@ typedef StreamWrapper<AudioOutputStreamTraits> AudioOutputStreamWrapper;
 //   ylabel('delay [msec]')
 //   title('Full-duplex audio delay measurement');
 TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioInputDevices() &&
+                          audio_manager()->HasAudioOutputDevices());
 
   AudioInputStreamWrapper aisw(audio_manager());
   AudioInputStream* ais = aisw.Create();

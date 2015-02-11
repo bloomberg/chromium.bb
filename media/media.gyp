@@ -1463,6 +1463,8 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'audio/audio_unittest_util.cc',
+        'audio/audio_unittest_util.h',
         'audio/mock_audio_manager.cc',
         'audio/mock_audio_manager.h',
         'audio/mock_audio_source_callback.cc',

@@ -14,6 +14,7 @@
 #include "media/base/limits.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/simple_sources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -160,10 +161,7 @@ class ReadOnlyMappedFile {
 // Test that can it be created and closed.
 TEST(WinAudioTest, PCMWaveStreamGetAndClose) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
@@ -176,10 +174,7 @@ TEST(WinAudioTest, PCMWaveStreamGetAndClose) {
 // Test that can it be cannot be created with invalid parameters.
 TEST(WinAudioTest, SanityOnMakeParams) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   AudioParameters::Format fmt = AudioParameters::AUDIO_PCM_LINEAR;
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
@@ -212,10 +207,7 @@ TEST(WinAudioTest, SanityOnMakeParams) {
 // Test that it can be opened and closed.
 TEST(WinAudioTest, PCMWaveStreamOpenAndClose) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
@@ -229,10 +221,7 @@ TEST(WinAudioTest, PCMWaveStreamOpenAndClose) {
 // Test that it has a maximum packet size.
 TEST(WinAudioTest, PCMWaveStreamOpenLimit) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
@@ -248,10 +237,7 @@ TEST(WinAudioTest, PCMWaveStreamOpenLimit) {
 // the test completes in reasonable time.
 TEST(WinAudioTest, PCMWaveSlowSource) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
@@ -276,10 +262,7 @@ TEST(WinAudioTest, PCMWaveSlowSource) {
 // bug 19276 for more details.
 TEST(WinAudioTest, PCMWaveStreamPlaySlowLoop) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
@@ -335,10 +318,7 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzTone44Kss) {
 // sound with a lower volume than PCMWaveStreamPlay200HzTone44Kss.
 TEST(WinAudioTest, PCMWaveStreamPlay200HzTone22Kss) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 20;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
@@ -370,10 +350,7 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzTone22Kss) {
 // object roughly at the same time.
 TEST(WinAudioTest, PushSourceFile16KHz)  {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   static const int kSampleRate = 16000;
   SineWaveAudioSource source(1, 200.0, kSampleRate);
@@ -413,10 +390,7 @@ TEST(WinAudioTest, PushSourceFile16KHz)  {
 // of silence.
 TEST(WinAudioTest, PCMWaveStreamPlayTwice200HzTone44Kss) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
@@ -450,10 +424,7 @@ TEST(WinAudioTest, PCMWaveStreamPlayTwice200HzTone44Kss) {
 // smaller buffer size for WASAPI than for Wave.
 TEST(WinAudioTest, PCMWaveStreamPlay200HzToneLowLatency) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   // The WASAPI API requires a correct COM environment.
   ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
@@ -494,10 +465,7 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzToneLowLatency) {
 // Check that the pending bytes value is correct what the stream starts.
 TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
@@ -630,10 +598,7 @@ DWORD __stdcall SyncSocketThread(void* context) {
 // In this test you should hear a continuous 200Hz tone for 2 seconds.
 TEST(WinAudioTest, SyncSocketBasic) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output device detected.";
-    return;
-  }
+  ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   static const int sample_rate = AudioParameters::kAudioCDSampleRate;
   static const uint32 kSamples20ms = sample_rate / 50;

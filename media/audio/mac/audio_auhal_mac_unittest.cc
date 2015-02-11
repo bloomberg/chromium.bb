@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +47,7 @@ class AUHALStreamTest : public testing::Test {
         manager_->GetDefaultOutputStreamParameters(), "");
   }
 
-  bool CanRunAudioTests() {
+  bool OutputDevicesAvailable() {
     return manager_->HasAudioOutputDevices();
   }
 
@@ -60,8 +61,7 @@ class AUHALStreamTest : public testing::Test {
 };
 
 TEST_F(AUHALStreamTest, HardwareSampleRate) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
   const AudioParameters preferred_params =
       manager_->GetDefaultOutputStreamParameters();
   EXPECT_GE(preferred_params.sample_rate(), 16000);
@@ -69,22 +69,19 @@ TEST_F(AUHALStreamTest, HardwareSampleRate) {
 }
 
 TEST_F(AUHALStreamTest, CreateClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
   Create()->Close();
 }
 
 TEST_F(AUHALStreamTest, CreateOpenClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
   AudioOutputStream* stream = Create();
   EXPECT_TRUE(stream->Open());
   stream->Close();
 }
 
 TEST_F(AUHALStreamTest, CreateOpenStartStopClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
   AudioOutputStream* stream = Create();
   EXPECT_TRUE(stream->Open());

@@ -10,6 +10,7 @@
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -112,13 +113,8 @@ class MacAudioInputTest : public testing::Test {
 
   ~MacAudioInputTest() override { base::RunLoop().RunUntilIdle(); }
 
-  // Convenience method which ensures that we are not running on the build
-  // bots and that at least one valid input device can be found.
-  bool CanRunAudioTests() {
-    bool has_input = audio_manager_->HasAudioInputDevices();
-    if (!has_input)
-      LOG(WARNING) << "No input devices detected";
-    return has_input;
+  bool InputDevicesAvailable() {
+    return audio_manager_->HasAudioInputDevices();
   }
 
   // Convenience method which creates a default AudioInputStream object using
@@ -154,16 +150,14 @@ class MacAudioInputTest : public testing::Test {
 
 // Test Create(), Close().
 TEST_F(MacAudioInputTest, AUAudioInputStreamCreateAndClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   AudioInputStream* ais = CreateDefaultAudioInputStream();
   ais->Close();
 }
 
 // Test Open(), Close().
 TEST_F(MacAudioInputTest, AUAudioInputStreamOpenAndClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   AudioInputStream* ais = CreateDefaultAudioInputStream();
   EXPECT_TRUE(ais->Open());
   ais->Close();
@@ -171,8 +165,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamOpenAndClose) {
 
 // Test Open(), Start(), Close().
 TEST_F(MacAudioInputTest, AUAudioInputStreamOpenStartAndClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   AudioInputStream* ais = CreateDefaultAudioInputStream();
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
@@ -182,8 +175,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamOpenStartAndClose) {
 
 // Test Open(), Start(), Stop(), Close().
 TEST_F(MacAudioInputTest, AUAudioInputStreamOpenStartStopAndClose) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   AudioInputStream* ais = CreateDefaultAudioInputStream();
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
@@ -194,8 +186,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamOpenStartStopAndClose) {
 
 // Test some additional calling sequences.
 TEST_F(MacAudioInputTest, AUAudioInputStreamMiscCallingSequences) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   AudioInputStream* ais = CreateDefaultAudioInputStream();
   AUAudioInputStream* auais = static_cast<AUAudioInputStream*>(ais);
 
@@ -222,8 +213,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamMiscCallingSequences) {
 
 // Verify that recording starts and stops correctly in mono using mocked sink.
 TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   int count = 0;
 
@@ -249,8 +239,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
 
 // Verify that recording starts and stops correctly in mono using mocked sink.
 TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   int count = 0;
 
@@ -288,8 +277,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
 // with --gtest_also_run_disabled_tests or set the GTEST_ALSO_RUN_DISABLED_TESTS
 // environment variable to a value greater than 0.
 TEST_F(MacAudioInputTest, DISABLED_AUAudioInputStreamRecordToFile) {
-  if (!CanRunAudioTests())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   const char* file_name = "out_stereo_10sec.pcm";
 
   int fs = static_cast<int>(AUAudioInputStream::HardwareSampleRate());

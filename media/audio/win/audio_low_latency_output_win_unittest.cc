@@ -16,6 +16,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/win/audio_low_latency_output_win.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -148,24 +149,11 @@ static bool ExclusiveModeIsEnabled() {
           AUDCLNT_SHAREMODE_EXCLUSIVE);
 }
 
-// Convenience method which ensures that we are not running on the build
-// bots and that at least one valid output device can be found. We also
-// verify that we are not running on XP since the low-latency (WASAPI-
-// based) version requires Windows Vista or higher.
-static bool CanRunAudioTests(AudioManager* audio_man) {
-  if (!CoreAudioUtil::IsSupported()) {
-    LOG(WARNING) << "This test requires Windows Vista or higher.";
-    return false;
-  }
-
+static bool HasCoreAudioAndOutputDevices(AudioManager* audio_man) {
+  // The low-latency (WASAPI-based) version requires Windows Vista or higher.
   // TODO(henrika): note that we use Wave today to query the number of
   // existing output devices.
-  if (!audio_man->HasAudioOutputDevices()) {
-    LOG(WARNING) << "No output devices detected.";
-    return false;
-  }
-
-  return true;
+  return CoreAudioUtil::IsSupported() && audio_man->HasAudioOutputDevices();
 }
 
 // Convenience method which creates a default AudioOutputStream object but
@@ -245,8 +233,8 @@ TEST(WASAPIAudioOutputStreamTest, HardwareSampleRate) {
   // Skip this test in exclusive mode since the resulting rate is only utilized
   // for shared mode streams.
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()) || ExclusiveModeIsEnabled())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
+                          ExclusiveModeIsEnabled());
 
   // Default device intended for games, system notification sounds,
   // and voice commands.
@@ -258,8 +246,7 @@ TEST(WASAPIAudioOutputStreamTest, HardwareSampleRate) {
 // Test Create(), Close() calling sequence.
 TEST(WASAPIAudioOutputStreamTest, CreateAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager.get());
   aos->Close();
 }
@@ -267,8 +254,7 @@ TEST(WASAPIAudioOutputStreamTest, CreateAndClose) {
 // Test Open(), Close() calling sequence.
 TEST(WASAPIAudioOutputStreamTest, OpenAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager.get());
   EXPECT_TRUE(aos->Open());
   aos->Close();
@@ -277,8 +263,7 @@ TEST(WASAPIAudioOutputStreamTest, OpenAndClose) {
 // Test Open(), Start(), Close() calling sequence.
 TEST(WASAPIAudioOutputStreamTest, OpenStartAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager.get());
   EXPECT_TRUE(aos->Open());
   MockAudioSourceCallback source;
@@ -291,8 +276,7 @@ TEST(WASAPIAudioOutputStreamTest, OpenStartAndClose) {
 // Test Open(), Start(), Stop(), Close() calling sequence.
 TEST(WASAPIAudioOutputStreamTest, OpenStartStopAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager.get());
   EXPECT_TRUE(aos->Open());
   MockAudioSourceCallback source;
@@ -306,8 +290,7 @@ TEST(WASAPIAudioOutputStreamTest, OpenStartStopAndClose) {
 // Test SetVolume(), GetVolume()
 TEST(WASAPIAudioOutputStreamTest, Volume) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager.get());
 
   // Initial volume should be full volume (1.0).
@@ -343,8 +326,7 @@ TEST(WASAPIAudioOutputStreamTest, Volume) {
 // Test some additional calling sequences.
 TEST(WASAPIAudioOutputStreamTest, MiscCallingSequences) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
 
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager.get());
   WASAPIAudioOutputStream* waos = static_cast<WASAPIAudioOutputStream*>(aos);
@@ -383,8 +365,7 @@ TEST(WASAPIAudioOutputStreamTest, MiscCallingSequences) {
 // Use preferred packet size and verify that rendering starts.
 TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
 
   base::MessageLoopForUI loop;
   MockAudioSourceCallback source;
@@ -422,8 +403,7 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
 // The test files are approximately 20 seconds long.
 TEST(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
 
   AudioOutputStreamWrapper aosw(audio_manager.get());
   AudioOutputStream* aos = aosw.Create();
@@ -471,12 +451,9 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
 // The expected outcomes of each setting in this test has been derived
 // manually using log outputs (--v=1).
 TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt48kHz) {
-  if (!ExclusiveModeIsEnabled())
-    return;
-
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
+                          ExclusiveModeIsEnabled());
 
   AudioOutputStreamWrapper aosw(audio_manager.get());
 
@@ -522,12 +499,9 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt48kHz) {
 // The expected outcomes of each setting in this test has been derived
 // manually using log outputs (--v=1).
 TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt44kHz) {
-  if (!ExclusiveModeIsEnabled())
-    return;
-
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
+                          ExclusiveModeIsEnabled());
 
   AudioOutputStreamWrapper aosw(audio_manager.get());
 
@@ -580,12 +554,9 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt44kHz) {
 // Verify that we can open and start the output stream in exclusive mode at
 // the lowest possible delay at 48kHz.
 TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt48kHz) {
-  if (!ExclusiveModeIsEnabled())
-    return;
-
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
+                          ExclusiveModeIsEnabled());
 
   base::MessageLoopForUI loop;
   MockAudioSourceCallback source;
@@ -618,12 +589,8 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt48kHz) {
 // Verify that we can open and start the output stream in exclusive mode at
 // the lowest possible delay at 44.1kHz.
 TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt44kHz) {
-  if (!ExclusiveModeIsEnabled())
-    return;
-
+  ABORT_AUDIO_TEST_IF_NOT(ExclusiveModeIsEnabled());
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
 
   base::MessageLoopForUI loop;
   MockAudioSourceCallback source;

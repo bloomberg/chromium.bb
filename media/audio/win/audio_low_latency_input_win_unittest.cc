@@ -15,6 +15,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_unittest_util.h"
 #include "media/audio/win/audio_low_latency_input_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/base/seekable_buffer.h"
@@ -150,20 +151,11 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   size_t bytes_to_write_;
 };
 
-// Convenience method which ensures that we are not running on the build
-// bots and that at least one valid input device can be found. We also
-// verify that we are not running on XP since the low-latency (WASAPI-
-// based) version requires Windows Vista or higher.
-static bool CanRunAudioTests(AudioManager* audio_man) {
-  if (!CoreAudioUtil::IsSupported()) {
-    LOG(WARNING) << "This tests requires Windows Vista or higher.";
-    return false;
-  }
+static bool HasCoreAudioAndInputDevices(AudioManager* audio_man) {
+  // The low-latency (WASAPI-based) version requires Windows Vista or higher.
   // TODO(henrika): note that we use Wave today to query the number of
   // existing input devices.
-  bool input = audio_man->HasAudioInputDevices();
-  LOG_IF(WARNING, !input) << "No input device detected.";
-  return input;
+  return CoreAudioUtil::IsSupported() && audio_man->HasAudioInputDevices();
 }
 
 // Convenience method which creates a default AudioInputStream object but
@@ -266,8 +258,7 @@ class ScopedAudioInputStream {
 // for all available input devices.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
 
   ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
 
@@ -288,8 +279,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
 // Test Create(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager.get()));
   ais.Close();
@@ -298,8 +288,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
 // Test Open(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager.get()));
   EXPECT_TRUE(ais->Open());
@@ -309,8 +298,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenAndClose) {
 // Test Open(), Start(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager.get()));
   EXPECT_TRUE(ais->Open());
@@ -322,8 +310,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
 // Test Open(), Start(), Stop(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager.get()));
   EXPECT_TRUE(ais->Open());
@@ -336,8 +323,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
 // Test some additional calling sequences.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager.get()));
   WASAPIAudioInputStream* wais =
@@ -365,8 +351,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
 
 TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
 
   int count = 0;
   base::MessageLoopForUI loop;
@@ -436,8 +421,8 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
 // Test that we can capture a stream in loopback.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!audio_manager->HasAudioOutputDevices() || !CoreAudioUtil::IsSupported())
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager->HasAudioOutputDevices() &&
+                          CoreAudioUtil::IsSupported());
 
   AudioParameters params = audio_manager->GetInputStreamParameters(
       AudioManagerBase::kLoopbackInputDeviceId);
@@ -470,8 +455,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
 // environment variable to a value greater than 0.
 TEST(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamRecordToFile) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
 
   // Name of the output PCM file containing captured data. The output file
   // will be stored in the directory containing 'media_unittests.exe'.

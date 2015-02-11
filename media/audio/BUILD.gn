@@ -248,6 +248,8 @@ source_set("audio") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "audio_unittest_util.cc",
+    "audio_unittest_util.h",
     "mock_audio_manager.cc",
     "mock_audio_manager.h",
     "mock_audio_source_callback.cc",
