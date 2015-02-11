@@ -148,6 +148,7 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
 
   void OnUnregisterCompleted(const std::string& app_id,
                              gcm::GCMClient::Result result) override {
+    ExtensionGCMAppHandler::OnUnregisterCompleted(app_id, result);
     unregistration_result_ = result;
     waiter_->SignalCompleted();
   }
@@ -402,7 +403,7 @@ TEST_F(ExtensionGCMAppHandlerTest, AddAndRemoveAppHandler) {
 
   // App handler is removed when extension is uninstalled.
   UninstallExtension(extension.get());
-  waiter()->PumpUILoop();
+  waiter()->WaitUntilCompleted();
   EXPECT_FALSE(HasAppHandlers(extension->id()));
 }
 
@@ -417,19 +418,11 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
   waiter()->WaitUntilCompleted();
   EXPECT_EQ(gcm::GCMClient::SUCCESS, registration_result());
 
-  // Add another app handler in order to prevent the GCM service from being
-  // stopped when the extension is uninstalled. This is needed because otherwise
-  // we are not able to receive the unregistration result.
-  GetGCMDriver()->AddAppHandler("Foo", gcm_app_handler());
-
   // Unregistration should be triggered when the extension is uninstalled.
   UninstallExtension(extension.get());
   waiter()->WaitUntilCompleted();
   EXPECT_EQ(gcm::GCMClient::SUCCESS,
             gcm_app_handler()->unregistration_result());
-
-  // Clean up.
-  GetGCMDriver()->RemoveAppHandler("Foo");
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {

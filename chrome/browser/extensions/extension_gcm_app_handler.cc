@@ -124,7 +124,11 @@ void ExtensionGCMAppHandler::OnExtensionUnloaded(
                    weak_factory_.GetWeakPtr()));
   }
 
-  RemoveAppHandler(extension->id());
+  // When the extention is being uninstalled, it will be unloaded first. We
+  // should not remove the app handler in this case and it will be handled
+  // in OnExtensionUninstalled.
+  if (reason != UnloadedExtensionInfo::REASON_UNINSTALL)
+    RemoveAppHandler(extension->id());
 }
 
 void ExtensionGCMAppHandler::OnExtensionUninstalled(
@@ -137,7 +141,6 @@ void ExtensionGCMAppHandler::OnExtensionUninstalled(
         base::Bind(&ExtensionGCMAppHandler::OnUnregisterCompleted,
                    weak_factory_.GetWeakPtr(),
                    extension->id()));
-    RemoveAppHandler(extension->id());
   }
 }
 
@@ -155,7 +158,7 @@ gcm::GCMDriver* ExtensionGCMAppHandler::GetGCMDriver() const {
 
 void ExtensionGCMAppHandler::OnUnregisterCompleted(
     const std::string& app_id, gcm::GCMClient::Result result) {
-  // Nothing to do.
+  RemoveAppHandler(app_id);
 }
 
 void ExtensionGCMAppHandler::AddAppHandler(const std::string& app_id) {
