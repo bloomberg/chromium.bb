@@ -295,15 +295,15 @@ TEST_PPAPI_NACL(ImageData)
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
   RUN_TCPSOCKET_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
-  RUN_TCPSOCKET_SUBTESTS;
-}
 #if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-// Flaky on Mac ASAN: http://crbug.com/437408.
+// Flaky on Mac ASAN: http://crbug.com/437408 and http://crbug.com/457501.
 #define MAYBE_TCPSocket DISABLED_TCPSocket
 #else
 #define MAYBE_TCPSocket TCPSocket
 #endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_TCPSocket) {
+  RUN_TCPSOCKET_SUBTESTS;
+}
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(MAYBE_TCPSocket)) {
   RUN_TCPSOCKET_SUBTESTS;
 }
