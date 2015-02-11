@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <storage/browser/blob/blob_data_builder.h>
+#include "storage/browser/blob/blob_data_builder.h"
+
 #include "base/time/time.h"
 
 namespace storage {
@@ -20,8 +21,8 @@ void BlobDataBuilder::AppendData(const char* data, size_t length) {
 }
 
 void BlobDataBuilder::AppendFile(const base::FilePath& file_path,
-                                 uint64 offset,
-                                 uint64 length,
+                                 uint64_t offset,
+                                 uint64_t length,
                                  const base::Time& expected_modification_time) {
   DCHECK(length > 0);
   scoped_ptr<DataElement> element(new DataElement());
@@ -32,8 +33,8 @@ void BlobDataBuilder::AppendFile(const base::FilePath& file_path,
 
 void BlobDataBuilder::AppendFile(
     const base::FilePath& file_path,
-    uint64 offset,
-    uint64 length,
+    uint64_t offset,
+    uint64_t length,
     const base::Time& expected_modification_time,
     scoped_refptr<ShareableFileReference> shareable_file) {
   DCHECK(length > 0);
@@ -44,39 +45,30 @@ void BlobDataBuilder::AppendFile(
 }
 
 void BlobDataBuilder::AppendBlob(const std::string& uuid,
-                                 uint64 offset,
-                                 uint64 length) {
+                                 uint64_t offset,
+                                 uint64_t length) {
   DCHECK_GT(length, 0ul);
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToBlobRange(uuid, offset, length);
   items_.push_back(new BlobDataItem(element.Pass()));
 }
 
+void BlobDataBuilder::AppendBlob(const std::string& uuid) {
+  scoped_ptr<DataElement> element(new DataElement());
+  element->SetToBlob(uuid);
+  items_.push_back(new BlobDataItem(element.Pass()));
+}
+
 void BlobDataBuilder::AppendFileSystemFile(
     const GURL& url,
-    uint64 offset,
-    uint64 length,
+    uint64_t offset,
+    uint64_t length,
     const base::Time& expected_modification_time) {
   DCHECK(length > 0);
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToFileSystemUrlRange(url, offset, length,
                                    expected_modification_time);
   items_.push_back(new BlobDataItem(element.Pass()));
-}
-
-size_t BlobDataBuilder::GetMemoryUsage() const {
-  int64 memory = 0;
-  for (const auto& data_item : items_) {
-    if (data_item->type() == DataElement::TYPE_BYTES)
-      memory += data_item->length();
-  }
-  return memory;
-}
-
-scoped_ptr<BlobDataSnapshot> BlobDataBuilder::BuildSnapshot() {
-  return scoped_ptr<BlobDataSnapshot>(new BlobDataSnapshot(uuid_, content_type_,
-                                                           content_disposition_,
-                                                           items_)).Pass();
 }
 
 }  // namespace storage

@@ -22,7 +22,7 @@ class BlobStorageContext;
 // to memory) by the BlobStorageContext.
 class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
  public:
-  storage::DataElement::Type type() const { return item_->type(); }
+  DataElement::Type type() const { return item_->type(); }
   const char* bytes() const { return item_->bytes(); }
   const base::FilePath& path() const { return item_->path(); }
   const GURL& filesystem_url() const { return item_->filesystem_url(); }
@@ -39,12 +39,13 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   friend class BlobDataBuilder;
   friend class BlobStorageContext;
   friend class base::RefCounted<BlobDataItem>;
+
   BlobDataItem(scoped_ptr<DataElement> item);
   BlobDataItem(scoped_ptr<DataElement> item,
                scoped_refptr<ShareableFileReference> file_handle);
   virtual ~BlobDataItem();
 
-  scoped_ptr<storage::DataElement> item_;
+  scoped_ptr<DataElement> item_;
   scoped_refptr<ShareableFileReference> file_handle_;
 };
 

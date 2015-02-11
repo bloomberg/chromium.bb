@@ -69,12 +69,11 @@ scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   std::string uuid(base::GenerateGUID());
-  scoped_ptr<storage::BlobDataBuilder> blob_data_builder(
-      new storage::BlobDataBuilder(uuid));
-  blob_data_builder->AppendData(data, length);
+  storage::BlobDataBuilder blob_data_builder(uuid);
+  blob_data_builder.AppendData(data, length);
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle =
-      context_->AddFinishedBlob(*blob_data_builder.get());
+      context_->AddFinishedBlob(&blob_data_builder);
   if (!blob_data_handle)
     return scoped_ptr<BlobHandle>();
 

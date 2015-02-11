@@ -271,7 +271,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
     expected_response += kTestData;
   }
   scoped_ptr<storage::BlobDataHandle> blob_handle =
-      blob_storage_context->context()->AddFinishedBlob(*blob_data_.get());
+      blob_storage_context->context()->AddFinishedBlob(blob_data_.get());
   SetUpWithHelper(new BlobResponder(
       kProcessID, blob_handle->uuid(), expected_response.size()));
 

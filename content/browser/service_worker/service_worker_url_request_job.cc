@@ -480,7 +480,7 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   }
 
   request_body_blob_data_handle_ =
-      blob_storage_context_->AddFinishedBlob(blob_builder);
+      blob_storage_context_->AddFinishedBlob(&blob_builder);
   *blob_uuid = uuid;
   *blob_size = total_size;
   return true;

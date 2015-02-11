@@ -109,27 +109,22 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
     scoped_ptr<BlobDataBuilder> blob_data_builder(
         new BlobDataBuilder(blob_id0));
     scoped_ptr<BlobDataHandle> handle1 =
-        blob_storage_context.AddFinishedBlob(*blob_data_builder.get());
+        blob_storage_context.AddFinishedBlob(blob_data_builder.get());
 
     const std::string blob_id1("id-1");
+    const std::string kBlobData = "BlobData";
     blob_data_builder.reset(new BlobDataBuilder(blob_id1));
-    blob_data_builder->AppendData("BlobData");
+    blob_data_builder->AppendData(kBlobData);
     blob_data_builder->AppendFile(
         base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
     scoped_ptr<BlobDataHandle> handle2 =
-        blob_storage_context.AddFinishedBlob(*blob_data_builder.get());
+        blob_storage_context.AddFinishedBlob(blob_data_builder.get());
 
     // Setup upload data elements for comparison.
-    auto blob_data = blob_data_builder->BuildSnapshot();
     ResourceRequestBody::Element blob_element1, blob_element2;
-    blob_element1.SetToBytes(
-        blob_data->items().at(0)->bytes() +
-            static_cast<int>(blob_data->items().at(0)->offset()),
-        static_cast<int>(blob_data->items().at(0)->length()));
+    blob_element1.SetToBytes(kBlobData.c_str(), kBlobData.size());
     blob_element2.SetToFilePathRange(
-        blob_data->items().at(1)->path(), blob_data->items().at(1)->offset(),
-        blob_data->items().at(1)->length(),
-        blob_data->items().at(1)->expected_modification_time());
+        base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
 
     ResourceRequestBody::Element upload_element1, upload_element2;
     upload_element1.SetToBytes("Hello", 5);

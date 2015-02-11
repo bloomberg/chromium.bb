@@ -39,6 +39,10 @@ class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
 
  private:
   friend class BlobDataBuilder;
+  friend class BlobStorageContext;
+  BlobDataSnapshot(const std::string& uuid,
+                   const std::string& content_type,
+                   const std::string& content_disposition);
   BlobDataSnapshot(const std::string& uuid,
                    const std::string& content_type,
                    const std::string& content_disposition,
@@ -47,7 +51,8 @@ class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
   const std::string uuid_;
   const std::string content_type_;
   const std::string content_disposition_;
-  const std::vector<scoped_refptr<BlobDataItem>> items_;
+  // Non-const for constrution in BlobStorageContext
+  std::vector<scoped_refptr<BlobDataItem>> items_;
 };
 
 }  // namespace storage

@@ -24,6 +24,12 @@ using storage::DataElement;
 namespace content {
 
 namespace {
+// This is necessary to clean up the blobs after the handles are released.
+void RunEventLoopTillIdle() {
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+}
+
 void SetupBasicBlob(BlobStorageHost* host, const std::string& id) {
   EXPECT_TRUE(host->StartBuildingBlob(id));
   DataElement item;
@@ -48,10 +54,7 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  {  // Clean up for ASAN
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunEventLoopTillIdle();
 
   // Make sure its still there after inc/dec.
   EXPECT_TRUE(host.IncrementBlobRefCount(kId));
@@ -59,10 +62,7 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  {  // Clean up for ASAN
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunEventLoopTillIdle();
 
   // Make sure it goes away in the end.
   EXPECT_TRUE(host.DecrementBlobRefCount(kId));
@@ -113,12 +113,116 @@ TEST(BlobStorageContextTest, BlobDataHandle) {
   // Should disappear after dropping both handles.
   blob_data_handle.reset();
   another_handle.reset();
-  {  // Clean up for ASAN
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunEventLoopTillIdle();
+
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_FALSE(blob_data_handle);
+}
+
+TEST(BlobStorageContextTest, MemoryUsage) {
+  const std::string kId1("id1");
+  const std::string kId2("id2");
+
+  base::MessageLoop fake_io_message_loop;
+
+  BlobDataBuilder builder1(kId1);
+  BlobDataBuilder builder2(kId2);
+  builder1.AppendData("Data1Data2");
+  builder2.AppendBlob(kId1);
+  builder2.AppendBlob(kId1);
+  builder2.AppendBlob(kId1);
+  builder2.AppendBlob(kId1);
+  builder2.AppendBlob(kId1);
+  builder2.AppendBlob(kId1);
+  builder2.AppendBlob(kId1);
+
+  BlobStorageContext context;
+  EXPECT_EQ(0lu, context.memory_usage());
+
+  scoped_ptr<BlobDataHandle> blob_data_handle =
+      context.AddFinishedBlob(&builder1);
+  EXPECT_EQ(10lu, context.memory_usage());
+  scoped_ptr<BlobDataHandle> blob_data_handle2 =
+      context.AddFinishedBlob(&builder2);
+  EXPECT_EQ(10lu, context.memory_usage());
+
+  blob_data_handle.reset();
+  RunEventLoopTillIdle();
+
+  EXPECT_EQ(10lu, context.memory_usage());
+  blob_data_handle2.reset();
+  RunEventLoopTillIdle();
+
+  EXPECT_EQ(0lu, context.memory_usage());
+}
+
+TEST(BlobStorageContextTest, AddFinishedBlob) {
+  const std::string kId1("id1");
+  const std::string kId2("id12");
+  const std::string kId2Prime("id2.prime");
+  const std::string kId3("id3");
+  const std::string kId3Prime("id3.prime");
+
+  base::MessageLoop fake_io_message_loop;
+
+  BlobDataBuilder builder1(kId1);
+  BlobDataBuilder builder2(kId2);
+  BlobDataBuilder canonicalized_blob_data2(kId2Prime);
+  builder1.AppendData("Data1Data2");
+  builder2.AppendBlob(kId1, 5, 5);
+  builder2.AppendData(" is the best");
+  canonicalized_blob_data2.AppendData("Data2");
+  canonicalized_blob_data2.AppendData(" is the best");
+
+  BlobStorageContext context;
+
+  scoped_ptr<BlobDataHandle> blob_data_handle =
+      context.AddFinishedBlob(&builder1);
+  scoped_ptr<BlobDataHandle> blob_data_handle2 =
+      context.AddFinishedBlob(&builder2);
+
+  ASSERT_TRUE(blob_data_handle);
+  ASSERT_TRUE(blob_data_handle2);
+  scoped_ptr<BlobDataSnapshot> data1 = blob_data_handle->CreateSnapshot();
+  scoped_ptr<BlobDataSnapshot> data2 = blob_data_handle2->CreateSnapshot();
+  EXPECT_EQ(*data1, builder1);
+  EXPECT_EQ(*data2, canonicalized_blob_data2);
+  blob_data_handle.reset();
+  data2.reset();
+
+  RunEventLoopTillIdle();
+
+  blob_data_handle = context.GetBlobDataFromUUID(kId1);
+  EXPECT_FALSE(blob_data_handle);
+  EXPECT_TRUE(blob_data_handle2);
+  data2 = blob_data_handle2->CreateSnapshot();
+  EXPECT_EQ(*data2, canonicalized_blob_data2);
+
+  // Test shared elements stick around.
+  BlobDataBuilder builder3(kId3);
+  builder3.AppendBlob(kId2);
+  builder3.AppendBlob(kId2);
+  scoped_ptr<BlobDataHandle> blob_data_handle3 =
+      context.AddFinishedBlob(&builder3);
+  blob_data_handle2.reset();
+  RunEventLoopTillIdle();
+
+  blob_data_handle2 = context.GetBlobDataFromUUID(kId2);
+  EXPECT_FALSE(blob_data_handle2);
+  EXPECT_TRUE(blob_data_handle3);
+  scoped_ptr<BlobDataSnapshot> data3 = blob_data_handle3->CreateSnapshot();
+
+  BlobDataBuilder canonicalized_blob_data3(kId3Prime);
+  canonicalized_blob_data3.AppendData("Data2");
+  canonicalized_blob_data3.AppendData(" is the best");
+  canonicalized_blob_data3.AppendData("Data2");
+  canonicalized_blob_data3.AppendData(" is the best");
+  EXPECT_EQ(*data3, canonicalized_blob_data3);
+
+  blob_data_handle.reset();
+  blob_data_handle2.reset();
+  blob_data_handle3.reset();
+  RunEventLoopTillIdle();
 }
 
 TEST(BlobStorageContextTest, CompoundBlobs) {
@@ -133,50 +237,46 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
   base::Time::FromString("Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
 
-  scoped_ptr<BlobDataBuilder> blob_data1(new BlobDataBuilder(kId1));
-  blob_data1->AppendData("Data1");
-  blob_data1->AppendData("Data2");
-  blob_data1->AppendFile(base::FilePath(FILE_PATH_LITERAL("File1.txt")),
-    10, 1024, time1);
+  BlobDataBuilder blob_data1(kId1);
+  blob_data1.AppendData("Data1");
+  blob_data1.AppendData("Data2");
+  blob_data1.AppendFile(base::FilePath(FILE_PATH_LITERAL("File1.txt")), 10,
+                        1024, time1);
 
-  scoped_ptr<BlobDataBuilder> blob_data2(new BlobDataBuilder(kId2));
-  blob_data2->AppendData("Data3");
-  blob_data2->AppendBlob(kId1, 8, 100);
-  blob_data2->AppendFile(base::FilePath(FILE_PATH_LITERAL("File2.txt")),
-      0, 20, time2);
+  BlobDataBuilder blob_data2(kId2);
+  blob_data2.AppendData("Data3");
+  blob_data2.AppendBlob(kId1, 8, 100);
+  blob_data2.AppendFile(base::FilePath(FILE_PATH_LITERAL("File2.txt")), 0, 20,
+                        time2);
 
-  scoped_ptr<BlobDataBuilder> canonicalized_blob_data2(
-      new BlobDataBuilder(kId2Prime));
-  canonicalized_blob_data2->AppendData("Data3");
-  canonicalized_blob_data2->AppendData("a2___", 2);
-  canonicalized_blob_data2->AppendFile(
-      base::FilePath(FILE_PATH_LITERAL("File1.txt")),
-      10, 98, time1);
-  canonicalized_blob_data2->AppendFile(
+  BlobDataBuilder canonicalized_blob_data2(kId2Prime);
+  canonicalized_blob_data2.AppendData("Data3");
+  canonicalized_blob_data2.AppendData("a2___", 2);
+  canonicalized_blob_data2.AppendFile(
+      base::FilePath(FILE_PATH_LITERAL("File1.txt")), 10, 98, time1);
+  canonicalized_blob_data2.AppendFile(
       base::FilePath(FILE_PATH_LITERAL("File2.txt")), 0, 20, time2);
 
   BlobStorageContext context;
   scoped_ptr<BlobDataHandle> blob_data_handle;
 
   // Test a blob referring to only data and a file.
-  blob_data_handle = context.AddFinishedBlob(*blob_data1.get());
+  blob_data_handle = context.AddFinishedBlob(&blob_data1);
+
   ASSERT_TRUE(blob_data_handle);
   scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
   ASSERT_TRUE(blob_data_handle);
-  EXPECT_EQ(*data, *blob_data1);
+  EXPECT_EQ(*data, blob_data1);
 
   // Test a blob composed in part with another blob.
-  blob_data_handle = context.AddFinishedBlob(*blob_data2.get());
+  blob_data_handle = context.AddFinishedBlob(&blob_data2);
   data = blob_data_handle->CreateSnapshot();
   ASSERT_TRUE(blob_data_handle);
   ASSERT_TRUE(data);
-  EXPECT_EQ(*data, *canonicalized_blob_data2);
+  EXPECT_EQ(*data, canonicalized_blob_data2);
 
   blob_data_handle.reset();
-  {  // Clean up for ASAN
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunEventLoopTillIdle();
 }
 
 TEST(BlobStorageContextTest, PublicBlobUrls) {
@@ -197,10 +297,7 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   EXPECT_EQ(kId, blob_data_handle->uuid());
   scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
   blob_data_handle.reset();
-  {  // Clean up for ASAN
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunEventLoopTillIdle();
 
   // The url registration should keep the blob alive even after
   // explicit references are dropped.
@@ -208,10 +305,7 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   blob_data_handle = context.GetBlobDataFromPublicURL(kUrl);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  {  // Clean up for ASAN
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  RunEventLoopTillIdle();
 
   // Finally get rid of the url registration and the blob.
   EXPECT_TRUE(host.RevokePublicBlobURL(kUrl));

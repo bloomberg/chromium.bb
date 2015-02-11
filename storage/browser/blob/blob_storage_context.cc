@@ -4,13 +4,18 @@
 
 #include "storage/browser/blob/blob_storage_context.h"
 
+#include <algorithm>
+#include <limits>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -39,12 +44,11 @@ static const int64 kMaxMemoryUsage = 500 * 1024 * 1024;  // Half a gig.
 
 }  // namespace
 
-BlobStorageContext::BlobMapEntry::BlobMapEntry()
-    : refcount(0), flags(0) {
+BlobStorageContext::BlobMapEntry::BlobMapEntry() : refcount(0), flags(0) {
 }
 
 BlobStorageContext::BlobMapEntry::BlobMapEntry(int refcount,
-                                               BlobDataBuilder* data)
+                                               InternalBlobData::Builder* data)
     : refcount(refcount), flags(0), data_builder(data) {
 }
 
@@ -55,8 +59,7 @@ bool BlobStorageContext::BlobMapEntry::IsBeingBuilt() {
   return data_builder;
 }
 
-BlobStorageContext::BlobStorageContext()
-    : memory_usage_(0) {
+BlobStorageContext::BlobStorageContext() : memory_usage_(0) {
 }
 
 BlobStorageContext::~BlobStorageContext() {
@@ -80,26 +83,41 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
 
 scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
     const GURL& url) {
-  BlobURLMap::iterator found = public_blob_urls_.find(
-      BlobUrlHasRef(url) ? ClearBlobUrlRef(url) : url);
+  BlobURLMap::iterator found =
+      public_blob_urls_.find(BlobUrlHasRef(url) ? ClearBlobUrlRef(url) : url);
   if (found == public_blob_urls_.end())
     return scoped_ptr<BlobDataHandle>();
   return GetBlobDataFromUUID(found->second);
 }
 
 scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
-    const BlobDataBuilder& data) {
-  StartBuildingBlob(data.uuid_);
-  for (const auto& blob_item : data.items_)
-    AppendBlobDataItem(data.uuid_, *(blob_item->item_));
-  FinishBuildingBlob(data.uuid_, data.content_type_);
-  scoped_ptr<BlobDataHandle> handle = GetBlobDataFromUUID(data.uuid_);
-  DecrementBlobRefCount(data.uuid_);
+    BlobDataBuilder* external_builder) {
+  StartBuildingBlob(external_builder->uuid_);
+  BlobMap::iterator found = blob_map_.find(external_builder->uuid_);
+  DCHECK(found != blob_map_.end());
+  BlobMapEntry* entry = found->second;
+  InternalBlobData::Builder* target_blob_builder = entry->data_builder.get();
+  DCHECK(target_blob_builder);
+
+  target_blob_builder->set_content_disposition(
+      external_builder->content_disposition_);
+  for (const auto& blob_item : external_builder->items_) {
+    if (!AppendAllocatedBlobItem(external_builder->uuid_, blob_item,
+                                 target_blob_builder)) {
+      BlobEntryExceededMemory(entry);
+      break;
+    }
+  }
+
+  FinishBuildingBlob(external_builder->uuid_, external_builder->content_type_);
+  scoped_ptr<BlobDataHandle> handle =
+      GetBlobDataFromUUID(external_builder->uuid_);
+  DecrementBlobRefCount(external_builder->uuid_);
   return handle.Pass();
 }
 
-bool BlobStorageContext::RegisterPublicBlobURL(
-    const GURL& blob_url, const std::string& uuid) {
+bool BlobStorageContext::RegisterPublicBlobURL(const GURL& blob_url,
+                                               const std::string& uuid) {
   DCHECK(!BlobUrlHasRef(blob_url));
   DCHECK(IsInUse(uuid));
   DCHECK(!IsUrlRegistered(blob_url));
@@ -123,20 +141,28 @@ scoped_ptr<BlobDataSnapshot> BlobStorageContext::CreateSnapshot(
   scoped_ptr<BlobDataSnapshot> result;
   auto found = blob_map_.find(uuid);
   DCHECK(found != blob_map_.end())
-      << "Blob should be in map, as the handle is still around";
+      << "Blob " << uuid << " should be in map, as the handle is still around";
   BlobMapEntry* entry = found->second;
   DCHECK(!entry->IsBeingBuilt());
-  result.reset(new BlobDataSnapshot(*entry->data));
-  return result.Pass();
+  const InternalBlobData& data = *entry->data;
+
+  scoped_ptr<BlobDataSnapshot> snapshot(new BlobDataSnapshot(
+      uuid, data.content_type(), data.content_disposition()));
+  snapshot->items_.reserve(data.items().size());
+  for (const auto& shareable_item : data.items()) {
+    snapshot->items_.push_back(shareable_item->item());
+  }
+  return snapshot;
 }
 
 void BlobStorageContext::StartBuildingBlob(const std::string& uuid) {
   DCHECK(!IsInUse(uuid) && !uuid.empty());
-  blob_map_[uuid] = new BlobMapEntry(1, new BlobDataBuilder(uuid));
+  blob_map_[uuid] = new BlobMapEntry(1, new InternalBlobData::Builder());
 }
 
-void BlobStorageContext::AppendBlobDataItem(const std::string& uuid,
-                                            const DataElement& item) {
+void BlobStorageContext::AppendBlobDataItem(
+    const std::string& uuid,
+    const storage::DataElement& ipc_data_element) {
   DCHECK(IsBeingBuilt(uuid));
   BlobMap::iterator found = blob_map_.find(uuid);
   if (found == blob_map_.end())
@@ -144,87 +170,38 @@ void BlobStorageContext::AppendBlobDataItem(const std::string& uuid,
   BlobMapEntry* entry = found->second;
   if (entry->flags & EXCEEDED_MEMORY)
     return;
-  BlobDataBuilder* target_blob_data = entry->data_builder.get();
-  DCHECK(target_blob_data);
+  InternalBlobData::Builder* target_blob_builder = entry->data_builder.get();
+  DCHECK(target_blob_builder);
 
-  bool exceeded_memory = false;
-
-  // The blob data is stored in the canonical way which only contains a
-  // list of Data, File, and FileSystem items. Aggregated TYPE_BLOB items
-  // are expanded into the primitive constituent types.
-  // 1) The Data item is denoted by the raw data and length.
-  // 2) The File item is denoted by the file path, the range and the expected
-  //    modification time.
-  // 3) The FileSystem File item is denoted by the FileSystem URL, the range
-  //    and the expected modification time.
-  // 4) The Blob items are expanded.
-  // TODO(michaeln): Would be nice to avoid copying Data items when expanding.
-
-  uint64 length = item.length();
-  DCHECK_GT(length, 0u);
-  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeBeforeAppend",
-                       memory_usage_ / 1024);
-  switch (item.type()) {
-    case DataElement::TYPE_BYTES:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Bytes", length / 1024);
-      DCHECK(!item.offset());
-      exceeded_memory = !AppendBytesItem(target_blob_data, item.bytes(),
-                                         static_cast<int64>(length));
-      break;
-    case DataElement::TYPE_FILE:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File", length / 1024);
-      AppendFileItem(target_blob_data, item.path(), item.offset(),
-                     item.length(), item.expected_modification_time());
-      break;
-    case DataElement::TYPE_FILE_FILESYSTEM:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.FileSystem", length / 1024);
-      AppendFileSystemFileItem(target_blob_data, item.filesystem_url(),
-                               item.offset(), item.length(),
-                               item.expected_modification_time());
-      break;
-    case DataElement::TYPE_BLOB: {
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Blob", length / 1024);
-      // We grab the handle to ensure it stays around while we copy it.
-      scoped_ptr<BlobDataHandle> src = GetBlobDataFromUUID(item.blob_uuid());
-      if (src) {
-        BlobMapEntry* entry = blob_map_.find(item.blob_uuid())->second;
-        DCHECK(entry->data);
-        exceeded_memory = !ExpandStorageItems(target_blob_data, *entry->data,
-                                              item.offset(), item.length());
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeAfterAppend",
-                       memory_usage_ / 1024);
-
-  // If we're using too much memory, drop this blob's data.
-  // TODO(michaeln): Blob memory storage does not yet spill over to disk,
-  // as a stop gap, we'll prevent memory usage over a max amount.
-  if (exceeded_memory) {
-    memory_usage_ -= target_blob_data->GetMemoryUsage();
-    entry->flags |= EXCEEDED_MEMORY;
-    entry->data_builder.reset(new BlobDataBuilder(uuid));
+  if (ipc_data_element.type() == DataElement::TYPE_BYTES &&
+      memory_usage_ + ipc_data_element.length() > kMaxMemoryUsage) {
+    BlobEntryExceededMemory(entry);
     return;
+  }
+  if (!AppendAllocatedBlobItem(uuid, AllocateBlobItem(uuid, ipc_data_element),
+                               target_blob_builder)) {
+    BlobEntryExceededMemory(entry);
   }
 }
 
-void BlobStorageContext::FinishBuildingBlob(
-    const std::string& uuid, const std::string& content_type) {
+void BlobStorageContext::FinishBuildingBlob(const std::string& uuid,
+                                            const std::string& content_type) {
   DCHECK(IsBeingBuilt(uuid));
   BlobMap::iterator found = blob_map_.find(uuid);
   if (found == blob_map_.end())
     return;
   BlobMapEntry* entry = found->second;
   entry->data_builder->set_content_type(content_type);
-  entry->data = entry->data_builder->BuildSnapshot().Pass();
+  entry->data = entry->data_builder->Build();
   entry->data_builder.reset();
   UMA_HISTOGRAM_COUNTS("Storage.Blob.ItemCount", entry->data->items().size());
   UMA_HISTOGRAM_BOOLEAN("Storage.Blob.ExceededMemory",
                         (entry->flags & EXCEEDED_MEMORY) == EXCEEDED_MEMORY);
+  size_t total_memory = 0, nonshared_memory = 0;
+  entry->data->GetMemoryUsage(&total_memory, &nonshared_memory);
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.TotalSize", total_memory / 1024);
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.TotalUnsharedSize",
+                       nonshared_memory / 1024);
 }
 
 void BlobStorageContext::CancelBuildingBlob(const std::string& uuid) {
@@ -247,28 +224,167 @@ void BlobStorageContext::DecrementBlobRefCount(const std::string& uuid) {
     return;
   auto* entry = found->second;
   if (--(entry->refcount) == 0) {
+    size_t memory_freeing = 0;
     if (entry->IsBeingBuilt()) {
-      memory_usage_ -= entry->data_builder->GetMemoryUsage();
+      memory_freeing = entry->data_builder->GetNonsharedMemoryUsage();
+      entry->data_builder->RemoveBlobFromShareableItems(uuid);
     } else {
-      memory_usage_ -= entry->data->GetMemoryUsage();
+      memory_freeing = entry->data->GetUnsharedMemoryUsage();
+      entry->data->RemoveBlobFromShareableItems(uuid);
     }
+    DCHECK_LE(memory_freeing, memory_usage_);
+    memory_usage_ -= memory_freeing;
     delete entry;
     blob_map_.erase(found);
   }
 }
 
-bool BlobStorageContext::ExpandStorageItems(
-    BlobDataBuilder* target_blob_data,
-    const BlobDataSnapshot& src_blob_data,
-    uint64 offset,
-    uint64 length) {
-  DCHECK(target_blob_data && length != static_cast<uint64>(-1));
+void BlobStorageContext::BlobEntryExceededMemory(BlobMapEntry* entry) {
+  // If we're using too much memory, drop this blob's data.
+  // TODO(michaeln): Blob memory storage does not yet spill over to disk,
+  // as a stop gap, we'll prevent memory usage over a max amount.
+  memory_usage_ -= entry->data_builder->GetNonsharedMemoryUsage();
+  entry->flags |= EXCEEDED_MEMORY;
+  entry->data_builder.reset(new InternalBlobData::Builder());
+}
 
-  const std::vector<scoped_refptr<BlobDataItem>>& items = src_blob_data.items();
+scoped_refptr<BlobDataItem> BlobStorageContext::AllocateBlobItem(
+    const std::string& uuid,
+    const DataElement& ipc_data) {
+  scoped_refptr<BlobDataItem> blob_item;
+
+  uint64 length = ipc_data.length();
+  scoped_ptr<DataElement> element(new DataElement());
+  switch (ipc_data.type()) {
+    case DataElement::TYPE_BYTES:
+      DCHECK(!ipc_data.offset());
+      element->SetToBytes(ipc_data.bytes(), length);
+      blob_item = new BlobDataItem(element.Pass());
+      break;
+    case DataElement::TYPE_FILE:
+      element->SetToFilePathRange(ipc_data.path(), ipc_data.offset(), length,
+                                  ipc_data.expected_modification_time());
+      blob_item = new BlobDataItem(
+          element.Pass(), ShareableFileReference::Get(ipc_data.path()));
+      break;
+    case DataElement::TYPE_FILE_FILESYSTEM:
+      element->SetToFileSystemUrlRange(ipc_data.filesystem_url(),
+                                       ipc_data.offset(), length,
+                                       ipc_data.expected_modification_time());
+      blob_item = new BlobDataItem(element.Pass());
+      break;
+    case DataElement::TYPE_BLOB:
+      // This is a temporary item that will be deconstructed later.
+      element->SetToBlobRange(ipc_data.blob_uuid(), ipc_data.offset(),
+                              ipc_data.length());
+      blob_item = new BlobDataItem(element.Pass());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return blob_item;
+}
+
+bool BlobStorageContext::AppendAllocatedBlobItem(
+    const std::string& target_blob_uuid,
+    scoped_refptr<BlobDataItem> blob_item,
+    InternalBlobData::Builder* target_blob_builder) {
+  bool exceeded_memory = false;
+
+  // The blob data is stored in the canonical way which only contains a
+  // list of Data, File, and FileSystem items. Aggregated TYPE_BLOB items
+  // are expanded into the primitive constituent types and reused if possible.
+  // 1) The Data item is denoted by the raw data and length.
+  // 2) The File item is denoted by the file path, the range and the expected
+  //    modification time.
+  // 3) The FileSystem File item is denoted by the FileSystem URL, the range
+  //    and the expected modification time.
+  // 4) The Blob item is denoted by the source blob and an offset and size.
+  //    Internal items that are fully used by the new blob (not cut by the
+  //    offset or size) are shared between the blobs.  Otherwise, the relevant
+  //    portion of the item is copied.
+
+  const DataElement& data_element = blob_item->data_element();
+  uint64 length = data_element.length();
+  uint64 offset = data_element.offset();
+  DCHECK_GT(length, 0u);
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeBeforeAppend",
+                       memory_usage_ / 1024);
+  switch (data_element.type()) {
+    case DataElement::TYPE_BYTES:
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Bytes", length / 1024);
+      DCHECK(!offset);
+      if (memory_usage_ + length > kMaxMemoryUsage) {
+        exceeded_memory = true;
+        break;
+      }
+      memory_usage_ += length;
+      target_blob_builder->AppendSharedBlobItem(
+          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      break;
+    case DataElement::TYPE_FILE: {
+      bool full_file = (length == std::numeric_limits<uint64>::max());
+      UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.File.Unknown", full_file);
+      if (!full_file) {
+        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File",
+                             (length - offset) / 1024);
+      }
+      target_blob_builder->AppendSharedBlobItem(
+          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      break;
+    }
+    case DataElement::TYPE_FILE_FILESYSTEM: {
+      bool full_file = (length == std::numeric_limits<uint64>::max());
+      UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.FileSystem.Unknown",
+                            full_file);
+      if (!full_file) {
+        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.FileSystem",
+                             (length - offset) / 1024);
+      }
+      target_blob_builder->AppendSharedBlobItem(
+          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      break;
+    }
+    case DataElement::TYPE_BLOB: {
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Blob",
+                           (length - offset) / 1024);
+      // We grab the handle to ensure it stays around while we copy it.
+      scoped_ptr<BlobDataHandle> src =
+          GetBlobDataFromUUID(data_element.blob_uuid());
+      if (src) {
+        BlobMapEntry* other_entry =
+            blob_map_.find(data_element.blob_uuid())->second;
+        DCHECK(other_entry->data);
+        exceeded_memory = !AppendBlob(target_blob_uuid, *other_entry->data,
+                                      offset, length, target_blob_builder);
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeAfterAppend",
+                       memory_usage_ / 1024);
+
+  return !exceeded_memory;
+}
+
+bool BlobStorageContext::AppendBlob(
+    const std::string& target_blob_uuid,
+    const InternalBlobData& blob,
+    size_t offset,
+    size_t length,
+    InternalBlobData::Builder* target_blob_builder) {
+  DCHECK(length > 0);
+
+  const std::vector<scoped_refptr<ShareableBlobDataItem>>& items = blob.items();
   auto iter = items.begin();
   if (offset) {
     for (; iter != items.end(); ++iter) {
-      const BlobDataItem& item = *(iter->get());
+      const BlobDataItem& item = *(iter->get()->item());
       if (offset >= item.length())
         offset -= item.length();
       else
@@ -277,68 +393,69 @@ bool BlobStorageContext::ExpandStorageItems(
   }
 
   for (; iter != items.end() && length > 0; ++iter) {
-    const BlobDataItem& item = *(iter->get());
-    uint64 current_length = item.length() - offset;
-    uint64 new_length = current_length > length ? length : current_length;
-    if (iter->get()->type() == DataElement::TYPE_BYTES) {
-      if (!AppendBytesItem(
-              target_blob_data,
-              item.bytes() + static_cast<size_t>(item.offset() + offset),
-              static_cast<int64>(new_length))) {
-        return false;  // exceeded memory
-      }
-    } else if (item.type() == DataElement::TYPE_FILE) {
-      AppendFileItem(target_blob_data, item.path(), item.offset() + offset,
-                     new_length, item.expected_modification_time());
-    } else {
-      DCHECK(item.type() == DataElement::TYPE_FILE_FILESYSTEM);
-      AppendFileSystemFileItem(target_blob_data, item.filesystem_url(),
-                               item.offset() + offset, new_length,
-                               item.expected_modification_time());
+    scoped_refptr<ShareableBlobDataItem> shareable_item = iter->get();
+    const BlobDataItem& item = *(shareable_item->item());
+    size_t item_length = item.length();
+    DCHECK_GT(item_length, offset);
+    size_t current_length = item_length - offset;
+    size_t new_length = current_length > length ? length : current_length;
+
+    bool reusing_blob_item = offset == 0 && new_length == item.length();
+    UMA_HISTOGRAM_BOOLEAN("Storage.Blob.ReusedItem", reusing_blob_item);
+    if (reusing_blob_item) {
+      shareable_item->referencing_blobs().insert(target_blob_uuid);
+      target_blob_builder->AppendSharedBlobItem(shareable_item);
+      length -= new_length;
+      continue;
+    }
+
+    // We need to do copying of the items when we have a different offset or
+    // length
+    switch (item.type()) {
+      case DataElement::TYPE_BYTES: {
+        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.Bytes",
+                             new_length / 1024);
+        if (memory_usage_ + new_length > kMaxMemoryUsage) {
+          return false;
+        }
+        DCHECK(!item.offset());
+        scoped_ptr<DataElement> element(new DataElement());
+        element->SetToBytes(item.bytes() + offset,
+                            static_cast<int64>(new_length));
+        memory_usage_ += new_length;
+        target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+            target_blob_uuid, new BlobDataItem(element.Pass())));
+      } break;
+      case DataElement::TYPE_FILE: {
+        DCHECK_NE(item.length(), std::numeric_limits<uint64>::max())
+            << "We cannot use a section of a file with an unknown length";
+        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.File",
+                             new_length / 1024);
+        scoped_ptr<DataElement> element(new DataElement());
+        element->SetToFilePathRange(item.path(), item.offset() + offset,
+                                    new_length,
+                                    item.expected_modification_time());
+        target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+            target_blob_uuid,
+            new BlobDataItem(element.Pass(), item.file_handle_)));
+      } break;
+      case DataElement::TYPE_FILE_FILESYSTEM: {
+        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.FileSystem",
+                             new_length / 1024);
+        scoped_ptr<DataElement> element(new DataElement());
+        element->SetToFileSystemUrlRange(item.filesystem_url(),
+                                         item.offset() + offset, new_length,
+                                         item.expected_modification_time());
+        target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+            target_blob_uuid, new BlobDataItem(element.Pass())));
+      } break;
+      default:
+        CHECK(false) << "Illegal blob item type: " << item.type();
     }
     length -= new_length;
     offset = 0;
   }
   return true;
-}
-
-bool BlobStorageContext::AppendBytesItem(BlobDataBuilder* target_blob_data,
-                                         const char* bytes,
-                                         int64 length) {
-  if (length < 0) {
-    DCHECK(false);
-    return false;
-  }
-  if (memory_usage_ + length > kMaxMemoryUsage) {
-    return false;
-  }
-  target_blob_data->AppendData(bytes, static_cast<size_t>(length));
-  memory_usage_ += length;
-  return true;
-}
-
-void BlobStorageContext::AppendFileItem(
-    BlobDataBuilder* target_blob_data,
-    const base::FilePath& file_path,
-    uint64 offset,
-    uint64 length,
-    const base::Time& expected_modification_time) {
-  // It may be a temporary file that should be deleted when no longer needed.
-  scoped_refptr<ShareableFileReference> shareable_file =
-      ShareableFileReference::Get(file_path);
-
-  target_blob_data->AppendFile(file_path, offset, length,
-                               expected_modification_time, shareable_file);
-}
-
-void BlobStorageContext::AppendFileSystemFileItem(
-    BlobDataBuilder* target_blob_data,
-    const GURL& filesystem_url,
-    uint64 offset,
-    uint64 length,
-    const base::Time& expected_modification_time) {
-  target_blob_data->AppendFileSystemFile(filesystem_url, offset, length,
-                                         expected_modification_time);
 }
 
 bool BlobStorageContext::IsInUse(const std::string& uuid) {

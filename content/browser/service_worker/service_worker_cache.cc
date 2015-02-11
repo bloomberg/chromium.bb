@@ -775,7 +775,7 @@ void ServiceWorkerCache::MatchDoneWithBody(
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle(
       match_context->blob_storage_context->AddFinishedBlob(
-          *match_context->blob_data.get()));
+          match_context->blob_data.get()));
 
   match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeOK,
                                        match_context->response.Pass(),

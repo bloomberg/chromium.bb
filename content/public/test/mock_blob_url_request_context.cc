@@ -37,7 +37,7 @@ ScopedTextBlob::ScopedTextBlob(
   storage::BlobDataBuilder blob_builder(blob_id_);
   if (!data.empty())
     blob_builder.AppendData(data);
-  handle_ = context_->AddFinishedBlob(blob_builder);
+  handle_ = context_->AddFinishedBlob(&blob_builder);
 }
 
 ScopedTextBlob::~ScopedTextBlob() {

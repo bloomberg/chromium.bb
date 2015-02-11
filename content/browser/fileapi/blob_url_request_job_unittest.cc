@@ -23,7 +23,9 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -67,7 +69,7 @@ class BlobURLRequestJobTest : public testing::Test {
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) const override {
       return new BlobURLRequestJob(request, network_delegate,
-                                   test_->blob_data_->BuildSnapshot().Pass(),
+                                   test_->GetSnapshotFromBuilder(),
                                    test_->file_system_context_.get(),
                                    base::MessageLoopProxy::current().get());
     }
@@ -103,7 +105,12 @@ class BlobURLRequestJobTest : public testing::Test {
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    blob_handle_.reset();
+    // Clean up for ASAN
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
 
   void SetUpFileSystem() {
     // Prepare file system.
@@ -215,11 +222,18 @@ class BlobURLRequestJobTest : public testing::Test {
     *expected_result += std::string(kTestFileSystemFileData2 + 6, 7);
   }
 
+  scoped_ptr<BlobDataSnapshot> GetSnapshotFromBuilder() {
+    if (!blob_handle_) {
+      blob_handle_ = blob_context_.AddFinishedBlob(blob_data_.get()).Pass();
+    }
+    return blob_handle_->CreateSnapshot().Pass();
+  }
+
   // This only works if all the Blob items have a definite pre-computed length.
   // Otherwise, this will fail a CHECK.
-  int64 GetTotalBlobLength() const {
+  int64 GetTotalBlobLength() {
     int64 total = 0;
-    scoped_ptr<BlobDataSnapshot> data = blob_data_->BuildSnapshot();
+    scoped_ptr<BlobDataSnapshot> data = GetSnapshotFromBuilder();
     const auto& items = data->items();
     for (const auto& item : items) {
       int64 length = base::checked_cast<int64>(item->length());
@@ -243,6 +257,9 @@ class BlobURLRequestJobTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
+
+  storage::BlobStorageContext blob_context_;
+  scoped_ptr<storage::BlobDataHandle> blob_handle_;
   scoped_ptr<BlobDataBuilder> blob_data_;
   scoped_ptr<BlobDataSnapshot> blob_data_snapshot_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;

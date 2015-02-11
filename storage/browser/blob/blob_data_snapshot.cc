@@ -17,6 +17,14 @@ BlobDataSnapshot::BlobDataSnapshot(
       items_(items) {
 }
 
+BlobDataSnapshot::BlobDataSnapshot(const std::string& uuid,
+                                   const std::string& content_type,
+                                   const std::string& content_disposition)
+    : uuid_(uuid),
+      content_type_(content_type),
+      content_disposition_(content_disposition) {
+}
+
 BlobDataSnapshot::BlobDataSnapshot(const BlobDataSnapshot& other)
     : uuid_(other.uuid_),
       content_type_(other.content_type_),

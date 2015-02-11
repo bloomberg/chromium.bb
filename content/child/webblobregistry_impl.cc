@@ -50,6 +50,13 @@ void WebBlobRegistryImpl::registerBlobData(
   size_t i = 0;
   WebBlobData::Item data_item;
   while (data.itemAt(i++, data_item)) {
+    // NOTE: data_item.length == -1 when we want to use the whole file.  This
+    // only happens when we are creating a file object in Blink, and the file
+    // object is the only item in the 'blob'.  If we use that file blob to
+    // create another blob, it is sent here as a 'file' item and not a blob,
+    // and the correct size is populated.
+    // static_cast<uint64>(-1) == kuint64max, which is what DataElement uses
+    // to specificy "use the whole file".
     if (data_item.length == 0) {
       continue;
     }

@@ -1,15 +1,17 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef STORAGE_BROWSER_BLOB_BLOB_DATA_BUILDER_H_
 #define STORAGE_BROWSER_BLOB_BLOB_DATA_BUILDER_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/storage_browser_export.h"
@@ -20,7 +22,7 @@ class BlobStorageContext;
 class STORAGE_EXPORT BlobDataBuilder {
  public:
   explicit BlobDataBuilder(const std::string& uuid);
-  virtual ~BlobDataBuilder();
+  ~BlobDataBuilder();
 
   const std::string& uuid() const { return uuid_; }
 
@@ -30,21 +32,28 @@ class STORAGE_EXPORT BlobDataBuilder {
 
   void AppendData(const char* data, size_t length);
 
+  // You must know the length of the file, you cannot use kuint64max to specify
+  // the whole file.
   void AppendFile(const base::FilePath& file_path,
-                  uint64 offset,
-                  uint64 length,
+                  uint64_t offset,
+                  uint64_t length,
                   const base::Time& expected_modification_time);
 
+  // You must know the length of the file, you cannot use kuint64max to specify
+  // the whole file.
   void AppendFile(const base::FilePath& file_path,
-                  uint64 offset,
-                  uint64 length,
+                  uint64_t offset,
+                  uint64_t length,
                   const base::Time& expected_modification_time,
                   scoped_refptr<ShareableFileReference> shareable_file);
 
-  void AppendBlob(const std::string& uuid, uint64 offset, uint64 length);
+  void AppendBlob(const std::string& uuid, uint64_t offset, uint64_t length);
+
+  void AppendBlob(const std::string& uuid);
+
   void AppendFileSystemFile(const GURL& url,
-                            uint64 offset,
-                            uint64 length,
+                            uint64_t offset,
+                            uint64_t length,
                             const base::Time& expected_modification_time);
 
   void set_content_type(const std::string& content_type) {
@@ -54,10 +63,6 @@ class STORAGE_EXPORT BlobDataBuilder {
   void set_content_disposition(const std::string& content_disposition) {
     content_disposition_ = content_disposition;
   }
-
-  size_t GetMemoryUsage() const;
-
-  scoped_ptr<BlobDataSnapshot> BuildSnapshot();
 
  private:
   friend class BlobStorageContext;
@@ -98,9 +103,8 @@ inline bool operator==(const BlobDataSnapshot& a, const BlobDataBuilder& b) {
     return false;
   }
   for (size_t i = 0; i < a.items().size(); ++i) {
-    if (*(a.items()[i]) != *(b.items_[i])) {
+    if (*(a.items()[i]) != *(b.items_[i]))
       return false;
-    }
   }
   return true;
 }

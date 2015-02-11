@@ -231,7 +231,7 @@ std::string IndexedDBDispatcherHost::HoldBlobData(
     blob_data_builder.set_content_type(base::UTF16ToUTF8(blob_info.type()));
     blob_data_builder.AppendFile(blob_info.file_path(), 0, blob_info.size(),
                                  blob_info.last_modified());
-    blob_data_handle = context->AddFinishedBlob(blob_data_builder);
+    blob_data_handle = context->AddFinishedBlob(&blob_data_builder);
   } else {
     auto iter = blob_data_handle_map_.find(uuid);
     if (iter != blob_data_handle_map_.end()) {

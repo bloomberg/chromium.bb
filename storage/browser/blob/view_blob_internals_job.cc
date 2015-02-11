@@ -18,8 +18,8 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
-#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/internal_blob_data.h"
 
 namespace {
 
@@ -150,8 +150,7 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
        iter != blob_storage_context_->blob_map_.end();
        ++iter) {
     AddHTMLBoldText(iter->first, out);
-    GenerateHTMLForBlobData(*(iter->second->data.get()), iter->second->refcount,
-                            out);
+    GenerateHTMLForBlobData(*iter->second->data, iter->second->refcount, out);
   }
   if (!blob_storage_context_->public_blob_urls_.empty()) {
     AddHorizontalRule(out);
@@ -168,7 +167,7 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
 }
 
 void ViewBlobInternalsJob::GenerateHTMLForBlobData(
-    const BlobDataSnapshot& blob_data,
+    const InternalBlobData& blob_data,
     int refcount,
     std::string* out) {
   StartHTMLList(out);
@@ -190,7 +189,7 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
       AddHTMLListItem(kIndex, base::UTF16ToUTF8(base::FormatNumber(i)), out);
       StartHTMLList(out);
     }
-    const BlobDataItem& item = *(blob_data.items().at(i));
+    const BlobDataItem& item = *(blob_data.items().at(i)->item());
 
     switch (item.type()) {
       case DataElement::TYPE_BYTES:

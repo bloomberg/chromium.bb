@@ -37052,6 +37052,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Storage.Blob.ReusedItem" units="BooleanReused">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    True if we reuse an item for a blob created from using Blob.slice, recorded
+    in BlobStorageContext on blob creation.
+  </summary>
+</histogram>
+
 <histogram name="Storage.Blob.StorageSizeAfterAppend" units="KB">
   <owner>dmurph@chromium.org</owner>
   <summary>
@@ -37070,10 +37078,59 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Storage.Blob.TotalSize" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total in-memory size in KB of finished blobs. Recorded in
+    BlobStorageContext when the blob is finished being created. This can include
+    memory that is shared with other blobs or memory from repeated internal
+    items.
+  </summary>
+</histogram>
+
+<histogram name="Storage.Blob.TotalUnsharedSize" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total amount of unique memory used to create a blob. Recorded in
+    BlobStorageContext when the blob is finished being created. This does not
+    include memory that is shared with other blobs. If multiple of the same blob
+    item is present, then this number will reflect the size of the single item.
+  </summary>
+</histogram>
+
 <histogram name="Storage.BlobItemSize" units="KB">
   <owner>dmurph@chromium.org</owner>
   <summary>
     The size in KB of items (or parts of items) appended to blobs.
+  </summary>
+</histogram>
+
+<histogram name="Storage.BlobItemSize.BlobSlice" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The size in KB of items (or parts of items) appended to blobs that come from
+    the slicing of other blobs.  This happens when using Blob.slice, where we
+    are using a part of an item in the original blob (not the whole item).
+  </summary>
+</histogram>
+
+<histogram name="Storage.BlobItemSize.File.Unknown" units="BooleanUnknown">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    True if the file size on blob append is unknown (which means the full file),
+    or false if a specific file length was populated. Recorded in
+    BlobStorageContext when we are adding a file item to a blob.
+  </summary>
+</histogram>
+
+<histogram name="Storage.BlobItemSize.FileSystem.Unknown"
+    units="BooleanUnknown">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    True if the file size of a filesystem object on blob append is unknown
+    (which means the full file), or false if a specific file length was
+    populated. Recorded in BlobStorageContext when we are adding a filesystem
+    item to a blob.
   </summary>
 </histogram>
 
@@ -43875,6 +43932,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Reported"/>
 </enum>
 
+<enum name="BooleanReused" type="int">
+  <int value="0" label="Not Reused"/>
+  <int value="1" label="Reused"/>
+</enum>
+
 <enum name="BooleanRevoked" type="int">
   <int value="0" label="Not revoked"/>
   <int value="1" label="Revoked"/>
@@ -43923,6 +43985,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanTimedOut" type="int">
   <int value="0" label="Did not time out"/>
   <int value="1" label="Timed out"/>
+</enum>
+
+<enum name="BooleanUnknown" type="int">
+  <int value="0" label="Known"/>
+  <int value="1" label="Unknown"/>
 </enum>
 
 <enum name="BooleanUsage" type="int">
@@ -63657,10 +63724,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="Storage.BlobAppendableItems" separator=".">
   <suffix name="Bytes" label="Appending bytes."/>
-  <suffix name="File" label="Appending a file."/>
-  <suffix name="FileSystem" label="Appending a filesystem object."/>
+  <suffix name="File" label="Appending a file with a known size."/>
+  <suffix name="FileSystem"
+      label="Appending a filesystem object with known size."/>
   <suffix name="Blob" label="Appending a blob."/>
   <affected-histogram name="Storage.BlobItemSize"/>
+  <affected-histogram name="Storage.BlobItemSize.BlobSlice"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyzygyStartupTime">
