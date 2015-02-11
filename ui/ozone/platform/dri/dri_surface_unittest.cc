@@ -83,7 +83,7 @@ void DriSurfaceTest::SetUp() {
   crtcs.push_back(kDefaultCrtc);
   drm_ = new ui::MockDriWrapper(true, crtcs, kPlanesPerCrtc);
   window_delegate_.reset(new MockDriWindowDelegate(drm_.get()));
-  surface_.reset(new ui::DriSurface(window_delegate_.get(), drm_.get()));
+  surface_.reset(new ui::DriSurface(window_delegate_.get()));
   surface_->ResizeCanvas(gfx::Size(kDefaultMode.hdisplay,
                                    kDefaultMode.vdisplay));
 }

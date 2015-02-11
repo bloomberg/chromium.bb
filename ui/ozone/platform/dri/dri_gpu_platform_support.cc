@@ -170,11 +170,13 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 
 DriGpuPlatformSupport::DriGpuPlatformSupport(
     const scoped_refptr<DriWrapper>& drm,
+    DrmDeviceManager* drm_device_manager,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager,
     scoped_ptr<NativeDisplayDelegateDri> ndd)
     : sender_(NULL),
       drm_(drm),
+      drm_device_manager_(drm_device_manager),
       window_manager_(window_manager),
       screen_manager_(screen_manager),
       ndd_(ndd.Pass()) {
@@ -235,7 +237,7 @@ bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
 void DriGpuPlatformSupport::OnCreateWindowDelegate(
     gfx::AcceleratedWidget widget) {
   scoped_ptr<DriWindowDelegate> delegate(new DriWindowDelegateImpl(
-      widget, drm_, window_manager_, screen_manager_));
+      widget, drm_, drm_device_manager_, window_manager_, screen_manager_));
   delegate->Initialize();
   window_manager_->AddWindowDelegate(widget, delegate.Pass());
 }

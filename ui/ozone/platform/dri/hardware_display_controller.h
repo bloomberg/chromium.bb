@@ -151,6 +151,8 @@ class OZONE_EXPORT HardwareDisplayController
     return crtc_controllers_.get();
   }
 
+  scoped_refptr<DriWrapper> GetAllocationDriWrapper() const;
+
  private:
   // Returns true if any of the CRTCs is waiting for a page flip.
   bool HasPendingPageFlips() const;

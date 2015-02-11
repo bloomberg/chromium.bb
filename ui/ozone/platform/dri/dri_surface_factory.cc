@@ -6,21 +6,18 @@
 
 #include <errno.h>
 
-#include "base/trace_event/trace_event.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
 
-DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
-                                     DriWindowDelegateManager* window_manager)
-    : drm_(drm), window_manager_(window_manager) {
+DriSurfaceFactory::DriSurfaceFactory(DriWindowDelegateManager* window_manager)
+    : window_manager_(window_manager) {
 }
 
 DriSurfaceFactory::~DriSurfaceFactory() {
@@ -29,7 +26,7 @@ DriSurfaceFactory::~DriSurfaceFactory() {
 scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   return scoped_ptr<ui::SurfaceOzoneCanvas>(
-      new DriSurface(window_manager_->GetWindowDelegate(widget), drm_));
+      new DriSurface(window_manager_->GetWindowDelegate(widget)));
 }
 
 bool DriSurfaceFactory::LoadEGLGLES2Bindings(

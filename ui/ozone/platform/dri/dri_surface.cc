@@ -34,12 +34,8 @@ scoped_refptr<DriBuffer> AllocateBuffer(const scoped_refptr<DriWrapper>& dri,
 
 }  // namespace
 
-DriSurface::DriSurface(DriWindowDelegate* window_delegate,
-                       const scoped_refptr<DriWrapper>& dri)
-    : window_delegate_(window_delegate),
-      dri_(dri),
-      buffers_(),
-      front_buffer_(0) {
+DriSurface::DriSurface(DriWindowDelegate* window_delegate)
+    : window_delegate_(window_delegate), buffers_(), front_buffer_(0) {
 }
 
 DriSurface::~DriSurface() {
@@ -61,17 +57,18 @@ void DriSurface::ResizeCanvas(const gfx::Size& viewport_size) {
   // For the display buffers use the mode size since a |viewport_size| smaller
   // than the display size will not scanout.
   for (size_t i = 0; i < arraysize(buffers_); ++i)
-    buffers_[i] = AllocateBuffer(dri_, controller->GetModeSize());
+    buffers_[i] = AllocateBuffer(controller->GetAllocationDriWrapper(),
+                                 controller->GetModeSize());
 }
 
 void DriSurface::PresentCanvas(const gfx::Rect& damage) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  DCHECK(buffers_[front_buffer_ ^ 1].get());
 
   HardwareDisplayController* controller = window_delegate_->GetController();
   if (!controller)
     return;
 
+  DCHECK(buffers_[front_buffer_ ^ 1].get());
   controller->QueueOverlayPlane(OverlayPlane(buffers_[front_buffer_ ^ 1]));
 
   UpdateNativeSurface(damage);

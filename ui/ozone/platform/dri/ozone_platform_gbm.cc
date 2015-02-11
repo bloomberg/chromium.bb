@@ -23,6 +23,7 @@
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
+#include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
@@ -156,6 +157,7 @@ class OzonePlatformGbm : public OzonePlatform {
     // Async page flips are supported only on surfaceless mode.
     gbm_ = new GbmWrapper(base::FilePath(kDefaultGraphicsCardPath));
     gbm_->Initialize();
+    drm_device_manager_.reset(new DrmDeviceManager(gbm_));
     buffer_generator_.reset(new GbmBufferGenerator());
     screen_manager_.reset(new ScreenManager(buffer_generator_.get()));
     // This makes sure that simple targets that do not handle display
@@ -166,19 +168,21 @@ class OzonePlatformGbm : public OzonePlatform {
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
-    surface_factory_ozone_->InitializeGpu(gbm_, window_delegate_manager_.get());
+    surface_factory_ozone_->InitializeGpu(gbm_, drm_device_manager_.get(),
+                                          window_delegate_manager_.get());
     scoped_ptr<NativeDisplayDelegateDri> ndd(
         new NativeDisplayDelegateDri(gbm_, screen_manager_.get()));
     ndd->Initialize();
-    gpu_platform_support_.reset(
-        new DriGpuPlatformSupport(gbm_, window_delegate_manager_.get(),
-                                  screen_manager_.get(), ndd.Pass()));
+    gpu_platform_support_.reset(new DriGpuPlatformSupport(
+        gbm_, drm_device_manager_.get(), window_delegate_manager_.get(),
+        screen_manager_.get(), ndd.Pass()));
   }
 
  private:
   bool use_surfaceless_;
   scoped_ptr<GlApiLoader> gl_api_loader_;
   scoped_refptr<GbmWrapper> gbm_;
+  scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;

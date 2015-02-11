@@ -30,6 +30,7 @@ class DriSurfaceFactory;
 class DriWindowDelegate;
 class DriWindowDelegateManager;
 class DriWrapper;
+class DrmDeviceManager;
 class NativeDisplayDelegateDri;
 class ScreenManager;
 
@@ -39,6 +40,7 @@ struct DisplaySnapshot_Params;
 class DriGpuPlatformSupport : public GpuPlatformSupport {
  public:
   DriGpuPlatformSupport(const scoped_refptr<DriWrapper>& drm,
+                        DrmDeviceManager* drm_device_manager,
                         DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager,
                         scoped_ptr<NativeDisplayDelegateDri> ndd);
@@ -82,6 +84,7 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
 
   IPC::Sender* sender_;                       // Not owned.
   scoped_refptr<DriWrapper> drm_;
+  DrmDeviceManager* drm_device_manager_;      // Not owned.
   DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.
 

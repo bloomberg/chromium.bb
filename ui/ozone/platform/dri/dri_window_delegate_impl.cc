@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 
 namespace ui {
@@ -44,10 +45,12 @@ void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
 DriWindowDelegateImpl::DriWindowDelegateImpl(
     gfx::AcceleratedWidget widget,
     const scoped_refptr<DriWrapper>& drm,
+    DrmDeviceManager* device_manager,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager)
     : widget_(widget),
       drm_(drm),
+      device_manager_(device_manager),
       window_manager_(window_manager),
       screen_manager_(screen_manager),
       controller_(NULL),
@@ -62,6 +65,7 @@ DriWindowDelegateImpl::~DriWindowDelegateImpl() {
 void DriWindowDelegateImpl::Initialize() {
   TRACE_EVENT1("dri", "DriWindowDelegateImpl::Initialize", "widget", widget_);
 
+  device_manager_->UpdateDrmDevice(widget_, nullptr);
   screen_manager_->AddObserver(this);
 
   uint64_t cursor_width = 64;
@@ -82,6 +86,7 @@ void DriWindowDelegateImpl::Initialize() {
 void DriWindowDelegateImpl::Shutdown() {
   TRACE_EVENT1("dri", "DriWindowDelegateImpl::Shutdown", "widget", widget_);
   screen_manager_->RemoveObserver(this);
+  device_manager_->RemoveDrmDevice(widget_);
 }
 
 gfx::AcceleratedWidget DriWindowDelegateImpl::GetAcceleratedWidget() {
@@ -97,6 +102,7 @@ void DriWindowDelegateImpl::OnBoundsChanged(const gfx::Rect& bounds) {
                widget_, "bounds", bounds.ToString());
   bounds_ = bounds;
   controller_ = screen_manager_->GetDisplayController(bounds);
+  UpdateWidgetToDrmDeviceMapping();
 }
 
 void DriWindowDelegateImpl::SetCursor(const std::vector<SkBitmap>& bitmaps,
@@ -149,6 +155,8 @@ void DriWindowDelegateImpl::OnDisplayChanged(
     if (bounds_ == controller_bounds && !controller->IsDisabled())
       controller_ = controller;
   }
+
+  UpdateWidgetToDrmDeviceMapping();
 }
 
 void DriWindowDelegateImpl::OnDisplayRemoved(
@@ -182,6 +190,14 @@ void DriWindowDelegateImpl::OnCursorAnimationTimeout() {
   cursor_frame_ %= cursor_bitmaps_.size();
 
   ResetCursor(true);
+}
+
+void DriWindowDelegateImpl::UpdateWidgetToDrmDeviceMapping() {
+  scoped_refptr<DriWrapper> drm = nullptr;
+  if (controller_)
+    drm = controller_->GetAllocationDriWrapper();
+
+  device_manager_->UpdateDrmDevice(widget_, drm);
 }
 
 }  // namespace ui

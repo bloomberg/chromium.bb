@@ -15,6 +15,7 @@
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
+#include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
@@ -45,6 +46,7 @@ class DriWindowDelegateImplTest : public testing::Test {
   scoped_refptr<ui::MockDriWrapper> dri_;
   scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
+  scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
   scoped_ptr<ui::DriWindowDelegateManager> window_delegate_manager_;
 
  private:
@@ -60,12 +62,13 @@ void DriWindowDelegateImplTest::SetUp() {
   screen_manager_->ConfigureDisplayController(kDefaultCrtc, kDefaultConnector,
                                               gfx::Point(), kDefaultMode);
 
+  drm_device_manager_.reset(new ui::DrmDeviceManager(dri_));
   window_delegate_manager_.reset(new ui::DriWindowDelegateManager());
 
   scoped_ptr<ui::DriWindowDelegate> window_delegate(
-      new ui::DriWindowDelegateImpl(kDefaultWidgetHandle, dri_.get(),
-                                    window_delegate_manager_.get(),
-                                    screen_manager_.get()));
+      new ui::DriWindowDelegateImpl(
+          kDefaultWidgetHandle, dri_.get(), drm_device_manager_.get(),
+          window_delegate_manager_.get(), screen_manager_.get()));
   window_delegate->Initialize();
   window_delegate_manager_->AddWindowDelegate(kDefaultWidgetHandle,
                                               window_delegate.Pass());

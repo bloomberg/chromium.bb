@@ -18,6 +18,7 @@ namespace ui {
 class DriBuffer;
 class DriWindowDelegateManager;
 class DriWrapper;
+class DrmDeviceManager;
 class HardwareDisplayController;
 class ScreenManager;
 
@@ -26,6 +27,7 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
  public:
   DriWindowDelegateImpl(gfx::AcceleratedWidget widget,
                         const scoped_refptr<DriWrapper>& drm,
+                        DrmDeviceManager* device_manager,
                         DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager);
   ~DriWindowDelegateImpl() override;
@@ -54,9 +56,12 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
   // Draw next frame in an animated cursor.
   void OnCursorAnimationTimeout();
 
+  void UpdateWidgetToDrmDeviceMapping();
+
   gfx::AcceleratedWidget widget_;
 
   scoped_refptr<DriWrapper> drm_;
+  DrmDeviceManager* device_manager_;          // Not owned.
   DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.
 

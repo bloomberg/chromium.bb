@@ -12,6 +12,7 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
+#include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"
@@ -68,16 +69,17 @@ class SingleOverlay : public OverlayCandidatesOzone {
 }  // namespace
 
 GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
-    : DriSurfaceFactory(NULL, NULL),
-      allow_surfaceless_(allow_surfaceless) {
+    : DriSurfaceFactory(NULL), allow_surfaceless_(allow_surfaceless) {
 }
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {}
 
 void GbmSurfaceFactory::InitializeGpu(
     const scoped_refptr<GbmWrapper>& gbm,
+    DrmDeviceManager* drm_device_manager,
     DriWindowDelegateManager* window_manager) {
   gbm_ = gbm;
+  drm_device_manager_ = drm_device_manager;
   window_manager_ = window_manager;
 }
 
@@ -119,8 +121,11 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
+  scoped_refptr<GbmWrapper> gbm = GetGbmDevice(widget);
+  DCHECK(gbm);
+
   scoped_ptr<GbmSurface> surface(
-      new GbmSurface(window_manager_->GetWindowDelegate(widget), gbm_));
+      new GbmSurface(window_manager_->GetWindowDelegate(widget), gbm));
   if (!surface->Initialize())
     return nullptr;
 
@@ -143,16 +148,19 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     BufferFormat format,
     BufferUsage usage) {
   if (usage == MAP)
-    return NULL;
+    return nullptr;
+
+  scoped_refptr<GbmWrapper> gbm = GetGbmDevice(widget);
+  DCHECK(gbm);
 
   scoped_refptr<GbmBuffer> buffer =
-      GbmBuffer::CreateBuffer(gbm_, format, size, true);
+      GbmBuffer::CreateBuffer(gbm, format, size, true);
   if (!buffer.get())
-    return NULL;
+    return nullptr;
 
   scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(buffer));
   if (!pixmap->Initialize())
-    return NULL;
+    return nullptr;
 
   return pixmap;
 }
@@ -203,6 +211,12 @@ bool GbmSurfaceFactory::CanCreateNativePixmap(BufferUsage usage) {
   }
   NOTREACHED();
   return false;
+}
+
+scoped_refptr<GbmWrapper> GbmSurfaceFactory::GetGbmDevice(
+    gfx::AcceleratedWidget widget) {
+  return static_cast<GbmWrapper*>(
+      drm_device_manager_->GetDrmDevice(widget).get());
 }
 
 }  // namespace ui

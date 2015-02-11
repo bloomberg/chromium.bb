@@ -255,6 +255,14 @@ void HardwareDisplayController::OnPageFlipEvent() {
   }
 }
 
+scoped_refptr<DriWrapper> HardwareDisplayController::GetAllocationDriWrapper()
+    const {
+  DCHECK(!crtc_controllers_.empty());
+  // TODO(dnicoara) When we support mirroring across DRM devices, figure out
+  // which device should be used for allocations.
+  return crtc_controllers_[0]->drm();
+}
+
 bool HardwareDisplayController::HasPendingPageFlips() const {
   for (size_t i = 0; i < crtc_controllers_.size(); ++i)
     if (crtc_controllers_[i]->page_flip_pending())

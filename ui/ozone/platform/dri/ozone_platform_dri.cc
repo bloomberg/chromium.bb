@@ -22,6 +22,7 @@
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -51,7 +52,8 @@ class OzonePlatformDri : public OzonePlatform {
       : dri_(new DriWrapper(base::FilePath(kDefaultGraphicsCardPath))),
         buffer_generator_(new DriBufferGenerator()),
         screen_manager_(new ScreenManager(buffer_generator_.get())),
-        device_manager_(CreateDeviceManager()) {}
+        device_manager_(CreateDeviceManager()),
+        window_delegate_manager_() {}
   ~OzonePlatformDri() override {}
 
   // OzonePlatform:
@@ -93,14 +95,16 @@ class OzonePlatformDri : public OzonePlatform {
     // This makes sure that simple targets that do not handle display
     // configuration can still use the primary display.
     ForceInitializationOfPrimaryDisplay(dri_, screen_manager_.get());
+    drm_device_manager_.reset(new DrmDeviceManager(dri_));
     display_manager_.reset(new DisplayManager());
     surface_factory_ozone_.reset(
-        new DriSurfaceFactory(dri_.get(), &window_delegate_manager_));
+        new DriSurfaceFactory(&window_delegate_manager_));
     scoped_ptr<NativeDisplayDelegateDri> ndd(
         new NativeDisplayDelegateDri(dri_.get(), screen_manager_.get()));
     ndd->Initialize();
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
-        dri_, &window_delegate_manager_, screen_manager_.get(), ndd.Pass()));
+        dri_, drm_device_manager_.get(), &window_delegate_manager_,
+        screen_manager_.get(), ndd.Pass()));
     gpu_platform_support_host_.reset(new DriGpuPlatformSupportHost());
     window_manager_.reset(new DriWindowManager());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
@@ -126,6 +130,7 @@ class OzonePlatformDri : public OzonePlatform {
 
  private:
   scoped_refptr<DriWrapper> dri_;
+  scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<DriBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;

@@ -212,7 +212,7 @@ bool ScreenManager::ModesetDisplayController(
     const gfx::Point& origin,
     const drmModeModeInfo& mode) {
   DCHECK(!controller->crtc_controllers().empty());
-  scoped_refptr<DriWrapper> drm = controller->crtc_controllers()[0]->drm();
+  scoped_refptr<DriWrapper> drm = controller->GetAllocationDriWrapper();
   controller->set_origin(origin);
 
   // Create a surface suitable for the current controller.
