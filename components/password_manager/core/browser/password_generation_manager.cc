@@ -49,14 +49,14 @@ void PasswordGenerationManager::DetectAccountCreationForms(
 // (2) Password saving is enabled.
 bool PasswordGenerationManager::IsGenerationEnabled() const {
   if (!driver_->GetPasswordManager()->IsSavingEnabledForCurrentPage()) {
-    DVLOG(2) << "Generation disabled because password saving is disabled";
+    VLOG(2) << "Generation disabled because password saving is disabled";
     return false;
   }
 
   // Don't consider sync enabled if the user has a custom passphrase. See
   // crbug.com/358998 for more details.
   if (!client_->IsPasswordSyncEnabled(WITHOUT_CUSTOM_PASSPHRASE)) {
-    DVLOG(2) << "Generation disabled because passwords are not being synced or"
+    VLOG(2) << "Generation disabled because passwords are not being synced or"
              << " custom passphrase is used.";
     return false;
   }

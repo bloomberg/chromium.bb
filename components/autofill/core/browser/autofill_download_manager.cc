@@ -98,7 +98,7 @@ bool AutofillDownloadManager::StartQueryRequest(
 
   std::string query_data;
   if (CheckCacheForQueryRequest(request_data.form_signatures, &query_data)) {
-    DVLOG(1) << "AutofillDownloadManager: query request has been retrieved "
+    VLOG(1) << "AutofillDownloadManager: query request has been retrieved "
              << "from the cache, form signatures: "
              << GetCombinedSignature(request_data.form_signatures);
     observer_->OnLoadedServerPredictions(query_data);
@@ -119,7 +119,7 @@ bool AutofillDownloadManager::StartUploadRequest(
 
   if (next_upload_request_ > base::Time::Now()) {
     // We are in back-off mode: do not do the request.
-    DVLOG(1) << "AutofillDownloadManager: Upload request is throttled.";
+    VLOG(1) << "AutofillDownloadManager: Upload request is throttled.";
     return false;
   }
 
@@ -129,7 +129,7 @@ bool AutofillDownloadManager::StartUploadRequest(
   if (form.upload_required() == UPLOAD_NOT_REQUIRED ||
       (form.upload_required() == USE_UPLOAD_RATES &&
        base::RandDouble() > upload_rate)) {
-    DVLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
+    VLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
     // If we ever need notification that upload was skipped, add it here.
     return false;
   }
@@ -188,7 +188,7 @@ bool AutofillDownloadManager::StartRequest(
                         net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher->Start();
 
-  DVLOG(1) << "Sending AutofillDownloadManager "
+  VLOG(1) << "Sending AutofillDownloadManager "
            << RequestTypeToString(request_data.request_type)
            << " request: " << form_xml;
 
@@ -293,7 +293,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
       }
     }
 
-    DVLOG(1) << "AutofillDownloadManager: " << request_type
+    VLOG(1) << "AutofillDownloadManager: " << request_type
              << " request has failed with response "
              << source->GetResponseCode();
     observer_->OnServerRequestError(it->second.form_signatures[0],
@@ -302,7 +302,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
   } else {
     std::string response_body;
     source->GetResponseAsString(&response_body);
-    DVLOG(1) << "AutofillDownloadManager: " << request_type
+    VLOG(1) << "AutofillDownloadManager: " << request_type
              << " request has succeeded with response body: " << response_body;
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
