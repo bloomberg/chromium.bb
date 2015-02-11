@@ -48,13 +48,6 @@ class PayloadVerificationError(Error):
 class _PaygenPayload(object):
   """Class to manage the process of generating and signing a payload."""
 
-  # GeneratorUri uses these to ensure we don't use generators that are too
-  # old to be supported.
-  MINIMUM_GENERATOR_VERSION = '6351.0.0'
-  MINIMUM_GENERATOR_URI = (
-      'gs://chromeos-releases/canary-channel/x86-mario/%s/au-generator.zip' %
-      MINIMUM_GENERATOR_VERSION)
-
   # What keys do we sign payloads with, and what size are they?
   PAYLOAD_SIGNATURE_KEYSETS = ('update_signer',)
   PAYLOAD_SIGNATURE_SIZES_BYTES = (2048 / 8,)  # aka 2048 bits in bytes.
@@ -133,36 +126,15 @@ class _PaygenPayload(object):
     """Given a payload uri, find the uri for the json payload description."""
     return uri + '.json'
 
-  def _GeneratorUri(self):
-    """Find the URI for the au-generator.zip to use to generate this payload.
-
-    The intent is to always find a generator compatible with the version
-    that will process the update generated. Notice that Full updates must
-    be compatible with all versions, no matter how old.
-
-    Returns:
-      URI of an au-generator.zip in string form.
-    """
-    if self._au_generator_uri_override:
-      return self._au_generator_uri_override
-
-    if (self.payload.src_image and
-        gspaths.VersionGreater(self.payload.src_image.version,
-                               self.MINIMUM_GENERATOR_VERSION)):
-      # If we are a delta, and newer than the minimum delta age,
-      # Use the generator from the src.
-      return gspaths.ChromeosReleases.GeneratorUri(
-          self.payload.src_image.channel,
-          self.payload.src_image.board,
-          self.payload.src_image.version)
-    else:
-      # If we are a full update, or a delta from older than minimum, use
-      # the minimum generator version.
-      return self.MINIMUM_GENERATOR_URI
-
   def _PrepareGenerator(self):
     """Download, and extract au-generate.zip into self.generator_dir."""
-    generator_uri = self._GeneratorUri()
+    if self._au_generator_uri_override:
+      generator_uri = self._au_generator_uri_override
+    else:
+      generator_uri = gspaths.ChromeosReleases.GeneratorUri(
+          self.payload.tgt_image.channel,
+          self.payload.tgt_image.board,
+          self.payload.tgt_image.version)
 
     logging.info('Preparing au-generate.zip from %s.', generator_uri)
 
