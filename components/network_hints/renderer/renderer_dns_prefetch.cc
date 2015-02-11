@@ -9,6 +9,7 @@
 #include <ctype.h>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "components/network_hints/common/network_hints_common.h"
@@ -146,7 +147,7 @@ void RendererDnsPrefetch::DnsPrefetchNames(size_t max_count) {
 
   network_hints::LookupRequest request;
   request.hostname_list = names;
-  RenderThread::Get()->Send(new DnsPrefetchMsg_RequestPrefetch(request));
+  RenderThread::Get()->Send(new NetworkHintsMsg_DNSPrefetch(request));
 }
 
 // is_numeric_ip() checks to see if all characters in name are either numeric,
@@ -162,4 +163,4 @@ bool RendererDnsPrefetch::is_numeric_ip(const char* name, size_t length) {
   return true;
 }
 
-}  // namespcae predictor
+}  // namespace predictor

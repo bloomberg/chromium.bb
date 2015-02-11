@@ -109,7 +109,7 @@ enum IPCMessageStart {
   ExtensionUtilityMsgStart,
   GeofencingMsgStart,
   LayoutTestMsgStart,
-  DnsPrefetchMsgStart,
+  NetworkHintsMsgStart,
   BluetoothMsgStart,
   NavigatorConnectMsgStart,
   CastMediaMsgStart,

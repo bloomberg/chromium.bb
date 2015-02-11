@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "components/network_hints/common/network_hints_common.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -28,7 +29,7 @@ struct ParamTraits<network_hints::LookupRequest> {
 
 #endif  // COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_MESSAGES_H_
 
-#define IPC_MESSAGE_START DnsPrefetchMsgStart
+#define IPC_MESSAGE_START NetworkHintsMsgStart
 
 //-----------------------------------------------------------------------------
 // Host messages
@@ -36,5 +37,12 @@ struct ParamTraits<network_hints::LookupRequest> {
 
 // Request for a DNS prefetch of the names in the array.
 // NameList is typedef'ed std::vector<std::string>
-IPC_MESSAGE_CONTROL1(DnsPrefetchMsg_RequestPrefetch,
+IPC_MESSAGE_CONTROL1(NetworkHintsMsg_DNSPrefetch,
                      network_hints::LookupRequest)
+
+
+// Request for preconnect to host providing resource specified by URL
+IPC_MESSAGE_CONTROL2(NetworkHintsMsg_Preconnect,
+                     GURL /* preconnect target url */,
+                     int  /* number of connections */)
+

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -45,7 +46,7 @@ namespace {
 
 const uint32 kFilteredMessageClasses[] = {
   ChromeMsgStart,
-  DnsPrefetchMsgStart,
+  NetworkHintsMsgStart,
 };
 
 }  // namespace
@@ -67,8 +68,8 @@ ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
 bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(DnsPrefetchMsg_RequestPrefetch, OnDnsPrefetch)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Preconnect, OnPreconnect)
+    IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
+    IPC_MESSAGE_HANDLER(NetworkHintsMsg_Preconnect, OnPreconnect)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
                         OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
@@ -112,10 +113,17 @@ void ChromeRenderMessageFilter::OnDnsPrefetch(
     predictor_->DnsPrefetchList(request.hostname_list);
 }
 
-void ChromeRenderMessageFilter::OnPreconnect(const GURL& url) {
-  if (predictor_)
+void ChromeRenderMessageFilter::OnPreconnect(const GURL& url, int count) {
+  if (count < 1) {
+    LOG(WARNING) << "NetworkHintsMsg_Preconnect IPC with invalid count: "
+                 << count;
+    return;
+  }
+  if (predictor_ && url.is_valid() && url.has_host() && url.has_scheme() &&
+      url.SchemeIsHTTPOrHTTPS()) {
     predictor_->PreconnectUrl(
-        url, GURL(), chrome_browser_net::UrlInfo::MOUSE_OVER_MOTIVATED, 1);
+        url, GURL(), chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED, count);
+  }
 }
 
 void ChromeRenderMessageFilter::OnResourceTypeStats(

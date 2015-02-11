@@ -353,6 +353,9 @@ std::string UrlInfo::GetAsciiMotivation() const {
     case STARTUP_LIST_MOTIVATED:
       return "[startup list]";
 
+    case EARLY_LOAD_MOTIVATED:
+      return "[early-load]";
+
     case NO_PREFETCH_MOTIVATION:
       return "n/a";
 

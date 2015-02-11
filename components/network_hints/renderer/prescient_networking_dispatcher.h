@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/network_hints/renderer/renderer_dns_prefetch.h"
+#include "components/network_hints/renderer/renderer_preconnect.h"
 #include "third_party/WebKit/public/platform/WebPrescientNetworking.h"
 
 namespace network_hints {
@@ -19,9 +20,11 @@ class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
   ~PrescientNetworkingDispatcher() override;
 
   void prefetchDNS(const blink::WebString& hostname) override;
+  void preconnect(const blink::WebURL& url) override;
 
  private:
   network_hints::RendererDnsPrefetch dns_prefetch_;
+  network_hints::RendererPreconnect preconnect_;
 
   DISALLOW_COPY_AND_ASSIGN(PrescientNetworkingDispatcher);
 };

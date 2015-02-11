@@ -11,6 +11,8 @@ source_set("renderer") {
     "prescient_networking_dispatcher.h",
     "renderer_dns_prefetch.cc",
     "renderer_dns_prefetch.h",
+    "renderer_preconnect.cc",
+    "renderer_preconnect.h",
   ]
 
   public_deps = [

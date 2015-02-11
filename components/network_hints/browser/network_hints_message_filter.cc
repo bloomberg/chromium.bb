@@ -64,7 +64,7 @@ class DnsLookupRequest {
 
 NetworkHintsMessageFilter::NetworkHintsMessageFilter(
     net::HostResolver* host_resolver)
-    : content::BrowserMessageFilter(DnsPrefetchMsgStart),
+    : content::BrowserMessageFilter(NetworkHintsMsgStart),
       host_resolver_(host_resolver) {
   DCHECK(host_resolver_);
 }
@@ -75,7 +75,7 @@ NetworkHintsMessageFilter::~NetworkHintsMessageFilter() {
 bool NetworkHintsMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NetworkHintsMessageFilter, message)
-    IPC_MESSAGE_HANDLER(DnsPrefetchMsg_RequestPrefetch, OnDnsPrefetch)
+    IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

@@ -24,4 +24,9 @@ void PrescientNetworkingDispatcher::prefetchDNS(
   dns_prefetch_.Resolve(hostname_utf8.data(), hostname_utf8.length());
 }
 
+void PrescientNetworkingDispatcher::preconnect(const blink::WebURL& url) {
+  VLOG(2) << "Preconnect: " << url.string().utf8();
+  preconnect_.Preconnect(url);
+}
+
 }  // namespace network_hints

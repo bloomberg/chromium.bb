@@ -60,7 +60,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   ~ChromeRenderMessageFilter() override;
 
   void OnDnsPrefetch(const network_hints::LookupRequest& request);
-  void OnPreconnect(const GURL& url);
+  void OnPreconnect(const GURL& url, int count);
   void OnResourceTypeStats(const blink::WebCache::ResourceTypeStats& stats);
   void OnUpdatedCacheStats(const blink::WebCache::UsageStats& stats);
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);

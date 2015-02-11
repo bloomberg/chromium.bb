@@ -62,6 +62,8 @@
             'network_hints/renderer/prescient_networking_dispatcher.h',
             'network_hints/renderer/renderer_dns_prefetch.cc',
             'network_hints/renderer/renderer_dns_prefetch.h',
+            'network_hints/renderer/renderer_preconnect.cc',
+            'network_hints/renderer/renderer_preconnect.h',
           ],
         },
       ],
