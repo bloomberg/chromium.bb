@@ -552,7 +552,14 @@ do {	register unsigned int __old __asm("o0");		\
 /* General user-level programmer's API: unprivileged */
 extern int           drmAvailable(void);
 extern int           drmOpen(const char *name, const char *busid);
-extern int drmOpenControl(int minor);
+
+#define DRM_NODE_PRIMARY 0
+#define DRM_NODE_CONTROL 1
+#define DRM_NODE_RENDER  2
+extern int           drmOpenWithType(const char *name, const char *busid,
+                                     int type);
+
+extern int           drmOpenControl(int minor);
 extern int           drmOpenRender(int minor);
 extern int           drmClose(int fd);
 extern drmVersionPtr drmGetVersion(int fd);

@@ -85,10 +85,6 @@
 
 #define DRM_MSG_VERBOSITY 3
 
-#define DRM_NODE_CONTROL 0
-#define DRM_NODE_PRIMARY 1
-#define DRM_NODE_RENDER 2
-
 #define memclear(s) memset(&s, 0, sizeof(s))
 
 static drmServerInfoPtr drm_server_info;
@@ -495,11 +491,25 @@ int drmAvailable(void)
     return retval;
 }
 
+static int drmGetMinorBase(int type)
+{
+    switch (type) {
+    case DRM_NODE_PRIMARY:
+        return 0;
+    case DRM_NODE_CONTROL:
+        return 64;
+    case DRM_NODE_RENDER:
+        return 128;
+    default:
+        return -1;
+    };
+}
 
 /**
  * Open the device by bus ID.
  *
  * \param busid bus ID.
+ * \param type device node type.
  *
  * \return a file descriptor on success, or a negative value on error.
  *
@@ -509,16 +519,20 @@ int drmAvailable(void)
  *
  * \sa drmOpenMinor() and drmGetBusid().
  */
-static int drmOpenByBusid(const char *busid)
+static int drmOpenByBusid(const char *busid, int type)
 {
     int        i, pci_domain_ok = 1;
     int        fd;
     const char *buf;
     drmSetVersion sv;
+    int        base = drmGetMinorBase(type);
+
+    if (base < 0)
+        return -1;
 
     drmMsg("drmOpenByBusid: Searching for BusID %s\n", busid);
-    for (i = 0; i < DRM_MAX_MINOR; i++) {
-	fd = drmOpenMinor(i, 1, DRM_NODE_PRIMARY);
+    for (i = base; i < base + DRM_MAX_MINOR; i++) {
+	fd = drmOpenMinor(i, 1, type);
 	drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
 	if (fd >= 0) {
 	    /* We need to try for 1.4 first for proper PCI domain support
@@ -558,6 +572,7 @@ static int drmOpenByBusid(const char *busid)
  * Open the device by name.
  *
  * \param name driver name.
+ * \param type the device node type.
  * 
  * \return a file descriptor on success, or a negative value on error.
  * 
@@ -568,19 +583,23 @@ static int drmOpenByBusid(const char *busid)
  * 
  * \sa drmOpenMinor(), drmGetVersion() and drmGetBusid().
  */
-static int drmOpenByName(const char *name)
+static int drmOpenByName(const char *name, int type)
 {
     int           i;
     int           fd;
     drmVersionPtr version;
     char *        id;
+    int           base = drmGetMinorBase(type);
+
+    if (base < 0)
+        return -1;
 
     /*
      * Open the first minor number that matches the driver name and isn't
      * already in use.  If it's in use it will have a busid assigned already.
      */
-    for (i = 0; i < DRM_MAX_MINOR; i++) {
-	if ((fd = drmOpenMinor(i, 1, DRM_NODE_PRIMARY)) >= 0) {
+    for (i = base; i < base + DRM_MAX_MINOR; i++) {
+	if ((fd = drmOpenMinor(i, 1, type)) >= 0) {
 	    if ((version = drmGetVersion(fd))) {
 		if (!strcmp(version->name, name)) {
 		    drmFreeVersion(version);
@@ -622,9 +641,9 @@ static int drmOpenByName(const char *name)
 			for (devstring = ++pt; *pt && *pt != ' '; ++pt)
 			    ;
 			if (*pt) { /* Found busid */
-			    return drmOpenByBusid(++pt);
+			    return drmOpenByBusid(++pt, type);
 			} else { /* No busid */
-			    return drmOpenDevice(strtol(devstring, NULL, 0),i, DRM_NODE_PRIMARY);
+			    return drmOpenDevice(strtol(devstring, NULL, 0),i, type);
 			}
 		    }
 		}
@@ -654,8 +673,29 @@ static int drmOpenByName(const char *name)
  */
 int drmOpen(const char *name, const char *busid)
 {
+    return drmOpenWithType(name, busid, DRM_NODE_PRIMARY);
+}
+
+/**
+ * Open the DRM device with specified type.
+ *
+ * Looks up the specified name and bus ID, and opens the device found.  The
+ * entry in /dev/dri is created if necessary and if called by root.
+ *
+ * \param name driver name. Not referenced if bus ID is supplied.
+ * \param busid bus ID. Zero if not known.
+ * \param type the device node type to open, PRIMARY, CONTROL or RENDER
+ *
+ * \return a file descriptor on success, or a negative value on error.
+ *
+ * \internal
+ * It calls drmOpenByBusid() if \p busid is specified or drmOpenByName()
+ * otherwise.
+ */
+int drmOpenWithType(const char *name, const char *busid, int type)
+{
     if (!drmAvailable() && name != NULL && drm_server_info) {
-	/* try to load the kernel */
+	/* try to load the kernel module */
 	if (!drm_server_info->load_module(name)) {
 	    drmMsg("[drm] failed to load kernel module \"%s\"\n", name);
 	    return -1;
@@ -663,13 +703,13 @@ int drmOpen(const char *name, const char *busid)
     }
 
     if (busid) {
-	int fd = drmOpenByBusid(busid);
+	int fd = drmOpenByBusid(busid, type);
 	if (fd >= 0)
 	    return fd;
     }
     
     if (name)
-	return drmOpenByName(name);
+	return drmOpenByName(name, type);
 
     return -1;
 }
