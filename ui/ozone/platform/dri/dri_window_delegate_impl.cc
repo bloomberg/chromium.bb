@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -44,12 +45,10 @@ void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
 
 DriWindowDelegateImpl::DriWindowDelegateImpl(
     gfx::AcceleratedWidget widget,
-    const scoped_refptr<DriWrapper>& drm,
     DrmDeviceManager* device_manager,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager)
     : widget_(widget),
-      drm_(drm),
       device_manager_(device_manager),
       window_manager_(window_manager),
       screen_manager_(screen_manager),
@@ -67,15 +66,17 @@ void DriWindowDelegateImpl::Initialize() {
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
   screen_manager_->AddObserver(this);
+  scoped_refptr<DriWrapper> drm =
+      device_manager_->GetDrmDevice(gfx::kNullAcceleratedWidget);
 
   uint64_t cursor_width = 64;
   uint64_t cursor_height = 64;
-  drm_->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
-  drm_->GetCapability(DRM_CAP_CURSOR_HEIGHT, &cursor_height);
+  drm->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
+  drm->GetCapability(DRM_CAP_CURSOR_HEIGHT, &cursor_height);
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(cursor_width, cursor_height);
   for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
-    cursor_buffers_[i] = new DriBuffer(drm_);
+    cursor_buffers_[i] = new DriBuffer(drm);
     if (!cursor_buffers_[i]->Initialize(info)) {
       LOG(ERROR) << "Failed to initialize cursor buffer";
       return;

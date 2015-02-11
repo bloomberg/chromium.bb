@@ -17,7 +17,6 @@ namespace ui {
 
 class DriBuffer;
 class DriWindowDelegateManager;
-class DriWrapper;
 class DrmDeviceManager;
 class HardwareDisplayController;
 class ScreenManager;
@@ -26,7 +25,6 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
                                            public DisplayChangeObserver {
  public:
   DriWindowDelegateImpl(gfx::AcceleratedWidget widget,
-                        const scoped_refptr<DriWrapper>& drm,
                         DrmDeviceManager* device_manager,
                         DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager);
@@ -60,7 +58,6 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
 
   gfx::AcceleratedWidget widget_;
 
-  scoped_refptr<DriWrapper> drm_;
   DrmDeviceManager* device_manager_;          // Not owned.
   DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.

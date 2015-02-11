@@ -67,7 +67,7 @@ void DriWindowDelegateImplTest::SetUp() {
 
   scoped_ptr<ui::DriWindowDelegate> window_delegate(
       new ui::DriWindowDelegateImpl(
-          kDefaultWidgetHandle, dri_.get(), drm_device_manager_.get(),
+          kDefaultWidgetHandle, drm_device_manager_.get(),
           window_delegate_manager_.get(), screen_manager_.get()));
   window_delegate->Initialize();
   window_delegate_manager_->AddWindowDelegate(kDefaultWidgetHandle,
