@@ -79,10 +79,6 @@ tests/getclient
 tests/getstats
 tests/getversion
 tests/lock
-tests/gem_basic
-tests/gem_flink
-tests/gem_mmap
-tests/gem_readwrite
 tests/openclose
 tests/setversion
 tests/updatedraw

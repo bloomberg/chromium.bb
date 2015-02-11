@@ -58,15 +58,6 @@ TESTS =						\
 
 SUBDIRS += vbltest $(NULL)
 
-if HAVE_INTEL
-TESTS +=					\
-	gem_basic				\
-	gem_flink				\
-	gem_readwrite				\
-	gem_mmap				\
-	$(NULL)
-endif
-
 check_PROGRAMS += $(TESTS)
 
 endif
