@@ -32,6 +32,8 @@ using password_manager::CreatePasswordFormFromDataForTesting;
 using password_manager::LoginDatabase;
 using password_manager::PasswordFormData;
 using password_manager::PasswordStore;
+using password_manager::PasswordStoreChange;
+using password_manager::PasswordStoreChangeList;
 using password_manager::PasswordStoreConsumer;
 using testing::_;
 using testing::DoAll;
@@ -181,6 +183,11 @@ void CheckFormsAgainstExpectations(
     EXPECT_EQ(GURL(password_manager::kTestingFederationUrlSpec),
               form->federation_url);
   }
+}
+
+PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
+  return PasswordStoreChangeList(
+      1, PasswordStoreChange(PasswordStoreChange::ADD, form));
 }
 
 }  // namespace
@@ -1169,7 +1176,7 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
   };
   scoped_ptr<PasswordForm> joint_form =
       CreatePasswordFormFromDataForTesting(joint_data);
-  login_db()->AddLogin(*joint_form);
+  EXPECT_EQ(AddChangeForForm(*joint_form), login_db()->AddLogin(*joint_form));
   MockAppleKeychain::KeychainTestData joint_keychain_data = {
     kSecAuthenticationTypeHTMLForm, "some.domain.com",
     kSecProtocolTypeHTTP, "/insecure.html", 0, NULL, "20020601171500Z",
@@ -1272,7 +1279,7 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   };
   scoped_ptr<PasswordForm> www_form =
       CreatePasswordFormFromDataForTesting(www_form_data);
-  login_db()->AddLogin(*www_form);
+  EXPECT_EQ(AddChangeForForm(*www_form), login_db()->AddLogin(*www_form));
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain());
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
   owned_keychain_adapter.AddPassword(*www_form);
@@ -1291,7 +1298,8 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   base::MessageLoop::current()->Run();
 
   // 3. Add the returned password for m.facebook.com.
-  login_db()->AddLogin(returned_form);
+  EXPECT_EQ(AddChangeForForm(returned_form),
+            login_db()->AddLogin(returned_form));
   owned_keychain_adapter.AddPassword(m_form);
 
   // 4. Remove both passwords.
@@ -1613,7 +1621,7 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
   };
   scoped_ptr<PasswordForm> www_form(
       CreatePasswordFormFromDataForTesting(www_form_data));
-  login_db()->AddLogin(*www_form);
+  EXPECT_EQ(AddChangeForForm(*www_form), login_db()->AddLogin(*www_form));
 
   // 2. Get a PSL-matched password for m.facebook.com. The observer isn't
   // notified because the form isn't in the database.

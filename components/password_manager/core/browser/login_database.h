@@ -43,13 +43,15 @@ class LoginDatabase {
   // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}
   // then the REMOVE is associated with the form that was added. Thus only the
   // primary key columns contain the values associated with the removed form.
-  PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form);
+  PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form)
+      WARN_UNUSED_RESULT;
 
   // Updates existing password form. Returns the list of applied changes
   // ({}, {UPDATE}). The password is looked up by the tuple {origin,
   // username_element, username_value, password_element, signon_realm}.
   // These columns stay intact.
-  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form);
+  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form)
+      WARN_UNUSED_RESULT;
 
   // Removes |form| from the list of remembered password forms. Returns true if
   // |form| was successfully removed from the database.

@@ -241,6 +241,11 @@ void InitExpectedForms(bool autofillable,
   }
 }
 
+PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
+  return PasswordStoreChangeList(
+      1, PasswordStoreChange(PasswordStoreChange::ADD, form));
+}
+
 }  // anonymous namespace
 
 enum BackendType {
@@ -371,11 +376,11 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   ASSERT_TRUE(base::GetFileInfo(login_db_file, &db_file_start_info));
 
   // Populate the login DB with logins that should be migrated.
-  for (const auto* form : expected_autofillable) {
-    login_db->AddLogin(*form);
+  for (const autofill::PasswordForm* form : expected_autofillable) {
+    EXPECT_EQ(AddChangeForForm(*form), login_db->AddLogin(*form));
   }
-  for (const auto* form : expected_blacklisted) {
-    login_db->AddLogin(*form);
+  for (const autofill::PasswordForm* form : expected_blacklisted) {
+    EXPECT_EQ(AddChangeForForm(*form), login_db->AddLogin(*form));
   }
 
   // Get the new size of the login DB file. We expect it to be larger.
