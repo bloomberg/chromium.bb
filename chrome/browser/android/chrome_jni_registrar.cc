@@ -44,6 +44,7 @@
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
+#include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
@@ -209,6 +210,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ProfileSyncService", ProfileSyncServiceAndroid::Register},
     {"RecentlyClosedBridge", RecentlyClosedTabsBridge::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
+    {"ServiceTabLauncher", ServiceTabLauncher::RegisterServiceTabLauncher},
     {"SigninManager", SigninManagerAndroid::Register},
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},
     {"SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid},

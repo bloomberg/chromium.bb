@@ -616,9 +616,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       WebContents* web_contents);
 
   // Allows programmatic opening of a new tab/window without going through
-  // another WebContents. For example, from a Worker.
-  virtual WebContents* OpenURL(BrowserContext* browser_context,
-                               const OpenURLParams& params);
+  // another WebContents. For example, from a Worker. |callback| will be
+  // invoked with the appropriate WebContents* when available.
+  virtual void OpenURL(BrowserContext* browser_context,
+                       const OpenURLParams& params,
+                       const base::Callback<void(WebContents*)>& callback);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching

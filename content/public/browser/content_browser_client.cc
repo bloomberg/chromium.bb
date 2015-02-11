@@ -342,9 +342,11 @@ ContentBrowserClient::GetPresentationServiceDelegate(
   return nullptr;
 }
 
-WebContents* ContentBrowserClient::OpenURL(BrowserContext* browser_context,
-                                           const OpenURLParams& params) {
-  return nullptr;
+void ContentBrowserClient::OpenURL(
+    content::BrowserContext* browser_context,
+    const content::OpenURLParams& params,
+    const base::Callback<void(content::WebContents*)>& callback) {
+  callback.Run(nullptr);
 }
 
 #if defined(OS_WIN)

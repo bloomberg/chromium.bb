@@ -156,6 +156,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/android/new_tab_page_url_handler.h"
+#include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
@@ -2522,9 +2523,10 @@ bool ChromeContentBrowserClient::CheckMediaAccessPermission(
           browser_context, security_origin, type);
 }
 
-content::WebContents* ChromeContentBrowserClient::OpenURL(
+void ChromeContentBrowserClient::OpenURL(
     content::BrowserContext* browser_context,
-    const content::OpenURLParams& params) {
+    const content::OpenURLParams& params,
+    const base::Callback<void(content::WebContents*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -2535,12 +2537,13 @@ content::WebContents* ChromeContentBrowserClient::OpenURL(
   nav_params.user_gesture = params.user_gesture;
 
   Navigate(&nav_params);
-  return nav_params.target_contents;
+  callback.Run(nav_params.target_contents);
+#elif defined(OS_ANDROID)
+  chrome::android::ServiceTabLauncher::GetInstance()->LaunchTab(
+      browser_context, params, callback);
 #else
-  // TODO(mlamouri): write a chrome::Navigate() method for Android and iOS.
-  // See https://crbug.com/448409.
-  return nullptr;
-#endif // !defined(OS_ANDROID) && !defined(OS_IOS)
+  NOTIMPLEMENTED();
+#endif
 }
 
 content::DevToolsManagerDelegate*

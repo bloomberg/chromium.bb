@@ -32,10 +32,17 @@ TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
   EXPECT_TRUE(client.ShouldAssignSiteForURL(GURL("https://www.google.com")));
 }
 
-using ChromeContentBrowserClientWindowTest = BrowserWithTestWindowTest;
-
 // BrowserWithTestWindowTest doesn't work on iOS and Android.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+using ChromeContentBrowserClientWindowTest = BrowserWithTestWindowTest;
+
+static void DidOpenURLForWindowTest(content::WebContents** target_contents,
+                                    content::WebContents* opened_contents) {
+  DCHECK(target_contents);
+
+  *target_contents = opened_contents;
+}
 
 // This test opens two URLs using ContentBrowserClient::OpenURL. It expects the
 // URLs to be opened in new tabs and activated, changing the active tabs after
@@ -54,13 +61,20 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
                                   NEW_FOREGROUND_TAB,
                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                   false);
-    content::WebContents* contents =
-        client.OpenURL(browser()->profile(), params);
-    EXPECT_TRUE(contents);
+    // TODO(peter): We should have more in-depth browser tests for the window
+    // opening functionality, which also covers Android. This test can currently
+    // only be ran on platforms where OpenURL is implemented synchronously.
+    // See https://crbug.com/457667.
+    content::WebContents* web_contents = nullptr;
+    client.OpenURL(browser()->profile(),
+                   params,
+                   base::Bind(&DidOpenURLForWindowTest, &web_contents));
+
+    EXPECT_TRUE(web_contents);
 
     content::WebContents* active_contents = browser()->tab_strip_model()->
         GetActiveWebContents();
-    EXPECT_EQ(contents, active_contents);
+    EXPECT_EQ(web_contents, active_contents);
     EXPECT_EQ(url, active_contents->GetVisibleURL());
   }
 

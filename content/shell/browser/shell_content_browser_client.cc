@@ -303,12 +303,14 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new ShellDevToolsManagerDelegate(browser_context());
 }
 
-WebContents* ShellContentBrowserClient::OpenURL(BrowserContext* browser_context,
-                                                const OpenURLParams& params) {
-  return Shell::CreateNewWindow(browser_context,
-                                params.url,
-                                nullptr,
-                                gfx::Size())->web_contents();
+void ShellContentBrowserClient::OpenURL(
+    BrowserContext* browser_context,
+    const OpenURLParams& params,
+    const base::Callback<void(WebContents*)>& callback) {
+  callback.Run(Shell::CreateNewWindow(browser_context,
+                                      params.url,
+                                      nullptr,
+                                      gfx::Size())->web_contents());
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

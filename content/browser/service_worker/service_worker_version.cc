@@ -219,6 +219,13 @@ class WindowOpenedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowOpenedObserver);
 };
 
+void DidOpenURL(const WindowOpenedCallback& callback,
+                WebContents* web_contents) {
+  DCHECK(web_contents);
+
+  new WindowOpenedObserver(web_contents, callback);
+}
+
 void OpenWindowOnUI(
     const GURL& url,
     const GURL& script_url,
@@ -250,11 +257,9 @@ void OpenWindowOnUI(
       NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       true /* is_renderer_initiated */);
 
-  WebContents* web_contents =
-      GetContentClient()->browser()->OpenURL(browser_context, params);
-  DCHECK(web_contents);
-
-  new WindowOpenedObserver(web_contents, callback);
+  GetContentClient()->browser()->OpenURL(
+      browser_context, params,
+      base::Bind(&DidOpenURL, callback));
 }
 
 void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
