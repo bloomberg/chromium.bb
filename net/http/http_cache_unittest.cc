@@ -3169,7 +3169,7 @@ TEST(HttpCache, SimpleHEAD_WithCachedRanges) {
   RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
 
   EXPECT_NE(std::string::npos, headers.find("HTTP/1.1 200 OK\n"));
-  EXPECT_EQ(std::string::npos, headers.find("Content-Length"));
+  EXPECT_NE(std::string::npos, headers.find("Content-Length: 80\n"));
   EXPECT_EQ(std::string::npos, headers.find("Content-Range"));
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());

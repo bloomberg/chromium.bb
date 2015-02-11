@@ -335,7 +335,7 @@ class HttpCache::Transaction : public HttpTransaction {
   // Handles a response validation error by bypassing the cache.
   void IgnoreRangeRequest();
 
-  // Removes content-length and byte range related info if needed.
+  // Fixes the response headers to match expectations for a HEAD request.
   void FixHeadersForHead();
 
   // Launches an asynchronous revalidation based on this transaction.
