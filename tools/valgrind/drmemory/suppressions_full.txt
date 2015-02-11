@@ -32,7 +32,11 @@ GoogleDesktopNetwork3.DLL!DllUnregisterServer
 # so we just look for randomByte.
 UNINITIALIZED READ
 name=sqlite3_randomness UNINIT
-*!randomByte
+sql.dll!sqlite3_randomness
+
+UNINITIALIZED READ
+name=blink_web_dll_sqlite3_randomness UNINIT
+blink_web.dll!sqlite3_randomness
 
 # Intentional leak in WebKit Template Framework for ThreadData.
 LEAK
