@@ -43,6 +43,27 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     learnMoreHelpTopicID_: null,
 
+    /**
+     * We block esc, back button and cancel button until gaia is loaded to
+     * prevent multiple cancel events.
+     */
+    isCancelDisabled_: null,
+
+    get isCancelDisabled() { return this.isCancelDisabled_ },
+    set isCancelDisabled(disabled) {
+      if (disabled == this.isCancelDisabled)
+        return;
+      this.isCancelDisabled_ = disabled;
+
+      $('oauth-enroll-back-button').disabled = disabled;
+      $('oauth-enroll-back-button').
+          classList.toggle('preserve-disabled-state', disabled);
+
+      $('oauth-enroll-cancel-button').disabled = disabled;
+      $('oauth-enroll-cancel-button').
+          classList.toggle('preserve-disabled-state', disabled);
+    },
+
     /** @override */
     decorate: function() {
       window.addEventListener('message',
@@ -106,13 +127,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           ['oauth-enroll-focus-on-error'],
           loadTimeData.getString('oauthEnrollBack'),
           function() {
-            $('oauth-enroll-back-button').disabled = true;
-
-            $('oauth-enroll-back-button').
-                classList.add('preserve-disabled-state');
-
+            this.isCancelDisabled = true;
             chrome.send('oauthEnrollClose', ['cancel']);
-          });
+          }.bind(this));
 
       makeButton(
           'oauth-enroll-retry-button',
@@ -147,6 +164,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                               data.enrollment_mode == modes[i]);
       }
       this.managementDomain_ = data.management_domain;
+      this.isCancelDisabled = true;
       this.doReload();
       this.learnMoreHelpTopicID_ = data.learn_more_help_topic_id;
       this.updateLocalizedContent();
@@ -157,6 +175,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Cancels enrollment and drops the user back to the login screen.
      */
     cancel: function() {
+      if (this.isCancelDisabled)
+        return;
+      this.isCancelDisabled = true;
       chrome.send('oauthEnrollClose', ['cancel']);
     },
 
@@ -253,11 +274,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       }
 
       if (msg.method == 'loginUILoaded' && this.currentStep_ == STEP_SIGNIN) {
-        $('oauth-enroll-back-button').disabled = false;
-
-        $('oauth-enroll-back-button').
-            classList.remove('preserve-disabled-state');
-
+        this.isCancelDisabled = false;
         chrome.send('frameLoadingCompleted', [0]);
       }
 
