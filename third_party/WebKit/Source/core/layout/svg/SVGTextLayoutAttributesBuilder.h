@@ -27,7 +27,7 @@ namespace blink {
 
 class RenderBoxModelObject;
 class LayoutSVGInlineText;
-class RenderSVGText;
+class LayoutSVGText;
 class SVGTextPositioningElement;
 
 // SVGTextLayoutAttributesBuilder performs the first layout phase for SVG text.
@@ -42,7 +42,7 @@ class SVGTextLayoutAttributesBuilder {
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributesBuilder);
 public:
     SVGTextLayoutAttributesBuilder();
-    bool buildLayoutAttributesForForSubtree(RenderSVGText&);
+    bool buildLayoutAttributesForForSubtree(LayoutSVGText&);
     void buildLayoutAttributesForTextRenderer(LayoutSVGInlineText*);
 
     void rebuildMetricsForTextRenderer(LayoutSVGInlineText*);
@@ -65,7 +65,7 @@ private:
         unsigned length;
     };
 
-    void buildCharacterDataMap(RenderSVGText&);
+    void buildCharacterDataMap(LayoutSVGText&);
     void collectTextPositioningElements(RenderBoxModelObject&, UChar& lastCharacter);
     void fillCharacterDataMap(const TextPosition&);
 

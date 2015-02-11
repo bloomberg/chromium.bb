@@ -22,7 +22,7 @@
 #include "core/svg/SVGTextPathElement.h"
 
 #include "core/XLinkNames.h"
-#include "core/rendering/svg/RenderSVGTextPath.h"
+#include "core/layout/svg/LayoutSVGTextPath.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {
@@ -118,7 +118,7 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
 LayoutObject* SVGTextPathElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGTextPath(this);
+    return new LayoutSVGTextPath(this);
 }
 
 bool SVGTextPathElement::rendererIsNeeded(const LayoutStyle& style)

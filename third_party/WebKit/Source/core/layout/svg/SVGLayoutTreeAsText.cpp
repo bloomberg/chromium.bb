@@ -40,13 +40,13 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGResourcePattern.h"
 #include "core/layout/svg/LayoutSVGResourceRadialGradient.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGShape.h"
-#include "core/rendering/svg/RenderSVGText.h"
 #include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/RadialGradientAttributes.h"
@@ -384,7 +384,7 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGRoot& root)
     return writePositionAndStyle(ts, root);
 }
 
-static void writeRenderSVGTextBox(TextStream& ts, const RenderSVGText& text)
+static void writeLayoutSVGTextBox(TextStream& ts, const LayoutSVGText& text)
 {
     SVGRootInlineBox* box = toSVGRootInlineBox(text.firstRootBox());
     if (!box)
@@ -598,10 +598,10 @@ void write(TextStream& ts, const RenderSVGRoot& root, int indent)
     writeChildren(ts, root, indent);
 }
 
-void writeSVGText(TextStream& ts, const RenderSVGText& text, int indent)
+void writeSVGText(TextStream& ts, const LayoutSVGText& text, int indent)
 {
     writeStandardPrefix(ts, text, indent);
-    writeRenderSVGTextBox(ts, text);
+    writeLayoutSVGTextBox(ts, text);
     ts << "\n";
     writeResources(ts, text, indent);
     writeChildren(ts, text, indent);

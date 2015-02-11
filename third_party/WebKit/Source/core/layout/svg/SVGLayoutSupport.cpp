@@ -33,12 +33,12 @@
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGShape.h"
-#include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
@@ -239,7 +239,7 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
         if (transformChanged) {
             // If the transform changed we need to update the text metrics (note: this also happens for layoutSizeChanged=true).
             if (child->isSVGText())
-                toRenderSVGText(child)->setNeedsTextMetricsUpdate();
+                toLayoutSVGText(child)->setNeedsTextMetricsUpdate();
             forceLayout = true;
         }
 
@@ -252,8 +252,8 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
                     if (child->isSVGShape()) {
                         toRenderSVGShape(child)->setNeedsShapeUpdate();
                     } else if (child->isSVGText()) {
-                        toRenderSVGText(child)->setNeedsTextMetricsUpdate();
-                        toRenderSVGText(child)->setNeedsPositioningValuesUpdate();
+                        toLayoutSVGText(child)->setNeedsTextMetricsUpdate();
+                        toLayoutSVGText(child)->setNeedsPositioningValuesUpdate();
                     }
 
                     forceLayout = true;

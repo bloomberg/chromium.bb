@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutSVGResourceFilter {filter} [id="myfilter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feGaussianBlur stdDeviation="3.00, 3.00"]
           [SourceGraphic]
-    RenderSVGText {text} at (4,11) size 564x61 contains 1 chunk(s)
+    LayoutSVGText {text} at (4,11) size 564x61 contains 1 chunk(s)
       [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52.37,4.90) size 676.44x73.20
       LayoutSVGInlineText {#text} at (0,0) size 564x61
         [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52.37,4.90) size 676.44x73.20

@@ -23,8 +23,8 @@
 
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGTextMetricsBuilder.h"
-#include "core/rendering/svg/RenderSVGText.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
 namespace blink {
@@ -38,7 +38,7 @@ void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRenderer(Layout
 {
     ASSERT(text);
 
-    RenderSVGText* textRoot = RenderSVGText::locateRenderSVGTextAncestor(text);
+    LayoutSVGText* textRoot = LayoutSVGText::locateLayoutSVGTextAncestor(text);
     if (!textRoot)
         return;
 
@@ -58,7 +58,7 @@ void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRenderer(Layout
     SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(textRoot, text, m_characterDataMap);
 }
 
-bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(RenderSVGText& textRoot)
+bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(LayoutSVGText& textRoot)
 {
     m_characterDataMap.clear();
 
@@ -131,7 +131,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(RenderBoxMod
     }
 }
 
-void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(RenderSVGText& textRoot)
+void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(LayoutSVGText& textRoot)
 {
     SVGTextPositioningElement* outermostTextElement = SVGTextPositioningElement::elementFromRenderer(textRoot);
     ASSERT(outermostTextElement);

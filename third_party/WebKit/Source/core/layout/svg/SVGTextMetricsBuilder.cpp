@@ -23,8 +23,8 @@
 
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGTextMetrics.h"
-#include "core/rendering/svg/RenderSVGText.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/text/BidiCharacterRun.h"
@@ -235,7 +235,7 @@ static void measureTextRenderer(LayoutSVGInlineText* text, MeasureTextData* data
     data->valueListPosition += textPosition - skippedCharacters;
 }
 
-static void walkTree(RenderSVGText* start, LayoutSVGInlineText* stopAtLeaf, MeasureTextData* data)
+static void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtLeaf, MeasureTextData* data)
 {
     LayoutObject* child = start->firstChild();
     while (child) {
@@ -259,7 +259,7 @@ void SVGTextMetricsBuilder::measureTextRenderer(LayoutSVGInlineText* text)
 {
     ASSERT(text);
 
-    RenderSVGText* textRoot = RenderSVGText::locateRenderSVGTextAncestor(text);
+    LayoutSVGText* textRoot = LayoutSVGText::locateLayoutSVGTextAncestor(text);
     if (!textRoot)
         return;
 
@@ -267,7 +267,7 @@ void SVGTextMetricsBuilder::measureTextRenderer(LayoutSVGInlineText* text)
     walkTree(textRoot, text, &data);
 }
 
-void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(RenderSVGText* textRoot, LayoutSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap)
+void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(LayoutSVGText* textRoot, LayoutSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap)
 {
     ASSERT(textRoot);
     MeasureTextData data(&allCharactersMap);

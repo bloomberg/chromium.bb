@@ -8,43 +8,43 @@ layer at (0,0) size 800x155
           text run at (0,33) width 226: "The alphabet A through M is here: "
         RenderSVGRoot {svg} at (233,18) size 501x45
           RenderSVGContainer {g} at (233,18) size 501x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,47.00)}]
-            RenderSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 37x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "A"
-            RenderSVGText {text} at (0,-45) size 34x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 34x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 34x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 33.35: "B"
-            RenderSVGText {text} at (0,-45) size 34x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 34x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 34x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 33.35: "C"
-            RenderSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 37x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "D"
-            RenderSVGText {text} at (0,-45) size 31x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 31x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 31x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 30.54: "E"
-            RenderSVGText {text} at (0,-45) size 28x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 28x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 28x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 27.81: "F"
-            RenderSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 37x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "G"
-            RenderSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 37x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "H"
-            RenderSVGText {text} at (0,-45) size 17x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 17x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 17x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 16.65: "I"
-            RenderSVGText {text} at (0,-45) size 20x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 20x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 20x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 19.46: "J"
-            RenderSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 37x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "K"
-            RenderSVGText {text} at (0,-45) size 31x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 31x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 31x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 30.54: "L"
-            RenderSVGText {text} at (0,-45) size 45x56 contains 1 chunk(s)
+            LayoutSVGText {text} at (0,-45) size 45x56 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 45x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 44.46: "M"
         RenderText {#text} at (725,33) size 779x89

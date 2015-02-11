@@ -36,7 +36,7 @@ class RenderSVGImage;
 class LayoutSVGInlineText;
 class RenderSVGShape;
 class RenderSVGRoot;
-class RenderSVGText;
+class LayoutSVGText;
 
 // functions used by the main LayoutTreeAsText code
 void write(TextStream&, const RenderSVGShape&, int indent);
@@ -46,7 +46,7 @@ void writeSVGResourceContainer(TextStream&, const LayoutObject&, int indent);
 void writeSVGContainer(TextStream&, const LayoutObject&, int indent);
 void writeSVGImage(TextStream&, const RenderSVGImage&, int indent);
 void writeSVGInlineText(TextStream&, const LayoutSVGInlineText&, int indent);
-void writeSVGText(TextStream&, const RenderSVGText&, int indent);
+void writeSVGText(TextStream&, const LayoutSVGText&, int indent);
 void writeResources(TextStream&, const LayoutObject&, int indent);
 
 } // namespace blink

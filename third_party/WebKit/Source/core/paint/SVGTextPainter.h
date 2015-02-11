@@ -8,15 +8,15 @@
 namespace blink {
 
 struct PaintInfo;
-class RenderSVGText;
+class LayoutSVGText;
 
 class SVGTextPainter {
 public:
-    SVGTextPainter(RenderSVGText& renderSVGText) : m_renderSVGText(renderSVGText) { }
+    SVGTextPainter(LayoutSVGText& renderSVGText) : m_renderSVGText(renderSVGText) { }
     void paint(const PaintInfo&);
 
 private:
-    RenderSVGText& m_renderSVGText;
+    LayoutSVGText& m_renderSVGText;
 };
 
 } // namespace blink

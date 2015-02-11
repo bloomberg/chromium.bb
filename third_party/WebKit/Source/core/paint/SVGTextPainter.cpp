@@ -6,9 +6,9 @@
 #include "core/paint/SVGTextPainter.h"
 
 #include "core/layout/PaintInfo.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/svg/RenderSVGText.h"
 
 namespace blink {
 

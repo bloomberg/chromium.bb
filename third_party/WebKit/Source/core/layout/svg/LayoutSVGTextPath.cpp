@@ -19,7 +19,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGTextPath.h"
+#include "core/layout/svg/LayoutSVGTextPath.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGPathData.h"
@@ -28,12 +28,12 @@
 
 namespace blink {
 
-RenderSVGTextPath::RenderSVGTextPath(Element* element)
+LayoutSVGTextPath::LayoutSVGTextPath(Element* element)
     : LayoutSVGInline(element)
 {
 }
 
-bool RenderSVGTextPath::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGTextPath::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     if (child->isText())
         return SVGLayoutSupport::isRenderableTextNode(child);
@@ -41,7 +41,7 @@ bool RenderSVGTextPath::isChildAllowed(LayoutObject* child, const LayoutStyle&) 
     return child->isSVGInline() && !child->isSVGTextPath();
 }
 
-Path RenderSVGTextPath::layoutPath() const
+Path LayoutSVGTextPath::layoutPath() const
 {
     SVGTextPathElement* textPathElement = toSVGTextPathElement(node());
     Element* targetElement = SVGURIReference::targetElementFromIRIString(textPathElement->href()->currentValue()->value(), textPathElement->treeScope());
@@ -62,7 +62,7 @@ Path RenderSVGTextPath::layoutPath() const
     return pathData;
 }
 
-float RenderSVGTextPath::startOffset() const
+float LayoutSVGTextPath::startOffset() const
 {
     return toSVGTextPathElement(node())->startOffset()->currentValue()->valueAsPercentage();
 }

@@ -3,19 +3,19 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
     RenderSVGContainer {g} at (28,0) size 772x426
-      RenderSVGText {text} at (19,-4) size 393x78 contains 1 chunk(s)
+      LayoutSVGText {text} at (19,-4) size 393x78 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 393x77
           chunk 1 text run 1 at (19.00,60.00) startOffset 0 endOffset 11 width 393.00: "Normal Text"
-      RenderSVGText {text} at (19,56) size 344x78 contains 1 chunk(s)
+      LayoutSVGText {text} at (19,56) size 344x78 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 344x77
           chunk 1 text run 1 at (19.00,120.00) startOffset 0 endOffset 12 width 343.20: "Fill opacity"
-      RenderSVGText {text} at (19,116) size 462x78 contains 1 chunk(s)
+      LayoutSVGText {text} at (19,116) size 462x78 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 462x77
           chunk 1 text run 1 at (19.00,180.00) startOffset 0 endOffset 14 width 462.00: "Stroke opacity"
-      RenderSVGText {text} at (19,176) size 242x78 contains 1 chunk(s)
+      LayoutSVGText {text} at (19,176) size 242x78 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 242x77
           chunk 1 text run 1 at (19.00,240.00) startOffset 0 endOffset 7 width 241.80: "Opacity"
-    RenderSVGText {text} at (10,304) size 260x46 contains 1 chunk(s)
+    LayoutSVGText {text} at (10,304) size 260x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 260x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 259.80: "$Revision: 1.3 $"
     RenderSVGRect {rect} at (0,0) size 800x600 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

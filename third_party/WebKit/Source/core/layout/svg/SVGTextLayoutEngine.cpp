@@ -22,10 +22,10 @@
 #include "core/layout/svg/SVGTextLayoutEngine.h"
 
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/layout/svg/LayoutSVGTextPath.h"
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 #include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/rendering/svg/RenderSVGTextPath.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
 
@@ -168,7 +168,7 @@ void SVGTextLayoutEngine::beginTextPathLayout(LayoutObject* object, SVGTextLayou
     ASSERT(object);
 
     m_inPathLayout = true;
-    RenderSVGTextPath* textPath = toRenderSVGTextPath(object);
+    LayoutSVGTextPath* textPath = toLayoutSVGTextPath(object);
 
     Path path = textPath->layoutPath();
     if (path.isEmpty())

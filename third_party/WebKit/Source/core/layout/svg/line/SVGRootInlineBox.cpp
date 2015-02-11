@@ -25,10 +25,10 @@
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
-#include "core/rendering/svg/RenderSVGText.h"
 
 namespace blink {
 
@@ -46,7 +46,7 @@ void SVGRootInlineBox::markDirty()
 
 void SVGRootInlineBox::computePerCharacterLayoutInformation()
 {
-    RenderSVGText& textRoot = toRenderSVGText(block());
+    LayoutSVGText& textRoot = toLayoutSVGText(block());
 
     Vector<SVGTextLayoutAttributes*>& layoutAttributes = textRoot.layoutAttributes();
     if (layoutAttributes.isEmpty())
@@ -63,7 +63,7 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation()
     characterLayout.finishLayout();
 
     // Perform SVG text layout phase four
-    // Position & resize all SVGInlineText/FlowBoxes in the inline box tree, resize the root box as well as the RenderSVGText parent block.
+    // Position & resize all SVGInlineText/FlowBoxes in the inline box tree, resize the root box as well as the LayoutSVGText parent block.
     FloatRectWillBeLayoutRect childRect;
     layoutChildBoxes(this, &childRect);
     layoutRootBox(childRect);

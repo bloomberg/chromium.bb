@@ -53,18 +53,18 @@ static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
         return 0;
 
     if (renderer->isRenderBlock()) {
-        // If we're given a block element, it has to be a RenderSVGText.
+        // If we're given a block element, it has to be a LayoutSVGText.
         ASSERT(renderer->isSVGText());
         RenderBlockFlow* renderBlockFlow = toRenderBlockFlow(renderer);
 
-        // RenderSVGText only ever contains a single line box.
+        // LayoutSVGText only ever contains a single line box.
         InlineFlowBox* flowBox = renderBlockFlow->firstLineBox();
         ASSERT(flowBox == renderBlockFlow->lastLineBox());
         return flowBox;
     }
 
     if (renderer->isRenderInline()) {
-        // We're given a LayoutSVGInline or objects that derive from it (RenderSVGTSpan / RenderSVGTextPath)
+        // We're given a LayoutSVGInline or objects that derive from it (RenderSVGTSpan / LayoutSVGTextPath)
         RenderInline* renderInline = toRenderInline(renderer);
 
         // LayoutSVGInline only ever contains a single line box.

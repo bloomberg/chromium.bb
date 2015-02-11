@@ -23,10 +23,10 @@
 
 #include "core/layout/svg/LayoutSVGInline.h"
 
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
-#include "core/rendering/svg/RenderSVGText.h"
 #include "core/svg/SVGAElement.h"
 
 namespace blink {
@@ -63,7 +63,7 @@ InlineFlowBox* LayoutSVGInline::createInlineFlowBox()
 
 FloatRect LayoutSVGInline::objectBoundingBox() const
 {
-    if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (const LayoutObject* object = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         return object->objectBoundingBox();
 
     return FloatRect();
@@ -71,7 +71,7 @@ FloatRect LayoutSVGInline::objectBoundingBox() const
 
 FloatRect LayoutSVGInline::strokeBoundingBox() const
 {
-    if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (const LayoutObject* object = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         return object->strokeBoundingBox();
 
     return FloatRect();
@@ -79,7 +79,7 @@ FloatRect LayoutSVGInline::strokeBoundingBox() const
 
 FloatRect LayoutSVGInline::paintInvalidationRectInLocalCoordinates() const
 {
-    if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (const LayoutObject* object = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         return object->paintInvalidationRectInLocalCoordinates();
 
     return FloatRect();
@@ -102,7 +102,7 @@ const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutLayerMod
 
 void LayoutSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
-    const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this);
+    const LayoutObject* object = LayoutSVGText::locateLayoutSVGTextAncestor(this);
     if (!object)
         return;
 
@@ -131,7 +131,7 @@ void LayoutSVGInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
     RenderInline::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
 
-    if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         textRenderer->subtreeChildWasAdded(child);
 }
 
@@ -139,7 +139,7 @@ void LayoutSVGInline::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
 
-    RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(this);
+    LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(this);
     if (!textRenderer) {
         RenderInline::removeChild(child);
         return;

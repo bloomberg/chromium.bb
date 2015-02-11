@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGText.h"
+#include "core/layout/svg/LayoutSVGText.h"
 
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/HitTestRequest.h"
@@ -53,7 +53,7 @@
 
 namespace blink {
 
-RenderSVGText::RenderSVGText(SVGTextElement* node)
+LayoutSVGText::LayoutSVGText(SVGTextElement* node)
     : RenderSVGBlock(node)
     , m_needsReordering(false)
     , m_needsPositioningValuesUpdate(false)
@@ -62,34 +62,34 @@ RenderSVGText::RenderSVGText(SVGTextElement* node)
 {
 }
 
-RenderSVGText::~RenderSVGText()
+LayoutSVGText::~LayoutSVGText()
 {
     ASSERT(m_layoutAttributes.isEmpty());
 }
 
-bool RenderSVGText::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGText::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isSVGInline() || (child->isText() && SVGLayoutSupport::isRenderableTextNode(child));
 }
 
-RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(LayoutObject* start)
+LayoutSVGText* LayoutSVGText::locateLayoutSVGTextAncestor(LayoutObject* start)
 {
     ASSERT(start);
     while (start && !start->isSVGText())
         start = start->parent();
     if (!start || !start->isSVGText())
         return 0;
-    return toRenderSVGText(start);
+    return toLayoutSVGText(start);
 }
 
-const RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(const LayoutObject* start)
+const LayoutSVGText* LayoutSVGText::locateLayoutSVGTextAncestor(const LayoutObject* start)
 {
     ASSERT(start);
     while (start && !start->isSVGText())
         start = start->parent();
     if (!start || !start->isSVGText())
         return 0;
-    return toRenderSVGText(start);
+    return toLayoutSVGText(start);
 }
 
 static inline void collectLayoutAttributes(LayoutObject* text, Vector<SVGTextLayoutAttributes*>& attributes)
@@ -100,7 +100,7 @@ static inline void collectLayoutAttributes(LayoutObject* text, Vector<SVGTextLay
     }
 }
 
-static inline bool findPreviousAndNextAttributes(RenderSVGText* root, LayoutSVGInlineText* locateElement, SVGTextLayoutAttributes*& previous, SVGTextLayoutAttributes*& next)
+static inline bool findPreviousAndNextAttributes(LayoutSVGText* root, LayoutSVGInlineText* locateElement, SVGTextLayoutAttributes*& previous, SVGTextLayoutAttributes*& next)
 {
     ASSERT(root);
     ASSERT(locateElement);
@@ -132,7 +132,7 @@ static inline bool findPreviousAndNextAttributes(RenderSVGText* root, LayoutSVGI
     return false;
 }
 
-inline bool RenderSVGText::shouldHandleSubtreeMutations() const
+inline bool LayoutSVGText::shouldHandleSubtreeMutations() const
 {
     if (beingDestroyed() || !everHadLayout()) {
         ASSERT(m_layoutAttributes.isEmpty());
@@ -142,7 +142,7 @@ inline bool RenderSVGText::shouldHandleSubtreeMutations() const
     return true;
 }
 
-void RenderSVGText::subtreeChildWasAdded(LayoutObject* child)
+void LayoutSVGText::subtreeChildWasAdded(LayoutObject* child)
 {
     ASSERT(child);
     if (!shouldHandleSubtreeMutations() || documentBeingDestroyed())
@@ -196,7 +196,7 @@ void RenderSVGText::subtreeChildWasAdded(LayoutObject* child)
     m_layoutAttributes = newLayoutAttributes;
 }
 
-static inline void checkLayoutAttributesConsistency(RenderSVGText* text, Vector<SVGTextLayoutAttributes*>& expectedLayoutAttributes)
+static inline void checkLayoutAttributesConsistency(LayoutSVGText* text, Vector<SVGTextLayoutAttributes*>& expectedLayoutAttributes)
 {
 #if ENABLE(ASSERT)
     Vector<SVGTextLayoutAttributes*> newLayoutAttributes;
@@ -205,7 +205,7 @@ static inline void checkLayoutAttributesConsistency(RenderSVGText* text, Vector<
 #endif
 }
 
-void RenderSVGText::willBeDestroyed()
+void LayoutSVGText::willBeDestroyed()
 {
     m_layoutAttributes.clear();
     m_layoutAttributesBuilder.clearTextPositioningElements();
@@ -213,7 +213,7 @@ void RenderSVGText::willBeDestroyed()
     RenderSVGBlock::willBeDestroyed();
 }
 
-void RenderSVGText::subtreeChildWillBeRemoved(LayoutObject* child, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes)
+void LayoutSVGText::subtreeChildWillBeRemoved(LayoutObject* child, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes)
 {
     ASSERT(child);
     if (!shouldHandleSubtreeMutations())
@@ -244,7 +244,7 @@ void RenderSVGText::subtreeChildWillBeRemoved(LayoutObject* child, Vector<SVGTex
     m_layoutAttributes.remove(position);
 }
 
-void RenderSVGText::subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes)
+void LayoutSVGText::subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes)
 {
     if (!shouldHandleSubtreeMutations() || documentBeingDestroyed()) {
         ASSERT(affectedAttributes.isEmpty());
@@ -258,7 +258,7 @@ void RenderSVGText::subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*
         m_layoutAttributesBuilder.buildLayoutAttributesForTextRenderer(affectedAttributes[i]->context());
 }
 
-void RenderSVGText::subtreeStyleDidChange()
+void LayoutSVGText::subtreeStyleDidChange()
 {
     if (!shouldHandleSubtreeMutations() || documentBeingDestroyed())
         return;
@@ -274,7 +274,7 @@ void RenderSVGText::subtreeStyleDidChange()
     }
 }
 
-void RenderSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
+void LayoutSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
 {
     ASSERT(text);
     ASSERT(!beingDestroyed());
@@ -310,7 +310,7 @@ static inline void updateFontInAllDescendants(LayoutObject* start, SVGTextLayout
     }
 }
 
-void RenderSVGText::layout()
+void LayoutSVGText::layout()
 {
     ASSERT(needsLayout());
 
@@ -405,14 +405,14 @@ void RenderSVGText::layout()
     clearNeedsLayout();
 }
 
-RootInlineBox* RenderSVGText::createRootInlineBox()
+RootInlineBox* LayoutSVGText::createRootInlineBox()
 {
     RootInlineBox* box = new SVGRootInlineBox(*this);
     box->setHasVirtualLogicalHeight();
     return box;
 }
 
-bool RenderSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, request, style()->pointerEvents());
     bool isVisible = (style()->visibility() == VISIBLE);
@@ -435,7 +435,7 @@ bool RenderSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResul
     return false;
 }
 
-PositionWithAffinity RenderSVGText::positionForPoint(const LayoutPoint& pointInContents)
+PositionWithAffinity LayoutSVGText::positionForPoint(const LayoutPoint& pointInContents)
 {
     RootInlineBox* rootBox = firstRootBox();
     if (!rootBox)
@@ -451,17 +451,17 @@ PositionWithAffinity RenderSVGText::positionForPoint(const LayoutPoint& pointInC
     return closestBox->renderer().positionForPoint(LayoutPoint(pointInContents.x(), closestBox->y()));
 }
 
-void RenderSVGText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutSVGText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
     quads.append(localToAbsoluteQuad(strokeBoundingBox(), 0 /* mode */, wasFixed));
 }
 
-void RenderSVGText::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGText::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGTextPainter(*this).paint(paintInfo);
 }
 
-FloatRect RenderSVGText::strokeBoundingBox() const
+FloatRect LayoutSVGText::strokeBoundingBox() const
 {
     FloatRect strokeBoundaries = objectBoundingBox();
     const SVGLayoutStyle& svgStyle = style()->svgStyle();
@@ -475,7 +475,7 @@ FloatRect RenderSVGText::strokeBoundingBox() const
     return strokeBoundaries;
 }
 
-FloatRect RenderSVGText::paintInvalidationRectInLocalCoordinates() const
+FloatRect LayoutSVGText::paintInvalidationRectInLocalCoordinates() const
 {
     FloatRect paintInvalidationRect = strokeBoundingBox();
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, paintInvalidationRect);
@@ -486,7 +486,7 @@ FloatRect RenderSVGText::paintInvalidationRectInLocalCoordinates() const
     return paintInvalidationRect;
 }
 
-void RenderSVGText::addChild(LayoutObject* child, LayoutObject* beforeChild)
+void LayoutSVGText::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderSVGBlock::addChild(child, beforeChild);
 
@@ -494,7 +494,7 @@ void RenderSVGText::addChild(LayoutObject* child, LayoutObject* beforeChild)
     subtreeChildWasAdded(child);
 }
 
-void RenderSVGText::removeChild(LayoutObject* child)
+void LayoutSVGText::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
 

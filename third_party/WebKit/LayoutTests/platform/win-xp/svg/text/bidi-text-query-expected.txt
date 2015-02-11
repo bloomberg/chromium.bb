@@ -3,11 +3,11 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (16,55) size 213x86
     RenderSVGContainer {g} at (16,55) size 213x86
-      RenderSVGText {text} at (10,33) size 128x22 contains 1 chunk(s)
+      LayoutSVGText {text} at (10,33) size 128x22 contains 1 chunk(s)
         RenderSVGTSpan {tspan} at (0,0) size 128x21
           LayoutSVGInlineText {#text} at (0,0) size 128x21
             chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 17 width 127.20 LTR override: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C} W3C"
-      RenderSVGText {text} at (10,63) size 124x22 contains 1 chunk(s)
+      LayoutSVGText {text} at (10,63) size 124x22 contains 1 chunk(s)
         RenderSVGTSpan {tspan} at (0,0) size 124x21
           LayoutSVGInlineText {#text} at (0,0) size 124x21
             chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 12 width 71.40 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}"

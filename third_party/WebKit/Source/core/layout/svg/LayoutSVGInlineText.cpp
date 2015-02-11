@@ -29,9 +29,9 @@
 #include "core/css/FontSize.h"
 #include "core/dom/StyleEngine.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/rendering/svg/RenderSVGText.h"
 
 namespace blink {
 
@@ -69,7 +69,7 @@ LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
 void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
 {
     RenderText::setTextInternal(text);
-    if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         textRenderer->subtreeTextDidChange(this);
 }
 
@@ -89,7 +89,7 @@ void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle
         return;
 
     // The text metrics may be influenced by style changes.
-    if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(this))
+    if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         textRenderer->setNeedsLayoutAndFullPaintInvalidation();
 }
 

@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (40,89) size 192x88
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
-        RenderSVGText {text} at (40,89) size 192x88 contains 1 chunk(s)
+        LayoutSVGText {text} at (40,89) size 192x88 contains 1 chunk(s)
           RenderSVGTSpan {tspan} at (0,0) size 192x88
             LayoutSVGInlineText {#text} at (0,0) size 192x88
               chunk 1 text run 1 at (40.00,160.00) startOffset 0 endOffset 4 width 191.13: "CLIP"

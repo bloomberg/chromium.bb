@@ -25,12 +25,12 @@
 namespace blink {
 
 class LayoutSVGInlineText;
-class RenderSVGText;
+class LayoutSVGText;
 
 namespace SVGTextMetricsBuilder {
 
 void measureTextRenderer(LayoutSVGInlineText*);
-void buildMetricsAndLayoutAttributes(RenderSVGText*, LayoutSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
+void buildMetricsAndLayoutAttributes(LayoutSVGText*, LayoutSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
 
 } // namespace SVGTextMetricsBuilder
 

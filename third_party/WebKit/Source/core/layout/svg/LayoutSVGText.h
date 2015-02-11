@@ -19,8 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGText_h
-#define RenderSVGText_h
+#ifndef LayoutSVGText_h
+#define LayoutSVGText_h
 
 #include "core/layout/svg/SVGTextLayoutAttributesBuilder.h"
 #include "core/rendering/svg/RenderSVGBlock.h"
@@ -32,10 +32,10 @@ class LayoutSVGInlineText;
 class SVGTextElement;
 class LayoutSVGInlineText;
 
-class RenderSVGText final : public RenderSVGBlock {
+class LayoutSVGText final : public RenderSVGBlock {
 public:
-    explicit RenderSVGText(SVGTextElement*);
-    virtual ~RenderSVGText();
+    explicit LayoutSVGText(SVGTextElement*);
+    virtual ~LayoutSVGText();
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
@@ -44,8 +44,8 @@ public:
     void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override;
 
-    static RenderSVGText* locateRenderSVGTextAncestor(LayoutObject*);
-    static const RenderSVGText* locateRenderSVGTextAncestor(const LayoutObject*);
+    static LayoutSVGText* locateLayoutSVGTextAncestor(LayoutObject*);
+    static const LayoutSVGText* locateLayoutSVGTextAncestor(const LayoutObject*);
 
     bool needsReordering() const { return m_needsReordering; }
     Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
@@ -59,7 +59,7 @@ public:
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
 
 private:
-    virtual const char* renderName() const override { return "RenderSVGText"; }
+    virtual const char* renderName() const override { return "LayoutSVGText"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGText || RenderSVGBlock::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
@@ -89,7 +89,7 @@ private:
     Vector<SVGTextLayoutAttributes*> m_layoutAttributes;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGText, isSVGText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGText, isSVGText());
 
 }
 

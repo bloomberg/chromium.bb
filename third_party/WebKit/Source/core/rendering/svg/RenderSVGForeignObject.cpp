@@ -102,7 +102,7 @@ void RenderSVGForeignObject::layout()
     // positions. A regular RenderBoxModelObject would pull this information from LayoutStyle - in SVG those
     // properties are ignored for non <svg> elements, so we mimic what happens when specifying them through CSS.
 
-    // FIXME: Investigate in location rounding issues - only affects RenderSVGForeignObject & RenderSVGText
+    // FIXME: Investigate in location rounding issues - only affects RenderSVGForeignObject & LayoutSVGText
     setLocation(roundedIntPoint(viewportLocation));
 
     bool layoutChanged = everHadLayout() && selfNeedsLayout();

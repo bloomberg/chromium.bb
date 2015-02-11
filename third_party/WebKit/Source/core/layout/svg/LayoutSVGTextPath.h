@@ -18,16 +18,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGTextPath_h
-#define RenderSVGTextPath_h
+#ifndef LayoutSVGTextPath_h
+#define LayoutSVGTextPath_h
 
 #include "core/layout/svg/LayoutSVGInline.h"
 
 namespace blink {
 
-class RenderSVGTextPath final : public LayoutSVGInline {
+class LayoutSVGTextPath final : public LayoutSVGInline {
 public:
-    explicit RenderSVGTextPath(Element*);
+    explicit LayoutSVGTextPath(Element*);
 
     Path layoutPath() const;
     float startOffset() const;
@@ -37,13 +37,13 @@ public:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTextPath || LayoutSVGInline::isOfType(type); }
 
 private:
-    virtual const char* renderName() const override { return "RenderSVGTextPath"; }
+    virtual const char* renderName() const override { return "LayoutSVGTextPath"; }
 
     Path m_layoutPath;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGTextPath, isSVGTextPath());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGTextPath, isSVGTextPath());
 
 }
 
-#endif // RenderSVGTextPath_h
+#endif // LayoutSVGTextPath_h

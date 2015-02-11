@@ -3,12 +3,12 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGContainer {g} at (0,4) size 472x356
-      RenderSVGText {text} at (0,4) size 472x45 contains 1 chunk(s)
+      LayoutSVGText {text} at (0,4) size 472x45 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 472x45
           chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 472.00: "Test 'baseline-shift' (vertic.)"
       RenderSVGContainer {g} at (82,60) size 294x300
         RenderSVGContainer {g} at (82,60) size 294x300 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,60.00)}]
-          RenderSVGText {text} at (-8,0) size 24x175 contains 1 chunk(s)
+          LayoutSVGText {text} at (-8,0) size 24x175 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 16x70
               chunk 1 (vertical) text run 1 at (-10.50,0.00) startOffset 0 endOffset 1 height 35.00: "t"
               chunk 1 (vertical) text run 2 at (-10.50,35.00) startOffset 1 endOffset 2 height 35.00: "e"
@@ -18,7 +18,7 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (1,105) size 14x70
               chunk 1 (vertical) text run 1 at (-10.50,105.00) startOffset 0 endOffset 1 height 35.00: "x"
               chunk 1 (vertical) text run 2 at (-10.50,140.00) startOffset 1 endOffset 2 height 35.00: "t"
-          RenderSVGText {text} at (45,0) size 43x280 contains 1 chunk(s)
+          LayoutSVGText {text} at (45,0) size 43x280 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (26,0) size 16x70
               chunk 1 (vertical) text run 1 at (69.50,0.00) startOffset 0 endOffset 1 height 35.00: "t"
               chunk 1 (vertical) text run 2 at (69.50,35.00) startOffset 1 endOffset 2 height 35.00: "e"
@@ -31,7 +31,7 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (27,210) size 14x70
               chunk 1 (vertical) text run 1 at (69.50,210.00) startOffset 0 endOffset 1 height 35.00: "x"
               chunk 1 (vertical) text run 2 at (69.50,245.00) startOffset 1 endOffset 2 height 35.00: "t"
-          RenderSVGText {text} at (154,0) size 34x245 contains 1 chunk(s)
+          LayoutSVGText {text} at (154,0) size 34x245 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (18,0) size 16x70
               chunk 1 (vertical) text run 1 at (169.50,0.00) startOffset 0 endOffset 1 height 35.00: "t"
               chunk 1 (vertical) text run 2 at (169.50,35.00) startOffset 1 endOffset 2 height 35.00: "e"
@@ -45,7 +45,7 @@ layer at (0,0) size 480x360
                 chunk 1 (vertical) text run 1 at (169.50,175.00) startOffset 0 endOffset 1 height 35.00: "x"
             LayoutSVGInlineText {#text} at (22,210) size 8x35
               chunk 1 (vertical) text run 1 at (169.50,210.00) startOffset 0 endOffset 1 height 35.00: "t"
-          RenderSVGText {text} at (252,0) size 34x315 contains 1 chunk(s)
+          LayoutSVGText {text} at (252,0) size 34x315 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 16x70
               chunk 1 (vertical) text run 1 at (249.50,0.00) startOffset 0 endOffset 1 height 35.00: "t"
               chunk 1 (vertical) text run 2 at (249.50,35.00) startOffset 1 endOffset 2 height 35.00: "e"
@@ -61,7 +61,7 @@ layer at (0,0) size 480x360
                 chunk 1 (vertical) text run 1 at (249.50,245.00) startOffset 0 endOffset 1 height 35.00: "x"
             LayoutSVGInlineText {#text} at (4,280) size 8x35
               chunk 1 (vertical) text run 1 at (249.50,280.00) startOffset 0 endOffset 1 height 35.00: "t"
-    RenderSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 261x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.5 $"
     RenderSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         RenderSVGRect {rect} at (0,0) size 0x0 [fill={[type=SOLID] [color=#FFFFFF]}] [x=-0.50] [y=-0.50] [width=0.10] [height=0.10]
     RenderSVGRect {rect} at (0,0) size 0x0 [fill={[type=SOLID] [color=#008000]}] [x=20.00] [y=20.00] [width=100.00] [height=100.00]
       [masker="mask"] LayoutSVGResourceMasker {mask} at (0,0) size 0x0
-    RenderSVGText {text} at (60,45) size 21x19 contains 1 chunk(s)
+    LayoutSVGText {text} at (60,45) size 21x19 contains 1 chunk(s)
       [masker="mask"] LayoutSVGResourceMasker {mask} at (0,0) size 0x0
       RenderSVGTSpan {tspan} at (0,0) size 21x19
         LayoutSVGInlineText {#text} at (0,0) size 21x19

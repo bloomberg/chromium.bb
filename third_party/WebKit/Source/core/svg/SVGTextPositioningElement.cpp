@@ -23,7 +23,7 @@
 #include "core/svg/SVGTextPositioningElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/svg/RenderSVGText.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumberList.h"
 
@@ -95,7 +95,7 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
 
     ASSERT(updateRelativeLengths || attrName == SVGNames::rotateAttr);
 
-    if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(renderer))
+    if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(renderer))
         textRenderer->setNeedsPositioningValuesUpdate();
     markForLayoutAndParentResourceInvalidation(renderer);
 }
