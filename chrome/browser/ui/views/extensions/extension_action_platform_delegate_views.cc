@@ -5,12 +5,8 @@
 #include "chrome/browser/ui/views/extensions/extension_action_platform_delegate_views.h"
 
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,20 +14,18 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/command.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 using extensions::ActionInfo;
-using extensions::CommandService;
 
 namespace {
 
@@ -53,7 +47,6 @@ ExtensionActionPlatformDelegate::Create(
 ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
     ExtensionActionViewController* controller)
     : controller_(controller),
-      popup_(nullptr),
       weak_factory_(this) {
   content::NotificationSource notification_source = content::Source<Profile>(
       controller_->browser()->profile()->GetOriginalProfile());
@@ -66,18 +59,9 @@ ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
 }
 
 ExtensionActionPlatformDelegateViews::~ExtensionActionPlatformDelegateViews() {
-  DCHECK(!popup_);  // We should never have a visible popup at shutdown.
   if (context_menu_owner == this)
     context_menu_owner = nullptr;
-  // Since the popup close process is asynchronous, it might not be fully closed
-  // at shutdown. We still need to cleanup, though.
-  if (popup_)
-    CleanupPopup(true);
   UnregisterCommand(false);
-}
-
-gfx::NativeView ExtensionActionPlatformDelegateViews::GetPopupNativeView() {
-  return popup_ ? popup_->GetWidget()->GetNativeView() : nullptr;
 }
 
 bool ExtensionActionPlatformDelegateViews::IsMenuRunning() const {
@@ -120,12 +104,6 @@ void ExtensionActionPlatformDelegateViews::CloseActivePopup() {
   }
 }
 
-void ExtensionActionPlatformDelegateViews::CloseOwnPopup() {
-  // It's possible that the popup is already in the process of destroying.
-  if (popup_)
-    CleanupPopup(true);
-}
-
 extensions::ExtensionViewHost*
 ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
     ExtensionActionViewController::PopupShowAction show_action,
@@ -140,14 +118,12 @@ ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
   ExtensionPopup::ShowAction popup_show_action =
       show_action == ExtensionActionViewController::SHOW_POPUP ?
           ExtensionPopup::SHOW : ExtensionPopup::SHOW_AND_INSPECT;
-  popup_ = ExtensionPopup::ShowPopup(popup_url,
-                                     controller_->browser(),
-                                     reference_view,
-                                     arrow,
-                                     popup_show_action);
-  popup_->GetWidget()->AddObserver(this);
-
-  return popup_->host();
+  ExtensionPopup* popup = ExtensionPopup::ShowPopup(popup_url,
+                                                    controller_->browser(),
+                                                    reference_view,
+                                                    arrow,
+                                                    popup_show_action);
+  return popup->host();
 }
 
 void ExtensionActionPlatformDelegateViews::Observe(
@@ -196,13 +172,6 @@ bool ExtensionActionPlatformDelegateViews::CanHandleAccelerators() const {
   return controller_->extension_action()->action_type() ==
       ActionInfo::TYPE_PAGE ? GetDelegateViews()->GetAsView()->visible() :
           true;
-}
-
-void ExtensionActionPlatformDelegateViews::OnWidgetDestroying(
-    views::Widget* widget) {
-  DCHECK(popup_);
-  DCHECK_EQ(popup_->GetWidget(), widget);
-  CleanupPopup(false);
 }
 
 void ExtensionActionPlatformDelegateViews::ShowContextMenuForView(
@@ -315,14 +284,6 @@ bool ExtensionActionPlatformDelegateViews::CloseActiveMenuIfNeeded() {
   }
 
   return false;
-}
-
-void ExtensionActionPlatformDelegateViews::CleanupPopup(bool close_widget) {
-  DCHECK(popup_);
-  popup_->GetWidget()->RemoveObserver(this);
-  if (close_widget)
-    popup_->GetWidget()->Close();
-  popup_ = nullptr;
 }
 
 ToolbarActionViewDelegateViews*

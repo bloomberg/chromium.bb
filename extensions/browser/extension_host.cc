@@ -190,6 +190,13 @@ void ExtensionHost::CreateRenderViewSoon() {
   }
 }
 
+void ExtensionHost::Close() {
+  content::NotificationService::current()->Notify(
+      extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+      content::Source<BrowserContext>(browser_context_),
+      content::Details<ExtensionHost>(this));
+}
+
 void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
   if (IsBackgroundPage()) {
@@ -248,13 +255,6 @@ void ExtensionHost::LoadInitialURL() {
 bool ExtensionHost::IsBackgroundPage() const {
   DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   return true;
-}
-
-void ExtensionHost::Close() {
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      content::Source<BrowserContext>(browser_context_),
-      content::Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::Observe(int type,

@@ -5,35 +5,18 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_VIEWS_H_
 
+#include "base/callback.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
-#include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/widget/widget_observer.h"
 
-class Browser;
-class ExtensionAction;
 class ToolbarActionViewDelegateViews;
-
-namespace content {
-class WebContents;
-}
-
-namespace extensions {
-class Command;
-class Extension;
-}
-
-namespace ui {
-class Accelerator;
-}
 
 namespace views {
 class MenuRunner;
 class View;
-class Widget;
 }
 
 // An abstract "View" for an ExtensionAction (either a BrowserAction or a
@@ -48,8 +31,7 @@ class ExtensionActionPlatformDelegateViews
     : public ExtensionActionPlatformDelegate,
       public content::NotificationObserver,
       public ui::AcceleratorTarget,
-      public views::ContextMenuController,
-      public views::WidgetObserver {
+      public views::ContextMenuController {
  public:
   ExtensionActionPlatformDelegateViews(
       ExtensionActionViewController* controller);
@@ -57,12 +39,10 @@ class ExtensionActionPlatformDelegateViews
 
  private:
   // ExtensionActionPlatformDelegate:
-  gfx::NativeView GetPopupNativeView() override;
   bool IsMenuRunning() const override;
   void RegisterCommand() override;
   void OnDelegateSet() override;
   void CloseActivePopup() override;
-  void CloseOwnPopup() override;
   extensions::ExtensionViewHost* ShowPopupWithUrl(
       ExtensionActionViewController::PopupShowAction show_action,
       const GURL& popup_url,
@@ -76,9 +56,6 @@ class ExtensionActionPlatformDelegateViews
   // ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
-
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::ContextMenuController:
   void ShowContextMenuForView(views::View* source,
@@ -99,11 +76,6 @@ class ExtensionActionPlatformDelegateViews
   // Returns true if a menu was closed, false otherwise.
   bool CloseActiveMenuIfNeeded();
 
-  // Cleans up after the popup. If |close_widget| is true, this will call
-  // Widget::Close() on the popup's widget; otherwise it assumes the popup is
-  // already closing.
-  void CleanupPopup(bool close_widget);
-
   ToolbarActionViewDelegateViews* GetDelegateViews() const;
 
   // The owning ExtensionActionViewController.
@@ -111,9 +83,6 @@ class ExtensionActionPlatformDelegateViews
 
   // Responsible for running the menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
-
-  // The browser action's popup, if it is visible; NULL otherwise.
-  ExtensionPopup* popup_;
 
   // The extension key binding accelerator this extension action is listening
   // for (to show the popup).

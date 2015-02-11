@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -17,11 +18,8 @@
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/gfx/image/image_skia.h"
@@ -43,7 +41,8 @@ ExtensionActionViewController::ExtensionActionViewController(
       icon_factory_(browser->profile(), extension, extension_action, this),
       icon_observer_(nullptr),
       extension_registry_(
-          extensions::ExtensionRegistry::Get(browser_->profile())) {
+          extensions::ExtensionRegistry::Get(browser_->profile())),
+      popup_host_observer_(this) {
   DCHECK(extension_action);
   DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
          extension_action->action_type() == ActionInfo::TYPE_BROWSER);
@@ -51,6 +50,7 @@ ExtensionActionViewController::ExtensionActionViewController(
 }
 
 ExtensionActionViewController::~ExtensionActionViewController() {
+  DCHECK(!is_showing_popup());
 }
 
 const std::string& ExtensionActionViewController::GetId() const {
@@ -142,17 +142,17 @@ bool ExtensionActionViewController::HasPopup(
 
 void ExtensionActionViewController::HidePopup() {
   if (is_showing_popup()) {
-    platform_delegate_->CloseOwnPopup();
+    popup_host_->Close();
     // We need to do these actions synchronously (instead of closing and then
-    // performing the rest of the cleanup in Observe()) because the extension
-    // host can close asynchronously, and we need to keep the view delegate
-    // up-to-date.
+    // performing the rest of the cleanup in OnExtensionHostDestroyed()) because
+    // the extension host can close asynchronously, and we need to keep the view
+    // delegate up-to-date.
     OnPopupClosed();
   }
 }
 
 gfx::NativeView ExtensionActionViewController::GetPopupNativeView() {
-  return platform_delegate_->GetPopupNativeView();
+  return popup_host_ ? popup_host_->view()->GetNativeView() : nullptr;
 }
 
 ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
@@ -232,17 +232,9 @@ void ExtensionActionViewController::OnIconUpdated() {
     view_delegate_->UpdateState();
 }
 
-void ExtensionActionViewController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  // TODO(devlin): Ew. Notifications. Extract out an observer interface for
-  // ExtensionHost and convert this.
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
-  extensions::ExtensionHost* host =
-      content::Details<extensions::ExtensionHost>(details).ptr();
-  if (host == popup_host_)
-    OnPopupClosed();
+void ExtensionActionViewController::OnExtensionHostDestroyed(
+    const extensions::ExtensionHost* host) {
+  OnPopupClosed();
 }
 
 bool ExtensionActionViewController::ExtensionIsValid() const {
@@ -286,19 +278,14 @@ bool ExtensionActionViewController::ShowPopupWithUrl(
   popup_host_ = platform_delegate_->ShowPopupWithUrl(
       show_action, popup_url, grant_tab_permissions);
   if (popup_host_) {
-    // Lazily register for notifications about extension host destructions.
-    static const int kType = extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED;
-    content::Source<content::BrowserContext> source(
-        browser_->profile()->GetOriginalProfile());
-    if (!registrar_.IsRegistered(this, kType, source))
-      registrar_.Add(this, kType, source);
-
+    popup_host_observer_.Add(popup_host_);
     view_delegate_->OnPopupShown(grant_tab_permissions);
   }
   return is_showing_popup();
 }
 
 void ExtensionActionViewController::OnPopupClosed() {
+  popup_host_observer_.Remove(popup_host_);
   popup_host_ = nullptr;
   view_delegate_->OnPopupClosed();
 }

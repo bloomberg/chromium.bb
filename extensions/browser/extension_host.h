@@ -78,6 +78,9 @@ class ExtensionHost : public content::WebContentsDelegate,
   // (can be NULL). This happens delayed to avoid locking the UI.
   void CreateRenderViewSoon();
 
+  // Closes this host (results in [possibly asynchronous] deletion).
+  void Close();
+
   // Typical observer interface.
   void AddObserver(ExtensionHostObserver* observer);
   void RemoveObserver(ExtensionHostObserver* observer);
@@ -142,9 +145,6 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Returns true if we're hosting a background page.
   virtual bool IsBackgroundPage() const;
-
-  // Closes this host (results in deletion).
-  void Close();
 
  private:
   friend class ProcessCreationQueue;

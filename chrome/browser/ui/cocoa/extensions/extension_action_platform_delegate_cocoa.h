@@ -24,12 +24,10 @@ class ExtensionActionPlatformDelegateCocoa
 
  private:
   // ExtensionActionPlatformDelegate:
-  gfx::NativeView GetPopupNativeView() override;
   bool IsMenuRunning() const override;
   void RegisterCommand() override;
   void OnDelegateSet() override;
   void CloseActivePopup() override;
-  void CloseOwnPopup() override;
   extensions::ExtensionViewHost* ShowPopupWithUrl(
       ExtensionActionViewController::PopupShowAction show_action,
       const GURL& popup_url,
@@ -39,9 +37,6 @@ class ExtensionActionPlatformDelegateCocoa
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // Returns the popup shown by this extension action, if one exists.
-  ExtensionPopupController* GetPopup() const;
 
   // Returns the delegate in its Cocoa implementation.
   ToolbarActionViewDelegateCocoa* GetDelegateCocoa();

@@ -52,14 +52,9 @@ ExtensionActionPlatformDelegateCocoa::ExtensionActionPlatformDelegateCocoa(
 ExtensionActionPlatformDelegateCocoa::~ExtensionActionPlatformDelegateCocoa() {
 }
 
-gfx::NativeView ExtensionActionPlatformDelegateCocoa::GetPopupNativeView() {
-  ExtensionPopupController* popup = GetPopup();
-  return popup != nil ? [popup view] : nil;
-}
-
 bool ExtensionActionPlatformDelegateCocoa::IsMenuRunning() const {
   // TODO(devlin): Also account for context menus.
-  return GetPopup() != nil;
+  return controller_->is_showing_popup();
 }
 
 void ExtensionActionPlatformDelegateCocoa::RegisterCommand() {
@@ -79,12 +74,6 @@ void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {
 
 void ExtensionActionPlatformDelegateCocoa::CloseActivePopup() {
   ExtensionPopupController* popup = [ExtensionPopupController popup];
-  if (popup && ![popup isClosing])
-    [popup close];
-}
-
-void ExtensionActionPlatformDelegateCocoa::CloseOwnPopup() {
-  ExtensionPopupController* popup = GetPopup();
   if (popup && ![popup isClosing])
     [popup close];
 }
@@ -121,13 +110,6 @@ ToolbarActionViewDelegateCocoa*
 ExtensionActionPlatformDelegateCocoa::GetDelegateCocoa() {
   return static_cast<ToolbarActionViewDelegateCocoa*>(
       controller_->view_delegate());
-}
-
-ExtensionPopupController* ExtensionActionPlatformDelegateCocoa::GetPopup()
-    const {
-  ExtensionPopupController* popup = [ExtensionPopupController popup];
-  return popup && [popup extensionId] == controller_->extension()->id() ?
-      popup : nil;
 }
 
 void ExtensionActionPlatformDelegateCocoa::Observe(

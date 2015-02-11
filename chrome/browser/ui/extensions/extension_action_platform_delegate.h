@@ -24,7 +24,6 @@ class ExtensionActionPlatformDelegate {
 
   // The following are forwarded from ToolbarActionViewController. See that
   // class for the definitions.
-  virtual gfx::NativeView GetPopupNativeView() = 0;
   virtual bool IsMenuRunning() const = 0;
   virtual void RegisterCommand() = 0;
 
@@ -33,10 +32,6 @@ class ExtensionActionPlatformDelegate {
 
   // Closes the active popup (whether it was this action's popup or not).
   virtual void CloseActivePopup() = 0;
-
-  // Closes this action's popup. This will only be called if the popup is
-  // showing.
-  virtual void CloseOwnPopup() = 0;
 
   // Shows the popup for the extension action, given the associated |popup_url|.
   // |grant_tab_permissions| is true if active tab permissions should be given

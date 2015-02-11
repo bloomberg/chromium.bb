@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_VIEW_CONTROLLER_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_host_observer.h"
 #include "ui/gfx/image/image.h"
 
 class Browser;
@@ -33,7 +33,7 @@ class ExtensionActionViewController
     : public ToolbarActionViewController,
       public ExtensionActionIconFactory::Observer,
       public ExtensionContextMenuModel::PopupDelegate,
-      public content::NotificationObserver {
+      public extensions::ExtensionHostObserver {
  public:
   // The different options for showing a popup.
   enum PopupShowAction { SHOW_POPUP, SHOW_POPUP_AND_INSPECT };
@@ -89,10 +89,8 @@ class ExtensionActionViewController
   // ExtensionActionIconFactory::Observer:
   void OnIconUpdated() override;
 
-  // content::NotificationObserver:
-  void Observe(int notification_type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ExtensionHostObserver:
+  void OnExtensionHostDestroyed(const extensions::ExtensionHost* host) override;
 
   // Checks if the associated |extension| is still valid by checking its
   // status in the registry. Since the OnExtensionUnloaded() notifications are
@@ -153,7 +151,8 @@ class ExtensionActionViewController
   // The associated ExtensionRegistry; cached for quick checking.
   extensions::ExtensionRegistry* extension_registry_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<extensions::ExtensionHost, extensions::ExtensionHostObserver>
+      popup_host_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewController);
 };
