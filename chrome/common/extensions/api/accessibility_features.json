@@ -10,37 +10,44 @@
       "spokenFeedback": {
         "$ref": "types.ChromeSetting",
         "description": "<p><strong>ChromeOS only.</strong></p><p>Spoken feedback (text-to-speech). The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
-        "value": ["spokenFeedback", {"type": "boolean"}]
+        "value": ["spokenFeedback", {"type": "boolean"}],
+        "platforms": ["chromeos"]
       },
       "largeCursor": {
         "$ref": "types.ChromeSetting",
         "description": "<p><strong>ChromeOS only.</strong></p><p>Enlarged cursor. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
-        "value": ["largeCursor", {"type": "boolean"}]
+        "value": ["largeCursor", {"type": "boolean"}],
+        "platforms": ["chromeos"]
       },
       "stickyKeys": {
         "$ref": "types.ChromeSetting",
         "description": "<p><strong>ChromeOS only.</strong></p><p>Sticky modifier keys (like shift or alt). The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
-        "value": ["stickyKeys", {"type": "boolean"}]
+        "value": ["stickyKeys", {"type": "boolean"}],
+        "platforms": ["chromeos"]
       },
       "highContrast": {
         "$ref": "types.ChromeSetting",
         "description": "<p><strong>ChromeOS only.</strong></p><p>High contrast rendering mode. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
-        "value": ["highContrast", {"type": "boolean"}]
+        "value": ["highContrast", {"type": "boolean"}],
+        "platforms": ["chromeos"]
       },
       "screenMagnifier": {
         "$ref": "types.ChromeSetting",
         "description": "<p><strong>ChromeOS only.</strong></p><p>Full screen magnification. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
-        "value": ["screenMagnifier", {"type": "boolean"}]
+        "value": ["screenMagnifier", {"type": "boolean"}],
+        "platforms": ["chromeos"]
       },
       "autoclick": {
         "$ref": "types.ChromeSetting",
         "description":"<p><strong>ChromeOS only.</strong></p><p>Auto mouse click after mouse stops moving. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
-        "value": ["autoclick", {"type": "boolean"}]
+        "value": ["autoclick", {"type": "boolean"}],
+        "platforms": ["chromeos"]
       },
       "virtualKeyboard": {
         "$ref": "types.ChromeSetting",
         "description": "<p><strong>ChromeOS only.</strong></p><p>Virtual on-screen keyboard. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
-        "value": ["virtualKeyboard", {"type": "boolean"}]
+        "value": ["virtualKeyboard", {"type": "boolean"}],
+        "platforms": ["chromeos"]
       },
       "animationPolicy": {
         "$ref": "types.ChromeSetting",
@@ -49,17 +56,17 @@
           "animationPolicy", {
             "type": "string",
             "enum": [{
-	        "description": "Images are allowed to animate.",
-	        "name": "allowed"
-	      }, {
-	        "description": "Images are animated once.",
-	        "name": "once"
-	      }, {
-	        "description": "Images are not animated.",
-	        "name": "none"
-	      }]
+              "description": "Images are allowed to animate.",
+              "name": "allowed"
+            }, {
+              "description": "Images are animated once.",
+              "name": "once"
+            }, {
+              "description": "Images are not animated.",
+              "name": "none"
+            }]
           }
-	  ]
+        ]
       }
     }
   }
