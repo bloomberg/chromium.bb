@@ -102,7 +102,8 @@ WaitForConstantsTask.prototype = {
   * A Task that creates a log dump in the browser process via NetLogLogger,
   * waits to receive it via IPC, and and then loads it as a string.
   * @param {integer} truncate The number of bytes to truncate from the end of
-  *     the string, if any, to simulate a truncated log due to crash.
+  *     the string, if any, to simulate a truncated log due to crash, or
+  *     quitting without properly shutting down a NetLogLogger.
   * @extends {NetInternalsTest.Task}
   */
 function GetNetLogLoggerStringAndLoadLogTask(truncate) {
@@ -133,6 +134,11 @@ GetNetLogLoggerStringAndLoadLogTask.prototype = {
     var expectedResult = 'The log file is missing clientInfo.numericDate.\n' +
         'Synthesizing export date as time of last event captured.\n' +
         'Log loaded.';
+
+    if (this.truncate_) {
+      expectedResult =
+          'Log file truncated.  Events may be missing.\n' + expectedResult;
+    }
 
     logDumpText = logDumpText.substring(0, logDumpText.length - this.truncate_);
     expectEquals(expectedResult, log_util.loadLogFile(logDumpText, 'log.txt'));
@@ -228,7 +234,7 @@ function checkActiveView(id) {
  * file.
  * TODO(mmenke):  Add some checks for the import view.
  */
-TEST_F('NetInternalsTest', 'netInternalsExportImportDump', function() {
+TEST_F('NetInternalsTest', 'netInternalsLogUtilExportImport', function() {
   expectFalse(g_browser.isDisabled());
   expectTrue(SourceTracker.getInstance().getPrivacyStripping());
   NetInternalsTest.expectStatusViewNodeVisible(CaptureStatusView.MAIN_BOX_ID);
@@ -244,7 +250,9 @@ TEST_F('NetInternalsTest', 'netInternalsExportImportDump', function() {
  * string.  The string is passed to Javascript via an IPC rather than drag and
  * drop.
  */
-TEST_F('NetInternalsTest', 'netInternalsImportNetLogLoggerDump', function() {
+TEST_F('NetInternalsTest',
+    'netInternalsLogUtilImportNetLogLoggerDump',
+    function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new GetNetLogLoggerStringAndLoadLogTask(0));
   taskQueue.addFunctionTask(checkViewsAfterNetLogLoggerLogLoaded);
@@ -255,7 +263,8 @@ TEST_F('NetInternalsTest', 'netInternalsImportNetLogLoggerDump', function() {
  * Same as above, but it truncates the log to simulate the case of a crash when
  * creating a log.
  */
-TEST_F('NetInternalsTest', 'netInternalsImportNetLogLoggerDumpTruncated',
+TEST_F('NetInternalsTest',
+    'netInternalsLogUtilImportNetLogLoggerDumpTruncated',
     function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new GetNetLogLoggerStringAndLoadLogTask(20));
@@ -267,7 +276,9 @@ TEST_F('NetInternalsTest', 'netInternalsImportNetLogLoggerDumpTruncated',
  * Exports a log dump to a string and loads it, and then repeats, making sure
  * we can export loaded logs.
  */
-TEST_F('NetInternalsTest', 'netInternalsExportImportExportImport', function() {
+TEST_F('NetInternalsTest',
+    'netInternalsLogUtilExportImportExportImport',
+    function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new CreateAndLoadLogTask('Random comment on the weather.'));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
@@ -279,7 +290,7 @@ TEST_F('NetInternalsTest', 'netInternalsExportImportExportImport', function() {
 /**
  * Checks pressing the stop capturing button.
  */
-TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
+TEST_F('NetInternalsTest', 'netInternalsLogUtilStopCapturing', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   // Switching to stop capturing mode will load a log dump, which will update
   // the constants.
@@ -300,7 +311,9 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
 /**
  * Switches to stop capturing mode, then exports and imports a log dump.
  */
-TEST_F('NetInternalsTest', 'netInternalsStopCapturingExportImport', function() {
+TEST_F('NetInternalsTest',
+    'netInternalsLogUtilStopCapturingExportImport',
+    function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   // Switching to stop capturing mode will load a log dump, which will update
   // the constants.

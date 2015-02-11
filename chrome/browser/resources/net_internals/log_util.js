@@ -275,6 +275,7 @@ log_util = (function() {
     // it's most likely a full log dump.  Otherwise, it may be a dump created by
     // --log-net-log.
     var parsedDump = null;
+    var errorString = '';
     try {
       parsedDump = JSON.parse(logFileContents);
     } catch (error) {
@@ -283,8 +284,10 @@ log_util = (function() {
         // after the final good entry, and add the necessary close brackets.
         var end = Math.max(logFileContents.lastIndexOf(',\n'),
                            logFileContents.lastIndexOf(',\r'));
-        if (end != -1)
+        if (end != -1) {
           parsedDump = JSON.parse(logFileContents.substring(0, end) + ']}');
+          errorString += 'Log file truncated.  Events may be missing.\n';
+        }
       }
       catch (error2) {
       }
@@ -292,7 +295,7 @@ log_util = (function() {
 
     if (!parsedDump)
       return 'Unable to parse log dump as JSON file.';
-    return loadLogDump(parsedDump, fileName);
+    return errorString + loadLogDump(parsedDump, fileName);
   }
 
   // Exports.
