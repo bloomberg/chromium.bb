@@ -304,9 +304,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_EQ(kEmptyPathError, catcher.message());
 }
 
-// This test is flaky as per http://crbug.com/74557.
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
-                       DISABLED_TabSpecificBrowserActionState) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   ASSERT_TRUE(RunExtensionTest("browser_action/tab_specific_state")) <<
       message_;
   const Extension* extension = GetSingleLoadedExtension();
