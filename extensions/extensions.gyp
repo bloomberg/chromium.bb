@@ -1167,8 +1167,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'browser/api/cast_channel/test_util.cc',
-        'browser/api/cast_channel/test_util.h',
+        'browser/api/cast_channel/cast_test_util.cc',
+        'browser/api/cast_channel/cast_test_util.h',
         'browser/api/dns/mock_host_resolver_creator.cc',
         'browser/api/dns/mock_host_resolver_creator.h',
         'browser/api/storage/settings_test_util.cc',

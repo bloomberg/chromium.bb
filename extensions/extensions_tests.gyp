@@ -54,8 +54,6 @@
         'browser/api/cast_channel/cast_transport_unittest.cc',
         'browser/api/cast_channel/keep_alive_delegate_unittest.cc',
         'browser/api/cast_channel/logger_unittest.cc',
-        'browser/api/cast_channel/test_util.cc',
-        'browser/api/cast_channel/test_util.h',
         'browser/api/declarative/declarative_rule_unittest.cc',
         'browser/api/declarative/deduping_factory_unittest.cc',
         'browser/api/declarative/rules_registry_unittest.cc',

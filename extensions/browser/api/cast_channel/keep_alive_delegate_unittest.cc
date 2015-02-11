@@ -5,7 +5,7 @@
 #include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 
 #include "base/timer/mock_timer.h"
-#include "extensions/browser/api/cast_channel/test_util.h"
+#include "extensions/browser/api/cast_channel/cast_test_util.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
