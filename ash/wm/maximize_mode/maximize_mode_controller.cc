@@ -119,6 +119,10 @@ bool MaximizeModeController::CanEnterMaximizeMode() {
   // trigger maximize mode at some point in the future.
   // The --enable-touch-view-testing switch can also mean that we may enter
   // maximize mode.
+  // TODO(mgiuca): This can result in false positives, as it returns true for
+  // any device with an accelerometer. Have TouchView-enabled devices explicitly
+  // set a flag, and change this implementation to simply return true iff the
+  // flag is present (http://crbug.com/457445).
   return have_seen_accelerometer_data_ ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kAshEnableTouchViewTesting);
