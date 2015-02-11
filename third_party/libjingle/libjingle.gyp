@@ -551,8 +551,8 @@
           'dependencies': [
             '<(DEPTH)/third_party/libsrtp/libsrtp.gyp:libsrtp',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:media_file',
-            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module_impl',
-            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module_impl',
+            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture',
+            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render',
             'libjingle',
           ],
         },  # target libjingle_webrtc_common
