@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "content/common/content_export.h"
@@ -131,6 +132,9 @@ class CONTENT_EXPORT CompositorImpl
   }
   void CreateLayerTreeHost();
 
+  void OnGpuChannelEstablished();
+  void OnGpuChannelTimeout();
+
   // root_layer_ is the persistent internal root layer, while subroot_layer_
   // is the one attached by the compositor client.
   scoped_refptr<cc::Layer> root_layer_;
@@ -186,10 +190,13 @@ class CONTENT_EXPORT CompositorImpl
   base::TimeDelta vsync_period_;
   base::TimeTicks last_vsync_;
 
-  // If set, a pending task to request or create a new OutputSurface for the
-  // current host. Cancelled when |host_| gets destroyed, so we don't call
-  // into the new LayerTreeHost with an old LTH's request.
-  scoped_ptr<base::CancelableClosure> output_surface_task_for_host_;
+  base::OneShotTimer<CompositorImpl> establish_gpu_channel_timeout_;
+
+  // Whether there is an OutputSurface request pending from the current
+  // |host_|. Becomes |true| if RequestNewOutputSurface is called, and |false|
+  // if |host_| is deleted or we succeed in creating *and* initializing an
+  // OutputSurface (which is essentially the contract with cc).
+  bool output_surface_request_pending_;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 

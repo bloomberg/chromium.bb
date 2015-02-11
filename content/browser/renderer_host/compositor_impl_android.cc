@@ -182,6 +182,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       composite_on_vsync_trigger_(DO_NOT_COMPOSITE),
       pending_swapbuffers_(0U),
       num_successive_context_creation_failures_(0),
+      output_surface_request_pending_(false),
       weak_factory_(this) {
   DCHECK(client);
   DCHECK(root_window);
@@ -429,7 +430,8 @@ void CompositorImpl::SetVisible(bool visible) {
       CancelComposite();
     ui_resource_provider_.SetLayerTreeHost(NULL);
     host_.reset();
-    output_surface_task_for_host_.reset();
+    establish_gpu_channel_timeout_.Stop();
+    output_surface_request_pending_ = false;
     display_client_.reset();
     if (current_composite_task_) {
       current_composite_task_->Cancel();
@@ -479,8 +481,6 @@ CreateGpuProcessViewContext(
     const scoped_refptr<GpuChannelHost>& gpu_channel_host,
     const blink::WebGraphicsContext3D::Attributes attributes,
     int surface_id) {
-  DCHECK(gpu_channel_host.get());
-
   GURL url("chrome://gpu/Compositor::createContext3D");
   static const size_t kBytesPerPixel = 4;
   gfx::DeviceDisplayInfo display_info;
@@ -512,16 +512,28 @@ void CompositorImpl::Layout() {
   ignore_schedule_composite_ = false;
 }
 
+void CompositorImpl::OnGpuChannelEstablished() {
+  establish_gpu_channel_timeout_.Stop();
+  CreateOutputSurface();
+}
+
+void CompositorImpl::OnGpuChannelTimeout() {
+  LOG(FATAL) << "Timed out waiting for GPU channel.";
+}
+
 void CompositorImpl::RequestNewOutputSurface() {
+  output_surface_request_pending_ = true;
+
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
   if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
-    CauseForGpuLaunch cause =
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-    output_surface_task_for_host_.reset(new base::CancelableClosure(base::Bind(
-        &CompositorImpl::CreateOutputSurface, base::Unretained(this))));
-    factory->EstablishGpuChannel(cause,
-                                 output_surface_task_for_host_->callback());
+    factory->EstablishGpuChannel(
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
+        base::Bind(&CompositorImpl::OnGpuChannelEstablished,
+                   weak_factory_.GetWeakPtr()));
+    establish_gpu_channel_timeout_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(7), this,
+        &CompositorImpl::OnGpuChannelTimeout);
     return;
   }
 
@@ -530,16 +542,22 @@ void CompositorImpl::RequestNewOutputSurface() {
 
 void CompositorImpl::DidInitializeOutputSurface() {
   num_successive_context_creation_failures_ = 0;
+  output_surface_request_pending_ = false;
 }
 
 void CompositorImpl::DidFailToInitializeOutputSurface() {
-  RequestNewOutputSurface();
   LOG(ERROR) << "Failed to init OutputSurface for compositor.";
-  LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 3)
+  LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 2)
       << "Too many context creation failures. Giving up... ";
+  RequestNewOutputSurface();
 }
 
 void CompositorImpl::CreateOutputSurface() {
+  // We might have had a request from a LayerTreeHost that was then
+  // deleted.
+  if (!output_surface_request_pending_)
+    return;
+
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
@@ -548,25 +566,18 @@ void CompositorImpl::CreateOutputSurface() {
   DCHECK(window_);
   DCHECK(surface_id_);
 
-  scoped_refptr<ContextProviderCommandBuffer> context_provider;
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
-  scoped_refptr<GpuChannelHost> gpu_channel_host = factory->GetGpuChannel();
-  if (gpu_channel_host.get() && !gpu_channel_host->IsLost()) {
-    context_provider = ContextProviderCommandBuffer::Create(
-        CreateGpuProcessViewContext(gpu_channel_host, attrs, surface_id_),
-        "BrowserCompositor");
-  }
-  if (!context_provider.get()) {
-    LOG(ERROR) << "Failed to create 3D context for compositor.";
-    LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 3)
-        << "Too many context creation failures. Giving up... ";
-    output_surface_task_for_host_.reset(new base::CancelableClosure(base::Bind(
-        &CompositorImpl::RequestNewOutputSurface, base::Unretained(this))));
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, output_surface_task_for_host_->callback());
-    return;
-  }
+  // This channel might be lost (and even if it isn't right now, it might
+  // still get marked as lost from the IO thread, at any point in time really).
+  // But from here on just try and always lead to either
+  // DidInitializeOutputSurface() or DidFailToInitializeOutputSurface().
+  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
+  scoped_refptr<ContextProviderCommandBuffer> context_provider(
+      ContextProviderCommandBuffer::Create(
+          CreateGpuProcessViewContext(gpu_channel_host, attrs, surface_id_),
+          "BrowserCompositor"));
+  DCHECK(context_provider.get());
 
   scoped_ptr<cc::OutputSurface> real_output_surface(
       new OutputSurfaceWithoutParent(context_provider,
