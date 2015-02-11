@@ -209,6 +209,7 @@
 #include "web/TextFinder.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
+#include "web/WebFrameWidgetImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -1677,7 +1678,9 @@ void WebLocalFrameImpl::createFrameView()
     if (isLocalRoot)
         webView->suppressInvalidations(true);
 
-    frame()->createView(webView->mainFrameSize(), webView->baseBackgroundColor(), webView->isTransparent());
+    IntSize initialSize = frameWidget() ? (IntSize)frameWidget()->size() : webView->mainFrameSize();
+
+    frame()->createView(initialSize, webView->baseBackgroundColor(), webView->isTransparent());
     if (webView->shouldAutoResize() && isLocalRoot)
         frame()->view()->enableAutoSizeMode(webView->minAutoSize(), webView->maxAutoSize());
 
