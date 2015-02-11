@@ -9,8 +9,8 @@
   ],
   'conditions': [
     # minidump_stackwalk and minidump_dump are tool-type executables that do
-    # not build on iOS.
-    ['OS!="ios" and OS!="win"', {
+    # not build on iOS with Xcode (but do build on iOS with ninja.)
+    ['(OS!="ios" or "<(GENERATOR)"=="ninja") and OS!="win"', {
       'targets': [
         {
           # code shared by both {micro,mini}dump_stackwalk
