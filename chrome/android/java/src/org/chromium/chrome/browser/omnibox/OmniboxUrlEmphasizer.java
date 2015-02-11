@@ -163,7 +163,9 @@ public class OmniboxUrlEmphasizer {
         ForegroundColorSpan span;
         if (emphasizeResponse.hasScheme()) {
             int colorId = nonEmphasizedColorId;
-            if (!isInternalPage) {
+            if (!isInternalPage
+                    && (useDarkColors || securityLevel
+                            == ToolbarModelSecurityLevel.SECURITY_ERROR)) {
                 switch (securityLevel) {
                     case ToolbarModelSecurityLevel.NONE:
                         colorId = nonEmphasizedColorId;

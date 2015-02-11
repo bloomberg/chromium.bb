@@ -155,7 +155,7 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
 
         assertEquals("Unexpected number of spans:", 4, spans.length);
         spans[0].assertIsColoredSpan("https", 0,
-                mResources.getColor(R.color.url_emphasis_start_scheme_secure));
+                mResources.getColor(R.color.url_emphasis_light_non_emphasized_text));
         spans[1].assertIsColoredSpan("://", 5,
                 mResources.getColor(R.color.url_emphasis_light_non_emphasized_text));
         spans[2].assertIsColoredSpan("www.google.com", 8,
