@@ -3643,3 +3643,14 @@
    fun:_ZN4mojo8internal9Connector17CallOnHandleReadyEPvi
    fun:_ZN4mojo8internal12_GLOBAL__N_113OnHandleReadyEPNS_6common13HandleWatcherEPFvPviES5_i
 }
+{
+   bug_457557
+   Memcheck:Leak
+   fun:calloc
+   fun:pthread_setspecific
+   fun:_ZN4base8internal19ThreadLocalPlatform14SetValueInSlotEjPv
+   fun:_ZN4base18ThreadLocalPointerIvE3SetEPv
+   fun:_ZN4base18ThreadLocalBoolean3SetEb
+   fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
