@@ -428,10 +428,6 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
         exceptionState.throwDOMException(SyntaxError, "The keyPath argument contains an invalid key path.");
         return 0;
     }
-    if (name.isNull()) {
-        exceptionState.throwTypeError("The name provided is null.");
-        return 0;
-    }
     if (containsIndex(name)) {
         exceptionState.throwDOMException(ConstraintError, "An index with the specified name already exists.");
         return 0;
