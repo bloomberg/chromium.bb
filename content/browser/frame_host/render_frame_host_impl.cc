@@ -637,14 +637,20 @@ void RenderFrameHostImpl::OnAddMessageToConsole(
     return;
 
   // Pass through log level only on WebUI pages to limit console spew.
-  int32 resolved_level =
-      HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL()) ? level : 0;
+  const bool is_web_ui =
+      HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL());
+  const int32 resolved_level = is_web_ui ? level : ::logging::LOG_INFO;
 
   // LogMessages can be persisted so this shouldn't be logged in incognito mode.
-  if (resolved_level >= ::logging::GetMinLogLevel()
-      && !GetSiteInstance()->GetBrowserContext()->IsOffTheRecord()) {
-    logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
-        message << "\", source: " << source_id << " (" << line_no << ")";
+  // This rule is not applied to WebUI pages, because source code of WebUI is a
+  // part of Chrome source code, and we want to treat messages from WebUI the
+  // same way as we treat log messages from native code.
+  if (::logging::GetMinLogLevel() <= resolved_level &&
+      (is_web_ui ||
+       !GetSiteInstance()->GetBrowserContext()->IsOffTheRecord())) {
+    logging::LogMessage("CONSOLE", line_no, resolved_level).stream()
+        << "\"" << message << "\", source: " << source_id << " (" << line_no
+        << ")";
   }
 }
 
