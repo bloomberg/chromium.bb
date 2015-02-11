@@ -192,7 +192,7 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
 
-base.extend(remoting.ClientSession, base.EventSource);
+base.extend(remoting.ClientSession, base.EventSourceImpl);
 
 /** @enum {string} */
 remoting.ClientSession.Events = {

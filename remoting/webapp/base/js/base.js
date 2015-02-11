@@ -345,7 +345,7 @@ base.Promise.as = function(method, params, opt_context, opt_hasErrorHandler) {
  * functionSmokeDetector() {
  *    this.defineEvents(['alarm']);
  * };
- * base.extend(SmokeDetector, base.EventSource);
+ * base.extend(SmokeDetector, base.EventSourceImpl);
  *
  * To fire an event:
  * SmokeDetector.prototype.onCarbonMonoxideDetected = function() {

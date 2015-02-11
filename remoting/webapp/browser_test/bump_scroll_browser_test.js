@@ -21,7 +21,7 @@ browserTest.FakeClientSession = function() {
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
 
-base.extend(browserTest.FakeClientSession, base.EventSource);
+base.extend(browserTest.FakeClientSession, base.EventSourceImpl);
 
 browserTest.FakeClientSession.prototype.getPluginPositionForTesting =
     function() {
