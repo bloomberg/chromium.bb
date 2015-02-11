@@ -997,14 +997,14 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
 struct NET_EXPORT_PRIVATE SerializedPacket {
   SerializedPacket(QuicPacketSequenceNumber sequence_number,
                    QuicSequenceNumberLength sequence_number_length,
-                   QuicPacket* packet,
+                   QuicEncryptedPacket* packet,
                    QuicPacketEntropyHash entropy_hash,
                    RetransmittableFrames* retransmittable_frames);
   ~SerializedPacket();
 
   QuicPacketSequenceNumber sequence_number;
   QuicSequenceNumberLength sequence_number_length;
-  QuicPacket* packet;
+  QuicEncryptedPacket* packet;
   QuicPacketEntropyHash entropy_hash;
   RetransmittableFrames* retransmittable_frames;
   bool is_fec_packet;

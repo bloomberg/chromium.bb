@@ -152,7 +152,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   // Do a first handshake in order to prime the client config with the server's
   // information.
   client->CryptoConnect();
-  CHECK_EQ(1u, client_conn->packets_.size());
+  CHECK_EQ(1u, client_conn->encrypted_packets_.size());
 
   scoped_ptr<TestSession> server_session(new TestSession(server_conn, config_));
   scoped_ptr<QuicCryptoServerStream> server(

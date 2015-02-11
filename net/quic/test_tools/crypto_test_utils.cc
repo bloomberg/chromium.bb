@@ -199,7 +199,7 @@ int CryptoTestUtils::HandshakeWithFakeServer(
   server_session.SetCryptoStream(&server);
 
   // The client's handshake must have been started already.
-  CHECK_NE(0u, client_conn->packets_.size());
+  CHECK_NE(0u, client_conn->encrypted_packets_.size());
 
   CommunicateHandshakeMessages(client_conn, client, server_conn, &server);
 
@@ -244,7 +244,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   client_session.SetCryptoStream(&client);
 
   client.CryptoConnect();
-  CHECK_EQ(1u, client_conn->packets_.size());
+  CHECK_EQ(1u, client_conn->encrypted_packets_.size());
 
   CommunicateHandshakeMessagesAndRunCallbacks(
       client_conn, &client, server_conn, server, async_channel_id_source);
@@ -295,17 +295,17 @@ void CryptoTestUtils::CommunicateHandshakeMessagesAndRunCallbacks(
     CallbackSource* callback_source) {
   size_t a_i = 0, b_i = 0;
   while (!a->handshake_confirmed()) {
-    ASSERT_GT(a_conn->packets_.size(), a_i);
-    LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
-              << " packets a->b";
+    ASSERT_GT(a_conn->encrypted_packets_.size(), a_i);
+    VLOG(1) << "Processing " << a_conn->encrypted_packets_.size() - a_i
+            << " packets a->b";
     MovePackets(a_conn, &a_i, b, b_conn);
     if (callback_source) {
       callback_source->RunPendingCallbacks();
     }
 
-    ASSERT_GT(b_conn->packets_.size(), b_i);
-    LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
-              << " packets b->a";
+    ASSERT_GT(b_conn->encrypted_packets_.size(), b_i);
+    VLOG(1) << "Processing " << b_conn->encrypted_packets_.size() - b_i
+            << " packets b->a";
     MovePackets(b_conn, &b_i, a, a_conn);
     if (callback_source) {
       callback_source->RunPendingCallbacks();
@@ -321,14 +321,14 @@ pair<size_t, size_t> CryptoTestUtils::AdvanceHandshake(
     PacketSavingConnection* b_conn,
     QuicCryptoStream* b,
     size_t b_i) {
-  LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
-            << " packets a->b";
+  VLOG(1) << "Processing " << a_conn->encrypted_packets_.size() - a_i
+          << " packets a->b";
   MovePackets(a_conn, &a_i, b, b_conn);
 
-  LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
-            << " packets b->a";
-  if (b_conn->packets_.size() - b_i == 2) {
-    LOG(INFO) << "here";
+  VLOG(1) << "Processing " << b_conn->encrypted_packets_.size() - b_i
+          << " packets b->a";
+  if (b_conn->encrypted_packets_.size() - b_i == 2) {
+    VLOG(1) << "here";
   }
   MovePackets(b_conn, &b_i, a, a_conn);
 

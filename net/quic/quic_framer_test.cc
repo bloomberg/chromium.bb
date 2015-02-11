@@ -471,7 +471,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
 
   QuicPacket* BuildDataPacket(const QuicPacketHeader& header,
                               const QuicFrames& frames) {
-    return BuildUnsizedDataPacket(&framer_, header, frames).packet;
+    return BuildUnsizedDataPacket(&framer_, header, frames);
   }
 
   test::TestEncrypter* encrypter_;
@@ -3389,7 +3389,7 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameLargePacket) {
   };
 
   scoped_ptr<QuicPacket> data(
-      framer_.BuildDataPacket(header, frames, kMaxPacketSize).packet);
+      framer_.BuildDataPacket(header, frames, kMaxPacketSize));
   ASSERT_TRUE(data != nullptr);
 
   test::CompareCharArraysWithHexError("constructed packet",
@@ -3451,8 +3451,7 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameSmallPacket) {
       0x00,
   };
 
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildDataPacket(header, frames, 37u).packet);
+  scoped_ptr<QuicPacket> data(framer_.BuildDataPacket(header, frames, 37u));
   ASSERT_TRUE(data != nullptr);
   // Expect 1 byte unused since at least 2 bytes are needed to fit more nacks.
   EXPECT_EQ(36u, data->length());
@@ -3925,8 +3924,7 @@ TEST_P(QuicFramerTest, BuildFecPacket) {
     'm',  'n',  'o',  'p',
   };
 
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildFecPacket(header, fec_data).packet);
+  scoped_ptr<QuicPacket> data(framer_.BuildFecPacket(header, fec_data));
   ASSERT_TRUE(data != nullptr);
 
   test::CompareCharArraysWithHexError("constructed packet",
@@ -4022,7 +4020,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
   scoped_ptr<QuicPacket> raw_ack_packet(
-      framer_.BuildDataPacket(header, frames, kMaxPacketSize).packet);
+      framer_.BuildDataPacket(header, frames, kMaxPacketSize));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
@@ -4062,7 +4060,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
   scoped_ptr<QuicPacket> raw_ack_packet(
-      framer_.BuildDataPacket(header, frames, 500).packet);
+      framer_.BuildDataPacket(header, frames, 500));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,

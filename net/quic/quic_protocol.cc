@@ -630,7 +630,7 @@ void RetransmittableFrames::set_encryption_level(EncryptionLevel level) {
 SerializedPacket::SerializedPacket(
     QuicPacketSequenceNumber sequence_number,
     QuicSequenceNumberLength sequence_number_length,
-    QuicPacket* packet,
+    QuicEncryptedPacket* packet,
     QuicPacketEntropyHash entropy_hash,
     RetransmittableFrames* retransmittable_frames)
     : sequence_number(sequence_number),

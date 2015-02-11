@@ -262,28 +262,33 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
 }
 
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
-    const QuicFrames& frames,
+    const RetransmittableFrames& frames,
     QuicSequenceNumberLength original_length) {
   DCHECK(fec_group_.get() == nullptr);
   const QuicSequenceNumberLength saved_length = sequence_number_length_;
   const QuicSequenceNumberLength saved_next_length =
       next_sequence_number_length_;
   const bool saved_should_fec_protect = should_fec_protect_;
+  const EncryptionLevel default_encryption_level = encryption_level_;
 
-  // Temporarily set the sequence number length and stop FEC protection.
+  // Temporarily set the sequence number length, stop FEC protection,
+  // and change the encryption level.
   sequence_number_length_ = original_length;
   next_sequence_number_length_ = original_length;
   should_fec_protect_ = false;
+  encryption_level_ = frames.encryption_level();
 
   // Serialize the packet and restore the FEC and sequence number length state.
-  SerializedPacket serialized_packet = SerializeAllFrames(frames);
+  SerializedPacket serialized_packet = SerializeAllFrames(frames.frames());
   sequence_number_length_ = saved_length;
   next_sequence_number_length_ = saved_next_length;
   should_fec_protect_ = saved_should_fec_protect;
+  encryption_level_ = default_encryption_level;
 
   return serialized_packet;
 }
 
+// TODO(ianswett): Remove this method, because it's test only.
 SerializedPacket QuicPacketCreator::SerializeAllFrames(
     const QuicFrames& frames) {
   // TODO(satyamshekhar): Verify that this DCHECK won't fail. What about queued
@@ -367,19 +372,32 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   bool possibly_truncated_by_length = packet_size_ == max_plaintext_size &&
       queued_frames_.size() == 1 &&
       queued_frames_.back().type == ACK_FRAME;
-  SerializedPacket serialized =
-      framer_->BuildDataPacket(header, queued_frames_, packet_size_);
-  LOG_IF(DFATAL, !serialized.packet)
-      << "Failed to serialize " << queued_frames_.size() << " frames.";
+  scoped_ptr<QuicPacket> packet(
+      framer_->BuildDataPacket(header, queued_frames_, packet_size_));
+  LOG_IF(DFATAL, packet == nullptr) << "Failed to serialize "
+                                    << queued_frames_.size() << " frames.";
   // Because of possible truncation, we can't be confident that our
   // packet size calculation worked correctly.
   if (!possibly_truncated_by_length) {
-    DCHECK_EQ(packet_size_, serialized.packet->length());
+    DCHECK_EQ(packet_size_, packet->length());
   }
+  // Immediately encrypt the packet, to ensure we don't encrypt the same packet
+  // sequence number multiple times.
+  QuicEncryptedPacket* encrypted =
+      framer_->EncryptPacket(encryption_level_, sequence_number_, *packet);
+  if (encrypted == nullptr) {
+    LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
+    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
+                               nullptr);
+    return kNoPacket;
+  }
+
   packet_size_ = 0;
   queued_frames_.clear();
-  serialized.retransmittable_frames = queued_retransmittable_frames_.release();
-  return serialized;
+  return SerializedPacket(header.packet_sequence_number,
+                          header.public_header.sequence_number_length,
+                          encrypted, QuicFramer::GetPacketEntropyHash(header),
+                          queued_retransmittable_frames_.release());
 }
 
 SerializedPacket QuicPacketCreator::SerializeFec() {
@@ -396,12 +414,27 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   QuicFecData fec_data;
   fec_data.fec_group = fec_group_->min_protected_packet();
   fec_data.redundancy = fec_group_->payload_parity();
-  SerializedPacket serialized = framer_->BuildFecPacket(header, fec_data);
+  scoped_ptr<QuicPacket> packet(framer_->BuildFecPacket(header, fec_data));
   fec_group_.reset(nullptr);
   packet_size_ = 0;
-  LOG_IF(DFATAL, !serialized.packet)
+  LOG_IF(DFATAL, packet == nullptr)
       << "Failed to serialize fec packet for group:" << fec_data.fec_group;
-  DCHECK_GE(max_packet_length_, serialized.packet->length());
+  DCHECK_GE(max_packet_length_, packet->length());
+  // Immediately encrypt the packet, to ensure we don't encrypt the same packet
+  // sequence number multiple times.
+  QuicEncryptedPacket* encrypted =
+      framer_->EncryptPacket(encryption_level_, sequence_number_, *packet);
+  if (encrypted == nullptr) {
+    LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
+    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
+                               nullptr);
+    return kNoPacket;
+  }
+  SerializedPacket serialized(
+      header.packet_sequence_number,
+      header.public_header.sequence_number_length, encrypted,
+      QuicFramer::GetPacketEntropyHash(header), nullptr);
+  serialized.is_fec_packet = true;
   return serialized;
 }
 

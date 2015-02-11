@@ -310,33 +310,30 @@ QuicFramer::AckFrameInfo::AckFrameInfo() : max_delta(0) {}
 
 QuicFramer::AckFrameInfo::~AckFrameInfo() {}
 
+// static
 QuicPacketEntropyHash QuicFramer::GetPacketEntropyHash(
-    const QuicPacketHeader& header) const {
+    const QuicPacketHeader& header) {
   return header.entropy_flag << (header.packet_sequence_number % 8);
 }
 
-SerializedPacket QuicFramer::BuildDataPacket(
-    const QuicPacketHeader& header,
-    const QuicFrames& frames,
-    size_t packet_size) {
+QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
+                                        const QuicFrames& frames,
+                                        size_t packet_size) {
   QuicDataWriter writer(packet_size);
-  const SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
-                                   nullptr);
   if (!AppendPacketHeader(header, &writer)) {
     LOG(DFATAL) << "AppendPacketHeader failed";
-    return kNoPacket;
+    return nullptr;
   }
 
-  for (size_t i = 0; i < frames.size(); ++i) {
-    const QuicFrame& frame = frames[i];
-
+  size_t i = 0;
+  for (const QuicFrame& frame : frames) {
     // Determine if we should write stream frame length in header.
     const bool no_stream_frame_length =
         (header.is_in_fec_group == NOT_IN_FEC_GROUP) &&
         (i == frames.size() - 1);
     if (!AppendTypeByte(frame, no_stream_frame_length, &writer)) {
       LOG(DFATAL) << "AppendTypeByte failed";
-      return kNoPacket;
+      return nullptr;
     }
 
     switch (frame.type) {
@@ -347,21 +344,21 @@ SerializedPacket QuicFramer::BuildDataPacket(
         if (!AppendStreamFrame(
             *frame.stream_frame, no_stream_frame_length, &writer)) {
           LOG(DFATAL) << "AppendStreamFrame failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       case ACK_FRAME:
         if (!AppendAckFrameAndTypeByte(
                 header, *frame.ack_frame, &writer)) {
           LOG(DFATAL) << "AppendAckFrameAndTypeByte failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       case STOP_WAITING_FRAME:
         if (!AppendStopWaitingFrame(
                 header, *frame.stop_waiting_frame, &writer)) {
           LOG(DFATAL) << "AppendStopWaitingFrame failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       case PING_FRAME:
@@ -370,39 +367,40 @@ SerializedPacket QuicFramer::BuildDataPacket(
       case RST_STREAM_FRAME:
         if (!AppendRstStreamFrame(*frame.rst_stream_frame, &writer)) {
           LOG(DFATAL) << "AppendRstStreamFrame failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       case CONNECTION_CLOSE_FRAME:
         if (!AppendConnectionCloseFrame(
                 *frame.connection_close_frame, &writer)) {
           LOG(DFATAL) << "AppendConnectionCloseFrame failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       case GOAWAY_FRAME:
         if (!AppendGoAwayFrame(*frame.goaway_frame, &writer)) {
           LOG(DFATAL) << "AppendGoAwayFrame failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       case WINDOW_UPDATE_FRAME:
         if (!AppendWindowUpdateFrame(*frame.window_update_frame, &writer)) {
           LOG(DFATAL) << "AppendWindowUpdateFrame failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       case BLOCKED_FRAME:
         if (!AppendBlockedFrame(*frame.blocked_frame, &writer)) {
           LOG(DFATAL) << "AppendBlockedFrame failed";
-          return kNoPacket;
+          return nullptr;
         }
         break;
       default:
         RaiseError(QUIC_INVALID_FRAME_DATA);
         LOG(DFATAL) << "QUIC_INVALID_FRAME_DATA";
-        return kNoPacket;
+        return nullptr;
     }
+    ++i;
   }
 
   // Save the length before writing, because take clears it.
@@ -420,41 +418,31 @@ SerializedPacket QuicFramer::BuildDataPacket(
                                              packet->FecProtectedData());
   }
 
-  return SerializedPacket(header.packet_sequence_number,
-                          header.public_header.sequence_number_length, packet,
-                          GetPacketEntropyHash(header), nullptr);
+  return packet;
 }
 
-SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
-                                            const QuicFecData& fec) {
+QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
+                                       const QuicFecData& fec) {
   DCHECK_EQ(IN_FEC_GROUP, header.is_in_fec_group);
   DCHECK_NE(0u, header.fec_group);
   size_t len = GetPacketHeaderSize(header);
   len += fec.redundancy.length();
 
   QuicDataWriter writer(len);
-  const SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
-                                   nullptr);
   if (!AppendPacketHeader(header, &writer)) {
     LOG(DFATAL) << "AppendPacketHeader failed";
-    return kNoPacket;
+    return nullptr;
   }
 
   if (!writer.WriteBytes(fec.redundancy.data(), fec.redundancy.length())) {
     LOG(DFATAL) << "Failed to add FEC";
-    return kNoPacket;
+    return nullptr;
   }
 
-  SerializedPacket packet(
-      header.packet_sequence_number,
-      header.public_header.sequence_number_length,
-      new QuicPacket(writer.take(), len, true,
-                     header.public_header.connection_id_length,
-                     header.public_header.version_flag,
-                     header.public_header.sequence_number_length),
-      GetPacketEntropyHash(header), nullptr);
-  packet.is_fec_packet = true;
-  return packet;
+  return new QuicPacket(writer.take(), len, true,
+                        header.public_header.connection_id_length,
+                        header.public_header.version_flag,
+                        header.public_header.sequence_number_length);
 }
 
 // static

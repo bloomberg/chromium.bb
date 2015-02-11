@@ -60,9 +60,9 @@ QuicAckFrame MakeAckFrameWithNackRanges(
   return ack;
 }
 
-SerializedPacket BuildUnsizedDataPacket(QuicFramer* framer,
-                                        const QuicPacketHeader& header,
-                                        const QuicFrames& frames) {
+QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
+                                   const QuicPacketHeader& header,
+                                   const QuicFrames& frames) {
   const size_t max_plaintext_size = framer->GetMaxPlaintextSize(kMaxPacketSize);
   size_t packet_size = GetPacketHeaderSize(header);
   for (size_t i = 0; i < frames.size(); ++i) {
@@ -298,17 +298,11 @@ PacketSavingConnection::PacketSavingConnection(
 }
 
 PacketSavingConnection::~PacketSavingConnection() {
-  STLDeleteElements(&packets_);
   STLDeleteElements(&encrypted_packets_);
 }
 
 void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
-  packets_.push_back(packet.serialized_packet.packet);
-  QuicEncryptedPacket* encrypted = QuicConnectionPeer::GetFramer(this)->
-      EncryptPacket(packet.encryption_level,
-                    packet.serialized_packet.sequence_number,
-                    *packet.serialized_packet.packet);
-  encrypted_packets_.push_back(encrypted);
+  encrypted_packets_.push_back(packet.serialized_packet.packet);
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
   sent_packet_manager_.OnPacketSent(
@@ -481,7 +475,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   frames.push_back(frame);
   QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
   scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer, header, frames).packet);
+      BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
   QuicEncryptedPacket* encrypted = framer.EncryptPacket(ENCRYPTION_NONE,
                                                         sequence_number,
@@ -558,7 +552,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
   frames.push_back(frame);
-  return BuildUnsizedDataPacket(&quic_framer, header, frames).packet;
+  return BuildUnsizedDataPacket(&quic_framer, header, frames);
 }
 
 QuicPacket* ConstructHandshakePacket(QuicConnectionId connection_id,

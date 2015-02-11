@@ -1307,8 +1307,13 @@ void QuicConnection::WritePendingRetransmissions() {
     // does not require the creator to be flushed.
     packet_generator_.FlushAllQueuedFrames();
     SerializedPacket serialized_packet = packet_generator_.ReserializeAllFrames(
-        pending.retransmittable_frames.frames(),
-        pending.sequence_number_length);
+        pending.retransmittable_frames, pending.sequence_number_length);
+    if (serialized_packet.packet == nullptr) {
+      // We failed to serialize the packet, so close the connection.
+      // CloseConnection does not send close packet, so no infinite loop here.
+      CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
+      return;
+    }
 
     DVLOG(1) << ENDPOINT << "Retransmitting " << pending.sequence_number
              << " as " << serialized_packet.sequence_number;
@@ -1404,32 +1409,19 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   DCHECK_LE(sequence_number_of_last_sent_packet_, sequence_number);
   sequence_number_of_last_sent_packet_ = sequence_number;
 
-  QuicEncryptedPacket* encrypted = framer_.EncryptPacket(
-      packet->encryption_level,
-      sequence_number,
-      *packet->serialized_packet.packet);
-  if (encrypted == nullptr) {
-    LOG(DFATAL) << ENDPOINT << "Failed to encrypt packet number "
-                << sequence_number;
-    // CloseConnection does not send close packet, so no infinite loop here.
-    CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
-    return false;
-  }
-
+  QuicEncryptedPacket* encrypted = packet->serialized_packet.packet;
   // Connection close packets are eventually owned by TimeWaitListManager.
   // Others are deleted at the end of this call.
-  scoped_ptr<QuicEncryptedPacket> encrypted_deleter;
   if (is_connection_close) {
     DCHECK(connection_close_packet_.get() == nullptr);
     connection_close_packet_.reset(encrypted);
+    packet->serialized_packet.packet = nullptr;
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
     if (writer_->IsWriteBlocked()) {
       visitor_->OnWriteBlocked();
       return true;
     }
-  } else {
-    encrypted_deleter.reset(encrypted);
   }
 
   if (!FLAGS_quic_allow_oversized_packets_for_test) {
@@ -1443,11 +1435,9 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
                           ? "data bearing "
                           : " ack only ")) << ", encryption level: "
            << QuicUtils::EncryptionLevelToString(packet->encryption_level)
-           << ", length:" << packet->serialized_packet.packet->length()
            << ", encrypted length:" << encrypted->length();
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
-           << QuicUtils::StringToHexASCIIDump(
-               packet->serialized_packet.packet->AsStringPiece());
+           << QuicUtils::StringToHexASCIIDump(encrypted->AsStringPiece());
 
   QuicTime packet_send_time = QuicTime::Zero();
   if (FLAGS_quic_record_send_time_before_write) {
@@ -1584,14 +1574,11 @@ void QuicConnection::OnWriteError(int error_code) {
 
 void QuicConnection::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
-  // If a forward-secure encrypter is available but is not being used and this
-  // packet's sequence number is after the first packet which requires
-  // forward security, start using the forward-secure encrypter.
-  if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
-      has_forward_secure_encrypter_ &&
-      serialized_packet.sequence_number >=
-          first_required_forward_secure_packet_) {
-    SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  if (serialized_packet.packet == nullptr) {
+    // We failed to serialize the packet, so close the connection.
+    // CloseConnection does not send close packet, so no infinite loop here.
+    CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
+    return;
   }
   if (serialized_packet.retransmittable_frames) {
     serialized_packet.retransmittable_frames->
@@ -1647,6 +1634,16 @@ void QuicConnection::SendOrQueuePacket(QueuedPacket packet) {
       packet.serialized_packet.entropy_hash);
   if (!WritePacket(&packet)) {
     queued_packets_.push_back(packet);
+  }
+
+  // If a forward-secure encrypter is available but is not being used and the
+  // next sequence number is the first packet which requires
+  // forward security, start using the forward-secure encrypter.
+  if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
+      has_forward_secure_encrypter_ &&
+      packet.serialized_packet.sequence_number >=
+          first_required_forward_secure_packet_ - 1) {
+    SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   }
 }
 

@@ -301,18 +301,18 @@ class NET_EXPORT_PRIVATE QuicFramer {
       bool includes_version,
       QuicSequenceNumberLength sequence_number_length);
 
-  // Returns a SerializedPacket whose |packet| member is owned by the caller,
-  // is created from the first |num_frames| frames, or is nullptr if the packet
-  // could not be created.  The packet must be of size |packet_size|.
-  SerializedPacket BuildDataPacket(const QuicPacketHeader& header,
-                                   const QuicFrames& frames,
-                                   size_t packet_size);
+  // Returns a QuicPacket* that is owned by the caller, is created from
+  // |frames|.  Returns nullptr if the packet could not be created.
+  // The packet must be of size |packet_size|.
+  QuicPacket* BuildDataPacket(const QuicPacketHeader& header,
+                              const QuicFrames& frames,
+                              size_t packet_size);
 
-  // Returns a SerializedPacket whose |packet| member is owned by the caller,
-  // and is populated with the fields in |header| and |fec|, or is nullptr if
-  // the packet could not be created.
-  SerializedPacket BuildFecPacket(const QuicPacketHeader& header,
-                                  const QuicFecData& fec);
+  // Returns a QuicPacket* that is owned by the caller, and is populated with
+  // the fields in |header| and |fec|.  Returns nullptr if the packet could
+  // not be created.
+  QuicPacket* BuildFecPacket(const QuicPacketHeader& header,
+                             const QuicFecData& fec);
 
   // Returns a new public reset packet, owned by the caller.
   static QuicEncryptedPacket* BuildPublicResetPacket(
@@ -371,6 +371,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   bool is_server() const { return is_server_; }
 
+  static QuicPacketEntropyHash GetPacketEntropyHash(
+      const QuicPacketHeader& header);
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -385,9 +388,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
     // Nack ranges starting with start sequence numbers and lengths.
     NackRangeMap nack_ranges;
   };
-
-  QuicPacketEntropyHash GetPacketEntropyHash(
-      const QuicPacketHeader& header) const;
 
   bool ProcessDataPacket(const QuicPacketPublicHeader& public_header,
                          const QuicEncryptedPacket& packet,

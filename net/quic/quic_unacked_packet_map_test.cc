@@ -30,18 +30,14 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
 
   SerializedPacket CreateRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
-    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
-                                      PACKET_8BYTE_CONNECTION_ID, false,
-                                      PACKET_1BYTE_SEQUENCE_NUMBER));
+    packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0, new RetransmittableFrames());
   }
 
   SerializedPacket CreateNonRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
-    packets_.push_back(new QuicPacket(nullptr, kDefaultLength, false,
-                                      PACKET_8BYTE_CONNECTION_ID, false,
-                                      PACKET_1BYTE_SEQUENCE_NUMBER));
+    packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0, nullptr);
   }
@@ -105,7 +101,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
           << " packets[" << i << "]:" << packets[i];
     }
   }
-  vector<QuicPacket*> packets_;
+  vector<QuicEncryptedPacket*> packets_;
   QuicUnackedPacketMap unacked_packets_;
   QuicTime now_;
 };

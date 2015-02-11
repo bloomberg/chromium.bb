@@ -415,9 +415,13 @@ class TestConnection : public QuicConnection {
         retransmittable == HAS_RETRANSMITTABLE_DATA
             ? new RetransmittableFrames()
             : nullptr;
-    OnSerializedPacket(
-        SerializedPacket(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
-                         packet, entropy_hash, retransmittable_frames));
+    QuicEncryptedPacket* encrypted =
+        QuicConnectionPeer::GetFramer(this)
+            ->EncryptPacket(ENCRYPTION_NONE, sequence_number, *packet);
+    delete packet;
+    OnSerializedPacket(SerializedPacket(sequence_number,
+                                        PACKET_6BYTE_SEQUENCE_NUMBER, encrypted,
+                                        entropy_hash, retransmittable_frames));
   }
 
   QuicConsumedData SendStreamDataWithString(
@@ -675,10 +679,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
                                                   connection_.is_server());
     SerializedPacket serialized_packet =
         peer_creator_.SerializeAllFrames(frames);
-    scoped_ptr<QuicPacket> packet(serialized_packet.packet);
-    scoped_ptr<QuicEncryptedPacket> encrypted(
-        framer_.EncryptPacket(ENCRYPTION_NONE,
-                              serialized_packet.sequence_number, *packet));
+    scoped_ptr<QuicEncryptedPacket> encrypted(serialized_packet.packet);
     connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
     return serialized_packet.entropy_hash;
   }
@@ -776,7 +777,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     fec_data.redundancy = data_packet->FecProtectedData();
 
     scoped_ptr<QuicPacket> fec_packet(
-        framer_.BuildFecPacket(header_, fec_data).packet);
+        framer_.BuildFecPacket(header_, fec_data));
     scoped_ptr<QuicEncryptedPacket> encrypted(
         framer_.EncryptPacket(ENCRYPTION_NONE, number, *fec_packet));
 
@@ -841,8 +842,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     QuicFrames frames;
     QuicFrame frame(&frame1_);
     frames.push_back(frame);
-    QuicPacket* packet =
-        BuildUnsizedDataPacket(&framer_, header_, frames).packet;
+    QuicPacket* packet = BuildUnsizedDataPacket(&framer_, header_, frames);
     EXPECT_TRUE(packet != nullptr);
     return packet;
   }
@@ -862,8 +862,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     QuicFrames frames;
     QuicFrame frame(&ping);
     frames.push_back(frame);
-    QuicPacket* packet =
-        BuildUnsizedDataPacket(&framer_, header_, frames).packet;
+    QuicPacket* packet = BuildUnsizedDataPacket(&framer_, header_, frames);
     EXPECT_TRUE(packet != nullptr);
     return packet;
   }
@@ -885,8 +884,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     QuicFrames frames;
     QuicFrame frame(&qccf);
     frames.push_back(frame);
-    QuicPacket* packet =
-        BuildUnsizedDataPacket(&framer_, header_, frames).packet;
+    QuicPacket* packet = BuildUnsizedDataPacket(&framer_, header_, frames);
     EXPECT_TRUE(packet != nullptr);
     return packet;
   }
@@ -3679,7 +3677,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
   QuicFrame frame(&frame1_);
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames).packet);
+      BuildUnsizedDataPacket(&framer_, header, frames));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
@@ -3717,7 +3715,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
   QuicFrame frame(&frame1_);
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames).packet);
+      BuildUnsizedDataPacket(&framer_, header, frames));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
@@ -3762,7 +3760,7 @@ TEST_P(QuicConnectionTest,
   QuicFrame frame(&frame1_);
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames).packet);
+      BuildUnsizedDataPacket(&framer_, header, frames));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
@@ -3807,7 +3805,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   QuicFrame frame(&frame1_);
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames).packet);
+      BuildUnsizedDataPacket(&framer_, header, frames));
   encrypted.reset(framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
   EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -3952,7 +3950,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   frames.push_back(stream_frame);
   frames.push_back(close_frame);
   scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header_, frames).packet);
+      BuildUnsizedDataPacket(&framer_, header_, frames));
   EXPECT_TRUE(nullptr != packet.get());
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
       ENCRYPTION_NONE, 1, *packet));
@@ -4246,8 +4244,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
   ack_header.is_in_fec_group = IN_FEC_GROUP;
   ack_header.fec_group = 1;
 
-  QuicPacket* packet =
-      BuildUnsizedDataPacket(&framer_, ack_header, frames).packet;
+  QuicPacket* packet = BuildUnsizedDataPacket(&framer_, ack_header, frames);
 
   // Take the packet which contains the ACK frame, and construct and deliver an
   // FEC packet which allows the ACK packet to be recovered.

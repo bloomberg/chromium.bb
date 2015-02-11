@@ -440,7 +440,7 @@ QuicEncryptedPacket* QuicPacketGenerator::SerializeVersionNegotiationPacket(
 }
 
 SerializedPacket QuicPacketGenerator::ReserializeAllFrames(
-    const QuicFrames& frames,
+    const RetransmittableFrames& frames,
     QuicSequenceNumberLength original_length) {
   return packet_creator_.ReserializeAllFrames(frames, original_length);
 }

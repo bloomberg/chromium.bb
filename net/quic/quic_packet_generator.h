@@ -159,7 +159,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
   SerializedPacket ReserializeAllFrames(
-      const QuicFrames& frames,
+      const RetransmittableFrames& frames,
       QuicSequenceNumberLength original_length);
 
   // Update the sequence number length to use in future packets as soon as it
