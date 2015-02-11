@@ -97,6 +97,8 @@ cr.define('cr.login', function() {
         'contentload', this.onContentLoad_.bind(this));
     this.webview_.addEventListener(
         'loadstop', this.onLoadStop_.bind(this));
+    this.webview_.addEventListener(
+        'loadcommit', this.onLoadCommit_.bind(this));
     this.webview_.request.onCompleted.addListener(
         this.onRequestCompleted_.bind(this),
         {urls: ['<all_urls>'], types: ['main_frame']},
@@ -303,8 +305,9 @@ cr.define('cr.login', function() {
 
     this.dispatchEvent(
         new CustomEvent('authCompleted',
-                        {detail: {email: this.email_,
-                                  gaiaId: this.gaiaId_,
+          // TODO(rsorokin): get rid of the stub values.
+                        {detail: {email: this.email_ || '',
+                                  gaiaId: this.gaiaId_ || '',
                                   password: this.password_ || '',
                                   usingSAML: this.authFlow_ == AuthFlow.SAML,
                                   chooseWhatToSync: this.chooseWhatToSync_,
@@ -342,6 +345,21 @@ cr.define('cr.login', function() {
       this.loaded_ = true;
       this.webview_.focus();
       this.dispatchEvent(new Event('ready'));
+    }
+  };
+
+  /**
+   * Invoked when the webview navigates withing the current document.
+   * @private
+   */
+  Authenticator.prototype.onLoadCommit_ = function(e) {
+    var currentUrl = e.url;
+
+    // TODO(rsorokin): temporary solution. Need to wait for oauth_code in
+    // headers.
+    if (currentUrl.indexOf('#close', 0) != -1) {
+      this.skipForNow_ = true;
+      this.onAuthCompleted_();
     }
   };
 
