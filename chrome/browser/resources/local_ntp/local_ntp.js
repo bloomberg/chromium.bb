@@ -1082,6 +1082,7 @@ function init() {
   if (configData.isGooglePage) {
     var logo = document.createElement('div');
     logo.id = IDS.LOGO;
+    logo.title = 'Google';
 
     fakebox = document.createElement('div');
     fakebox.id = IDS.FAKEBOX;
