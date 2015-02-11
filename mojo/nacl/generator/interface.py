@@ -87,7 +87,7 @@ def MakeInterface():
   f.Param('deadline').In('MojoDeadline')
   f.Param('result_index').Out('uint32_t').Optional()
   p = f.Param('signals_states')
-  p.OutArray('MojoHandleSignalsState', 'num_handles').Optional()
+  p.OutFixedStructArray('MojoHandleSignalsState', 'num_handles').Optional()
 
   f = mojo.Func('MojoCreateMessagePipe', 'MojoResult')
   p = f.Param('options')
@@ -110,6 +110,12 @@ def MakeInterface():
   f.Param('handles').OutArray('MojoHandle', 'num_handles').Optional()
   f.Param('num_handles').InOut('uint32_t').Optional()
   f.Param('flags').In('MojoReadMessageFlags')
+
+  # This function is not provided by the Mojo system APIs, but instead allows
+  # trusted code to provide a handle for use by untrusted code. See the
+  # implementation in mojo_syscall.cc.tmpl.
+  f = mojo.Func('_MojoGetInitialHandle', 'MojoResult')
+  f.Param('handle').Out('MojoHandle')
 
   mojo.Finalize()
 

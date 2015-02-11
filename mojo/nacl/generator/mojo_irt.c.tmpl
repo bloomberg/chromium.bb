@@ -1,0 +1,43 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{{generator_warning}}
+
+#include <stdio.h>
+#include <string.h>
+
+#include "mojo/nacl/mojo_irt.h"
+#include "mojo/public/c/system/core.h"
+#include "native_client/src/public/chrome_main.h"
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/imc_types.h"
+#include "native_client/src/public/irt_core.h"
+
+#define NACL_MOJO_DESC (NACL_CHROME_DESC_BASE + 3)
+
+static void DoMojoCall(uint32_t params[], nacl_abi_size_t num_params) {
+  struct NaClAbiNaClImcMsgIoVec iov[1] = {
+    {params, num_params}
+  };
+  struct NaClAbiNaClImcMsgHdr msgh = {iov, 1, NULL, 0};
+  // Note: return value unchecked.  We're relying on the result parameter being
+  // unmodified - if the syscall fails, the Mojo function will return whatever
+  // the result parameter was initialized to before this function was called.
+  imc_sendmsg(NACL_MOJO_DESC, &msgh, 0);
+}
+
+{{body}}
+
+size_t mojo_irt_query(const char* interface_ident,
+                      void* table,
+                      size_t tablesize) {
+  static const size_t size = sizeof(kIrtMojo);
+  if (0 == strcmp(interface_ident, NACL_IRT_MOJO_v0_1)) {
+    if (size <= tablesize) {
+      memcpy(table, &kIrtMojo, size);
+      return size;
+    }
+  }
+  return 0;
+}

@@ -9,12 +9,19 @@
 #include <stdio.h>
 
 #include "mojo/nacl/mojo_syscall_internal.h"
+#include "mojo/public/c/system/core.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
-#include "third_party/mojo/src/mojo/public/c/system/core.h"
+
+MojoHandle g_mojo_handle = MOJO_HANDLE_INVALID;
 
 namespace {
+
+MojoResult _MojoGetInitialHandle(MojoHandle* handle) {
+  *handle = g_mojo_handle;
+  return MOJO_RESULT_OK;
+}
 
 void MojoDescDestroy(void* handle) {
 }
@@ -91,6 +98,12 @@ struct NaClDesc* MakeDisabledMojoDesc(struct NaClApp* nap) {
 
 void InjectMojo(struct NaClApp* nap) {
   NaClAppSetDesc(nap, NACL_MOJO_DESC, MakeMojoDesc(nap));
+  g_mojo_handle = MOJO_HANDLE_INVALID;
+}
+
+void InjectMojo(struct NaClApp* nap, MojoHandle handle) {
+  NaClAppSetDesc(nap, NACL_MOJO_DESC, MakeMojoDesc(nap));
+  g_mojo_handle = handle;
 }
 
 void InjectDisabledMojo(struct NaClApp* nap) {

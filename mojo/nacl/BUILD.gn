@@ -18,6 +18,8 @@ if (current_toolchain == default_toolchain) {
       "generator/libmojo.cc.tmpl",
     ]
     outputs = [
+      "$gen_dir/mojo_irt.c",
+      "$gen_dir/mojo_irt.h",
       "$gen_dir/mojo_syscall.cc",
       "$gen_dir/libmojo.cc",
     ]
@@ -64,7 +66,9 @@ if (is_nacl) {
   static_library("mojo") {
     sources = [
       "$gen_dir/libmojo.cc",
+      "$gen_dir/mojo_irt.h",
     ]
+    include_dirs = [ "$root_build_dir/gen" ]
     deps = [
       ":mojo_nacl_codegen($default_toolchain)",
     ]
@@ -78,7 +82,6 @@ if (is_nacl) {
       "//third_party/mojo/src/mojo/public/cpp/system/tests/macros_unittest.cc",
     ]
     deps = [
-      "//native_client/src/untrusted/nacl:imc_syscalls",
       "//testing/gtest:gtest",
       "//testing/gtest:gtest_main",
       "//third_party/mojo/src/mojo/public/c/system/tests:tests",
@@ -86,11 +89,27 @@ if (is_nacl) {
       ":mojo",
     ]
   }
+
+  executable("irt_mojo") {
+    cflags_c = [ "-std=c99" ]
+    sources = [
+      "irt_entry_mojo.c",
+      "$gen_dir/mojo_irt.c",
+      "$gen_dir/mojo_irt.h",
+    ]
+    include_dirs = [ "$root_build_dir/gen" ]
+    deps = [
+      "//native_client/build/config/nacl:nacl_base",
+      "//native_client/src/untrusted/irt:irt_core_lib",
+      "//native_client/src/untrusted/nacl:imc_syscalls",
+      ":mojo_nacl_codegen($default_toolchain)",
+    ]
+  }
 }
 
 group("mojo_nacl") {
   deps = [
-    "//native_client/src/untrusted/irt:irt_core(//native_client/build/toolchain/nacl:irt_${cpu_arch})",
+    ":irt_mojo(//native_client/build/toolchain/nacl:irt_${cpu_arch})",
   ]
 }
 

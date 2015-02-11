@@ -39,6 +39,7 @@
           'type': 'static_library',
           'include_dirs': [
             '..',
+            '../third_party/mojo/src/',
           ],
           'sources': [
             '<(monacl_codegen_dir)/mojo_syscall.cc',
@@ -52,6 +53,7 @@
           'type': 'static_library',
           'include_dirs': [
             '..',
+            '../third_party/mojo/src/',
           ],
           'sources': [
             'nacl/monacl_sel_main.cc',

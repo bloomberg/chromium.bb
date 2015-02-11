@@ -120,6 +120,14 @@ class Param(object):
     self.is_extensible = False
     return self
 
+  def OutFixedStructArray(self, ty, size):
+    self.base_type = ty
+    self.param_type = 'struct ' + ty + '*'
+    self.size = size
+    self.is_array = True
+    self.is_output = True
+    return self
+
   # Declares that it is valid to pass a null pointer.
   def Optional(self):
     assert not self.IsPassedByValue()

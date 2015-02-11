@@ -77,10 +77,10 @@ template <typename T> bool ConvertScalarOutput(
     if (temp != kNaClBadAddress) {
       *sys_ptr = reinterpret_cast<T volatile*>(temp);
       return true;
-    } else if (optional) {
-      *sys_ptr = 0;
-      return true;
     }
+  } else if (optional) {
+    *sys_ptr = 0;
+    return true;
   }
   *sys_ptr = 0; // Paranoia.
   return false;

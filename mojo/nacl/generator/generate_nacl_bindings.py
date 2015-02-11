@@ -5,6 +5,7 @@
 
 # pylint: disable=W0104,W0106,F0401,R0201
 
+import errno
 import optparse
 import os.path
 import sys
@@ -79,6 +80,8 @@ def TemplateFile(name):
 
 
 # Wraps comma separated lists as needed.
+# TODO(teravest): Eliminate Wrap() and use "git cl format" when code is checked
+# in.
 def Wrap(pre, items, post):
   complete = pre + ', '.join(items) + post
   if len(complete) <= 80:
@@ -98,7 +101,8 @@ def GeneratorWarning():
           os.path.basename(__file__))
 
 
-# Untrusted library implementing the public Mojo API.
+# Untrusted library which thunks from the public Mojo API to the IRT interface
+# implementing the public Mojo API.
 def GenerateLibMojo(functions, out):
   template = jinja_env.get_template('libmojo.cc.tmpl')
 
@@ -108,34 +112,13 @@ def GenerateLibMojo(functions, out):
     for line in Wrap('%s %s(' % (f.return_type, f.name), f.ParamList(), ') {'):
       code << line
 
-    # 2 extra parameters: message ID and return value.
-    num_params = len(f.params) + 2
-
     with code.Indent():
-      code << 'uint32_t params[%d];' % num_params
-      return_type = f.result_param.base_type
-      if return_type == 'MojoResult':
-        default = 'MOJO_RESULT_INVALID_ARGUMENT'
-      elif return_type == 'MojoTimeTicks':
-        default = '0'
-      else:
-        raise Exception('Unhandled return type: ' + return_type)
-      code << '%s %s = %s;' % (return_type, f.result_param.name, default)
-
-      # Message ID
-      code << 'params[0] = %d;' % f.uid
-      # Parameter pointers
-      cast_template = 'params[%d] = reinterpret_cast<uint32_t>(%s);'
-      for p in f.params:
-        ptr = p.name
-        if p.IsPassedByValue():
-          ptr = '&' + ptr
-        code << cast_template % (p.uid + 1, ptr)
-      # Return value pointer
-      code << cast_template % (num_params - 1, '&' + f.result_param.name)
-
-      code << 'DoMojoCall(params, sizeof(params));'
-      code << 'return %s;' % f.result_param.name
+      code << 'struct nacl_irt_mojo* irt_mojo = get_irt_mojo();'
+      code << 'if (irt_mojo == NULL)'
+      with code.Indent():
+        code << 'return MOJO_RESULT_INTERNAL;'
+      code << 'return irt_mojo->%s(%s);' % (
+          f.name, ', '.join([p.name for p in f.params]))
 
     code << '}'
     code << ''
@@ -399,9 +382,96 @@ def GenerateMojoSyscall(functions, out):
   out.write(text)
 
 
+# A header declaring the IRT interface for accessing Mojo functions.
+def GenerateMojoIrtHeader(functions, out):
+  template = jinja_env.get_template('mojo_irt.h.tmpl')
+  code = CodeWriter()
+
+  code << 'struct nacl_irt_mojo {'
+  with code.Indent():
+    for f in functions:
+      for line in Wrap('%s (*%s)(' % (f.return_type, f.name),
+                       f.ParamList(),
+                       ');'):
+        code << line
+
+  code << '};'
+
+  body = code.GetValue()
+
+  text = template.render(
+    generator_warning=GeneratorWarning(),
+    body=body)
+  out.write(text)
+
+# IRT interface which implements the Mojo public API.
+def GenerateMojoIrtImplementation(functions, out):
+  template = jinja_env.get_template('mojo_irt.c.tmpl')
+  code = CodeWriter()
+
+  for f in functions:
+    for line in Wrap('static %s irt_%s(' % (f.return_type, f.name),
+                     f.ParamList(),
+                     ') {'):
+      code << line
+
+    # 2 extra parameters: message ID and return value.
+    num_params = len(f.params) + 2
+
+    with code.Indent():
+      code << 'uint32_t params[%d];' % num_params
+      return_type = f.result_param.base_type
+      if return_type == 'MojoResult':
+        default = 'MOJO_RESULT_INVALID_ARGUMENT'
+      elif return_type == 'MojoTimeTicks':
+        default = '0'
+      else:
+        raise Exception('Unhandled return type: ' + return_type)
+      code << '%s %s = %s;' % (return_type, f.result_param.name, default)
+
+      # Message ID
+      code << 'params[0] = %d;' % f.uid
+      # Parameter pointers
+      cast_template = 'params[%d] = (uint32_t)(%s);'
+      for p in f.params:
+        ptr = p.name
+        if p.IsPassedByValue():
+          ptr = '&' + ptr
+        code << cast_template % (p.uid + 1, ptr)
+      # Return value pointer
+      code << cast_template % (num_params - 1, '&' + f.result_param.name)
+
+      code << 'DoMojoCall(params, sizeof(params));'
+      code << 'return %s;' % f.result_param.name
+
+    # Add body here.
+    code << "};"
+    code << "\n"
+
+  # Now we've emitted all the functions, but we still need the struct
+  # definition.
+  code << 'struct nacl_irt_mojo kIrtMojo = {'
+  for f in functions:
+    with code.Indent():
+      code << '&irt_%s,' % f.name
+  code << '};'
+
+  body = code.GetValue()
+
+  text = template.render(
+    generator_warning=GeneratorWarning(),
+    body=body)
+  out.write(text)
+
+
 def OutFile(dir_path, name):
   if not os.path.exists(dir_path):
-    os.makedirs(dir_path)
+    try:
+      os.makedirs(dir_path)
+    except OSError as e:
+      # There may have been a race to create this directory.
+      if e.errno != errno.EEXIST:
+        raise
   return open(os.path.join(dir_path, name), 'w')
 
 
@@ -427,6 +497,11 @@ def main(args):
   out = OutFile(options.out_dir, 'mojo_syscall.cc')
   GenerateMojoSyscall(mojo.functions, out)
 
+  out = OutFile(options.out_dir, 'mojo_irt.h')
+  GenerateMojoIrtHeader(mojo.functions, out)
+
+  out = OutFile(options.out_dir, 'mojo_irt.c')
+  GenerateMojoIrtImplementation(mojo.functions, out)
 
 if __name__ == '__main__':
   main(sys.argv[1:])
