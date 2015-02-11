@@ -78,6 +78,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   // unit tests.
   void MakeDeterministicForTesting();
 
+  // Gets the time of the first beacon that has not yet been successfully
+  // uploaded.
+  base::TimeTicks first_beacon_time() const { return first_beacon_time_; }
+
  private:
   void MaybeScheduleUpload();
 

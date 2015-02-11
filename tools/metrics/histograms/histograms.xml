@@ -5458,6 +5458,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DomainReliability.UploadLatency" units="ms">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The time from the first beacon in a Domain Reliability upload being recorded
+    and that upload completing successfully. (Note that if some beacons are
+    never uploaded successfully, they will not feature in this histogram at
+    all.)
+  </summary>
+</histogram>
+
 <histogram name="DomainReliability.UploadNetError" enum="NetErrorCodes">
   <owner>ttuttle@chromium.org</owner>
   <summary>
