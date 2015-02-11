@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright 2014 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file.
--->
+     found in the LICENSE file. -->
 
 <resources>
     <!-- Preferences -->
     <style name="PreferencesTheme" parent="ThemeWithActionBar">
         <item name="android:textColorLink">@color/pref_accent_color</item>
-        <item name="android:buttonStyle">@style/PreferenceButtonStyle</item>
         <item name="android:textAppearanceMedium">@style/PreferenceTextAppearanceMedium</item>
         <item name="android:preferenceCategoryStyle">@style/PreferenceCategory</item>
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
@@ -16,15 +14,6 @@
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_padding</item>
-    </style>
-    <style name="PreferenceButtonStyle" parent="@android:style/Widget.Holo.Light.Button">
-        <!-- TODO(twellington): Delete btn_default_preferences.xml once the AppCompat theme supports
-                                Material-like buttons. -->
-        <item name="android:background">@drawable/btn_default_preferences</item>
-        <item name="android:textAllCaps">true</item>
-        <item name="android:textColor">#fff</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textStyle">bold</item>
     </style>
     <style name="PreferenceTextAppearanceMedium">
         <item name="android:textSize">18sp</item>

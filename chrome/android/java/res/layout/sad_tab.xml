@@ -8,6 +8,7 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="Overdraw"
     android:layout_width="match_parent"
@@ -41,23 +42,15 @@
             android:textColor="#666"
             android:textSize="20sp" />
 
-        <Button
+        <org.chromium.chrome.browser.widget.ButtonCompat
             android:id="@+id/sad_tab_reload_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="15dp"
-            android:background="@drawable/sad_tab_reload_button"
             android:text="@string/sad_tab_reload_label"
             android:textColor="#fff"
-            android:textSize="13.8sp"
-            android:textStyle="bold"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:paddingStart="13dp"
-            android:paddingEnd="13dp"
-            android:minWidth="65dp"
-            android:minHeight="29dp" />
+            chrome:buttonColor="@color/light_active_color" />
 
         <View
             android:layout_width="match_parent"

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright 2014 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file.
--->
+     found in the LICENSE file. -->
 
 <resources>
     <!-- Common colors -->
@@ -16,7 +15,6 @@
     <color name="infobar_background">#fff</color>
     <color name="infobar_background_separator">#afafaf</color>
     <color name="infobar_accent_blue">#4285f4</color>
-    <color name="infobar_accent_blue_pressed">#679df6</color>
     <color name="infobar_tertiary_button_text">#969696</color>
 
     <!-- Tab Switcher Colors -->
@@ -64,8 +62,6 @@
 
     <!--  Preferences Colors -->
     <color name="pref_accent_color">#03a9f4</color>
-    <color name="pref_button_pressed_color">#038ecd</color>
-    <color name="pref_button_disabled_color">#83d7fd</color>
     <color name="expandable_group_dark_gray">#484848</color>
 
     <!-- Compositor Tab Title Colors -->

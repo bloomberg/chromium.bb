@@ -1485,7 +1485,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // Make sure we are not adding the "Aw, snap" view over an existing one.
             assert mSadTabView == null;
             mSadTabView = SadTabViewFactory.createSadTabView(
-                    getApplicationContext(), suggestionAction, reloadButtonAction);
+                    mContext, suggestionAction, reloadButtonAction);
 
             // Show the sad tab inside ContentView.
             getContentViewCore().getContainerView().addView(

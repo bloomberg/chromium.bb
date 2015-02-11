@@ -5,10 +5,5 @@
 
 <resources>
     <!--  Preferences dimensions -->
-    <!-- TODO(twellington): Remove/update the button dimens after AppCompat adds button support. -->
-    <dimen name="pref_button_margin_start">-4dp</dimen>
-    <dimen name="pref_button_horizontal_padding">20dp</dimen>
-    <dimen name="pref_button_vertical_padding">16dp</dimen>
-
     <dimen name="pref_homepage_layout_margin">0dp</dimen>
 </resources>

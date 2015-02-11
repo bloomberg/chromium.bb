@@ -5,21 +5,22 @@
 
 <!-- Layout used by ButtonPreference for the button widget style. -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     style="@style/PreferenceLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipToPadding="false"
     android:gravity="center_vertical"
     android:orientation="vertical">
 
-    <Button
+    <org.chromium.chrome.browser.widget.ButtonCompat
         android:id="@+id/button_preference"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:layout_marginStart="@dimen/pref_button_margin_start"
-        android:paddingStart="@dimen/pref_button_horizontal_padding"
-        android:paddingEnd="@dimen/pref_button_horizontal_padding"
-        android:paddingTop="@dimen/pref_button_vertical_padding"
-        android:paddingBottom="@dimen/pref_button_vertical_padding" />
+        android:minHeight="40dp"
+        android:textColor="#fff"
+        chrome:buttonColor="@color/pref_accent_color" />
 
 </LinearLayout>

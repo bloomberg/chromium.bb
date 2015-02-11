@@ -39,7 +39,6 @@
 
         <Button
             android:id="@+id/website_settings_copy_url_button"
-            android:background="?attr/selectableItemBackground"
             android:layout_gravity="end"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/website_settings_popup_button_height"
@@ -50,10 +49,8 @@
             android:paddingEnd="@dimen/website_settings_popup_button_padding_sides"
             android:paddingStart="@dimen/website_settings_popup_button_padding_sides"
             android:text="@string/page_info_copy_url_button"
-            android:textAllCaps="true"
-            android:textColor="#4184f3"
-            android:textSize="@dimen/website_settings_popup_button_text_size"
-            android:textStyle="bold" />
+            android:textColor="@color/light_active_color"
+            style="@style/ButtonBorderlessCompat" />
     </LinearLayout>
 
     <!-- Horizontal separator -->
@@ -87,7 +84,6 @@
 
             <Button
                 android:id="@+id/website_settings_site_settings_button"
-                android:background="?attr/selectableItemBackground"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/website_settings_popup_button_height"
                 android:layout_marginEnd="@dimen/website_settings_popup_button_margin_sides"
@@ -95,10 +91,8 @@
                 android:paddingEnd="@dimen/website_settings_popup_button_padding_sides"
                 android:paddingStart="@dimen/website_settings_popup_button_padding_sides"
                 android:text="@string/page_info_site_settings_button"
-                android:textAllCaps="true"
                 android:textColor="@color/website_settings_popup_button_text"
-                android:textSize="@dimen/website_settings_popup_button_text_size"
-                android:textStyle="bold" />
+                style="@style/ButtonBorderlessCompat" />
         </FrameLayout>
     </LinearLayout>
 

@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.widget;
 
 import android.animation.AnimatorInflater;
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
@@ -18,7 +20,8 @@ import android.widget.Button;
 import org.chromium.chrome.R;
 
 /**
- * A Material-styled button with a customizable background color.
+ * A Material-styled button with a customizable background color. On L devices, this is a true
+ * Material button. On earlier devices, the button is similar but lacks ripples and a shadow.
  *
  * Create a button in Java:
  *
@@ -26,19 +29,19 @@ import org.chromium.chrome.R;
  *
  * Create a button in XML:
  *
- *   <ButtonCompat
+ *   <org.chromium.chrome.browser.widget.ButtonCompat
  *       android:layout_width="wrap_content"
  *       android:layout_height="wrap_content"
  *       android:text="Click me"
  *       chrome:buttonColor="#f00" />
  *
- * On L devices, this is a true Material button. On earlier devices, the button is similar but lacks
- * ripples and lacks a shadow when pressed.
+ * Note: To ensure the button's shadow is fully visible, you may need to set
+ * android:clipToPadding="false" on the button's parent view.
  */
 public class ButtonCompat extends Button {
 
-    /** The amount by which to dim the button background when pressed. */
-    private static final float PRE_L_DIM_AMOUNT = 0.85f;
+    private static final float PRE_L_PRESSED_BRIGHTNESS = 0.85f;
+    private static final int DISABLED_COLOR = 0x1F000000;
 
     private int mColor;
 
@@ -93,7 +96,7 @@ public class ButtonCompat extends Button {
         mColor = color;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getBackground().setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+            updateButtonBackgroundL();
         } else {
             updateButtonBackgroundPreL();
         }
@@ -107,27 +110,39 @@ public class ButtonCompat extends Button {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void updateButtonBackgroundL() {
+        ColorStateList csl = new ColorStateList(
+                new int[][] { { -android.R.attr.state_enabled }, {} },
+                new int[] { DISABLED_COLOR, mColor });
+        GradientDrawable shape = (GradientDrawable)
+                ((RippleDrawable) getBackground()).getDrawable(0);
+        shape.mutate();
+        shape.setColor(csl);
+    }
+
     private void updateButtonBackgroundPreL() {
-        int color = mColor;
+        GradientDrawable background = (GradientDrawable) getBackground();
+        background.setColor(getBackgroundColorPreL());
+    }
+
+    private int getBackgroundColorPreL() {
         for (int state : getDrawableState()) {
             if (state == android.R.attr.state_pressed
                     || state == android.R.attr.state_focused
                     || state == android.R.attr.state_selected) {
-                color = getActiveColorPreL();
-                break;
+                return Color.rgb(
+                        Math.round(Color.red(mColor) * PRE_L_PRESSED_BRIGHTNESS),
+                        Math.round(Color.green(mColor) * PRE_L_PRESSED_BRIGHTNESS),
+                        Math.round(Color.blue(mColor) * PRE_L_PRESSED_BRIGHTNESS));
             }
         }
-
-        GradientDrawable background = (GradientDrawable) getBackground();
-        background.setColor(color);
-    }
-
-    private int getActiveColorPreL() {
-        return Color.rgb(
-                Math.round(Color.red(mColor) * PRE_L_DIM_AMOUNT),
-                Math.round(Color.green(mColor) * PRE_L_DIM_AMOUNT),
-                Math.round(Color.blue(mColor) * PRE_L_DIM_AMOUNT)
-        );
+        for (int state : getDrawableState()) {
+            if (state == android.R.attr.state_enabled) {
+                return mColor;
+            }
+        }
+        return DISABLED_COLOR;
     }
 
     private static int getColorFromAttributeSet(Context context, AttributeSet attrs) {

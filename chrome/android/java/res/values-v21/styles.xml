@@ -7,9 +7,7 @@
     <!-- Preferences -->
     <style name="PreferencesTheme" parent="ThemeWithActionBar">
         <item name="android:textColorLink">@color/pref_accent_color</item>
-        <item name="android:buttonStyle">@style/PreferenceButtonStyle</item>
         <item name="android:alertDialogTheme">@style/PreferencesDialogTheme</item>
-        <item name="android:colorButtonNormal">@color/btn_default_preferences</item>
         <item name="android:editTextBackground">@drawable/abc_edit_text_material</item>
         <item name="android:editTextStyle">@style/PreferenceEditTextStyle</item>
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
@@ -20,9 +18,6 @@
     </style>
     <style name="PreferencesDialogTheme" parent="@android:style/Theme.Material.Light.Dialog.Alert">
         <item name="android:colorAccent">@color/pref_accent_color</item>
-    </style>
-    <style name="PreferenceButtonStyle" parent="@android:style/Widget.Material.Light.Button">
-        <item name="android:textColor">#fff</item>
     </style>
     <style name="PreferenceCategoryWithButtonStyle">
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
