@@ -14,7 +14,7 @@
 namespace {
 
 const int kTileSize = 90;
-const int kTileHorizontalPadding = 10;
+const int kIconTitleSpacing = 6;
 
 }  // namespace
 
@@ -27,7 +27,7 @@ TileItemView::TileItemView()
       title_(new views::Label),
       selected_(false) {
   views::BoxLayout* layout_manager = new views::BoxLayout(
-      views::BoxLayout::kVertical, kTileHorizontalPadding, 0, 0);
+      views::BoxLayout::kVertical, 0, 0, kIconTitleSpacing);
   layout_manager->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(layout_manager);

@@ -30,17 +30,17 @@ namespace app_list {
 namespace {
 
 // Layout constants.
-const int kInstantContainerSpacing = 11;
-const int kSearchBoxAndTilesSpacing = 40;
+const int kInstantContainerSpacing = 24;
+const int kSearchBoxAndTilesSpacing = 35;
 const int kStartPageSearchBoxWidth = 480;
 
 // WebView constants.
 const int kWebViewWidth = 700;
-const int kWebViewHeight = 254;
+const int kWebViewHeight = 244;
 
 // Tile container constants.
 const size_t kNumStartPageTiles = 4;
-const int kTileSpacing = 10;
+const int kTileSpacing = 7;
 
 // An invisible placeholder view which fills the space for the search box view
 // in a box layout. The search box view itself is a child of the AppListView
