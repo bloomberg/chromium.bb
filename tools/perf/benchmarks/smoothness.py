@@ -3,15 +3,16 @@
 # found in the LICENSE file.
 
 from benchmarks import silk_flags
-import page_sets
 from measurements import smoothness
+import page_sets
 from telemetry import benchmark
 
 
 class SmoothnessTop25(benchmark.Benchmark):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks
+  """
   test = smoothness.Smoothness
   page_set = page_sets.Top25SmoothPageSet
 
@@ -72,7 +73,8 @@ class SmoothnessMaps(benchmark.Benchmark):
 class SmoothnessKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics while scrolling down the key mobile sites.
 
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks
+  """
   test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
@@ -93,7 +95,7 @@ class SmoothnessToughAnimationCases(benchmark.Benchmark):
 @benchmark.Enabled('android')
 class SmoothnessKeySilkCases(benchmark.Benchmark):
   """Measures rendering statistics for the key silk cases without GPU
-  rasterization
+  rasterization.
   """
   test = smoothness.Smoothness
   page_set = page_sets.KeySilkCasesPageSet
@@ -105,11 +107,12 @@ class SmoothnessKeySilkCases(benchmark.Benchmark):
 
 @benchmark.Enabled('android')
 class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
-  """Measures rendering statistics for the top 25 with GPU rasterization
+  """Measures rendering statistics for the top 25 with GPU rasterization.
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
   page_set = page_sets.Top25SmoothPageSet
+
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
@@ -121,11 +124,12 @@ class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
 @benchmark.Enabled('android')
 class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics for the key mobile sites with GPU
-  rasterization
+  rasterization.
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
@@ -142,6 +146,7 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   tag = 'sync_scroll'
   test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
 
@@ -149,9 +154,11 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   def Name(cls):
     return 'smoothness.sync_scroll.key_mobile_sites_smooth'
 
+
 @benchmark.Enabled('android')
 class SmoothnessSimpleMobilePages(benchmark.Benchmark):
-  """Measures rendering statistics for simple mobile sites page set """
+  """Measures rendering statistics for simple mobile sites page set.
+  """
   test = smoothness.Smoothness
   page_set = page_sets.SimpleMobileSitesPageSet
 
@@ -159,10 +166,11 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
   def Name(cls):
     return 'smoothness.simple_mobile_sites'
 
+
 @benchmark.Enabled('android', 'chromeos')
 class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
-  cases
+  cases.
   """
   test = smoothness.Smoothness
   page_set = page_sets.ToughPinchZoomCasesPageSet
@@ -186,11 +194,12 @@ class SmoothnessPolymer(benchmark.Benchmark):
 
 @benchmark.Enabled('android')
 class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
-  """Measures rendering statistics for the Polymer cases with GPU rasterization
+  """Measures rendering statistics for the Polymer cases with GPU rasterization.
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
   page_set = page_sets.PolymerPageSet
+
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
@@ -202,7 +211,7 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
 class SmoothnessToughFastScrollingCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughScrollingCasesPageSet
-  options = {'page_label_filter' : 'fastscrolling'}
+  options = {'page_label_filter': 'fastscrolling'}
 
   @classmethod
   def Name(cls):
@@ -214,6 +223,7 @@ class SmoothnessImageDecodingCases(benchmark.Benchmark):
   """
   test = smoothness.Smoothness
   page_set = page_sets.ImageDecodingCasesPageSet
+
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
     options.AppendExtraBrowserArgs('--disable-accelerated-jpeg-decoding')
@@ -224,16 +234,29 @@ class SmoothnessImageDecodingCases(benchmark.Benchmark):
 
 
 class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
-  """Measures decoding statistics for jpeg images with GPU rasterization
+  """Measures decoding statistics for jpeg images with GPU rasterization.
   """
   tag = 'gpu_rasterization_and_decoding'
   test = smoothness.Smoothness
   page_set = page_sets.ImageDecodingCasesPageSet
+
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
-    # TODO: Remove the following line once M41 goes stable
+    # TODO(sugoi): Remove the following line once M41 goes stable
     options.AppendExtraBrowserArgs('--enable-accelerated-jpeg-decoding')
+
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization_and_decoding.image_decoding_cases'
 
+
+@benchmark.Enabled('android')
+class SmoothnessPathologicalMobileSites(benchmark.Benchmark):
+  """Measures task execution statistics while scrolling pathological sites.
+  """
+  test = smoothness.Smoothness
+  page_set = page_sets.PathologicalMobileSitesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.pathological_mobile_sites'
