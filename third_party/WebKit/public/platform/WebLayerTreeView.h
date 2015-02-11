@@ -68,9 +68,6 @@ public:
     // Sets the background transparency for the viewport. The default is 'false'.
     virtual void setHasTransparentBackground(bool) = 0;
 
-    // Sets the overhang gutter bitmap.
-    virtual void setOverhangBitmap(const SkBitmap&) { }
-
     // Sets whether this view is visible. In threaded mode, a view that is not visible will not
     // composite or trigger updateAnimations() or layout() calls until it becomes visible.
     virtual void setVisible(bool) = 0;
