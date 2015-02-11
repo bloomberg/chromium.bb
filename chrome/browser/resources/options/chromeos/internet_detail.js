@@ -1450,14 +1450,19 @@ cr.define('options.internet', function() {
     configureAddressField($('ip-netmask'), inetNetmask);
     configureAddressField($('ip-gateway'), inetGateway);
 
-    // Set Nameserver fields.
+    // Set Nameserver fields. Nameservers are 'automatic' by default. If a
+    // static namerserver is set, use that unless it does not match a non
+    // empty 'NameServers' value (indicating that the custom nameservers are
+    // invalid or not being applied for some reason). TODO(stevenjb): Only
+    // set these properites if they change so that invalid custom values do
+    // not get lost.
     var nameServerType = 'automatic';
-    if (staticNameServersString) {
-      // If static nameservers are defined and match the google name servers,
-      // show that in the UI, otherwise show the custom static nameservers.
+    if (staticNameServersString &&
+        (!inetNameServersString ||
+         staticNameServersString == inetNameServersString)) {
       if (staticNameServersString == GoogleNameServers.join(','))
         nameServerType = 'google';
-      else if (staticNameServersString == inetNameServersString)
+      else
         nameServerType = 'user';
     }
     if (nameServerType == 'automatic')
