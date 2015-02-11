@@ -1,6 +1,7 @@
 /*
  * Copyright © 2012 Intel Corporation
  * Copyright © 2013 Vasily Khoruzhick <anarsoul@gmail.com>
+ * Copyright © 2015 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -676,6 +677,53 @@ pixman_renderer_destroy(struct weston_compositor *ec)
 }
 
 static void
+pixman_renderer_surface_get_content_size(struct weston_surface *surface,
+					 int *width, int *height)
+{
+	struct pixman_surface_state *ps = get_surface_state(surface);
+
+	if (ps->image) {
+		*width = pixman_image_get_width(ps->image);
+		*height = pixman_image_get_height(ps->image);
+	} else {
+		*width = 0;
+		*height = 0;
+	}
+}
+
+static int
+pixman_renderer_surface_copy_content(struct weston_surface *surface,
+				     void *target, size_t size,
+				     int src_x, int src_y,
+				     int width, int height)
+{
+	const pixman_format_code_t format = PIXMAN_a8b8g8r8;
+	const size_t bytespp = 4; /* PIXMAN_a8b8g8r8 */
+	struct pixman_surface_state *ps = get_surface_state(surface);
+	pixman_image_t *out_buf;
+
+	if (!ps->image)
+		return -1;
+
+	out_buf = pixman_image_create_bits(format, width, height,
+					   target, width * bytespp);
+
+	pixman_image_set_transform(ps->image, NULL);
+	pixman_image_composite32(PIXMAN_OP_SRC,
+				 ps->image,    /* src */
+				 NULL,         /* mask */
+				 out_buf,      /* dest */
+				 src_x, src_y, /* src_x, src_y */
+				 0, 0,         /* mask_x, mask_y */
+				 0, 0,         /* dest_x, dest_y */
+				 width, height);
+
+	pixman_image_unref(out_buf);
+
+	return 0;
+}
+
+static void
 debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 	      void *data)
 {
@@ -713,6 +761,10 @@ pixman_renderer_init(struct weston_compositor *ec)
 	renderer->base.attach = pixman_renderer_attach;
 	renderer->base.surface_set_color = pixman_renderer_surface_set_color;
 	renderer->base.destroy = pixman_renderer_destroy;
+	renderer->base.surface_get_content_size =
+		pixman_renderer_surface_get_content_size;
+	renderer->base.surface_copy_content =
+		pixman_renderer_surface_copy_content;
 	ec->renderer = &renderer->base;
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
