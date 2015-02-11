@@ -407,33 +407,6 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   }
 }
 
-static void ReadPixelsSyncInner(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-    uint32 texture_id,
-    const gfx::Rect& visible_rect,
-    const SkBitmap& pixels,
-    base::WaitableEvent* event) {
-  factories->ReadPixels(texture_id, visible_rect, pixels);
-  event->Signal();
-}
-
-static void ReadPixelsSync(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-    uint32 texture_id,
-    const gfx::Rect& visible_rect,
-    const SkBitmap& pixels) {
-  base::WaitableEvent event(true, false);
-  if (!factories->GetTaskRunner()->PostTask(FROM_HERE,
-                                            base::Bind(&ReadPixelsSyncInner,
-                                                       factories,
-                                                       texture_id,
-                                                       visible_rect,
-                                                       pixels,
-                                                       &event)))
-    return;
-  event.Wait();
-}
-
 scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
     const media::Picture& picture,
     const media::PictureBuffer& pb,
@@ -450,7 +423,6 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
           &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
       pb.size(), visible_rect, visible_rect.size(), timestamp_ms,
-      base::Bind(&ReadPixelsSync, factories_, pb.texture_id(), visible_rect),
       picture.allow_overlay());
 }
 

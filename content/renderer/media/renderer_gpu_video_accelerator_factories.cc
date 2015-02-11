@@ -18,8 +18,6 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace content {
 
@@ -185,54 +183,6 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
   // Callers expect the WaitSyncPoint to affect the next IPCs. Make sure to
   // flush the command buffers to ensure that.
   gles2->ShallowFlushCHROMIUM();
-}
-
-void RendererGpuVideoAcceleratorFactories::ReadPixels(
-    uint32 texture_id,
-    const gfx::Rect& visible_rect,
-    const SkBitmap& pixels) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  GLHelper* gl_helper = GetGLHelper();
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-
-  if (!gl_helper || !context)
-    return;
-
-  // Copy texture from texture_id to tmp_texture as texture might be external
-  // (GL_TEXTURE_EXTERNAL_OES)
-  GLuint tmp_texture;
-  tmp_texture = gl_helper->CreateTexture();
-  context->copyTextureCHROMIUM(
-      GL_TEXTURE_2D, texture_id, tmp_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
-
-  unsigned char* pixel_data =
-      static_cast<unsigned char*>(pixels.pixelRef()->pixels());
-
-  if (gl_helper->IsReadbackConfigSupported(pixels.colorType())) {
-    gl_helper->ReadbackTextureSync(
-        tmp_texture, visible_rect, pixel_data, pixels.colorType());
-  } else if (pixels.colorType() == kN32_SkColorType) {
-    gl_helper->ReadbackTextureSync(
-        tmp_texture, visible_rect, pixel_data, kRGBA_8888_SkColorType);
-
-    int pixel_count = visible_rect.width() * visible_rect.height();
-    uint32_t* pixels_ptr = static_cast<uint32_t*>(pixels.pixelRef()->pixels());
-    for (int i = 0; i < pixel_count; ++i) {
-        uint32_t r = pixels_ptr[i] & 0xFF;
-        uint32_t g = (pixels_ptr[i] >> 8) & 0xFF;
-        uint32_t b = (pixels_ptr[i] >> 16) & 0xFF;
-        uint32_t a = (pixels_ptr[i] >> 24) & 0xFF;
-        pixels_ptr[i] = (r << SK_R32_SHIFT) |
-                        (g << SK_G32_SHIFT) |
-                        (b << SK_B32_SHIFT) |
-                        (a << SK_A32_SHIFT);
-    }
-  } else {
-    NOTREACHED();
-  }
-
-  gl_helper->DeleteTexture(tmp_texture);
 }
 
 scoped_ptr<base::SharedMemory>

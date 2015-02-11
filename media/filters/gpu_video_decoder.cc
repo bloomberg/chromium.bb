@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
@@ -385,33 +384,6 @@ void GpuVideoDecoder::DismissPictureBuffer(int32 id) {
   // Postpone deletion until after it's returned to us.
 }
 
-static void ReadPixelsSyncInner(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-    uint32 texture_id,
-    const gfx::Rect& visible_rect,
-    const SkBitmap& pixels,
-    base::WaitableEvent* event) {
-  factories->ReadPixels(texture_id, visible_rect, pixels);
-  event->Signal();
-}
-
-static void ReadPixelsSync(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-    uint32 texture_id,
-    const gfx::Rect& visible_rect,
-    const SkBitmap& pixels) {
-  base::WaitableEvent event(true, false);
-  if (!factories->GetTaskRunner()->PostTask(FROM_HERE,
-                                            base::Bind(&ReadPixelsSyncInner,
-                                                       factories,
-                                                       texture_id,
-                                                       visible_rect,
-                                                       pixels,
-                                                       &event)))
-    return;
-  event.Wait();
-}
-
 void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DVLOG(3) << "PictureReady()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
@@ -454,7 +426,6 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
       pb.size(), visible_rect, natural_size, timestamp,
-      base::Bind(&ReadPixelsSync, factories_, pb.texture_id(), visible_rect),
       picture.allow_overlay()));
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;

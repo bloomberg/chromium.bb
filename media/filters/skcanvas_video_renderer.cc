@@ -146,6 +146,7 @@ bool CopyVideoFrameTextureToSkBitmapTexture(VideoFrame* video_frame,
   SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
       context_3d.gl, video_frame, texture_id, 0, GL_RGBA, GL_UNSIGNED_BYTE,
       true, false);
+  bitmap->notifyPixelsChanged();
   return true;
 }
 
@@ -321,37 +322,49 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   }
 
   SkBitmap* target_frame = nullptr;
-  if (canvas->getGrContext()) {
+
+  if (video_frame->format() == VideoFrame::NATIVE_TEXTURE) {
+    // Draw HW Video on both SW and HW Canvas.
+    // In SW Canvas case, rely on skia drawing Ganesh SkBitmap on SW SkCanvas.
     if (accelerated_last_frame_.isNull() ||
         video_frame->timestamp() != accelerated_last_frame_timestamp_) {
-      if (video_frame->format() == VideoFrame::NATIVE_TEXTURE) {
-        // Draw HW Video on HW Canvas.
-        DCHECK(context_3d.gl);
-        DCHECK(context_3d.gr_context);
-        if (accelerated_generator_) {
-          // Reset SkBitmap used in SWVideo-to-HWCanvas path.
-          accelerated_last_frame_.reset();
-          accelerated_generator_ = nullptr;
-        }
-        if (!CopyVideoFrameTextureToSkBitmapTexture(
-                video_frame.get(), &accelerated_last_frame_, context_3d)) {
-          NOTREACHED();
-          return;
-        }
-      } else {
-        // Draw SW Video on HW Canvas.
-        if (!accelerated_generator_ && !accelerated_last_frame_.isNull()) {
-          // Reset SkBitmap used in HWVideo-to-HWCanvas path.
-          accelerated_last_frame_.reset();
-        }
-        accelerated_generator_ = new VideoImageGenerator(video_frame);
+      DCHECK(context_3d.gl);
+      DCHECK(context_3d.gr_context);
+      if (accelerated_generator_) {
+        // Reset SkBitmap used in SWVideo-to-HWCanvas path.
+        accelerated_last_frame_.reset();
+        accelerated_generator_ = nullptr;
+      }
+      if (!CopyVideoFrameTextureToSkBitmapTexture(
+              video_frame.get(), &accelerated_last_frame_, context_3d)) {
+        NOTREACHED();
+        return;
+      }
+      DCHECK(video_frame->visible_rect().width() ==
+                 accelerated_last_frame_.width() &&
+             video_frame->visible_rect().height() ==
+                 accelerated_last_frame_.height());
 
-        // Note: This takes ownership of |accelerated_generator_|.
-        if (!SkInstallDiscardablePixelRef(accelerated_generator_,
-                                          &accelerated_last_frame_)) {
-          NOTREACHED();
-          return;
-        }
+      accelerated_last_frame_timestamp_ = video_frame->timestamp();
+    }
+    target_frame = &accelerated_last_frame_;
+    accelerated_frame_deleting_timer_.Reset();
+  } else if (canvas->getGrContext()) {
+    DCHECK(video_frame->format() != VideoFrame::NATIVE_TEXTURE);
+    if (accelerated_last_frame_.isNull() ||
+        video_frame->timestamp() != accelerated_last_frame_timestamp_) {
+      // Draw SW Video on HW Canvas.
+      if (!accelerated_generator_ && !accelerated_last_frame_.isNull()) {
+        // Reset SkBitmap used in HWVideo-to-HWCanvas path.
+        accelerated_last_frame_.reset();
+      }
+      accelerated_generator_ = new VideoImageGenerator(video_frame);
+
+      // Note: This takes ownership of |accelerated_generator_|.
+      if (!SkInstallDiscardablePixelRef(accelerated_generator_,
+                                        &accelerated_last_frame_)) {
+        NOTREACHED();
+        return;
       }
       DCHECK(video_frame->visible_rect().width() ==
                  accelerated_last_frame_.width() &&
@@ -365,7 +378,8 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     target_frame = &accelerated_last_frame_;
     accelerated_frame_deleting_timer_.Reset();
   } else {
-    // Draw both SW and HW Video on SW Canvas.
+    // Draw SW Video on SW Canvas.
+    DCHECK(video_frame->format() != VideoFrame::NATIVE_TEXTURE);
     if (last_frame_.isNull() ||
         video_frame->timestamp() != last_frame_timestamp_) {
       // Check if |bitmap| needs to be (re)allocated.
@@ -438,9 +452,10 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 }
 
 void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
-                                 SkCanvas* canvas) {
+                                 SkCanvas* canvas,
+                                 const Context3D& context_3d) {
   Paint(video_frame, canvas, video_frame->visible_rect(), 0xff,
-        SkXfermode::kSrc_Mode, media::VIDEO_ROTATION_0, Context3D());
+        SkXfermode::kSrc_Mode, media::VIDEO_ROTATION_0, context_3d);
 }
 
 // static
@@ -571,17 +586,9 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
 #endif
       break;
 
-    case VideoFrame::NATIVE_TEXTURE: {
-      SkBitmap tmp;
-      tmp.installPixels(
-          SkImageInfo::MakeN32Premul(video_frame->visible_rect().width(),
-                                     video_frame->visible_rect().height()),
-          rgb_pixels,
-          row_bytes);
-      video_frame->ReadPixelsFromNativeTexture(tmp);
+    case VideoFrame::NATIVE_TEXTURE:
+      NOTREACHED();
       break;
-    }
-
 #if defined(VIDEO_HOLE)
     case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)

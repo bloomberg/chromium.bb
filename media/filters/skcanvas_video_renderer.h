@@ -31,8 +31,8 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
 
   // Paints |video_frame| on |canvas|, scaling and rotating the result to fit
   // dimensions specified by |dest_rect|.
-  // If the format of |video_frame| is VideoFrame::NATIVE_TEXTURE and |canvas|
-  // is ganeshed, |context_3d| must be provided.
+  // If the format of |video_frame| is VideoFrame::NATIVE_TEXTURE, |context_3d|
+  // must be provided.
   //
   // Black will be painted on |canvas| if |video_frame| is null.
   void Paint(const scoped_refptr<VideoFrame>& video_frame,
@@ -44,7 +44,11 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
              const Context3D& context_3d);
 
   // Copy |video_frame| on |canvas|.
-  void Copy(const scoped_refptr<VideoFrame>&, SkCanvas* canvas);
+  // If the format of |video_frame| is VideoFrame::NATIVE_TEXTURE, |context_3d|
+  // must be provided.
+  void Copy(const scoped_refptr<VideoFrame>& video_frame,
+            SkCanvas* canvas,
+            const Context3D& context_3d);
 
   // Convert the contents of |video_frame| to raw RGB pixels. |rgb_pixels|
   // should point into a buffer large enough to hold as many 32 bit RGBA pixels

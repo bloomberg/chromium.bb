@@ -16,10 +16,6 @@
 #include "media/base/video_util.h"
 #include "ui/gfx/geometry/point.h"
 
-#if !defined(MEDIA_FOR_CAST_IOS)
-#include "third_party/skia/include/core/SkBitmap.h"
-#endif
-
 namespace media {
 
 static bool IsPowerOfTwo(size_t x) {
@@ -253,7 +249,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp,
-    const ReadPixelsCB& read_pixels_cb,
     bool allow_overlay) {
   scoped_refptr<VideoFrame> frame(new VideoFrame(NATIVE_TEXTURE,
                                                  coded_size,
@@ -263,19 +258,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
                                                  timestamp,
                                                  false));
   frame->mailbox_holder_release_cb_ = mailbox_holder_release_cb;
-  frame->read_pixels_cb_ = read_pixels_cb;
   frame->allow_overlay_ = allow_overlay;
 
   return frame;
 }
-
-#if !defined(MEDIA_FOR_CAST_IOS)
-void VideoFrame::ReadPixelsFromNativeTexture(const SkBitmap& pixels) {
-  DCHECK_EQ(format_, NATIVE_TEXTURE);
-  if (!read_pixels_cb_.is_null())
-    read_pixels_cb_.Run(pixels);
-}
-#endif
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(

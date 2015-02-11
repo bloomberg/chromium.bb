@@ -39,12 +39,15 @@ using blink::WebMediaPlayer;
 using blink::WebRect;
 using blink::WebSize;
 
+namespace content {
+
 namespace {
 
 // This function copies a YV12 or NATIVE_TEXTURE to a new YV12
 // media::VideoFrame.
 scoped_refptr<media::VideoFrame> CopyFrameToYV12(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    const scoped_refptr<media::VideoFrame>& frame,
+    media::SkCanvasVideoRenderer* video_renderer) {
   DCHECK(frame->format() == media::VideoFrame::YV12 ||
          frame->format() == media::VideoFrame::I420 ||
          frame->format() == media::VideoFrame::NATIVE_TEXTURE);
@@ -59,8 +62,19 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
     SkBitmap bitmap;
     bitmap.allocN32Pixels(frame->visible_rect().width(),
                           frame->visible_rect().height());
-    frame->ReadPixelsFromNativeTexture(bitmap);
+    SkCanvas canvas(bitmap);
 
+    cc::ContextProvider* provider =
+        RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+    if (provider) {
+      media::Context3D context_3d =
+          media::Context3D(provider->ContextGL(), provider->GrContext());
+      DCHECK(context_3d.gl);
+      video_renderer->Copy(frame.get(), &canvas, context_3d);
+    } else {
+      // GPU Process crashed.
+      bitmap.eraseColor(SK_ColorTRANSPARENT);
+    }
     media::CopyRGBToVideoFrame(
         reinterpret_cast<uint8*>(bitmap.getPixels()),
         bitmap.rowBytes(),
@@ -78,8 +92,6 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
 }
 
 }  // anonymous namespace
-
-namespace content {
 
 WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebFrame* frame,
@@ -220,7 +232,9 @@ void WebMediaPlayerMS::pause() {
   // The original frame must not be referenced when the player is paused since
   // there might be a finite number of available buffers. E.g, video that
   // originates from a video camera.
-  scoped_refptr<media::VideoFrame> new_frame = CopyFrameToYV12(current_frame_);
+  scoped_refptr<media::VideoFrame> new_frame =
+      CopyFrameToYV12(current_frame_, &video_renderer_);
+
   base::AutoLock auto_lock(current_frame_lock_);
   current_frame_ = new_frame;
 }

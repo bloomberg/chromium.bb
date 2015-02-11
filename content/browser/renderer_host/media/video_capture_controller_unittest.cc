@@ -147,8 +147,7 @@ class VideoCaptureControllerTest : public testing::Test {
       gfx::Size dimensions) {
     return media::VideoFrame::WrapNativeTexture(
         holder.Pass(), release_cb, dimensions, gfx::Rect(dimensions),
-        dimensions, base::TimeDelta(), media::VideoFrame::ReadPixelsCB(),
-        false);
+        dimensions, base::TimeDelta(), false);
   }
 
   TestBrowserThreadBundle bundle_;

@@ -259,8 +259,6 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
   }
 }
 
-static void NullReadPixelsCB(const SkBitmap& bitmap) { NOTIMPLEMENTED(); }
-
 void VideoCaptureImpl::OnMailboxBufferReceived(
     int buffer_id,
     const gpu::MailboxHolder& mailbox_holder,
@@ -283,8 +281,7 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
           &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
           buffer_id, scoped_refptr<ClientBuffer>())),
       last_frame_format_.frame_size, gfx::Rect(last_frame_format_.frame_size),
-      last_frame_format_.frame_size, timestamp - first_frame_timestamp_,
-      base::Bind(&NullReadPixelsCB), false);
+      last_frame_format_.frame_size, timestamp - first_frame_timestamp_, false);
 
   for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
        ++it) {

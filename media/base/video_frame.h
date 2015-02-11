@@ -20,8 +20,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
-class SkBitmap;
-
 namespace gpu {
 struct MailboxHolder;
 }  // namespace gpu
@@ -93,10 +91,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                             const gfx::Rect& visible_rect,
                             const gfx::Size& natural_size);
 
-  // CB to write pixels from the texture backing this frame into the
-  // |const SkBitmap&| parameter.
-  typedef base::Callback<void(const SkBitmap&)> ReadPixelsCB;
-
   // CB to be called on the mailbox backing this frame when the frame is
   // destroyed.
   typedef base::Callback<void(uint32)> ReleaseMailboxCB;
@@ -114,15 +108,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
-      const ReadPixelsCB& read_pixels_cb,
       bool allow_overlay);
-
-#if !defined(MEDIA_FOR_CAST_IOS)
-  // Read pixels from the native texture backing |*this| and write
-  // them to |pixels| as BGRA.  |pixels| must point to a buffer at
-  // least as large as 4 * visible_rect().size().GetArea().
-  void ReadPixelsFromNativeTexture(const SkBitmap& pixels);
-#endif
 
   // Wraps packed image data residing in a memory buffer with a VideoFrame.
   // The image data resides in |data| and is assumed to be packed tightly in a
@@ -392,7 +378,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Native texture mailbox, if this is a NATIVE_TEXTURE frame.
   const scoped_ptr<gpu::MailboxHolder> mailbox_holder_;
   ReleaseMailboxCB mailbox_holder_release_cb_;
-  ReadPixelsCB read_pixels_cb_;
 
   // Shared memory handle, if this frame was allocated from shared memory.
   base::SharedMemoryHandle shared_memory_handle_;

@@ -240,7 +240,7 @@ void SkCanvasVideoRendererTest::PaintRotated(
 void SkCanvasVideoRendererTest::Copy(
     const scoped_refptr<VideoFrame>& video_frame,
     SkCanvas* canvas) {
-  renderer_.Copy(video_frame, canvas);
+  renderer_.Copy(video_frame, canvas, Context3D());
 }
 
 TEST_F(SkCanvasVideoRendererTest, NoFrame) {

@@ -1081,14 +1081,12 @@ class LayerTreeHostContextTestDontUseLostResources
         make_scoped_ptr(
             new gpu::MailboxHolder(mailbox, GL_TEXTURE_2D, sync_point)),
         media::VideoFrame::ReleaseMailboxCB(), gfx::Size(4, 4),
-        gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta(),
-        VideoFrame::ReadPixelsCB(), false);
+        gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta(), false);
     scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
         make_scoped_ptr(
             new gpu::MailboxHolder(mailbox, GL_TEXTURE_2D, sync_point)),
         media::VideoFrame::ReleaseMailboxCB(), gfx::Size(4, 4),
-        gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4), base::TimeDelta(),
-        VideoFrame::ReadPixelsCB(), false);
+        gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4), base::TimeDelta(), false);
 
     color_frame_provider_.set_frame(color_video_frame_);
     hw_frame_provider_.set_frame(hw_video_frame_);

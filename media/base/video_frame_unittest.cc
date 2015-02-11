@@ -259,7 +259,6 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
         gfx::Rect(10, 10),           // visible_rect
         gfx::Size(10, 10),           // natural_size
         base::TimeDelta(),           // timestamp
-        VideoFrame::ReadPixelsCB(),  // read_pixels_cb
         false);                      // allow_overlay
   }
   // Nobody set a sync point to |frame|, so |frame| set |called_sync_point| to 0
@@ -301,7 +300,6 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
         gfx::Rect(10, 10),           // visible_rect
         gfx::Size(10, 10),           // natural_size
         base::TimeDelta(),           // timestamp
-        VideoFrame::ReadPixelsCB(),  // read_pixels_cb
         false);                      // allow_overlay
 
     const gpu::MailboxHolder* mailbox_holder = frame->mailbox_holder();
