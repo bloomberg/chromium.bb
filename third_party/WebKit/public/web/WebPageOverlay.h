@@ -29,15 +29,23 @@
 #ifndef WebPageOverlay_h
 #define WebPageOverlay_h
 
-#include "../platform/WebCanvas.h"
-#include "../platform/WebRect.h"
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 
-class WebPageOverlay {
+class WebGraphicsContext;
+struct WebSize;
+
+class BLINK_EXPORT WebPageOverlay {
 public:
     // Paints page overlay contents.
-    virtual void paintPageOverlay(WebCanvas*) = 0;
+    // FIXME: Once Chromium no longer uses the WebCanvas* overload:
+    // - remove it
+    // - make the WebGraphicsContext* overload pure virtual
+    // - remove the BLINK_EXPORT tag from this class
+    virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize);
+    virtual void paintPageOverlay(WebCanvas*);
 
 protected:
     virtual ~WebPageOverlay() { }

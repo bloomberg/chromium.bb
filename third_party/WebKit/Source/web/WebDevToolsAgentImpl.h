@@ -47,6 +47,7 @@ namespace blink {
 class LocalFrame;
 class InspectorClient;
 class InspectorController;
+class IntPoint;
 class Page;
 class PlatformKeyboardEvent;
 class WebDevToolsAgentClient;
@@ -102,7 +103,7 @@ public:
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) override;
 
     // WebPageOverlay
-    virtual void paintPageOverlay(WebCanvas*) override;
+    virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) override;
 
     void flushPendingProtocolNotifications();
 

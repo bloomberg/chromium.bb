@@ -114,6 +114,9 @@ void PageOverlayList::update()
 
 void PageOverlayList::paintWebFrame(GraphicsContext& gc)
 {
+    // If accelerated compositing is active, page overlays are painted through
+    // their corresponding GraphicsLayer.
+    ASSERT(!m_viewImpl->isAcceleratedCompositingActive());
     for (size_t i = 0; i < m_pageOverlays.size(); ++i)
         m_pageOverlays[i]->paintWebFrame(gc);
 }
@@ -134,6 +137,13 @@ size_t PageOverlayList::findGraphicsLayer(GraphicsLayer* layer)
             return i;
     }
     return WTF::kNotFound;
+}
+
+GraphicsLayer* PageOverlayList::graphicsLayerForTesting() const
+{
+    if (m_pageOverlays.isEmpty())
+        return nullptr;
+    return m_pageOverlays[0]->graphicsLayer();
 }
 
 } // namespace blink

@@ -37,18 +37,10 @@
 #include "public/platform/WebLayer.h"
 #include "public/web/WebPageOverlay.h"
 #include "public/web/WebViewClient.h"
+#include "web/WebGraphicsContextImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
-
-namespace {
-
-WebCanvas* ToWebCanvas(GraphicsContext* gc)
-{
-    return gc->canvas();
-}
-
-} // namespace
 
 PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, WebPageOverlay* overlay)
 {
@@ -62,36 +54,6 @@ PageOverlay::PageOverlay(WebViewImpl* viewImpl, WebPageOverlay* overlay)
 {
 }
 
-class OverlayGraphicsLayerClientImpl : public GraphicsLayerClient {
-public:
-    static PassOwnPtr<OverlayGraphicsLayerClientImpl> create(WebPageOverlay* overlay)
-    {
-        return adoptPtr(new OverlayGraphicsLayerClientImpl(overlay));
-    }
-
-    virtual ~OverlayGraphicsLayerClientImpl() { }
-
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
-    {
-        gc.save();
-        m_overlay->paintPageOverlay(ToWebCanvas(&gc));
-        gc.restore();
-    }
-
-    virtual String debugName(const GraphicsLayer* graphicsLayer) override
-    {
-        return String("WebViewImpl Page Overlay Content Layer");
-    }
-
-private:
-    explicit OverlayGraphicsLayerClientImpl(WebPageOverlay* overlay)
-        : m_overlay(overlay)
-    {
-    }
-
-    WebPageOverlay* m_overlay;
-};
-
 void PageOverlay::clear()
 {
     invalidateWebFrame();
@@ -101,7 +63,6 @@ void PageOverlay::clear()
         if (Page* page = m_viewImpl->page())
             page->inspectorController().didRemovePageOverlay(m_layer.get());
         m_layer = nullptr;
-        m_layerClient = nullptr;
     }
 }
 
@@ -110,8 +71,7 @@ void PageOverlay::update()
     invalidateWebFrame();
 
     if (!m_layer) {
-        m_layerClient = OverlayGraphicsLayerClientImpl::create(m_overlay);
-        m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), m_layerClient.get());
+        m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), this);
         m_layer->setDrawsContent(true);
 
         if (Page* page = m_viewImpl->page())
@@ -136,11 +96,18 @@ void PageOverlay::update()
 
 void PageOverlay::paintWebFrame(GraphicsContext& gc)
 {
-    if (!m_viewImpl->isAcceleratedCompositingActive()) {
-        gc.save();
-        m_overlay->paintPageOverlay(ToWebCanvas(&gc));
-        gc.restore();
-    }
+    WebGraphicsContextImpl contextWrapper(gc, displayItemClient(), DisplayItem::PageOverlay);
+    m_overlay->paintPageOverlay(&contextWrapper, m_viewImpl->size());
+}
+
+void PageOverlay::paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
+{
+    paintWebFrame(gc);
+}
+
+String PageOverlay::debugName(const GraphicsLayer*)
+{
+    return "WebViewImpl Page Overlay Content Layer";
 }
 
 void PageOverlay::invalidateWebFrame()

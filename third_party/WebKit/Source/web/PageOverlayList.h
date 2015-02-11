@@ -59,6 +59,11 @@ public:
 
     size_t findGraphicsLayer(GraphicsLayer*);
 
+    // FIXME: Really, it should be possible for there to be multiple.
+    // But the signature of WebViewImpl::setOverlayLayer already seems to
+    // preclude that.
+    GraphicsLayer* graphicsLayerForTesting() const;
+
 private:
     typedef Vector<OwnPtr<PageOverlay>, 2> PageOverlays;
 

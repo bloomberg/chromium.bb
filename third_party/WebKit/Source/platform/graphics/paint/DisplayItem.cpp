@@ -44,8 +44,10 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::BoxDecorationBackground: return "DrawingBoxDecorationBackground";
     case DisplayItem::Caret: return "DrawingCaret";
     case DisplayItem::ColumnRules: return "DrawingColumnRules";
+    case DisplayItem::DebugRedFill: return "DrawingDebugRedFill";
     case DisplayItem::DragImage: return "DrawingDragImage";
     case DisplayItem::LinkHighlight: return "DrawingLinkHighlight";
+    case DisplayItem::PageOverlay: return "PageOverlay";
     case DisplayItem::PageWidgetDelegateBackgroundFallback: return "DrawingPageWidgetDelegateBackgroundFallback";
     case DisplayItem::Resizer: return "DrawingResizer";
     case DisplayItem::SVGFilter: return "DrawingSVGFilter";
@@ -56,7 +58,6 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::SelectionGap: return "DrawingSelectionGap";
     case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
     case DisplayItem::ViewBackground: return "DrawingViewBackground";
-    case DisplayItem::DebugRedFill: return "DrawingDebugRedFill";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";

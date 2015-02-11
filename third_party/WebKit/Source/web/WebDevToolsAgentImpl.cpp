@@ -67,6 +67,7 @@
 #include "public/web/WebMemoryUsageInfo.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
+#include "web/WebGraphicsContextImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -466,27 +467,10 @@ LocalFrame* WebDevToolsAgentImpl::mainFrame()
 }
 
 // WebPageOverlay
-void WebDevToolsAgentImpl::paintPageOverlay(WebCanvas* canvas)
+void WebDevToolsAgentImpl::paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
 {
-    InspectorController* ic = inspectorController();
-    if (ic) {
-        OwnPtr<GraphicsContext> graphicsContext;
-        OwnPtr<DisplayItemList> displayItemList;
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            displayItemList = DisplayItemList::create();
-            graphicsContext = adoptPtr(new GraphicsContext(nullptr, displayItemList.get()));
-        } else {
-            graphicsContext = adoptPtr(new GraphicsContext(canvas, nullptr));
-        }
-
-        graphicsContext->setCertainlyOpaque(false);
-        ic->drawHighlight(*graphicsContext);
-
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            GraphicsContext context(canvas, nullptr);
-            displayItemList->replay(&context);
-        }
-    }
+    if (InspectorController* ic = inspectorController())
+        ic->drawHighlight(toWebGraphicsContextImpl(context)->graphicsContext());
 }
 
 void WebDevToolsAgentImpl::highlight()
