@@ -26,6 +26,7 @@
 #include "chrome/browser/history/delete_directive_handler.h"
 #include "chrome/browser/history/typed_url_syncable_service.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -40,7 +41,6 @@ class AndroidHistoryProviderService;
 
 class GURL;
 class HistoryService;
-struct ImportedFaviconUsage;
 class PageUsageRequest;
 class Profile;
 class SkBitmap;
@@ -779,7 +779,7 @@ class HistoryService : public syncer::SyncableService,
   // once. The pages must exist, any favicon sets for unknown pages will be
   // discarded. Existing favicons will not be overwritten.
   void SetImportedFavicons(
-      const std::vector<ImportedFaviconUsage>& favicon_usage);
+      const favicon_base::FaviconUsageDataList& favicon_usage);
 
   // Sets the in-memory URL database. This is called by the backend once the
   // database is loaded to make it available.

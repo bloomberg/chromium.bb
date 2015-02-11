@@ -27,9 +27,9 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -1133,8 +1133,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   // Now provide one imported favicon for both URLs already in the registry.
   // The new favicon should only be used with the URL that doesn't already have
   // a favicon.
-  std::vector<ImportedFaviconUsage> favicons;
-  ImportedFaviconUsage favicon;
+  favicon_base::FaviconUsageDataList favicons;
+  favicon_base::FaviconUsageData favicon;
   favicon.favicon_url = GURL("http://news.google.com/favicon.ico");
   favicon.png_data.push_back('2');
   favicon.urls.insert(row1.url());

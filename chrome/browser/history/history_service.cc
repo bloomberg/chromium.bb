@@ -33,7 +33,6 @@
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -688,7 +687,7 @@ void HistoryService::CloneFavicons(const GURL& old_page_url,
 }
 
 void HistoryService::SetImportedFavicons(
-    const std::vector<ImportedFaviconUsage>& favicon_usage) {
+    const favicon_base::FaviconUsageDataList& favicon_usage) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleTask(PRIORITY_NORMAL,

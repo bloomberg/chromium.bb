@@ -11,10 +11,10 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "chrome/common/importer/importer_data_types.h"
+#include "components/favicon_base/favicon_usage_data.h"
 
 class GURL;
 struct ImportedBookmarkEntry;
-struct ImportedFaviconUsage;
 
 namespace base {
 class FilePath;
@@ -49,7 +49,7 @@ void ImportBookmarksFile(
     const base::FilePath& file_path,
     std::vector<ImportedBookmarkEntry>* bookmarks,
     std::vector<importer::SearchEngineInfo>* search_engines,
-    std::vector<ImportedFaviconUsage>* favicons);
+    favicon_base::FaviconUsageDataList* favicons);
 
 // Returns true if |url| should be imported as a search engine, i.e. because it
 // has replacement terms. Chrome treats such bookmarks as search engines rather

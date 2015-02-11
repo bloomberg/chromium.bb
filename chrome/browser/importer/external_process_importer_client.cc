@@ -221,7 +221,7 @@ void ExternalProcessImporterClient::OnFaviconsImportStart(
 }
 
 void ExternalProcessImporterClient::OnFaviconsImportGroup(
-    const std::vector<ImportedFaviconUsage>& favicons_group) {
+    const favicon_base::FaviconUsageDataList& favicons_group) {
   if (cancelled_)
     return;
 

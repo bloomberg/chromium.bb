@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "chrome/utility/importer/importer.h"
+#include "components/favicon_base/favicon_usage_data.h"
 
 #if __OBJC__
 @class NSDictionary;
@@ -26,7 +27,6 @@ class NSString;
 
 class GURL;
 struct ImportedBookmarkEntry;
-struct ImportedFaviconUsage;
 
 namespace sql {
 class Connection;
@@ -94,7 +94,7 @@ class SafariImporter : public Importer {
   // Loads and reencodes the individual favicons.
   void LoadFaviconData(sql::Connection* db,
                        const FaviconMap& favicon_map,
-                       std::vector<ImportedFaviconUsage>* favicons);
+                       favicon_base::FaviconUsageDataList* favicons);
 
   base::FilePath library_dir_;
 

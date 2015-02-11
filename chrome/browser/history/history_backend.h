@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/expire_history_backend.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
@@ -33,7 +34,6 @@
 
 class HistoryURLProvider;
 struct HistoryURLProviderParams;
-struct ImportedFaviconUsage;
 class SkBitmap;
 class TestingProfile;
 struct ThumbnailScore;
@@ -311,7 +311,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void CloneFavicons(const GURL& old_page_url, const GURL& new_page_url);
 
   void SetImportedFavicons(
-      const std::vector<ImportedFaviconUsage>& favicon_usage);
+      const favicon_base::FaviconUsageDataList& favicon_usage);
 
   // Downloads -----------------------------------------------------------------
 

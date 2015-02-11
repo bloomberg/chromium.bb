@@ -17,7 +17,7 @@
 
 class GURL;
 struct ImportedBookmarkEntry;
-struct ImportedFaviconUsage;
+struct FaviconUsageData;
 class ExternalProcessImporterHost;
 
 namespace importer {
@@ -44,7 +44,7 @@ class InProcessImporterBridge : public ImporterBridge {
       const importer::ImporterIE7PasswordInfo& password_info) override;
 #endif
 
-  void SetFavicons(const std::vector<ImportedFaviconUsage>& favicons) override;
+  void SetFavicons(const favicon_base::FaviconUsageDataList& favicons) override;
 
   void SetHistoryItems(const std::vector<ImporterURLRow>& rows,
                        importer::VisitSource visit_source) override;

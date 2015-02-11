@@ -16,12 +16,12 @@
 #include "base/values.h"
 #include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "components/autofill/content/common/autofill_param_traits_macros.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -56,7 +56,7 @@ IPC_STRUCT_TRAITS_BEGIN(ImportedBookmarkEntry)
   IPC_STRUCT_TRAITS_MEMBER(creation_time)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ImportedFaviconUsage)
+IPC_STRUCT_TRAITS_BEGIN(favicon_base::FaviconUsageData)
   IPC_STRUCT_TRAITS_MEMBER(favicon_url)
   IPC_STRUCT_TRAITS_MEMBER(png_data)
   IPC_STRUCT_TRAITS_MEMBER(urls)

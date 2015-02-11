@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/typed_url_syncable_service.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -1812,7 +1811,7 @@ void HistoryBackend::CloneFavicons(const GURL& old_page_url,
 }
 
 void HistoryBackend::SetImportedFavicons(
-    const std::vector<ImportedFaviconUsage>& favicon_usage) {
+    const favicon_base::FaviconUsageDataList& favicon_usage) {
   if (!db_ || !thumbnail_db_)
     return;
 

@@ -14,9 +14,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "chrome/utility/importer/importer.h"
+#include "components/favicon_base/favicon_usage_data.h"
 
 class GURL;
-struct ImportedFaviconUsage;
 
 namespace sql {
 class Connection;
@@ -76,7 +76,7 @@ class FirefoxImporter : public Importer {
   // and converts it into FaviconUsage structures.
   void LoadFavicons(sql::Connection* db,
                     const FaviconMap& favicon_map,
-                    std::vector<ImportedFaviconUsage>* favicons);
+                    favicon_base::FaviconUsageDataList* favicons);
 
   base::FilePath source_path_;
   base::FilePath app_path_;

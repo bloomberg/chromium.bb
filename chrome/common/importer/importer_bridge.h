@@ -14,10 +14,10 @@
 #include "build/build_config.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
+#include "components/favicon_base/favicon_usage_data.h"
 
 class GURL;
 struct ImportedBookmarkEntry;
-struct ImportedFaviconUsage;
 struct ImporterAutofillFormDataEntry;
 
 namespace autofill {
@@ -48,7 +48,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 #endif
 
   virtual void SetFavicons(
-      const std::vector<ImportedFaviconUsage>& favicons) = 0;
+      const favicon_base::FaviconUsageDataList& favicons) = 0;
 
   virtual void SetHistoryItems(const std::vector<ImporterURLRow>& rows,
                                importer::VisitSource visit_source) = 0;

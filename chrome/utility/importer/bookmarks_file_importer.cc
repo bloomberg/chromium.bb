@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/utility/importer/bookmark_html_reader.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/common/url_constants.h"
 
@@ -91,7 +91,7 @@ void BookmarksFileImporter::StartImport(
 
   std::vector<ImportedBookmarkEntry> bookmarks;
   std::vector<importer::SearchEngineInfo> search_engines;
-  std::vector<ImportedFaviconUsage> favicons;
+  favicon_base::FaviconUsageDataList favicons;
 
   bookmark_html_reader::ImportBookmarksFile(
       base::Bind(IsImporterCancelled, base::Unretained(this)),

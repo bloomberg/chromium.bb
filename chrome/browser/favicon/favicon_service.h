@@ -13,12 +13,12 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class FaviconClient;
 class GURL;
 class HistoryService;
-struct ImportedFaviconUsage;
 class Profile;
 
 // The favicon service provides methods to access favicons. It calls the history
@@ -177,7 +177,7 @@ class FaviconService : public KeyedService {
   // must exist, any favicon sets for unknown pages will be discarded. Existing
   // favicons will not be overwritten.
   void SetImportedFavicons(
-      const std::vector<ImportedFaviconUsage>& favicon_usage);
+      const favicon_base::FaviconUsageDataList& favicon_usage);
 
   // Set the favicon for |page_url| for |icon_type| in the thumbnail database.
   // Unlike SetFavicons(), this method will not delete preexisting bitmap data

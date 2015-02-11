@@ -11,13 +11,13 @@
 #include "base/values.h"
 #include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "chrome/common/importer/profile_import_process_param_traits_macros.h"
 #include "components/autofill/content/common/autofill_param_traits_macros.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -81,7 +81,7 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportStart,
                      int  /* total number of favicons */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
-                     std::vector<ImportedFaviconUsage>)
+                     favicon_base::FaviconUsageDataList)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                      autofill::PasswordForm)

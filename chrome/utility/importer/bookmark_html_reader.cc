@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/utility/importer/favicon_reencode.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
@@ -55,10 +54,9 @@ bool GetAttribute(const std::string& attribute_list,
 
 // Given the URL of a page and a favicon data URL, adds an appropriate record
 // to the given favicon usage vector.
-void DataURLToFaviconUsage(
-    const GURL& link_url,
-    const GURL& favicon_data,
-    std::vector<ImportedFaviconUsage>* favicons) {
+void DataURLToFaviconUsage(const GURL& link_url,
+                           const GURL& favicon_data,
+                           favicon_base::FaviconUsageDataList* favicons) {
   if (!link_url.is_valid() || !favicon_data.is_valid() ||
       !favicon_data.SchemeIs(url::kDataScheme))
     return;
@@ -69,7 +67,7 @@ void DataURLToFaviconUsage(
       data.empty())
     return;
 
-  ImportedFaviconUsage usage;
+  favicon_base::FaviconUsageData usage;
   if (!importer::ReencodeFavicon(
           reinterpret_cast<const unsigned char*>(&data[0]),
           data.size(), &usage.png_data))
@@ -90,12 +88,12 @@ void DataURLToFaviconUsage(
 namespace bookmark_html_reader {
 
 void ImportBookmarksFile(
-      const base::Callback<bool(void)>& cancellation_callback,
-      const base::Callback<bool(const GURL&)>& valid_url_callback,
-      const base::FilePath& file_path,
-      std::vector<ImportedBookmarkEntry>* bookmarks,
-      std::vector<importer::SearchEngineInfo>* search_engines,
-      std::vector<ImportedFaviconUsage>* favicons) {
+    const base::Callback<bool(void)>& cancellation_callback,
+    const base::Callback<bool(const GURL&)>& valid_url_callback,
+    const base::FilePath& file_path,
+    std::vector<ImportedBookmarkEntry>* bookmarks,
+    std::vector<importer::SearchEngineInfo>* search_engines,
+    favicon_base::FaviconUsageDataList* favicons) {
   std::string content;
   base::ReadFileToString(file_path, &content);
   std::vector<std::string> lines;

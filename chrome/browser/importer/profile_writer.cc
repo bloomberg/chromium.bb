@@ -24,7 +24,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -236,7 +235,7 @@ void ProfileWriter::AddBookmarks(
 }
 
 void ProfileWriter::AddFavicons(
-    const std::vector<ImportedFaviconUsage>& favicons) {
+    const favicon_base::FaviconUsageDataList& favicons) {
   FaviconServiceFactory::GetForProfile(profile_,
                                        ServiceAccessType::EXPLICIT_ACCESS)
       ->SetImportedFavicons(favicons);

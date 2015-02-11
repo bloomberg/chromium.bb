@@ -11,10 +11,10 @@
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_parser.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -194,7 +194,7 @@ void InProcessImporterBridge::AddIE7PasswordInfo(
 #endif  // OS_WIN
 
 void InProcessImporterBridge::SetFavicons(
-    const std::vector<ImportedFaviconUsage>& favicons) {
+    const favicon_base::FaviconUsageDataList& favicons) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddFavicons, writer_, favicons));

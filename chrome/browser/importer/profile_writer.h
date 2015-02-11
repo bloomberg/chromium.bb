@@ -13,11 +13,11 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
 struct ImportedBookmarkEntry;
-struct ImportedFaviconUsage;
 class Profile;
 class TemplateURL;
 
@@ -76,8 +76,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
       const std::vector<ImportedBookmarkEntry>& bookmarks,
       const base::string16& top_level_folder_name);
 
-  virtual void AddFavicons(
-      const std::vector<ImportedFaviconUsage>& favicons);
+  virtual void AddFavicons(const favicon_base::FaviconUsageDataList& favicons);
 
   // Adds the TemplateURLs in |template_urls| to the local store.  The local
   // store becomes the owner of the TemplateURLs.  Some TemplateURLs in

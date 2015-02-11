@@ -35,12 +35,12 @@
 #include "chrome/common/importer/ie_importer_test_registry_overrider_win.h"
 #include "chrome/common/importer/ie_importer_utils_win.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/favicon_base/favicon_usage_data.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -323,7 +323,7 @@ class TestObserver : public ProfileWriter,
   }
 
   virtual void AddFavicons(
-      const std::vector<ImportedFaviconUsage>& usage) override {
+      const favicon_base::FaviconUsageDataList& usage) override {
     // Importer should group the favicon information for each favicon URL.
     for (size_t i = 0; i < arraysize(kIEFaviconGroup); ++i) {
       GURL favicon_url(kIEFaviconGroup[i].favicon_url);

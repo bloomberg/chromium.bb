@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_url_row.h"
@@ -345,7 +344,7 @@ void FirefoxImporter::ImportBookmarks() {
     bridge_->SetKeywords(search_engines, false);
   }
   if (!favicon_map.empty() && !cancelled()) {
-    std::vector<ImportedFaviconUsage> favicons;
+    favicon_base::FaviconUsageDataList favicons;
     LoadFavicons(&db, favicon_map, &favicons);
     bridge_->SetFavicons(favicons);
   }
@@ -759,7 +758,7 @@ void FirefoxImporter::GetWholeBookmarkFolder(sql::Connection* db,
 void FirefoxImporter::LoadFavicons(
     sql::Connection* db,
     const FaviconMap& favicon_map,
-    std::vector<ImportedFaviconUsage>* favicons) {
+    favicon_base::FaviconUsageDataList* favicons) {
   const char query[] = "SELECT url, data FROM moz_favicons WHERE id=?";
   sql::Statement s(db->GetUniqueStatement(query));
 
@@ -770,7 +769,7 @@ void FirefoxImporter::LoadFavicons(
        i != favicon_map.end(); ++i) {
     s.BindInt64(0, i->first);
     if (s.Step()) {
-      ImportedFaviconUsage usage;
+      favicon_base::FaviconUsageData usage;
 
       usage.favicon_url = GURL(s.ColumnString(0));
       if (!usage.favicon_url.is_valid())

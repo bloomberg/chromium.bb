@@ -222,8 +222,6 @@
       'common/importer/ie_importer_utils_win.h',
       'common/importer/imported_bookmark_entry.cc',
       'common/importer/imported_bookmark_entry.h',
-      'common/importer/imported_favicon_usage.cc',
-      'common/importer/imported_favicon_usage.h',
       'common/importer/importer_autofill_form_data_entry.cc',
       'common/importer/importer_autofill_form_data_entry.h',
       'common/importer/importer_bridge.cc',

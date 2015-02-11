@@ -12,7 +12,6 @@
 #include "base/task_runner.h"
 #include "base/values.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/profile_import_process_messages.h"
 #include "components/autofill/core/common/password_form.h"
@@ -78,7 +77,7 @@ void ExternalProcessImporterBridge::AddIE7PasswordInfo(
 #endif
 
 void ExternalProcessImporterBridge::SetFavicons(
-    const std::vector<ImportedFaviconUsage>& favicons) {
+    const favicon_base::FaviconUsageDataList& favicons) {
   Send(new ProfileImportProcessHostMsg_NotifyFaviconsImportStart(
     favicons.size()));
 
@@ -86,10 +85,10 @@ void ExternalProcessImporterBridge::SetFavicons(
   // Debug bounds-check which prevents pushing an iterator beyond its end()
   // (i.e., |it + 2 < s.end()| crashes in debug mode if |i + 1 == s.end()|).
   int favicons_left = favicons.end() - favicons.begin();
-  for (std::vector<ImportedFaviconUsage>::const_iterator it =
-           favicons.begin(); it < favicons.end();) {
-    std::vector<ImportedFaviconUsage> favicons_group;
-    std::vector<ImportedFaviconUsage>::const_iterator end_group =
+  for (favicon_base::FaviconUsageDataList::const_iterator it = favicons.begin();
+       it < favicons.end();) {
+    favicon_base::FaviconUsageDataList favicons_group;
+    favicon_base::FaviconUsageDataList::const_iterator end_group =
         it + std::min(favicons_left, kNumFaviconsToSend);
     favicons_group.assign(it, end_group);
 

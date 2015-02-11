@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
-#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -99,7 +98,7 @@ void SafariImporter::ImportBookmarks() {
   ImportFaviconURLs(&db, &favicon_map);
   // Write favicons into profile.
   if (!favicon_map.empty() && !cancelled()) {
-    std::vector<ImportedFaviconUsage> favicons;
+    favicon_base::FaviconUsageDataList favicons;
     LoadFaviconData(&db, favicon_map, &favicons);
     bridge_->SetFavicons(favicons);
   }
@@ -133,7 +132,7 @@ void SafariImporter::ImportFaviconURLs(sql::Connection* db,
 void SafariImporter::LoadFaviconData(
     sql::Connection* db,
     const FaviconMap& favicon_map,
-    std::vector<ImportedFaviconUsage>* favicons) {
+    favicon_base::FaviconUsageDataList* favicons) {
   const char query[] = "SELECT i.url, d.data "
                        "FROM IconInfo i JOIN IconData d "
                        "ON i.iconID = d.iconID "
@@ -145,7 +144,7 @@ void SafariImporter::LoadFaviconData(
     s.Reset(true);
     s.BindInt64(0, i->first);
     if (s.Step()) {
-      ImportedFaviconUsage usage;
+      favicon_base::FaviconUsageData usage;
 
       usage.favicon_url = GURL(s.ColumnString(0));
       if (!usage.favicon_url.is_valid())
