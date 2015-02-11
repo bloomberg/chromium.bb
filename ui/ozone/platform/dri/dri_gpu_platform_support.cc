@@ -180,6 +180,7 @@ DriGpuPlatformSupport::DriGpuPlatformSupport(
       window_manager_(window_manager),
       screen_manager_(screen_manager),
       ndd_(ndd.Pass()) {
+  ndd_->AddGraphicsDevice(drm_);
   filter_ = new DriGpuPlatformSupportMessageFilter(
       window_manager, base::Bind(&DriGpuPlatformSupport::SetIOTaskRunner,
                                  base::Unretained(this)),

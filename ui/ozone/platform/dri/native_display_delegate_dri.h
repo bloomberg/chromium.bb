@@ -19,8 +19,7 @@ class ScreenManager;
 
 class NativeDisplayDelegateDri : public NativeDisplayDelegate {
  public:
-  NativeDisplayDelegateDri(const scoped_refptr<DriWrapper>& dri,
-                           ScreenManager* screen_manager);
+  NativeDisplayDelegateDri(ScreenManager* screen_manager);
   ~NativeDisplayDelegateDri() override;
 
   DisplaySnapshot* FindDisplaySnapshot(int64_t id);
@@ -32,6 +31,9 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
   bool Configure(const DisplaySnapshot& output,
                  const DisplayMode* mode,
                  const gfx::Point& origin);
+
+  void AddGraphicsDevice(const scoped_refptr<DriWrapper>& dri);
+  void RemoveGraphicsDevice(const scoped_refptr<DriWrapper>& dri);
 
   // NativeDisplayDelegate overrides:
   void Initialize() override;
@@ -66,8 +68,8 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
       const std::vector<DisplaySnapshotDri*>& new_displays,
       const std::vector<DisplaySnapshotDri*>& old_displays) const;
 
-  scoped_refptr<DriWrapper> dri_;
   ScreenManager* screen_manager_;  // Not owned.
+  std::vector<scoped_refptr<DriWrapper>> devices_;
   // Modes can be shared between different displays, so we need to keep track
   // of them independently for cleanup.
   ScopedVector<const DisplayMode> cached_modes_;

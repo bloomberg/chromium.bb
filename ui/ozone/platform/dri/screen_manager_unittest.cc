@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -91,23 +92,21 @@ TEST_F(ScreenManagerTest, CheckWithNoControllers) {
 
 TEST_F(ScreenManagerTest, CheckWithValidController) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   ui::HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
 
   EXPECT_TRUE(controller);
-  EXPECT_TRUE(controller->HasCrtc(kPrimaryCrtc));
+  EXPECT_TRUE(controller->HasCrtc(dri_, kPrimaryCrtc));
 }
 
 TEST_F(ScreenManagerTest, CheckWithInvalidBounds) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
@@ -115,14 +114,13 @@ TEST_F(ScreenManagerTest, CheckWithInvalidBounds) {
 
 TEST_F(ScreenManagerTest, CheckForSecondValidController) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   screen_manager_->AddDisplayController(dri_, kSecondaryCrtc,
                                         kSecondaryConnector);
   screen_manager_->ConfigureDisplayController(
-      kSecondaryCrtc, kSecondaryConnector, GetSecondaryBounds().origin(),
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetSecondaryBounds().origin(),
       kDefaultMode);
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
@@ -131,15 +129,14 @@ TEST_F(ScreenManagerTest, CheckForSecondValidController) {
 
 TEST_F(ScreenManagerTest, CheckControllerAfterItIsRemoved) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   EXPECT_EQ(1, observer_.num_displays_changed());
   EXPECT_EQ(0, observer_.num_displays_removed());
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
 
-  screen_manager_->RemoveDisplayController(kPrimaryCrtc);
+  screen_manager_->RemoveDisplayController(dri_, kPrimaryCrtc);
   EXPECT_EQ(1, observer_.num_displays_changed());
   EXPECT_EQ(1, observer_.num_displays_removed());
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
@@ -147,16 +144,14 @@ TEST_F(ScreenManagerTest, CheckControllerAfterItIsRemoved) {
 
 TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   uint32_t framebuffer = dri_->current_framebuffer();
 
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
 
   // Should reuse existing framebuffer.
   EXPECT_EQ(framebuffer, dri_->current_framebuffer());
@@ -170,14 +165,14 @@ TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
 
 TEST_F(ScreenManagerTest, CheckChangingMode) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   drmModeModeInfo new_mode = kDefaultMode;
   new_mode.vdisplay = 10;
   screen_manager_->ConfigureDisplayController(
-      kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(), new_mode);
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      new_mode);
 
   EXPECT_EQ(2, observer_.num_displays_changed());
   EXPECT_EQ(0, observer_.num_displays_removed());
@@ -193,16 +188,14 @@ TEST_F(ScreenManagerTest, CheckChangingMode) {
 
 TEST_F(ScreenManagerTest, CheckForControllersInMirroredMode) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   screen_manager_->AddDisplayController(dri_, kSecondaryCrtc,
                                         kSecondaryConnector);
-  screen_manager_->ConfigureDisplayController(kSecondaryCrtc,
-                                              kSecondaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
 
   EXPECT_EQ(2, observer_.num_displays_changed());
   EXPECT_EQ(1, observer_.num_displays_removed());
@@ -212,65 +205,55 @@ TEST_F(ScreenManagerTest, CheckForControllersInMirroredMode) {
 
 TEST_F(ScreenManagerTest, CheckMirrorModeTransitions) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   screen_manager_->AddDisplayController(dri_, kSecondaryCrtc,
                                         kSecondaryConnector);
-  screen_manager_->ConfigureDisplayController(kSecondaryCrtc,
-                                              kSecondaryConnector,
-                                              GetSecondaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetSecondaryBounds().origin(),
+      kDefaultMode);
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
-  screen_manager_->ConfigureDisplayController(kSecondaryCrtc,
-                                              kSecondaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetSecondaryBounds().origin(),
-                                              kDefaultMode);
-  screen_manager_->ConfigureDisplayController(kSecondaryCrtc,
-                                              kSecondaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetSecondaryBounds().origin(),
+      kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 }
 
 TEST_F(ScreenManagerTest, MonitorGoneInMirrorMode) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                              kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   screen_manager_->AddDisplayController(dri_, kSecondaryCrtc,
                                         kSecondaryConnector);
-  screen_manager_->ConfigureDisplayController(kSecondaryCrtc,
-                                              kSecondaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
 
   EXPECT_EQ(2, observer_.num_displays_changed());
   EXPECT_EQ(1, observer_.num_displays_removed());
 
-  screen_manager_->RemoveDisplayController(kSecondaryCrtc);
-  EXPECT_TRUE(
-      screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
-                                                  kPrimaryConnector,
-                                                  GetPrimaryBounds().origin(),
-                                                  kDefaultMode));
+  screen_manager_->RemoveDisplayController(dri_, kSecondaryCrtc);
+  EXPECT_TRUE(screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode));
   EXPECT_EQ(3, observer_.num_displays_changed());
   EXPECT_EQ(1, observer_.num_displays_removed());
 
@@ -284,18 +267,18 @@ TEST_F(ScreenManagerTest, DoNotEnterMirrorModeUnlessSameBounds) {
                                         kSecondaryConnector);
 
   // Configure displays in extended mode.
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc, kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
   screen_manager_->ConfigureDisplayController(
-      kSecondaryCrtc, kSecondaryConnector, GetSecondaryBounds().origin(),
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetSecondaryBounds().origin(),
       kDefaultMode);
 
   drmModeModeInfo new_mode = kDefaultMode;
   new_mode.vdisplay = 10;
   // Shouldn't enter mirror mode unless the display bounds are the same.
   screen_manager_->ConfigureDisplayController(
-      kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
       new_mode);
 
   EXPECT_FALSE(
@@ -304,17 +287,17 @@ TEST_F(ScreenManagerTest, DoNotEnterMirrorModeUnlessSameBounds) {
 
 TEST_F(ScreenManagerTest, ReuseFramebufferIfDisabledThenReEnabled) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc, kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   uint32_t framebuffer = dri_->current_framebuffer();
 
-  screen_manager_->DisableDisplayController(kPrimaryCrtc);
+  screen_manager_->DisableDisplayController(dri_, kPrimaryCrtc);
   EXPECT_EQ(0u, dri_->current_framebuffer());
 
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc, kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
 
   // Should reuse existing framebuffer.
   EXPECT_EQ(framebuffer, dri_->current_framebuffer());
@@ -322,15 +305,15 @@ TEST_F(ScreenManagerTest, ReuseFramebufferIfDisabledThenReEnabled) {
 
 TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
   screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc, kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
-  screen_manager_->DisableDisplayController(kPrimaryCrtc);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+  screen_manager_->DisableDisplayController(dri_, kPrimaryCrtc);
 
   screen_manager_->AddDisplayController(dri_, kSecondaryCrtc,
                                         kSecondaryConnector);
   screen_manager_->ConfigureDisplayController(
-      kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      dri_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
   ui::HardwareDisplayController* controller =
@@ -338,9 +321,33 @@ TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
   EXPECT_TRUE(controller);
   EXPECT_FALSE(controller->IsMirrored());
 
-  screen_manager_->ConfigureDisplayController(kPrimaryCrtc, kPrimaryConnector,
-                                              GetPrimaryBounds().origin(),
-                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
   EXPECT_TRUE(controller);
   EXPECT_TRUE(controller->IsMirrored());
+}
+
+TEST_F(ScreenManagerTest,
+       CheckProperConfigurationWithDifferentDeviceAndSameCrtc) {
+  scoped_refptr<ui::MockDriWrapper> dri2 = new ui::MockDriWrapper();
+
+  screen_manager_->AddDisplayController(dri_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->AddDisplayController(dri2, kPrimaryCrtc, kPrimaryConnector);
+
+  screen_manager_->ConfigureDisplayController(
+      dri_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri2, kPrimaryCrtc, kPrimaryConnector, GetSecondaryBounds().origin(),
+      kDefaultMode);
+
+  ui::HardwareDisplayController* controller1 =
+      screen_manager_->GetDisplayController(GetPrimaryBounds());
+  ui::HardwareDisplayController* controller2 =
+      screen_manager_->GetDisplayController(GetSecondaryBounds());
+
+  EXPECT_NE(controller1, controller2);
+  EXPECT_EQ(dri_, controller1->crtc_controllers()[0]->drm());
+  EXPECT_EQ(dri2, controller2->crtc_controllers()[0]->drm());
 }

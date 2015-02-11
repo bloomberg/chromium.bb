@@ -171,7 +171,7 @@ class OzonePlatformGbm : public OzonePlatform {
     surface_factory_ozone_->InitializeGpu(gbm_, drm_device_manager_.get(),
                                           window_delegate_manager_.get());
     scoped_ptr<NativeDisplayDelegateDri> ndd(
-        new NativeDisplayDelegateDri(gbm_, screen_manager_.get()));
+        new NativeDisplayDelegateDri(screen_manager_.get()));
     ndd->Initialize();
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
         gbm_, drm_device_manager_.get(), window_delegate_manager_.get(),

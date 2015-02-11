@@ -160,6 +160,8 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
 
   int get_fd() const { return file_.GetPlatformFile(); }
 
+  base::FilePath device_path() const { return device_path_; }
+
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
  protected:

@@ -226,7 +226,8 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   ASSERT_TRUE(owned_plane != nullptr);
   EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
   // Removing the crtc should free the plane.
-  scoped_ptr<ui::CrtcController> crtc = controller_->RemoveCrtc(kPrimaryCrtc);
+  scoped_ptr<ui::CrtcController> crtc =
+      controller_->RemoveCrtc(drm_, kPrimaryCrtc);
   EXPECT_FALSE(owned_plane->in_use());
 }
 
@@ -269,7 +270,7 @@ TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
       base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
                  base::Unretained(this))));
 
-  controller_->RemoveCrtc(kPrimaryCrtc);
+  controller_->RemoveCrtc(drm_, kPrimaryCrtc);
 
   EXPECT_EQ(1, page_flips_);
   drm_->RunCallbacks();

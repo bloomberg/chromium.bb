@@ -100,7 +100,7 @@ class OzonePlatformDri : public OzonePlatform {
     surface_factory_ozone_.reset(
         new DriSurfaceFactory(&window_delegate_manager_));
     scoped_ptr<NativeDisplayDelegateDri> ndd(
-        new NativeDisplayDelegateDri(dri_.get(), screen_manager_.get()));
+        new NativeDisplayDelegateDri(screen_manager_.get()));
     ndd->Initialize();
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
         dri_, drm_device_manager_.get(), &window_delegate_manager_,

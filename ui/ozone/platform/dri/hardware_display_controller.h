@@ -134,8 +134,9 @@ class OZONE_EXPORT HardwareDisplayController
   bool MoveCursor(const gfx::Point& location);
 
   void AddCrtc(scoped_ptr<CrtcController> controller);
-  scoped_ptr<CrtcController> RemoveCrtc(uint32_t crtc);
-  bool HasCrtc(uint32_t crtc) const;
+  scoped_ptr<CrtcController> RemoveCrtc(const scoped_refptr<DriWrapper>& drm,
+                                        uint32_t crtc);
+  bool HasCrtc(const scoped_refptr<DriWrapper>& drm, uint32_t crtc) const;
   bool IsMirrored() const;
   bool IsDisabled() const;
   gfx::Size GetModeSize() const;

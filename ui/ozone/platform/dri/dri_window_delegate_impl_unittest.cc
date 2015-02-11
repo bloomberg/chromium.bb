@@ -59,8 +59,8 @@ void DriWindowDelegateImplTest::SetUp() {
   buffer_generator_.reset(new ui::DriBufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   screen_manager_->AddDisplayController(dri_, kDefaultCrtc, kDefaultConnector);
-  screen_manager_->ConfigureDisplayController(kDefaultCrtc, kDefaultConnector,
-                                              gfx::Point(), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      dri_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
 
   drm_device_manager_.reset(new ui::DrmDeviceManager(dri_));
   window_delegate_manager_.reset(new ui::DriWindowDelegateManager());

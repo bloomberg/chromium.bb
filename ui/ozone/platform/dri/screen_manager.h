@@ -39,18 +39,21 @@ class OZONE_EXPORT ScreenManager {
 
   // Remove a display controller from the list of active controllers. The
   // controller is removed since it was disconnected.
-  void RemoveDisplayController(uint32_t crtc);
+  void RemoveDisplayController(const scoped_refptr<DriWrapper>& dri,
+                               uint32_t crtc);
 
   // Configure a display controller. The display controller is identified by
   // (|crtc|, |connector|) and the controller is modeset using |mode|.
-  bool ConfigureDisplayController(uint32_t crtc,
+  bool ConfigureDisplayController(const scoped_refptr<DriWrapper>& dri,
+                                  uint32_t crtc,
                                   uint32_t connector,
                                   const gfx::Point& origin,
                                   const drmModeModeInfo& mode);
 
   // Disable the display controller identified by |crtc|. Note, the controller
   // may still be connected, so this does not remove the controller.
-  bool DisableDisplayController(uint32_t crtc);
+  bool DisableDisplayController(const scoped_refptr<DriWrapper>& dri,
+                                uint32_t crtc);
 
   // Returns a reference to the display controller configured to display within
   // |bounds|. If the caller caches the controller it must also register as an
@@ -65,7 +68,9 @@ class OZONE_EXPORT ScreenManager {
 
   // Returns an iterator into |controllers_| for the controller identified by
   // (|crtc|, |connector|).
-  HardwareDisplayControllers::iterator FindDisplayController(uint32_t crtc);
+  HardwareDisplayControllers::iterator FindDisplayController(
+      const scoped_refptr<DriWrapper>& drm,
+      uint32_t crtc);
 
   // Returns an iterator into |controllers_| for the controller located at
   // |origin|.
@@ -82,6 +87,7 @@ class OZONE_EXPORT ScreenManager {
   // controller is currently present.
   bool HandleMirrorMode(HardwareDisplayControllers::iterator original,
                         HardwareDisplayControllers::iterator mirror,
+                        const scoped_refptr<DriWrapper>& drm,
                         uint32_t crtc,
                         uint32_t connector);
 

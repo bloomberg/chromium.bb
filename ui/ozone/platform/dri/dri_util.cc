@@ -152,8 +152,9 @@ void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DriWrapper>& drm,
   screen_manager->AddDisplayController(drm, displays[0]->crtc()->crtc_id,
                                        displays[0]->connector()->connector_id);
   if (screen_manager->ConfigureDisplayController(
-          displays[0]->crtc()->crtc_id, displays[0]->connector()->connector_id,
-          gfx::Point(), displays[0]->connector()->modes[0])) {
+          drm, displays[0]->crtc()->crtc_id,
+          displays[0]->connector()->connector_id, gfx::Point(),
+          displays[0]->connector()->modes[0])) {
     if (dpms)
       drm->SetProperty(displays[0]->connector()->connector_id, dpms->prop_id,
                        DRM_MODE_DPMS_ON);

@@ -155,10 +155,11 @@ void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
 }
 
 scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
+    const scoped_refptr<DriWrapper>& drm,
     uint32_t crtc) {
   for (ScopedVector<CrtcController>::iterator it = crtc_controllers_.begin();
        it != crtc_controllers_.end(); ++it) {
-    if ((*it)->crtc() == crtc) {
+    if ((*it)->drm() == drm && (*it)->crtc() == crtc) {
       scoped_ptr<CrtcController> controller(*it);
       crtc_controllers_.weak_erase(it);
       // Remove entry from |owned_hardware_planes_| iff no other crtcs share it.
@@ -188,9 +189,11 @@ scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
   return nullptr;
 }
 
-bool HardwareDisplayController::HasCrtc(uint32_t crtc) const {
+bool HardwareDisplayController::HasCrtc(const scoped_refptr<DriWrapper>& drm,
+                                        uint32_t crtc) const {
   for (size_t i = 0; i < crtc_controllers_.size(); ++i)
-    if (crtc_controllers_[i]->crtc() == crtc)
+    if (crtc_controllers_[i]->drm() == drm &&
+        crtc_controllers_[i]->crtc() == crtc)
       return true;
 
   return false;
