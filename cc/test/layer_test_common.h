@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/fake_layer_tree_host.h"
-#include "cc/test/mock_occlusion_tracker.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
@@ -128,7 +127,6 @@ class LayerTestCommon {
     scoped_ptr<FakeLayerTreeHost> host_;
     scoped_ptr<LayerImpl> root_layer_impl_;
     scoped_ptr<RenderPass> render_pass_;
-    MockOcclusionTracker<LayerImpl> occlusion_tracker_;
   };
 };
 

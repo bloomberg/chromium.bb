@@ -22,8 +22,7 @@ namespace cc {
 
 class DamageTracker;
 class DelegatedRendererLayerImpl;
-template <typename LayerType>
-class OcclusionTracker;
+class Occlusion;
 class RenderPassId;
 class RenderPassSink;
 class LayerImpl;
@@ -59,6 +58,12 @@ class CC_EXPORT RenderSurfaceImpl {
     draw_opacity_is_animating_ = draw_opacity_is_animating;
   }
   bool draw_opacity_is_animating() const { return draw_opacity_is_animating_; }
+
+  SkColor GetDebugBorderColor() const;
+  SkColor GetReplicaDebugBorderColor() const;
+
+  float GetDebugBorderWidth() const;
+  float GetReplicaDebugBorderWidth() const;
 
   void SetDrawTransform(const gfx::Transform& draw_transform) {
     draw_transform_ = draw_transform;
@@ -136,9 +141,12 @@ class CC_EXPORT RenderSurfaceImpl {
 
   void AppendRenderPasses(RenderPassSink* pass_sink);
   void AppendQuads(RenderPass* render_pass,
-                   const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                   const gfx::Transform& draw_transform,
+                   const Occlusion& occlusion_in_content_space,
+                   SkColor debug_border_color,
+                   float debug_border_width,
+                   LayerImpl* mask_layer,
                    AppendQuadsData* append_quads_data,
-                   bool for_replica,
                    RenderPassId render_pass_id);
 
  private:

@@ -18,7 +18,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/trees/damage_tracker.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -51,6 +51,23 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   }
 
   return drawable_content_rect;
+}
+
+SkColor RenderSurfaceImpl::GetDebugBorderColor() const {
+  return DebugColors::SurfaceBorderColor();
+}
+
+SkColor RenderSurfaceImpl::GetReplicaDebugBorderColor() const {
+  return DebugColors::SurfaceReplicaBorderColor();
+}
+
+float RenderSurfaceImpl::GetDebugBorderWidth() const {
+  return DebugColors::SurfaceBorderWidth(owning_layer_->layer_tree_impl());
+}
+
+float RenderSurfaceImpl::GetReplicaDebugBorderWidth() const {
+  return DebugColors::SurfaceReplicaBorderWidth(
+      owning_layer_->layer_tree_impl());
 }
 
 int RenderSurfaceImpl::OwningLayerId() const {
@@ -132,72 +149,39 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
   pass_sink->AppendRenderPass(pass.Pass());
 }
 
-void RenderSurfaceImpl::AppendQuads(
-    RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
-    AppendQuadsData* append_quads_data,
-    bool for_replica,
-    RenderPassId render_pass_id) {
-  DCHECK(!for_replica || owning_layer_->has_replica());
-
-  const gfx::Transform& draw_transform =
-      for_replica ? replica_draw_transform_ : draw_transform_;
+void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
+                                    const gfx::Transform& draw_transform,
+                                    const Occlusion& occlusion_in_content_space,
+                                    SkColor debug_border_color,
+                                    float debug_border_width,
+                                    LayerImpl* mask_layer,
+                                    AppendQuadsData* append_quads_data,
+                                    RenderPassId render_pass_id) {
   gfx::Rect visible_content_rect =
-      occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-                            draw_transform)
-          .GetUnoccludedContentRect(content_rect_);
+      occlusion_in_content_space.GetUnoccludedContentRect(content_rect_);
   if (visible_content_rect.IsEmpty())
     return;
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(draw_transform,
-                            content_rect_.size(),
-                            content_rect_,
-                            clip_rect_,
-                            is_clipped_,
-                            draw_opacity_,
+  shared_quad_state->SetAll(draw_transform, content_rect_.size(), content_rect_,
+                            clip_rect_, is_clipped_, draw_opacity_,
                             owning_layer_->blend_mode(),
                             owning_layer_->sorting_context_id());
 
   if (owning_layer_->ShowDebugBorders()) {
-    SkColor color = for_replica ?
-                    DebugColors::SurfaceReplicaBorderColor() :
-                    DebugColors::SurfaceBorderColor();
-    float width = for_replica ?
-                  DebugColors::SurfaceReplicaBorderWidth(
-                      owning_layer_->layer_tree_impl()) :
-                  DebugColors::SurfaceBorderWidth(
-                      owning_layer_->layer_tree_impl());
     DebugBorderDrawQuad* debug_border_quad =
         render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
-    debug_border_quad->SetNew(
-        shared_quad_state, content_rect_, visible_content_rect, color, width);
-  }
-
-  // TODO(shawnsingh): By using the same RenderSurfaceImpl for both the content
-  // and its reflection, it's currently not possible to apply a separate mask to
-  // the reflection layer or correctly handle opacity in reflections (opacity
-  // must be applied after drawing both the layer and its reflection). The
-  // solution is to introduce yet another RenderSurfaceImpl to draw the layer
-  // and its reflection in. For now we only apply a separate reflection mask if
-  // the contents don't have a mask of their own.
-  LayerImpl* mask_layer = owning_layer_->mask_layer();
-  if (mask_layer &&
-      (!mask_layer->DrawsContent() || mask_layer->bounds().IsEmpty()))
-    mask_layer = nullptr;
-
-  if (!mask_layer && for_replica) {
-    mask_layer = owning_layer_->replica_layer()->mask_layer();
-    if (mask_layer &&
-        (!mask_layer->DrawsContent() || mask_layer->bounds().IsEmpty()))
-      mask_layer = nullptr;
+    debug_border_quad->SetNew(shared_quad_state, content_rect_,
+                              visible_content_rect, debug_border_color,
+                              debug_border_width);
   }
 
   ResourceProvider::ResourceId mask_resource_id = 0;
   gfx::Size mask_texture_size;
   gfx::Vector2dF mask_uv_scale;
-  if (mask_layer) {
+  if (mask_layer && mask_layer->DrawsContent() &&
+      !mask_layer->bounds().IsEmpty()) {
     mask_layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
     gfx::Vector2dF owning_layer_draw_scale =
         MathUtil::ComputeTransform2dScaleComponents(

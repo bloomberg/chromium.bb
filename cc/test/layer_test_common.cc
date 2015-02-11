@@ -160,12 +160,12 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
 
   render_pass_->quad_list.clear();
   render_pass_->shared_quad_state_list.clear();
-  occlusion_tracker_.set_occluded_target_rect_for_contributing_surface(
-      occluded);
-  bool for_replica = false;
-  RenderPassId id(1, 1);
+
   surface_impl->AppendQuads(
-      render_pass_.get(), occlusion_tracker_, &data, for_replica, id);
+      render_pass_.get(), gfx::Transform(),
+      Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
+                SimpleEnclosedRegion()),
+      SK_ColorBLACK, 1.f, nullptr, &data, RenderPassId(1, 1));
 }
 
 }  // namespace cc
