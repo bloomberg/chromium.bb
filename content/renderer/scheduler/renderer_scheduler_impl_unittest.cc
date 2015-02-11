@@ -52,9 +52,9 @@ class RendererSchedulerImplTest : public testing::Test {
   }
 
  protected:
-  static base::TimeDelta compositor_priority_after_touch_duration() {
+  static base::TimeDelta priority_escalation_after_input_duration() {
     return base::TimeDelta::FromMilliseconds(
-        RendererSchedulerImpl::kCompositorPriorityAfterTouchMillis);
+        RendererSchedulerImpl::kPriorityEscalationAfterInputMillis);
   }
 
   scoped_refptr<cc::TestNowSource> clock_;
@@ -400,6 +400,51 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
                                           std::string("I1")));
 }
 
+TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy) {
+  std::vector<std::string> order;
+
+  loading_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+
+  // Observation of touchstart should defer execution of idle and loading tasks.
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+  RunUntilIdle();
+  EXPECT_THAT(order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2")));
+
+  // Meta events like TapDown/FlingCancel shouldn't affect the priority.
+  order.clear();
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureFlingCancel));
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureTapDown));
+  RunUntilIdle();
+  EXPECT_TRUE(order.empty());
+
+  // Action events like ScrollBegin will kick us back into compositor priority,
+  // allowing servie of the loading and idle queues.
+  order.clear();
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureScrollBegin));
+  RunUntilIdle();
+  EXPECT_THAT(order, testing::ElementsAre(std::string("L1")));
+}
+
 TEST_F(RendererSchedulerImplTest,
        DidReceiveInputEventOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
   std::vector<std::string> order;
@@ -592,6 +637,98 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicyEnds) {
                                    std::string("D2"), std::string("C2")));
 }
 
+TEST_F(RendererSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
+  std::vector<std::string> order;
+
+  loading_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+  RunUntilIdle();
+  EXPECT_THAT(order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2")));
+
+  order.clear();
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+
+  // Touchstart policy mode should have ended now that the clock has advanced.
+  RunUntilIdle();
+  EXPECT_THAT(order, testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                          std::string("C1"), std::string("D2"),
+                                          std::string("C2")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       TestTouchstartPolicyEndsAfterConsecutiveTouchmoves) {
+  std::vector<std::string> order;
+
+  loading_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+
+  // Observation of touchstart should defer execution of idle and loading tasks.
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+  RunUntilIdle();
+  EXPECT_THAT(order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2")));
+
+  // Receiving the first touchmove will not affect scheduler priority.
+  order.clear();
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchMove));
+  RunUntilIdle();
+  EXPECT_TRUE(order.empty());
+
+  // Receiving the second touchmove will kick us back into compositor priority.
+  order.clear();
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchMove));
+  RunUntilIdle();
+  EXPECT_THAT(order, testing::ElementsAre(std::string("L1")));
+}
+
 TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
   bool is_anticipated_before = false;
   bool is_anticipated_after = false;
@@ -618,7 +755,7 @@ TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
   EXPECT_FALSE(is_anticipated_before);
   EXPECT_TRUE(is_anticipated_after);
 
-  clock_->AdvanceNow(compositor_priority_after_touch_duration() * 2);
+  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
   simulate_input = false;
   default_task_runner_->PostTask(
       FROM_HERE,

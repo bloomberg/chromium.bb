@@ -63,6 +63,13 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   enum Policy {
     NORMAL_PRIORITY_POLICY,
     COMPOSITOR_PRIORITY_POLICY,
+    TOUCHSTART_PRIORITY_POLICY,
+  };
+
+  enum InputStreamState {
+    INPUT_INACTIVE,
+    INPUT_ACTIVE,
+    INPUT_ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
   };
 
   class PollableNeedsUpdateFlag {
@@ -88,9 +95,15 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
       base::TimeTicks optional_now) const;
   static const char* TaskQueueIdToString(QueueId queue_id);
   static const char* PolicyToString(Policy policy);
+  static const char* InputStreamStateToString(InputStreamState state);
 
-  // The time we should stay in CompositorPriority mode for after a touch event.
-  static const int kCompositorPriorityAfterTouchMillis = 100;
+  static InputStreamState ComputeNewInputStreamState(
+      InputStreamState current_state,
+      blink::WebInputEvent::Type new_input_event,
+      blink::WebInputEvent::Type last_input_event);
+
+  // The time we should stay in a priority-escalated mode after an input event.
+  static const int kPriorityEscalationAfterInputMillis = 100;
 
   // IdleTaskDeadlineSupplier Implementation:
   void CurrentIdleTaskDeadlineCallback(base::TimeTicks* deadline_out) const;
@@ -109,7 +122,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   void UpdatePolicy();
 
   // An input event of some sort happened, the policy may need updating.
-  void UpdateForInputEvent();
+  void UpdateForInputEvent(blink::WebInputEvent::Type type);
 
   // Start and end an idle period.
   void StartIdlePeriod();
@@ -134,10 +147,12 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   base::TimeTicks estimated_next_frame_begin_;
 
-  // The incoming_signals_lock_ mutex protects access to last_input_time_
-  // and write access to policy_may_need_update_.
+  // The incoming_signals_lock_ mutex protects access to all variables in the
+  // (contiguous) block below.
   base::Lock incoming_signals_lock_;
   base::TimeTicks last_input_time_;
+  blink::WebInputEvent::Type last_input_type_;
+  InputStreamState input_stream_state_;
   PollableNeedsUpdateFlag policy_may_need_update_;
 
   scoped_refptr<cc::TestNowSource> time_source_;

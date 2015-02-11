@@ -20,11 +20,10 @@ void RendererTaskQueueSelector::RegisterWorkQueues(
     const std::vector<const base::TaskQueue*>& work_queues) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   work_queues_ = work_queues;
-  for (QueuePriority priority = FIRST_QUEUE_PRIORITY;
-       priority < QUEUE_PRIORITY_COUNT;
-       priority = NextPriority(priority)) {
-    queue_priorities_[priority].clear();
+  for (auto& queue_priority : queue_priorities_) {
+    queue_priority.clear();
   }
+
   // By default, all work queues are set to normal priority.
   for (size_t i = 0; i < work_queues.size(); i++) {
     queue_priorities_[NORMAL_PRIORITY].insert(i);
@@ -48,11 +47,19 @@ void RendererTaskQueueSelector::EnableQueue(size_t queue_index,
 void RendererTaskQueueSelector::DisableQueue(size_t queue_index) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
-  for (QueuePriority priority = FIRST_QUEUE_PRIORITY;
-       priority < QUEUE_PRIORITY_COUNT;
-       priority = NextPriority(priority)) {
-    queue_priorities_[priority].erase(queue_index);
+  for (auto& queue_priority : queue_priorities_) {
+    queue_priority.erase(queue_index);
   }
+}
+
+bool RendererTaskQueueSelector::IsQueueEnabled(size_t queue_index) const {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_LT(queue_index, work_queues_.size());
+  for (const auto& queue_priority : queue_priorities_) {
+    if (queue_priority.find(queue_index) != queue_priority.end())
+      return true;
+  }
+  return false;
 }
 
 bool RendererTaskQueueSelector::IsOlder(const base::TaskQueue* queueA,

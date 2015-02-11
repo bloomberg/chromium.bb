@@ -58,6 +58,8 @@ class RendererTaskQueueSelectorTest : public testing::Test {
       task_queues_.push_back(task_queue.release());
     }
     selector_.RegisterWorkQueues(const_task_queues);
+    for (size_t i = 0; i < kTaskQueueCount; i++)
+      EXPECT_TRUE(selector_.IsQueueEnabled(i)) << i;
   }
 
   const size_t kTaskQueueCount = 5;
@@ -96,7 +98,9 @@ TEST_F(RendererTaskQueueSelectorTest, TestControlPriority) {
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(4, RendererTaskQueueSelector::CONTROL_PRIORITY);
+  EXPECT_TRUE(selector_.IsQueueEnabled(4));
   selector_.SetQueuePriority(2, RendererTaskQueueSelector::HIGH_PRIORITY);
+  EXPECT_TRUE(selector_.IsQueueEnabled(2));
   EXPECT_THAT(PopTasks(), testing::ElementsAre(4, 2, 0, 1, 3));
 }
 
@@ -105,7 +109,9 @@ TEST_F(RendererTaskQueueSelectorTest, TestDisableEnable) {
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
   selector_.DisableQueue(2);
+  EXPECT_FALSE(selector_.IsQueueEnabled(2));
   selector_.DisableQueue(4);
+  EXPECT_FALSE(selector_.IsQueueEnabled(4));
   EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3));
   selector_.EnableQueue(2, RendererTaskQueueSelector::BEST_EFFORT_PRIORITY);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(2));
@@ -122,6 +128,7 @@ TEST_F(RendererTaskQueueSelectorTest, TestEmptyQueues) {
   size_t queue_order[] = {0};
   PushTasks(tasks, queue_order);
   selector_.DisableQueue(0);
+  EXPECT_FALSE(selector_.IsQueueEnabled(0));
   EXPECT_FALSE(selector_.SelectWorkQueueToService(&chosen_queue_index));
 }
 

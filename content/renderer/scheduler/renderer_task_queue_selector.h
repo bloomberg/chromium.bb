@@ -51,6 +51,9 @@ class CONTENT_EXPORT RendererTaskQueueSelector
   // Disable the |queue_index|.
   void DisableQueue(size_t queue_index);
 
+  // Whether |queue_index| is enabled.
+  bool IsQueueEnabled(size_t queue_index) const;
+
   // TaskQueueSelector implementation:
   void RegisterWorkQueues(
       const std::vector<const base::TaskQueue*>& work_queues) override;
