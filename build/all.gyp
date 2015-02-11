@@ -1329,21 +1329,6 @@
           ],
         },
       ],  # targets
-    }, {
-      'conditions': [
-        ['OS=="linux"', {
-          # TODO(thakis): Remove this once the linux gtk bot no longer references
-          # it (probably after the first aura release on linux), see r249162
-          'targets': [
-            {
-              'target_name': 'aura_builder',
-              'type': 'none',
-              'dependencies': [
-                '../chrome/chrome.gyp:chrome',
-              ],
-            },
-          ],  # targets
-      }]], # OS=="linux"
     }], # "use_aura==1"
     ['test_isolation_mode != "noop"', {
       'targets': [
