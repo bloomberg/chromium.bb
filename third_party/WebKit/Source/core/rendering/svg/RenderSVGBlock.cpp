@@ -97,7 +97,7 @@ void RenderSVGBlock::mapLocalToContainer(const LayoutLayerModelObject* paintInva
     SVGLayoutSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* RenderSVGBlock::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderSVGBlock::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }

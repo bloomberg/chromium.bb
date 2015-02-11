@@ -55,7 +55,7 @@ public:
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
-    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap&) const override final;
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const override final;

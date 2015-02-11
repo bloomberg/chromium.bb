@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderGeometryMap_h
-#define RenderGeometryMap_h
+#ifndef LayoutGeometryMap_h
+#define LayoutGeometryMap_h
 
+#include "core/layout/LayoutGeometryMapStep.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderGeometryMapStep.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
@@ -42,11 +42,11 @@ class TransformationMatrix;
 class TransformState;
 
 // Can be used while walking the Renderer tree to cache data about offsets and transforms.
-class RenderGeometryMap {
-    WTF_MAKE_NONCOPYABLE(RenderGeometryMap);
+class LayoutGeometryMap {
+    WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
 public:
-    RenderGeometryMap(MapCoordinatesFlags = UseTransforms);
-    ~RenderGeometryMap();
+    LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);
+    ~LayoutGeometryMap();
 
     MapCoordinatesFlags mapCoordinatesFlags() const { return m_mapCoordinatesFlags; }
 
@@ -77,8 +77,8 @@ public:
 private:
     void mapToContainer(TransformState&, const LayoutLayerModelObject* container = 0) const;
 
-    void stepInserted(const RenderGeometryMapStep&);
-    void stepRemoved(const RenderGeometryMapStep&);
+    void stepInserted(const LayoutGeometryMapStep&);
+    void stepRemoved(const LayoutGeometryMapStep&);
 
     bool hasNonUniformStep() const { return m_nonUniformStepsCount; }
     bool hasTransformStep() const { return m_transformedStepsCount; }
@@ -92,17 +92,17 @@ private:
     bool isTopmostRenderView(const LayoutObject* renderer) const;
 #endif
 
-    typedef Vector<RenderGeometryMapStep, 32> RenderGeometryMapSteps;
+    typedef Vector<LayoutGeometryMapStep, 32> LayoutGeometryMapSteps;
 
     size_t m_insertionPosition;
     int m_nonUniformStepsCount;
     int m_transformedStepsCount;
     int m_fixedStepsCount;
-    RenderGeometryMapSteps m_mapping;
+    LayoutGeometryMapSteps m_mapping;
     LayoutSize m_accumulatedOffset;
     MapCoordinatesFlags m_mapCoordinatesFlags;
 };
 
 } // namespace blink
 
-#endif // RenderGeometryMap_h
+#endif // LayoutGeometryMap_h

@@ -379,7 +379,7 @@ void RenderSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInval
     RenderReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* RenderSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     return RenderReplaced::pushMappingToContainer(ancestorToStopAt, geometryMap);
 }

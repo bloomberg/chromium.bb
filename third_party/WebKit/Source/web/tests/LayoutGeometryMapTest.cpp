@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderGeometryMap.h"
+#include "core/layout/LayoutGeometryMap.h"
 
 #include "core/dom/Document.h"
 #include "core/layout/Layer.h"
@@ -51,9 +51,9 @@ class MockWebFrameClient : public WebFrameClient {
 namespace {
 
 
-class RenderGeometryMapTest : public testing::Test {
+class LayoutGeometryMapTest : public testing::Test {
 public:
-    RenderGeometryMapTest()
+    LayoutGeometryMapTest()
         : m_baseURL("http://www.test.com/")
     {
     }
@@ -132,7 +132,7 @@ protected:
     MockWebFrameClient m_mockWebViewClient;
 };
 
-TEST_F(RenderGeometryMapTest, SimpleGeometryMapTest)
+TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest)
 {
     registerMockedHttpURLLoad("rgm_test.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
@@ -141,9 +141,9 @@ TEST_F(RenderGeometryMapTest, SimpleGeometryMapTest)
     webView->layout();
 
     // We are going test everything twice. Once with FloatPoints and once with
-    // FloatRects. This is because RenderGeometryMap treats both slightly
+    // FloatRects. This is because LayoutGeometryMap treats both slightly
     // differently
-    RenderGeometryMap rgm;
+    LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getRenderBox(webView, "InitialDiv"), 0);
     FloatPoint point;
     FloatRect rect(0.0f, 0.0f, 1.0f, 2.0f);
@@ -172,9 +172,9 @@ TEST_F(RenderGeometryMapTest, SimpleGeometryMapTest)
 // Fails on Windows due to crbug.com/391457. When run through the transform the
 // position on windows differs by a pixel
 #if OS(WIN)
-TEST_F(RenderGeometryMapTest, DISABLED_TransformedGeometryTest)
+TEST_F(LayoutGeometryMapTest, DISABLED_TransformedGeometryTest)
 #else
-TEST_F(RenderGeometryMapTest, TransformedGeometryTest)
+TEST_F(LayoutGeometryMapTest, TransformedGeometryTest)
 #endif
 {
     registerMockedHttpURLLoad("rgm_transformed_test.html");
@@ -183,7 +183,7 @@ TEST_F(RenderGeometryMapTest, TransformedGeometryTest)
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
-    RenderGeometryMap rgm;
+    LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getRenderBox(webView, "InitialDiv"), 0);
     FloatPoint point;
     const float rectWidth = 15.0f;
@@ -223,7 +223,7 @@ TEST_F(RenderGeometryMapTest, TransformedGeometryTest)
     EXPECT_EQ(FloatQuad(FloatRect(801.0f - rectWidth * scaleWidth, 106.0f, 15.0f * scaleWidth, 25.0f * scaleHeight)).boundingBox(), rgm.mapToContainer(rect, nullptr).boundingBox());
 }
 
-TEST_F(RenderGeometryMapTest, FixedGeometryTest)
+TEST_F(LayoutGeometryMapTest, FixedGeometryTest)
 {
     registerMockedHttpURLLoad("rgm_fixed_position_test.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
@@ -231,7 +231,7 @@ TEST_F(RenderGeometryMapTest, FixedGeometryTest)
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
-    RenderGeometryMap rgm;
+    LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getRenderBox(webView, "InitialDiv"), 0);
     FloatPoint point;
     FloatRect rect(0.0f, 0.0f, 15.0f, 25.0f);
@@ -264,7 +264,7 @@ TEST_F(RenderGeometryMapTest, FixedGeometryTest)
     EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, nullptr));
 }
 
-TEST_F(RenderGeometryMapTest, IframeTest)
+TEST_F(LayoutGeometryMapTest, IframeTest)
 {
     registerMockedHttpURLLoad("rgm_iframe_test.html");
     registerMockedHttpURLLoad("rgm_test.html");
@@ -273,8 +273,8 @@ TEST_F(RenderGeometryMapTest, IframeTest)
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
-    RenderGeometryMap rgm(TraverseDocumentBoundaries);
-    RenderGeometryMap rgmNoFrame;
+    LayoutGeometryMap rgm(TraverseDocumentBoundaries);
+    LayoutGeometryMap rgmNoFrame;
 
     rgmNoFrame.pushMappingsToAncestor(getFrameElement("test_frame", webView, "InitialDiv"), 0);
     rgm.pushMappingsToAncestor(getFrameElement("test_frame", webView, "InitialDiv"), 0);
@@ -343,7 +343,7 @@ TEST_F(RenderGeometryMapTest, IframeTest)
     EXPECT_EQ(FloatQuad(FloatRect(50.0f, 44.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, nullptr));
 }
 
-TEST_F(RenderGeometryMapTest, ColumnTest)
+TEST_F(LayoutGeometryMapTest, ColumnTest)
 {
     registerMockedHttpURLLoad("rgm_column_test.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
@@ -359,7 +359,7 @@ TEST_F(RenderGeometryMapTest, ColumnTest)
     // (for the gap).
     float offset = (1000.0f - 16.0f - 20.0f) / 3.0f + 10.0f;
 
-    RenderGeometryMap rgm;
+    LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getRenderBox(webView, "A"), 0);
     FloatPoint point;
     FloatRect rect(0.0f, 0.0f, 5.0f, 3.0f);

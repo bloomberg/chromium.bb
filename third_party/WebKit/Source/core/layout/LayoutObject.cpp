@@ -51,6 +51,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutTableCaption.h"
@@ -69,7 +70,6 @@
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderFlowThread.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderImageResourceStyleImage.h"
@@ -1945,7 +1945,7 @@ void LayoutObject::mapLocalToContainer(const LayoutLayerModelObject* paintInvali
     o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != this);
 

@@ -65,7 +65,7 @@ class PseudoStyleRequest;
 class RenderBoxModelObject;
 class RenderBlock;
 class RenderFlowThread;
-class RenderGeometryMap;
+class LayoutGeometryMap;
 class Layer;
 class LayoutLayerModelObject;
 class LayoutMultiColumnSpannerPlaceholder;
@@ -989,9 +989,9 @@ public:
     virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
 
-    // Pushes state onto RenderGeometryMap about how to map coordinates from this renderer to its container, or ancestorToStopAt (whichever is encountered first).
+    // Pushes state onto LayoutGeometryMap about how to map coordinates from this renderer to its container, or ancestorToStopAt (whichever is encountered first).
     // Returns the renderer which was mapped to (container or ancestorToStopAt).
-    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap&) const;
 
     bool shouldUseTransformFromContainer(const LayoutObject* container) const;
     void getTransformFromContainer(const LayoutObject* container, const LayoutSize& offsetInContainer, TransformationMatrix&) const;

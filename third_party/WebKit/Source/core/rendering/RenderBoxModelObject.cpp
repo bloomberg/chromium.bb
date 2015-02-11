@@ -28,6 +28,7 @@
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
@@ -36,7 +37,6 @@
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextFragment.h"
@@ -586,7 +586,7 @@ void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 }
 
-const LayoutObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     ASSERT(ancestorToStopAt != this);
 

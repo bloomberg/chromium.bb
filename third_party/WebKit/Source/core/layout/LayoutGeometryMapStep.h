@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderGeometryMapStep_h
-#define RenderGeometryMapStep_h
+#ifndef LayoutGeometryMapStep_h
+#define LayoutGeometryMapStep_h
 
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -36,8 +36,8 @@ namespace blink {
 class LayoutObject;
 
 // Stores data about how to map from one renderer to its container.
-struct RenderGeometryMapStep {
-    RenderGeometryMapStep(const RenderGeometryMapStep& o)
+struct LayoutGeometryMapStep {
+    LayoutGeometryMapStep(const LayoutGeometryMapStep& o)
         : m_renderer(o.m_renderer)
         , m_offset(o.m_offset)
         , m_offsetForFixedPosition(o.m_offsetForFixedPosition)
@@ -48,7 +48,7 @@ struct RenderGeometryMapStep {
     {
         ASSERT(!o.m_transform);
     }
-    RenderGeometryMapStep(const LayoutObject* renderer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
+    LayoutGeometryMapStep(const LayoutObject* renderer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
         : m_renderer(renderer)
         , m_accumulatingTransform(accumulatingTransform)
         , m_isNonUniform(isNonUniform)
@@ -68,6 +68,6 @@ struct RenderGeometryMapStep {
 
 } // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::RenderGeometryMapStep);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::LayoutGeometryMapStep);
 
-#endif // RenderGeometryMapStep_h
+#endif // LayoutGeometryMapStep_h

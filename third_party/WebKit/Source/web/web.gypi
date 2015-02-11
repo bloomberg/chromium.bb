@@ -301,7 +301,7 @@
       'tests/PinchViewportTest.cpp',
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
-      'tests/RenderGeometryMapTest.cpp',
+      'tests/LayoutGeometryMapTest.cpp',
       'tests/ScrollingCoordinatorTest.cpp',
       'tests/SpinLockTest.cpp',
       'tests/TextFinderTest.cpp',

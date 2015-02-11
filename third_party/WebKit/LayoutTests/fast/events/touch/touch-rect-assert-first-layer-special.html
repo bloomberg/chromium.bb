@@ -3,7 +3,7 @@
 <head>
 <style>
 /* By applying a transform to the html element, we ensure that
-RenderGeometryMap::pushMappingsToAncestor takes the slow bath (which doesn't push
+LayoutGeometryMap::pushMappingsToAncestor takes the slow bath (which doesn't push
 the RenderView */
 html {
   transform: scale(1.1);
@@ -16,7 +16,7 @@ html {
 <div id="console"></div>
 <div id="touchtarget" ontouchstart="foo()">Foo</div>
 <script>
-    description("Make sure we don't ASSERT when the first layer is special and can't use the RenderGeometryMap fast path - crbug.com/339141.");
+    description("Make sure we don't ASSERT when the first layer is special and can't use the LayoutGeometryMap fast path - crbug.com/339141.");
 
     var rects;
     // Verify we actually have a hit rect in the document.

@@ -32,12 +32,12 @@
 #include "core/layout/ColumnInfo.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/ViewPainter.h"
 #include "core/rendering/RenderFlowThread.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -256,7 +256,7 @@ void RenderView::mapLocalToContainer(const LayoutLayerModelObject* paintInvalida
     }
 }
 
-const LayoutObject* RenderView::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* RenderView::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     LayoutSize offsetForFixedPosition;
     LayoutSize offset;

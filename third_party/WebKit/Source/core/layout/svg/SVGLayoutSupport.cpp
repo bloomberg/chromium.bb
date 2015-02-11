@@ -27,6 +27,7 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
@@ -36,7 +37,6 @@
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
@@ -127,7 +127,7 @@ void SVGLayoutSupport::mapLocalToContainer(const LayoutObject* object, const Lay
     parent->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject* object, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap)
+const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject* object, const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap)
 {
     ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != object);
 

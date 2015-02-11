@@ -36,7 +36,7 @@ class GraphicsContextStateSaver;
 class PaintInvalidationState;
 class LayoutRect;
 struct PaintInfo;
-class RenderGeometryMap;
+class LayoutGeometryMap;
 class LayoutLayerModelObject;
 class LayoutObject;
 class LayoutStyle;
@@ -75,7 +75,7 @@ public:
     static LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
     static const RenderSVGRoot& mapRectToSVGRootForPaintInvalidation(const LayoutObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);
     static void mapLocalToContainer(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
-    static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
+    static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
     // Shared between SVG renderers and resources.
     static void applyStrokeStyleToContext(GraphicsContext&, const LayoutStyle&, const LayoutObject&);

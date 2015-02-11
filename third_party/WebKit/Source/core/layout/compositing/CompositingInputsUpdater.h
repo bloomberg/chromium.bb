@@ -5,7 +5,7 @@
 #ifndef CompositingInputsUpdater_h
 #define CompositingInputsUpdater_h
 
-#include "core/rendering/RenderGeometryMap.h"
+#include "core/layout/LayoutGeometryMap.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ private:
 
     void updateRecursive(Layer*, UpdateType, AncestorInfo);
 
-    RenderGeometryMap m_geometryMap;
+    LayoutGeometryMap m_geometryMap;
     Layer* m_rootLayer;
 };
 

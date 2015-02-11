@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderGeometryMap.h"
+#include "core/layout/LayoutGeometryMap.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/layout/Layer.h"
@@ -34,7 +34,7 @@
 
 namespace blink {
 
-RenderGeometryMap::RenderGeometryMap(MapCoordinatesFlags flags)
+LayoutGeometryMap::LayoutGeometryMap(MapCoordinatesFlags flags)
     : m_insertionPosition(kNotFound)
     , m_nonUniformStepsCount(0)
     , m_transformedStepsCount(0)
@@ -43,11 +43,11 @@ RenderGeometryMap::RenderGeometryMap(MapCoordinatesFlags flags)
 {
 }
 
-RenderGeometryMap::~RenderGeometryMap()
+LayoutGeometryMap::~LayoutGeometryMap()
 {
 }
 
-void RenderGeometryMap::mapToContainer(TransformState& transformState, const LayoutLayerModelObject* container) const
+void LayoutGeometryMap::mapToContainer(TransformState& transformState, const LayoutLayerModelObject* container) const
 {
     // If the mapping includes something like columns, we have to go via renderers.
     if (hasNonUniformStep()) {
@@ -62,7 +62,7 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Lay
 #endif
 
     for (int i = m_mapping.size() - 1; i >= 0; --i) {
-        const RenderGeometryMapStep& currentStep = m_mapping[i];
+        const LayoutGeometryMapStep& currentStep = m_mapping[i];
 
         // If container is the root RenderView (step 0) we want to apply its fixed position offset.
         if (i > 0 && currentStep.m_renderer == container) {
@@ -104,13 +104,13 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Lay
     transformState.flatten();
 }
 
-FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const LayoutLayerModelObject* container) const
+FloatPoint LayoutGeometryMap::mapToContainer(const FloatPoint& p, const LayoutLayerModelObject* container) const
 {
     FloatPoint result;
 
-    if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_renderer)))
+    if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_renderer))) {
         result = p + m_accumulatedOffset;
-    else {
+    } else {
         TransformState transformState(TransformState::ApplyTransformDirection, p);
         mapToContainer(transformState, container);
         result = transformState.lastPlanarPoint();
@@ -137,9 +137,9 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const LayoutLa
 
 #ifndef NDEBUG
 // Handy function to call from gdb while debugging mismatched point/rect errors.
-void RenderGeometryMap::dumpSteps() const
+void LayoutGeometryMap::dumpSteps() const
 {
-    fprintf(stderr, "RenderGeometryMap::dumpSteps accumulatedOffset=%d,%d\n", m_accumulatedOffset.width().toInt(), m_accumulatedOffset.height().toInt());
+    fprintf(stderr, "LayoutGeometryMap::dumpSteps accumulatedOffset=%d,%d\n", m_accumulatedOffset.width().toInt(), m_accumulatedOffset.height().toInt());
     for (int i = m_mapping.size() - 1; i >= 0; --i) {
         fprintf(stderr, " [%d] %s: offset=%d,%d", i, m_mapping[i].m_renderer->debugName().ascii().data(), m_mapping[i].m_offset.width().toInt(), m_mapping[i].m_offset.height().toInt());
         if (m_mapping[i].m_hasTransform)
@@ -149,7 +149,7 @@ void RenderGeometryMap::dumpSteps() const
 }
 #endif
 
-FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const LayoutLayerModelObject* container) const
+FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutLayerModelObject* container) const
 {
     FloatQuad result;
 
@@ -183,7 +183,7 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const LayoutL
     return result;
 }
 
-void RenderGeometryMap::pushMappingsToAncestor(const LayoutObject* renderer, const LayoutLayerModelObject* ancestorRenderer)
+void LayoutGeometryMap::pushMappingsToAncestor(const LayoutObject* renderer, const LayoutLayerModelObject* ancestorRenderer)
 {
     // We need to push mappings in reverse order here, so do insertions rather than appends.
     TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
@@ -211,7 +211,7 @@ static bool canMapBetweenRenderers(const LayoutObject* renderer, const LayoutObj
     return true;
 }
 
-void RenderGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* ancestorLayer)
+void LayoutGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* ancestorLayer)
 {
     const LayoutObject* renderer = layer->renderer();
 
@@ -222,7 +222,7 @@ void RenderGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* 
     // from mapping via layers.
     bool canConvertInLayerTree = (ancestorLayer && !crossDocument) ? canMapBetweenRenderers(layer->renderer(), ancestorLayer->renderer()) : false;
 
-//    fprintf(stderr, "RenderGeometryMap::pushMappingsToAncestor from layer %p to layer %p, canConvertInLayerTree=%d\n", layer, ancestorLayer, canConvertInLayerTree);
+//    fprintf(stderr, "LayoutGeometryMap::pushMappingsToAncestor from layer %p to layer %p, canConvertInLayerTree=%d\n", layer, ancestorLayer, canConvertInLayerTree);
 
     if (canConvertInLayerTree) {
         LayoutPoint layerOffset;
@@ -243,32 +243,32 @@ void RenderGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* 
     pushMappingsToAncestor(renderer, ancestorRenderer);
 }
 
-void RenderGeometryMap::push(const LayoutObject* renderer, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
+void LayoutGeometryMap::push(const LayoutObject* renderer, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
-//    fprintf(stderr, "RenderGeometryMap::push %p %d,%d isNonUniform=%d\n", renderer, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
+//    fprintf(stderr, "LayoutGeometryMap::push %p %d,%d isNonUniform=%d\n", renderer, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
 
     ASSERT(m_insertionPosition != kNotFound);
     ASSERT(!renderer->isRenderView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
     ASSERT(offsetForFixedPosition.isZero() || renderer->isRenderView());
 
-    m_mapping.insert(m_insertionPosition, RenderGeometryMapStep(renderer, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
+    m_mapping.insert(m_insertionPosition, LayoutGeometryMapStep(renderer, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
 
-    RenderGeometryMapStep& step = m_mapping[m_insertionPosition];
+    LayoutGeometryMapStep& step = m_mapping[m_insertionPosition];
     step.m_offset = offsetFromContainer;
     step.m_offsetForFixedPosition = offsetForFixedPosition;
 
     stepInserted(step);
 }
 
-void RenderGeometryMap::push(const LayoutObject* renderer, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
+void LayoutGeometryMap::push(const LayoutObject* renderer, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
     ASSERT(m_insertionPosition != kNotFound);
     ASSERT(!renderer->isRenderView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
     ASSERT(offsetForFixedPosition.isZero() || renderer->isRenderView());
 
-    m_mapping.insert(m_insertionPosition, RenderGeometryMapStep(renderer, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
+    m_mapping.insert(m_insertionPosition, LayoutGeometryMapStep(renderer, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
 
-    RenderGeometryMapStep& step = m_mapping[m_insertionPosition];
+    LayoutGeometryMapStep& step = m_mapping[m_insertionPosition];
     step.m_offsetForFixedPosition = offsetForFixedPosition;
 
     if (!t.isIntegerTranslation())
@@ -279,7 +279,7 @@ void RenderGeometryMap::push(const LayoutObject* renderer, const TransformationM
     stepInserted(step);
 }
 
-void RenderGeometryMap::popMappingsToAncestor(const LayoutLayerModelObject* ancestorRenderer)
+void LayoutGeometryMap::popMappingsToAncestor(const LayoutLayerModelObject* ancestorRenderer)
 {
     ASSERT(m_mapping.size());
 
@@ -289,13 +289,13 @@ void RenderGeometryMap::popMappingsToAncestor(const LayoutLayerModelObject* ance
     }
 }
 
-void RenderGeometryMap::popMappingsToAncestor(const Layer* ancestorLayer)
+void LayoutGeometryMap::popMappingsToAncestor(const Layer* ancestorLayer)
 {
     const LayoutLayerModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
     popMappingsToAncestor(ancestorRenderer);
 }
 
-void RenderGeometryMap::stepInserted(const RenderGeometryMapStep& step)
+void LayoutGeometryMap::stepInserted(const LayoutGeometryMapStep& step)
 {
     m_accumulatedOffset += step.m_offset;
 
@@ -309,7 +309,7 @@ void RenderGeometryMap::stepInserted(const RenderGeometryMapStep& step)
         ++m_fixedStepsCount;
 }
 
-void RenderGeometryMap::stepRemoved(const RenderGeometryMapStep& step)
+void LayoutGeometryMap::stepRemoved(const LayoutGeometryMapStep& step)
 {
     m_accumulatedOffset -= step.m_offset;
 
@@ -330,7 +330,7 @@ void RenderGeometryMap::stepRemoved(const RenderGeometryMapStep& step)
 }
 
 #if ENABLE(ASSERT)
-bool RenderGeometryMap::isTopmostRenderView(const LayoutObject* renderer) const
+bool LayoutGeometryMap::isTopmostRenderView(const LayoutObject* renderer) const
 {
     if (!renderer->isRenderView())
         return false;

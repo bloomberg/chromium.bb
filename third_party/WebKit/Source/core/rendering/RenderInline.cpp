@@ -27,6 +27,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/style/StyleInheritedData.h"
@@ -38,7 +39,6 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderFullScreen.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
@@ -685,7 +685,7 @@ public:
     }
 private:
     Vector<FloatQuad>& m_quads;
-    RenderGeometryMap m_geometryMap;
+    LayoutGeometryMap m_geometryMap;
 };
 
 } // unnamed namespace

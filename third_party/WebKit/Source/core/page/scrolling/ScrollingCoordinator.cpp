@@ -35,12 +35,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -458,7 +458,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
     const Layer* curLayer,
     const LayerHitTestRects& layerRects,
     GraphicsLayerHitTestRects& graphicsRects,
-    RenderGeometryMap& geometryMap,
+    LayoutGeometryMap& geometryMap,
     HashSet<const Layer*>& layersWithRects,
     LayerFrameMap& layerChildFrameMap)
 {
@@ -529,7 +529,7 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
 
     // We have a set of rects per Layer, we need to map them to their bounding boxes in their
     // enclosing composited layer. To do this most efficiently we'll walk the Layer tree using
-    // RenderGeometryMap. First record all the branches we should traverse in the tree (including
+    // LayoutGeometryMap. First record all the branches we should traverse in the tree (including
     // all documents on the page).
     HashSet<const Layer*> layersWithRects;
     for (const auto& layerRect : layerRects) {
@@ -547,12 +547,12 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
         } while (layer);
     }
 
-    // Now walk the layer projecting rects while maintaining a RenderGeometryMap
+    // Now walk the layer projecting rects while maintaining a LayoutGeometryMap
     MapCoordinatesFlags flags = UseTransforms;
     if (touchHandlerInChildFrame)
         flags |= TraverseDocumentBoundaries;
     Layer* rootLayer = mainFrame->contentRenderer()->layer();
-    RenderGeometryMap geometryMap(flags);
+    LayoutGeometryMap geometryMap(flags);
     geometryMap.pushMappingsToAncestor(rootLayer, 0);
     LayerFrameMap layerChildFrameMap;
     makeLayerChildFrameMap(mainFrame, &layerChildFrameMap);
