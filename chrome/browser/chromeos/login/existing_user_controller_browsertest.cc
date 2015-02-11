@@ -275,11 +275,19 @@ void ExistingUserControllerUntrustedTest::SetUpSessionManager() {
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
-                       UserLoginForbidden) {
+                       ExistingUserLoginForbidden) {
   UserContext user_context(kUsername);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(kUsername);
   existing_user_controller()->Login(user_context, SigninSpecifics());
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
+                       NewUserLoginForbidden) {
+  UserContext user_context(kUsername);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(kUsername);
+  existing_user_controller()->CompleteLogin(user_context);
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,

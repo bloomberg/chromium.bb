@@ -336,16 +336,10 @@ void ExistingUserController::CompleteLogin(const UserContext& user_context) {
     return;
   }
 
-  PerformPreLoginActions(user_context);
-
-  if (!time_init_.is_null()) {
-    base::TimeDelta delta = base::Time::Now() - time_init_;
-    UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
-    time_init_ = base::Time();  // Reset to null.
-  }
-
-  host_->OnCompleteLogin();
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+  ContinueLoginIfDeviceNotDisabled(base::Bind(
+      &ExistingUserController::DoCompleteLogin,
+      weak_factory_.GetWeakPtr(),
+      user_context));
 }
 
 base::string16 ExistingUserController::GetConnectedNetworkName() {
@@ -358,100 +352,11 @@ bool ExistingUserController::IsSigninInProgress() const {
 
 void ExistingUserController::Login(const UserContext& user_context,
                                    const SigninSpecifics& specifics) {
-  // Disable clicking on other windows and status tray.
-  login_display_->SetUIEnabled(false);
-
-  // Stop the auto-login timer.
-  StopPublicSessionAutoLoginTimer();
-
-  // Wait for the |cros_settings_| to become either trusted or permanently
-  // untrusted.
-  const CrosSettingsProvider::TrustedStatus status =
-      cros_settings_->PrepareTrustedValues(base::Bind(
-          &ExistingUserController::Login,
-          weak_factory_.GetWeakPtr(),
-          user_context,
-          specifics));
-  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
-    return;
-
-  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-    // If the |cros_settings_| are permanently untrusted, show an error message
-    // and refuse to log in.
-    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST,
-                              1,
-                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
-
-    // Re-enable clicking on other windows and the status area. Do not start the
-    // auto-login timer though. Without trusted |cros_settings_|, no auto-login
-    // can succeed.
-    login_display_->SetUIEnabled(true);
-    return;
-  }
-
-  bool device_disabled = false;
-  cros_settings_->GetBoolean(kDeviceDisabled, &device_disabled);
-  if (device_disabled && system::DeviceDisablingManager::
-                             HonorDeviceDisablingDuringNormalOperation()) {
-    // If the device is disabled, bail out. A device disabled screen will be
-    // shown by the DeviceDisablingManager.
-
-    // Re-enable clicking on other windows and the status area. Do not start the
-    // auto-login timer though. On a disabled device, no auto-login can succeed.
-    login_display_->SetUIEnabled(true);
-    return;
-  }
-
-  if (is_login_in_progress_) {
-    // If there is another login in progress, bail out. Do not re-enable
-    // clicking on other windows and the status area. Do not start the
-    // auto-login timer.
-    return;
-  }
-
-  if (user_context.GetUserType() != user_manager::USER_TYPE_REGULAR &&
-      user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    // Multi-login is only allowed for regular users. If we are attempting to
-    // do multi-login as another type of user somehow, bail out. Do not
-    // re-enable clicking on other windows and the status area. Do not start the
-    // auto-login timer.
-    return;
-  }
-
-  if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
-    if (!specifics.guest_mode_url.empty()) {
-      guest_mode_url_ = GURL(specifics.guest_mode_url);
-      if (specifics.guest_mode_url_append_locale)
-        guest_mode_url_ = google_util::AppendGoogleLocaleParam(
-            guest_mode_url_, g_browser_process->GetApplicationLocale());
-    }
-    LoginAsGuest();
-    return;
-  }
-
-  if (user_context.GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-    LoginAsPublicSession(user_context);
-    return;
-  }
-
-  if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
-    LoginAsKioskApp(user_context.GetUserID(), specifics.kiosk_diagnostic_mode);
-    return;
-  }
-
-  // Regular user or supervised user login.
-
-  if (!user_context.HasCredentials()) {
-    // If credentials are missing, refuse to log in.
-
-    // Reenable clicking on other windows and status area.
-    login_display_->SetUIEnabled(true);
-    // Restart the auto-login timer.
-    StartPublicSessionAutoLoginTimer();
-  }
-
-  PerformPreLoginActions(user_context);
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_INTERNAL);
+  ContinueLoginIfDeviceNotDisabled(base::Bind(
+      &ExistingUserController::DoLogin,
+      weak_factory_.GetWeakPtr(),
+      user_context,
+      specifics));
 }
 
 void ExistingUserController::PerformLogin(
@@ -1143,6 +1048,121 @@ void ExistingUserController::PerformLoginFinishedActions(
 
   if (start_public_session_timer)
     StartPublicSessionAutoLoginTimer();
+}
+
+void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
+    const base::Closure& continuation) {
+  // Disable clicking on other windows and status tray.
+  login_display_->SetUIEnabled(false);
+
+  // Stop the auto-login timer.
+  StopPublicSessionAutoLoginTimer();
+
+  // Wait for the |cros_settings_| to become either trusted or permanently
+  // untrusted.
+  const CrosSettingsProvider::TrustedStatus status =
+      cros_settings_->PrepareTrustedValues(base::Bind(
+          &ExistingUserController::ContinueLoginIfDeviceNotDisabled,
+          weak_factory_.GetWeakPtr(),
+          continuation));
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+    return;
+
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    // If the |cros_settings_| are permanently untrusted, show an error message
+    // and refuse to log in.
+    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST,
+                              1,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+
+    // Re-enable clicking on other windows and the status area. Do not start the
+    // auto-login timer though. Without trusted |cros_settings_|, no auto-login
+    // can succeed.
+    login_display_->SetUIEnabled(true);
+    return;
+  }
+
+  bool device_disabled = false;
+  cros_settings_->GetBoolean(kDeviceDisabled, &device_disabled);
+  if (device_disabled && system::DeviceDisablingManager::
+                             HonorDeviceDisablingDuringNormalOperation()) {
+    // If the device is disabled, bail out. A device disabled screen will be
+    // shown by the DeviceDisablingManager.
+
+    // Re-enable clicking on other windows and the status area. Do not start the
+    // auto-login timer though. On a disabled device, no auto-login can succeed.
+    login_display_->SetUIEnabled(true);
+    return;
+  }
+
+  continuation.Run();
+}
+
+void ExistingUserController::DoCompleteLogin(const UserContext& user_context) {
+  PerformPreLoginActions(user_context);
+
+  if (!time_init_.is_null()) {
+    base::TimeDelta delta = base::Time::Now() - time_init_;
+    UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
+    time_init_ = base::Time();  // Reset to null.
+  }
+
+  host_->OnCompleteLogin();
+  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+}
+
+void ExistingUserController::DoLogin(const UserContext& user_context,
+                                     const SigninSpecifics& specifics) {
+  if (is_login_in_progress_) {
+    // If there is another login in progress, bail out. Do not re-enable
+    // clicking on other windows and the status area. Do not start the
+    // auto-login timer.
+    return;
+  }
+
+  if (user_context.GetUserType() != user_manager::USER_TYPE_REGULAR &&
+      user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    // Multi-login is only allowed for regular users. If we are attempting to
+    // do multi-login as another type of user somehow, bail out. Do not
+    // re-enable clicking on other windows and the status area. Do not start the
+    // auto-login timer.
+    return;
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
+    if (!specifics.guest_mode_url.empty()) {
+      guest_mode_url_ = GURL(specifics.guest_mode_url);
+      if (specifics.guest_mode_url_append_locale)
+        guest_mode_url_ = google_util::AppendGoogleLocaleParam(
+            guest_mode_url_, g_browser_process->GetApplicationLocale());
+    }
+    LoginAsGuest();
+    return;
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+    LoginAsPublicSession(user_context);
+    return;
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
+    LoginAsKioskApp(user_context.GetUserID(), specifics.kiosk_diagnostic_mode);
+    return;
+  }
+
+  // Regular user or supervised user login.
+
+  if (!user_context.HasCredentials()) {
+    // If credentials are missing, refuse to log in.
+
+    // Reenable clicking on other windows and status area.
+    login_display_->SetUIEnabled(true);
+    // Restart the auto-login timer.
+    StartPublicSessionAutoLoginTimer();
+  }
+
+  PerformPreLoginActions(user_context);
+  PerformLogin(user_context, LoginPerformer::AUTH_MODE_INTERNAL);
 }
 
 }  // namespace chromeos

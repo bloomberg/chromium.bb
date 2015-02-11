@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -219,6 +220,18 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // cancelled. If |start_public_session_timer| is true than public session
   // auto-login timer is started.
   void PerformLoginFinishedActions(bool start_public_session_timer);
+
+  // Invokes |continuation| after verifying that the device is not disabled.
+  void ContinueLoginIfDeviceNotDisabled(const base::Closure& continuation);
+
+  // Signs in as a new user. This is a continuation of CompleteLogin() that gets
+  // invoked after it has been verified that the device is not disabled.
+  void DoCompleteLogin(const UserContext& user_context);
+
+  // Signs in as a known user. This is a continuation of Login() that gets
+  // invoked after it has been verified that the device is not disabled.
+  void DoLogin(const UserContext& user_context,
+               const SigninSpecifics& specifics);
 
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;
