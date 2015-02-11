@@ -53,18 +53,21 @@ void CSSSelectorParser::consumeCompoundSelectorList(CSSParserTokenRange& range, 
 {
     Vector<OwnPtr<CSSParserSelector> > selectorList;
     OwnPtr<CSSParserSelector> selector = consumeCompoundSelector(range);
+    range.consumeWhitespaceAndComments();
     if (!selector)
         return;
     selectorList.append(selector.release());
     while (!range.atEnd() && range.peek().type() == CommaToken) {
+        // FIXME: This differs from the spec grammar:
+        // Spec: compound_selector S* [ COMMA S* compound_selector ]* S*
+        // Impl: compound_selector S* [ COMMA S* compound_selector S* ]*
         range.consumeIncludingWhitespaceAndComments();
         selector = consumeCompoundSelector(range);
+        range.consumeWhitespaceAndComments();
         if (!selector)
             return;
         selectorList.append(selector.release());
     }
-
-    range.consumeWhitespaceAndComments();
 
     if (!m_failedParsing)
         output.adoptSelectorVector(selectorList);
