@@ -747,14 +747,4 @@ void WebSettingsImpl::setV8CacheOptions(V8CacheOptions options)
     m_settings->setV8CacheOptions(static_cast<blink::V8CacheOptions>(options));
 }
 
-void WebSettingsImpl::setV8ScriptStreamingEnabled(bool enabled)
-{
-    // FIXME: To be removed.
-}
-
-void WebSettingsImpl::setV8ScriptStreamingMode(V8ScriptStreamingMode mode)
-{
-    // FIXME: To be removed.
-}
-
 } // namespace blink

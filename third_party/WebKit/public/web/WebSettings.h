@@ -72,12 +72,6 @@ public:
         V8CacheOptionsRecentSmall
     };
 
-    enum V8ScriptStreamingMode {
-        V8ScriptStreamingModeAll,
-        V8ScriptStreamingModeOnlyAsyncAndDefer,
-        V8ScriptStreamingModeAllPlusBlockParsingBlocking,
-    };
-
     // Bit field values indicating available pointer types. Identical to
     // blink::PointerType enums, enforced by compile-time assertions in
     // AssertMatchingEnums.cpp.
@@ -245,8 +239,6 @@ public:
     virtual void setUseWideViewport(bool) = 0;
     virtual void setUsesEncodingDetector(bool) = 0;
     virtual void setV8CacheOptions(V8CacheOptions) = 0;
-    virtual void setV8ScriptStreamingEnabled(bool) = 0;
-    virtual void setV8ScriptStreamingMode(V8ScriptStreamingMode) = 0;
     virtual void setValidationMessageTimerMagnification(int) = 0;
     virtual void setViewportEnabled(bool) = 0;
     virtual void setViewportMetaEnabled(bool) = 0;
