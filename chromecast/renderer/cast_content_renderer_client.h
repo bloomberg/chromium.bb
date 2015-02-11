@@ -18,6 +18,8 @@ namespace chromecast {
 namespace shell {
 class CastRenderProcessObserver;
 
+void PlatformAddRendererNativeBindings(blink::WebLocalFrame* frame);
+
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
   CastContentRendererClient();

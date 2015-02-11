@@ -78,7 +78,7 @@ CastRenderViewObserver::CastRenderViewObserver(content::RenderView* render_view)
 }
 
 void CastRenderViewObserver::DidClearWindowObject(blink::WebLocalFrame* frame) {
-  // Native bindings go here.
+  PlatformAddRendererNativeBindings(frame);
 }
 
 }  // namespace
