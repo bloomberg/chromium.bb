@@ -777,7 +777,13 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   PerformLoginFinishedActions(true /* start public session timer */);
   offline_failed_ = false;
 
-  ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    ShowError(IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST, email);
+  } else {
+    ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
+  }
 
   login_display_->ShowSigninUI(email);
 
@@ -843,8 +849,15 @@ void ExistingUserController::LoginAsGuest() {
     // Disallowed. The UI should normally not show the guest pod but if for some
     // reason this has been made available to the user here is the time to tell
     // this nicely.
-    login_display_->ShowError(IDS_LOGIN_ERROR_WHITELIST, 1,
-                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    if (g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->IsEnterpriseManaged()) {
+      login_display_->ShowError(IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST, 1,
+                                HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    } else {
+      login_display_->ShowError(IDS_LOGIN_ERROR_WHITELIST, 1,
+                                HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    }
     PerformLoginFinishedActions(true /* start public session timer */);
     display_email_.clear();
     return;
