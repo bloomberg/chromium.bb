@@ -184,7 +184,7 @@ var listener = null;
 
 module('base.EventSource', {
   setup: function() {
-    source = new base.EventSource();
+    source = new base.EventSourceImpl();
     source.defineEvents(['foo', 'bar']);
     listener = sinon.spy();
     source.addEventListener('foo', listener);

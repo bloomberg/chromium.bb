@@ -368,28 +368,48 @@ base.EventEntry = function() {
   this.listeners = [];
 };
 
+
+/** @interface */
+base.EventSource = function() {};
+
+ /**
+  * Add a listener |fn| to listen to |type| event.
+  * @param {string} type
+  * @param {function(?=):void} fn
+  */
+base.EventSource.prototype.addEventListener = function(type, fn) {};
+
+ /**
+  * Remove a listener |fn| to listen to |type| event.
+  * @param {string} type
+  * @param {function(?=):void} fn
+  */
+base.EventSource.prototype.removeEventListener = function(type, fn) {};
+
+
 /**
   * @constructor
   * Since this class is implemented as a mixin, the constructor may not be
   * called.  All initializations should be done in defineEvents.
+  * @implements {base.EventSource}
   */
-base.EventSource = function() {
+base.EventSourceImpl = function() {
   /** @type {Object.<string, base.EventEntry>} */
   this.eventMap_;
 };
 
 /**
-  * @param {base.EventSource} obj
+  * @param {base.EventSourceImpl} obj
   * @param {string} type
   */
-base.EventSource.isDefined = function(obj, type) {
+base.EventSourceImpl.isDefined = function(obj, type) {
   base.debug.assert(Boolean(obj.eventMap_),
                    "The object doesn't support events");
   base.debug.assert(Boolean(obj.eventMap_[type]), 'Event <' + type +
     '> is undefined for the current object');
 };
 
-base.EventSource.prototype = {
+base.EventSourceImpl.prototype = {
   /**
     * Define |events| for this event source.
     * @param {Array.<string>} events
@@ -400,7 +420,7 @@ base.EventSource.prototype = {
     this.eventMap_ = {};
     events.forEach(
       /**
-        * @this {base.EventSource}
+        * @this {base.EventSourceImpl}
         * @param {string} type
         */
       function(type) {
@@ -410,26 +430,24 @@ base.EventSource.prototype = {
   },
 
   /**
-    * Add a listener |fn| to listen to |type| event.
     * @param {string} type
     * @param {function(?=):void} fn
     */
   addEventListener: function(type, fn) {
     base.debug.assert(typeof fn == 'function');
-    base.EventSource.isDefined(this, type);
+    base.EventSourceImpl.isDefined(this, type);
 
     var listeners = this.eventMap_[type].listeners;
     listeners.push(fn);
   },
 
   /**
-    * Remove the listener |fn| from the event source.
     * @param {string} type
     * @param {function(?=):void} fn
     */
   removeEventListener: function(type, fn) {
     base.debug.assert(typeof fn == 'function');
-    base.EventSource.isDefined(this, type);
+    base.EventSourceImpl.isDefined(this, type);
 
     var listeners = this.eventMap_[type].listeners;
     // find the listener to remove.
@@ -451,7 +469,7 @@ base.EventSource.prototype = {
     *     As a hack, we set the type to *=.
     */
   raiseEvent: function(type, opt_details) {
-    base.EventSource.isDefined(this, type);
+    base.EventSourceImpl.isDefined(this, type);
 
     var entry = this.eventMap_[type];
     var listeners = entry.listeners.slice(0); // Make a copy of the listeners.

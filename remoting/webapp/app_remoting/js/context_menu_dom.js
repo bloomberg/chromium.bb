@@ -65,10 +65,10 @@ remoting.ContextMenuDom = function(root) {
    */
   this.bottom_ = 8;
   /**
-   * @type {base.EventSource}
+   * @type {base.EventSourceImpl}
    * @private
    */
-  this.eventSource_ = new base.EventSource();
+  this.eventSource_ = new base.EventSourceImpl();
   /**
    * @type {string}
    * @private

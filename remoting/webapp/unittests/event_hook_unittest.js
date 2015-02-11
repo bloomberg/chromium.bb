@@ -36,7 +36,7 @@ function raiseAllEvents() {
 module('base.EventHook', {
   setup: function() {
     domElement = document.createElement('div');
-    eventSource = new base.EventSource();
+    eventSource = new base.EventSourceImpl();
     eventSource.defineEvents(['customEvent']);
     myChromeEvent = new chromeMocks.Event();
     listener = new Listener(domElement);

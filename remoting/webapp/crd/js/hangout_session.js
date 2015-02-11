@@ -70,9 +70,9 @@ remoting.HangoutSession.prototype.onSessionStateChanged_ = function(state) {
  * remoting.clientSession does not exist until the session is connected.
  * hangoutSessionEvents serves as a global event source to plumb session
  * state changes until we cleanup clientSession and sessionConnector.
- * @type {base.EventSource}
+ * @type {base.EventSourceImpl}
  */
-remoting.hangoutSessionEvents = new base.EventSource();
+remoting.hangoutSessionEvents = new base.EventSourceImpl();
 
 /** @type {string} */
 remoting.hangoutSessionEvents.sessionStateChanged = "sessionStateChanged";

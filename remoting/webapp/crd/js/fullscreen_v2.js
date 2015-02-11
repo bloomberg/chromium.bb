@@ -41,10 +41,10 @@ remoting.FullscreenAppsV2 = function() {
   this.kEventName_ = '_fullscreenchanged';
 
   /**
-   * @type {base.EventSource}
+   * @type {base.EventSourceImpl}
    * @private
    */
-  this.eventSource_ = new base.EventSource();
+  this.eventSource_ = new base.EventSourceImpl();
   this.eventSource_.defineEvents([this.kEventName_]);
 
   chrome.app.window.current().onFullscreened.addListener(

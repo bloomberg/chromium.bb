@@ -70,7 +70,7 @@ remoting.enableMouseLock = false;
  * @param {string} defaultRemapKeys The default set of remap keys, to use
  *     when the client doesn't define any.
  * @constructor
- * @extends {base.EventSource}
+ * @extends {base.EventSourceImpl}
  */
 remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
                                   accessCode, fetchPin, fetchThirdPartyToken,

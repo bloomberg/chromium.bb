@@ -8,9 +8,9 @@
 var remoting = remoting || {};
 
 /**
- * @type {base.EventSource} An event source object for handling global events.
- *    This is an interim hack.  Eventually, we should move functionalities
- *    away from the remoting namespace and into smaller objects.
+ * @type {base.EventSourceImpl} An event source object for handling global
+ *    events. This is an interim hack.  Eventually, we should move
+ *    functionalities away from the remoting namespace and into smaller objects.
  */
 remoting.testEvents;
 
@@ -42,7 +42,7 @@ remoting.initGlobalObjects = function() {
 
   remoting.initModalDialogs();
 
-  remoting.testEvents = new base.EventSource();
+  remoting.testEvents = new base.EventSourceImpl();
   /** @enum {string} */
   remoting.testEvents.Names = {
     uiModeChanged: 'uiModeChanged'
