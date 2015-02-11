@@ -51,6 +51,8 @@ public:
 
         static bool createInterpolationsFromCSSValues(CSSPropertyID, CSSValue* fromCSSValue, CSSValue* toCSSValue, Element*, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& interpolations);
 
+        void ensureAnimatableValueCaches(CSSPropertyID, Keyframe::PropertySpecificKeyframe&, Element*, CSSValue& fromCSSValue, CSSValue& toCSSValue) const;
+
         RefPtrWillBeMember<CSSValue> m_value;
         mutable RefPtrWillBeMember<AnimatableValue> m_animatableValueCache;
     };

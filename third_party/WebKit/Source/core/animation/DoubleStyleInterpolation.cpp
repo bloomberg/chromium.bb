@@ -34,18 +34,36 @@ PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDo
     double doubleValue = toInterpolableNumber(value)->value();
 
     switch (clamp) {
+    case RangeAll:
+        // Do nothing
+        break;
+    case RangeZeroToOne:
+        doubleValue = clampTo<float>(doubleValue, 0, 1);
+        break;
     case RangeOpacityFIXME:
-        doubleValue = clampTo<float>(doubleValue, 0, nextafterf(1, 0));
+        doubleValue = clampTo<float>(doubleValue, 0, nextafter(1, 0));
+        break;
+    case RangeFloor:
+        doubleValue = floor(doubleValue);
+        break;
+    case RangePositive:
+        doubleValue = clampTo<double>(doubleValue, nextafterf(0, 1));
+        break;
+    case RangeRound:
+        doubleValue = round(doubleValue);
+        break;
+    case RangeRoundGreaterThanOrEqualToOne:
+        doubleValue = clampTo<float>(round(doubleValue), 1);
+        break;
+    case RangeGreaterThanOrEqualToOne:
+        doubleValue = clampTo<float>(doubleValue, 1);
         break;
     case RangeNonNegative:
         doubleValue = clampTo<float>(doubleValue, 0);
         break;
-    case RangeAll:
-        break;
     default:
         ASSERT_NOT_REACHED();
     }
-
     if (isNumber)
         return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::CSS_NUMBER);
     return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::CSS_DEG);

@@ -13,9 +13,15 @@ namespace blink {
 class StyleResolverState;
 
 enum InterpolationRange {
+    RangeAll,
+    RangeFloor,
+    RangeGreaterThanOrEqualToOne,
     RangeNonNegative,
+    RangePositive,
+    RangeRound,
+    RangeRoundGreaterThanOrEqualToOne,
     RangeOpacityFIXME,
-    RangeAll
+    RangeZeroToOne
 };
 
 class StyleInterpolation : public Interpolation {

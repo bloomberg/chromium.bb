@@ -75,6 +75,37 @@ StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset
     ASSERT(!isNull(m_offset));
 }
 
+namespace {
+InterpolationRange setRange(CSSPropertyID id)
+{
+    switch (id) {
+    case CSSPropertyOrphans:
+    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyWidows:
+        return RangeRoundGreaterThanOrEqualToOne;
+    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyZIndex:
+        return RangeRound;
+    case CSSPropertyFloodOpacity:
+    case CSSPropertyStopOpacity:
+    case CSSPropertyStrokeOpacity:
+    case CSSPropertyShapeImageThreshold:
+        return RangeZeroToOne;
+    case CSSPropertyFillOpacity:
+    case CSSPropertyOpacity:
+        return RangeOpacityFIXME;
+    case CSSPropertyStrokeMiterlimit:
+        return RangeGreaterThanOrEqualToOne;
+    case CSSPropertyZoom:
+        return RangePositive;
+    default:
+        ASSERT_NOT_REACHED();
+        return RangeAll;
+    }
+}
+
+} // namespace
+
 // FIXME: Refactor this into a generic piece that lives in InterpolationEffect, and a template parameter specific converter.
 PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element) const
 {
@@ -107,7 +138,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
     case CSSPropertyBorderTopWidth:
-    case CSSPropertyFlexBasis:
     case CSSPropertyFontSize:
     case CSSPropertyHeight:
     case CSSPropertyMaxHeight:
@@ -122,10 +152,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyPaddingTop:
     case CSSPropertyPerspective:
     case CSSPropertyShapeMargin:
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnWidth:
     case CSSPropertyWidth:
         range = RangeNonNegative;
         // Fall through
@@ -147,7 +173,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         // FIXME: Handle keywords e.g. 'none'.
         if (property == CSSPropertyPerspective)
             fallBackToLegacy = true;
-
         // FIXME: Handle keywords e.g. 'smaller', 'larger'.
         if (property == CSSPropertyFontSize)
             fallBackToLegacy = true;
@@ -159,14 +184,31 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         // FIXME: Handle keywords e.g. 'thick'
         if (property == CSSPropertyOutlineWidth)
             fallBackToLegacy = true;
-
         break;
-    case CSSPropertyMotionRotation:
-        {
-            RefPtrWillBeRawPtr<Interpolation> interpolation = DoubleStyleInterpolation::maybeCreateFromMotionRotation(*fromCSSValue, *toCSSValue, property);
-            if (interpolation)
-                return interpolation.release();
+    case CSSPropertyOrphans:
+    case CSSPropertyWidows:
+    case CSSPropertyZIndex:
+    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyShapeImageThreshold:
+    case CSSPropertyFillOpacity:
+    case CSSPropertyFloodOpacity:
+    case CSSPropertyOpacity:
+    case CSSPropertyStopOpacity:
+    case CSSPropertyStrokeOpacity:
+    case CSSPropertyStrokeMiterlimit:
+    case CSSPropertyZoom:
+    case CSSPropertyWebkitColumnRuleWidth:
+        if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue)) {
+            if (property == CSSPropertyOpacity)
+                StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValueCaches(property, end, element, *fromCSSValue, *toCSSValue);
+            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, toCSSPrimitiveValue(fromCSSValue)->primitiveType(), setRange(property));
+        }
+        break;
 
+    case CSSPropertyMotionRotation: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = DoubleStyleInterpolation::maybeCreateFromMotionRotation(*fromCSSValue, *toCSSValue, property);
+        if (interpolation)
+            return interpolation.release();
             break;
         }
     case CSSPropertyVisibility:
@@ -286,7 +328,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return DeferredLegacyStyleInterpolation::create(fromCSSValue, toCSSValue, property);
         }
 
-        // FIXME: Remove the use of AnimatableValues, LayoutStyles and Elements here.
+        // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
         // FIXME: Remove this cache
         ASSERT(element);
         if (!m_animatableValueCache)
@@ -304,6 +346,16 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
     return nullptr;
 
+}
+// FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
+// FIXME: Remove this cache
+void StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValueCaches(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, CSSValue& fromCSSValue, CSSValue& toCSSValue) const
+{
+    ASSERT(element);
+    if (!m_animatableValueCache)
+        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
+    RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
+    toStringPropertySpecificKeyframe(end).m_animatableValueCache = to;
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const

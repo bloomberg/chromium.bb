@@ -54,6 +54,31 @@ assertInterpolation({
   {at: 1, is: '5'},
   {at: 1.5, is: '10'},
 ]);
+assertInterpolation({
+  property: 'z-index',
+  from: '2',
+  to: '4'
+}, [
+  {at: -0.3, is: '1'},
+  {at: 0, is: '2'},
+  {at: 0.3, is: '3'},
+  {at: 0.6, is: '3'},
+  {at: 1, is: '4'},
+  {at: 1.5, is: '5'},
+]);
+assertInterpolation({
+  property: 'z-index',
+  from: '-2',
+  to: '-4'
+}, [
+  {at: -0.3, is: '-1'},
+  {at: 0, is: '-2'},
+  {at: 0.1, is: '-2'},
+  {at: 0.3, is: '-3'},
+  {at: 0.6, is: '-3'},
+  {at: 1, is: '-4'},
+  {at: 1.5, is: '-5'},
+]);
 afterTest(function() {
   var actives = document.querySelectorAll('.active');
   var replicas = document.querySelectorAll('.replica');
