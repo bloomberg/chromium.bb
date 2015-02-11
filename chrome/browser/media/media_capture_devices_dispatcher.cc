@@ -135,6 +135,22 @@ bool IsOriginForCasting(const GURL& origin) {
       // Google Cast Stable
       origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/";
 }
+
+bool IsExtensionWhitelistedForScreenCapture(
+    const extensions::Extension* extension) {
+#if defined(OS_CHROMEOS)
+  std::string hash = base::SHA1HashString(extension->id());
+  std::string hex_hash = base::HexEncode(hash.c_str(), hash.length());
+
+  // crbug.com/446688
+  return hex_hash == "4F25792AF1AA7483936DE29C07806F203C7170A0" ||
+         hex_hash == "BD8781D757D830FC2E85470A1B6E8A718B7EE0D9" ||
+         hex_hash == "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB" ||
+         hex_hash == "81986D4F846CEDDDB962643FA501D1780DD441BB";
+#else
+  return false;
+#endif  // defined(OS_CHROMEOS)
+}
 #endif  // defined(ENABLE_EXTENSIONS)
 
 // Helper to get title of the calling application shown in the screen capture
@@ -568,6 +584,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
 #if defined(ENABLE_EXTENSIONS)
   screen_capture_enabled |=
       IsOriginForCasting(request.security_origin) ||
+      IsExtensionWhitelistedForScreenCapture(extension) ||
       IsBuiltInExtension(request.security_origin);
 #endif
 
@@ -604,9 +621,15 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
 #endif
     web_contents = NULL;
 
-    // For component extensions, bypass message box.
+    bool whitelisted_extension = false;
+#if defined(ENABLE_EXTENSIONS)
+    whitelisted_extension = IsExtensionWhitelistedForScreenCapture(
+        extension);
+#endif
+
+    // For whitelisted or component extensions, bypass message box.
     bool user_approved = false;
-    if (!component_extension) {
+    if (!whitelisted_extension && !component_extension) {
       base::string16 application_name =
           base::UTF8ToUTF16(request.security_origin.spec());
 #if defined(ENABLE_EXTENSIONS)
@@ -627,7 +650,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       user_approved = (result == chrome::MESSAGE_BOX_RESULT_YES);
     }
 
-    if (user_approved || component_extension) {
+    if (user_approved || component_extension || whitelisted_extension) {
       content::DesktopMediaID screen_id;
 #if defined(OS_CHROMEOS)
       screen_id = content::DesktopMediaID::RegisterAuraWindow(
