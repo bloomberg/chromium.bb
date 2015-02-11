@@ -6,14 +6,13 @@
 
 from __future__ import print_function
 
-import mock
-
 from chromite.cros.commands import cros_build
 from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib import project
 
 
 class MockBuildCommand(init_unittest.MockCommand):
@@ -23,14 +22,17 @@ class MockBuildCommand(init_unittest.MockCommand):
 
   def Run(self, inst):
     packages = cros_build.GetToolchainPackages()
-    with mock.patch.object(cros_build, 'GetToolchainPackages') as tc_mock:
-      tc_mock.return_value = packages
-      with parallel_unittest.ParallelMock():
-        init_unittest.MockCommand.Run(self, inst)
+    self.PatchObject(cros_build, 'GetToolchainPackages', return_value=packages)
+    with parallel_unittest.ParallelMock():
+      init_unittest.MockCommand.Run(self, inst)
 
 
-class BuildCommandTest(cros_test_lib.TestCase):
+class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our BuildCommand class."""
+
+  def setUp(self):
+    p = project.Project(self.tempdir, initial_config={'name': 'foo'})
+    self.PatchObject(project, 'FindProjectByName', return_value=p)
 
   def testSuccess(self):
     """Test that successful commands work."""
@@ -47,7 +49,7 @@ class BuildCommandTest(cros_test_lib.TestCase):
 
   def testFailedDeps(self):
     """Test that failures are detected correctly."""
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     args = ['--board=foo', 'power_manager']
     with MockBuildCommand(args) as build:
       cmd = partial_mock.In('--backtrack=0')
