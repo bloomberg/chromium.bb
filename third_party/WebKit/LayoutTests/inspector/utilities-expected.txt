@@ -64,3 +64,5 @@ Pair(9, 9)
 
 Running: stringHashTest
 
+Running: stringTrimURLTest
+

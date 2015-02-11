@@ -426,8 +426,23 @@ function test()
             InspectorTest.assertTrue(isFinite(hashA));
             InspectorTest.assertTrue(hashA + 1 !== hashA);
             next();
-        }
+        },
 
+        function stringTrimURLTest(next)
+        {
+            var baseURLDomain = "www.chromium.org";
+            var testArray = [
+                "http://www.chromium.org/foo/bar", "/foo/bar",
+                "https://www.CHromium.ORG/BAZ/zoo", "/BAZ/zoo",
+                "https://example.com/foo[]", "example.com/foo[]",
+            ];
+            for (var i = 0; i < testArray.length; i += 2) {
+                var url = testArray[i];
+                var expected = testArray[i + 1];
+                InspectorTest.assertEquals(expected, url.trimURL(baseURLDomain), url);
+            }
+            next();
+        },
     ]);
 }
 
