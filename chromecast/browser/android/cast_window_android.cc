@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "chromecast/browser/android/cast_window_manager.h"
+#include "chromecast/browser/cast_content_window.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,54 +31,44 @@ bool CastWindowAndroid::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-CastWindowAndroid::CastWindowAndroid(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      weak_factory_(this) {
-}
-
-CastWindowAndroid::~CastWindowAndroid() {
-}
-
 // static
 CastWindowAndroid* CastWindowAndroid::CreateNewWindow(
     content::BrowserContext* browser_context,
     const GURL& url) {
-  content::WebContents::CreateParams create_params(browser_context);
-  create_params.routing_id = MSG_ROUTING_NONE;
-  content::WebContents* web_contents =
-      content::WebContents::Create(create_params);
-  CastWindowAndroid* shell = CreateCastWindowAndroid(
-      web_contents,
-      create_params.initial_size);
+  CastWindowAndroid* window_android = new CastWindowAndroid(browser_context);
+  window_android->Initialize();
+
   if (!url.is_empty())
-    shell->LoadURL(url);
-  return shell;
+    window_android->LoadURL(url);
+  return window_android;
 }
 
-// static
-CastWindowAndroid* CastWindowAndroid::CreateCastWindowAndroid(
-    content::WebContents* web_contents,
-    const gfx::Size& initial_size) {
-  CastWindowAndroid* shell = new CastWindowAndroid(web_contents);
+CastWindowAndroid::CastWindowAndroid(content::BrowserContext* browser_context)
+    : browser_context_(browser_context),
+      content_window_(new CastContentWindow),
+      weak_factory_(this) {
+}
+
+void CastWindowAndroid::Initialize() {
+  web_contents_ =
+      content_window_->CreateWebContents(gfx::Size(), browser_context_);
+  web_contents_->SetDelegate(this);
+  content::WebContentsObserver::Observe(web_contents_.get());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> shell_android(
-      CreateCastWindowView(shell));
-
-  shell->java_object_.Reset(env, shell_android.Release());
-  shell->web_contents_.reset(web_contents);
-  web_contents->SetDelegate(shell);
+  window_java_.Reset(CreateCastWindowView(this));
 
   Java_CastWindowAndroid_initFromNativeWebContents(
-      env, shell->java_object_.obj(), web_contents->GetJavaWebContents().obj(),
-      web_contents->GetRenderProcessHost()->GetID());
+      env, window_java_.obj(), web_contents_->GetJavaWebContents().obj(),
+      web_contents_->GetRenderProcessHost()->GetID());
 
   // Enabling hole-punching also requires runtime renderer preference
-  web_contents->GetMutableRendererPrefs()->
+  web_contents_->GetMutableRendererPrefs()->
       use_video_overlay_for_embedded_encrypted_video = true;
-  web_contents->GetRenderViewHost()->SyncRendererPrefs();
+  web_contents_->GetRenderViewHost()->SyncRendererPrefs();
+}
 
-  return shell;
+CastWindowAndroid::~CastWindowAndroid() {
 }
 
 void CastWindowAndroid::Close() {
@@ -91,7 +82,7 @@ void CastWindowAndroid::Destroy() {
   // Note: if multiple windows becomes supported, this may close other devtools
   // sessions.
   content::DevToolsAgentHost::DetachAllClients();
-  CloseCastWindowView(java_object_.obj());
+  CloseCastWindowView(window_java_.obj());
   delete this;
 }
 
@@ -123,20 +114,6 @@ void CastWindowAndroid::CloseContents(content::WebContents* source) {
   // give (and guarantee) the renderer enough time to finish 'onunload'
   // handler (but we don't want to wait any longer than that to delay the
   // starting of next app).
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    // When shutting down in a test context, the last remaining WebContents
-    // is torn down at browser-thread shutdown time. Call Destroy directly to
-    // avoid losing the last posted task to delete this object.
-    // TODO(gunsch): This could probably be avoided by using a
-    // CompletionCallback in StopCurrentApp to wait until the app is completely
-    // stopped. This might require a separate message loop and might only be
-    // appropriate for test contexts or during shutdown, since it triggers a
-    // wait on the main thread.
-    Destroy();
-    return;
-  }
-
   base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CastWindowAndroid::Destroy, weak_factory_.GetWeakPtr()),

@@ -33,6 +33,7 @@ class WebContents;
 }  // namespace content
 
 namespace chromecast {
+class CastContentWindow;
 namespace shell {
 
 class CastWindowAndroid : public content::WebContentsDelegate,
@@ -76,15 +77,13 @@ class CastWindowAndroid : public content::WebContentsDelegate,
   virtual void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
-  explicit CastWindowAndroid(content::WebContents* web_contents);
+  explicit CastWindowAndroid(content::BrowserContext* browser_context);
+  void Initialize();
 
-  // Helper to create a new CastWindowAndroid given a newly created WebContents.
-  static CastWindowAndroid* CreateCastWindowAndroid(
-      content::WebContents* web_contents,
-      const gfx::Size& initial_size);
-
-  base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  content::BrowserContext* browser_context_;
+  base::android::ScopedJavaGlobalRef<jobject> window_java_;
   scoped_ptr<content::WebContents> web_contents_;
+  scoped_ptr<CastContentWindow> content_window_;
 
   base::WeakPtrFactory<CastWindowAndroid> weak_factory_;
 
