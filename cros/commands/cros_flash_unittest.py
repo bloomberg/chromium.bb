@@ -54,6 +54,19 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
     """Mock out SetupRootfsUpdate."""
 
 
+class ProjectMock(partial_mock.PartialMock):
+  """Mock out project.Project."""
+  TARGET = 'chromite.lib.project.Project'
+  ATTRS = ('Inherits')
+
+  def __init__(self):
+    partial_mock.PartialMock.__init__(self)
+
+  def Inherits(self, _inst, *_args, **_kwargs):
+    """Mock out Inherits."""
+    return True
+
+
 class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
                            cros_test_lib.LoggingTestCase):
   """Test the flow of FlashCommand.run with the update methods mocked out."""
@@ -83,26 +96,35 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
+    proj = ProjectMock()
     with mock.patch('os.path.exists', return_value=True):
-      self.cmd_mock.inst.Run()
-      self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-      self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
+      with mock.patch('chromite.lib.project.FindProjectByName',
+                      return_value=proj):
+        self.cmd_mock.inst.Run()
+        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateStateful(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-rootfs-update', self.DEVICE, self.IMAGE])
+    proj = ProjectMock()
     with mock.patch('os.path.exists', return_value=True):
-      self.cmd_mock.inst.Run()
-      self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-      self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
+      with mock.patch('chromite.lib.project.FindProjectByName',
+                      return_value=proj):
+        self.cmd_mock.inst.Run()
+        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+        self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateRootfs(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-stateful-update', self.DEVICE, self.IMAGE])
+    proj = ProjectMock()
     with mock.patch('os.path.exists', return_value=True):
-      self.cmd_mock.inst.Run()
-      self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
-      self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
+      with mock.patch('chromite.lib.project.FindProjectByName',
+                      return_value=proj):
+        self.cmd_mock.inst.Run()
+        self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
+        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testMissingPayloads(self):
     """Tests we exit when payloads are missing."""

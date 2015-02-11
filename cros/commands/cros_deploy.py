@@ -949,10 +949,11 @@ For more information of cros build usage:
         # Make sure that a project is found and compatible with the device.
         proj = project.FindProjectByName(self.board)
         if not proj:
-          cros_build_lib.Die('Could not find project for %s', self.board)
+          cros_build_lib.Die('Could not find project for board')
         if not (self.options.ignore_device_board or
                 proj.Inherits(device.board)):
-          cros_build_lib.Die('Device %s incompatible with board', device.board)
+          cros_build_lib.Die('Device (%s) is incompatible with board',
+                             device.board)
 
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
