@@ -46,15 +46,19 @@ TEST_F(ZoomDecorationTest, ChangeZoomPercent) {
   MockZoomController controller(web_contents());
 
   controller.zoom_percent_ = 100;
-  decoration.UpdateIfNecessary(&controller);
+  decoration.UpdateIfNecessary(&controller, /*default_zoom_changed=*/false);
   EXPECT_EQ(1, decoration.update_ui_count_);
 
-  decoration.UpdateIfNecessary(&controller);
+  decoration.UpdateIfNecessary(&controller, /*default_zoom_changed=*/false);
   EXPECT_EQ(1, decoration.update_ui_count_);
 
   controller.zoom_percent_ = 80;
-  decoration.UpdateIfNecessary(&controller);
+  decoration.UpdateIfNecessary(&controller, /*default_zoom_changed=*/false);
   EXPECT_EQ(2, decoration.update_ui_count_);
+
+  // Always redraw if the default zoom changes.
+  decoration.UpdateIfNecessary(&controller, /*default_zoom_changed=*/true);
+  EXPECT_EQ(3, decoration.update_ui_count_);
 }
 
 }  // namespace

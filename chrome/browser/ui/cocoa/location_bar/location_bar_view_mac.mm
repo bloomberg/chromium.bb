@@ -62,6 +62,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -132,6 +133,9 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
 
   browser_->search_model()->AddObserver(this);
 
+  ui_zoom::ZoomEventManager::GetForBrowserContext(profile)
+      ->AddZoomEventManagerObserver(this);
+
   [[field_ cell] setIsPopupMode:
       !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
 
@@ -149,6 +153,8 @@ LocationBarViewMac::~LocationBarViewMac() {
   [[field_ cell] clearDecorations];
 
   browser_->search_model()->RemoveObserver(this);
+  ui_zoom::ZoomEventManager::GetForBrowserContext(profile())
+      ->RemoveZoomEventManagerObserver(this);
 }
 
 void LocationBarViewMac::ShowFirstRunBubble() {
@@ -309,7 +315,7 @@ bool LocationBarViewMac::GetBookmarkStarVisibility() {
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   UpdateBookmarkStarVisibility();
-  UpdateZoomDecoration();
+  UpdateZoomDecoration(/*default_zoom_changed=*/false);
   UpdatePageActions();
   Layout();
 }
@@ -333,7 +339,7 @@ void LocationBarViewMac::SetTranslateIconLit(bool on) {
 }
 
 void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
-  bool changed = UpdateZoomDecoration();
+  bool changed = UpdateZoomDecoration(/*default_zoom_changed=*/false);
   if (changed)
     OnDecorationsChanged();
 
@@ -529,7 +535,7 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   UpdateManagePasswordsIconAndBubble();
   UpdateBookmarkStarVisibility();
   UpdateTranslateDecoration();
-  UpdateZoomDecoration();
+  UpdateZoomDecoration(/*default_zoom_changed=*/false);
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   UpdateMicSearchDecorationVisibility();
@@ -755,13 +761,19 @@ void LocationBarViewMac::UpdateTranslateDecoration() {
   translate_decoration_->SetLit(language_state.IsPageTranslated());
 }
 
-bool LocationBarViewMac::UpdateZoomDecoration() {
+bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
   WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return false;
 
   return zoom_decoration_->UpdateIfNecessary(
-      ui_zoom::ZoomController::FromWebContents(web_contents));
+      ui_zoom::ZoomController::FromWebContents(web_contents),
+      default_zoom_changed);
+}
+
+void LocationBarViewMac::OnDefaultZoomLevelChanged() {
+  if (UpdateZoomDecoration(/*default_zoom_changed=*/true))
+    OnDecorationsChanged();
 }
 
 bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {

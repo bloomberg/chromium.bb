@@ -29,7 +29,8 @@ class ZoomDecoration : public ImageDecoration,
 
   // Called when this decoration should show or hide itself in its most current
   // state. Returns whether any updates were made.
-  bool UpdateIfNecessary(ui_zoom::ZoomController* zoom_controller);
+  bool UpdateIfNecessary(ui_zoom::ZoomController* zoom_controller,
+                         bool default_zoom_changed);
 
   // Shows the zoom bubble for this decoration. If |auto_close| is YES, then
   // the bubble will automatically close after a fixed period of time.

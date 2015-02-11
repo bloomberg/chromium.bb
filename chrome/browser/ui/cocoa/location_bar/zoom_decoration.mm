@@ -27,7 +27,7 @@ ZoomDecoration::~ZoomDecoration() {
 }
 
 bool ZoomDecoration::UpdateIfNecessary(
-    ui_zoom::ZoomController* zoom_controller) {
+    ui_zoom::ZoomController* zoom_controller, bool default_zoom_changed) {
   if (!ShouldShowDecoration()) {
     if (!IsVisible() && !bubble_)
       return false;
@@ -41,8 +41,10 @@ bool ZoomDecoration::UpdateIfNecessary(
   NSString* zoom_string =
       l10n_util::GetNSStringFWithFixup(IDS_TOOLTIP_ZOOM, zoom_percent);
 
-  if (IsVisible() && [tooltip_ isEqualToString:zoom_string])
+  if (IsVisible() && [tooltip_ isEqualToString:zoom_string] &&
+      !default_zoom_changed) {
     return false;
+  }
 
   ShowAndUpdateUI(zoom_controller, zoom_string);
   return true;

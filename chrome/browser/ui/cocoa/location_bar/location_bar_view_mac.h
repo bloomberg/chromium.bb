@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/ui/zoom/zoom_event_manager_observer.h"
 
 @class AutocompleteTextField;
 class CommandUpdater;
@@ -47,7 +48,8 @@ class ZoomDecorationTest;
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
                            public OmniboxEditController,
-                           public SearchModelObserver {
+                           public SearchModelObserver,
+                           public ui_zoom::ZoomEventManagerObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
                      CommandUpdater* command_updater,
@@ -180,6 +182,10 @@ class LocationBarViewMac : public LocationBar,
 
   Browser* browser() const { return browser_; }
 
+  // ZoomManagerObserver:
+  // Updates the view for the zoom icon when default zoom levels change.
+  void OnDefaultZoomLevelChanged() override;
+
  protected:
   // OmniboxEditController:
   void HideURL() override;
@@ -219,7 +225,7 @@ class LocationBarViewMac : public LocationBar,
 
   // Updates the zoom decoration in the omnibox with the current zoom level.
   // Returns whether any updates were made.
-  bool UpdateZoomDecoration();
+  bool UpdateZoomDecoration(bool default_zoom_changed);
 
   // Updates the voice search decoration. Returns true if the visible state was
   // changed.
