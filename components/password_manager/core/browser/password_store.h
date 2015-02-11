@@ -198,12 +198,20 @@ class PasswordStore : protected PasswordStoreSync,
   typedef base::Callback<void(ScopedVector<autofill::PasswordForm>)>
       ConsumerCallbackRunner;
 
-  // Should find all PasswordForms with the same signon_realm. The results
-  // will then be scored by the PasswordFormManager. Once they are found
-  // (or not), the consumer should be notified.
+  // Finds all PasswordForms with a signon_realm that is equal to, or is a
+  // PSL-match to that of |form|, and takes care of notifying the consumer with
+  // the results when done.
+  // Note: subclasses should implement FillMatchingLogins() instead, which will
+  // later be used by additional flavors of this method.
   virtual void GetLoginsImpl(const autofill::PasswordForm& form,
                              AuthorizationPromptPolicy prompt_policy,
-                             const ConsumerCallbackRunner& callback_runner) = 0;
+                             const ConsumerCallbackRunner& callback_runner);
+
+  // Finds and returns all PasswordForms with the same signon_realm as |form|,
+  // or with a signon_realm that is a PSL-match to that of |form|.
+  virtual ScopedVector<autofill::PasswordForm> FillMatchingLogins(
+      const autofill::PasswordForm& form,
+      AuthorizationPromptPolicy prompt_policy) = 0;
 
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   virtual void GetAutofillableLoginsImpl(

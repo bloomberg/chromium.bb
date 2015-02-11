@@ -1032,17 +1032,14 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
-void PasswordStoreMac::GetLoginsImpl(
+ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
     const autofill::PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
-    const ConsumerCallbackRunner& callback_runner) {
+    AuthorizationPromptPolicy prompt_policy) {
   chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
       prompt_policy == ALLOW_PROMPT);
 
-  if (!login_metadata_db_) {
-    callback_runner.Run(ScopedVector<autofill::PasswordForm>());
-    return;
-  }
+  if (!login_metadata_db_)
+    return ScopedVector<autofill::PasswordForm>();
 
   ScopedVector<PasswordForm> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);
@@ -1084,7 +1081,7 @@ void PasswordStoreMac::GetLoginsImpl(
     NotifyLoginsChanged(FormsToRemoveChangeList(database_forms.get()));
   }
 
-  callback_runner.Run(matched_forms.Pass());
+  return matched_forms.Pass();
 }
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(

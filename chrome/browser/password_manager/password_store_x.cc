@@ -135,10 +135,9 @@ void PasswordStoreX::SortLoginsByOrigin(
   std::sort(list->begin(), list->end(), LoginLessThan());
 }
 
-void PasswordStoreX::GetLoginsImpl(
+ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
     const autofill::PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
-    const ConsumerCallbackRunner& callback_runner) {
+    AuthorizationPromptPolicy prompt_policy) {
   CheckMigration();
   ScopedVector<autofill::PasswordForm> matched_forms;
   if (use_native_backend() && backend_->GetLogins(form, &matched_forms)) {
@@ -150,11 +149,9 @@ void PasswordStoreX::GetLoginsImpl(
       allow_fallback_ = false;
   } else if (allow_default_store()) {
     DCHECK(matched_forms.empty());
-    PasswordStoreDefault::GetLoginsImpl(form, prompt_policy, callback_runner);
-    return;
+    return PasswordStoreDefault::FillMatchingLogins(form, prompt_policy);
   }
-  // The consumer will be left hanging unless we reply.
-  callback_runner.Run(matched_forms.Pass());
+  return matched_forms.Pass();
 }
 
 void PasswordStoreX::GetAutofillableLoginsImpl(

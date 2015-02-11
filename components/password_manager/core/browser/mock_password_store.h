@@ -34,10 +34,11 @@ class MockPasswordStore : public PasswordStore {
                PasswordStoreChangeList(base::Time, base::Time));
   MOCK_METHOD2(RemoveLoginsSyncedBetweenImpl,
                PasswordStoreChangeList(base::Time, base::Time));
-  MOCK_METHOD3(GetLoginsImpl,
-               void(const autofill::PasswordForm& form,
-                    PasswordStore::AuthorizationPromptPolicy prompt_policy,
-                    const ConsumerCallbackRunner& callback_runner));
+  ScopedVector<autofill::PasswordForm> FillMatchingLogins(
+      const autofill::PasswordForm& form,
+      PasswordStore::AuthorizationPromptPolicy prompt_policy) override {
+    return ScopedVector<autofill::PasswordForm>();
+  }
   void GetAutofillableLoginsImpl(
       scoped_ptr<GetLoginsRequest> request) override {}
   void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) override {}

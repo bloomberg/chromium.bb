@@ -94,17 +94,16 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
   return changes;
 }
 
-void TestPasswordStore::GetLoginsImpl(
+ScopedVector<autofill::PasswordForm> TestPasswordStore::FillMatchingLogins(
     const autofill::PasswordForm& form,
-    PasswordStore::AuthorizationPromptPolicy prompt_policy,
-    const PasswordStore::ConsumerCallbackRunner& runner) {
+    PasswordStore::AuthorizationPromptPolicy prompt_policy) {
   ScopedVector<autofill::PasswordForm> matched_forms;
   std::vector<autofill::PasswordForm> forms =
       stored_passwords_[form.signon_realm];
   for (const auto& stored_form : forms) {
     matched_forms.push_back(new autofill::PasswordForm(stored_form));
   }
-  runner.Run(matched_forms.Pass());
+  return matched_forms.Pass();
 }
 
 void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,

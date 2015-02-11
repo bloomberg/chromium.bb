@@ -111,14 +111,13 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
-void PasswordStoreDefault::GetLoginsImpl(
+ScopedVector<autofill::PasswordForm> PasswordStoreDefault::FillMatchingLogins(
     const autofill::PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
-    const ConsumerCallbackRunner& callback_runner) {
+    AuthorizationPromptPolicy prompt_policy) {
   ScopedVector<autofill::PasswordForm> matched_forms;
   if (login_db_)
     login_db_->GetLogins(form, &matched_forms);
-  callback_runner.Run(matched_forms.Pass());
+  return matched_forms.Pass();
 }
 
 void PasswordStoreDefault::GetAutofillableLoginsImpl(

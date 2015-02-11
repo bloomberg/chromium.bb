@@ -43,15 +43,10 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
   // Invoked from Shutdown, but run on the DB thread.
   void ShutdownOnDBThread();
 
-  virtual void GetLoginsImpl(
-      const autofill::PasswordForm& form,
-      AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) override;
-
-  void GetIE7LoginIfNecessary(
-      const autofill::PasswordForm& form,
-      const ConsumerCallbackRunner& callback_runner,
-      ScopedVector<autofill::PasswordForm> matched_forms);
+  // password_manager::PasswordStore:
+  void GetLoginsImpl(const autofill::PasswordForm& form,
+                     AuthorizationPromptPolicy prompt_policy,
+                     const ConsumerCallbackRunner& callback_runner) override;
 
   scoped_ptr<DBHandler> db_handler_;
 

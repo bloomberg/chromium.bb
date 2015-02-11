@@ -196,6 +196,13 @@ PasswordStore::GetBackgroundTaskRunner() {
   return db_thread_runner_;
 }
 
+void PasswordStore::GetLoginsImpl(
+    const autofill::PasswordForm& form,
+    AuthorizationPromptPolicy prompt_policy,
+    const ConsumerCallbackRunner& callback_runner) {
+  callback_runner.Run(FillMatchingLogins(form, prompt_policy));
+}
+
 // static
 void PasswordStore::ForwardLoginsResult(scoped_ptr<GetLoginsRequest> request) {
   request->ApplyIgnoreLoginsCutoff();

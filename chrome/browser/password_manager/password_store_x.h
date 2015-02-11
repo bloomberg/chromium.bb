@@ -91,9 +91,9 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   password_manager::PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  void GetLoginsImpl(const autofill::PasswordForm& form,
-                     AuthorizationPromptPolicy prompt_policy,
-                     const ConsumerCallbackRunner& callback_runner) override;
+  ScopedVector<autofill::PasswordForm> FillMatchingLogins(
+      const autofill::PasswordForm& form,
+      AuthorizationPromptPolicy prompt_policy) override;
   void GetAutofillableLoginsImpl(
       scoped_ptr<PasswordStore::GetLoginsRequest> request) override;
   void GetBlacklistLoginsImpl(

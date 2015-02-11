@@ -186,25 +186,23 @@ void PasswordStoreWin::Shutdown() {
   PasswordStoreDefault::Shutdown();
 }
 
-void PasswordStoreWin::GetIE7LoginIfNecessary(
-    const PasswordForm& form,
-    const ConsumerCallbackRunner& callback_runner,
-    ScopedVector<autofill::PasswordForm> matched_forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (matched_forms.empty() && db_handler_) {
-    db_handler_->GetIE7Login(form, callback_runner);
-  } else {
-    // No need to get IE7 login.
-    callback_runner.Run(matched_forms.Pass());
-  }
-}
-
 void PasswordStoreWin::GetLoginsImpl(
     const PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy,
     const ConsumerCallbackRunner& callback_runner) {
-  ConsumerCallbackRunner get_ie7_login =
-      base::Bind(&PasswordStoreWin::GetIE7LoginIfNecessary,
-                 this, form, callback_runner);
-  PasswordStoreDefault::GetLoginsImpl(form, prompt_policy, get_ie7_login);
+  // When importing from IE7, the credentials are first stored into a temporary
+  // Web SQL database. Then, after each GetLogins() request that does not yield
+  // any matches from the LoginDatabase, the matching credentials in the Web SQL
+  // database, if any, are returned as results instead, and simultaneously get
+  // moved to the LoginDatabase, so next time they will be found immediately.
+  // TODO(engedy): Make the IE7-specific code synchronous, so FillMatchingLogins
+  // can be overridden instead. See: https://crbug.com/78830.
+  // TODO(engedy): Credentials should be imported into the LoginDatabase in the
+  // first place. See: https://crbug.com/456119.
+  ScopedVector<autofill::PasswordForm> matched_forms(
+      FillMatchingLogins(form, prompt_policy));
+  if (matched_forms.empty() && db_handler_)
+    db_handler_->GetIE7Login(form, callback_runner);
+  else
+    callback_runner.Run(matched_forms.Pass());
 }

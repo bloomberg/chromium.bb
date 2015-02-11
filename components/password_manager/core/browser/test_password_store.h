@@ -47,9 +47,9 @@ class TestPasswordStore : public PasswordStore {
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
-  void GetLoginsImpl(const autofill::PasswordForm& form,
-                     PasswordStore::AuthorizationPromptPolicy prompt_policy,
-                     const ConsumerCallbackRunner& runner) override;
+  ScopedVector<autofill::PasswordForm> FillMatchingLogins(
+      const autofill::PasswordForm& form,
+      PasswordStore::AuthorizationPromptPolicy prompt_policy) override;
   void GetAutofillableLoginsImpl(scoped_ptr<GetLoginsRequest> request) override;
 
   // Unused portions of PasswordStore interface
