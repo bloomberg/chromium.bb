@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//extensions/extensions.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
@@ -66,58 +67,9 @@ grit("extensions_renderer_resources") {
 
 source_set("test_support") {
   testonly = true
-  sources = [
-    "browser/api/cast_channel/cast_test_util.cc",
-    "browser/api/cast_channel/cast_test_util.h",
-    "browser/api/dns/mock_host_resolver_creator.cc",
-    "browser/api/dns/mock_host_resolver_creator.h",
-    "browser/api/storage/settings_test_util.cc",
-    "browser/api/storage/settings_test_util.h",
-    "browser/api_test_utils.cc",
-    "browser/api_test_utils.h",
-    "browser/api_unittest.cc",
-    "browser/api_unittest.h",
-    "browser/app_window/test_app_window_contents.cc",
-    "browser/app_window/test_app_window_contents.h",
-    "browser/extension_error_test_util.cc",
-    "browser/extension_error_test_util.h",
-    "browser/extensions_test.cc",
-    "browser/extensions_test.h",
-    "browser/guest_view/test_guest_view_manager.cc",
-    "browser/guest_view/test_guest_view_manager.h",
-    "browser/mock_extension_system.cc",
-    "browser/mock_extension_system.h",
-    "browser/test_extension_registry_observer.cc",
-    "browser/test_extension_registry_observer.h",
-    "browser/test_extensions_browser_client.cc",
-    "browser/test_extensions_browser_client.h",
-    "browser/test_management_policy.cc",
-    "browser/test_management_policy.h",
-    "browser/test_runtime_api_delegate.cc",
-    "browser/test_runtime_api_delegate.h",
-    "common/extension_builder.cc",
-    "common/extension_builder.h",
-    "common/manifest_test.cc",
-    "common/manifest_test.h",
-    "common/test_util.cc",
-    "common/test_util.h",
-    "common/value_builder.cc",
-    "common/value_builder.h",
-    "renderer/test_extensions_renderer_client.cc",
-    "renderer/test_extensions_renderer_client.h",
-    "test/extension_test_message_listener.cc",
-    "test/extension_test_message_listener.h",
-    "test/result_catcher.cc",
-    "test/result_catcher.h",
-    "test/test_content_utility_client.cc",
-    "test/test_content_utility_client.h",
-    "test/test_extensions_client.cc",
-    "test/test_extensions_client.h",
-    "test/test_permission_message_provider.cc",
-    "test/test_permission_message_provider.h",
-    "test/test_service_registration_manager.cc",
-    "test/test_service_registration_manager.h",
-  ]
+  sources = rebase_path(extensions_gypi_values.extensions_test_support_sources,
+                        ".",
+                        "//extensions")
 
   deps = [
     ":extensions_resources",
@@ -177,101 +129,12 @@ repack("shell_and_test_pak") {
 }
 
 test("extensions_unittests") {
-  sources = [
-    # TODO(rockot|jamescook): This list is out of date. Move the files into
-    # gypi source lists.
-    "browser/api/api_resource_manager_unittest.cc",
-    "browser/api/cast_channel/cast_auth_ica_unittest.cc",
-    "browser/api/cast_channel/cast_auth_util_unittest.cc",
-    "browser/api/cast_channel/cast_channel_api_unittest.cc",
-    "browser/api/cast_channel/cast_framer_unittest.cc",
-    "browser/api/cast_channel/cast_socket_unittest.cc",
-    "browser/api/cast_channel/cast_transport_unittest.cc",
-    "browser/api/cast_channel/keep_alive_delegate_unittest.cc",
-    "browser/api/cast_channel/logger_unittest.cc",
-    "browser/api/declarative/declarative_rule_unittest.cc",
-    "browser/api/declarative/deduping_factory_unittest.cc",
-    "browser/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc",
-    "browser/api/declarative_webrequest/webrequest_condition_unittest.cc",
-    "browser/api/idle/idle_api_unittest.cc",
-    "browser/api/mime_handler_private/mime_handler_private_unittest.cc",
-    "browser/api/sockets_tcp/sockets_tcp_api_unittest.cc",
-    "browser/api/sockets_udp/sockets_udp_api_unittest.cc",
-    "browser/api/storage/settings_quota_unittest.cc",
-    "browser/api/storage/storage_api_unittest.cc",
-    "browser/api/storage/storage_frontend_unittest.cc",
-    "browser/api/web_request/form_data_parser_unittest.cc",
-    "browser/api/web_request/upload_data_presenter_unittest.cc",
-    "browser/api/web_request/web_request_time_tracker_unittest.cc",
-    "browser/computed_hashes_unittest.cc",
-    "browser/content_hash_tree_unittest.cc",
-    "browser/event_listener_map_unittest.cc",
-    "browser/event_router_unittest.cc",
-    "browser/extension_pref_value_map_unittest.cc",
-    "browser/extension_registry_unittest.cc",
-    "browser/file_highlighter_unittest.cc",
-    "browser/file_reader_unittest.cc",
-    "browser/guest_view/guest_view_manager_unittest.cc",
-    "browser/image_loader_unittest.cc",
-    "browser/info_map_unittest.cc",
-    "browser/lazy_background_task_queue_unittest.cc",
-    "browser/management_policy_unittest.cc",
-    "browser/mojo/keep_alive_impl_unittest.cc",
-    "browser/process_manager_unittest.cc",
-    "browser/process_map_unittest.cc",
-    "browser/quota_service_unittest.cc",
-    "browser/runtime_data_unittest.cc",
-    "browser/sandboxed_unpacker_unittest.cc",
-    "browser/value_store/leveldb_value_store_unittest.cc",
-    "browser/value_store/testing_value_store_unittest.cc",
-    "browser/value_store/value_store_change_unittest.cc",
-    "browser/value_store/value_store_frontend_unittest.cc",
-    "browser/value_store/value_store_unittest.cc",
-    "browser/value_store/value_store_unittest.h",
-    "browser/verified_contents_unittest.cc",
-    "browser/warning_service_unittest.cc",
-    "common/api/sockets/sockets_manifest_permission_unittest.cc",
-    "common/csp_validator_unittest.cc",
-    "common/event_filter_unittest.cc",
-    "common/extension_l10n_util_unittest.cc",
-    "common/extension_resource_unittest.cc",
-    "common/extension_set_unittest.cc",
-    "common/file_util_unittest.cc",
-    "common/image_util_unittest.cc",
-    "common/manifest_handlers/content_capabilities_manifest_unittest.cc",
-    "common/manifest_handlers/oauth2_manifest_unittest.cc",
-    "common/manifest_handlers/shared_module_manifest_unittest.cc",
-    "common/manifest_handler_unittest.cc",
-    "common/message_bundle_unittest.cc",
-    "common/one_shot_event_unittest.cc",
-    "common/permissions/manifest_permission_set_unittest.cc",
-    "common/stack_frame_unittest.cc",
-    "common/url_pattern_set_unittest.cc",
-    "common/url_pattern_unittest.cc",
-    "common/user_script_unittest.cc",
-    "renderer/activity_log_converter_strategy_unittest.cc",
-    "renderer/api/mojo_private/mojo_private_unittest.cc",
-    "renderer/api/serial/data_receiver_unittest.cc",
-    "renderer/api/serial/data_sender_unittest.cc",
-    "renderer/api/serial/serial_api_unittest.cc",
-    "renderer/api_test_base.cc",
-    "renderer/api_test_base.h",
-    "renderer/api_test_base_unittest.cc",
-    "renderer/event_unittest.cc",
-    "renderer/json_schema_unittest.cc",
-    "renderer/messaging_utils_unittest.cc",
-    "renderer/module_system_test.cc",
-    "renderer/module_system_test.h",
-    "renderer/module_system_unittest.cc",
-    "renderer/mojo/keep_alive_client_unittest.cc",
-    "renderer/safe_builtins_unittest.cc",
-    "renderer/script_context_set_unittest.cc",
-    "renderer/script_context_unittest.cc",
-    "renderer/mojo/stash_client_unittest.cc",
-    "renderer/utils_unittest.cc",
-    "test/extensions_unittests_main.cc",
-    "utility/unpacker_unittest.cc",
+  sources =
+      rebase_path(extensions_tests_gypi_values.extensions_unittests_sources,
+                  ".",
+                  "//extensions")
 
+  sources += [
     # TODO(rockot): DisplayInfoProvider::Create() is only implemented in Chrome
     # and app_shell. This is wrong.
     "shell/browser/shell_display_info_provider.cc",
@@ -290,6 +153,7 @@ test("extensions_unittests") {
     "//components/keyed_service/content",
     "//components/user_prefs",
     "//content/test:test_support",
+    "//device/bluetooth:mocks",
     "//device/serial",
     "//device/serial:test_support",
     "//extensions/common",
@@ -317,42 +181,16 @@ test("extensions_unittests") {
       # stub in app_shell and a real one in Chrome. This is wrong.
       "shell/browser/api/vpn_provider/vpn_service_factory.cc",
     ]
+
+    deps += [ "//chromeos:test_support" ]
   }
 }
 
 test("extensions_browsertests") {
-  sources = [
-    "browser/api/audio/audio_apitest.cc",
-    "browser/api/bluetooth_socket/bluetooth_socket_apitest.cc",
-    "browser/api/dns/dns_apitest.cc",
-    "browser/api/hid/hid_apitest.cc",
-    "browser/api/socket/socket_apitest.cc",
-    "browser/api/sockets_tcp/sockets_tcp_apitest.cc",
-    "browser/api/sockets_udp/sockets_udp_apitest.cc",
-    "browser/api/system_cpu/system_cpu_apitest.cc",
-    "browser/api/system_display/system_display_apitest.cc",
-    "browser/api/system_memory/system_memory_apitest.cc",
-    "browser/api/system_network/system_network_apitest.cc",
-    "browser/api/system_storage/storage_api_test_util.cc",
-    "browser/api/system_storage/storage_api_test_util.h",
-    "browser/api/system_storage/system_storage_apitest.cc",
-    "browser/api/system_storage/system_storage_eject_apitest.cc",
-    "browser/api/usb/usb_apitest.cc",
-    "browser/guest_view/app_view/app_view_apitest.cc",
-    "browser/guest_view/web_view/web_view_apitest.h",
-    "browser/guest_view/web_view/web_view_apitest.cc",
-    "browser/guest_view/web_view/web_view_media_access_apitest.cc",
-    "browser/updater/update_service_browsertest.cc",
-    "shell/browser/geolocation/geolocation_apitest.cc",
-    "shell/browser/shell_browsertest.cc",
-    "shell/test/shell_apitest.cc",
-    "shell/test/shell_apitest.h",
-    "shell/test/shell_test.cc",
-    "shell/test/shell_test.h",
-    "shell/test/shell_test_launcher_delegate.cc",
-    "shell/test/shell_test_launcher_delegate.h",
-    "shell/test/shell_tests_main.cc",
-  ]
+  sources =
+      rebase_path(extensions_tests_gypi_values.extensions_browsertests_sources,
+                  ".",
+                  "//extensions")
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
