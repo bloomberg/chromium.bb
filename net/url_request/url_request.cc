@@ -470,26 +470,6 @@ void URLRequest::set_method(const std::string& method) {
   method_ = method;
 }
 
-// static
-std::string URLRequest::ComputeMethodForRedirect(
-    const std::string& method,
-    int http_status_code) {
-  // For 303 redirects, all request methods except HEAD are converted to GET,
-  // as per the latest httpbis draft.  The draft also allows POST requests to
-  // be converted to GETs when following 301/302 redirects, for historical
-  // reasons. Most major browsers do this and so shall we.  Both RFC 2616 and
-  // the httpbis draft say to prompt the user to confirm the generation of new
-  // requests, other than GET and HEAD requests, but IE omits these prompts and
-  // so shall we.
-  // See:  https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-17#section-7.3
-  if ((http_status_code == 303 && method != "HEAD") ||
-      ((http_status_code == 301 || http_status_code == 302) &&
-       method == "POST")) {
-    return "GET";
-  }
-  return method;
-}
-
 void URLRequest::SetReferrer(const std::string& referrer) {
   DCHECK(!is_pending_);
   GURL referrer_url(referrer);

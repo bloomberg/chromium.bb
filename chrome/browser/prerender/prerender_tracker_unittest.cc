@@ -125,7 +125,7 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
     *defer_redirect = true;
 
     // Find out what the throttle would have done.
-    throttle_->WillRedirectRequest(redirect_info.new_url, &was_deferred_);
+    throttle_->WillRedirectRequest(redirect_info, &was_deferred_);
     run_loop_->Quit();
   }
   void OnResponseStarted(net::URLRequest* request) override {}

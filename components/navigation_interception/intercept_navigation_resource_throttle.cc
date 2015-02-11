@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request.h"
@@ -81,24 +82,14 @@ void InterceptNavigationResourceThrottle::WillStartRequest(bool* defer) {
 }
 
 void InterceptNavigationResourceThrottle::WillRedirectRequest(
-    const GURL& new_url,
+    const net::RedirectInfo& redirect_info,
     bool* defer) {
-  *defer =
-      CheckIfShouldIgnoreNavigation(new_url, GetMethodAfterRedirect(), true);
+  *defer = CheckIfShouldIgnoreNavigation(redirect_info.new_url,
+                                         redirect_info.new_method, true);
 }
 
 const char* InterceptNavigationResourceThrottle::GetNameForLogging() const {
   return "InterceptNavigationResourceThrottle";
-}
-
-std::string InterceptNavigationResourceThrottle::GetMethodAfterRedirect() {
-  net::HttpResponseHeaders* headers = request_->response_headers();
-  if (!headers)
-    return request_->method();
-  // TODO(davidben): Plumb net::RedirectInfo through content::ResourceThrottle
-  // and unexpose net::URLRequest::ComputeMethodForRedirect.
-  return net::URLRequest::ComputeMethodForRedirect(
-             request_->method(), headers->response_code());
 }
 
 bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(

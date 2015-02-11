@@ -30,7 +30,8 @@ class DownloadResourceThrottle
 
   // content::ResourceThrottle implementation:
   void WillStartRequest(bool* defer) override;
-  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+                           bool* defer) override;
   void WillProcessResponse(bool* defer) override;
   const char* GetNameForLogging() const override;
 

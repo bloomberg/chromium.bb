@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/page_transition_types.h"
 
@@ -147,9 +148,10 @@ void SupervisedUserResourceThrottle::WillStartRequest(bool* defer) {
   ShowInterstitialIfNeeded(false, request_->url(), defer);
 }
 
-void SupervisedUserResourceThrottle::WillRedirectRequest(const GURL& new_url,
-                                                         bool* defer) {
-  ShowInterstitialIfNeeded(true, new_url, defer);
+void SupervisedUserResourceThrottle::WillRedirectRequest(
+    const net::RedirectInfo& redirect_info,
+    bool* defer) {
+  ShowInterstitialIfNeeded(true, redirect_info.new_url, defer);
 }
 
 const char* SupervisedUserResourceThrottle::GetNameForLogging() const {

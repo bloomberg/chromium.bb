@@ -40,7 +40,7 @@ bool ThrottlingResourceHandler::OnRequestRedirected(
   *defer = false;
   while (next_index_ < throttles_.size()) {
     int index = next_index_;
-    throttles_[index]->WillRedirectRequest(redirect_info.new_url, defer);
+    throttles_[index]->WillRedirectRequest(redirect_info, defer);
     next_index_++;
     if (cancelled_by_resource_throttle_)
       return false;

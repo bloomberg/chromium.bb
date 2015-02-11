@@ -12,6 +12,7 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 
 using content::ResourceType;
@@ -47,8 +48,9 @@ void PrerenderResourceThrottle::WillStartRequest(bool* defer) {
                  request_->url()));
 }
 
-void PrerenderResourceThrottle::WillRedirectRequest(const GURL& new_url,
-                                                    bool* defer) {
+void PrerenderResourceThrottle::WillRedirectRequest(
+    const net::RedirectInfo& redirect_info,
+    bool* defer) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
   *defer = true;
@@ -60,7 +62,8 @@ void PrerenderResourceThrottle::WillRedirectRequest(const GURL& new_url,
       FROM_HERE,
       base::Bind(&PrerenderResourceThrottle::WillRedirectRequestOnUI,
                  AsWeakPtr(), header, info->GetResourceType(), info->IsAsync(),
-                 info->GetChildID(), info->GetRenderFrameID(), new_url));
+                 info->GetChildID(), info->GetRenderFrameID(),
+                 redirect_info.new_url));
 }
 
 const char* PrerenderResourceThrottle::GetNameForLogging() const {

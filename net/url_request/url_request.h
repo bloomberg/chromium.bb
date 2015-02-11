@@ -281,12 +281,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   const std::string& method() const { return method_; }
   void set_method(const std::string& method);
 
-  // Determines the new method of the request afer following a redirect.
-  // |method| is the method used to arrive at the redirect,
-  // |http_status_code| is the status code associated with the redirect.
-  static std::string ComputeMethodForRedirect(const std::string& method,
-                                              int http_status_code);
-
   // The referrer URL for the request.  This header may actually be suppressed
   // from the underlying network request for security reasons (e.g., a HTTPS
   // URL will not be sent as the referrer for a HTTP request).  The referrer

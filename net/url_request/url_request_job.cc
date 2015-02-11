@@ -21,19 +21,38 @@
 #include "net/filter/filter.h"
 #include "net/http/http_response_headers.h"
 
+namespace net {
+
 namespace {
 
 // Callback for TYPE_URL_REQUEST_FILTERS_SET net-internals event.
-base::Value* FiltersSetCallback(net::Filter* filter,
-                                enum net::NetLog::LogLevel /* log_level */) {
+base::Value* FiltersSetCallback(Filter* filter,
+                                NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetString("filters", filter->OrderedFilterList());
   return event_params;
 }
 
-}  // namespace
+std::string ComputeMethodForRedirect(const std::string& method,
+                                     int http_status_code) {
+  // For 303 redirects, all request methods except HEAD are converted to GET,
+  // as per the latest httpbis draft.  The draft also allows POST requests to
+  // be converted to GETs when following 301/302 redirects, for historical
+  // reasons. Most major browsers do this and so shall we.  Both RFC 2616 and
+  // the httpbis draft say to prompt the user to confirm the generation of new
+  // requests, other than GET and HEAD requests, but IE omits these prompts and
+  // so shall we.
+  // See:
+  // https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-17#section-7.3
+  if ((http_status_code == 303 && method != "HEAD") ||
+      ((http_status_code == 301 || http_status_code == 302) &&
+       method == "POST")) {
+    return "GET";
+  }
+  return method;
+}
 
-namespace net {
+}  // namespace
 
 URLRequestJob::URLRequestJob(URLRequest* request,
                              NetworkDelegate* network_delegate)
@@ -907,8 +926,8 @@ RedirectInfo URLRequestJob::ComputeRedirectInfo(const GURL& location,
   redirect_info.status_code = http_status_code;
 
   // The request method may change, depending on the status code.
-  redirect_info.new_method = URLRequest::ComputeMethodForRedirect(
-      request_->method(), http_status_code);
+  redirect_info.new_method =
+      ComputeMethodForRedirect(request_->method(), http_status_code);
 
   // Move the reference fragment of the old location to the new one if the
   // new one has none. This duplicates mozilla's behavior.

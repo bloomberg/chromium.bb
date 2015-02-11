@@ -67,7 +67,8 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
 
   // From content::ResourceThrottle
   void WillStartRequest(bool* defer) override;
-  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+                           bool* defer) override;
   const char* GetNameForLogging() const override;
 
   void OnIoThreadClientReady(int new_render_process_id,
@@ -120,8 +121,9 @@ void IoThreadClientThrottle::WillStartRequest(bool* defer) {
   }
 }
 
-void IoThreadClientThrottle::WillRedirectRequest(const GURL& new_url,
-                                                 bool* defer) {
+void IoThreadClientThrottle::WillRedirectRequest(
+    const net::RedirectInfo& redirect_info,
+    bool* defer) {
   WillStartRequest(defer);
 }
 

@@ -55,7 +55,8 @@ class SafeBrowsingResourceThrottle
 
   // content::ResourceThrottle implementation (called on IO thread):
   void WillStartRequest(bool* defer) override;
-  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+                           bool* defer) override;
   const char* GetNameForLogging() const override;
 
   // SafeBrowsingDabaseManager::Client implementation (called on IO thread):

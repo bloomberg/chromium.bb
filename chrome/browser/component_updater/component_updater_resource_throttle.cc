@@ -32,7 +32,8 @@ class CUResourceThrottle : public content::ResourceThrottle,
 
   // Overriden from ResourceThrottle.
   void WillStartRequest(bool* defer) override;
-  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+                           bool* defer) override;
   const char* GetNameForLogging() const override;
 
   // Component updater calls this function via PostTask to unblock the request.
@@ -63,7 +64,8 @@ void CUResourceThrottle::WillStartRequest(bool* defer) {
   }
 }
 
-void CUResourceThrottle::WillRedirectRequest(const GURL& new_url, bool* defer) {
+void CUResourceThrottle::WillRedirectRequest(
+    const net::RedirectInfo& redirect_info, bool* defer) {
   WillStartRequest(defer);
 }
 

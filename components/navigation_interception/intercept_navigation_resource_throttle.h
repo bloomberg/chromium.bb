@@ -41,11 +41,11 @@ class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
 
   // content::ResourceThrottle implementation:
   void WillStartRequest(bool* defer) override;
-  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+                           bool* defer) override;
   const char* GetNameForLogging() const override;
 
  private:
-  std::string GetMethodAfterRedirect();
   bool CheckIfShouldIgnoreNavigation(const GURL& url,
                                      const std::string& method,
                                      bool is_redirect);

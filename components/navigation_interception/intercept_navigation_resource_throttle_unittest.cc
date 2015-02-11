@@ -25,6 +25,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -154,9 +155,10 @@ class TestIOThreadState {
     throttle_->WillStartRequest(defer);
   }
 
-  void ThrottleWillRedirectRequest(const GURL& new_url, bool* defer) {
+  void ThrottleWillRedirectRequest(const net::RedirectInfo& redirect_info,
+                                   bool* defer) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    throttle_->WillRedirectRequest(new_url, defer);
+    throttle_->WillRedirectRequest(redirect_info, defer);
   }
 
   bool request_resumed() const {
@@ -218,10 +220,15 @@ class InterceptNavigationResourceThrottleTest
 
     SetIOThreadState(io_thread_state);
 
-    if (redirect_mode == REDIRECT_MODE_NO_REDIRECT)
+    if (redirect_mode == REDIRECT_MODE_NO_REDIRECT) {
       io_thread_state->ThrottleWillStartRequest(defer);
-    else
-      io_thread_state->ThrottleWillRedirectRequest(url, defer);
+    } else {
+      // 302 redirects convert POSTs to gets.
+      net::RedirectInfo redirect_info;
+      redirect_info.new_url = url;
+      redirect_info.new_method = "GET";
+      io_thread_state->ThrottleWillRedirectRequest(redirect_info, defer);
+    }
   }
 
  protected:
