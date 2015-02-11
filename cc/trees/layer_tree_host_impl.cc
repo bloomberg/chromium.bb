@@ -1209,33 +1209,28 @@ void LayerTreeHostImpl::GetPictureLayerImplPairs(
     std::vector<PictureLayerImpl::Pair>* layer_pairs,
     bool need_valid_tile_priorities) const {
   DCHECK(layer_pairs->empty());
-  for (std::vector<PictureLayerImpl*>::const_iterator it =
-           picture_layers_.begin();
-       it != picture_layers_.end();
-       ++it) {
-    PictureLayerImpl* layer = *it;
 
-    if (!layer->IsOnActiveOrPendingTree() ||
-        (need_valid_tile_priorities && !layer->HasValidTilePriorities()))
+  for (auto& layer : active_tree_->picture_layers()) {
+    if (need_valid_tile_priorities && !layer->HasValidTilePriorities())
       continue;
-
     PictureLayerImpl* twin_layer = layer->GetPendingOrActiveTwinLayer();
-
     // Ignore the twin layer when tile priorities are invalid.
     if (need_valid_tile_priorities && twin_layer &&
-        !twin_layer->HasValidTilePriorities())
-      twin_layer = NULL;
+        !twin_layer->HasValidTilePriorities()) {
+      twin_layer = nullptr;
+    }
+    layer_pairs->push_back(PictureLayerImpl::Pair(layer, twin_layer));
+  }
 
-    // If the current tree is ACTIVE_TREE, then always generate a layer_pair.
-    // If current tree is PENDING_TREE, then only generate a layer_pair if
-    // there is no twin layer.
-    if (layer->layer_tree_impl()->IsActiveTree()) {
-      DCHECK_IMPLIES(twin_layer,
-                     twin_layer->layer_tree_impl()->IsPendingTree());
-      layer_pairs->push_back(PictureLayerImpl::Pair(layer, twin_layer));
-    } else if (!twin_layer) {
-      DCHECK(layer->layer_tree_impl()->IsPendingTree());
-      layer_pairs->push_back(PictureLayerImpl::Pair(NULL, layer));
+  if (pending_tree_) {
+    for (auto& layer : pending_tree_->picture_layers()) {
+      if (need_valid_tile_priorities && !layer->HasValidTilePriorities())
+        continue;
+      if (layer->GetPendingOrActiveTwinLayer()) {
+        // Already captured from the active tree.
+        continue;
+      }
+      layer_pairs->push_back(PictureLayerImpl::Pair(nullptr, layer));
     }
   }
 }
@@ -1267,11 +1262,6 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
   // for draw tile here, then we will miss telling the scheduler each frame that
   // we intend to draw so it may make worse scheduling decisions.
   is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
-}
-
-const std::vector<PictureLayerImpl*>& LayerTreeHostImpl::GetPictureLayers()
-    const {
-  return picture_layers_;
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
@@ -1820,7 +1810,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     client_->RenewTreePriority();
     // If we have any picture layers, then by activating we also modified tile
     // priorities.
-    if (!picture_layers_.empty())
+    if (!active_tree_->picture_layers().empty())
       DidModifyTilePriorities();
   }
 
@@ -3499,19 +3489,6 @@ void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfForwardingToMainThread() {
   std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
   for (; it != swap_promise_monitor_.end(); it++)
     (*it)->OnForwardScrollUpdateToMainThreadOnImpl();
-}
-
-void LayerTreeHostImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
-  DCHECK(std::find(picture_layers_.begin(), picture_layers_.end(), layer) ==
-         picture_layers_.end());
-  picture_layers_.push_back(layer);
-}
-
-void LayerTreeHostImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
-  std::vector<PictureLayerImpl*>::iterator it =
-      std::find(picture_layers_.begin(), picture_layers_.end(), layer);
-  DCHECK(it != picture_layers_.end());
-  picture_layers_.erase(it);
 }
 
 }  // namespace cc

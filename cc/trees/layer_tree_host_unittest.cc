@@ -84,7 +84,8 @@ class LayerTreeHostTestReadyToActivateEmpty : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    const std::vector<PictureLayerImpl*>& layers = impl->GetPictureLayers();
+    const std::vector<PictureLayerImpl*>& layers =
+        impl->sync_tree()->picture_layers();
     required_for_activation_count_ = 0;
     for (const auto& layer : layers) {
       FakePictureLayerImpl* fake_layer =
@@ -156,7 +157,8 @@ class LayerTreeHostTestReadyToDrawEmpty : public LayerTreeHostTest {
 
   void NotifyReadyToDrawOnThread(LayerTreeHostImpl* impl) override {
     did_notify_ready_to_draw_ = true;
-    const std::vector<PictureLayerImpl*>& layers = impl->GetPictureLayers();
+    const std::vector<PictureLayerImpl*>& layers =
+        impl->active_tree()->picture_layers();
     all_tiles_required_for_draw_are_ready_to_draw_ =
         impl->tile_manager()->IsReadyToDraw();
     for (const auto& layer : layers) {

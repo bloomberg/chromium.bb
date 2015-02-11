@@ -277,6 +277,12 @@ class CC_EXPORT LayerTreeImpl {
 
   bool IsUIResourceOpaque(UIResourceId uid) const;
 
+  void RegisterPictureLayerImpl(PictureLayerImpl* layer);
+  void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
+  const std::vector<PictureLayerImpl*>& picture_layers() const {
+    return picture_layers_;
+  }
+
   void AddLayerWithCopyOutputRequest(LayerImpl* layer);
   void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
   const std::vector<LayerImpl*>& LayersWithCopyOutputRequest() const;
@@ -303,9 +309,6 @@ class CC_EXPORT LayerTreeImpl {
   // the viewport.
   void GetViewportSelection(ViewportSelectionBound* start,
                             ViewportSelectionBound* end);
-
-  void RegisterPictureLayerImpl(PictureLayerImpl* layer);
-  void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
 
   void set_top_controls_shrink_blink_size(bool shrink);
   bool top_controls_shrink_blink_size() const {
@@ -370,6 +373,7 @@ class CC_EXPORT LayerTreeImpl {
   typedef base::hash_map<int, LayerImpl*> LayerIdMap;
   LayerIdMap layer_id_map_;
 
+  std::vector<PictureLayerImpl*> picture_layers_;
   std::vector<LayerImpl*> layers_with_copy_output_request_;
 
   // Persisted state for non-impl-side-painting.

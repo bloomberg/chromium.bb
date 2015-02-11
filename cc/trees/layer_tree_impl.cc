@@ -1149,6 +1149,19 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
     layer_tree_host_impl_->SetNeedsCommit();
 }
 
+void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
+  DCHECK(std::find(picture_layers_.begin(), picture_layers_.end(), layer) ==
+         picture_layers_.end());
+  picture_layers_.push_back(layer);
+}
+
+void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
+  std::vector<PictureLayerImpl*>::iterator it =
+      std::find(picture_layers_.begin(), picture_layers_.end(), layer);
+  DCHECK(it != picture_layers_.end());
+  picture_layers_.erase(it);
+}
+
 void LayerTreeImpl::AddLayerWithCopyOutputRequest(LayerImpl* layer) {
   // Only the active tree needs to know about layers with copy requests, as
   // they are aborted if not serviced during draw.
@@ -1559,14 +1572,6 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelectionBound* start,
         selection_end_.layer_id ? LayerById(selection_end_.layer_id) : NULL,
         device_scale_factor());
   }
-}
-
-void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
-  layer_tree_host_impl_->RegisterPictureLayerImpl(layer);
-}
-
-void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
-  layer_tree_host_impl_->UnregisterPictureLayerImpl(layer);
 }
 
 void LayerTreeImpl::InputScrollAnimationFinished() {
