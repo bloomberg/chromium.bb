@@ -2543,12 +2543,12 @@ void drmCloseOnce(int fd)
 
 int drmSetMaster(int fd)
 {
-	return ioctl(fd, DRM_IOCTL_SET_MASTER, 0);
+	return drmIoctl(fd, DRM_IOCTL_SET_MASTER, 0);
 }
 
 int drmDropMaster(int fd)
 {
-	return ioctl(fd, DRM_IOCTL_DROP_MASTER, 0);
+	return drmIoctl(fd, DRM_IOCTL_DROP_MASTER, 0);
 }
 
 char *drmGetDeviceNameFromFd(int fd)
