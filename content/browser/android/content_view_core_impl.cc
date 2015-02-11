@@ -256,6 +256,8 @@ ContentViewCoreImpl::ContentViewCoreImpl(
 }
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {
+  root_layer_->RemoveFromParent();
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   java_ref_.reset();
@@ -1301,6 +1303,12 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env, jobject jobj,
     else
       GetRenderWidgetHostViewAndroid()->SetBackgroundColor(SK_ColorTRANSPARENT);
   }
+}
+
+void ContentViewCoreImpl::SetDrawsContent(JNIEnv* env,
+                                          jobject jobj,
+                                          jboolean draws) {
+  GetLayer()->SetHideLayerAndSubtree(!draws);
 }
 
 void ContentViewCoreImpl::RequestTextSurroundingSelection(

@@ -63,6 +63,8 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -151,6 +153,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
+
+    /**
+     * A list of {@link ContentViewCore} overlay objects that are managed by external components but
+     * need to be sized and rendered along side this {@link Tab}s content.
+     */
+    private final List<ContentViewCore> mOverlayContentViewCores = new ArrayList<ContentViewCore>();
 
     // Content layer Observers and Delegates
     private ContentViewClient mContentViewClient;
@@ -1204,12 +1212,17 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                          whether or not the newly created {@link WebContents} will be hidden
      *                          or not.
      */
-    public void initialize(WebContents webContents, TabContentManager tabContentManager,
+    public final void initialize(WebContents webContents, TabContentManager tabContentManager,
             boolean initiallyHidden) {
         try {
             TraceEvent.begin("Tab.initialize");
 
-            internalInit(tabContentManager);
+            internalInit();
+
+            // Attach the TabContentManager if we have one.  This will bind this Tab's content layer
+            // to this manager.
+            // TODO(dtrainor): Remove this and move to a pull model instead of pushing the layer.
+            nativeAttachToTabContentManager(mNativeTabAndroid, tabContentManager);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents.
@@ -1242,16 +1255,79 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /**
      * Perform any class-specific initialization tasks.
-     * @param tabContentManager A {@link TabContentManager} instance or {@code null} if the web
-     *                          content will be managed/displayed manually.
      */
-    protected void internalInit(TabContentManager tabContentManager) {
+    protected void internalInit() {
         initializeNative();
 
         if (AppBannerManager.isEnabled()) {
             mAppBannerManager = new AppBannerManager(this);
             addObserver(mAppBannerManager);
         }
+    }
+
+    /**
+     * Used to get a list of Android {@link View}s that represent both the normal content as well as
+     * overlays.
+     * @param content A {@link List} that will be populated with {@link View}s that represent all of
+     *                the content in this {@link Tab}.
+     */
+    public void getAllViews(List<View> content) {
+        content.add(getView());
+        for (int i = 0; i < mOverlayContentViewCores.size(); i++) {
+            content.add(mOverlayContentViewCores.get(i).getContainerView());
+        }
+    }
+
+    /**
+     * Used to get a list of {@link ContentViewCore}s that represent both the normal content as well
+     * as overlays.  These are all {@link ContentViewCore}s currently showing or rendering content
+     * for this {@link Tab}.
+     * @param content A {@link List} that will be populated with {@link ContentViewCore}s currently
+     *                rendering content related to this {@link Tab}.
+     */
+    public void getAllContentViewCores(List<ContentViewCore> content) {
+        content.add(mContentViewCore);
+        for (int i = 0; i < mOverlayContentViewCores.size(); i++) {
+            content.add(mOverlayContentViewCores.get(i));
+        }
+    }
+
+    /**
+     * Adds a {@link ContentViewCore} to this {@link Tab} as an overlay object.  This
+     * {@link ContentViewCore} will be attached to the CC layer hierarchy and have all layout events
+     * propagated to it.  This {@link ContentViewCore} can be removed via
+     * {@link #detachOverlayContentViewCore(ContentViewCore)}.
+     * @param content The {@link ContentViewCore} to attach.
+     * @param visible Whether or not to make the content visible.
+     */
+    public void attachOverlayContentViewCore(ContentViewCore content, boolean visible) {
+        if (content == null) return;
+
+        assert !mOverlayContentViewCores.contains(content);
+        mOverlayContentViewCores.add(content);
+        nativeAttachOverlayContentViewCore(mNativeTabAndroid, content, visible);
+        for (TabObserver observer : mObservers) {
+            observer.onOverlayContentViewCoreAdded(this, content);
+        }
+    }
+
+    /**
+     * Removes a {@link ContentViewCore} overlay object from this {@link Tab}.  This
+     * {@link ContentViewCore} must have previously been added via
+     * {@link #attachOverlayContentViewCore(ContentViewCore, boolean)}.
+     * @param content The {@link ContentViewCore} to detach.
+     */
+    public void detachOverlayContentViewCore(ContentViewCore content) {
+        if (content == null) return;
+
+        for (TabObserver observer : mObservers) {
+            observer.onOverlayContentViewCoreRemoved(this, content);
+        }
+
+        assert mOverlayContentViewCores.contains(content);
+        mOverlayContentViewCores.remove(content);
+
+        nativeDetachOverlayContentViewCore(mNativeTabAndroid, content);
     }
 
     /**
@@ -1349,7 +1425,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mContentViewParent.removeAllViews();
         }
         mContentViewParent = new FrameLayout(mContext);
-        mContentViewParent.addView(cvc.getContainerView());
+        mContentViewParent.addView(cvc.getContainerView(),
+                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
         mWebContentsDelegate = createWebContentsDelegate();
         mWebContentsObserver = new TabWebContentsObserver(mContentViewCore.getWebContents());
@@ -2391,5 +2468,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeSearchByImageInNewTabAsync(long nativeTabAndroid);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,
             InterceptNavigationDelegate delegate);
+    private native void nativeAttachToTabContentManager(long nativeTabAndroid,
+            TabContentManager tabContentManager);
+    private native void nativeAttachOverlayContentViewCore(long nativeTabAndroid,
+            ContentViewCore content, boolean visible);
+    private native void nativeDetachOverlayContentViewCore(long nativeTabAndroid,
+            ContentViewCore content);
     private static native void nativeRecordStartupToCommitUma();
 }

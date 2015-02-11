@@ -180,6 +180,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                             jint height);
 
   void SetBackgroundOpaque(JNIEnv* env, jobject jobj, jboolean opaque);
+  void SetDrawsContent(JNIEnv* env, jobject jobj, jboolean draws);
 
   jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj);
 
