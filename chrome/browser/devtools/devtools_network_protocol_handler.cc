@@ -90,7 +90,7 @@ DevToolsNetworkProtocolHandler::EmulateNetworkConditions(
           offline, latency, download_throughput, upload_throughput));
 
   UpdateNetworkState(agent_host, conditions.Pass());
-  return DevToolsProtocol::CreateSuccessResponse(command_id, nullptr);
+  return scoped_ptr<base::DictionaryValue>();
 }
 
 void DevToolsNetworkProtocolHandler::UpdateNetworkState(
