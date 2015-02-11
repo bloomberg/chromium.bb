@@ -158,6 +158,18 @@ class Project(object):
     return bool('name' in self.config and
                 _FindProjectInOverlays(project_name, self.config['name']))
 
+  def MainPackages(self):
+    """Returns the project's main package(s).
+
+    This finds the 'main_package' property.  It nevertheless returns a (single
+    element) list as it is easier to work with.
+
+    Returns:
+      A list of main packages; empty if no main package configured.
+    """
+    main_package = self.config.get('main_package')
+    return [main_package] if main_package else []
+
 
 def _FindProjectInOverlays(name, base=None):
   """Returns the parent project of |base| called |name|.
@@ -169,15 +181,20 @@ def _FindProjectInOverlays(name, base=None):
   Returns:
     The project associated to |name| if one exists, otherwise None.
   """
+  if not name:
+    return None
   if base is None:
     base = name
-  for overlay in portage_util.FindOverlays('both', base):
-    try:
-      p = Project(overlay)
-      if p.config.get('name') == name:
-        return p
-    except ProjectNotFound:
-      pass
+  try:
+    for overlay in portage_util.FindOverlays('both', base):
+      try:
+        p = Project(overlay)
+        if p.config.get('name') == name:
+          return p
+      except ProjectNotFound:
+        pass
+  except portage_util.MissingOverlayException:
+    pass
 
   return None
 

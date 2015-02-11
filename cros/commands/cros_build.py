@@ -12,6 +12,7 @@ import logging
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
+from chromite.lib import project
 from chromite.scripts import cros_list_modified_packages as workon
 from chromite.scripts import cros_setup_toolchains as toolchain
 from chromite import cros
@@ -184,7 +185,7 @@ To just build a single package:
 
   def Run(self):
     """Run cros build."""
-    if not (self.options.board or self.options.host or self.current_project):
+    if not (self.options.board or self.options.host or self.curr_project_name):
       cros_build_lib.Die('You did not specify a board/project to build for. You'
                          ' need to be in a project directory or set '
                          '--board/--project')
@@ -192,7 +193,9 @@ To just build a single package:
     self.RunInsideChroot(auto_detect_project=True)
 
     # If no packages were listed, find the main project package.
-    self.build_pkgs = self.options.packages or self.DefaultPackages()
+    proj = project.FindProjectByName(self.options.board or
+                                     self.curr_project_name)
+    self.build_pkgs = self.options.packages or (proj and proj.MainPackages())
     if not self.build_pkgs:
       cros_build_lib.Die('No packages found, nothing to build.')
 

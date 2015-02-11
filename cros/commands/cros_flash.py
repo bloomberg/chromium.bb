@@ -803,7 +803,7 @@ Examples:
         return 1
 
     try:
-      board = self.options.board or self.current_project
+      board = self.options.board or self.curr_project_name
       if self.run_mode == self.SSH_MODE:
         logging.info('Preparing to update the remote device %s',
                      self.options.device)

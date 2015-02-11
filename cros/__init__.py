@@ -72,7 +72,7 @@ class CrosCommand(object):
   def __init__(self, options):
     self.options = options
     p = project.FindProjectInPath()
-    self.current_project = p.config.get('name') if p else None
+    self.curr_project_name = p.config.get('name') if p else None
 
   @classmethod
   def AddParser(cls, parser):
@@ -83,7 +83,7 @@ class CrosCommand(object):
     """Run this command inside the chroot.
 
     If cwd is in a project, and --board/--host is not explicitly set, set
-    --board explicitly as we might not be able to detect the current_project
+    --board explicitly as we might not be able to detect the curr_project_name
     inside the chroot (cwd will have changed).
 
     Args:
@@ -94,27 +94,11 @@ class CrosCommand(object):
 
     extra_args = None
     if (auto_detect_project and not self.options.board and
-        not ('host' in self.options  and self.options.host) and
-        self.current_project):
-      extra_args = ['--project', self.current_project]
+        not ('host' in self.options and self.options.host) and
+        self.curr_project_name):
+      extra_args = ['--project', self.curr_project_name]
 
     raise commandline.ChrootRequiredError(extra_args=extra_args)
-
-  def DefaultPackages(self):
-    """Returns the default packages for the current project/board.
-
-    Currently, this finds the 'main_package' property of the current project.
-    We nevertheless return a (single element) list because it matches the
-    argument type that different commands are expecting.
-
-    Returns:
-      A list of default packages; empty if project is unknown or has no main
-      package configured.
-    """
-    proj_name = self.options.board or self.current_project
-    proj = proj_name and project.FindProjectByName(proj_name)
-    main_package = proj and proj.config.get('main_package')
-    return [main_package] if main_package else []
 
   def Run(self):
     """The command to run."""

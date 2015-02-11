@@ -15,6 +15,7 @@ import urlparse
 from chromite import cros
 from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
+from chromite.lib import project
 from chromite.lib import remote_access
 try:
   import portage
@@ -892,7 +893,7 @@ For more information of cros build usage:
     self.clean_binpkg = self.options.clean_binpkg
     self.root = self.options.root
     self.ping = self.options.ping
-    self.board = self.options.board or self.current_project
+    self.board = self.options.board or self.curr_project_name
     device = self.options.device
     # pylint: disable=E1101
     if urlparse.urlparse(device).scheme == '':
@@ -943,7 +944,8 @@ For more information of cros build usage:
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
         # If no packages were listed, find the project's main packages.
-        deploy_pkgs = self.options.packages or self.DefaultPackages()
+        proj = project.FindProjectByName(self.board)
+        deploy_pkgs = self.options.packages or (proj and proj.MainPackages())
         if not deploy_pkgs:
           cros_build_lib.Die('No packages found, nothing to deploy.')
 
