@@ -278,8 +278,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestProcessCancelDetachableTimesOut);
 
-  class ShutdownTask;
-
   struct OustandingRequestsStats {
     int memory_cost;
     int num_requests;
@@ -287,6 +285,17 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   friend class ShutdownTask;
   friend class ResourceMessageDelegate;
+
+  // Information about status of a ResourceLoader.
+  struct LoadInfo {
+    GURL url;
+    net::LoadStateWithParam load_state;
+    uint64 upload_position;
+    uint64 upload_size;
+  };
+
+  // Map from ProcessID+RouteID pair to the "most interesting" LoadState.
+  typedef std::map<GlobalRoutingID, LoadInfo> LoadInfoMap;
 
   // ResourceLoaderDelegate implementation:
   ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
@@ -363,9 +372,33 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // not rely on this iterator being valid on return.
   void RemovePendingLoader(const LoaderMap::iterator& iter);
 
-  // Checks all pending requests and updates the load states and upload
-  // progress if necessary.
-  void UpdateLoadStates();
+  // This function returns true if the LoadInfo of |a| is "more interesting"
+  // than the LoadInfo of |b|.  The load that is currently sending the larger
+  // request body is considered more interesting.  If neither request is
+  // sending a body (Neither request has a body, or any request that has a body
+  // is not currently sending the body), the request that is further along is
+  // considered more interesting.
+  //
+  // This takes advantage of the fact that the load states are an enumeration
+  // listed in the order in which they usually occur during the lifetime of a
+  // request, so states with larger numeric values are generally further along
+  // toward completion.
+  //
+  // For example, by this measure "tranferring data" is a more interesting state
+  // than "resolving host" because when transferring data something is being
+  // done that corresponds to changes that the user might observe, whereas
+  // waiting for a host name to resolve implies being stuck.
+  static bool LoadInfoIsMoreInteresting(const LoadInfo& a, const LoadInfo& b);
+
+  // Used to marshal calls to LoadStateChanged from the IO to UI threads.  All
+  // are done as a single callback to avoid spamming the UI thread.
+  static void UpdateLoadInfoOnUIThread(scoped_ptr<LoadInfoMap> info_map);
+
+  // Gets the most interesting LoadInfo for each GlobalRoutingID.
+  scoped_ptr<LoadInfoMap> GetLoadInfoForAllRoutes();
+
+  // Checks all pending requests and updates the load info if necessary.
+  void UpdateLoadInfo();
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.
   void ProcessBlockedRequestsForRoute(int child_id,

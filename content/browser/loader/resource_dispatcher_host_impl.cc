@@ -799,9 +799,9 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
   // Make sure we have the load state monitor running
   if (!update_load_states_timer_->IsRunning()) {
-    update_load_states_timer_->Start(FROM_HERE,
-        TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
-        this, &ResourceDispatcherHostImpl::UpdateLoadStates);
+    update_load_states_timer_->Start(
+        FROM_HERE, TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
+        this, &ResourceDispatcherHostImpl::UpdateLoadInfo);
   }
 }
 
@@ -2138,121 +2138,87 @@ net::URLRequest* ResourceDispatcherHostImpl::GetURLRequest(
   return loader->request();
 }
 
-namespace {
+// static
+bool ResourceDispatcherHostImpl::LoadInfoIsMoreInteresting(const LoadInfo& a,
+                                                           const LoadInfo& b) {
+  // Set |*_uploading_size| to be the size of the corresponding upload body if
+  // it's currently being uploaded.
 
-// This function attempts to return the "more interesting" load state of |a|
-// and |b|.  We don't have temporal information about these load states
-// (meaning we don't know when we transitioned into these states), so we just
-// rank them according to how "interesting" the states are.
-//
-// We take advantage of the fact that the load states are an enumeration listed
-// in the order in which they occur during the lifetime of a request, so we can
-// regard states with larger numeric values as being further along toward
-// completion.  We regard those states as more interesting to report since they
-// represent progress.
-//
-// For example, by this measure "tranferring data" is a more interesting state
-// than "resolving host" because when we are transferring data we are actually
-// doing something that corresponds to changes that the user might observe,
-// whereas waiting for a host name to resolve implies being stuck.
-//
-const net::LoadStateWithParam& MoreInterestingLoadState(
-    const net::LoadStateWithParam& a, const net::LoadStateWithParam& b) {
-  return (a.state < b.state) ? b : a;
+  uint64 a_uploading_size = 0;
+  if (a.load_state.state == net::LOAD_STATE_SENDING_REQUEST)
+    a_uploading_size = a.upload_size;
+
+  uint64 b_uploading_size = 0;
+  if (b.load_state.state == net::LOAD_STATE_SENDING_REQUEST)
+    b_uploading_size = b.upload_size;
+
+  if (a_uploading_size != b_uploading_size)
+    return a_uploading_size > b_uploading_size;
+
+  return a.load_state.state > b.load_state.state;
 }
 
-// Carries information about a load state change.
-struct LoadInfo {
-  GURL url;
-  net::LoadStateWithParam load_state;
-  uint64 upload_position;
-  uint64 upload_size;
-};
-
-// Map from ProcessID+RouteID pair to LoadState
-typedef std::map<GlobalRoutingID, LoadInfo> LoadInfoMap;
-
-// Used to marshal calls to LoadStateChanged from the IO to UI threads.  We do
-// them all as a single callback to avoid spamming the UI thread.
-void LoadInfoUpdateCallback(const LoadInfoMap& info_map) {
-  LoadInfoMap::const_iterator i;
-  for (i = info_map.begin(); i != info_map.end(); ++i) {
-    RenderViewHostImpl* view =
-        RenderViewHostImpl::FromID(i->first.child_id, i->first.route_id);
-    if (view)  // The view could be gone at this point.
-      view->LoadStateChanged(i->second.url, i->second.load_state,
-                             i->second.upload_position,
-                             i->second.upload_size);
+// static
+void ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread(
+    scoped_ptr<LoadInfoMap> info_map) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (const auto& load_info : *info_map) {
+    RenderViewHostImpl* view = RenderViewHostImpl::FromID(
+        load_info.first.child_id, load_info.first.route_id);
+    // The view could be gone at this point.
+    if (view) {
+      view->LoadStateChanged(load_info.second.url, load_info.second.load_state,
+                             load_info.second.upload_position,
+                             load_info.second.upload_size);
+    }
   }
 }
 
-}  // namespace
+scoped_ptr<ResourceDispatcherHostImpl::LoadInfoMap>
+ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
+  // Populate this map with load state changes, and then send them on to the UI
+  // thread where they can be passed along to the respective RVHs.
+  scoped_ptr<LoadInfoMap> info_map(new LoadInfoMap());
 
-void ResourceDispatcherHostImpl::UpdateLoadStates() {
+  for (const auto& loader : pending_loaders_) {
+    // Also poll for upload progress on this timer and send upload progress ipc
+    // messages to the plugin process.
+    loader.second->ReportUploadProgress();
+
+    net::URLRequest* request = loader.second->request();
+    net::UploadProgress upload_progress = request->GetUploadProgress();
+    LoadInfo load_info;
+    load_info.url = request->url();
+    load_info.load_state = request->GetLoadState();
+    load_info.upload_size = upload_progress.size();
+    load_info.upload_position = upload_progress.position();
+
+    GlobalRoutingID id(loader.second->GetRequestInfo()->GetGlobalRoutingID());
+    LoadInfoMap::iterator existing = info_map->find(id);
+    if (existing == info_map->end() ||
+        LoadInfoIsMoreInteresting(load_info, existing->second)) {
+      (*info_map)[id] = load_info;
+    }
+  }
+  return info_map.Pass();
+}
+
+void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/455952 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "455952 ResourceDispatcherHostImpl::UpdateLoadStates"));
-  // Populate this map with load state changes, and then send them on to the UI
-  // thread where they can be passed along to the respective RVHs.
-  LoadInfoMap info_map;
 
-  LoaderMap::const_iterator i;
+  scoped_ptr<LoadInfoMap> info_map(GetLoadInfoForAllRoutes());
 
-  // Determine the largest upload size of all requests
-  // in each View (good chance it's zero).
-  std::map<GlobalRoutingID, uint64> largest_upload_size;
-  for (i = pending_loaders_.begin(); i != pending_loaders_.end(); ++i) {
-    net::URLRequest* request = i->second->request();
-    ResourceRequestInfoImpl* info = i->second->GetRequestInfo();
-    uint64 upload_size = request->GetUploadProgress().size();
-    if (request->GetLoadState().state != net::LOAD_STATE_SENDING_REQUEST)
-      upload_size = 0;
-    GlobalRoutingID id(info->GetGlobalRoutingID());
-    if (upload_size && largest_upload_size[id] < upload_size)
-      largest_upload_size[id] = upload_size;
-  }
-
-  for (i = pending_loaders_.begin(); i != pending_loaders_.end(); ++i) {
-    net::URLRequest* request = i->second->request();
-    ResourceRequestInfoImpl* info = i->second->GetRequestInfo();
-    net::LoadStateWithParam load_state = request->GetLoadState();
-    net::UploadProgress progress = request->GetUploadProgress();
-
-    // We also poll for upload progress on this timer and send upload
-    // progress ipc messages to the plugin process.
-    i->second->ReportUploadProgress();
-
-    GlobalRoutingID id(info->GetGlobalRoutingID());
-
-    // If a request is uploading data, ignore all other requests so that the
-    // upload progress takes priority for being shown in the status bar.
-    if (largest_upload_size.find(id) != largest_upload_size.end() &&
-        progress.size() < largest_upload_size[id])
-      continue;
-
-    net::LoadStateWithParam to_insert = load_state;
-    LoadInfoMap::iterator existing = info_map.find(id);
-    if (existing != info_map.end()) {
-      to_insert =
-          MoreInterestingLoadState(existing->second.load_state, load_state);
-      if (to_insert.state == existing->second.load_state.state)
-        continue;
-    }
-    LoadInfo& load_info = info_map[id];
-    load_info.url = request->url();
-    load_info.load_state = to_insert;
-    load_info.upload_size = progress.size();
-    load_info.upload_position = progress.position();
-  }
-
-  if (info_map.empty())
+  if (info_map->empty())
     return;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoadInfoUpdateCallback, info_map));
+      base::Bind(&ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread,
+                 base::Passed(&info_map)));
 }
 
 void ResourceDispatcherHostImpl::BlockRequestsForRoute(int child_id,
