@@ -1,10 +1,5 @@
-The icons:
-ic_action_keyboard.png
-ic_action_full_screen.png
+Some of these icons are taken from the Google Material Design icon repository:
+https://github.com/google/material-design-icons
 
-were taken from the icon pack at:
-https://developer.android.com/design/downloads/index.html
-
-which carries the following notice:
-"You may use these materials without restriction in your apps and to develop
-your apps."
+These icons are released under an Attribution 4.0 International licence:
+http://creativecommons.org/licenses/by/4.0/

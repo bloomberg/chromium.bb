@@ -41,19 +41,6 @@
           ],
         },  # end of target 'remoting_client_jni'
         {
-          'target_name': 'remoting_android_resources',
-          'type': 'none',
-          'copies': [
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable',
-              'files': [
-                'resources/chromoting128.png',
-                'resources/icon_host.png',
-              ],
-            },
-          ],
-        },  # end of target 'remoting_android_resources'
-        {
           'target_name': 'remoting_apk_manifest',
           'type': 'none',
           'conditions': [
@@ -97,14 +84,11 @@
             'res_extra_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
             'res_extra_files': [
               '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(SHARED_INTERMEDIATE_DIR)" resources/remoting_strings.grd)',
-              '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable/chromoting128.png',
-              '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable/icon_host.png',
             ],
           },
           'dependencies': [
             '../base/base.gyp:base_java',
             '../ui/android/ui_android.gyp:ui_java',
-            'remoting_android_resources',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',

@@ -35,7 +35,7 @@ class HostListAdapter extends ArrayAdapter<HostInfo> {
 
         target.setText(host.name);
         target.setCompoundDrawablesWithIntrinsicBounds(
-                host.isOnline ? R.drawable.icon_host : R.drawable.icon_host_offline, 0, 0, 0);
+                host.isOnline ? R.drawable.ic_host_online : R.drawable.ic_host_offline, 0, 0, 0);
 
         if (host.isOnline) {
             target.setOnClickListener(new View.OnClickListener() {
