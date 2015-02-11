@@ -137,14 +137,11 @@ public:
         atomicSubtract(&m_unparkedThreadCount, threads.size());
         releaseStore(&m_canResume, 1);
 
-        // FIXME: Resumed threads will all contend for m_mutex just to unlock it
-        // later which is a waste of resources.
         if (UNLIKELY(barrierLocked)) {
             m_resume.broadcast();
         } else {
-            // FIXME: Resumed threads will all contend for
-            // m_mutex just to unlock it later which is a waste of
-            // resources.
+            // FIXME: Resumed threads will all contend for m_mutex just
+            // to unlock it later which is a waste of resources.
             MutexLocker locker(m_mutex);
             m_resume.broadcast();
         }
