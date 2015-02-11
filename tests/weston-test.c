@@ -33,6 +33,7 @@
 #ifdef ENABLE_EGL
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#include "../src/weston-egl-ext.h"
 #endif /* ENABLE_EGL */
 
 struct weston_test {
