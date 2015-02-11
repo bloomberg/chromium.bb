@@ -55,7 +55,7 @@ class MEDIA_EXPORT MojoRendererService
     STATE_ERROR
   };
 
-  // Called when the MojoDemuxerStreamAdapter is ready to go (has a config,
+  // Called when the DemuxerStreamProviderShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.
   void OnStreamReady(const mojo::Closure& callback);
 

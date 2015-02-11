@@ -5,7 +5,6 @@
 #include "media/base/user_input_monitor.h"
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkPoint.h"
 
 namespace media {
 
