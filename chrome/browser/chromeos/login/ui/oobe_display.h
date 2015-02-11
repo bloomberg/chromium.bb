@@ -22,7 +22,7 @@ class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaView;
 class GaiaScreenHandler;
-class HIDDetectionScreenActor;
+class HIDDetectionView;
 class HostPairingScreenActor;
 class KioskAutolaunchScreenActor;
 class KioskEnableScreenActor;
@@ -88,7 +88,7 @@ class OobeDisplay {
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
   virtual AutoEnrollmentCheckScreenActor*
       GetAutoEnrollmentCheckScreenActor() = 0;
-  virtual HIDDetectionScreenActor* GetHIDDetectionScreenActor() = 0;
+  virtual HIDDetectionView* GetHIDDetectionView() = 0;
   virtual SupervisedUserCreationScreenHandler*
       GetSupervisedUserCreationScreenActor() = 0;
   virtual AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() = 0;

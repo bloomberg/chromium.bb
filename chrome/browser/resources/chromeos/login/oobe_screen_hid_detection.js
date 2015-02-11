@@ -7,11 +7,17 @@
  */
 
 login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
+  var CONTEXT_KEY_KEYBOARD_STATE = 'keyboard-state';
+  var CONTEXT_KEY_MOUSE_STATE = 'mouse-state';
+  var CONTEXT_KEY_KEYBOARD_PINCODE = 'keyboard-pincode';
+  var CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED = 'num-keys-entered-expected';
+  var CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE = 'num-keys-entered-pincode';
+  var CONTEXT_KEY_MOUSE_DEVICE_NAME = 'mouse-device-name';
+  var CONTEXT_KEY_KEYBOARD_DEVICE_NAME = 'keyboard-device-name';
+  var CONTEXT_KEY_KEYBOARD_LABEL = 'keyboard-device-label';
+  var CONTEXT_KEY_CONTINUE_BUTTON_ENABLED = 'continue-button-enabled';
+
   return {
-    EXTERNAL_API: [
-      'setPointingDeviceState',
-      'setKeyboardDeviceState',
-    ],
 
   /**
    * Enumeration of possible states during pairing.  The value associated with
@@ -22,7 +28,6 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
    PAIRING: {
      STARTUP: 'bluetoothStartConnecting',
      REMOTE_PIN_CODE: 'bluetoothRemotePinCode',
-     REMOTE_PASSKEY: 'bluetoothRemotePasskey',
      CONNECT_FAILED: 'bluetoothConnectFailed',
      CANCELED: 'bluetoothPairingCanceled',
      // Pairing dismissed (succeeded or canceled).
@@ -51,6 +56,82 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
      */
     continueButton_: null,
 
+    /** @override */
+    decorate: function() {
+      var self = this;
+
+      this.context.addObserver(
+          CONTEXT_KEY_MOUSE_STATE,
+          function(stateId) {
+            if (stateId === undefined)
+              return;
+            self.setDeviceBlockState_('hid-mouse-block', stateId);
+          }
+      );
+      this.context.addObserver(
+        CONTEXT_KEY_KEYBOARD_STATE,
+        function(stateId) {
+          if (stateId === undefined)
+            return;
+          self.setDeviceBlockState_('hid-keyboard-block', stateId);
+          if (stateId == self.CONNECTION.PAIRED) {
+            $('hid-keyboard-label-paired').textContent = self.context.get(
+                CONTEXT_KEY_KEYBOARD_LABEL, '');
+          } else if (stateId == self.CONNECTION.PAIRING) {
+            $('hid-keyboard-label-pairing').textContent = self.context.get(
+                CONTEXT_KEY_KEYBOARD_LABEL, '');
+          } else if (stateId == self.CONNECTION.CONNECTED) {
+          }
+        }
+      );
+      this.context.addObserver(
+        CONTEXT_KEY_KEYBOARD_PINCODE,
+        function(pincode) {
+          self.setPincodeKeysState_();
+          if (!pincode) {
+            $('hid-keyboard-pincode').classList.remove('show-pincode');
+            return;
+          }
+          if (self.context.get(CONTEXT_KEY_KEYBOARD_STATE, '') !=
+              self.CONNECTION.PAIRING) {
+            return;
+          }
+          $('hid-keyboard-pincode').classList.add('show-pincode');
+          for (var i = 0, len = pincode.length; i < len; i++) {
+            var pincodeSymbol = $('hid-keyboard-pincode-sym-' + (i + 1));
+            pincodeSymbol.textContent = pincode[i];
+          }
+          announceAccessibleMessage(
+            self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '') + ' ' + pincode +
+            ' ' + loadTimeData.getString('hidDetectionBTEnterKey'));
+        }
+      );
+      this.context.addObserver(
+        CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED,
+        function(entered_part_expected) {
+          if (self.context.get(CONTEXT_KEY_KEYBOARD_STATE, '') != 'pairing')
+            return;
+          self.setPincodeKeysState_();
+        }
+      );
+      this.context.addObserver(
+        CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE,
+        function(entered_part) {
+          if (self.context.get(CONTEXT_KEY_KEYBOARD_STATE, '') !=
+              self.CONNECTION.PAIRING) {
+            return;
+          }
+          self.setPincodeKeysState_();
+        }
+      );
+      this.context.addObserver(
+        CONTEXT_KEY_CONTINUE_BUTTON_ENABLED,
+        function(enabled) {
+          $('hid-continue-button').disabled = !enabled;
+        }
+      );
+    },
+
     /**
      * Buttons in oobe wizard's button strip.
      * @type {array} Array of Buttons.
@@ -66,7 +147,6 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
         e.stopPropagation();
       });
       buttons.push(continueButton);
-      this.continueButton_ = continueButton;
 
       return buttons;
     },
@@ -75,7 +155,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      return this.continueButton_;
+      return $('hid-continue-button');
     },
 
     /**
@@ -114,54 +194,30 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
 
     /**
      * Sets state for pincode key elements.
-     * @param {entered} int, number of typed keys of pincode, -1 if keys press
-     * detection is not supported by device.
      */
-    setPincodeKeysState_: function(entered) {
+    setPincodeKeysState_: function() {
+      var entered = self.context.get(
+          CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE, 0);
+      // whether the functionality of getting num of entered keys is available.
+      var expected = self.context.get(
+          CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED, false);
       var pincodeLength = 7; // including enter-key
       for (var i = 0; i < pincodeLength; i++) {
         var pincodeSymbol = $('hid-keyboard-pincode-sym-' + (i + 1));
-        pincodeSymbol.classList.remove('key-typed');
-        pincodeSymbol.classList.remove('key-untyped');
-        pincodeSymbol.classList.remove('key-next');
-        if (i < entered)
-          pincodeSymbol.classList.add('key-typed');
-        else if (i == entered)
-          pincodeSymbol.classList.add('key-next');
-        else if (entered != -1)
-          pincodeSymbol.classList.add('key-untyped');
+        pincodeSymbol.classList.toggle('key-typed', i < entered && expected);
+        pincodeSymbol.classList.toggle('key-untyped', i > entered && expected);
+        pincodeSymbol.classList.toggle('key-next', i == entered && expected);
       }
     },
 
-    /**
-     * Sets state for keyboard-block.
-     * @param {data} dict with parameters.
+     /*
+     * Event handler that is invoked just before the screen in shown.
+     * @param {Object} data Screen init payload.
      */
-    setKeyboardDeviceState: function(data) {
-      if (data === undefined || !('state' in data))
-        return;
-      var state = data['state'];
-      this.setDeviceBlockState_(this.BLOCK.KEYBOARD, state);
-      if (state == this.CONNECTION.PAIRED)
-        $('hid-keyboard-label-paired').textContent = data['keyboard-label'];
-      else if (state == this.CONNECTION.PAIRING) {
-        $('hid-keyboard-label-pairing').textContent = data['keyboard-label'];
-        if (data['pairing-state'] == this.PAIRING.REMOTE_PIN_CODE ||
-            data['pairing-state'] == this.PAIRING.REMOTE_PASSKEY) {
-          this.setPincodeKeysState_(-1);
-          for (var i = 0, len = data['pincode'].length; i < len; i++) {
-            var pincodeSymbol = $('hid-keyboard-pincode-sym-' + (i + 1));
-            pincodeSymbol.textContent = data['pincode'][i];
-          }
-          announceAccessibleMessage(
-              data['keyboard-label'] + ' ' + data['pincode'] + ' ' +
-              loadTimeData.getString('hidDetectionBTEnterKey'));
-        }
-      } else if (state == this.CONNECTION.UPDATE) {
-        if ('keysEntered' in data) {
-          this.setPincodeKeysState_(data['keysEntered']);
-        }
-      }
+    onBeforeShow: function(data) {
+      this.setDeviceBlockState_('hid-mouse-block', this.CONNECTION.SEARCHING);
+      this.setDeviceBlockState_('hid-keyboard-block',
+                                this.CONNECTION.SEARCHING);
     },
   };
 });
