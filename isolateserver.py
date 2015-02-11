@@ -1984,7 +1984,7 @@ def archive_files_to_storage(storage, files, blacklist):
     _uploaded_files = storage.upload_items(items_to_upload)
     return results
   finally:
-    if tempdir:
+    if tempdir and os.path.isdir(tempdir):
       file_path.rmtree(tempdir)
 
 
