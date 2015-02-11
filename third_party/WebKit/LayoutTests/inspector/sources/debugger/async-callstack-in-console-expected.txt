@@ -7,33 +7,37 @@ Set timer for test function.
 async-callstack-in-console.html:11 Console was cleared
 
     async-callstack-in-console.html:17 console.trace()
-        async-callstack-in-console.html:17 timeout1
+        
+        timeout1 @ async-callstack-in-console.html:17
         setTimeout (async)
-        async-callstack-in-console.html:12 testFunction
+        testFunction @ async-callstack-in-console.html:12
 
     async-callstack-in-console.html:24 Uncaught Error: foo
-        async-callstack-in-console.html:24 timeout2
+        
+        timeout2 @ async-callstack-in-console.html:24
         setTimeout (async)
-        async-callstack-in-console.html:18 timeout1
+        timeout1 @ async-callstack-in-console.html:18
         setTimeout (async)
-        async-callstack-in-console.html:12 testFunction
+        testFunction @ async-callstack-in-console.html:12
 
     async-callstack-in-console.html:29 console.trace()
-        async-callstack-in-console.html:29 timeout3
+        
+        timeout3 @ async-callstack-in-console.html:29
         setTimeout (async)
-        async-callstack-in-console.html:23 timeout2
+        timeout2 @ async-callstack-in-console.html:23
         setTimeout (async)
-        async-callstack-in-console.html:18 timeout1
+        timeout1 @ async-callstack-in-console.html:18
         setTimeout (async)
-        async-callstack-in-console.html:12 testFunction
+        testFunction @ async-callstack-in-console.html:12
 
     async-callstack-in-console.html:37 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://www.example.com') does not match the recipient window's origin ('file://').
-        async-callstack-in-console.html:37 tryPostMessage
-        async-callstack-in-console.html:31 timeout3
+        
+        tryPostMessage @ async-callstack-in-console.html:37
+        timeout3 @ async-callstack-in-console.html:31
         setTimeout (async)
-        async-callstack-in-console.html:23 timeout2
+        timeout2 @ async-callstack-in-console.html:23
         setTimeout (async)
-        async-callstack-in-console.html:18 timeout1
+        timeout1 @ async-callstack-in-console.html:18
         setTimeout (async)
-        async-callstack-in-console.html:12 testFunction
+        testFunction @ async-callstack-in-console.html:12
 

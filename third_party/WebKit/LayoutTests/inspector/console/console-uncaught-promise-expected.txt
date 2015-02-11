@@ -15,8 +15,9 @@ Tests that uncaught promise rejections are logged into console.
         get stack: function () { [native code] }
         set stack: function () { [native code] }
         __proto__: d
-        console-uncaught-promise.html:23 promiseTest1
-        console-uncaught-promise.html:16 timeout
+        
+        promiseTest1 @ console-uncaught-promise.html:23
+        timeout @ console-uncaught-promise.html:16
 
     console-uncaught-promise.html:44 Uncaught (in promise) Error: err2 {stack: (...), message: "err2"}
         message: "err2"
@@ -24,8 +25,9 @@ Tests that uncaught promise rejections are logged into console.
         get stack: function () { [native code] }
         set stack: function () { [native code] }
         __proto__: d
-        console-uncaught-promise.html:44 promiseTest2
-        console-uncaught-promise.html:16 timeout
+        
+        promiseTest2 @ console-uncaught-promise.html:44
+        timeout @ console-uncaught-promise.html:16
 
     console-uncaught-promise.html:62 Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node. {...<removed>...}
         code: 8
@@ -33,23 +35,28 @@ Tests that uncaught promise rejections are logged into console.
         name: "NotFoundError"
         stack: (...)
         __proto__: DOMException
-        console-uncaught-promise.html:62 throwDOMException
-        console-uncaught-promise.html:54 catcher
+        
+        throwDOMException @ console-uncaught-promise.html:62
+        catcher @ console-uncaught-promise.html:54
 console-uncaught-promise.html:1 Uncaught (in promise) 42
 
     console-uncaught-promise.html:73 Uncaught (in promise) 1e+100
-        console-uncaught-promise.html:73 promiseTest5
-        console-uncaught-promise.html:16 timeout
+        
+        promiseTest5 @ console-uncaught-promise.html:73
+        timeout @ console-uncaught-promise.html:16
 
     console-uncaught-promise.html:78 Uncaught (in promise) foo
-        console-uncaught-promise.html:78 promiseTest6
-        console-uncaught-promise.html:16 timeout
+        
+        promiseTest6 @ console-uncaught-promise.html:78
+        timeout @ console-uncaught-promise.html:16
 
     console-uncaught-promise.html:83 Uncaught (in promise) Object {foo: 42}
-        console-uncaught-promise.html:83 promiseTest7
-        console-uncaught-promise.html:16 timeout
+        
+        promiseTest7 @ console-uncaught-promise.html:83
+        timeout @ console-uncaught-promise.html:16
 
     console-uncaught-promise.html:88 Uncaught (in promise) undefined
-        console-uncaught-promise.html:88 promiseTest8
-        console-uncaught-promise.html:16 timeout
+        
+        promiseTest8 @ console-uncaught-promise.html:88
+        timeout @ console-uncaught-promise.html:16
 

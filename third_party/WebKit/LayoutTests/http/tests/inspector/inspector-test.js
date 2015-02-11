@@ -449,7 +449,7 @@ InspectorTest.textContentWithLineBreaks = function(node)
     while (currentNode = currentNode.traverseNextNode(node)) {
         if (currentNode.nodeType === Node.TEXT_NODE) {
             buffer += currentNode.nodeValue;
-        } else if (currentNode.nodeName === "LI") {
+        } else if (currentNode.nodeName === "LI" || currentNode.nodeName === "TR") {
             buffer += "\n" + padding(currentNode);
         } else if (currentNode.nodeName === "STYLE") {
             currentNode = currentNode.traverseNextNode(node);
