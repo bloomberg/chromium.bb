@@ -345,7 +345,7 @@ PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSS
         return nullptr; // Parser error; @viewport prelude should be empty
     consumeDeclarationList(block, CSSRuleSourceData::VIEWPORT_RULE);
     RefPtrWillBeRawPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
-    rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
+    rule->setProperties(createStylePropertySet(m_parsedProperties, CSSViewportRuleMode));
     m_parsedProperties.clear();
     return rule.release();
 }
