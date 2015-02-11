@@ -291,8 +291,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
-// Flaking in the android try bot. See http://crbug.com/360578.
-#if defined(OS_ANDROID)
+// Flaky. See http://crbug.com/360578.
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_OrientationNullTestWithAlert DISABLED_OrientationNullTestWithAlert
 #else
 #define MAYBE_OrientationNullTestWithAlert OrientationNullTestWithAlert
@@ -321,8 +321,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
-// Flaking in the android try bot. See http://crbug.com/360578.
-#if defined(OS_ANDROID) || defined(OS_WIN)
+// Flaky. See http://crbug.com/360578.
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_MotionNullTestWithAlert DISABLED_MotionNullTestWithAlert
 #else
 #define MAYBE_MotionNullTestWithAlert MotionNullTestWithAlert
