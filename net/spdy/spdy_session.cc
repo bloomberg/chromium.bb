@@ -1468,6 +1468,9 @@ int SpdySession::DoReadComplete(int result) {
 }
 
 void SpdySession::PumpWriteLoop(WriteState expected_write_state, int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::PumpWriteLoop"));
   CHECK(!in_io_loop_);
   DCHECK_EQ(write_state_, expected_write_state);
 
@@ -1519,6 +1522,9 @@ int SpdySession::DoWriteLoop(WriteState expected_write_state, int result) {
 }
 
 int SpdySession::DoWrite() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite"));
   CHECK(in_io_loop_);
 
   DCHECK(buffered_spdy_framer_);
@@ -1582,6 +1588,9 @@ int SpdySession::DoWrite() {
 }
 
 int SpdySession::DoWriteComplete(int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWriteComplete"));
   CHECK(in_io_loop_);
   DCHECK_NE(result, ERR_IO_PENDING);
   DCHECK_GT(in_flight_write_->GetRemainingSize(), 0u);
@@ -1649,6 +1658,9 @@ void SpdySession::DcheckDraining() const {
 
 void SpdySession::StartGoingAway(SpdyStreamId last_good_stream_id,
                                  Error status) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::StartGoingAway"));
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
 
   // The loops below are carefully written to avoid reentrancy problems.
