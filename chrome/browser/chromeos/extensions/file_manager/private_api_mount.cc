@@ -52,9 +52,7 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger) {
-    logger->Log(logging::LOG_INFO,
-                "%s[%d] called. (source: '%s')",
-                name().c_str(),
+    logger->Log(logging::LOG_INFO, "%s[%d] called. (source: '%s')", name(),
                 request_id(),
                 params->source.empty() ? "(none)" : params->source.c_str());
   }
@@ -174,11 +172,8 @@ bool FileManagerPrivateRemoveMountFunction::RunAsync() {
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger) {
-    logger->Log(logging::LOG_INFO,
-                "%s[%d] called. (volume_id: '%s')",
-                name().c_str(),
-                request_id(),
-                params->volume_id.c_str());
+    logger->Log(logging::LOG_INFO, "%s[%d] called. (volume_id: '%s')", name(),
+                request_id(), params->volume_id.c_str());
   }
   set_log_on_completion(true);
 
@@ -247,8 +242,7 @@ bool FileManagerPrivateGetVolumeMetadataListFunction::RunAsync() {
   if (logger) {
     logger->Log(logging::LOG_INFO,
                 "%s[%d] succeeded. (results: '[%s]', %" PRIuS " mount points)",
-                name().c_str(), request_id(), log_string.c_str(),
-                result.size());
+                name(), request_id(), log_string.c_str(), result.size());
   }
 
   results_ =

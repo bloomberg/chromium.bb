@@ -215,9 +215,10 @@ class ExtensionFunction
   // Sets the function's bad message state.
   void set_bad_message(bool bad_message) { bad_message_ = bad_message; }
 
-  // Specifies the name of the function.
-  void set_name(const std::string& name) { name_ = name; }
-  const std::string& name() const { return name_; }
+  // Specifies the name of the function. A long-lived string (such as a string
+  // literal) must be provided.
+  void set_name(const char* name) { name_ = name; }
+  const char* name() const { return name_; }
 
   void set_profile_id(void* profile_id) { profile_id_ = profile_id; }
   void* profile_id() const { return profile_id_; }
@@ -363,7 +364,7 @@ class ExtensionFunction
   scoped_refptr<const extensions::Extension> extension_;
 
   // The name of this function.
-  std::string name_;
+  const char* name_;
 
   // The URL of the frame which is making this request
   GURL source_url_;

@@ -60,7 +60,7 @@ class MockMapper : public QuotaLimitHeuristic::BucketMapper {
 
 class MockFunction : public ExtensionFunction {
  public:
-  explicit MockFunction(const std::string& name) { set_name(name); }
+  explicit MockFunction(const char* name) { set_name(name); }
 
   void SetArgs(const base::ListValue* args) override {}
   std::string GetError() const override { return std::string(); }
@@ -75,8 +75,7 @@ class MockFunction : public ExtensionFunction {
 
 class TimedLimitMockFunction : public MockFunction {
  public:
-  explicit TimedLimitMockFunction(const std::string& name)
-      : MockFunction(name) {}
+  explicit TimedLimitMockFunction(const char* name) : MockFunction(name) {}
   void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const override {
     heuristics->push_back(
@@ -89,7 +88,7 @@ class TimedLimitMockFunction : public MockFunction {
 
 class FrozenMockFunction : public MockFunction {
  public:
-  explicit FrozenMockFunction(const std::string& name) : MockFunction(name) {}
+  explicit FrozenMockFunction(const char* name) : MockFunction(name) {}
   void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const override {
     heuristics->push_back(

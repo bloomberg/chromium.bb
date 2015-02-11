@@ -788,8 +788,8 @@ bool FileManagerPrivateSearchFilesByHashesFunction::RunAsync() {
       file_manager::util::GetLogger(GetProfile());
   if (logger) {
     logger->Log(logging::LOG_INFO,
-                "%s[%d] called. (volume id: %s, number of hashes: %zd)",
-                name().c_str(), request_id(), params->volume_id.c_str(),
+                "%s[%d] called. (volume id: %s, number of hashes: %zd)", name(),
+                request_id(), params->volume_id.c_str(),
                 params->hash_list.size());
   }
   set_log_on_completion(true);

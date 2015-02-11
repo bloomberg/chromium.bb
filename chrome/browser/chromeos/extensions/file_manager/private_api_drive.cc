@@ -687,11 +687,9 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger) {
     logger->Log(logging::LOG_INFO,
-                "%s[%d] called. (types: '%s', maxResults: '%d')",
-                name().c_str(),
-                request_id(),
-                api::file_manager_private::ToString(
-                    params->search_params.types).c_str(),
+                "%s[%d] called. (types: '%s', maxResults: '%d')", name(),
+                request_id(), api::file_manager_private::ToString(
+                                  params->search_params.types).c_str(),
                 params->search_params.max_results);
   }
   set_log_on_completion(true);
@@ -823,7 +821,7 @@ bool FileManagerPrivateGetDriveConnectionStateFunction::RunSync() {
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger)
-    logger->Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
+    logger->Log(logging::LOG_INFO, "%s succeeded.", name());
   return true;
 }
 

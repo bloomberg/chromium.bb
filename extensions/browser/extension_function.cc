@@ -230,6 +230,7 @@ class UIThreadExtensionFunction::RenderHostTracker
 ExtensionFunction::ExtensionFunction()
     : request_id_(-1),
       profile_id_(NULL),
+      name_(""),
       has_callback_(false),
       include_incognito_(false),
       user_gesture_(false),

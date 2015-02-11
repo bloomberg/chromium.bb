@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/process/process.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -281,6 +282,9 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                             static_cast<content::BrowserContext*>(profile_id));
     UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
                                 function->histogram_value());
+    tracked_objects::ScopedProfile scoped_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(function->name()),
+        tracked_objects::ScopedProfile::ENABLED);
     function->Run()->Execute();
   } else {
     function->OnQuotaExceeded(violation_error);
@@ -397,6 +401,9 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
         extension->id(), params.name, args.Pass(), browser_context_);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
                                 function->histogram_value());
+    tracked_objects::ScopedProfile scoped_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(function->name()),
+        tracked_objects::ScopedProfile::ENABLED);
     function->Run()->Execute();
   } else {
     function->OnQuotaExceeded(violation_error);

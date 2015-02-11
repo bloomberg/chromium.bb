@@ -129,7 +129,7 @@ bool FileManagerPrivateGetPreferencesFunction::RunSync() {
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger)
-    logger->Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
+    logger->Log(logging::LOG_INFO, "%s succeeded.", name());
   return true;
 }
 
@@ -150,7 +150,7 @@ bool FileManagerPrivateSetPreferencesFunction::RunSync() {
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger)
-    logger->Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
+    logger->Log(logging::LOG_INFO, "%s succeeded.", name());
   return true;
 }
 

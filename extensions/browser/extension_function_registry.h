@@ -45,7 +45,7 @@ class ExtensionFunctionRegistry {
   void RegisterFunction() {
     ExtensionFunctionFactory factory = &NewExtensionFunction<T>;
     factories_[T::function_name()] =
-        FactoryEntry(factory, T::histogram_value());
+        FactoryEntry(factory, T::function_name(), T::histogram_value());
   }
 
   struct FactoryEntry {
@@ -53,9 +53,11 @@ class ExtensionFunctionRegistry {
     explicit FactoryEntry();
     explicit FactoryEntry(
         ExtensionFunctionFactory factory,
+        const char* function_name,
         extensions::functions::HistogramValue histogram_value);
 
     ExtensionFunctionFactory factory_;
+    const char* function_name_;
     extensions::functions::HistogramValue histogram_value_;
   };
 

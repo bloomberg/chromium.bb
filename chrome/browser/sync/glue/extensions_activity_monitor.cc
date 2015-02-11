@@ -48,12 +48,16 @@ void ExtensionsActivityMonitor::Observe(
       content::Source<const extensions::Extension>(source).ptr();
   const extensions::BookmarksFunction* f =
       content::Details<const extensions::BookmarksFunction>(details).ptr();
-  if (f->name() == "bookmarks.update" ||
-      f->name() == "bookmarks.move" ||
-      f->name() == "bookmarks.create" ||
-      f->name() == "bookmarks.removeTree" ||
-      f->name() == "bookmarks.remove") {
-    extensions_activity_->UpdateRecord(extension->id());
+  switch (f->histogram_value()) {
+    case extensions::functions::BOOKMARKS_UPDATE:
+    case extensions::functions::BOOKMARKS_MOVE:
+    case extensions::functions::BOOKMARKS_CREATE:
+    case extensions::functions::BOOKMARKS_REMOVETREE:
+    case extensions::functions::BOOKMARKS_REMOVE:
+      extensions_activity_->UpdateRecord(extension->id());
+      break;
+    default:
+      break;
   }
 #endif
 }

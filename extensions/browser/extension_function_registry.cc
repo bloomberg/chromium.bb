@@ -49,15 +49,22 @@ ExtensionFunction* ExtensionFunctionRegistry::NewFunction(
     return NULL;
   }
   ExtensionFunction* function = iter->second.factory_();
-  function->set_name(name);
+  function->set_name(iter->second.function_name_);
   function->set_histogram_value(iter->second.histogram_value_);
   return function;
 }
 
 ExtensionFunctionRegistry::FactoryEntry::FactoryEntry()
-    : factory_(0), histogram_value_(extensions::functions::UNKNOWN) {}
+    : factory_(0),
+      function_name_(nullptr),
+      histogram_value_(extensions::functions::UNKNOWN) {
+}
 
 ExtensionFunctionRegistry::FactoryEntry::FactoryEntry(
     ExtensionFunctionFactory factory,
+    const char* function_name,
     extensions::functions::HistogramValue histogram_value)
-    : factory_(factory), histogram_value_(histogram_value) {}
+    : factory_(factory),
+      function_name_(function_name),
+      histogram_value_(histogram_value) {
+}
