@@ -143,8 +143,9 @@ void RenderSurfaceImpl::AppendQuads(
   const gfx::Transform& draw_transform =
       for_replica ? replica_draw_transform_ : draw_transform_;
   gfx::Rect visible_content_rect =
-      occlusion_tracker.UnoccludedContributingSurfaceContentRect(
-          content_rect_, draw_transform);
+      occlusion_tracker.GetCurrentOcclusionForContributingSurface(
+                            draw_transform)
+          .GetUnoccludedContentRect(content_rect_);
   if (visible_content_rect.IsEmpty())
     return;
 

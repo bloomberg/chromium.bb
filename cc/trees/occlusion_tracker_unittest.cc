@@ -101,8 +101,9 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
   gfx::Rect UnoccludedSurfaceContentRect(const LayerType* layer,
                                          const gfx::Rect& content_rect) const {
     typename LayerType::RenderSurfaceType* surface = layer->render_surface();
-    return this->UnoccludedContributingSurfaceContentRect(
-        content_rect, surface->draw_transform());
+    return this->GetCurrentOcclusionForContributingSurface(
+                     surface->draw_transform())
+        .GetUnoccludedContentRect(content_rect);
   }
 };
 

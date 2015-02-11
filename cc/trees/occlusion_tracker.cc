@@ -38,6 +38,21 @@ Occlusion OcclusionTracker<LayerType>::GetCurrentOcclusionForLayer(
 }
 
 template <typename LayerType>
+Occlusion
+OcclusionTracker<LayerType>::GetCurrentOcclusionForContributingSurface(
+    const gfx::Transform& draw_transform) const {
+  DCHECK(!stack_.empty());
+  if (stack_.size() < 2)
+    return Occlusion();
+  // A contributing surface doesn't get occluded by things inside its own
+  // surface, so only things outside the surface can occlude it. That occlusion
+  // is found just below the top of the stack (if it exists).
+  const StackObject& second_last = stack_[stack_.size() - 2];
+  return Occlusion(draw_transform, second_last.occlusion_from_outside_target,
+                   second_last.occlusion_from_inside_target);
+}
+
+template <typename LayerType>
 void OcclusionTracker<LayerType>::EnterLayer(
     const LayerIteratorPosition<LayerType>& layer_iterator) {
   LayerType* render_target = layer_iterator.target_render_surface_layer;
@@ -340,12 +355,15 @@ void OcclusionTracker<LayerType>::LeaveToRenderTarget(
   gfx::Rect unoccluded_surface_rect;
   gfx::Rect unoccluded_replica_rect;
   if (old_target->background_filters().HasFilterThatMovesPixels()) {
-    unoccluded_surface_rect = UnoccludedContributingSurfaceContentRect(
-        old_surface->content_rect(), old_surface->draw_transform());
+    Occlusion surface_occlusion = GetCurrentOcclusionForContributingSurface(
+        old_surface->draw_transform());
+    unoccluded_surface_rect =
+        surface_occlusion.GetUnoccludedContentRect(old_surface->content_rect());
     if (old_target->has_replica()) {
-      unoccluded_replica_rect = UnoccludedContributingSurfaceContentRect(
-          old_surface->content_rect(),
+      Occlusion replica_occlusion = GetCurrentOcclusionForContributingSurface(
           old_surface->replica_draw_transform());
+      unoccluded_replica_rect = replica_occlusion.GetUnoccludedContentRect(
+          old_surface->content_rect());
     }
   }
 
@@ -490,53 +508,6 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
         gfx::ToEnclosedRect(screen_space_quad.BoundingBox());
     non_occluding_screen_space_rects_->push_back(screen_space_rect);
   }
-}
-
-template <typename LayerType>
-gfx::Rect OcclusionTracker<LayerType>::UnoccludedContributingSurfaceContentRect(
-    const gfx::Rect& content_rect,
-    const gfx::Transform& draw_transform) const {
-  if (content_rect.IsEmpty())
-    return content_rect;
-
-  // A contributing surface doesn't get occluded by things inside its own
-  // surface, so only things outside the surface can occlude it. That occlusion
-  // is found just below the top of the stack (if it exists).
-  bool has_occlusion = stack_.size() > 1;
-  if (!has_occlusion)
-    return content_rect;
-
-  const StackObject& second_last = stack_[stack_.size() - 2];
-  if (second_last.occlusion_from_inside_target.IsEmpty() &&
-      second_last.occlusion_from_outside_target.IsEmpty())
-    return content_rect;
-
-  gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
-  bool ok = draw_transform.GetInverse(&inverse_draw_transform);
-  DCHECK(ok);
-
-  // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
-  // partial pixels in the resulting Rect.
-  gfx::Rect unoccluded_rect_in_target_surface =
-      MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
-  DCHECK_LE(second_last.occlusion_from_inside_target.GetRegionComplexity(), 1u);
-  DCHECK_LE(second_last.occlusion_from_outside_target.GetRegionComplexity(),
-            1u);
-  // These subtract operations are more lossy than if we did both operations at
-  // once.
-  unoccluded_rect_in_target_surface.Subtract(
-      second_last.occlusion_from_inside_target.bounds());
-  unoccluded_rect_in_target_surface.Subtract(
-      second_last.occlusion_from_outside_target.bounds());
-
-  if (unoccluded_rect_in_target_surface.IsEmpty())
-    return gfx::Rect();
-
-  gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
-      inverse_draw_transform, unoccluded_rect_in_target_surface);
-  unoccluded_rect.Intersect(content_rect);
-
-  return unoccluded_rect;
 }
 
 template <typename LayerType>

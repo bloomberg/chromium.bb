@@ -40,6 +40,8 @@ class CC_EXPORT OcclusionTracker {
   // and can be used outside of a layer walk to check occlusion.
   Occlusion GetCurrentOcclusionForLayer(
       const gfx::Transform& draw_transform) const;
+  Occlusion GetCurrentOcclusionForContributingSurface(
+      const gfx::Transform& draw_transform) const;
 
   // Called at the beginning of each step in the LayerIterator's front-to-back
   // traversal.
@@ -47,13 +49,6 @@ class CC_EXPORT OcclusionTracker {
   // Called at the end of each step in the LayerIterator's front-to-back
   // traversal.
   void LeaveLayer(const LayerIteratorPosition<LayerType>& layer_iterator);
-
-  // Gives an unoccluded sub-rect of |content_rect| in the content space of the
-  // render_target owned by the layer. Used when considering occlusion for a
-  // contributing surface that is rendering into another target.
-  gfx::Rect UnoccludedContributingSurfaceContentRect(
-      const gfx::Rect& content_rect,
-      const gfx::Transform& draw_transform) const;
 
   // Gives the region of the screen that is not occluded by something opaque.
   Region ComputeVisibleRegionInScreen() const;
