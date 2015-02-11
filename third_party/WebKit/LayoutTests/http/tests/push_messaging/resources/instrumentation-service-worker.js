@@ -18,13 +18,26 @@ self.addEventListener('message', function(workerEvent) {
                 }, function(error) {
                     messagePort.postMessage({ command: event.data.command,
                                               success: false,
-                                              message: error.message });
+                                              errorMessage: error.message });
+                });
+                break;
+
+            case 'subscribe':
+                self.registration.pushManager.subscribe().then(function(subscription) {
+                    messagePort.postMessage({ command: event.data.command,
+                                              success: true,
+                                              subscriptionId: subscription.subscriptionId,
+                                              endpoint: subscription.endpoint });
+                }, function(error) {
+                    messagePort.postMessage({ command: event.data.command,
+                                              success: false,
+                                              errorMessage: error.message });
                 });
                 break;
 
             default:
                 messagePort.postMessage({ command: 'error',
-                                          message: 'Invalid command: ' + event.data.command });
+                                          errorMessage: 'Invalid command: ' + event.data.command });
                 break;
         }
     };
