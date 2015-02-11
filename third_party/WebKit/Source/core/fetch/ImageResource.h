@@ -24,7 +24,6 @@
 #define ImageResource_h
 
 #include "core/fetch/ResourcePtr.h"
-#include "core/svg/graphics/SVGImageCache.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
@@ -40,6 +39,7 @@ class Length;
 class MemoryCache;
 class LayoutObject;
 class SecurityOrigin;
+class SVGImageForContainer;
 
 class ImageResource final : public Resource, public ImageObserver {
     friend class MemoryCache;
@@ -127,6 +127,8 @@ private:
     void clearImage();
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = nullptr);
+    IntSize svgImageSizeForRenderer(const LayoutObject*) const;
+    blink::Image* svgImageForRenderer(const LayoutObject*);
 
     virtual void switchClientsToRevalidatedResource() override;
 
@@ -135,8 +137,10 @@ private:
     ContainerSizeRequests m_pendingContainerSizeRequests;
     float m_devicePixelRatioHeaderValue;
 
+    typedef HashMap<const ImageResourceClient*, RefPtr<SVGImageForContainer>> ImageForContainerMap;
+    OwnPtr<ImageForContainerMap> m_imageForContainerMap;
+
     RefPtr<blink::Image> m_image;
-    OwnPtr<SVGImageCache> m_svgImageCache;
     bool m_loadingMultipartContent;
     bool m_hasDevicePixelRatioHeaderValue;
 };

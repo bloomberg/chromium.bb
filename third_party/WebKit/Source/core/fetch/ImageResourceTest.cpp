@@ -42,6 +42,7 @@
 #include "core/testing/URLTestHelpers.h"
 #include "core/testing/UnitTestHelpers.h"
 #include "platform/SharedBuffer.h"
+#include "platform/graphics/Image.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"

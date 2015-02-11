@@ -3479,8 +3479,6 @@
             'svg/animation/SVGSMILElement.cpp',
             'svg/graphics/SVGImage.cpp',
             'svg/graphics/SVGImage.h',
-            'svg/graphics/SVGImageCache.cpp',
-            'svg/graphics/SVGImageCache.h',
             'svg/graphics/SVGImageChromeClient.cpp',
             'svg/graphics/SVGImageChromeClient.h',
             'svg/graphics/SVGImageForContainer.cpp',

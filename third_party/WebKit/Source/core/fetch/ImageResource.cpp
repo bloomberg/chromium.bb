@@ -30,8 +30,10 @@
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "core/svg/graphics/SVGImageForContainer.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
@@ -109,10 +111,9 @@ void ImageResource::didRemoveClient(ResourceClient* c)
 {
     ASSERT(c);
     ASSERT(c->resourceClientType() == ImageResourceClient::expectedType());
-
     m_pendingContainerSizeRequests.remove(static_cast<ImageResourceClient*>(c));
-    if (m_svgImageCache)
-        m_svgImageCache->removeClientFromCache(static_cast<ImageResourceClient*>(c));
+    if (m_imageForContainerMap)
+        m_imageForContainerMap->remove(static_cast<ImageResourceClient*>(c));
 
     Resource::didRemoveClient(c);
 }
@@ -209,7 +210,7 @@ blink::Image* ImageResource::imageForRenderer(const LayoutObject* renderer)
         return blink::Image::nullImage();
 
     if (m_image->isSVGImage()) {
-        blink::Image* image = m_svgImageCache->imageForRenderer(renderer);
+        blink::Image* image = svgImageForRenderer(renderer);
         if (image != blink::Image::nullImage())
             return image;
     }
@@ -232,7 +233,9 @@ void ImageResource::setContainerSizeForRenderer(const ImageResourceClient* rende
         return;
     }
 
-    m_svgImageCache->setContainerSizeForRenderer(renderer, containerSize, containerZoom);
+    FloatSize containerSizeWithoutZoom(containerSize);
+    containerSizeWithoutZoom.scale(1 / containerZoom);
+    m_imageForContainerMap->set(renderer, SVGImageForContainer::create(toSVGImage(m_image.get()), containerSizeWithoutZoom, containerZoom));
 }
 
 bool ImageResource::usesImageContainerSize() const
@@ -271,7 +274,7 @@ LayoutSize ImageResource::imageSizeForRenderer(const LayoutObject* renderer, flo
     if (m_image->isBitmapImage() && (renderer && renderer->shouldRespectImageOrientation() == RespectImageOrientation))
         imageSize = LayoutSize(toBitmapImage(m_image.get())->sizeRespectingOrientation());
     else if (m_image->isSVGImage() && sizeType == NormalSize)
-        imageSize = LayoutSize(m_svgImageCache->imageSizeForRenderer(renderer));
+        imageSize = LayoutSize(svgImageSizeForRenderer(renderer));
     else
         imageSize = LayoutSize(m_image->size());
 
@@ -322,9 +325,8 @@ inline void ImageResource::createImage()
         return;
 
     if (m_response.mimeType() == "image/svg+xml") {
-        RefPtr<SVGImage> svgImage = SVGImage::create(this);
-        m_svgImageCache = SVGImageCache::create(svgImage.get());
-        m_image = svgImage.release();
+        m_image = SVGImage::create(this);
+        m_imageForContainerMap = adoptPtr(new ImageForContainerMap);
     } else {
         m_image = BitmapImage::create(this);
     }
@@ -517,6 +519,45 @@ bool ImageResource::isAccessAllowed(ExecutionContext* context, SecurityOrigin* s
     if (passesAccessControlCheck(context, securityOrigin))
         return true;
     return !securityOrigin->taintsCanvas(response().url());
+}
+
+IntSize ImageResource::svgImageSizeForRenderer(const LayoutObject* renderer) const
+{
+    IntSize imageSize = m_image->size();
+    if (!renderer)
+        return imageSize;
+
+    ImageForContainerMap::const_iterator it = m_imageForContainerMap->find(renderer);
+    if (it == m_imageForContainerMap->end())
+        return imageSize;
+
+    RefPtr<SVGImageForContainer> imageForContainer = it->value;
+    ASSERT(!imageForContainer->size().isEmpty());
+    return imageForContainer->size();
+}
+
+// FIXME: This doesn't take into account the animation timeline so animations will not
+// restart on page load, nor will two animations in different pages have different timelines.
+Image* ImageResource::svgImageForRenderer(const LayoutObject* renderer)
+{
+    if (!renderer)
+        return Image::nullImage();
+
+    ImageForContainerMap::iterator it = m_imageForContainerMap->find(renderer);
+    if (it == m_imageForContainerMap->end())
+        return Image::nullImage();
+
+    RefPtr<SVGImageForContainer> imageForContainer = it->value;
+    ASSERT(!imageForContainer->size().isEmpty());
+
+    Node* node = renderer->node();
+    if (node && isHTMLImageElement(node)) {
+        const AtomicString& urlString = toHTMLImageElement(node)->imageSourceURL();
+        KURL url = node->document().completeURL(urlString);
+        imageForContainer->setURL(url);
+    }
+
+    return imageForContainer.get();
 }
 
 } // namespace blink
