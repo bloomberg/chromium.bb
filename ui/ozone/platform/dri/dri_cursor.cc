@@ -104,8 +104,21 @@ void DriCursor::PrepareForBoundsChange(gfx::AcceleratedWidget window) {
   if (state_.window == window)
     SendCursorHideLocked();
 
-  // The cursor will be shown and moved once the confined bounds for |window|
-  // are updated.
+  // The cursor will be shown and moved in CommitBoundsChange().
+}
+
+void DriCursor::CommitBoundsChange(
+    gfx::AcceleratedWidget window,
+    const gfx::Rect& new_display_bounds_in_screen,
+    const gfx::Rect& new_confined_bounds) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
+  if (state_.window == window) {
+    state_.display_bounds_in_screen = new_display_bounds_in_screen;
+    state_.confined_bounds = new_confined_bounds;
+    SetCursorLocationLocked(state_.location);
+    SendCursorShowLocked();
+  }
 }
 
 void DriCursor::ConfineCursorToBounds(gfx::AcceleratedWidget window,
@@ -203,7 +216,7 @@ void DriCursor::OnChannelEstablished(
   state_.send_runner = send_runner;
   state_.send_callback = send_callback;
   // Initial set for this GPU process will happen after the window
-  // initializes, in ConfineCursorToBounds().
+  // initializes, in CommitBoundsChange().
 }
 
 void DriCursor::OnChannelDestroyed(int host_id) {
@@ -273,8 +286,8 @@ void DriCursor::SendLocked(IPC::Message* message) {
                                    base::Bind(state_.send_callback, message)))
     return;
 
-  // Drop disconnected updates. DriWindow will call ConfineCursorToBounds()
-  // when we connect to initialize the cursor location.
+  // Drop disconnected updates. DriWindow will call CommitBoundsChange() when
+  // we connect to initialize the cursor location.
   delete message;
 }
 
