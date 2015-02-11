@@ -243,6 +243,7 @@ TileItemView* StartPageView::all_apps_button() const {
 
 void StartPageView::OnShow() {
   UpdateCustomPageClickzoneVisibility();
+  tiles_container_->Update();
   tiles_container_->ClearSelectedIndex();
 }
 

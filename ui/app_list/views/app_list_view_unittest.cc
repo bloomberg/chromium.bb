@@ -483,6 +483,15 @@ void AppListViewTestContext::RunStartPageTest() {
     model->results()->DeleteAll();
     start_page_view->UpdateForTesting();
     EXPECT_EQ(0u, GetVisibleViews(start_page_view->tile_views()));
+
+    // Tiles should not update when the start page is not active but should be
+    // correct once the start page is shown.
+    EXPECT_TRUE(SetAppListState(AppListModel::STATE_APPS));
+    model->results()->Add(new TestStartPageSearchResult());
+    start_page_view->UpdateForTesting();
+    EXPECT_EQ(0u, GetVisibleViews(start_page_view->tile_views()));
+    EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
+    EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
   } else {
     EXPECT_EQ(NULL, start_page_view);
   }
