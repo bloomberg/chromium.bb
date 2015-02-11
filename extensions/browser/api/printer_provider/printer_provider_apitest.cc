@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -174,6 +175,22 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     EXPECT_EQ(expected_result, result);
   }
 
+  bool SimulateExtensionUnload(const std::string& extension_id) {
+    extensions::ExtensionRegistry* extension_registry =
+        extensions::ExtensionRegistry::Get(browser_context());
+
+    const extensions::Extension* extension =
+        extension_registry->GetExtensionById(
+            extension_id, extensions::ExtensionRegistry::ENABLED);
+    if (!extension)
+      return false;
+
+    extension_registry->RemoveEnabled(extension_id);
+    extension_registry->TriggerOnUnloaded(
+        extension, extensions::UnloadedExtensionInfo::REASON_TERMINATE);
+    return true;
+  }
+
   // Validates that set of printers reported by test apps via
   // chrome.printerProvider.onGetPritersRequested is the same as the set of
   // printers in |expected_printers|. |expected_printers| contains list of
@@ -224,6 +241,28 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                          PrinterProviderAPI::PRINT_ERROR_FAILED);
 }
 
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestAppUnloaded) {
+  extensions::ResultCatcher catcher;
+
+  std::string extension_id;
+  InitializePrinterProviderTestApp("api_test/printer_provider/request_print",
+                                   "IGNORE_CALLBACK", &extension_id);
+  ASSERT_FALSE(extension_id.empty());
+
+  base::RunLoop run_loop;
+  PrinterProviderAPI::PrintError print_result;
+  StartPrintRequest(extension_id,
+                    base::Bind(&RecordPrintErrorAndRunCallback, &print_result,
+                               run_loop.QuitClosure()));
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ASSERT_TRUE(SimulateExtensionUnload(extension_id));
+
+  run_loop.Run();
+  EXPECT_EQ(PrinterProviderAPI::PRINT_ERROR_FAILED, print_result);
+}
+
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilitySuccess) {
   RunPrinterCapabilitiesRequestTest("OK", "{\"capability\":\"value\"}");
 }
@@ -243,6 +282,28 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, NoCapabilityEventListener) {
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, CapabilityInvalidValue) {
   RunPrinterCapabilitiesRequestTest("INVALID_VALUE", "{}");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilityAppUnloaded) {
+  extensions::ResultCatcher catcher;
+
+  std::string extension_id;
+  InitializePrinterProviderTestApp(
+      "api_test/printer_provider/request_capability", "IGNORE_CALLBACK",
+      &extension_id);
+  ASSERT_FALSE(extension_id.empty());
+
+  base::RunLoop run_loop;
+  std::string result;
+  StartCapabilityRequest(
+      extension_id,
+      base::Bind(&RecordDictAndRunCallback, &result, run_loop.QuitClosure()));
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ASSERT_TRUE(SimulateExtensionUnload(extension_id));
+  run_loop.Run();
+  EXPECT_EQ("{}", result);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
@@ -372,6 +433,38 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
       extension_id_2.c_str(), extension_id_2.c_str()));
 
   ValidatePrinterListValue(printers, expected_printers);
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
+                       GetPrintersTwoExtensionsBothUnloaded) {
+  extensions::ResultCatcher catcher;
+
+  std::string extension_id_1;
+  InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
+                                   "IGNORE_CALLBACK", &extension_id_1);
+  ASSERT_FALSE(extension_id_1.empty());
+
+  std::string extension_id_2;
+  InitializePrinterProviderTestApp(
+      "api_test/printer_provider/request_printers_second", "IGNORE_CALLBACK",
+      &extension_id_2);
+  ASSERT_FALSE(extension_id_2.empty());
+
+  base::RunLoop run_loop;
+  base::ListValue printers;
+
+  StartGetPrintersRequest(base::Bind(&AppendPrintersAndRunCallbackIfDone,
+                                     &printers, run_loop.QuitClosure()));
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ASSERT_TRUE(SimulateExtensionUnload(extension_id_1));
+  ASSERT_TRUE(SimulateExtensionUnload(extension_id_2));
+
+  run_loop.Run();
+
+  EXPECT_TRUE(printers.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,

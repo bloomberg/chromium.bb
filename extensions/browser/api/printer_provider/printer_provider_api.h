@@ -14,6 +14,7 @@
 #include "base/scoped_observer.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace base {
 class DictionaryValue;
@@ -26,6 +27,7 @@ class BrowserContext;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 class PrinterProviderInternalAPI;
 }
 
@@ -33,7 +35,8 @@ namespace extensions {
 
 // Implements chrome.printerProvider API events.
 class PrinterProviderAPI : public BrowserContextKeyedAPI,
-                           public PrinterProviderInternalAPIObserver {
+                           public PrinterProviderInternalAPIObserver,
+                           public ExtensionRegistryObserver {
  public:
   // Status returned by chrome.printerProvider.onPrintRequested event.
   enum PrintError {
@@ -161,6 +164,11 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
                               int request_id,
                               const base::ListValue& result);
 
+    // Runs callbacks for the extension for all requests that are waiting for a
+    // response from the extension with the provided extension id. Callbacks are
+    // called as if the extension reported empty set of printers.
+    void FailAllForExtension(const std::string& extension_id);
+
    private:
     int last_request_id_;
     std::map<int, GetPrintersRequest*> pending_requests_;
@@ -183,6 +191,10 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
     // callback and removes the request from the set.
     bool Complete(int request_id, const base::DictionaryValue& result);
 
+    // Runs all pending callbacks with empty capability value and clears the
+    // set of pending requests.
+    void FailAll();
+
    private:
     int last_request_id_;
     std::map<int, GetCapabilityCallback> pending_requests_;
@@ -202,6 +214,10 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
     // Completes the request with the provided request id. It runs the request
     // callback and removes the request from the set.
     bool Complete(int request_id, PrintError result);
+
+    // Runs all pending callbacks with ERROR_FAILED and clears the set of
+    // pending requests.
+    void FailAll();
 
    private:
     int last_request_id_;
@@ -226,6 +242,11 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
       int request_id,
       core_api::printer_provider_internal::PrintError error) override;
 
+  // ExtensionRegistryObserver implementation:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+
   // Called before chrome.printerProvider.onGetPrintersRequested event is
   // dispatched to an extension. It returns whether the extension is interested
   // in the event. If the extension listens to the event, it's added to the set
@@ -247,6 +268,9 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
 
   ScopedObserver<PrinterProviderInternalAPI, PrinterProviderInternalAPIObserver>
       internal_api_observer_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderAPI);
 };

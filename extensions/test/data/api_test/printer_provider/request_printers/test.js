@@ -25,6 +25,11 @@ chrome.test.sendMessage('loaded', function(test) {
             return;
           }
 
+          if (test == 'IGNORE_CALLBACK') {
+            chrome.test.succeed();
+            return;
+          }
+
           if (test == 'NOT_ARRAY') {
             chrome.test.assertThrows(
                 callback,

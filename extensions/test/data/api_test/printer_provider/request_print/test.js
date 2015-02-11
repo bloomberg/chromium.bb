@@ -15,6 +15,11 @@ chrome.test.sendMessage('loaded', function(test) {
       chrome.test.assertFalse(!!chrome.printerProviderInternal);
       chrome.test.assertTrue(!!job);
 
+      if (test == 'IGNORE_CALLBACK') {
+        chrome.test.succeed();
+        return;
+      }
+
       if (test == 'ASYNC_RESPONSE') {
         setTimeout(callback.bind(null, 'OK'), 0);
         chrome.test.succeed();

@@ -15,6 +15,11 @@ chrome.test.sendMessage('loaded', function(test) {
           chrome.test.assertFalse(!!chrome.printerProviderInternal);
           chrome.test.assertTrue(!!callback);
 
+          if (test == 'IGNORE_CALLBACK') {
+            chrome.test.succeed();
+            return;
+          }
+
           if (test == 'INVALID_VALUE') {
             chrome.test.assertThrows(
                 callback,

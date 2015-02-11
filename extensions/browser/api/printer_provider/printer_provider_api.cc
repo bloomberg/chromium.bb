@@ -13,6 +13,8 @@
 #include "base/values.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/common/api/printer_provider.h"
 #include "extensions/common/api/printer_provider_internal.h"
 #include "extensions/common/extension.h"
@@ -86,9 +88,12 @@ PrinterProviderAPI::GetFactoryInstance() {
 }
 
 PrinterProviderAPI::PrinterProviderAPI(content::BrowserContext* browser_context)
-    : browser_context_(browser_context), internal_api_observer_(this) {
+    : browser_context_(browser_context),
+      internal_api_observer_(this),
+      extension_registry_observer_(this) {
   internal_api_observer_.Add(
       PrinterProviderInternalAPI::GetFactoryInstance()->Get(browser_context));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
 }
 
 PrinterProviderAPI::~PrinterProviderAPI() {
@@ -255,6 +260,18 @@ bool PrinterProviderAPI::PendingGetPrintersRequests::CompleteForExtension(
   return true;
 }
 
+void PrinterProviderAPI::PendingGetPrintersRequests::FailAllForExtension(
+    const std::string& extension_id) {
+  auto it = pending_requests_.begin();
+  while (it != pending_requests_.end()) {
+    int request_id = it->first;
+    // |it| may get deleted during |CompleteForExtension|, so progress it to the
+    // next item before calling the method.
+    ++it;
+    CompleteForExtension(extension_id, request_id, base::ListValue());
+  }
+}
+
 PrinterProviderAPI::PendingGetCapabilityRequests::PendingGetCapabilityRequests()
     : last_request_id_(0) {
 }
@@ -283,6 +300,12 @@ bool PrinterProviderAPI::PendingGetCapabilityRequests::Complete(
   return true;
 }
 
+void PrinterProviderAPI::PendingGetCapabilityRequests::FailAll() {
+  for (auto& request : pending_requests_)
+    request.second.Run(base::DictionaryValue());
+  pending_requests_.clear();
+}
+
 PrinterProviderAPI::PendingPrintRequests::PendingPrintRequests()
     : last_request_id_(0) {
 }
@@ -307,6 +330,12 @@ bool PrinterProviderAPI::PendingPrintRequests::Complete(int request_id,
 
   callback.Run(response);
   return true;
+}
+
+void PrinterProviderAPI::PendingPrintRequests::FailAll() {
+  for (auto& request : pending_requests_)
+    request.second.Run(PRINT_ERROR_FAILED);
+  pending_requests_.clear();
 }
 
 void PrinterProviderAPI::OnGetPrintersResult(
@@ -346,6 +375,25 @@ void PrinterProviderAPI::OnPrintResult(
       request_id, APIPrintErrorToInternalType(error));
 }
 
+void PrinterProviderAPI::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  pending_get_printers_requests_.FailAllForExtension(extension->id());
+
+  auto print_it = pending_print_requests_.find(extension->id());
+  if (print_it != pending_print_requests_.end()) {
+    print_it->second.FailAll();
+    pending_print_requests_.erase(print_it);
+  }
+
+  auto capability_it = pending_capability_requests_.find(extension->id());
+  if (capability_it != pending_capability_requests_.end()) {
+    capability_it->second.FailAll();
+    pending_capability_requests_.erase(capability_it);
+  }
+}
+
 bool PrinterProviderAPI::WillRequestPrinters(
     PrinterProviderAPI::GetPrintersRequest* request,
     content::BrowserContext* browser_context,
@@ -369,6 +417,7 @@ void BrowserContextKeyedAPIFactory<
     PrinterProviderAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(PrinterProviderInternalAPI::GetFactoryInstance());
+  DependsOn(ExtensionRegistryFactory::GetInstance());
 }
 
 }  // namespace extensions

@@ -22,6 +22,11 @@ chrome.test.sendMessage('loaded', function(test) {
             return;
           }
 
+          if (test == 'IGNORE_CALLBACK') {
+            chrome.test.succeed();
+            return;
+          }
+
           if (test == 'INVALID_VALUE') {
             chrome.test.assertThrows(
                 callback,
