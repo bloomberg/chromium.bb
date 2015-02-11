@@ -33,30 +33,29 @@ class ASH_EXPORT TouchTransformerController
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
-                           TouchTransformerMirrorModeLetterboxing);
+                           MirrorModeLetterboxing);
   FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
-                           TouchTransformerMirrorModePillarboxing);
-  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
-                           TouchTransformerExtendedMode);
-  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
-                           TouchRadiusScale);
+                           MirrorModePillarboxing);
+  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest, SoftwareMirrorMode);
+  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest, ExtendedMode);
+  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest, TouchRadiusScale);
 
   // Returns a transform that will be used to change an event's location from
-  // the touchscreen's coordinate system into the display's coordinate system.
+  // the touchscreen's coordinate system into |display|'s coordinate system.
   // The transform is also responsible for properly scaling the display if the
-  // display support panel fitting.
+  // display supports panel fitting.
   //
   // On X11 events are reported in framebuffer coordinate space, so the
   // |framebuffer_size| is used for scaling.
   // On Ozone events are reported in the touchscreen's resolution, so
-  // |touchscreen| is used to determine the size and scale the event.
-  gfx::Transform GetTouchTransform(
-      const DisplayInfo& display,
-      const ui::TouchscreenDevice& touchscreen,
-      const gfx::Size& framebuffer_size) const;
+  // |touch_display| is used to determine the size and scale the event.
+  gfx::Transform GetTouchTransform(const DisplayInfo& display,
+                                   const DisplayInfo& touch_display,
+                                   const ui::TouchscreenDevice& touchscreen,
+                                   const gfx::Size& framebuffer_size) const;
 
   // Returns the scaling factor for the touch radius such that it scales the
-  // radius from |touch_device|'s coordiante system to the |touch_display|'s
+  // radius from |touch_device|'s coordinate system to the |touch_display|'s
   // coordinate system.
   double GetTouchResolutionScale(
       const DisplayInfo& touch_display,

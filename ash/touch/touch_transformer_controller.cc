@@ -64,10 +64,11 @@ double TouchTransformerController::GetTouchResolutionScale(
 
 gfx::Transform TouchTransformerController::GetTouchTransform(
     const DisplayInfo& display,
+    const DisplayInfo& touch_display,
     const ui::TouchscreenDevice& touchscreen,
     const gfx::Size& framebuffer_size) const {
   gfx::SizeF current_size = display.bounds_in_native().size();
-  gfx::SizeF native_size = display.GetNativeModeSize();
+  gfx::SizeF touch_native_size = touch_display.GetNativeModeSize();
 #if defined(USE_OZONE)
   gfx::SizeF touch_area = touchscreen.size;
 #elif defined(USE_X11)
@@ -77,8 +78,8 @@ gfx::Transform TouchTransformerController::GetTouchTransform(
 
   gfx::Transform ctm;
 
-  if (current_size.IsEmpty() || native_size.IsEmpty() || touch_area.IsEmpty() ||
-      touchscreen.id == ui::InputDevice::kInvalidId)
+  if (current_size.IsEmpty() || touch_native_size.IsEmpty() ||
+      touch_area.IsEmpty() || touchscreen.id == ui::InputDevice::kInvalidId)
     return ctm;
 
 #if defined(USE_OZONE)
@@ -87,22 +88,25 @@ gfx::Transform TouchTransformerController::GetTouchTransform(
                 display.bounds_in_native().y());
 #endif
 
-  // Take care of panel fitting only if supported.
+  // Take care of panel fitting only if supported. Panel fitting is emulated in
+  // software mirroring mode (display != touch_display).
   // If panel fitting is enabled then the aspect ratio is preserved and the
   // display is scaled acordingly. In this case blank regions would be present
   // in order to center the displayed area.
-  if (display.is_aspect_preserving_scaling()) {
-    float native_ar = native_size.width() / native_size.height();
+  if (display.is_aspect_preserving_scaling() ||
+      display.id() != touch_display.id()) {
+    float touch_native_ar =
+        touch_native_size.width() / touch_native_size.height();
     float current_ar = current_size.width() / current_size.height();
 
-    if (current_ar > native_ar) {  // Letterboxing
+    if (current_ar > touch_native_ar) {  // Letterboxing
       ctm.Translate(
-          0, (1 - current_ar / native_ar) * 0.5 * current_size.height());
-      ctm.Scale(1, current_ar / native_ar);
-    } else if (native_ar > current_ar) {  // Pillarboxing
+          0, (1 - current_ar / touch_native_ar) * 0.5 * current_size.height());
+      ctm.Scale(1, current_ar / touch_native_ar);
+    } else if (touch_native_ar > current_ar) {  // Pillarboxing
       ctm.Translate(
-          (1 - native_ar / current_ar) * 0.5 * current_size.width(), 0);
-      ctm.Scale(native_ar / current_ar, 1);
+          (1 - touch_native_ar / current_ar) * 0.5 * current_size.width(), 0);
+      ctm.Scale(touch_native_ar / current_ar, 1);
     }
   }
 
@@ -180,15 +184,13 @@ void TouchTransformerController::UpdateTouchTransformer() const {
     RootWindowController::ForWindow(root)->ash_host()->UpdateDisplayID(
         display1_id, display2_id);
     device_manager->UpdateTouchInfoForDisplay(
-        display1_id,
-        display1.touch_device_id(),
-        GetTouchTransform(display1,
+        display1_id, display1.touch_device_id(),
+        GetTouchTransform(display1, display1,
                           FindTouchscreenById(display1.touch_device_id()),
                           fb_size));
     device_manager->UpdateTouchInfoForDisplay(
-        display2_id,
-        display2.touch_device_id(),
-        GetTouchTransform(display2,
+        display2_id, display2.touch_device_id(),
+        GetTouchTransform(display2, display2,
                           FindTouchscreenById(display2.touch_device_id()),
                           fb_size));
     return;
@@ -207,15 +209,13 @@ void TouchTransformerController::UpdateTouchTransformer() const {
       // Mapping from framebuffer size to the source display's native
       // resolution.
       device_manager->UpdateTouchInfoForDisplay(
-          display1_id,
-          display1.touch_device_id(),
-          GetTouchTransform(source_display,
+          display1_id, display1.touch_device_id(),
+          GetTouchTransform(source_display, display1,
                             FindTouchscreenById(display1.touch_device_id()),
                             fb_size));
       device_manager->UpdateTouchInfoForDisplay(
-          display2_id,
-          display2.touch_device_id(),
-          GetTouchTransform(source_display,
+          display2_id, display2.touch_device_id(),
+          GetTouchTransform(source_display, display2,
                             FindTouchscreenById(display2.touch_device_id()),
                             fb_size));
     } else {
@@ -231,15 +231,13 @@ void TouchTransformerController::UpdateTouchTransformer() const {
           display2_id, gfx::Display::kInvalidDisplayID);
       // Mapping from framebuffer size to each display's native resolution.
       device_manager->UpdateTouchInfoForDisplay(
-          display1_id,
-          display1.touch_device_id(),
-          GetTouchTransform(display1,
+          display1_id, display1.touch_device_id(),
+          GetTouchTransform(display1, display1,
                             FindTouchscreenById(display1.touch_device_id()),
                             fb_size));
       device_manager->UpdateTouchInfoForDisplay(
-          display2_id,
-          display2.touch_device_id(),
-          GetTouchTransform(display2,
+          display2_id, display2.touch_device_id(),
+          GetTouchTransform(display2, display2,
                             FindTouchscreenById(display2.touch_device_id()),
                             fb_size));
     }
@@ -252,9 +250,8 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   RootWindowController::ForWindow(root)->ash_host()->UpdateDisplayID(
       single_display.id(), gfx::Display::kInvalidDisplayID);
   device_manager->UpdateTouchInfoForDisplay(
-      single_display_id,
-      single_display.touch_device_id(),
-      GetTouchTransform(single_display,
+      single_display_id, single_display.touch_device_id(),
+      GetTouchTransform(single_display, single_display,
                         FindTouchscreenById(single_display.touch_device_id()),
                         fb_size));
 }
