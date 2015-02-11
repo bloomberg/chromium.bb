@@ -56,6 +56,14 @@ static const ELF::Sword DT_ANDROID_REL_SIZE = DT_LOOS + 1;
 // page.  See http://www.airs.com/blog/archives/189.
 static const size_t kPreserveAlignment = 4096;
 
+// Alignment values used by ld and gold for the GNU_STACK segment.  Different
+// linkers write different values; the actual value is immaterial on Android
+// because it ignores GNU_STACK segments.  However, it is useful for binary
+// comparison and unit test purposes if packing and unpacking can preserve
+// them through a round-trip.
+static const size_t kLdGnuStackSegmentAlignment = 16;
+static const size_t kGoldGnuStackSegmentAlignment = 0;
+
 namespace {
 
 // Get section data.  Checks that the section has exactly one data entry,
@@ -363,19 +371,36 @@ ELF::Phdr* FindFirstLoadSegment(ELF::Phdr* program_headers,
   return first_loadable_segment;
 }
 
+// Helper for ResizeSection().  Deduce the alignment that the PT_GNU_STACK
+// segment will use.  Determined by sensing the linker that was used to
+// create the shared library.
+size_t DeduceGnuStackSegmentAlignment(Elf* elf) {
+  size_t string_index;
+  elf_getshdrstrndx(elf, &string_index);
+
+  Elf_Scn* section = NULL;
+  size_t gnu_stack_segment_alignment = kLdGnuStackSegmentAlignment;
+
+  while ((section = elf_nextscn(elf, section)) != NULL) {
+    const ELF::Shdr* section_header = ELF::getshdr(section);
+    std::string name = elf_strptr(elf, string_index, section_header->sh_name);
+
+    if (name == ".note.gnu.gold-version") {
+      gnu_stack_segment_alignment = kGoldGnuStackSegmentAlignment;
+      break;
+    }
+  }
+
+  return gnu_stack_segment_alignment;
+}
+
 // Helper for ResizeSection().  Find the PT_GNU_STACK segment, and check
 // that it contains what we expect so we can restore it on unpack if needed.
-//
-// Note: GNU LD and Gold on aarch64 differ in p_align of PT_GNU_STACK (16 vs.
-// 0). This fact is ignored when unpacking, so a Gold-linked DSO would not
-// remain bit-identical after packing-unpacking cycle. Modifying p_align is safe
-// because the Android dynamic linker ignores PT_GNU_STACK segment.
-//
-// To produce bit-idential unpacked DSOs the linker could be detected by the
-// presence of .note.gnu.gold-version section. It is not done for simplicity.
-ELF::Phdr* FindUnusedGnuStackSegment(ELF::Phdr* program_headers,
+ELF::Phdr* FindUnusedGnuStackSegment(Elf* elf,
+                                     ELF::Phdr* program_headers,
                                      size_t count) {
   ELF::Phdr* unused_segment = NULL;
+  const size_t stack_alignment = DeduceGnuStackSegmentAlignment(elf);
 
   for (size_t i = 0; i < count; ++i) {
     ELF::Phdr* program_header = &program_headers[i];
@@ -386,7 +411,8 @@ ELF::Phdr* FindUnusedGnuStackSegment(ELF::Phdr* program_headers,
         program_header->p_paddr == 0 &&
         program_header->p_filesz == 0 &&
         program_header->p_memsz == 0 &&
-        program_header->p_flags == (PF_R | PF_W)) {
+        program_header->p_flags == (PF_R | PF_W) &&
+        program_header->p_align == stack_alignment) {
       unused_segment = program_header;
     }
   }
@@ -565,7 +591,7 @@ void SplitProgramHeadersForHole(Elf* elf,
   // Locate the segment that we can overwrite to form the new LOAD entry,
   // and the segment that we are going to split into two parts.
   ELF::Phdr* spliced_header =
-      FindUnusedGnuStackSegment(elf_program_header, program_header_count);
+      FindUnusedGnuStackSegment(elf, elf_program_header, program_header_count);
   ELF::Phdr* split_header =
       FindFirstLoadSegment(elf_program_header, program_header_count);
 
@@ -687,6 +713,7 @@ void CoalesceProgramHeadersForHole(Elf* elf,
       last_section_header->sh_offset + last_section_header->sh_size;
 
   // Reconstruct the original GNU_STACK segment into spliced_header.
+  const size_t stack_alignment = DeduceGnuStackSegmentAlignment(elf);
   spliced_header->p_type = PT_GNU_STACK;
   spliced_header->p_offset = 0;
   spliced_header->p_vaddr = 0;
@@ -694,7 +721,7 @@ void CoalesceProgramHeadersForHole(Elf* elf,
   spliced_header->p_filesz = 0;
   spliced_header->p_memsz = 0;
   spliced_header->p_flags = PF_R | PF_W;
-  spliced_header->p_align = ELF::kGnuStackSegmentAlignment;
+  spliced_header->p_align = stack_alignment;
 
   // Adjust the offsets of all program headers that are not one of the pair
   // we just coalesced.
