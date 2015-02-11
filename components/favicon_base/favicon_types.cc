@@ -6,14 +6,15 @@
 
 namespace favicon_base {
 
-// FaviconImageResult ---------------------------------------------------------
+// ---------------------------------------------------------
+// FaviconImageResult
 
 FaviconImageResult::FaviconImageResult() {}
 
 FaviconImageResult::~FaviconImageResult() {}
 
-// FaviconRawBitmapResult
 // --------------------------------------------------------
+// FaviconRawBitmapResult
 
 FaviconRawBitmapResult::FaviconRawBitmapResult()
     : expired(false), icon_type(INVALID_ICON) {
@@ -22,4 +23,4 @@ FaviconRawBitmapResult::FaviconRawBitmapResult()
 FaviconRawBitmapResult::~FaviconRawBitmapResult() {
 }
 
-}  // namespace chrome
+}  // namespace favicon_base
