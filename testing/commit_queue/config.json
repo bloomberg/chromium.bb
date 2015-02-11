@@ -89,15 +89,9 @@
               "win_chromium_compile_dbg_ng": ["defaulttests"],
               "win_chromium_rel_ng": ["defaulttests"],
               "win_chromium_x64_rel_ng": ["defaulttests"]
-            },
-            "tryserver.chromium.gpu": {
-                "win_gpu": ["defaulttests"]
             }
         },
         "triggered": {
-            "tryserver.chromium.gpu": {
-                "win_gpu_triggered_tests": "win_gpu"
-            }
         }
     }
 }
