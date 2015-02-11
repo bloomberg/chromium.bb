@@ -229,8 +229,12 @@ void PluginProxyTestHarness::CreatePluginGlobals() {
   if (globals_config_ == PER_THREAD_GLOBALS) {
     plugin_globals_.reset(new PluginGlobals(PpapiGlobals::PerThreadForTest()));
     PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
+    // Enable locking in case some other unit test ran before us and disabled
+    // locking.
+    ProxyLock::EnableLockingOnThreadForTest();
   } else {
     plugin_globals_.reset(new PluginGlobals());
+    ProxyLock::EnableLockingOnThreadForTest();
   }
 }
 
@@ -456,8 +460,6 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
 void HostProxyTestHarness::TearDownHarness() {
   HostDispatcher::RemoveForInstance(pp_instance());
   host_dispatcher_.reset();
-  // Set the proxy lock back to the default, which is locking.
-  ProxyLock::EnableLockingOnThreadForTest();
   host_globals_.reset();
 }
 

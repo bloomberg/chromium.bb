@@ -70,8 +70,6 @@ class URLRequestInfoTest : public RenderViewTest {
 
   void TearDown() override {
     test_globals_.GetResourceTracker()->DidDeleteInstance(pp_instance_);
-    // Turn locking back to the default for tests that run later.
-    ppapi::ProxyLock::EnableLockingOnThreadForTest();
     RenderViewTest::TearDown();
   }
 
