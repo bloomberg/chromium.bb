@@ -631,7 +631,7 @@ movq Wq Vq, 0xf3 0x0f 0x7e, CPUFeature_SSE2
 movq Vq Wq, 0x66 0x0f 0xd6, CPUFeature_SSE2
 vmovq Mq Vo, 0xc4 RXB.00001 x.1111.0.10 0x7e, CPUFeature_AVX
 vmovq Uq Vo, 0xc4 RXB.00001 x.1111.0.10 0x7e, CPUFeature_AVX
-vmovq Vq Wq, 0xc4 RXB.00001 x.1111.1.01 0xd6, CPUFeature_AVX
+vmovq Vq Wq, 0xc4 RXB.00001 x.1111.0.01 0xd6, CPUFeature_AVX
 ######## MOVSD/VMOVSD ##########################################################
 movsd Wsd Vsd, 0xf2 0x0f 0x10, CPUFeature_SSE2
 movsd Vsd Wsd, 0xf2 0x0f 0x11, CPUFeature_SSE2
