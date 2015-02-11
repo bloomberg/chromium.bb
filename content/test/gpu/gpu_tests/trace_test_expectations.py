@@ -13,6 +13,7 @@ class TraceTestExpectations(GpuTestExpectations):
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
     self.Skip('TraceTest.Canvas2DRedBox')
+    self.Skip('TraceTest.CSS3DBlueBox')
     pass
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
