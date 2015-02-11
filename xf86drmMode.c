@@ -61,7 +61,7 @@
 #define VG(x)
 #endif
 
-#define VG_CLEAR(s) VG(memset(&s, 0, sizeof(s)))
+#define memclear(s) memset(&s, 0, sizeof(s))
 
 #define U642VOID(x) ((void *)(unsigned long)(x))
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
@@ -164,7 +164,7 @@ drmModeResPtr drmModeGetResources(int fd)
 	drmModeResPtr r = 0;
 
 retry:
-	memset(&res, 0, sizeof(struct drm_mode_card_res));
+	memclear(res);
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res))
 		return 0;
 
@@ -259,7 +259,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 	struct drm_mode_fb_cmd f;
 	int ret;
 
-	VG_CLEAR(f);
+	memclear(f);
 	f.width  = width;
 	f.height = height;
 	f.pitch  = pitch;
@@ -282,6 +282,7 @@ int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
 	struct drm_mode_fb_cmd2 f;
 	int ret;
 
+	memclear(f);
 	f.width  = width;
 	f.height = height;
 	f.pixel_format = pixel_format;
@@ -300,8 +301,6 @@ int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
 int drmModeRmFB(int fd, uint32_t bufferId)
 {
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_RMFB, &bufferId);
-
-
 }
 
 drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
@@ -309,6 +308,7 @@ drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 	struct drm_mode_fb_cmd info;
 	drmModeFBPtr r;
 
+	memclear(info);
 	info.fb_id = buf;
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETFB, &info))
@@ -331,8 +331,9 @@ drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 int drmModeDirtyFB(int fd, uint32_t bufferId,
 		   drmModeClipPtr clips, uint32_t num_clips)
 {
-	struct drm_mode_fb_dirty_cmd dirty = { 0 };
+	struct drm_mode_fb_dirty_cmd dirty;
 
+	memclear(dirty);
 	dirty.fb_id = bufferId;
 	dirty.clips_ptr = VOID2U64(clips);
 	dirty.num_clips = num_clips;
@@ -350,7 +351,7 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	struct drm_mode_crtc crtc;
 	drmModeCrtcPtr r;
 
-	VG_CLEAR(crtc);
+	memclear(crtc);
 	crtc.crtc_id = crtcId;
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETCRTC, &crtc))
@@ -384,7 +385,7 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 {
 	struct drm_mode_crtc crtc;
 
-	VG_CLEAR(crtc);
+	memclear(crtc);
 	crtc.x             = x;
 	crtc.y             = y;
 	crtc.crtc_id       = crtcId;
@@ -394,8 +395,7 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 	if (mode) {
 	  memcpy(&crtc.mode, mode, sizeof(struct drm_mode_modeinfo));
 	  crtc.mode_valid = 1;
-	} else
-	  crtc.mode_valid = 0;
+	}
 
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETCRTC, &crtc);
 }
@@ -408,6 +408,7 @@ int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width
 {
 	struct drm_mode_cursor arg;
 
+	memclear(arg);
 	arg.flags = DRM_MODE_CURSOR_BO;
 	arg.crtc_id = crtcId;
 	arg.width = width;
@@ -421,6 +422,7 @@ int drmModeSetCursor2(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t widt
 {
 	struct drm_mode_cursor2 arg;
 
+	memclear(arg);
 	arg.flags = DRM_MODE_CURSOR_BO;
 	arg.crtc_id = crtcId;
 	arg.width = width;
@@ -436,6 +438,7 @@ int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
 {
 	struct drm_mode_cursor arg;
 
+	memclear(arg);
 	arg.flags = DRM_MODE_CURSOR_MOVE;
 	arg.crtc_id = crtcId;
 	arg.x = x;
@@ -452,11 +455,8 @@ drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
 	struct drm_mode_get_encoder enc;
 	drmModeEncoderPtr r = NULL;
 
+	memclear(enc);
 	enc.encoder_id = encoder_id;
-	enc.crtc_id = 0;
-	enc.encoder_type = 0;
-	enc.possible_crtcs = 0;
-	enc.possible_clones = 0;
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETENCODER, &enc))
 		return 0;
@@ -483,7 +483,7 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	drmModeConnectorPtr r = NULL;
 
 retry:
-	memset(&conn, 0, sizeof(struct drm_mode_get_connector));
+	memclear(conn);
 	conn.connector_id = connector_id;
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn))
@@ -576,6 +576,7 @@ int drmModeAttachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_inf
 {
 	struct drm_mode_mode_cmd res;
 
+	memclear(res);
 	memcpy(&res.mode, mode_info, sizeof(struct drm_mode_modeinfo));
 	res.connector_id = connector_id;
 
@@ -586,6 +587,7 @@ int drmModeDetachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_inf
 {
 	struct drm_mode_mode_cmd res;
 
+	memclear(res);
 	memcpy(&res.mode, mode_info, sizeof(struct drm_mode_modeinfo));
 	res.connector_id = connector_id;
 
@@ -598,13 +600,8 @@ drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 	struct drm_mode_get_property prop;
 	drmModePropertyPtr r;
 
-	VG_CLEAR(prop);
+	memclear(prop);
 	prop.prop_id = property_id;
-	prop.count_enum_blobs = 0;
-	prop.count_values = 0;
-	prop.flags = 0;
-	prop.enum_blob_ptr = 0;
-	prop.values_ptr = 0;
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPROPERTY, &prop))
 		return 0;
@@ -667,8 +664,7 @@ drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id)
 	struct drm_mode_get_blob blob;
 	drmModePropertyBlobPtr r;
 
-	blob.length = 0;
-	blob.data = 0;
+	memclear(blob);
 	blob.blob_id = blob_id;
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPROPBLOB, &blob))
@@ -708,6 +704,7 @@ int drmModeConnectorSetProperty(int fd, uint32_t connector_id, uint32_t property
 {
 	struct drm_mode_connector_set_property osp;
 
+	memclear(osp);
 	osp.connector_id = connector_id;
 	osp.prop_id = property_id;
 	osp.value = value;
@@ -818,6 +815,7 @@ int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
 {
 	struct drm_mode_crtc_lut l;
 
+	memclear(l);
 	l.crtc_id = crtc_id;
 	l.gamma_size = size;
 	l.red = VOID2U64(red);
@@ -832,6 +830,7 @@ int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
 {
 	struct drm_mode_crtc_lut l;
 
+	memclear(l);
 	l.crtc_id = crtc_id;
 	l.gamma_size = size;
 	l.red = VOID2U64(red);
@@ -897,11 +896,11 @@ int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
 {
 	struct drm_mode_crtc_page_flip flip;
 
+	memclear(flip);
 	flip.fb_id = fb_id;
 	flip.crtc_id = crtc_id;
 	flip.user_data = VOID2U64(user_data);
 	flip.flags = flags;
-	flip.reserved = 0;
 
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip);
 }
@@ -916,6 +915,7 @@ int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 {
 	struct drm_mode_set_plane s;
 
+	memclear(s);
 	s.plane_id = plane_id;
 	s.crtc_id = crtc_id;
 	s.fb_id = fb_id;
@@ -939,7 +939,7 @@ drmModePlanePtr drmModeGetPlane(int fd, uint32_t plane_id)
 	drmModePlanePtr r = 0;
 
 retry:
-	memset(&ovr, 0, sizeof(struct drm_mode_get_plane));
+	memclear(ovr);
 	ovr.plane_id = plane_id;
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPLANE, &ovr))
 		return 0;
@@ -999,7 +999,7 @@ drmModePlaneResPtr drmModeGetPlaneResources(int fd)
 	drmModePlaneResPtr r = 0;
 
 retry:
-	memset(&res, 0, sizeof(struct drm_mode_get_plane_res));
+	memclear(res);
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPLANERESOURCES, &res))
 		return 0;
 
@@ -1056,7 +1056,7 @@ drmModeObjectPropertiesPtr drmModeObjectGetProperties(int fd,
 	uint32_t count;
 
 retry:
-	memset(&properties, 0, sizeof(struct drm_mode_obj_get_properties));
+	memclear(properties);
 	properties.obj_id = object_id;
 	properties.obj_type = object_type;
 
@@ -1122,6 +1122,7 @@ int drmModeObjectSetProperty(int fd, uint32_t object_id, uint32_t object_type,
 {
 	struct drm_mode_obj_set_property prop;
 
+	memclear(prop);
 	prop.value = value;
 	prop.prop_id = property_id;
 	prop.obj_id = object_id;
