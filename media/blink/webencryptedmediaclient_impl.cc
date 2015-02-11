@@ -32,13 +32,19 @@ static bool IsSupportedContentType(
   // TODO(sandersd): Check that |container| matches the capability:
   //   - audioCapabilitys: audio/mp4 or audio/webm.
   //   - videoCapabilitys: video/mp4 or video/webm.
-  // http://crbug.com/429781.
+  // http://crbug.com/457384.
   std::string container = base::StringToLowerASCII(mime_type);
 
-  // TODO(sandersd): Strict checking for codecs. http://crbug.com/374751.
-  bool strip_codec_suffixes = !net::IsStrictMediaMimeType(container);
+  // Check that |codecs| are supported as specified (e.g. "mp4a.40.2").
   std::vector<std::string> codec_vector;
-  net::ParseCodecString(codecs, &codec_vector, strip_codec_suffixes);
+  net::ParseCodecString(codecs, &codec_vector, false);
+  if (!net::AreSupportedMediaCodecs(codec_vector))
+    return false;
+
+  // IsSupportedKeySystemWithMediaMimeType() only works with base codecs
+  // (e.g. "mp4a"), so reparse |codecs| to get the base only.
+  codec_vector.clear();
+  net::ParseCodecString(codecs, &codec_vector, true);
   return IsSupportedKeySystemWithMediaMimeType(container, codec_vector,
                                                key_system);
 }
