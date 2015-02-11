@@ -8,7 +8,8 @@
 # Clones the dom-distiller repo, compiles and extracts its javascript Then
 # copies that js into the Chromium tree.
 # This script should be run from the src/ directory and requires that ant is
-# installed.
+# installed. It takes an optional parameter for which SHA1 to roll to. If left
+# unspecified the script rolls to HEAD.
 
 (
   set -e
@@ -25,17 +26,20 @@
   mkdir $tmpdir
 
   pushd $tmpdir
-  git clone https://code.google.com/p/dom-distiller/ .
+  git clone https://github.com/chromium/dom-distiller/ .
 
-  new_gitsha=$(git rev-parse --short=10 HEAD)
-  git log --oneline ${curr_gitsha}.. > $changes
+  # The new git SHA1 is HEAD or the first command line parameter.
+  [[ -z "$1" ]] && gitsha_target="HEAD" || gitsha_target="$1"
+  new_gitsha=$(git rev-parse --short=10 ${gitsha_target})
+  git reset --hard ${new_gitsha}
+  git log --oneline ${curr_gitsha}..${new_gitsha} > $changes
 
   echo -n BUG= > $bugs
 
   # This extracts BUG= lines from the log, extracts the numbers part, removes
   # whitespace and deletes empty lines. Then, split on ',', sort, uniquify and
   # rejoin. Finally, remove the trailing ',' and concat to $bugs.
-  git log ${curr_gitsha}.. \
+  git log ${curr_gitsha}..${new_gitsha} \
     | grep BUG= \
     | sed -e 's/.*BUG=\(.*\)/\1/' -e 's/\s*//g' -e '/^$/d' \
     | tr ',' '\n' \
@@ -53,6 +57,7 @@
   rm -rf $dom_distiller_js_package
   mkdir $dom_distiller_js_package
   cp -rf $tmpdir/out/package/* $dom_distiller_js_package
+  git add $dom_distiller_js_package
   cp $tmpdir/LICENSE $dom_distiller_js_path/
   sed -i "s/Version: [0-9a-f]*/Version: $new_gitsha/" $readme_chromium
 
