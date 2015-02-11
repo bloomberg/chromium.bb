@@ -17,7 +17,7 @@ bool ShadowStyleInterpolation::canCreateFrom(const CSSValue& start, const CSSVal
 {
     return start.isShadowValue() && end.isShadowValue()
         && toCSSShadowValue(start).style == toCSSShadowValue(end).style
-        && toCSSShadowValue(start).color && toCSSShadowValue(start).color;
+        && toCSSShadowValue(start).color && toCSSShadowValue(end).color;
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> ShadowStyleInterpolation::lengthToInterpolableValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value)
@@ -67,8 +67,11 @@ PassRefPtrWillBeRawPtr<CSSValue> ShadowStyleInterpolation::fromInterpolableValue
 bool ShadowStyleInterpolation::usesDefaultStyleInterpolation(const CSSValue& start, const CSSValue& end)
 {
     if (start.isValueList() && end.isValueList() && toCSSValueList(start).length() == toCSSValueList(end).length()) {
+        const CSSValueList* startList = toCSSValueList(&start);
+        const CSSValueList* endList = toCSSValueList(&end);
         for (size_t i = 0; i < toCSSValueList(start).length(); i++) {
-            if (!canCreateFrom(*toCSSValueList(start).item(i), *toCSSValueList(end).item(i)))
+            if (startList->item(i)->isShadowValue() && endList->item(i)->isShadowValue()
+                && toCSSShadowValue(startList->item(i))->style != toCSSShadowValue(endList->item(i))->style)
                 return true;
         }
     }

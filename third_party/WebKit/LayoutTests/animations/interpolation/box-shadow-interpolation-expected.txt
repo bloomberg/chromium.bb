@@ -11,6 +11,12 @@ PASS: box-shadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px 
 PASS: box-shadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px orange inset] was [-3px -2px 17px 0px rgb(153, 99, 0) inset] at 0.6
 PASS: box-shadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px orange inset] was [-15px -10px 25px -4px orange inset] at 1
 PASS: box-shadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px orange inset] was [-30px -20px 35px -9px rgb(255, 248, 0) inset] at 1.5
+PASS: box-shadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [24px 16px 0px 9px black] at -0.3
+PASS: box-shadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [15px 10px 5px 6px black] at 0
+PASS: box-shadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [6px 4px 11px 3px rgb(0, 0, 0)] at 0.3
+PASS: box-shadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [-3px -2px 17px 0px rgb(0, 0, 0)] at 0.6
+PASS: box-shadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [-15px -10px 25px -4px rgb(0, 0, 0)] at 1
+PASS: box-shadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [-30px -20px 35px -9px rgb(0, 0, 0)] at 1.5
 PASS: box-shadow from [10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000] to [none] was [13px 26px rgba(255, 255, 0, 0.65), inset 6.5px 39px rgb(0, 166, 0)] at -0.3
 PASS: box-shadow from [10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000] to [none] was [10px 20px rgba(255, 255, 0, 0.5), inset 5px 30px #008000] at 0
 PASS: box-shadow from [10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000] to [none] was [7px 14px rgba(255, 255, 0, 0.35), inset 3.5px 21px rgba(0, 128, 0, 0.7)] at 0.3
@@ -37,6 +43,12 @@ PASS: boxShadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px o
 PASS: boxShadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px orange inset] was [-3px -2px 17px 0px rgb(153, 99, 0) inset] at 0.6
 PASS: boxShadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px orange inset] was [-15px -10px 25px -4px orange inset] at 1
 PASS: boxShadow from [15px 10px 5px 6px black inset] to [-15px -10px 25px -4px orange inset] was [-30px -20px 35px -9px rgb(255, 248, 0) inset] at 1.5
+PASS: boxShadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [24px 16px 0px 9px black] at -0.3
+PASS: boxShadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [15px 10px 5px 6px black] at 0
+PASS: boxShadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [6px 4px 11px 3px rgb(0, 0, 0)] at 0.3
+PASS: boxShadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [-3px -2px 17px 0px rgb(0, 0, 0)] at 0.6
+PASS: boxShadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [-15px -10px 25px -4px rgb(0, 0, 0)] at 1
+PASS: boxShadow from [15px 10px 5px 6px black] to [-15px -10px 25px -4px] was [-30px -20px 35px -9px rgb(0, 0, 0)] at 1.5
 PASS: boxShadow from [10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000] to [none] was [13px 26px rgba(255, 255, 0, 0.65), inset 6.5px 39px rgb(0, 166, 0)] at -0.3
 PASS: boxShadow from [10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000] to [none] was [10px 20px rgba(255, 255, 0, 0.5), inset 5px 30px #008000] at 0
 PASS: boxShadow from [10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000] to [none] was [7px 14px rgba(255, 255, 0, 0.35), inset 3.5px 21px rgba(0, 128, 0, 0.7)] at 0.3
