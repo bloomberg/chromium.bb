@@ -264,6 +264,18 @@ const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
 };
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+const Experiment::Choice kTabCloseButtonsHiddenWithTouchChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_ALWAYS,
+    switches::kTabCloseButtonsHiddenWithTouch, "always" },
+  { IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_NARROW,
+    switches::kTabCloseButtonsHiddenWithTouch, "narrow" },
+  { IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_STACKED,
+    switches::kTabCloseButtonsHiddenWithTouch, "stacked" },
+};
+#endif
+
 #if defined(OS_ANDROID)
 const Experiment::Choice kZeroSuggestExperimentsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -1378,6 +1390,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_TAB_CAPTURE_DOWNSCALE_QUALITY_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kTabCaptureDownscaleQualityChoices)
+  },
+#endif
+#if defined(TOOLKIT_VIEWS)
+  {
+    "tab-close-buttons-hidden-with-touch",
+    IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_NAME,
+    IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_DESCRIPTION,
+    kOsCrOS | kOsWin | kOsLinux,
+    MULTI_VALUE_TYPE(kTabCloseButtonsHiddenWithTouchChoices)
   },
 #endif
   {

@@ -757,6 +757,11 @@ const char kTabCaptureDownscaleQuality[]    = "tab-capture-downscale-quality";
 // Upscale defaults to "best".
 const char kTabCaptureUpscaleQuality[]      = "tab-capture-upscale-quality";
 
+// Options for hiding the close buttons of inactive tabs when touch
+// is used to interact with the tabstrip.
+const char kTabCloseButtonsHiddenWithTouch[] =
+    "tab-close-buttons-hidden-with-touch";
+
 // Allows for forcing socket connections to http/https to use fixed ports.
 const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
 const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";

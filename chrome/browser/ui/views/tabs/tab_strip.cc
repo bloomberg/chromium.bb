@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
@@ -965,6 +967,30 @@ const ui::ListSelectionModel& TabStrip::GetSelectionModel() {
 bool TabStrip::SupportsMultipleSelection() {
   // TODO: currently only allow single selection in touch layout mode.
   return touch_layout_ == NULL;
+}
+
+// TODO(tdanderson): Modify this logic and clean up related code once a
+//                   decision has been made on the experimental
+//                   flag --tab-close-buttons-hidden-with-touch.
+bool TabStrip::ShouldHideCloseButtonForInactiveTab(const Tab* tab) {
+  DCHECK(!tab->IsActive());
+
+  // Do not force the close button to hide if mouse was used as
+  // the last input type to interact with the tab strip.
+  if (!stacked_layout_)
+    return false;
+
+  std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kTabCloseButtonsHiddenWithTouch);
+  int width = tab->width();
+  if (switch_value == "always" ||
+      (switch_value == "narrow" && width < Tab::GetStandardSize().width()) ||
+      (switch_value == "stacked" && width <= Tab::GetTouchWidth())) {
+    return true;
+  }
+
+  return false;
 }
 
 void TabStrip::SelectTab(Tab* tab) {

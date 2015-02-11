@@ -213,6 +213,7 @@ class TabStrip : public views::View,
   // TabController overrides:
   const ui::ListSelectionModel& GetSelectionModel() override;
   bool SupportsMultipleSelection() override;
+  bool ShouldHideCloseButtonForInactiveTab(const Tab* tab) override;
   void SelectTab(Tab* tab) override;
   void ExtendSelectionTo(Tab* tab) override;
   void ToggleSelected(Tab* tab) override;
