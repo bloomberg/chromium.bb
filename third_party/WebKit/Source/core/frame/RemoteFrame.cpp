@@ -31,7 +31,6 @@ PassRefPtrWillBeRawPtr<RemoteFrame> RemoteFrame::create(RemoteFrameClient* clien
 
 RemoteFrame::~RemoteFrame()
 {
-    setView(nullptr);
 }
 
 void RemoteFrame::trace(Visitor* visitor)
@@ -75,6 +74,7 @@ void RemoteFrame::detach()
     if (!client())
         return;
     m_windowProxyManager->clearForClose();
+    setView(nullptr);
     Frame::detach();
 }
 
@@ -97,6 +97,20 @@ void RemoteFrame::setView(PassRefPtrWillBeRawPtr<RemoteFrameView> view)
 
 void RemoteFrame::createView()
 {
+    setView(nullptr);
+    if (!tree().parent() || !tree().parent()->isLocalFrame()) {
+        // FIXME: This is not the right place to clear the previous frame's
+        // widget. We do it here because the LocalFrame cleanup after a swap is
+        // still work in progress.
+        if (ownerRenderer()) {
+            HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
+            ASSERT(owner);
+            owner->setWidget(nullptr);
+        }
+
+        return;
+    }
+
     RefPtrWillBeRawPtr<RemoteFrameView> view = RemoteFrameView::create(this);
     setView(view);
 
