@@ -319,6 +319,10 @@ component("gfx") {
   # Linux.
   if (is_linux) {
     configs += [ "//build/config/linux:fontconfig" ]
+    sources += [
+      "platform_font_pango.cc",
+      "platform_font_pango.h",
+    ]
   }
 
   # Ozone stuff.
@@ -343,12 +347,6 @@ component("gfx") {
   }
 
   if (use_pango) {
-    sources += [
-      "pango_util.cc",
-      "pango_util.h",
-      "platform_font_pango.cc",
-      "platform_font_pango.h",
-    ]
     configs += [ "//build/config/linux:pangocairo" ]
   }
   if (use_pango && use_ozone) {

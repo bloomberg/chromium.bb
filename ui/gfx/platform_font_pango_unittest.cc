@@ -4,45 +4,119 @@
 
 #include "ui/gfx/platform_font_pango.h"
 
-#include <cairo/cairo.h>
-#include <fontconfig/fontconfig.h>
-#include <glib-object.h>
-#include <pango/pangocairo.h>
-#include <pango/pangofc-fontmap.h>
-
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/pango_util.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/font_render_params.h"
+#include "ui/gfx/linux_font_delegate.h"
+#include "ui/gfx/test/fontconfig_util_linux.h"
 
 namespace gfx {
 
-// Test that PlatformFontPango is able to cope with PangoFontDescriptions
-// containing multiple font families.  The first family should be preferred.
-TEST(PlatformFontPangoTest, FamilyList) {
-  // Needed for GLib versions prior to 2.36, but deprecated starting 2.35.
-#if !GLIB_CHECK_VERSION(2, 35, 0)
-  g_type_init();
-#endif
+// Implementation of LinuxFontDelegate used to control the default font
+// description on Linux.
+class TestFontDelegate : public LinuxFontDelegate {
+ public:
+  TestFontDelegate() : size_pixels_(0), style_(gfx::Font::NORMAL) {}
+  ~TestFontDelegate() override {}
 
-  ScopedPangoFontDescription desc("Arial,Times New Roman, 13px");
-  scoped_refptr<gfx::PlatformFontPango> font(
-      new gfx::PlatformFontPango(desc.get()));
+  void set_family(const std::string& family) { family_ = family; }
+  void set_size_pixels(int size_pixels) { size_pixels_ = size_pixels; }
+  void set_style(int style) { style_ = style; }
+  void set_params(const FontRenderParams& params) { params_ = params; }
+
+  FontRenderParams GetDefaultFontRenderParams() const override {
+    NOTIMPLEMENTED();
+    return FontRenderParams();
+  }
+  void GetDefaultFontDescription(
+      std::string* family_out,
+      int* size_pixels_out,
+      int* style_out,
+      FontRenderParams* params_out) const override {
+    *family_out = family_;
+    *size_pixels_out = size_pixels_;
+    *style_out = style_;
+    *params_out = params_;
+  }
+
+ private:
+  // Default values to be returned.
+  std::string family_;
+  int size_pixels_;
+  int style_;
+  FontRenderParams params_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFontDelegate);
+};
+
+class PlatformFontPangoTest : public testing::Test {
+ public:
+  PlatformFontPangoTest() {
+    SetUpFontconfig();
+    original_font_delegate_ = LinuxFontDelegate::instance();
+    LinuxFontDelegate::SetInstance(&test_font_delegate_);
+  }
+
+  ~PlatformFontPangoTest() override {
+    LinuxFontDelegate::SetInstance(
+        const_cast<LinuxFontDelegate*>(original_font_delegate_));
+    TearDownFontconfig();
+  }
+
+ protected:
+  TestFontDelegate test_font_delegate_;
+
+ private:
+  // Originally-registered delegate.
+  const LinuxFontDelegate* original_font_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformFontPangoTest);
+};
+
+// Test that PlatformFontPango's default constructor initializes the instance
+// with the correct parameters.
+TEST_F(PlatformFontPangoTest, DefaultFont) {
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("times_new_roman.ttf"));
+
+#if defined(OS_CHROMEOS)
+  PlatformFontPango::SetDefaultFontDescription("Arial,Times New Roman,13px");
+#else
+  test_font_delegate_.set_family("Arial");
+  test_font_delegate_.set_size_pixels(13);
+  test_font_delegate_.set_style(gfx::Font::NORMAL);
+  FontRenderParams params;
+  params.antialiasing = false;
+  params.hinting = FontRenderParams::HINTING_FULL;
+  test_font_delegate_.set_params(params);
+#endif
+  scoped_refptr<gfx::PlatformFontPango> font(new gfx::PlatformFontPango());
   EXPECT_EQ("Arial", font->GetFontName());
   EXPECT_EQ(13, font->GetFontSize());
+  EXPECT_EQ(gfx::Font::NORMAL, font->GetStyle());
+#if !defined(OS_CHROMEOS)
+  // On Linux, the FontRenderParams returned by the the delegate should be used.
+  EXPECT_EQ(params.antialiasing, font->GetFontRenderParams().antialiasing);
+  EXPECT_EQ(params.hinting, font->GetFontRenderParams().hinting);
+#endif
 
-  ScopedPangoFontDescription desc2("Times New Roman,Arial, 15px");
-  scoped_refptr<gfx::PlatformFontPango> font2(
-      new gfx::PlatformFontPango(desc2.get()));
+  // Drop the old default font and check that new settings are loaded.
+#if defined(OS_CHROMEOS)
+  PlatformFontPango::SetDefaultFontDescription(
+      "Times New Roman,Arial,Bold 15px");
+#else
+  test_font_delegate_.set_family("Times New Roman");
+  test_font_delegate_.set_size_pixels(15);
+  test_font_delegate_.set_style(gfx::Font::BOLD);
+#endif
+  PlatformFontPango::ReloadDefaultFont();
+  scoped_refptr<gfx::PlatformFontPango> font2(new gfx::PlatformFontPango());
   EXPECT_EQ("Times New Roman", font2->GetFontName());
   EXPECT_EQ(15, font2->GetFontSize());
-
-  // Free memory allocated by FontConfig (http://crbug.com/114750).
-  pango_fc_font_map_cache_clear(
-      PANGO_FC_FONT_MAP(pango_cairo_font_map_get_default()));
-  cairo_debug_reset_static_data();
-  FcFini();
+  EXPECT_EQ(gfx::Font::BOLD, font2->GetStyle());
 }
 
 }  // namespace gfx

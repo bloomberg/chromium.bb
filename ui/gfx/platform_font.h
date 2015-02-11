@@ -21,7 +21,9 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:
   // Creates an appropriate PlatformFont implementation.
   static PlatformFont* CreateDefault();
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
   static PlatformFont* CreateFromNativeFont(NativeFont native_font);
+#endif
   // Creates a PlatformFont implementation with the specified |font_name|
   // (encoded in UTF-8) and |font_size| in pixels.
   static PlatformFont* CreateFromNameAndSize(const std::string& font_name,
@@ -66,8 +68,10 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns an object describing how the font should be rendered.
   virtual const FontRenderParams& GetFontRenderParams() = 0;
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
   // Returns the native font handle.
   virtual NativeFont GetNativeFont() const = 0;
+#endif
 
  protected:
   virtual ~PlatformFont() {}

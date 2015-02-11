@@ -4,14 +4,12 @@
 
 #include "ui/gfx/font_render_params.h"
 
-#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_font_delegate.h"
-#include "ui/gfx/pango_util.h"
 #include "ui/gfx/test/fontconfig_util_linux.h"
 
 namespace gfx {
@@ -30,14 +28,12 @@ class TestFontDelegate : public LinuxFontDelegate {
   FontRenderParams GetDefaultFontRenderParams() const override {
     return params_;
   }
-  scoped_ptr<ScopedPangoFontDescription> GetDefaultPangoFontDescription()
-      const override {
+  void GetDefaultFontDescription(
+      std::string* family_out,
+      int* size_pixels_out,
+      int* style_out,
+      FontRenderParams* params_out) const override {
     NOTIMPLEMENTED();
-    return nullptr;
-  }
-  double GetFontDPI() const override {
-    NOTIMPLEMENTED();
-    return 96.0;
   }
 
  private:
@@ -45,19 +41,6 @@ class TestFontDelegate : public LinuxFontDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(TestFontDelegate);
 };
-
-// Loads the first system font defined by fontconfig_util_linux.h with a base
-// filename of |basename|. Case is ignored. FcFontMatch() requires there to be
-// at least one font present.
-bool LoadSystemFont(const std::string& basename) {
-  for (size_t i = 0; i < kNumSystemFontsForFontconfig; ++i) {
-    base::FilePath path(gfx::kSystemFontsForFontconfig[i]);
-    if (strcasecmp(path.BaseName().value().c_str(), basename.c_str()) == 0)
-      return LoadFontIntoFontconfig(path);
-  }
-  LOG(ERROR) << "Unable to find system font named " << basename;
-  return false;
-}
 
 }  // namespace
 
@@ -87,7 +70,7 @@ class FontRenderParamsTest : public testing::Test {
 };
 
 TEST_F(FontRenderParamsTest, Default) {
-  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
       std::string(kFontconfigFileHeader) +
       // Specify the desired defaults via a font match rather than a pattern
@@ -135,7 +118,7 @@ TEST_F(FontRenderParamsTest, Default) {
 }
 
 TEST_F(FontRenderParamsTest, Size) {
-  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
       std::string(kFontconfigFileHeader) +
       kFontconfigMatchPatternHeader +
@@ -182,7 +165,7 @@ TEST_F(FontRenderParamsTest, Size) {
 }
 
 TEST_F(FontRenderParamsTest, Style) {
-  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   // Load a config that disables subpixel rendering for bold text and disables
   // hinting for italic text.
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
@@ -249,7 +232,7 @@ TEST_F(FontRenderParamsTest, Scalable) {
 }
 
 TEST_F(FontRenderParamsTest, UseBitmaps) {
-  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   // Load a config that enables embedded bitmaps for fonts <= 10 pixels.
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
       std::string(kFontconfigFileHeader) +
@@ -364,8 +347,8 @@ TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
 TEST_F(FontRenderParamsTest, MissingFamily) {
   // With Arial and Verdana installed, request (in order) Helvetica, Arial, and
   // Verdana and check that Arial is returned.
-  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
-  ASSERT_TRUE(LoadSystemFont("verdana.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("verdana.ttf"));
   FontRenderParamsQuery query(false);
   query.families.push_back("Helvetica");
   query.families.push_back("Arial");
@@ -377,8 +360,8 @@ TEST_F(FontRenderParamsTest, MissingFamily) {
 
 TEST_F(FontRenderParamsTest, SubstituteFamily) {
   // Configure Fontconfig to use Verdana for both Helvetica and Arial.
-  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
-  ASSERT_TRUE(LoadSystemFont("verdana.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFontIntoFontconfig("verdana.ttf"));
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
       std::string(kFontconfigFileHeader) +
       CreateFontconfigAliasStanza("Helvetica", "Verdana") +

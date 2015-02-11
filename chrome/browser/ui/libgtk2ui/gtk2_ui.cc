@@ -16,6 +16,7 @@
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
@@ -45,7 +46,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/pango_util.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -327,7 +327,7 @@ color_utils::HSL GetDefaultTint(int id) {
   }
 }
 
-// Returns a FontRenderParams corresponding to GTK's configuration.
+// Returns a gfx::FontRenderParams corresponding to GTK's configuration.
 gfx::FontRenderParams GetGtkFontRenderParams() {
   GtkSettings* gtk_settings = gtk_settings_get_default();
   CHECK(gtk_settings);
@@ -379,6 +379,21 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
+// Queries GTK for its font DPI setting and returns the number of pixels in a
+// point.
+double GetPixelsInPoint() {
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  CHECK(gtk_settings);
+  gint gtk_dpi = -1;
+  g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, NULL);
+
+  // GTK multiplies the DPI by 1024 before storing it.
+  double dpi = (gtk_dpi > 0) ? gtk_dpi / 1024.0 : 96.0;
+
+  // There are 72 points in an inch.
+  return dpi / 72.0;
+}
+
 views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -395,7 +410,10 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 
 }  // namespace
 
-Gtk2UI::Gtk2UI() : middle_click_action_(GetDefaultMiddleClickAction()) {
+Gtk2UI::Gtk2UI()
+    : default_font_size_pixels_(0),
+      default_font_style_(gfx::Font::NORMAL),
+      middle_click_action_(GetDefaultMiddleClickAction()) {
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
@@ -670,21 +688,15 @@ gfx::FontRenderParams Gtk2UI::GetDefaultFontRenderParams() const {
   return params;
 }
 
-scoped_ptr<gfx::ScopedPangoFontDescription>
-Gtk2UI::GetDefaultPangoFontDescription() const {
-  return scoped_ptr<gfx::ScopedPangoFontDescription>(
-      new gfx::ScopedPangoFontDescription(
-          pango_font_description_copy(default_font_description_->get())));
-}
-
-double Gtk2UI::GetFontDPI() const {
-  GtkSettings* gtk_settings = gtk_settings_get_default();
-  CHECK(gtk_settings);
-  gint dpi = -1;
-  g_object_get(gtk_settings, "gtk-xft-dpi", &dpi, NULL);
-
-  // GTK multiplies the DPI by 1024 before storing it.
-  return (dpi > 0) ? dpi / 1024.0 : dpi;
+void Gtk2UI::GetDefaultFontDescription(
+    std::string* family_out,
+    int* size_pixels_out,
+    int* style_out,
+    gfx::FontRenderParams* params_out) const {
+  *family_out = default_font_family_;
+  *size_pixels_out = default_font_size_pixels_;
+  *style_out = default_font_style_;
+  *params_out = default_font_render_params_;
 }
 
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
@@ -851,8 +863,7 @@ void Gtk2UI::LoadGtkValues() {
   SetThemeColorFromGtk(ThemeProperties::COLOR_BOOKMARK_TEXT, &label_color);
   SetThemeColorFromGtk(ThemeProperties::COLOR_STATUS_BAR_TEXT, &label_color);
 
-  default_font_description_.reset(new gfx::ScopedPangoFontDescription(
-      pango_font_description_copy(label_style->font_desc)));
+  UpdateDefaultFont(label_style->font_desc);
 
   // Build the various icon tints.
   GetNormalButtonTintHSL(&button_tint_);
@@ -1352,6 +1363,42 @@ SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
 
 void Gtk2UI::ClearAllThemeData() {
   gtk_images_.clear();
+}
+
+void Gtk2UI::UpdateDefaultFont(const PangoFontDescription* desc) {
+  // Use gfx::FontRenderParams to select a family and determine the rendering
+  // settings.
+  gfx::FontRenderParamsQuery query(false /* for_web_contents */);
+  base::SplitString(pango_font_description_get_family(desc), ',',
+                    &query.families);
+
+  if (pango_font_description_get_size_is_absolute(desc)) {
+    // If the size is absolute, it's specified in Pango units. There are
+    // PANGO_SCALE Pango units in a device unit (pixel).
+    const int size_pixels = pango_font_description_get_size(desc) / PANGO_SCALE;
+    default_font_size_pixels_ = size_pixels;
+    query.pixel_size = size_pixels;
+  } else {
+    // Non-absolute sizes are in points (again scaled by PANGO_SIZE).
+    // Round the value when converting to pixels to match GTK's logic.
+    const double size_points = pango_font_description_get_size(desc) /
+        static_cast<double>(PANGO_SCALE);
+    default_font_size_pixels_ = static_cast<int>(
+        GetPixelsInPoint() * size_points + 0.5);
+    query.point_size = static_cast<int>(size_points);
+  }
+
+  query.style = gfx::Font::NORMAL;
+  // TODO(davemoore): Support weights other than bold?
+  if (pango_font_description_get_weight(desc) == PANGO_WEIGHT_BOLD)
+    query.style |= gfx::Font::BOLD;
+  // TODO(davemoore): What about PANGO_STYLE_OBLIQUE?
+  if (pango_font_description_get_style(desc) == PANGO_STYLE_ITALIC)
+    query.style |= gfx::Font::ITALIC;
+
+  default_font_render_params_ =
+      gfx::GetFontRenderParams(query, &default_font_family_);
+  default_font_style_ = query.style;
 }
 
 void Gtk2UI::OnStyleSet(GtkWidget* widget, GtkStyle* previous_style) {

@@ -35,6 +35,11 @@ void TearDownFontconfig();
 // success.
 bool LoadFontIntoFontconfig(const base::FilePath& path);
 
+// Loads the first system font in kSystemFontsForFontconfig with a base filename
+// of |basename|. Case is ignored. FcFontMatch() requires there to be at least
+// one font present.
+bool LoadSystemFontIntoFontconfig(const std::string& basename);
+
 // Instructs Fontconfig to load |path|, an XML configuration file, into the
 // current config, returning true on success.
 bool LoadConfigFileIntoFontconfig(const base::FilePath& path);

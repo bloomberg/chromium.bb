@@ -19,15 +19,14 @@ class SkPaint;
 
 namespace gfx {
 
+// TODO(derat): Rename this to PlatformFontLinux.
 class GFX_EXPORT PlatformFontPango : public PlatformFont {
  public:
+  // TODO(derat): Get rid of the default constructor in favor of using
+  // gfx::FontList (which also has the concept of a default font but may contain
+  // multiple font families) everywhere. See http://crbug.com/398885#c16.
   PlatformFontPango();
-  explicit PlatformFontPango(NativeFont native_font);
   PlatformFontPango(const std::string& font_name, int font_size_pixels);
-
-  // Converts |gfx_font| to a new pango font. Free the returned font with
-  // pango_font_description_free().
-  static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
 
   // Resets and reloads the cached system font used by the default constructor.
   // This function is useful when the system font has changed, for example, when
@@ -35,8 +34,8 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   static void ReloadDefaultFont();
 
 #if defined(OS_CHROMEOS)
-  // Sets the default font. |font_description| is a Pango font description that
-  // will be passed to pango_font_description_from_string().
+  // Sets the default font. |font_description| is a gfx::FontList font
+  // description; only the first family will be used.
   static void SetDefaultFontDescription(const std::string& font_description);
 #endif
 
@@ -51,13 +50,12 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   std::string GetActualFontNameForTesting() const override;
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
-  NativeFont GetNativeFont() const override;
 
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
   PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
-                    const std::string& name,
+                    const std::string& family,
                     int size_pixels,
                     int style,
                     const FontRenderParams& params);
@@ -95,11 +93,8 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   int cap_height_pixels_;
   double average_width_pixels_;
 
-  // The default font, used for the default constructor.
-  static Font* default_font_;
-
 #if defined(OS_CHROMEOS)
-  // A Pango font description.
+  // A font description string of the format used by gfx::FontList.
   static std::string* default_font_description_;
 #endif
 

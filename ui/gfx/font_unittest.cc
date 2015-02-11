@@ -9,25 +9,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX) && !defined(USE_OZONE)
-#include <pango/pango.h>
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "ui/gfx/platform_font_win.h"
 #endif
 
 namespace gfx {
 namespace {
 
-class FontTest : public testing::Test {
- public:
-  // Fulfills the memory management contract as outlined by the comment at
-  // gfx::Font::GetNativeFont().
-  void FreeIfNecessary(NativeFont font) {
-#if defined(OS_LINUX) && !defined(USE_OZONE)
-    pango_font_description_free(font);
-#endif
-  }
-};
+using FontTest = testing::Test;
 
 #if defined(OS_WIN)
 class ScopedMinimumFontSizeCallback {
@@ -59,25 +48,25 @@ int ScopedMinimumFontSizeCallback::minimum_size_ = 0;
 
 TEST_F(FontTest, LoadArial) {
   Font cf("Arial", 16);
-  NativeFont native = cf.GetNativeFont();
-  EXPECT_TRUE(native);
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+  EXPECT_TRUE(cf.GetNativeFont());
+#endif
   EXPECT_EQ(cf.GetStyle(), Font::NORMAL);
   EXPECT_EQ(cf.GetFontSize(), 16);
   EXPECT_EQ(cf.GetFontName(), "Arial");
   EXPECT_EQ("arial",
             base::StringToLowerASCII(cf.GetActualFontNameForTesting()));
-  FreeIfNecessary(native);
 }
 
 TEST_F(FontTest, LoadArialBold) {
   Font cf("Arial", 16);
   Font bold(cf.Derive(0, Font::BOLD));
-  NativeFont native = bold.GetNativeFont();
-  EXPECT_TRUE(native);
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+  EXPECT_TRUE(bold.GetNativeFont());
+#endif
   EXPECT_EQ(bold.GetStyle(), Font::BOLD);
   EXPECT_EQ("arial",
             base::StringToLowerASCII(cf.GetActualFontNameForTesting()));
-  FreeIfNecessary(native);
 }
 
 TEST_F(FontTest, Ascent) {

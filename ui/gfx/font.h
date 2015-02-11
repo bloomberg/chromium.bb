@@ -45,8 +45,10 @@ class GFX_EXPORT Font {
   Font(const Font& other);
   Font& operator=(const Font& other);
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
   // Creates a font from the specified native font.
   explicit Font(NativeFont native_font);
+#endif
 
   // Constructs a Font object with the specified PlatformFont object. The Font
   // object takes ownership of the PlatformFont object.
@@ -97,15 +99,14 @@ class GFX_EXPORT Font {
   // Returns an object describing how the font should be rendered.
   const FontRenderParams& GetFontRenderParams() const;
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
   // Returns the native font handle.
   // Lifetime lore:
   // Windows: This handle is owned by the Font object, and should not be
   //          destroyed by the caller.
   // Mac:     The object is owned by the system and should not be released.
-  // Gtk:     This handle is created on demand, and must be freed by calling
-  //          pango_font_description_free() when the caller is done using it or
-  //          by using ScopedPangoFontDescription.
   NativeFont GetNativeFont() const;
+#endif
 
   // Raw access to the underlying platform font implementation. Can be
   // static_cast to a known implementation type if needed.

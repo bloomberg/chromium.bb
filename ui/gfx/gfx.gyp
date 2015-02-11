@@ -221,8 +221,6 @@
         'nine_image_painter.cc',
         'nine_image_painter.h',
         'overlay_transform.h',
-        'pango_util.cc',
-        'pango_util.h',
         'path.cc',
         'path.h',
         'path_aura.cc',

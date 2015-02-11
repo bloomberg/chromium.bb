@@ -30,7 +30,6 @@ class SkBitmap;
 
 namespace gfx {
 class Image;
-class ScopedPangoFontDescription;
 }
 
 namespace libgtk2ui {
@@ -68,9 +67,11 @@ class Gtk2UI : public views::LinuxUI {
 
   // gfx::LinuxFontDelegate:
   gfx::FontRenderParams GetDefaultFontRenderParams() const override;
-  scoped_ptr<gfx::ScopedPangoFontDescription> GetDefaultPangoFontDescription()
-      const override;
-  double GetFontDPI() const override;
+  void GetDefaultFontDescription(
+      std::string* family_out,
+      int* size_pixels_out,
+      int* style_out,
+      gfx::FontRenderParams* params_out) const override;
 
   // ui::LinuxShellDialog:
   ui::SelectFileDialog* CreateSelectFileDialog(
@@ -192,6 +193,9 @@ class Gtk2UI : public views::LinuxUI {
   // Frees all calculated images and color data.
   void ClearAllThemeData();
 
+  // Updates |default_font_*| based on |desc|.
+  void UpdateDefaultFont(const PangoFontDescription* desc);
+
   // Handles signal from GTK that our theme has been changed.
   CHROMEGTK_CALLBACK_1(Gtk2UI, void, OnStyleSet, GtkStyle*);
 
@@ -224,8 +228,11 @@ class Gtk2UI : public views::LinuxUI {
   SkColor inactive_selection_bg_color_;
   SkColor inactive_selection_fg_color_;
 
-  // Pango description for the default UI font.
-  scoped_ptr<gfx::ScopedPangoFontDescription> default_font_description_;
+  // Details about the default UI font.
+  std::string default_font_family_;
+  int default_font_size_pixels_;
+  int default_font_style_;  // Bitfield of gfx::Font::Style values.
+  gfx::FontRenderParams default_font_render_params_;
 
 #if defined(USE_GCONF)
   // Currently, the only source of window button configuration. This will

@@ -23,9 +23,11 @@ Font& Font::operator=(const Font& other) {
   return *this;
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
 Font::Font(NativeFont native_font)
     : platform_font_(PlatformFont::CreateFromNativeFont(native_font)) {
 }
+#endif
 
 Font::Font(PlatformFont* platform_font) : platform_font_(platform_font) {
 }
@@ -78,8 +80,10 @@ const FontRenderParams& Font::GetFontRenderParams() const {
   return platform_font_->GetFontRenderParams();
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
 NativeFont Font::GetNativeFont() const {
   return platform_font_->GetNativeFont();
 }
+#endif
 
 }  // namespace gfx

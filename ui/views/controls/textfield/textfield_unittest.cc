@@ -1584,7 +1584,7 @@ TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
   SendKeyEvent('b');
   EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2" L"ab"), textfield_->text());
   x = GetCursorBounds().x();
-  EXPECT_EQ(prev_x, x);
+  EXPECT_GE(1, std::abs(x - prev_x));
 
   // Reset locale.
   base::i18n::SetICUDefaultLocale(locale);

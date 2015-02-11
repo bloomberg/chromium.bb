@@ -13,8 +13,6 @@
 
 namespace gfx {
 
-class ScopedPangoFontDescription;
-
 // Allows a Linux platform-specific overriding of font preferences.
 class GFX_EXPORT LinuxFontDelegate {
  public:
@@ -35,13 +33,13 @@ class GFX_EXPORT LinuxFontDelegate {
   // Returns the default font rendering settings.
   virtual FontRenderParams GetDefaultFontRenderParams() const = 0;
 
-  // Returns the Pango description for the default UI font.
-  virtual scoped_ptr<ScopedPangoFontDescription>
-      GetDefaultPangoFontDescription() const = 0;
-
-  // Returns the resolution (as pixels-per-inch) that should be used to convert
-  // font sizes between points and pixels. -1 is returned if the DPI is unset.
-  virtual double GetFontDPI() const = 0;
+  // Returns details about the default UI font. |style_out| holds a bitfield of
+  // gfx::Font::Style values.
+  virtual void GetDefaultFontDescription(
+      std::string* family_out,
+      int* size_pixels_out,
+      int* style_out,
+      FontRenderParams* params_out) const = 0;
 };
 
 }  // namespace gfx
