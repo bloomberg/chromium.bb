@@ -34,8 +34,10 @@ namespace blink {
 inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(HTMLNames::marqueeTag, document)
 {
-    v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(&document, "HTMLMarqueeElement");
-    RELEASE_ASSERT(!classObject.IsEmpty());
+    if (document.contextDocument()) {
+        v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(&document, "HTMLMarqueeElement");
+        RELEASE_ASSERT(!classObject.IsEmpty());
+    }
     UseCounter::count(document, UseCounter::HTMLMarqueeElement);
 }
 
