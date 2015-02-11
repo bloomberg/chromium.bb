@@ -130,7 +130,7 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
         m_cues->add(newCues[i].release());
     }
 
-    if (mediaElement())
+    if (mediaElement() && mode() != disabledKeyword())
         mediaElement()->textTrackAddCues(this, m_cues.get());
 }
 

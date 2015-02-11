@@ -247,7 +247,7 @@ void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
     cue->setTrack(this);
     ensureTextTrackCueList()->add(cue);
 
-    if (mediaElement())
+    if (mediaElement() && m_mode != disabledKeyword())
         mediaElement()->textTrackAddCue(this, cue.get());
 }
 
@@ -367,7 +367,10 @@ void TextTrack::cueDidChange(TextTrackCue* cue)
     // Make sure the TextTrackCueList order is up-to-date.
     ensureTextTrackCueList()->updateCueIndex(cue);
 
-    // ... and add it back again.
+    // ... and add it back again if the track is enabled.
+    if (m_mode == disabledKeyword())
+        return;
+
     mediaElement()->textTrackAddCue(this, cue);
 }
 

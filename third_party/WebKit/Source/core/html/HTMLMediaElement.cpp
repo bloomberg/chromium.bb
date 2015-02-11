@@ -1483,8 +1483,7 @@ void HTMLMediaElement::endIgnoringTrackDisplayUpdateRequests()
 void HTMLMediaElement::textTrackAddCues(TextTrack* track, const TextTrackCueList* cues)
 {
     WTF_LOG(Media, "HTMLMediaElement::textTrackAddCues(%p)", this);
-    if (track->mode() == TextTrack::disabledKeyword())
-        return;
+    ASSERT(track->mode() != TextTrack::disabledKeyword());
 
     TrackDisplayUpdateScope scope(this);
     for (size_t i = 0; i < cues->length(); ++i)
@@ -1502,8 +1501,7 @@ void HTMLMediaElement::textTrackRemoveCues(TextTrack*, const TextTrackCueList* c
 
 void HTMLMediaElement::textTrackAddCue(TextTrack* track, PassRefPtrWillBeRawPtr<TextTrackCue> cue)
 {
-    if (track->mode() == TextTrack::disabledKeyword())
-        return;
+    ASSERT(track->mode() != TextTrack::disabledKeyword());
 
     // Negative duration cues need be treated in the interval tree as
     // zero-length cues.
