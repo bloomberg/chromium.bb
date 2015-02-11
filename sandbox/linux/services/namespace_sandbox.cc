@@ -28,18 +28,26 @@ namespace {
 
 class WriteUidGidMapDelegate : public base::LaunchOptions::PreExecDelegate {
  public:
-  WriteUidGidMapDelegate() : uid_(getuid()), gid_(getgid()) {}
+  WriteUidGidMapDelegate()
+      : uid_(getuid()),
+        gid_(getgid()),
+        supports_deny_setgroups_(
+            NamespaceUtils::KernelSupportsDenySetgroups()) {}
 
   ~WriteUidGidMapDelegate() override {}
 
   void RunAsyncSafe() override {
+    if (supports_deny_setgroups_) {
+      RAW_CHECK(NamespaceUtils::DenySetgroups());
+    }
     RAW_CHECK(NamespaceUtils::WriteToIdMapFile("/proc/self/uid_map", uid_));
     RAW_CHECK(NamespaceUtils::WriteToIdMapFile("/proc/self/gid_map", gid_));
   }
 
  private:
-  uid_t uid_;
-  gid_t gid_;
+  const uid_t uid_;
+  const gid_t gid_;
+  const bool supports_deny_setgroups_;
   DISALLOW_COPY_AND_ASSIGN(WriteUidGidMapDelegate);
 };
 

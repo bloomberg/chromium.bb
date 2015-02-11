@@ -33,6 +33,17 @@ class SANDBOX_EXPORT NamespaceUtils {
   // not work from within a sandbox.
   static bool KernelSupportsUnprivilegedNamespace(int type);
 
+  // Returns true if the kernel supports denying setgroups in a user namespace.
+  // On kernels where this is supported, DenySetgroups must be called before a
+  // gid mapping can be added.
+  static bool KernelSupportsDenySetgroups();
+
+  // Disables setgroups() within the current user namespace. On Linux 3.18.2 and
+  // later, this is required in order to write to /proc/self/gid_map without
+  // having CAP_SETGID. Callers can determine whether is this needed with
+  // KernelSupportsDenySetgroups. This function is async-signal-safe.
+  static bool DenySetgroups() WARN_UNUSED_RESULT;
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(NamespaceUtils);
 };

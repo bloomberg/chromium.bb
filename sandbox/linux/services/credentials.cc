@@ -203,13 +203,17 @@ bool Credentials::MoveToNewUserNS() {
     return false;
   }
 
+  if (NamespaceUtils::KernelSupportsDenySetgroups()) {
+    PCHECK(NamespaceUtils::DenySetgroups());
+  }
+
   // The current {r,e,s}{u,g}id is now an overflow id (c.f.
   // /proc/sys/kernel/overflowuid). Setup the uid and gid maps.
   DCHECK(GetRESIds(NULL, NULL));
   const char kGidMapFile[] = "/proc/self/gid_map";
   const char kUidMapFile[] = "/proc/self/uid_map";
-  CHECK(NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid));
-  CHECK(NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid));
+  PCHECK(NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid));
+  PCHECK(NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid));
   DCHECK(GetRESIds(NULL, NULL));
   return true;
 }

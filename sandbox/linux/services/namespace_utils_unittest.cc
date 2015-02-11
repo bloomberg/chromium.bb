@@ -40,10 +40,17 @@ SANDBOX_TEST(NamespaceUtils, WriteToIdMapFile) {
   const uid_t uid = getuid();
   const gid_t gid = getgid();
 
+  const bool supports_deny_setgroups =
+      NamespaceUtils::KernelSupportsDenySetgroups();
+
   const pid_t pid =
       base::ForkWithFlags(CLONE_NEWUSER | SIGCHLD, nullptr, nullptr);
   ASSERT_NE(-1, pid);
   if (pid == 0) {
+    if (supports_deny_setgroups) {
+      RAW_CHECK(NamespaceUtils::DenySetgroups());
+    }
+
     RAW_CHECK(getuid() != uid);
     RAW_CHECK(NamespaceUtils::WriteToIdMapFile("/proc/self/uid_map", uid));
     RAW_CHECK(getuid() == uid);

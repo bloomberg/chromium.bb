@@ -27,6 +27,8 @@ namespace {
 bool IsRunningOnValgrind() {
   return RUNNING_ON_VALGRIND;
 }
+
+const char kProcSelfSetgroups[] = "/proc/self/setgroups";
 }  // namespace
 
 // static
@@ -43,7 +45,7 @@ bool NamespaceUtils::WriteToIdMapFile(const char* map_file, generic_id_t id) {
   const generic_id_t outside_id = id;
 
   char mapping[64];
-  ssize_t len =
+  const ssize_t len =
       base::strings::SafeSPrintf(mapping, "%d %d 1\n", inside_id, outside_id);
   const ssize_t rc = HANDLE_EINTR(write(fd, mapping, len));
   RAW_CHECK(IGNORE_EINTR(close(fd)) == 0);
@@ -90,6 +92,26 @@ bool NamespaceUtils::KernelSupportsUnprivilegedNamespace(int type) {
   }
 
   return base::PathExists(base::FilePath(path));
+}
+
+// static
+bool NamespaceUtils::KernelSupportsDenySetgroups() {
+  return base::PathExists(base::FilePath(kProcSelfSetgroups));
+}
+
+// static
+bool NamespaceUtils::DenySetgroups() {
+  // This function needs to be async-signal-safe.
+  int fd = HANDLE_EINTR(open(kProcSelfSetgroups, O_WRONLY));
+  if (fd == -1) {
+    return false;
+  }
+
+  static const char kDeny[] = "deny";
+  const ssize_t len = sizeof(kDeny) - 1;
+  const ssize_t rc = HANDLE_EINTR(write(fd, kDeny, len));
+  RAW_CHECK(IGNORE_EINTR(close(fd)) == 0);
+  return rc == len;
 }
 
 }  // namespace sandbox
