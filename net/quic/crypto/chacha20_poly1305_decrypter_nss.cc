@@ -36,10 +36,11 @@ bool ChaCha20Poly1305Decrypter::IsSupported() {
   return false;
 }
 
-void ChaCha20Poly1305Decrypter::FillAeadParams(StringPiece nonce,
-                                               StringPiece associated_data,
-                                               size_t auth_tag_size,
-                                               AeadParams* aead_params) const {
+void ChaCha20Poly1305Decrypter::FillAeadParams(
+    StringPiece nonce,
+    const StringPiece& associated_data,
+    size_t auth_tag_size,
+    AeadParams* aead_params) const {
   NOTIMPLEMENTED();
 }
 
@@ -60,10 +61,11 @@ bool ChaCha20Poly1305Decrypter::IsSupported() {
   return true;
 }
 
-void ChaCha20Poly1305Decrypter::FillAeadParams(StringPiece nonce,
-                                               StringPiece associated_data,
-                                               size_t auth_tag_size,
-                                               AeadParams* aead_params) const {
+void ChaCha20Poly1305Decrypter::FillAeadParams(
+    StringPiece nonce,
+    const StringPiece& associated_data,
+    size_t auth_tag_size,
+    AeadParams* aead_params) const {
   aead_params->len = sizeof(aead_params->data.nss_aead_params);
   CK_NSS_AEAD_PARAMS* nss_aead_params = &aead_params->data.nss_aead_params;
   nss_aead_params->pIv =

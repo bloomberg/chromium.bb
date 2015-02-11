@@ -558,7 +558,17 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   } else if (public_header.reset_flag) {
     rv = ProcessPublicResetPacket(public_header);
   } else {
-    rv = ProcessDataPacket(public_header, packet);
+    if (packet.length() <= kMaxPacketSize) {
+      char buffer[kMaxPacketSize];
+      rv = ProcessDataPacket(public_header, packet, buffer, kMaxPacketSize);
+    } else {
+      scoped_ptr<char[]> buffer(new char[packet.length()]);
+      rv = ProcessDataPacket(public_header, packet, buffer.get(),
+                             packet.length());
+      LOG_IF(DFATAL, rv) << "QUIC should never successfully process packets "
+                         << "larger than kMaxPacketSize. packet size:"
+                         << packet.length();
+    }
   }
 
   reader_.reset(nullptr);
@@ -582,11 +592,12 @@ bool QuicFramer::ProcessVersionNegotiationPacket(
   return true;
 }
 
-bool QuicFramer::ProcessDataPacket(
-    const QuicPacketPublicHeader& public_header,
-    const QuicEncryptedPacket& packet) {
+bool QuicFramer::ProcessDataPacket(const QuicPacketPublicHeader& public_header,
+                                   const QuicEncryptedPacket& packet,
+                                   char* decrypted_buffer,
+                                   size_t buffer_length) {
   QuicPacketHeader header(public_header);
-  if (!ProcessPacketHeader(&header, packet)) {
+  if (!ProcessPacketHeader(&header, packet, decrypted_buffer, buffer_length)) {
     DLOG(WARNING) << "Unable to process data packet header.";
     return false;
   }
@@ -1000,9 +1011,10 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
   return ack_info;
 }
 
-bool QuicFramer::ProcessPacketHeader(
-    QuicPacketHeader* header,
-    const QuicEncryptedPacket& packet) {
+bool QuicFramer::ProcessPacketHeader(QuicPacketHeader* header,
+                                     const QuicEncryptedPacket& packet,
+                                     char* decrypted_buffer,
+                                     size_t buffer_length) {
   if (!ProcessPacketSequenceNumber(header->public_header.sequence_number_length,
                                    &header->packet_sequence_number)) {
     set_detailed_error("Unable to read sequence number.");
@@ -1018,7 +1030,7 @@ bool QuicFramer::ProcessPacketHeader(
     return false;
   }
 
-  if (!DecryptPayload(*header, packet)) {
+  if (!DecryptPayload(*header, packet, decrypted_buffer, buffer_length)) {
     set_detailed_error("Unable to decrypt payload.");
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
@@ -1658,32 +1670,26 @@ size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
 }
 
 bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
-                                const QuicEncryptedPacket& packet) {
-  StringPiece encrypted;
-  if (!reader_->ReadStringPiece(&encrypted, reader_->BytesRemaining())) {
-    return false;
-  }
+                                const QuicEncryptedPacket& packet,
+                                char* decrypted_buffer,
+                                size_t buffer_length) {
+  StringPiece encrypted = reader_->ReadRemainingPayload();
   DCHECK(decrypter_.get() != nullptr);
-  decrypted_.reset(decrypter_->DecryptPacket(
-      header.packet_sequence_number,
-      GetAssociatedDataFromEncryptedPacket(
-          packet,
-          header.public_header.connection_id_length,
-          header.public_header.version_flag,
-          header.public_header.sequence_number_length),
-      encrypted));
-  if (decrypted_.get() != nullptr) {
+  const StringPiece& associated_data = GetAssociatedDataFromEncryptedPacket(
+      packet, header.public_header.connection_id_length,
+      header.public_header.version_flag,
+      header.public_header.sequence_number_length);
+  size_t decrypted_length = 0;
+  bool success = decrypter_->DecryptPacket(
+      header.packet_sequence_number, associated_data, encrypted,
+      decrypted_buffer, &decrypted_length, buffer_length);
+  if (success) {
     visitor_->OnDecryptedPacket(decrypter_level_);
   } else if (alternative_decrypter_.get() != nullptr) {
-    decrypted_.reset(alternative_decrypter_->DecryptPacket(
-        header.packet_sequence_number,
-        GetAssociatedDataFromEncryptedPacket(
-            packet,
-            header.public_header.connection_id_length,
-            header.public_header.version_flag,
-            header.public_header.sequence_number_length),
-        encrypted));
-    if (decrypted_.get() != nullptr) {
+    success = alternative_decrypter_->DecryptPacket(
+        header.packet_sequence_number, associated_data, encrypted,
+        decrypted_buffer, &decrypted_length, buffer_length);
+    if (success) {
       visitor_->OnDecryptedPacket(alternative_decrypter_level_);
       if (alternative_decrypter_latch_) {
         // Switch to the alternative decrypter and latch so that we cannot
@@ -1701,13 +1707,13 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
     }
   }
 
-  if (decrypted_.get() == nullptr) {
+  if (!success) {
     DLOG(WARNING) << "DecryptPacket failed for sequence_number:"
                   << header.packet_sequence_number;
     return false;
   }
 
-  reader_.reset(new QuicDataReader(decrypted_->data(), decrypted_->length()));
+  reader_.reset(new QuicDataReader(decrypted_buffer, decrypted_length));
   return true;
 }
 

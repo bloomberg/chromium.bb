@@ -141,13 +141,18 @@ class TestDecrypter : public QuicDecrypter {
   ~TestDecrypter() override {}
   bool SetKey(StringPiece key) override { return true; }
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
-  QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
-                          StringPiece associated_data,
-                          StringPiece ciphertext) override {
+  bool DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                     const StringPiece& associated_data,
+                     const StringPiece& ciphertext,
+                     char* output,
+                     size_t* output_length,
+                     size_t max_output_length) override {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
-    return new QuicData(ciphertext.data(), ciphertext.length());
+    memcpy(output, ciphertext.data(), ciphertext.length());
+    *output_length = ciphertext.length();
+    return true;
   }
   StringPiece GetKey() const override { return StringPiece(); }
   StringPiece GetNoncePrefix() const override { return StringPiece(); }
@@ -176,6 +181,8 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     STLDeleteElements(&stop_waiting_frames_);
     STLDeleteElements(&ping_frames_);
     STLDeleteElements(&fec_data_);
+    STLDeleteElements(&stream_data_);
+    STLDeleteElements(&fec_data_redundancy_);
   }
 
   void OnError(QuicFramer* f) override {
@@ -223,7 +230,14 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
 
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     ++frame_count_;
-    stream_frames_.push_back(new QuicStreamFrame(frame));
+    // Save a copy of the data so it is valid after the packet is processed.
+    stream_data_.push_back(frame.GetDataAsString());
+    QuicStreamFrame* stream_frame = new QuicStreamFrame(frame);
+    // Make sure that the stream frame points to this data.
+    stream_frame->data.Clear();
+    stream_frame->data.Append(const_cast<char*>(stream_data_.back()->data()),
+                              stream_data_.back()->size());
+    stream_frames_.push_back(stream_frame);
     return true;
   }
 
@@ -251,7 +265,13 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
 
   void OnFecData(const QuicFecData& fec) override {
     ++fec_count_;
-    fec_data_.push_back(new QuicFecData(fec));
+    QuicFecData* fec_data = new QuicFecData();
+    fec_data->fec_group = fec.fec_group;
+    // Save a copy of the data so it is valid after the packet is processed.
+    string* redundancy = new string(fec.redundancy.as_string());
+    fec_data_redundancy_.push_back(redundancy);
+    fec_data->redundancy = StringPiece(*redundancy);
+    fec_data_.push_back(fec_data);
   }
 
   void OnPacketComplete() override { ++complete_packets_; }
@@ -307,6 +327,8 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   QuicGoAwayFrame goaway_frame_;
   QuicWindowUpdateFrame window_update_frame_;
   QuicBlockedFrame blocked_frame_;
+  vector<string*> stream_data_;
+  vector<string*> fec_data_redundancy_;
 };
 
 class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {

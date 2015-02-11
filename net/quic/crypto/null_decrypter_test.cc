@@ -26,10 +26,12 @@ TEST_F(NullDecrypterTest, Decrypt) {
   const char* data = reinterpret_cast<const char*>(expected);
   size_t len = arraysize(expected);
   NullDecrypter decrypter;
-  scoped_ptr<QuicData> decrypted(
-      decrypter.DecryptPacket(0, "hello world!", StringPiece(data, len)));
-  ASSERT_TRUE(decrypted.get());
-  EXPECT_EQ("goodbye!", decrypted->AsStringPiece());
+  char buffer[256];
+  size_t length = 0;
+  ASSERT_TRUE(decrypter.DecryptPacket(0, "hello world!", StringPiece(data, len),
+                                      buffer, &length, 256));
+  EXPECT_LT(0u, length);
+  EXPECT_EQ("goodbye!", StringPiece(buffer, length));
 }
 
 TEST_F(NullDecrypterTest, BadHash) {
@@ -45,9 +47,10 @@ TEST_F(NullDecrypterTest, BadHash) {
   const char* data = reinterpret_cast<const char*>(expected);
   size_t len = arraysize(expected);
   NullDecrypter decrypter;
-  scoped_ptr<QuicData> decrypted(
-      decrypter.DecryptPacket(0, "hello world!", StringPiece(data, len)));
-  ASSERT_FALSE(decrypted.get());
+  char buffer[256];
+  size_t length = 0;
+  ASSERT_FALSE(decrypter.DecryptPacket(
+      0, "hello world!", StringPiece(data, len), buffer, &length, 256));
 }
 
 TEST_F(NullDecrypterTest, ShortInput) {
@@ -60,9 +63,10 @@ TEST_F(NullDecrypterTest, ShortInput) {
   const char* data = reinterpret_cast<const char*>(expected);
   size_t len = arraysize(expected);
   NullDecrypter decrypter;
-  scoped_ptr<QuicData> decrypted(
-      decrypter.DecryptPacket(0, "hello world!", StringPiece(data, len)));
-  ASSERT_FALSE(decrypted.get());
+  char buffer[256];
+  size_t length = 0;
+  ASSERT_FALSE(decrypter.DecryptPacket(
+      0, "hello world!", StringPiece(data, len), buffer, &length, 256));
 }
 
 }  // namespace test

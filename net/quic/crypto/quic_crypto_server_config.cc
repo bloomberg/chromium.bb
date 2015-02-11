@@ -684,16 +684,17 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
     }
 
-    scoped_ptr<QuicData> cetv_plaintext(crypters.decrypter->DecryptPacket(
+    char plaintext[kMaxPacketSize];
+    size_t plaintext_length = 0;
+    const bool success = crypters.decrypter->DecryptPacket(
         0 /* sequence number */, StringPiece() /* associated data */,
-        cetv_ciphertext));
-    if (!cetv_plaintext.get()) {
+        cetv_ciphertext, plaintext, &plaintext_length, kMaxPacketSize);
+    if (!success) {
       *error_details = "CETV decryption failure";
-      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      return QUIC_PACKET_TOO_LARGE;
     }
-
-    scoped_ptr<CryptoHandshakeMessage> cetv(CryptoFramer::ParseMessage(
-        cetv_plaintext->AsStringPiece()));
+    scoped_ptr<CryptoHandshakeMessage> cetv(
+        CryptoFramer::ParseMessage(StringPiece(plaintext, plaintext_length)));
     if (!cetv.get()) {
       *error_details = "CETV parse error";
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;

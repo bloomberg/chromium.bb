@@ -132,20 +132,21 @@ class TaggingDecrypter : public QuicDecrypter {
 
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
-  QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
-                          StringPiece associated_data,
-                          StringPiece ciphertext) override {
+  bool DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                     const StringPiece& associated_data,
+                     const StringPiece& ciphertext,
+                     char* output,
+                     size_t* output_length,
+                     size_t max_output_length) override {
     if (ciphertext.size() < kTagSize) {
-      return nullptr;
+      return false;
     }
     if (!CheckTag(ciphertext, GetTag(ciphertext))) {
-      return nullptr;
+      return false;
     }
-    const size_t len = ciphertext.size() - kTagSize;
-    uint8* buf = new uint8[len];
-    memcpy(buf, ciphertext.data(), len);
-    return new QuicData(reinterpret_cast<char*>(buf), len,
-                        true /* owns buffer */);
+    *output_length = ciphertext.size() - kTagSize;
+    memcpy(output, ciphertext.data(), *output_length);
+    return true;
   }
 
   StringPiece GetKey() const override { return StringPiece(); }
