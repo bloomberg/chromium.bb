@@ -27,7 +27,7 @@ var TIMER_FACTORY = new CountdownTimerFactory();
 var FACTORY_REGISTRY = new FactoryRegistry(
     new CryptoTokenApprovedOrigin(),
     TIMER_FACTORY,
-    new EtldOriginChecker(),
+    new CryptoTokenOriginChecker(),
     new UsbHelper(),
     new XhrTextFetcher());
 
