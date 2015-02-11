@@ -44,6 +44,8 @@ bool GlRenderer::Initialize() {
 void GlRenderer::RenderFrame() {
   float fraction = NextFraction();
 
+  context_->MakeCurrent(surface_.get());
+
   glViewport(0, 0, size_.width(), size_.height());
   glClearColor(1 - fraction, fraction, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
 
 namespace ui {
 
@@ -77,15 +79,21 @@ void SurfacelessGlRenderer::BufferWrapper::SchedulePlane() {
                                gfx::Rect(size_), gfx::RectF(0, 0, 1, 1));
 }
 
-SurfacelessGlRenderer::SurfacelessGlRenderer(gfx::AcceleratedWidget widget,
-                                             const gfx::Size& size)
+SurfacelessGlRenderer::SurfacelessGlRenderer(
+    gfx::AcceleratedWidget widget,
+    const gfx::Size& size,
+    GpuMemoryBufferFactoryOzoneNativeBuffer* buffer_factory)
     : GlRenderer(widget, size),
+      buffer_factory_(buffer_factory),
       back_buffer_(0),
       is_swapping_buffers_(false),
       weak_ptr_factory_(this) {
 }
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
+  // Need to make current when deleting the framebuffer resources allocated in
+  // the buffers.
+  context_->MakeCurrent(surface_.get());
 }
 
 bool SurfacelessGlRenderer::Initialize() {
@@ -93,7 +101,7 @@ bool SurfacelessGlRenderer::Initialize() {
     return false;
 
   for (size_t i = 0; i < arraysize(buffers_); ++i)
-    if (!buffers_[i].Initialize(&buffer_factory_, widget_, size_))
+    if (!buffers_[i].Initialize(buffer_factory_, widget_, size_))
       return false;
 
   return true;
@@ -105,6 +113,7 @@ void SurfacelessGlRenderer::RenderFrame() {
 
   float fraction = NextFraction();
 
+  context_->MakeCurrent(surface_.get());
   buffers_[back_buffer_].BindFramebuffer();
 
   glViewport(0, 0, size_.width(), size_.height());

@@ -7,7 +7,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "ui/ozone/demo/gl_renderer.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
 
 namespace gfx {
 class GLImage;
@@ -15,9 +14,14 @@ class GLImage;
 
 namespace ui {
 
+class GpuMemoryBufferFactoryOzoneNativeBuffer;
+
 class SurfacelessGlRenderer : public GlRenderer {
  public:
-  SurfacelessGlRenderer(gfx::AcceleratedWidget widget, const gfx::Size& size);
+  SurfacelessGlRenderer(
+      gfx::AcceleratedWidget widget,
+      const gfx::Size& size,
+      GpuMemoryBufferFactoryOzoneNativeBuffer* buffer_factory);
   ~SurfacelessGlRenderer() override;
 
   // Renderer:
@@ -48,7 +52,8 @@ class SurfacelessGlRenderer : public GlRenderer {
     unsigned int gl_tex_;
   };
 
-  GpuMemoryBufferFactoryOzoneNativeBuffer buffer_factory_;
+  GpuMemoryBufferFactoryOzoneNativeBuffer* buffer_factory_;
+
   BufferWrapper buffers_[2];
   int back_buffer_;
   bool is_swapping_buffers_;
