@@ -137,7 +137,7 @@ class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
   ~BeginFrameSourceMixIn() override {}
 
   // BeginFrameSource
-  bool NeedsBeginFrames() const override;
+  bool NeedsBeginFrames() const final;
   void SetNeedsBeginFrames(bool needs_begin_frames) final;
   void DidFinishFrame(size_t remaining_frames) override {}
   void AddObserver(BeginFrameObserver* obs) final;
@@ -210,9 +210,6 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceMixIn,
       base::TimeDelta initial_vsync_interval);
   ~SyntheticBeginFrameSource() override;
 
-  // BeginFrameSource
-  bool NeedsBeginFrames() const override;
-
   // Tracing
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
@@ -260,7 +257,6 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceMixIn,
   const BeginFrameArgs LastUsedBeginFrameArgs() const override;
 
   // BeginFrameSource
-  bool NeedsBeginFrames() const override;
   void DidFinishFrame(size_t remaining_frames) override;
 
   // BeginFrameSourceMixIn

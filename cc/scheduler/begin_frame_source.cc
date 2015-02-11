@@ -265,10 +265,6 @@ void SyntheticBeginFrameSource::OnNeedsBeginFramesChange(
   }
 }
 
-bool SyntheticBeginFrameSource::NeedsBeginFrames() const {
-  return time_source_->Active();
-}
-
 // Tracing support
 void SyntheticBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* dict) const {
@@ -407,14 +403,6 @@ const BeginFrameArgs BeginFrameSourceMultiplexer::LastUsedBeginFrameArgs()
 }
 
 // BeginFrameSource support
-bool BeginFrameSourceMultiplexer::NeedsBeginFrames() const {
-  if (active_source_) {
-    return active_source_->NeedsBeginFrames();
-  } else {
-    return false;
-  }
-}
-
 void BeginFrameSourceMultiplexer::OnNeedsBeginFramesChange(
     bool needs_begin_frames) {
   DEBUG_FRAMES("BeginFrameSourceMultiplexer::OnNeedsBeginFramesChange",
