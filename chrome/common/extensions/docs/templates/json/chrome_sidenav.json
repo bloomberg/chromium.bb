@@ -135,20 +135,16 @@
             "href": "/devtools/docs/commandline-api"
           },
           {
+            "title": "Integrating with DevTools & Chrome",
+            "href": "/devtools/docs/integrating"
+          },  
+          {
             "title": "DevTools Extensions API",
             "href": "/devtools/docs/integrating",
             "items": [
               {
-                "title": "Integrating with DevTools",
-                "href": "/devtools/docs/integrating"
-              },
-              {
                 "title": "Sample DevTools Extensions",
                 "href": "/devtools/docs/sample-extensions"
-              },
-              {
-                "title": "Sample DevTools Protocol Clients",
-                "href": "/devtools/docs/debugging-clients"
               }
             ]
           },
@@ -165,12 +161,16 @@
             "href": "/devtools/docs/debugger-protocol",
             "items": [
               {
-                "title": "Remote Debugging Protocol",
-                "href": "/devtools/docs/debugger-protocol"
+                "title": "Showcase Debugging Protocol Clients",
+                "href": "/devtools/docs/debugging-clients"
               },
               {
-                "title": "Version 1.1",
+                "title": "Version 1.1 (Stable)",
                 "href": "/devtools/docs/protocol/1.1/index"
+              },
+              {
+                "title": "Tip-of-tree (Unstable)",
+                "href": "/devtools/docs/protocol/tot/index"
               },
               {
                 "title": "Version 1.0",
@@ -179,10 +179,6 @@
               {
                 "title": "Version .1",
                 "href": "/devtools/docs/protocol/0.1/index"
-              },
-              {
-                "title": "Tip-of-tree",
-                "href": "/devtools/docs/protocol/tot/index"
               }
             ]
           }
