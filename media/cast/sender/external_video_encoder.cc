@@ -72,7 +72,7 @@ class ExternalVideoEncoder::VEAClientImpl
         create_video_encode_memory_cb_(create_video_encode_memory_cb),
         video_encode_accelerator_(vea.Pass()),
         encoder_active_(false),
-        last_encoded_frame_id_(kStartFrameId),
+        next_frame_id_(0u),
         key_frame_encountered_(false) {
   }
 
@@ -82,9 +82,9 @@ class ExternalVideoEncoder::VEAClientImpl
 
   void Initialize(const gfx::Size& frame_size,
                   VideoCodecProfile codec_profile,
-                  int start_bit_rate) {
+                  int start_bit_rate,
+                  uint32 first_frame_id) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    DCHECK(!frame_size.IsEmpty());
 
     encoder_active_ = video_encode_accelerator_->Initialize(
         media::VideoFrame::I420,
@@ -92,6 +92,7 @@ class ExternalVideoEncoder::VEAClientImpl
         codec_profile,
         start_bit_rate,
         this);
+    next_frame_id_ = first_frame_id;
 
     UMA_HISTOGRAM_BOOLEAN("Cast.Sender.VideoEncodeAcceleratorInitializeSuccess",
                           encoder_active_);
@@ -203,7 +204,7 @@ class ExternalVideoEncoder::VEAClientImpl
       scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
       encoded_frame->dependency = key_frame ? EncodedFrame::KEY :
           EncodedFrame::DEPENDENT;
-      encoded_frame->frame_id = ++last_encoded_frame_id_;
+      encoded_frame->frame_id = next_frame_id_++;
       if (key_frame)
         encoded_frame->referenced_frame_id = encoded_frame->frame_id;
       else
@@ -290,7 +291,7 @@ class ExternalVideoEncoder::VEAClientImpl
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
   scoped_ptr<media::VideoEncodeAccelerator> video_encode_accelerator_;
   bool encoder_active_;
-  uint32 last_encoded_frame_id_;
+  uint32 next_frame_id_;
   bool key_frame_encountered_;
   std::string stream_header_;
 
@@ -303,59 +304,50 @@ class ExternalVideoEncoder::VEAClientImpl
   DISALLOW_COPY_AND_ASSIGN(VEAClientImpl);
 };
 
+// static
+bool ExternalVideoEncoder::IsSupported(const VideoSenderConfig& video_config) {
+  if (video_config.codec != CODEC_VIDEO_VP8 &&
+      video_config.codec != CODEC_VIDEO_H264)
+    return false;
+
+  // TODO(miu): "Layering hooks" are needed to be able to query outside of
+  // libmedia, to determine whether the system provides a hardware encoder.  For
+  // now, assume that this was already checked by this point.
+  // http://crbug.com/454029
+  return video_config.use_external_encoder;
+}
+
 ExternalVideoEncoder::ExternalVideoEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoSenderConfig& video_config,
     const gfx::Size& frame_size,
+    uint32 first_frame_id,
     const StatusChangeCallback& status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
     : cast_environment_(cast_environment),
       create_video_encode_memory_cb_(create_video_encode_memory_cb),
+      frame_size_(frame_size),
       bit_rate_(video_config.start_bitrate),
       key_frame_requested_(false),
       weak_factory_(this) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK_GT(video_config.max_frame_rate, 0);
-  DCHECK(!frame_size.IsEmpty());
+  DCHECK(!frame_size_.IsEmpty());
   DCHECK(!status_change_cb.is_null());
   DCHECK(!create_vea_cb.is_null());
   DCHECK(!create_video_encode_memory_cb_.is_null());
   DCHECK_GT(bit_rate_, 0);
 
-  VideoCodecProfile codec_profile;
-  switch (video_config.codec) {
-    case CODEC_VIDEO_VP8:
-      codec_profile = media::VP8PROFILE_ANY;
-      break;
-    case CODEC_VIDEO_H264:
-      codec_profile = media::H264PROFILE_MAIN;
-      break;
-    case CODEC_VIDEO_FAKE:
-      NOTREACHED() << "Fake software video encoder cannot be external";
-      // ...flow through to next case...
-    default:
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN,
-          FROM_HERE,
-          base::Bind(status_change_cb, STATUS_UNSUPPORTED_CODEC));
-      return;
-  }
-
   create_vea_cb.Run(
       base::Bind(&ExternalVideoEncoder::OnCreateVideoEncodeAccelerator,
                  weak_factory_.GetWeakPtr(),
-                 frame_size,
-                 codec_profile,
-                 video_config.max_frame_rate,
+                 video_config,
+                 first_frame_id,
                  status_change_cb));
 }
 
 ExternalVideoEncoder::~ExternalVideoEncoder() {
-}
-
-bool ExternalVideoEncoder::CanEncodeVariedFrameSizes() const {
-  return false;
 }
 
 bool ExternalVideoEncoder::EncodeVideoFrame(
@@ -363,11 +355,10 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
     const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  DCHECK(!video_frame->visible_rect().IsEmpty());
   DCHECK(!frame_encoded_callback.is_null());
 
-  if (!client_)
-    return false;  // Not ready.
+  if (!client_ || video_frame->visible_rect().size() != frame_size_)
+    return false;
 
   client_->task_runner()->PostTask(FROM_HERE,
                                    base::Bind(&VEAClientImpl::EncodeVideoFrame,
@@ -401,9 +392,8 @@ void ExternalVideoEncoder::LatestFrameIdToReference(uint32 /*frame_id*/) {
 }
 
 void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
-    const gfx::Size& frame_size,
-    VideoCodecProfile codec_profile,
-    int max_frame_rate,
+    const VideoSenderConfig& video_config,
+    uint32 first_frame_id,
     const StatusChangeCallback& status_change_cb,
     scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
     scoped_ptr<media::VideoEncodeAccelerator> vea) {
@@ -420,19 +410,64 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
     return;
   }
 
+  VideoCodecProfile codec_profile;
+  switch (video_config.codec) {
+    case CODEC_VIDEO_VP8:
+      codec_profile = media::VP8PROFILE_ANY;
+      break;
+    case CODEC_VIDEO_H264:
+      codec_profile = media::H264PROFILE_MAIN;
+      break;
+    case CODEC_VIDEO_FAKE:
+      NOTREACHED() << "Fake software video encoder cannot be external";
+      // ...flow through to next case...
+    default:
+      cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(status_change_cb, STATUS_UNSUPPORTED_CODEC));
+      return;
+  }
+
   DCHECK(!client_);
   client_ = new VEAClientImpl(cast_environment_,
                               encoder_task_runner,
                               vea.Pass(),
-                              max_frame_rate,
+                              video_config.max_frame_rate,
                               status_change_cb,
                               create_video_encode_memory_cb_);
   client_->task_runner()->PostTask(FROM_HERE,
                                    base::Bind(&VEAClientImpl::Initialize,
                                               client_,
-                                              frame_size,
+                                              frame_size_,
                                               codec_profile,
-                                              bit_rate_));
+                                              bit_rate_,
+                                              first_frame_id));
+}
+
+SizeAdaptableExternalVideoEncoder::SizeAdaptableExternalVideoEncoder(
+    const scoped_refptr<CastEnvironment>& cast_environment,
+    const VideoSenderConfig& video_config,
+    const StatusChangeCallback& status_change_cb,
+    const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+    const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
+    : SizeAdaptableVideoEncoderBase(cast_environment,
+                                    video_config,
+                                    status_change_cb),
+      create_vea_cb_(create_vea_cb),
+      create_video_encode_memory_cb_(create_video_encode_memory_cb) {}
+
+SizeAdaptableExternalVideoEncoder::~SizeAdaptableExternalVideoEncoder() {}
+
+scoped_ptr<VideoEncoder> SizeAdaptableExternalVideoEncoder::CreateEncoder() {
+  return scoped_ptr<VideoEncoder>(new ExternalVideoEncoder(
+      cast_environment(),
+      video_config(),
+      frame_size(),
+      last_frame_id() + 1,
+      CreateEncoderStatusChangeCallback(),
+      create_vea_cb_,
+      create_video_encode_memory_cb_));
 }
 
 }  //  namespace cast

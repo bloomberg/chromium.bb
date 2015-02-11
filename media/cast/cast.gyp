@@ -162,6 +162,8 @@
         'sender/fake_software_video_encoder.cc',
         'sender/frame_sender.cc',
         'sender/frame_sender.h',
+        'sender/size_adaptable_video_encoder_base.cc',
+        'sender/size_adaptable_video_encoder_base.h',
         'sender/software_video_encoder.h',
         'sender/video_encoder.h',
         'sender/video_encoder.cc',

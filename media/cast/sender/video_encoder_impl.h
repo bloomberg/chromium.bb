@@ -29,6 +29,9 @@ class VideoEncoderImpl : public VideoEncoder {
   typedef base::Callback<void(scoped_ptr<EncodedFrame>)>
       FrameEncodedCallback;
 
+  // Returns true if VideoEncoderImpl can be used with the given |video_config|.
+  static bool IsSupported(const VideoSenderConfig& video_config);
+
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const VideoSenderConfig& video_config,
                    const StatusChangeCallback& status_change_cb);
@@ -36,7 +39,6 @@ class VideoEncoderImpl : public VideoEncoder {
   ~VideoEncoderImpl() override;
 
   // VideoEncoder implementation.
-  bool CanEncodeVariedFrameSizes() const override;
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,

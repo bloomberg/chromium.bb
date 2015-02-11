@@ -19,11 +19,12 @@ namespace cast {
 class LocalVideoFrameInput : public VideoFrameInput {
  public:
   LocalVideoFrameInput(scoped_refptr<CastEnvironment> cast_environment,
-                       base::WeakPtr<VideoSender> video_sender,
-                       scoped_ptr<VideoFrameFactory> video_frame_factory)
+                       base::WeakPtr<VideoSender> video_sender)
       : cast_environment_(cast_environment),
         video_sender_(video_sender),
-        video_frame_factory_(video_frame_factory.Pass()) {}
+        video_frame_factory_(
+            video_sender.get() ?
+                video_sender->CreateVideoFrameFactory().release() : nullptr) {}
 
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& capture_time) override {
@@ -35,13 +36,14 @@ class LocalVideoFrameInput : public VideoFrameInput {
                                            capture_time));
   }
 
-  scoped_refptr<VideoFrame> CreateOptimizedFrame(
+  scoped_refptr<VideoFrame> MaybeCreateOptimizedFrame(
+      const gfx::Size& frame_size,
       base::TimeDelta timestamp) override {
-    DCHECK(video_frame_factory_.get());
-    return video_frame_factory_->CreateFrame(timestamp);
+    return video_frame_factory_ ?
+        video_frame_factory_->MaybeCreateFrame(frame_size, timestamp) : nullptr;
   }
 
-  bool SupportsCreateOptimizedFrame() const override {
+  bool CanCreateOptimizedFrames() const override {
     return video_frame_factory_.get() != nullptr;
   }
 
@@ -51,9 +53,9 @@ class LocalVideoFrameInput : public VideoFrameInput {
  private:
   friend class base::RefCountedThreadSafe<LocalVideoFrameInput>;
 
-  scoped_refptr<CastEnvironment> cast_environment_;
-  base::WeakPtr<VideoSender> video_sender_;
-  scoped_ptr<VideoFrameFactory> video_frame_factory_;
+  const scoped_refptr<CastEnvironment> cast_environment_;
+  const base::WeakPtr<VideoSender> video_sender_;
+  const scoped_ptr<VideoFrameFactory> video_frame_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalVideoFrameInput);
 };
@@ -194,8 +196,7 @@ void CastSenderImpl::OnVideoStatusChange(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (status == STATUS_INITIALIZED && !video_frame_input_) {
     video_frame_input_ =
-        new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr(),
-                                 video_sender_->CreateVideoFrameFactory());
+        new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
   }
   status_change_cb.Run(status);
 }

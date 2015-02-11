@@ -8,27 +8,37 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/sender/video_frame_factory.h"
 
 namespace media {
 namespace cast {
-
-class VideoFrameFactory;
 
 // All these functions are called from the main cast thread.
 class VideoEncoder {
  public:
   typedef base::Callback<void(scoped_ptr<EncodedFrame>)> FrameEncodedCallback;
 
-  virtual ~VideoEncoder() {}
+  // Creates a VideoEncoder instance from the given |video_config| and based on
+  // the current platform's hardware/library support; or null if no
+  // implementation will suffice.  The instance will run |status_change_cb| at
+  // some point in the future to indicate initialization success/failure.
+  //
+  // All VideoEncoder instances returned by this function support encoding
+  // sequences of differently-size VideoFrames.
+  //
+  // TODO(miu): Remove the CreateVEA callbacks.  http://crbug.com/454029
+  static scoped_ptr<VideoEncoder> Create(
+      const scoped_refptr<CastEnvironment>& cast_environment,
+      const VideoSenderConfig& video_config,
+      const StatusChangeCallback& status_change_cb,
+      const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+      const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 
-  // Returns true if the size of video frames passed in successive calls to
-  // EncodedVideoFrame() can vary.
-  virtual bool CanEncodeVariedFrameSizes() const = 0;
+  virtual ~VideoEncoder() {}
 
   // If true is returned, the Encoder has accepted the request and will process
   // it asynchronously, running |frame_encoded_callback| on the MAIN

@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"
 #include "media/cast/sender/video_frame_factory.h"
@@ -36,25 +37,35 @@ struct InProgressFrameEncode {
         frame_encoded_callback(callback) {}
 };
 
+base::ScopedCFTypeRef<CFDictionaryRef> DictionaryWithKeysAndValues(
+    CFTypeRef* keys,
+    CFTypeRef* values,
+    size_t size) {
+  return base::ScopedCFTypeRef<CFDictionaryRef>(CFDictionaryCreate(
+      kCFAllocatorDefault,
+      keys,
+      values,
+      size,
+      &kCFTypeDictionaryKeyCallBacks,
+      &kCFTypeDictionaryValueCallBacks));
+}
+
 base::ScopedCFTypeRef<CFDictionaryRef> DictionaryWithKeyValue(CFTypeRef key,
                                                               CFTypeRef value) {
   CFTypeRef keys[1] = {key};
   CFTypeRef values[1] = {value};
-  return base::ScopedCFTypeRef<CFDictionaryRef>(CFDictionaryCreate(
-      kCFAllocatorDefault, keys, values, 1, &kCFTypeDictionaryKeyCallBacks,
-      &kCFTypeDictionaryValueCallBacks));
+  return DictionaryWithKeysAndValues(keys, values, 1);
 }
 
-base::ScopedCFTypeRef<CFArrayRef> ArrayWithIntegers(const std::vector<int>& v) {
+base::ScopedCFTypeRef<CFArrayRef> ArrayWithIntegers(const int* v, size_t size) {
   std::vector<CFNumberRef> numbers;
-  numbers.reserve(v.size());
-  for (const int i : v) {
-    numbers.push_back(CFNumberCreate(nullptr, kCFNumberSInt32Type, &i));
-  }
+  numbers.reserve(size);
+  for (const int* end = v + size; v < end; ++v)
+    numbers.push_back(CFNumberCreate(nullptr, kCFNumberSInt32Type, v));
   base::ScopedCFTypeRef<CFArrayRef> array(CFArrayCreate(
       kCFAllocatorDefault, reinterpret_cast<const void**>(&numbers[0]),
       numbers.size(), &kCFTypeArrayCallBacks));
-  for (CFNumberRef number : numbers) {
+  for (auto& number : numbers) {
     CFRelease(number);
   }
   return array;
@@ -202,42 +213,61 @@ void CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
 class VideoFrameFactoryCVPixelBufferPoolImpl : public VideoFrameFactory {
  public:
   VideoFrameFactoryCVPixelBufferPoolImpl(
-      const base::ScopedCFTypeRef<CVPixelBufferPoolRef>& pool)
-      : pool_(pool) {}
+      const base::ScopedCFTypeRef<CVPixelBufferPoolRef>& pool,
+      const gfx::Size& frame_size)
+      : pool_(pool),
+        frame_size_(frame_size) {}
 
   ~VideoFrameFactoryCVPixelBufferPoolImpl() override {}
 
-  scoped_refptr<VideoFrame> CreateFrame(base::TimeDelta timestamp) override {
+  scoped_refptr<VideoFrame> MaybeCreateFrame(
+      const gfx::Size& frame_size, base::TimeDelta timestamp) override {
+    if (frame_size != frame_size_)
+      return nullptr;  // Buffer pool is not a match for requested frame size.
+
     base::ScopedCFTypeRef<CVPixelBufferRef> buffer;
-    CHECK_EQ(kCVReturnSuccess,
-             CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool_,
-                                                buffer.InitializeInto()));
+    if (CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool_,
+                                           buffer.InitializeInto()) !=
+            kCVReturnSuccess)
+      return nullptr;  // Buffer pool has run out of pixel buffers.
+    DCHECK(buffer);
+
     return VideoFrame::WrapCVPixelBuffer(buffer, timestamp);
   }
 
  private:
-  base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool_;
+  const base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool_;
+  const gfx::Size frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryCVPixelBufferPoolImpl);
 };
 
 }  // namespace
 
+// static
+bool H264VideoToolboxEncoder::IsSupported(
+    const VideoSenderConfig& video_config) {
+  return video_config.codec == CODEC_VIDEO_H264 && VideoToolboxGlue::Get();
+}
+
 H264VideoToolboxEncoder::H264VideoToolboxEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoSenderConfig& video_config,
     const gfx::Size& frame_size,
+    uint32 first_frame_id,
     const StatusChangeCallback& status_change_cb)
     : cast_environment_(cast_environment),
       videotoolbox_glue_(VideoToolboxGlue::Get()),
-      frame_id_(kStartFrameId),
+      frame_size_(frame_size),
+      status_change_cb_(status_change_cb),
+      next_frame_id_(first_frame_id),
       encode_next_frame_as_keyframe_(false) {
-  DCHECK(!frame_size.IsEmpty());
-  DCHECK(!status_change_cb.is_null());
+  DCHECK(!frame_size_.IsEmpty());
+  DCHECK(!status_change_cb_.is_null());
 
   OperationalStatus operational_status;
   if (video_config.codec == CODEC_VIDEO_H264 && videotoolbox_glue_) {
-    operational_status = Initialize(video_config, frame_size) ?
+    operational_status = Initialize(video_config) ?
         STATUS_INITIALIZED : STATUS_INVALID_CONFIGURATION;
   } else {
     operational_status = STATUS_UNSUPPORTED_CODEC;
@@ -245,7 +275,7 @@ H264VideoToolboxEncoder::H264VideoToolboxEncoder(
   cast_environment_->PostTask(
       CastEnvironment::MAIN,
       FROM_HERE,
-      base::Bind(status_change_cb, operational_status));
+      base::Bind(status_change_cb_, operational_status));
 }
 
 H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
@@ -253,8 +283,7 @@ H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
 }
 
 bool H264VideoToolboxEncoder::Initialize(
-    const VideoSenderConfig& video_config,
-    const gfx::Size& frame_size) {
+    const VideoSenderConfig& video_config) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!compression_session_);
 
@@ -280,16 +309,40 @@ bool H264VideoToolboxEncoder::Initialize(
   // Certain encoders prefer kCVPixelFormatType_422YpCbCr8, which is not
   // supported through VideoFrame. We can force 420 formats to be used instead.
   const int formats[] = {
-      kCVPixelFormatType_420YpCbCr8Planar,
-      CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange};
-  base::ScopedCFTypeRef<CFArrayRef> formats_array = ArrayWithIntegers(
-      std::vector<int>(formats, formats + arraysize(formats)));
-  base::ScopedCFTypeRef<CFDictionaryRef> buffer_attributes =
-      DictionaryWithKeyValue(kCVPixelBufferPixelFormatTypeKey, formats_array);
+    kCVPixelFormatType_420YpCbCr8Planar,
+    CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+  };
+  // Keep these attachment settings in-sync with those in ConfigureSession().
+  CFTypeRef attachments_keys[] = {
+    kCVImageBufferColorPrimariesKey,
+    kCVImageBufferTransferFunctionKey,
+    kCVImageBufferYCbCrMatrixKey
+  };
+  CFTypeRef attachments_values[] = {
+    kCVImageBufferColorPrimaries_ITU_R_709_2,
+    kCVImageBufferTransferFunction_ITU_R_709_2,
+    kCVImageBufferYCbCrMatrix_ITU_R_709_2
+  };
+  CFTypeRef buffer_attributes_keys[] = {
+    kCVPixelBufferPixelFormatTypeKey,
+    kCVBufferPropagatedAttachmentsKey
+  };
+  CFTypeRef buffer_attributes_values[] = {
+    ArrayWithIntegers(formats, arraysize(formats)).release(),
+    DictionaryWithKeysAndValues(attachments_keys,
+                                attachments_values,
+                                arraysize(attachments_keys)).release()
+  };
+  const base::ScopedCFTypeRef<CFDictionaryRef> buffer_attributes =
+      DictionaryWithKeysAndValues(buffer_attributes_keys,
+                                  buffer_attributes_values,
+                                  arraysize(buffer_attributes_keys));
+  for (auto& v : buffer_attributes_values)
+    CFRelease(v);
 
   VTCompressionSessionRef session;
   OSStatus status = videotoolbox_glue_->VTCompressionSessionCreate(
-      kCFAllocatorDefault, frame_size.width(), frame_size.height(),
+      kCFAllocatorDefault, frame_size_.width(), frame_size_.height(),
       CoreMediaGlue::kCMVideoCodecType_H264, encoder_spec, buffer_attributes,
       nullptr /* compressedDataAllocator */,
       &H264VideoToolboxEncoder::CompressionCallback,
@@ -329,6 +382,7 @@ void H264VideoToolboxEncoder::ConfigureSession(
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_ExpectedFrameRate(),
       video_config.max_frame_rate);
+  // Keep these attachment settings in-sync with those in Initialize().
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_ColorPrimaries(),
       kCVImageBufferColorPrimaries_ITU_R_709_2);
@@ -357,22 +411,20 @@ void H264VideoToolboxEncoder::Teardown() {
   }
 }
 
-bool H264VideoToolboxEncoder::CanEncodeVariedFrameSizes() const {
-  return false;
-}
-
 bool H264VideoToolboxEncoder::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!video_frame->visible_rect().IsEmpty());
   DCHECK(!frame_encoded_callback.is_null());
 
   if (!compression_session_) {
     DLOG(ERROR) << " compression session is null";
     return false;
   }
+
+  if (video_frame->visible_rect().size() != frame_size_)
+    return false;
 
   // Wrap the VideoFrame in a CVPixelBuffer. In all cases, no data will be
   // copied. If the VideoFrame was created by this encoder's video frame
@@ -435,12 +487,14 @@ void H264VideoToolboxEncoder::LatestFrameIdToReference(uint32 /*frame_id*/) {
 
 scoped_ptr<VideoFrameFactory>
 H264VideoToolboxEncoder::CreateVideoFrameFactory() {
+  if (!videotoolbox_glue_ || !compression_session_)
+    return nullptr;
   base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool(
       videotoolbox_glue_->VTCompressionSessionGetPixelBufferPool(
           compression_session_),
       base::scoped_policy::RETAIN);
   return scoped_ptr<VideoFrameFactory>(
-      new VideoFrameFactoryCVPixelBufferPoolImpl(pool));
+      new VideoFrameFactoryCVPixelBufferPoolImpl(pool, frame_size_));
 }
 
 void H264VideoToolboxEncoder::EmitFrames() {
@@ -483,31 +537,38 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
                                                   OSStatus status,
                                                   VTEncodeInfoFlags info,
                                                   CMSampleBufferRef sbuf) {
-  if (status != noErr) {
-    DLOG(ERROR) << " encoding failed: " << status;
-    return;
-  }
-  if ((info & VideoToolboxGlue::kVTEncodeInfo_FrameDropped)) {
-    DVLOG(2) << " frame dropped";
-    return;
-  }
-
   auto encoder = reinterpret_cast<H264VideoToolboxEncoder*>(encoder_opaque);
   const scoped_ptr<InProgressFrameEncode> request(
       reinterpret_cast<InProgressFrameEncode*>(request_opaque));
-  auto sample_attachments = static_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(
-      CoreMediaGlue::CMSampleBufferGetSampleAttachmentsArray(sbuf, true), 0));
+  bool keyframe = false;
+  bool has_frame_data = false;
 
-  // If the NotSync key is not present, it implies Sync, which indicates a
-  // keyframe (at least I think, VT documentation is, erm, sparse). Could
-  // alternatively use kCMSampleAttachmentKey_DependsOnOthers == false.
-  bool keyframe =
-      !CFDictionaryContainsKey(sample_attachments,
-                               CoreMediaGlue::kCMSampleAttachmentKey_NotSync());
+  if (status != noErr) {
+    DLOG(ERROR) << " encoding failed: " << status;
+    encoder->cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(encoder->status_change_cb_, STATUS_CODEC_RUNTIME_ERROR));
+  } else if ((info & VideoToolboxGlue::kVTEncodeInfo_FrameDropped)) {
+    DVLOG(2) << " frame dropped";
+  } else {
+    auto sample_attachments = static_cast<CFDictionaryRef>(
+        CFArrayGetValueAtIndex(
+            CoreMediaGlue::CMSampleBufferGetSampleAttachmentsArray(sbuf, true),
+            0));
+
+    // If the NotSync key is not present, it implies Sync, which indicates a
+    // keyframe (at least I think, VT documentation is, erm, sparse). Could
+    // alternatively use kCMSampleAttachmentKey_DependsOnOthers == false.
+    keyframe = !CFDictionaryContainsKey(
+        sample_attachments,
+        CoreMediaGlue::kCMSampleAttachmentKey_NotSync());
+    has_frame_data = true;
+  }
 
   // Increment the encoder-scoped frame id and assign the new value to this
   // frame. VideoToolbox calls the output callback serially, so this is safe.
-  uint32 frame_id = ++encoder->frame_id_;
+  const uint32 frame_id = encoder->next_frame_id_++;
 
   scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
   encoded_frame->frame_id = frame_id;
@@ -530,12 +591,97 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
     encoded_frame->referenced_frame_id = frame_id - 1;
   }
 
-  CopySampleBufferToAnnexBBuffer(sbuf, &encoded_frame->data, keyframe);
+  if (has_frame_data)
+    CopySampleBufferToAnnexBBuffer(sbuf, &encoded_frame->data, keyframe);
 
   encoder->cast_environment_->PostTask(
       CastEnvironment::MAIN, FROM_HERE,
       base::Bind(request->frame_encoded_callback,
                  base::Passed(&encoded_frame)));
+}
+
+// A ref-counted structure that is shared to provide concurrent access to the
+// VideoFrameFactory instance for the current encoder.  OnEncoderReplaced() can
+// change |factory| whenever an encoder instance has been replaced, while users
+// of CreateVideoFrameFactory() may attempt to read/use |factory| by any thread
+// at any time.
+struct SizeAdaptableH264VideoToolboxVideoEncoder::FactoryHolder
+    : public base::RefCountedThreadSafe<FactoryHolder> {
+  base::Lock lock;
+  scoped_ptr<VideoFrameFactory> factory;
+
+ private:
+  friend class base::RefCountedThreadSafe<FactoryHolder>;
+  ~FactoryHolder() {}
+};
+
+SizeAdaptableH264VideoToolboxVideoEncoder::
+    SizeAdaptableH264VideoToolboxVideoEncoder(
+        const scoped_refptr<CastEnvironment>& cast_environment,
+        const VideoSenderConfig& video_config,
+        const StatusChangeCallback& status_change_cb)
+        : SizeAdaptableVideoEncoderBase(cast_environment,
+                                        video_config,
+                                        status_change_cb),
+          holder_(new FactoryHolder()) {}
+
+SizeAdaptableH264VideoToolboxVideoEncoder::
+    ~SizeAdaptableH264VideoToolboxVideoEncoder() {}
+
+// A proxy allowing SizeAdaptableH264VideoToolboxVideoEncoder to swap out the
+// VideoFrameFactory instance to match one appropriate for the current encoder
+// instance.
+class SizeAdaptableH264VideoToolboxVideoEncoder::VideoFrameFactoryProxy
+    : public VideoFrameFactory {
+ public:
+  explicit VideoFrameFactoryProxy(const scoped_refptr<FactoryHolder>& holder)
+      : holder_(holder) {}
+
+  ~VideoFrameFactoryProxy() override {}
+
+  scoped_refptr<VideoFrame> MaybeCreateFrame(
+      const gfx::Size& frame_size, base::TimeDelta timestamp) override {
+    base::AutoLock auto_lock(holder_->lock);
+    return holder_->factory ?
+        holder_->factory->MaybeCreateFrame(frame_size, timestamp) : nullptr;
+  }
+
+ private:
+  const scoped_refptr<FactoryHolder> holder_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryProxy);
+};
+
+scoped_ptr<VideoFrameFactory>
+    SizeAdaptableH264VideoToolboxVideoEncoder::CreateVideoFrameFactory() {
+  return scoped_ptr<VideoFrameFactory>(new VideoFrameFactoryProxy(holder_));
+}
+
+scoped_ptr<VideoEncoder>
+    SizeAdaptableH264VideoToolboxVideoEncoder::CreateEncoder() {
+  return scoped_ptr<VideoEncoder>(new H264VideoToolboxEncoder(
+      cast_environment(),
+      video_config(),
+      frame_size(),
+      last_frame_id() + 1,
+      CreateEncoderStatusChangeCallback()));
+}
+
+void SizeAdaptableH264VideoToolboxVideoEncoder::OnEncoderReplaced(
+    VideoEncoder* replacement_encoder) {
+  scoped_ptr<VideoFrameFactory> current_factory(
+      replacement_encoder->CreateVideoFrameFactory());
+  base::AutoLock auto_lock(holder_->lock);
+  holder_->factory = current_factory.Pass();
+  SizeAdaptableVideoEncoderBase::OnEncoderReplaced(replacement_encoder);
+}
+
+void SizeAdaptableH264VideoToolboxVideoEncoder::DestroyEncoder() {
+  {
+    base::AutoLock auto_lock(holder_->lock);
+    holder_->factory.reset();
+  }
+  SizeAdaptableVideoEncoderBase::DestroyEncoder();
 }
 
 }  // namespace cast

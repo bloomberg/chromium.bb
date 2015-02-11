@@ -74,8 +74,6 @@ VideoSenderConfig GetDefaultVideoSenderConfig() {
   config.receiver_ssrc = recv_config.feedback_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
-  config.width = 1280;
-  config.height = 720;
   config.max_bitrate = 4000000;
   config.min_bitrate = 2000000;
   config.start_bitrate = 4000000;

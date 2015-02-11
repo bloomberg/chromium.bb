@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/sender/size_adaptable_video_encoder_base.h"
 #include "media/cast/sender/video_encoder.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -21,10 +22,15 @@ namespace cast {
 // emits media::cast::EncodedFrames.
 class ExternalVideoEncoder : public VideoEncoder {
  public:
+  // Returns true if the current platform and system configuration supports
+  // using ExternalVideoEncoder with the given |video_config|.
+  static bool IsSupported(const VideoSenderConfig& video_config);
+
   ExternalVideoEncoder(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
       const gfx::Size& frame_size,
+      uint32 first_frame_id,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
@@ -32,7 +38,6 @@ class ExternalVideoEncoder : public VideoEncoder {
   ~ExternalVideoEncoder() override;
 
   // VideoEncoder implementation.
-  bool CanEncodeVariedFrameSizes() const override;
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
@@ -48,15 +53,18 @@ class ExternalVideoEncoder : public VideoEncoder {
   // VEAClientImpl to own and interface with a new |vea|.  Upon return,
   // |client_| holds a reference to the new VEAClientImpl.
   void OnCreateVideoEncodeAccelerator(
-      const gfx::Size& frame_size,
-      VideoCodecProfile codec_profile,
-      int max_frame_rate,
+      const VideoSenderConfig& video_config,
+      uint32 first_frame_id,
       const StatusChangeCallback& status_change_cb,
       scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
       scoped_ptr<media::VideoEncodeAccelerator> vea);
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
+
+  // The size of the visible region of the video frames to be encoded.
+  const gfx::Size frame_size_;
+
   int bit_rate_;
   bool key_frame_requested_;
 
@@ -67,6 +75,31 @@ class ExternalVideoEncoder : public VideoEncoder {
   base::WeakPtrFactory<ExternalVideoEncoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVideoEncoder);
+};
+
+// An implementation of SizeAdaptableVideoEncoderBase to proxy for
+// ExternalVideoEncoder instances.
+class SizeAdaptableExternalVideoEncoder : public SizeAdaptableVideoEncoderBase {
+ public:
+  SizeAdaptableExternalVideoEncoder(
+      const scoped_refptr<CastEnvironment>& cast_environment,
+      const VideoSenderConfig& video_config,
+      const StatusChangeCallback& status_change_cb,
+      const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+      const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
+
+  ~SizeAdaptableExternalVideoEncoder() override;
+
+ protected:
+  scoped_ptr<VideoEncoder> CreateEncoder() override;
+
+ private:
+  // Special callbacks needed by media::cast::ExternalVideoEncoder.
+  // TODO(miu): Remove these.  http://crbug.com/454029
+  const CreateVideoEncodeAcceleratorCallback create_vea_cb_;
+  const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(SizeAdaptableExternalVideoEncoder);
 };
 
 }  // namespace cast

@@ -12,13 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/sender/external_video_encoder.h"
-#include "media/cast/sender/video_encoder_impl.h"
-#include "media/cast/sender/video_frame_factory.h"
-
-#if defined(OS_MACOSX)
-#include "media/cast/sender/h264_vt_encoder.h"
-#endif
+#include "media/cast/sender/video_encoder.h"
 
 namespace media {
 namespace cast {
@@ -71,34 +65,12 @@ VideoSender::VideoSender(
       last_bitrate_(0),
       playout_delay_change_cb_(playout_delay_change_cb),
       weak_factory_(this) {
-#if defined(OS_MACOSX)
-  // On Apple platforms, use the hardware H.264 encoder if possible. It is the
-  // only reasonable option for iOS.
-  if (!video_config.use_external_encoder &&
-      video_config.codec == CODEC_VIDEO_H264) {
-    video_encoder_.reset(new H264VideoToolboxEncoder(
-        cast_environment,
-        video_config,
-        gfx::Size(video_config.width, video_config.height),
-        status_change_cb));
-  }
-#endif  // defined(OS_MACOSX)
-#if !defined(OS_IOS)
-  if (video_config.use_external_encoder) {
-    video_encoder_.reset(new ExternalVideoEncoder(
-        cast_environment,
-        video_config,
-        gfx::Size(video_config.width, video_config.height),
-        status_change_cb,
-        create_vea_cb,
-        create_video_encode_mem_cb));
-  } else if (!video_encoder_) {
-    // Software encoder is initialized immediately.
-    video_encoder_.reset(new VideoEncoderImpl(
-        cast_environment, video_config, status_change_cb));
-  }
-#endif  // !defined(OS_IOS)
-
+  video_encoder_ = VideoEncoder::Create(
+      cast_environment_,
+      video_config,
+      status_change_cb,
+      create_vea_cb,
+      create_video_encode_mem_cb);
   if (!video_encoder_) {
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
@@ -200,6 +172,11 @@ void VideoSender::InsertRawVideoFrame(
   if (bitrate != last_bitrate_) {
     video_encoder_->SetBitRate(bitrate);
     last_bitrate_ = bitrate;
+  }
+
+  if (video_frame->visible_rect().IsEmpty()) {
+    VLOG(1) << "Rejecting empty video frame.";
+    return;
   }
 
   if (video_encoder_->EncodeVideoFrame(

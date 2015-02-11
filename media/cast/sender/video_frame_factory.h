@@ -8,6 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace media {
 
 class VideoFrame;
@@ -33,7 +37,11 @@ class VideoFrameFactory {
   // Creates a |VideoFrame| suitable for input via |InsertRawVideoFrame|. Frames
   // obtained in this manner may provide benefits such memory reuse and affinity
   // with the encoder. The format is guaranteed to be I420 or NV12.
-  virtual scoped_refptr<VideoFrame> CreateFrame(base::TimeDelta timestamp) = 0;
+  //
+  // This can transiently return null if the encoder is not yet initialized or
+  // is re-initializing.
+  virtual scoped_refptr<VideoFrame> MaybeCreateFrame(
+      const gfx::Size& frame_size, base::TimeDelta timestamp) = 0;
 };
 
 }  // namespace cast

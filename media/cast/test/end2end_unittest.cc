@@ -53,8 +53,6 @@ static const double kSoundFrequency = 314.15926535897;  // Freq of sine wave.
 static const float kSoundVolume = 0.5f;
 static const int kVideoHdWidth = 1280;
 static const int kVideoHdHeight = 720;
-static const int kVideoQcifWidth = 176;
-static const int kVideoQcifHeight = 144;
 
 // Since the video encoded and decoded an error will be introduced; when
 // comparing individual pixels the error can be quite large; we allow a PSNR of
@@ -356,8 +354,6 @@ class TestReceiverVideoCallback
  public:
   struct ExpectedVideoFrame {
     int start_value;
-    int width;
-    int height;
     base::TimeTicks playout_time;
     bool should_be_continuous;
   };
@@ -365,14 +361,10 @@ class TestReceiverVideoCallback
   TestReceiverVideoCallback() : num_called_(0) {}
 
   void AddExpectedResult(int start_value,
-                         int width,
-                         int height,
                          const base::TimeTicks& playout_time,
                          bool should_be_continuous) {
     ExpectedVideoFrame expected_video_frame;
     expected_video_frame.start_value = start_value;
-    expected_video_frame.width = width;
-    expected_video_frame.height = height;
     expected_video_frame.playout_time = playout_time;
     expected_video_frame.should_be_continuous = should_be_continuous;
     expected_frame_.push_back(expected_video_frame);
@@ -388,11 +380,10 @@ class TestReceiverVideoCallback
     ExpectedVideoFrame expected_video_frame = expected_frame_.front();
     expected_frame_.pop_front();
 
-    EXPECT_EQ(expected_video_frame.width, video_frame->visible_rect().width());
-    EXPECT_EQ(expected_video_frame.height,
-              video_frame->visible_rect().height());
+    EXPECT_EQ(kVideoHdWidth, video_frame->visible_rect().width());
+    EXPECT_EQ(kVideoHdHeight, video_frame->visible_rect().height());
 
-    gfx::Size size(expected_video_frame.width, expected_video_frame.height);
+    const gfx::Size size(kVideoHdWidth, kVideoHdHeight);
     scoped_refptr<media::VideoFrame> expected_I420_frame =
         media::VideoFrame::CreateFrame(
             VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
@@ -496,8 +487,6 @@ class End2EndTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     video_sender_config_.rtp_payload_type = 97;
     video_sender_config_.use_external_encoder = false;
-    video_sender_config_.width = kVideoHdWidth;
-    video_sender_config_.height = kVideoHdHeight;
     video_sender_config_.max_bitrate = 50000;
     video_sender_config_.min_bitrate = 10000;
     video_sender_config_.start_bitrate = 10000;
@@ -666,7 +655,7 @@ class End2EndTest : public ::testing::Test {
     // TODO(miu): Consider using a slightly skewed clock for the media timestamp
     // since the video clock may not be the same as the reference clock.
     const base::TimeDelta time_diff = reference_time - start_time_;
-    gfx::Size size(video_sender_config_.width, video_sender_config_.height);
+    const gfx::Size size(kVideoHdWidth, kVideoHdHeight);
     EXPECT_TRUE(VideoFrame::IsValidConfig(
         VideoFrame::I420, size, gfx::Rect(size), size));
     scoped_refptr<media::VideoFrame> video_frame =
@@ -834,10 +823,6 @@ class End2EndTest : public ::testing::Test {
 
 TEST_F(End2EndTest, LoopNoLossPcm16) {
   Configure(CODEC_VIDEO_VP8, CODEC_AUDIO_PCM16, 32000, 1);
-  // Reduce video resolution to allow processing multiple frames within a
-  // reasonable time frame.
-  video_sender_config_.width = kVideoQcifWidth;
-  video_sender_config_.height = kVideoQcifHeight;
   Create();
 
   const int kNumIterations = 50;
@@ -853,8 +838,6 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
 
     test_receiver_video_callback_->AddExpectedResult(
         video_start,
-        video_sender_config_.width,
-        video_sender_config_.height,
         testing_clock_sender_->NowTicks() +
             base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
         true);
@@ -959,8 +942,6 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
     // packets, and specifically no RTCP packets were sent.
     test_receiver_video_callback_->AddExpectedResult(
         video_start,
-        video_sender_config_.width,
-        video_sender_config_.height,
         initial_send_time + expected_delay +
             base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
         true);
@@ -989,8 +970,6 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 
     test_receiver_video_callback_->AddExpectedResult(
         video_start,
-        video_sender_config_.width,
-        video_sender_config_.height,
         testing_clock_sender_->NowTicks() +
             base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
         true);
@@ -1040,8 +1019,6 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
     if (i % 2 == 0) {
       test_receiver_video_callback_->AddExpectedResult(
           video_start,
-          video_sender_config_.width,
-          video_sender_config_.height,
           reference_time + base::TimeDelta::FromMilliseconds(target_delay),
           i == 0);
 
@@ -1081,8 +1058,6 @@ TEST_F(End2EndTest, CryptoVideo) {
 
     test_receiver_video_callback_->AddExpectedResult(
         frames_counter,
-        video_sender_config_.width,
-        video_sender_config_.height,
         reference_time +
             base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
         true);
@@ -1137,8 +1112,6 @@ TEST_F(End2EndTest, VideoLogging) {
     base::TimeTicks reference_time = testing_clock_sender_->NowTicks();
     test_receiver_video_callback_->AddExpectedResult(
         video_start,
-        video_sender_config_.width,
-        video_sender_config_.height,
         reference_time +
             base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
         true);

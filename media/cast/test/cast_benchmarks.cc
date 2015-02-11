@@ -69,8 +69,6 @@ namespace {
 
 static const int64 kStartMillisecond = INT64_C(1245);
 static const int kAudioChannels = 2;
-static const int kVideoHdWidth = 1280;
-static const int kVideoHdHeight = 720;
 static const int kTargetPlayoutDelayMs = 300;
 
 // The tests are commonly implemented with |kFrameTimerMs| RunTask function;
@@ -266,8 +264,6 @@ class RunOneBenchmark {
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     video_sender_config_.rtp_payload_type = 97;
     video_sender_config_.use_external_encoder = false;
-    video_sender_config_.width = kVideoHdWidth;
-    video_sender_config_.height = kVideoHdHeight;
 #if 0
     video_sender_config_.max_bitrate = 10000000;  // 10Mbit max
     video_sender_config_.min_bitrate = 1000000;   // 1Mbit min

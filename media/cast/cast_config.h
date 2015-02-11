@@ -87,8 +87,6 @@ struct VideoSenderConfig {
   int rtp_payload_type;
 
   bool use_external_encoder;
-  int width;  // Incoming frames will be scaled to this size.
-  int height;
 
   float congestion_control_back_off;
   int max_bitrate;

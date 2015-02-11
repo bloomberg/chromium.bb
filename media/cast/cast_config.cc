@@ -29,8 +29,6 @@ VideoSenderConfig::VideoSenderConfig()
           base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
       rtp_payload_type(0),
       use_external_encoder(false),
-      width(0),
-      height(0),
       congestion_control_back_off(kDefaultCongestionControlBackOff),
       max_bitrate(5000000),
       min_bitrate(1000000),

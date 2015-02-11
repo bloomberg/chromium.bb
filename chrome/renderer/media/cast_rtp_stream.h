@@ -68,6 +68,7 @@ struct CastRtpPayloadParams {
   double max_frame_rate;
 
   // Width and height of the video content.
+  // TODO(miu): DEPRECATED.  Remove these, as they are ignored.
   int width;
   int height;
 

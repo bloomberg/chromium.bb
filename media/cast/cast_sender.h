@@ -21,6 +21,10 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_sender.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace media {
 class VideoFrame;
 
@@ -40,14 +44,18 @@ class VideoFrameInput : public base::RefCountedThreadSafe<VideoFrameInput> {
   // frames offer performance benefits, such as memory copy elimination. The
   // format is guaranteed to be I420 or NV12.
   //
-  // Not every encoder supports this method. Use |ShouldCreateOptimizedFrame|
-  // to determine if you can and should use this method. Calling
-  // this method when |ShouldCreateOptimizedFrame| is false will CHECK.
-  virtual scoped_refptr<VideoFrame> CreateOptimizedFrame(
-      base::TimeDelta timestamp) = 0;
+  // Not every encoder supports this method. Use |CanCreateOptimizedFrames| to
+  // determine if you can and should use this method.
+  //
+  // Even if |CanCreateOptimizedFrames| indicates support, there are transient
+  // conditions during a session where optimized frames cannot be provided.  In
+  // this case, the caller must be able to account for a nullptr return value
+  // and instantiate its own media::VideoFrames.
+  virtual scoped_refptr<VideoFrame> MaybeCreateOptimizedFrame(
+      const gfx::Size& frame_size, base::TimeDelta timestamp) = 0;
 
   // Returns true if the encoder supports creating optimized frames.
-  virtual bool SupportsCreateOptimizedFrame() const = 0;
+  virtual bool CanCreateOptimizedFrames() const = 0;
 
  protected:
   virtual ~VideoFrameInput() {}

@@ -52,6 +52,15 @@ void EncodeVideoFrameOnEncoderThread(
 }
 }  // namespace
 
+// static
+bool VideoEncoderImpl::IsSupported(const VideoSenderConfig& video_config) {
+#ifndef OFFICIAL_BUILD
+  if (video_config.codec == CODEC_VIDEO_FAKE)
+    return true;
+#endif
+  return video_config.codec == CODEC_VIDEO_VP8;
+}
+
 VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
@@ -96,12 +105,6 @@ VideoEncoderImpl::~VideoEncoderImpl() {
         base::Bind(&base::DeletePointer<SoftwareVideoEncoder>,
                    encoder_.release()));
   }
-}
-
-bool VideoEncoderImpl::CanEncodeVariedFrameSizes() const {
-  // Both the VP8Encoder and FakeSoftwareVideoEncoder support calls to
-  // EncodeVideoFrame() with different frame sizes.
-  return true;
 }
 
 bool VideoEncoderImpl::EncodeVideoFrame(

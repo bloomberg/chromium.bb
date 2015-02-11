@@ -8,6 +8,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/mac/videotoolbox_glue.h"
+#include "media/cast/sender/size_adaptable_video_encoder_base.h"
 #include "media/cast/sender/video_encoder.h"
 
 namespace media {
@@ -22,15 +23,19 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   typedef VideoToolboxGlue::VTEncodeInfoFlags VTEncodeInfoFlags;
 
  public:
+  // Returns true if the current platform and system configuration supports
+  // using H264VideoToolboxEncoder with the given |video_config|.
+  static bool IsSupported(const VideoSenderConfig& video_config);
+
   H264VideoToolboxEncoder(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
       const gfx::Size& frame_size,
+      uint32 first_frame_id,
       const StatusChangeCallback& status_change_cb);
   ~H264VideoToolboxEncoder() override;
 
   // media::cast::VideoEncoder implementation
-  bool CanEncodeVariedFrameSizes() const override;
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
@@ -43,8 +48,7 @@ class H264VideoToolboxEncoder : public VideoEncoder {
 
  private:
   // Initialize the compression session.
-  bool Initialize(const VideoSenderConfig& video_config,
-                  const gfx::Size& frame_size);
+  bool Initialize(const VideoSenderConfig& video_config);
 
   // Configure the compression session.
   void ConfigureSession(const VideoSenderConfig& video_config);
@@ -68,7 +72,13 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   const scoped_refptr<CastEnvironment> cast_environment_;
 
   // VideoToolboxGlue provides access to VideoToolbox at runtime.
-  const VideoToolboxGlue* videotoolbox_glue_;
+  const VideoToolboxGlue* const videotoolbox_glue_;
+
+  // The size of the visible region of the video frames to be encoded.
+  const gfx::Size frame_size_;
+
+  // Callback used to report initialization status and runtime errors.
+  const StatusChangeCallback status_change_cb_;
 
   // Thread checker to enforce that this object is used on a specific thread.
   base::ThreadChecker thread_checker_;
@@ -77,12 +87,40 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   base::ScopedCFTypeRef<VTCompressionSessionRef> compression_session_;
 
   // Frame identifier counter.
-  uint32 frame_id_;
+  uint32 next_frame_id_;
 
   // Force next frame to be a keyframe.
   bool encode_next_frame_as_keyframe_;
 
   DISALLOW_COPY_AND_ASSIGN(H264VideoToolboxEncoder);
+};
+
+// An implementation of SizeAdaptableVideoEncoderBase to proxy for
+// H264VideoToolboxEncoder instances.
+class SizeAdaptableH264VideoToolboxVideoEncoder
+ : public SizeAdaptableVideoEncoderBase {
+ public:
+  SizeAdaptableH264VideoToolboxVideoEncoder(
+      const scoped_refptr<CastEnvironment>& cast_environment,
+      const VideoSenderConfig& video_config,
+      const StatusChangeCallback& status_change_cb);
+
+  ~SizeAdaptableH264VideoToolboxVideoEncoder() override;
+
+  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() override;
+
+ protected:
+  scoped_ptr<VideoEncoder> CreateEncoder() override;
+  void OnEncoderReplaced(VideoEncoder* replacement_encoder) override;
+  void DestroyEncoder() override;
+
+ private:
+  struct FactoryHolder;
+  class VideoFrameFactoryProxy;
+
+  const scoped_refptr<FactoryHolder> holder_;
+
+  DISALLOW_COPY_AND_ASSIGN(SizeAdaptableH264VideoToolboxVideoEncoder);
 };
 
 }  // namespace cast

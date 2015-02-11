@@ -176,7 +176,9 @@ class EndToEndFrameChecker
 };
 
 void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
-  auto video_frame = video_frame_factory->CreateFrame(base::TimeDelta());
+  const scoped_refptr<media::VideoFrame> video_frame =
+      video_frame_factory->MaybeCreateFrame(
+          gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta());
   ASSERT_TRUE(video_frame.get());
   auto cv_pixel_buffer = video_frame->cv_pixel_buffer();
   ASSERT_TRUE(cv_pixel_buffer);
@@ -207,6 +209,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
         cast_environment_,
         video_sender_config_,
         gfx::Size(kVideoWidth, kVideoHeight),
+        0u,
         base::Bind(&SaveOperationalStatus, &operational_status_)));
     message_loop_.RunUntilIdle();
     EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
@@ -304,6 +307,8 @@ TEST_F(H264VideoToolboxEncoderTest, CheckVideoFrameFactory) {
   auto video_frame_factory = encoder_->CreateVideoFrameFactory();
   ASSERT_TRUE(video_frame_factory.get());
   CreateFrameAndMemsetPlane(video_frame_factory.get());
+  // TODO(jfroy): Need to test that the encoder can encode VideoFrames provided
+  // by the VideoFrameFactory.
   encoder_.reset();
   message_loop_.RunUntilIdle();
   CreateFrameAndMemsetPlane(video_frame_factory.get());
