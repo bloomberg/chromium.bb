@@ -36,6 +36,24 @@ class _ApplicationImpl extends application_mojom.Application {
   void close({bool nodefer: false}) => shell.close();
 }
 
+// ApplicationConnection represents a single outgoing connection to another app.
+class ApplicationConnection {
+  // ServiceProvider used to obtain services from the remote application.
+  service_provider.ServiceProviderProxy serviceProvider;
+
+  ApplicationConnection(this.serviceProvider);
+
+  // Obtains a service from the remote application.
+  void connectToService(bindings.Proxy proxy) {
+    assert(!proxy.isBound);
+    var applicationPipe = new core.MojoMessagePipe();
+    var proxyEndpoint = applicationPipe.endpoints[0];
+    var applicationEndpoint = applicationPipe.endpoints[1];
+    proxy.bind(proxyEndpoint);
+    serviceProvider.connectToService(proxy.name, applicationEndpoint);
+  }
+}
+
 // TODO(zra): Better documentation and examples.
 // To implement, do the following:
 // - Optionally override acceptConnection() if services are to be provided.
@@ -53,27 +71,37 @@ class _ApplicationImpl extends application_mojom.Application {
 //   Shell.
 abstract class Application {
   _ApplicationImpl _applicationImpl;
-  List<service_provider.ServiceProviderProxy> _proxies;
+  List<ApplicationConnection> _applicationConnections;
   List<ServiceProvider> _serviceProviders;
 
   Application(core.MojoMessagePipeEndpoint endpoint) {
-    _proxies = [];
+    _applicationConnections = [];
     _serviceProviders = [];
     _applicationImpl = new _ApplicationImpl(this, endpoint);
   }
 
   Application.fromHandle(core.MojoHandle appHandle) {
-    _proxies = [];
+    _applicationConnections = [];
     _serviceProviders = [];
     _applicationImpl = new _ApplicationImpl.fromHandle(this, appHandle);
   }
 
   void initialize(List<String> args) {}
 
+  // Establishes a connection to the app at |url|.
+  ApplicationConnection connectToApplication(String url) {
+    var serviceProviderProxy =
+        new service_provider.ServiceProviderProxy.unbound();
+    // TODO: Need to expose ServiceProvider for local services.
+    _applicationImpl.shell.connectToApplication(
+        url, serviceProviderProxy, null);
+    var applicationConnection = new ApplicationConnection(serviceProviderProxy);
+    _applicationConnections.add(applicationConnection);
+    return applicationConnection;
+  }
+
   void connectToService(String url, bindings.Proxy proxy) {
-    assert(!proxy.isBound);
-    var endpoint = _connectToServiceHelper(url, proxy.name);
-    proxy.bind(endpoint);
+    connectToApplication(url).connectToService(proxy);
   }
 
   void requestQuit() {}
@@ -87,8 +115,8 @@ abstract class Application {
 
   void close() {
     assert(_applicationImpl != null);
-    _proxies.forEach((c) => c.close());
-    _proxies.clear();
+    _applicationConnections.forEach((c) => c.serviceProvider.close());
+    _applicationConnections.clear();
     _serviceProviders.forEach((sp) => sp.close());
     _serviceProviders.clear();
     _applicationImpl.close();
@@ -104,18 +132,4 @@ abstract class Application {
   }
 
   void acceptConnection(String requestorUrl, ServiceProvider serviceProvider) {}
-
-  core.MojoMessagePipeEndpoint _connectToServiceHelper(
-      String url, String service) {
-    var applicationPipe = new core.MojoMessagePipe();
-    var proxyEndpoint = applicationPipe.endpoints[0];
-    var applicationEndpoint = applicationPipe.endpoints[1];
-    var serviceProviderProxy =
-        new service_provider.ServiceProviderProxy.unbound();
-    _applicationImpl.shell.connectToApplication(
-        url, serviceProviderProxy, null);
-    serviceProviderProxy.connectToService(service, applicationEndpoint);
-    _proxies.add(serviceProviderProxy);
-    return proxyEndpoint;
-  }
 }

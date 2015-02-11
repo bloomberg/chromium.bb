@@ -66,7 +66,7 @@ TEST(FixedBufferTest, Leak) {
   free(buf_ptr);
 }
 
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 TEST(FixedBufferTest, TooBig) {
   internal::FixedBuffer buf(24);
 

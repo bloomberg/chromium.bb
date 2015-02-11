@@ -1,0 +1,8 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# To use the prebuilt shell, simply omit this variable. Note that the prebuilt
+# shell will be used only on platforms for which it is published (currently
+# Linux and Android).
+# use_prebuilt_mojo_shell = false

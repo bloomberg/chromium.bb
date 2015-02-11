@@ -451,7 +451,7 @@ TEST_F(LoggingTest, Dcheck) {
   // fails to compile the condition.)
   bool was_called = false;
   MOJO_DCHECK(DcheckTestHelper(&was_called)) << "hello";
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   EXPECT_FALSE(was_called);
   EXPECT_FALSE(log_message_was_called());
 #else

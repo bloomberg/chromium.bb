@@ -59,6 +59,14 @@ class TranslateTest(unittest.TestCase):
     actual = translate.Translate(tree, "mojom_tree")
     self.assertEquals(actual["unions"], expected)
 
+  def testMapTreeForTypeRaisesWithDuplicate(self):
+    """Verifies _MapTreeForType() raises when passed two values with the same
+       name."""
+    methods = [ast.Method('dup', None, None, ast.ParameterList(), None),
+               ast.Method('dup', None, None, ast.ParameterList(), None)]
+    self.assertRaises(Exception, translate._MapTreeForType,
+                      (lambda x: x, methods, '', 'scope'))
+
 
 if __name__ == "__main__":
   unittest.main()

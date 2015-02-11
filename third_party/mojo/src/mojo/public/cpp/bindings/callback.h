@@ -37,10 +37,15 @@ class Callback<void(Args...)> {
   explicit Callback(Runnable* runnable) : sink_(runnable) {}
 
   // As above, but can take an object that isn't derived from Runnable, so long
-  // as it has a Run() method.
+  // as it has a compatible operator() or Run() method.  operator() will be
+  // prefered if the type has both.
   template <typename Sink>
-  Callback(const Sink& sink)
-      : sink_(new Adapter<Sink>(sink)) {}
+  Callback(const Sink& sink) {
+    using sink_type = typename internal::Conditional<
+        internal::HasCompatibleCallOperator<Sink, Args...>::value,
+        FunctorAdapter<Sink>, RunnableAdapter<Sink>>::type;
+    sink_ = internal::SharedPtr<Runnable>(new sink_type(sink));
+  }
 
   // Executes the callback function, invoking Pass() on move-only types.
   void Run(typename internal::Callback_ParamTraits<Args>::ForwardType... args)
@@ -58,12 +63,24 @@ class Callback<void(Args...)> {
   // Adapts a class that has a Run() method but is not derived from Runnable to
   // be callable by Callback.
   template <typename Sink>
-  struct Adapter : public Runnable {
-    explicit Adapter(const Sink& sink) : sink(sink) {}
+  struct RunnableAdapter : public Runnable {
+    explicit RunnableAdapter(const Sink& sink) : sink(sink) {}
     virtual void Run(
         typename internal::Callback_ParamTraits<Args>::ForwardType... args)
         const override {
       sink.Run(internal::Forward(args)...);
+    }
+    Sink sink;
+  };
+
+  // Adapts a class that has a compatible operator() callable by Callback.
+  template <typename Sink>
+  struct FunctorAdapter : public Runnable {
+    explicit FunctorAdapter(const Sink& sink) : sink(sink) {}
+    virtual void Run(
+        typename internal::Callback_ParamTraits<Args>::ForwardType... args)
+        const override {
+      sink.operator()(internal::Forward(args)...);
     }
     Sink sink;
   };

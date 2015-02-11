@@ -33,7 +33,7 @@ define("mojo/public/js/codec", [
   var kMapStructPayloadSize = 16;
 
   var kStructHeaderNumBytesOffset = 0;
-  var kStructHeaderNumFieldsOffset = 4;
+  var kStructHeaderVersionOffset = 4;
 
   var kEncodedInvalidHandleValue = 0xFFFFFFFF;
 
@@ -186,7 +186,7 @@ define("mojo/public/js/codec", [
 
   Decoder.prototype.decodeMap = function(keyClass, valueClass) {
     this.skip(4); // numberOfBytes
-    this.skip(4); // numberOfFields
+    this.skip(4); // version
     var keys = this.decodeArrayPointer(keyClass);
     var values = this.decodeArrayPointer(valueClass);
     var val = new Map();
@@ -390,7 +390,9 @@ define("mojo/public/js/codec", [
       keys[i++] = key;
     });
     this.writeUint32(kStructHeaderSize + kMapStructPayloadSize);
-    this.writeUint32(2); // two fields: keys, values
+    // TODO(yzshen): In order to work with other bindings which still interprets
+    // the |version| field as |num_fields|, set it to version 2 for now.
+    this.writeUint32(2);  // version
     this.encodeArrayPointer(keyClass, keys);
     this.encodeArrayPointer(valueClass, values);
   }
@@ -427,8 +429,8 @@ define("mojo/public/js/codec", [
     return this.buffer.getUint32(kStructHeaderNumBytesOffset);
   };
 
-  Message.prototype.getHeaderNumFields = function() {
-    return this.buffer.getUint32(kStructHeaderNumFieldsOffset);
+  Message.prototype.getHeaderVersion = function() {
+    return this.buffer.getUint32(kStructHeaderVersionOffset);
   };
 
   Message.prototype.getName = function() {
@@ -463,7 +465,9 @@ define("mojo/public/js/codec", [
     this.handles = [];
     var encoder = this.createEncoder(kMessageHeaderSize);
     encoder.writeUint32(kMessageHeaderSize);
-    encoder.writeUint32(2);  // num_fields.
+    // TODO(yzshen): In order to work with other bindings which still interprets
+    // the |version| field as |num_fields|, set it to version 2 for now.
+    encoder.writeUint32(2);  // version.
     encoder.writeUint32(messageName);
     encoder.writeUint32(0);  // flags.
   }
@@ -499,7 +503,9 @@ define("mojo/public/js/codec", [
     this.handles = [];
     var encoder = this.createEncoder(kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(kMessageWithRequestIDHeaderSize);
-    encoder.writeUint32(3);  // num_fields.
+    // TODO(yzshen): In order to work with other bindings which still interprets
+    // the |version| field as |num_fields|, set it to version 3 for now.
+    encoder.writeUint32(3);  // version.
     encoder.writeUint32(messageName);
     encoder.writeUint32(flags);
     encoder.writeUint64(requestID);
@@ -517,10 +523,10 @@ define("mojo/public/js/codec", [
     this.decoder = new Decoder(message.buffer, message.handles, 0);
     var messageHeaderSize = this.decoder.readUint32();
     this.payloadSize = message.buffer.byteLength - messageHeaderSize;
-    var numFields = this.decoder.readUint32();
+    var version = this.decoder.readUint32();
     this.messageName = this.decoder.readUint32();
     this.flags = this.decoder.readUint32();
-    if (numFields >= 3)
+    if (version >= 3)
       this.requestID = this.decoder.readUint64();
     this.decoder.skip(messageHeaderSize - this.decoder.next);
   }

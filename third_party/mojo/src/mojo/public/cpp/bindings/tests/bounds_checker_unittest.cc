@@ -17,7 +17,7 @@ const void* ToPtr(uintptr_t ptr) {
   return reinterpret_cast<const void*>(ptr);
 }
 
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 TEST(BoundsCheckerTest, ConstructorRangeOverflow) {
   {
     // Test memory range overflow.

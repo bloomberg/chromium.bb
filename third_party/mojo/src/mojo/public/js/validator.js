@@ -104,7 +104,7 @@ define("mojo/public/js/validator", [
   }
 
   Validator.prototype.validateStructHeader =
-      function(offset, minNumBytes, minNumFields) {
+      function(offset, minNumBytes, minVersion) {
     if (!codec.isAligned(offset))
       return validationError.MISALIGNED_OBJECT;
 
@@ -112,9 +112,10 @@ define("mojo/public/js/validator", [
       return validationError.ILLEGAL_MEMORY_RANGE;
 
     var numBytes = this.message.buffer.getUint32(offset);
-    var numFields = this.message.buffer.getUint32(offset + 4);
+    var version = this.message.buffer.getUint32(offset + 4);
 
-    if (numBytes < minNumBytes || numFields < minNumFields)
+    // Backward compatibility is not yet supported.
+    if (numBytes < minNumBytes || version < minVersion)
       return validationError.UNEXPECTED_STRUCT_HEADER;
 
     if (!this.claimRange(offset, numBytes))
@@ -129,21 +130,21 @@ define("mojo/public/js/validator", [
       return err;
 
     var numBytes = this.message.getHeaderNumBytes();
-    var numFields = this.message.getHeaderNumFields();
+    var version = this.message.getHeaderVersion();
 
-    var validNumFieldsAndNumBytes =
-        (numFields == 2 && numBytes == codec.kMessageHeaderSize) ||
-        (numFields == 3 &&
+    var validVersionAndNumBytes =
+        (version == 2 && numBytes == codec.kMessageHeaderSize) ||
+        (version == 3 &&
          numBytes == codec.kMessageWithRequestIDHeaderSize) ||
-        (numFields > 3 &&
+        (version > 3 &&
          numBytes >= codec.kMessageWithRequestIDHeaderSize);
-    if (!validNumFieldsAndNumBytes)
+    if (!validVersionAndNumBytes)
       return validationError.UNEXPECTED_STRUCT_HEADER;
 
     var expectsResponse = this.message.expectsResponse();
     var isResponse = this.message.isResponse();
 
-    if (numFields == 2 && (expectsResponse || isResponse))
+    if (version == 2 && (expectsResponse || isResponse))
       return validationError.MESSAGE_HEADER_MISSING_REQUEST_ID;
 
     if (isResponse && expectsResponse)

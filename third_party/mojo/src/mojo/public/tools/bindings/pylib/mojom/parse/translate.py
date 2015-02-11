@@ -8,11 +8,28 @@
 from . import ast
 
 
-def _MapTreeForType(func, tree, type_to_map):
+def _DuplicateName(values):
+  """Returns the 'name' of the first entry in |values| whose 'name' has already
+     been encountered. If there are no duplicates, returns None."""
+  names = set()
+  for value in values:
+    if value['name'] in names:
+      return value['name']
+    names.add(value['name'])
+  return None
+
+def _MapTreeForType(func, tree, type_to_map, scope):
   assert isinstance(type_to_map, type)
   if not tree:
     return []
-  return [func(subtree) for subtree in tree if isinstance(subtree, type_to_map)]
+  result = [func(subtree)
+            for subtree in tree if isinstance(subtree, type_to_map)]
+  duplicate_name = _DuplicateName(result)
+  if duplicate_name:
+    raise Exception('Names in mojom must be unique within a scope. The name '
+                    '"%s" is used more than once within the scope "%s".' %
+                    (duplicate_name, scope))
+  return result
 
 def _MapKind(kind):
   map_to_kind = {'bool': 'b',
@@ -110,10 +127,11 @@ class _MojomBuilder(object):
       assert isinstance(struct, ast.Struct)
       data = {'name': struct.name,
               'fields': _MapTreeForType(StructFieldToDict, struct.body,
-                                        ast.StructField),
-              'enums': _MapTreeForType(_EnumToDict, struct.body, ast.Enum),
+                                        ast.StructField, struct.name),
+              'enums': _MapTreeForType(_EnumToDict, struct.body, ast.Enum,
+                                       struct.name),
               'constants': _MapTreeForType(_ConstToDict, struct.body,
-                                           ast.Const)}
+                                           ast.Const, struct.name)}
       _AddOptional(data, 'attributes',
                    _AttributeListToDict(struct.attribute_list))
       return data
@@ -133,7 +151,7 @@ class _MojomBuilder(object):
       assert isinstance(union, ast.Union)
       data = {'name': union.name,
               'fields': _MapTreeForType(UnionFieldToDict, union.body,
-                                        ast.UnionField)}
+                                        ast.UnionField, union.name)}
       _AddOptional(data, 'attributes',
                    _AttributeListToDict(union.attribute_list))
       return data
@@ -165,10 +183,11 @@ class _MojomBuilder(object):
       assert isinstance(interface, ast.Interface)
       data = {'name': interface.name,
               'methods': _MapTreeForType(MethodToDict, interface.body,
-                                         ast.Method),
-              'enums': _MapTreeForType(_EnumToDict, interface.body, ast.Enum),
+                                         ast.Method, interface.name),
+              'enums': _MapTreeForType(_EnumToDict, interface.body, ast.Enum,
+                                       interface.name),
               'constants': _MapTreeForType(_ConstToDict, interface.body,
-                                           ast.Const)}
+                                           ast.Const, interface.name)}
       _AddOptional(data, 'attributes',
                    _AttributeListToDict(interface.attribute_list))
       return data
@@ -179,15 +198,16 @@ class _MojomBuilder(object):
     self.mojom['imports'] = \
         [{'filename': imp.import_filename} for imp in tree.import_list]
     self.mojom['structs'] = \
-        _MapTreeForType(StructToDict, tree.definition_list, ast.Struct)
+        _MapTreeForType(StructToDict, tree.definition_list, ast.Struct, name)
     self.mojom['unions'] = \
-        _MapTreeForType(UnionToDict, tree.definition_list, ast.Union)
+        _MapTreeForType(UnionToDict, tree.definition_list, ast.Union, name)
     self.mojom['interfaces'] = \
-        _MapTreeForType(InterfaceToDict, tree.definition_list, ast.Interface)
+        _MapTreeForType(InterfaceToDict, tree.definition_list, ast.Interface,
+                        name)
     self.mojom['enums'] = \
-        _MapTreeForType(_EnumToDict, tree.definition_list, ast.Enum)
+        _MapTreeForType(_EnumToDict, tree.definition_list, ast.Enum, name)
     self.mojom['constants'] = \
-        _MapTreeForType(_ConstToDict, tree.definition_list, ast.Const)
+        _MapTreeForType(_ConstToDict, tree.definition_list, ast.Const, name)
     _AddOptional(self.mojom, 'attributes',
                  _AttributeListToDict(tree.module.attribute_list)
                      if tree.module else None)

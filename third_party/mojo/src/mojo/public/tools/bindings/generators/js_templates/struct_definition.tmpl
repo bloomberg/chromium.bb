@@ -38,7 +38,7 @@
     if (err !== validator.validationError.NONE)
         return err;
 {%- endmacro %}
-    err = messageValidator.validateStructHeader(offset, {{struct.name}}.encodedSize, {{struct.packed.packed_fields|length}});
+    err = messageValidator.validateStructHeader(offset, {{struct.name}}.encodedSize, {{struct.versions[-1].version}});
     {{check_err()}}
 
 {%- for packed_field in struct.packed.packed_fields %}
@@ -77,7 +77,7 @@
     var packed;
     var val = new {{struct.name}}();
     var numberOfBytes = decoder.readUint32();
-    var numberOfFields = decoder.readUint32();
+    var version = decoder.readUint32();
 {%- for byte in struct.bytes %}
 {%-   if byte.packed_fields|length > 1 %}
     packed = decoder.readUint8();
@@ -99,7 +99,7 @@
   {{struct.name}}.encode = function(encoder, val) {
     var packed;
     encoder.writeUint32({{struct.name}}.encodedSize);
-    encoder.writeUint32({{struct.packed.packed_fields|length}});
+    encoder.writeUint32({{struct.versions[-1].version}});
 
 {%- for byte in struct.bytes %}
 {%-   if byte.packed_fields|length > 1 %}

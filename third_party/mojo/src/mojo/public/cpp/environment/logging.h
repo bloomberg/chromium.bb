@@ -43,19 +43,19 @@
 // compile) the condition, whereas |MOJO_DCHECK()| "neuters" the condition
 // (i.e., compiles, but doesn't evaluate).
 #ifdef NDEBUG
-
 #define MOJO_DLOG(level) MOJO_LAZY_LOG_STREAM(level, false)
 #define MOJO_DLOG_IF(level, condition) MOJO_LAZY_LOG_STREAM(level, false)
-#define MOJO_DCHECK(condition) \
-    MOJO_LAZY_LOG_STREAM(FATAL, false ? !(condition) : false)
-
 #else
-
 #define MOJO_DLOG(level) MOJO_LOG(level)
 #define MOJO_DLOG_IF(level, condition) MOJO_LOG_IF(level, condition)
-#define MOJO_DCHECK(condition) MOJO_CHECK(condition)
-
 #endif  // NDEBUG
+
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+#define MOJO_DCHECK(condition) \
+  MOJO_LAZY_LOG_STREAM(FATAL, false ? !(condition) : false)
+#else
+#define MOJO_DCHECK(condition) MOJO_CHECK(condition)
+#endif  // NDEBUG && !defined(DCHECK_ALWAYS_ON)
 
 namespace mojo {
 namespace internal {
