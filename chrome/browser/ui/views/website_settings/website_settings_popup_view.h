@@ -109,11 +109,11 @@ class WebsiteSettingsPopupView
                              views::Link* link) WARN_UNUSED_RESULT;
 
   // Resets the content of a section. All children of the |section_container|
-  // are cleared and destroyed first. Then the |icon|, |headline|, |text| and
-  // |link| are layout out properly. If the |headline| is an empty string then
-  // no headline will be displayed. The ownership of the passed |link| is
-  // transfered to the ResetConnectionSection method and the |link| is added to
-  // the views hierarchy. If the |link| is NULL then no link is be displayed.
+  // are cleared and destroyed first. Then the |icon|, |headline|, |text|,
+  // |link|, and |secondary_link| are laid out properly. If the |headline| is an
+  // empty string then no headline will be displayed. Ownership of |link| and
+  // |secondary_link| is transfered to the ResetConnectionSection method and the
+  // links are added to the views hierarchy. NULL links are not displayed.
   void ResetConnectionSection(views::View* section_container,
                               const gfx::Image& icon,
                               const base::string16& headline,
@@ -129,7 +129,7 @@ class WebsiteSettingsPopupView
   // The Browser is used to load the help center page.
   Browser* browser_;
 
-  // The presenter that controlls the Website Settings UI.
+  // The presenter that controls the Website Settings UI.
   scoped_ptr<WebsiteSettings> presenter_;
 
   PopupHeaderView* header_;  // Owned by views hierarchy.
@@ -137,10 +137,12 @@ class WebsiteSettingsPopupView
   // The |TabbedPane| that contains the tabs of the Website Settings UI.
   views::TabbedPane* tabbed_pane_;
 
+  // The view that contains the permissions tab contents.
+  views::View* permissions_tab_;
   // The view that contains the contents of the "Cookies and Site data" section
   // from the "Permissions" tab.
   views::View* site_data_content_;
-  // The link that opend the "Cookies" dialog.
+  // The link that opens the "Cookies" dialog.
   views::Link* cookie_dialog_link_;
   // The view that contains the contents of the "Permissions" section from the
   // "Permissions" tab.
@@ -148,7 +150,7 @@ class WebsiteSettingsPopupView
 
   // The view that contains the connection tab contents.
   views::View* connection_tab_;
-  // The view that contains the ui elements for displaying information about
+  // The view that contains the UI elements for displaying information about
   // the site's identity.
   views::View* identity_info_content_;
   // The link to open the certificate viewer for displaying the certificate
@@ -163,10 +165,10 @@ class WebsiteSettingsPopupView
   // current host.
   views::LabelButton* reset_decisions_button_;
 
-  // The id of the certificate provided by the site. If the site does not
+  // The ID of the certificate provided by the site. If the site does not
   // provide a certificate then |cert_id_| is 0.
   int cert_id_;
-  // The IDs and validation status of Signed Certificate TImestamps provided
+  // The IDs and validation status of Signed Certificate Timestamps provided
   // by the site. Empty if no SCTs accompany the certificate.
   content::SignedCertificateTimestampIDStatusList
       signed_certificate_timestamp_ids_;
@@ -174,6 +176,10 @@ class WebsiteSettingsPopupView
   // The link to open the help center page that contains more information about
   // the connection status icons.
   views::Link* help_center_link_;
+
+  // The link to open the site settings page that provides full control over
+  // the origin's permissions.
+  views::Link* site_settings_link_;
 
   views::View* connection_info_content_;
   views::View* page_info_content_;

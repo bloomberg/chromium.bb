@@ -15,7 +15,7 @@ namespace {
 
 const int kInvalidResourceID = -1;
 
-// The resource id's for the strings that are displayed on the permissions
+// The resource IDs for the strings that are displayed on the permissions
 // button if the permission setting is managed by policy.
 const int kPermissionButtonTextIDPolicyManaged[] = {
     kInvalidResourceID,
@@ -28,7 +28,7 @@ static_assert(arraysize(kPermissionButtonTextIDPolicyManaged) ==
               CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDPolicyManaged array size is incorrect");
 
-// The resource id's for the strings that are displayed on the permissions
+// The resource IDs for the strings that are displayed on the permissions
 // button if the permission setting is managed by an extension.
 const int kPermissionButtonTextIDExtensionManaged[] = {
     kInvalidResourceID,
@@ -42,7 +42,7 @@ static_assert(arraysize(kPermissionButtonTextIDExtensionManaged) ==
               "kPermissionButtonTextIDExtensionManaged array size is "
               "incorrect");
 
-// The resource id's for the strings that are displayed on the permissions
+// The resource IDs for the strings that are displayed on the permissions
 // button if the permission setting is managed by the user.
 const int kPermissionButtonTextIDUserManaged[] = {
     kInvalidResourceID,
@@ -55,7 +55,7 @@ static_assert(arraysize(kPermissionButtonTextIDUserManaged) ==
               CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDUserManaged array size is incorrect");
 
-// The resource id's for the strings that are displayed on the permissions
+// The resource IDs for the strings that are displayed on the permissions
 // button if the permission setting is the global default setting.
 const int kPermissionButtonTextIDDefaultSetting[] = {
     kInvalidResourceID,

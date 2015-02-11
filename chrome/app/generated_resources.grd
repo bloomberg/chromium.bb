@@ -9612,6 +9612,9 @@ I don't think this site should be blocked!
       <message name="IDS_PAGE_INFO_HELP_CENTER_LINK" desc="This is the text of the link pointing to the Help Center. This appears at the bottom of the SSL dialog and 'this' refers to the sections within the bubble.">
         What do these mean?
       </message>
+      <message name="IDS_PAGE_INFO_SITE_SETTINGS_LINK" desc="This is the text of the link pointing to Chrome's Site Settings page. This appears at the bottom of the Permissions pane of the Page Information Window.">
+        Site settings
+      </message>
 
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT" desc="The text of the identity section when the page is secure and no Certificate Transparency information is present.">
         The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph> but does not have public audit records.

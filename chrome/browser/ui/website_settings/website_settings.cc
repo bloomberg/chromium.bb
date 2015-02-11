@@ -35,6 +35,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/local_shared_objects_counter.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -68,19 +69,21 @@ enum SSLCertificateDecisionsDidRevoke {
   END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM
 };
 
-// The list of content settings types to display on the Website Settings UI.
+// The list of content settings types to display on the Website Settings UI. THE
+// ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it, email
+// security-dev@chromium.org.
 ContentSettingsType kPermissionType[] = {
-    CONTENT_SETTINGS_TYPE_IMAGES,
-    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-    CONTENT_SETTINGS_TYPE_PLUGINS,
-    CONTENT_SETTINGS_TYPE_POPUPS,
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-    CONTENT_SETTINGS_TYPE_FULLSCREEN,
-    CONTENT_SETTINGS_TYPE_MOUSELOCK,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTINGS_TYPE_IMAGES,
+    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_FULLSCREEN,
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+    CONTENT_SETTINGS_TYPE_PLUGINS,
+    CONTENT_SETTINGS_TYPE_MOUSELOCK,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 #if defined(OS_ANDROID)
     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
@@ -693,7 +696,11 @@ void WebsiteSettings::PresentSitePermissions() {
           content_settings_->GetDefaultContentSetting(permission_info.type,
                                                       NULL);
     }
-    permission_info_list.push_back(permission_info);
+
+    if (permission_info.setting != CONTENT_SETTING_DEFAULT &&
+        permission_info.setting != permission_info.default_setting) {
+      permission_info_list.push_back(permission_info);
+    }
   }
 
   ui_->SetPermissionInfo(permission_info_list);

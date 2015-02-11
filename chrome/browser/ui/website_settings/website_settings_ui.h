@@ -76,7 +76,9 @@ class WebsiteSettingsUI {
     IdentityInfo();
     ~IdentityInfo();
 
-    // The site's identity.
+    // The site's identity: the certificate's Organization Name for sites with
+    // Extended Validation certificates, or the URL's hostname for all other
+    // sites.
     std::string site_identity;
     // Status of the site's identity.
     WebsiteSettings::SiteIdentityStatus identity_status;
@@ -104,6 +106,7 @@ class WebsiteSettingsUI {
   };
 
   typedef std::vector<CookieInfo> CookieInfoList;
+
   typedef std::vector<PermissionInfo> PermissionInfoList;
 
   virtual ~WebsiteSettingsUI();
