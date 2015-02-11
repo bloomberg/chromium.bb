@@ -33,8 +33,8 @@
 
 namespace blink {
 
-template<> void observeContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
-template<> void unobserveContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
+template<> void observerContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
+template<> void unobserverContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
 
 class DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow> {
 public:

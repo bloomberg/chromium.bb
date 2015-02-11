@@ -40,8 +40,12 @@ public:
     typedef LifecycleObserver<T> Observer;
     typedef T Context;
 
+    static PassOwnPtr<LifecycleNotifier> create(Context* context)
+    {
+        return adoptPtr(new LifecycleNotifier(context));
+    }
+
     virtual ~LifecycleNotifier();
-    virtual bool isContextThread() const { return true; }
 
     // notifyContextDestroyed() should be explicitly dispatched from an
     // observed context to notify observers contextDestroyed().
@@ -52,8 +56,6 @@ public:
     // FIXME: this won't need to be virtual anymore.
     virtual void addObserver(Observer*);
     virtual void removeObserver(Observer*);
-
-    virtual void trace(Visitor*) { }
 
     bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
 

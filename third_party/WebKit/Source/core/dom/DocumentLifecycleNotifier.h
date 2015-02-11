@@ -26,18 +26,17 @@
 #ifndef DocumentLifecycleNotifier_h
 #define DocumentLifecycleNotifier_h
 
-#include "platform/LifecycleNotifier.h"
-#include "wtf/HashSet.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentLifecycleObserver.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
 
-class Document;
-class DocumentLifecycleObserver;
-
 class DocumentLifecycleNotifier : public LifecycleNotifier<Document> {
 public:
+    static PassOwnPtr<DocumentLifecycleNotifier> create(Document*);
+
     void notifyDocumentWasDetached();
 #if !ENABLE(OILPAN)
     void notifyDocumentWasDisposed();
@@ -46,13 +45,33 @@ public:
     virtual void addObserver(Observer*) override final;
     virtual void removeObserver(Observer*) override final;
 
-protected:
+private:
     explicit DocumentLifecycleNotifier(Document*);
 
-private:
     using DocumentObserverSet = HashSet<DocumentLifecycleObserver*>;
     DocumentObserverSet m_documentObservers;
 };
+
+inline PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create(Document* document)
+{
+    return adoptPtr(new DocumentLifecycleNotifier(document));
+}
+
+inline void DocumentLifecycleNotifier::notifyDocumentWasDetached()
+{
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDocumentObservers);
+    for (DocumentLifecycleObserver* observer : m_documentObservers)
+        observer->documentWasDetached();
+}
+
+#if !ENABLE(OILPAN)
+inline void DocumentLifecycleNotifier::notifyDocumentWasDisposed()
+{
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDocumentObservers);
+    for (DocumentLifecycleObserver* observer : m_documentObservers)
+        observer->documentWasDisposed();
+}
+#endif
 
 } // namespace blink
 

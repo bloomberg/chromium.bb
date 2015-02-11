@@ -26,6 +26,8 @@
 
 #include "config.h"
 
+#include "platform/LifecycleContext.h"
+
 #include "platform/LifecycleNotifier.h"
 #include "platform/heap/Handle.h"
 #include <gtest/gtest.h>
@@ -34,27 +36,29 @@ using namespace blink;
 
 namespace blink {
 
-class DummyContext final : public NoBaseWillBeGarbageCollectedFinalized<DummyContext>, public LifecycleNotifier<DummyContext> {
+class DummyContext final : public NoBaseWillBeGarbageCollectedFinalized<DummyContext>, public LifecycleContext<DummyContext> {
 public:
-    DummyContext()
-        : LifecycleNotifier<DummyContext>(this)
+    PassOwnPtr<LifecycleNotifier<DummyContext>> createLifecycleNotifier()
     {
+        return LifecycleNotifier<DummyContext>::create(this);
+    }
+    LifecycleNotifier<DummyContext>& lifecycleNotifier()
+    {
+        return static_cast<LifecycleNotifier<DummyContext>&>(LifecycleContext<DummyContext>::lifecycleNotifier());
     }
 
-    void trace(Visitor* visitor)
-    {
-        LifecycleNotifier<DummyContext>::trace(visitor);
-    }
+private:
+    OwnPtr<LifecycleNotifier<DummyContext>> m_lifecycleNotifier;
 };
 
-template<> void observeContext(DummyContext* context, LifecycleObserver<DummyContext>* observer)
+template<> void observerContext(DummyContext* context, LifecycleObserver<DummyContext>* observer)
 {
-    context->addObserver(observer);
+    context->wasObservedBy(observer);
 }
 
-template<> void unobserveContext(DummyContext* context, LifecycleObserver<DummyContext>* observer)
+template<> void unobserverContext(DummyContext* context, LifecycleObserver<DummyContext>* observer)
 {
-    context->removeObserver(observer);
+    context->wasUnobservedBy(observer);
 }
 
 class TestingObserver final : public GarbageCollectedFinalized<TestingObserver>, public LifecycleObserver<DummyContext> {
@@ -78,7 +82,7 @@ public:
 
     bool m_contextDestroyedCalled;
 
-    void unobserve() { setContext(nullptr); }
+    void unobserve() { observeContext(0); }
 };
 
 TEST(LifecycleContextTest, shouldObserveContextDestroyed)

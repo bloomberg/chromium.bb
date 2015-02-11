@@ -84,7 +84,7 @@ void ActiveDOMObject::stop()
 
 void ActiveDOMObject::didMoveToNewExecutionContext(ExecutionContext* context)
 {
-    setContext(context);
+    observeContext(context);
 
     if (context->activeDOMObjectsAreStopped()) {
         stop();

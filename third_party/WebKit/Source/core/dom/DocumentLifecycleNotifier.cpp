@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/dom/DocumentLifecycleNotifier.h"
 
-#include "core/dom/DocumentLifecycleObserver.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -56,21 +55,5 @@ void DocumentLifecycleNotifier::removeObserver(DocumentLifecycleNotifier::Observ
 
     LifecycleNotifier<Document>::removeObserver(observer);
 }
-
-void DocumentLifecycleNotifier::notifyDocumentWasDetached()
-{
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverDocumentObservers);
-    for (DocumentLifecycleObserver* observer : m_documentObservers)
-        observer->documentWasDetached();
-}
-
-#if !ENABLE(OILPAN)
-void DocumentLifecycleNotifier::notifyDocumentWasDisposed()
-{
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverDocumentObservers);
-    for (DocumentLifecycleObserver* observer : m_documentObservers)
-        observer->documentWasDisposed();
-}
-#endif
 
 } // namespace blink

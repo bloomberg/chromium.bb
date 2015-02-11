@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 #ifndef ContextLifecycleNotifier_h
 #define ContextLifecycleNotifier_h
 
+#include "core/dom/ExecutionContext.h"
 #include "platform/LifecycleNotifier.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
@@ -35,10 +35,13 @@
 namespace blink {
 
 class ActiveDOMObject;
-class ExecutionContext;
 
 class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext> {
 public:
+    static PassOwnPtr<ContextLifecycleNotifier> create(ExecutionContext*);
+
+    virtual ~ContextLifecycleNotifier();
+
     typedef HashSet<ActiveDOMObject*> ActiveDOMObjectSet;
 
     const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
@@ -59,6 +62,11 @@ protected:
 private:
     ActiveDOMObjectSet m_activeDOMObjects;
 };
+
+inline PassOwnPtr<ContextLifecycleNotifier> ContextLifecycleNotifier::create(ExecutionContext* context)
+{
+    return adoptPtr(new ContextLifecycleNotifier(context));
+}
 
 } // namespace blink
 

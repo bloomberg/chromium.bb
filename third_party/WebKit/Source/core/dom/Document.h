@@ -36,7 +36,6 @@
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
-#include "core/dom/DocumentLifecycleNotifier.h"
 #include "core/dom/DocumentSupplementable.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
@@ -82,6 +81,7 @@ class CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMWindow;
 class DocumentFragment;
+class DocumentLifecycleNotifier;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentNameCollection;
@@ -219,7 +219,7 @@ private:
 };
 
 class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext
-    , public DocumentSupplementable, public DocumentLifecycleNotifier {
+    , public DocumentSupplementable, public LifecycleContext<Document> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Document);
 public:
@@ -1022,6 +1022,7 @@ public:
     virtual LocalDOMWindow* executingWindow() override final;
     LocalFrame* executingFrame();
 
+    DocumentLifecycleNotifier& lifecycleNotifier();
     DocumentLifecycle& lifecycle() { return m_lifecycle; }
     bool isActive() const { return m_lifecycle.isActive(); }
     bool isDetached() const { return m_lifecycle.state() >= DocumentLifecycle::Stopping; }
@@ -1035,6 +1036,7 @@ public:
     void maybeHandleHttpRefresh(const String&, HttpRefreshType);
 
     void updateSecurityOrigin(PassRefPtr<SecurityOrigin>);
+    PassOwnPtr<LifecycleNotifier<Document>> createLifecycleNotifier();
 
     void setHasViewportUnits() { m_hasViewportUnits = true; }
     bool hasViewportUnits() const { return m_hasViewportUnits; }

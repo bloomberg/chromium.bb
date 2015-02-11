@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/dom/ExecutionContext.h"
 
+#include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
@@ -66,8 +67,7 @@ public:
 };
 
 ExecutionContext::ExecutionContext()
-    : ContextLifecycleNotifier(this)
-    , m_circularSequentialID(0)
+    : m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)
@@ -80,10 +80,15 @@ ExecutionContext::~ExecutionContext()
 {
 }
 
+bool ExecutionContext::hasPendingActivity()
+{
+    return lifecycleNotifier().hasPendingActivity();
+}
+
 void ExecutionContext::suspendActiveDOMObjects()
 {
     ASSERT(!m_activeDOMObjectsAreSuspended);
-    notifySuspendingActiveDOMObjects();
+    lifecycleNotifier().notifySuspendingActiveDOMObjects();
     m_activeDOMObjectsAreSuspended = true;
 }
 
@@ -91,18 +96,18 @@ void ExecutionContext::resumeActiveDOMObjects()
 {
     ASSERT(m_activeDOMObjectsAreSuspended);
     m_activeDOMObjectsAreSuspended = false;
-    notifyResumingActiveDOMObjects();
+    lifecycleNotifier().notifyResumingActiveDOMObjects();
 }
 
 void ExecutionContext::stopActiveDOMObjects()
 {
     m_activeDOMObjectsAreStopped = true;
-    notifyStoppingActiveDOMObjects();
+    lifecycleNotifier().notifyStoppingActiveDOMObjects();
 }
 
 unsigned ExecutionContext::activeDOMObjectCount()
 {
-    return activeDOMObjects().size();
+    return lifecycleNotifier().activeDOMObjects().size();
 }
 
 void ExecutionContext::suspendScheduledTasks()
@@ -119,7 +124,7 @@ void ExecutionContext::resumeScheduledTasks()
 
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
 {
-    ASSERT(contains(object));
+    ASSERT(lifecycleNotifier().contains(object));
     // Ensure all ActiveDOMObjects are suspended also newly created ones.
     if (m_activeDOMObjectsAreSuspended)
         object->suspend();
@@ -206,6 +211,16 @@ KURL ExecutionContext::completeURL(const String& url) const
     return virtualCompleteURL(url);
 }
 
+PassOwnPtr<LifecycleNotifier<ExecutionContext> > ExecutionContext::createLifecycleNotifier()
+{
+    return ContextLifecycleNotifier::create(this);
+}
+
+ContextLifecycleNotifier& ExecutionContext::lifecycleNotifier()
+{
+    return static_cast<ContextLifecycleNotifier&>(LifecycleContext<ExecutionContext>::lifecycleNotifier());
+}
+
 bool ExecutionContext::isIteratingOverObservers() const
 {
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
@@ -238,7 +253,7 @@ void ExecutionContext::trace(Visitor* visitor)
     visitor->trace(m_publicURLManager);
     HeapSupplementable<ExecutionContext>::trace(visitor);
 #endif
-    ContextLifecycleNotifier::trace(visitor);
+    LifecycleContext<ExecutionContext>::trace(visitor);
 }
 
 } // namespace blink
