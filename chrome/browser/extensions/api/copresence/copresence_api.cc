@@ -47,6 +47,11 @@ const std::string GetPrefName(bool authenticated) {
 
 }  // namespace
 
+namespace Execute = api::copresence::Execute;
+namespace OnMessagesReceived = api::copresence::OnMessagesReceived;
+namespace OnStatusUpdated = api::copresence::OnStatusUpdated;
+namespace SetApiKey = api::copresence::SetApiKey;
+namespace SetAuthToken = api::copresence::SetAuthToken;
 
 // Public functions.
 
@@ -154,9 +159,8 @@ void CopresenceService::HandleMessages(
 
   // Send the messages to the client app.
   scoped_ptr<Event> event(
-      new Event(api::copresence::OnMessagesReceived::kEventName,
-                api::copresence::OnMessagesReceived::Create(subscription_id,
-                                                            api_messages),
+      new Event(OnMessagesReceived::kEventName,
+                OnMessagesReceived::Create(subscription_id, api_messages),
                 browser_context_));
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(app_id, event.Pass());
@@ -166,10 +170,10 @@ void CopresenceService::HandleMessages(
 
 void CopresenceService::HandleStatusUpdate(
     copresence::CopresenceStatus status) {
+  DCHECK_EQ(copresence::AUDIO_FAIL, status);
   scoped_ptr<Event> event(
-      new Event(api::copresence::OnStatusUpdated::kEventName,
-                api::copresence::OnStatusUpdated::Create(
-                    api::copresence::STATUS_AUDIOFAILED),
+      new Event(OnStatusUpdated::kEventName,
+                OnStatusUpdated::Create(api::copresence::STATUS_AUDIOFAILED),
                 browser_context_));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   DVLOG(2) << "Sent Audio Failed status update.";
@@ -244,8 +248,7 @@ BrowserContextKeyedAPIFactory<CopresenceService>::DeclareFactoryDependencies() {
 
 // CopresenceExecuteFunction implementation.
 ExtensionFunction::ResponseAction CopresenceExecuteFunction::Run() {
-  scoped_ptr<api::copresence::Execute::Params> params(
-      api::copresence::Execute::Params::Create(*args_));
+  scoped_ptr<Execute::Params> params(Execute::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   CopresenceService* service =
@@ -278,13 +281,12 @@ void CopresenceExecuteFunction::SendResult(
   api::copresence::ExecuteStatus api_status =
       (status == copresence::SUCCESS) ? api::copresence::EXECUTE_STATUS_SUCCESS
                                       : api::copresence::EXECUTE_STATUS_FAILED;
-  Respond(ArgumentList(api::copresence::Execute::Results::Create(api_status)));
+  Respond(ArgumentList(Execute::Results::Create(api_status)));
 }
 
 // CopresenceSetApiKeyFunction implementation.
 ExtensionFunction::ResponseAction CopresenceSetApiKeyFunction::Run() {
-  scoped_ptr<api::copresence::SetApiKey::Params> params(
-      api::copresence::SetApiKey::Params::Create(*args_));
+  scoped_ptr<SetApiKey::Params> params(SetApiKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   LOG(WARNING) << "copresence.setApiKey() is deprecated. "
@@ -298,8 +300,7 @@ ExtensionFunction::ResponseAction CopresenceSetApiKeyFunction::Run() {
 
 // CopresenceSetAuthTokenFunction implementation
 ExtensionFunction::ResponseAction CopresenceSetAuthTokenFunction::Run() {
-  scoped_ptr<api::copresence::SetAuthToken::Params> params(
-      api::copresence::SetAuthToken::Params::Create(*args_));
+  scoped_ptr<SetAuthToken::Params> params(SetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // The token may be set to empty, to clear it.

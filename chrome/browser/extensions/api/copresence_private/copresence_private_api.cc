@@ -17,6 +17,11 @@
 
 namespace extensions {
 
+namespace SendFound = api::copresence_private::SendFound;
+namespace SendSamples = api::copresence_private::SendSamples;
+namespace SendDetect = api::copresence_private::SendDetect;
+namespace SendInitialized = api::copresence_private::SendInitialized;
+
 // Copresence Private functions.
 
 copresence::WhispernetClient* CopresencePrivateFunction::GetWhispernetClient() {
@@ -32,8 +37,7 @@ ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
     return RespondNow(NoArguments());
   }
 
-  scoped_ptr<api::copresence_private::SendFound::Params> params(
-      api::copresence_private::SendFound::Params::Create(*args_));
+  scoped_ptr<SendFound::Params> params(SendFound::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   std::vector<copresence::AudioToken> tokens;
   for (size_t i = 0; i < params->tokens.size(); ++i) {
@@ -51,12 +55,11 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
     return RespondNow(NoArguments());
   }
 
-  scoped_ptr<api::copresence_private::SendSamples::Params> params(
-      api::copresence_private::SendSamples::Params::Create(*args_));
+  scoped_ptr<SendSamples::Params> params(SendSamples::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   scoped_refptr<media::AudioBusRefCounted> samples =
-      media::AudioBusRefCounted::Create(1,
+      media::AudioBusRefCounted::Create(1,  // Mono
                                         params->samples.size() / sizeof(float));
 
   memcpy(samples->channel(0), vector_as_array(&params->samples),
@@ -75,8 +78,7 @@ ExtensionFunction::ResponseAction CopresencePrivateSendDetectFunction::Run() {
     return RespondNow(NoArguments());
   }
 
-  scoped_ptr<api::copresence_private::SendDetect::Params> params(
-      api::copresence_private::SendDetect::Params::Create(*args_));
+  scoped_ptr<SendDetect::Params> params(SendDetect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GetWhispernetClient()->GetDetectBroadcastCallback().Run(params->detected);
@@ -91,8 +93,8 @@ CopresencePrivateSendInitializedFunction::Run() {
     return RespondNow(NoArguments());
   }
 
-  scoped_ptr<api::copresence_private::SendInitialized::Params> params(
-      api::copresence_private::SendInitialized::Params::Create(*args_));
+  scoped_ptr<SendInitialized::Params> params(
+      SendInitialized::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GetWhispernetClient()->GetInitializedCallback().Run(params->success);
