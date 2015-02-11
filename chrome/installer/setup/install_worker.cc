@@ -984,6 +984,10 @@ void AddMigrateUsageStatesWorkItems(const InstallationState& original_state,
   if (installer_state.is_multi_install())
     return;
 
+  // This operation doesn't apply to SxS Chrome.
+  if (InstallUtil::IsChromeSxSProcess())
+    return;
+
   // Ensure that Chrome is the product being installed or updated (there are no
   // other products, so it is especially unexpected for this to fail).
   const Product* chrome_product =
@@ -1241,8 +1245,10 @@ void AddInstallWorkItems(const InstallationState& original_state,
                             install_list);
   }
 
-  // Ensure that the Clients key for the binaries is gone for single installs.
-  if (!installer_state.is_multi_install()) {
+  // Ensure that the Clients key for the binaries is gone for single installs
+  // (but not for SxS Chrome).
+  if (!installer_state.is_multi_install() &&
+      !InstallUtil::IsChromeSxSProcess()) {
     BrowserDistribution* binaries_dist =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BINARIES);
