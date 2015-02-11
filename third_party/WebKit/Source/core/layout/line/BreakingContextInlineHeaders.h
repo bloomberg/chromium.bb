@@ -36,10 +36,10 @@
 #include "core/layout/line/LineWidth.h"
 #include "core/layout/line/TrailingObjects.h"
 #include "core/layout/line/WordMeasurement.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {
@@ -764,7 +764,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
         if (isSVGText && m_current.offset()) {
             // Force creation of new InlineBoxes for each absolute positioned character (those that start new text chunks).
-            if (toRenderSVGInlineText(renderText)->characterStartsNewTextChunk(m_current.offset()))
+            if (toLayoutSVGInlineText(renderText)->characterStartsNewTextChunk(m_current.offset()))
                 m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
         }
 

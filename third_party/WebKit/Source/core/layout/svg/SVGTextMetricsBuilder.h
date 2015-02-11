@@ -24,13 +24,13 @@
 
 namespace blink {
 
-class RenderSVGInlineText;
+class LayoutSVGInlineText;
 class RenderSVGText;
 
 namespace SVGTextMetricsBuilder {
 
-void measureTextRenderer(RenderSVGInlineText*);
-void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
+void measureTextRenderer(LayoutSVGInlineText*);
+void buildMetricsAndLayoutAttributes(RenderSVGText*, LayoutSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
 
 } // namespace SVGTextMetricsBuilder
 

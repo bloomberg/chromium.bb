@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
     RenderSVGRect {rect} at (130,0) size 540x600 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=448.00] [height=498.00]
     RenderSVGContainer {g} at (288,12) size 224x33
       RenderSVGText {text} at (132,10) size 186x13 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 186x12
+        LayoutSVGInlineText {#text} at (0,0) size 186x12
           chunk 1 (middle anchor) text run 1 at (132.18,20.00) startOffset 0 endOffset 47 width 185.64: "stroked circle shouldn't be clipped in any way."
       RenderSVGText {text} at (161,25) size 128x13 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 128x12
+        LayoutSVGInlineText {#text} at (0,0) size 128x12
           chunk 1 (middle anchor) text run 1 at (161.26,35.00) startOffset 0 endOffset 32 width 127.48: "(stroke-width should be visible!"

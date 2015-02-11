@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
         RenderSVGEllipse {circle} at (290,40) size 40x40 [opacity=0.50] [fill={[type=SOLID] [color=#008000]}] [cx=30.00] [cy=5.00] [r=10.00]
         RenderSVGEllipse {circle} at (300,50) size 20x20 [opacity=0.50] [fill={[type=SOLID] [color=#FFFF00]}] [cx=30.00] [cy=5.00] [r=5.00]
     RenderSVGText {text} at (10,46) size 241x18 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 241x18
+      LayoutSVGInlineText {#text} at (0,0) size 241x18
         chunk 1 text run 1 at (10.00,60.00) startOffset 0 endOffset 38 width 240.50: "The two objects should look identical."
     RenderSVGContainer {use} at (45,40) size 130x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(25.00,25.00)}]
       RenderSVGContainer {g} at (45,40) size 130x40

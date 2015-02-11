@@ -21,7 +21,7 @@
 
 #include "core/layout/svg/SVGTextMetrics.h"
 
-#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
 {
 }
 
-SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* textRenderer, const TextRun& run)
+SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* textRenderer, const TextRun& run)
 {
     ASSERT(textRenderer);
 
@@ -56,13 +56,13 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* textRenderer, const TextRun&
     m_length = static_cast<unsigned>(run.length());
 }
 
-TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length)
+TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned position, unsigned length)
 {
     ASSERT(text->style());
     return constructTextRun(text, position, length, text->style()->direction());
 }
 
-TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
+TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
 {
     const LayoutStyle& style = text->styleRef();
 
@@ -90,19 +90,19 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
     return run;
 }
 
-SVGTextMetrics SVGTextMetrics::measureCharacterRange(RenderSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
+SVGTextMetrics SVGTextMetrics::measureCharacterRange(LayoutSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
 {
     ASSERT(text);
     return SVGTextMetrics(text, constructTextRun(text, position, length, textDirection));
 }
 
-SVGTextMetrics SVGTextMetrics::measureCharacterRange(RenderSVGInlineText* text, unsigned position, unsigned length)
+SVGTextMetrics SVGTextMetrics::measureCharacterRange(LayoutSVGInlineText* text, unsigned position, unsigned length)
 {
     ASSERT(text);
     return SVGTextMetrics(text, constructTextRun(text, position, length));
 }
 
-SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* text, unsigned position, unsigned length, float width)
+SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* text, unsigned position, unsigned length, float width)
 {
     ASSERT(text);
 

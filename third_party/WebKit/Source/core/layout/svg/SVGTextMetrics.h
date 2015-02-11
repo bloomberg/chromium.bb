@@ -24,7 +24,7 @@
 
 namespace blink {
 
-class RenderSVGInlineText;
+class LayoutSVGInlineText;
 class TextRun;
 
 class SVGTextMetrics {
@@ -35,14 +35,14 @@ public:
 
     SVGTextMetrics();
     SVGTextMetrics(MetricsType);
-    SVGTextMetrics(RenderSVGInlineText*, unsigned position, unsigned length, float width);
+    SVGTextMetrics(LayoutSVGInlineText*, unsigned position, unsigned length, float width);
 
     // FIXME: Migrate away from these to the two below.
-    static SVGTextMetrics measureCharacterRange(RenderSVGInlineText*, unsigned position, unsigned length);
-    static TextRun constructTextRun(RenderSVGInlineText*, unsigned position, unsigned length);
+    static SVGTextMetrics measureCharacterRange(LayoutSVGInlineText*, unsigned position, unsigned length);
+    static TextRun constructTextRun(LayoutSVGInlineText*, unsigned position, unsigned length);
 
-    static SVGTextMetrics measureCharacterRange(RenderSVGInlineText*, unsigned position, unsigned length, TextDirection);
-    static TextRun constructTextRun(RenderSVGInlineText*, unsigned position, unsigned length, TextDirection);
+    static SVGTextMetrics measureCharacterRange(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);
+    static TextRun constructTextRun(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);
 
     bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
 
@@ -53,7 +53,7 @@ public:
     unsigned length() const { return m_length; }
 
 private:
-    SVGTextMetrics(RenderSVGInlineText*, const TextRun&);
+    SVGTextMetrics(LayoutSVGInlineText*, const TextRun&);
 
     float m_width;
     float m_height;

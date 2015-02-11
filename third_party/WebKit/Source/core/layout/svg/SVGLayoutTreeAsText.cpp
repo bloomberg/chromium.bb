@@ -32,6 +32,7 @@
 
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceLinearGradient.h"
@@ -43,7 +44,6 @@
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGImage.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGText.h"
@@ -405,7 +405,7 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     if (fragments.isEmpty())
         return;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(textBox->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(textBox->renderer());
 
     const SVGLayoutStyle& svgStyle = textRenderer.style()->svgStyle();
     String text = textBox->renderer().text();
@@ -607,7 +607,7 @@ void writeSVGText(TextStream& ts, const RenderSVGText& text, int indent)
     writeChildren(ts, text, indent);
 }
 
-void writeSVGInlineText(TextStream& ts, const RenderSVGInlineText& text, int indent)
+void writeSVGInlineText(TextStream& ts, const LayoutSVGInlineText& text, int indent)
 {
     writeStandardPrefix(ts, text, indent);
     ts << " " << enclosingIntRect(FloatRect(text.firstRunOrigin(), text.floatLinesBoundingBox().size())) << "\n";

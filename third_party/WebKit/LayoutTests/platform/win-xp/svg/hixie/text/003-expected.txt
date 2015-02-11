@@ -15,7 +15,7 @@ layer at (8,52) size 784x162
     layer at (0,0) size 778x156
       RenderSVGRoot {svg} at (0,0) size 372x156
         RenderSVGText {text} at (0,-1) size 3x3 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 3x2
+          LayoutSVGInlineText {#text} at (0,0) size 3x2
             chunk 1 text run 1 at (0.00,0.80) startOffset 0 endOffset 4 width 2.38: "PASS"
 layer at (8,235) size 784x162
   RenderEmbeddedObject {OBJECT} at (0,0) size 784x162 [border: (3px inset #000080)]
@@ -24,5 +24,5 @@ layer at (8,235) size 784x162
     layer at (0,0) size 778x156
       RenderSVGRoot {svg} at (0,0) size 371x156
         RenderSVGText {text} at (0,-94) size 2378x1119 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 2378x1119
+          LayoutSVGInlineText {#text} at (0,0) size 2378x1119
             chunk 1 text run 1 at (0.00,800.00) startOffset 0 endOffset 4 width 2377.89: "PASS"

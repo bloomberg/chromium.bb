@@ -12,6 +12,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/style/ShadowList.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
@@ -19,11 +20,10 @@
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 
 namespace blink {
 
-static inline bool textShouldBePainted(RenderSVGInlineText& textRenderer)
+static inline bool textShouldBePainted(LayoutSVGInlineText& textRenderer)
 {
     // Font::pixelSize(), returns FontDescription::computedPixelSize(), which returns "int(x + 0.5)".
     // If the absolute font size on screen is below x=0.5, don't render anything.
@@ -51,7 +51,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     if (paintInfo.phase == PaintPhaseSelection && !shouldPaintSelection())
         return;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(m_svgInlineTextBox.renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(m_svgInlineTextBox.renderer());
     if (!textShouldBePainted(textRenderer))
         return;
 
@@ -159,7 +159,7 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     if (!backgroundColor.alpha())
         return;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(m_svgInlineTextBox.renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(m_svgInlineTextBox.renderer());
     if (!textShouldBePainted(textRenderer))
         return;
 
@@ -247,7 +247,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
 
     float scalingFactor = 1;
     Font scaledFont;
-    RenderSVGInlineText::computeNewScaledFontForStyle(decorationRenderer, &decorationStyle, scalingFactor, scaledFont);
+    LayoutSVGInlineText::computeNewScaledFontForStyle(decorationRenderer, &decorationStyle, scalingFactor, scaledFont);
     ASSERT(scalingFactor);
 
     float thickness = thicknessForDecoration(decoration, scaledFont);
@@ -293,7 +293,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     TextRun& textRun, const SVGTextFragment& fragment, int startPosition, int endPosition,
     LayoutSVGResourceMode resourceMode)
 {
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(m_svgInlineTextBox.renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(m_svgInlineTextBox.renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -396,7 +396,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
     if (marker->type() != DocumentMarker::TextMatch)
         return;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(m_svgInlineTextBox.renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(m_svgInlineTextBox.renderer());
 
     FloatRect markerRect;
     AffineTransform fragmentTransform;

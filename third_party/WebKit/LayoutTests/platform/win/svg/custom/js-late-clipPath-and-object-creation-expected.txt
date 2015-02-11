@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderSVGContainer {g} at (16,42) size 318x170 [transform={m=((1.00,0.00)(0.00,1.50)) t=(0.00,0.00)}]
       RenderSVGText {text} at (10,16) size 528x69 contains 1 chunk(s)
         [clipPath="dynClip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 200x200
-        RenderSVGInlineText {#text} at (0,0) size 528x68
+        LayoutSVGInlineText {#text} at (0,0) size 528x68
           [clipPath="dynClip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 200x200
           chunk 1 text run 1 at (10.00,70.00) startOffset 0 endOffset 19 width 527.63: "Clipped. INVISIBLE."
       LayoutSVGResourceClipper {clipPath} [id="dynClip"] [clipPathUnits=userSpaceOnUse]

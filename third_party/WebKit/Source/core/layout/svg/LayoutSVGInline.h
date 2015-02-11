@@ -18,18 +18,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGInline_h
-#define RenderSVGInline_h
+#ifndef LayoutSVGInline_h
+#define LayoutSVGInline_h
 
 #include "core/rendering/RenderInline.h"
 
 namespace blink {
 
-class RenderSVGInline : public RenderInline {
+class LayoutSVGInline : public RenderInline {
 public:
-    explicit RenderSVGInline(Element*);
+    explicit LayoutSVGInline(Element*);
 
-    virtual const char* renderName() const override { return "RenderSVGInline"; }
+    virtual const char* renderName() const override { return "LayoutSVGInline"; }
     virtual LayerType layerTypeRequired() const override final { return NoLayer; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInline || RenderInline::isOfType(type); }
 
@@ -59,7 +59,7 @@ private:
     virtual void removeChild(LayoutObject*) override final;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGInline, isSVGInline());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInline, isSVGInline());
 
 }
 

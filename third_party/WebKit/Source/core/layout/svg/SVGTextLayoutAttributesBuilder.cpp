@@ -21,9 +21,9 @@
 
 #include "core/layout/svg/SVGTextLayoutAttributesBuilder.h"
 
+#include "core/layout/svg/LayoutSVGInline.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextMetricsBuilder.h"
-#include "core/rendering/svg/RenderSVGInline.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
@@ -34,7 +34,7 @@ SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder()
 {
 }
 
-void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRenderer(RenderSVGInlineText* text)
+void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRenderer(LayoutSVGInlineText* text)
 {
     ASSERT(text);
 
@@ -76,13 +76,13 @@ bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(RenderSV
     return true;
 }
 
-void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextRenderer(RenderSVGInlineText* text)
+void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextRenderer(LayoutSVGInlineText* text)
 {
     ASSERT(text);
     SVGTextMetricsBuilder::measureTextRenderer(text);
 }
 
-static inline void processRenderSVGInlineText(RenderSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)
+static inline void processLayoutSVGInlineText(LayoutSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)
 {
     if (text->style()->whiteSpace() == PRE) {
         atCharacter += text->textLength();
@@ -106,14 +106,14 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(RenderBoxMod
 
     for (LayoutObject* child = start.slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isSVGInlineText()) {
-            processRenderSVGInlineText(toRenderSVGInlineText(child), m_textLength, lastCharacter);
+            processLayoutSVGInlineText(toLayoutSVGInlineText(child), m_textLength, lastCharacter);
             continue;
         }
 
         if (!child->isSVGInline())
             continue;
 
-        RenderSVGInline& inlineChild = toRenderSVGInline(*child);
+        LayoutSVGInline& inlineChild = toLayoutSVGInline(*child);
         SVGTextPositioningElement* element = SVGTextPositioningElement::elementFromRenderer(inlineChild);
         unsigned atPosition = m_textPositions.size();
         if (element)

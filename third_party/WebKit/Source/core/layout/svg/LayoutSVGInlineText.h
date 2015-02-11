@@ -19,17 +19,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGInlineText_h
-#define RenderSVGInlineText_h
+#ifndef LayoutSVGInlineText_h
+#define LayoutSVGInlineText_h
 
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
 #include "core/rendering/RenderText.h"
 
 namespace blink {
 
-class RenderSVGInlineText final : public RenderText {
+class LayoutSVGInlineText final : public RenderText {
 public:
-    RenderSVGInlineText(Node*, PassRefPtr<StringImpl>);
+    LayoutSVGInlineText(Node*, PassRefPtr<StringImpl>);
 
     bool characterStartsNewTextChunk(int position) const;
     SVGTextLayoutAttributes* layoutAttributes() { return &m_layoutAttributes; }
@@ -46,7 +46,7 @@ public:
     virtual PassRefPtr<StringImpl> originalText() const override;
 
 private:
-    virtual const char* renderName() const override { return "RenderSVGInlineText"; }
+    virtual const char* renderName() const override { return "LayoutSVGInlineText"; }
 
     virtual void setTextInternal(PassRefPtr<StringImpl>) override;
     virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
@@ -67,8 +67,8 @@ private:
     SVGTextLayoutAttributes m_layoutAttributes;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGInlineText, isSVGInlineText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInlineText, isSVGInlineText());
 
 }
 
-#endif // RenderSVGInlineText_h
+#endif // LayoutSVGInlineText_h

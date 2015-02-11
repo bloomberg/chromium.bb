@@ -31,9 +31,9 @@
 #include "core/layout/PaintInfo.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/line/InlineFlowBox.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "platform/FloatConversion.h"
 #include "platform/fonts/FontCache.h"
 
@@ -78,7 +78,7 @@ int SVGInlineTextBox::offsetForPosition(FloatWillBeLayoutUnit, bool) const
 
 int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragment, FloatWillBeLayoutUnit position, bool includePartialGlyphs) const
 {
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -108,7 +108,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const S
 {
     ASSERT(startPosition < endPosition);
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -243,7 +243,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::calculateBoundaries() const
 {
     FloatRectWillBeLayoutRect textRect;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);

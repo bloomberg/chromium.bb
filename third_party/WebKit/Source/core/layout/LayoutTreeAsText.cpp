@@ -39,6 +39,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
 #include "core/rendering/RenderBR.h"
@@ -52,7 +53,6 @@
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGImage.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGText.h"
@@ -457,7 +457,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
         return;
     }
     if (o.isSVGInlineText()) {
-        writeSVGInlineText(ts, toRenderSVGInlineText(o), indent);
+        writeSVGInlineText(ts, toLayoutSVGInlineText(o), indent);
         return;
     }
     if (o.isSVGImage()) {

@@ -21,9 +21,9 @@
 
 #include "core/layout/svg/SVGTextMetricsBuilder.h"
 
+#include "core/layout/svg/LayoutSVGInline.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextMetrics.h"
-#include "core/rendering/svg/RenderSVGInline.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
@@ -39,7 +39,7 @@ namespace blink {
 
 class SVGTextMetricsCalculator {
 public:
-    SVGTextMetricsCalculator(RenderSVGInlineText*);
+    SVGTextMetricsCalculator(LayoutSVGInlineText*);
     ~SVGTextMetricsCalculator();
 
     SVGTextMetrics computeMetricsForCharacter(unsigned textPosition);
@@ -59,7 +59,7 @@ private:
     SVGTextMetrics computeMetricsForCharacterSimple(unsigned textPosition);
     SVGTextMetrics computeMetricsForCharacterComplex(unsigned textPosition);
 
-    RenderSVGInlineText* m_text;
+    LayoutSVGInlineText* m_text;
     BidiCharacterRun* m_bidiRun;
     TextRun m_run;
     BidiResolver<TextRunIterator, BidiCharacterRun> m_bidiResolver;
@@ -71,7 +71,7 @@ private:
     OwnPtr<SimpleShaper> m_simpleShaper;
 };
 
-SVGTextMetricsCalculator::SVGTextMetricsCalculator(RenderSVGInlineText* text)
+SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
     : m_text(text)
     , m_bidiRun(0)
     , m_run(SVGTextMetrics::constructTextRun(text, 0, text->textLength()))
@@ -179,7 +179,7 @@ struct MeasureTextData {
     unsigned valueListPosition;
 };
 
-static void measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data, bool processRenderer)
+static void measureTextRenderer(LayoutSVGInlineText* text, MeasureTextData* data, bool processRenderer)
 {
     ASSERT(text);
 
@@ -235,18 +235,18 @@ static void measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data
     data->valueListPosition += textPosition - skippedCharacters;
 }
 
-static void walkTree(RenderSVGText* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
+static void walkTree(RenderSVGText* start, LayoutSVGInlineText* stopAtLeaf, MeasureTextData* data)
 {
     LayoutObject* child = start->firstChild();
     while (child) {
         if (child->isSVGInlineText()) {
-            RenderSVGInlineText* text = toRenderSVGInlineText(child);
+            LayoutSVGInlineText* text = toLayoutSVGInlineText(child);
             measureTextRenderer(text, data, !stopAtLeaf || stopAtLeaf == text);
             if (stopAtLeaf && stopAtLeaf == text)
                 return;
         } else if (child->isSVGInline()) {
             // Visit children of text content elements.
-            if (LayoutObject* inlineChild = toRenderSVGInline(child)->firstChild()) {
+            if (LayoutObject* inlineChild = toLayoutSVGInline(child)->firstChild()) {
                 child = inlineChild;
                 continue;
             }
@@ -255,7 +255,7 @@ static void walkTree(RenderSVGText* start, RenderSVGInlineText* stopAtLeaf, Meas
     }
 }
 
-void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text)
+void SVGTextMetricsBuilder::measureTextRenderer(LayoutSVGInlineText* text)
 {
     ASSERT(text);
 
@@ -267,7 +267,7 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text)
     walkTree(textRoot, text, &data);
 }
 
-void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(RenderSVGText* textRoot, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap)
+void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(RenderSVGText* textRoot, LayoutSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap)
 {
     ASSERT(textRoot);
     MeasureTextData data(&allCharactersMap);

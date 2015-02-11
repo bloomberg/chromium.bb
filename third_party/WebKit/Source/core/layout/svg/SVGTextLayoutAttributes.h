@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class RenderSVGInlineText;
+class LayoutSVGInlineText;
 
 struct SVGCharacterData {
     SVGCharacterData();
@@ -45,12 +45,12 @@ typedef HashMap<unsigned, SVGCharacterData> SVGCharacterDataMap;
 class SVGTextLayoutAttributes {
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributes);
 public:
-    SVGTextLayoutAttributes(RenderSVGInlineText*);
+    SVGTextLayoutAttributes(LayoutSVGInlineText*);
 
     void clear();
     static float emptyValue();
 
-    RenderSVGInlineText* context() const { return m_context; }
+    LayoutSVGInlineText* context() const { return m_context; }
 
     SVGCharacterDataMap& characterDataMap() { return m_characterDataMap; }
     const SVGCharacterDataMap& characterDataMap() const { return m_characterDataMap; }
@@ -59,7 +59,7 @@ public:
     const Vector<SVGTextMetrics>& textMetricsValues() const { return m_textMetricsValues; }
 
 private:
-    RenderSVGInlineText* m_context;
+    LayoutSVGInlineText* m_context;
     SVGCharacterDataMap m_characterDataMap;
     Vector<SVGTextMetrics> m_textMetricsValues;
 };

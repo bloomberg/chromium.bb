@@ -29,13 +29,13 @@
 #include "core/layout/Layer.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/RenderGeometryMap.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGText.h"
@@ -431,7 +431,7 @@ bool SVGLayoutSupport::isRenderableTextNode(const LayoutObject* object)
 {
     ASSERT(object->isText());
     // <br> is marked as text, but is not handled by the SVG rendering code-path.
-    return object->isSVGInlineText() && !toRenderSVGInlineText(object)->hasEmptyText();
+    return object->isSVGInlineText() && !toLayoutSVGInlineText(object)->hasEmptyText();
 }
 
 bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const LayoutStyle& style)

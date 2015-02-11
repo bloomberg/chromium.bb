@@ -21,11 +21,11 @@
 #ifndef RenderSVGTextPath_h
 #define RenderSVGTextPath_h
 
-#include "core/rendering/svg/RenderSVGInline.h"
+#include "core/layout/svg/LayoutSVGInline.h"
 
 namespace blink {
 
-class RenderSVGTextPath final : public RenderSVGInline {
+class RenderSVGTextPath final : public LayoutSVGInline {
 public:
     explicit RenderSVGTextPath(Element*);
 
@@ -34,7 +34,7 @@ public:
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTextPath || RenderSVGInline::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTextPath || LayoutSVGInline::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "RenderSVGTextPath"; }

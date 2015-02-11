@@ -21,10 +21,10 @@
 
 #include "core/layout/svg/SVGTextLayoutEngine.h"
 
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 #include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGTextPath.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
@@ -240,7 +240,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
 {
     ASSERT(textBox);
 
-    RenderSVGInlineText& text = toRenderSVGInlineText(textBox->renderer());
+    LayoutSVGInlineText& text = toLayoutSVGInlineText(textBox->renderer());
     ASSERT(text.parent());
     ASSERT(text.parent()->node());
     ASSERT(text.parent()->node()->isSVGElement());
@@ -422,7 +422,7 @@ void SVGTextLayoutEngine::advanceToNextVisualCharacter(const SVGTextMetrics& vis
     m_visualCharacterOffset += visualMetrics.length();
 }
 
-void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, const RenderSVGInlineText& text, const LayoutStyle& style)
+void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, const LayoutSVGInlineText& text, const LayoutStyle& style)
 {
     if (m_inPathLayout && !m_textPathCalculator)
         return;

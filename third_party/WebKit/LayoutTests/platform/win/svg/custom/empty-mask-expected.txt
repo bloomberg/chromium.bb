@@ -10,5 +10,5 @@ layer at (0,0) size 800x600
     RenderSVGText {text} at (60,46) size 23x17 contains 1 chunk(s)
       [masker="mask"] LayoutSVGResourceMasker {mask} at (0,0) size 0x0
       RenderSVGTSpan {tspan} at (0,0) size 23x17
-        RenderSVGInlineText {#text} at (0,0) size 23x17
+        LayoutSVGInlineText {#text} at (0,0) size 23x17
           chunk 1 text run 1 at (60.00,60.00) startOffset 0 endOffset 4 width 22.22: "test"

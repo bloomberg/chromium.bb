@@ -4,7 +4,7 @@ layer at (0,0) size 450x500
   RenderSVGRoot {svg} at (0,0) size 448x498
     RenderSVGContainer {g} at (20,26) size 410x449
       RenderSVGText {text} at (96,26) size 258x17 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 258x17
+        LayoutSVGInlineText {#text} at (0,0) size 258x17
           chunk 1 (middle anchor) text run 1 at (96.03,40.00) startOffset 0 endOffset 38 width 257.95: "Long text on a path test for selection"
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
         RenderSVGPath {path} at (25,149) size 400x301 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 25 150 L 425 150 M 25 170 L 425 170 M 25 190 L 425 190 M 25 210 L 425 210 M 25 230 L 425 230 M 25 250 L 425 250 M 25 270 L 425 270 M 25 290 L 425 290 M 25 310 L 425 310 M 25 330 L 425 330 M 25 350 L 425 350 M 25 370 L 425 370 M 25 390 L 425 390 M 25 410 L 425 410 M 25 430 L 425 430 M 25 450"]
@@ -13,7 +13,7 @@ layer at (0,0) size 450x500
       RenderSVGRect {rect} at (20,100) size 205x375 [fill={[type=SOLID] [color=#C8C8FF]}] [x=20.00] [y=100.00] [width=205.00] [height=375.00]
       RenderSVGText {text} at (21,132) size 409x262 contains 1 chunk(s)
         RenderSVGTextPath {textPath} at (0,0) size 409x262
-          RenderSVGInlineText {#text} at (1,0) size 409x262
+          LayoutSVGInlineText {#text} at (1,0) size 409x262
             chunk 1 text run 1 at (31.11,150.00) startOffset 0 endOffset 1 width 12.22: "T"
             chunk 1 text run 2 at (42.22,150.00) startOffset 1 endOffset 2 width 10.00: "h"
             chunk 1 text run 3 at (50.00,150.00) startOffset 2 endOffset 3 width 5.56: "i"
@@ -658,7 +658,7 @@ layer at (0,0) size 450x500
             chunk 1 text run 68 at (185.09,390.00) startOffset 67 endOffset 68 width 8.88: "e"
             chunk 1 text run 69 at (194.53,390.00) startOffset 68 endOffset 69 width 10.00: "d"
             chunk 1 text run 70 at (202.03,390.00) startOffset 69 endOffset 70 width 5.00: "."
-        RenderSVGInlineText {#text} at (0,0) size 0x0
+        LayoutSVGInlineText {#text} at (0,0) size 0x0
     RenderSVGContainer {use} at (0,0) size 448x498
       RenderSVGContainer {g} at (0,0) size 448x498
         RenderSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]

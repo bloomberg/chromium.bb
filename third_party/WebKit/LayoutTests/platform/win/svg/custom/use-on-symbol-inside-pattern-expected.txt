@@ -32,13 +32,13 @@ layer at (0,0) size 225x425
       RenderSVGPath {path} at (0,0) size 203x92 [stroke={[type=SOLID] [color=#B42D25] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 0 50 L 100 0 L 200 20 L 150 70 L 50 90 Z"]
     RenderSVGContainer {g} at (8,6) size 205x96 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
       RenderSVGText {text} at (0,-4) size 68x17 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 68x17
+        LayoutSVGInlineText {#text} at (0,0) size 68x17
           chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 10 width 67.53: "coniferous"
       RenderSVGContainer {use} at (8,8) size 205x94
         RenderSVGPath {path} at (8,8) size 205x94 [stroke={[type=SOLID] [color=#B42D25] [stroke width=2.00]}] [fill={[type=PATTERN] [id="pat00"]}] [data="M 0 50 L 100 0 L 200 20 L 150 70 L 50 90 Z"]
     RenderSVGContainer {g} at (8,106) size 205x96 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,110.00)}]
       RenderSVGText {text} at (0,-4) size 76x17 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 76x17
+        LayoutSVGInlineText {#text} at (0,0) size 76x17
           chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 10 width 75.51: "broadLeave"
       RenderSVGContainer {use} at (8,108) size 205x94
         RenderSVGPath {path} at (8,108) size 205x94 [stroke={[type=SOLID] [color=#B42D25] [stroke width=2.00]}] [fill={[type=PATTERN] [id="pat01"]}] [data="M 0 50 L 100 0 L 200 20 L 150 70 L 50 90 Z"]

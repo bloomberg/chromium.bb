@@ -21,11 +21,11 @@
 #include "core/layout/svg/SVGTextQuery.h"
 
 #include "core/layout/line/InlineFlowBox.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
@@ -43,7 +43,7 @@ struct SVGTextQuery::Data {
 
     bool isVerticalText;
     unsigned processedCharacters;
-    RenderSVGInlineText* textRenderer;
+    LayoutSVGInlineText* textRenderer;
     const SVGInlineTextBox* textBox;
 };
 
@@ -64,10 +64,10 @@ static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
     }
 
     if (renderer->isRenderInline()) {
-        // We're given a RenderSVGInline or objects that derive from it (RenderSVGTSpan / RenderSVGTextPath)
+        // We're given a LayoutSVGInline or objects that derive from it (RenderSVGTSpan / RenderSVGTextPath)
         RenderInline* renderInline = toRenderInline(renderer);
 
-        // RenderSVGInline only ever contains a single line box.
+        // LayoutSVGInline only ever contains a single line box.
         InlineFlowBox* flowBox = renderInline->firstLineBox();
         ASSERT(flowBox == renderInline->lastLineBox());
         return flowBox;
@@ -110,7 +110,7 @@ bool SVGTextQuery::executeQuery(Data* queryData, ProcessTextFragmentCallback fra
     // Loop over all text boxes
     for (unsigned textBoxPosition = 0; textBoxPosition < textBoxCount; ++textBoxPosition) {
         queryData->textBox = m_textBoxes.at(textBoxPosition);
-        queryData->textRenderer = &toRenderSVGInlineText(queryData->textBox->renderer());
+        queryData->textRenderer = &toLayoutSVGInlineText(queryData->textBox->renderer());
         ASSERT(queryData->textRenderer->style());
 
         queryData->isVerticalText = queryData->textRenderer->style()->svgStyle().isVerticalWritingMode();
@@ -433,7 +433,7 @@ static inline void calculateGlyphBoundaries(SVGTextQuery::Data* queryData, const
     extent = fragmentTransform.mapRect(extent);
 }
 
-static inline FloatRect calculateFragmentBoundaries(const RenderSVGInlineText& textRenderer, const SVGTextFragment& fragment)
+static inline FloatRect calculateFragmentBoundaries(const LayoutSVGInlineText& textRenderer, const SVGTextFragment& fragment)
 {
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);

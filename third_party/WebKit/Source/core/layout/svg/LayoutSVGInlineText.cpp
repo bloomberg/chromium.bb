@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 
 #include "core/css/CSSFontSelector.h"
 #include "core/css/FontSize.h"
@@ -59,21 +59,21 @@ static PassRefPtr<StringImpl> applySVGWhitespaceRules(PassRefPtr<StringImpl> str
     return newString.release();
 }
 
-RenderSVGInlineText::RenderSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
+LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
     : RenderText(n, applySVGWhitespaceRules(string, false))
     , m_scalingFactor(1)
     , m_layoutAttributes(this)
 {
 }
 
-void RenderSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
+void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
 {
     RenderText::setTextInternal(text);
     if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(this))
         textRenderer->subtreeTextDidChange(this);
 }
 
-void RenderSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderText::styleDidChange(diff, oldStyle);
     updateScaledFont();
@@ -93,14 +93,14 @@ void RenderSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle
         textRenderer->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-InlineTextBox* RenderSVGInlineText::createTextBox(int start, unsigned short length)
+InlineTextBox* LayoutSVGInlineText::createTextBox(int start, unsigned short length)
 {
     InlineTextBox* box = new SVGInlineTextBox(*this, start, length);
     box->setHasVirtualLogicalHeight();
     return box;
 }
 
-LayoutRect RenderSVGInlineText::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit*)
+LayoutRect LayoutSVGInlineText::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit*)
 {
     if (!box || !box->isInlineTextBox())
         return LayoutRect();
@@ -121,7 +121,7 @@ LayoutRect RenderSVGInlineText::localCaretRect(InlineBox* box, int caretOffset, 
     return LayoutRect(x, rect.y(), caretWidth, rect.height());
 }
 
-FloatRect RenderSVGInlineText::floatLinesBoundingBox() const
+FloatRect LayoutSVGInlineText::floatLinesBoundingBox() const
 {
     FloatRect boundingBox;
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
@@ -129,12 +129,12 @@ FloatRect RenderSVGInlineText::floatLinesBoundingBox() const
     return boundingBox;
 }
 
-IntRect RenderSVGInlineText::linesBoundingBox() const
+IntRect LayoutSVGInlineText::linesBoundingBox() const
 {
     return enclosingIntRect(floatLinesBoundingBox());
 }
 
-bool RenderSVGInlineText::characterStartsNewTextChunk(int position) const
+bool LayoutSVGInlineText::characterStartsNewTextChunk(int position) const
 {
     ASSERT(position >= 0);
     ASSERT(position < static_cast<int>(textLength()));
@@ -150,7 +150,7 @@ bool RenderSVGInlineText::characterStartsNewTextChunk(int position) const
     return it->value.x != SVGTextLayoutAttributes::emptyValue() || it->value.y != SVGTextLayoutAttributes::emptyValue();
 }
 
-PositionWithAffinity RenderSVGInlineText::positionForPoint(const LayoutPoint& point)
+PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& point)
 {
     if (!firstTextBox() || !textLength())
         return createPositionWithAffinity(0, DOWNSTREAM);
@@ -185,7 +185,7 @@ PositionWithAffinity RenderSVGInlineText::positionForPoint(const LayoutPoint& po
             fragmentRect = fragmentTransform.mapRect(fragmentRect);
 
             float distance = powf(fragmentRect.x() - absolutePoint.x(), 2) +
-                             powf(fragmentRect.y() + fragmentRect.height() / 2 - absolutePoint.y(), 2);
+                powf(fragmentRect.y() + fragmentRect.height() / 2 - absolutePoint.y(), 2);
 
             if (distance < closestDistance) {
                 closestDistance = distance;
@@ -203,12 +203,12 @@ PositionWithAffinity RenderSVGInlineText::positionForPoint(const LayoutPoint& po
     return createPositionWithAffinity(offset + closestDistanceBox->start(), offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM);
 }
 
-void RenderSVGInlineText::updateScaledFont()
+void LayoutSVGInlineText::updateScaledFont()
 {
     computeNewScaledFontForStyle(this, style(), m_scalingFactor, m_scaledFont);
 }
 
-void RenderSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, const LayoutStyle* style, float& scalingFactor, Font& scaledFont)
+void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, const LayoutStyle* style, float& scalingFactor, Font& scaledFont)
 {
     ASSERT(style);
     ASSERT(renderer);
@@ -234,7 +234,7 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, c
     scaledFont.update(document.styleEngine()->fontSelector());
 }
 
-LayoutRect RenderSVGInlineText::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGInlineText::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // FIXME: The following works because RenderSVGBlock has forced slow rect mapping of the paintInvalidationState.
     // Should let this really work with paintInvalidationState's fast mapping and remove the assert.
@@ -242,7 +242,7 @@ LayoutRect RenderSVGInlineText::clippedOverflowRectForPaintInvalidation(const La
     return parent()->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 
-PassRefPtr<StringImpl> RenderSVGInlineText::originalText() const
+PassRefPtr<StringImpl> LayoutSVGInlineText::originalText() const
 {
     RefPtr<StringImpl> result = RenderText::originalText();
     if (!result)

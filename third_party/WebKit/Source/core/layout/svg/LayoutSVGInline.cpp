@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGInline.h"
+#include "core/layout/svg/LayoutSVGInline.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -31,7 +31,7 @@
 
 namespace blink {
 
-bool RenderSVGInline::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
+bool LayoutSVGInline::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
 {
     if (child->isText())
         return SVGLayoutSupport::isRenderableTextNode(child);
@@ -48,20 +48,20 @@ bool RenderSVGInline::isChildAllowed(LayoutObject* child, const LayoutStyle& sty
     return RenderInline::isChildAllowed(child, style);
 }
 
-RenderSVGInline::RenderSVGInline(Element* element)
+LayoutSVGInline::LayoutSVGInline(Element* element)
     : RenderInline(element)
 {
     setAlwaysCreateLineBoxes();
 }
 
-InlineFlowBox* RenderSVGInline::createInlineFlowBox()
+InlineFlowBox* LayoutSVGInline::createInlineFlowBox()
 {
     InlineFlowBox* box = new SVGInlineFlowBox(*this);
     box->setHasVirtualLogicalHeight();
     return box;
 }
 
-FloatRect RenderSVGInline::objectBoundingBox() const
+FloatRect LayoutSVGInline::objectBoundingBox() const
 {
     if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
         return object->objectBoundingBox();
@@ -69,7 +69,7 @@ FloatRect RenderSVGInline::objectBoundingBox() const
     return FloatRect();
 }
 
-FloatRect RenderSVGInline::strokeBoundingBox() const
+FloatRect LayoutSVGInline::strokeBoundingBox() const
 {
     if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
         return object->strokeBoundingBox();
@@ -77,7 +77,7 @@ FloatRect RenderSVGInline::strokeBoundingBox() const
     return FloatRect();
 }
 
-FloatRect RenderSVGInline::paintInvalidationRectInLocalCoordinates() const
+FloatRect LayoutSVGInline::paintInvalidationRectInLocalCoordinates() const
 {
     if (const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this))
         return object->paintInvalidationRectInLocalCoordinates();
@@ -85,22 +85,22 @@ FloatRect RenderSVGInline::paintInvalidationRectInLocalCoordinates() const
     return FloatRect();
 }
 
-LayoutRect RenderSVGInline::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGInline::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
-void RenderSVGInline::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGInline::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     SVGLayoutSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* RenderSVGInline::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
     return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
-void RenderSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
     const LayoutObject* object = RenderSVGText::locateRenderSVGTextAncestor(this);
     if (!object)
@@ -111,13 +111,13 @@ void RenderSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) co
         quads.append(localToAbsoluteQuad(FloatRect(textBoundingBox.x() + box->x(), textBoundingBox.y() + box->y(), box->logicalWidth(), box->logicalHeight()), false, wasFixed));
 }
 
-void RenderSVGInline::willBeDestroyed()
+void LayoutSVGInline::willBeDestroyed()
 {
     SVGResourcesCache::clientDestroyed(this);
     RenderInline::willBeDestroyed();
 }
 
-void RenderSVGInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();
@@ -126,7 +126,7 @@ void RenderSVGInline::styleDidChange(StyleDifference diff, const LayoutStyle* ol
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
-void RenderSVGInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
+void LayoutSVGInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderInline::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
@@ -135,7 +135,7 @@ void RenderSVGInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
         textRenderer->subtreeChildWasAdded(child);
 }
 
-void RenderSVGInline::removeChild(LayoutObject* child)
+void LayoutSVGInline::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
 

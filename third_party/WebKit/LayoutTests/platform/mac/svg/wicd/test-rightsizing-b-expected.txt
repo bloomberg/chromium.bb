@@ -58,7 +58,7 @@ layer at (47,95) size 295x295
         RenderSVGEllipse {circle} at (0,0) size 295x295 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         RenderSVGContainer {g} at (44,107) size 207x104
           RenderSVGText {text} at (29,72) size 142x71 contains 1 chunk(s)
-            RenderSVGInlineText {#text} at (0,0) size 141x70
+            LayoutSVGInlineText {#text} at (0,0) size 141x70
               chunk 1 (middle anchor) text run 1 at (29.98,125.00) startOffset 0 endOffset 3 width 140.03: "SVG"
 layer at (347,242) size 147x148
   RenderEmbeddedObject {object} at (299.59,147) size 147.58x148 [bgcolor=#FF0000]
@@ -71,7 +71,7 @@ layer at (347,242) size 147x148
         RenderSVGEllipse {circle} at (0,0) size 148x148 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         RenderSVGContainer {g} at (22,53) size 104x53
           RenderSVGText {text} at (29,72) size 142x71 contains 1 chunk(s)
-            RenderSVGInlineText {#text} at (0,0) size 141x71
+            LayoutSVGInlineText {#text} at (0,0) size 141x71
               chunk 1 (middle anchor) text run 1 at (29.98,125.00) startOffset 0 endOffset 3 width 140.03: "SVG"
 layer at (499,316) size 73x74
   RenderEmbeddedObject {object} at (451.63,221) size 73.78x74 [bgcolor=#FF0000]
@@ -84,7 +84,7 @@ layer at (499,316) size 73x74
         RenderSVGEllipse {circle} at (0,0) size 74x74 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         RenderSVGContainer {g} at (11,27) size 52x26
           RenderSVGText {text} at (29,73) size 142x69 contains 1 chunk(s)
-            RenderSVGInlineText {#text} at (0,0) size 141x68
+            LayoutSVGInlineText {#text} at (0,0) size 141x68
               chunk 1 (middle anchor) text run 1 at (29.98,125.00) startOffset 0 endOffset 3 width 140.03: "SVG"
 layer at (577,353) size 37x37
   RenderEmbeddedObject {object} at (529.84,258) size 36.89x37 [bgcolor=#FF0000]
@@ -97,5 +97,5 @@ layer at (577,353) size 37x37
         RenderSVGEllipse {circle} at (0,0) size 37x37 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         RenderSVGContainer {g} at (5,13) size 27x14
           RenderSVGText {text} at (29,70) size 142x72 contains 1 chunk(s)
-            RenderSVGInlineText {#text} at (0,0) size 141x71
+            LayoutSVGInlineText {#text} at (0,0) size 141x71
               chunk 1 (middle anchor) text run 1 at (29.98,125.00) startOffset 0 endOffset 3 width 140.03: "SVG"

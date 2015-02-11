@@ -28,9 +28,9 @@
 
 namespace blink {
 
-class RenderSVGInlineText;
+class LayoutSVGInlineText;
 class SVGTextElement;
-class RenderSVGInlineText;
+class LayoutSVGInlineText;
 
 class RenderSVGText final : public RenderSVGBlock {
 public:
@@ -54,7 +54,7 @@ public:
     void subtreeChildWillBeRemoved(LayoutObject*, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
     void subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
     void subtreeStyleDidChange();
-    void subtreeTextDidChange(RenderSVGInlineText*);
+    void subtreeTextDidChange(LayoutSVGInlineText*);
 
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
 

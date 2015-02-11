@@ -28,7 +28,7 @@
 namespace blink {
 
 RenderSVGTSpan::RenderSVGTSpan(Element* element)
-    : RenderSVGInline(element)
+    : LayoutSVGInline(element)
 {
 }
 

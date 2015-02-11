@@ -26,7 +26,7 @@
 
 namespace blink {
 
-SVGTextLayoutAttributes::SVGTextLayoutAttributes(RenderSVGInlineText* context)
+SVGTextLayoutAttributes::SVGTextLayoutAttributes(LayoutSVGInlineText* context)
     : m_context(context)
 {
 }

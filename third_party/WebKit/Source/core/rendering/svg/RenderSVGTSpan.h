@@ -22,10 +22,10 @@
 #ifndef RenderSVGTSpan_h
 #define RenderSVGTSpan_h
 
-#include "core/rendering/svg/RenderSVGInline.h"
+#include "core/layout/svg/LayoutSVGInline.h"
 
 namespace blink {
-class RenderSVGTSpan final : public RenderSVGInline {
+class RenderSVGTSpan final : public LayoutSVGInline {
 public:
     explicit RenderSVGTSpan(Element*);
 

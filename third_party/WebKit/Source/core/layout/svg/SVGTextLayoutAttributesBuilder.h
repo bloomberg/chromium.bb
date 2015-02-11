@@ -26,14 +26,14 @@
 namespace blink {
 
 class RenderBoxModelObject;
-class RenderSVGInlineText;
+class LayoutSVGInlineText;
 class RenderSVGText;
 class SVGTextPositioningElement;
 
 // SVGTextLayoutAttributesBuilder performs the first layout phase for SVG text.
 //
 // It extracts the x/y/dx/dy/rotate values from the SVGTextPositioningElements in the DOM.
-// These values are propagated to the corresponding RenderSVGInlineText renderers.
+// These values are propagated to the corresponding LayoutSVGInlineText renderers.
 // The first layout phase only extracts the relevant information needed in RenderBlockLineLayout
 // to create the InlineBox tree based on text chunk boundaries & BiDi information.
 // The second layout phase is carried out by SVGTextLayoutEngine.
@@ -43,9 +43,9 @@ class SVGTextLayoutAttributesBuilder {
 public:
     SVGTextLayoutAttributesBuilder();
     bool buildLayoutAttributesForForSubtree(RenderSVGText&);
-    void buildLayoutAttributesForTextRenderer(RenderSVGInlineText*);
+    void buildLayoutAttributesForTextRenderer(LayoutSVGInlineText*);
 
-    void rebuildMetricsForTextRenderer(RenderSVGInlineText*);
+    void rebuildMetricsForTextRenderer(LayoutSVGInlineText*);
 
     // Invoked whenever the underlying DOM tree changes, so that m_textPositions is rebuild.
     void clearTextPositioningElements() { m_textPositions.clear(); }

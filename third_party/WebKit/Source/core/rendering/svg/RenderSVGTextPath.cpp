@@ -29,7 +29,7 @@
 namespace blink {
 
 RenderSVGTextPath::RenderSVGTextPath(Element* element)
-    : RenderSVGInline(element)
+    : LayoutSVGInline(element)
 {
 }
 

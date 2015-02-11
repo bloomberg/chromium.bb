@@ -33,9 +33,9 @@
 #include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/svg/SVGForeignObjectElement.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -318,7 +318,7 @@ static bool isSVGText(Text* text)
 RenderText* Text::createTextRenderer(LayoutStyle* style)
 {
     if (isSVGText(this))
-        return new RenderSVGInlineText(this, dataImpl());
+        return new LayoutSVGInlineText(this, dataImpl());
 
     if (style->hasTextCombine())
         return new RenderCombineText(this, dataImpl());

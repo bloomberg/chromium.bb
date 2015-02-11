@@ -24,10 +24,10 @@
 #include "config.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 
 namespace blink {
@@ -197,7 +197,7 @@ static inline void swapItemsInLayoutAttributes(SVGTextLayoutAttributes* firstAtt
     std::swap(itFirst->value, itLast->value);
 }
 
-static inline void findFirstAndLastAttributesInVector(Vector<SVGTextLayoutAttributes*>& attributes, RenderSVGInlineText* firstContext, RenderSVGInlineText* lastContext, SVGTextLayoutAttributes*& first, SVGTextLayoutAttributes*& last)
+static inline void findFirstAndLastAttributesInVector(Vector<SVGTextLayoutAttributes*>& attributes, LayoutSVGInlineText* firstContext, LayoutSVGInlineText* lastContext, SVGTextLayoutAttributes*& first, SVGTextLayoutAttributes*& last)
 {
     first = 0;
     last = 0;
@@ -240,8 +240,8 @@ static inline void reverseInlineBoxRangeAndValueListsIfNeeded(void* userData, Ve
 
         // Reordering is only necessary for BiDi text that is _absolutely_ positioned.
         if (firstTextBox->len() == 1 && firstTextBox->len() == lastTextBox->len()) {
-            RenderSVGInlineText& firstContext = toRenderSVGInlineText(firstTextBox->renderer());
-            RenderSVGInlineText& lastContext = toRenderSVGInlineText(lastTextBox->renderer());
+            LayoutSVGInlineText& firstContext = toLayoutSVGInlineText(firstTextBox->renderer());
+            LayoutSVGInlineText& lastContext = toLayoutSVGInlineText(lastTextBox->renderer());
 
             SVGTextLayoutAttributes* firstAttributes = 0;
             SVGTextLayoutAttributes* lastAttributes = 0;

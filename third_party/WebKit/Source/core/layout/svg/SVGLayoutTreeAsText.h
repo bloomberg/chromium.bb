@@ -33,7 +33,7 @@ namespace blink {
 class LayoutObject;
 class RenderSVGGradientStop;
 class RenderSVGImage;
-class RenderSVGInlineText;
+class LayoutSVGInlineText;
 class RenderSVGShape;
 class RenderSVGRoot;
 class RenderSVGText;
@@ -45,7 +45,7 @@ void writeSVGGradientStop(TextStream&, const RenderSVGGradientStop&, int indent)
 void writeSVGResourceContainer(TextStream&, const LayoutObject&, int indent);
 void writeSVGContainer(TextStream&, const LayoutObject&, int indent);
 void writeSVGImage(TextStream&, const RenderSVGImage&, int indent);
-void writeSVGInlineText(TextStream&, const RenderSVGInlineText&, int indent);
+void writeSVGInlineText(TextStream&, const LayoutSVGInlineText&, int indent);
 void writeSVGText(TextStream&, const RenderSVGText&, int indent);
 void writeResources(TextStream&, const LayoutObject&, int indent);
 
