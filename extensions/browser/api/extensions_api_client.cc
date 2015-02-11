@@ -41,6 +41,12 @@ ExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
   return NULL;
 }
 
+ExtensionViewGuestDelegate*
+ExtensionsAPIClient::CreateExtensionViewGuestDelegate(
+    ExtensionViewGuest* guest) const {
+  return NULL;
+}
+
 scoped_ptr<MimeHandlerViewGuestDelegate>
 ExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {

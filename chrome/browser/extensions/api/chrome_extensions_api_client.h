@@ -26,6 +26,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
   ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
       ExtensionOptionsGuest* guest) const override;
+  ExtensionViewGuestDelegate* CreateExtensionViewGuestDelegate(
+      ExtensionViewGuest* guest) const override;
   scoped_ptr<MimeHandlerViewGuestDelegate> CreateMimeHandlerViewGuestDelegate(
       MimeHandlerViewGuest* guest) const override;
   WebViewGuestDelegate* CreateWebViewGuestDelegate(

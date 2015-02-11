@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/guest_view/extension_view/extension_view_guest_delegate.h"
 #include "extensions/browser/guest_view/guest_view.h"
 #include "url/gurl.h"
 
@@ -49,6 +50,8 @@ class ExtensionViewGuest
 
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;
+  scoped_ptr<extensions::ExtensionViewGuestDelegate>
+      extension_view_guest_delegate_;
   GURL view_page_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewGuest);

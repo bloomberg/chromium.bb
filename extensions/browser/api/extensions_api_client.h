@@ -29,6 +29,8 @@ class ContentRulesRegistry;
 class DevicePermissionsPrompt;
 class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
+class ExtensionViewGuest;
+class ExtensionViewGuestDelegate;
 class ManagementAPIDelegate;
 class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
@@ -74,6 +76,11 @@ class ExtensionsAPIClient {
   // ExtensionOptionsGuestDelegate.
   virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
       ExtensionOptionsGuest* guest) const;
+
+  // Returns a delegate for ExtensionViewGuest. The caller owns the returned
+  // ExtensionViewGuestDelegate.
+  virtual ExtensionViewGuestDelegate* CreateExtensionViewGuestDelegate(
+      ExtensionViewGuest* guest) const;
 
   // Creates a delegate for MimeHandlerViewGuest.
   virtual scoped_ptr<MimeHandlerViewGuestDelegate>

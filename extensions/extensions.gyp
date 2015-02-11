@@ -743,6 +743,8 @@
         'browser/guest_view/extension_view/extension_view_constants.h',
         'browser/guest_view/extension_view/extension_view_guest.cc',
         'browser/guest_view/extension_view/extension_view_guest.h',
+        'browser/guest_view/extension_view/extension_view_guest_delegate.cc',
+        'browser/guest_view/extension_view/extension_view_guest_delegate.h',
         'browser/guest_view/guest_view_base.cc',
         'browser/guest_view/guest_view_base.h',
         'browser/guest_view/guest_view_manager_factory.h',

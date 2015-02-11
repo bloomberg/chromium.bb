@@ -21,8 +21,12 @@ namespace extensions {
 // static
 const char ExtensionViewGuest::Type[] = "extensionview";
 
-ExtensionViewGuest::ExtensionViewGuest(content::WebContents* owner_web_contents)
-    : GuestView<ExtensionViewGuest>(owner_web_contents) {
+ExtensionViewGuest::ExtensionViewGuest(
+    content::WebContents* owner_web_contents)
+    : GuestView<ExtensionViewGuest>(owner_web_contents),
+      extension_view_guest_delegate_(
+          extensions::ExtensionsAPIClient::Get()
+              ->CreateExtensionViewGuestDelegate(this)) {
 }
 
 ExtensionViewGuest::~ExtensionViewGuest() {
@@ -83,6 +87,9 @@ void ExtensionViewGuest::DidInitialize(
     const base::DictionaryValue& create_params) {
   extension_function_dispatcher_.reset(
       new extensions::ExtensionFunctionDispatcher(browser_context(), this));
+
+  if (extension_view_guest_delegate_)
+    extension_view_guest_delegate_->DidInitialize();
 
   ApplyAttributes(create_params);
 }
