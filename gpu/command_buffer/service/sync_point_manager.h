@@ -10,9 +10,13 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "gpu/gpu_export.h"
+
+namespace base {
+class SequenceChecker;
+}
 
 namespace gpu {
 
@@ -21,7 +25,10 @@ namespace gpu {
 class GPU_EXPORT SyncPointManager
     : public base::RefCountedThreadSafe<SyncPointManager> {
  public:
-  SyncPointManager();
+  // InProcessCommandBuffer allows threaded calls since it can call into
+  // SyncPointManager from client threads, or from multiple service threads
+  // used in Android WebView.
+  static SyncPointManager* Create(bool allow_threaded_calls);
 
   // Generates a sync point, returning its ID. This can me called on any thread.
   // IDs start at a random number. Never return 0.
@@ -44,9 +51,11 @@ class GPU_EXPORT SyncPointManager
   typedef std::vector<base::Closure> ClosureList;
   typedef base::hash_map<uint32, ClosureList> SyncPointMap;
 
+  explicit SyncPointManager(bool allow_threaded_calls);
   ~SyncPointManager();
+  void CheckSequencedThread();
 
-  base::ThreadChecker thread_checker_;
+  scoped_ptr<base::SequenceChecker> sequence_checker_;
 
   // Protects the 2 fields below. Note: callbacks shouldn't be called with this
   // held.

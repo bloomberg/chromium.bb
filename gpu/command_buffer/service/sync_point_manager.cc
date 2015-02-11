@@ -8,16 +8,26 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/sequence_checker.h"
 
 namespace gpu {
 
 static const int kMaxSyncBase = INT_MAX;
 
-SyncPointManager::SyncPointManager()
+// static
+SyncPointManager* SyncPointManager::Create(bool allow_threaded_calls) {
+  return new SyncPointManager(allow_threaded_calls);
+}
+
+SyncPointManager::SyncPointManager(bool allow_threaded_calls)
     : next_sync_point_(base::RandInt(1, kMaxSyncBase)) {
   // To reduce the risk that a sync point created in a previous GPU process
   // will be in flight in the next GPU process, randomize the starting sync
   // point number. http://crbug.com/373452
+
+  if (!allow_threaded_calls) {
+    sequence_checker_.reset(new base::SequenceChecker);
+  }
 }
 
 SyncPointManager::~SyncPointManager() {
@@ -41,7 +51,7 @@ uint32 SyncPointManager::GenerateSyncPoint() {
 }
 
 void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CheckSequencedThread();
   ClosureList list;
   {
     base::AutoLock lock(lock_);
@@ -60,7 +70,7 @@ void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
 
 void SyncPointManager::AddSyncPointCallback(uint32 sync_point,
                                             const base::Closure& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CheckSequencedThread();
   {
     base::AutoLock lock(lock_);
     SyncPointMap::iterator it = sync_point_map_.find(sync_point);
@@ -73,12 +83,17 @@ void SyncPointManager::AddSyncPointCallback(uint32 sync_point,
 }
 
 bool SyncPointManager::IsSyncPointRetired(uint32 sync_point) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CheckSequencedThread();
   {
     base::AutoLock lock(lock_);
     SyncPointMap::iterator it = sync_point_map_.find(sync_point);
     return it == sync_point_map_.end();
   }
+}
+
+void SyncPointManager::CheckSequencedThread() {
+  DCHECK(!sequence_checker_ ||
+         sequence_checker_->CalledOnValidSequencedThread());
 }
 
 }  // namespace gpu

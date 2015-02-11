@@ -95,7 +95,7 @@ GpuChannelManager::GpuChannelManager(MessageRouter* router,
           this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       watchdog_(watchdog),
-      sync_point_manager_(new gpu::SyncPointManager),
+      sync_point_manager_(gpu::SyncPointManager::Create(false)),
       gpu_memory_buffer_factory_(
           GpuMemoryBufferFactory::Create(GetGpuMemoryBufferFactoryType())),
       channel_(channel),
