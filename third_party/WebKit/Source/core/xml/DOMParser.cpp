@@ -27,9 +27,14 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<Document> DOMParser::parseFromString(const String& str, const String& type)
 {
-    RefPtrWillBeRawPtr<Document> doc = DOMImplementation::createDocument(type, 0, KURL(), false);
+    RefPtrWillBeRawPtr<Document> doc = DOMImplementation::createDocument(type, DocumentInit(KURL(), nullptr, m_contextDocument), false);
     doc->setContent(str);
     return doc.release();
+}
+
+DOMParser::DOMParser(Document& document)
+    : m_contextDocument(document.contextDocument())
+{
 }
 
 } // namespace blink

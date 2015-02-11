@@ -32,9 +32,9 @@ class Document;
 class DOMParser final : public RefCountedWillBeGarbageCollected<DOMParser>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DOMParser> create()
+    static PassRefPtrWillBeRawPtr<DOMParser> create(Document& document)
     {
-        return adoptRefWillBeNoop(new DOMParser);
+        return adoptRefWillBeNoop(new DOMParser(document));
     }
 
     PassRefPtrWillBeRawPtr<Document> parseFromString(const String&, const String& type);
@@ -42,7 +42,9 @@ public:
     void trace(Visitor*) { }
 
 private:
-    DOMParser() { }
+    DOMParser(Document&);
+
+    WeakPtrWillBeWeakMember<Document> m_contextDocument;
 };
 
 } // namespace blink
