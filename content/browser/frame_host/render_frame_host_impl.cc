@@ -202,7 +202,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // the dtor has run.
   swapout_event_monitor_timeout_.reset();
 
-  for (const auto& iter: flush_visual_state_callbacks_) {
+  for (const auto& iter: visual_state_callbacks_) {
     iter.second.Run(false);
   }
 
@@ -359,8 +359,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_JavaScriptExecuteResponse,
                         OnJavaScriptExecuteResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FlushVisualStateResponse,
-                        OnFlushVisualStateResponse)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse,
+                        OnVisualStateResponse)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptMessage,
                                     OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
@@ -1118,11 +1118,11 @@ void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
   }
 }
 
-void RenderFrameHostImpl::OnFlushVisualStateResponse(uint64 id) {
-  auto it = flush_visual_state_callbacks_.find(id);
-  if (it != flush_visual_state_callbacks_.end()) {
+void RenderFrameHostImpl::OnVisualStateResponse(uint64 id) {
+  auto it = visual_state_callbacks_.find(id);
+  if (it != visual_state_callbacks_.end()) {
     it->second.Run(true);
-    flush_visual_state_callbacks_.erase(it);
+    visual_state_callbacks_.erase(it);
   } else {
     NOTREACHED() << "Received script response for unknown request";
   }
@@ -1780,12 +1780,12 @@ void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
   }
 }
 
-void RenderFrameHostImpl::FlushVisualState(
-    const FlushVisualStateResultCallback& callback) {
+void RenderFrameHostImpl::InsertVisualStateCallback(
+    const VisualStateCallback& callback) {
   static uint64 next_id = 1;
   uint64 key = next_id++;
-  Send(new FrameMsg_FlushVisualStateRequest(routing_id_, key));
-  flush_visual_state_callbacks_.insert(std::make_pair(key, callback));
+  Send(new FrameMsg_VisualStateRequest(routing_id_, key));
+  visual_state_callbacks_.insert(std::make_pair(key, callback));
 }
 
 #if defined(OS_WIN)

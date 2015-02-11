@@ -9,7 +9,7 @@ import android.graphics.Color;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwContents.VisualStateFlushCallback;
+import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.test.util.Feature;
@@ -29,7 +29,7 @@ public class VisualStateTest extends AwTestBase {
 
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testFlushVisualStateCallbackIsReceived() throws Throwable {
+    public void testVisualStateCallbackIsReceived() throws Throwable {
         AwTestContainerView testContainer = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
         loadUrlSync(
@@ -40,18 +40,19 @@ public class VisualStateTest extends AwTestBase {
             @Override
             public void run() {
                 final long requestId = 20;
-                awContents.flushVisualState(requestId, new AwContents.VisualStateFlushCallback() {
-                    @Override
-                    public void onComplete(long id) {
-                        assertEquals(requestId, id);
-                        ch.notifyCalled();
-                    }
+                awContents.insertVisualStateCallback(requestId,
+                        new AwContents.VisualStateCallback() {
+                            @Override
+                            public void onComplete(long id) {
+                                assertEquals(requestId, id);
+                                ch.notifyCalled();
+                            }
 
-                    @Override
-                    public void onFailure(long id) {
-                        fail("onFailure received");
-                    }
-                });
+                            @Override
+                            public void onFailure(long id) {
+                                fail("onFailure received");
+                            }
+                        });
             }
         });
         ch.waitForCallback(chCount);
@@ -59,7 +60,7 @@ public class VisualStateTest extends AwTestBase {
 
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testFlushVisualStateCallbackWaitsForContentsToBeOnScreen() throws Throwable {
+    public void testVisualStateCallbackWaitsForContentsToBeOnScreen() throws Throwable {
         // This test loads a page with a blue background color. It then waits for the DOM tree
         // in blink to contain the contents of the blue page (which happens when the onPageFinished
         // event is received). It then flushes the contents and verifies that the blue page
@@ -74,8 +75,8 @@ public class VisualStateTest extends AwTestBase {
                     public void onPageFinished(String url) {
                         if (bluePageUrl.getUrl().equals(url)) {
                             final long requestId = 10;
-                            awContentsRef.get().flushVisualState(requestId,
-                                    new VisualStateFlushCallback() {
+                            awContentsRef.get().insertVisualStateCallback(requestId,
+                                    new VisualStateCallback() {
                                         @Override
                                         public void onFailure(long id) {
                                             fail("onFailure received");

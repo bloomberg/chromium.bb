@@ -387,7 +387,7 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DisownOpener)
 
 // Requests that the RenderFrame send back a response after waiting for the
 // commit, activation and frame swap of the current DOM tree in blink.
-IPC_MESSAGE_ROUTED1(FrameMsg_FlushVisualStateRequest, uint64 /* id */)
+IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64 /* id */)
 
 // Instructs the renderer to create a new RenderFrame object with |routing_id|.
 // The new frame should be created as a child of the object identified by
@@ -845,9 +845,9 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeginNavigation,
 // after the frame has painted something.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFirstVisuallyNonEmptyPaint)
 
-// Sent as a response to FrameMsg_FlushVisualStateRequest.
+// Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_FlushVisualStateResponse, uint64 /* id */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64 /* id */)
 
 // Puts the browser into "tab fullscreen" mode for the sending renderer.
 // See the comment in chrome/browser/ui/browser.h for more details.

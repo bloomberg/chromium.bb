@@ -182,13 +182,13 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * Callback used when flushing the visual state, see {@link #flushVisualState}.
+     * Visual state callback, see {@link #insertVisualStateCallback} for details.
      *
-     * <p>The {@code requestId} is the id passed to {@link AwContents#flushVisualState}
+     * <p>The {@code requestId} is the id passed to {@link AwContents#insertVisualStateCallback}
      * which can be used to match requests with the corresponding callbacks.
      */
     @VisibleForTesting
-    public abstract static class VisualStateFlushCallback {
+    public abstract static class VisualStateCallback {
         public abstract void onComplete(long requestId);
         public abstract void onFailure(long requestId);
     }
@@ -2043,10 +2043,10 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * Flush the visual state.
+     * Inserts a {@link VisualStateCallback}.
      *
-     * Flushing the visual state means queuing a callback in Blink that will be invoked when the
-     * contents of the DOM tree at the moment that the callback was enqueued (or later) are drawn
+     * The {@link VisualStateCallback} will be inserted in Blink and will be invoked when the
+     * contents of the DOM tree at the moment that the callback was inserted (or later) are drawn
      * into the screen. In other words, the following events need to happen before the callback is
      * invoked:
      * 1. The DOM tree is committed becoming the pending tree - see ThreadProxy::BeginMainFrame
@@ -2055,9 +2055,10 @@ public class AwContents implements SmartClipProvider {
      *
      * @param requestId an id that will be returned from the callback invocation to allow
      * callers to match requests with callbacks.
+     * @param callback the callback to be inserted
      */
-    public void flushVisualState(long requestId, VisualStateFlushCallback callback) {
-        nativeFlushVisualState(mNativeAwContents, requestId, callback);
+    public void insertVisualStateCallback(long requestId, VisualStateCallback callback) {
+        nativeInsertVisualStateCallback(mNativeAwContents, requestId, callback);
     }
 
     //--------------------------------------------------------------------------------------------
@@ -2164,13 +2165,15 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * Invokes the given {@link VisualStateFlushCallback}.
+     * Invokes the given {@link VisualStateCallback}.
      *
-     * @param result true if the flush request was successful and false otherwise
+     * @param callback the callback to be invoked
+     * @param requestId the id passed to {@link AwContents#insertVisualStateCallback}
+     * @param result true if the callback should succeed and false otherwise
      */
     @CalledByNative
-    public void flushVisualStateCallback(
-            final VisualStateFlushCallback callback, final long requestId, final boolean result) {
+    public void invokeVisualStateCallback(
+            final VisualStateCallback callback, final long requestId, final boolean result) {
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
         mContainerView.getHandler().post(new Runnable() {
@@ -2741,8 +2744,8 @@ public class AwContents implements SmartClipProvider {
     private native long nativeGetAwDrawGLViewContext(long nativeAwContents);
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);
     private native void nativeEnableOnNewPicture(long nativeAwContents, boolean enabled);
-    private native void nativeFlushVisualState(
-            long nativeAwContents, long requestId, VisualStateFlushCallback callback);
+    private native void nativeInsertVisualStateCallback(
+            long nativeAwContents, long requestId, VisualStateCallback callback);
     private native void nativeClearView(long nativeAwContents);
     private native void nativeSetExtraHeadersForUrl(long nativeAwContents,
             String url, String extraHeaders);

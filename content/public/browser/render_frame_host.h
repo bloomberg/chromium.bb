@@ -99,9 +99,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // call are visible on screen. The call completes asynchronously by running
   // the supplied |callback| with a value of true upon successful completion and
   // false otherwise (when the frame is destroyed, detached, etc..).
-  typedef base::Callback<void(bool)> FlushVisualStateResultCallback;
-  virtual void FlushVisualState(
-      const FlushVisualStateResultCallback& callback) = 0;
+  typedef base::Callback<void(bool)> VisualStateCallback;
+  virtual void InsertVisualStateCallback(
+      const VisualStateCallback& callback) = 0;
 
   // Temporary until we get rid of RenderViewHost.
   virtual RenderViewHost* GetRenderViewHost() = 0;
