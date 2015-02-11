@@ -30,6 +30,7 @@ namespace proximity_auth {
 class CryptAuthClient;
 }
 
+class EasyUnlockAppManager;
 class EasyUnlockToggleFlow;
 class Profile;
 
@@ -63,9 +64,6 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
-
-  // Opens the component packaged app responsible for setting up Smart Lock.
-  void OpenSetupApp();
 
   // Callback when the controlling pref changes.
   void OnPrefsChanged();

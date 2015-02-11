@@ -33,6 +33,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+class EasyUnlockAppManager;
 class EasyUnlockAuthAttempt;
 class EasyUnlockServiceObserver;
 class Profile;
@@ -89,7 +90,7 @@ class EasyUnlockService : public KeyedService {
   // Returns the user currently associated with the service.
   virtual std::string GetUserEmail() const = 0;
 
-  // Launches Easy Unlock Setup app.
+  // Launches Easy Unlock setup app.
   virtual void LaunchSetup() = 0;
 
   // Gets/Sets/Clears the permit access for the local device.
@@ -134,6 +135,9 @@ class EasyUnlockService : public KeyedService {
 
   // Sets auto pairing result.
   virtual void SetAutoPairingResult(bool success, const std::string& error) = 0;
+
+  // Sets the service up and schedules service initialization.
+  void Initialize(scoped_ptr<EasyUnlockAppManager> app_manager);
 
   // Whether easy unlock is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
@@ -212,21 +216,22 @@ class EasyUnlockService : public KeyedService {
   // Exposes the profile to which the service is attached to subclasses.
   Profile* profile() const { return profile_; }
 
-  // Installs the Easy unlock component app if it isn't installed and enables
-  // the app if it is disabled.
-  void LoadApp();
+  // Opens an Easy Unlock Setup app window.
+  void OpenSetupApp();
 
-  // Disables the Easy unlock component app if it's loaded.
-  void DisableAppIfLoaded();
-
-  // Unloads the Easy unlock component app if it's loaded.
-  void UnloadApp();
-
-  // Reloads the Easy unlock component app if it's loaded.
-  void ReloadApp();
+  // Reloads the Easy unlock component app if it's loaded and resets the lock
+  // screen state.
+  void ReloadAppAndLockScreen();
 
   // Checks whether Easy unlock should be running and updates app state.
   void UpdateAppState();
+
+  // Disables easy unlock app without affecting lock screen state.
+  // Used primarily by signin service when user logged in state changes to
+  // logged in but before screen gets unlocked. At this point service shutdown
+  // is imminent and the app can be safely unloaded, but, for esthetic reasons,
+  // the lock screen UI should remain unchanged until the screen unlocks.
+  void DisableAppWithoutResettingScreenlockState();
 
   // Notifies the easy unlock app that the user state has been updated.
   void NotifyUserUpdated();
@@ -255,8 +260,8 @@ class EasyUnlockService : public KeyedService {
   // A class to detect whether a bluetooth adapter is present.
   class BluetoothDetector;
 
-  // Initializes the service after ExtensionService is ready.
-  void Initialize();
+  // Initializes the service after EasyUnlockAppManager is ready.
+  void InitializeOnAppManagerReady();
 
   // Gets |screenlock_state_handler_|. Returns NULL if Easy Unlock is not
   // allowed. Otherwise, if |screenlock_state_handler_| is not set, an instance
@@ -282,6 +287,8 @@ class EasyUnlockService : public KeyedService {
   void EnsureTpmKeyPresentIfNeeded();
 
   Profile* profile_;
+
+  scoped_ptr<EasyUnlockAppManager> app_manager_;
 
   // Created lazily in |GetScreenlockStateHandler|.
   scoped_ptr<EasyUnlockScreenlockStateHandler> screenlock_state_handler_;

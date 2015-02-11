@@ -4,20 +4,49 @@
 
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 #endif
+
+namespace {
+
+// Gets the file path from which easy unlock app should be loaded.
+base::FilePath GetEasyUnlockAppPath() {
+#if defined(GOOGLE_CHROME_BUILD)
+#ifndef NDEBUG
+  // Only allow app path override switch for debug build.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEasyUnlockAppPath))
+    return command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath);
+#endif  // !defined(NDEBUG)
+
+#if defined(OS_CHROMEOS)
+  return base::FilePath("/usr/share/chromeos-assets/easy_unlock");
+#endif  // defined(OS_CHROMEOS)
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  return base::FilePath();
+}
+
+}  // namespace
 
 // static
 EasyUnlockServiceFactory* EasyUnlockServiceFactory::GetInstance() {
@@ -47,17 +76,30 @@ EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {
 
 KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  EasyUnlockService* service = NULL;
+  int manifest_id = 0;
+
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
-    if (EasyUnlockService::IsSignInEnabled() && context->IsOffTheRecord()) {
-      return new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
-    } else {
+    if (!EasyUnlockService::IsSignInEnabled() || !context->IsOffTheRecord())
       return NULL;
-    }
+
+    service = new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
+    manifest_id = IDR_EASY_UNLOCK_MANIFEST_SIGNIN;
   }
 #endif
-  return new EasyUnlockServiceRegular(Profile::FromBrowserContext(context));
+
+  if (!service) {
+    service =
+        new EasyUnlockServiceRegular(Profile::FromBrowserContext(context));
+    manifest_id = IDR_EASY_UNLOCK_MANIFEST;
+  }
+
+  service->Initialize(
+      EasyUnlockAppManager::Create(extensions::ExtensionSystem::Get(context),
+                                   manifest_id, GetEasyUnlockAppPath()));
+  return service;
 }
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(

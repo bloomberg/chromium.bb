@@ -5,12 +5,10 @@
 #include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
-
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
@@ -47,10 +45,10 @@ std::string UnwrapSecret(const std::string& wrapped_secret,
 
 }  // namespace
 
-EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(Profile* profile,
+EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
                                              const std::string& user_id,
                                              Type type)
-    : profile_(profile),
+    : app_manager_(app_manager),
       state_(STATE_IDLE),
       user_id_(user_id),
       type_(type) {
@@ -61,34 +59,28 @@ EasyUnlockAuthAttempt::~EasyUnlockAuthAttempt() {
     Cancel(user_id_);
 }
 
-bool EasyUnlockAuthAttempt::Start(const std::string& user_id) {
+bool EasyUnlockAuthAttempt::Start() {
   DCHECK(state_ == STATE_IDLE);
 
   if (!ScreenlockBridge::Get()->IsLocked())
     return false;
 
-  if (user_id != user_id_) {
-    Cancel(user_id);
-    return false;
-  }
-
   ScreenlockBridge::LockHandler::AuthType auth_type =
-      ScreenlockBridge::Get()->lock_handler()->GetAuthType(user_id);
+      ScreenlockBridge::Get()->lock_handler()->GetAuthType(user_id_);
 
   if (auth_type != ScreenlockBridge::LockHandler::USER_CLICK) {
-    Cancel(user_id);
+    Cancel(user_id_);
     return false;
   }
 
   state_ = STATE_RUNNING;
 
-  // TODO(tbarzic): Replace this with an easyUnlockPrivate event that will
-  // report more context to the app (e.g. user id, whether the attempt is for
-  // signin or unlock).
-  extensions::ScreenlockPrivateEventRouter* router =
-      extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
-          profile_);
-  return router->OnAuthAttempted(auth_type, "");
+  if (!app_manager_->SendAuthAttemptEvent()) {
+    Cancel(user_id_);
+    return false;
+  }
+
+  return true;
 }
 
 void EasyUnlockAuthAttempt::FinalizeUnlock(const std::string& user_id,
@@ -96,13 +88,13 @@ void EasyUnlockAuthAttempt::FinalizeUnlock(const std::string& user_id,
   if (state_ != STATE_RUNNING || user_id != user_id_)
     return;
 
+  if (!ScreenlockBridge::Get()->IsLocked())
+    return;
+
   if (type_ != TYPE_UNLOCK) {
     Cancel(user_id_);
     return;
   }
-
-  if (!ScreenlockBridge::Get()->IsLocked())
-    return;
 
   if (success) {
     ScreenlockBridge::Get()->lock_handler()->Unlock(user_id_);
@@ -119,14 +111,18 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const std::string& user_id,
   if (state_ != STATE_RUNNING || user_id != user_id_)
     return;
 
+  if (!ScreenlockBridge::Get()->IsLocked())
+    return;
+
   if (type_ != TYPE_SIGNIN) {
     Cancel(user_id_);
     return;
   }
 
-  if (!ScreenlockBridge::Get()->IsLocked())
+  if (wrapped_secret.empty()) {
+    Cancel(user_id_);
     return;
-
+  }
 
   std::string unwrapped_secret = UnwrapSecret(wrapped_secret, raw_session_key);
 
@@ -143,9 +139,16 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const std::string& user_id,
 }
 
 void EasyUnlockAuthAttempt::Cancel(const std::string& user_id) {
-  if (type_ == TYPE_UNLOCK)
-    FinalizeUnlock(user_id, false);
-  else
-    FinalizeSignin(user_id, "", "");
   state_ = STATE_DONE;
+
+  if (!ScreenlockBridge::Get()->IsLocked())
+    return;
+
+  if (type_ == TYPE_UNLOCK) {
+    ScreenlockBridge::Get()->lock_handler()->EnableInput();
+  } else {
+    // Attempting signin with an empty secret is equivalent to canceling the
+    // attempt.
+    ScreenlockBridge::Get()->lock_handler()->AttemptEasySignin(user_id, "", "");
+  }
 }

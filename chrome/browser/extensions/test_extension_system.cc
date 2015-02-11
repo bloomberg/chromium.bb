@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
@@ -48,6 +49,10 @@ TestExtensionSystem::~TestExtensionSystem() {
 void TestExtensionSystem::Shutdown() {
   if (extension_service_)
     extension_service_->Shutdown();
+}
+
+void TestExtensionSystem::CreateLazyBackgroundTaskQueue() {
+  lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
 }
 
 ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
@@ -143,7 +148,7 @@ InfoMap* TestExtensionSystem::info_map() { return info_map_.get(); }
 
 LazyBackgroundTaskQueue*
 TestExtensionSystem::lazy_background_task_queue() {
-  return NULL;
+  return lazy_background_task_queue_.get();
 }
 
 void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {

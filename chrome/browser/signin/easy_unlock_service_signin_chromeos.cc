@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
@@ -342,7 +343,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
 void EasyUnlockServiceSignin::LoggedInStateChanged() {
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
-  UnloadApp();
+  DisableAppWithoutResettingScreenlockState();
 }
 
 void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {

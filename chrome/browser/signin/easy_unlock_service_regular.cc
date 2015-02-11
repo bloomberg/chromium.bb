@@ -10,13 +10,10 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -29,7 +26,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)
@@ -124,17 +120,6 @@ void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
   CheckCryptohomeKeysAndMaybeHardlock();
 }
 #endif
-
-void EasyUnlockServiceRegular::OpenSetupApp() {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
-  const extensions::Extension* extension =
-      service->GetExtensionById(extension_misc::kEasyUnlockAppId, false);
-
-  OpenApplication(
-      AppLaunchParams(profile(), extension, extensions::LAUNCH_CONTAINER_WINDOW,
-                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
-}
 
 const base::DictionaryValue* EasyUnlockServiceRegular::GetPermitAccess() const {
   const base::DictionaryValue* pairing_dict =
@@ -350,7 +335,7 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
 
   SetRemoteDevices(base::ListValue());
   SetTurnOffFlowStatus(IDLE);
-  ReloadApp();
+  ReloadAppAndLockScreen();
 }
 
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(

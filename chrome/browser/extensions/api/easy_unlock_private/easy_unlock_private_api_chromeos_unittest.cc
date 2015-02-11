@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
@@ -417,7 +418,12 @@ struct AutoPairingResult {
 
 // Test factory to register EasyUnlockService.
 KeyedService* BuildTestEasyUnlockService(content::BrowserContext* context) {
-  return new EasyUnlockServiceRegular(static_cast<Profile*>(context));
+  EasyUnlockService* service =
+      new EasyUnlockServiceRegular(static_cast<Profile*>(context));
+  service->Initialize(
+      EasyUnlockAppManager::Create(extensions::ExtensionSystem::Get(context),
+                                   -1 /* manifest id*/, base::FilePath()));
+  return service;
 }
 
 // A fake EventRouter that logs event it dispatches for testing.
@@ -469,14 +475,15 @@ KeyedService* BuildFakeExtensionSystem(content::BrowserContext* profile) {
 }
 
 TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
   FakeExtensionSystem* fake_extension_system =
       static_cast<FakeExtensionSystem*>(
           extensions::ExtensionSystemFactory::GetInstance()
               ->SetTestingFactoryAndUse(profile(), &BuildFakeExtensionSystem));
   FakeEventRouter* event_router =
       static_cast<FakeEventRouter*>(fake_extension_system->event_router());
+
+  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), &BuildTestEasyUnlockService);
 
   AutoPairingResult result;
 

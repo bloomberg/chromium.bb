@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 
-class Profile;
+class EasyUnlockAppManager;
 
 // Class responsible for handling easy unlock auth attempts (both for unlocking
 // the screen and logging in). The auth protocol is started by calling |Start|,
@@ -26,14 +26,14 @@ class EasyUnlockAuthAttempt {
     TYPE_SIGNIN
   };
 
-  EasyUnlockAuthAttempt(Profile* profile,
+  EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
                         const std::string& user_id,
                         Type type);
   ~EasyUnlockAuthAttempt();
 
   // Starts the auth attempt by sending screenlockPrivate.onAuthAttempted event
   // to easy unlock app. Returns whether the event was successfully dispatched.
-  bool Start(const std::string& user_id);
+  bool Start();
 
   // Finalizes an unlock attempt. It unlocks the screen if |success| is true.
   // If |this| has TYPE_SIGNIN type, calling this method will cause signin
@@ -60,7 +60,7 @@ class EasyUnlockAuthAttempt {
   // Cancels the attempt.
   void Cancel(const std::string& user_id);
 
-  Profile* profile_;
+  EasyUnlockAppManager* app_manager_;
   State state_;
   std::string user_id_;
   Type type_;

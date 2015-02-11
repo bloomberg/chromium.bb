@@ -385,7 +385,6 @@
       'browser/sessions/session_restore_browsertest.cc',
       'browser/sessions/session_restore_browsertest_chromeos.cc',
       'browser/sessions/tab_restore_browsertest.cc',
-      'browser/signin/easy_unlock_service_browsertest_chromeos.cc',
       'browser/signin/signin_browsertest.cc',
       'browser/spellchecker/spellcheck_service_browsertest.cc',
       'browser/ssl/captive_portal_blocking_page_browsertest.cc',
