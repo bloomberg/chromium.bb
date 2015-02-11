@@ -27,39 +27,50 @@
 #ifndef RenderMultiColumnSet_h
 #define RenderMultiColumnSet_h
 
+#include "core/layout/MultiColumnFragmentainerGroup.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-// RenderMultiColumnSet represents a set of columns that all have the same width and height. By
-// combining runs of same-size columns into a single object, we significantly reduce the number of
-// unique LayoutObjects required to represent columns.
+// A set of columns in a multicol container. A column set is inserted as an anonymous child of the
+// actual multicol container (i.e. the renderer whose style computes to non-auto column-count and/or
+// column-width), next to the flow thread. There'll be one column set for each contiguous run of
+// column content. The only thing that can interrupt a contiguous run of column content is a column
+// spanner, which means that if there are no spanners, there'll only be one column set.
 //
-// Column sets are inserted as anonymous children of the actual multicol container (i.e. the
-// renderer whose style computes to non-auto column-count and/or column-width).
+// Since a spanner interrupts an otherwise contiguous run of column content, inserting one may
+// result in the creation of additional new column sets. A placeholder for the spanning renderer has
+// to be placed in between the column sets that come before and after the spanner, if there's
+// actually column content both before and after the spanner.
 //
-// Being a "region", a column set has no children on its own, but is merely used to slice a portion
-// of the tall "single-column" flow thread into actual columns visually, to convert from flow thread
-// coordinates to visual ones. It is in charge of both positioning columns correctly relatively to
-// the parent multicol container, and to calculate the correct translation for each column's
-// contents, and to paint any rules between them. RenderMultiColumnSet objects are used for
-// painting, hit testing, and any other type of operation that requires mapping from flow thread
-// coordinates to visual coordinates.
+// A column set has no children on its own, but is merely used to slice a portion of the tall
+// "single-column" flow thread into actual columns visually, to convert from flow thread coordinates
+// to visual ones. It is in charge of both positioning columns correctly relatively to the parent
+// multicol container, and to calculate the correct translation for each column's contents, and to
+// paint any rules between them. RenderMultiColumnSet objects are used for painting, hit testing,
+// and any other type of operation that requires mapping from flow thread coordinates to visual
+// coordinates.
 //
-// Column spans result in the creation of new column sets, since a spanning renderer has to be
-// placed in between the column sets that come before and after the span.
+// Columns are normally laid out in the inline progression direction, but if the multicol container
+// is inside another fragmentation context (e.g. paged media, or an another multicol container), we
+// may need to group the columns, so that we get one MultiColumnFragmentainerGroup for each outer
+// fragmentainer (page / column) that the inner multicol container lives in. Each fragmentainer
+// group has its own column height, but the column height is uniform within a group.
 class RenderMultiColumnSet : public RenderRegion {
 public:
-    enum BalancedHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
-
     static RenderMultiColumnSet* createAnonymous(RenderFlowThread&, const LayoutStyle& parentStyle);
+
+    const MultiColumnFragmentainerGroup& firstFragmentainerGroup() const { return m_fragmentainerGroups.first(); }
+    const MultiColumnFragmentainerGroup& lastFragmentainerGroup() const { return m_fragmentainerGroups.last(); }
+    MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit);
+    const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderMultiColumnSet || RenderRegion::isOfType(type); }
 
-    virtual LayoutUnit pageLogicalWidth() const override final { return flowThread()->logicalWidth(); }
-    virtual LayoutUnit pageLogicalHeight() const override final { return m_columnHeight; }
+    virtual LayoutUnit pageLogicalWidth() const final { return flowThread()->logicalWidth(); }
+    virtual LayoutUnit pageLogicalHeight() const final;
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
     RenderMultiColumnFlowThread* multiColumnFlowThread() const
@@ -71,11 +82,9 @@ public:
     RenderMultiColumnSet* nextSiblingMultiColumnSet() const;
     RenderMultiColumnSet* previousSiblingMultiColumnSet() const;
 
-    void setLogicalTopInFlowThread(LayoutUnit);
-    LayoutUnit logicalTopInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().y() : flowThreadPortionRect().x(); }
-    LayoutUnit logicalHeightInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().height() : flowThreadPortionRect().width(); }
-    void setLogicalBottomInFlowThread(LayoutUnit);
-    LayoutUnit logicalBottomInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().maxY() : flowThreadPortionRect().maxX(); }
+    LayoutUnit logicalTopInFlowThread() const;
+    LayoutUnit logicalBottomInFlowThread() const;
+    LayoutUnit logicalHeightInFlowThread() const { return logicalBottomInFlowThread() - logicalTopInFlowThread(); }
 
     // The used CSS value of column-count, i.e. how many columns there are room for without overflowing.
     unsigned usedColumnCount() const { return multiColumnFlowThread()->columnCount(); }
@@ -86,10 +95,7 @@ public:
     // get from flow thread coordinates to visual coordinates.
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit) const;
 
-    LayoutUnit heightAdjustedForSetOffset(LayoutUnit height) const;
-
-    void updateMinimumColumnHeight(LayoutUnit height) { m_minimumColumnHeight = std::max(height, m_minimumColumnHeight); }
-    LayoutUnit minimumColumnHeight() const { return m_minimumColumnHeight; }
+    void updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height);
 
     // Add a content run, specified by its end position. A content run is appended at every
     // forced/explicit break and at the end of the column set. The content runs are used to
@@ -100,13 +106,13 @@ public:
     // (Re-)calculate the column height if it's auto. This is first and foremost needed by sets that
     // are to balance the column height, but even when it isn't to be balanced, this is necessary if
     // the multicol container's height is constrained.
-    virtual bool recalculateColumnHeight(BalancedHeightCalculation);
+    bool recalculateColumnHeight(BalancedColumnHeightCalculation);
 
     // Record space shortage (the amount of space that would have been enough to prevent some
     // element from being moved to the next column) at a column break. The smallest amount of space
     // shortage we find is the amount with which we will stretch the column height, if it turns out
     // after layout that the columns weren't tall enough.
-    void recordSpaceShortage(LayoutUnit spaceShortage);
+    void recordSpaceShortage(LayoutUnit offsetInFlowThread, LayoutUnit);
 
     // Reset previously calculated column height. Will mark for layout if needed.
     void resetColumnHeight();
@@ -115,6 +121,7 @@ public:
     // happens at the beginning of flow thread layout, and when advancing from a previous column set
     // or spanner to this one.
     void beginFlow(LayoutUnit offsetInFlowThread);
+
     // Layout of flow thread content that was to be rendered inside this column set has
     // finished. This happens at end of flow thread layout, and when advancing to the next column
     // set or spanner.
@@ -156,82 +163,10 @@ private:
 
     virtual const char* renderName() const override;
 
-    LayoutUnit calculateMaxColumnHeight() const;
-    LayoutRect columnRectAt(unsigned index) const;
+    virtual LayoutRect flowThreadPortionRect() const override;
 
-
-    LayoutRect flowThreadPortionRectAt(unsigned index) const;
-    LayoutRect flowThreadPortionOverflowRect(const LayoutRect& flowThreadPortion, unsigned index, unsigned colCount, LayoutUnit colGap) const;
-
-    enum ColumnIndexCalculationMode {
-        ClampToExistingColumns, // Stay within the range of already existing columns.
-        AssumeNewColumns // Allow column indices outside the range of already existing columns.
-    };
-    unsigned columnIndexAtOffset(LayoutUnit, ColumnIndexCalculationMode = ClampToExistingColumns) const;
-
-    void setAndConstrainColumnHeight(LayoutUnit);
-
-    // Return the index of the content run with the currently tallest columns, taking all implicit
-    // breaks assumed so far into account.
-    unsigned findRunWithTallestColumns() const;
-
-    // Given the current list of content runs, make assumptions about where we need to insert
-    // implicit breaks (if there's room for any at all; depending on the number of explicit breaks),
-    // and store the results. This is needed in order to balance the columns.
-    void distributeImplicitBreaks();
-
-    LayoutUnit calculateColumnHeight(BalancedHeightCalculation) const;
-
-    LayoutUnit m_columnHeight;
-
-    // The following variables are used when balancing the column set.
-    LayoutUnit m_maxColumnHeight; // Maximum column height allowed.
-    LayoutUnit m_minSpaceShortage; // The smallest amout of space shortage that caused a column break.
-    LayoutUnit m_minimumColumnHeight;
-
-    // A run of content without explicit (forced) breaks; i.e. a flow thread portion between two
-    // explicit breaks, between flow thread start and an explicit break, between an explicit break
-    // and flow thread end, or, in cases when there are no explicit breaks at all: between flow
-    // thread portion start and flow thread portion end. We need to know where the explicit breaks
-    // are, in order to figure out where the implicit breaks will end up, so that we get the columns
-    // properly balanced. A content run starts out as representing one single column, and will
-    // represent one additional column for each implicit break "inserted" there.
-    class ContentRun {
-    public:
-        ContentRun(LayoutUnit breakOffset)
-            : m_breakOffset(breakOffset)
-            , m_assumedImplicitBreaks(0) { }
-
-        unsigned assumedImplicitBreaks() const { return m_assumedImplicitBreaks; }
-        void assumeAnotherImplicitBreak() { m_assumedImplicitBreaks++; }
-        LayoutUnit breakOffset() const { return m_breakOffset; }
-
-        // Return the column height that this content run would require, considering the implicit
-        // breaks assumed so far.
-        LayoutUnit columnLogicalHeight(LayoutUnit startOffset) const { return ceilf((m_breakOffset - startOffset).toFloat() / float(m_assumedImplicitBreaks + 1)); }
-
-    private:
-        LayoutUnit m_breakOffset; // Flow thread offset where this run ends.
-        unsigned m_assumedImplicitBreaks; // Number of implicit breaks in this run assumed so far.
-    };
-    Vector<ContentRun, 1> m_contentRuns;
+    MultiColumnFragmentainerGroupList m_fragmentainerGroups;
 };
-
-inline void RenderMultiColumnSet::beginFlow(LayoutUnit offsetInFlowThread)
-{
-    // At this point layout is exactly at the beginning of this set. Store block offset from flow
-    // thread start.
-    setLogicalTopInFlowThread(offsetInFlowThread);
-}
-
-inline void RenderMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
-{
-    // At this point layout is exactly at the end of this set. Store block offset from flow thread
-    // start. This set is now considered "flowed", although we may have to revisit it later (with
-    // beginFlow()), e.g. if a subtree in the flow thread has to be laid out over again because the
-    // initial margin collapsing estimates were wrong.
-    setLogicalBottomInFlowThread(offsetInFlowThread);
-}
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMultiColumnSet, isRenderMultiColumnSet());
 

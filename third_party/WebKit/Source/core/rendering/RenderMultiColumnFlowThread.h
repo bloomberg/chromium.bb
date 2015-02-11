@@ -34,6 +34,8 @@ namespace blink {
 class RenderMultiColumnSet;
 class RenderMultiColumnSpannerPlaceholder;
 
+enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
+
 // Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
 // the actual multicol container (i.e. the RenderBlockFlow whose style computes to non-auto
 // column-count and/or column-width). RenderMultiColumnFlowThread is the heart of the multicol

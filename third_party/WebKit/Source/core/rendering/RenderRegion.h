@@ -42,9 +42,9 @@ public:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderRegion || RenderBlockFlow::isOfType(type); }
 
-    void setFlowThreadPortionRect(const LayoutRect& rect) { m_flowThreadPortionRect = rect; }
-    LayoutRect flowThreadPortionRect() const { return m_flowThreadPortionRect; }
+    virtual LayoutRect flowThreadPortionRect() const = 0;
     LayoutRect flowThreadPortionOverflowRect() const;
+    LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
 
     RenderFlowThread* flowThread() const { return m_flowThread; }
 
@@ -69,8 +69,6 @@ public:
 protected:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
 
-    LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
-
 private:
     virtual void layoutBlock(bool relayoutChildren) override final;
 
@@ -78,7 +76,6 @@ protected:
     RenderFlowThread* m_flowThread;
 
 private:
-    LayoutRect m_flowThreadPortionRect;
     bool m_isValid : 1;
 };
 

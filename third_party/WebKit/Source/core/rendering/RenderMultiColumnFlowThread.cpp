@@ -276,7 +276,7 @@ bool RenderMultiColumnFlowThread::recalculateColumnHeights()
     // columns, unless we have a bug.
     bool needsRelayout = false;
     for (RenderMultiColumnSet* multicolSet = firstMultiColumnSet(); multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet()) {
-        needsRelayout |= multicolSet->recalculateColumnHeight(m_inBalancingPass ? RenderMultiColumnSet::StretchBySpaceShortage : RenderMultiColumnSet::GuessFromFlowThreadPortion);
+        needsRelayout |= multicolSet->recalculateColumnHeight(m_inBalancingPass ? StretchBySpaceShortage : GuessFromFlowThreadPortion);
         if (needsRelayout) {
             // Once a column set gets a new column height, that column set and all successive column
             // sets need to be laid out over again, since their logical top will be affected by
@@ -647,13 +647,13 @@ void RenderMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spa
         return;
 
     if (RenderMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
-        multicolSet->recordSpaceShortage(spaceShortage);
+        multicolSet->recordSpaceShortage(offset, spaceShortage);
 }
 
 void RenderMultiColumnFlowThread::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight)
 {
     if (RenderMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
-        multicolSet->updateMinimumColumnHeight(minHeight);
+        multicolSet->updateMinimumColumnHeight(offset, minHeight);
 }
 
 bool RenderMultiColumnFlowThread::addForcedRegionBreak(LayoutUnit offset, LayoutObject* /*breakChild*/, bool /*isBefore*/, LayoutUnit* offsetBreakAdjustment)

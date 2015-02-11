@@ -90,7 +90,7 @@ void RenderFlowThread::validateRegions()
     }
 
     updateLogicalWidth(); // Called to get the maximum logical width for the columnSet.
-    updateRegionsFlowThreadPortionRect();
+    generateColumnSetIntervalTree();
 }
 
 void RenderFlowThread::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
@@ -166,26 +166,13 @@ RenderRegion* RenderFlowThread::lastRegion() const
     return m_multiColumnSetList.last();
 }
 
-void RenderFlowThread::updateRegionsFlowThreadPortionRect()
+void RenderFlowThread::generateColumnSetIntervalTree()
 {
-    LayoutUnit logicalHeight = 0;
     // FIXME: Optimize not to clear the interval all the time. This implies manually managing the tree nodes lifecycle.
     m_multiColumnSetIntervalTree.clear();
     m_multiColumnSetIntervalTree.initIfNeeded();
-    for (RenderMultiColumnSetList::iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-        RenderMultiColumnSet* columnSet = *iter;
-
-        LayoutUnit columnSetLogicalWidth = columnSet->pageLogicalWidth();
-        LayoutUnit columnSetLogicalHeight = std::min<LayoutUnit>(RenderFlowThread::maxLogicalHeight() - logicalHeight, columnSet->logicalHeightInFlowThread());
-
-        LayoutRect columnSetRect(style()->direction() == LTR ? LayoutUnit() : logicalWidth() - columnSetLogicalWidth, logicalHeight, columnSetLogicalWidth, columnSetLogicalHeight);
-
-        columnSet->setFlowThreadPortionRect(isHorizontalWritingMode() ? columnSetRect : columnSetRect.transposedRect());
-
-        m_multiColumnSetIntervalTree.add(MultiColumnSetIntervalTree::createInterval(logicalHeight, logicalHeight + columnSetLogicalHeight, columnSet));
-
-        logicalHeight += columnSetLogicalHeight;
-    }
+    for (auto columnSet : m_multiColumnSetList)
+        m_multiColumnSetIntervalTree.add(MultiColumnSetIntervalTree::createInterval(columnSet->logicalTopInFlowThread(), columnSet->logicalBottomInFlowThread(), columnSet));
 }
 
 void RenderFlowThread::collectLayerFragments(LayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)

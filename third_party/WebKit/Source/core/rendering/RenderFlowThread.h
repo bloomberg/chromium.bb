@@ -122,7 +122,7 @@ public:
 protected:
     virtual const char* renderName() const = 0;
 
-    void updateRegionsFlowThreadPortionRect();
+    void generateColumnSetIntervalTree();
 
     RenderMultiColumnSetList m_multiColumnSetList;
 
