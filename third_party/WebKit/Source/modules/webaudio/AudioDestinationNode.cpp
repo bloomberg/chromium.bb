@@ -75,11 +75,6 @@ void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus,
     if (sourceBus)
         m_localAudioInputProvider.set(sourceBus);
 
-    ASSERT(numberOfInputs() >= 1);
-    if (numberOfInputs() < 1) {
-        destinationBus->zero();
-        return;
-    }
     // This will cause the node(s) connected to us to process, which in turn will pull on their input(s),
     // all the way backwards through the rendering graph.
     AudioBus* renderedBus = input(0)->pull(destinationBus, numberOfFrames);
