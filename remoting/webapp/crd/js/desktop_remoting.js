@@ -143,6 +143,13 @@ remoting.DesktopRemoting.prototype.init = function() {
 }
 
 /**
+ * @return {string} Application product name to be used in UI.
+ */
+remoting.DesktopRemoting.prototype.getApplicationName = function() {
+  return chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
+};
+
+/**
  * @return {string} The default remap keys for the current platform.
  */
 remoting.DesktopRemoting.prototype.getDefaultRemapKeys = function() {

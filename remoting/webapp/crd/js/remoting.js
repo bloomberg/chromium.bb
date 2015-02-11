@@ -74,7 +74,7 @@ remoting.getExtensionInfo = function() {
   var v2OrLegacy = base.isAppsV2() ? " (v2)" : " (legacy)";
   var manifest = chrome.runtime.getManifest();
   if (manifest && manifest.version) {
-    var name = chrome.i18n.getMessage('PRODUCT_NAME');
+    var name = remoting.app.getApplicationName();
     return name + ' version: ' + manifest.version + v2OrLegacy;
   } else {
     return 'Failed to get product version. Corrupt manifest?';
@@ -214,4 +214,3 @@ function isWindowed_(callback) {
     console.error('chome.tabs is not available.');
   }
 }
-

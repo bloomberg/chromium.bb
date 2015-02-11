@@ -113,11 +113,10 @@ remoting.WindowFrame.prototype.setClientSession = function(clientSession) {
   if (this.clientSession_) {
     this.title_.innerText = clientSession.getHostDisplayName();
     windowTitle.innerText = clientSession.getHostDisplayName() + ' - ' +
-        chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
+        remoting.app.getApplicationName();
   } else {
     this.title_.innerHTML = '&nbsp;';
-    windowTitle.innerText =
-        chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
+    windowTitle.innerText = remoting.app.getApplicationName();
   }
   this.handleWindowStateChange_();
 };

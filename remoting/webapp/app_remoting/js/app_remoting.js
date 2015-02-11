@@ -202,6 +202,14 @@ remoting.AppRemoting.prototype.init = function(connector) {
 }
 
 /**
+ * @return {string} Application product name to be used in UI.
+ */
+remoting.AppRemoting.prototype.getApplicationName = function() {
+  var manifest = chrome.runtime.getManifest();
+  return manifest.name;
+};
+
+/**
  * @return {string} The default remap keys for the current platform.
  */
 remoting.AppRemoting.prototype.getDefaultRemapKeys = function() {

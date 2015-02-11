@@ -25,7 +25,7 @@ remoting.LoadingWindow = function() {};
  */
 remoting.LoadingWindow.onTimeout_ = function() {
   remoting.MessageWindow.showErrorMessage(
-      chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME_APP_STREAMING'),
+      remoting.app.getApplicationName(),
       chrome.i18n.getMessage(remoting.Error.SERVICE_UNAVAILABLE));
 };
 
@@ -48,7 +48,7 @@ remoting.LoadingWindow.show = function() {
         chrome.i18n.getMessage(/*i18n-content*/'NO_TRANSPARENCY_WARNING');
   }
   remoting.loadingWindow_ = remoting.MessageWindow.showTimedMessageWindow(
-      chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME_APP_STREAMING'),
+      remoting.app.getApplicationName(),
       chrome.i18n.getMessage(/*i18n-content*/'FOOTER_CONNECTING'),
       transparencyWarning,
       chrome.i18n.getMessage(/*i18n-content*/'CANCEL'),

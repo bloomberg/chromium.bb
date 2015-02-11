@@ -51,6 +51,13 @@ remoting.Application.prototype.setDelegate = function(appDelegate) {
 };
 
 /**
+ * @return {string} Application product name to be used in UI.
+ */
+remoting.Application.prototype.getApplicationName = function() {
+  return this.delegate_.getApplicationName();
+};
+
+/**
  * @return {Array.<string>} A list of |ClientSession.Capability|s required
  *     by this application.
  */
@@ -203,6 +210,11 @@ remoting.Application.Delegate = function() {};
  * @return {void} Nothing.
  */
 remoting.Application.Delegate.prototype.init = function(connector) {};
+
+/**
+ * @return {string} Application product name to be used in UI.
+ */
+remoting.Application.Delegate.prototype.getApplicationName = function() {};
 
 /**
  * @return {string} The default remap keys for the current platform.
