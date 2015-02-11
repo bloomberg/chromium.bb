@@ -112,6 +112,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
 
   bool supports_robustness =
       gpu_info->gl_extensions.find("GL_EXT_robustness") != std::string::npos ||
+      gpu_info->gl_extensions.find("GL_KHR_robustness") != std::string::npos ||
       gpu_info->gl_extensions.find("GL_ARB_robustness") != std::string::npos;
   if (supports_robustness) {
     glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB,

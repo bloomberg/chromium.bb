@@ -1684,6 +1684,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
            surface_->DeferDraws();
   }
 
+  bool IsRobustnessSupported() {
+    return has_robustness_extension_ &&
+           context_->WasAllocatedUsingRobustnessExtension();
+  }
+
   error::Error WillAccessBoundFramebufferForDraw() {
     if (ShouldDeferDraws())
       return error::kDeferCommandUntilLater;
@@ -10229,10 +10234,8 @@ bool GLES2DecoderImpl::WasContextLost() {
     MaybeExitOnContextLost();
     return true;
   }
-  if (context_->WasAllocatedUsingRobustnessExtension()) {
-    GLenum status = GL_NO_ERROR;
-    if (has_robustness_extension_)
-      status = glGetGraphicsResetStatusARB();
+  if (IsRobustnessSupported()) {
+    GLenum status = glGetGraphicsResetStatusARB();
     if (status != GL_NO_ERROR) {
       // The graphics card was reset. Signal a lost context to the application.
       reset_status_ = status;
@@ -10264,7 +10267,7 @@ void GLES2DecoderImpl::LoseContext(uint32 reset_status) {
       reset_status = GL_UNKNOWN_CONTEXT_RESET_ARB;
     }
   } else if (reset_status == GL_UNKNOWN_CONTEXT_RESET_ARB &&
-      has_robustness_extension_) {
+             IsRobustnessSupported()) {
     // If the reason for the call was a GL error, we can try to determine the
     // reset status more accurately.
     GLenum driver_status = glGetGraphicsResetStatusARB();
