@@ -2271,6 +2271,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   [responderDelegate_ touchesEndedWithEvent:event];
 }
 
+- (void)smartMagnifyWithEvent:(NSEvent*)event {
+}
+
 // This is invoked only on 10.8 or newer when the user taps a word using
 // three fingers.
 - (void)quickLookWithEvent:(NSEvent*)event {
