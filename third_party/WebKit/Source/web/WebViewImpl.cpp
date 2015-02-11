@@ -1678,31 +1678,17 @@ void WebViewImpl::resizePinchViewport(const WebSize& newSize)
     page()->frameHost().pinchViewport().clampToBoundaries();
 }
 
-WebLocalFrameImpl* WebViewImpl::localFrameRootTemporary() const
-{
-    // FIXME: This is a temporary method that finds the first localFrame in a traversal.
-    // This is equivalent to mainFrame() if the mainFrame is in-process. We need to create
-    // separate WebWidgets to be created by RenderParts, which are associated with *all*
-    // local frame roots, not just the first one in the tree. Until then, this limits us
-    // to having only one functioning connected LocalFrame subtree per process.
-    for (Frame* frame = page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->isLocalRoot())
-            return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
-    }
-    return 0;
-}
-
 void WebViewImpl::performResize()
 {
     m_pageScaleConstraintsSet.didChangeViewSize(m_size);
 
-    updatePageDefinedViewportConstraints(localFrameRootTemporary()->frame()->document()->viewportDescription());
+    updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     updateMainFrameLayoutSize();
 
     // If the virtual viewport pinch mode is enabled, the main frame will be resized
     // after layout so it can be sized to the contentsSize.
-    if (!pinchVirtualViewportEnabled() && localFrameRootTemporary()->frameView())
-        localFrameRootTemporary()->frameView()->resize(m_size);
+    if (!pinchVirtualViewportEnabled() && mainFrameImpl()->frameView())
+        mainFrameImpl()->frameView()->resize(m_size);
 
     if (pinchVirtualViewportEnabled())
         page()->frameHost().pinchViewport().setSize(m_size);
@@ -1713,7 +1699,7 @@ void WebViewImpl::performResize()
     // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
     // Therefore we should force explicit media queries invalidation here.
     if (page()->inspectorController().deviceEmulationEnabled()) {
-        if (Document* document = localFrameRootTemporary()->frame()->document()) {
+        if (Document* document = mainFrameImpl()->frame()->document()) {
             document->styleResolverChanged();
             document->mediaQueryAffectingValueChanged();
         }
@@ -1739,11 +1725,11 @@ void WebViewImpl::setTopControlsHeight(float height, bool topControlsShrinkLayou
 
 void WebViewImpl::didUpdateTopControls()
 {
-    WebLocalFrameImpl* localFrameRoot = localFrameRootTemporary();
-    if (!localFrameRoot)
+    WebLocalFrameImpl* mainFrame = mainFrameImpl();
+    if (!mainFrame)
         return;
 
-    FrameView* view = localFrameRoot->frameView();
+    FrameView* view = mainFrame->frameView();
     if (!view)
         return;
 
@@ -1782,11 +1768,11 @@ void WebViewImpl::resize(const WebSize& newSize)
     if (m_shouldAutoResize || m_size == newSize)
         return;
 
-    WebLocalFrameImpl* localFrameRoot = localFrameRootTemporary();
-    if (!localFrameRoot)
+    WebLocalFrameImpl* mainFrame = mainFrameImpl();
+    if (!mainFrame)
         return;
 
-    FrameView* view = localFrameRoot->frameView();
+    FrameView* view = mainFrame->frameView();
     if (!view)
         return;
 
@@ -1797,7 +1783,7 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     m_size = newSize;
 
-    ViewportAnchor viewportAnchor(&localFrameRootTemporary()->frame()->eventHandler());
+    ViewportAnchor viewportAnchor(&mainFrameImpl()->frame()->eventHandler());
     if (shouldAnchorAndRescaleViewport) {
         viewportAnchor.setAnchor(
             view->visibleContentRect(),
@@ -1854,7 +1840,10 @@ IntRect WebViewImpl::visibleRectInDocument() const
     }
 
     // Outer viewport in the document coordinates
-    return localFrameRootTemporary()->frameView()->visibleContentRect();
+    if (page()->mainFrame()->isLocalFrame())
+        return page()->deprecatedLocalMainFrame()->view()->visibleContentRect();
+
+    return IntRect();
 }
 
 void WebViewImpl::willEndLiveResize()
@@ -1918,10 +1907,10 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 void WebViewImpl::layout()
 {
     TRACE_EVENT0("blink", "WebViewImpl::layout");
-    if (!localFrameRootTemporary())
+    if (!mainFrameImpl())
         return;
 
-    PageWidgetDelegate::layout(*m_page, *localFrameRootTemporary()->frame());
+    PageWidgetDelegate::layout(*m_page, *mainFrameImpl()->frame());
     updateLayerTreeBackgroundColor();
 
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
@@ -2146,7 +2135,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     }
 
     // FIXME: This should take in the intended frame, not the local frame root.
-    if (PageWidgetDelegate::handleInputEvent(*this, inputEvent, localFrameRootTemporary()->frame()))
+    if (PageWidgetDelegate::handleInputEvent(*this, inputEvent, mainFrameImpl()->frame()))
         return true;
 
     // Unhandled touchpad gesture pinch events synthesize mouse wheel events.
@@ -3731,9 +3720,9 @@ void WebViewImpl::sendResizeEventAndRepaint()
     // FIXME: This is wrong. The FrameView is responsible sending a resizeEvent
     // as part of layout. Layout is also responsible for sending invalidations
     // to the embedder. This method and all callers may be wrong. -- eseidel.
-    if (localFrameRootTemporary()->frameView()) {
+    if (mainFrameImpl()->frameView()) {
         // Enqueues the resize event.
-        localFrameRootTemporary()->frame()->document()->enqueueResizeEvent();
+        mainFrameImpl()->frame()->document()->enqueueResizeEvent();
     }
 
     if (m_client) {
@@ -4283,11 +4272,8 @@ GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
 
 LayerCompositor* WebViewImpl::compositor() const
 {
-    if (!page() || !page()->mainFrame())
+    if (!page() || !page()->mainFrame() || !page()->mainFrame()->isLocalFrame())
         return 0;
-
-    if (!page()->mainFrame()->isLocalFrame())
-        return localFrameRootTemporary()->frame()->document()->renderView()->compositor();
 
     if (!page()->deprecatedLocalMainFrame()->document() || !page()->deprecatedLocalMainFrame()->document()->renderView())
         return 0;
