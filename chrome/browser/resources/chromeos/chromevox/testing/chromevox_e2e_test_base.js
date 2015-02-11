@@ -58,26 +58,11 @@ ChromeVoxE2ETest.prototype = {
   },
 
   /**
-   * Launch a new tab, wait until tab status complete, then run callback.
+   * Run a test with the specified HTML snippet loaded.
    * @param {function() : void} doc Snippet wrapped inside of a function.
    * @param {function()} callback Called once the document is ready.
    */
-  runWithLoadedTab: function(doc, callback) {
-    this.launchNewTabWithDoc(doc, function(tab) {
-      chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-        if (tabId == tab.id && changeInfo.status == 'complete') {
-          callback(tabId);
-        }
-      });
-    });
-  },
-
-  /**
-   * Launches the given document in a new tab.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @param {function()} opt_callback Called once the document is created.
-   */
-  runWithTab: function(doc, opt_callback) {
+  runWithDocument: function(doc, callback) {
     var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
     var url = 'data:text/html,<!doctype html>' +
         docString +
@@ -86,7 +71,13 @@ ChromeVoxE2ETest.prototype = {
       active: true,
       url: url
     };
-    chrome.tabs.create(createParams, opt_callback);
+    chrome.tabs.create(createParams, function(tab) {
+      chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
+        if (tabId == tab.id && changeInfo.status == 'complete') {
+          callback(tabId);
+        }
+      });
+    });
   },
 
   /**
