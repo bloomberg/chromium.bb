@@ -1585,6 +1585,7 @@ int main(int argc, char **argv) {
     if (it->first == "num_play_throughs") {
       std::string input(it->second.begin(), it->second.end());
       CHECK(base::StringToInt(input, &content::g_num_play_throughs));
+      continue;
     }
     if (it->first == "fake_decoder") {
       content::g_fake_decoder = 1;

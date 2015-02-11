@@ -1378,6 +1378,7 @@ int main(int argc, char** argv) {
     if (it->first == "num_frames_to_encode") {
       std::string input(it->second.begin(), it->second.end());
       CHECK(base::StringToInt(input, &content::g_num_frames_to_encode));
+      continue;
     }
     if (it->first == "fake_encoder") {
       content::g_fake_encoder = true;
