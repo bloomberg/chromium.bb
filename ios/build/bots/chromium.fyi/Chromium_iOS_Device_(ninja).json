@@ -1,0 +1,18 @@
+{
+  "owners": [
+    "smut"
+  ],
+  "comments": [
+    "Builder for 64-bit devices using ninja."
+  ],
+  "xcode version": "5.1.1",
+  "GYP_DEFINES": {
+    "clang_xcode": "0",
+    "target_subarch": "arm64"
+  },
+  "compiler": "ninja",
+  "configuration": "Release",
+  "sdk": "iphoneos7.1",
+  "tests": [
+  ]
+}

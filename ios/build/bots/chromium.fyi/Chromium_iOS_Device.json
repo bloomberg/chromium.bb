@@ -1,0 +1,17 @@
+{
+  "owners": [
+    "smut"
+  ],
+  "comments": [
+    "Builder for 32-bit devices."
+  ],
+  "xcode version": "5.1.1",
+  "GYP_DEFINES": {
+    "target_subarch": "arm32"
+  },
+  "compiler": "xcodebuild",
+  "configuration": "Release",
+  "sdk": "iphoneos7.1",
+  "tests": [
+  ]
+}
