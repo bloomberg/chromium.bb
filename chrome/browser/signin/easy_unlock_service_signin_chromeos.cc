@@ -257,6 +257,17 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
   DVLOG(1) << "EasySignIn password login event, event=" << event;
 }
 
+void EasyUnlockServiceSignin::StartAutoPairing(
+    const AutoPairingResultCallback& callback) {
+  NOTREACHED();
+}
+
+void EasyUnlockServiceSignin::SetAutoPairingResult(
+    bool success,
+    const std::string& error) {
+  NOTREACHED();
+}
+
 void EasyUnlockServiceSignin::InitializeInternal() {
   if (chromeos::LoginState::Get()->IsUserLoggedIn())
     return;

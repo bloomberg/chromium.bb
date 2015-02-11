@@ -47633,6 +47633,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="956" label="NETWORKING_CONFIG_FINISHAUTHENTICATION"/>
   <int value="957" label="PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES"/>
   <int value="958" label="CRYPTOTOKENPRIVATE_CANORIGINASSERTAPPID"/>
+  <int value="959" label="EASYUNLOCKPRIVATE_SETAUTOPAIRINGRESULT"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

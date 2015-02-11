@@ -171,6 +171,15 @@ namespace easyUnlockPrivate {
     long height;
   };
 
+  // Auto pairing reuslt.
+  dictionary AutoPairingResult {
+    // Whether the auto pairing is completed successfully.
+    boolean success;
+
+    // Optional error message to indicate the failure.
+    DOMString? errorMessage;
+  };
+
   // Callback for crypto methods that return a single array buffer.
   callback DataCallback = void(optional ArrayBuffer data);
 
@@ -358,6 +367,14 @@ namespace easyUnlockPrivate {
                                 Range link_range,
                                 DOMString link_target,
                                 Rect anchorRect);
+
+    // Sets the result of auto pairing triggered from onStartAutoPairing
+    // event. If auto pairing is completed successfully, |result.success|
+    // should be true so that Easy bootstrap flow would finish and starts
+    // the user session. Otherwise, |result.success| is set to false with
+    // an optional error message to be displayed to the user.
+    static void setAutoPairingResult(AutoPairingResult result,
+                                     optional EmptyCallback callback);
   };
 
   interface Events {
@@ -365,5 +382,9 @@ namespace easyUnlockPrivate {
     // Easy unlock service is updated.
     // |userInfo| The updated user information.
     static void onUserInfoUpdated(UserInfo userInfo);
+
+    // Event fired at the end of Easy bootstrap to start auto pairing so
+    // that a proper cryptohome key could be generated for the user.
+    static void onStartAutoPairing();
   };
 };

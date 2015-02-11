@@ -72,6 +72,8 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   void RecordEasySignInOutcome(const std::string& user_id,
                                bool success) const override;
   void RecordPasswordLoginEvent(const std::string& user_id) const override;
+  void StartAutoPairing(const AutoPairingResultCallback& callback) override;
+  void SetAutoPairingResult(bool success, const std::string& error) override;
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;

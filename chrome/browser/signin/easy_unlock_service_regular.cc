@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/user_names.h"
@@ -27,6 +28,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 
@@ -251,6 +253,34 @@ void EasyUnlockServiceRegular::RecordEasySignInOutcome(
 void EasyUnlockServiceRegular::RecordPasswordLoginEvent(
     const std::string& user_id) const {
   NOTREACHED();
+}
+
+void EasyUnlockServiceRegular::StartAutoPairing(
+    const AutoPairingResultCallback& callback) {
+  if (!auto_pairing_callback_.is_null()) {
+    LOG(ERROR)
+        << "Start auto pairing when there is another auto pairing requested.";
+    callback.Run(false, std::string());
+    return;
+  }
+
+  auto_pairing_callback_ = callback;
+
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::api::easy_unlock_private::OnStartAutoPairing::kEventName,
+      args.Pass()));
+  extensions::EventRouter::Get(profile())->DispatchEventWithLazyListener(
+       extension_misc::kEasyUnlockAppId, event.Pass());
+}
+
+void EasyUnlockServiceRegular::SetAutoPairingResult(
+    bool success,
+    const std::string& error) {
+  DCHECK(!auto_pairing_callback_.is_null());
+
+  auto_pairing_callback_.Run(success, error);
+  auto_pairing_callback_.Reset();
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {

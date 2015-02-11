@@ -368,6 +368,22 @@ class EasyUnlockPrivateShowErrorBubbleFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateShowErrorBubbleFunction);
 };
 
+class EasyUnlockPrivateSetAutoPairingResultFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.setAutoPairingResult",
+                             EASYUNLOCKPRIVATE_SETAUTOPAIRINGRESULT)
+  EasyUnlockPrivateSetAutoPairingResultFunction();
+
+ private:
+  ~EasyUnlockPrivateSetAutoPairingResultFunction() override;
+
+  // SyncExtensionFunction:
+  bool RunSync() override;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetAutoPairingResultFunction);
+};
+
 }  // namespace api
 }  // namespace extensions
 

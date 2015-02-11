@@ -2,15 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/test_extension_prefs.h"
+#include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/signin/easy_unlock_service_factory.h"
+#include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
+#include "extensions/browser/event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -22,6 +32,7 @@ using extensions::api::EasyUnlockPrivateGenerateEcP256KeyPairFunction;
 using extensions::api::EasyUnlockPrivatePerformECDHKeyAgreementFunction;
 using extensions::api::EasyUnlockPrivateCreateSecureMessageFunction;
 using extensions::api::EasyUnlockPrivateUnwrapSecureMessageFunction;
+using extensions::api::EasyUnlockPrivateSetAutoPairingResultFunction;
 
 // Converts a string to a base::BinaryValue value whose buffer contains the
 // string data without the trailing '\0'.
@@ -390,6 +401,118 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
+}
+
+struct AutoPairingResult {
+  AutoPairingResult() : success(false) {}
+
+  void SetResult(bool success, const std::string& error) {
+    this->success = success;
+    this->error = error;
+  }
+
+  bool success;
+  std::string error;
+};
+
+// Test factory to register EasyUnlockService.
+KeyedService* BuildTestEasyUnlockService(content::BrowserContext* context) {
+  return new EasyUnlockServiceRegular(static_cast<Profile*>(context));
+}
+
+// A fake EventRouter that logs event it dispatches for testing.
+class FakeEventRouter : public extensions::EventRouter {
+ public:
+  FakeEventRouter(Profile* profile, extensions::ExtensionPrefs* extension_prefs)
+      : EventRouter(profile, extension_prefs),
+        event_count_(0) {}
+
+  void DispatchEventToExtension(const std::string& extension_id,
+                                scoped_ptr<extensions::Event> event) override {
+    ++event_count_;
+    last_extension_id_ = extension_id;
+    last_event_name_ = event ? event->event_name : std::string();
+  }
+
+  int event_count() const { return event_count_; }
+  const std::string& last_extension_id() const { return last_extension_id_; }
+  const std::string& last_event_name() const { return last_event_name_; }
+
+ private:
+  int event_count_;
+  std::string last_extension_id_;
+  std::string last_event_name_;
+};
+
+// A fake ExtensionSystem that returns a FakeEventRouter for event_router().
+class FakeExtensionSystem : public extensions::TestExtensionSystem {
+ public:
+  explicit FakeExtensionSystem(Profile* profile)
+      : TestExtensionSystem(profile),
+        prefs_(new extensions::TestExtensionPrefs(
+            base::MessageLoopProxy::current())) {
+    fake_event_router_.reset(new FakeEventRouter(profile, prefs_->prefs()));
+  }
+
+  extensions::EventRouter* event_router() override {
+    return fake_event_router_.get();
+  }
+
+ private:
+  scoped_ptr<extensions::TestExtensionPrefs> prefs_;
+  scoped_ptr<FakeEventRouter> fake_event_router_;
+};
+
+// Factory function to register for the ExtensionSystem.
+KeyedService* BuildFakeExtensionSystem(content::BrowserContext* profile) {
+  return new FakeExtensionSystem(static_cast<Profile*>(profile));
+}
+
+TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
+  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), &BuildTestEasyUnlockService);
+  FakeExtensionSystem* fake_extension_system =
+      static_cast<FakeExtensionSystem*>(
+          extensions::ExtensionSystemFactory::GetInstance()
+              ->SetTestingFactoryAndUse(profile(), &BuildFakeExtensionSystem));
+  FakeEventRouter* event_router =
+      static_cast<FakeEventRouter*>(fake_extension_system->event_router());
+
+  AutoPairingResult result;
+
+  // Dispatch OnStartAutoPairing event on EasyUnlockService::StartAutoPairing.
+  EasyUnlockService* service = EasyUnlockService::Get(profile());
+  service->StartAutoPairing(base::Bind(&AutoPairingResult::SetResult,
+                                       base::Unretained(&result)));
+  EXPECT_EQ(1, event_router->event_count());
+  EXPECT_EQ(extension_misc::kEasyUnlockAppId,
+            event_router->last_extension_id());
+  EXPECT_EQ(
+      extensions::api::easy_unlock_private::OnStartAutoPairing::kEventName,
+      event_router->last_event_name());
+
+  // Test SetAutoPairingResult call with failure.
+  scoped_refptr<EasyUnlockPrivateSetAutoPairingResultFunction> function(
+      new EasyUnlockPrivateSetAutoPairingResultFunction());
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(),
+      "[{\"success\":false, \"errorMessage\":\"fake_error\"}]",
+      browser(),
+      extension_function_test_utils::NONE));
+  EXPECT_EQ(false, result.success);
+  EXPECT_EQ("fake_error", result.error);
+
+  // Test SetAutoPairingResult call with success.
+  service->StartAutoPairing(base::Bind(&AutoPairingResult::SetResult,
+                                       base::Unretained(&result)));
+  function = new EasyUnlockPrivateSetAutoPairingResultFunction();
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(),
+      "[{\"success\":true}]",
+      browser(),
+      extension_function_test_utils::NONE));
+  EXPECT_EQ(true, result.success);
+  EXPECT_TRUE(result.error.empty());
 }
 
 }  // namespace

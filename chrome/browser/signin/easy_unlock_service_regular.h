@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -57,6 +58,8 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   void RecordEasySignInOutcome(const std::string& user_id,
                                bool success) const override;
   void RecordPasswordLoginEvent(const std::string& user_id) const override;
+  void StartAutoPairing(const AutoPairingResultCallback& callback) override;
+  void SetAutoPairingResult(bool success, const std::string& error) override;
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
@@ -97,6 +100,8 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
 
   TurnOffFlowStatus turn_off_flow_status_;
   scoped_ptr<proximity_auth::CryptAuthClient> cryptauth_client_;
+
+  AutoPairingResultCallback auto_pairing_callback_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 

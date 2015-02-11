@@ -776,5 +776,29 @@ bool EasyUnlockPrivateShowErrorBubbleFunction::RunSync() {
   return true;
 }
 
+EasyUnlockPrivateSetAutoPairingResultFunction::
+    EasyUnlockPrivateSetAutoPairingResultFunction() {
+}
+
+EasyUnlockPrivateSetAutoPairingResultFunction::
+    ~EasyUnlockPrivateSetAutoPairingResultFunction() {
+}
+
+bool EasyUnlockPrivateSetAutoPairingResultFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::SetAutoPairingResult::Params> params =
+      easy_unlock_private::SetAutoPairingResult::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::string error_message;
+  if (params->result.error_message)
+    error_message = *params->result.error_message;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  EasyUnlockService::Get(profile)
+      ->SetAutoPairingResult(params->result.success, error_message);
+
+  return true;
+}
+
 }  // namespace api
 }  // namespace extensions

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -125,6 +126,14 @@ class EasyUnlockService : public KeyedService {
 
   // Records metrics for password based flow for the given user.
   virtual void RecordPasswordLoginEvent(const std::string& user_id) const = 0;
+
+  // Starts auto pairing.
+  typedef base::Callback<void(bool success, const std::string& error)>
+      AutoPairingResultCallback;
+  virtual void StartAutoPairing(const AutoPairingResultCallback& callback) = 0;
+
+  // Sets auto pairing result.
+  virtual void SetAutoPairingResult(bool success, const std::string& error) = 0;
 
   // Whether easy unlock is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
