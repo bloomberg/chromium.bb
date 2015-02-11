@@ -42,10 +42,12 @@ TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
 TouchSelectionController::TouchSelectionController(
     TouchSelectionControllerClient* client,
     base::TimeDelta tap_timeout,
-    float tap_slop)
+    float tap_slop,
+    bool show_on_tap_for_empty_editable)
     : client_(client),
       tap_timeout_(tap_timeout),
       tap_slop_(tap_slop),
+      show_on_tap_for_empty_editable_(show_on_tap_for_empty_editable),
       response_pending_input_event_(INPUT_EVENT_TYPE_NONE),
       start_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
       end_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
@@ -305,7 +307,8 @@ void TouchSelectionController::ShowSelectionHandlesAutomatically() {
 void TouchSelectionController::OnInsertionChanged() {
   DeactivateSelection();
 
-  if (response_pending_input_event_ == TAP && selection_empty_) {
+  if (response_pending_input_event_ == TAP && selection_empty_ &&
+      !show_on_tap_for_empty_editable_) {
     HideAndDisallowShowingAutomatically();
     return;
   }

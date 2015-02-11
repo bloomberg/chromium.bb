@@ -260,10 +260,12 @@ scoped_ptr<ui::TouchSelectionController> CreateSelectionController(
   DCHECK(content_view_core);
   int tap_timeout_ms = gfx::ViewConfiguration::GetTapTimeoutInMs();
   int touch_slop_pixels = gfx::ViewConfiguration::GetTouchSlopInPixels();
+  bool show_on_tap_for_empty_editable = false;
   return make_scoped_ptr(new ui::TouchSelectionController(
       client,
       base::TimeDelta::FromMilliseconds(tap_timeout_ms),
-      touch_slop_pixels / content_view_core->GetDpiScale()));
+      touch_slop_pixels / content_view_core->GetDpiScale(),
+      show_on_tap_for_empty_editable));
 }
 
 scoped_ptr<OverscrollControllerAndroid> CreateOverscrollController(

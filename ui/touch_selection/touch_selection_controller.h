@@ -38,7 +38,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
  public:
   TouchSelectionController(TouchSelectionControllerClient* client,
                            base::TimeDelta tap_timeout,
-                           float tap_slop);
+                           float tap_slop,
+                           bool show_on_tap_for_empty_editable);
   ~TouchSelectionController() override;
 
   // To be called when the selection bounds have changed.
@@ -118,6 +119,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   TouchSelectionControllerClient* const client_;
   const base::TimeDelta tap_timeout_;
   const float tap_slop_;
+
+  // Controls whether an insertion handle is shown on a tap for an empty
+  // editable text.
+  bool show_on_tap_for_empty_editable_;
 
   InputEventType response_pending_input_event_;
 
