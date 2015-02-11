@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_BUTTON_CSS"
-             file="../../webui/resources/cr_elements/cr_toggle_button/cr-toggle-button.css"
+             file="../../webui/resources/cr_elements/cr_toggle_button/cr_toggle_button.css"
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_BUTTON_HTML"
-             file="../../webui/resources/cr_elements/cr_toggle_button/cr-toggle-button.html"
+             file="../../webui/resources/cr_elements/cr_toggle_button/cr_toggle_button.html"
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_BUTTON_JS"
-             file="../../webui/resources/cr_elements/cr_toggle_button/cr-toggle-button.js"
+             file="../../webui/resources/cr_elements/cr_toggle_button/cr_toggle_button.js"
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_EVENTS_HTML"
-             file="../../webui/resources/cr_elements/cr_events/cr-events.html"
+             file="../../webui/resources/cr_elements/cr_events/cr_events.html"
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_EVENTS_JS"
-             file="../../webui/resources/cr_elements/cr_events/cr-events.js"
+             file="../../webui/resources/cr_elements/cr_events/cr_events.js"
              type="chrome_html" />
 </grit-part>
