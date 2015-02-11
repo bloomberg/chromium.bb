@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/management_policy.h"
@@ -50,10 +51,6 @@ class WebContents;
 
 namespace extensions {
 class ExtensionRegistry;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace user_prefs {
@@ -216,8 +213,9 @@ class SupervisedUserService : public KeyedService,
     void SetManualHosts(scoped_ptr<std::map<std::string, bool>> host_map);
     void SetManualURLs(scoped_ptr<std::map<GURL, bool>> url_map);
 
-    void InitAsyncURLChecker(net::URLRequestContextGetter* context,
-                             const std::string& cx);
+    void InitAsyncURLChecker(
+        const scoped_refptr<net::URLRequestContextGetter>& context,
+        const std::string& cx);
 
     void Clear();
 

@@ -179,9 +179,9 @@ void SupervisedUserService::URLFilterContext::OnBlacklistLoaded(
 }
 
 void SupervisedUserService::URLFilterContext::InitAsyncURLChecker(
-    net::URLRequestContextGetter* context,
+    const scoped_refptr<net::URLRequestContextGetter>& context,
     const std::string& cx) {
-  ui_url_filter_->InitAsyncURLChecker(context, cx);
+  ui_url_filter_->InitAsyncURLChecker(context.get(), cx);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
