@@ -84,7 +84,7 @@ cr.define('options.browser_options', function() {
       });
 
       if (!this.isPlaceholder)
-        this.draggable = true;
+        titleEl.draggable = true;
     },
 
     /** @override */
@@ -178,7 +178,7 @@ cr.define('options.browser_options', function() {
         return false;
       }
 
-      var target = e.target;
+      var target = this.getTargetFromDropEvent_(e);
       // StartupPageListItem should be the only draggable element type in the
       // page but let's make sure.
       if (target instanceof StartupPageListItem) {
