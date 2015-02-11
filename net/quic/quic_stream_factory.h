@@ -107,6 +107,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int load_server_info_timeout,
       float load_server_info_timeout_srtt_multiplier,
       bool enable_truncated_connection_ids,
+      bool enable_connection_racing,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 

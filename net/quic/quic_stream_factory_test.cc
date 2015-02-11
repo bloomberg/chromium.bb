@@ -205,6 +205,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*load_server_info_timeout=*/0u,
                  /*load_server_info_timeout_srtt_multiplier=*/0.0f,
                  /*enable_truncated_connection_ids=*/true,
+                 /*enable_connection_racing=*/false,
                  QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),

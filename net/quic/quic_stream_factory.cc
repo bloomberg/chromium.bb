@@ -595,6 +595,7 @@ QuicStreamFactory::QuicStreamFactory(
     int load_server_info_timeout,
     float load_server_info_timeout_srtt_multiplier,
     bool enable_truncated_connection_ids,
+    bool enable_connection_racing,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -616,7 +617,7 @@ QuicStreamFactory::QuicStreamFactory(
       load_server_info_timeout_srtt_multiplier_(
           load_server_info_timeout_srtt_multiplier),
       enable_truncated_connection_ids_(enable_truncated_connection_ids),
-      enable_connection_racing_(false),
+      enable_connection_racing_(enable_connection_racing),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       task_runner_(nullptr),
