@@ -70,6 +70,9 @@ MouseEvent::MouseEvent()
     : m_button(0)
     , m_buttons(0)
     , m_buttonDown(false)
+    , m_relatedTarget(nullptr)
+    , m_dataTransfer(nullptr)
+    , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
 {
 }
 
@@ -104,6 +107,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& init
     , m_buttonDown(initializer.button() != (unsigned short)-1)
     , m_relatedTarget(initializer.relatedTarget())
     , m_dataTransfer(nullptr)
+    , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
 {
     initCoordinates(IntPoint(initializer.clientX(), initializer.clientY()));
 }
