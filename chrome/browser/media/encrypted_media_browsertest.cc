@@ -317,15 +317,16 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
                             const std::string& expected_title) {
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.
-    RunEncryptedMediaTest(kDefaultEmePlayer,
-                          "bear-a_enc-a.webm",
-                          kWebMAudioOnly,
-                          key_system,
-                          SRC,
-                          PREFIXED,
-                          kNoSessionToLoad,
-                          false,
-                          expected_title);
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
+                          kWebMAudioOnly, key_system, SRC, UNPREFIXED,
+                          kNoSessionToLoad, false, expected_title);
+  }
+
+  void TestPlaybackCase(const std::string& session_to_load,
+                        const std::string& expected_title) {
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
+                          kWebMVideoOnly, kExternalClearKeyKeySystem, SRC,
+                          UNPREFIXED, session_to_load, false, expected_title);
   }
 
  protected:
@@ -337,10 +338,26 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
 
 // Tests encrypted media playback using ExternalClearKey key system in
 // decrypt-and-decode mode for unprefixed EME.
-// TODO(jrummell): Make ECKEncryptedMediaTest run the unprefixed tests and add
-// a prefixed class to run the prefixed tests. (Once prefixed is disabled by
-// default, we will need a subclass to enable it from the command line.)
-class ECKUnprefixedEncryptedMediaTest : public EncryptedMediaTestBase {
+class ECKPrefixedEncryptedMediaTest : public EncryptedMediaTestBase {
+ public:
+  // We use special |key_system| names to do non-playback related tests, e.g.
+  // kExternalClearKeyFileIOTestKeySystem is used to test file IO.
+  void TestNonPlaybackCases(const std::string& key_system,
+                            const std::string& expected_title) {
+    // Since we do not test playback, arbitrarily choose a test file and source
+    // type.
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
+                          kWebMAudioOnly, key_system, SRC, PREFIXED,
+                          kNoSessionToLoad, false, expected_title);
+  }
+
+  void TestPlaybackCase(const std::string& session_to_load,
+                        const std::string& expected_title) {
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
+                          kWebMVideoOnly, kExternalClearKeyKeySystem, SRC,
+                          PREFIXED, session_to_load, false, expected_title);
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -363,8 +380,8 @@ class WVEncryptedMediaTest : public EncryptedMediaTestBase {
 
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
-// - bool: True to load media using MSE, otherwise use src.
-// - bool: True to use unprefixed EME, otherwise use prefixed EME.
+// - SrcType: Use MSE or SRC.
+// - EmeVersion: Use PREFIXED or UNPREFIXED EME.
 //
 // Note: Only parameterized (*_P) tests can be used. Non-parameterized (*_F)
 // tests will crash at GetParam(). To add non-parameterized tests, use
@@ -449,10 +466,7 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey_Prefixed,
                                 Values(SRC),
                                 Values(PREFIXED)));
 
-// TODO(jrummell): Enable unprefixed tests before shipping unprefixed EME.
-// Disabled now as they don't provide much additional coverage, but do take a
-// bit of time to execute.
-INSTANTIATE_TEST_CASE_P(DISABLED_SRC_ClearKey,
+INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem),
                                 Values(SRC),
@@ -515,14 +529,11 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine_Prefixed,
                                 Values(MSE),
                                 Values(PREFIXED)));
 
-// Following tests fail if Widevine is loaded as a component, crbug.com/356833.
-#if !defined(WIDEVINE_CDM_IS_COMPONENT)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
                         Combine(Values(kWidevineKeySystem),
                                 Values(MSE),
                                 Values(UNPREFIXED)));
-#endif  // !defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 // These tests time out in Chrome OS official builds. http://crbug.com/430711
@@ -669,52 +680,47 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-320x240-v_enc-v.webm",
-                        kWebMVideoOnly,
-                        kExternalClearKeyKeySystem,
-                        SRC,
-                        PREFIXED,
-                        kLoadableSession,
-                        false,
-                        kEnded);
+  TestPlaybackCase(kLoadableSession, kEnded);
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
   // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-320x240-v_enc-v.webm",
-                        kWebMVideoOnly,
-                        kExternalClearKeyKeySystem,
-                        SRC,
-                        PREFIXED,
-                        kUnknownSession,
-                        false,
-                        kEmeKeyError);
+  TestPlaybackCase(kUnknownSession, kEmeKeyError);
 }
 
-IN_PROC_BROWSER_TEST_F(ECKUnprefixedEncryptedMediaTest, LoadLoadableSession) {
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-320x240-v_enc-v.webm",
-                        kWebMVideoOnly,
-                        kExternalClearKeyKeySystem,
-                        SRC,
-                        UNPREFIXED,
-                        kLoadableSession,
-                        false,
-                        kEnded);
+IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, InitializeCDMFail) {
+  TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem, kEmeKeyError);
 }
 
-IN_PROC_BROWSER_TEST_F(ECKUnprefixedEncryptedMediaTest, LoadUnknownSession) {
+// When CDM crashes, we should still get a decode error.
+// crbug.com/386657
+IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest,
+                       DISABLED_CDMCrashDuringDecode) {
+  IgnorePluginCrash();
+  TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
+}
+
+// Testing that the media browser test does fail on plugin crash.
+// crbug.com/386657
+IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest,
+                       DISABLED_CDMExpectedCrash) {
+  // Plugin crash is not ignored by default, the test is expected to fail.
+  EXPECT_NONFATAL_FAILURE(
+      TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError),
+      "plugin crash");
+}
+
+IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, FileIOTest) {
+  TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem,
+                       kFileIOTestSuccess);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, LoadLoadableSession) {
+  TestPlaybackCase(kLoadableSession, kEnded);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, LoadUnknownSession) {
   // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-320x240-v_enc-v.webm",
-                        kWebMVideoOnly,
-                        kExternalClearKeyKeySystem,
-                        SRC,
-                        UNPREFIXED,
-                        kUnknownSession,
-                        false,
-                        kEmeKeyError);
+  TestPlaybackCase(kUnknownSession, kEmeKeyError);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)

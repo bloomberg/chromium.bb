@@ -186,8 +186,7 @@ PlayerUtils.createPlayer = function(video, testConfig) {
           return PrefixedClearKeyPlayer;
         return ClearKeyPlayer;
       case FILE_IO_TEST_KEYSYSTEM:
-        if (usePrefixedEME)
-          return FileIOTestPlayer;
+        return FileIOTestPlayer;
       default:
         Utils.timeLog(keySystem + ' is not a known key system');
         if (usePrefixedEME)
