@@ -179,25 +179,6 @@ bool PopupListBox::handleWheelEvent(const PlatformWheelEvent& event)
     return true;
 }
 
-// Should be kept in sync with handleKeyEvent().
-bool PopupListBox::isInterestedInEventForKey(int keyCode)
-{
-    switch (keyCode) {
-    case VKEY_ESCAPE:
-    case VKEY_RETURN:
-    case VKEY_UP:
-    case VKEY_DOWN:
-    case VKEY_PRIOR:
-    case VKEY_NEXT:
-    case VKEY_HOME:
-    case VKEY_END:
-    case VKEY_TAB:
-        return true;
-    default:
-        return false;
-    }
-}
-
 bool PopupListBox::handleTouchEvent(const PlatformTouchEvent&)
 {
     return false;

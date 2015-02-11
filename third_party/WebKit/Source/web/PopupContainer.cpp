@@ -388,11 +388,6 @@ void PopupContainer::paintBorder(GraphicsContext* gc, const IntRect& rect)
     gc->drawRect(IntRect(tx + width() - borderSize, ty, borderSize, height()));
 }
 
-bool PopupContainer::isInterestedInEventForKey(int keyCode)
-{
-    return m_listBox->isInterestedInEventForKey(keyCode);
-}
-
 ChromeClient& PopupContainer::chromeClient()
 {
     return m_frameView->frame().page()->chrome().client();
@@ -430,28 +425,6 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
     // parent WebWidget.
     setFrameRect(IntRect(IntPoint(), controlSize));
     showPopup(v);
-}
-
-IntRect PopupContainer::refresh(const IntRect& targetControlRect)
-{
-    m_listBox->setBaseWidth(std::max(m_controlSize.width() - borderSize * 2, 0));
-    m_listBox->updateFromElement();
-
-    IntPoint locationInWindow = m_frameView->contentsToWindow(targetControlRect.location());
-
-    // Move it below the select widget.
-    locationInWindow.move(0, targetControlRect.height());
-
-    IntRect widgetRectInScreen = layoutAndCalculateWidgetRect(targetControlRect.height(), IntSize(), locationInWindow);
-
-    // Reset the size (which can be set to the PopupListBox size in
-    // layoutAndGetRTLOffset(), exceeding the available widget rectangle.)
-    if (size() != widgetRectInScreen.size())
-        resize(widgetRectInScreen.size());
-
-    invalidate();
-
-    return widgetRectInScreen;
 }
 
 inline bool PopupContainer::isRTL() const
@@ -501,40 +474,6 @@ void PopupContainer::popupOpened(const IntRect& bounds)
     // transparent to the WebView.
     webView->popupOpened(this);
     toWebPopupMenuImpl(webwidget)->initialize(this, bounds);
-}
-
-void PopupContainer::getPopupMenuInfo(WebPopupMenuInfo* info)
-{
-    const Vector<OwnPtr<PopupItem>>& inputItems = m_listBox->items();
-    WebVector<WebMenuItemInfo> outputItems(inputItems.size());
-
-    for (size_t i = 0; i < inputItems.size(); ++i) {
-        const PopupItem& inputItem = *inputItems[i];
-        WebMenuItemInfo& outputItem = outputItems[i];
-
-        outputItem.label = inputItem.label;
-        outputItem.enabled = inputItem.enabled;
-        outputItem.textDirection = toWebTextDirection(inputItem.textDirection);
-        outputItem.hasTextDirectionOverride = inputItem.hasTextDirectionOverride;
-
-        switch (inputItem.type) {
-        case PopupItem::TypeOption:
-            outputItem.type = WebMenuItemInfo::Option;
-            break;
-        case PopupItem::TypeGroup:
-            outputItem.type = WebMenuItemInfo::Group;
-            break;
-        case PopupItem::TypeSeparator:
-            outputItem.type = WebMenuItemInfo::Separator;
-            break;
-        }
-    }
-
-    info->itemHeight = menuItemHeight();
-    info->itemFontSize = menuItemFontSize();
-    info->selectedIndex = selectedIndex();
-    info->items.swap(outputItems);
-    info->rightAligned = menuStyle().textDirection() == RTL;
 }
 
 void PopupContainer::invalidateRect(const IntRect& rect)

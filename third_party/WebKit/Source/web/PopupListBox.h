@@ -156,9 +156,6 @@ public:
     // Computes the size of widget and children.
     virtual void layout() override;
 
-    // Returns whether the popup wants to process events for the passed key.
-    bool isInterestedInEventForKey(int keyCode);
-
     // Gets the height of a row.
     int getRowHeight(int index) const;
 
@@ -171,8 +168,6 @@ public:
     virtual void setMaxWidthAndLayout(int) override;
 
     void disconnectClient() { m_popupClient = 0; }
-
-    const Vector<OwnPtr<PopupItem>>& items() const { return m_items; }
 
     virtual int popupContentHeight() const override;
 

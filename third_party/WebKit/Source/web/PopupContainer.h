@@ -52,9 +52,6 @@ class PopupContainer final : public Widget {
 public:
     static PassRefPtrWillBeRawPtr<PopupContainer> create(PopupMenuClient*, bool deviceSupportsTouch);
 
-    // Whether a key event should be sent to this popup.
-    bool isInterestedInEventForKey(int keyCode);
-
     // Widget
     virtual void paint(GraphicsContext*, const IntRect&) override;
     virtual void hide() override;
@@ -100,9 +97,6 @@ public:
     // has selected with the keyboard up/down arrows.
     int selectedIndex() const;
 
-    // Refresh the popup values from the PopupMenuClient.
-    IntRect refresh(const IntRect& targetControlRect);
-
     // The height of a row in the menu.
     int menuItemHeight() const;
 
@@ -139,7 +133,6 @@ private:
     void fitToListBox();
 
     void popupOpened(const IntRect& bounds);
-    void getPopupMenuInfo(WebPopupMenuInfo*);
 
     // Returns the ChromeClient of the page this popup is associated with.
     ChromeClient& chromeClient();
