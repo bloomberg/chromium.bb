@@ -191,7 +191,11 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
 
     CSSToLengthConversionData::FontSizes fontSizes(documentStyle, documentStyle);
     CSSToLengthConversionData::ViewportSize viewportSize(width, height);
-    Length result = primitiveValue->convertToLength<AnyConversion>(CSSToLengthConversionData(documentStyle, fontSizes, viewportSize, 1.0f));
+
+    if (primitiveValue->getValueID() == CSSValueAuto)
+        return Length(Auto);
+
+    Length result = primitiveValue->convertToLength(CSSToLengthConversionData(documentStyle, fontSizes, viewportSize, 1.0f));
     if (documentStyle->hasViewportUnits())
         m_document->setHasViewportUnits();
     documentStyle->setHasViewportUnits(documentStyleHasViewportUnits);

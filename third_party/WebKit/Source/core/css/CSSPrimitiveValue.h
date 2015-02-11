@@ -277,8 +277,8 @@ public:
      */
     template<typename T> T computeLength(const CSSToLengthConversionData&);
 
-    // Converts to a Length, mapping various unit types appropriately.
-    template<int> Length convertToLength(const CSSToLengthConversionData&);
+    // Converts to a Length (Fixed, Percent or Calculated)
+    Length convertToLength(const CSSToLengthConversionData&);
 
     double getDoubleValue(UnitType) const;
     double getDoubleValue() const;

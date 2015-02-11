@@ -3930,27 +3930,6 @@ template<> inline CSSPrimitiveValue::operator ETransformStyle3D() const
     return TransformStyle3DFlat;
 }
 
-enum LengthConversion {
-    AnyConversion = ~0,
-    FixedConversion = 1 << 0,
-    AutoConversion = 1 << 1,
-    PercentConversion = 1 << 2,
-};
-
-template<int supported> Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conversionData)
-{
-    if ((supported & FixedConversion) && isLength())
-        return computeLength<Length>(conversionData);
-    if ((supported & PercentConversion) && isPercentage())
-        return Length(getDoubleValue(), Percent);
-    if ((supported & AutoConversion) && getValueID() == CSSValueAuto)
-        return Length(Auto);
-    if ((supported & FixedConversion) && (supported & PercentConversion) && isCalculated())
-        return Length(cssCalcValue()->toCalcValue(conversionData));
-    ASSERT_NOT_REACHED();
-    return Length(0, Fixed);
-}
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBufferedRendering e)
     : CSSValue(PrimitiveClass)
 {

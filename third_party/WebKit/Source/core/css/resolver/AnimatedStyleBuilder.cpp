@@ -69,9 +69,8 @@ Length animatableValueToLength(const AnimatableValue* value, const StyleResolver
 {
     if (value->isLength())
         return toAnimatableLength(value)->length(state.style()->effectiveZoom(), range);
-    RefPtrWillBeRawPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
-    CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
-    return cssPrimitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData());
+    ASSERT(toAnimatableUnknown(value)->toCSSValueID() == CSSValueAuto);
+    return Length(Auto);
 }
 
 BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* value, const StyleResolverState& state)
@@ -80,9 +79,8 @@ BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* valu
         return BorderImageLength(toAnimatableLength(value)->length(state.style()->effectiveZoom(), ValueRangeNonNegative));
     if (value->isDouble())
         return BorderImageLength(clampTo<double>(toAnimatableDouble(value)->toDouble(), 0));
-    RefPtrWillBeRawPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
-    CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
-    return BorderImageLength(cssPrimitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData()));
+    ASSERT(toAnimatableUnknown(value)->toCSSValueID() == CSSValueAuto);
+    return Length(Auto);
 }
 
 template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())

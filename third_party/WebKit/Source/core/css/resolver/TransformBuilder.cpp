@@ -47,7 +47,7 @@ namespace blink {
 static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const CSSToLengthConversionData& conversionData)
 {
     ASSERT(primitiveValue);
-    return primitiveValue->convertToLength<FixedConversion | PercentConversion>(conversionData);
+    return primitiveValue->convertToLength(conversionData);
 }
 
 static TransformOperation::OperationType getTransformOperationType(CSSTransformValue::TransformOperationType type)

@@ -170,7 +170,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
         case CSSFilterValue::BlurFilterOperation: {
             Length stdDeviation = Length(0, Fixed);
             if (filterValue->length() >= 1)
-                stdDeviation = firstValue->convertToLength<FixedConversion | PercentConversion>(conversionData);
+                stdDeviation = firstValue->convertToLength(conversionData);
             operations.operations().append(BlurFilterOperation::create(stdDeviation));
             break;
         }

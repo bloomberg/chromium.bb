@@ -513,7 +513,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(i.value());
         if (!primitiveValue->getValueID())
-            lengthOrPercentageValue = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+            lengthOrPercentageValue = primitiveValue->convertToLength(state.cssToLengthConversionData());
         else if (primitiveValue->getValueID() == CSSValueEachLine)
             textIndentLineValue = TextIndentEachLine;
         else if (primitiveValue->getValueID() == CSSValueHanging)
@@ -617,7 +617,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverStat
         return;
     }
 
-    state.style()->setVerticalAlignLength(primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
+    state.style()->setVerticalAlignLength(primitiveValue->convertToLength(state.cssToLengthConversionData()));
 }
 
 static void resetEffectiveZoom(StyleResolverState& state)

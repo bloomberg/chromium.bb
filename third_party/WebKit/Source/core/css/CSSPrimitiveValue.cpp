@@ -756,6 +756,16 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(UnitType unitTyp
     return factor;
 }
 
+Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conversionData)
+{
+    if (isLength())
+        return computeLength<Length>(conversionData);
+    if (isPercentage())
+        return Length(getDoubleValue(), Percent);
+    ASSERT(isCalculated());
+    return Length(cssCalcValue()->toCalcValue(conversionData));
+}
+
 double CSSPrimitiveValue::getDoubleValue(UnitType unitType) const
 {
     double result = 0;

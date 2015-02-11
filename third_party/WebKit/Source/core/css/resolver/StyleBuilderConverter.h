@@ -61,8 +61,8 @@ public:
     static GridPosition convertGridPosition(StyleResolverState&, CSSValue*);
     static GridTrackSize convertGridTrackSize(StyleResolverState&, CSSValue*);
     template <typename T> static T convertLineWidth(StyleResolverState&, CSSValue*);
-    static Length convertLength(StyleResolverState&, CSSValue*);
-    static Length convertLengthOrAuto(StyleResolverState&, CSSValue*);
+    static Length convertLength(const StyleResolverState&, CSSValue*);
+    static Length convertLengthOrAuto(const StyleResolverState&, CSSValue*);
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
     static TabSize convertLengthOrTabSpaces(StyleResolverState&, CSSValue*);

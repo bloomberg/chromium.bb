@@ -132,7 +132,7 @@ static Length convertToLength(const StyleResolverState& state, CSSPrimitiveValue
 {
     if (!value)
         return Length(0, Fixed);
-    return value->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+    return value->convertToLength(state.cssToLengthConversionData());
 }
 
 static LengthSize convertToLengthSize(const StyleResolverState& state, CSSPrimitiveValue* value)

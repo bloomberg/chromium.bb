@@ -54,7 +54,7 @@ static GridLength convertGridTrackBreadth(const StyleResolverState& state, CSSPr
     if (primitiveValue->isFlex())
         return GridLength(primitiveValue->getDoubleValue());
 
-    return primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
+    return StyleBuilderConverter::convertLengthOrAuto(state, primitiveValue);
 }
 
 } // namespace
@@ -70,7 +70,7 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolv
     RefPtr<StyleReflection> reflection = StyleReflection::create();
     reflection->setDirection(*reflectValue->direction());
     if (reflectValue->offset())
-        reflection->setOffset(reflectValue->offset()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
+        reflection->setOffset(reflectValue->offset()->convertToLength(state.cssToLengthConversionData()));
     NinePieceImage mask;
     mask.setMaskDefaults();
     CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBoxReflect, reflectValue->mask(), mask);
@@ -493,16 +493,17 @@ void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const Named
     }
 }
 
-Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertLength(const StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    return primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+    return toCSSPrimitiveValue(value)->convertToLength(state.cssToLengthConversionData());
 }
 
-Length StyleBuilderConverter::convertLengthOrAuto(StyleResolverState& state, CSSValue* value)
+Length StyleBuilderConverter::convertLengthOrAuto(const StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    return primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
+    if (primitiveValue->getValueID() == CSSValueAuto)
+        return Length(Auto);
+    return primitiveValue->convertToLength(state.cssToLengthConversionData());
 }
 
 Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSSValue* value)
@@ -551,8 +552,8 @@ LengthPoint StyleBuilderConverter::convertLengthPoint(StyleResolverState& state,
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* pair = primitiveValue->getPairValue();
-    Length x = pair->first()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    Length y = pair->second()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+    Length x = pair->first()->convertToLength(state.cssToLengthConversionData());
+    Length y = pair->second()->convertToLength(state.cssToLengthConversionData());
     return LengthPoint(x, y);
 }
 
@@ -716,8 +717,8 @@ LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSVa
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* pair = primitiveValue->getPairValue();
-    Length radiusWidth = pair->first()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    Length radiusHeight = pair->second()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+    Length radiusWidth = pair->first()->convertToLength(state.cssToLengthConversionData());
+    Length radiusHeight = pair->second()->convertToLength(state.cssToLengthConversionData());
     float width = radiusWidth.value();
     float height = radiusHeight.value();
     ASSERT(width >= 0 && height >= 0);

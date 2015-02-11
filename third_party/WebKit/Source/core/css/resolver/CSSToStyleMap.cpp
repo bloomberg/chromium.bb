@@ -36,6 +36,7 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/style/BorderImageLengthBox.h"
 #include "core/layout/style/FillLayer.h"
@@ -194,10 +195,10 @@ void CSSToStyleMap::mapFillSize(StyleResolverState& state, FillLayer* layer, CSS
     Length secondLength;
 
     if (Pair* pair = primitiveValue->getPairValue()) {
-        firstLength = pair->first()->convertToLength<AnyConversion>(state.cssToLengthConversionData());
-        secondLength = pair->second()->convertToLength<AnyConversion>(state.cssToLengthConversionData());
+        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, pair->first());
+        secondLength = StyleBuilderConverter::convertLengthOrAuto(state, pair->second());
     } else {
-        firstLength = primitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData());
+        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, primitiveValue);
         secondLength = Length();
     }
 
@@ -221,7 +222,7 @@ void CSSToStyleMap::mapFillXPosition(StyleResolverState& state, FillLayer* layer
     if (pair)
         primitiveValue = pair->second();
 
-    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+    Length length = primitiveValue->convertToLength(state.cssToLengthConversionData());
 
     layer->setXPosition(length);
     if (pair)
@@ -243,7 +244,7 @@ void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer
     if (pair)
         primitiveValue = pair->second();
 
-    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+    Length length = primitiveValue->convertToLength(state.cssToLengthConversionData());
 
     layer->setYPosition(length);
     if (pair)
