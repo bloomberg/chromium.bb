@@ -455,11 +455,11 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (updateChildTransformLayer(needsChildTransformLayer))
         layerConfigChanged = true;
 
-    updateScrollParent(scrollParent);
-    updateClipParent();
-
     if (updateSquashingLayers(!m_squashedLayers.isEmpty()))
         layerConfigChanged = true;
+
+    updateScrollParent(scrollParent);
+    updateClipParent();
 
     if (layerConfigChanged)
         updateInternalHierarchy();
@@ -1625,6 +1625,18 @@ void CompositedLayerMapping::updateScrollParent(Layer* scrollParent)
     }
 }
 
+static void updateClipParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer* topmostLayer, Layer* clipParent, ScrollingCoordinator* scrollingCoordinator)
+{
+    if (!layer)
+        return;
+
+    // Only the topmost layer has a scroll parent. All other layers have a null scroll parent.
+    if (layer != topmostLayer)
+        clipParent = 0;
+
+    scrollingCoordinator->updateClipParentForGraphicsLayer(layer, clipParent);
+}
+
 void CompositedLayerMapping::updateClipParent()
 {
     if (owningLayerClippedByLayerNotAboveCompositedAncestor())
@@ -1634,8 +1646,12 @@ void CompositedLayerMapping::updateClipParent()
     if (clipParent)
         clipParent = clipParent->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
 
-    if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer))
-        scrollingCoordinator->updateClipParentForGraphicsLayer(m_graphicsLayer.get(), clipParent);
+    if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
+        GraphicsLayer* topmostLayer = childForSuperlayers();
+        updateClipParentForGraphicsLayer(m_squashingContainmentLayer.get(), topmostLayer, clipParent, scrollingCoordinator);
+        updateClipParentForGraphicsLayer(m_ancestorClippingLayer.get(), topmostLayer, clipParent, scrollingCoordinator);
+        updateClipParentForGraphicsLayer(m_graphicsLayer.get(), topmostLayer, clipParent, scrollingCoordinator);
+    }
 }
 
 bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)

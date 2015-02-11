@@ -1795,6 +1795,8 @@ crbug.com/449023 http/tests/security/mixedContent/insecure-image-in-main-frame-a
 
 crbug.com/449081 [ Mac Linux Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-max-int-size.html [ Pass Failure ]
 
+crbug.com/457074 compositing/squashing/squashed-clip-parent.html [ ImageOnlyFailure ]
+
 crbug.com/454729 svg/animations/dynamic-modify-transform-without-baseval.html [ Pass Timeout ]
 
 crbug.com/455140 http/tests/loading/bad-scheme-subframe.html [ Pass Failure ]
