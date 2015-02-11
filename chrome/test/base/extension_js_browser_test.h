@@ -17,7 +17,7 @@ class ExtensionJSBrowserTest : public JavaScriptBrowserTest {
  public:
   ExtensionJSBrowserTest();
 
-  virtual ~ExtensionJSBrowserTest();
+  ~ExtensionJSBrowserTest() override;
 
  protected:
   // Waits for an extension to load; returns immediately if already loaded.

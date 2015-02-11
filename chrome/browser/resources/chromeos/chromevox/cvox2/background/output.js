@@ -13,6 +13,8 @@ goog.require('AutomationUtil.Dir');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
+goog.require('cvox.AbstractEarcons');
+goog.require('cvox.NavBraille');
 goog.require('cvox.Spannable');
 goog.require('cvox.ValueSelectionSpan');
 goog.require('cvox.ValueSpan');
