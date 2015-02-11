@@ -103,3 +103,27 @@ android_gcc_toolchain("mipsel") {
   tool_prefix = "$mips_android_toolchain_root/bin/mipsel-linux-android-"
   toolchain_cpu_arch = "mipsel"
 }
+
+android_gcc_toolchain("x64") {
+  android_ndk_sysroot = "$android_ndk_root/$x86_64_android_sysroot_subdir"
+  android_ndk_lib_dir = "usr/lib"
+
+  tool_prefix = "$x86_64_android_toolchain_root/bin/x86_64-linux-android-"
+  toolchain_cpu_arch = "x86_64"
+}
+
+android_gcc_toolchain("arm64") {
+  android_ndk_sysroot = "$android_ndk_root/$arm64_android_sysroot_subdir"
+  android_ndk_lib_dir = "usr/lib"
+
+  tool_prefix = "$arm64_android_toolchain_root/bin/arm-linux-androideabi-"
+  toolchain_cpu_arch = "aarch64"
+}
+
+android_gcc_toolchain("mips64el") {
+  android_ndk_sysroot = "$android_ndk_root/$mips64_android_sysroot_subdir"
+  android_ndk_lib_dir = "usr/lib"
+
+  tool_prefix = "$mips64_android_toolchain_root/bin/mipsel-linux-android-"
+  toolchain_cpu_arch = "mipsel64el"
+}
