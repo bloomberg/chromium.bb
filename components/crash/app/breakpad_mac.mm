@@ -237,7 +237,7 @@ void InitCrashReporter(const std::string& process_type) {
   // Initialize Breakpad.
   gBreakpadRef = BreakpadCreate(breakpad_config);
   if (!gBreakpadRef) {
-    LOG_IF(ERROR, base::mac::AmIBundled()) << "Breakpad initializaiton failed";
+    LOG_IF(ERROR, base::mac::AmIBundled()) << "Breakpad initialization failed";
     return;
   }
 
