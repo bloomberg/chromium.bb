@@ -52,6 +52,7 @@
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/AudioTrackList.h"
+#include "core/html/track/AutomaticTrackSelection.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
@@ -62,7 +63,6 @@
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "platform/ContentType.h"
-#include "platform/Language.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -2841,170 +2841,19 @@ void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement)
         m_textTracksWhenResourceSelectionBegan.remove(index);
 }
 
-static int textTrackLanguageSelectionScore(const TextTrack& track)
-{
-    if (track.language().isEmpty())
-        return 0;
-
-    Vector<AtomicString> languages = userPreferredLanguages();
-    size_t languageMatchIndex = indexOfBestMatchingLanguageInList(track.language(), languages);
-    if (languageMatchIndex >= languages.size())
-        return 0;
-
-    return languages.size() - languageMatchIndex;
-}
-
-static int textTrackSelectionScore(const TextTrack& track)
-{
-    if (track.kind() != TextTrack::captionsKeyword() && track.kind() != TextTrack::subtitlesKeyword())
-        return 0;
-
-    return textTrackLanguageSelectionScore(track);
-}
-
-void HTMLMediaElement::performAutomaticTextTrackSelection(const TrackGroup& group)
-{
-    ASSERT(group.tracks.size());
-
-    WTF_LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%p, %d)", this, group.kind);
-
-    // First, find the track in the group that should be enabled (if any).
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> currentlyEnabledTracks;
-    RefPtrWillBeRawPtr<TextTrack> trackToEnable = nullptr;
-    RefPtrWillBeRawPtr<TextTrack> defaultTrack = nullptr;
-    RefPtrWillBeRawPtr<TextTrack> fallbackTrack = nullptr;
-    int highestTrackScore = 0;
-    for (size_t i = 0; i < group.tracks.size(); ++i) {
-        RefPtrWillBeRawPtr<TextTrack> textTrack = group.tracks[i];
-
-        if (m_processingPreferenceChange && textTrack->mode() == TextTrack::showingKeyword())
-            currentlyEnabledTracks.append(textTrack);
-
-        int trackScore = textTrackSelectionScore(*textTrack);
-        if (trackScore) {
-            // * If the text track kind is { [subtitles or captions] [descriptions] } and the user has indicated an interest in having a
-            // track with this text track kind, text track language, and text track label enabled, and there is no
-            // other text track in the media element's list of text tracks with a text track kind of either subtitles
-            // or captions whose text track mode is showing
-            // ...
-            // * If the text track kind is chapters and the text track language is one that the user agent has reason
-            // to believe is appropriate for the user, and there is no other text track in the media element's list of
-            // text tracks with a text track kind of chapters whose text track mode is showing
-            //    Let the text track mode be showing.
-            if (trackScore > highestTrackScore) {
-                highestTrackScore = trackScore;
-                trackToEnable = textTrack;
-            }
-
-            if (!defaultTrack && textTrack->isDefault())
-                defaultTrack = textTrack;
-            if (!defaultTrack && !fallbackTrack)
-                fallbackTrack = textTrack;
-        } else if (!group.visibleTrack && !defaultTrack && textTrack->isDefault()) {
-            // * If the track element has a default attribute specified, and there is no other text track in the media
-            // element's list of text tracks whose text track mode is showing or showing by default
-            //    Let the text track mode be showing by default.
-            defaultTrack = textTrack;
-        }
-    }
-
-    if (!trackToEnable && defaultTrack)
-        trackToEnable = defaultTrack;
-
-    // If no track matches the user's preferred language and non was marked 'default', enable the first track
-    // because the user has explicitly stated a preference for this kind of track.
-    if (!fallbackTrack && m_closedCaptionsVisible && group.kind == TrackGroup::CaptionsAndSubtitles)
-        fallbackTrack = group.tracks[0];
-
-    if (!trackToEnable && fallbackTrack)
-        trackToEnable = fallbackTrack;
-
-    if (currentlyEnabledTracks.size()) {
-        for (size_t i = 0; i < currentlyEnabledTracks.size(); ++i) {
-            RefPtrWillBeRawPtr<TextTrack> textTrack = currentlyEnabledTracks[i];
-            if (textTrack != trackToEnable)
-                textTrack->setMode(TextTrack::disabledKeyword());
-        }
-    }
-
-    if (trackToEnable)
-        trackToEnable->setMode(TextTrack::showingKeyword());
-}
-
-void HTMLMediaElement::enableDefaultMetadataTextTracks(const TrackGroup& group)
-{
-    ASSERT(group.tracks.size());
-
-    // https://html.spec.whatwg.org/multipage/embedded-content.html#honor-user-preferences-for-automatic-text-track-selection
-
-    // 4. If there are any text tracks in the media element's list of text
-    // tracks whose text track kind is metadata that correspond to track
-    // elements with a default attribute set whose text track mode is set to
-    // disabled, then set the text track mode of all such tracks to hidden
-    for (auto& textTrack : group.tracks) {
-        if (textTrack->mode() != TextTrack::disabledKeyword())
-            continue;
-        if (!textTrack->isDefault())
-            continue;
-        textTrack->setMode(TextTrack::hiddenKeyword());
-    }
-}
-
 void HTMLMediaElement::honorUserPreferencesForAutomaticTextTrackSelection()
 {
-    TrackGroup captionAndSubtitleTracks(TrackGroup::CaptionsAndSubtitles);
-    TrackGroup descriptionTracks(TrackGroup::Description);
-    TrackGroup chapterTracks(TrackGroup::Chapter);
-    TrackGroup metadataTracks(TrackGroup::Metadata);
-
-    if (!m_textTracks)
+    if (!m_textTracks || !m_textTracks->length())
         return;
 
-    for (size_t i = 0; i < m_textTracks->length(); ++i) {
-        RefPtrWillBeRawPtr<TextTrack> textTrack = m_textTracks->item(i);
-        if (!textTrack)
-            continue;
+    AutomaticTrackSelection::Configuration configuration;
+    if (m_processingPreferenceChange)
+        configuration.disableCurrentlyEnabledTracks = true;
+    if (m_closedCaptionsVisible)
+        configuration.forceEnableSubtitleOrCaptionTrack = true;
 
-        String kind = textTrack->kind();
-        TrackGroup* currentGroup;
-        if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword()) {
-            currentGroup = &captionAndSubtitleTracks;
-        } else if (kind == TextTrack::descriptionsKeyword()) {
-            currentGroup = &descriptionTracks;
-        } else if (kind == TextTrack::chaptersKeyword()) {
-            currentGroup = &chapterTracks;
-        } else {
-            ASSERT(kind == TextTrack::metadataKeyword());
-            currentGroup = &metadataTracks;
-        }
-
-        if (!currentGroup->visibleTrack && textTrack->mode() == TextTrack::showingKeyword())
-            currentGroup->visibleTrack = textTrack;
-        if (!currentGroup->defaultTrack && textTrack->isDefault())
-            currentGroup->defaultTrack = textTrack;
-
-        // Do not add this track to the group if it has already been automatically configured
-        // as we only want to perform selection once per track so that adding another track
-        // after the initial configuration doesn't reconfigure every track - only those that
-        // should be changed by the new addition. For example all metadata tracks are
-        // disabled by default, and we don't want a track that has been enabled by script
-        // to be disabled automatically when a new metadata track is added later.
-        if (textTrack->hasBeenConfigured())
-            continue;
-
-        if (textTrack->language().length())
-            currentGroup->hasSrcLang = true;
-        currentGroup->tracks.append(textTrack);
-    }
-
-    if (captionAndSubtitleTracks.tracks.size())
-        performAutomaticTextTrackSelection(captionAndSubtitleTracks);
-    if (descriptionTracks.tracks.size())
-        performAutomaticTextTrackSelection(descriptionTracks);
-    if (chapterTracks.tracks.size())
-        performAutomaticTextTrackSelection(chapterTracks);
-    if (metadataTracks.tracks.size())
-        enableDefaultMetadataTextTracks(metadataTracks);
+    AutomaticTrackSelection trackSelection(configuration);
+    trackSelection.perform(*m_textTracks);
 
     textTracksChanged();
 }
@@ -3736,6 +3585,26 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
     updateTextTrackDisplay();
 }
 
+void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
+{
+    if (!m_textTracks)
+        return;
+
+    // Mark all tracks as not "configured" so that
+    // honorUserPreferencesForAutomaticTextTrackSelection() will reconsider
+    // which tracks to display in light of new user preferences (e.g. default
+    // tracks should not be displayed if the user has turned off captions and
+    // non-default tracks should be displayed based on language preferences if
+    // the user has turned captions on).
+    for (unsigned i = 0; i < m_textTracks->length(); ++i) {
+        RefPtrWillBeRawPtr<TextTrack> textTrack = m_textTracks->item(i);
+        String kind = textTrack->kind();
+
+        if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword())
+            textTrack->setHasBeenConfigured(false);
+    }
+}
+
 unsigned HTMLMediaElement::webkitAudioDecodedByteCount() const
 {
     if (!webMediaPlayer())
@@ -3851,26 +3720,6 @@ void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assu
 
     updateActiveTextTrackCues(currentTime());
     updateTextTrackDisplay();
-}
-
-void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
-{
-    if (!m_textTracks)
-        return;
-
-    // Mark all tracks as not "configured" so that
-    // honorUserPreferencesForAutomaticTextTrackSelection() will reconsider
-    // which tracks to display in light of new user preferences (e.g. default
-    // tracks should not be displayed if the user has turned off captions and
-    // non-default tracks should be displayed based on language preferences if
-    // the user has turned captions on).
-    for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-        RefPtrWillBeRawPtr<TextTrack> textTrack = m_textTracks->item(i);
-        String kind = textTrack->kind();
-
-        if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword())
-            textTrack->setHasBeenConfigured(false);
-    }
 }
 
 void* HTMLMediaElement::preDispatchEventHandler(Event* event)

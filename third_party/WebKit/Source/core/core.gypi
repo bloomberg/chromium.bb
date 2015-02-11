@@ -3038,6 +3038,8 @@
             'html/track/AudioTrack.h',
             'html/track/AudioTrackList.cpp',
             'html/track/AudioTrackList.h',
+            'html/track/AutomaticTrackSelection.cpp',
+            'html/track/AutomaticTrackSelection.h',
             'html/track/InbandTextTrack.cpp',
             'html/track/InbandTextTrack.h',
             'html/track/LoadableTextTrack.cpp',

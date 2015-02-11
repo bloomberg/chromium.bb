@@ -201,30 +201,7 @@ public:
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
     virtual KURL mediaPlayerPosterURL() override { return KURL(); }
 
-    class TrackGroup {
-        STACK_ALLOCATED();
-    public:
-        enum GroupKind { CaptionsAndSubtitles, Description, Chapter, Metadata, Other };
-
-        explicit TrackGroup(GroupKind kind)
-            : visibleTrack(nullptr)
-            , defaultTrack(nullptr)
-            , kind(kind)
-            , hasSrcLang(false)
-        {
-        }
-
-        WillBeHeapVector<RefPtrWillBeMember<TextTrack>> tracks;
-        RefPtrWillBeMember<TextTrack> visibleTrack;
-        RefPtrWillBeMember<TextTrack> defaultTrack;
-        GroupKind kind;
-        bool hasSrcLang;
-    };
-
-    void configureTextTrackGroupForLanguage(const TrackGroup&) const;
     void honorUserPreferencesForAutomaticTextTrackSelection();
-    void performAutomaticTextTrackSelection(const TrackGroup&);
-    void enableDefaultMetadataTextTracks(const TrackGroup&);
 
     bool textTracksAreReady() const;
     enum VisibilityChangeAssumption {
