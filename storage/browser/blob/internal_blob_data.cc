@@ -98,7 +98,7 @@ void InternalBlobData::GetMemoryUsage(size_t* total_memory,
   for (const auto& data_item : items_) {
     if (data_item->item()->type() == DataElement::TYPE_BYTES) {
       *total_memory += data_item->item()->length();
-      if (data_item->referencing_blobs().size() == 1 ||
+      if (data_item->referencing_blobs().size() == 1 &&
           seen_items.find(data_item.get()) == seen_items.end()) {
         *unshared_memory += data_item->item()->length();
         seen_items.insert(data_item.get());
