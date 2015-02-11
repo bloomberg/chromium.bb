@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
-#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+#include "native_client/src/public/win/debug_exception_handler.h"
 
 namespace {
 
