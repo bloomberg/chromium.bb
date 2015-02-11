@@ -114,6 +114,14 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+
+  // "dump-render-tree" has been renamed to "run-layout-test", but the old
+  // flag name is still used in some places, so this check will remain until
+  // it is phased out entirely.
+  if (command_line.HasSwitch(switches::kDumpRenderTree))
+    command_line.AppendSwitch(switches::kRunLayoutTest);
+
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kContentShellProviderName);
@@ -129,7 +137,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif  // OS_MACOSX
 
   InitLogging();
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
     // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
     // continue and try to load the fonts in BlinkTestPlatformInitialize
@@ -141,7 +148,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
 
-  if (command_line.HasSwitch(switches::kDumpRenderTree)) {
+  if (command_line.HasSwitch(switches::kRunLayoutTest)) {
     EnableBrowserLayoutTestMode();
 
     command_line.AppendSwitch(switches::kProcessPerTab);
@@ -262,7 +269,7 @@ int ShellMainDelegate::RunProcess(
 
   browser_runner_.reset(BrowserMainRunner::Create());
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kDumpRenderTree) ||
+  return command_line.HasSwitch(switches::kRunLayoutTest) ||
                  command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)
              ? LayoutTestBrowserMain(main_function_params, browser_runner_)
              : ShellBrowserMain(main_function_params, browser_runner_);
@@ -318,7 +325,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
   browser_client_.reset(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                            switches::kDumpRenderTree)
+                            switches::kRunLayoutTest)
                             ? new LayoutTestContentBrowserClient
                             : new ShellContentBrowserClient);
 
@@ -327,7 +334,7 @@ ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
   renderer_client_.reset(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kDumpRenderTree)
+                             switches::kRunLayoutTest)
                              ? new LayoutTestContentRendererClient
                              : new ShellContentRendererClient);
 
