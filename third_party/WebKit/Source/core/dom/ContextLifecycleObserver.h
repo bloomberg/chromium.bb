@@ -28,12 +28,11 @@
 #define ContextLifecycleObserver_h
 
 #include "core/dom/ExecutionContext.h"
-#include "platform/LifecycleContext.h"
 
 namespace blink {
 
-template<> void observerContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
-template<> void unobserverContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
+template<> void observeContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
+template<> void unobserveContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
 
 class ContextLifecycleObserver : public LifecycleObserver<ExecutionContext> {
 public:

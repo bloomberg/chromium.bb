@@ -27,18 +27,19 @@
 #include "config.h"
 #include "core/frame/DOMWindowLifecycleObserver.h"
 
+#include "core/frame/DOMWindowLifecycleNotifier.h"
 #include "core/frame/LocalDOMWindow.h"
 
 namespace blink {
 
-template<> void observerContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
+template<> void observeContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
 {
-    context->wasObservedBy(observer);
+    context->addObserver(observer);
 }
 
-template<> void unobserverContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
+template<> void unobserveContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
 {
-    context->wasUnobservedBy(observer);
+    context->removeObserver(observer);
 }
 
 DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(LocalDOMWindow* window)

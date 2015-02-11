@@ -154,7 +154,7 @@ void WaitUntilObserver::decrementPendingActivity()
         client->didHandlePushEvent(m_eventID, result);
         break;
     }
-    observeContext(0);
+    setContext(nullptr);
 }
 
 void WaitUntilObserver::consumeWindowInteraction(Timer<WaitUntilObserver>*)
