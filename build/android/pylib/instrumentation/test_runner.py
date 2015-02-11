@@ -318,7 +318,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     extras['class'] = test
     return self.device.StartInstrumentation(
         '%s/%s' % (self.test_pkg.GetPackageName(), self.options.test_runner),
-        raw=True, extras=extras, timeout=timeout, retries=0)
+        raw=True, extras=extras, timeout=timeout, retries=3)
 
   def _GenerateTestResult(self, test, instr_statuses, start_ms, duration_ms):
     return instrumentation_test_instance.GenerateTestResult(
