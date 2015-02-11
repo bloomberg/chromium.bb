@@ -94,17 +94,27 @@
             }], 'NotSupportedError', 'Mismatched audio container/codec');
 
             expect_config('org.w3.clearkey', [{
-                audioCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
             }], {
-                audioCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
             }, 'Supported video codec');
+
+            // FIXME: crbug.com/457384. video shouldn't be allowed in
+            // audioCapabilities (and vice versa).
+//          expect_error('org.w3.clearkey', [{
+//              audioCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
+//          }], 'NotSupportedError', 'Video codec specified in audio field');
+
+//          expect_error('org.w3.clearkey', [{
+//              videoCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
+//          }], 'NotSupportedError', 'Audio codec specified in video field');
 
             expect_error('org.w3.clearkey', [{
                 audioCapabilities: [{contentType: 'video/webm; codecs=fake'}],
             }], 'NotSupportedError', 'Unsupported video codec');
 
             expect_error('org.w3.clearkey', [{
-                videoCapabilities: [
+                audioCapabilities: [
                     {contentType: 'audio/webm; codecs=avc1'},
                     {contentType: 'audio/webm; codecs=avc1.42e01e'}
                 ],
@@ -119,6 +129,42 @@
                 {initDataTypes: ['webm']},
                 {}
             ], {initDataTypes: ['webm']}, 'Two configurations, both supported');
+
+            // Audio MIME type does not support video codecs.
+            expect_error('org.w3.clearkey', [{
+                audioCapabilities: [
+                    {contentType: 'audio/webm; codecs="vp8,vorbis"'},
+                    {contentType: 'audio/webm; codecs="vorbis, vp8"'},
+                    {contentType: 'audio/webm; codecs="vp8"'}
+                ],
+            }], 'NotSupportedError', 'Audio MIME type does not support video codecs.');
+
+            // Video MIME type does not support audio codecs.
+            // FIXME: crbug.com/457386.
+//          expect_error('org.w3.clearkey', [{
+//              videoCapabilities: [
+//                  {contentType: 'video/webm; codecs="vp8,vorbis"'},
+//                  {contentType: 'video/webm; codecs="vorbis, vp8"'},
+//                  {contentType: 'video/webm; codecs="vorbis"'}
+//              ],
+//          }], 'NotSupportedError', 'Video MIME type does not support audio codecs.');
+
+            // WebM does not support AVC1/AAC.
+            expect_error('org.w3.clearkey', [{
+                audioCapabilities: [
+                    {contentType: 'audio/webm; codecs="aac"'},
+                    {contentType: 'audio/webm; codecs="avc1"'},
+                    {contentType: 'audio/webm; codecs="vp8,aac"'}
+                ],
+            }], 'NotSupportedError', 'WebM audio does not support AVC1/AAC.');
+
+            expect_error('org.w3.clearkey', [{
+                videoCapabilities: [
+                    {contentType: 'video/webm; codecs="aac"'},
+                    {contentType: 'video/webm; codecs="avc1"'},
+                    {contentType: 'video/webm; codecs="vp8,aac"'}
+                ],
+            }], 'NotSupportedError', 'WebM video does not support AVC1/AAC.');
         </script>
     </body>
 </html>
