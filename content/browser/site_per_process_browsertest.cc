@@ -577,7 +577,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.
 // See http://crbug.com/338508.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
+// TODO(creis): Disabled for flakiness; see http://crbug.com/405582.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
