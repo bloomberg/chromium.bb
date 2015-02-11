@@ -33,6 +33,9 @@ const GUID kChromeWatcherTraceProviderName = {
     0x7fe69228, 0x633e, 0x4f06,
         { 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7 } };
 
+// The amount of time we wait around for a WM_ENDSESSION or a process exit.
+const int kDelayTimeSeconds = 30;
+
 // Takes care of monitoring a browser. This class watches for a browser's exit
 // code, as well as listening for WM_ENDSESSION messages. Events are recorded in
 // an exit funnel, for reporting the next time Chrome runs.
@@ -59,9 +62,6 @@ class BrowserMonitor {
   // Posted to main thread from Watch when browser exits.
   void BrowserExited();
 
-  // True if BrowserExited has run.
-  bool browser_exited_;
-
   // The funnel used to record events for this browser.
   browser_watcher::ExitFunnel exit_funnel_;
 
@@ -70,6 +70,10 @@ class BrowserMonitor {
 
   // The thread that runs Watch().
   base::Thread background_thread_;
+
+  // Set when the browser has exited, used to stretch the watcher's lifetime
+  // when WM_ENDSESSION occurs before browser exit.
+  base::WaitableEvent browser_exited_;
 
   // The run loop for the main thread and its task runner.
   base::RunLoop* run_loop_;
@@ -80,7 +84,7 @@ class BrowserMonitor {
 
 BrowserMonitor::BrowserMonitor(base::RunLoop* run_loop,
                                const base::char16* registry_path) :
-    browser_exited_(false),
+    browser_exited_(true, false),  // manual reset, initially non-signalled.
     exit_code_watcher_(registry_path),
     end_session_watcher_window_(
         base::Bind(&BrowserMonitor::OnEndSessionMessage,
@@ -139,9 +143,11 @@ void BrowserMonitor::OnEndSessionMessage(UINT message, LPARAM lparam) {
   if (lparam & ~kKnownBits)
     exit_funnel_.RecordEvent(L"ES_Other");
 
-  // Belt-and-suspenders; make sure our message loop exits ASAP.
-  if (browser_exited_)
-    run_loop_->Quit();
+  // If the browser hasn't exited yet, dally for a bit to try and stretch this
+  // process' lifetime to give it some more time to capture the browser exit.
+  browser_exited_.TimedWait(base::TimeDelta::FromSeconds(kDelayTimeSeconds));
+
+  run_loop_->Quit();
 }
 
 void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
@@ -156,6 +162,9 @@ void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
   exit_code_watcher_.WaitForExit();
   exit_funnel_.RecordEvent(L"BrowserExit");
 
+  // Note that the browser has exited.
+  browser_exited_.Signal();
+
   main_thread_->PostTask(FROM_HERE,
       base::Bind(&BrowserMonitor::BrowserExited, base::Unretained(this)));
 }
@@ -163,9 +172,6 @@ void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
 void BrowserMonitor::BrowserExited() {
   // This runs in the main thread.
   DCHECK_EQ(main_thread_, base::MessageLoopProxy::current());
-
-  // Note that the browser has exited.
-  browser_exited_ = true;
 
   // Our background thread has served it's purpose.
   background_thread_.Stop();
@@ -178,9 +184,10 @@ void BrowserMonitor::BrowserExited() {
   } else {
     // The browser exited abnormally, wait around for a little bit to see
     // whether this instance will get a logoff message.
-    main_thread_->PostDelayedTask(FROM_HERE,
-                                  run_loop_->QuitClosure(),
-                                  base::TimeDelta::FromSeconds(30));
+    main_thread_->PostDelayedTask(
+        FROM_HERE,
+        run_loop_->QuitClosure(),
+        base::TimeDelta::FromSeconds(kDelayTimeSeconds));
   }
 }
 
