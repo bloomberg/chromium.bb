@@ -174,6 +174,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnTextSurroundingSelectionResponse(const base::string16& content,
                                           size_t start_offset,
                                           size_t end_offset) override;
+  void OnDidNavigateMainFrameToNewPage() override;
 
   // cc::DelegatedFrameResourceCollectionClient implementation.
   void UnusedResourcesAreAvailable() override;

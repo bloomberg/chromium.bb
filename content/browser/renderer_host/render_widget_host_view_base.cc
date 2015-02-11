@@ -700,4 +700,7 @@ RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
       : blink::WebScreenOrientationLandscapeSecondary;
 }
 
+void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
+}
+
 }  // namespace content

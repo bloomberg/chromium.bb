@@ -2675,6 +2675,11 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // clear the bubble when a user navigates to a named anchor in the same
     // page.
     UpdateTargetURL(render_frame_host->GetRenderViewHost(), GURL());
+
+    RenderWidgetHostViewBase* rwhvb =
+        static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
+    if (rwhvb)
+      rwhvb->OnDidNavigateMainFrameToNewPage();
   }
 
   if (!details.is_in_page) {

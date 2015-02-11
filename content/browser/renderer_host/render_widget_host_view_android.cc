@@ -823,6 +823,10 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   gesture_provider_.ResetDetection();
 }
 
+void RenderWidgetHostViewAndroid::OnDidNavigateMainFrameToNewPage() {
+  ResetGestureDetection();
+}
+
 void RenderWidgetHostViewAndroid::SetDoubleTapSupportEnabled(bool enabled) {
   gesture_provider_.SetDoubleTapSupportForPlatformEnabled(enabled);
 }

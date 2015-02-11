@@ -768,7 +768,6 @@ public class ContentViewCore
                 if (!isNavigationToDifferentPage) return;
                 hidePopupsAndClearSelection();
                 resetScrollInProgress();
-                resetGestureDetection();
             }
 
             @Override

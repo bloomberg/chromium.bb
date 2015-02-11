@@ -319,6 +319,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                        const SkBitmap& zoomed_bitmap);
 
+  // Called by the WebContentsImpl when a user tries to navigate a new page on
+  // main frame.
+  virtual void OnDidNavigateMainFrameToNewPage();
+
 #if defined(OS_ANDROID)
   // Instructs the view to not drop the surface even when the view is hidden.
   virtual void LockCompositingSurface() = 0;
