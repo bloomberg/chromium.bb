@@ -51,7 +51,9 @@ namespace blink {
 
 namespace {
 
-const int kMaxRecursionDepth = 22;
+// Used to throw an exception before we exceed the C++ stack and crash.
+// This limit was arrived at arbitrarily. crbug.com/449744
+const int kMaxRecursionDepth = 44;
 
 class V8CompileHistogram {
 public:
