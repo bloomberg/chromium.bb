@@ -5,8 +5,11 @@
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,10 +19,17 @@ namespace sandbox {
 namespace {
 
 // Check for leaks in our tests.
-void RunPostTestsChecks() {
+void RunPostTestsChecks(const base::FilePath& orig_cwd) {
   if (TestUtils::CurrentProcessHasChildren()) {
-    LOG(ERROR) << "One of the tests created a child that was not waited for. "
-               << "Please, clean-up after your tests!";
+    LOG(FATAL) << "One of the tests created a child that was not waited for. "
+               << "Please, clean up after your tests!";
+  }
+
+  base::FilePath cwd;
+  CHECK(GetCurrentDirectory(&cwd));
+  if (orig_cwd != cwd) {
+    LOG(FATAL) << "One of the tests changed the current working directory. "
+               << "Please, clean up after your tests!";
   }
 }
 
@@ -42,6 +52,9 @@ int main(int argc, char* argv[]) {
     return multi_process_function_list::InvokeChildProcessTest(client_func);
   }
 
+  base::FilePath orig_cwd;
+  CHECK(GetCurrentDirectory(&orig_cwd));
+
 #if defined(OS_ANDROID)
   // The use of Callbacks requires an AtExitManager.
   base::AtExitManager exit_manager;
@@ -62,6 +75,6 @@ int main(int argc, char* argv[]) {
   int tests_result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
 #endif
 
-  sandbox::RunPostTestsChecks();
+  sandbox::RunPostTestsChecks(orig_cwd);
   return tests_result;
 }
