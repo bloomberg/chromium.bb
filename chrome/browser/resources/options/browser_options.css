@@ -182,13 +182,13 @@ input[type='range'] {
   padding-bottom: 0;
 }
 
-.hotword-settings {
-  -webkit-margin-start: 22px;
+.setting-extra-description {
+  -webkit-margin-start: 1.8em;
+  color: #999;
 }
 
-.hotword-description {
-  -webkit-margin-start: 1.8em;
-  color: gray;
+.hotword-settings {
+  -webkit-margin-start: 22px;
 }
 
 .hotword-audio-history {

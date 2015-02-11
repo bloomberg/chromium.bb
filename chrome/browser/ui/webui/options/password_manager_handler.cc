@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -51,6 +53,10 @@ void PasswordManagerHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static const OptionsStringResource resources[] = {
+    { "autoSigninTitle",
+      IDS_PASSWORDS_AUTO_SIGNIN_TITLE },
+    { "autoSigninDescription",
+      IDS_PASSWORDS_AUTO_SIGNIN_DESCRIPTION },
     { "savedPasswordsTitle",
       IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE },
     { "passwordExceptionsTitle",
@@ -100,6 +106,10 @@ void PasswordManagerHandler::GetLocalizedValues(
 #endif
 
   localized_strings->SetBoolean("disableShowPasswords", disable_show_passwords);
+  localized_strings->SetBoolean(
+      "enableCredentialManagerAPI",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCredentialManagerAPI));
 }
 
 void PasswordManagerHandler::RegisterMessages() {
