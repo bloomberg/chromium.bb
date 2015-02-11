@@ -35,16 +35,16 @@ void SimulateConfigureConnectionFailure(
 
 // Normal mode sync cycle successes and failures.
 void SimulateNormalSuccess(ModelTypeSet requested_types,
-                           const sessions::NudgeTracker& nudge_tracker,
+                           sessions::NudgeTracker* nudge_tracker,
                            sessions::SyncSession* session);
 void SimulateDownloadUpdatesFailed(ModelTypeSet requested_types,
-                                   const sessions::NudgeTracker& nudge_tracker,
+                                   sessions::NudgeTracker* nudge_tracker,
                                    sessions::SyncSession* session);
 void SimulateCommitFailed(ModelTypeSet requested_types,
-                          const sessions::NudgeTracker& nudge_tracker,
+                          sessions::NudgeTracker* nudge_tracker,
                           sessions::SyncSession* session);
 void SimulateConnectionFailure(ModelTypeSet requested_types,
-                               const sessions::NudgeTracker& nudge_tracker,
+                               sessions::NudgeTracker* nudge_tracker,
                                sessions::SyncSession* session);
 
 // Poll successes and failures.
@@ -73,7 +73,7 @@ void SimulatePollIntervalUpdateImpl(
 // Works with normal cycles.
 void SimulateSessionsCommitDelayUpdateImpl(
     ModelTypeSet requested_types,
-    const sessions::NudgeTracker& nudge_tracker,
+    sessions::NudgeTracker* nudge_tracker,
     sessions::SyncSession* session,
     const base::TimeDelta& new_delay);
 

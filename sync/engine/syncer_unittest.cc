@@ -262,11 +262,8 @@ class SyncerTest : public testing::Test,
     // Pretend we've seen a local change, to make the nudge_tracker look normal.
     nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
-    EXPECT_TRUE(
-        syncer_->NormalSyncShare(
-            context_->GetEnabledTypes(),
-            nudge_tracker_,
-            session_.get()));
+    EXPECT_TRUE(syncer_->NormalSyncShare(context_->GetEnabledTypes(),
+                                         &nudge_tracker_, session_.get()));
   }
 
   void SyncShareConfigure() {
@@ -642,8 +639,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   ResetSession();
   syncer_->NormalSyncShare(
       Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)),
-      nudge_tracker_,
-      session_.get());
+      &nudge_tracker_, session_.get());
 
   {
     // Nothing should have been committed as bookmarks is throttled.
@@ -2865,6 +2861,25 @@ TEST_F(SyncerTest, SendDebugInfoEventsOnGetUpdates_PostFailsDontDrop) {
   EXPECT_EQ(3U, mock_server_->requests().size());
   ASSERT_TRUE(mock_server_->last_request().has_get_updates());
   EXPECT_EQ(0, mock_server_->last_request().debug_info().events_size());
+}
+
+// Tests that commit failure with conflict will trigger GetUpdates for next
+// sycle of sync
+TEST_F(SyncerTest, CommitFailureWithConflict) {
+  ConfigureNoGetUpdatesRequired();
+  CreateUnsyncedDirectory("X", "id_X");
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+
+  SyncShareNudge();
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+
+  CreateUnsyncedDirectory("Y", "id_Y");
+  mock_server_->set_conflict_n_commits(1);
+  SyncShareNudge();
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
+
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 }
 
 // Tests that sending debug info events on Commit works.

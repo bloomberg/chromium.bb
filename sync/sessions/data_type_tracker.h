@@ -43,6 +43,10 @@ class DataTypeTracker {
   // Takes note that initial sync is pending for this type.
   void RecordInitialSyncRequired();
 
+  // Takes note that the conflict happended for this type, need to sync to
+  // resolve conflict locally.
+  void RecordCommitConflict();
+
   // Records that a sync cycle has been performed successfully.
   // Generally, this means that all local changes have been committed and all
   // remote changes have been downloaded, so we can clear any flags related to
@@ -73,6 +77,9 @@ class DataTypeTracker {
 
   // Returns true if this type is requesting an initial sync.
   bool IsInitialSyncRequired() const;
+
+  // Returns true if this type is requesting a sync to resolve conflict issue.
+  bool IsSyncRequiredToResolveConflict() const;
 
   // Fills in the legacy invalidaiton payload information fields.
   void SetLegacyNotificationHint(
@@ -121,6 +128,9 @@ class DataTypeTracker {
   // Set to true if this type is ready for, but has not yet completed initial
   // sync.
   bool initial_sync_required_;
+
+  // Set to true if this type need to get update to resolve conflict issue.
+  bool sync_required_to_resolve_conflict_;
 
   // If !unthrottle_time_.is_null(), this type is throttled and may not download
   // or commit data until the specified time.

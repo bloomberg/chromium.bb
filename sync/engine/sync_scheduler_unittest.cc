@@ -44,9 +44,10 @@ using sync_pb::GetUpdatesCallerInfo;
 class MockSyncer : public Syncer {
  public:
   MockSyncer();
-  MOCK_METHOD3(NormalSyncShare, bool(ModelTypeSet,
-                                     const sessions::NudgeTracker&,
-                                     sessions::SyncSession*));
+  MOCK_METHOD3(NormalSyncShare,
+               bool(ModelTypeSet,
+                    sessions::NudgeTracker*,
+                    sessions::SyncSession*));
   MOCK_METHOD3(ConfigureSyncShare,
                bool(ModelTypeSet,
                     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
