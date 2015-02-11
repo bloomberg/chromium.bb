@@ -37,4 +37,9 @@ DOMParser::DOMParser(Document& document)
 {
 }
 
+void DOMParser::trace(Visitor* visitor)
+{
+    visitor->trace(m_contextDocument);
+}
+
 } // namespace blink

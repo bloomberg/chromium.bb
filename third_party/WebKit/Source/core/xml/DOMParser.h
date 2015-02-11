@@ -39,7 +39,7 @@ public:
 
     PassRefPtrWillBeRawPtr<Document> parseFromString(const String&, const String& type);
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     DOMParser(Document&);
