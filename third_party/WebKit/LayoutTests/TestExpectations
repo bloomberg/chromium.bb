@@ -580,6 +580,8 @@ crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
+crbug.com/457678 http/tests/serviceworker/unregister-then-register-new-script.html [ Slow ]
+
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
 crbug.com/450271 compositing/repaint/end-of-opacity-transition.html [ Failure Pass ]
