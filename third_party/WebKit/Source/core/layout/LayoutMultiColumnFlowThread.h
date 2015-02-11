@@ -24,25 +24,25 @@
  */
 
 
-#ifndef RenderMultiColumnFlowThread_h
-#define RenderMultiColumnFlowThread_h
+#ifndef LayoutMultiColumnFlowThread_h
+#define LayoutMultiColumnFlowThread_h
 
 #include "core/rendering/RenderFlowThread.h"
 
 namespace blink {
 
-class RenderMultiColumnSet;
-class RenderMultiColumnSpannerPlaceholder;
+class LayoutMultiColumnSet;
+class LayoutMultiColumnSpannerPlaceholder;
 
 enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
 
 // Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
 // the actual multicol container (i.e. the RenderBlockFlow whose style computes to non-auto
-// column-count and/or column-width). RenderMultiColumnFlowThread is the heart of the multicol
+// column-count and/or column-width). LayoutMultiColumnFlowThread is the heart of the multicol
 // implementation, and there is only one instance per multicol container. Child content of the
 // multicol container is parented into the flow thread at the time of renderer insertion.
 //
-// Apart from this flow thread child, the multicol container will also have RenderMultiColumnSet
+// Apart from this flow thread child, the multicol container will also have LayoutMultiColumnSet
 // "region" children, which are used to position the columns visually. The flow thread is in charge
 // of layout, and, after having calculated the column width, it lays out content as if everything
 // were in one tall single column, except that there will typically be some amount of blank space
@@ -50,32 +50,32 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 // way, content that needs to be preceded by a break will appear at the top of the next
 // column. Content needs to be preceded by a break when there's a forced break or when the content
 // is unbreakable and cannot fully fit in the same column as the preceding piece of
-// content. Although a RenderMultiColumnFlowThread is laid out, it does not take up any space in its
-// container. It's the RenderMultiColumnSet objects that take up the necessary amount of space, and
+// content. Although a LayoutMultiColumnFlowThread is laid out, it does not take up any space in its
+// container. It's the LayoutMultiColumnSet objects that take up the necessary amount of space, and
 // make sure that the columns are painted and hit-tested correctly.
 //
 // If there is any column content inside the multicol container, we create a
-// RenderMultiColumnSet. We only need to create multiple sets if there are spanners
+// LayoutMultiColumnSet. We only need to create multiple sets if there are spanners
 // (column-span:all) in the multicol container. When a spanner is inserted, content preceding it
 // gets its own set, and content succeeding it will get another set. The spanner itself will also
-// get its own placeholder between the sets (RenderMultiColumnSpannerPlaceholder), so that it gets
+// get its own placeholder between the sets (LayoutMultiColumnSpannerPlaceholder), so that it gets
 // positioned and sized correctly. The column-span:all element is inside the flow thread, but its
 // containing block is the multicol container.
 //
 // Some invariants for the render tree structure for multicol:
 // - A multicol container is always a RenderBlockFlow
-// - Every multicol container has one and only one RenderMultiColumnFlowThread
+// - Every multicol container has one and only one LayoutMultiColumnFlowThread
 // - All multicol DOM children and pseudo-elements associated with the multicol container are
 //   reparented into the flow thread
-// - The RenderMultiColumnFlowThread is the first child of the multicol container
-// - A multicol container may only have RenderMultiColumnFlowThread, RenderMultiColumnSet and
-//   RenderMultiColumnSpannerPlaceholder children
-// - A RenderMultiColumnSet may not be adjacent to another RenderMultiColumnSet; there are no
+// - The LayoutMultiColumnFlowThread is the first child of the multicol container
+// - A multicol container may only have LayoutMultiColumnFlowThread, LayoutMultiColumnSet and
+//   LayoutMultiColumnSpannerPlaceholder children
+// - A LayoutMultiColumnSet may not be adjacent to another LayoutMultiColumnSet; there are no
 //   use-cases for it, and there are also implementation limitations behind this requirement.
 // - The flow thread is not in the containing block chain for children that are not to be laid out
 //   in columns. This means column spanners and absolutely positioned children whose containing
 //   block is outside column content
-// - Each spanner (column-span:all) establishes a RenderMultiColumnSpannerPlaceholder
+// - Each spanner (column-span:all) establishes a LayoutMultiColumnSpannerPlaceholder
 //
 // The width of the flow thread is the same as the column width. The width of a column set is the
 // same as the content box width of the multicol container; in other words exactly enough to hold
@@ -101,7 +101,7 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 // we end up with too many columns (i.e. columns overflowing the multicol container), it wasn't
 // enough. In this case we need to increase the column heights. We'll increase them by the lowest
 // amount of space that could possibly affect where the breaks occur (see
-// RenderMultiColumnSet::recordSpaceShortage()). We'll relayout (to find new break points and the
+// LayoutMultiColumnSet::recordSpaceShortage()). We'll relayout (to find new break points and the
 // new lowest amount of space increase that could affect where they occur, in case we need another
 // round) until we've reached an acceptable height (where everything fits perfectly in the number of
 // columns that we have specified). The rule of thumb is that we shouldn't have to perform more of
@@ -114,18 +114,18 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 //
 // There's also some documentation online:
 // https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
-class RenderMultiColumnFlowThread : public RenderFlowThread {
+class LayoutMultiColumnFlowThread : public RenderFlowThread {
 public:
-    virtual ~RenderMultiColumnFlowThread();
+    virtual ~LayoutMultiColumnFlowThread();
 
-    static RenderMultiColumnFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
+    static LayoutMultiColumnFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
 
-    virtual bool isRenderMultiColumnFlowThread() const override final { return true; }
+    virtual bool isLayoutMultiColumnFlowThread() const override final { return true; }
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
 
-    RenderMultiColumnSet* firstMultiColumnSet() const;
-    RenderMultiColumnSet* lastMultiColumnSet() const;
+    LayoutMultiColumnSet* firstMultiColumnSet() const;
+    LayoutMultiColumnSet* lastMultiColumnSet() const;
 
     // Return the first column set or spanner placeholder.
     RenderBox* firstMultiColumnBox() const
@@ -142,11 +142,11 @@ public:
     }
 
     // Find the first set inside which the specified renderer would be rendered.
-    RenderMultiColumnSet* findSetRendering(LayoutObject*) const;
+    LayoutMultiColumnSet* findSetRendering(LayoutObject*) const;
 
     // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
     // any. This includes the renderer for the element that actually establishes the spanner too.
-    RenderMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const LayoutObject* descendant) const;
+    LayoutMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const LayoutObject* descendant) const;
 
     // Populate the flow thread with what's currently its siblings. Called when a regular block
     // becomes a multicol container.
@@ -167,7 +167,7 @@ public:
     // Do we need to set a new width and lay out?
     virtual bool needsNewWidth() const;
 
-    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const override final;
+    virtual LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const override final;
 
     void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);
 
@@ -176,7 +176,7 @@ public:
     void columnRuleStyleDidChange();
 
 protected:
-    RenderMultiColumnFlowThread();
+    LayoutMultiColumnFlowThread();
     void setProgressionIsInline(bool isInline) { m_progressionIsInline = isInline; }
 
     virtual void layout() override;
@@ -188,7 +188,7 @@ private:
     virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
     virtual const char* renderName() const override;
-    virtual void addRegionToThread(RenderMultiColumnSet*) override;
+    virtual void addRegionToThread(LayoutMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
     virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) override;
     virtual void flowThreadDescendantWasInserted(LayoutObject*) override;
@@ -204,7 +204,7 @@ private:
     // The last set we worked on. It's not to be used as the "current set". The concept of a
     // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong
     // top location estimates (due to e.g. margin collapsing), and possibly for other reasons.
-    RenderMultiColumnSet* m_lastSetWorkedOn;
+    LayoutMultiColumnSet* m_lastSetWorkedOn;
 
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
@@ -216,4 +216,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderMultiColumnFlowThread_h
+#endif // LayoutMultiColumnFlowThread_h

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RenderMultiColumnSpannerPlaceholder_h
-#define RenderMultiColumnSpannerPlaceholder_h
+#ifndef LayoutMultiColumnSpannerPlaceholder_h
+#define LayoutMultiColumnSpannerPlaceholder_h
 
-#include "core/rendering/RenderMultiColumnFlowThread.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 
 namespace blink {
 
 // Placeholder renderer for column-span:all elements. The column-span:all renderer itself is a
 // descendant of the flow thread, but due to its out-of-flow nature, we need something on the
-// outside to take care of its positioning and sizing. RenderMultiColumnSpannerPlaceholder objects
-// are siblings of RenderMultiColumnSet objects, i.e. direct children of the multicol container.
-class RenderMultiColumnSpannerPlaceholder final : public RenderBox {
+// outside to take care of its positioning and sizing. LayoutMultiColumnSpannerPlaceholder objects
+// are siblings of LayoutMultiColumnSet objects, i.e. direct children of the multicol container.
+class LayoutMultiColumnSpannerPlaceholder final : public RenderBox {
 public:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderMultiColumnSpannerPlaceholder || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSpannerPlaceholder || RenderBox::isOfType(type); }
 
-    static RenderMultiColumnSpannerPlaceholder* createAnonymous(const LayoutStyle& parentStyle, RenderBox&);
+    static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const LayoutStyle& parentStyle, RenderBox&);
 
     RenderFlowThread* flowThread() const { return toRenderBlockFlow(parent())->multiColumnFlowThread(); }
 
@@ -37,12 +37,12 @@ protected:
     virtual const char* renderName() const override;
 
 private:
-    RenderMultiColumnSpannerPlaceholder(RenderBox*);
+    LayoutMultiColumnSpannerPlaceholder(RenderBox*);
 
     RenderBox* m_rendererInFlowThread; // The actual column-span:all renderer inside the flow thread.
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMultiColumnSpannerPlaceholder, isRenderMultiColumnSpannerPlaceholder());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSpannerPlaceholder, isLayoutMultiColumnSpannerPlaceholder());
 
 } // namespace blink
 

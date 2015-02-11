@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class RenderMultiColumnSpannerPlaceholder;
+class LayoutMultiColumnSpannerPlaceholder;
 
 struct PaintInfo;
 
@@ -63,7 +63,7 @@ public:
     InlineBox* m_inlineBoxWrapper;
 
     // For spanners, the spanner placeholder that lays us out within the multicol container.
-    RenderMultiColumnSpannerPlaceholder* m_spannerPlaceholder;
+    LayoutMultiColumnSpannerPlaceholder* m_spannerPlaceholder;
 
     LayoutUnit m_overrideLogicalContentHeight;
     LayoutUnit m_overrideLogicalContentWidth;
@@ -407,9 +407,9 @@ public:
     void setInlineBoxWrapper(InlineBox*);
     void deleteLineBoxWrapper();
 
-    void setSpannerPlaceholder(RenderMultiColumnSpannerPlaceholder&);
+    void setSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
     void clearSpannerPlaceholder();
-    virtual RenderMultiColumnSpannerPlaceholder* spannerPlaceholder() const final { return m_rareData ? m_rareData->m_spannerPlaceholder : 0; }
+    virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const final { return m_rareData ? m_rareData->m_spannerPlaceholder : 0; }
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
     virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
@@ -819,7 +819,7 @@ inline RenderBox* RenderBox::lastChildBox() const
 
 inline RenderBox* RenderBox::previousSiblingMultiColumnBox() const
 {
-    ASSERT(isRenderMultiColumnSpannerPlaceholder() || isRenderMultiColumnSet());
+    ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
     RenderBox* previousBox = previousSiblingBox();
     if (previousBox->isRenderFlowThread())
         return 0;
@@ -828,7 +828,7 @@ inline RenderBox* RenderBox::previousSiblingMultiColumnBox() const
 
 inline RenderBox* RenderBox::nextSiblingMultiColumnBox() const
 {
-    ASSERT(isRenderMultiColumnSpannerPlaceholder() || isRenderMultiColumnSet());
+    ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
     return nextSiblingBox();
 }
 

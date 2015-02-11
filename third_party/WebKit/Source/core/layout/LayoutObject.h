@@ -68,7 +68,7 @@ class RenderFlowThread;
 class RenderGeometryMap;
 class Layer;
 class LayoutLayerModelObject;
-class RenderMultiColumnSpannerPlaceholder;
+class LayoutMultiColumnSpannerPlaceholder;
 class RenderView;
 class TransformState;
 
@@ -356,8 +356,8 @@ public:
     bool isRenderGrid() const { return isOfType(LayoutObjectRenderGrid); }
     bool isRenderIFrame() const { return isOfType(LayoutObjectRenderIFrame); }
     bool isRenderImage() const { return isOfType(LayoutObjectRenderImage); }
-    bool isRenderMultiColumnSet() const { return isOfType(LayoutObjectRenderMultiColumnSet); }
-    bool isRenderMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectRenderMultiColumnSpannerPlaceholder); }
+    bool isLayoutMultiColumnSet() const { return isOfType(LayoutObjectLayoutMultiColumnSet); }
+    bool isLayoutMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder); }
     bool isRenderRegion() const { return isOfType(LayoutObjectRenderRegion); }
     bool isRenderScrollbarPart() const { return isOfType(LayoutObjectRenderScrollbarPart); }
     bool isRenderView() const { return isOfType(LayoutObjectRenderView); }
@@ -508,7 +508,7 @@ public:
         // RenderBlock::createAnonymousBlock(). This includes creating an anonymous
         // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
         // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
-        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread() && !isRenderMultiColumnSet()
+        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread() && !isLayoutMultiColumnSet()
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder();
     }
@@ -632,7 +632,7 @@ public:
     Document& document() const { return m_node->document(); }
     LocalFrame* frame() const { return document().frame(); }
 
-    virtual RenderMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return 0; }
+    virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return 0; }
     bool isColumnSpanAll() const { return style()->columnSpan() == ColumnSpanAll && spannerPlaceholder(); }
 
     // Returns the object containing this one. Can be different from parent for positioned elements.
@@ -1095,8 +1095,8 @@ protected:
         LayoutObjectRenderIFrame,
         LayoutObjectRenderImage,
         LayoutObjectRenderInline,
-        LayoutObjectRenderMultiColumnSet,
-        LayoutObjectRenderMultiColumnSpannerPlaceholder,
+        LayoutObjectLayoutMultiColumnSet,
+        LayoutObjectLayoutMultiColumnSpannerPlaceholder,
         LayoutObjectRenderPart,
         LayoutObjectRenderRegion,
         LayoutObjectRenderScrollbarPart,

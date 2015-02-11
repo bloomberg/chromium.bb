@@ -24,11 +24,11 @@
  */
 
 
-#ifndef RenderMultiColumnSet_h
-#define RenderMultiColumnSet_h
+#ifndef LayoutMultiColumnSet_h
+#define LayoutMultiColumnSet_h
 
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
-#include "core/rendering/RenderMultiColumnFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 #include "wtf/Vector.h"
 
@@ -49,7 +49,7 @@ namespace blink {
 // "single-column" flow thread into actual columns visually, to convert from flow thread coordinates
 // to visual ones. It is in charge of both positioning columns correctly relatively to the parent
 // multicol container, and to calculate the correct translation for each column's contents, and to
-// paint any rules between them. RenderMultiColumnSet objects are used for painting, hit testing,
+// paint any rules between them. LayoutMultiColumnSet objects are used for painting, hit testing,
 // and any other type of operation that requires mapping from flow thread coordinates to visual
 // coordinates.
 //
@@ -58,29 +58,29 @@ namespace blink {
 // may need to group the columns, so that we get one MultiColumnFragmentainerGroup for each outer
 // fragmentainer (page / column) that the inner multicol container lives in. Each fragmentainer
 // group has its own column height, but the column height is uniform within a group.
-class RenderMultiColumnSet : public RenderRegion {
+class LayoutMultiColumnSet : public RenderRegion {
 public:
-    static RenderMultiColumnSet* createAnonymous(RenderFlowThread&, const LayoutStyle& parentStyle);
+    static LayoutMultiColumnSet* createAnonymous(RenderFlowThread&, const LayoutStyle& parentStyle);
 
     const MultiColumnFragmentainerGroup& firstFragmentainerGroup() const { return m_fragmentainerGroups.first(); }
     const MultiColumnFragmentainerGroup& lastFragmentainerGroup() const { return m_fragmentainerGroups.last(); }
     MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit);
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderMultiColumnSet || RenderRegion::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || RenderRegion::isOfType(type); }
 
     virtual LayoutUnit pageLogicalWidth() const final { return flowThread()->logicalWidth(); }
     virtual LayoutUnit pageLogicalHeight() const final;
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
-    RenderMultiColumnFlowThread* multiColumnFlowThread() const
+    LayoutMultiColumnFlowThread* multiColumnFlowThread() const
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(!flowThread() || flowThread()->isRenderMultiColumnFlowThread());
-        return static_cast<RenderMultiColumnFlowThread*>(flowThread());
+        ASSERT_WITH_SECURITY_IMPLICATION(!flowThread() || flowThread()->isLayoutMultiColumnFlowThread());
+        return static_cast<LayoutMultiColumnFlowThread*>(flowThread());
     }
 
-    RenderMultiColumnSet* nextSiblingMultiColumnSet() const;
-    RenderMultiColumnSet* previousSiblingMultiColumnSet() const;
+    LayoutMultiColumnSet* nextSiblingMultiColumnSet() const;
+    LayoutMultiColumnSet* previousSiblingMultiColumnSet() const;
 
     LayoutUnit logicalTopInFlowThread() const;
     LayoutUnit logicalBottomInFlowThread() const;
@@ -147,7 +147,7 @@ public:
     unsigned actualColumnCount() const;
 
 protected:
-    RenderMultiColumnSet(RenderFlowThread*);
+    LayoutMultiColumnSet(RenderFlowThread*);
 
 private:
     virtual void insertedIntoTree() override final;
@@ -168,9 +168,9 @@ private:
     MultiColumnFragmentainerGroupList m_fragmentainerGroups;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMultiColumnSet, isRenderMultiColumnSet());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSet, isLayoutMultiColumnSet());
 
 } // namespace blink
 
-#endif // RenderMultiColumnSet_h
+#endif // LayoutMultiColumnSet_h
 

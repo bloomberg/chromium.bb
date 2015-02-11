@@ -36,10 +36,10 @@
 
 namespace blink {
 
-class RenderMultiColumnSet;
+class LayoutMultiColumnSet;
 class RenderRegion;
 
-typedef ListHashSet<RenderMultiColumnSet*> RenderMultiColumnSetList;
+typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
 // RenderFlowThread is used to collect all the render objects that participate in a
 // flow thread. It will also help in doing the layout. However, it will not render
@@ -53,7 +53,7 @@ public:
     virtual ~RenderFlowThread() { };
 
     virtual bool isRenderFlowThread() const override final { return true; }
-    virtual bool isRenderMultiColumnFlowThread() const { return false; }
+    virtual bool isLayoutMultiColumnFlowThread() const { return false; }
     virtual bool isRenderPagedFlowThread() const { return false; }
 
     virtual bool supportsPaintInvalidationStateCachedOffsets() const override { return false; }
@@ -76,8 +76,8 @@ public:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
-    virtual void addRegionToThread(RenderMultiColumnSet*) = 0;
-    virtual void removeRegionFromThread(RenderMultiColumnSet*);
+    virtual void addRegionToThread(LayoutMultiColumnSet*) = 0;
+    virtual void removeRegionFromThread(LayoutMultiColumnSet*);
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
@@ -97,7 +97,7 @@ public:
 
     bool regionsHaveUniformLogicalHeight() const { return m_regionsHaveUniformLogicalHeight; }
 
-    // FIXME: These 2 functions should return a RenderMultiColumnSet.
+    // FIXME: These 2 functions should return a LayoutMultiColumnSet.
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
 
@@ -117,17 +117,17 @@ public:
     // Used to estimate the maximum height of the flow thread.
     static LayoutUnit maxLogicalHeight() { return LayoutUnit::max() / 2; }
 
-    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
+    virtual LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
 
 protected:
     virtual const char* renderName() const = 0;
 
     void generateColumnSetIntervalTree();
 
-    RenderMultiColumnSetList m_multiColumnSetList;
+    LayoutMultiColumnSetList m_multiColumnSetList;
 
-    typedef PODInterval<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetInterval;
-    typedef PODIntervalTree<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetIntervalTree;
+    typedef PODInterval<LayoutUnit, LayoutMultiColumnSet*> MultiColumnSetInterval;
+    typedef PODIntervalTree<LayoutUnit, LayoutMultiColumnSet*> MultiColumnSetIntervalTree;
 
     class MultiColumnSetSearchAdapter {
     public:
@@ -141,11 +141,11 @@ protected:
         const LayoutUnit& highValue() const { return m_offset; }
         void collectIfNeeded(const MultiColumnSetInterval&);
 
-        RenderMultiColumnSet* result() const { return m_result; }
+        LayoutMultiColumnSet* result() const { return m_result; }
 
     private:
         LayoutUnit m_offset;
-        RenderMultiColumnSet* m_result;
+        LayoutMultiColumnSet* m_result;
     };
 
     MultiColumnSetIntervalTree m_multiColumnSetIntervalTree;
@@ -163,8 +163,8 @@ template <> struct ValueToString<LayoutUnit> {
     static String string(const LayoutUnit value) { return String::number(value.toFloat()); }
 };
 
-template <> struct ValueToString<RenderMultiColumnSet*> {
-    static String string(const RenderMultiColumnSet* value) { return String::format("%p", value); }
+template <> struct ValueToString<LayoutMultiColumnSet*> {
+    static String string(const LayoutMultiColumnSet* value) { return String::format("%p", value); }
 };
 #endif
 

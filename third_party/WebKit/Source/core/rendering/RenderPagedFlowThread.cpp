@@ -27,7 +27,7 @@ bool RenderPagedFlowThread::needsNewWidth() const
 
 void RenderPagedFlowThread::updateLogicalWidth()
 {
-    // As long as we inherit from RenderMultiColumnFlowThread, we need to bypass its implementation
+    // As long as we inherit from LayoutMultiColumnFlowThread, we need to bypass its implementation
     // here. We're not split into columns, so the flow thread width will just be whatever is
     // available in the containing block.
     RenderFlowThread::updateLogicalWidth();
@@ -36,7 +36,7 @@ void RenderPagedFlowThread::updateLogicalWidth()
 void RenderPagedFlowThread::layout()
 {
     setProgressionIsInline(pagedBlockFlow()->style()->hasInlinePaginationAxis());
-    RenderMultiColumnFlowThread::layout();
+    LayoutMultiColumnFlowThread::layout();
 }
 
 } // namespace blink

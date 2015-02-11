@@ -47,8 +47,8 @@ class MarginInfo;
 class LineBreaker;
 class LineInfo;
 class LineWidth;
-class RenderMultiColumnFlowThread;
-class RenderMultiColumnSpannerPlaceholder;
+class LayoutMultiColumnFlowThread;
+class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 template <class Run> class BidiRunList;
 
@@ -169,7 +169,7 @@ public:
         return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isRenderInline());
     }
 
-    RenderMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread : 0; }
+    LayoutMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread : 0; }
     void resetMultiColumnFlowThread()
     {
         if (m_rareData)
@@ -202,7 +202,7 @@ public:
     LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
     void setPaginationStrut(LayoutUnit);
 
-    void positionSpannerDescendant(RenderMultiColumnSpannerPlaceholder& child);
+    void positionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child);
 
     virtual bool avoidsFloats() const override;
 
@@ -325,7 +325,7 @@ private:
 
     FlowThreadType flowThreadType(const LayoutStyle&);
 
-    RenderMultiColumnFlowThread* createMultiColumnFlowThread(FlowThreadType);
+    LayoutMultiColumnFlowThread* createMultiColumnFlowThread(FlowThreadType);
     void createOrDestroyMultiColumnFlowThreadIfNeeded(const LayoutStyle* oldStyle);
 
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, unsigned expansionOpportunityCount);
@@ -418,7 +418,7 @@ public:
         MarginValues m_margins;
         LayoutUnit m_paginationStrut;
 
-        RenderMultiColumnFlowThread* m_multiColumnFlowThread;
+        LayoutMultiColumnFlowThread* m_multiColumnFlowThread;
 
         int m_lineBreakToAvoidWidow;
         bool m_didBreakAtLineToAvoidWidow : 1;

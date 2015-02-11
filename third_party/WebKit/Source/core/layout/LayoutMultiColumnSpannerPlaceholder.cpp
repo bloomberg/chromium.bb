@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
+#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 
 namespace blink {
 
@@ -17,9 +17,9 @@ static void copyMarginProperties(LayoutStyle& placeholderStyle, const LayoutStyl
     placeholderStyle.setMarginBottom(spannerStyle.marginBottom());
 }
 
-RenderMultiColumnSpannerPlaceholder* RenderMultiColumnSpannerPlaceholder::createAnonymous(const LayoutStyle& parentStyle, RenderBox& rendererInFlowThread)
+LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::createAnonymous(const LayoutStyle& parentStyle, RenderBox& rendererInFlowThread)
 {
-    RenderMultiColumnSpannerPlaceholder* newSpanner = new RenderMultiColumnSpannerPlaceholder(&rendererInFlowThread);
+    LayoutMultiColumnSpannerPlaceholder* newSpanner = new LayoutMultiColumnSpannerPlaceholder(&rendererInFlowThread);
     Document& document = rendererInFlowThread.document();
     newSpanner->setDocumentForAnonymous(&document);
     RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK);
@@ -28,42 +28,42 @@ RenderMultiColumnSpannerPlaceholder* RenderMultiColumnSpannerPlaceholder::create
     return newSpanner;
 }
 
-RenderMultiColumnSpannerPlaceholder::RenderMultiColumnSpannerPlaceholder(RenderBox* rendererInFlowThread)
+LayoutMultiColumnSpannerPlaceholder::LayoutMultiColumnSpannerPlaceholder(RenderBox* rendererInFlowThread)
     : RenderBox(0)
     , m_rendererInFlowThread(rendererInFlowThread)
 {
 }
 
-void RenderMultiColumnSpannerPlaceholder::updateMarginProperties()
+void LayoutMultiColumnSpannerPlaceholder::updateMarginProperties()
 {
     RefPtr<LayoutStyle> newStyle = LayoutStyle::clone(styleRef());
     copyMarginProperties(*newStyle, m_rendererInFlowThread->styleRef());
     setStyle(newStyle);
 }
 
-void RenderMultiColumnSpannerPlaceholder::willBeRemovedFromTree()
+void LayoutMultiColumnSpannerPlaceholder::willBeRemovedFromTree()
 {
     if (m_rendererInFlowThread)
         m_rendererInFlowThread->clearSpannerPlaceholder();
     RenderBox::willBeRemovedFromTree();
 }
 
-bool RenderMultiColumnSpannerPlaceholder::needsPreferredWidthsRecalculation() const
+bool LayoutMultiColumnSpannerPlaceholder::needsPreferredWidthsRecalculation() const
 {
     return m_rendererInFlowThread->needsPreferredWidthsRecalculation();
 }
 
-LayoutUnit RenderMultiColumnSpannerPlaceholder::minPreferredLogicalWidth() const
+LayoutUnit LayoutMultiColumnSpannerPlaceholder::minPreferredLogicalWidth() const
 {
     return m_rendererInFlowThread->minPreferredLogicalWidth();
 }
 
-LayoutUnit RenderMultiColumnSpannerPlaceholder::maxPreferredLogicalWidth() const
+LayoutUnit LayoutMultiColumnSpannerPlaceholder::maxPreferredLogicalWidth() const
 {
     return m_rendererInFlowThread->maxPreferredLogicalWidth();
 }
 
-void RenderMultiColumnSpannerPlaceholder::layout()
+void LayoutMultiColumnSpannerPlaceholder::layout()
 {
     ASSERT(needsLayout());
 
@@ -83,7 +83,7 @@ void RenderMultiColumnSpannerPlaceholder::layout()
     clearNeedsLayout();
 }
 
-void RenderMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     computedValues.m_extent = m_rendererInFlowThread->logicalHeight();
     computedValues.m_position = logicalTop;
@@ -91,27 +91,27 @@ void RenderMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, Layou
     computedValues.m_margins.m_after = marginAfter();
 }
 
-void RenderMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void LayoutMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
     m_rendererInFlowThread->invalidateTreeIfNeeded(newPaintInvalidationState);
     RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
-void RenderMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!m_rendererInFlowThread->hasSelfPaintingLayer())
         m_rendererInFlowThread->paint(paintInfo, paintOffset);
 }
 
-bool RenderMultiColumnSpannerPlaceholder::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutMultiColumnSpannerPlaceholder::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     return !m_rendererInFlowThread->hasSelfPaintingLayer() && m_rendererInFlowThread->nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
 }
 
-const char* RenderMultiColumnSpannerPlaceholder::renderName() const
+const char* LayoutMultiColumnSpannerPlaceholder::renderName() const
 {
-    return "RenderMultiColumnSpannerPlaceholder";
+    return "LayoutMultiColumnSpannerPlaceholder";
 }
 
 }

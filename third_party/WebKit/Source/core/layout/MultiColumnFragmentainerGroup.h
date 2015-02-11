@@ -5,7 +5,7 @@
 #ifndef MultiColumnFragmentainerGroup_h
 #define MultiColumnFragmentainerGroup_h
 
-#include "core/rendering/RenderMultiColumnFlowThread.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 
 namespace blink {
 
@@ -27,11 +27,11 @@ namespace blink {
 // (and make them appear in the next outer fragmentainer).
 class MultiColumnFragmentainerGroup {
 public:
-    MultiColumnFragmentainerGroup(RenderMultiColumnSet&);
+    MultiColumnFragmentainerGroup(LayoutMultiColumnSet&);
 
     bool isLastGroup() const;
 
-    // Position within the RenderMultiColumnSet.
+    // Position within the LayoutMultiColumnSet.
     LayoutUnit logicalTop() const { return m_logicalTop; }
 
     LayoutUnit logicalHeight() const { return m_columnHeight; }
@@ -92,7 +92,7 @@ private:
     };
     unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread, ColumnIndexCalculationMode = ClampToExistingColumns) const;
 
-    RenderMultiColumnSet& m_columnSet;
+    LayoutMultiColumnSet& m_columnSet;
 
     LayoutUnit m_logicalTop;
     LayoutUnit m_logicalTopInFlowThread;
@@ -138,7 +138,7 @@ private:
 // the owning column set lives in multiple outer fragmentainers (e.g. multicol inside paged media).
 class MultiColumnFragmentainerGroupList : public Vector<MultiColumnFragmentainerGroup, 1> {
 public:
-    MultiColumnFragmentainerGroupList(RenderMultiColumnSet&);
+    MultiColumnFragmentainerGroupList(LayoutMultiColumnSet&);
 
     // Add an additional fragmentainer group to the end of the list, and return it.
     MultiColumnFragmentainerGroup& addExtraGroup();
@@ -147,7 +147,7 @@ public:
     void deleteExtraGroups();
 
 private:
-    RenderMultiColumnSet& m_columnSet;
+    LayoutMultiColumnSet& m_columnSet;
 };
 
 } // namespace blink

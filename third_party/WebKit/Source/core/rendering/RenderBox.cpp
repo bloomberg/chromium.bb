@@ -39,6 +39,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/compositing/LayerCompositor.h"
@@ -55,7 +56,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
@@ -250,7 +250,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle
     updateShapeOutsideInfoAfterStyleChange(*style(), oldStyle);
     updateGridPositionAfterStyleChange(oldStyle);
 
-    if (RenderMultiColumnSpannerPlaceholder* placeholder = this->spannerPlaceholder())
+    if (LayoutMultiColumnSpannerPlaceholder* placeholder = this->spannerPlaceholder())
         placeholder->updateMarginProperties();
 }
 
@@ -1755,7 +1755,7 @@ void RenderBox::deleteLineBoxWrapper()
     }
 }
 
-void RenderBox::setSpannerPlaceholder(RenderMultiColumnSpannerPlaceholder& placeholder)
+void RenderBox::setSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder& placeholder)
 {
     RELEASE_ASSERT(!m_rareData || !m_rareData->m_spannerPlaceholder); // not expected to change directly from one spanner to another.
     ensureRareData().m_spannerPlaceholder = &placeholder;

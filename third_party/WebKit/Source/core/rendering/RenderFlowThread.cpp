@@ -31,7 +31,7 @@
 
 #include "core/rendering/RenderFlowThread.h"
 
-#include "core/rendering/RenderMultiColumnSet.h"
+#include "core/layout/LayoutMultiColumnSet.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
@@ -45,7 +45,7 @@ RenderFlowThread::RenderFlowThread()
     setFlowThreadState(InsideOutOfFlowThread);
 }
 
-void RenderFlowThread::removeRegionFromThread(RenderMultiColumnSet* columnSet)
+void RenderFlowThread::removeRegionFromThread(LayoutMultiColumnSet* columnSet)
 {
     ASSERT(columnSet);
     m_multiColumnSetList.remove(columnSet);
@@ -73,8 +73,8 @@ void RenderFlowThread::validateRegions()
             LayoutUnit previousRegionLogicalHeight = 0;
             bool firstRegionVisited = false;
 
-            for (RenderMultiColumnSetList::iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-                RenderMultiColumnSet* columnSet = *iter;
+            for (LayoutMultiColumnSetList::iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
+                LayoutMultiColumnSet* columnSet = *iter;
                 LayoutUnit regionLogicalHeight = columnSet->pageLogicalHeight();
 
                 if (!firstRegionVisited) {
@@ -112,8 +112,8 @@ void RenderFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, L
     computedValues.m_position = logicalTop;
     computedValues.m_extent = 0;
 
-    for (RenderMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-        RenderMultiColumnSet* columnSet = *iter;
+    for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
+        LayoutMultiColumnSet* columnSet = *iter;
         computedValues.m_extent += columnSet->logicalHeightInFlowThread();
     }
 }
@@ -127,7 +127,7 @@ bool RenderFlowThread::nodeAtPoint(const HitTestRequest& request, HitTestResult&
 
 LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
 {
-    RenderMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
     if (!columnSet)
         return 0;
 
@@ -136,7 +136,7 @@ LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
 
 LayoutUnit RenderFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offset, PageBoundaryRule pageBoundaryRule)
 {
-    RenderMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
     if (!columnSet)
         return 0;
 
@@ -179,8 +179,8 @@ void RenderFlowThread::collectLayerFragments(LayerFragments& layerFragments, con
 {
     ASSERT(!m_regionsInvalidated);
 
-    for (RenderMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-        RenderMultiColumnSet* columnSet = *iter;
+    for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
+        LayoutMultiColumnSet* columnSet = *iter;
         columnSet->collectLayerFragments(layerFragments, layerBoundingBox, dirtyRect);
     }
 }
@@ -190,8 +190,8 @@ LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     ASSERT(!m_regionsInvalidated);
 
     LayoutRect result;
-    for (RenderMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-        RenderMultiColumnSet* columnSet = *iter;
+    for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
+        LayoutMultiColumnSet* columnSet = *iter;
         LayerFragments fragments;
         columnSet->collectLayerFragments(fragments, layerBoundingBox, LayoutRect::infiniteIntRect());
         for (size_t i = 0; i < fragments.size(); ++i) {

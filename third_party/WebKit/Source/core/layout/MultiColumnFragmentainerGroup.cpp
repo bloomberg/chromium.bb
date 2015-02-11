@@ -6,11 +6,11 @@
 
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 
-#include "core/rendering/RenderMultiColumnSet.h"
+#include "core/layout/LayoutMultiColumnSet.h"
 
 namespace blink {
 
-MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(RenderMultiColumnSet& columnSet)
+MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(LayoutMultiColumnSet& columnSet)
     : m_columnSet(columnSet)
 {
 }
@@ -125,7 +125,7 @@ void MultiColumnFragmentainerGroup::expandToEncompassFlowThreadOverflow()
     // to encompass that remaining height and overflow. The idea is that we will generate
     // additional columns and pages to hold that overflow, since people do write bad
     // content like <body style="height:0px"> in multi-column layouts.
-    RenderMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
+    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
     LayoutRect layoutRect = flowThread->layoutOverflowRect();
     m_logicalBottomInFlowThread = flowThread->isHorizontalWritingMode() ? layoutRect.maxY() : layoutRect.maxX();
 }
@@ -164,7 +164,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(LayerFragments& fragme
     // e.g. RenderBox::frameRect(). These rectangles also pretend that there's only one long column,
     // i.e. they are for the flow thread.
 
-    RenderMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
+    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
     bool isHorizontalWritingMode = m_columnSet.isHorizontalWritingMode();
 
     // Put the layer bounds into flow thread-local coordinates by flipping it first. Since we're in
@@ -489,7 +489,7 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtOffset(LayoutUnit offsetInF
     return 0;
 }
 
-MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(RenderMultiColumnSet& columnSet)
+MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(LayoutMultiColumnSet& columnSet)
     : m_columnSet(columnSet)
 {
     append(MultiColumnFragmentainerGroup(m_columnSet));

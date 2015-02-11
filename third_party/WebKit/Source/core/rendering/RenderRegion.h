@@ -56,7 +56,7 @@ public:
     bool isLastRegion() const;
 
     // These methods represent the width and height of a "page" and for a RenderRegion they are just
-    // the content width and content height of a region. For RenderMultiColumnSets, however, they
+    // the content width and content height of a region. For LayoutMultiColumnSets, however, they
     // will be the width and height of a single column or page in the set.
     virtual LayoutUnit pageLogicalWidth() const;
     virtual LayoutUnit pageLogicalHeight() const;

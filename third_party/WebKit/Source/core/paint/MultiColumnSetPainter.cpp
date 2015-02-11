@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/MultiColumnSetPainter.h"
 
+#include "core/layout/LayoutMultiColumnSet.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderMultiColumnSet.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {

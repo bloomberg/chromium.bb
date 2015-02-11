@@ -683,7 +683,7 @@ private:
 
     // Pointer to the enclosing Layer that caused us to be paginated. It is 0 if we are not paginated.
     //
-    // See RenderMultiColumnFlowThread and
+    // See LayoutMultiColumnFlowThread and
     // https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
     // for more information about the multicol implementation. It's important to understand the
     // difference between flow thread coordinates and visual coordinates when working with multicol

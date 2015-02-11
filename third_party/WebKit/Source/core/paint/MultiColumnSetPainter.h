@@ -9,17 +9,17 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class RenderMultiColumnSet;
+class LayoutMultiColumnSet;
 
 class MultiColumnSetPainter {
 public:
-    MultiColumnSetPainter(RenderMultiColumnSet& renderMultiColumnSet) : m_renderMultiColumnSet(renderMultiColumnSet) { }
+    MultiColumnSetPainter(LayoutMultiColumnSet& renderMultiColumnSet) : m_renderMultiColumnSet(renderMultiColumnSet) { }
     void paintObject(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     void paintColumnRules(const PaintInfo&, const LayoutPoint& paintOffset);
 
-    RenderMultiColumnSet& m_renderMultiColumnSet;
+    LayoutMultiColumnSet& m_renderMultiColumnSet;
 };
 
 } // namespace blink

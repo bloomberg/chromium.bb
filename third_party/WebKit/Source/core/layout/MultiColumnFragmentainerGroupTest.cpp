@@ -6,8 +6,8 @@
 
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 
-#include "core/rendering/RenderMultiColumnFlowThread.h"
-#include "core/rendering/RenderMultiColumnSet.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "core/layout/LayoutMultiColumnSet.h"
 #include "core/rendering/RenderingTestHelper.h"
 
 #include <gtest/gtest.h>
@@ -24,21 +24,21 @@ protected:
     virtual void SetUp() override;
     virtual void TearDown() override;
 
-    RenderMultiColumnSet& columnSet() { return *m_columnSet; }
+    LayoutMultiColumnSet& columnSet() { return *m_columnSet; }
 
     static int groupCount(const MultiColumnFragmentainerGroupList&);
 
 private:
-    RenderMultiColumnFlowThread* m_flowThread;
-    RenderMultiColumnSet* m_columnSet;
+    LayoutMultiColumnFlowThread* m_flowThread;
+    LayoutMultiColumnSet* m_columnSet;
 };
 
 void MultiColumnFragmentainerGroupTest::SetUp()
 {
     RenderingTest::SetUp();
     RefPtr<LayoutStyle> style = LayoutStyle::create();
-    m_flowThread = RenderMultiColumnFlowThread::createAnonymous(document(), *style.get());
-    m_columnSet = RenderMultiColumnSet::createAnonymous(*m_flowThread, *m_flowThread->style());
+    m_flowThread = LayoutMultiColumnFlowThread::createAnonymous(document(), *style.get());
+    m_columnSet = LayoutMultiColumnSet::createAnonymous(*m_flowThread, *m_flowThread->style());
 }
 
 void MultiColumnFragmentainerGroupTest::TearDown()

@@ -5,15 +5,15 @@
 #ifndef RenderPagedFlowThread_h
 #define RenderPagedFlowThread_h
 
-#include "core/rendering/RenderMultiColumnFlowThread.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 
 namespace blink {
 
 // A flow thread for paged overflow. FIXME: The current implementation relies on the multicol
 // implementation, but it in the long run it would be better to have what's common between
-// RenderMultiColumnFlowThread and RenderPagedFlowThread in RenderFlowThread, and have both of them
+// LayoutMultiColumnFlowThread and RenderPagedFlowThread in RenderFlowThread, and have both of them
 // inherit from that one.
-class RenderPagedFlowThread : public RenderMultiColumnFlowThread {
+class RenderPagedFlowThread : public LayoutMultiColumnFlowThread {
 public:
     static RenderPagedFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
 

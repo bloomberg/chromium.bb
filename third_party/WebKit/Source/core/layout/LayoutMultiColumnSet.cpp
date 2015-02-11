@@ -24,84 +24,84 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderMultiColumnSet.h"
+#include "core/layout/LayoutMultiColumnSet.h"
 
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 #include "core/paint/MultiColumnSetPainter.h"
-#include "core/rendering/RenderMultiColumnFlowThread.h"
 
 namespace blink {
 
-RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
+LayoutMultiColumnSet::LayoutMultiColumnSet(RenderFlowThread* flowThread)
     : RenderRegion(0, flowThread)
     , m_fragmentainerGroups(*this)
 {
 }
 
-RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread& flowThread, const LayoutStyle& parentStyle)
+LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(RenderFlowThread& flowThread, const LayoutStyle& parentStyle)
 {
     Document& document = flowThread.document();
-    RenderMultiColumnSet* renderer = new RenderMultiColumnSet(&flowThread);
+    LayoutMultiColumnSet* renderer = new LayoutMultiColumnSet(&flowThread);
     renderer->setDocumentForAnonymous(&document);
     renderer->setStyle(LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
 }
 
-MultiColumnFragmentainerGroup& RenderMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit)
+MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit)
 {
     // FIXME: implement this, once we have support for multiple rows.
     return m_fragmentainerGroups.first();
 }
 
-const MultiColumnFragmentainerGroup& RenderMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const
+const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const
 {
     // FIXME: implement this, once we have support for multiple rows.
     return m_fragmentainerGroups.first();
 }
 
-LayoutUnit RenderMultiColumnSet::pageLogicalHeight() const
+LayoutUnit LayoutMultiColumnSet::pageLogicalHeight() const
 {
     // FIXME: pageLogicalHeight() needs to take a flow thread offset parameter, so that we can
     // locate the right row.
     return firstFragmentainerGroup().logicalHeight();
 }
 
-RenderMultiColumnSet* RenderMultiColumnSet::nextSiblingMultiColumnSet() const
+LayoutMultiColumnSet* LayoutMultiColumnSet::nextSiblingMultiColumnSet() const
 {
     for (LayoutObject* sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
-        if (sibling->isRenderMultiColumnSet())
-            return toRenderMultiColumnSet(sibling);
+        if (sibling->isLayoutMultiColumnSet())
+            return toLayoutMultiColumnSet(sibling);
     }
     return 0;
 }
 
-RenderMultiColumnSet* RenderMultiColumnSet::previousSiblingMultiColumnSet() const
+LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() const
 {
     for (LayoutObject* sibling = previousSibling(); sibling; sibling = sibling->previousSibling()) {
-        if (sibling->isRenderMultiColumnSet())
-            return toRenderMultiColumnSet(sibling);
+        if (sibling->isLayoutMultiColumnSet())
+            return toLayoutMultiColumnSet(sibling);
     }
     return 0;
 }
 
-LayoutUnit RenderMultiColumnSet::logicalTopInFlowThread() const
+LayoutUnit LayoutMultiColumnSet::logicalTopInFlowThread() const
 {
     return firstFragmentainerGroup().logicalTopInFlowThread();
 }
 
-LayoutUnit RenderMultiColumnSet::logicalBottomInFlowThread() const
+LayoutUnit LayoutMultiColumnSet::logicalBottomInFlowThread() const
 {
     return lastFragmentainerGroup().logicalBottomInFlowThread();
 }
 
-bool RenderMultiColumnSet::heightIsAuto() const
+bool LayoutMultiColumnSet::heightIsAuto() const
 {
-    RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+    LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
     if (!flowThread->isRenderPagedFlowThread()) {
         if (multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance)
             return true;
         if (RenderBox* next = nextSiblingBox()) {
-            if (next->isRenderMultiColumnSpannerPlaceholder()) {
+            if (next->isLayoutMultiColumnSpannerPlaceholder()) {
                 // If we're followed by a spanner, we need to balance.
                 return true;
             }
@@ -110,30 +110,30 @@ bool RenderMultiColumnSet::heightIsAuto() const
     return !flowThread->columnHeightAvailable();
 }
 
-LayoutSize RenderMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset) const
+LayoutSize LayoutMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset) const
 {
     const MultiColumnFragmentainerGroup& row = fragmentainerGroupAtFlowThreadOffset(blockOffset);
     return row.offsetFromColumnSet() + row.flowThreadTranslationAtOffset(blockOffset);
 }
 
-void RenderMultiColumnSet::updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height)
+void LayoutMultiColumnSet::updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height)
 {
     fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).updateMinimumColumnHeight(height);
 }
 
-LayoutUnit RenderMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) const
+LayoutUnit LayoutMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) const
 {
     return fragmentainerGroupAtFlowThreadOffset(offset).columnLogicalTopForOffset(offset);
 }
 
-void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
+void LayoutMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
 {
     if (!heightIsAuto())
         return;
     fragmentainerGroupAtFlowThreadOffset(endOffsetFromFirstPage).addContentRun(endOffsetFromFirstPage);
 }
 
-bool RenderMultiColumnSet::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)
+bool LayoutMultiColumnSet::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)
 {
     bool changed = false;
     for (auto& group : m_fragmentainerGroups)
@@ -141,25 +141,25 @@ bool RenderMultiColumnSet::recalculateColumnHeight(BalancedColumnHeightCalculati
     return changed;
 }
 
-void RenderMultiColumnSet::recordSpaceShortage(LayoutUnit offsetInFlowThread, LayoutUnit spaceShortage)
+void LayoutMultiColumnSet::recordSpaceShortage(LayoutUnit offsetInFlowThread, LayoutUnit spaceShortage)
 {
     fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).recordSpaceShortage(spaceShortage);
 }
 
-void RenderMultiColumnSet::resetColumnHeight()
+void LayoutMultiColumnSet::resetColumnHeight()
 {
     m_fragmentainerGroups.deleteExtraGroups();
     m_fragmentainerGroups.first().resetColumnHeight();
 }
 
-void RenderMultiColumnSet::beginFlow(LayoutUnit offsetInFlowThread)
+void LayoutMultiColumnSet::beginFlow(LayoutUnit offsetInFlowThread)
 {
     // At this point layout is exactly at the beginning of this set. Store block offset from flow
     // thread start.
     m_fragmentainerGroups.first().setLogicalTopInFlowThread(offsetInFlowThread);
 }
 
-void RenderMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
+void LayoutMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
 {
     // At this point layout is exactly at the end of this set. Store block offset from flow thread
     // start. This set is now considered "flowed", although we may have to revisit it later (with
@@ -168,7 +168,7 @@ void RenderMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
     m_fragmentainerGroups.last().setLogicalBottomInFlowThread(offsetInFlowThread);
 }
 
-void RenderMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
+void LayoutMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
 {
     ASSERT(multiColumnFlowThread()->lastMultiColumnSet() == this);
     // FIXME: this may result in the need for creating additional rows, since there may not be
@@ -176,7 +176,7 @@ void RenderMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
     m_fragmentainerGroups.last().expandToEncompassFlowThreadOverflow();
 }
 
-void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     LayoutUnit logicalHeight;
     for (const auto& group : m_fragmentainerGroups)
@@ -185,7 +185,7 @@ void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTo
     computedValues.m_position = logicalTop;
 }
 
-LayoutUnit RenderMultiColumnSet::columnGap() const
+LayoutUnit LayoutMultiColumnSet::columnGap() const
 {
     RenderBlockFlow* parentBlock = multiColumnBlockFlow();
     if (parentBlock->style()->hasNormalColumnGap())
@@ -193,25 +193,25 @@ LayoutUnit RenderMultiColumnSet::columnGap() const
     return parentBlock->style()->columnGap();
 }
 
-unsigned RenderMultiColumnSet::actualColumnCount() const
+unsigned LayoutMultiColumnSet::actualColumnCount() const
 {
     // FIXME: remove this method. It's a meaningless question to ask the set "how many columns do
     // you actually have?", since that may vary for each row.
     return firstFragmentainerGroup().actualColumnCount();
 }
 
-void RenderMultiColumnSet::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutMultiColumnSet::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     MultiColumnSetPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
+void LayoutMultiColumnSet::collectLayerFragments(LayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
 {
     for (const auto& group : m_fragmentainerGroups)
         group.collectLayerFragments(fragments, layerBoundingBox, dirtyRect);
 }
 
-void RenderMultiColumnSet::addOverflowFromChildren()
+void LayoutMultiColumnSet::addOverflowFromChildren()
 {
     LayoutRect overflowRect;
     for (const auto& group : m_fragmentainerGroups) {
@@ -224,26 +224,26 @@ void RenderMultiColumnSet::addOverflowFromChildren()
         addVisualOverflow(overflowRect);
 }
 
-const char* RenderMultiColumnSet::renderName() const
+const char* LayoutMultiColumnSet::renderName() const
 {
-    return "RenderMultiColumnSet";
+    return "LayoutMultiColumnSet";
 }
 
-void RenderMultiColumnSet::insertedIntoTree()
+void LayoutMultiColumnSet::insertedIntoTree()
 {
     RenderRegion::insertedIntoTree();
 
     attachRegion();
 }
 
-void RenderMultiColumnSet::willBeRemovedFromTree()
+void LayoutMultiColumnSet::willBeRemovedFromTree()
 {
     RenderRegion::willBeRemovedFromTree();
 
     detachRegion();
 }
 
-void RenderMultiColumnSet::attachRegion()
+void LayoutMultiColumnSet::attachRegion()
 {
     if (documentBeingDestroyed())
         return;
@@ -258,7 +258,7 @@ void RenderMultiColumnSet::attachRegion()
     m_flowThread->addRegionToThread(this);
 }
 
-void RenderMultiColumnSet::detachRegion()
+void LayoutMultiColumnSet::detachRegion()
 {
     if (m_flowThread) {
         m_flowThread->removeRegionFromThread(this);
@@ -266,7 +266,7 @@ void RenderMultiColumnSet::detachRegion()
     }
 }
 
-LayoutRect RenderMultiColumnSet::flowThreadPortionRect() const
+LayoutRect LayoutMultiColumnSet::flowThreadPortionRect() const
 {
     LayoutRect portionRect(LayoutUnit(), logicalTopInFlowThread(), pageLogicalWidth(), logicalHeightInFlowThread());
     if (!isHorizontalWritingMode())

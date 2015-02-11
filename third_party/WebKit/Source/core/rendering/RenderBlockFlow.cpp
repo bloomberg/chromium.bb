@@ -38,14 +38,14 @@
 #include "core/html/HTMLDialogElement.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/paint/BlockFlowPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderFlowThread.h"
-#include "core/rendering/RenderMultiColumnFlowThread.h"
-#include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
 #include "core/rendering/RenderPagedFlowThread.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
@@ -179,7 +179,7 @@ RenderBlockFlow* RenderBlockFlow::createAnonymous(Document* document)
 
 LayoutObject* RenderBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+    LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
     if (!flowThread)
         return 0;
     setLogicalTopForChild(*flowThread, borderBefore() + paddingBefore());
@@ -191,7 +191,7 @@ LayoutObject* RenderBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren,
 bool RenderBlockFlow::updateLogicalWidthAndColumnWidth()
 {
     bool relayoutChildren = RenderBlock::updateLogicalWidthAndColumnWidth();
-    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+    if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
         if (flowThread->needsNewWidth())
             return true;
     }
@@ -200,7 +200,7 @@ bool RenderBlockFlow::updateLogicalWidthAndColumnWidth()
 
 void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight)
 {
-    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+    if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
         LogicalExtentComputedValues computedValues;
         computeLogicalHeight(LayoutUnit(), logicalTop(), computedValues);
         LayoutUnit columnHeight = computedValues.m_extent - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
@@ -435,7 +435,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsNewFormattingContext())
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
 
-    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+    if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
         if (flowThread->recalculateColumnHeights()) {
             setChildNeedsLayout(MarkOnlyThis);
             return false;
@@ -675,9 +675,9 @@ void RenderBlockFlow::layoutBlockChild(RenderBox& child, MarginInfo& marginInfo,
             setLogicalHeight(newHeight);
     }
 
-    if (child.isRenderMultiColumnSpannerPlaceholder()) {
+    if (child.isLayoutMultiColumnSpannerPlaceholder()) {
         // The actual column-span:all element is positioned by this placeholder child.
-        positionSpannerDescendant(toRenderMultiColumnSpannerPlaceholder(child));
+        positionSpannerDescendant(toLayoutMultiColumnSpannerPlaceholder(child));
     }
 }
 
@@ -1978,7 +1978,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const LayoutStyle* ol
     if (diff.needsFullLayout() || !oldStyle)
         createOrDestroyMultiColumnFlowThreadIfNeeded(oldStyle);
     if (oldStyle) {
-        if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+        if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
             if (!style()->columnRuleEquivalent(oldStyle)) {
                 // Column rules are painted by anonymous column set children of the multicol
                 // container. We need to notify them.
@@ -1990,7 +1990,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const LayoutStyle* ol
 
 void RenderBlockFlow::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox& child)
 {
-    if (child.isRenderMultiColumnSpannerPlaceholder() && toRenderMultiColumnSpannerPlaceholder(child).rendererInFlowThread()->needsLayout()) {
+    if (child.isLayoutMultiColumnSpannerPlaceholder() && toLayoutMultiColumnSpannerPlaceholder(child).rendererInFlowThread()->needsLayout()) {
         // The containing block of a spanner is the multicol container (|this| block), but the spanner
         // is laid out via its spanner set (|child|), so we need to make sure that we enter it.
         child.setChildNeedsLayout(MarkOnlyThis);
@@ -2013,7 +2013,7 @@ void RenderBlockFlow::setStaticInlinePositionForChild(RenderBox& child, LayoutUn
 
 void RenderBlockFlow::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
-    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+    if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
         if (beforeChild == flowThread)
             beforeChild = flowThread->firstChild();
         ASSERT(!beforeChild || beforeChild->isDescendantOf(flowThread));
@@ -2984,7 +2984,7 @@ void RenderBlockFlow::setPaginationStrut(LayoutUnit strut)
     m_rareData->m_paginationStrut = strut;
 }
 
-void RenderBlockFlow::positionSpannerDescendant(RenderMultiColumnSpannerPlaceholder& child)
+void RenderBlockFlow::positionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child)
 {
     RenderBox& spanner = *child.rendererInFlowThread();
     // FIXME: |spanner| is a descendant, but never a direct child, so the names here are bad, if
@@ -3054,11 +3054,11 @@ RenderBlockFlow::FlowThreadType RenderBlockFlow::flowThreadType(const LayoutStyl
     return NoFlowThread;
 }
 
-RenderMultiColumnFlowThread* RenderBlockFlow::createMultiColumnFlowThread(FlowThreadType type)
+LayoutMultiColumnFlowThread* RenderBlockFlow::createMultiColumnFlowThread(FlowThreadType type)
 {
     switch (type) {
     case MultiColumnFlowThread:
-        return RenderMultiColumnFlowThread::createAnonymous(document(), styleRef());
+        return LayoutMultiColumnFlowThread::createAnonymous(document(), styleRef());
     case PagedFlowThread:
         // Paged overflow is currently done using the multicol implementation.
         return RenderPagedFlowThread::createAnonymous(document(), styleRef());
@@ -3093,7 +3093,7 @@ void RenderBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const LayoutS
     if (type == NoFlowThread || multiColumnFlowThread())
         return;
 
-    RenderMultiColumnFlowThread* flowThread = createMultiColumnFlowThread(type);
+    LayoutMultiColumnFlowThread* flowThread = createMultiColumnFlowThread(type);
     addChild(flowThread);
     flowThread->populate();
     RenderBlockFlowRareData& rareData = ensureRareData();

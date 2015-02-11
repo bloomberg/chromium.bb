@@ -2432,7 +2432,7 @@ LayoutRect Layer::boundingBoxForCompositing(const Layer* ancestorLayer, Calculat
         return m_renderer->view()->unscaledDocumentRect();
 
     // The layer created for the RenderFlowThread is just a helper for painting and hit-testing,
-    // and should not contribute to the bounding box. The RenderMultiColumnSets will contribute
+    // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute
     // the correct size for the rendered content of the multicol container.
     if (useRegionBasedColumns() && renderer()->isRenderFlowThread())
         return LayoutRect();
