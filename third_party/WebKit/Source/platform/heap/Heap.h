@@ -89,7 +89,6 @@ static const intptr_t zappedVTable = 0xd0d;
 
 class CallbackStack;
 class PageMemory;
-class ThreadHeapForHeapPage;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity>> class Persistent;
 
@@ -331,6 +330,13 @@ inline Address roundToBlinkPageEnd(Address address)
     return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address - 1) & blinkPageBaseMask) + blinkPageSize;
 }
 
+// Compute the amount of padding we have to add to a header to make
+// the size of the header plus the padding a multiple of 8 bytes.
+inline size_t headerPadding()
+{
+    return (allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
+}
+
 // Masks an address down to the enclosing blink page base address.
 inline Address blinkPageAddress(Address address)
 {
@@ -355,24 +361,12 @@ public:
     BaseHeapPage(PageMemory*, ThreadHeap*);
     virtual ~BaseHeapPage() { }
 
-    void link(BaseHeapPage** previousNext)
-    {
-        m_next = *previousNext;
-        *previousNext = this;
-    }
-    void unlink(BaseHeapPage** previousNext)
-    {
-        *previousNext = m_next;
-        m_next = nullptr;
-    }
-    BaseHeapPage* next() const { return m_next; }
-
     // virtual methods are slow. So performance-sensitive methods
     // should be defined as non-virtual methods on HeapPage and LargeObject.
     // The following methods are not performance-sensitive.
     virtual size_t objectPayloadSizeForTesting() = 0;
     virtual bool isEmpty() = 0;
-    virtual void removeFromHeap() = 0;
+    virtual void removeFromHeap(ThreadHeap*) = 0;
     virtual void sweep() = 0;
     virtual void markUnmarkedObjectsDead() = 0;
     // Check if the given address points to an object in this
@@ -420,7 +414,6 @@ public:
 private:
     PageMemory* m_storage;
     ThreadHeap* m_heap;
-    BaseHeapPage* m_next;
     // Whether the page is part of a terminating thread or not.
     bool m_terminating;
 
@@ -430,7 +423,6 @@ private:
     // Set to false at the start of a sweep, true  upon completion
     // of lazy sweeping.
     bool m_swept;
-    friend class ThreadHeap;
 };
 
 class HeapPage final : public BaseHeapPage {
@@ -448,9 +440,21 @@ public:
     Address payloadEnd() { return payload() + payloadSize(); }
     bool containedInObjectPayload(Address address) { return payload() <= address && address < payloadEnd(); }
 
+    void link(HeapPage** previousNext)
+    {
+        m_next = *previousNext;
+        *previousNext = this;
+    }
+
+    void unlink(HeapPage** previousNext)
+    {
+        *previousNext = m_next;
+        m_next = nullptr;
+    }
+
     virtual size_t objectPayloadSizeForTesting() override;
     virtual bool isEmpty() override;
-    virtual void removeFromHeap() override;
+    virtual void removeFromHeap(ThreadHeap*) override;
     virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
     virtual void checkAndMarkPointer(Visitor*, Address) override;
@@ -485,28 +489,29 @@ public:
     }
 #endif
     virtual size_t size() override { return blinkPageSize; }
-    // Compute the amount of padding we have to add to a header to make
-    // the size of the header plus the padding a multiple of 8 bytes.
-    static size_t headerPadding()
-    {
-        return (sizeof(HeapPage) + allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
-    }
 
+    HeapPage* next() { return m_next; }
 
-    ThreadHeapForHeapPage* heapForHeapPage();
     void clearObjectStartBitMap();
 
 #if defined(ADDRESS_SANITIZER)
     void poisonUnmarkedObjects();
 #endif
 
+    // This method is needed just to avoid compilers from removing m_padding.
+    uint64_t unusedMethod() const { return m_padding; }
+
 private:
     HeapObjectHeader* findHeaderFromAddress(Address);
     void populateObjectStartBitMap();
     bool isObjectStartBitMapComputed() { return m_objectStartBitMapComputed; }
 
+    HeapPage* m_next;
     bool m_objectStartBitMapComputed;
     uint8_t m_objectStartBitMap[reservedForObjectBitMap];
+    uint64_t m_padding; // Preserve 8-byte alignment on 32-bit systems.
+
+    friend class ThreadHeap;
 };
 
 // Large allocations are allocated as separate objects and linked in a list.
@@ -529,7 +534,7 @@ public:
 
     virtual size_t objectPayloadSizeForTesting() override;
     virtual bool isEmpty() override;
-    virtual void removeFromHeap() override;
+    virtual void removeFromHeap(ThreadHeap*) override;
     virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
     virtual void checkAndMarkPointer(Visitor*, Address) override;
@@ -562,13 +567,24 @@ public:
     {
         return sizeof(LargeObject) + headerPadding() +  sizeof(HeapObjectHeader) + m_payloadSize;
     }
-    // Compute the amount of padding we have to add to a header to make
-    // the size of the header plus the padding a multiple of 8 bytes.
-    static size_t headerPadding()
-    {
-        return (sizeof(LargeObject) + allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
-    }
     virtual bool isLargeObject() override { return true; }
+
+    void link(LargeObject** previousNext)
+    {
+        m_next = *previousNext;
+        *previousNext = this;
+    }
+
+    void unlink(LargeObject** previousNext)
+    {
+        *previousNext = m_next;
+        m_next = nullptr;
+    }
+
+    LargeObject* next()
+    {
+        return m_next;
+    }
 
     HeapObjectHeader* heapObjectHeader()
     {
@@ -576,9 +592,14 @@ public:
         return reinterpret_cast<HeapObjectHeader*>(headerAddress);
     }
 
-private:
+    // This method is needed just to avoid compilers from removing m_padding.
+    uint64_t unusedMethod() const { return m_padding; }
 
+private:
+    friend class ThreadHeap;
+    LargeObject* m_next;
     size_t m_payloadSize;
+    uint64_t m_padding; // Preserve 8-byte alignment on 32-bit systems.
 };
 
 // A HeapDoesNotContainCache provides a fast way of taking an arbitrary
@@ -707,7 +728,7 @@ private:
     // All FreeListEntries in the nth list have size >= 2^n.
     FreeListEntry* m_freeLists[blinkPageSizeLog2];
 
-    friend class ThreadHeapForHeapPage;
+    friend class ThreadHeap;
 };
 
 // Thread heaps represent a part of the per-thread Blink heap.
@@ -720,10 +741,10 @@ private:
 // (potentially adding new pages to the heap), to find and mark
 // objects during conservative stack scanning and to sweep the set of
 // pages after a GC.
-class PLATFORM_EXPORT ThreadHeap {
+class PLATFORM_EXPORT ThreadHeap final {
 public:
     ThreadHeap(ThreadState*, int);
-    virtual ~ThreadHeap();
+    ~ThreadHeap();
     void cleanupPages();
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
@@ -734,60 +755,36 @@ public:
     void incrementMarkedObjectsAge();
 #endif
 
-    virtual void clearFreeLists() { }
+    void clearFreeLists();
     void makeConsistentForSweeping();
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() = 0;
+    bool isConsistentForSweeping();
 #endif
     size_t objectPayloadSizeForTesting();
-    void prepareHeapForTermination();
-    void prepareForSweep();
-    Address lazySweep(size_t, size_t gcInfoIndex);
-    void completeSweep();
 
     ThreadState* threadState() { return m_threadState; }
-    int heapIndex() const { return m_index; }
-    inline static size_t allocationSizeFromSize(size_t);
-    inline static size_t roundedAllocationSize(size_t size)
-    {
-        return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
-    }
 
-protected:
-    BaseHeapPage* m_firstPage;
-    BaseHeapPage* m_firstUnsweptPage;
-
-private:
-    virtual Address lazySweepPages(size_t, size_t gcInfoIndex) = 0;
-
-    ThreadState* m_threadState;
-
-    // Index into the page pools.  This is used to ensure that the pages of the
-    // same type go into the correct page pool and thus avoid type confusion.
-    int m_index;
-};
-
-class PLATFORM_EXPORT ThreadHeapForHeapPage final : public ThreadHeap {
-public:
-    ThreadHeapForHeapPage(ThreadState*, int);
     void addToFreeList(Address address, size_t size)
     {
         ASSERT(findPageFromAddress(address));
         ASSERT(findPageFromAddress(address + size - 1));
         m_freeList.addToFreeList(address, size);
     }
-    virtual void clearFreeLists() override;
-#if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() override;
-    bool pagesToBeSweptContains(Address);
-#endif
 
     inline Address allocate(size_t payloadSize, size_t gcInfoIndex);
-    inline Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
+    inline static size_t roundedAllocationSize(size_t size)
+    {
+        return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
+    }
+    inline static size_t allocationSizeFromSize(size_t);
+
+    void prepareHeapForTermination();
+    void prepareForSweep();
+    void completeSweep();
 
     void freePage(HeapPage*);
+    void freeLargeObject(LargeObject*);
 
-    bool coalesce();
     void promptlyFreeObject(HeapObjectHeader*);
     bool expandObject(HeapObjectHeader*, size_t);
     void shrinkObject(HeapObjectHeader*, size_t);
@@ -801,8 +798,6 @@ public:
 #endif
 
 private:
-    void allocatePage();
-    virtual Address lazySweepPages(size_t, size_t gcInfoIndex) override;
     Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
@@ -810,11 +805,37 @@ private:
     inline void setAllocationPoint(Address, size_t);
     void updateRemainingAllocationSize();
     Address allocateFromFreeList(size_t, size_t gcInfoIndex);
+    Address lazySweepPages(size_t, size_t gcInfoIndex);
+    bool lazySweepLargeObjects(size_t);
 
-    FreeList m_freeList;
+    void allocatePage();
+    Address allocateLargeObject(size_t, size_t gcInfoIndex);
+
+    inline Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
+
+#if ENABLE(ASSERT)
+    bool pagesToBeSweptContains(Address);
+#endif
+
+    bool coalesce();
+    void preparePagesForSweeping();
+
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
     size_t m_lastRemainingAllocationSize;
+
+    HeapPage* m_firstPage;
+    LargeObject* m_firstLargeObject;
+    HeapPage* m_firstUnsweptPage;
+    LargeObject* m_firstUnsweptLargeObject;
+
+    ThreadState* m_threadState;
+
+    FreeList m_freeList;
+
+    // Index into the page pools.  This is used to ensure that the pages of the
+    // same type go into the correct page pool and thus avoid type confusion.
+    int m_index;
 
     // The size of promptly freed objects in the heap.
     size_t m_promptlyFreedSize;
@@ -824,19 +845,6 @@ private:
     size_t m_allocationCount;
     size_t m_inlineAllocationCount;
 #endif
-};
-
-class ThreadHeapForLargeObject final : public ThreadHeap {
-public:
-    ThreadHeapForLargeObject(ThreadState*, int);
-    Address allocateLargeObject(size_t, size_t gcInfoIndex);
-    void freeLargeObject(LargeObject*);
-#if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() override { return true; }
-#endif
-private:
-    Address doAllocateLargeObject(size_t, size_t gcInfoIndex);
-    virtual Address lazySweepPages(size_t, size_t gcInfoIndex) override;
 };
 
 // Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
@@ -1354,7 +1362,7 @@ size_t ThreadHeap::allocationSizeFromSize(size_t size)
     return allocationSize;
 }
 
-Address ThreadHeapForHeapPage::allocateObject(size_t allocationSize, size_t gcInfoIndex)
+Address ThreadHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
 {
 #if ENABLE(GC_PROFILING)
     m_cumulativeAllocationSize += allocationSize;
@@ -1382,7 +1390,7 @@ Address ThreadHeapForHeapPage::allocateObject(size_t allocationSize, size_t gcIn
     return outOfLineAllocate(allocationSize, gcInfoIndex);
 }
 
-Address ThreadHeapForHeapPage::allocate(size_t size, size_t gcInfoIndex)
+Address ThreadHeap::allocate(size_t size, size_t gcInfoIndex)
 {
     return allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
@@ -1407,7 +1415,7 @@ Address Heap::allocateOnHeapIndex(size_t size, int heapIndex, size_t gcInfoIndex
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
-    return static_cast<ThreadHeapForHeapPage*>(state->heap(heapIndex))->allocate(size, gcInfoIndex);
+    return state->heap(heapIndex)->allocate(size, gcInfoIndex);
 }
 
 template<typename T>
