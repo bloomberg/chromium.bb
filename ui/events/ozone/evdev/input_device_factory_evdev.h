@@ -80,7 +80,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void DetachInputDevice(const base::FilePath& file_path);
 
   // Update observers on device changes.
-  void NotifyDeviceChange(const EventConverterEvdev& converter);
+  void UpdateDirtyFlags(const EventConverterEvdev* converter);
+  void NotifyDevicesUpdated();
   void NotifyKeyboardsUpdated();
   void NotifyTouchscreensUpdated();
   void NotifyMouseDevicesUpdated();
@@ -109,6 +110,13 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   // Dispatcher for events.
   scoped_ptr<DeviceEventDispatcherEvdev> dispatcher_;
+
+  // Number of pending device additions & device classes.
+  int pending_device_changes_;
+  bool touchscreen_list_dirty_;
+  bool keyboard_list_dirty_;
+  bool mouse_list_dirty_;
+  bool touchpad_list_dirty_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<InputDeviceFactoryEvdev> weak_ptr_factory_;

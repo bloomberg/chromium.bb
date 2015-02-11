@@ -203,12 +203,15 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
                      scoped_refptr<base::TaskRunner> reply_runner,
                      const OpenInputDeviceReplyCallback& reply_callback) {
   const base::FilePath& path = params->path;
+  scoped_ptr<EventConverterEvdev> converter;
 
   TRACE_EVENT1("ozone", "OpenInputDevice", "path", path.value());
 
   int fd = open(path.value().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd < 0) {
     PLOG(ERROR) << "Cannot open '" << path.value();
+    reply_runner->PostTask(
+        FROM_HERE, base::Bind(reply_callback, base::Passed(&converter)));
     return;
   }
 
@@ -223,13 +226,14 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
   if (!devinfo.Initialize(fd)) {
     LOG(ERROR) << "failed to get device information for " << path.value();
     close(fd);
+    reply_runner->PostTask(
+        FROM_HERE, base::Bind(reply_callback, base::Passed(&converter)));
     return;
   }
 
   InputDeviceType type = GetInputDeviceTypeFromPath(path);
 
-  scoped_ptr<EventConverterEvdev> converter =
-      CreateConverter(*params, fd, type, devinfo);
+  converter = CreateConverter(*params, fd, type, devinfo);
 
   // Reply with the constructed converter.
   reply_runner->PostTask(FROM_HERE,
@@ -256,6 +260,11 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
       dispatcher_(dispatcher.Pass()),
+      pending_device_changes_(0),
+      touchscreen_list_dirty_(false),
+      keyboard_list_dirty_(false),
+      mouse_list_dirty_(false),
+      touchpad_list_dirty_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -279,6 +288,8 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
       base::Bind(&InputDeviceFactoryEvdev::AttachInputDevice,
                  weak_ptr_factory_.GetWeakPtr());
 
+  ++pending_device_changes_;
+
   // Dispatch task to open from the worker pool, since open may block.
   base::WorkerPool::PostTask(FROM_HERE,
                              base::Bind(&OpenInputDevice, base::Passed(&params),
@@ -292,21 +303,25 @@ void InputDeviceFactoryEvdev::RemoveInputDevice(const base::FilePath& path) {
 
 void InputDeviceFactoryEvdev::AttachInputDevice(
     scoped_ptr<EventConverterEvdev> converter) {
-  const base::FilePath& path = converter->path();
+  if (converter.get()) {
+    const base::FilePath& path = converter->path();
 
-  TRACE_EVENT1("ozone", "AttachInputDevice", "path", path.value());
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    TRACE_EVENT1("ozone", "AttachInputDevice", "path", path.value());
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  // If we have an existing device, detach it. We don't want two
-  // devices with the same name open at the same time.
-  if (converters_[path])
-    DetachInputDevice(path);
+    // If we have an existing device, detach it. We don't want two
+    // devices with the same name open at the same time.
+    if (converters_[path])
+      DetachInputDevice(path);
 
-  // Add initialized device to map.
-  converters_[path] = converter.release();
-  converters_[path]->Start();
+    // Add initialized device to map.
+    converters_[path] = converter.release();
+    converters_[path]->Start();
+    UpdateDirtyFlags(converters_[path]);
+  }
 
-  NotifyDeviceChange(*converters_[path]);
+  if (--pending_device_changes_ == 0)
+    NotifyDevicesUpdated();
 }
 
 void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
@@ -322,7 +337,8 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
     // on UI since the polling happens on UI.
     converter->Stop();
 
-    NotifyDeviceChange(*converter);
+    UpdateDirtyFlags(converter.get());
+    NotifyDevicesUpdated();
 
     // Dispatch task to close from the worker pool, since close may block.
     base::WorkerPool::PostTask(
@@ -418,19 +434,34 @@ base::WeakPtr<InputDeviceFactoryEvdev> InputDeviceFactoryEvdev::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void InputDeviceFactoryEvdev::NotifyDeviceChange(
-    const EventConverterEvdev& converter) {
-  if (converter.HasTouchscreen())
+void InputDeviceFactoryEvdev::UpdateDirtyFlags(
+    const EventConverterEvdev* converter) {
+  if (converter->HasTouchscreen())
+    touchscreen_list_dirty_ = true;
+
+  if (converter->HasKeyboard())
+    keyboard_list_dirty_ = true;
+
+  if (converter->HasMouse())
+    mouse_list_dirty_ = true;
+
+  if (converter->HasTouchpad())
+    touchpad_list_dirty_ = true;
+}
+
+void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
+  if (touchscreen_list_dirty_)
     NotifyTouchscreensUpdated();
-
-  if (converter.HasKeyboard())
+  if (keyboard_list_dirty_)
     NotifyKeyboardsUpdated();
-
-  if (converter.HasMouse())
+  if (mouse_list_dirty_)
     NotifyMouseDevicesUpdated();
-
-  if (converter.HasTouchpad())
+  if (touchpad_list_dirty_)
     NotifyTouchpadDevicesUpdated();
+  touchscreen_list_dirty_ = false;
+  keyboard_list_dirty_ = false;
+  mouse_list_dirty_ = false;
+  touchpad_list_dirty_ = false;
 }
 
 void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
