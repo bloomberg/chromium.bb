@@ -16,13 +16,8 @@ namespace blink {
 // generate_init_partial_interfaces.py.
 void initPartialInterfacesInModules();
 
-static void didLeaveScriptContextForModule(v8::Isolate* isolate)
-{
-}
-
 void ModuleBindingsInitializer::init()
 {
-    ModuleProxy::moduleProxy().registerDidLeaveScriptContextForRecursionScope(didLeaveScriptContextForModule);
     initPartialInterfacesInModules();
     SerializedScriptValueFactory::initialize(new SerializedScriptValueForModulesFactory);
 }

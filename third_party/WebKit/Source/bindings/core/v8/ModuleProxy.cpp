@@ -15,15 +15,4 @@ ModuleProxy& ModuleProxy::moduleProxy()
     return moduleProxy;
 }
 
-void ModuleProxy::didLeaveScriptContextForRecursionScope(v8::Isolate* isolate)
-{
-    RELEASE_ASSERT(m_didLeaveScriptContextForRecursionScope);
-    (*m_didLeaveScriptContextForRecursionScope)(isolate);
-}
-
-void ModuleProxy::registerDidLeaveScriptContextForRecursionScope(void (*didLeaveScriptContext)(v8::Isolate*))
-{
-    m_didLeaveScriptContextForRecursionScope = didLeaveScriptContext;
-}
-
 } // namespace blink
