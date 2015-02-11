@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/native_theme/native_theme_switches.h"
 
@@ -189,6 +190,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableV8IdleTasks(false);
   else
     WebRuntimeFeatures::enableV8IdleTasks(true);
+
+  if (command_line.HasSwitch(switches::kEnableUnsafeES3APIs))
+    WebRuntimeFeatures::enableUnsafeES3APIs(true);
 
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
