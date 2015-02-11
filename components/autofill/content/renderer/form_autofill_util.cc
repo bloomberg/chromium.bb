@@ -416,8 +416,18 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kFieldSet, ("fieldset"));
   while (inferred_label.empty() && !node.isNull()) {
     if (HasTagName(node, kDiv)) {
-      looking_for_parent = false;
       inferred_label = FindChildText(node);
+      // Avoid sibling DIVs that contain autofillable fields.
+      if (!looking_for_parent && !inferred_label.empty()) {
+        CR_DEFINE_STATIC_LOCAL(WebString, kSelector,
+                               ("input, select, textarea"));
+        blink::WebExceptionCode ec = 0;
+        WebElement result_element = node.querySelector(kSelector, ec);
+        if (!result_element.isNull())
+          inferred_label.clear();
+      }
+
+      looking_for_parent = false;
     } else if (looking_for_parent &&
                (HasTagName(node, kTable) || HasTagName(node, kFieldSet))) {
       // If the element is in a table or fieldset, its label most likely is too.
@@ -429,10 +439,7 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
       looking_for_parent = true;
     }
 
-    if (looking_for_parent)
-      node = node.parentNode();
-    else
-      node = node.previousSibling();
+    node = looking_for_parent ? node.parentNode() : node.previousSibling();
   }
 
   return inferred_label;
