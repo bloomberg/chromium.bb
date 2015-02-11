@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -320,7 +319,6 @@ void RpcHandler::RegisterDevice(bool authenticated) {
     Identity* identity =
         request->mutable_device_identifiers()->mutable_registrant();
     identity->set_type(CHROME);
-    identity->set_chrome_id(base::GenerateGUID());
   }
 
   bool gcm_pending = authenticated && gcm_handler_ && gcm_id_.empty();

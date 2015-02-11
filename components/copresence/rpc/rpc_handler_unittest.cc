@@ -196,9 +196,7 @@ TEST_F(RpcHandlerTest, RegisterDevice) {
   EXPECT_THAT(request_protos_, SizeIs(1));
   const RegisterDeviceRequest* registration =
       static_cast<RegisterDeviceRequest*>(request_protos_[0]);
-  Identity identity = registration->device_identifiers().registrant();
-  EXPECT_EQ(CHROME, identity.type());
-  EXPECT_FALSE(identity.chrome_id().empty());
+  EXPECT_EQ(CHROME, registration->device_identifiers().registrant().type());
 
   SetAuthToken("Register auth");
   RegisterDevice(true);
