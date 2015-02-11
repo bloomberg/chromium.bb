@@ -101,7 +101,6 @@ private:
 
     // WebContentDecryptionModuleSession::Client
     virtual void message(MessageType, const unsigned char* message, size_t messageLength) override;
-    virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) override;
     virtual void close() override;
     virtual void expirationChanged(double updatedExpiryTimeInMS) override;
     virtual void keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>&, bool hasAdditionalUsableKey) override;

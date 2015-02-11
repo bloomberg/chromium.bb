@@ -821,15 +821,6 @@ void MediaKeySession::message(MessageType messageType, const unsigned char* mess
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-// FIXME: This method should be removed once Chromium uses the new method.
-void MediaKeySession::message(const unsigned char* messageData, size_t messageLength, const WebURL& destinationURL)
-{
-    MessageType messageType = destinationURL.isEmpty()
-        ? WebContentDecryptionModuleSession::Client::MessageType::LicenseRequest
-        : WebContentDecryptionModuleSession::Client::MessageType::LicenseRenewal;
-    message(messageType, messageData, messageLength);
-}
-
 void MediaKeySession::close()
 {
     WTF_LOG(Media, "MediaKeySession(%p)::close", this);
