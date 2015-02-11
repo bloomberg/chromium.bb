@@ -14,6 +14,7 @@ from pylib import flag_changer
 from pylib.base import base_test_result
 from pylib.base import test_instance
 from pylib.instrumentation import test_result
+from pylib.instrumentation import instrumentation_parser
 from pylib.utils import apk_helper
 from pylib.utils import md5sum
 from pylib.utils import proguard
@@ -47,48 +48,10 @@ def ParseAmInstrumentRawOutput(raw_output):
         - the bundle dump as a dict mapping string keys to a list of
           strings, one for each line.
   """
-  INSTR_STATUS = 'INSTRUMENTATION_STATUS: '
-  INSTR_STATUS_CODE = 'INSTRUMENTATION_STATUS_CODE: '
-  INSTR_RESULT = 'INSTRUMENTATION_RESULT: '
-  INSTR_CODE = 'INSTRUMENTATION_CODE: '
-
-  last = None
-  instr_code = None
-  instr_result = []
-  instr_statuses = []
-  bundle = {}
-  for line in raw_output:
-    if line.startswith(INSTR_STATUS):
-      instr_var = line[len(INSTR_STATUS):]
-      if '=' in instr_var:
-        k, v = instr_var.split('=', 1)
-        bundle[k] = [v]
-        last = INSTR_STATUS
-        last_key = k
-      else:
-        logging.debug('Unknown "%s" line: %s' % (INSTR_STATUS, line))
-
-    elif line.startswith(INSTR_STATUS_CODE):
-      instr_status = line[len(INSTR_STATUS_CODE):]
-      instr_statuses.append((int(instr_status), bundle))
-      bundle = {}
-      last = INSTR_STATUS_CODE
-
-    elif line.startswith(INSTR_RESULT):
-      instr_result.append(line[len(INSTR_RESULT):])
-      last = INSTR_RESULT
-
-    elif line.startswith(INSTR_CODE):
-      instr_code = int(line[len(INSTR_CODE):])
-      last = INSTR_CODE
-
-    elif last == INSTR_STATUS:
-      bundle[last_key].append(line)
-
-    elif last == INSTR_RESULT:
-      instr_result.append(line)
-
-  return (instr_code, instr_result, instr_statuses)
+  parser = instrumentation_parser.InstrumentationParser(raw_output)
+  statuses = list(parser.IterStatus())
+  code, bundle = parser.GetResult()
+  return (code, bundle, statuses)
 
 
 def GenerateTestResult(test_name, instr_statuses, start_ms, duration_ms):
@@ -106,22 +69,15 @@ def GenerateTestResult(test_name, instr_statuses, start_ms, duration_ms):
   Returns:
     An InstrumentationTestResult object.
   """
-  INSTR_STATUS_CODE_START = 1
-  INSTR_STATUS_CODE_OK = 0
-  INSTR_STATUS_CODE_ERROR = -1
-  INSTR_STATUS_CODE_FAIL = -2
-
   log = ''
   result_type = base_test_result.ResultType.UNKNOWN
 
   for status_code, bundle in instr_statuses:
-    if status_code == INSTR_STATUS_CODE_START:
+    if status_code == instrumentation_parser.STATUS_CODE_START:
       pass
-    elif status_code == INSTR_STATUS_CODE_OK:
-      bundle_test = '%s#%s' % (
-          ''.join(bundle.get('class', [''])),
-          ''.join(bundle.get('test', [''])))
-      skipped = ''.join(bundle.get('test_skipped', ['']))
+    elif status_code == instrumentation_parser.STATUS_CODE_OK:
+      bundle_test = '%s#%s' % (bundle.get('class', ''), bundle.get('test', ''))
+      skipped = bundle.get('test_skipped', '')
 
       if (test_name == bundle_test and
           result_type == base_test_result.ResultType.UNKNOWN):
@@ -130,13 +86,13 @@ def GenerateTestResult(test_name, instr_statuses, start_ms, duration_ms):
         result_type = base_test_result.ResultType.SKIP
         logging.info('Skipped ' + test_name)
     else:
-      if status_code not in (INSTR_STATUS_CODE_ERROR,
-                             INSTR_STATUS_CODE_FAIL):
+      if status_code not in (instrumentation_parser.STATUS_CODE_ERROR,
+                             instrumentation_parser.STATUS_CODE_FAILURE):
         logging.error('Unrecognized status code %d. Handling as an error.',
                       status_code)
       result_type = base_test_result.ResultType.FAIL
       if 'stack' in bundle:
-        log = '\n'.join(bundle['stack'])
+        log = bundle['stack']
 
   return test_result.InstrumentationTestResult(
       test_name, result_type, start_ms, duration_ms, log=log)
@@ -466,24 +422,22 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   @staticmethod
   def GenerateMultiTestResult(errors, statuses):
-    INSTR_STATUS_CODE_START = 1
     results = []
     skip_counter = 1
     for status_code, bundle in statuses:
-      if status_code != INSTR_STATUS_CODE_START:
+      if status_code != instrumentation_parser.STATUS_CODE_START:
         # TODO(rnephew): Make skipped tests still output test name. This is only
         # there to give skipped tests a unique name so they are counted
         if 'test_skipped' in bundle:
           test_name = str(skip_counter)
           skip_counter += 1
         else:
-          test_name = '%s#%s' % (
-              ''.join(bundle.get('class', [''])),
-              ''.join(bundle.get('test', [''])))
+          test_name = '%s#%s' % (bundle.get('class', ''),
+                                 bundle.get('test', ''))
 
         results.append(
             GenerateTestResult(test_name, [(status_code, bundle)], 0, 0))
-    for error in errors:
+    for error in errors.itervalues():
       if _NATIVE_CRASH_RE.search(error):
         results.append(
             base_test_result.BaseTestResult(
