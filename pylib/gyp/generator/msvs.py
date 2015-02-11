@@ -1863,10 +1863,13 @@ def _InitNinjaFlavor(params, target_list, target_dicts):
     if not spec.get('msvs_external_builder_out_dir'):
       gyp_file, _, _ = gyp.common.ParseQualifiedTarget(qualified_target)
       gyp_dir = os.path.dirname(gyp_file)
+      configuration = '$(Configuration)'
+      if params.get('target_arch') == 'x64':
+        configuration += '_x64'
       spec['msvs_external_builder_out_dir'] = os.path.join(
           gyp.common.RelativePath(params['options'].toplevel_dir, gyp_dir),
           ninja_generator.ComputeOutputDir(params),
-          '$(Configuration)')
+          configuration)
     if not spec.get('msvs_external_builder_build_cmd'):
       spec['msvs_external_builder_build_cmd'] = [
         path_to_ninja,

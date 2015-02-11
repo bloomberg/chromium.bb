@@ -493,7 +493,8 @@ def gyp_main(args):
               'gyp_binary': sys.argv[0],
               'home_dot_gyp': home_dot_gyp,
               'parallel': options.parallel,
-              'root_targets': options.root_targets}
+              'root_targets': options.root_targets,
+              'target_arch': cmdline_default_variables.get('target_arch', '')}
 
     # Start with the default variables from the command line.
     [generator, flat_list, targets, data] = Load(
