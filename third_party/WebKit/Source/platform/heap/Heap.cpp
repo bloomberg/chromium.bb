@@ -2355,13 +2355,15 @@ void Heap::postGC(ThreadState::GCType gcType)
 void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType)
 {
     ThreadState* state = ThreadState::current();
+    ThreadState::GCState originalGCState = state->gcState();
     state->setGCState(ThreadState::StoppingOtherThreads);
 
     GCScope gcScope(stackState);
     // Check if we successfully parked the other threads.  If not we bail out of
     // the GC.
     if (!gcScope.allThreadsParked()) {
-        state->scheduleGCIfNeeded();
+        // Restore the original GCState.
+        state->setGCState(originalGCState);
         return;
     }
 
