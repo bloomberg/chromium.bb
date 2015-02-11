@@ -92,6 +92,16 @@ void OverscrollGlow::Reset() {
     edge_effects_[i]->Finish();
 }
 
+bool OverscrollGlow::IsActive() const {
+  if (!initialized_)
+    return false;
+  for (size_t i = 0; i < EDGE_COUNT; ++i) {
+    if (!edge_effects_[i]->IsFinished())
+      return true;
+  }
+  return false;
+}
+
 bool OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
                                     gfx::Vector2dF accumulated_overscroll,
                                     gfx::Vector2dF overscroll_delta,
@@ -168,10 +178,8 @@ bool OverscrollGlow::CheckNeedsAnimate() {
     return false;
   }
 
-  for (size_t i = 0; i < EDGE_COUNT; ++i) {
-    if (!edge_effects_[i]->IsFinished())
-      return true;
-  }
+  if (IsActive())
+    return true;
 
   Detach();
   return false;

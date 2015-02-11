@@ -44,10 +44,6 @@ const int kActivationRecedeTimeMs = 250;
 // Input threshold required to start glowing.
 const float kGlowActivationThreshold = 0.85f;
 
-// Useful for avoiding accidental triggering when a scroll janks (is delayed),
-// capping the impulse per event.
-const int kMinPullsToActivate = 4;
-
 // Minimum alpha for the effect layer.
 const float kMinAlpha = 0.3f;
 
@@ -148,7 +144,7 @@ class OverscrollRefresh::Effect {
     state_ = STATE_PULL;
 
     delta *= kDragRate;
-    float max_delta = target_drag_ / kMinPullsToActivate;
+    float max_delta = target_drag_ / OverscrollRefresh::kMinPullsToActivate;
     delta = Clamp(delta, -max_delta, max_delta);
 
     drag_ += delta;

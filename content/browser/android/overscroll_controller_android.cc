@@ -30,13 +30,27 @@ const int kAndroidLSDKVersion = 21;
 // action will be activated.
 const int kDefaultRefreshDragTargetDips = 64;
 
+bool IsAndroidLOrNewer() {
+  static bool android_l_or_newer =
+      base::android::BuildInfo::GetInstance()->sdk_int() >= kAndroidLSDKVersion;
+  return android_l_or_newer;
+}
+
+bool ShouldDisableRefreshWhenGlowActive() {
+  // Suppressing refresh detection when the glow is still animating prevents
+  // visual confusion and accidental activation after repeated scrolls. However,
+  // only the L effect is guaranteed to be both sufficiently brief and prominent
+  // to provide a meaningful "wait" signal. The refresh effect on previous
+  // Android releases can be quite faint, depending on the OEM-supplied
+  // overscroll resources, and lasts nearly twice as long.
+  return IsAndroidLOrNewer();
+}
+
 scoped_ptr<EdgeEffectBase> CreateGlowEdgeEffect(
     ui::ResourceManager* resource_manager,
     float dpi_scale) {
   DCHECK(resource_manager);
-  static bool use_l_flavoured_effect =
-      base::android::BuildInfo::GetInstance()->sdk_int() >= kAndroidLSDKVersion;
-  if (use_l_flavoured_effect)
+  if (IsAndroidLOrNewer())
     return scoped_ptr<EdgeEffectBase>(new EdgeEffectL(resource_manager));
 
   return scoped_ptr<EdgeEffectBase>(
@@ -95,9 +109,17 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
   if (!enabled_)
     return false;
 
-  // Suppress refresh detection for fullscreen web apps.
-  if (!refresh_effect_ || is_fullscreen_)
+  if (!refresh_effect_)
     return false;
+
+  // Suppress refresh detection for fullscreen HTML5 scenarios, e.g., video.
+  if (is_fullscreen_)
+    return false;
+
+  if (glow_effect_) {
+    if (glow_effect_->IsActive() && ShouldDisableRefreshWhenGlowActive())
+      return false;
+  }
 
   bool handled = false;
   bool maybe_needs_animate = false;

@@ -48,6 +48,11 @@ class OverscrollRefreshTest : public OverscrollRefreshClient,
     return triggered;
   }
 
+  void PullBeyondActivationThreshold(OverscrollRefresh* effect) {
+    for (int i = 0; i < OverscrollRefresh::kMinPullsToActivate; ++i)
+      EXPECT_TRUE(effect->WillHandleScrollUpdate(gfx::Vector2dF(0, 100)));
+  }
+
  protected:
   void SignalRefreshCompleted() { still_refreshing_ = false; }
 
@@ -88,12 +93,8 @@ TEST_F(OverscrollRefreshTest, Basic) {
   EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, -50)));
   EXPECT_TRUE(effect.IsActive());
 
-  // Feed enough scrolls to the effect to exceeds tht threshold.
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 100)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 100)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 100)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 100)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 100)));
+  // Feed enough scrolls to the effect to exceeds the threshold.
+  PullBeyondActivationThreshold(&effect);
   EXPECT_TRUE(effect.IsActive());
 
   // Ending the scroll while beyond the threshold should trigger a refresh.
@@ -127,12 +128,8 @@ TEST_F(OverscrollRefreshTest, AnimationTerminatesEvenIfRefreshNeverTerminates) {
   ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
   effect.OnScrollUpdateAck(false);
   ASSERT_TRUE(effect.IsActive());
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  PullBeyondActivationThreshold(&effect);
+  ASSERT_TRUE(effect.IsActive());
   effect.OnScrollEnd(gfx::Vector2dF(0, 0));
   ASSERT_TRUE(GetAndResetRefreshTriggered());
 
@@ -254,12 +251,8 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfFlungDownward) {
   ASSERT_TRUE(effect.IsActive());
 
   // Ensure the pull exceeds the necessary threshold.
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  PullBeyondActivationThreshold(&effect);
+  ASSERT_TRUE(effect.IsActive());
 
   // Terminating the pull with a down-directed fling should prevent triggering.
   effect.OnScrollEnd(gfx::Vector2dF(0, -1000));
@@ -276,12 +269,8 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfReleasedWithoutActivation) {
   ASSERT_TRUE(effect.IsActive());
 
   // Ensure the pull exceeds the necessary threshold.
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
-  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  PullBeyondActivationThreshold(&effect);
+  ASSERT_TRUE(effect.IsActive());
 
   // An early release should prevent the refresh action from firing.
   effect.ReleaseWithoutActivation();

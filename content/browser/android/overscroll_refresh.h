@@ -44,6 +44,11 @@ class CONTENT_EXPORT OverscrollRefreshClient {
 // and beyond a particular threshold when released.
 class CONTENT_EXPORT OverscrollRefresh {
  public:
+  // Minmum number of overscrolling pull events required to activate the effect.
+  // Useful for avoiding accidental triggering when a scroll janks (is delayed),
+  // capping the impulse per event.
+  enum { kMinPullsToActivate = 3 };
+
   // Both |resource_manager| and |client| must not be null.
   // |target_drag_offset_pixels| is the threshold beyond which the effect
   // will trigger a refresh action when released. When |mirror| is true,

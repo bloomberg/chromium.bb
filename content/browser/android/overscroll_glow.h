@@ -66,6 +66,9 @@ class OverscrollGlow {
   // Reset the effect to its inactive state, clearing any active effects.
   void Reset();
 
+  // Whether the effect is active, either being pulled or receding.
+  bool IsActive() const;
+
  private:
   enum Axis { AXIS_X, AXIS_Y };
 
