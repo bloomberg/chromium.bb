@@ -1146,6 +1146,19 @@ LONG_STRING_CONST(
       "features": [
         "disable_d3d11"
       ]
+    },
+    {
+      "id": 101,
+      "description": "The Mali-Txxx driver hangs when reading from currently displayed buffer",
+      "cr_bugs": [457511],
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-T.*",
+      "features": [
+        "disable_post_sub_buffers_for_onscreen_surfaces"
+      ]
     }
   ]
 }
