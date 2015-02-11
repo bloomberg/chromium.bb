@@ -52,8 +52,6 @@
           'nacl_desc_effector.h',
           'nacl_desc_effector_trusted_mem.c',
           'nacl_desc_effector_trusted_mem.h',
-          'nacl_desc_file_info.c',
-          'nacl_desc_file_info.h',
           'nacl_desc_imc.c',
           'nacl_desc_imc.h',
           'nacl_desc_imc_shm.c',

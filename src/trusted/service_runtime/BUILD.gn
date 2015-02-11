@@ -196,7 +196,6 @@ static_library("sel") {
 
   deps = [
     "//native_client/build/config/nacl:nacl_base",
-    "//native_client/src/trusted/desc_cacheability:desc_cacheability",
     "//native_client/src/trusted/service_runtime:nacl_error_code",
     "//native_client/src/trusted/service_runtime:env_cleanser",
     "//native_client/src/trusted/simple_service:simple_service",

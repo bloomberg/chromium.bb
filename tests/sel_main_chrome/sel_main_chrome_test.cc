@@ -110,20 +110,6 @@ static int TestCachingIsInexpensive(const struct NaClValidationMetadata *m) {
   return 1;
 }
 
-static int TestResolveFileToken(void *handle, struct NaClFileToken *file_token,
-                                int32_t *fd, char **file_path,
-                                uint32_t *file_path_length) {
-  // We don't expect ResolveFileToken() to be used any more.
-  // TODO(mseaborn): Remove ResolveFileToken() entirely.
-  UNREFERENCED_PARAMETER(handle);
-  UNREFERENCED_PARAMETER(file_token);
-  UNREFERENCED_PARAMETER(fd);
-  UNREFERENCED_PARAMETER(file_path);
-  UNREFERENCED_PARAMETER(file_path_length);
-  CHECK(false);
-  return 0;
-}
-
 struct ThreadArgs {
   NaClHandle channel;
 };
@@ -258,7 +244,6 @@ int main(int argc, char **argv) {
     test_cache.SetKnownToValidate = &TestSetKnownToValidate;
     test_cache.DestroyQuery = &TestDestroyQuery;
     test_cache.CachingIsInexpensive = &TestCachingIsInexpensive;
-    test_cache.ResolveFileToken = &TestResolveFileToken;
     args->validation_cache = &test_cache;
   }
   NaClHandle nexe_handle = OpenFileHandleReadExec(nexe_filename);
