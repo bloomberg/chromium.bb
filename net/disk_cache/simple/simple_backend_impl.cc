@@ -50,7 +50,7 @@ namespace {
 
 // Maximum number of concurrent worker pool threads, which also is the limit
 // on concurrent IO (as we use one thread per IO request).
-const int kDefaultMaxWorkerThreads = 50;
+const size_t kMaxWorkerThreads = 5U;
 
 const char kThreadNamePrefix[] = "SimpleCache";
 
@@ -62,17 +62,8 @@ SequencedWorkerPool* g_sequenced_worker_pool = NULL;
 
 void MaybeCreateSequencedWorkerPool() {
   if (!g_sequenced_worker_pool) {
-    int max_worker_threads = kDefaultMaxWorkerThreads;
-
-    const std::string thread_count_field_trial =
-        base::FieldTrialList::FindFullName("SimpleCacheMaxThreads");
-    if (!thread_count_field_trial.empty()) {
-      max_worker_threads =
-          std::max(1, std::atoi(thread_count_field_trial.c_str()));
-    }
-
-    g_sequenced_worker_pool = new SequencedWorkerPool(max_worker_threads,
-                                                      kThreadNamePrefix);
+    g_sequenced_worker_pool =
+        new SequencedWorkerPool(kMaxWorkerThreads, kThreadNamePrefix);
     g_sequenced_worker_pool->AddRef();  // Leak it.
   }
 }
