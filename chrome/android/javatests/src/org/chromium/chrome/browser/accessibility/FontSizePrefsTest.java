@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.UiUtils;
@@ -66,8 +67,12 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
         assertTrue(mFontSizePrefs.getUserSetForceEnableZoom());
     }
 
+    /*
     @SmallTest
     @Feature({"Accessibility"})
+    crbug.com/458200
+    */
+    @DisabledTest
     public void testObserversForceEnableZoom() throws InterruptedException {
         TestingObserver test1 = new TestingObserver();
         TestingObserver test2 = new TestingObserver();
@@ -89,8 +94,12 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
         mFontSizePrefs.removeObserver(test2);
     }
 
+    /*
     @SmallTest
     @Feature({"Accessibility"})
+    crbug.com/458200
+    */
+    @DisabledTest
     public void testObserversFontScale() throws InterruptedException {
         TestingObserver test1 = new TestingObserver();
         TestingObserver test2 = new TestingObserver();
@@ -114,8 +123,12 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
         mFontSizePrefs.removeObserver(test2);
     }
 
+    /*
     @SmallTest
     @Feature({"Accessibility"})
+    crbug.com/458200
+    */
+    @DisabledTest
     public void testObserversUserSetForceEnableZoom() throws InterruptedException {
         TestingObserver test1 = new TestingObserver();
         TestingObserver test2 = new TestingObserver();

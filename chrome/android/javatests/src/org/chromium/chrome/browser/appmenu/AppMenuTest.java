@@ -14,6 +14,7 @@ import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellActivity.AppMenuHandlerFactory;
@@ -158,8 +159,12 @@ public class AppMenuTest extends ChromeShellTestBase {
     /**
      * Test that changing orientation hides the menu.
      */
+    /*
     @SmallTest
     @Feature({"Browser", "Main"})
+    crbug.com/458193
+    */
+    @DisabledTest
     public void testChangingOrientationHidesMenu() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();

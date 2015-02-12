@@ -8,6 +8,7 @@ import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -57,8 +58,12 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
         assertEquals(Theme.SEPIA, mDistilledPagePrefs.getTheme());
     }
 
+    /*
     @SmallTest
     @Feature({"DomDistiller"})
+    crbug.com/458196
+    */
+    @DisabledTest
     public void testSingleObserverTheme() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
@@ -72,8 +77,12 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
         mDistilledPagePrefs.removeObserver(testObserver);
     }
 
+    /*
     @SmallTest
     @Feature({"DomDistiller"})
+    crbug.com/458196
+    */
+    @DisabledTest
     public void testMultipleObserversTheme() throws InterruptedException {
         TestingObserver testObserverOne = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserverOne);
@@ -105,8 +114,12 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
         assertEquals(FontFamily.SERIF, mDistilledPagePrefs.getFontFamily());
     }
 
+    /*
     @SmallTest
     @Feature({"DomDistiller"})
+    crbug.com/458196
+    */
+    @DisabledTest
     public void testSingleObserverFontFamily() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
@@ -120,8 +133,12 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
         mDistilledPagePrefs.removeObserver(testObserver);
     }
 
+    /*
     @SmallTest
     @Feature({"DomDistiller"})
+    crbug.com/458196
+    */
+    @DisabledTest
     public void testMultipleObserversFontFamily() throws InterruptedException {
         TestingObserver testObserverOne = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserverOne);
