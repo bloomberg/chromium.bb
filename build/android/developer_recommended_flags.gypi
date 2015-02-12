@@ -38,6 +38,7 @@
     # This comes with some caveats:
     #   Only works with a single device connected (it will print a warning if
     #     zero or multiple devices are attached).
+    #   Device must be flashed with a user-debug unsigned Android build.
     #   Some actions are always run (i.e. ninja will never say "no work to do").
     'gyp_managed_install%': 1,
 
