@@ -67,8 +67,7 @@ async_test(function(t) {
     // The url attribute's getter must return request's url,
     // serialized with the exclude fragment flag set.
     assert_equals(request.url,
-      'http://127.0.0.1:8000/serviceworker/resources/fetch-status.php' +
-      '?status=200');
+      BASE_ORIGIN + '/serviceworker/resources/fetch-status.php?status=200');
 
     fetch(request)
       .then(function(response) {
@@ -78,8 +77,8 @@ async_test(function(t) {
           // if response's url is null and response's url,
           // serialized with the exclude fragment flag set, otherwise.
           assert_equals(response.url,
-            'http://127.0.0.1:8000/serviceworker/resources/fetch-status.php' +
-            '?status=200');
+            BASE_ORIGIN +
+            '/serviceworker/resources/fetch-status.php?status=200');
           t.done();
         })
       .catch(unreached_rejection(t));
@@ -87,10 +86,9 @@ async_test(function(t) {
 
 async_test(function(t) {
     var redirect_target_url =
-      'http://127.0.0.1:8000/serviceworker/resources/fetch-status.php' +
-      '?status=200';
+      BASE_ORIGIN + '/serviceworker/resources/fetch-status.php?status=200';
     var redirect_original_url =
-      'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=' +
+      BASE_ORIGIN + '/serviceworker/resources/redirect.php?Redirect=' +
       redirect_target_url;
 
     var request = new Request(redirect_original_url);

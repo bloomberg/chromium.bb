@@ -3,17 +3,19 @@
 <meta name="timeout" content="long"></meta>
 <script src = "/resources/testharness.js"></script>
 <script src = "/resources/testharnessreport.js"></script>
-<script src = "/resources/testharness-helpers.js"></script>
 <script src = "/serviceworker/resources/test-helpers.js"></script>
-<script src = "../resources/fetch-test-helpers.js"></script>
-<script src = "/serviceworker/resources/fetch-access-control-util.js"></script>
 </head>
 <body>
 <script>
-function start() {
+function start(t) {
   fetch_tests_from_worker(
     new Worker('../script-tests/fetch-access-control-cors.js?'));
+  t.done();
+}
+function init(test) {
+  return login(test)
+    .then(function() {return login_https(test);});
 }
 </script>
-<script src = "../resources/fetch-access-control-util-init.js"></script>
+<script src = "../resources/init.js"></script>
 </body>

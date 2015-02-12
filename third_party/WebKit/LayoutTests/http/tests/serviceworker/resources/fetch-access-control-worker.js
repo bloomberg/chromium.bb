@@ -1,3 +1,4 @@
+importScripts('fetch-test-options.js');
 importScripts('fetch-access-control-util.js');
 
 var port = undefined;

@@ -1,3 +1,4 @@
+// OPTIONS: -base-https
 if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }

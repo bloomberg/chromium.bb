@@ -1,18 +1,3 @@
-var BASE_ORIGIN = 'http://127.0.0.1:8000';
-var OTHER_ORIGIN = 'http://localhost:8000';
-var TEST_OPTIONS = '';
-// TEST_OPTIONS is '', '-base-https', or '-base-https-other-https'.
-
-if (location.href.includes('base-https')) {
-  BASE_ORIGIN = 'https://127.0.0.1:8443';
-  TEST_OPTIONS += '-base-https';
-}
-
-if (location.href.includes('other-https')) {
-  OTHER_ORIGIN = 'https://localhost:8443';
-  TEST_OPTIONS += '-other-https';
-}
-
 var SCOPE = BASE_ORIGIN +
   '/serviceworker/resources/fetch-access-control-iframe.html?' + TEST_OPTIONS;
 var IFRAME_ORIGIN = BASE_ORIGIN;
@@ -178,26 +163,6 @@ if (location.href.includes('base-https'))
 
 if (location.href.includes('other-https'))
   authCheck2 = checkJsonpAuth.bind(this, 'username2s', 'password2s', 'cookie2');
-
-function login(test) {
-  var login1 =
-    test_login(test, 'http://127.0.0.1:8000',
-               'username1', 'password1', 'cookie1');
-  var login2 =
-    test_login(test, 'http://localhost:8000',
-               'username2', 'password2', 'cookie2');
-  return Promise.all([login1, login2]);
-}
-
-function login_https(test) {
-  var login1 =
-    test_login(test, 'https://127.0.0.1:8443',
-               'username1s', 'password1s', 'cookie1');
-  var login2 =
-    test_login(test, 'https://localhost:8443',
-               'username2s', 'password2s', 'cookie2');
-  return Promise.all([login1, login2]);
-}
 
 function executeServiceWorkerProxiedTests(test_targets) {
   var test = async_test('Verify access control of fetch() in a Service Worker');

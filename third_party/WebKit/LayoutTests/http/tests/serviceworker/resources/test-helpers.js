@@ -209,3 +209,23 @@ function test_login(test, origin, username, password, cookie) {
           }));
     });
 }
+
+function login(test) {
+  var login1 =
+    test_login(test, 'http://127.0.0.1:8000',
+               'username1', 'password1', 'cookie1');
+  var login2 =
+    test_login(test, 'http://localhost:8000',
+               'username2', 'password2', 'cookie2');
+  return Promise.all([login1, login2]);
+}
+
+function login_https(test) {
+  var login1 =
+    test_login(test, 'https://127.0.0.1:8443',
+               'username1s', 'password1s', 'cookie1');
+  var login2 =
+    test_login(test, 'https://localhost:8443',
+               'username2s', 'password2s', 'cookie2');
+  return Promise.all([login1, login2]);
+}

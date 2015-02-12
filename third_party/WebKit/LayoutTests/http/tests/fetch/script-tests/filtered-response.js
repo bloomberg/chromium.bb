@@ -1,3 +1,4 @@
+// OPTIONS: ,-other-https,-base-https-other-https
 if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }
@@ -5,7 +6,7 @@ if (self.importScripts) {
 // Spec: https://fetch.spec.whatwg.org/#concept-filtered-response
 
 var base_url = '../resources/filtered-response.php';
-var other_url = 'http://localhost:8000/fetch/resources/filtered-response.php';
+var other_url = OTHER_ORIGIN + '/fetch/resources/filtered-response.php';
 
 function size(headers) {
   var count = 0;

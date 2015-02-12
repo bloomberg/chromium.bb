@@ -10,33 +10,12 @@ from templates in script-tests/TEMPLATE*.html.
 
 The following tokens in the template files are replaced:
 - TESTNAME -> X
-- INITSCRIPT -> <script src="../resources/X-init.js"></script>
-  and X-init.js is executed on window before X.js is started,
-  when X-init.js exists.
-  Otherwise, replaced with an empty string.
-- OPTIONS -> see below for fetch-access-control tests,
-  or empty string otherwise.
+- OPTIONS -> OPTIONS string (see README).
 
 Run
 $ python generate.py
 at this (/LayoutTests/http/tests/fetch/) directory, and
 commit the generated files.
-
-fetch-access-control* tests:
-These tests contain three configurations based on
-BASE_ORIGIN and OTHER_ORIGIN are HTTP or HTTPS:
-  ----------------------------- ----------------------- ----------- ------------
-  Filename                      OPTIONS                 BASE_ORIGIN OTHER_ORIGIN
-  ----------------------------- ----------------------- ----------- ------------
-  X.html                        (empty)                 HTTP        HTTP
-  X-other-https.html            -other-https            HTTP        HTTPS
-  X-base-https-other-https.html -base-https-other-https HTTPS       HTTPS
-  ----------------------------- ----------------------- ----------- ------------
-'base-https' indicates that BASE_ORIGIN is HTTPS and fetch() is executed on
-that HTTPS BASE_ORIGIN.
-'other-https' indicates that OTHER_ORIGIN is HTTPS.
-(There are no X-base-https.html because of mixed content blocking.)
-These test switches by location.href at runtime.
 '''
 
 import os
@@ -58,15 +37,6 @@ def generate(templatename, context, testname, options):
         template_data = template_file.read()
         output_data = re.sub(r'TESTNAME', testname, template_data)
         output_data = re.sub(r'OPTIONS', options, output_data)
-        if os.path.exists(os.path.join(top_path,
-                                       'resources',
-                                       testname + '-init.js')):
-            output_data = re.sub(r'INITSCRIPT',
-                                 '<script src = "../resources/' +
-                                 testname + '-init.js"></script>',
-                                 output_data)
-        else:
-            output_data = re.sub(r'INITSCRIPT\n*', '', output_data)
 
     with open(output_path, 'w') as output_file:
         output_file.write(output_data)
@@ -79,20 +49,27 @@ def main():
             continue
         testname = re.sub(r'\.js$', '', os.path.basename(script))
         templatename = 'TEMPLATE'
+        contexts = list(basic_contexts)
+        options = ['', '-base-https-other-https']
 
+        # fetch-access-control tests.
         if script.startswith('fetch-access-control'):
             templatename = 'TEMPLATE-fetch-access-control'
-            contexts = list(basic_contexts)
             contexts.append('serviceworker-proxied')
-            for context in contexts:
-                generate(templatename, context, testname, '')
-                generate(templatename, context, testname,
-                         '-other-https')
-                generate(templatename, context, testname,
-                         '-base-https-other-https')
-        else:
-            for context in basic_contexts:
-                generate(templatename, context, testname, '')
+            options = ['', '-other-https', '-base-https-other-https']
+
+        # Read OPTIONS list.
+        with open(os.path.join(script_tests_path, script), 'r') as script_file:
+            script = script_file.read()
+            m = re.search(r'// *OPTIONS: *([a-z\-,]*)', script)
+            if m:
+                options = re.split(',', m.group(1))
+
+        for context in contexts:
+            for option in options:
+                assert(option in ['', '-other-https', '-base-https',
+                                  '-base-https-other-https'])
+                generate(templatename, context, testname, option)
 
     return 0
 

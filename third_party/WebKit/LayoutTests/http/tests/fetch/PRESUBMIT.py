@@ -11,7 +11,7 @@ import os
 import os.path
 import re
 
-
+'''
 def missing_files(scripts_path, path_list):
     for script in os.listdir(scripts_path):
         if script.startswith('.') or not script.endswith('.js'):
@@ -31,3 +31,9 @@ def CheckChangeOnUpload(input, output):
 
     return [output.PresubmitPromptWarning('%s is missing' % path) for path
             in missing_files(script_tests_path, test_paths)]
+'''
+
+# Because generate.py has been quite updated, this PRESUBMIT.py is obsolete
+# and temporarily disabled.
+def CheckChangeOnUpload(input, output):
+    return []
