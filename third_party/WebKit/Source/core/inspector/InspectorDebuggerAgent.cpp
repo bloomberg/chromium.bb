@@ -55,6 +55,7 @@
 #include "wtf/text/WTFString.h"
 
 using blink::TypeBuilder::Array;
+using blink::TypeBuilder::Debugger::AsyncOperation;
 using blink::TypeBuilder::Debugger::BreakpointId;
 using blink::TypeBuilder::Debugger::CallFrame;
 using blink::TypeBuilder::Debugger::CollectionEntry;
@@ -111,6 +112,23 @@ static String breakpointIdSuffix(InspectorDebuggerAgent::BreakpointSource source
 static String generateBreakpointId(const String& scriptId, int lineNumber, int columnNumber, InspectorDebuggerAgent::BreakpointSource source)
 {
     return scriptId + ':' + String::number(lineNumber) + ':' + String::number(columnNumber) + breakpointIdSuffix(source);
+}
+
+static ScriptCallFrame toScriptCallFrame(JavaScriptCallFrame* callFrame)
+{
+    String scriptId = String::number(callFrame->sourceID());
+    // FIXME(WK62725): Debugger line/column are 0-based, while console ones are 1-based.
+    int line = callFrame->line() + 1;
+    int column = callFrame->column() + 1;
+    return ScriptCallFrame(callFrame->functionName(), scriptId, callFrame->scriptName(), line, column);
+}
+
+static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallFrame* callFrame)
+{
+    Vector<ScriptCallFrame> frames;
+    for (; callFrame; callFrame = callFrame->caller())
+        frames.append(toScriptCallFrame(callFrame));
+    return ScriptCallStack::create(frames);
 }
 
 InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager)
@@ -696,6 +714,11 @@ void InspectorDebuggerAgent::schedulePauseOnNextStatement(InspectorFrontend::Deb
     scriptDebugServer().setPauseOnNextStatement(true);
 }
 
+bool InspectorDebuggerAgent::isStepping() const
+{
+    return m_scheduledDebuggerStep != NoStep || m_performingAsyncStepIn || !m_continueToLocationBreakpointId.isEmpty();
+}
+
 void InspectorDebuggerAgent::schedulePauseOnNextStatementIfSteppingInto()
 {
     if (m_scheduledDebuggerStep != StepInto || m_javaScriptPauseScheduled || isPaused())
@@ -779,6 +802,8 @@ void InspectorDebuggerAgent::resume(ErrorString* errorString)
     m_steppingFromFramework = false;
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().continueProgram();
+    if (!isStepping())
+        clearAsyncOperationNotifications();
 }
 
 void InspectorDebuggerAgent::stepOver(ErrorString* errorString)
@@ -1085,6 +1110,19 @@ int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& descriptio
         if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
             m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
     }
+    if (m_frontend && isStepping()) {
+        RefPtr<AsyncOperation> operation = AsyncOperation::create()
+            .setId(m_lastAsyncOperationId)
+            .setDescription(description)
+            .release();
+        if (!callFrames.isEmpty()) {
+            RefPtrWillBeRawPtr<JavaScriptCallFrame> jsCallFrame = ScriptDebugServer::toJavaScriptCallFrameUnsafe(callFrames);
+            if (jsCallFrame)
+                operation->setCallFrame(toScriptCallFrame(jsCallFrame.get()).buildInspectorObject());
+        }
+        m_asyncOperationNotifications.add(m_lastAsyncOperationId);
+        m_frontend->asyncOperationStarted(operation.release());
+    }
     return m_lastAsyncOperationId;
 }
 
@@ -1137,14 +1175,18 @@ void InspectorDebuggerAgent::traceAsyncCallbackStarting(int operationId)
 void InspectorDebuggerAgent::traceAsyncOperationCompleted(int operationId)
 {
     ASSERT(operationId > 0 || operationId == unknownAsyncOperationId);
+    bool shouldNotify = false;
     if (operationId > 0) {
         m_asyncOperations.remove(operationId);
         m_asyncOperationsForStepInto.remove(operationId);
+        shouldNotify = m_asyncOperationNotifications.take(operationId);
     }
-    if (!m_performingAsyncStepIn)
-        return;
-    if (!m_inAsyncOperationForStepInto && m_asyncOperationsForStepInto.isEmpty())
-        clearStepIntoAsync();
+    if (m_performingAsyncStepIn) {
+        if (!m_inAsyncOperationForStepInto && m_asyncOperationsForStepInto.isEmpty())
+            clearStepIntoAsync();
+    }
+    if (m_frontend && shouldNotify)
+        m_frontend->asyncOperationCompleted(operationId);
 }
 
 void InspectorDebuggerAgent::resetAsyncCallTracker()
@@ -1281,21 +1323,6 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
         result.swap(next);
     }
     return result.release();
-}
-
-static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallFrame* callFrame)
-{
-    Vector<ScriptCallFrame> frames;
-    for (; callFrame; callFrame = callFrame->caller()) {
-        StringBuilder stringBuilder;
-        stringBuilder.appendNumber(callFrame->sourceID());
-        String scriptId = stringBuilder.toString();
-        // FIXME(WK62725): Debugger line/column are 0-based, while console ones are 1-based.
-        int line = callFrame->line() + 1;
-        int column = callFrame->column() + 1;
-        frames.append(ScriptCallFrame(callFrame->functionName(), scriptId, callFrame->scriptName(), line, column));
-    }
-    return ScriptCallStack::create(frames);
 }
 
 PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
@@ -1498,6 +1525,7 @@ void InspectorDebuggerAgent::clear()
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
     clearStepIntoAsync();
+    clearAsyncOperationNotifications();
 }
 
 void InspectorDebuggerAgent::clearStepIntoAsync()
@@ -1505,6 +1533,15 @@ void InspectorDebuggerAgent::clearStepIntoAsync()
     m_performingAsyncStepIn = false;
     m_asyncOperationsForStepInto.clear();
     m_inAsyncOperationForStepInto = false;
+}
+
+void InspectorDebuggerAgent::clearAsyncOperationNotifications()
+{
+    if (m_asyncOperationNotifications.isEmpty())
+        return;
+    m_asyncOperationNotifications.clear();
+    if (m_frontend)
+        m_frontend->asyncOperationsCleared();
 }
 
 bool InspectorDebuggerAgent::assertPaused(ErrorString* errorString)

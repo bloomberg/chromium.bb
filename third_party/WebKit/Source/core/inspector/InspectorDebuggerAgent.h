@@ -216,6 +216,8 @@ private:
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
 
+    bool isStepping() const;
+
     void schedulePauseOnNextStatementIfSteppingInto();
     void cancelPauseOnNextStatement();
     void addMessageToConsole(MessageSource, MessageType);
@@ -239,6 +241,7 @@ private:
     void removeBreakpoint(const String& breakpointId);
     void clear();
     void clearStepIntoAsync();
+    void clearAsyncOperationNotifications();
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
 
@@ -295,6 +298,7 @@ private:
     AsyncOperationIdToAsyncCallChain m_asyncOperations;
     int m_lastAsyncOperationId;
     HashSet<int> m_asyncOperationsForStepInto;
+    HashSet<int> m_asyncOperationNotifications;
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;

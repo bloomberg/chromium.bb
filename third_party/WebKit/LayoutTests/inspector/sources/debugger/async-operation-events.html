@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    debugger;
+    setTimeout(callback1, 0);
+}
+
+function callback1()
+{
+    setTimeout(callback2, 0);
+}
+
+function callback2()
+{
+    debugger;
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationStarted, onAsyncOperationStarted);
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationCompleted, onAsyncOperationCompleted);
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationsCleared, onAsyncOperationsCleared);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+    }
+
+    function step3()
+    {
+        var actions = [
+            "StepOver", "StepOver", "StepInto", "Print",
+            "StepOver", "StepOver",
+            "Resume",
+            "Resume",
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+
+    var lastAsyncOperationId = -1;
+
+    function onAsyncOperationStarted(event)
+    {
+        var operation = event.data.operation;
+        lastAsyncOperationId = operation.id;
+        InspectorTest.addResult("==> AsyncOperationStarted: " + operation.description);
+    }
+
+    function onAsyncOperationCompleted(event)
+    {
+        var operationId = event.data.operationId;
+        InspectorTest.assertEquals(lastAsyncOperationId, operationId);
+        InspectorTest.addResult("==> AsyncOperationCompleted");
+    }
+
+    function onAsyncOperationsCleared()
+    {
+        InspectorTest.addResult("==> AsyncOperationsCleared");
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests debugger AsyncOperation events while in a debugger stepping session.
+</p>
+</body>
+</html>

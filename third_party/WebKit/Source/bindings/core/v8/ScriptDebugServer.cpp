@@ -349,6 +349,10 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::toJavaScriptCallF
 {
     if (value.isEmpty())
         return nullptr;
+    ScriptState* scriptState = value.scriptState();
+    if (!scriptState || !scriptState->contextIsValid())
+        return nullptr;
+    ScriptState::Scope scope(scriptState);
     ASSERT(value.isObject());
     return V8JavaScriptCallFrame::toImpl(v8::Handle<v8::Object>::Cast(value.v8ValueUnsafe()));
 }
