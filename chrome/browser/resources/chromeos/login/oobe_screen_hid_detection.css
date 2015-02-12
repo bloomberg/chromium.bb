@@ -94,6 +94,6 @@
   visibility: visible;
 }
 
-.pairing .show-pincode #hid-keyboard-pincode {
+.pairing #hid-keyboard-pincode {
   display: block;
 }
