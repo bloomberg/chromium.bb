@@ -582,7 +582,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
 
   void AfterTest() override {
     EXPECT_EQ(gfx::Size(40, 40).ToString(),
-              scrollbar_->internal_content_bounds().ToString());
+              scrollbar_->content_bounds().ToString());
   }
 
  private:

@@ -261,23 +261,6 @@ void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
       draw_properties_.blend_mode, sorting_context_id_);
 }
 
-void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
-                                              float scale) const {
-  gfx::Transform scaled_draw_transform =
-      draw_properties_.target_space_transform;
-  scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
-  gfx::Size scaled_content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
-  gfx::Rect scaled_visible_content_rect =
-      gfx::ScaleToEnclosingRect(visible_content_rect(), scale);
-  scaled_visible_content_rect.Intersect(gfx::Rect(scaled_content_bounds));
-
-  state->SetAll(scaled_draw_transform, scaled_content_bounds,
-                scaled_visible_content_rect, draw_properties().clip_rect,
-                draw_properties().is_clipped, draw_properties().opacity,
-                draw_properties().blend_mode, sorting_context_id_);
-}
-
 bool LayerImpl::WillDraw(DrawMode draw_mode,
                          ResourceProvider* resource_provider) {
   // WillDraw/DidDraw must be matched.
