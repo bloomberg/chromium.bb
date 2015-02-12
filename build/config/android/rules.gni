@@ -998,6 +998,9 @@ template("android_library") {
     if (defined(invoker.dex_path)) {
       dex_path = invoker.dex_path
     }
+    if (defined(invoker.manifest_entries)) {
+      manifest_entries = invoker.manifest_entries
+    }
 
     supports_android = true
     requires_android = true

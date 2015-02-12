@@ -665,6 +665,10 @@ template("compile_java") {
   if (defined(invoker.chromium_code)) {
     _chromium_code = invoker.chromium_code
   }
+  _manifest_entries = []
+  if (defined(invoker.manifest_entries)) {
+    _manifest_entries = invoker.manifest_entries
+  }
 
   _srcjar_deps = []
   if (defined(invoker.srcjar_deps)) {
@@ -718,6 +722,9 @@ template("compile_java") {
       "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
       "--jar-excluded-classes=$_jar_excluded_patterns",
     ]
+    foreach(e, _manifest_entries) {
+      args += [ "--manifest-entry=" + e ]
+    }
     if (_chromium_code) {
       args += [ "--chromium-code=1" ]
     }
@@ -860,6 +867,9 @@ template("java_library_impl") {
     }
     if (defined(invoker.dist_jar_path)) {
       dist_jar_path = invoker.dist_jar_path
+    }
+    if (defined(invoker.manifest_entries)) {
+      manifest_entries = invoker.manifest_entries
     }
   }
 
