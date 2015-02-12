@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace ui {
 namespace {
@@ -57,7 +58,8 @@ TouchSelectionController::TouchSelectionController(
       activate_selection_automatically_(false),
       selection_empty_(false),
       selection_editable_(false),
-      temporarily_hidden_(false) {
+      temporarily_hidden_(false),
+      selection_handle_dragged_(false) {
   DCHECK(client_);
   HideAndDisallowShowingAutomatically();
 }
@@ -241,6 +243,7 @@ void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
     base = start_selection_handle_->position() + GetStartLineOffset();
     extent = end_selection_handle_->position() + GetEndLineOffset();
   }
+  selection_handle_dragged_ = true;
 
   // When moving the handle we want to move only the extent point. Before doing
   // so we must make sure that the base point is set correctly.
@@ -388,7 +391,13 @@ void TouchSelectionController::ActivateSelection() {
   // an entirely new selection, notify the client but avoid sending an
   // intervening SELECTION_CLEARED update to avoid unnecessary state changes.
   if (!is_selection_active_ || response_pending_input_event_ == LONG_PRESS) {
+    if (is_selection_active_) {
+      // The active selection session finishes with the start of the new one.
+      LogSelectionEnd();
+    }
     is_selection_active_ = true;
+    selection_handle_dragged_ = false;
+    selection_start_time_ = base::TimeTicks::Now();
     response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
     client_->OnSelectionEvent(SELECTION_SHOWN, GetStartPosition());
   }
@@ -399,6 +408,7 @@ void TouchSelectionController::DeactivateSelection() {
     return;
   DCHECK(start_selection_handle_);
   DCHECK(end_selection_handle_);
+  LogSelectionEnd();
   start_selection_handle_->SetEnabled(false);
   end_selection_handle_->SetEnabled(false);
   is_selection_active_ = false;
@@ -443,6 +453,21 @@ TouchHandle::AnimationStyle TouchSelectionController::GetAnimationStyle(
   return was_active && client_->SupportsAnimation()
              ? TouchHandle::ANIMATION_SMOOTH
              : TouchHandle::ANIMATION_NONE;
+}
+
+void TouchSelectionController::LogSelectionEnd() {
+  // TODO(mfomitchev): Once we are able to tell the difference between
+  // 'successful' and 'unsuccessful' selections - log
+  // Event.TouchSelection.Duration instead and get rid of
+  // Event.TouchSelectionD.WasDraggeduration.
+  if (selection_handle_dragged_) {
+    base::TimeDelta duration = base::TimeTicks::Now() - selection_start_time_;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Event.TouchSelection.WasDraggedDuration",
+                               duration,
+                               base::TimeDelta::FromMilliseconds(500),
+                               base::TimeDelta::FromSeconds(60),
+                               60);
+  }
 }
 
 }  // namespace ui

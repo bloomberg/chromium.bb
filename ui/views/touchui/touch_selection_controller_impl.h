@@ -120,6 +120,8 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   scoped_ptr<EditingHandleView> selection_handle_2_;
   scoped_ptr<EditingHandleView> cursor_handle_;
   TouchEditingMenuView* context_menu_;
+  bool command_executed_;
+  base::TimeTicks selection_start_time_;
 
   // Timer to trigger |context_menu| (|context_menu| is not shown if the
   // selection handles are being updated. It appears only when the handles are

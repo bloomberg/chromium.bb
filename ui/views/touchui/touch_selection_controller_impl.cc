@@ -4,6 +4,7 @@
 
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -415,7 +416,9 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
                                            client_view->GetNativeView(),
                                            true)),
       context_menu_(nullptr),
+      command_executed_(false),
       dragging_handle_(nullptr) {
+  selection_start_time_ = base::TimeTicks::Now();
   aura::Window* client_window = client_view_->GetNativeView();
   client_window->AddObserver(this);
   client_widget_ = Widget::GetTopLevelWidgetForNativeView(client_window);
@@ -425,6 +428,8 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
 }
 
 TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
+  UMA_HISTOGRAM_BOOLEAN("Event.TouchSelection.EndedWithAction",
+                        command_executed_);
   HideContextMenu();
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
   if (client_widget_)
@@ -594,6 +599,15 @@ bool TouchSelectionControllerImpl::IsCommandIdEnabled(int command_id) const {
 
 void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
                                                   int event_flags) {
+  command_executed_ = true;
+  base::TimeDelta duration = base::TimeTicks::Now() - selection_start_time_;
+  // Note that we only log the duration stats for the 'successful' selections,
+  // i.e. selections ending with the execution of a command.
+  UMA_HISTOGRAM_CUSTOM_TIMES("Event.TouchSelection.Duration",
+                             duration,
+                             base::TimeDelta::FromMilliseconds(500),
+                             base::TimeDelta::FromSeconds(60),
+                             60);
   HideContextMenu();
   client_view_->ExecuteCommand(command_id, event_flags);
 }

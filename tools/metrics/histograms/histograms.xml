@@ -7372,6 +7372,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.TouchSelection.Duration" units="milliseconds">
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Duration of touch selection sequence which finished with the user selecting
+    one of the text manipulation actions, such as copy, cut, or paste. The
+    duration is measured from the moment the text selection handles are shown,
+    and until the action is executed.
+  </summary>
+</histogram>
+
+<histogram name="Event.TouchSelection.EndedWithAction" enum="BooleanSuccess">
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Whether the touch selection sequence ended with the user selecting one of
+    the text manipulation actions, such as copy, cut, or paste. after startup).
+    Sequences ending with such action are considered successful.
+  </summary>
+</histogram>
+
+<histogram name="Event.TouchSelection.WasDraggedDuration" units="milliseconds">
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Duration of touch selection sequence which involved dragging a text
+    selection handle. The duration is measured from the moment the text
+    selection handles are shown, and until they are dismissed.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionActivity.AdInjected" units="Extension Count">
   <owner>felt@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
