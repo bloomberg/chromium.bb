@@ -13578,16 +13578,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_ABOUT_SANDBOX_SUID_SANDBOX" desc="The name of a type of sandbox used by Chrome on UNIX like systems. The name 'SUID' stands for 'Set User ID', however it's a technical term and may be best left untranslated.">
           SUID Sandbox
         </message>
-        <message name="IDS_ABOUT_SANDBOX_PID_NAMESPACES" desc="This a technical term for an attribute of the SUID sandbox. PID stands for 'Process ID' but, as a technical term, may be best left untranslated. A namespace is another technical term which refers to set of names for objects which are disjoint from the members of all other namespaces.">
+        <message name="IDS_ABOUT_SANDBOX_NAMESPACE_SANDBOX" desc="The name of a type of sandbox used by Chrome on Linux systems. A namespace is a technical term which refers to set of names for objects which are disjoint from the members of all other namespaces.">
+          Namespace Sandbox
+        </message>
+        <message name="IDS_ABOUT_SANDBOX_PID_NAMESPACES" desc="This a technical term for an attribute of the SUID or namespace sandboxes. PID stands for 'Process ID' but, as a technical term, may be best left untranslated. A namespace is another technical term which refers to set of names for objects which are disjoint from the members of all other namespaces.">
           PID namespaces
         </message>
-        <message name="IDS_ABOUT_SANDBOX_NET_NAMESPACES" desc="This a technical term for an attribute of the SUID sandbox. A namespace is a technical term which refers to set of names for objects which are disjoint from the members of all other namespaces.">
+        <message name="IDS_ABOUT_SANDBOX_NET_NAMESPACES" desc="This a technical term for an attribute of the SUID or namespace sandboxes. A namespace is a technical term which refers to set of names for objects which are disjoint from the members of all other namespaces.">
           Network namespaces
         </message>
-        <message name="IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX" desc="The name of a type of sandbox used by Chrome on UNIX like systems. 'Seccomp-BPF' is a technical term which should be left untranslated.">
+        <message name="IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX" desc="The name of a type of sandbox used by Chrome on Linux systems. 'Seccomp-BPF' is a technical term which should be left untranslated.">
           Seccomp-BPF sandbox
         </message>
-        <message name="IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX_TSYNC" desc="The name of a type of sandbox used by Chrome on UNIX like systems. 'Seccomp-BPF' is a technical term which should be left untranslated. TSYNC is a technical term which should be left untranslated.">
+        <message name="IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX_TSYNC" desc="The name of a type of sandbox used by Chrome on Linux systems. 'Seccomp-BPF' is a technical term which should be left untranslated. TSYNC is a technical term which should be left untranslated.">
           Seccomp-BPF sandbox supports TSYNC
         </message>
         <message name="IDS_ABOUT_SANDBOX_YAMA_LSM" desc="The name of a Linux security module. It is a technical term that should be left untranslated.">

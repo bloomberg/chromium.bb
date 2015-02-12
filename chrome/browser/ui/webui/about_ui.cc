@@ -675,10 +675,8 @@ std::string AboutLinuxProxyConfig() {
   return data;
 }
 
-void AboutSandboxRow(std::string* data, const std::string& prefix, int name_id,
-                     bool good) {
+void AboutSandboxRow(std::string* data, int name_id, bool good) {
   data->append("<tr><td>");
-  data->append(prefix);
   data->append(l10n_util::GetStringUTF8(name_id));
   if (good) {
     data->append("</td><td style='color: green;'>");
@@ -705,31 +703,26 @@ std::string AboutSandbox() {
 
   data.append("<table>");
 
-  AboutSandboxRow(&data,
-                  std::string(),
-                  IDS_ABOUT_SANDBOX_SUID_SANDBOX,
+  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_SUID_SANDBOX,
                   status & content::kSandboxLinuxSUID);
-  AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_PID_NAMESPACES,
+  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_NAMESPACE_SANDBOX,
+                  status & content::kSandboxLinuxUserNS);
+  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_PID_NAMESPACES,
                   status & content::kSandboxLinuxPIDNS);
-  AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_NET_NAMESPACES,
+  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_NET_NAMESPACES,
                   status & content::kSandboxLinuxNetNS);
-  AboutSandboxRow(&data,
-                  std::string(),
-                  IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX,
+  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX,
                   status & content::kSandboxLinuxSeccompBPF);
-  AboutSandboxRow(&data,
-                  std::string(),
-                  IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX_TSYNC,
+  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX_TSYNC,
                   status & content::kSandboxLinuxSeccompTSYNC);
-  AboutSandboxRow(&data,
-                  std::string(),
-                  IDS_ABOUT_SANDBOX_YAMA_LSM,
+  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_YAMA_LSM,
                   status & content::kSandboxLinuxYama);
 
   data.append("</table>");
 
-  // The setuid sandbox is required as our first-layer sandbox.
-  bool good_layer1 = status & content::kSandboxLinuxSUID &&
+  // Require either the setuid or namespace sandbox for our first-layer sandbox.
+  bool good_layer1 = (status & content::kSandboxLinuxSUID ||
+                      status & content::kSandboxLinuxUserNS) &&
                      status & content::kSandboxLinuxPIDNS &&
                      status & content::kSandboxLinuxNetNS;
   // A second-layer sandbox is also required to be adequately sandboxed.
