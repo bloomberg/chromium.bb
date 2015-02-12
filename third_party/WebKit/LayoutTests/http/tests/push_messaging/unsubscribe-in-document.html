@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Test PushSubscription.unsubscribe()</title>
+<title>unsubscribe must resolve with true iff it is called on an active subscription</title>
 <link rel="manifest" href="resources/push_manifest.json">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
@@ -21,7 +21,7 @@ async_test(function(test) {
         })
         .then(function() {
             // If running manually, grant permission when prompted.
-            if (self.testRunner)
+            if (window.testRunner)
                 testRunner.setPushMessagingPermission(location.origin, true);
             return swRegistration.pushManager.subscribe();
         })
@@ -49,7 +49,7 @@ async_test(function(test) {
             return service_worker_unregister_and_done(test, workerScope);
         })
         .catch(unreached_rejection(test));
-});
+}, 'unsubscribe must resolve with true iff it is called on an active subscription');
 </script>
 </body>
 </html>
