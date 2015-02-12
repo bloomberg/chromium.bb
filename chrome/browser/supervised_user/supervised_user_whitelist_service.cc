@@ -6,18 +6,15 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "sync/api/sync_change.h"
@@ -31,12 +28,13 @@ const char kName[] = "name";
 
 SupervisedUserWhitelistService::SupervisedUserWhitelistService(
     PrefService* prefs,
-    scoped_ptr<component_updater::SupervisedUserWhitelistInstaller> installer)
+    component_updater::SupervisedUserWhitelistInstaller* installer,
+    const std::string& client_id)
     : prefs_(prefs),
-      installer_(installer.Pass()),
+      installer_(installer),
+      client_id_(client_id),
       weak_ptr_factory_(this) {
   DCHECK(prefs);
-  DCHECK(installer_);
 }
 
 SupervisedUserWhitelistService::~SupervisedUserWhitelistService() {
@@ -55,35 +53,17 @@ void SupervisedUserWhitelistService::Init() {
       prefs_->GetDictionary(prefs::kSupervisedUserWhitelists);
   for (base::DictionaryValue::Iterator it(*whitelists); !it.IsAtEnd();
        it.Advance()) {
-    const base::DictionaryValue* dict = nullptr;
-    it.value().GetAsDictionary(&dict);
-    std::string name;
-    bool result = dict->GetString(kName, &name);
-    DCHECK(result);
-    bool new_installation = false;
-    RegisterWhitelist(it.key(), name, new_installation);
+    registered_whitelists_.insert(it.key());
   }
   UMA_HISTOGRAM_COUNTS_100("ManagedUsers.Whitelist.Count", whitelists->size());
 
-  // Register whitelists specified on the command line.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string command_line_whitelists = command_line->GetSwitchValueASCII(
-      switches::kInstallSupervisedUserWhitelists);
-  std::vector<std::string> split_whitelists;
-  base::SplitString(command_line_whitelists, ',', &split_whitelists);
-  for (const std::string& whitelist : split_whitelists) {
-    std::string id;
-    std::string name;
-    size_t separator = whitelist.find(':');
-    if (separator != std::string::npos) {
-      id = whitelist.substr(0, separator);
-      name = whitelist.substr(separator + 1);
-    } else {
-      id = whitelist;
-    }
-    bool new_installation = true;
-    RegisterWhitelist(id, name, new_installation);
-  }
+  // The installer can be null in some unit tests.
+  if (!installer_)
+    return;
+
+  installer_->Subscribe(
+      base::Bind(&SupervisedUserWhitelistService::OnWhitelistReady,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserWhitelistService::AddSiteListsChangedCallback(
@@ -281,7 +261,7 @@ void SupervisedUserWhitelistService::RemoveWhitelist(
   base::RecordAction(base::UserMetricsAction("ManagedUsers_Whitelist_Removed"));
 
   pref_dict->RemoveWithoutPathExpansion(id, NULL);
-  installer_->UninstallWhitelist(id);
+  installer_->UnregisterWhitelist(client_id_, id);
   UnloadWhitelist(id);
 }
 
@@ -291,10 +271,7 @@ void SupervisedUserWhitelistService::RegisterWhitelist(const std::string& id,
   bool result = registered_whitelists_.insert(id).second;
   DCHECK(result);
 
-  installer_->RegisterWhitelist(
-      id, name, new_installation,
-      base::Bind(&SupervisedUserWhitelistService::OnWhitelistReady,
-                 weak_ptr_factory_.GetWeakPtr(), id));
+  installer_->RegisterWhitelist(client_id_, id, name);
 }
 
 void SupervisedUserWhitelistService::GetLoadedWhitelists(
@@ -314,7 +291,8 @@ void SupervisedUserWhitelistService::NotifyWhitelistsChanged() {
 void SupervisedUserWhitelistService::OnWhitelistReady(
     const std::string& id,
     const base::FilePath& whitelist_path) {
-  // If the whitelist has been unregistered in the mean time, ignore it.
+  // If we did not register the whitelist or it has been unregistered in the
+  // mean time, ignore it.
   if (registered_whitelists_.count(id) == 0u)
     return;
 

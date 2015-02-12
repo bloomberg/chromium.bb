@@ -48,6 +48,7 @@ class VariationsService;
 namespace component_updater {
 class ComponentUpdateService;
 class PnaclComponentInstaller;
+class SupervisedUserWhitelistInstaller;
 }
 
 namespace extensions {
@@ -225,7 +226,10 @@ class BrowserProcess {
   virtual CRLSetFetcher* crl_set_fetcher() = 0;
 
   virtual component_updater::PnaclComponentInstaller*
-      pnacl_component_installer() = 0;
+  pnacl_component_installer() = 0;
+
+  virtual component_updater::SupervisedUserWhitelistInstaller*
+  supervised_user_whitelist_installer() = 0;
 
   virtual MediaFileSystemRegistry* media_file_system_registry() = 0;
 

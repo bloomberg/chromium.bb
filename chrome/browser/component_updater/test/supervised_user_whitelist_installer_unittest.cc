@@ -8,14 +8,17 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
+#include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
@@ -32,8 +35,10 @@ namespace component_updater {
 
 namespace {
 
+const char kClientId[] = "client-id";
 const char kCrxId[] = "abcdefghijklmnopponmlkjihgfedcba";
 const char kName[] = "Some Whitelist";
+const char kOtherClientId[] = "other-client-id";
 const char kVersion[] = "1.2.3.4";
 const char kWhitelistContents[] = "{\"foo\": \"bar\"}";
 const char kWhitelistFile[] = "whitelist.json";
@@ -44,6 +49,12 @@ std::string CrxIdToHashToCrxId(const std::string& kCrxId) {
       SupervisedUserWhitelistInstaller::GetHashFromCrxId(kCrxId);
   EXPECT_EQ(16u, component.pk_hash.size());
   return GetCrxComponentID(component);
+}
+
+std::string JsonToString(const base::DictionaryValue* dict) {
+  std::string json;
+  base::JSONWriter::Write(dict, &json);
+  return json;
 }
 
 class MockOnDemandUpdater : public OnDemandUpdater {
@@ -136,12 +147,31 @@ class MockComponentUpdateService : public ComponentUpdateService {
   base::Closure registration_callback_;
 };
 
-void OnWhitelistReady(const base::Closure& callback,
-                      const base::FilePath& expected_whitelist_file,
-                      const base::FilePath& actual_whitelist_file) {
-  EXPECT_EQ(expected_whitelist_file.value(), actual_whitelist_file.value());
-  callback.Run();
-}
+class WhitelistLoadObserver {
+ public:
+  explicit WhitelistLoadObserver(SupervisedUserWhitelistInstaller* installer)
+      : weak_ptr_factory_(this) {
+    installer->Subscribe(base::Bind(&WhitelistLoadObserver::OnWhitelistReady,
+                                    weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  const base::FilePath& whitelist_path() { return whitelist_path_; }
+
+ private:
+  void OnWhitelistReady(const std::string& crx_id,
+                        const base::FilePath& whitelist_path) {
+    EXPECT_EQ(base::FilePath::StringType(), whitelist_path_.value());
+    whitelist_path_ = whitelist_path;
+    run_loop_.Quit();
+  }
+
+  base::FilePath whitelist_path_;
+
+  base::RunLoop run_loop_;
+  base::WeakPtrFactory<WhitelistLoadObserver> weak_ptr_factory_;
+};
 
 }  // namespace
 
@@ -150,33 +180,38 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   SupervisedUserWhitelistInstallerTest()
       : path_override_(DIR_SUPERVISED_USER_WHITELISTS),
         component_update_service_(message_loop_.task_runner()),
-        installer_(SupervisedUserWhitelistInstaller::Create(
-            &component_update_service_)) {}
+        installer_(
+            SupervisedUserWhitelistInstaller::Create(&component_update_service_,
+                                                     nullptr,
+                                                     &local_state_)) {}
+
   ~SupervisedUserWhitelistInstallerTest() override {}
 
   void SetUp() override {
-    base::FilePath whitelist_base_directory;
+    SupervisedUserWhitelistInstaller::RegisterPrefs(local_state_.registry());
+
     ASSERT_TRUE(PathService::Get(DIR_SUPERVISED_USER_WHITELISTS,
-                                 &whitelist_base_directory));
-    whitelist_directory_ = whitelist_base_directory.AppendASCII(kVersion);
-    whitelist_path_ = whitelist_directory_.AppendASCII(kWhitelistFile);
+                                 &whitelist_base_directory_));
+    whitelist_directory_ = whitelist_base_directory_.AppendASCII(kCrxId);
+    whitelist_version_directory_ = whitelist_directory_.AppendASCII(kVersion);
+    whitelist_path_ = whitelist_version_directory_.AppendASCII(kWhitelistFile);
 
     scoped_ptr<base::DictionaryValue> contentPackDict(
         new base::DictionaryValue);
     contentPackDict->SetString("sites", kWhitelistFile);
     manifest_.Set("content_pack", contentPackDict.release());
     manifest_.SetString("version", kVersion);
+
+    scoped_ptr<base::DictionaryValue> whitelist_dict(new base::DictionaryValue);
+    whitelist_dict->SetString("name", kName);
+    scoped_ptr<base::ListValue> clients(new base::ListValue);
+    clients->AppendString(kClientId);
+    clients->AppendString(kOtherClientId);
+    whitelist_dict->Set("clients", clients.release());
+    pref_.Set(kCrxId, whitelist_dict.release());
   }
 
  protected:
-  void LoadWhitelist(bool new_installation,
-                     const base::Closure& whitelist_ready_callback) {
-    installer_->RegisterWhitelist(
-        kCrxId, kName, new_installation,
-        base::Bind(&OnWhitelistReady, whitelist_ready_callback,
-                   whitelist_path_));
-  }
-
   void PrepareWhitelistDirectory(const base::FilePath& whitelist_directory) {
     base::FilePath whitelist_path =
         whitelist_directory.AppendASCII(kWhitelistFile);
@@ -187,6 +222,13 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     base::FilePath manifest_file =
         whitelist_directory.AppendASCII("manifest.json");
     ASSERT_TRUE(JSONFileValueSerializer(manifest_file).Serialize(manifest_));
+  }
+
+  void RegisterExistingComponents() {
+    local_state_.Set(prefs::kRegisteredSupervisedUserWhitelists, pref_);
+    base::RunLoop run_loop;
+    installer_->RegisterComponents();
+    run_loop.RunUntilIdle();
   }
 
   void CheckRegisteredComponent(const char* version) {
@@ -201,10 +243,14 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedPathOverride path_override_;
   MockComponentUpdateService component_update_service_;
+  TestingPrefServiceSimple local_state_;
   scoped_ptr<SupervisedUserWhitelistInstaller> installer_;
+  base::FilePath whitelist_base_directory_;
   base::FilePath whitelist_directory_;
+  base::FilePath whitelist_version_directory_;
   base::FilePath whitelist_path_;
   base::DictionaryValue manifest_;
+  base::DictionaryValue pref_;
 };
 
 TEST_F(SupervisedUserWhitelistInstallerTest, GetHashFromCrxId) {
@@ -234,12 +280,14 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   component_update_service_.set_registration_callback(
       registration_run_loop.QuitClosure());
 
-  base::RunLoop installation_run_loop;
-  bool new_installation = true;
-  LoadWhitelist(new_installation, installation_run_loop.QuitClosure());
+  WhitelistLoadObserver observer(installer_.get());
+  installer_->RegisterWhitelist(kClientId, kCrxId, kName);
   registration_run_loop.Run();
 
   ASSERT_NO_FATAL_FAILURE(CheckRegisteredComponent("0.0.0.0"));
+
+  // Registering the same whitelist for another client should not do anything.
+  installer_->RegisterWhitelist(kOtherClientId, kCrxId, kName);
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -250,30 +298,62 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
       component_update_service_.registered_component();
   ASSERT_TRUE(component);
   ASSERT_TRUE(component->installer->Install(manifest_, unpacked_path));
-  installation_run_loop.Run();
+  observer.Wait();
+  EXPECT_EQ(whitelist_path_.value(), observer.whitelist_path().value());
 
   std::string whitelist_contents;
   ASSERT_TRUE(base::ReadFileToString(whitelist_path_, &whitelist_contents));
   EXPECT_EQ(kWhitelistContents, whitelist_contents);
+
+  EXPECT_EQ(JsonToString(&pref_),
+            JsonToString(local_state_.GetDictionary(
+                prefs::kRegisteredSupervisedUserWhitelists)));
 }
 
 TEST_F(SupervisedUserWhitelistInstallerTest,
        RegisterAndUninstallExistingWhitelist) {
-  ASSERT_TRUE(base::CreateDirectory(whitelist_directory_));
-  ASSERT_NO_FATAL_FAILURE(PrepareWhitelistDirectory(whitelist_directory_));
+  ASSERT_TRUE(base::CreateDirectory(whitelist_version_directory_));
+  ASSERT_NO_FATAL_FAILURE(
+      PrepareWhitelistDirectory(whitelist_version_directory_));
 
-  {
-    base::RunLoop run_loop;
-    bool new_installation = false;
-    LoadWhitelist(new_installation, run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  // Create another whitelist directory, with an ID that is not registered.
+  base::FilePath other_directory =
+      whitelist_base_directory_.AppendASCII("paobncmdlekfjgihhigjfkeldmcnboap");
+  ASSERT_TRUE(base::CreateDirectory(other_directory));
+  ASSERT_NO_FATAL_FAILURE(PrepareWhitelistDirectory(other_directory));
+
+  // Create a directory that is not a valid whitelist directory.
+  base::FilePath non_whitelist_directory =
+      whitelist_base_directory_.AppendASCII("Not a whitelist");
+  ASSERT_TRUE(base::CreateDirectory(non_whitelist_directory));
+
+  RegisterExistingComponents();
 
   ASSERT_NO_FATAL_FAILURE(CheckRegisteredComponent(kVersion));
 
+  // Check that unregistered whitelists have been removed:
+  // The registered whitelist directory should still exist.
+  EXPECT_TRUE(base::DirectoryExists(whitelist_directory_));
+
+  // The other directory should be gone.
+  EXPECT_FALSE(base::DirectoryExists(other_directory));
+
+  // The non-whitelist directory should still exist as well.
+  EXPECT_TRUE(base::DirectoryExists(non_whitelist_directory));
+
+  // Unregistering for the first client should do nothing.
   {
     base::RunLoop run_loop;
-    installer_->UninstallWhitelist(kCrxId);
+    installer_->UnregisterWhitelist(kClientId, kCrxId);
+    run_loop.RunUntilIdle();
+  }
+  EXPECT_TRUE(component_update_service_.registered_component());
+  EXPECT_TRUE(base::DirectoryExists(whitelist_version_directory_));
+
+  // Unregistering for the second client should uninstall the whitelist.
+  {
+    base::RunLoop run_loop;
+    installer_->UnregisterWhitelist(kOtherClientId, kCrxId);
     run_loop.RunUntilIdle();
   }
   EXPECT_FALSE(component_update_service_.registered_component());

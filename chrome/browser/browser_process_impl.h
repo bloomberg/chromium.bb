@@ -129,6 +129,8 @@ class BrowserProcessImpl : public BrowserProcess,
   CRLSetFetcher* crl_set_fetcher() override;
   component_updater::PnaclComponentInstaller* pnacl_component_installer()
       override;
+  component_updater::SupervisedUserWhitelistInstaller*
+  supervised_user_whitelist_installer() override;
   MediaFileSystemRegistry* media_file_system_registry() override;
   bool created_local_state() const override;
 #if defined(ENABLE_WEBRTC)
@@ -280,6 +282,9 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<component_updater::PnaclComponentInstaller>
       pnacl_component_installer_;
 #endif
+
+  scoped_ptr<component_updater::SupervisedUserWhitelistInstaller>
+      supervised_user_whitelist_installer_;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   scoped_ptr<PluginsResourceService> plugins_resource_service_;

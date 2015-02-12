@@ -7131,6 +7131,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ManagedUsers_Whitelist_UncleanUninstall">
+  <owner>bauerb@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <description>
+    Recorded at startup if an unregistered whitelist has been found. This
+    usually means that an uninstallation did not complete.
+  </description>
+</action>
+
 <action name="MaxButton_Clk_ExitFS">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

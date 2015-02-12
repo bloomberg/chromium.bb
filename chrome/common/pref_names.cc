@@ -2281,6 +2281,11 @@ const char kPasswordBubbleLastInteractions[] = "password_bubble.interactions";
 const char kRecoveryComponentNeedsElevation[] =
     "recovery_component.needs_elevation";
 
+// A dictionary that maps from supervised user whitelist IDs to their properties
+// (name and a list of clients that registered the whitelist).
+const char kRegisteredSupervisedUserWhitelists[] =
+    "supervised_users.whitelists";
+
 #if defined(ENABLE_EXTENSIONS)
 // Policy that indicates how to handle animated images.
 const char kAnimationPolicy[] = "settings.a11y.animation_policy";

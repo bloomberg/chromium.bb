@@ -659,12 +659,11 @@ void SupervisedUserService::Init() {
   if (sync_service)
     sync_service->AddPreferenceProvider(this);
 
-  component_updater::ComponentUpdateService* component_updater =
-      g_browser_process->component_updater();
+  std::string client_id = component_updater::SupervisedUserWhitelistInstaller::
+      ClientIdForProfilePath(profile_->GetPath());
   whitelist_service_.reset(new SupervisedUserWhitelistService(
       profile_->GetPrefs(),
-      component_updater::SupervisedUserWhitelistInstaller::Create(
-          component_updater)));
+      g_browser_process->supervised_user_whitelist_installer(), client_id));
   whitelist_service_->AddSiteListsChangedCallback(
       base::Bind(&SupervisedUserService::OnSiteListsChanged,
                  weak_ptr_factory_.GetWeakPtr()));

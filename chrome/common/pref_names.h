@@ -817,6 +817,8 @@ extern const char kPasswordBubbleLastInteractions[];
 
 extern const char kRecoveryComponentNeedsElevation[];
 
+extern const char kRegisteredSupervisedUserWhitelists[];
+
 #if defined(ENABLE_EXTENSIONS)
 extern const char kAnimationPolicy[];
 #endif

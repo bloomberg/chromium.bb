@@ -28,6 +28,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
+#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -252,6 +253,10 @@ void BrowserProcessImpl::StartTearDown() {
   // before the profiles, since if there are any still showing we will access
   // those things during teardown.
   notification_ui_manager_.reset();
+
+  // The SupervisedUserWhitelistInstaller observes the ProfileInfoCache, so it
+  // needs to be shut down before the ProfileManager.
+  supervised_user_whitelist_installer_.reset();
 
   // Need to clear profiles (download managers) before the io_thread_.
   {
@@ -894,6 +899,17 @@ BrowserProcessImpl::pnacl_component_installer() {
 #else
   return nullptr;
 #endif
+}
+
+component_updater::SupervisedUserWhitelistInstaller*
+BrowserProcessImpl::supervised_user_whitelist_installer() {
+  if (!supervised_user_whitelist_installer_) {
+    supervised_user_whitelist_installer_ =
+        component_updater::SupervisedUserWhitelistInstaller::Create(
+            component_updater(), &profile_manager()->GetProfileInfoCache(),
+            local_state());
+  }
+  return supervised_user_whitelist_installer_.get();
 }
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {

@@ -48,6 +48,7 @@
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
+#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/component_updater/swiftshader_component_installer.h"
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #include "chrome/browser/defaults.h"
@@ -418,7 +419,7 @@ void RegisterComponentsForUpdate() {
 #if defined(OS_CHROMEOS)
   // PNaCl on Chrome OS is on rootfs and there is no need to download it. But
   // Chrome4ChromeOS on Linux doesn't contain PNaCl so enable component
-  // installer when ruining on Linux. See crbug.com/422121 for more details.
+  // installer when running on Linux. See crbug.com/422121 for more details.
   if (!base::SysInfo::IsRunningOnChromeOS())
 #endif
     g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
@@ -427,6 +428,10 @@ void RegisterComponentsForUpdate() {
   // Registration of the CLD Component is a no-op unless the CLD data source has
   // been configured to be the "Component" data source.
   RegisterCldComponent(cus);
+
+  component_updater::SupervisedUserWhitelistInstaller* whitelist_installer =
+      g_browser_process->supervised_user_whitelist_installer();
+  whitelist_installer->RegisterComponents();
 
   base::FilePath path;
   if (PathService::Get(chrome::DIR_USER_DATA, &path)) {

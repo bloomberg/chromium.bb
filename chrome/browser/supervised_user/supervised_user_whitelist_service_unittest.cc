@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
@@ -27,6 +28,8 @@
 
 namespace {
 
+const char kClientId[] = "client-id";
+
 class MockSupervisedUserWhitelistInstaller
     : public component_updater::SupervisedUserWhitelistInstaller {
  public:
@@ -39,27 +42,30 @@ class MockSupervisedUserWhitelistInstaller
 
   void NotifyWhitelistReady(const std::string& crx_id,
                             const base::FilePath& path) {
-    // We purposely don't check whether the whitelist is registered, to allow
-    // testing the case where a whitelist will become ready after it has been
-    // unregistered.
-    ASSERT_TRUE(ready_callbacks_.count(crx_id) > 0) << crx_id;
-    ready_callbacks_[crx_id].Run(path);
+    for (const auto& callback : ready_callbacks_)
+      callback.Run(crx_id, path);
   }
 
   // SupervisedUserWhitelistInstaller implementation:
-  void RegisterWhitelist(const std::string& crx_id,
-                         const std::string& name,
-                         bool new_installation,
-                         const WhitelistReadyCallback& callback) override {
-    ASSERT_FALSE(WhitelistIsRegistered(crx_id)) << crx_id;
-    registered_whitelists_.insert(crx_id);
-    ready_callbacks_[crx_id] = callback;
+  void RegisterComponents() override {}
+
+  void Subscribe(const WhitelistReadyCallback& callback) override {
+    ready_callbacks_.push_back(callback);
   }
 
-  void UninstallWhitelist(const std::string& crx_id) override {
+  void RegisterWhitelist(const std::string& client_id,
+                         const std::string& crx_id,
+                         const std::string& name) override {
+    EXPECT_EQ(kClientId, client_id);
+    EXPECT_FALSE(WhitelistIsRegistered(crx_id)) << crx_id;
+    registered_whitelists_.insert(crx_id);
+  }
+
+  void UnregisterWhitelist(const std::string& client_id,
+                           const std::string& crx_id) override {
+    EXPECT_EQ(kClientId, client_id);
     EXPECT_TRUE(WhitelistIsRegistered(crx_id)) << crx_id;
     registered_whitelists_.erase(crx_id);
-    // Don't remove the ready callback (see above).
   }
 
  private:
@@ -68,17 +74,18 @@ class MockSupervisedUserWhitelistInstaller
   }
 
   std::set<std::string> registered_whitelists_;
-  std::map<std::string, WhitelistReadyCallback> ready_callbacks_;
+  std::vector<WhitelistReadyCallback> ready_callbacks_;
 };
 
 }  // namespace
 
 class SupervisedUserWhitelistServiceTest : public testing::Test {
  public:
-  SupervisedUserWhitelistServiceTest() {
-    installer_ = new MockSupervisedUserWhitelistInstaller;
-    service_.reset(new SupervisedUserWhitelistService(
-        profile_.GetPrefs(), make_scoped_ptr(installer_)));
+  SupervisedUserWhitelistServiceTest()
+      : installer_(new MockSupervisedUserWhitelistInstaller),
+        service_(new SupervisedUserWhitelistService(profile_.GetPrefs(),
+                                                    installer_.get(),
+                                                    kClientId)) {
     service_->AddSiteListsChangedCallback(
         base::Bind(&SupervisedUserWhitelistServiceTest::OnSiteListsChanged,
                    base::Unretained(this)));
@@ -90,7 +97,7 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
   }
 
  protected:
-  void PrepareInitialPreferences() {
+  void PrepareInitialStateAndPreferences() {
     // Create two whitelists.
     DictionaryPrefUpdate update(profile_.GetPrefs(),
                                 prefs::kSupervisedUserWhitelists);
@@ -103,6 +110,9 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
     whitelist_dict.reset(new base::DictionaryValue);
     whitelist_dict->SetString("name", "Whitelist B");
     dict->Set("bbbb", whitelist_dict.release());
+
+    installer_->RegisterWhitelist(kClientId, "aaaa", "Whitelist A");
+    installer_->RegisterWhitelist(kClientId, "bbbb", "Whitelist B");
   }
 
   void CheckFinalStateAndPreferences() {
@@ -145,8 +155,7 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
   base::MessageLoop message_loop_;
   TestingProfile profile_;
 
-  // Owned by the SupervisedUserWhitelistService.
-  MockSupervisedUserWhitelistInstaller* installer_;
+  scoped_ptr<MockSupervisedUserWhitelistInstaller> installer_;
   scoped_ptr<SupervisedUserWhitelistService> service_;
 
   std::vector<scoped_refptr<SupervisedUserSiteList>> site_lists_;
@@ -155,7 +164,6 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
 
 TEST_F(SupervisedUserWhitelistServiceTest, MergeEmpty) {
   service_->Init();
-  EXPECT_EQ(0u, installer_->registered_whitelists().size());
 
   syncer::SyncMergeResult result = service_->MergeDataAndStartSyncing(
       syncer::SUPERVISED_USER_WHITELISTS, syncer::SyncDataList(),
@@ -172,14 +180,10 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeEmpty) {
 }
 
 TEST_F(SupervisedUserWhitelistServiceTest, MergeExisting) {
-  PrepareInitialPreferences();
+  PrepareInitialStateAndPreferences();
 
-  // Initialize the service. Both whitelists should be registered, but not ready
-  // yet.
+  // Initialize the service. The whitelists should not be ready yet.
   service_->Init();
-  EXPECT_EQ(2u, installer_->registered_whitelists().size());
-  EXPECT_EQ(1u, installer_->registered_whitelists().count("aaaa"));
-  EXPECT_EQ(1u, installer_->registered_whitelists().count("bbbb"));
   EXPECT_EQ(0u, site_lists_.size());
 
   // Notify that whitelist A is ready.
@@ -226,7 +230,7 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeExisting) {
 }
 
 TEST_F(SupervisedUserWhitelistServiceTest, ApplyChanges) {
-  PrepareInitialPreferences();
+  PrepareInitialStateAndPreferences();
 
   service_->Init();
 
@@ -258,7 +262,7 @@ TEST_F(SupervisedUserWhitelistServiceTest, ApplyChanges) {
 }
 
 TEST_F(SupervisedUserWhitelistServiceTest, GetAllSyncData) {
-  PrepareInitialPreferences();
+  PrepareInitialStateAndPreferences();
 
   syncer::SyncDataList sync_data =
       service_->GetAllSyncData(syncer::SUPERVISED_USER_WHITELISTS);

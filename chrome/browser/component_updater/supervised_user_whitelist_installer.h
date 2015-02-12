@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_SUPERVISED_USER_WHITELIST_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_SUPERVISED_USER_WHITELIST_INSTALLER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,10 @@ namespace base {
 class FilePath;
 }
 
+class PrefRegistrySimple;
+class PrefService;
+class ProfileInfoCache;
+
 namespace component_updater {
 
 class ComponentUpdateService;
@@ -22,13 +27,22 @@ class OnDemandUpdater;
 
 class SupervisedUserWhitelistInstaller {
  public:
-  typedef base::Callback<void(const base::FilePath& whitelist_path)>
-      WhitelistReadyCallback;
+  using WhitelistReadyCallback =
+      base::Callback<void(const std::string& crx_id,
+                          const base::FilePath& whitelist_path)>;
 
   virtual ~SupervisedUserWhitelistInstaller() {}
 
   static scoped_ptr<SupervisedUserWhitelistInstaller> Create(
-      ComponentUpdateService* cus);
+      ComponentUpdateService* cus,
+      ProfileInfoCache* profile_info_cache,
+      PrefService* local_state);
+
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Generates a client ID suitable for RegisterWhitelist() and
+  // UnregisterWhitelist() below from a profile path.
+  static std::string ClientIdForProfilePath(const base::FilePath& profile_path);
 
   // Turns a CRX ID (which is derived from a hash) back into a hash.
   // Note that the resulting hash will be only 16 bytes long instead of the
@@ -37,18 +51,27 @@ class SupervisedUserWhitelistInstaller {
   // Public for testing.
   static std::vector<uint8_t> GetHashFromCrxId(const std::string& crx_id);
 
-  // Registers a new whitelist with the given CRX ID and name.
-  // |new_installation| should be set to true if the whitelist is not installed
-  // locally yet, to trigger installation.
-  // |callback| will be called when the whitelist is installed (for new
-  // installations) or updated.
-  virtual void RegisterWhitelist(const std::string& crx_id,
-                                 const std::string& name,
-                                 bool new_installation,
-                                 const WhitelistReadyCallback& callback) = 0;
+  // Starts registering all components with the ComponentUpdaterService.
+  // Also removes unregistered components on disk (which are most likely left
+  // over from a previous uninstallation that was interrupted, e.g. during
+  // shutdown or a crash).
+  virtual void RegisterComponents() = 0;
 
-  // Uninstalls a whitelist.
-  virtual void UninstallWhitelist(const std::string& crx_id) = 0;
+  // Subscribes for notifications about available whitelists. Clients should
+  // filter out the whitelists they are interested in via the |crx_id|
+  // parameter.
+  virtual void Subscribe(const WhitelistReadyCallback& callback) = 0;
+
+  // Registers a new whitelist with the given |crx_id|.
+  // The |client_id| should be a unique identifier for the client that is stable
+  // across restarts.
+  virtual void RegisterWhitelist(const std::string& client_id,
+                                 const std::string& crx_id,
+                                 const std::string& name) = 0;
+
+  // Unregisters a whitelist.
+  virtual void UnregisterWhitelist(const std::string& client_id,
+                                   const std::string& crx_id) = 0;
 
  protected:
   // Triggers an update for a whitelist to be installed. Protected so it can be
