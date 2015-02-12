@@ -38,6 +38,11 @@ CHECKOUT_TYPE_REPO = 'repo'
 CHECKOUT_TYPE_SUBMODULE = 'submodule'
 
 
+DEVICE_SCHEME_FILE = 'file'
+DEVICE_SCHEME_SSH = 'ssh'
+DEVICE_SCHEME_USB = 'usb'
+
+
 CheckoutInfo = collections.namedtuple(
     'CheckoutInfo', ['type', 'root', 'chrome_src_dir'])
 
@@ -172,6 +177,71 @@ def NormalizeUri(value):
     return NormalizeLocalOrGSPath(value)
 
 
+# A Device object holds information parsed from the command line input:
+#   scheme: DEVICE_SCHEME_SSH, DEVICE_SCHEME_USB, or DEVICE_SCHEME_FILE.
+#   username: String SSH username or None.
+#   hostname: String SSH hostname or None.
+#   port: Int SSH port or None.
+#   path: String USB/file path or None.
+# For now this is a superset of all information for USB, SSH, or file devices.
+# If functionality diverges based on type, it may be useful to split this into
+# separate device classes instead.
+Device = cros_build_lib.Collection(
+    'Device', scheme=None, username=None, hostname=None, port=None, path=None)
+
+
+def ParseDevice(value):
+  """Parse a device argument.
+
+  Args:
+    value: String representing a device target. Valid options are:
+      - [ssh://][username@]hostname[:port].
+      - usb://[path].
+      - file://path.
+
+  Returns:
+    A Device object.
+
+  Raises:
+    ValueError: |value| is not a valid device specifier.
+  """
+  try:
+    parsed = urlparse.urlparse(value)
+    if not parsed.scheme:
+      # Default to a file scheme for absolute paths, SSH scheme otherwise.
+      if value and value[0] == '/':
+        scheme = DEVICE_SCHEME_FILE
+      else:
+        # urlparse won't provide hostname/username/port unless a scheme is
+        # specified so we need to re-parse.
+        parsed = urlparse.urlparse('%s://%s' % (DEVICE_SCHEME_SSH, value))
+        scheme = DEVICE_SCHEME_SSH
+    else:
+      scheme = parsed.scheme.lower()
+
+    if scheme == DEVICE_SCHEME_SSH:
+      hostname = parsed.hostname
+      if not hostname:
+        raise ValueError('Hostname is required for device "%s"' % value)
+      return Device(scheme=scheme, username=parsed.username, hostname=hostname,
+                    port=parsed.port)
+    elif scheme == DEVICE_SCHEME_USB:
+      path = parsed.netloc + parsed.path
+      # Change path '' to None for consistency.
+      return Device(scheme=scheme, path=path if path else None)
+    elif scheme == DEVICE_SCHEME_FILE:
+      path = parsed.netloc + parsed.path
+      if not path:
+        raise ValueError('Path is required for "%s"' % value)
+      return Device(scheme=scheme, path=path)
+    else:
+      raise ValueError('Invalid device scheme "%s" in "%s"' % (scheme, value))
+  except ValueError as e:
+    # argparse ignores exception messages, so print the message manually.
+    cros_build_lib.Error(e)
+    raise
+
+
 def OptparseWrapCheck(desc, check_f, _option, opt, value):
   """Optparse adapter for type checking functionality."""
   try:
@@ -187,6 +257,7 @@ VALID_TYPES = {
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
     'path_or_uri': NormalizeUri,
+    'device': ParseDevice,
 }
 
 

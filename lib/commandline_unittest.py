@@ -83,6 +83,115 @@ class GSPathTest(cros_test_lib.TestCase):
           check_attrs={'code': 2})
 
 
+class DeviceParseTest(cros_test_lib.TestCase):
+  """Test device parsing functionality."""
+
+  def _CheckDeviceParse(self, device_input, scheme, username=None,
+                        hostname=None, port=None, path=None):
+    """Checks that parsing a device input gives the expected result.
+
+    Args:
+      device_input: String input specifying a device.
+      scheme: String expected scheme.
+      username: String expected username or None.
+      hostname: String expected hostname or None.
+      port: Int expected port or None.
+      path: String expected path or None.
+    """
+    parser = commandline.ArgumentParser()
+    parser.add_argument('device', type='device')
+    device = parser.parse_args([device_input]).device
+    self.assertEqual(device.scheme, scheme)
+    self.assertEqual(device.username, username)
+    self.assertEqual(device.hostname, hostname)
+    self.assertEqual(device.port, port)
+    self.assertEqual(device.path, path)
+
+  def _CheckDeviceParseFails(self, device_input):
+    """Checks that parsing a device input fails.
+
+    Args:
+      device_input: String input specifying a device.
+    """
+    parser = commandline.ArgumentParser()
+    parser.add_argument('device', type='device')
+    with cros_test_lib.OutputCapturer():
+      self.assertRaises2(SystemExit, parser.parse_args, [device_input])
+
+  def testNoDevice(self):
+    """Verify that an empty device specification fails."""
+    self._CheckDeviceParseFails('')
+
+  def testSshScheme(self):
+    """Verify that SSH scheme-only device specification fails."""
+    self._CheckDeviceParseFails('ssh://')
+
+  def testSshHostname(self):
+    """Test SSH hostname-only device specification."""
+    self._CheckDeviceParse('192.168.1.200',
+                           scheme=commandline.DEVICE_SCHEME_SSH,
+                           hostname='192.168.1.200')
+
+  def testSshUsernameHostname(self):
+    """Test SSH username and hostname device specification."""
+    self._CheckDeviceParse('me@foo_host',
+                           scheme=commandline.DEVICE_SCHEME_SSH,
+                           username='me',
+                           hostname='foo_host')
+
+  def testSshUsernameHostnamePort(self):
+    """Test SSH username, hostname, and port device specification."""
+    self._CheckDeviceParse('me@foo_host:4500',
+                           scheme=commandline.DEVICE_SCHEME_SSH,
+                           username='me',
+                           hostname='foo_host',
+                           port=4500)
+
+  def testSshSchemeUsernameHostnamePort(self):
+    """Test SSH scheme, username, hostname, and port device specification."""
+    self._CheckDeviceParse('ssh://me@foo_host:4500',
+                           scheme=commandline.DEVICE_SCHEME_SSH,
+                           username='me',
+                           hostname='foo_host',
+                           port=4500)
+
+  def testUsbScheme(self):
+    """Test USB scheme-only device specification."""
+    self._CheckDeviceParse('usb://', scheme=commandline.DEVICE_SCHEME_USB)
+
+  def testUsbSchemePath(self):
+    """Test USB scheme and path device specification."""
+    self._CheckDeviceParse('usb://path/to/my/device',
+                           scheme=commandline.DEVICE_SCHEME_USB,
+                           path='path/to/my/device')
+
+  def testFileScheme(self):
+    """Verify that file scheme-only device specification fails."""
+    self._CheckDeviceParseFails('file://')
+
+  def testFileSchemePath(self):
+    """Test file scheme and path device specification."""
+    self._CheckDeviceParse('file://foo/bar',
+                           scheme=commandline.DEVICE_SCHEME_FILE,
+                           path='foo/bar')
+
+  def testAbsolutePath(self):
+    """Verify that an absolute path defaults to file scheme."""
+    self._CheckDeviceParse('/path/to/my/device',
+                           scheme=commandline.DEVICE_SCHEME_FILE,
+                           path='/path/to/my/device')
+
+  def testUnsupportedScheme(self):
+    """Verify that an unsupported scheme fails."""
+    self._CheckDeviceParseFails('ftp://192.168.1.200')
+
+  def testSchemeCaseInsensitive(self):
+    """Verify that schemes are case-insensitive."""
+    self._CheckDeviceParse('SSH://foo_host',
+                           scheme=commandline.DEVICE_SCHEME_SSH,
+                           hostname='foo_host')
+
+
 class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
   """Verify functionality for figuring out what checkout we're in."""
 
