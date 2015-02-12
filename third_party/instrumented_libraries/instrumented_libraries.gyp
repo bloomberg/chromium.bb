@@ -317,6 +317,8 @@
         # From debian/rules.
         '--disable-gtk',
         '--disable-silent-rules',
+        # Avoid a clang issue. http://crbug.com/449183
+        '--disable-mmx',
       ],
       'patch': 'patches/libpixman-1-0.diff',
       'includes': ['standard_instrumented_package_target.gypi'],
