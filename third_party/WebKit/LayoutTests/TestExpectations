@@ -168,9 +168,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
-crbug.com/327832 fast/dynamic/insert-before-table-part-in-continuation.html [ NeedsRebaseline ]
-crbug.com/327832 tables/mozilla/bugs/bug3037-1.html [ NeedsRebaseline ]
-
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 # crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
