@@ -29,7 +29,6 @@ def print_landmines():
     print 'Need to clobber winja goma due to backend cwd cache fix.'
   if platform() == 'android':
     print 'Clobber: to handle new way of suppressing findbugs failures.'
-    print 'Clobber to fix gyp not rename package name (crbug.com/457038)'
   if platform() == 'win' and builder() == 'ninja':
     print 'Compile on cc_unittests fails due to symbols removed in r185063.'
   if platform() == 'linux' and builder() == 'ninja':
