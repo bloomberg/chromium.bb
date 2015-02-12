@@ -200,11 +200,13 @@ void EasyUnlockScreenlockStateHandler::SetTrialRun() {
   RefreshScreenlockState();
 }
 
-void EasyUnlockScreenlockStateHandler::OnScreenDidLock() {
+void EasyUnlockScreenlockStateHandler::OnScreenDidLock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
   RefreshScreenlockState();
 }
 
-void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock() {
+void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
   if (hardlock_state_ == LOGIN_FAILED)
     hardlock_state_ = NO_HARDLOCK;
   hardlock_ui_shown_ = false;

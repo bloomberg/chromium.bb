@@ -57,8 +57,8 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void SetAuthType(const std::string& user_email,
                    ScreenlockBridge::LockHandler::AuthType auth_type,
                    const base::string16& auth_value) override;
-  ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& user_email) const override;
+  AuthType GetAuthType(const std::string& user_email) const override;
+  ScreenType GetScreenType() const override;
   void Unlock(const std::string& user_email) override;
   void AttemptEasySignin(const std::string& user_email,
                          const std::string& secret,

@@ -6369,6 +6369,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.AuthEvent.SignIn" enum="EasyUnlockAuthEvent">
+  <owner>isherman@google.com</owner>
+  <owner>xiaowenx@google.com</owner>
+  <owner>xiyuan@google.com</owner>
+  <summary>
+    Measures the use of Smart Lock on the sign-in screen: records whether a
+    Smart Lock login succeeded or failed; or if a password fallback was used,
+    the reason why. Recorded upon a login attempt for users who have the Smart
+    Lock feature enabled.
+  </summary>
+</histogram>
+
+<histogram name="EasyUnlock.AuthEvent.Unlock" enum="EasyUnlockAuthEvent">
+  <owner>isherman@google.com</owner>
+  <owner>xiaowenx@google.com</owner>
+  <owner>xiyuan@google.com</owner>
+  <summary>
+    Measures the use of Smart Lock on the lock screen: records whether a Smart
+    Lock unlock attempt succeeded or failed; or if a password fallback was used,
+    the reason why. Recorded upon an unlock attempt for users who have the Smart
+    Lock feature enabled.
+  </summary>
+</histogram>
+
 <histogram name="EasyUnlock.ClickedButton" enum="EasyUnlockButton">
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -6408,12 +6432,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="EasyUnlock.SignIn.LoginEvent" enum="EasyUnlockLoginEvent">
+<histogram name="EasyUnlock.SignIn.LoginEvent" enum="EasyUnlockAuthEvent">
+  <obsolete>
+    Deprecated 02/2015; replaced by EasyUnlock.AuthEvent.SignIn.
+  </obsolete>
   <owner>xiaowenx@google.com</owner>
   <owner>xiyuan@google.com</owner>
   <summary>
     Measures the use of Easy sign-in: records whether an Easy sign-in login
-    succeeded or  failed; or if a password fallback was used, the reason why.
+    succeeded or failed; or if a password fallback was used, the reason why.
     Recorded upon a login attempt for users who have the Easy sign-in feature
     enabled.
   </summary>
@@ -6433,6 +6460,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="EasyUnlock.UnlockEvent" enum="EasyUnlockUnlockEvent">
+  <obsolete>
+    Deprecated 02/2015; replaced by EasyUnlock.AuthEvent.Unlock.
+  </obsolete>
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>Screen unlock events detected while EasyUnlock was enabled.</summary>
@@ -45721,6 +45751,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="TTLS"/>
 </enum>
 
+<enum name="EasyUnlockAuthEvent" type="int">
+  <int value="0" label="Smart Lock success"/>
+  <int value="1" label="Smart Lock failure"/>
+  <int value="2" label="Password entry: No pairing"/>
+  <int value="3" label="Password entry: Pairing changed"/>
+  <int value="4" label="Password entry: User hardlock"/>
+  <int value="5" label="Password entry: Service not active"/>
+  <int value="6" label="Password entry: No Bluetooth"/>
+  <int value="7" label="Password entry: Bluetooth connecting"/>
+  <int value="8" label="Password entry: No phone"/>
+  <int value="9" label="Password entry: Phone not authenticated"/>
+  <int value="10" label="Password entry: Phone locked"/>
+  <int value="11" label="Password entry: Phone not lockable"/>
+  <int value="12" label="Password entry: RSSI too low"/>
+  <int value="13" label="Password entry: Phone not supported"/>
+  <int value="14" label="Password entry: Phone authenticated"/>
+  <int value="15" label="Password entry: Tx power too high"/>
+  <int value="16" label="Password entry: Easy sign-in failed"/>
+  <int value="17" label="Password entry: Pairing added"/>
+  <int value="18" label="Password entry: No screenlock state handler"/>
+  <int value="19" label="Password entry: Phone locked and tx power too high"/>
+</enum>
+
 <enum name="EasyUnlockButton" type="int">
   <int value="0" label="Setup app launches"/>
   <int value="1" label="Find device"/>
@@ -45729,29 +45782,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Enable"/>
   <int value="5" label="Disable"/>
   <int value="6" label="Dismiss ('done')"/>
-</enum>
-
-<enum name="EasyUnlockLoginEvent" type="int">
-  <int value="0" label="Easy sign-in success"/>
-  <int value="1" label="Easy sign-in failure"/>
-  <int value="2" label="Password sign-in: No pairing"/>
-  <int value="3" label="Password sign-in: Pairing changed"/>
-  <int value="4" label="Password sign-in: User hardlock"/>
-  <int value="5" label="Password sign-in: Service not active"/>
-  <int value="6" label="Password sign-in: No Bluetooth"/>
-  <int value="7" label="Password sign-in: Bluetooth connecting"/>
-  <int value="8" label="Password sign-in: No phone"/>
-  <int value="9" label="Password sign-in: Phone not authenticated"/>
-  <int value="10" label="Password sign-in: Phone locked"/>
-  <int value="11" label="Password sign-in: Phone not lockable"/>
-  <int value="12" label="Password sign-in: RSSI too low"/>
-  <int value="13" label="Password sign-in: Phone not supported"/>
-  <int value="14" label="Password sign-in: Phone authenticated"/>
-  <int value="15" label="Password sign-in: Tx power too high"/>
-  <int value="16" label="Password sign-in: Easy sign-in failed"/>
-  <int value="17" label="Password sign-in: Pairing added"/>
-  <int value="18" label="Password sign-in: No screenlock state handler"/>
-  <int value="19" label="Password sign-in: Phone locked and tx power too high"/>
 </enum>
 
 <enum name="EasyUnlockNotificationEvent" type="int">

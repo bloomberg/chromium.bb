@@ -85,6 +85,10 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
     return auth_type_;
   }
 
+  ScreenType GetScreenType() const override {
+    return LOCK_SCREEN;
+  }
+
   void Unlock(const std::string& user_email) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }

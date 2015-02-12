@@ -66,8 +66,10 @@ class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
   void Shutdown() override;
 
   // ScreenlockBridge::Observer
-  void OnScreenDidLock() override;
-  void OnScreenDidUnlock() override;
+  void OnScreenDidLock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnScreenDidUnlock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnFocusedUserChanged(const std::string& user_id) override;
 
  private:

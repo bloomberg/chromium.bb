@@ -341,6 +341,11 @@ ScreenlockBridge::LockHandler::AuthType UserManagerScreenHandler::GetAuthType(
   return it->second;
 }
 
+ScreenlockBridge::LockHandler::ScreenType
+UserManagerScreenHandler::GetScreenType() const {
+  return ScreenlockBridge::LockHandler::LOCK_SCREEN;
+}
+
 void UserManagerScreenHandler::Unlock(const std::string& user_email) {
   const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();

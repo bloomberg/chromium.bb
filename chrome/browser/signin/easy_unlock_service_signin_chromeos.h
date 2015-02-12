@@ -77,10 +77,13 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
+  void OnWillFinalizeUnlock(bool success) override;
 
   // ScreenlockBridge::Observer implementation:
-  void OnScreenDidLock() override;
-  void OnScreenDidUnlock() override;
+  void OnScreenDidLock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnScreenDidUnlock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnFocusedUserChanged(const std::string& user_id) override;
 
   // chromeos::LoginState::Observer implementation:

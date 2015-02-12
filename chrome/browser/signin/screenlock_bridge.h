@@ -25,18 +25,6 @@ class Profile;
 // used solely for the lock screen anymore.
 class ScreenlockBridge {
  public:
-  class Observer {
-   public:
-    // Invoked after the screen is locked.
-    virtual void OnScreenDidLock() = 0;
-    // Invoked after the screen lock is dismissed.
-    virtual void OnScreenDidUnlock() = 0;
-    // Invoked when the user focused on the lock screen changes.
-    virtual void OnFocusedUserChanged(const std::string& user_id) = 0;
-   protected:
-    virtual ~Observer() {}
-  };
-
   // User pod icons supported by lock screen / signin screen UI.
   enum UserPodCustomIcon {
     USER_POD_CUSTOM_ICON_NONE,
@@ -105,6 +93,12 @@ class ScreenlockBridge {
       FORCE_OFFLINE_PASSWORD = 5
     };
 
+    enum ScreenType {
+      SIGNIN_SCREEN = 0,
+      LOCK_SCREEN = 1,
+      OTHER_SCREEN = 2
+    };
+
     // Displays |message| in a banner on the lock screen.
     virtual void ShowBannerMessage(const base::string16& message) = 0;
 
@@ -127,6 +121,9 @@ class ScreenlockBridge {
     // Returns the authentication type used for a user.
     virtual AuthType GetAuthType(const std::string& user_email) const = 0;
 
+    // Returns the type of the screen -- a signin or a lock screen.
+    virtual ScreenType GetScreenType() const = 0;
+
     // Unlock from easy unlock app for a user.
     virtual void Unlock(const std::string& user_email) = 0;
 
@@ -137,6 +134,21 @@ class ScreenlockBridge {
 
    protected:
     virtual ~LockHandler() {}
+  };
+
+  class Observer {
+   public:
+    // Invoked after the screen is locked.
+    virtual void OnScreenDidLock(LockHandler::ScreenType screen_type) = 0;
+
+    // Invoked after the screen lock is dismissed.
+    virtual void OnScreenDidUnlock(LockHandler::ScreenType screen_type) = 0;
+
+    // Invoked when the user focused on the lock screen changes.
+    virtual void OnFocusedUserChanged(const std::string& user_id) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   static ScreenlockBridge* Get();

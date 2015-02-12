@@ -277,7 +277,7 @@ void EasyUnlockService::Initialize(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-bool EasyUnlockService::IsAllowed() {
+bool EasyUnlockService::IsAllowed() const {
   if (shut_down_)
     return false;
 
@@ -420,12 +420,18 @@ void EasyUnlockService::FinalizeUnlock(bool success) {
   if (!auth_attempt_.get())
     return;
 
+  this->OnWillFinalizeUnlock(success);
   auth_attempt_->FinalizeUnlock(GetUserEmail(), success);
   auth_attempt_.reset();
+  // TODO(isherman): If observing screen unlock events, is there a race
+  // condition in terms of reading the service's state vs. the app setting the
+  // state?
 
   // Make sure that the lock screen is updated on failure.
-  if (!success)
+  if (!success) {
+    RecordEasyUnlockScreenUnlockEvent(EASY_UNLOCK_FAILURE);
     HandleAuthFailure(GetUserEmail());
+  }
 }
 
 void EasyUnlockService::FinalizeSignin(const std::string& key) {
@@ -632,6 +638,61 @@ void EasyUnlockService::SetHardlockStateForUser(
 
   if (GetUserEmail() == user_id)
     SetScreenlockHardlockedState(state);
+}
+
+EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
+  DCHECK(IsEnabled());
+
+  if (GetHardlockState() != EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
+    switch (GetHardlockState()) {
+      case EasyUnlockScreenlockStateHandler::NO_HARDLOCK:
+        NOTREACHED();
+        return EASY_UNLOCK_AUTH_EVENT_COUNT;
+      case EasyUnlockScreenlockStateHandler::NO_PAIRING:
+        return PASSWORD_ENTRY_NO_PAIRING;
+      case EasyUnlockScreenlockStateHandler::USER_HARDLOCK:
+        return PASSWORD_ENTRY_USER_HARDLOCK;
+      case EasyUnlockScreenlockStateHandler::PAIRING_CHANGED:
+        return PASSWORD_ENTRY_PAIRING_CHANGED;
+      case EasyUnlockScreenlockStateHandler::LOGIN_FAILED:
+        return PASSWORD_ENTRY_LOGIN_FAILED;
+      case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
+        return PASSWORD_ENTRY_PAIRING_ADDED;
+    }
+  } else if (!screenlock_state_handler()) {
+    return PASSWORD_ENTRY_NO_SCREENLOCK_STATE_HANDLER;
+  } else {
+    switch (screenlock_state_handler()->state()) {
+      case EasyUnlockScreenlockStateHandler::STATE_INACTIVE:
+        return PASSWORD_ENTRY_SERVICE_NOT_ACTIVE;
+      case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
+        return PASSWORD_ENTRY_NO_BLUETOOTH;
+      case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
+        return PASSWORD_ENTRY_BLUETOOTH_CONNECTING;
+      case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
+        return PASSWORD_ENTRY_NO_PHONE;
+      case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED:
+        return PASSWORD_ENTRY_PHONE_NOT_AUTHENTICATED;
+      case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
+        return PASSWORD_ENTRY_PHONE_LOCKED;
+      case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
+        return PASSWORD_ENTRY_PHONE_NOT_LOCKABLE;
+      case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
+        return PASSWORD_ENTRY_PHONE_UNSUPPORTED;
+      case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
+        return PASSWORD_ENTRY_RSSI_TOO_LOW;
+      case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
+        return PASSWORD_ENTRY_TX_POWER_TOO_HIGH;
+      case EasyUnlockScreenlockStateHandler::
+               STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+        return PASSWORD_ENTRY_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+      case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
+        return PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE;
+    }
+  }
+
+  NOTREACHED();
+  return EASY_UNLOCK_AUTH_EVENT_COUNT;
 }
 
 #if defined(OS_CHROMEOS)

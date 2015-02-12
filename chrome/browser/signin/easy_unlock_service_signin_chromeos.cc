@@ -175,87 +175,24 @@ void EasyUnlockServiceSignin::RecordEasySignInOutcome(
     bool success) const {
   DCHECK_EQ(GetUserEmail(), user_id);
 
-  RecordEasyUnlockLoginEvent(
-      success ? EASY_SIGN_IN_SUCCESS : EASY_SIGN_IN_FAILURE);
+  RecordEasyUnlockSigninEvent(
+      success ? EASY_UNLOCK_SUCCESS : EASY_UNLOCK_FAILURE);
   DVLOG(1) << "Easy sign-in " << (success ? "success" : "failure");
 }
 
 void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
     const std::string& user_id) const {
-  // This happens during tests where user could login without pod focusing.
+  // This happens during tests, where a user could log in without the user pod
+  // being focused.
   if (GetUserEmail() != user_id)
     return;
 
-  EasyUnlockLoginEvent event = EASY_SIGN_IN_LOGIN_EVENT_COUNT;
-  if (!GetRemoteDevices() ||
-      GetHardlockState() == EasyUnlockScreenlockStateHandler::NO_PAIRING) {
-    event = PASSWORD_SIGN_IN_NO_PAIRING;
-  } else if (GetHardlockState() !=
-             EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
-    switch (GetHardlockState()) {
-      case EasyUnlockScreenlockStateHandler::NO_HARDLOCK:
-      case EasyUnlockScreenlockStateHandler::NO_PAIRING:
-        NOTREACHED();
-        break;
-      case EasyUnlockScreenlockStateHandler::USER_HARDLOCK:
-        event = PASSWORD_SIGN_IN_USER_HARDLOCK;
-        break;
-      case EasyUnlockScreenlockStateHandler::PAIRING_CHANGED:
-        event = PASSWORD_SIGN_IN_PAIRING_CHANGED;
-        break;
-      case EasyUnlockScreenlockStateHandler::LOGIN_FAILED:
-        event = PASSWORD_SIGN_IN_LOGIN_FAILED;
-        break;
-      case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
-        event = PASSWORD_SIGN_IN_PAIRING_ADDED;
-        break;
-    }
-  } else if (!screenlock_state_handler()) {
-    event = PASSWORD_SIGN_IN_NO_SCREENLOCK_STATE_HANDLER;
-  } else {
-    switch (screenlock_state_handler()->state()) {
-      case EasyUnlockScreenlockStateHandler::STATE_INACTIVE:
-        event = PASSWORD_SIGN_IN_SERVICE_NOT_ACTIVE;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
-        event = PASSWORD_SIGN_IN_NO_BLUETOOTH;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
-        event = PASSWORD_SIGN_IN_BLUETOOTH_CONNECTING;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
-        event = PASSWORD_SIGN_IN_NO_PHONE;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED:
-        event = PASSWORD_SIGN_IN_PHONE_NOT_AUTHENTICATED;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
-        event = PASSWORD_SIGN_IN_PHONE_LOCKED;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
-        event = PASSWORD_SIGN_IN_PHONE_NOT_LOCKABLE;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
-        event = PASSWORD_SIGN_IN_PHONE_UNSUPPORTED;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
-        event = PASSWORD_SIGN_IN_RSSI_TOO_LOW;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
-        event = PASSWORD_SIGN_IN_TX_POWER_TOO_HIGH;
-        break;
-      case EasyUnlockScreenlockStateHandler::
-               STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
-        event = PASSWORD_SIGN_IN_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
-        break;
-      case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
-        event = PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE;
-        break;
-    }
-  }
+  if (!IsEnabled())
+    return;
 
-  RecordEasyUnlockLoginEvent(event);
-  DVLOG(1) << "EasySignIn password login event, event=" << event;
+  EasyUnlockAuthEvent event = GetPasswordAuthEvent();
+  RecordEasyUnlockSigninEvent(event);
+  DVLOG(1) << "Easy Sign-in password login event, event=" << event;
 }
 
 void EasyUnlockServiceSignin::StartAutoPairing(
@@ -300,12 +237,30 @@ bool EasyUnlockServiceSignin::IsAllowedInternal() const {
          !chromeos::LoginState::Get()->IsUserLoggedIn();
 }
 
-void EasyUnlockServiceSignin::OnScreenDidLock() {
+void EasyUnlockServiceSignin::OnWillFinalizeUnlock(bool success) {
+  // This code path should only be exercised for the lock screen, not for the
+  // sign-in screen.
+  NOTREACHED();
+}
+
+void EasyUnlockServiceSignin::OnScreenDidLock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+  // In production code, the screen type should always be the signin screen; but
+  // in tests, the screen type might be different.
+  if (screen_type != ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
+    return;
+
   // Update initial UI is when the account picker on login screen is ready.
   ShowInitialUserState();
 }
 
-void EasyUnlockServiceSignin::OnScreenDidUnlock() {
+void EasyUnlockServiceSignin::OnScreenDidUnlock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+  // In production code, the screen type should always be the signin screen; but
+  // in tests, the screen type might be different.
+  if (screen_type != ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
+    return;
+
   Shutdown();
 }
 

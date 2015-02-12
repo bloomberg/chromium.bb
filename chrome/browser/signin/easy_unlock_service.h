@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -141,8 +142,8 @@ class EasyUnlockService : public KeyedService {
 
   // Whether easy unlock is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
-  // permitted either the flag is enabled or its field trial is enabled.
-  bool IsAllowed();
+  // permitted if the flag is enabled.
+  bool IsAllowed() const;
 
   // Whether Easy Unlock is currently enabled for this user.
   bool IsEnabled() const;
@@ -210,6 +211,10 @@ class EasyUnlockService : public KeyedService {
   // not be allowed if common tests fail (e.g. if Bluetooth is not available).
   virtual bool IsAllowedInternal() const = 0;
 
+  // Called while processing a user gesture to unlock the screen using Easy
+  // Unlock, just before the screen is unlocked.
+  virtual void OnWillFinalizeUnlock(bool success) = 0;
+
   // KeyedService override:
   void Shutdown() override;
 
@@ -255,6 +260,10 @@ class EasyUnlockService : public KeyedService {
   void SetHardlockStateForUser(
       const std::string& user_id,
       EasyUnlockScreenlockStateHandler::HardlockState state);
+
+  // Returns the authentication event for a recent password sign-in or unlock,
+  // according to the current state of the service.
+  EasyUnlockAuthEvent GetPasswordAuthEvent() const;
 
  private:
   // A class to detect whether a bluetooth adapter is present.

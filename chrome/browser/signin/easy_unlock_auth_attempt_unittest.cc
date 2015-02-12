@@ -163,6 +163,11 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
     return auth_type_;
   }
 
+  ScreenType GetScreenType() const override {
+    // Return an arbitrary value; this is not used by the test code.
+    return LOCK_SCREEN;
+  }
+
   void Unlock(const std::string& user_email) override {
     ASSERT_EQ(user_id_, user_email);
     ASSERT_EQ(STATE_ATTEMPTING_UNLOCK, state_);

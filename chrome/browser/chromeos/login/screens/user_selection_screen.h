@@ -70,6 +70,7 @@ class UserSelectionScreen : public ui::UserActivityObserver,
                    AuthType auth_type,
                    const base::string16& auth_value) override;
   AuthType GetAuthType(const std::string& user_email) const override;
+  ScreenType GetScreenType() const override;
 
   void Unlock(const std::string& user_email) override;
   void AttemptEasySignin(const std::string& user_email,
@@ -86,7 +87,7 @@ class UserSelectionScreen : public ui::UserActivityObserver,
       user_manager::User* user,
       bool is_owner,
       bool is_signin_to_add,
-      ScreenlockBridge::LockHandler::AuthType auth_type,
+      AuthType auth_type,
       const std::vector<std::string>* public_session_recommended_locales,
       base::DictionaryValue* user_dict);
 
@@ -111,7 +112,7 @@ class UserSelectionScreen : public ui::UserActivityObserver,
   bool show_guest_;
 
   // Purpose of the screen (see constants in OobeUI).
-  std::string display_type_;
+  const std::string display_type_;
 
   // Set of Users that are visible.
   user_manager::UserList users_;

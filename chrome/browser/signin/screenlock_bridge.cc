@@ -125,11 +125,25 @@ ScreenlockBridge::~ScreenlockBridge() {
 
 void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
   DCHECK(lock_handler_ == NULL || lock_handler == NULL);
+
+  // Don't notify observers if there is no change -- i.e. if the screen was
+  // already unlocked, and is remaining unlocked.
+  if (lock_handler == lock_handler_)
+    return;
+
+  // TODO(isherman): If |lock_handler| is null, then |lock_handler_| might have
+  // been freed. Cache the screen type rather than querying it below.
+  LockHandler::ScreenType screen_type;
+  if (lock_handler_)
+    screen_type = lock_handler_->GetScreenType();
+  else
+    screen_type = lock_handler->GetScreenType();
+
   lock_handler_ = lock_handler;
   if (lock_handler_)
-    FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidLock());
+    FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidLock(screen_type));
   else
-    FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidUnlock());
+    FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidUnlock(screen_type));
 }
 
 void ScreenlockBridge::SetFocusedUser(const std::string& user_id) {

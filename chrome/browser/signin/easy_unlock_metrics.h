@@ -10,59 +10,58 @@
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
 //   (b) new constants should only be appended at the end of the enumeration.
-enum EasyUnlockLoginEvent {
-  // User is successfully authenticated using Easy Sign-in.
-  EASY_SIGN_IN_SUCCESS = 0,
-  // Easy sign-in failed to authenticate the user.
-  EASY_SIGN_IN_FAILURE = 1,
+enum EasyUnlockAuthEvent {
+  // User is successfully authenticated using Easy Unlock.
+  EASY_UNLOCK_SUCCESS = 0,
+  // Easy Unlock failed to authenticate the user.
+  EASY_UNLOCK_FAILURE = 1,
 
-  // Password is used for sign-in because there is no pairing data.
-  PASSWORD_SIGN_IN_NO_PAIRING = 2,
-  // Password is used for sign-in because pairing data is changed.
-  PASSWORD_SIGN_IN_PAIRING_CHANGED = 3,
-  // Password is used for sign-in because of user hardlock.
-  PASSWORD_SIGN_IN_USER_HARDLOCK = 4,
-  // Password is used for sign-in because Easy unlock service is not active.
-  PASSWORD_SIGN_IN_SERVICE_NOT_ACTIVE = 5,
-  // Password is used for sign-in because Bluetooth is not on.
-  PASSWORD_SIGN_IN_NO_BLUETOOTH = 6,
-  // Password is used for sign-in because Easy unlock is connecting.
-  PASSWORD_SIGN_IN_BLUETOOTH_CONNECTING = 7,
-  // Password is used for sign-in because no eligible phones found.
-  PASSWORD_SIGN_IN_NO_PHONE = 8,
-  // Password is used for sign-in because phone could not be authenticated.
-  PASSWORD_SIGN_IN_PHONE_NOT_AUTHENTICATED = 9,
-  // Password is used for sign-in because phone is locked.
-  PASSWORD_SIGN_IN_PHONE_LOCKED = 10,
-  // Password is used for sign-in because phone does not have lock screen.
-  PASSWORD_SIGN_IN_PHONE_NOT_LOCKABLE = 11,
-  // Password is used for sign-in because phone is not close enough (roughly,
-  // at least 30 feet away).
-  PASSWORD_SIGN_IN_RSSI_TOO_LOW = 12,
-  // Password is used for sign-in because phone is not supported.
-  PASSWORD_SIGN_IN_PHONE_UNSUPPORTED = 13,
-  // Password is used for sign-in because user types in password. This is
-  // unlikely to happen though.
-  PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE = 14,
-  // Password is used for sign-in because phone is not right next to the
-  // Chromebook.
-  PASSWORD_SIGN_IN_TX_POWER_TOO_HIGH = 15,
-  // Password is used for sign-in because Easy sign-in failed.
-  PASSWORD_SIGN_IN_LOGIN_FAILED = 16,
-  // Password is used for sign-in because pairing data is changed for a "new"
-  // Chromebook (where there was no previous pairing data)..
-  PASSWORD_SIGN_IN_PAIRING_ADDED = 17,
-  // Password is used for sign-in because there is no screenlock state handler.
-  // Most likely because EasyUnlock is disabled, e.g. Bluetooth adapter not
-  // ready.
-  PASSWORD_SIGN_IN_NO_SCREENLOCK_STATE_HANDLER = 18,
-  // Password is used for sign-in because the phone is (a) locked, and (b) not
-  // right next to the Chromebook.
-  PASSWORD_SIGN_IN_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH = 19,
+  // Password is used because there is no pairing data.
+  PASSWORD_ENTRY_NO_PAIRING = 2,
+  // Password is used because pairing data is changed.
+  PASSWORD_ENTRY_PAIRING_CHANGED = 3,
+  // Password is used because of user hardlock.
+  PASSWORD_ENTRY_USER_HARDLOCK = 4,
+  // Password is used because Easy unlock service is not active.
+  PASSWORD_ENTRY_SERVICE_NOT_ACTIVE = 5,
+  // Password is used because Bluetooth is not on.
+  PASSWORD_ENTRY_NO_BLUETOOTH = 6,
+  // Password is used because Easy unlock is connecting.
+  PASSWORD_ENTRY_BLUETOOTH_CONNECTING = 7,
+  // Password is used because no eligible phones found.
+  PASSWORD_ENTRY_NO_PHONE = 8,
+  // Password is used because phone could not be authenticated.
+  PASSWORD_ENTRY_PHONE_NOT_AUTHENTICATED = 9,
+  // Password is used because phone is locked.
+  PASSWORD_ENTRY_PHONE_LOCKED = 10,
+  // Password is used because phone does not have lock screen.
+  PASSWORD_ENTRY_PHONE_NOT_LOCKABLE = 11,
+  // Password is used because phone is not close enough (roughly, at least 30
+  // feet away).
+  PASSWORD_ENTRY_RSSI_TOO_LOW = 12,
+  // Password is used because phone is not supported.
+  PASSWORD_ENTRY_PHONE_UNSUPPORTED = 13,
+  // Password is used because user types in password. This is unlikely to happen
+  // though.
+  PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE = 14,
+  // Password is used because phone is not right next to the Chromebook.
+  PASSWORD_ENTRY_TX_POWER_TOO_HIGH = 15,
+  // Password is used because Easy sign-in failed.
+  PASSWORD_ENTRY_LOGIN_FAILED = 16,
+  // Password is used because pairing data is changed for a "new" Chromebook
+  // (where there was no previous pairing data).
+  PASSWORD_ENTRY_PAIRING_ADDED = 17,
+  // Password is used because there is no screenlock state handler. Most likely
+  // because EasyUnlock is disabled, e.g. Bluetooth adapter not ready.
+  PASSWORD_ENTRY_NO_SCREENLOCK_STATE_HANDLER = 18,
+  // Password is used because the phone is (a) locked, and (b) not right next to
+  // the Chromebook.
+  PASSWORD_ENTRY_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH = 19,
 
-  EASY_SIGN_IN_LOGIN_EVENT_COUNT  // Must be the last entry.
+  EASY_UNLOCK_AUTH_EVENT_COUNT  // Must be the last entry.
 };
 
-void RecordEasyUnlockLoginEvent(EasyUnlockLoginEvent event);
+void RecordEasyUnlockSigninEvent(EasyUnlockAuthEvent event);
+void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event);
 
 #endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_

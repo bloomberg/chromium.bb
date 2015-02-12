@@ -51,6 +51,7 @@ const char kKeyDevices[] = "devices";
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(Profile* profile)
     : EasyUnlockService(profile),
       turn_off_flow_status_(EasyUnlockService::IDLE),
+      will_unlock_using_easy_unlock_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -269,6 +270,7 @@ void EasyUnlockServiceRegular::SetAutoPairingResult(
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {
+  ScreenlockBridge::Get()->AddObserver(this);
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
       prefs::kEasyUnlockAllowed,
@@ -287,6 +289,7 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
 
   turn_off_flow_status_ = EasyUnlockService::IDLE;
   registrar_.RemoveAll();
+  ScreenlockBridge::Get()->RemoveObserver(this);
 }
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {
@@ -317,6 +320,39 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   // TODO(xiyuan): Revisit when non-chromeos platforms are supported.
   return false;
 #endif
+}
+
+void EasyUnlockServiceRegular::OnWillFinalizeUnlock(bool success) {
+  will_unlock_using_easy_unlock_ = success;
+}
+
+void EasyUnlockServiceRegular::OnScreenDidLock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+  will_unlock_using_easy_unlock_ = false;
+}
+
+void EasyUnlockServiceRegular::OnScreenDidUnlock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+  // Notifications of signin screen unlock events can also reach this code path;
+  // disregard them.
+  if (screen_type != ScreenlockBridge::LockHandler::LOCK_SCREEN)
+    return;
+
+  // Only record metrics for users who have enabled the feature.
+  if (IsEnabled()) {
+    EasyUnlockAuthEvent event =
+        will_unlock_using_easy_unlock_
+            ? EASY_UNLOCK_SUCCESS
+            : GetPasswordAuthEvent();
+    RecordEasyUnlockScreenUnlockEvent(event);
+  }
+
+  will_unlock_using_easy_unlock_ = false;
+}
+
+void EasyUnlockServiceRegular::OnFocusedUserChanged(
+    const std::string& user_id) {
+  // Nothing to do.
 }
 
 void EasyUnlockServiceRegular::OnPrefsChanged() {

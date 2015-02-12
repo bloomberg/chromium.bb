@@ -109,12 +109,14 @@ ScreenlockPrivateEventRouter::ScreenlockPrivateEventRouter(
 
 ScreenlockPrivateEventRouter::~ScreenlockPrivateEventRouter() {}
 
-void ScreenlockPrivateEventRouter::OnScreenDidLock() {
+void ScreenlockPrivateEventRouter::OnScreenDidLock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
   DispatchEvent(screenlock::OnChanged::kEventName,
       new base::FundamentalValue(true));
 }
 
-void ScreenlockPrivateEventRouter::OnScreenDidUnlock() {
+void ScreenlockPrivateEventRouter::OnScreenDidUnlock(
+    ScreenlockBridge::LockHandler::ScreenType screen_type) {
   DispatchEvent(screenlock::OnChanged::kEventName,
       new base::FundamentalValue(false));
 }

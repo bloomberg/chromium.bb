@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
@@ -36,13 +37,14 @@ class Profile;
 
 // EasyUnlockService instance that should be used for regular, non-signin
 // profiles.
-class EasyUnlockServiceRegular : public EasyUnlockService {
+class EasyUnlockServiceRegular : public EasyUnlockService,
+                                 public ScreenlockBridge::Observer {
  public:
   explicit EasyUnlockServiceRegular(Profile* profile);
   ~EasyUnlockServiceRegular() override;
 
  private:
-  // EasyUnlockService implementation.
+  // EasyUnlockService implementation:
   EasyUnlockService::Type GetType() const override;
   std::string GetUserEmail() const override;
   void LaunchSetup() override;
@@ -64,6 +66,14 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
+  void OnWillFinalizeUnlock(bool success) override;
+
+  // ScreenlockBridge::Observer implementation:
+  void OnScreenDidLock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnScreenDidUnlock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnFocusedUserChanged(const std::string& user_id) override;
 
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
@@ -100,6 +110,11 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   scoped_ptr<proximity_auth::CryptAuthClient> cryptauth_client_;
 
   AutoPairingResultCallback auto_pairing_callback_;
+
+  // True if the user just unlocked the screen using Easy Unlock. Reset once
+  // the screen unlocks. Used to distinguish Easy Unlock-powered unlocks from
+  // password-based unlocks for metrics.
+  bool will_unlock_using_easy_unlock_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 
