@@ -4,7 +4,11 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
@@ -30,6 +34,9 @@ public final class PrefServiceBridge {
     public static final int SUPERVISED_USER_FILTERING_ALLOW = 0;
     public static final int SUPERVISED_USER_FILTERING_WARN = 1;
     public static final int SUPERVISED_USER_FILTERING_BLOCK = 2;
+
+    private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
+    private static final int MIGRATION_CURRENT_VERSION = 1;
 
     private static String sProfilePath;
 
@@ -140,6 +147,25 @@ public final class PrefServiceBridge {
      */
     public static boolean isInitialized() {
         return sInstance != null;
+    }
+
+    /**
+     * Migrates (synchronously) the preferences to the most recent version.
+     */
+    public void migratePreferences(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int currentVersion = preferences.getInt(MIGRATION_PREF_KEY, 0);
+        if (currentVersion == MIGRATION_CURRENT_VERSION) return;
+        if (currentVersion > MIGRATION_CURRENT_VERSION) {
+            Log.e(LOG_TAG, "Saved preferences version is newer than supported.  Attempting to "
+                    + "run an older version of Chrome without clearing data is unsupported and "
+                    + "the results may be unpredictable.");
+        }
+
+        if (currentVersion <= 0) {
+            nativeMigrateJavascriptPreference();
+        }
+        preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).commit();
     }
 
     /**
@@ -746,6 +772,7 @@ public final class PrefServiceBridge {
     private native void nativeResetTranslateDefaults();
     private native boolean nativeGetJavaScriptEnabled();
     private native void nativeSetJavaScriptEnabled(boolean enabled);
+    private native void nativeMigrateJavascriptPreference();
     private native void nativeClearBrowsingData(boolean history, boolean cache,
             boolean cookiesAndSiteData, boolean passwords, boolean formData);
     private native void nativeSetAllowCookiesEnabled(boolean allow);
