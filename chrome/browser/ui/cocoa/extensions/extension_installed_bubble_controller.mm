@@ -44,6 +44,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
@@ -236,62 +237,53 @@ class ExtensionLoadedNotificationObserver
       static_cast<BrowserWindowCocoa*>(browser_->window());
   NSPoint arrowPoint = NSZeroPoint;
 
-  switch(type_) {
-    case extension_installed_bubble::kApp: {
-      TabStripView* view = [window->cocoa_controller() tabStripView];
-      NewTabButton* button = [view getNewTabButton];
-      NSRect bounds = [button bounds];
-      NSPoint anchor = NSMakePoint(
-          NSMidX(bounds),
-          NSMaxY(bounds) - extension_installed_bubble::kAppsBubbleArrowOffset);
-      arrowPoint = [button convertPoint:anchor toView:nil];
-      break;
-    }
-    case extension_installed_bubble::kOmniboxKeyword: {
-      LocationBarViewMac* locationBarView =
-          [window->cocoa_controller() locationBarBridge];
-      arrowPoint = locationBarView->GetPageInfoBubblePoint();
-      break;
-    }
-    case extension_installed_bubble::kBrowserAction: {
-      BrowserActionsController* controller =
-          [[window->cocoa_controller() toolbarController]
-              browserActionsController];
-      arrowPoint = [controller popupPointForId:extension_->id()];
-      break;
-    }
-    case extension_installed_bubble::kPageAction: {
-      LocationBarViewMac* locationBarView =
-          [window->cocoa_controller() locationBarBridge];
+  if (type_ == extension_installed_bubble::kApp) {
+    TabStripView* view = [window->cocoa_controller() tabStripView];
+    NewTabButton* button = [view getNewTabButton];
+    NSRect bounds = [button bounds];
+    NSPoint anchor = NSMakePoint(
+        NSMidX(bounds),
+        NSMaxY(bounds) - extension_installed_bubble::kAppsBubbleArrowOffset);
+    arrowPoint = [button convertPoint:anchor toView:nil];
+  } else if (type_ == extension_installed_bubble::kBrowserAction ||
+             extensions::FeatureSwitch::extension_action_redesign()->
+                 IsEnabled()) {
+    // If the toolbar redesign is enabled, all bubbles for extensions point to
+    // their toolbar action.
+    BrowserActionsController* controller =
+        [[window->cocoa_controller() toolbarController]
+            browserActionsController];
+    arrowPoint = [controller popupPointForId:extension_->id()];
+  } else if (type_ == extension_installed_bubble::kPageAction) {
+    LocationBarViewMac* locationBarView =
+        [window->cocoa_controller() locationBarBridge];
 
-      ExtensionAction* page_action =
-          extensions::ExtensionActionManager::Get(browser_->profile())->
-          GetPageAction(*extension_);
+    ExtensionAction* page_action =
+        extensions::ExtensionActionManager::Get(browser_->profile())->
+        GetPageAction(*extension_);
 
-      // Tell the location bar to show a preview of the page action icon, which
-      // would ordinarily only be displayed on a page of the appropriate type.
-      // We remove this preview when the extension installed bubble closes.
-      locationBarView->SetPreviewEnabledPageAction(page_action, true);
-      pageActionPreviewShowing_ = YES;
+    // Tell the location bar to show a preview of the page action icon,
+    // which would ordinarily only be displayed on a page of the appropriate
+    // type. We remove this preview when the extension installed bubble
+    // closes.
+    locationBarView->SetPreviewEnabledPageAction(page_action, true);
+    pageActionPreviewShowing_ = YES;
 
-      // Find the center of the bottom of the page action icon.
-      arrowPoint =
-          locationBarView->GetPageActionBubblePoint(page_action);
-      break;
-    }
-    case extension_installed_bubble::kBundle:
-    case extension_installed_bubble::kGeneric: {
-      // Point at the bottom of the wrench menu.
-      NSView* wrenchButton =
-          [[window->cocoa_controller() toolbarController] wrenchButton];
-      const NSRect bounds = [wrenchButton bounds];
-      NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
-      arrowPoint = [wrenchButton convertPoint:anchor toView:nil];
-      break;
-    }
-    default: {
-      NOTREACHED();
-    }
+    // Find the center of the bottom of the page action icon.
+    arrowPoint = locationBarView->GetPageActionBubblePoint(page_action);
+  } else if (type_ == extension_installed_bubble::kOmniboxKeyword) {
+    LocationBarViewMac* locationBarView =
+        [window->cocoa_controller() locationBarBridge];
+    arrowPoint = locationBarView->GetPageInfoBubblePoint();
+  } else {
+    DCHECK(type_ == extension_installed_bubble::kBundle ||
+           type_ == extension_installed_bubble::kGeneric);
+    // Point at the bottom of the wrench menu.
+    NSView* wrenchButton =
+        [[window->cocoa_controller() toolbarController] wrenchButton];
+    const NSRect bounds = [wrenchButton bounds];
+    NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
+    arrowPoint = [wrenchButton convertPoint:anchor toView:nil];
   }
   return arrowPoint;
 }
