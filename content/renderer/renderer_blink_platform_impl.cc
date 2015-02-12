@@ -171,9 +171,9 @@ class RendererBlinkPlatformImpl::MimeRegistry
       const blink::WebString& key_system);
   virtual bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
                                            const blink::WebString& codecs);
-  virtual bool supportsEncryptedMediaMIMEType(const WebString& key_system,
-                                              const WebString& mime_type,
-                                              const WebString& codecs) override;
+  bool supportsEncryptedMediaMIMEType(const WebString& key_system,
+                                      const WebString& mime_type,
+                                      const WebString& codecs) override;
   virtual blink::WebString mimeTypeForExtension(
       const blink::WebString& file_extension);
   virtual blink::WebString mimeTypeFromFile(
