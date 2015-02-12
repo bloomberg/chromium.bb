@@ -176,9 +176,9 @@ class InstallUtil {
   static int GetInstallReturnCode(installer::InstallStatus install_status);
 
   // Composes |program| and |arguments| into |command_line|.
-  static void MakeUninstallCommand(const base::string16& program,
-                                   const base::string16& arguments,
-                                   base::CommandLine* command_line);
+  static void ComposeCommandLine(const base::string16& program,
+                                 const base::string16& arguments,
+                                 base::CommandLine* command_line);
 
   // Returns a string in the form YYYYMMDD of the current date.
   static base::string16 GetCurrentDate();

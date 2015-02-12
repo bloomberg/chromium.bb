@@ -564,9 +564,9 @@ int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
 }
 
 // static
-void InstallUtil::MakeUninstallCommand(const base::string16& program,
-                                       const base::string16& arguments,
-                                       base::CommandLine* command_line) {
+void InstallUtil::ComposeCommandLine(const base::string16& program,
+                                     const base::string16& arguments,
+                                     base::CommandLine* command_line) {
   *command_line =
       base::CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }

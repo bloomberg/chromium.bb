@@ -96,8 +96,8 @@ bool ProductState::Initialize(bool system_install,
     key.ReadValue(kUninstallStringField, &setup_path);
     // "UninstallArguments" will be absent for the multi-installer package.
     key.ReadValue(kUninstallArgumentsField, &uninstall_arguments);
-    InstallUtil::MakeUninstallCommand(setup_path, uninstall_arguments,
-                                      &uninstall_command_);
+    InstallUtil::ComposeCommandLine(setup_path, uninstall_arguments,
+                                    &uninstall_command_);
 
     // "usagestats" may be absent, 0 (false), or 1 (true).  On the chance that
     // different values are permitted in the future, we'll simply hold whatever

@@ -34,7 +34,7 @@ class InstallUtilTest : public TestWithTempDirAndDeleteTempOverrideKeys {
  protected:
 };
 
-TEST_F(InstallUtilTest, MakeUninstallCommand) {
+TEST_F(InstallUtilTest, ComposeCommandLine) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 
   std::pair<std::wstring, std::wstring> params[] = {
@@ -46,7 +46,7 @@ TEST_F(InstallUtilTest, MakeUninstallCommand) {
   };
   for (int i = 0; i < arraysize(params); ++i) {
     std::pair<std::wstring, std::wstring>& param = params[i];
-    InstallUtil::MakeUninstallCommand(param.first, param.second, &command_line);
+    InstallUtil::ComposeCommandLine(param.first, param.second, &command_line);
     EXPECT_EQ(param.first, command_line.GetProgram().value());
     if (param.second.empty()) {
       EXPECT_TRUE(command_line.GetSwitches().empty());
