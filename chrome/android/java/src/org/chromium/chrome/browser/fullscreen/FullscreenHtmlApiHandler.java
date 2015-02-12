@@ -20,6 +20,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.widget.TextBubble;
 import org.chromium.content.browser.ContentViewCore;
 
@@ -56,7 +57,11 @@ public class FullscreenHtmlApiHandler {
 
     private final boolean mPersistentFullscreenSupported;
 
+    // We still need this since we are setting fullscreen UI state on the contentviewcore's
+    // container view, and a tab can have null content view core, i.e., if you navigate
+    // to a native page.
     private ContentViewCore mContentViewCoreInFullscreen;
+    private Tab mTabInFullscreen;
     private boolean mIsPersistentMode;
 
     private TextBubble mNotificationBubble;
@@ -65,45 +70,63 @@ public class FullscreenHtmlApiHandler {
     /**
      * Delegate that allows embedders to react to fullscreen API requests.
      */
-    public interface FullscreenHtmlApiDelegate {
+    // TODO(changwan): change this to interface
+    public static class FullscreenHtmlApiDelegate {
         /**
          * @return The Y offset to be applied to the fullscreen notification.
          */
-        int getNotificationOffsetY();
+        public int getNotificationOffsetY() {
+            return 0;
+        }
 
         /**
          * @return The view that the fullscreen notification will be pinned to.
          */
-        View getNotificationAnchorView();
+        public View getNotificationAnchorView() {
+            return null;
+        }
 
         /**
          * Notifies the delegate that entering fullscreen has been requested and allows them
          * to hide their controls.
          * <p>
          * Once the delegate has hidden the their controls, it must call
-         * {@link FullscreenHtmlApiHandler#enterFullscreen(ContentViewCore)}.
+         * {@link FullscreenHtmlApiHandler#enterFullscreen(Tab)}.
          */
-        void onEnterFullscreen();
+        public void onEnterFullscreen() {}
 
         /**
          * Cancels a pending enter fullscreen request if present.
          * @return Whether the request was cancelled.
          */
-        boolean cancelPendingEnterFullscreen();
+        public boolean cancelPendingEnterFullscreen() {
+            return true;
+        }
 
         /**
          * Notifies the delegate that the window UI has fully exited fullscreen and gives
          * the embedder a chance to update their controls.
          *
-         * @param contentViewCore The ContentViewCore whose fullscreen is being exited.
+         * @param contentViewCore The CVC for the tab whose fullscreen is being exited.
          */
-        void onFullscreenExited(ContentViewCore contentViewCore);
+        // TODO(changwan): remove
+        public void onFullscreenExited(ContentViewCore contentViewCore) {}
+
+        /**
+         * Notifies the delegate that the window UI has fully exited fullscreen and gives
+         * the embedder a chance to update their controls.
+         *
+         * @param tab The tab whose fullscreen is being exited.
+         */
+        public void onFullscreenExited(Tab tab) {}
 
         /**
          * @return Whether the notification bubble should be shown. For fullscreen video in
          *         overlay mode, the notification bubble should be disabled.
          */
-        boolean shouldShowNotificationBubble();
+        public boolean shouldShowNotificationBubble() {
+            return true;
+        }
     }
 
     // This static inner class holds a WeakReference to the outer object, to avoid triggering the
@@ -217,14 +240,15 @@ public class FullscreenHtmlApiHandler {
         if (mIsPersistentMode) {
             mDelegate.onEnterFullscreen();
         } else {
-            if (mContentViewCoreInFullscreen != null) {
-                exitFullscreen(mContentViewCoreInFullscreen);
+            if (mContentViewCoreInFullscreen != null && mTabInFullscreen != null) {
+                exitFullscreen(mContentViewCoreInFullscreen, mTabInFullscreen);
             } else {
                 if (!mDelegate.cancelPendingEnterFullscreen()) {
                     assert false : "No content view previously set to fullscreen.";
                 }
             }
             mContentViewCoreInFullscreen = null;
+            mTabInFullscreen = null;
         }
     }
 
@@ -236,7 +260,7 @@ public class FullscreenHtmlApiHandler {
         return mIsPersistentMode;
     }
 
-    private void exitFullscreen(final ContentViewCore contentViewCore) {
+    private void exitFullscreen(final ContentViewCore contentViewCore, final Tab tab) {
         final View contentView = contentViewCore.getContainerView();
         hideNotificationBubble();
         mHandler.removeMessages(MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS);
@@ -260,7 +284,7 @@ public class FullscreenHtmlApiHandler {
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 if ((bottom - top) < (oldBottom - oldTop)) {
-                    mDelegate.onFullscreenExited(contentViewCore);
+                    mDelegate.onFullscreenExited(tab);
                     contentView.removeOnLayoutChangeListener(this);
                 }
             }
@@ -271,9 +295,21 @@ public class FullscreenHtmlApiHandler {
 
     /**
      * Handles hiding the system UI components to allow the content to take up the full screen.
-     * @param contentViewCore The contentViewCore that is entering fullscreen.
+     * @param tab The tab that is entering fullscreen.
      */
+    public void enterFullscreen(final Tab tab) {
+        ContentViewCore contentViewCore = tab.getContentViewCore();
+        enterFullscreen(contentViewCore);
+        mTabInFullscreen = tab;
+    }
+
+    /**
+     * Handles hiding the system UI components to allow the content to take up the full screen.
+     * @param tab The CVC for the tab that is entering fullscreen.
+     */
+    // TODO(changwan): remove
     public void enterFullscreen(final ContentViewCore contentViewCore) {
+        if (contentViewCore == null) return;
         final View contentView = contentViewCore.getContainerView();
         int systemUiVisibility = contentView.getSystemUiVisibility();
         systemUiVisibility |= SYSTEM_UI_FLAG_LOW_PROFILE;
@@ -381,7 +417,7 @@ public class FullscreenHtmlApiHandler {
     public void onContentViewSystemUiVisibilityChange(int visibility) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return;
 
-        if (mContentViewCoreInFullscreen == null || !mIsPersistentMode) return;
+        if (mTabInFullscreen == null || !mIsPersistentMode) return;
         mHandler.sendEmptyMessageDelayed(
                 MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS, ANDROID_CONTROLS_SHOW_DURATION_MS);
     }
@@ -396,7 +432,7 @@ public class FullscreenHtmlApiHandler {
 
         mHandler.removeMessages(MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS);
         mHandler.removeMessages(MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG);
-        if (mContentViewCoreInFullscreen == null || !mIsPersistentMode || !hasWindowFocus) return;
+        if (mTabInFullscreen == null || !mIsPersistentMode || !hasWindowFocus) return;
         mHandler.sendEmptyMessageDelayed(
                 MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS, ANDROID_CONTROLS_SHOW_DURATION_MS);
     }

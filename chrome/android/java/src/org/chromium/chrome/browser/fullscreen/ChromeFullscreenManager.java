@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.Fullscree
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.common.TopControlsState;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -90,6 +91,7 @@ public class ChromeFullscreenManager
 
     private boolean mTopControlsPermanentlyHidden;
     private boolean mTopControlsAndroidViewHidden;
+    private final boolean mSupportsBrowserOverride;
 
     private final ArrayList<FullscreenListener> mListeners = new ArrayList<FullscreenListener>();
 
@@ -185,11 +187,32 @@ public class ChromeFullscreenManager
      * @param activity The activity that supports fullscreen.
      * @param controlContainer Container holding the controls (Toolbar).
      * @param enabled Whether fullscreen is globally enabled.
+     * @param persistentFullscreenSupported Whether persistent fullscreen mode is supported.
      * @param modelSelector The model selector providing access to the current tab.
+     * @param resControlContainerHeight The dimension resource ID for the control container height.
      */
+    // TODO(changwan): remove
     public ChromeFullscreenManager(Activity activity, View controlContainer, boolean enabled,
             boolean persistentFullscreenSupported, TabModelSelector modelSelector,
             int resControlContainerHeight) {
+        this(activity, controlContainer, enabled, persistentFullscreenSupported,
+                modelSelector, resControlContainerHeight, true);
+    }
+
+    /**
+     * Creates an instance of the fullscreen mode manager.
+     * @param activity The activity that supports fullscreen.
+     * @param controlContainer Container holding the controls (Toolbar).
+     * @param enabled Whether fullscreen is globally enabled.
+     * @param persistentFullscreenSupported Whether persistent fullscreen mode is supported.
+     * @param modelSelector The model selector providing access to the current tab.
+     * @param resControlContainerHeight The dimension resource ID for the control container height.
+     * @param supportsBrowserOverride Whether we want to disable the token system used by the
+                                      browser.
+     */
+    public ChromeFullscreenManager(Activity activity, View controlContainer, boolean enabled,
+            boolean persistentFullscreenSupported, TabModelSelector modelSelector,
+            int resControlContainerHeight, boolean supportsBrowserOverride) {
         super(activity.getWindow(), modelSelector, enabled, persistentFullscreenSupported);
 
         mActivity = activity;
@@ -204,6 +227,7 @@ public class ChromeFullscreenManager
         mControlContainerHeight = resources.getDimensionPixelSize(resControlContainerHeight);
         mRendererContentOffset = mControlContainerHeight;
         mEnabled = enabled;
+        mSupportsBrowserOverride = supportsBrowserOverride;
         updateControlOffset();
     }
 
@@ -267,7 +291,15 @@ public class ChromeFullscreenManager
 
             @Override
             public void onEnterFullscreen() {
-                mIsEnteringPersistentModeState = true;
+                Tab tab = getActiveTab();
+                if (getControlOffset() == -mControlContainerHeight) {
+                    // The top controls are currently hidden.
+                    getHtmlApiHandler().enterFullscreen(tab);
+                } else {
+                    // We should hide top controls first.
+                    mIsEnteringPersistentModeState = true;
+                    tab.updateFullscreenEnabledState();
+                }
             }
 
             @Override
@@ -278,9 +310,10 @@ public class ChromeFullscreenManager
             }
 
             @Override
-            public void onFullscreenExited(ContentViewCore contentViewCore) {
-                contentViewCore.getWebContents().updateTopControlsState(false, true, true);
-                contentViewCore.getWebContents().updateTopControlsState(true, true, false);
+            public void onFullscreenExited(Tab tab) {
+                // At this point, top controls are hidden. Show top controls only if it's
+                // permitted.
+                tab.updateTopControlsState(TopControlsState.SHOWN, true);
             }
 
             @Override
@@ -320,11 +353,13 @@ public class ChromeFullscreenManager
 
     @Override
     public void showControlsTransient() {
+        if (!mSupportsBrowserOverride) return;
         if (mPersistentControlTokens.isEmpty()) update(true);
     }
 
     @Override
     public int showControlsPersistent() {
+        if (!mSupportsBrowserOverride) return INVALID_TOKEN;
         int token = mPersistentControlsCurrentToken++;
         mPersistentControlTokens.add(token);
         if (mPersistentControlTokens.size() == 1) update(true);
@@ -333,12 +368,14 @@ public class ChromeFullscreenManager
 
     @Override
     public int showControlsPersistentAndClearOldToken(int oldToken) {
+        if (!mSupportsBrowserOverride) return INVALID_TOKEN;
         if (oldToken != INVALID_TOKEN) mPersistentControlTokens.remove(oldToken);
         return showControlsPersistent();
     }
 
     @Override
     public void hideControlsPersistent(int token) {
+        if (!mSupportsBrowserOverride) return;
         if (mPersistentControlTokens.remove(token) && mPersistentControlTokens.isEmpty()) {
             update(false);
         }
@@ -526,10 +563,9 @@ public class ChromeFullscreenManager
             }
         }
 
-        final ContentViewCore contentViewCore = getActiveContentViewCore();
-        if (contentViewCore != null && offset == -mControlContainerHeight
-                && mIsEnteringPersistentModeState) {
-            getHtmlApiHandler().enterFullscreen(contentViewCore);
+        final Tab tab = getActiveTab();
+        if (tab != null && offset == -mControlContainerHeight && mIsEnteringPersistentModeState) {
+            getHtmlApiHandler().enterFullscreen(tab);
             mIsEnteringPersistentModeState = false;
         }
 
@@ -612,14 +648,24 @@ public class ChromeFullscreenManager
         }
     }
 
-    private ContentViewCore getActiveContentViewCore() {
+    private Tab getActiveTab() {
         Tab tab = getTabModelSelector().getCurrentTab();
+        return tab;
+    }
+
+    private ContentViewCore getActiveContentViewCore() {
+        Tab tab = getActiveTab();
         return tab != null ? tab.getContentViewCore() : null;
     }
 
     @Override
     public void setPositionsForTabToNonFullscreen() {
-        setPositionsForTab(0, mControlContainerHeight);
+        Tab tab = getActiveTab();
+        if (tab == null || tab.isShowingTopControlsEnabled()) {
+            setPositionsForTab(0, mControlContainerHeight);
+        } else {
+            setPositionsForTab(-mControlContainerHeight, 0);
+        }
     }
 
     @Override

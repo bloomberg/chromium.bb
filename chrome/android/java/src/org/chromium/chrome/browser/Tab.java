@@ -2264,6 +2264,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return Whether showing top controls is enabled or not.
+     */
+    public boolean isShowingTopControlsEnabled() {
+        if (mFullscreenManager == null) return true;
+        return !mFullscreenManager.getPersistentFullscreenMode();
+    }
+
+    /**
      * @return The current visibility constraints for the display of top controls.
      *         {@link TopControlsState} defines the valid return options.
      */
@@ -2271,7 +2279,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mFullscreenManager == null) return TopControlsState.SHOWN;
 
         boolean enableHidingTopControls = isHidingTopControlsEnabled();
-        boolean enableShowingTopControls = !mFullscreenManager.getPersistentFullscreenMode();
+        boolean enableShowingTopControls = isShowingTopControlsEnabled();
 
         int constraints = TopControlsState.BOTH;
         if (!enableShowingTopControls) {
