@@ -71,7 +71,7 @@ if (!is_win) {
 #
 # Base compiler configuration.
 #
-# See also "runtime_library" below for related stuff and a discussion about
+# See also "runtime_library" below for related stuff and a discusison about
 # where stuff should go. Put warning related stuff in the "warnings" config.
 
 config("compiler") {
@@ -385,13 +385,6 @@ config("compiler") {
       #"-Wl,--threads",
       #"-Wl,--thread-count=4",
     ]
-
-    # TODO(thestig): Make this flag work with GN.
-    #if (!is_chromeos && !(is_asan || is_lsan || is_tsan || is_msan)) {
-    #  ldflags += [
-    #    "-Wl,--detect-odr-violations",
-    #  ]
-    #}
   }
 
   if (linux_use_bundled_binutils) {

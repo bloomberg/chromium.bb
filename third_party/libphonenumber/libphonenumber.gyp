@@ -140,12 +140,6 @@
           '/wo4309',
         ],
       }],
-      # libphonenumber needs to fix their ODR violations. http://crbug.com/456021
-      ['OS=="linux"', {
-        'ldflags!': [
-          '-Wl,--detect-odr-violations',
-        ],
-      }],
     ],
   }]
 }

@@ -45,9 +45,8 @@ static_library("libphonenumber_without_metadata") {
     "src/phonenumbers/utf/unilib.cc",
   ]
 
-  # libphonenumber's base/logging.h is a minimal implementation where DCHECKs
-  # do not consume their arguments. This leads to unused variable warnings in
-  # release builds.
+  # TODO(scottmg): Temporary until https://codereview.appspot.com/134650043/
+  # lands and rolls. http://crbug.com/335824
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
