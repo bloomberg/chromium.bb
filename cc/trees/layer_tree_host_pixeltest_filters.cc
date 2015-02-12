@@ -395,6 +395,62 @@ TEST_F(ImageScaledRenderSurface, ImageRenderSurfaceScaled_Software) {
       base::FilePath(FILE_PATH_LITERAL("scaled_render_surface_layer_sw.png")));
 }
 
+class EnlargedTextureWithAlphaThresholdFilter
+    : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    // Rectangles choosen so that if flipped, the test will fail.
+    gfx::Rect rect1(10, 10, 10, 15);
+    gfx::Rect rect2(20, 25, 70, 65);
+
+    scoped_refptr<SolidColorLayer> child1 =
+        CreateSolidColorLayer(rect1, SK_ColorRED);
+    scoped_refptr<SolidColorLayer> child2 =
+        CreateSolidColorLayer(rect2, SK_ColorGREEN);
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
+    scoped_refptr<SolidColorLayer> filter_layer =
+        CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+
+    // Make sure a transformation does not cause misregistration of the filter
+    // and source texture.
+    gfx::Transform filter_transform;
+    filter_transform.Scale(2.f, 2.f);
+    filter_layer->SetTransform(filter_transform);
+    filter_layer->AddChild(child1);
+    filter_layer->AddChild(child2);
+
+    rect1.Inset(-5, -5);
+    rect2.Inset(-5, -5);
+    SkRegion alpha_region;
+    SkIRect rects[2] = {gfx::RectToSkIRect(rect1), gfx::RectToSkIRect(rect2)};
+    alpha_region.setRects(rects, 2);
+    FilterOperations filters;
+    filters.Append(
+        FilterOperation::CreateAlphaThresholdFilter(alpha_region, 0.f, 0.f));
+    filter_layer->SetFilters(filters);
+
+    background->AddChild(filter_layer);
+
+    // Force the allocation a larger textures.
+    set_enlarge_texture_amount(gfx::Vector2d(50, 50));
+
+    RunPixelTest(test_type, background, image_name);
+  }
+};
+
+TEST_F(EnlargedTextureWithAlphaThresholdFilter, GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_threshold.png")));
+}
+
+TEST_F(EnlargedTextureWithAlphaThresholdFilter, Software) {
+  RunPixelTestType(
+      PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_threshold.png")));
+}
+
 }  // namespace
 }  // namespace cc
 
