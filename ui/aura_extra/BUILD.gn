@@ -15,6 +15,7 @@ component("aura_extra") {
 
   deps = [
     "//base",
+    "//skia",
     "//ui/aura",
     "//ui/base",
     "//ui/events",
