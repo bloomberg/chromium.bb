@@ -304,12 +304,8 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
             addHTMLLengthToStyle(style, CSSPropertyBorderSpacing, value);
     } else if (name == vspaceAttr) {
         UseCounter::countDeprecation(document(), UseCounter::HTMLTableElementVspace);
-        addHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-        addHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
     } else if (name == hspaceAttr) {
         UseCounter::countDeprecation(document(), UseCounter::HTMLTableElementHspace);
-        addHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-        addHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
     } else if (name == alignAttr) {
         if (!value.isEmpty()) {
             if (equalIgnoringCase(value, "center")) {

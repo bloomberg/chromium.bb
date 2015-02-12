@@ -367,6 +367,8 @@ crbug.com/443382 imported/web-platform-tests/subresource-integrity/subresource-i
 
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
 
+crbug.com/277080 tables/mozilla/bugs/bug1261.html [ NeedsRebaseline ]
+
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 
