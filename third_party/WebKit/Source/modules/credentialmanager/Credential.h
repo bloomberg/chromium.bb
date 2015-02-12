@@ -25,7 +25,7 @@ public:
     const String& name() const { return m_platformCredential->name(); }
     const KURL& avatarURL() const { return m_platformCredential->avatarURL(); }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     PlatformCredential* platformCredential() const { return m_platformCredential; }
 

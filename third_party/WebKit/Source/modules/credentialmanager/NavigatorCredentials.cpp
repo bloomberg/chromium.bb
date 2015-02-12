@@ -47,7 +47,7 @@ CredentialsContainer* NavigatorCredentials::credentials()
     return m_credentialsContainer.get();
 }
 
-void NavigatorCredentials::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorCredentials)
 {
     visitor->trace(m_credentialsContainer);
     WillBeHeapSupplement<Navigator>::trace(visitor);

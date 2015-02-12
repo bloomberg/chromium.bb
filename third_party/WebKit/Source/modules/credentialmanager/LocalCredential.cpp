@@ -44,7 +44,7 @@ const String& LocalCredential::password() const
     return static_cast<PlatformLocalCredential*>(m_platformCredential.get())->password();
 }
 
-void LocalCredential::trace(Visitor* visitor)
+DEFINE_TRACE(LocalCredential)
 {
     visitor->trace(m_formData);
     Credential::trace(visitor);

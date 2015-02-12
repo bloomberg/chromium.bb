@@ -43,7 +43,7 @@ KURL Credential::parseStringAsURL(const String& url, ExceptionState& exceptionSt
     return parsedURL;
 }
 
-void Credential::trace(Visitor* visitor)
+DEFINE_TRACE(Credential)
 {
     visitor->trace(m_platformCredential);
 }

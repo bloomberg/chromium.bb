@@ -26,7 +26,7 @@ public:
     ScriptPromise notifyFailedSignIn(ScriptState*, Credential* = 0);
     ScriptPromise notifySignedOut(ScriptState*);
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 private:
     CredentialsContainer();

@@ -21,7 +21,7 @@ CredentialManagerClient::~CredentialManagerClient()
 {
 }
 
-void CredentialManagerClient::trace(Visitor* visitor)
+DEFINE_TRACE(CredentialManagerClient)
 {
     WillBeHeapSupplement<Page>::trace(visitor);
 }

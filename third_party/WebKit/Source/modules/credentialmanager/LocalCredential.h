@@ -36,7 +36,7 @@ public:
     const String& password() const;
     DOMFormData* formData() const { return m_formData.get(); };
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     LocalCredential(WebLocalCredential*);

@@ -25,7 +25,7 @@ public:
     // NavigatorCredentials.idl
     static CredentialsContainer* credentials(Navigator&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit NavigatorCredentials(Navigator&);
