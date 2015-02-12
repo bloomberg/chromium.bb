@@ -1211,8 +1211,8 @@ project_sdk = _config(
   uprev=False,
 
   # Use the SDK manifest published by the Canary master for most builds.
-  manifest=constants.PROJECT_SDK_MANIFEST,
-  manifest_version=True,
+  lkgm_manifest=constants.LATEST_PROJECT_SDK_MANIFEST,
+  use_lkgm=True,
 
   # Tests probably don't work yet.
   vm_tests=[],
