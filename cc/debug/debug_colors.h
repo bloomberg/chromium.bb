@@ -87,14 +87,6 @@ class DebugColors {
   static int ScreenSpaceSurfaceReplicaRectBorderWidth();
   static SkColor ScreenSpaceSurfaceReplicaRectFillColor();
 
-  static SkColor OccludingRectBorderColor();
-  static int OccludingRectBorderWidth();
-  static SkColor OccludingRectFillColor();
-
-  static SkColor NonOccludingRectBorderColor();
-  static int NonOccludingRectBorderWidth();
-  static SkColor NonOccludingRectFillColor();
-
   static SkColor TouchEventHandlerRectBorderColor();
   static int TouchEventHandlerRectBorderWidth();
   static SkColor TouchEventHandlerRectFillColor();

@@ -216,24 +216,6 @@ SkColor DebugColors::ScreenSpaceSurfaceReplicaRectFillColor() {
   return SkColorSetARGB(10, 100, 0, 200);
 }
 
-// Occluding rects in pink.
-SkColor DebugColors::OccludingRectBorderColor() {
-  return SkColorSetARGB(255, 245, 136, 255);
-}
-int DebugColors::OccludingRectBorderWidth() { return 2; }
-SkColor DebugColors::OccludingRectFillColor() {
-  return SkColorSetARGB(10, 245, 136, 255);
-}
-
-// Non-Occluding rects in a reddish color.
-SkColor DebugColors::NonOccludingRectBorderColor() {
-  return SkColorSetARGB(255, 200, 0, 100);
-}
-int DebugColors::NonOccludingRectBorderWidth() { return 2; }
-SkColor DebugColors::NonOccludingRectFillColor() {
-  return SkColorSetARGB(10, 200, 0, 100);
-}
-
 // Touch-event-handler rects in yellow.
 SkColor DebugColors::TouchEventHandlerRectBorderColor() {
   return SkColorSetARGB(255, 239, 229, 60);

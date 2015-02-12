@@ -57,16 +57,6 @@ class CC_EXPORT OcclusionTracker {
     minimum_tracking_size_ = size;
   }
 
-  // The following is used for visualization purposes.
-  void set_occluding_screen_space_rects_container(
-      std::vector<gfx::Rect>* rects) {
-    occluding_screen_space_rects_ = rects;
-  }
-  void set_non_occluding_screen_space_rects_container(
-      std::vector<gfx::Rect>* rects) {
-    non_occluding_screen_space_rects_ = rects;
-  }
-
  protected:
   struct StackObject {
     StackObject() : target(0) {}
@@ -114,10 +104,6 @@ class CC_EXPORT OcclusionTracker {
 
   gfx::Rect screen_space_clip_rect_;
   gfx::Size minimum_tracking_size_;
-
-  // This is used for visualizing the occlusion tracking process.
-  std::vector<gfx::Rect>* occluding_screen_space_rects_;
-  std::vector<gfx::Rect>* non_occluding_screen_space_rects_;
 
   DISALLOW_COPY_AND_ASSIGN(OcclusionTracker);
 };

@@ -764,16 +764,6 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
         fill_color = DebugColors::ScreenSpaceLayerRectFillColor();
         stroke_width = DebugColors::ScreenSpaceLayerRectBorderWidth();
         break;
-      case OCCLUDING_RECT_TYPE:
-        stroke_color = DebugColors::OccludingRectBorderColor();
-        fill_color = DebugColors::OccludingRectFillColor();
-        stroke_width = DebugColors::OccludingRectBorderWidth();
-        break;
-      case NONOCCLUDING_RECT_TYPE:
-        stroke_color = DebugColors::NonOccludingRectBorderColor();
-        fill_color = DebugColors::NonOccludingRectFillColor();
-        stroke_width = DebugColors::NonOccludingRectBorderWidth();
-        break;
       case TOUCH_EVENT_HANDLER_RECT_TYPE:
         stroke_color = DebugColors::TouchEventHandlerRectBorderColor();
         fill_color = DebugColors::TouchEventHandlerRectFillColor();

@@ -295,10 +295,6 @@ void RenderWidgetCompositor::Initialize() {
       cmd->HasSwitch(cc::switches::kShowScreenSpaceRects);
   settings.initial_debug_state.show_replica_screen_space_rects =
       cmd->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
-  settings.initial_debug_state.show_occluding_rects =
-      cmd->HasSwitch(cc::switches::kShowOccludingRects);
-  settings.initial_debug_state.show_non_occluding_rects =
-      cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
 
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd->HasSwitch(cc::switches::kEnableGpuBenchmarking));

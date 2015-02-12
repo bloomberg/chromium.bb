@@ -99,16 +99,6 @@ const char kShowReplicaScreenSpaceRects[] = "show-replica-screenspace-rects";
 const char kUIShowReplicaScreenSpaceRects[] =
     "ui-show-replica-screenspace-rects";
 
-// Show rects in the HUD wherever something is known to be drawn opaque and is
-// considered occluding the pixels behind it.
-const char kShowOccludingRects[] = "show-occluding-rects";
-const char kUIShowOccludingRects[] = "ui-show-occluding-rects";
-
-// Show rects in the HUD wherever something is not known to be drawn opaque and
-// is not considered to be occluding the pixels behind it.
-const char kShowNonOccludingRects[] = "show-nonoccluding-rects";
-const char kUIShowNonOccludingRects[] = "ui-show-nonoccluding-rects";
-
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 

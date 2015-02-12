@@ -18,8 +18,6 @@ LayerTreeDebugState::LayerTreeDebugState()
       show_surface_damage_rects(false),
       show_screen_space_rects(false),
       show_replica_screen_space_rects(false),
-      show_occluding_rects(false),
-      show_non_occluding_rects(false),
       show_touch_event_handler_rects(false),
       show_wheel_event_handler_rects(false),
       show_scroll_event_handler_rects(false),
@@ -48,8 +46,7 @@ bool LayerTreeDebugState::ShowHudInfo() const {
 bool LayerTreeDebugState::ShowHudRects() const {
   return show_paint_rects || show_property_changed_rects ||
          show_surface_damage_rects || show_screen_space_rects ||
-         show_replica_screen_space_rects || show_occluding_rects ||
-         show_non_occluding_rects || show_touch_event_handler_rects ||
+         show_replica_screen_space_rects || show_touch_event_handler_rects ||
          show_wheel_event_handler_rects || show_scroll_event_handler_rects ||
          show_non_fast_scrollable_rects || show_layer_animation_bounds_rects;
 }
@@ -69,8 +66,6 @@ bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
       a.show_surface_damage_rects == b.show_surface_damage_rects &&
       a.show_screen_space_rects == b.show_screen_space_rects &&
       a.show_replica_screen_space_rects == b.show_replica_screen_space_rects &&
-      a.show_occluding_rects == b.show_occluding_rects &&
-      a.show_non_occluding_rects == b.show_non_occluding_rects &&
       a.show_touch_event_handler_rects == b.show_touch_event_handler_rects &&
       a.show_wheel_event_handler_rects == b.show_wheel_event_handler_rects &&
       a.show_scroll_event_handler_rects == b.show_scroll_event_handler_rects &&
@@ -96,8 +91,6 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
   r.show_surface_damage_rects |= b.show_surface_damage_rects;
   r.show_screen_space_rects |= b.show_screen_space_rects;
   r.show_replica_screen_space_rects |= b.show_replica_screen_space_rects;
-  r.show_occluding_rects |= b.show_occluding_rects;
-  r.show_non_occluding_rects |= b.show_non_occluding_rects;
   r.show_touch_event_handler_rects |= b.show_touch_event_handler_rects;
   r.show_wheel_event_handler_rects |= b.show_wheel_event_handler_rects;
   r.show_scroll_event_handler_rects |= b.show_scroll_event_handler_rects;

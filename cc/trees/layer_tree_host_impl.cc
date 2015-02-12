@@ -763,15 +763,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   occlusion_tracker.set_minimum_tracking_size(
       settings_.minimum_occlusion_tracking_size);
 
-  if (debug_state_.show_occluding_rects) {
-    occlusion_tracker.set_occluding_screen_space_rects_container(
-        &frame->occluding_screen_space_rects);
-  }
-  if (debug_state_.show_non_occluding_rects) {
-    occlusion_tracker.set_non_occluding_screen_space_rects_container(
-        &frame->non_occluding_screen_space_rects);
-  }
-
   // Add quads to the Render passes in front-to-back order to allow for testing
   // occlusion and performing culling during the tree walk.
   typedef LayerIterator<LayerImpl> LayerIteratorType;
@@ -1514,8 +1505,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         active_tree_->root_layer(),
         active_tree_->hud_layer(),
         *frame->render_surface_layer_list,
-        frame->occluding_screen_space_rects,
-        frame->non_occluding_screen_space_rects,
         debug_state_);
   }
 

@@ -20,12 +20,12 @@ namespace cc {
 template <typename LayerType>
 OcclusionTracker<LayerType>::OcclusionTracker(
     const gfx::Rect& screen_space_clip_rect)
-    : screen_space_clip_rect_(screen_space_clip_rect),
-      occluding_screen_space_rects_(NULL),
-      non_occluding_screen_space_rects_(NULL) {}
+    : screen_space_clip_rect_(screen_space_clip_rect) {
+}
 
 template <typename LayerType>
-OcclusionTracker<LayerType>::~OcclusionTracker() {}
+OcclusionTracker<LayerType>::~OcclusionTracker() {
+}
 
 template <typename LayerType>
 Occlusion OcclusionTracker<LayerType>::GetCurrentOcclusionForLayer(
@@ -465,48 +465,6 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
         transformed_rect.height() < minimum_tracking_size_.height())
       continue;
     stack_.back().occlusion_from_inside_target.Union(transformed_rect);
-
-    if (!occluding_screen_space_rects_)
-      continue;
-
-    // Save the occluding area in screen space for debug visualization.
-    bool clipped;
-    gfx::QuadF screen_space_quad = MathUtil::MapQuad(
-        layer->render_target()->render_surface()->screen_space_transform(),
-        gfx::QuadF(transformed_rect), &clipped);
-    // TODO(danakj): Store the quad in the debug info instead of the bounding
-    // box.
-    gfx::Rect screen_space_rect =
-        gfx::ToEnclosedRect(screen_space_quad.BoundingBox());
-    occluding_screen_space_rects_->push_back(screen_space_rect);
-  }
-
-  if (!non_occluding_screen_space_rects_)
-    return;
-
-  Region non_opaque_contents(gfx::Rect(layer->content_bounds()));
-  non_opaque_contents.Subtract(opaque_contents);
-
-  for (Region::Iterator non_opaque_content_rects(non_opaque_contents);
-       non_opaque_content_rects.has_rect();
-       non_opaque_content_rects.next()) {
-    gfx::Rect transformed_rect =
-        MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
-            layer->draw_transform(), non_opaque_content_rects.rect());
-    transformed_rect.Intersect(clip_rect_in_target);
-    if (transformed_rect.IsEmpty())
-      continue;
-
-    bool clipped;
-    gfx::QuadF screen_space_quad = MathUtil::MapQuad(
-        layer->render_target()->render_surface()->screen_space_transform(),
-        gfx::QuadF(transformed_rect),
-        &clipped);
-    // TODO(danakj): Store the quad in the debug info instead of the bounding
-    // box.
-    gfx::Rect screen_space_rect =
-        gfx::ToEnclosedRect(screen_space_quad.BoundingBox());
-    non_occluding_screen_space_rects_->push_back(screen_space_rect);
   }
 }
 

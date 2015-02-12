@@ -349,32 +349,46 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
       break;
 
     if (!top.IsEmpty()) {
+      bool force_anti_aliasing_off = false;
       SolidColorDrawQuad* top_quad =
           render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      top_quad->SetNew(
-          shared_quad_state, top, top, colors[i % kNumColors], false);
+      top_quad->SetNew(shared_quad_state, top, top, colors[i % kNumColors],
+                       force_anti_aliasing_off);
 
       SolidColorDrawQuad* bottom_quad =
           render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      bottom_quad->SetNew(shared_quad_state,
-                          bottom,
-                          bottom,
+      bottom_quad->SetNew(shared_quad_state, bottom, bottom,
                           colors[kNumColors - 1 - (i % kNumColors)],
-                          false);
+                          force_anti_aliasing_off);
+
+      if (contents_opaque()) {
+        // Draws a stripe filling the layer vertically with the same color and
+        // width as the horizontal stipes along the layer's top border.
+        SolidColorDrawQuad* solid_quad =
+            render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+        // The inner fill is more transparent then the border.
+        static const float kFillOpacity = 0.1f;
+        SkColor fill_color = SkColorSetA(
+            colors[i % kNumColors],
+            static_cast<uint8_t>(SkColorGetA(colors[i % kNumColors]) *
+                                 kFillOpacity));
+        gfx::Rect fill_rect(x, 0, width, content_bounds().height());
+        solid_quad->SetNew(shared_quad_state, fill_rect, fill_rect, fill_color,
+                           force_anti_aliasing_off);
+      }
     }
     if (!left.IsEmpty()) {
+      bool force_anti_aliasing_off = false;
       SolidColorDrawQuad* left_quad =
           render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      left_quad->SetNew(shared_quad_state,
-                        left,
-                        left,
+      left_quad->SetNew(shared_quad_state, left, left,
                         colors[kNumColors - 1 - (i % kNumColors)],
-                        false);
+                        force_anti_aliasing_off);
 
       SolidColorDrawQuad* right_quad =
           render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      right_quad->SetNew(
-          shared_quad_state, right, right, colors[i % kNumColors], false);
+      right_quad->SetNew(shared_quad_state, right, right,
+                         colors[i % kNumColors], force_anti_aliasing_off);
     }
   }
 }

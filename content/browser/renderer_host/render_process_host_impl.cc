@@ -1324,8 +1324,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kShowCompositedLayerBorders,
     cc::switches::kShowFPSCounter,
     cc::switches::kShowLayerAnimationBounds,
-    cc::switches::kShowNonOccludingRects,
-    cc::switches::kShowOccludingRects,
     cc::switches::kShowPropertyChangedRects,
     cc::switches::kShowReplicaScreenSpaceRects,
     cc::switches::kShowScreenSpaceRects,

@@ -128,10 +128,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       command_line->HasSwitch(cc::switches::kUIShowScreenSpaceRects);
   settings.initial_debug_state.show_replica_screen_space_rects =
       command_line->HasSwitch(cc::switches::kUIShowReplicaScreenSpaceRects);
-  settings.initial_debug_state.show_occluding_rects =
-      command_line->HasSwitch(cc::switches::kUIShowOccludingRects);
-  settings.initial_debug_state.show_non_occluding_rects =
-      command_line->HasSwitch(cc::switches::kUIShowNonOccludingRects);
 
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));

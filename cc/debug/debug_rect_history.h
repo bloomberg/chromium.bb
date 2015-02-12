@@ -34,21 +34,12 @@ class LayerTreeDebugState;
 //
 // - Replica screen space rects: this is the region the replica's contents
 // occupy in screen space.
-//
-// - Occluding rects: these are the regions that contribute to the occluded
-// region.
-//
-// - Non-Occluding rects: these are the regions of composited layers that do not
-//   contribute to the occluded region.
-//
 enum DebugRectType {
   PAINT_RECT_TYPE,
   PROPERTY_CHANGED_RECT_TYPE,
   SURFACE_DAMAGE_RECT_TYPE,
   SCREEN_SPACE_RECT_TYPE,
   REPLICA_SCREEN_SPACE_RECT_TYPE,
-  OCCLUDING_RECT_TYPE,
-  NONOCCLUDING_RECT_TYPE,
   TOUCH_EVENT_HANDLER_RECT_TYPE,
   WHEEL_EVENT_HANDLER_RECT_TYPE,
   SCROLL_EVENT_HANDLER_RECT_TYPE,
@@ -79,8 +70,6 @@ class DebugRectHistory {
       LayerImpl* root_layer,
       LayerImpl* hud_layer,
       const LayerImplList& render_surface_layer_list,
-      const std::vector<gfx::Rect>& occluding_screen_space_rects,
-      const std::vector<gfx::Rect>& non_occluding_screen_space_rects,
       const LayerTreeDebugState& debug_state);
 
   const std::vector<DebugRect>& debug_rects() { return debug_rects_; }
@@ -95,10 +84,6 @@ class DebugRectHistory {
       const LayerImplList& render_surface_layer_list);
   void SaveScreenSpaceRects(
       const LayerImplList& render_surface_layer_list);
-  void SaveOccludingRects(
-      const std::vector<gfx::Rect>& occluding_screen_space_rects);
-  void SaveNonOccludingRects(
-      const std::vector<gfx::Rect>& non_occluding_screen_space_rects);
   void SaveTouchEventHandlerRects(LayerImpl* layer);
   void SaveTouchEventHandlerRectsCallback(LayerImpl* layer);
   void SaveWheelEventHandlerRects(LayerImpl* layer);

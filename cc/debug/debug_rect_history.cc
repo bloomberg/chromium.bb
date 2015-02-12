@@ -29,8 +29,6 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     LayerImpl* root_layer,
     LayerImpl* hud_layer,
     const LayerImplList& render_surface_layer_list,
-    const std::vector<gfx::Rect>& occluding_screen_space_rects,
-    const std::vector<gfx::Rect>& non_occluding_screen_space_rects,
     const LayerTreeDebugState& debug_state) {
   // For now, clear all rects from previous frames. In the future we may want to
   // store all debug rects for a history of many frames.
@@ -59,12 +57,6 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
 
   if (debug_state.show_screen_space_rects)
     SaveScreenSpaceRects(render_surface_layer_list);
-
-  if (debug_state.show_occluding_rects)
-    SaveOccludingRects(occluding_screen_space_rects);
-
-  if (debug_state.show_non_occluding_rects)
-    SaveNonOccludingRects(non_occluding_screen_space_rects);
 
   if (debug_state.show_layer_animation_bounds_rects)
     SaveLayerAnimationBoundsRects(render_surface_layer_list);
@@ -167,20 +159,6 @@ void DebugRectHistory::SaveScreenSpaceRects(
                         render_surface->replica_screen_space_transform(),
                         render_surface->content_rect())));
     }
-  }
-}
-
-void DebugRectHistory::SaveOccludingRects(
-    const std::vector<gfx::Rect>& occluding_rects) {
-  for (size_t i = 0; i < occluding_rects.size(); ++i)
-    debug_rects_.push_back(DebugRect(OCCLUDING_RECT_TYPE, occluding_rects[i]));
-}
-
-void DebugRectHistory::SaveNonOccludingRects(
-    const std::vector<gfx::Rect>& non_occluding_rects) {
-  for (size_t i = 0; i < non_occluding_rects.size(); ++i) {
-    debug_rects_.push_back(
-        DebugRect(NONOCCLUDING_RECT_TYPE, non_occluding_rects[i]));
   }
 }
 
