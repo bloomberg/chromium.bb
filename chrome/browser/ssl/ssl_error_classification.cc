@@ -60,6 +60,7 @@ enum SSLInterstitialCause {
 
 // Events for UMA. Do not reorder or change!
 enum SSLInterstitialCauseCaptivePortal {
+  CAPTIVE_PORTAL_ALL,
   CAPTIVE_PORTAL_DETECTION_ENABLED,
   CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE,
   CAPTIVE_PORTAL_PROBE_COMPLETED,
@@ -148,6 +149,7 @@ SSLErrorClassification::~SSLErrorClassification() { }
 void SSLErrorClassification::RecordCaptivePortalUMAStatistics(
     bool overridable) const {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  RecordCaptivePortalEventStats(CAPTIVE_PORTAL_ALL);
   if (captive_portal_detection_enabled_)
     RecordCaptivePortalEventStats(
         overridable ?

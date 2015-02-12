@@ -57866,39 +57866,40 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SSLCaptivePortal" type="int">
-  <int value="0"
+  <int value="0" label="All captive portal events (CAPTIVE_PORTAL_ALL)"/>
+  <int value="1"
       label="Chrome captive portal detection enabled
              (CAPTIVE_PORTAL_DETECTION_ENABLED)"/>
-  <int value="1"
+  <int value="2"
       label="Chrome captive portal detection enabled on an overridable SSL
              error page (CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE)">
-    This is a subset of CAPTIVE_PORTAL_DETECTION_ENABLED (bucket 0), the only
+    This is a subset of CAPTIVE_PORTAL_DETECTION_ENABLED (bucket 1), the only
     difference is that it is for overridable errors.
   </int>
-  <int value="2"
+  <int value="3"
       label="Received a captive portal probe result.
              (CAPTIVE_PORTAL_PROBE_COMPLETED)">
     Was the captive portal probe completed before the interstitial was closed?
     Captive Portal won't be detected unless ::Observe is triggered which might
     be a few seconds later.
   </int>
-  <int value="3"
+  <int value="4"
       label="Received a captive portal result on an overridable SSL error page
              (CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE)">
-    This is a subset of CAPTIVE_PORTAL_PROBE_COMPLETED (bucket 2), the only
+    This is a subset of CAPTIVE_PORTAL_PROBE_COMPLETED (bucket 3), the only
     difference is that it is for overridable errors.
   </int>
-  <int value="4"
+  <int value="5"
       label="Received no response or Non-HTTP login page
              (CAPTIVE_PORTAL_NO_RESPONSE)"/>
-  <int value="5"
+  <int value="6"
       label="Received no response or Non-HTTP login page on an overridable
              SSL error page (CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE)"/>
-  <int value="6" label="Detected captive portal (CAPTIVE_PORTAL_DETECTED)"/>
-  <int value="7"
+  <int value="7" label="Detected captive portal (CAPTIVE_PORTAL_DETECTED)"/>
+  <int value="8"
       label="Detected captive portal on an overridable SSL error page
              (CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)">
-    This is a subset of CAPTIVE_PORTAL_DETECTED (bucket 6), the only difference
+    This is a subset of CAPTIVE_PORTAL_DETECTED (bucket 7), the only difference
     is that it is for overridable errors.
   </int>
 </enum>

@@ -257,9 +257,6 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       cert_error_,
       *ssl_info_.cert.get()));
   ssl_error_classification_->RecordUMAStatistics(overridable_);
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  ssl_error_classification_->RecordCaptivePortalUMAStatistics(overridable_);
-#endif
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
@@ -274,6 +271,11 @@ const void* SSLBlockingPage::GetTypeForTesting() const {
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // Captive portal detection results can arrive anytime during the interstitial
+  // is being displayed, so record it when the interstitial is going away.
+  ssl_error_classification_->RecordCaptivePortalUMAStatistics(overridable_);
+#endif
   if (!callback_.is_null()) {
     // The page is closed without the user having chosen what to do, default to
     // deny.
