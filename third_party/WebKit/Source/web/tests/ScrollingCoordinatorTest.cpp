@@ -106,11 +106,6 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
-class GraphicsLayerForScrollTesting : public GraphicsLayer {
-public:
-    virtual WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
-};
-
 TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault)
 {
     navigateTo("about:blank");
@@ -551,7 +546,7 @@ TEST_F(ScrollingCoordinatorTest, scrollbarsForceMainThreadOrHaveWebScrollbarLaye
     RenderBox* box = toRenderBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
     CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
-    GraphicsLayerForScrollTesting* scrollbarGraphicsLayer = static_cast<GraphicsLayerForScrollTesting*>(compositedLayerMapping->layerForVerticalScrollbar());
+    GraphicsLayer* scrollbarGraphicsLayer = compositedLayerMapping->layerForVerticalScrollbar();
     ASSERT_TRUE(scrollbarGraphicsLayer);
 
     bool hasWebScrollbarLayer = !scrollbarGraphicsLayer->drawsContent();
@@ -571,7 +566,7 @@ TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
     FrameView* frameView = frame()->view();
     ASSERT_TRUE(frameView);
 
-    GraphicsLayerForScrollTesting* scrollbarGraphicsLayer = static_cast<GraphicsLayerForScrollTesting*>(frameView->layerForHorizontalScrollbar());
+    GraphicsLayer* scrollbarGraphicsLayer = frameView->layerForHorizontalScrollbar();
     ASSERT_TRUE(scrollbarGraphicsLayer);
 
     WebLayer* platformLayer = scrollbarGraphicsLayer->platformLayer();

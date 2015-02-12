@@ -256,6 +256,9 @@ public:
 
     virtual DisplayItemList* displayItemList() override;
 
+    // Exposed for tests.
+    virtual WebLayer* contentsLayer() const { return m_contentsLayer; }
+
 protected:
     String debugName(WebLayer*) const;
 
@@ -264,9 +267,6 @@ protected:
     friend class GraphicsLayerFactoryChromium;
     // for testing
     friend class FakeGraphicsLayerFactory;
-
-    // Exposed for tests.
-    virtual WebLayer* contentsLayer() const { return m_contentsLayer; }
 
 private:
     // Callback from the underlying graphics system to draw layer contents.
