@@ -93,7 +93,7 @@ PassOwnPtr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutO
     FloatRect clientBoundingBox = object.objectBoundingBox();
     FloatRect tileBounds = SVGLengthContext::resolveRectangle(element(),
         attributes.patternUnits(), clientBoundingBox,
-        attributes.x(), attributes.y(), attributes.width(), attributes.height());
+        *attributes.x(), *attributes.y(), *attributes.width(), *attributes.height());
     if (tileBounds.isEmpty())
         return nullptr;
 

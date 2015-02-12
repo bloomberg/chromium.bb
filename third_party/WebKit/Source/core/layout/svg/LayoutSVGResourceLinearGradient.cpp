@@ -50,12 +50,12 @@ bool LayoutSVGResourceLinearGradient::collectGradientAttributes(SVGGradientEleme
 
 FloatPoint LayoutSVGResourceLinearGradient::startPoint(const LinearGradientAttributes& attributes) const
 {
-    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), attributes.x1(), attributes.y1());
+    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), *attributes.x1(), *attributes.y1());
 }
 
 FloatPoint LayoutSVGResourceLinearGradient::endPoint(const LinearGradientAttributes& attributes) const
 {
-    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), attributes.x2(), attributes.y2());
+    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), *attributes.x2(), *attributes.y2());
 }
 
 void LayoutSVGResourceLinearGradient::buildGradient(GradientData* gradientData) const

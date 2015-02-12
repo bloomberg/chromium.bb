@@ -36,54 +36,44 @@ SVGLengthContext::SVGLengthContext(const SVGElement* context)
 {
 }
 
-FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport, PassRefPtrWillBeRawPtr<SVGLength> passX, PassRefPtrWillBeRawPtr<SVGLength> passY, PassRefPtrWillBeRawPtr<SVGLength> passWidth, PassRefPtrWillBeRawPtr<SVGLength> passHeight)
+FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport, const SVGLength& x, const SVGLength& y, const SVGLength& width, const SVGLength& height)
 {
-    RefPtrWillBeRawPtr<SVGLength> x = passX;
-    RefPtrWillBeRawPtr<SVGLength> y = passY;
-    RefPtrWillBeRawPtr<SVGLength> width = passWidth;
-    RefPtrWillBeRawPtr<SVGLength> height = passHeight;
-
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
     if (type != SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE && !viewport.isEmpty()) {
         const FloatSize& viewportSize = viewport.size();
         return FloatRect(
-            convertValueFromPercentageToUserUnits(*x, viewportSize) + viewport.x(),
-            convertValueFromPercentageToUserUnits(*y, viewportSize) + viewport.y(),
-            convertValueFromPercentageToUserUnits(*width, viewportSize),
-            convertValueFromPercentageToUserUnits(*height, viewportSize));
+            convertValueFromPercentageToUserUnits(x, viewportSize) + viewport.x(),
+            convertValueFromPercentageToUserUnits(y, viewportSize) + viewport.y(),
+            convertValueFromPercentageToUserUnits(width, viewportSize),
+            convertValueFromPercentageToUserUnits(height, viewportSize));
     }
 
     SVGLengthContext lengthContext(context);
-    return FloatRect(x->value(lengthContext), y->value(lengthContext), width->value(lengthContext), height->value(lengthContext));
+    return FloatRect(x.value(lengthContext), y.value(lengthContext), width.value(lengthContext), height.value(lengthContext));
 }
 
-FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitTypes::SVGUnitType type, PassRefPtrWillBeRawPtr<SVGLength> passX, PassRefPtrWillBeRawPtr<SVGLength> passY)
+FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const SVGLength& x, const SVGLength& y)
 {
-    RefPtrWillBeRawPtr<SVGLength> x = passX;
-    RefPtrWillBeRawPtr<SVGLength> y = passY;
-
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
     if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
         SVGLengthContext lengthContext(context);
-        return FloatPoint(x->value(lengthContext), y->value(lengthContext));
+        return FloatPoint(x.value(lengthContext), y.value(lengthContext));
     }
 
     // FIXME: valueAsPercentage() won't be correct for eg. cm units. They need to be resolved in user space and then be considered in objectBoundingBox space.
-    return FloatPoint(x->valueAsPercentage(), y->valueAsPercentage());
+    return FloatPoint(x.valueAsPercentage(), y.valueAsPercentage());
 }
 
-float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::SVGUnitType type, PassRefPtrWillBeRawPtr<SVGLength> passX)
+float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const SVGLength& x)
 {
-    RefPtrWillBeRawPtr<SVGLength> x = passX;
-
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
     if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
         SVGLengthContext lengthContext(context);
-        return x->value(lengthContext);
+        return x.value(lengthContext);
     }
 
     // FIXME: valueAsPercentage() won't be correct for eg. cm units. They need to be resolved in user space and then be considered in objectBoundingBox space.
-    return x->valueAsPercentage();
+    return x.valueAsPercentage();
 }
 
 float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode, SVGLengthType fromUnit) const

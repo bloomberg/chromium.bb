@@ -56,12 +56,12 @@ public:
     template<typename T>
     static FloatRect resolveRectangle(const T* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport)
     {
-        return resolveRectangle(context, type, viewport, context->x()->currentValue(), context->y()->currentValue(), context->width()->currentValue(), context->height()->currentValue());
+        return resolveRectangle(context, type, viewport, *context->x()->currentValue(), *context->y()->currentValue(), *context->width()->currentValue(), *context->height()->currentValue());
     }
 
-    static FloatRect resolveRectangle(const SVGElement*, SVGUnitTypes::SVGUnitType, const FloatRect& viewport, PassRefPtrWillBeRawPtr<SVGLength> x, PassRefPtrWillBeRawPtr<SVGLength> y, PassRefPtrWillBeRawPtr<SVGLength> width, PassRefPtrWillBeRawPtr<SVGLength> height);
-    static FloatPoint resolvePoint(const SVGElement*, SVGUnitTypes::SVGUnitType, PassRefPtrWillBeRawPtr<SVGLength> x, PassRefPtrWillBeRawPtr<SVGLength> y);
-    static float resolveLength(const SVGElement*, SVGUnitTypes::SVGUnitType, PassRefPtrWillBeRawPtr<SVGLength>);
+    static FloatRect resolveRectangle(const SVGElement*, SVGUnitTypes::SVGUnitType, const FloatRect& viewport, const SVGLength& x, const SVGLength& y, const SVGLength& width, const SVGLength& height);
+    static FloatPoint resolvePoint(const SVGElement*, SVGUnitTypes::SVGUnitType, const SVGLength& x, const SVGLength& y);
+    static float resolveLength(const SVGElement*, SVGUnitTypes::SVGUnitType, const SVGLength&);
 
     float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit) const;
     float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
