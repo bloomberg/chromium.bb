@@ -4,15 +4,19 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Context;
 import android.os.Build;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.ProtectedContentPreferences;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
 import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
 import org.chromium.content.app.ContentApplication;
+import org.chromium.content.browser.BrowserStartupController;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -45,6 +49,29 @@ public abstract class ChromiumApplication extends ContentApplication {
     protected void showPasswordSettings() {
         PreferencesLauncher.launchSettingsPage(this,
                 ManageSavedPasswordsPreferences.class.getName());
+    }
+
+    /**
+     * For extending classes to carry out tasks that initialize the browser process.
+     * Should be called almost immediately after the native library has loaded to initialize things
+     * that really, really have to be set up early.  Avoid putting any long tasks here.
+     */
+    public void initializeProcess() { }
+
+    /**
+     * Start the browser process asynchronously. This will set up a queue of UI
+     * thread tasks to initialize the browser process.
+     *
+     * Note that this can only be called on the UI thread.
+     *
+     * @param callback the callback to be called when browser startup is complete.
+     * @throws ProcessInitException
+     */
+    public void startChromeBrowserProcessesAsync(BrowserStartupController.StartupCallback callback)
+            throws ProcessInitException {
+        assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
+        Context applicationContext = getApplicationContext();
+        BrowserStartupController.get(applicationContext).startBrowserProcessesAsync(callback);
     }
 
     /**
