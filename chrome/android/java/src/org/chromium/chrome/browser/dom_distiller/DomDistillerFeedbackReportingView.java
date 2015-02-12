@@ -9,10 +9,10 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageButton;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
+import org.chromium.chrome.browser.widget.ButtonCompat;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
@@ -31,10 +31,10 @@ public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
     private FeedbackObserver mFeedbackObserver;
 
     // The button to click for selecting 'No'.
-    private ImageButton mNoButton;
+    private ButtonCompat mNoButton;
 
     // The button to click for selecting 'Yes'.
-    private ImageButton mYesButton;
+    private ButtonCompat mYesButton;
 
     // Whether a selection has already been made, which means new events should be ignored.
     private boolean mSelectionMade;
@@ -58,7 +58,7 @@ public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
      */
     public static DomDistillerFeedbackReportingView create(ContentViewCore contentViewCore,
                                                FeedbackObserver feedbackObserver) {
-        Context context = contentViewCore.getContext().getApplicationContext();
+        Context context = contentViewCore.getContext();
         DomDistillerFeedbackReportingView view =
                 (DomDistillerFeedbackReportingView) LayoutInflater.from(context)
                         .inflate(VIEW_LAYOUT, null);
@@ -80,8 +80,8 @@ public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
 
     private void initialize(FeedbackObserver feedbackObserver) {
         mFeedbackObserver = feedbackObserver;
-        mNoButton = (ImageButton) findViewById(R.id.distillation_quality_answer_no);
-        mYesButton = (ImageButton) findViewById(R.id.distillation_quality_answer_yes);
+        mNoButton = (ButtonCompat) findViewById(R.id.distillation_quality_answer_no);
+        mYesButton = (ButtonCompat) findViewById(R.id.distillation_quality_answer_yes);
         mNoButton.setClickable(true);
         mYesButton.setClickable(true);
         mNoButton.setOnClickListener(new OnClickListener() {
@@ -89,7 +89,6 @@ public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
             public void onClick(View v) {
                 if (mSelectionMade) return;
                 mSelectionMade = true;
-                mNoButton.setImageResource(R.drawable.distillation_quality_answer_no_pressed);
                 disableUI();
                 if (mFeedbackObserver != null) {
                     mFeedbackObserver.onNoPressed(DomDistillerFeedbackReportingView.this);
@@ -101,7 +100,6 @@ public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
             public void onClick(View v) {
                 if (mSelectionMade) return;
                 mSelectionMade = true;
-                mYesButton.setImageResource(R.drawable.distillation_quality_answer_yes_pressed);
                 disableUI();
                 if (mFeedbackObserver != null) {
                     mFeedbackObserver.onYesPressed(DomDistillerFeedbackReportingView.this);

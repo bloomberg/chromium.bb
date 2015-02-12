@@ -6,6 +6,7 @@
 
 <org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReportingView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:id="@+id/feedback_reporting_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,7 +15,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:gravity="center">
 
         <LinearLayout
             android:baselineAligned="false"
@@ -47,25 +49,10 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/distillation_quality_answer_no"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/distillation_quality_answer_no"
-                android:background="@null"
-                android:src="@drawable/distillation_quality_answer_no" />
-
-            <TextView
+        <TextView
                 android:id="@+id/distillation_quality_question"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="@string/distillation_quality_question"
@@ -74,13 +61,33 @@
                 android:textStyle="bold"
                 android:fontFamily="sans-serif" />
 
-            <ImageButton
-                android:id="@+id/distillation_quality_answer_yes"
-                android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:clipToPadding="false"
+            android:orientation="horizontal">
+
+            <org.chromium.chrome.browser.widget.ButtonCompat
+                android:id="@+id/distillation_quality_answer_no"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/distillation_quality_answer_yes"
-                android:background="@null"
-                android:src="@drawable/distillation_quality_answer_yes" />
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:text="@string/distillation_quality_answer_no"
+                android:textColor="#fff"
+                chrome:buttonColor="#DB4437" />
+
+            <org.chromium.chrome.browser.widget.ButtonCompat
+                android:id="@+id/distillation_quality_answer_yes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:text="@string/distillation_quality_answer_yes"
+                android:textColor="#fff"
+                chrome:buttonColor="#0F9D58" />
 
         </LinearLayout>
     </LinearLayout>
