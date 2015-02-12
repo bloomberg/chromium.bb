@@ -1079,7 +1079,7 @@ Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t
 #if ENABLE(ASSERT)
     // Verify that the allocated PageMemory is expectedly zeroed.
     for (size_t i = 0; i < largeObjectSize; ++i)
-        ASSERT(!headerAddress[i]);
+        ASSERT(!largeObjectAddress[i]);
 #endif
     ASSERT(gcInfoIndex > 0);
     HeapObjectHeader* header = new (NotNull, headerAddress) HeapObjectHeader(largeObjectSizeInHeader, gcInfoIndex);
