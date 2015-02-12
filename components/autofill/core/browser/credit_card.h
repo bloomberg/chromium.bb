@@ -115,6 +115,12 @@ class CreditCard : public AutofillDataModel {
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
 
+  // These setters verify that the month and year are within appropriate
+  // ranges, or 0. They take integers as an alternative to setting the inputs
+  // from strings via SetInfo().
+  void SetExpirationMonth(int expiration_month);
+  void SetExpirationYear(int expiration_year);
+
   const std::string& server_id() const { return server_id_; }
 
   // For use in STL containers.
@@ -183,11 +189,6 @@ class CreditCard : public AutofillDataModel {
 
   // Sets |expiration_year_| to the integer conversion of |text|.
   void SetExpirationYearFromString(const base::string16& text);
-
-  // These setters verify that the month and year are within appropriate
-  // ranges.
-  void SetExpirationMonth(int expiration_month);
-  void SetExpirationYear(int expiration_year);
 
   // See enum definition above.
   RecordType record_type_;

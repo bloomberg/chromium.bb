@@ -63,6 +63,9 @@ enum ModelType {
   AUTOFILL_PROFILE,
   // An autofill object.
   AUTOFILL,
+  // Credit cards and addresses synced from the user's account. These are
+  // read-only on the client.
+  AUTOFILL_WALLET_DATA,
   // A themes object.
   THEMES,
   // A typed_url object.

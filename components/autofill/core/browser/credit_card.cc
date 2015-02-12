@@ -503,6 +503,19 @@ void CreditCard::SetInfoForMonthInputType(const base::string16& value) {
   SetExpirationMonth(num);
 }
 
+void CreditCard::SetExpirationMonth(int expiration_month) {
+  if (expiration_month < 0 || expiration_month > 12)
+    return;
+  expiration_month_ = expiration_month;
+}
+
+void CreditCard::SetExpirationYear(int expiration_year) {
+  if (expiration_year != 0 &&
+      (expiration_year < 2006 || expiration_year > 10000))
+    return;
+  expiration_year_ = expiration_year;
+}
+
 base::string16 CreditCard::LastFourDigits() const {
   static const size_t kNumLastDigits = 4;
 
@@ -727,22 +740,6 @@ void CreditCard::SetNumber(const base::string16& number) {
   // when we have masked cards from the server (last 4 digits).
   if (record_type_ != MASKED_SERVER_CARD)
     type_ = GetCreditCardType(StripSeparators(number_));
-}
-
-void CreditCard::SetExpirationMonth(int expiration_month) {
-  if (expiration_month < 0 || expiration_month > 12)
-    return;
-
-  expiration_month_ = expiration_month;
-}
-
-void CreditCard::SetExpirationYear(int expiration_year) {
-  if (expiration_year != 0 &&
-      (expiration_year < 2006 || expiration_year > 10000)) {
-    return;
-  }
-
-  expiration_year_ = expiration_year;
 }
 
 // So we can compare CreditCards with EXPECT_EQ().

@@ -30,6 +30,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::PASSWORDS,
   syncer::AUTOFILL,
   syncer::AUTOFILL_PROFILE,
+  syncer::AUTOFILL_WALLET_DATA,
   syncer::EXTENSION_SETTINGS,
   syncer::APP_SETTINGS,
   syncer::TYPED_URLS,

@@ -44,7 +44,7 @@ const char* kUserSelectableDataTypeNames[] = {
 };
 
 static_assert(
-    34 == MODEL_TYPE_COUNT,
+    35 == MODEL_TYPE_COUNT,
     "update kUserSelectableDataTypeName to match UserSelectableTypes");
 
 void AddDefaultFieldValue(ModelType datatype,
@@ -68,6 +68,9 @@ void AddDefaultFieldValue(ModelType datatype,
       break;
     case AUTOFILL_PROFILE:
       specifics->mutable_autofill_profile();
+      break;
+    case AUTOFILL_WALLET_DATA:
+      specifics->mutable_autofill_wallet();
       break;
     case THEMES:
       specifics->mutable_theme();
@@ -176,6 +179,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kAutofillFieldNumber;
     case AUTOFILL_PROFILE:
       return sync_pb::EntitySpecifics::kAutofillProfileFieldNumber;
+    case AUTOFILL_WALLET_DATA:
+      return sync_pb::EntitySpecifics::kAutofillWalletFieldNumber;
     case THEMES:
       return sync_pb::EntitySpecifics::kThemeFieldNumber;
     case TYPED_URLS:
@@ -283,6 +288,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.has_autofill_profile())
     return AUTOFILL_PROFILE;
+
+  if (specifics.has_autofill_wallet())
+    return AUTOFILL_WALLET_DATA;
 
   if (specifics.has_theme())
     return THEMES;
@@ -444,6 +452,8 @@ ModelTypeSet EncryptableUserTypes() {
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.
   encryptable_user_types.RemoveAll(ProxyTypes());
+  // Wallet data is not encrypted since it actually originates on the server.
+  encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
   return encryptable_user_types;
 }
 
@@ -585,6 +595,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "WiFi Credentials";
     case PROXY_TABS:
       return "Tabs";
+    case AUTOFILL_WALLET_DATA:
+      return "Autofill Wallet";
     default:
       break;
   }
@@ -594,8 +606,10 @@ const char* ModelTypeToString(ModelType model_type) {
 
 // The normal rules about histograms apply here.  Always append to the bottom of
 // the list, and be careful to not reuse integer values that have already been
-// assigned.  Don't forget to update histograms.xml when you make changes to
-// this list.
+// assigned.
+//
+// Don't forget to update the "SyncModelTypes" enum in histograms.xml when you
+// make changes to this list.
 int ModelTypeToHistogramInt(ModelType model_type) {
   switch (model_type) {
     case UNSPECIFIED:
@@ -666,6 +680,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 32;
     case SUPERVISED_USER_WHITELISTS:
       return 33;
+    case AUTOFILL_WALLET_DATA:
+      return 34;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -711,6 +727,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return AUTOFILL;
   else if (model_type_string == "Autofill Profiles")
     return AUTOFILL_PROFILE;
+  else if (model_type_string == "Autofill Wallet")
+    return AUTOFILL_WALLET_DATA;
   else if (model_type_string == "Themes")
     return THEMES;
   else if (model_type_string == "Typed URLs")
@@ -855,6 +873,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_app_list";
     case AUTOFILL_PROFILE:
       return "google_chrome_autofill_profiles";
+    case AUTOFILL_WALLET_DATA:
+      return "google_chrome_autofill_wallet";
     case APP_SETTINGS:
       return "google_chrome_app_settings";
     case EXTENSION_SETTINGS:
@@ -919,6 +939,7 @@ const char kAppListNotificationType[] = "APP_LIST";
 const char kSearchEngineNotificationType[] = "SEARCH_ENGINE";
 const char kSessionNotificationType[] = "SESSION";
 const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
+const char kAutofillWalletNotificationType[] = "AUTOFILL_WALLET";
 const char kAppNotificationNotificationType[] = "APP_NOTIFICATION";
 const char kHistoryDeleteDirectiveNotificationType[] =
     "HISTORY_DELETE_DIRECTIVE";
@@ -984,6 +1005,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case AUTOFILL_PROFILE:
       *notification_type = kAutofillProfileNotificationType;
+      return true;
+    case AUTOFILL_WALLET_DATA:
+      *notification_type = kAutofillWalletNotificationType;
       return true;
     case EXTENSION_SETTINGS:
       *notification_type = kExtensionSettingNotificationType;
@@ -1083,6 +1107,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kAutofillProfileNotificationType) {
     *model_type = AUTOFILL_PROFILE;
+    return true;
+  } else if (notification_type == kAutofillWalletNotificationType) {
+    *model_type = AUTOFILL_WALLET_DATA;
     return true;
   } else if (notification_type == kAppSettingNotificationType) {
     *model_type = APP_SETTINGS;

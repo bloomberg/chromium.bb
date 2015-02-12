@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/search_engines/keyword_table.h"
@@ -41,9 +42,15 @@ void InitSyncableServicesOnDBThread(
       autofill_web_data.get(), autofill_backend);
   autofill::AutocompleteSyncableService::FromWebDataService(
       autofill_web_data.get())->InjectStartSyncFlare(sync_flare);
+
   autofill::AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
       autofill_web_data.get(), autofill_backend, app_locale);
+  autofill::AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
+      autofill_web_data.get(), autofill_backend, app_locale);
+
   autofill::AutofillProfileSyncableService::FromWebDataService(
+      autofill_web_data.get())->InjectStartSyncFlare(sync_flare);
+  autofill::AutofillWalletSyncableService::FromWebDataService(
       autofill_web_data.get())->InjectStartSyncFlare(sync_flare);
 }
 

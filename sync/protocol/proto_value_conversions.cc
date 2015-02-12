@@ -351,6 +351,21 @@ base::DictionaryValue* AutofillProfileSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* AutofillWalletSpecificsToValue(
+    const sync_pb::AutofillWalletSpecifics& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+
+  SET_ENUM(type, GetWalletInfoTypeString);
+  if (proto.type() == sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD) {
+    value->Set("masked_card",
+               WalletMaskedCreditCardToValue(proto.masked_card()));
+  } else if (proto.type() == sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS) {
+    value->Set("masked_card",
+               WalletPostalAddressToValue(proto.address()));
+  }
+  return value;
+}
+
 base::DictionaryValue* MetaInfoToValue(
     const sync_pb::MetaInfo& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -666,6 +681,35 @@ base::DictionaryValue* TypedUrlSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* WalletMaskedCreditCardToValue(
+    const sync_pb::WalletMaskedCreditCard& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(id);
+  SET_ENUM(status, GetWalletCardStatusString);
+  SET_STR(name_on_card);
+  SET_ENUM(type, GetWalletCardTypeString);
+  SET_STR(last_four);
+  SET_INT32(exp_month);
+  SET_INT32(exp_year);
+  return value;
+}
+
+base::DictionaryValue* WalletPostalAddressToValue(
+    const sync_pb::WalletPostalAddress& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(company_name);
+  SET_STR_REP(street_address);
+  SET_STR(address_1);
+  SET_STR(address_2);
+  SET_STR(address_3);
+  SET_STR(address_4);
+  SET_STR(postal_code);
+  SET_STR(sorting_code);
+  SET_STR(country_code);
+  SET_STR(language_code);
+  return value;
+}
+
 base::DictionaryValue* WifiCredentialSpecificsToValue(
     const sync_pb::WifiCredentialSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -685,6 +729,7 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(article, ArticleSpecificsToValue);
   SET_FIELD(autofill, AutofillSpecificsToValue);
   SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);
+  SET_FIELD(autofill_wallet, AutofillWalletSpecificsToValue);
   SET_FIELD(bookmark, BookmarkSpecificsToValue);
   SET_FIELD(device_info, DeviceInfoSpecificsToValue);
   SET_FIELD(dictionary, DictionarySpecificsToValue);

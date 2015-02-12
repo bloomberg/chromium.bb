@@ -23,6 +23,7 @@ class ArticleSpecifics;
 class AttachmentIdProto;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
+class AutofillWalletSpecifics;
 class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
@@ -71,6 +72,8 @@ class Target;
 class ThemeSpecifics;
 class TimeRangeDirective;
 class TypedUrlSpecifics;
+class WalletMaskedCreditCard;
+class WalletPostalAddress;
 class WifiCredentialSpecifics;
 }  // namespace sync_pb
 
@@ -163,6 +166,9 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* AutofillSpecificsToValue(
 SYNC_EXPORT_PRIVATE base::DictionaryValue* AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);
 
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AutofillWalletSpecificsToValue(
+    const sync_pb::AutofillWalletSpecifics& autofill_wallet_specifics);
+
 SYNC_EXPORT_PRIVATE base::DictionaryValue* BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
 
@@ -238,6 +244,12 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* ThemeSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* TypedUrlSpecificsToValue(
     const sync_pb::TypedUrlSpecifics& typed_url_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* WalletMaskedCreditCardToValue(
+    const sync_pb::WalletMaskedCreditCard& wallet_masked_card);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* WalletPostalAddressToValue(
+    const sync_pb::WalletPostalAddress& wallet_postal_address);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* WifiCredentialSpecificsToValue(
     const sync_pb::WifiCredentialSpecifics& wifi_credential_specifics);

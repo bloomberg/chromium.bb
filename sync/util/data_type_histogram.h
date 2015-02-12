@@ -51,6 +51,9 @@
       case ::syncer::AUTOFILL_PROFILE: \
         PER_DATA_TYPE_MACRO("AutofillProfiles"); \
         break; \
+      case ::syncer::AUTOFILL_WALLET_DATA: \
+        PER_DATA_TYPE_MACRO("AutofillWallet"); \
+        break; \
       case ::syncer::THEMES: \
         PER_DATA_TYPE_MACRO("Themes"); \
         break; \

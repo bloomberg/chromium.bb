@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
+#include "chrome/browser/sync/glue/autofill_wallet_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -45,7 +46,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
+#include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/search_engines/template_url_service.h"
@@ -211,6 +215,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
     pss->RegisterDataTypeController(
         new AutofillProfileDataTypeController(this, profile_));
+  }
+
+  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
+           autofill::switches::kEnableWalletCardImport) ||
+       profile_->GetPrefs()->GetBoolean(
+           autofill::prefs::kAutofillWalletSyncExperimentEnabled)) &&
+       !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA)) {
+    // The feature can be enabled by sync experiment *or* command line flag,
+    // and additionally the sync type must be enabled.
+    pss->RegisterDataTypeController(
+        new browser_sync::AutofillWalletDataTypeController(this, profile_));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
@@ -470,16 +485,19 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return PrefServiceSyncable::FromProfile(profile_)->GetSyncableService(
           syncer::PRIORITY_PREFERENCES)->AsWeakPtr();
     case syncer::AUTOFILL:
-    case syncer::AUTOFILL_PROFILE: {
+    case syncer::AUTOFILL_PROFILE:
+    case syncer::AUTOFILL_WALLET_DATA: {
       if (!web_data_service_.get())
         return base::WeakPtr<syncer::SyncableService>();
       if (type == syncer::AUTOFILL) {
         return autofill::AutocompleteSyncableService::FromWebDataService(
             web_data_service_.get())->AsWeakPtr();
-      } else {
+      } else if (type == syncer::AUTOFILL_PROFILE) {
         return autofill::AutofillProfileSyncableService::FromWebDataService(
             web_data_service_.get())->AsWeakPtr();
       }
+      return autofill::AutofillWalletSyncableService::FromWebDataService(
+          web_data_service_.get())->AsWeakPtr();
     }
     case syncer::SEARCH_ENGINES:
       return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();

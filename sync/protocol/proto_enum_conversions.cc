@@ -200,6 +200,46 @@ const char* GetLaunchTypeString(sync_pb::AppSpecifics::LaunchType launch_type) {
   return "";
 }
 
+const char* GetWalletInfoTypeString(
+    sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::AutofillWalletSpecifics, WalletInfoType,
+                     UNKNOWN, POSTAL_ADDRESS);
+  switch (wallet_info_type) {
+    ENUM_CASE(sync_pb::AutofillWalletSpecifics, UNKNOWN);
+    ENUM_CASE(sync_pb::AutofillWalletSpecifics, MASKED_CREDIT_CARD);
+    ENUM_CASE(sync_pb::AutofillWalletSpecifics, POSTAL_ADDRESS);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* GetWalletCardStatusString(
+    sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status) {
+  switch (wallet_card_status) {
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, VALID);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, EXPIRED);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* GetWalletCardTypeString(
+    sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type) {
+  switch (wallet_card_type) {
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, UNKNOWN);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, AMEX);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, DISCOVER);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, JCB);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, MAESTRO);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, MASTER_CARD);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, SOLO);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, SWITCH);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, VISA);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* GetDeviceTypeString(
     sync_pb::SyncEnums::DeviceType device_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, DeviceType, TYPE_WIN, TYPE_TABLET);

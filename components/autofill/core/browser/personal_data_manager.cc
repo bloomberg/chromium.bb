@@ -1211,20 +1211,19 @@ const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles(
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   profiles_.clear();
-
-  // Populates |auxiliary_profiles_|.
-  if (use_auxiliary_profiles)
-    LoadAuxiliaryProfiles(record_metrics);
-
   profiles_.insert(profiles_.end(), web_profiles().begin(),
                    web_profiles().end());
   if (use_auxiliary_profiles) {
+    LoadAuxiliaryProfiles(record_metrics);
     profiles_.insert(
         profiles_.end(), auxiliary_profiles_.begin(),
         auxiliary_profiles_.end());
   }
-  profiles_.insert(
-      profiles_.end(), server_profiles_.begin(), server_profiles_.end());
+  if (IsExperimentalWalletIntegrationEnabled() &&
+      pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
+    profiles_.insert(
+        profiles_.end(), server_profiles_.begin(), server_profiles_.end());
+  }
   return profiles_;
 }
 

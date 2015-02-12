@@ -1257,54 +1257,6 @@ bool AutofillTable::GetServerCreditCards(
     credit_cards->push_back(card);
   }
 
-  static bool do_once = true;
-  // Fake out some masked cards. TODO(estade): remove this block of code.
-  if (do_once &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWalletCardImport)) {
-    do_once = false;
-    std::vector<CreditCard> fake_masked_cards;
-    fake_masked_cards.push_back(
-        CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NAME,
-                                        ASCIIToUTF16("Edgar Salazar"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_MONTH,
-                                        ASCIIToUTF16("03"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                                        ASCIIToUTF16("2016"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NUMBER,
-                                        ASCIIToUTF16("8431"));
-    fake_masked_cards.back().SetTypeForMaskedCard(kAmericanExpressCard);
-
-    fake_masked_cards.push_back(
-        CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NAME,
-                                        ASCIIToUTF16("Elena Salazar"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_MONTH,
-                                        ASCIIToUTF16("05"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                                        ASCIIToUTF16("2017"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NUMBER,
-                                        ASCIIToUTF16("9424"));
-    fake_masked_cards.back().SetTypeForMaskedCard(kDiscoverCard);
-
-    fake_masked_cards.push_back(
-        CreditCard(CreditCard::MASKED_SERVER_CARD, "c789"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NAME,
-                                        ASCIIToUTF16("Efren Salazar, Sr"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_MONTH,
-                                        ASCIIToUTF16("12"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                                        ASCIIToUTF16("2014"));
-    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NUMBER,
-                                        ASCIIToUTF16("1881"));
-    fake_masked_cards.back().SetTypeForMaskedCard(kVisaCard);
-    fake_masked_cards.back().SetServerStatus(CreditCard::EXPIRED);
-
-    SetServerCreditCards(fake_masked_cards);
-    return GetServerCreditCards(credit_cards);
-  }
-
   return s.Succeeded();
 }
 

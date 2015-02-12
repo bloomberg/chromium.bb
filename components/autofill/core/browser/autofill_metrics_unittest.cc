@@ -1146,6 +1146,12 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
 
 // Test that we log interacted form event for address only once.
 TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
+  // Enabling server card.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::autofill::switches::kEnableWalletCardImport);
+  autofill_client_.GetPrefs()->SetBoolean(
+      ::autofill::prefs::kAutofillWalletImportEnabled, true);
+
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");

@@ -57,7 +57,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(34, MODEL_TYPE_COUNT);
+  EXPECT_EQ(35, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -133,6 +133,10 @@ TEST_F(ProtoValueConversionsTest, AutofillSpecificsToValue) {
 
 TEST_F(ProtoValueConversionsTest, AutofillProfileSpecificsToValue) {
   TestSpecificsToValue(AutofillProfileSpecificsToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
+  TestSpecificsToValue(AutofillWalletSpecificsToValue);
 }
 
 TEST_F(ProtoValueConversionsTest, BookmarkSpecificsToValue) {
@@ -313,6 +317,8 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(theme);
   SET_FIELD(typed_url);
   SET_FIELD(wifi_credential);
+
+  SET_FIELD(autofill_wallet);
 
 #undef SET_FIELD
 
