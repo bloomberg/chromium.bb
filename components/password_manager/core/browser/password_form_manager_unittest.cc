@@ -1308,4 +1308,42 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
 }
 
+TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
+  // Check that preferred_match() is always a member of best_matches().
+  TestPasswordManagerClient client_with_store(mock_store());
+
+  TestPasswordManager manager(&client_with_store);
+  PasswordFormManager form_manager(&manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  EXPECT_CALL(*mock_store(),
+              GetLogins(*observed_form(), auth_policy, &form_manager));
+  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
+
+  ScopedVector<PasswordForm> simulated_results;
+  scoped_ptr<PasswordForm> form(new PasswordForm(*observed_form()));
+  form->username_value = ASCIIToUTF16("username");
+  form->password_value = ASCIIToUTF16("password1");
+  form->preferred = false;
+
+  scoped_ptr<PasswordForm> generated_form(new PasswordForm(*form));
+  generated_form->type = PasswordForm::TYPE_GENERATED;
+  generated_form->password_value = ASCIIToUTF16("password2");
+  generated_form->preferred = true;
+
+  simulated_results.push_back(generated_form.Pass());
+  simulated_results.push_back(form.Pass());
+
+  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
+  EXPECT_EQ(1u, form_manager.best_matches().size());
+  EXPECT_EQ(form_manager.preferred_match(),
+            form_manager.best_matches().begin()->second);
+  // Make sure to access all fields of preferred_match; this way if it was
+  // deleted, ASAN might notice it.
+  PasswordForm dummy(*form_manager.preferred_match());
+}
+
 }  // namespace password_manager

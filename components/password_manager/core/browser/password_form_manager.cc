@@ -421,21 +421,19 @@ void PasswordFormManager::OnRequestDone(
 
   int best_score = 0;
   // These credentials will be in the final result regardless of score.
-  ScopedVector<PasswordForm> credentials_to_keep;
+  std::vector<PasswordForm> credentials_to_keep;
   for (auto& login_ptr : logins_result) {
     scoped_ptr<PasswordForm> login(login_ptr);
     login_ptr = nullptr;
-    // A stable handle to the form while the owners change.
-    const PasswordForm& const_login(*login);
 
-    if (ShouldIgnoreResult(const_login))
+    if (ShouldIgnoreResult(*login))
       continue;
 
     // Score and update best matches.
-    int current_score = ScoreResult(const_login);
+    int current_score = ScoreResult(*login);
     if ((observed_form_.scheme == PasswordForm::SCHEME_HTML) &&
-        (observed_form_.signon_realm == const_login.origin.spec()) &&
-        (current_score > 0) && (!const_login.blacklisted_by_user)) {
+        (observed_form_.signon_realm == login->origin.spec()) &&
+        (current_score > 0) && (!login->blacklisted_by_user)) {
       // This check is here so we can append empty path matches in the event
       // they don't score as high as others and aren't added to best_matches_.
       // This is most commonly imported firefox logins. We skip blacklisted
@@ -448,8 +446,8 @@ void PasswordFormManager::OnRequestDone(
       // TODO(timsteele): Bug 1269400. We probably should do something more
       // elegant for any shorter-path match instead of explicitly handling empty
       // path matches.
-      credentials_to_keep.push_back(login.release());
-    } else if (const_login.type == PasswordForm::TYPE_GENERATED) {
+      credentials_to_keep.push_back(*login);
+    } else if (login->type == PasswordForm::TYPE_GENERATED) {
       // Always keep generated passwords as part of the result set. If a user
       // generates a password on a signup form, it should show on a login form
       // even if they have a previous login saved.
@@ -457,28 +455,29 @@ void PasswordFormManager::OnRequestDone(
       // signup forms even if they weren't generated, but currently it's hard to
       // distinguish between those forms and two different login forms on the
       // same domain. Filed http://crbug.com/294468 to look into this.
-      credentials_to_keep.push_back(login.release());
+      credentials_to_keep.push_back(*login);
     }
 
     // End of exceptions, only interested in good-scoring candidates since now.
     if (current_score < best_score) {
       continue;
     } else if (current_score == best_score) {
-      auto& best_match = best_matches_[const_login.username_value];
+      auto& best_match = best_matches_[login->username_value];
       if (best_match == preferred_match_)
         preferred_match_ = nullptr;
       delete best_match;
+      preferred_match_ = login->preferred ? login.get() : preferred_match_;
       best_match = login.release();
     } else {  // current_score > best_score
       best_score = current_score;
-      preferred_match_ = nullptr;  // Don't delete, its owned by best_matches_.
       STLDeleteValues(&best_matches_);  // |login| tops the previous matches.
-      best_matches_[const_login.username_value] = login.release();
+      preferred_match_ = login->preferred ? login.get() : nullptr;
+      base::string16 username_value = login->username_value;
+      best_matches_[username_value] = login.release();
     }
     // |login| is just temporary, should no longer hold the credentials at this
     // point.
     DCHECK(!login);
-    preferred_match_ = const_login.preferred ? &const_login : preferred_match_;
   }
   logins_result.weak_clear();  // It contains just nulls, speed up destruction.
 
@@ -493,15 +492,14 @@ void PasswordFormManager::OnRequestDone(
     return;
   }
 
-  for (auto& form : credentials_to_keep) {
+  for (std::vector<PasswordForm>::const_iterator it =
+           credentials_to_keep.begin();
+       it != credentials_to_keep.end(); ++it) {
     // If we don't already have a result with the same username, add the
     // lower-scored match (if it had equal score it would already be in
     // best_matches_).
-    auto& corresponding_best_match = best_matches_[form->username_value];
-    if (!corresponding_best_match) {
-      corresponding_best_match = form;
-      form = nullptr;
-    }
+    if (best_matches_.find(it->username_value) == best_matches_.end())
+      best_matches_[it->username_value] = new PasswordForm(*it);
   }
 
   UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
