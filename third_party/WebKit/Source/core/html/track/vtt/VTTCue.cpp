@@ -490,14 +490,6 @@ PassRefPtrWillBeRawPtr<DocumentFragment> VTTCue::getCueAsHTML()
     return clonedFragment.release();
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> VTTCue::createCueRenderingTree()
-{
-    createVTTNodeTree();
-    RefPtrWillBeRawPtr<DocumentFragment> clonedFragment = DocumentFragment::create(document());
-    m_vttNodeTree->cloneChildNodes(clonedFragment.get());
-    return clonedFragment.release();
-}
-
 void VTTCue::setRegionId(const String& regionId)
 {
     if (m_regionId == regionId)
@@ -804,7 +796,9 @@ void VTTCue::updateDisplayTree(double movieTime)
     m_cueBackgroundBox->removeChildren();
 
     // Update the two sets containing past and future WebVTT objects.
-    RefPtrWillBeRawPtr<DocumentFragment> referenceTree = createCueRenderingTree();
+    createVTTNodeTree();
+    RefPtrWillBeRawPtr<DocumentFragment> referenceTree = DocumentFragment::create(document());
+    m_vttNodeTree->cloneChildNodes(referenceTree.get());
     markFutureAndPastNodes(referenceTree.get(), startTime(), movieTime);
     m_cueBackgroundBox->appendChild(referenceTree, ASSERT_NO_EXCEPTION);
 }

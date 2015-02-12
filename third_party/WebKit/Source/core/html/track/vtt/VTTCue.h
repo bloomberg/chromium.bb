@@ -104,7 +104,6 @@ public:
     void parseSettings(const String&);
 
     PassRefPtrWillBeRawPtr<DocumentFragment> getCueAsHTML();
-    PassRefPtrWillBeRawPtr<DocumentFragment> createCueRenderingTree();
 
     const String& regionId() const { return m_regionId; }
     void setRegionId(const String&);
