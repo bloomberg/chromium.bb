@@ -105,8 +105,6 @@ class MockRenderProcessHost : public RenderProcessHost {
     factory_ = factory;
   }
 
-  int GetActiveViewCount();
-
   void set_is_isolated_guest(bool is_isolated_guest) {
     is_isolated_guest_ = is_isolated_guest;
   }

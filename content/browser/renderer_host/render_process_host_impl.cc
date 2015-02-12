@@ -2094,7 +2094,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // TODO(darin): clean this up
 }
 
-int RenderProcessHostImpl::GetActiveViewCount() {
+int RenderProcessHost::GetActiveViewCount() {
   int num_active_views = 0;
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());

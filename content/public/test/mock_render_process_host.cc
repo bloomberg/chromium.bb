@@ -193,18 +193,6 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
 void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {
 }
 
-int MockRenderProcessHost::GetActiveViewCount() {
-  int num_active_views = 0;
-  scoped_ptr<RenderWidgetHostIterator> widgets(
-      RenderWidgetHost::GetRenderWidgetHosts());
-  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
-    // Count only RenderWidgetHosts in this process.
-    if (widget->GetProcess()->GetID() == GetID())
-      num_active_views++;
-  }
-  return num_active_views;
-}
-
 bool MockRenderProcessHost::FastShutdownForPageCount(size_t count) {
   if (static_cast<size_t>(GetActiveViewCount()) == count)
     return FastShutdownIfPossible();

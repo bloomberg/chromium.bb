@@ -732,10 +732,8 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
           GetProcess()->GetID())) {
     // This process has no bindings yet. Make sure it does not have more
     // than this single active view.
-    RenderProcessHostImpl* process =
-        static_cast<RenderProcessHostImpl*>(GetProcess());
     // --single-process only has one renderer.
-    if (process->GetActiveViewCount() > 1 &&
+    if (GetProcess()->GetActiveViewCount() > 1 &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSingleProcess))
       return;

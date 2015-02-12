@@ -174,10 +174,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
     child_process_activity_time_ = base::TimeTicks::Now();
   }
 
-  // Returns the current number of active views in this process.  Excludes
-  // any RenderViewHosts that are swapped out.
-  int GetActiveViewCount();
-
   // Start and end frame subscription for a specific renderer.
   // This API only supports subscription to accelerated composited frames.
   void BeginFrameSubscription(

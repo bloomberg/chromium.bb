@@ -277,6 +277,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                            int cdm_id) const = 0;
 #endif
 
+  // Returns the current number of active views in this process.  Excludes
+  // any RenderViewHosts that are swapped out.
+  int GetActiveViewCount();
+
   // Static management functions -----------------------------------------------
 
   // Flag to run the renderer in process.  This is primarily
