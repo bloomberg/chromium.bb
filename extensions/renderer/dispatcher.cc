@@ -1167,11 +1167,14 @@ void Dispatcher::UpdateOriginPermissions(const GURL& extension_url,
                                          const URLPatternSet& old_patterns,
                                          const URLPatternSet& new_patterns) {
   static const char* kSchemes[] = {
-      url::kHttpScheme,
-      url::kHttpsScheme,
-      url::kFileScheme,
-      content::kChromeUIScheme,
-      url::kFtpScheme,
+    url::kHttpScheme,
+    url::kHttpsScheme,
+    url::kFileScheme,
+    content::kChromeUIScheme,
+    url::kFtpScheme,
+#if defined(OS_CHROMEOS)
+    content::kExternalFileScheme,
+#endif
   };
   for (size_t i = 0; i < arraysize(kSchemes); ++i) {
     const char* scheme = kSchemes[i];

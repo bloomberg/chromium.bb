@@ -361,6 +361,23 @@ TEST(PermissionsDataTest, GetPermissionMessages_Plugins) {
 #endif
 }
 
+TEST(PermissionsDataTest, ExternalFiles) {
+  GURL external_file("externalfile:abc");
+  scoped_refptr<const Extension> extension;
+
+  // A regular extension shouldn't get access to externalfile: scheme URLs
+  // even with <all_urls> specified.
+  extension = GetExtensionWithHostPermission(
+      "regular_extension", "<all_urls>", Manifest::UNPACKED);
+  ASSERT_FALSE(extension->permissions_data()->HasHostPermission(external_file));
+
+  // Component extensions should get access to externalfile: scheme URLs when
+  // <all_urls> is specified.
+  extension = GetExtensionWithHostPermission(
+      "component_extension", "<all_urls>", Manifest::COMPONENT);
+  ASSERT_TRUE(extension->permissions_data()->HasHostPermission(external_file));
+}
+
 // Base class for testing the CanAccessPage and CanCaptureVisiblePage
 // methods of Extension for extensions with various permissions.
 class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
