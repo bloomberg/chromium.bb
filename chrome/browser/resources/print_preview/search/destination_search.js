@@ -679,6 +679,7 @@ cr.define('print_preview', function() {
      */
     onCloudprintPromoCloseButtonClick_: function() {
       setIsVisible(this.getChildElement('.cloudprint-promo'), false);
+      this.reflowLists_();
     },
 
     /**
