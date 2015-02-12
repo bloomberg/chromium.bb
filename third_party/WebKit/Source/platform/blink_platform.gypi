@@ -754,8 +754,6 @@
       'network/ParsedContentType.h',
       'network/ResourceError.cpp',
       'network/ResourceError.h',
-      'network/ResourceLoadTiming.cpp',
-      'network/ResourceLoadTiming.h',
       'network/ResourceRequest.cpp',
       'network/ResourceRequest.h',
       'network/ResourceResponse.cpp',
