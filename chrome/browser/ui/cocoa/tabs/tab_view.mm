@@ -493,6 +493,9 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)setTitle:(NSString*)title {
+  if ([title isEqualToString:[titleView_ stringValue]])
+    return;
+
   [titleView_ setStringValue:title];
 
   base::string16 title16 = base::SysNSStringToUTF16(title);
@@ -509,8 +512,11 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)setTitleFrame:(NSRect)titleFrame {
+  NSRect oldTitleFrame = [titleView_ frame];
+  if (NSEqualRects(titleFrame, oldTitleFrame))
+    return;
   [titleView_ setFrame:titleFrame];
-  [self setNeedsDisplayInRect:titleFrame];
+  [self setNeedsDisplayInRect:NSUnionRect(titleFrame, oldTitleFrame)];
 }
 
 - (NSColor*)titleColor {
@@ -518,6 +524,8 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)setTitleColor:(NSColor*)titleColor {
+  if ([titleColor isEqual:[titleView_ textColor]])
+    return;
   [titleView_ setTextColor:titleColor];
   [self setNeedsDisplayInRect:[titleView_ frame]];
 }
@@ -527,6 +535,8 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)setTitleHidden:(BOOL)titleHidden {
+  if (titleHidden == [titleView_ isHidden])
+    return;
   [titleView_ setHidden:titleHidden];
   [self setNeedsDisplayInRect:[titleView_ frame]];
 }

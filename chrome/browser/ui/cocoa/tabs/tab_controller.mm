@@ -111,6 +111,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
            controller:self
           closeButton:closeButton_]);
     [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+    [view setPostsFrameChangedNotifications:NO];
+    [view setPostsBoundsChangedNotifications:NO];
     [view addSubview:iconView_];
     [view addSubview:closeButton_];
     [view setTitleFrame:titleFrame];
