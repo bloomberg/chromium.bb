@@ -141,35 +141,37 @@ source_set("test_support") {
   }
 }
 
-test("compositor_unittests") {
-  sources = [
-    "layer_animation_element_unittest.cc",
-    "layer_animation_sequence_unittest.cc",
-    "layer_animator_unittest.cc",
-    "layer_owner_unittest.cc",
-    "layer_unittest.cc",
-    "run_all_unittests.cc",
-    "transform_animation_curve_adapter_unittest.cc",
-  ]
+if (!is_android) {
+  test("compositor_unittests") {
+    sources = [
+      "layer_animation_element_unittest.cc",
+      "layer_animation_sequence_unittest.cc",
+      "layer_animator_unittest.cc",
+      "layer_owner_unittest.cc",
+      "layer_unittest.cc",
+      "run_all_unittests.cc",
+      "transform_animation_curve_adapter_unittest.cc",
+    ]
 
-  deps = [
-    ":compositor",
-    ":test_support",
-    "//base",
-    "//base/allocator",
-    "//base/test:test_support",
-    "//cc",
-    "//cc:test_support",
-    "//skia",
-    "//testing/gtest",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-    "//ui/resources",
-  ]
+    deps = [
+      ":compositor",
+      ":test_support",
+      "//base",
+      "//base/allocator",
+      "//base/test:test_support",
+      "//cc",
+      "//cc:test_support",
+      "//skia",
+      "//testing/gtest",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/resources",
+    ]
 
-  if (is_linux) {
-    deps += [ "//third_party/mesa:osmesa" ]
+    if (is_linux) {
+      deps += [ "//third_party/mesa:osmesa" ]
+    }
   }
 }
