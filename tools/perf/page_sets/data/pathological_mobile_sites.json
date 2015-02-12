@@ -2,12 +2,12 @@
     "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "pathological_mobile_sites_000.wpr": [
-            "http://www.latimes.com", 
             "http://www.pbs.org/newshour/bb/much-really-cost-live-city-like-seattle/#the-rundown", 
-            "http://edition.cnn.com", 
             "http://www.zdnet.com", 
             "http://m.espn.go.com/nhl/rankings", 
-            "http://recode.net"
+            "http://recode.net", 
+            "http://www.latimes.com", 
+            "http://edition.cnn.com"
         ]
     }
 }
