@@ -31,7 +31,7 @@
 namespace blink {
 
 RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGGraphicsElement* node)
-    : RenderSVGContainer(node)
+    : LayoutSVGContainer(node)
     , m_needsTransformUpdate(true)
     , m_didTransformToRootUpdate(false)
 {
@@ -66,7 +66,7 @@ bool RenderSVGTransformableContainer::isChildAllowed(LayoutObject* child, const 
         if (parent() && parent()->isSVG())
             return parent()->isChildAllowed(child, style);
     }
-    return RenderSVGContainer::isChildAllowed(child, style);
+    return LayoutSVGContainer::isChildAllowed(child, style);
 }
 
 bool RenderSVGTransformableContainer::calculateLocalTransform()

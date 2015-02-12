@@ -20,8 +20,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGContainer_h
-#define RenderSVGContainer_h
+#ifndef LayoutSVGContainer_h
+#define LayoutSVGContainer_h
 
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
@@ -29,12 +29,12 @@ namespace blink {
 
 class SVGElement;
 
-class RenderSVGContainer : public RenderSVGModelObject {
+class LayoutSVGContainer : public RenderSVGModelObject {
 public:
-    explicit RenderSVGContainer(SVGElement*);
-    virtual ~RenderSVGContainer();
+    explicit LayoutSVGContainer(SVGElement*);
+    virtual ~LayoutSVGContainer();
 
-    // If you have a RenderSVGContainer, use firstChild or lastChild instead.
+    // If you have a LayoutSVGContainer, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
@@ -55,7 +55,7 @@ protected:
     virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || RenderSVGModelObject::isOfType(type); }
-    virtual const char* renderName() const override { return "RenderSVGContainer"; }
+    virtual const char* renderName() const override { return "LayoutSVGContainer"; }
 
     virtual void layout() override;
 
@@ -94,8 +94,8 @@ private:
     mutable bool m_hasNonIsolatedBlendingDescendantsDirty : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGContainer, isSVGContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGContainer, isSVGContainer());
 
 } // namespace blink
 
-#endif // RenderSVGContainer_h
+#endif // LayoutSVGContainer_h

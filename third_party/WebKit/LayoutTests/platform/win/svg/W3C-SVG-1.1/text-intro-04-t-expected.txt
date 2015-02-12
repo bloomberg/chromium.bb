@@ -3,11 +3,11 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (10,6) size 417x238
+    LayoutSVGContainer {g} at (10,6) size 417x238
       LayoutSVGText {text} at (10,6) size 140x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 140x17
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 139.62: "Test horizontal text."
-      RenderSVGContainer {g} at (10,45) size 417x199
+      LayoutSVGContainer {g} at (10,45) size 417x199
         LayoutSVGText {text} at (10,45) size 283x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 283x19
             chunk 1 text run 1 at (10.00,60.00) startOffset 0 endOffset 42 width 282.83: "Polish: Mog\x{119} je\x{15B}\x{107} szk\x{142}o, i mi nie szkodzi."

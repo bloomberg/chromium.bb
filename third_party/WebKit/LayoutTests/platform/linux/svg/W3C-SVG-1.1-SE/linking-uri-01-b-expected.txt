@@ -3,26 +3,26 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (30,4) size 416x295
+    LayoutSVGContainer {g} at (30,4) size 416x295
       LayoutSVGText {text} at (65,4) size 338x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 338x15
           chunk 1 text run 1 at (65.00,16.00) startOffset 0 endOffset 69 width 338.00: "Link test of the 'view' element and its attributes, 1 of 2, internal."
-      RenderSVGContainer {g} at (30,28) size 416x271
-        RenderSVGContainer {g} at (150,130) size 125x112 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-150.00,75.00)}]
+      LayoutSVGContainer {g} at (30,28) size 416x271
+        LayoutSVGContainer {g} at (150,130) size 125x112 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-150.00,75.00)}]
           RenderSVGRect {rect} at (150,130) size 125x85 [fill={[type=SOLID] [color=#AAAAAA]}] [x=300.00] [y=55.00] [width=125.00] [height=85.00]
-          RenderSVGContainer {a} at (160,132) size 103x16
+          LayoutSVGContainer {a} at (160,132) size 103x16
             LayoutSVGText {text} at (310,57) size 103x16 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 103x16
                 chunk 1 text run 1 at (310.00,70.00) startOffset 0 endOffset 15 width 103.00: "Go to Rectangle"
-          RenderSVGContainer {a} at (160,152) size 80x16
+          LayoutSVGContainer {a} at (160,152) size 80x16
             LayoutSVGText {text} at (310,77) size 80x16 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 80x16
                 chunk 1 text run 1 at (310.00,90.00) startOffset 0 endOffset 13 width 80.00: "Go to Ellipse"
-          RenderSVGContainer {a} at (160,172) size 75x16
+          LayoutSVGContainer {a} at (160,172) size 75x16
             LayoutSVGText {text} at (310,97) size 75x16 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 75x16
                 chunk 1 text run 1 at (310.00,110.00) startOffset 0 endOffset 12 width 75.00: "Go to Circle"
-          RenderSVGContainer {a} at (160,192) size 90x16
+          LayoutSVGContainer {a} at (160,192) size 90x16
             LayoutSVGText {text} at (310,117) size 90x16 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 90x16
                 chunk 1 text run 1 at (310.00,130.00) startOffset 0 endOffset 13 width 90.00: "Go to Polygon"
@@ -70,7 +70,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (38,194) size 94x13 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 94x13
             chunk 1 (middle anchor) text run 1 at (38.00,204.00) startOffset 0 endOffset 19 width 94.00: "changes to viewport"
-    RenderSVGContainer {g} at (10,311) size 246x36
+    LayoutSVGContainer {g} at (10,311) size 246x36
       LayoutSVGText {text} at (10,311) size 246x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 246x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 246.00: "$Revision: 1.12 $"

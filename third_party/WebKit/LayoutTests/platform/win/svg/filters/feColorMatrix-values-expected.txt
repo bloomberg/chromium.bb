@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
       LayoutSVGResourceFilter {filter} [id="huerange"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feColorMatrix type="HUEROTATE" values="720.00"]
           [SourceGraphic]
-    RenderSVGContainer {g} at (0,0) size 440x440
+    LayoutSVGContainer {g} at (0,0) size 440x440
       RenderSVGRect {rect} at (0,0) size 440x440 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=400.00] [height=400.00]
         [filter="satfull"] LayoutSVGResourceFilter {filter} at (-40,-40) size 480x480
       RenderSVGRect {rect} at (2,2) size 196x396 [fill={[type=SOLID] [color=#FF0000]}] [x=2.00] [y=2.00] [width=196.00] [height=396.00]

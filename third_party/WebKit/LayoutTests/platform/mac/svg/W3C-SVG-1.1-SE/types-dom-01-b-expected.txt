@@ -3,9 +3,9 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (10,8) size 365x295
-      RenderSVGContainer {g} at (10,8) size 365x295
-        RenderSVGContainer {g} at (16,8) size 359x156 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
+    LayoutSVGContainer {g} at (10,8) size 365x295
+      LayoutSVGContainer {g} at (10,8) size 365x295
+        LayoutSVGContainer {g} at (16,8) size 359x156 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
           LayoutSVGText {text} at (30,131) size 343x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 343x24
               chunk 1 text run 1 at (30.00,150.00) startOffset 0 endOffset 37 width 342.41: "Rotated Text for testing SVGLocatable"
@@ -32,7 +32,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (10,289) size 273x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 273x14
             chunk 1 text run 1 at (10.00,300.00) startOffset 0 endOffset 47 width 272.48: ".nearestViewportElement of blueCircle=nestedSVG"
-    RenderSVGContainer {g} at (10,310) size 230x37
+    LayoutSVGContainer {g} at (10,310) size 230x37
       LayoutSVGText {text} at (10,310) size 230x37 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 230x37
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.6 $"

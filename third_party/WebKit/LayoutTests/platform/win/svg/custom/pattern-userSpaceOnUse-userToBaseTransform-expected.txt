@@ -8,7 +8,7 @@ layer at (0,0) size 800x358
       RenderBR {br} at (772,0) size 1x17
       RenderBR {br} at (0,18) size 0x17
       RenderSVGRoot {svg} at (8,43) size 202x306
-        RenderSVGContainer {g} at (9,45) size 200x200
+        LayoutSVGContainer {g} at (9,45) size 200x200
           RenderSVGRect {rect} at (9,145) size 100x50 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=100.00] [width=100.00] [height=50.00]
           RenderSVGRect {rect} at (109,45) size 100x50 [fill={[type=SOLID] [color=#FF0000]}] [x=100.00] [y=0.00] [width=100.00] [height=50.00]
           RenderSVGRect {rect} at (9,145) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=100.00] [width=100.00] [height=100.00]
@@ -19,10 +19,10 @@ layer at (0,0) size 800x358
         LayoutSVGText {text} at (5,266) size 83x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 83x17
             chunk 1 text run 1 at (5.00,280.00) startOffset 0 endOffset 11 width 82.78: "+Transforms"
-        RenderSVGContainer {g} at (215,145) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,100.00)}]
+        LayoutSVGContainer {g} at (215,145) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,100.00)}]
           RenderSVGRect {rect} at (215,145) size 100x50 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
           RenderSVGRect {rect} at (215,145) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-        RenderSVGContainer {g} at (315,45) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
+        LayoutSVGContainer {g} at (315,45) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
           RenderSVGRect {rect} at (315,45) size 100x50 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
           RenderSVGRect {rect} at (315,45) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -37,6 +37,6 @@ layer at (420,44) size 202x302
     LayoutSVGText {text} at (5,266) size 173x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 173x17
         chunk 1 text run 1 at (5.00,280.00) startOffset 0 endOffset 24 width 172.09: "+Accelerated Compositing"
-    RenderSVGContainer {g} at (421,45) size 200x200
+    LayoutSVGContainer {g} at (421,45) size 200x200
       RenderSVGRect {rect} at (421,145) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=100.00] [width=100.00] [height=100.00]
       RenderSVGRect {rect} at (521,45) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=100.00] [y=0.00] [width=100.00] [height=100.00]

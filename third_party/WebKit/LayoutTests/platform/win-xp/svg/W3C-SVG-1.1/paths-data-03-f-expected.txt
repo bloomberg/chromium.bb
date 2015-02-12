@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (20,2) size 447x330
+    LayoutSVGContainer {g} at (20,2) size 447x330
       LayoutSVGText {text} at (120,2) size 236x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 236x15
           chunk 1 text run 1 at (120.00,14.00) startOffset 0 endOffset 42 width 236.00: "Elliptical arc curves drawn with commands:"

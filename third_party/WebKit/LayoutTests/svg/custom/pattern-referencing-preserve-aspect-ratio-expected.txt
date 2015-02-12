@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourcePattern {pattern} [id="pattern1"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
         RenderSVGRect {rect} at (0,0) size 30x40 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=29.00] [height=39.00]
-        RenderSVGContainer {g} at (5,10) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,5.00)}]
+        LayoutSVGContainer {g} at (5,10) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,5.00)}]
           RenderSVGEllipse {circle} at (5,10) size 20x20 [fill={[type=SOLID] [color=#FFFF00]}] [cx=15.00] [cy=15.00] [r=10.00]
           RenderSVGEllipse {circle} at (10,15) size 4x4 [fill={[type=SOLID] [color=#000000]}] [cx=12.00] [cy=12.00] [r=1.50]
           RenderSVGEllipse {circle} at (15,15) size 4x4 [fill={[type=SOLID] [color=#000000]}] [cx=17.00] [cy=12.00] [r=1.50]

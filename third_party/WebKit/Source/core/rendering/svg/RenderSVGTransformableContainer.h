@@ -21,18 +21,18 @@
 #ifndef RenderSVGTransformableContainer_h
 #define RenderSVGTransformableContainer_h
 
-#include "core/rendering/svg/RenderSVGContainer.h"
+#include "core/layout/svg/LayoutSVGContainer.h"
 
 namespace blink {
 
 class SVGGraphicsElement;
-class RenderSVGTransformableContainer final : public RenderSVGContainer {
+class RenderSVGTransformableContainer final : public LayoutSVGContainer {
 public:
     explicit RenderSVGTransformableContainer(SVGGraphicsElement*);
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTransformableContainer || RenderSVGContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTransformableContainer || LayoutSVGContainer::isOfType(type); }
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
     virtual bool didTransformToRootUpdate() override { return m_didTransformToRootUpdate; }

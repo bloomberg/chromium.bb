@@ -33,7 +33,7 @@ layer at (62,110) size 333x250
       RenderView at (0,0) size 333x250
     layer at (0,0) size 333x250
       RenderSVGRoot {svg} at (0,0) size 333x250
-        RenderSVGContainer {g} at (18,31) size 260x164
+        LayoutSVGContainer {g} at (18,31) size 260x164
           RenderSVGRect {rect} at (20,31) size 36x57 [stroke={[type=SOLID] [color=#000000]}] [x=30.00] [y=46.00] [width=50.00] [height=80.00]
           RenderSVGRect {rect} at (90,32) size 35x56 [fill={[type=SOLID] [color=#FF0000]}] [x=130.00] [y=46.00] [width=50.00] [height=80.00]
           RenderSVGRect {rect} at (173,31) size 36x57 [stroke={[type=SOLID] [color=#000000]}] [x=250.00] [y=46.00] [width=50.00] [height=80.00]

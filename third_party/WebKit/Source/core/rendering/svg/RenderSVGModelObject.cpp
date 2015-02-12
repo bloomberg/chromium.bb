@@ -32,10 +32,10 @@
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/svg/LayoutSVGContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGGraphicsElement.h"
 

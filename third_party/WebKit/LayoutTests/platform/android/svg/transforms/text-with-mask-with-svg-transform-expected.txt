@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,83) size 430x460
-    RenderSVGContainer {g} at (0,83) size 430x460 [transform={m=((0.43,0.25)(-0.25,0.43)) t=(50.00,50.00)}]
+    LayoutSVGContainer {g} at (0,83) size 430x460 [transform={m=((0.43,0.25)(-0.25,0.43)) t=(50.00,50.00)}]
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (10,5) size 145x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 145x18

@@ -2,8 +2,8 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (78,53) size 293x150 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
-      RenderSVGContainer {a} at (78,53) size 293x150
+    LayoutSVGContainer {g} at (78,53) size 293x150 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
+      LayoutSVGContainer {a} at (78,53) size 293x150
         RenderSVGPath {path} at (78,53) size 293x150 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#00FF00]}] [data="M 185 40 L 85 40 L 85 28 L 40 64 L 85 100 L 85 88 L 185 88 Z"]
     LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x45

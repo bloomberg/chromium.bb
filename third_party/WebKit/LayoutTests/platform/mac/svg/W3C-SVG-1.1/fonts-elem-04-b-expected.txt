@@ -2,18 +2,18 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (26,7) size 392x236
+    LayoutSVGContainer {g} at (26,7) size 392x236
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (26,7) size 392x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 392x36
           chunk 1 text run 1 at (26.00,35.00) startOffset 0 endOffset 31 width 391.55: "External SVG font element (css)"
-      RenderSVGContainer {g} at (31,81) size 345x162
+      LayoutSVGContainer {g} at (31,81) size 345x162
         LayoutSVGText {text} at (31,113) size 105x22 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 105x22
             chunk 1 text run 1 at (31.00,130.00) startOffset 0 endOffset 13 width 104.48: "Placed Glyphs"
-        RenderSVGContainer {g} at (164,81) size 212x162 [transform={m=((1.00,0.00)(0.00,-1.00)) t=(165.00,140.00)}]
+        LayoutSVGContainer {g} at (164,81) size 212x162 [transform={m=((1.00,0.00)(0.00,-1.00)) t=(165.00,140.00)}]
           RenderSVGPath {line} at (165,139) size 210x2 [stroke={[type=SOLID] [color=#888888]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=210.00] [y2=0.00]
-          RenderSVGContainer {g} at (164,81) size 212x162 [transform={m=((0.03,0.00)(0.00,0.03)) t=(0.00,0.00)}]
+          LayoutSVGContainer {g} at (164,81) size 212x162 [transform={m=((0.03,0.00)(0.00,0.03)) t=(0.00,0.00)}]
             RenderSVGPath {line} at (164,81) size 2x162 [stroke={[type=SOLID] [color=#888888] [stroke width=50.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-3500.00] [x2=0.00] [y2=2000.00]
             RenderSVGPath {path} at (168,96) size 37x45 [fill={[type=SOLID] [color=#000000]}] [data="M 1250 -30 C 1188.67 -30 1135.33 48.6667 1090 206 C 1072.67 266 1051 371 1025 521 C 957 511.667 868 495 758 471 L 492 416 C 458.667 328.667 401.667 201 321 33 C 299.667 -4.33333 270.667 -23 234 -23 C 207.333 -23 183.667 -13.3333 163 6 C 142.333 25.3333 131.667 49.3333 131 78 C 131 110 181.333 231.667 282 443 C 270.667 460.333 265 480.333 265 503 C 265 557 297.667 591.667 363 607 C 439 749.667 535 913.667 651 1099 C 809 1351.67 907.333 1478 946 1478 C 998.667 1478 1034.67 1441.33 1054 1368 L 1117 1032 L 1266 337 L 1323 179 C 1342.33 125 1352 89 1352 71 C 1352 42.3333 1341.67 18.3333 1321 -1 C 1300.33 -20.3333 1276.67 -30 1250 -30 Z M 897 1113 L 611 652 C 691.667 672.667 814 697.667 978 727 L 897 1113 Z"]
             RenderSVGPath {line} at (208,81) size 2x162 [stroke={[type=SOLID] [color=#888888] [stroke width=50.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=1498.00] [y1=-3500.00] [x2=1498.00] [y2=2000.00]
@@ -28,7 +28,7 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (67,193) size 74x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 74x22
           chunk 1 text run 1 at (67.00,210.00) startOffset 0 endOffset 8 width 73.52: "SVG Font"
-      RenderSVGContainer {g} at (165,166) size 210x69 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,220.00)}]
+      LayoutSVGContainer {g} at (165,166) size 210x69 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,220.00)}]
         RenderSVGPath {line} at (165,219) size 210x2 [stroke={[type=SOLID] [color=#888888]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=210.00] [y2=0.00]
         LayoutSVGText {text} at (0,-54) size 199x69 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 199x69

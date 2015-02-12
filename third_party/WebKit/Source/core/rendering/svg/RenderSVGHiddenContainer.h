@@ -20,7 +20,7 @@
 #ifndef RenderSVGHiddenContainer_h
 #define RenderSVGHiddenContainer_h
 
-#include "core/rendering/svg/RenderSVGContainer.h"
+#include "core/layout/svg/LayoutSVGContainer.h"
 
 namespace blink {
 
@@ -28,7 +28,7 @@ class SVGElement;
 
 // This class is for containers which are never drawn, but do need to support style
 // <defs>, <linearGradient>, <radialGradient> are all good examples
-class RenderSVGHiddenContainer : public RenderSVGContainer {
+class RenderSVGHiddenContainer : public LayoutSVGContainer {
 public:
     explicit RenderSVGHiddenContainer(SVGElement*);
 
@@ -37,7 +37,7 @@ public:
 protected:
     virtual void layout() override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || RenderSVGContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || LayoutSVGContainer::isOfType(type); }
 
 private:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override final;

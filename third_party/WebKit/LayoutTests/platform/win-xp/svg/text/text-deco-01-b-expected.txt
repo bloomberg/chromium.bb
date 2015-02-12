@@ -2,11 +2,11 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
-    RenderSVGContainer {g} at (16,8) size 623x461
+    LayoutSVGContainer {g} at (16,8) size 623x461
       LayoutSVGText {text} at (10,5) size 146x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 146x19
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 23 width 145.80: "Test 'text-decoration'."
-      RenderSVGContainer {g} at (40,71) size 599x398
+      LayoutSVGContainer {g} at (40,71) size 599x398
         LayoutSVGText {text} at (25,43) size 121x28 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 121x27
             chunk 1 text run 1 at (25.00,65.00) startOffset 0 endOffset 11 width 120.60: "Normal text"

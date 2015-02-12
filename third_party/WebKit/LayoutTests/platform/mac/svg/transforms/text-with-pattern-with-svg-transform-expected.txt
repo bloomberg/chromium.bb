@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 346x460
-    RenderSVGContainer {g} at (0,0) size 346x460 [transform={m=((0.43,0.25)(-0.25,0.43)) t=(0.00,0.00)}]
+    LayoutSVGContainer {g} at (0,0) size 346x460 [transform={m=((0.43,0.25)(-0.25,0.43)) t=(0.00,0.00)}]
       LayoutSVGResourcePattern {pattern} [id="pat1"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
         RenderSVGRect {rect} at (0,5) size 9x13 [fill={[type=SOLID] [color=#FF0000]}] [x=5.00] [y=5.00] [width=10.00] [height=10.00]
         RenderSVGRect {rect} at (0,11) size 11x12 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=10.00] [height=10.00]

@@ -3,17 +3,17 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (10,28) size 298x125
+    LayoutSVGContainer {g} at (10,28) size 298x125
       LayoutSVGText {text} at (10,28) size 298x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 298x15
           chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 56 width 298.00: "Test pointer-events=\"painted\" with paint server fallback"
       RenderSVGRect {rect} at (10,80) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=10.00] [y=80.00] [width=50.00] [height=50.00]
       RenderSVGRect {rect} at (10,80) size 50x50 [x=10.00] [y=80.00] [width=50.00] [height=50.00]
-      RenderSVGContainer {g} at (10,137) size 251x16
+      LayoutSVGContainer {g} at (10,137) size 251x16
         LayoutSVGText {text} at (10,137) size 251x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 251x16
             chunk 1 text run 1 at (10.00,150.00) startOffset 0 endOffset 44 width 251.00: "Move the pointing device over the rectangle."
-    RenderSVGContainer {g} at (10,311) size 230x36
+    LayoutSVGContainer {g} at (10,311) size 230x36
       LayoutSVGText {text} at (10,311) size 230x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 230x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.4 $"

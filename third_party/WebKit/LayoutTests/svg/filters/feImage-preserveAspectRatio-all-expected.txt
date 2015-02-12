@@ -18,7 +18,7 @@ layer at (0,0) size 800x400
       LayoutSVGResourceFilter {filter} [id="meet_min"] [filterUnits=objectBoundingBox] [primitiveUnits=objectBoundingBox]
         [feImage image-size="100x100"]
     RenderSVGRect {rect} at (0,0) size 800x333 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=1198.00] [height=498.00]
-    RenderSVGContainer {g} at (20,3) size 760x311
+    LayoutSVGContainer {g} at (20,3) size 760x311
       RenderSVGRect {rect} at (26,3) size 81x161 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=25.00] [width=100.00] [height=200.00]
         [filter="none"] LayoutSVGResourceFilter {filter} at (40,5) size 120x240
       RenderSVGRect {rect} at (33,16) size 68x135 [stroke={[type=SOLID] [color=#008000]}] [x=50.00] [y=25.00] [width=100.00] [height=200.00]

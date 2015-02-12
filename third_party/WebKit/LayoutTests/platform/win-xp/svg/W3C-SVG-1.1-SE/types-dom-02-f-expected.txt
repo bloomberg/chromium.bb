@@ -3,11 +3,11 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (51,38) size 389x253
+    LayoutSVGContainer {g} at (51,38) size 389x253
       LayoutSVGText {text} at (51,38) size 159x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 159x21
           chunk 1 (end anchor) text run 1 at (51.00,55.00) startOffset 0 endOffset 19 width 159.00: "animVal != baseVal:"
-      RenderSVGContainer {g} at (240,40) size 200x251 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(500.00,0.00)}]
+      LayoutSVGContainer {g} at (240,40) size 200x251 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(500.00,0.00)}]
         RenderSVGRect {rect} at (420,40) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=60.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (70,62) size 159x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 159x16
@@ -45,7 +45,7 @@ layer at (0,0) size 480x360
         RenderSVGEllipse {circle} at (0,0) size 50x50 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=50.00]
         LayoutSVGResourceMarker {marker} [id="marker"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=90.00]
         RenderSVGViewportContainer {svg} at (0,0) size 0x0
-    RenderSVGContainer {g} at (10,311) size 228x36
+    LayoutSVGContainer {g} at (10,311) size 228x36
       LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 228x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.8 $"

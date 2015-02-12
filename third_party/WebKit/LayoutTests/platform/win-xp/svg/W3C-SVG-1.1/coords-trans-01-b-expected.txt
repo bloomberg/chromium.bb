@@ -2,8 +2,8 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (10,40) size 461x251 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
-      RenderSVGContainer {g} at (10,40) size 461x251
+    LayoutSVGContainer {g} at (10,40) size 461x251 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
+      LayoutSVGContainer {g} at (10,40) size 461x251
         RenderSVGPath {line} at (10,40) size 460x1 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=10.00] [y1=10.50] [x2=470.00] [y2=10.50]
         RenderSVGPath {line} at (10,50) size 460x1 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=10.00] [y1=20.50] [x2=470.00] [y2=20.50]
         RenderSVGPath {line} at (10,60) size 460x1 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=10.00] [y1=30.50] [x2=470.00] [y2=30.50]
@@ -77,24 +77,24 @@ layer at (0,0) size 480x360
         RenderSVGPath {line} at (450,40) size 1x251 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=450.50] [y1=10.00] [x2=450.50] [y2=260.50]
         RenderSVGPath {line} at (460,40) size 1x251 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=460.50] [y1=10.00] [x2=460.50] [y2=260.50]
         RenderSVGPath {line} at (470,40) size 1x251 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=470.50] [y1=10.00] [x2=470.50] [y2=260.50]
-      RenderSVGContainer {g} at (40,65) size 373x138 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,10.00)}]
-        RenderSVGContainer {g} at (50,90) size 320x110
-          RenderSVGContainer {g} at (50,90) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,50.00)}]
+      LayoutSVGContainer {g} at (40,65) size 373x138 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,10.00)}]
+        LayoutSVGContainer {g} at (50,90) size 320x110
+          LayoutSVGContainer {g} at (50,90) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,50.00)}]
             RenderSVGRect {rect} at (50,90) size 20x2 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=20.00] [height=2.00]
             RenderSVGRect {rect} at (50,90) size 2x20 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=2.00] [height=20.00]
-          RenderSVGContainer {g} at (150,90) size 20x20 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(150.00,70.00)}]
+          LayoutSVGContainer {g} at (150,90) size 20x20 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(150.00,70.00)}]
             RenderSVGRect {rect} at (150,90) size 2x20 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=20.00] [height=2.00]
             RenderSVGRect {rect} at (150,108) size 20x2 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=2.00] [height=20.00]
-          RenderSVGContainer {g} at (250,90) size 40x20 [transform={m=((1.00,0.00)(1.00,1.00)) t=(250.00,50.00)}]
+          LayoutSVGContainer {g} at (250,90) size 40x20 [transform={m=((1.00,0.00)(1.00,1.00)) t=(250.00,50.00)}]
             RenderSVGRect {rect} at (250,90) size 22x2 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=20.00] [height=2.00]
             RenderSVGRect {rect} at (250,90) size 22x20 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=2.00] [height=20.00]
-          RenderSVGContainer {g} at (350,90) size 20x40 [transform={m=((1.00,1.00)(0.00,1.00)) t=(350.00,50.00)}]
+          LayoutSVGContainer {g} at (350,90) size 20x40 [transform={m=((1.00,1.00)(0.00,1.00)) t=(350.00,50.00)}]
             RenderSVGRect {rect} at (350,90) size 20x22 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=20.00] [height=2.00]
             RenderSVGRect {rect} at (350,90) size 2x22 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=2.00] [height=20.00]
-          RenderSVGContainer {g} at (210,160) size 40x40 [transform={m=((2.00,0.00)(0.00,2.00)) t=(210.00,120.00)}]
+          LayoutSVGContainer {g} at (210,160) size 40x40 [transform={m=((2.00,0.00)(0.00,2.00)) t=(210.00,120.00)}]
             RenderSVGRect {rect} at (210,160) size 40x2 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=20.00] [height=1.00]
             RenderSVGRect {rect} at (210,160) size 2x40 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=1.00] [height=20.00]
-        RenderSVGContainer {g} at (40,65) size 373x138
+        LayoutSVGContainer {g} at (40,65) size 373x138
           LayoutSVGText {text} at (40,25) size 104x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 104x19
               chunk 1 text run 1 at (40.00,40.00) startOffset 0 endOffset 18 width 104.00: "translate (50, 50)"
@@ -125,17 +125,17 @@ layer at (0,0) size 480x360
           RenderSVGRect {rect} at (208,158) size 5x5 [fill={[type=SOLID] [color=#000000]}] [x=208.00] [y=118.00] [width=5.00] [height=5.00]
           RenderSVGRect {rect} at (248,158) size 5x5 [fill={[type=SOLID] [color=#0000FF]}] [x=248.00] [y=118.00] [width=5.00] [height=5.00]
           RenderSVGRect {rect} at (208,198) size 5x5 [fill={[type=SOLID] [color=#FF0000]}] [x=208.00] [y=158.00] [width=5.00] [height=5.00]
-      RenderSVGContainer {g} at (40,215) size 397x68
-        RenderSVGContainer {g} at (50,240) size 260x40
-          RenderSVGContainer {g} at (50,240) size 60x40 [transform={m=((3.00,0.00)(0.00,2.00)) t=(50.00,210.00)}]
+      LayoutSVGContainer {g} at (40,215) size 397x68
+        LayoutSVGContainer {g} at (50,240) size 260x40
+          LayoutSVGContainer {g} at (50,240) size 60x40 [transform={m=((3.00,0.00)(0.00,2.00)) t=(50.00,210.00)}]
             RenderSVGRect {rect} at (50,240) size 60x2 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=20.00] [height=1.00]
             RenderSVGRect {rect} at (50,240) size 3x40 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=0.67] [height=20.00]
-          RenderSVGContainer {g} at (250,240) size 60x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,0.00)}]
-            RenderSVGContainer {g} at (250,240) size 60x40 [transform={m=((3.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
-              RenderSVGContainer {g} at (250,240) size 60x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(16.67,105.00)}]
+          LayoutSVGContainer {g} at (250,240) size 60x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,0.00)}]
+            LayoutSVGContainer {g} at (250,240) size 60x40 [transform={m=((3.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
+              LayoutSVGContainer {g} at (250,240) size 60x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(16.67,105.00)}]
                 RenderSVGRect {rect} at (250,240) size 60x2 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=20.00] [height=1.00]
                 RenderSVGRect {rect} at (250,240) size 3x40 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=0.67] [height=20.00]
-        RenderSVGContainer {g} at (40,215) size 397x68
+        LayoutSVGContainer {g} at (40,215) size 397x68
           LayoutSVGText {text} at (40,185) size 194x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 194x19
               chunk 1 text run 1 at (40.00,200.00) startOffset 0 endOffset 33 width 194.00: "scale(25, 95) and translate(2, 2)"

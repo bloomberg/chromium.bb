@@ -25,7 +25,7 @@
 namespace blink {
 
 RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
-    : RenderSVGContainer(element)
+    : LayoutSVGContainer(element)
 {
 }
 

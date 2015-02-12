@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 
+#include "core/layout/svg/LayoutSVGContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/rendering/svg/RenderSVGContainer.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -46,9 +46,9 @@ void LayoutSVGResourceMarker::layout()
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
     // RenderSVGHiddenContainer overwrites layout(). We need the
-    // layouting of RenderSVGContainer for calculating  local
+    // layouting of LayoutSVGContainer for calculating  local
     // transformations and paint invalidation.
-    RenderSVGContainer::layout();
+    LayoutSVGContainer::layout();
 
     clearInvalidationMask();
 }
@@ -66,7 +66,7 @@ void LayoutSVGResourceMarker::removeClientFromCache(LayoutObject* client, bool m
 
 FloatRect LayoutSVGResourceMarker::markerBoundaries(const AffineTransform& markerTransformation) const
 {
-    FloatRect coordinates = RenderSVGContainer::paintInvalidationRectInLocalCoordinates();
+    FloatRect coordinates = LayoutSVGContainer::paintInvalidationRectInLocalCoordinates();
 
     // Map paint invalidation rect into parent coordinate space, in which the marker boundaries have to be evaluated
     coordinates = localToParentTransform().mapRect(coordinates);

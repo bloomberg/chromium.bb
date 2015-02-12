@@ -2,25 +2,25 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (35,4) size 411x295
+    LayoutSVGContainer {g} at (35,4) size 411x295
       LayoutSVGText {text} at (50,4) size 308x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 308x15
           chunk 1 text run 1 at (50.00,16.00) startOffset 0 endOffset 69 width 308.00: "Link test of the 'view' element and its attributes, 2 of 2, external."
-      RenderSVGContainer {g} at (150,130) size 125x122 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-150.00,75.00)}]
+      LayoutSVGContainer {g} at (150,130) size 125x122 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-150.00,75.00)}]
         RenderSVGRect {rect} at (150,130) size 125x85 [fill={[type=SOLID] [color=#AAAAAA]}] [x=300.00] [y=55.00] [width=125.00] [height=85.00]
-        RenderSVGContainer {a} at (170,130) size 98x19
+        LayoutSVGContainer {a} at (170,130) size 98x19
           LayoutSVGText {text} at (320,55) size 98x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 98x19
               chunk 1 text run 1 at (320.00,70.00) startOffset 0 endOffset 15 width 98.00: "Go to Rectangle"
-        RenderSVGContainer {a} at (170,150) size 78x19
+        LayoutSVGContainer {a} at (170,150) size 78x19
           LayoutSVGText {text} at (320,75) size 78x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 78x19
               chunk 1 text run 1 at (320.00,90.00) startOffset 0 endOffset 13 width 78.00: "Go to Ellipse"
-        RenderSVGContainer {a} at (170,170) size 75x19
+        LayoutSVGContainer {a} at (170,170) size 75x19
           LayoutSVGText {text} at (320,95) size 75x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 75x19
               chunk 1 text run 1 at (320.00,110.00) startOffset 0 endOffset 12 width 75.00: "Go to Circle"
-        RenderSVGContainer {a} at (170,190) size 88x19
+        LayoutSVGContainer {a} at (170,190) size 88x19
           LayoutSVGText {text} at (320,115) size 88x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 88x19
               chunk 1 text run 1 at (320.00,130.00) startOffset 0 endOffset 13 width 88.00: "Go to Polygon"

@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (0,0) size 469x212
+    LayoutSVGContainer {g} at (0,0) size 469x212
       LayoutSVGText {text} at (-1,83) size 470x118 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (19,0) size 373x58
           chunk 1 text run 1 at (20.00,120.00) startOffset 0 endOffset 1 width 25.00: "N"
@@ -186,7 +186,7 @@ layer at (0,0) size 480x360
             chunk 1 text run 1 at (340.00,210.00) startOffset 0 endOffset 43 width 118.00: "   55    55  55  55   55 55  55   55       "
         LayoutSVGInlineText {#text} at (458,210) size 10x10
           chunk 1 text run 1 at (458.00,210.00) startOffset 0 endOffset 5 width 10.00: "     "
-    RenderSVGContainer {g} at (10,311) size 246x36
+    LayoutSVGContainer {g} at (10,311) size 246x36
       LayoutSVGText {text} at (10,311) size 246x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 246x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 246.00: "$Revision: 1.11 $"

@@ -92,26 +92,26 @@ layer at (8,257) size 256x449
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
-        RenderSVGContainer {a} at (0,0) size 128x129
+        LayoutSVGContainer {a} at (0,0) size 128x129
           RenderSVGRect {rect} at (0,0) size 128x129 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=1.00] [y=1.00] [width=38.00] [height=38.00]
           LayoutSVGText {text} at (13,8) size 14x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 14x23
               chunk 1 (middle anchor) text run 1 at (13.44,27.00) startOffset 0 endOffset 1 width 13.13: "B"
-        RenderSVGContainer {a} at (128,0) size 128x129
+        LayoutSVGContainer {a} at (128,0) size 128x129
           RenderSVGRect {rect} at (128,0) size 128x129 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=41.00] [y=1.00] [width=38.00] [height=38.00]
-        RenderSVGContainer {a} at (0,160) size 128x129
+        LayoutSVGContainer {a} at (0,160) size 128x129
           RenderSVGEllipse {circle} at (0,160) size 128x129 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=20.00] [cy=70.00] [r=19.00]
           LayoutSVGText {text} at (13,58) size 14x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 14x23
               chunk 1 (middle anchor) text run 1 at (13.28,77.00) startOffset 0 endOffset 1 width 13.44: "C"
-        RenderSVGContainer {a} at (128,160) size 128x129
+        LayoutSVGContainer {a} at (128,160) size 128x129
           RenderSVGEllipse {circle} at (128,160) size 128x129 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=60.00] [cy=70.00] [r=19.00]
-        RenderSVGContainer {a} at (0,320) size 128x129
+        LayoutSVGContainer {a} at (0,320) size 128x129
           RenderSVGEllipse {circle} at (0,320) size 128x129 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=20.00] [cy=120.00] [r=19.00]
           LayoutSVGText {text} at (12,108) size 16x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 15x23
               chunk 1 (middle anchor) text run 1 at (12.81,127.00) startOffset 0 endOffset 1 width 14.38: "D"
-        RenderSVGContainer {a} at (128,320) size 128x129
+        LayoutSVGContainer {a} at (128,320) size 128x129
           RenderSVGEllipse {circle} at (128,320) size 128x129 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=60.00] [cy=120.00] [r=19.00]
           LayoutSVGText {text} at (53,108) size 14x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 13x23
@@ -154,22 +154,22 @@ layer at (521,257) size 256x256
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
-        RenderSVGContainer {a} at (0,0) size 128x128
+        LayoutSVGContainer {a} at (0,0) size 128x128
           RenderSVGRect {rect} at (0,0) size 128x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=1.00] [y=1.00] [width=38.00] [height=38.00]
           LayoutSVGText {text} at (11,8) size 18x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 18x23
               chunk 1 (middle anchor) text run 1 at (11.09,27.00) startOffset 0 endOffset 1 width 17.81: "M"
-        RenderSVGContainer {a} at (128,0) size 128x128
+        LayoutSVGContainer {a} at (128,0) size 128x128
           RenderSVGRect {rect} at (128,0) size 128x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=41.00] [y=1.00] [width=38.00] [height=38.00]
           LayoutSVGText {text} at (52,8) size 16x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 15x23
               chunk 1 (middle anchor) text run 1 at (52.81,27.00) startOffset 0 endOffset 1 width 14.38: "N"
-        RenderSVGContainer {a} at (0,128) size 128x128
+        LayoutSVGContainer {a} at (0,128) size 128x128
           RenderSVGRect {rect} at (0,128) size 128x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=1.00] [y=41.00] [width=38.00] [height=38.00]
           LayoutSVGText {text} at (14,48) size 12x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 12x23
               chunk 1 (middle anchor) text run 1 at (14.38,67.00) startOffset 0 endOffset 1 width 11.25: "P"
-        RenderSVGContainer {a} at (128,128) size 128x128
+        LayoutSVGContainer {a} at (128,128) size 128x128
           RenderSVGRect {rect} at (128,128) size 128x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=41.00] [y=41.00] [width=38.00] [height=38.00]
           LayoutSVGText {text} at (52,48) size 16x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 15x23

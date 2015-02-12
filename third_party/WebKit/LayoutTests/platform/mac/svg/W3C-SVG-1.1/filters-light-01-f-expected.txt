@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (70,9) size 410x266
+    LayoutSVGContainer {g} at (70,9) size 410x266
       LayoutSVGText {text} at (114,9) size 252x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 251x14
           chunk 1 (middle anchor) text run 1 at (114.93,20.00) startOffset 0 endOffset 50 width 250.14: "Filters: feDistantLight, fePointLight, feSpotLight"
@@ -43,7 +43,7 @@ layer at (0,0) size 480x360
         LayoutSVGResourceFilter {filter} [id="spotLightD"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feDiffuseLighting surfaceScale="10.00" diffuseConstant="1.00" kernelUnitLength="0.00, 0.00"]
             [SourceGraphic]
-      RenderSVGContainer {g} at (70,36) size 361x64 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
+      LayoutSVGContainer {g} at (70,36) size 361x64 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
         LayoutSVGText {text} at (70,-4) size 361x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 361x18
             chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 55 width 360.78: "Various values for feDistantLight azimuth and elevation"
@@ -67,7 +67,7 @@ layer at (0,0) size 480x360
           [filter="distantLightC"] LayoutSVGResourceFilter {filter} at (260,30) size 50x30
         RenderSVGImage {image} at (355,70) size 50x30
           [filter="distantLightD"] LayoutSVGResourceFilter {filter} at (355,30) size 50x30
-      RenderSVGContainer {g} at (70,116) size 360x33 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
+      LayoutSVGContainer {g} at (70,116) size 360x33 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
         LayoutSVGText {text} at (70,-4) size 279x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 279x18
             chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 44 width 278.38: "Various values for fePointLight's x, y and z"
@@ -83,7 +83,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (355,11) size 75x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 75x18
             chunk 1 text run 1 at (355.00,25.00) startOffset 0 endOffset 12 width 74.66: "(50, 30, 10)"
-      RenderSVGContainer {g} at (70,150) size 335x30
+      LayoutSVGContainer {g} at (70,150) size 335x30
         RenderSVGImage {image} at (70,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,150.00)}]
           [filter="pointLightA"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
         RenderSVGImage {image} at (165,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,150.00)}]
@@ -92,7 +92,7 @@ layer at (0,0) size 480x360
           [filter="pointLightC"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
         RenderSVGImage {image} at (355,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,150.00)}]
           [filter="pointLightD"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
-      RenderSVGContainer {g} at (70,196) size 410x48 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
+      LayoutSVGContainer {g} at (70,196) size 410x48 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
         LayoutSVGText {text} at (70,-14) size 474x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 474x18
             chunk 1 text run 1 at (70.00,0.00) startOffset 0 endOffset 73 width 473.07: "Various values for feSpotLight's x, y, z, pointsAtX, pointsAtY, pointsAtZ"
@@ -114,7 +114,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (355,16) size 149x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 149x18
             chunk 1 text run 1 at (355.00,30.00) startOffset 0 endOffset 20 width 148.57: "limitingConeAngle=30"
-      RenderSVGContainer {g} at (70,245) size 335x30
+      LayoutSVGContainer {g} at (70,245) size 335x30
         RenderSVGRect {rect} at (70,245) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,245.00)}] [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=30.00]
           [filter="spotLightA"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
         RenderSVGRect {rect} at (165,245) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,245.00)}] [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=30.00]

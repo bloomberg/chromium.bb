@@ -19,12 +19,12 @@ layer at (0,0) size 800x600
         RenderSVGRect {rect} at (0,0) size 1x1 [fill={[type=PATTERN] [id="pattern1"]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
         RenderSVGRect {rect} at (0,0) size 1x1 [fill={[type=PATTERN] [id="pattern1a"]}] [x=0.50] [y=0.50] [width=0.50] [height=0.50]
     RenderSVGRect {rect} at (50,50) size 200x200 [fill={[type=PATTERN] [id="pattern1"]}] [x=50.00] [y=50.00] [width=200.00] [height=200.00]
-    RenderSVGContainer {g} at (50,300) size 200x200
+    LayoutSVGContainer {g} at (50,300) size 200x200
       RenderSVGRect {rect} at (50,300) size 200x200 [fill={[type=SOLID] [color=#FF0000]}] [x=50.00] [y=300.00] [width=200.00] [height=200.00]
       RenderSVGRect {rect} at (50,300) size 100x100 [fill={[type=SOLID] [color=#008000]}] [x=50.00] [y=300.00] [width=100.00] [height=100.00]
       RenderSVGRect {rect} at (50,300) size 50x50 [fill={[type=SOLID] [color=#FFA500]}] [x=50.00] [y=300.00] [width=50.00] [height=50.00]
     RenderSVGRect {rect} at (300,50) size 200x200 [fill={[type=PATTERN] [id="pattern2"]}] [x=300.00] [y=50.00] [width=200.00] [height=200.00]
-    RenderSVGContainer {g} at (300,300) size 200x200
+    LayoutSVGContainer {g} at (300,300) size 200x200
       RenderSVGRect {rect} at (300,300) size 200x200 [fill={[type=SOLID] [color=#808080]}] [x=300.00] [y=300.00] [width=200.00] [height=200.00]
       RenderSVGRect {rect} at (300,300) size 100x100 [fill={[type=SOLID] [color=#FFFF00]}] [x=300.00] [y=300.00] [width=100.00] [height=100.00]
       RenderSVGRect {rect} at (300,300) size 25x25 [fill={[type=SOLID] [color=#FF0000]}] [x=300.00] [y=300.00] [width=25.00] [height=25.00]

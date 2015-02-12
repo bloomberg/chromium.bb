@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (90,18) size 348x232
+    LayoutSVGContainer {g} at (90,18) size 348x232
       LayoutSVGText {text} at (145,18) size 137x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 137x15
           chunk 1 text run 1 at (145.00,30.00) startOffset 0 endOffset 26 width 137.00: "Filters: feDiffuseLighting"
@@ -34,7 +34,7 @@ layer at (0,0) size 480x360
         LayoutSVGResourceFilter {filter} [id="lightingColorC"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feDiffuseLighting surfaceScale="10.00" diffuseConstant="1.00" kernelUnitLength="0.00, 0.00"]
             [SourceGraphic]
-      RenderSVGContainer {g} at (90,61) size 296x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
+      LayoutSVGContainer {g} at (90,61) size 296x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
         LayoutSVGText {text} at (90,11) size 296x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 296x17
             chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 46 width 295.90: "Various values for surfaceScale: 1, 10 and -10"
@@ -44,7 +44,7 @@ layer at (0,0) size 480x360
           [filter="surfaceScaleB"] LayoutSVGResourceFilter {filter} at (160,30) size 50x30
         RenderSVGImage {image} at (230,80) size 50x30
           [filter="surfaceScaleC"] LayoutSVGResourceFilter {filter} at (230,30) size 50x30
-      RenderSVGContainer {g} at (90,131) size 302x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
+      LayoutSVGContainer {g} at (90,131) size 302x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
         LayoutSVGText {text} at (90,11) size 302x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 302x17
             chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 47 width 301.28: "Various values for diffuseConstants: 0, 1 and 2"
@@ -54,7 +54,7 @@ layer at (0,0) size 480x360
           [filter="diffuseConstantB"] LayoutSVGResourceFilter {filter} at (160,30) size 50x30
         RenderSVGImage {image} at (230,150) size 50x30
           [filter="diffuseConstantC"] LayoutSVGResourceFilter {filter} at (230,30) size 50x30
-      RenderSVGContainer {g} at (90,201) size 348x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,190.00)}]
+      LayoutSVGContainer {g} at (90,201) size 348x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,190.00)}]
         LayoutSVGText {text} at (90,11) size 348x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 348x17
             chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 55 width 347.91: "Various values for lighting color: red, yellow and blue"

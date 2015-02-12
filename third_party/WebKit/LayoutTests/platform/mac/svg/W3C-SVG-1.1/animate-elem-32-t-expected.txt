@@ -2,8 +2,8 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (5,49) size 461x243
-      RenderSVGContainer {g} at (5,83) size 461x209
+    LayoutSVGContainer {g} at (5,49) size 461x243
+      LayoutSVGContainer {g} at (5,83) size 461x209
         LayoutSVGText {text} at (5,83) size 28x9 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 28x9
             chunk 1 text run 1 at (5.00,90.00) startOffset 0 endOffset 7 width 27.57: "Stroked"
@@ -28,7 +28,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (210,283) size 56x9 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 56x9
             chunk 1 text run 1 at (210.00,290.00) startOffset 0 endOffset 16 width 55.14: "Zero length line"
-      RenderSVGContainer {g} at (49,49) size 381x222
+      LayoutSVGContainer {g} at (49,49) size 381x222
         RenderSVGRect {rect} at (49,49) size 37x62 [stroke={[type=SOLID] [color=#000000]}] [x=50.00] [y=50.00] [width=35.00] [height=60.00]
         RenderSVGRect {rect} at (49,154) size 37x62 [stroke={[type=SOLID] [color=#000000]}] [x=50.00] [y=155.00] [width=35.00] [height=60.00]
         RenderSVGRect {rect} at (129,49) size 37x62 [stroke={[type=SOLID] [color=#000000]}] [x=130.00] [y=50.00] [width=35.00] [height=60.00]

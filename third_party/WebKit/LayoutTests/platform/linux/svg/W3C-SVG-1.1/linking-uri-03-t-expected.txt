@@ -2,11 +2,11 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (18,4) size 417x250
+    LayoutSVGContainer {g} at (18,4) size 417x250
       LayoutSVGText {text} at (75,4) size 249x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 249x15
           chunk 1 text run 1 at (75.00,16.00) startOffset 0 endOffset 55 width 249.00: "Simple exercise of xlink attributes on the 'a' element."
-      RenderSVGContainer {a} at (134,121) size 132x133
+      LayoutSVGContainer {a} at (134,121) size 132x133
         RenderSVGPath {path} at (134,121) size 132x133 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#00FF00]}] [data="M 135 122 L 265 122 L 200 252 Z"]
       LayoutSVGText {text} at (160,104) size 70x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 70x15

@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (15,15) size 435x294
+    LayoutSVGContainer {g} at (15,15) size 435x294
       RenderSVGImage {image} at (120,15) size 300x294
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="BlendNormal"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
@@ -29,7 +29,7 @@ layer at (0,0) size 480x360
         [filter="BlendNormal"] LayoutSVGResourceFilter {filter} at (30,10) size 120x10
       RenderSVGRect {rect} at (90,69) size 360x30 [opacity=0.50] [fill={[type=SOLID] [color=#0000FF]}] [x=30.00] [y=23.00] [width=120.00] [height=10.00]
         [filter="BlendMultiply"] LayoutSVGResourceFilter {filter} at (30,23) size 120x10
-      RenderSVGContainer {g} at (90,108) size 360x69
+      LayoutSVGContainer {g} at (90,108) size 360x69
         [filter="BlendMultiply"] LayoutSVGResourceFilter {filter} at (30,36) size 120x23
         RenderSVGRect {rect} at (90,108) size 360x30 [opacity=0.50] [fill={[type=SOLID] [color=#0000FF]}] [x=30.00] [y=36.00] [width=120.00] [height=10.00]
         RenderSVGRect {rect} at (90,147) size 360x30 [opacity=0.50] [fill={[type=SOLID] [color=#FFFF00]}] [x=30.00] [y=49.00] [width=120.00] [height=10.00]
@@ -39,7 +39,7 @@ layer at (0,0) size 480x360
         [filter="BlendDarken"] LayoutSVGResourceFilter {filter} at (30,75) size 120x10
       RenderSVGRect {rect} at (90,264) size 360x30 [opacity=0.50] [fill={[type=SOLID] [color=#0000FF]}] [x=30.00] [y=88.00] [width=120.00] [height=10.00]
         [filter="BlendLighten"] LayoutSVGResourceFilter {filter} at (30,88) size 120x10
-      RenderSVGContainer {g} at (15,33) size 72x258
+      LayoutSVGContainer {g} at (15,33) size 72x258
         LayoutSVGText {text} at (5,11) size 22x8 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 22x8
             chunk 1 text run 1 at (5.00,17.00) startOffset 0 endOffset 6 width 21.33: "Normal"

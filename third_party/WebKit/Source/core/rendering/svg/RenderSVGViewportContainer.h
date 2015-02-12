@@ -23,13 +23,13 @@
 #ifndef RenderSVGViewportContainer_h
 #define RenderSVGViewportContainer_h
 
-#include "core/rendering/svg/RenderSVGContainer.h"
+#include "core/layout/svg/LayoutSVGContainer.h"
 
 namespace blink {
 
 // This is used for non-root <svg> elements and <marker> elements, neither of which are SVGTransformable
-// thus we inherit from RenderSVGContainer instead of RenderSVGTransformableContainer
-class RenderSVGViewportContainer final : public RenderSVGContainer {
+// thus we inherit from LayoutSVGContainer instead of RenderSVGTransformableContainer
+class RenderSVGViewportContainer final : public LayoutSVGContainer {
 public:
     explicit RenderSVGViewportContainer(SVGElement*);
     FloatRect viewport() const { return m_viewport; }
@@ -43,7 +43,7 @@ public:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || RenderSVGContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || LayoutSVGContainer::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGViewportContainer"; }
 
     AffineTransform viewportTransform() const;

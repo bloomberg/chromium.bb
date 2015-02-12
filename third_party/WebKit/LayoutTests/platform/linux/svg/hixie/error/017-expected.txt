@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 474x303
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGContainer {g} at (0,0) size 0x0
-        RenderSVGContainer {use} at (0,0) size 0x0
-      RenderSVGContainer {g} at (0,0) size 0x0
-        RenderSVGContainer {use} at (0,0) size 0x0
-      RenderSVGContainer {g} at (0,0) size 0x0
-        RenderSVGContainer {use} at (0,0) size 0x0
-    RenderSVGContainer {g} at (0,0) size 0x0
-      RenderSVGContainer {use} at (0,0) size 0x0
+      LayoutSVGContainer {g} at (0,0) size 0x0
+        LayoutSVGContainer {use} at (0,0) size 0x0
+      LayoutSVGContainer {g} at (0,0) size 0x0
+        LayoutSVGContainer {use} at (0,0) size 0x0
+      LayoutSVGContainer {g} at (0,0) size 0x0
+        LayoutSVGContainer {use} at (0,0) size 0x0
+    LayoutSVGContainer {g} at (0,0) size 0x0
+      LayoutSVGContainer {use} at (0,0) size 0x0
     LayoutSVGText {text} at (20,40) size 444x225 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 444x225
         chunk 1 text run 1 at (20.00,220.00) startOffset 0 endOffset 4 width 444.00: "FAIL"

@@ -3,11 +3,11 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
     RenderSVGRect {rect} at (0,0) size 800x600 [fill={[type=SOLID] [color=#FFFFFF]}] [x=-1000.00] [y=-1000.00] [width=3000.00] [height=3000.00]
-    RenderSVGContainer {g} at (39,37) size 469x467
+    LayoutSVGContainer {g} at (39,37) size 469x467
       LayoutSVGText {text} at (500,48) size 108x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 108x15
           chunk 1 text run 1 at (500.00,60.00) startOffset 0 endOffset 13 width 107.55: "Combobox Demo"
-      RenderSVGContainer {a} at (390,54) size 118x11
+      LayoutSVGContainer {a} at (390,54) size 118x11
         LayoutSVGText {text} at (500,69) size 150x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 150x13
             chunk 1 text run 1 at (500.00,80.00) startOffset 0 endOffset 28 width 149.71: "Link to Documentation (HTML)"
@@ -52,10 +52,10 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (240,631) size 246x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 246x13
           chunk 1 text run 1 at (240.00,642.00) startOffset 0 endOffset 50 width 245.06: "Click on this text to randomly resize the combobox"
-    RenderSVGContainer {g} at (283,169) size 407x309 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(500.00,20.00)}]
-      RenderSVGContainer {g} at (283,169) size 166x169
+    LayoutSVGContainer {g} at (283,169) size 407x309 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(500.00,20.00)}]
+      LayoutSVGContainer {g} at (283,169) size 166x169
         RenderSVGRect {rect} at (283,170) size 154x162 [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=200.00] [width=134.00] [height=160.00]
-        RenderSVGContainer {g} at (284,171) size 152x160
+        LayoutSVGContainer {g} at (284,171) size 152x160
           RenderSVGRect {rect} at (341,171) size 95x63 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=200.00] [width=131.00] [height=16.00]
           LayoutSVGText {text} at (53,202) size 32x14 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 32x13
@@ -109,9 +109,9 @@ layer at (0,0) size 800x600
         RenderSVGTSpan {tspan} at (0,0) size 338x13
           LayoutSVGInlineText {#text} at (0,20) size 338x13
             chunk 1 text run 1 at (220.00,232.00) startOffset 0 endOffset 67 width 337.39: "Note that one can also transform the group containing the combo box"
-    RenderSVGContainer {g} at (38,429) size 135x102
+    LayoutSVGContainer {g} at (38,429) size 135x102
       RenderSVGRect {rect} at (39,429) size 121x101 [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=550.00] [width=154.00] [height=128.00]
-      RenderSVGContainer {g} at (40,429) size 119x101
+      LayoutSVGContainer {g} at (40,429) size 119x101
         RenderSVGRect {rect} at (40,429) size 119x14 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=550.00] [width=151.00] [height=16.00]
         LayoutSVGText {text} at (53,552) size 48x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 48x13
@@ -151,9 +151,9 @@ layer at (0,0) size 800x600
       RenderSVGRect {rect} at (158,516) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=662.00] [width=16.00] [height=16.00]
       RenderSVGPath {path} at (162,520) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 666 L 216 666 L 212 674 Z"]
       RenderSVGRect {rect} at (158,449) size 15x34 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=576.11] [width=16.00] [height=40.42]
-    RenderSVGContainer {g} at (38,233) size 135x65
+    LayoutSVGContainer {g} at (38,233) size 135x65
       RenderSVGRect {rect} at (39,234) size 121x63 [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=300.00] [width=154.00] [height=80.00]
-      RenderSVGContainer {g} at (40,234) size 119x63
+      LayoutSVGContainer {g} at (40,234) size 119x63
         RenderSVGRect {rect} at (40,234) size 119x13 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=300.00] [width=151.00] [height=16.00]
         LayoutSVGText {text} at (53,302) size 53x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 53x13
@@ -181,9 +181,9 @@ layer at (0,0) size 800x600
       RenderSVGRect {rect} at (158,283) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=364.00] [width=16.00] [height=16.00]
       RenderSVGPath {path} at (162,287) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 368 L 216 368 L 212 376 Z"]
       RenderSVGRect {rect} at (158,266) size 15x19 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=342.18] [width=16.00] [height=21.82]
-    RenderSVGContainer {g} at (38,38) size 122x52
+    LayoutSVGContainer {g} at (38,38) size 122x52
       RenderSVGRect {rect} at (39,39) size 121x51 [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=50.00] [width=154.00] [height=64.00]
-      RenderSVGContainer {g} at (40,39) size 119x51
+      LayoutSVGContainer {g} at (40,39) size 119x51
         RenderSVGRect {rect} at (40,39) size 119x13 [fill={[type=SOLID] [color=#FFFFFF]}] [x=51.50] [y=50.00] [width=151.00] [height=16.00]
         LayoutSVGText {text} at (53,52) size 43x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 43x13

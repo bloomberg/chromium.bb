@@ -3,8 +3,8 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (43,39) size 288x239
-      RenderSVGContainer {g} at (70,93) size 143x132
+    LayoutSVGContainer {g} at (43,39) size 288x239
+      LayoutSVGContainer {g} at (70,93) size 143x132
         LayoutSVGText {text} at (70,93) size 143x22 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 143x22
             chunk 1 text run 1 at (70.00,110.00) startOffset 0 endOffset 18 width 143.00: "Text from 0s to 3s"
@@ -14,7 +14,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (100,203) size 77x22 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x22
             chunk 1 text run 1 at (100.00,220.00) startOffset 0 endOffset 10 width 77.00: "Text at 9s"
-      RenderSVGContainer {g} at (43,39) size 288x239
+      LayoutSVGContainer {g} at (43,39) size 288x239
         LayoutSVGText {text} at (0,-14) size 77x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x17
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 11 width 76.84: "It's alive!"
@@ -24,7 +24,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (100,228) size 231x50 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 231x50
             chunk 1 text run 1 at (100.00,270.00) startOffset 0 endOffset 11 width 230.52: "It's alive!"
-      RenderSVGContainer {g} at (43,39) size 75x54 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,90.00)}]
+      LayoutSVGContainer {g} at (43,39) size 75x54 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,90.00)}]
         LayoutSVGText {text} at (0,-14) size 77x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x17
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 11 width 76.84: "It's alive!"

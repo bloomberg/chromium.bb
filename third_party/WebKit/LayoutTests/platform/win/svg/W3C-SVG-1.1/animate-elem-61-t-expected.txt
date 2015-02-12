@@ -9,8 +9,8 @@ layer at (0,0) size 480x360
     LayoutSVGText {text} at (181,12) size 118x22 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 117x22
         chunk 1 (middle anchor) text run 1 at (181.95,30.00) startOffset 0 endOffset 14 width 116.09: "multiple begin"
-    RenderSVGContainer {g} at (103,52) size 200x226 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,100.00)}]
-      RenderSVGContainer {g} at (103,112) size 77x166 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,25.00)}]
+    LayoutSVGContainer {g} at (103,52) size 200x226 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,100.00)}]
+      LayoutSVGContainer {g} at (103,112) size 77x166 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,25.00)}]
         LayoutSVGText {text} at (-50,-13) size 50x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 50x16
             chunk 1 (end anchor) text run 1 at (-50.00,0.00) startOffset 0 endOffset 9 width 50.00: "2 offsets"
@@ -29,7 +29,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (-27,137) size 27x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 27x16
             chunk 1 (end anchor) text run 1 at (-27.00,150.00) startOffset 0 endOffset 4 width 27.00: "misc"
-      RenderSVGContainer {g} at (234,52) size 69x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,5.00)}]
+      LayoutSVGContainer {g} at (234,52) size 69x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,5.00)}]
         LayoutSVGText {text} at (-13,-13) size 26x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 25x16
             chunk 1 (middle anchor) text run 1 at (-12.50,0.00) startOffset 0 endOffset 4 width 25.00: "0-1s"
@@ -39,49 +39,49 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (-13,-53) size 26x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 25x16
             chunk 1 (middle anchor) text run 1 at (-12.50,-40.00) startOffset 0 endOffset 4 width 25.00: "> 5s"
-        RenderSVGContainer {g} at (277,72) size 26x36 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
+        LayoutSVGContainer {g} at (277,72) size 26x36 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
           LayoutSVGText {text} at (-13,-13) size 26x16 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 25x16
               chunk 1 (middle anchor) text run 1 at (-12.50,0.00) startOffset 0 endOffset 4 width 25.00: "1-2s"
           LayoutSVGText {text} at (-13,-33) size 26x16 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 25x16
               chunk 1 (middle anchor) text run 1 at (-12.50,-20.00) startOffset 0 endOffset 4 width 25.00: "4-5s"
-      RenderSVGContainer {g} at (243,113) size 54x164 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,20.00)}]
+      LayoutSVGContainer {g} at (243,113) size 54x164 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,20.00)}]
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
           RenderSVGRect {rect} at (243,113) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-        RenderSVGContainer {g} at (243,113) size 54x14
-          RenderSVGContainer {use} at (243,113) size 14x14
+        LayoutSVGContainer {g} at (243,113) size 54x14
+          LayoutSVGContainer {use} at (243,113) size 14x14
             RenderSVGRect {rect} at (243,113) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-          RenderSVGContainer {use} at (283,113) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
+          LayoutSVGContainer {use} at (283,113) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
             RenderSVGRect {rect} at (283,113) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
           RenderSVGRect {rect} at (243,113) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CC0066]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-        RenderSVGContainer {g} at (243,138) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,25.00)}]
-          RenderSVGContainer {use} at (243,138) size 14x14
+        LayoutSVGContainer {g} at (243,138) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,25.00)}]
+          LayoutSVGContainer {use} at (243,138) size 14x14
             RenderSVGRect {rect} at (243,138) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-          RenderSVGContainer {use} at (283,138) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
+          LayoutSVGContainer {use} at (283,138) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
             RenderSVGRect {rect} at (283,138) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
           RenderSVGRect {rect} at (243,138) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CC0066]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-        RenderSVGContainer {g} at (243,163) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
-          RenderSVGContainer {use} at (243,163) size 14x14
+        LayoutSVGContainer {g} at (243,163) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
+          LayoutSVGContainer {use} at (243,163) size 14x14
             RenderSVGRect {rect} at (243,163) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-          RenderSVGContainer {use} at (283,163) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
+          LayoutSVGContainer {use} at (283,163) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
             RenderSVGRect {rect} at (283,163) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
           RenderSVGRect {rect} at (243,163) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CC0066]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-        RenderSVGContainer {g} at (243,213) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,100.00)}]
-          RenderSVGContainer {use} at (243,213) size 14x14
+        LayoutSVGContainer {g} at (243,213) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,100.00)}]
+          LayoutSVGContainer {use} at (243,213) size 14x14
             RenderSVGRect {rect} at (243,213) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-          RenderSVGContainer {use} at (283,213) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
+          LayoutSVGContainer {use} at (283,213) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
             RenderSVGRect {rect} at (283,213) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
           RenderSVGRect {rect} at (243,213) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CC0066]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-        RenderSVGContainer {g} at (243,238) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,125.00)}]
-          RenderSVGContainer {use} at (243,238) size 14x14
+        LayoutSVGContainer {g} at (243,238) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,125.00)}]
+          LayoutSVGContainer {use} at (243,238) size 14x14
             RenderSVGRect {rect} at (243,238) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-          RenderSVGContainer {use} at (283,238) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
+          LayoutSVGContainer {use} at (283,238) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
             RenderSVGRect {rect} at (283,238) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
           RenderSVGRect {rect} at (243,238) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CC0066]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-        RenderSVGContainer {g} at (243,263) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,150.00)}]
-          RenderSVGContainer {use} at (243,263) size 14x14
+        LayoutSVGContainer {g} at (243,263) size 54x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,150.00)}]
+          LayoutSVGContainer {use} at (243,263) size 14x14
             RenderSVGRect {rect} at (243,263) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
-          RenderSVGContainer {use} at (283,263) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
+          LayoutSVGContainer {use} at (283,263) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}]
             RenderSVGRect {rect} at (283,263) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
           RenderSVGRect {rect} at (243,263) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CC0066]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]

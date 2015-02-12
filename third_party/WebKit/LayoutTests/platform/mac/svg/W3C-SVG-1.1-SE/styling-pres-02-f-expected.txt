@@ -3,11 +3,11 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (0,0) size 440x225
+    LayoutSVGContainer {g} at (0,0) size 440x225
       LayoutSVGText {text} at (10,3) size 343x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 343x21
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 44 width 342.21: "Testing inapplicable presentation attributes"
-      RenderSVGContainer {g} at (0,0) size 21x10
+      LayoutSVGContainer {g} at (0,0) size 21x10
         RenderSVGPath {path} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M 0 0"]
         RenderSVGImage {image} at (0,0) size 10x10
         RenderSVGRect {rect} at (0,0) size 10x10 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
@@ -26,7 +26,7 @@ layer at (0,0) size 480x360
         LayoutSVGResourceRadialGradient {radialGradient} [id="radialGradient"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
           RenderSVGGradientStop {stop} [offset=0.00] [color=#000000]
         LayoutSVGResourceClipper {clipPath} [id="clipPath"] [clipPathUnits=userSpaceOnUse]
-      RenderSVGContainer {g} at (10,25) size 430x200
+      LayoutSVGContainer {g} at (10,25) size 430x200
         RenderSVGRect {rect} at (10,25) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=25.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (40,27) size 75x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 75x16
@@ -83,7 +83,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (280,207) size 153x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 153x16
             chunk 1 text run 1 at (280.00,220.00) startOffset 0 endOffset 26 width 152.53: "lighting-color on clipPath"
-    RenderSVGContainer {g} at (10,310) size 230x37
+    LayoutSVGContainer {g} at (10,310) size 230x37
       LayoutSVGText {text} at (10,310) size 230x37 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 230x37
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.9 $"

@@ -447,7 +447,7 @@ SVGSVGElement* SVGElement::ownerSVGElement() const
 
 SVGElement* SVGElement::viewportElement() const
 {
-    // This function needs shadow tree support - as RenderSVGContainer uses this function
+    // This function needs shadow tree support - as LayoutSVGContainer uses this function
     // to determine the "overflow" property. <use> on <symbol> wouldn't work otherwhise.
     ContainerNode* n = parentOrShadowHostNode();
     while (n) {

@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (340,6) size 113x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 113x17
         chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 112.45: "Visibility: hidden"
-    RenderSVGContainer {g} at (0,20) size 730x576
+    LayoutSVGContainer {g} at (0,20) size 730x576
       RenderSVGRect {rect} at (680,20) size 50x50 [fill={[type=SOLID] [color=#FFA500]}] [x=680.00] [y=20.00] [width=50.00] [height=50.00]
       LayoutSVGText {text} at (685,26) size 27x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 27x17

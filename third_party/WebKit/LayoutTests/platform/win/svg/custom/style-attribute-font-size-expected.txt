@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (150,30) size 20x12 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 20x12
         chunk 1 text run 1 at (150.00,40.00) startOffset 0 endOffset 3 width 20.00: "SVG"
-    RenderSVGContainer {g} at (10,128) size 329x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,140.00)}]
+    LayoutSVGContainer {g} at (10,128) size 329x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,140.00)}]
       LayoutSVGText {text} at (0,-12) size 329x45 contains 1 chunk(s)
         RenderSVGTSpan {tspan} at (0,0) size 280x15
           LayoutSVGInlineText {#text} at (0,0) size 280x15

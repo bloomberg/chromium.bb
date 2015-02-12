@@ -150,7 +150,7 @@ const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject*
 // Update a bounding box taking into account the validity of the other bounding box.
 inline void SVGLayoutSupport::updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, LayoutObject* other, FloatRect otherBoundingBox)
 {
-    bool otherValid = other->isSVGContainer() ? toRenderSVGContainer(other)->isObjectBoundingBoxValid() : true;
+    bool otherValid = other->isSVGContainer() ? toLayoutSVGContainer(other)->isObjectBoundingBoxValid() : true;
     if (!otherValid)
         return;
 
@@ -216,7 +216,7 @@ bool SVGLayoutSupport::transformToRootChanged(LayoutObject* ancestor)
 {
     while (ancestor && !ancestor->isSVGRoot()) {
         if (ancestor->isSVGTransformableContainer())
-            return toRenderSVGContainer(ancestor)->didTransformToRootUpdate();
+            return toLayoutSVGContainer(ancestor)->didTransformToRootUpdate();
         if (ancestor->isSVGViewportContainer())
             return toRenderSVGViewportContainer(ancestor)->didTransformToRootUpdate();
         ancestor = ancestor->parent();

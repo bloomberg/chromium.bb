@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
-    RenderSVGContainer {g} at (32,15) size 736x469
+    LayoutSVGContainer {g} at (32,15) size 736x469
       LayoutSVGResourceLinearGradient {linearGradient} [id="defs1"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
       LayoutSVGResourceLinearGradient {linearGradient} [id="defs2"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
         RenderSVGGradientStop {stop} [offset=1.00] [color=#000000]

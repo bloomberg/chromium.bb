@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (15,3) size 465x300
+    LayoutSVGContainer {g} at (15,3) size 465x300
       LayoutSVGText {text} at (15,3) size 424x39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 424x39
           chunk 1 text run 1 at (15.00,35.00) startOffset 0 endOffset 26 width 423.98: "Basic: xml:space attribute"

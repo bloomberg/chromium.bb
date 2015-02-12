@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (3,2) size 457x341
+    LayoutSVGContainer {g} at (3,2) size 457x341
       LayoutSVGText {text} at (100,2) size 238x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 238x15
           chunk 1 text run 1 at (100.00,14.00) startOffset 0 endOffset 40 width 238.00: "Cubic bezier curves drawn with commands:"

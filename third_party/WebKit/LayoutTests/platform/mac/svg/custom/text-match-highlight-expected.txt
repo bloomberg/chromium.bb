@@ -47,7 +47,7 @@ layer at (0,0) size 800x410
         LayoutSVGText {text} at (10,90) size 139x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 139x12
             chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.02: "Findme in a typewriter!"
-        RenderSVGContainer {g} at (28,222) size 200x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
+        LayoutSVGContainer {g} at (28,222) size 200x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
           LayoutSVGText {text} at (69,14) size 663x238 contains 1 chunk(s)
             LayoutSVGTextPath {textPath} at (0,0) size 662x238
               LayoutSVGInlineText {#text} at (0,0) size 662x238

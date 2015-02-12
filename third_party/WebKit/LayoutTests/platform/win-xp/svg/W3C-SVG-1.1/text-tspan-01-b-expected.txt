@@ -2,11 +2,11 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (17,5) size 454x294
+    LayoutSVGContainer {g} at (17,5) size 454x294
       LayoutSVGText {text} at (25,5) size 410x18 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 410x18
           chunk 1 text run 1 at (25.00,20.00) startOffset 0 endOffset 60 width 410.00: "Basics of tspan: changing visual properties and positioning."
-      RenderSVGContainer {g} at (47,48) size 312x81
+      LayoutSVGContainer {g} at (47,48) size 312x81
         LayoutSVGText {text} at (74,48) size 155x20 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 53x18
             chunk 1 text run 1 at (74.00,63.75) startOffset 0 endOffset 7 width 53.00: "You are"
@@ -25,7 +25,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (65,110) size 83x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 82x18
             chunk 1 text run 1 at (65.25,125.25) startOffset 0 endOffset 13 width 82.00: "to red, bold."
-      RenderSVGContainer {g} at (224,128) size 247x105
+      LayoutSVGContainer {g} at (224,128) size 247x105
         LayoutSVGText {text} at (257,128) size 173x44 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,10) size 51x18
             chunk 1 text run 1 at (257.50,153.75) startOffset 0 endOffset 7 width 51.00: "But you"
@@ -45,7 +45,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (238,214) size 170x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 170x18
             chunk 1 text run 1 at (238.00,229.50) startOffset 0 endOffset 25 width 170.00: "'tspan' lowers \"a peach!\""
-      RenderSVGContainer {g} at (17,185) size 337x114
+      LayoutSVGContainer {g} at (17,185) size 337x114
         LayoutSVGText {text} at (35,185) size 145x49 contains 1 chunk(s)
           RenderSVGTSpan {tspan} at (0,0) size 145x18
             LayoutSVGInlineText {#text} at (0,0) size 145x18

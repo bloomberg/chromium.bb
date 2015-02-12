@@ -6,14 +6,14 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (0,-14) size 46x18 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 46x18
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 45.32: "sample"
-    RenderSVGContainer {g} at (90,36) size 250x437
+    LayoutSVGContainer {g} at (90,36) size 250x437
       LayoutSVGText {text} at (138,36) size 174x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 174x17
           chunk 1 (middle anchor) text run 1 at (138.30,50.00) startOffset 0 endOffset 26 width 173.41: "Text Layout Properties (2)"
       LayoutSVGText {text} at (186,65) size 78x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 78x13
           chunk 1 (middle anchor) text run 1 at (186.26,75.00) startOffset 0 endOffset 19 width 77.48: "Baseline Properties"
-      RenderSVGContainer {g} at (155,88) size 140x49
+      LayoutSVGContainer {g} at (155,88) size 140x49
         LayoutSVGText {text} at (164,88) size 122x35 contains 1 chunk(s)
           RenderSVGTSpan {tspan} at (0,0) size 33x17
             LayoutSVGInlineText {#text} at (0,0) size 33x17
@@ -28,7 +28,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (155,128) size 140x9 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 139x9
             chunk 1 (middle anchor) text run 1 at (155.53,135.00) startOffset 0 endOffset 43 width 138.95: "baseline-shift=\"super\"/baseline-shift=\"sub\""
-      RenderSVGContainer {g} at (118,149) size 214x33
+      LayoutSVGContainer {g} at (118,149) size 214x33
         LayoutSVGText {text} at (118,149) size 214x23 contains 1 chunk(s)
           RenderSVGTSpan {tspan} at (0,0) size 48x17
             LayoutSVGInlineText {#text} at (0,0) size 48x17
@@ -128,10 +128,10 @@ layer at (0,0) size 450x500
           chunk 1 (middle anchor) text run 17 at (264.98,465.00) startOffset 16 endOffset 17 width 7.50: "p"
           chunk 1 (middle anchor) text run 18 at (272.48,465.00) startOffset 17 endOffset 18 width 7.50: "h"
           chunk 1 (middle anchor) text run 19 at (279.98,465.00) startOffset 18 endOffset 19 width 5.84: "s"
-    RenderSVGContainer {use} at (0,0) size 448x498
-      RenderSVGContainer {g} at (0,0) size 448x498
+    LayoutSVGContainer {use} at (0,0) size 448x498
+      LayoutSVGContainer {g} at (0,0) size 448x498
         RenderSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
-        RenderSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
+        LayoutSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
           RenderSVGViewportContainer {svg} at (418,466) size 28x30
             RenderSVGPath {path} at (418,468) size 14x19 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 C 3 226 33 247 55 232 C 14 306 -1 332 0 356 C 0 370 13 398 44 383 C 52 379 79 358 96 342 C 110 341 120 331 138 314 C 155 328 174 324 190 307 C 212 309 272 229 234 199 C 231 175 204 162 181 181 C 175 179 168 180 163 182 C 185 147 206 100 212 77 C 219 47 188 36 172 44 Z"]
             RenderSVGPath {path} at (432,466) size 14x17 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 C 382 3 351 31 351 31 C 322 54 308 89 323 126 C 310 140 294 170 294 193 C 294 221 314 245 344 222 C 351 230 365 238 381 227 C 376 256 384 275 407 276 C 408 286 420 307 443 293 C 459 283 501 254 522 237 C 547 214 547 143 504 148 C 537 89 501 52 477 64 C 467 68 431 89 425 94 C 424 87 420 82 414 80 C 436 45 436 -5 401 0 Z"]

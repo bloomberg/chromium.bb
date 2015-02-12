@@ -2,14 +2,14 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (0,0) size 480x360
-      RenderSVGContainer {g} at (0,0) size 480x360
+    LayoutSVGContainer {g} at (0,0) size 480x360
+      LayoutSVGContainer {g} at (0,0) size 480x360
         RenderSVGRect {rect} at (0,0) size 480x360 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=2000.00] [height=2000.00]
         RenderSVGRect {rect} at (0,0) size 480x360 [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=480.00] [height=360.00]
       LayoutSVGText {text} at (125,8) size 182x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 182x15
           chunk 1 text run 1 at (125.00,20.00) startOffset 0 endOffset 35 width 182.00: "Initial viewport and CSS units test"
-      RenderSVGContainer {g} at (20,66) size 372x197 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,60.00)}]
+      LayoutSVGContainer {g} at (20,66) size 372x197 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,60.00)}]
         LayoutSVGText {text} at (20,6) size 18x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 18x15
             chunk 1 text run 1 at (20.00,18.00) startOffset 0 endOffset 3 width 18.00: "200"
@@ -30,7 +30,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (230,48) size 131x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 131x15
             chunk 1 text run 1 at (230.00,60.00) startOffset 0 endOffset 26 width 131.00: "Relative to font size (em)"
-        RenderSVGContainer {g} at (20,120) size 200x1
+        LayoutSVGContainer {g} at (20,120) size 200x1
           RenderSVGRect {rect} at (20,120) size 200x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=60.00] [width=200.00] [height=1.00]
         LayoutSVGText {text} at (20,66) size 26x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 26x15
@@ -38,7 +38,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (230,68) size 150x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 150x15
             chunk 1 text run 1 at (230.00,80.00) startOffset 0 endOffset 30 width 150.00: "Relative to font x-height (ex)"
-        RenderSVGContainer {g} at (20,140) size 160x1
+        LayoutSVGContainer {g} at (20,140) size 160x1
           RenderSVGRect {rect} at (20,140) size 160x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=80.00] [width=160.00] [height=1.00]
         LayoutSVGText {text} at (20,86) size 84x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 84x15

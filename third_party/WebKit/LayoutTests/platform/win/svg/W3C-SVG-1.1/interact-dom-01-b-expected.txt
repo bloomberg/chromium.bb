@@ -2,8 +2,8 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (64,19) size 352x202
-      RenderSVGContainer {g} at (64,19) size 352x202
+    LayoutSVGContainer {g} at (64,19) size 352x202
+      LayoutSVGContainer {g} at (64,19) size 352x202
         RenderSVGRect {rect} at (64,19) size 352x202 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#DDDDDD]}] [x=65.00] [y=20.00] [width=350.00] [height=200.00]
         LayoutSVGText {text} at (120,82) size 209x60 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 209x60

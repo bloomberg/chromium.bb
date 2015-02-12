@@ -33,7 +33,7 @@
 namespace blink {
 
 RenderSVGViewportContainer::RenderSVGViewportContainer(SVGElement* node)
-    : RenderSVGContainer(node)
+    : LayoutSVGContainer(node)
     , m_didTransformToRootUpdate(false)
     , m_isLayoutSizeChanged(false)
     , m_needsTransformUpdate(true)

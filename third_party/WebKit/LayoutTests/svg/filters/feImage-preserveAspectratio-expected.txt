@@ -10,7 +10,7 @@ layer at (0,0) size 600x250
       LayoutSVGResourceFilter {filter} [id="Shifted"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feImage image-size="100x100"]
     RenderSVGRect {rect} at (0,0) size 600x250 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=598.00] [height=248.00]
-    RenderSVGContainer {g} at (40,5) size 520x240
+    LayoutSVGContainer {g} at (40,5) size 520x240
       RenderSVGRect {rect} at (40,5) size 120x240 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=25.00] [width=100.00] [height=200.00]
         [filter="Default"] LayoutSVGResourceFilter {filter} at (40,5) size 120x240
       RenderSVGRect {rect} at (49,24) size 102x202 [stroke={[type=SOLID] [color=#008000]}] [x=50.00] [y=25.00] [width=100.00] [height=200.00]

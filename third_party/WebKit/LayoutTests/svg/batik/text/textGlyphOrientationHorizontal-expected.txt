@@ -8,13 +8,13 @@ layer at (0,0) size 450x500
     LayoutSVGText {text} at (129,16) size 192x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 191x17
         chunk 1 (middle anchor) text run 1 at (129.85,30.00) startOffset 0 endOffset 27 width 190.30: "Text Orientation Horizontal"
-    RenderSVGContainer {g} at (37,44) size 363x356
+    LayoutSVGContainer {g} at (37,44) size 363x356
       RenderSVGPath {line} at (50,79) size 150x2 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=80.00] [x2=200.00] [y2=80.00]
       LayoutSVGText {text} at (50,58) size 143x27 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 143x27
           chunk 1 text run 1 at (50.00,80.00) startOffset 0 endOffset 13 width 142.73: "Batik is Good"
-      RenderSVGContainer {g} at (224,44) size 176x76 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,60.00)}]
-        RenderSVGContainer {use} at (239,60) size 161x60
+      LayoutSVGContainer {g} at (224,44) size 176x76 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,60.00)}]
+        LayoutSVGContainer {use} at (239,60) size 161x60
           RenderSVGPath {path} at (239,60) size 161x60 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 20 40 C 40 20 60 0 80 20 C 100 40 120 60 140 40 C 160 20 180 20 180 20"]
         LayoutSVGText {text} at (4,-16) size 138x70 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 138x69
@@ -53,8 +53,8 @@ layer at (0,0) size 450x500
           chunk 1 text run 11 at (320.00,130.00) startOffset 10 endOffset 11 width 13.35: "o"
           chunk 1 text run 12 at (347.00,130.00) startOffset 11 endOffset 12 width 13.35: "o"
           chunk 1 text run 13 at (374.00,130.00) startOffset 12 endOffset 13 width 13.35: "d"
-      RenderSVGContainer {g} at (38,149) size 332x61 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,150.00)}]
-        RenderSVGContainer {use} at (49,150) size 321x60
+      LayoutSVGContainer {g} at (38,149) size 332x61 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,150.00)}]
+        LayoutSVGContainer {use} at (49,150) size 321x60
           RenderSVGPath {path} at (49,150) size 321x60 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 20 40 C 60 20 100 0 140 20 C 180 40 220 60 260 40 C 300 20 340 20 340 20"]
         LayoutSVGText {text} at (8,-1) size 315x52 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 315x51
@@ -92,8 +92,8 @@ layer at (0,0) size 450x500
           chunk 1 text run 11 at (152.69,240.00) startOffset 10 endOffset 11 width 13.35: "o"
           chunk 1 text run 12 at (166.04,240.00) startOffset 11 endOffset 12 width 13.35: "o"
           chunk 1 text run 13 at (179.39,240.00) startOffset 12 endOffset 13 width 13.35: "d"
-      RenderSVGContainer {g} at (221,200) size 179x80 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,220.00)}]
-        RenderSVGContainer {use} at (239,220) size 161x60
+      LayoutSVGContainer {g} at (221,200) size 179x80 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,220.00)}]
+        LayoutSVGContainer {use} at (239,220) size 161x60
           RenderSVGPath {path} at (239,220) size 161x60 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 20 40 C 40 20 60 0 80 20 C 100 40 120 60 140 40 C 160 20 180 20 180 20"]
         LayoutSVGText {text} at (1,-20) size 139x69 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 139x69
@@ -132,8 +132,8 @@ layer at (0,0) size 450x500
           chunk 1 text run 11 at (320.00,320.00) startOffset 10 endOffset 11 width 13.35: "o"
           chunk 1 text run 12 at (347.00,320.00) startOffset 11 endOffset 12 width 13.35: "o"
           chunk 1 text run 13 at (374.00,320.00) startOffset 12 endOffset 13 width 13.35: "d"
-      RenderSVGContainer {g} at (37,337) size 333x63 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,340.00)}]
-        RenderSVGContainer {use} at (49,340) size 321x60
+      LayoutSVGContainer {g} at (37,337) size 333x63 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,340.00)}]
+        LayoutSVGContainer {use} at (49,340) size 321x60
           RenderSVGPath {path} at (49,340) size 321x60 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 20 40 C 60 20 100 0 140 20 C 180 40 220 60 260 40 C 300 20 340 20 340 20"]
         LayoutSVGText {text} at (7,-3) size 313x55 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 312x55

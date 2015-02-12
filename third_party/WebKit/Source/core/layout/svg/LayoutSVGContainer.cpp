@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGContainer.h"
+#include "core/layout/svg/LayoutSVGContainer.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
@@ -31,7 +31,7 @@
 
 namespace blink {
 
-RenderSVGContainer::RenderSVGContainer(SVGElement* node)
+LayoutSVGContainer::LayoutSVGContainer(SVGElement* node)
     : RenderSVGModelObject(node)
     , m_objectBoundingBoxValid(false)
     , m_needsBoundariesUpdate(true)
@@ -40,11 +40,11 @@ RenderSVGContainer::RenderSVGContainer(SVGElement* node)
 {
 }
 
-RenderSVGContainer::~RenderSVGContainer()
+LayoutSVGContainer::~LayoutSVGContainer()
 {
 }
 
-void RenderSVGContainer::layout()
+void LayoutSVGContainer::layout()
 {
     ASSERT(needsLayout());
 
@@ -74,7 +74,7 @@ void RenderSVGContainer::layout()
     clearNeedsLayout();
 }
 
-void RenderSVGContainer::addChild(LayoutObject* child, LayoutObject* beforeChild)
+void LayoutSVGContainer::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     RenderSVGModelObject::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
@@ -84,7 +84,7 @@ void RenderSVGContainer::addChild(LayoutObject* child, LayoutObject* beforeChild
         descendantIsolationRequirementsChanged(DescendantIsolationRequired);
 }
 
-void RenderSVGContainer::removeChild(LayoutObject* child)
+void LayoutSVGContainer::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
     RenderSVGModelObject::removeChild(child);
@@ -94,13 +94,13 @@ void RenderSVGContainer::removeChild(LayoutObject* child)
         descendantIsolationRequirementsChanged(DescendantIsolationNeedsUpdate);
 }
 
-bool RenderSVGContainer::selfWillPaint()
+bool LayoutSVGContainer::selfWillPaint()
 {
     SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
     return resources && resources->filter();
 }
 
-void RenderSVGContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderSVGModelObject::styleDidChange(diff, oldStyle);
 
@@ -114,7 +114,7 @@ void RenderSVGContainer::styleDidChange(StyleDifference diff, const LayoutStyle*
         parent()->descendantIsolationRequirementsChanged(SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this) ? DescendantIsolationNeedsUpdate : DescendantIsolationRequired);
 }
 
-bool RenderSVGContainer::hasNonIsolatedBlendingDescendants() const
+bool LayoutSVGContainer::hasNonIsolatedBlendingDescendants() const
 {
     if (m_hasNonIsolatedBlendingDescendantsDirty) {
         m_hasNonIsolatedBlendingDescendants = SVGLayoutSupport::computeHasNonIsolatedBlendingDescendants(this);
@@ -123,7 +123,7 @@ bool RenderSVGContainer::hasNonIsolatedBlendingDescendants() const
     return m_hasNonIsolatedBlendingDescendants;
 }
 
-void RenderSVGContainer::descendantIsolationRequirementsChanged(DescendantIsolationState state)
+void LayoutSVGContainer::descendantIsolationRequirementsChanged(DescendantIsolationState state)
 {
     switch (state) {
     case DescendantIsolationRequired:
@@ -142,25 +142,25 @@ void RenderSVGContainer::descendantIsolationRequirementsChanged(DescendantIsolat
         parent()->descendantIsolationRequirementsChanged(state);
 }
 
-void RenderSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGContainerPainter(*this).paint(paintInfo);
 }
 
-void RenderSVGContainer::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
+void LayoutSVGContainer::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
 {
     LayoutRect contentRect = LayoutRect(paintInvalidationRectInLocalCoordinates());
     if (!contentRect.isEmpty())
         rects.append(contentRect);
 }
 
-void RenderSVGContainer::updateCachedBoundaries()
+void LayoutSVGContainer::updateCachedBoundaries()
 {
     SVGLayoutSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_paintInvalidationBoundingBox);
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
-bool RenderSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // Give RenderSVGViewportContainer a chance to apply its viewport clip
     if (!pointIsInsideViewportClip(pointInParent))

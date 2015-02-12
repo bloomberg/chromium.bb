@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (8,10) size 462x278
+    LayoutSVGContainer {g} at (8,10) size 462x278
       LayoutSVGResourceRadialGradient {radialGradient} [id="Grad1"] [gradientUnits=userSpaceOnUse] [center=(75,100)] [focal=(75,100)] [radius=130.00] [focalRadius=0.00]
         RenderSVGGradientStop {stop} [offset=0.00] [color=#000000]
         RenderSVGGradientStop {stop} [offset=1.00] [color=#FF0000]

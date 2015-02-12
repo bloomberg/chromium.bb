@@ -2,13 +2,13 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (68,15) size 344x260
-      RenderSVGContainer {g} at (68,15) size 344x18
+    LayoutSVGContainer {g} at (68,15) size 344x260
+      LayoutSVGContainer {g} at (68,15) size 344x18
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGText {text} at (68,15) size 344x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 343x18
             chunk 1 (middle anchor) text run 1 at (68.50,30.00) startOffset 0 endOffset 51 width 343.00: "Pie chart built from data in a different namespace."
-      RenderSVGContainer {g} at (127,62) size 242x213
+      LayoutSVGContainer {g} at (127,62) size 242x213
         RenderSVGPath {path} at (263,76) size 106x83 [transform={m=((1.00,0.00)(0.00,1.00)) t=(27.00,-13.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF8888]}] [data="M 240 170 L 340 170 C 340.103 139.741 326.499 111.063 303 92 Z"]
         LayoutSVGText {text} at (285,129) size 28x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 28x16

@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (15,5) size 450x300
+    LayoutSVGContainer {g} at (15,5) size 450x300
       RenderSVGViewportContainer {svg} at (15,5) size 450x300
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="MyGradient"] [gradientUnits=userSpaceOnUse] [start=(10,0)] [end=(590,0)]
@@ -39,7 +39,7 @@ layer at (0,0) size 480x360
                 {alpha: type="UNKNOWN" slope="0.00" intercept="0.00" amplitude="0.00" exponent="0.00" offset="0.00"}]
               [SourceGraphic]
         RenderSVGRect {rect} at (15,5) size 450x300 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
-        RenderSVGContainer {g} at (15,5) size 450x300
+        LayoutSVGContainer {g} at (15,5) size 450x300
           RenderSVGRect {rect} at (15,5) size 450x300 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
           RenderSVGRect {rect} at (22,12) size 415x29 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=10.00] [width=580.00] [height=40.00]
             [filter="Identity"] LayoutSVGResourceFilter {filter} at (10,10) size 580x40

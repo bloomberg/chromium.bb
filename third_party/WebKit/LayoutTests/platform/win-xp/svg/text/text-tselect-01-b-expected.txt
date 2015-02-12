@@ -2,11 +2,11 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
-    RenderSVGContainer {g} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (0,0) size 800x600
       LayoutSVGText {text} at (10,5) size 292x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 292x19
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 46 width 291.60: "Test single line and multiline text selection."
-      RenderSVGContainer {g} at (41,83) size 578x365
+      LayoutSVGContainer {g} at (41,83) size 578x365
         LayoutSVGText {text} at (25,50) size 244x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 244x19
             chunk 1 text run 1 at (25.00,65.00) startOffset 0 endOffset 37 width 243.60: "Here is a stand-alone 'text' element."

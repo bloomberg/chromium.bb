@@ -3,8 +3,8 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-    RenderSVGContainer {g} at (61,10) size 375x350
-      RenderSVGContainer {g} at (61,10) size 375x350
+    LayoutSVGContainer {g} at (61,10) size 375x350
+      LayoutSVGContainer {g} at (61,10) size 375x350
         LayoutSVGText {text} at (61,10) size 18x308 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 17x308
             chunk 1 (vertical) text run 1 at (65.50,10.00) startOffset 0 endOffset 1 height 17.00: "T"

@@ -2,10 +2,10 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (20,129) size 385x97
-      RenderSVGContainer {g} at (20,129) size 385x97
-        RenderSVGContainer {switch} at (20,129) size 385x97
-          RenderSVGContainer {g} at (20,129) size 385x97
+    LayoutSVGContainer {g} at (20,129) size 385x97
+      LayoutSVGContainer {g} at (20,129) size 385x97
+        LayoutSVGContainer {switch} at (20,129) size 385x97
+          LayoutSVGContainer {g} at (20,129) size 385x97
             LayoutSVGText {text} at (20,199) size 385x27 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 385x27
                 chunk 1 text run 1 at (20.00,220.00) startOffset 0 endOffset 35 width 385.00: "Why can't they just speak English ?"

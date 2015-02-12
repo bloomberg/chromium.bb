@@ -2,11 +2,11 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (5,8) size 454x277
+    LayoutSVGContainer {g} at (5,8) size 454x277
       LayoutSVGText {text} at (5,8) size 454x39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 454x39
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 34 width 454.00: "Test 'baseline-shift' (horizontal)"
-      RenderSVGContainer {g} at (15,85) size 397x200 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,120.00)}]
+      LayoutSVGContainer {g} at (15,85) size 397x200 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,120.00)}]
         LayoutSVGText {text} at (0,-35) size 343x42 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,7) size 96x35
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 96.00: "Normal"

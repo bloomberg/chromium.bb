@@ -6,14 +6,14 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (0,-14) size 46x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 46x17
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 45.32: "sample"
-    RenderSVGContainer {g} at (40,36) size 368x421
+    LayoutSVGContainer {g} at (40,36) size 368x421
       LayoutSVGText {text} at (152,36) size 146x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 146x17
           chunk 1 (middle anchor) text run 1 at (152.00,50.00) startOffset 0 endOffset 22 width 146.00: "Text Layout Properties"
       LayoutSVGText {text} at (170,65) size 110x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 110x12
           chunk 1 (middle anchor) text run 1 at (170.00,75.00) startOffset 0 endOffset 26 width 110.00: "Explicit Glyph Positioning"
-      RenderSVGContainer {g} at (40,89) size 111x38
+      LayoutSVGContainer {g} at (40,89) size 111x38
         LayoutSVGText {text} at (40,89) size 111x26 contains 1 chunk(s)
           RenderSVGTSpan {tspan} at (0,0) size 111x26
             LayoutSVGInlineText {#text} at (0,0) size 111x26
@@ -26,14 +26,14 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (40,117) size 104x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 104x10
             chunk 1 text run 1 at (40.00,125.00) startOffset 0 endOffset 30 width 104.00: "tspan x=\"40,60,80,105,125,140\""
-      RenderSVGContainer {g} at (185,89) size 70x38
+      LayoutSVGContainer {g} at (185,89) size 70x38
         LayoutSVGText {text} at (185,89) size 68x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 68x26
             chunk 1 text run 1 at (185.00,110.00) startOffset 0 endOffset 6 width 67.98: "sample"
         LayoutSVGText {text} at (185,117) size 70x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 70x10
             chunk 1 text run 1 at (185.00,125.00) startOffset 0 endOffset 22 width 70.00: "Serif, default spacing"
-      RenderSVGContainer {g} at (290,89) size 118x38
+      LayoutSVGContainer {g} at (290,89) size 118x38
         LayoutSVGText {text} at (290,89) size 118x26 contains 1 chunk(s)
           RenderSVGTSpan {tspan} at (0,0) size 118x26
             LayoutSVGInlineText {#text} at (0,0) size 118x26
@@ -49,7 +49,7 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (102,140) size 246x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 245x12
           chunk 1 (middle anchor) text run 1 at (102.50,150.00) startOffset 0 endOffset 59 width 245.00: "Letter Spacing Adjustment and Explicit Length Specification"
-      RenderSVGContainer {g} at (40,159) size 112x38
+      LayoutSVGContainer {g} at (40,159) size 112x38
         LayoutSVGText {text} at (40,159) size 112x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 112x26
             chunk 1 text run 1 at (40.00,180.00) startOffset 0 endOffset 1 width 9.34: "s"
@@ -61,7 +61,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (40,187) size 58x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 58x10
             chunk 1 text run 1 at (40.00,195.00) startOffset 0 endOffset 16 width 58.00: "textLength=\"120\""
-      RenderSVGContainer {g} at (185,159) size 70x38
+      LayoutSVGContainer {g} at (185,159) size 70x38
         LayoutSVGText {text} at (185,159) size 70x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 70x26
             chunk 1 text run 1 at (185.00,180.00) startOffset 0 endOffset 1 width 9.34: "s"
@@ -73,7 +73,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (185,187) size 54x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 54x10
             chunk 1 text run 1 at (185.00,195.00) startOffset 0 endOffset 15 width 54.00: "textLength=\"70\""
-      RenderSVGContainer {g} at (40,204) size 120x48
+      LayoutSVGContainer {g} at (40,204) size 120x48
         LayoutSVGText {text} at (40,204) size 120x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x26
             chunk 1 text run 1 at (40.00,225.00) startOffset 0 endOffset 6 width 67.98: "sample"
@@ -83,7 +83,7 @@ layer at (0,0) size 450x500
           RenderSVGTSpan {tspan} at (0,0) size 116x10
             LayoutSVGInlineText {#text} at (0,10) size 116x10
               chunk 1 text run 1 at (40.00,250.00) startOffset 0 endOffset 31 width 116.00: "lengthAdjust=\"spacingAndGlyphs\""
-      RenderSVGContainer {g} at (185,204) size 116x48
+      LayoutSVGContainer {g} at (185,204) size 116x48
         LayoutSVGText {text} at (185,204) size 70x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 70x26
             chunk 1 text run 1 at (185.00,225.00) startOffset 0 endOffset 6 width 67.98: "sample"
@@ -93,7 +93,7 @@ layer at (0,0) size 450x500
           RenderSVGTSpan {tspan} at (0,0) size 116x10
             LayoutSVGInlineText {#text} at (0,10) size 116x10
               chunk 1 text run 1 at (185.00,250.00) startOffset 0 endOffset 31 width 116.00: "lengthAdjust=\"spacingAndGlyphs\""
-      RenderSVGContainer {g} at (40,254) size 104x38
+      LayoutSVGContainer {g} at (40,254) size 104x38
         LayoutSVGText {text} at (40,254) size 104x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 104x26
             chunk 1 text run 1 at (40.00,275.00) startOffset 0 endOffset 1 width 9.34: "s"
@@ -105,7 +105,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (40,282) size 77x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x10
             chunk 1 text run 1 at (40.00,290.00) startOffset 0 endOffset 22 width 77.00: "letter-spacing=\"0.3em\""
-      RenderSVGContainer {g} at (185,254) size 63x38
+      LayoutSVGContainer {g} at (185,254) size 63x38
         LayoutSVGText {text} at (185,254) size 53x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 53x26
             chunk 1 text run 1 at (185.00,275.00) startOffset 0 endOffset 1 width 9.34: "s"
@@ -117,7 +117,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (185,282) size 63x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 63x10
             chunk 1 text run 1 at (185.00,290.00) startOffset 0 endOffset 19 width 63.00: "letter-spacing=\"-3\""
-      RenderSVGContainer {g} at (290,254) size 118x38
+      LayoutSVGContainer {g} at (290,254) size 118x38
         LayoutSVGText {text} at (290,254) size 118x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 118x26
             chunk 1 text run 1 at (290.00,275.00) startOffset 0 endOffset 1 width 9.34: "s"
@@ -132,7 +132,7 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (171,310) size 108x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 108x12
           chunk 1 (middle anchor) text run 1 at (171.00,320.00) startOffset 0 endOffset 23 width 108.00: "Word Spacing Adjustment"
-      RenderSVGContainer {g} at (40,337) size 350x30
+      LayoutSVGContainer {g} at (40,337) size 350x30
         LayoutSVGText {text} at (40,337) size 350x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 350x17
             chunk 1 text run 1 at (40.00,350.00) startOffset 0 endOffset 1 width 14.00: "W"
@@ -167,7 +167,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (40,357) size 131x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 131x10
             chunk 1 text run 1 at (40.00,365.00) startOffset 0 endOffset 35 width 131.00: "textLength=\"350\" word-spacing=\"3em\""
-      RenderSVGContainer {g} at (40,382) size 345x30
+      LayoutSVGContainer {g} at (40,382) size 345x30
         LayoutSVGText {text} at (40,382) size 345x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 345x17
             chunk 1 text run 1 at (40.00,395.00) startOffset 0 endOffset 1 width 11.00: "N"
@@ -204,7 +204,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (40,402) size 123x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 123x10
             chunk 1 text run 1 at (40.00,410.00) startOffset 0 endOffset 34 width 123.00: "textLength=\"350\" word-spacing=\"-5\""
-      RenderSVGContainer {g} at (40,427) size 350x30
+      LayoutSVGContainer {g} at (40,427) size 350x30
         LayoutSVGText {text} at (40,427) size 350x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 350x17
             chunk 1 text run 1 at (40.00,440.00) startOffset 0 endOffset 7 width 50.00: "Narrow "
@@ -214,10 +214,10 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (40,447) size 241x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 241x10
             chunk 1 text run 1 at (40.00,455.00) startOffset 0 endOffset 66 width 241.00: "textLength=\"350\" lengthAdjust=\"spacingAndGlyphs\" word-spacing=\"-5\""
-    RenderSVGContainer {use} at (0,0) size 448x498
-      RenderSVGContainer {g} at (0,0) size 448x498
+    LayoutSVGContainer {use} at (0,0) size 448x498
+      LayoutSVGContainer {g} at (0,0) size 448x498
         RenderSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
-        RenderSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
+        LayoutSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
           RenderSVGViewportContainer {svg} at (418,466) size 28x30
             RenderSVGPath {path} at (418,468) size 14x19 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 C 3 226 33 247 55 232 C 14 306 -1 332 0 356 C 0 370 13 398 44 383 C 52 379 79 358 96 342 C 110 341 120 331 138 314 C 155 328 174 324 190 307 C 212 309 272 229 234 199 C 231 175 204 162 181 181 C 175 179 168 180 163 182 C 185 147 206 100 212 77 C 219 47 188 36 172 44 Z"]
             RenderSVGPath {path} at (432,466) size 14x17 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 C 382 3 351 31 351 31 C 322 54 308 89 323 126 C 310 140 294 170 294 193 C 294 221 314 245 344 222 C 351 230 365 238 381 227 C 376 256 384 275 407 276 C 408 286 420 307 443 293 C 459 283 501 254 522 237 C 547 214 547 143 504 148 C 537 89 501 52 477 64 C 467 68 431 89 425 94 C 424 87 420 82 414 80 C 436 45 436 -5 401 0 Z"]
