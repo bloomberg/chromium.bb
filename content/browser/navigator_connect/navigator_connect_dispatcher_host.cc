@@ -13,9 +13,11 @@
 namespace content {
 
 NavigatorConnectDispatcherHost::NavigatorConnectDispatcherHost(
-    const scoped_refptr<NavigatorConnectContextImpl>& navigator_connect_context)
+    const scoped_refptr<NavigatorConnectContextImpl>& navigator_connect_context,
+    MessagePortMessageFilter* message_port_message_filter)
     : BrowserMessageFilter(NavigatorConnectMsgStart),
-      navigator_connect_context_(navigator_connect_context) {
+      navigator_connect_context_(navigator_connect_context),
+      message_port_message_filter_(message_port_message_filter) {
 }
 
 NavigatorConnectDispatcherHost::~NavigatorConnectDispatcherHost() {
@@ -37,18 +39,24 @@ void NavigatorConnectDispatcherHost::OnConnect(
     const NavigatorConnectClient& client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  DCHECK(client.message_port_id == MSG_ROUTING_NONE)
+      << "Connect request should not include a message port";
+
   navigator_connect_context_->Connect(
-      client, base::Bind(&NavigatorConnectDispatcherHost::OnConnectResult, this,
-                         thread_id, request_id));
+      client, message_port_message_filter_,
+      base::Bind(&NavigatorConnectDispatcherHost::OnConnectResult, this,
+                 thread_id, request_id));
 }
 
-void NavigatorConnectDispatcherHost::OnConnectResult(
-    int thread_id,
-    int request_id,
-    bool accept_connection) {
+void NavigatorConnectDispatcherHost::OnConnectResult(int thread_id,
+                                                     int request_id,
+                                                     int message_port_id,
+                                                     int message_port_route_id,
+                                                     bool accept_connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  Send(new NavigatorConnectMsg_ConnectResult(thread_id, request_id,
-                                             accept_connection));
+  Send(new NavigatorConnectMsg_ConnectResult(
+      thread_id, request_id, message_port_id, message_port_route_id,
+      accept_connection));
 }
 
 }  // namespace content

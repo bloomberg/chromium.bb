@@ -10,6 +10,11 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/message_port_delegate.h"
 
+// Windows headers will redefine SendMessage.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 namespace content {
 
 // Filter for MessagePort related IPC messages (creating and destroying a

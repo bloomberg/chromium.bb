@@ -13,6 +13,7 @@
 
 namespace content {
 
+class MessagePortMessageFilter;
 struct NavigatorConnectClient;
 class NavigatorConnectService;
 class NavigatorConnectServiceFactory;
@@ -24,14 +25,16 @@ class NavigatorConnectServiceFactory;
 // TODO(mek): Somehow clean up connections when the client side goes away.
 class NavigatorConnectContextImpl : public NavigatorConnectContext {
  public:
-  using ConnectCallback = base::Callback<void(bool success)>;
+  using ConnectCallback = base::Callback<
+      void(int message_port_id, int message_port_route_id, bool success)>;
 
   explicit NavigatorConnectContextImpl();
 
   // Called when a new connection request comes in from a client. Finds the
   // correct service factory and passes the connection request off to there.
   // Can call the callback before this method call returns.
-  void Connect(const NavigatorConnectClient& client,
+  void Connect(NavigatorConnectClient client,
+               MessagePortMessageFilter* message_port_message_filter,
                const ConnectCallback& callback);
 
   // NavigatorConnectContext implementation.
@@ -42,6 +45,8 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
 
   // Callback called by service factories when a connection succeeded or failed.
   void OnConnectResult(const NavigatorConnectClient& client,
+                       int client_message_port_id,
+                       int client_port_route_id,
                        const ConnectCallback& callback,
                        MessagePortDelegate* delegate);
 

@@ -11,6 +11,7 @@ class GURL;
 
 namespace content {
 
+class MessagePortMessageFilter;
 struct NavigatorConnectClient;
 class NavigatorConnectContextImpl;
 
@@ -24,8 +25,10 @@ class NavigatorConnectContextImpl;
 // if it is still handling a connection attempt).
 class NavigatorConnectDispatcherHost : public BrowserMessageFilter {
  public:
-  explicit NavigatorConnectDispatcherHost(const scoped_refptr<
-      NavigatorConnectContextImpl>& navigator_connect_context);
+  NavigatorConnectDispatcherHost(
+      const scoped_refptr<NavigatorConnectContextImpl>&
+          navigator_connect_context,
+      MessagePortMessageFilter* message_port_message_filter);
 
  private:
   ~NavigatorConnectDispatcherHost() override;
@@ -40,12 +43,14 @@ class NavigatorConnectDispatcherHost : public BrowserMessageFilter {
 
   // Callback called when the service worker finished handling the cross origin
   // connection event.
-  void OnConnectResult(
-      int thread_id,
-      int request_id,
-      bool accept_connection);
+  void OnConnectResult(int thread_id,
+                       int request_id,
+                       int message_port_id,
+                       int message_port_route_id,
+                       bool accept_connection);
 
   scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context_;
+  MessagePortMessageFilter* const message_port_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorConnectDispatcherHost);
 };

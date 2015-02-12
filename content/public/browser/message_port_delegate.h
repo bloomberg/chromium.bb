@@ -10,6 +10,11 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
+// Windows headers will redefine SendMessage.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 namespace content {
 
 // Delegate used by MessagePortService to send messages to message ports to the

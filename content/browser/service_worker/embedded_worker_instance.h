@@ -21,6 +21,11 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
+// Windows headers will redefine SendMessage.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 struct EmbeddedWorkerMsg_StartWorker_Params;
 
 namespace IPC {

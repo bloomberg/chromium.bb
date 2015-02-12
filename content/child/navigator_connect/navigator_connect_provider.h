@@ -47,8 +47,7 @@ class NavigatorConnectProvider : public blink::WebNavigatorConnectProvider,
   // WebNavigatorConnectProvider implementation.
   virtual void connect(const blink::WebURL& target_url,
                        const blink::WebString& origin,
-                       blink::WebMessagePortChannel* port,
-                       blink::WebNavigatorConnectCallbacks* callbacks);
+                       blink::WebNavigatorConnectPortCallbacks* callbacks);
 
   void OnMessageReceived(const IPC::Message& msg);
 
@@ -59,15 +58,18 @@ class NavigatorConnectProvider : public blink::WebNavigatorConnectProvider,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_loop);
 
  private:
-  void OnConnectResult(int thread_id, int request_id, bool allow_connect);
+  void OnConnectResult(int thread_id,
+                       int request_id,
+                       int message_port_id,
+                       int message_port_route_id,
+                       bool allow_connect);
 
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_loop_;
-  typedef blink::WebNavigatorConnectCallbacks ConnectCallback;
-  IDMap<ConnectCallback, IDMapOwnPointer> requests_;
+  IDMap<blink::WebNavigatorConnectPortCallbacks, IDMapOwnPointer> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorConnectProvider);
 };

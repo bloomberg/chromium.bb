@@ -23,7 +23,9 @@ IPC_MESSAGE_CONTROL3(NavigatorConnectHostMsg_Connect,
                      content::NavigatorConnectClient /* client */)
 
 // Messages sent from the browser to the child process.
-IPC_MESSAGE_CONTROL3(NavigatorConnectMsg_ConnectResult,
+IPC_MESSAGE_CONTROL5(NavigatorConnectMsg_ConnectResult,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* message_port_id */,
+                     int /* message_port_route_id */,
                      bool /* allow_connect */)
