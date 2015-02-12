@@ -130,7 +130,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
 
         @Override
         protected boolean validateSocket(Socket sock) {
-            return !sock.getInetAddress().isLoopbackAddress();
+            return sock.getInetAddress().isLoopbackAddress();
         }
 
         @Override
