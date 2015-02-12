@@ -49,55 +49,50 @@ TEST(SkiaBenchmarkingExtensionTest, SkDebugCanvas) {
   SkRect fillRect = SkRect::MakeXYWH(SkIntToScalar(25), SkIntToScalar(25),
                                      SkIntToScalar(50), SkIntToScalar(50));
 
+  SkMatrix trans;
+  trans.setTranslate(SkIntToScalar(10), SkIntToScalar(10));
+
   // Draw a trivial scene.
   canvas.save();
   canvas.clipRect(fullRect, SkRegion::kIntersect_Op, false);
-  canvas.translate(SkIntToScalar(10), SkIntToScalar(10));
-  canvas.scale(SkIntToScalar(2), SkIntToScalar(2));
+  canvas.setMatrix(trans);
   canvas.drawRect(fillRect, red_paint);
   canvas.restore();
 
   // Verify the recorded commands.
-  DrawType cmd;
+  SkDrawCommand::OpType cmd;
   int idx = 0;
-  ASSERT_EQ(canvas.getSize(), 6);
+  ASSERT_EQ(canvas.getSize(), 5);
 
   ASSERT_TRUE(canvas.getDrawCommandAt(idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, SAVE);
+  EXPECT_EQ(cmd, SkDrawCommand::kSave_OpType);
   EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Save");
 
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, CLIP_RECT);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Clip Rect");
+  EXPECT_EQ(cmd, SkDrawCommand::kClipRect_OpType);
+  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd),
+               SkDrawCommand::kClipRectString);
   EXPECT_TRUE(HasInfoField(canvas, idx, "SkRect"));
   EXPECT_TRUE(HasInfoField(canvas, idx, "Op"));
   EXPECT_TRUE(HasInfoField(canvas, idx, "doAA"));
 
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, TRANSLATE);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Translate");
-  EXPECT_TRUE(HasInfoField(canvas, idx, "dx"));
-  EXPECT_TRUE(HasInfoField(canvas, idx, "dy"));
+  EXPECT_EQ(cmd, SkDrawCommand::kSetMatrix_OpType);
+  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "SetMatrix");
 
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, SCALE);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Scale");
-  EXPECT_TRUE(HasInfoField(canvas, idx, "sx"));
-  EXPECT_TRUE(HasInfoField(canvas, idx, "sy"));
-
-  ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
-  cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, DRAW_RECT);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Draw Rect");
+  EXPECT_EQ(cmd, SkDrawCommand::kDrawRect_OpType);
+  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd),
+               SkDrawCommand::kDrawRectString);
   EXPECT_TRUE(HasInfoField(canvas, idx, "SkRect"));
 
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, RESTORE);
+  EXPECT_EQ(cmd, SkDrawCommand::kRestore_OpType);
   EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Restore");
 }
 
