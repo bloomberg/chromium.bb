@@ -11,7 +11,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 @class ExtensionPopupController;
-class ToolbarActionViewDelegateCocoa;
 
 // The Cocoa-specific implementation for ExtensionActionPlatformDelegate.
 class ExtensionActionPlatformDelegateCocoa
@@ -38,8 +37,8 @@ class ExtensionActionPlatformDelegateCocoa
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Returns the delegate in its Cocoa implementation.
-  ToolbarActionViewDelegateCocoa* GetDelegateCocoa();
+  // Returns the point at which the popup should be shown.
+  NSPoint GetPopupPoint() const;
 
   // The main controller for this extension action.
   ExtensionActionViewController* controller_;

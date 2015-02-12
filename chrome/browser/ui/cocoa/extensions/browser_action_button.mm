@@ -16,10 +16,10 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -45,7 +45,7 @@ static const CGFloat kMinimumDragDistance = 5;
 
 // A class to bridge the ToolbarActionViewController and the
 // BrowserActionButton.
-class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
+class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegate {
  public:
   ToolbarActionViewDelegateBridge(BrowserActionButton* owner,
                                   BrowserActionsController* controller,
@@ -58,13 +58,12 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
   bool user_shown_popup_visible() const { return user_shown_popup_visible_; }
 
  private:
-  // ToolbarActionViewDelegateCocoa:
+  // ToolbarActionViewDelegate:
   ToolbarActionViewController* GetPreferredPopupViewController() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;
-  NSPoint GetPopupPoint() override;
 
   // A helper method to implement showing the context menu.
   void DoShowContextMenu();
@@ -148,10 +147,6 @@ void ToolbarActionViewDelegateBridge::OnPopupShown(bool by_user) {
 void ToolbarActionViewDelegateBridge::OnPopupClosed() {
   user_shown_popup_visible_ = false;
   [owner_ updateHighlightedState];
-}
-
-NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
-  return [controller_ popupPointForId:[owner_ viewController]->GetId()];
 }
 
 void ToolbarActionViewDelegateBridge::DoShowContextMenu() {

@@ -12,10 +12,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -83,8 +85,6 @@ ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
     ExtensionActionViewController::PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
-  NSPoint arrowPoint = GetDelegateCocoa()->GetPopupPoint();
-
   // If this was triggered by an action overflowed to the wrench menu, then
   // the wrench menu will be open. Close it before opening the popup.
   WrenchMenuController* wrenchMenuController =
@@ -100,16 +100,29 @@ ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
   ExtensionPopupController* popupController =
       [ExtensionPopupController showURL:popup_url
                               inBrowser:controller_->browser()
-                             anchoredAt:arrowPoint
+                             anchoredAt:GetPopupPoint()
                           arrowLocation:info_bubble::kTopRight
                                 devMode:devMode];
   return [popupController extensionViewHost];
 }
 
-ToolbarActionViewDelegateCocoa*
-ExtensionActionPlatformDelegateCocoa::GetDelegateCocoa() {
-  return static_cast<ToolbarActionViewDelegateCocoa*>(
-      controller_->view_delegate());
+NSPoint ExtensionActionPlatformDelegateCocoa::GetPopupPoint() const {
+  BrowserWindowController* windowController =
+      [BrowserWindowController browserWindowControllerForWindow:
+          controller_->browser()->window()->GetNativeWindow()];
+  NSPoint popupPoint;
+  if (controller_->extension_action()->action_type() ==
+          extensions::ActionInfo::TYPE_PAGE) {
+    popupPoint = [windowController locationBarBridge]->GetPageActionBubblePoint(
+        controller_->extension_action());
+  } else {
+    DCHECK_EQ(extensions::ActionInfo::TYPE_BROWSER,
+              controller_->extension_action()->action_type());
+    BrowserActionsController* actionsController =
+        [[windowController toolbarController] browserActionsController];
+    popupPoint = [actionsController popupPointForId:controller_->GetId()];
+  }
+  return popupPoint;
 }
 
 void ExtensionActionPlatformDelegateCocoa::Observe(

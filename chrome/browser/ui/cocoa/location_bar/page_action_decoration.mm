@@ -161,12 +161,3 @@ void PageActionDecoration::UpdateState() {
     owner_->RedrawDecoration(this);
   }
 }
-
-NSPoint PageActionDecoration::GetPopupPoint() {
-  // Anchor popup at the bottom center of the page action icon.
-  AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-  NSPoint anchor = GetBubblePointInFrame(
-      owner_->GetPageActionFrame(viewController_->extension_action()));
-  anchor = [field convertPoint:anchor toView:nil];
-  return anchor;
-}

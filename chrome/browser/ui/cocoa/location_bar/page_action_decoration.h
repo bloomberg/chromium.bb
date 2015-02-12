@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 
 class Browser;
 class ExtensionAction;
@@ -28,7 +28,7 @@ class Extension;
 // Action and notify the extension when the icon is clicked.
 
 class PageActionDecoration : public ImageDecoration,
-                             public ToolbarActionViewDelegateCocoa {
+                             public ToolbarActionViewDelegate {
  public:
   PageActionDecoration(LocationBarViewMac* owner,
                        Browser* browser,
@@ -66,11 +66,10 @@ class PageActionDecoration : public ImageDecoration,
   // Sets the tooltip for this Page Action image.
   void SetToolTip(const base::string16& tooltip);
 
-  // Overridden from ToolbarActionViewDelegateCocoa:
+  // Overridden from ToolbarActionViewDelegate:
   ToolbarActionViewController* GetPreferredPopupViewController() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
-  NSPoint GetPopupPoint() override;
 
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
