@@ -98,7 +98,7 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_IMAGES);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
