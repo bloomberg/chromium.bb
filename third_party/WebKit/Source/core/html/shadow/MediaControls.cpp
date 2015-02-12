@@ -355,11 +355,6 @@ void MediaControls::refreshClosedCaptionsButtonVisibility()
         m_toggleClosedCaptionsButton->hide();
 }
 
-void MediaControls::textTracksChanged()
-{
-    refreshClosedCaptionsButtonVisibility();
-}
-
 static Element* elementFromCenter(Element& element)
 {
     RefPtrWillBeRawPtr<ClientRect> clientRect = element.getBoundingClientRect();

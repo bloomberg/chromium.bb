@@ -58,7 +58,6 @@ public:
 
     void changedClosedCaptionsVisibility();
     void refreshClosedCaptionsButtonVisibility();
-    void textTracksChanged();
 
     void enteredFullscreen();
     void exitedFullscreen();

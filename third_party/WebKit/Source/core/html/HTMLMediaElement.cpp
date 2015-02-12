@@ -2716,7 +2716,7 @@ void HTMLMediaElement::mediaPlayerDidRemoveTextTrack(WebInbandTextTrack* webTrac
 void HTMLMediaElement::textTracksChanged()
 {
     if (hasMediaControls())
-        mediaControls()->textTracksChanged();
+        mediaControls()->refreshClosedCaptionsButtonVisibility();
 }
 
 void HTMLMediaElement::addTextTrack(TextTrack* track)
