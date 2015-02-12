@@ -58,13 +58,14 @@ static float pointsToPixels(float points)
     return points / pointsPerInch * pixelsPerInch;
 }
 
-static void getNonClientMetrics(NONCLIENTMETRICS* metrics)
+static bool getNonClientMetrics(NONCLIENTMETRICS* metrics)
 {
     static UINT size = isWindowsVistaOrGreater() ?
         sizeof(NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
     metrics->cbSize = size;
     bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, size, metrics, 0);
     ASSERT_UNUSED(success, success);
+    return success;
 }
 
 // Return the height of system font |font| in pixels. We use this size by
@@ -105,6 +106,8 @@ void LayoutThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontSt
 {
     fontStyle = FontStyleNormal;
     fontWeight = FontWeightNormal;
+    fontSize = s_defaultFontSize;
+    fontFamily = defaultGUIFont();
 
     switch (systemFontID) {
     case CSSValueSmallCaption: {
@@ -113,9 +116,10 @@ void LayoutThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontSt
             fontFamily = FontCache::smallCaptionFontFamily();
         } else {
             NONCLIENTMETRICS metrics;
-            getNonClientMetrics(&metrics);
-            fontSize = systemFontSize(metrics.lfSmCaptionFont);
-            fontFamily = AtomicString(metrics.lfSmCaptionFont.lfFaceName, wcslen(metrics.lfSmCaptionFont.lfFaceName));
+            if (getNonClientMetrics(&metrics)) {
+                fontSize = systemFontSize(metrics.lfSmCaptionFont);
+                fontFamily = AtomicString(metrics.lfSmCaptionFont.lfFaceName, wcslen(metrics.lfSmCaptionFont.lfFaceName));
+            }
         }
         break;
     }
@@ -125,9 +129,10 @@ void LayoutThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontSt
             fontFamily = FontCache::menuFontFamily();
         } else {
             NONCLIENTMETRICS metrics;
-            getNonClientMetrics(&metrics);
-            fontSize = systemFontSize(metrics.lfMenuFont);
-            fontFamily = AtomicString(metrics.lfMenuFont.lfFaceName, wcslen(metrics.lfMenuFont.lfFaceName));
+            if (getNonClientMetrics(&metrics)) {
+                fontSize = systemFontSize(metrics.lfMenuFont);
+                fontFamily = AtomicString(metrics.lfMenuFont.lfFaceName, wcslen(metrics.lfMenuFont.lfFaceName));
+            }
         }
         break;
     }
@@ -137,9 +142,10 @@ void LayoutThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontSt
             fontFamily = FontCache::statusFontFamily();
         } else {
             NONCLIENTMETRICS metrics;
-            getNonClientMetrics(&metrics);
-            fontSize = systemFontSize(metrics.lfStatusFont);
-            fontFamily = metrics.lfStatusFont.lfFaceName;
+            if (getNonClientMetrics(&metrics)) {
+                fontSize = systemFontSize(metrics.lfStatusFont);
+                fontFamily = metrics.lfStatusFont.lfFaceName;
+            }
         }
         break;
     }
