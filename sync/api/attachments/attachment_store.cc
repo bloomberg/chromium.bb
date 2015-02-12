@@ -16,9 +16,6 @@
 
 namespace syncer {
 
-AttachmentStoreBase::AttachmentStoreBase() {}
-AttachmentStoreBase::~AttachmentStoreBase() {}
-
 AttachmentStore::AttachmentStore() {}
 AttachmentStore::~AttachmentStore() {}
 
@@ -33,7 +30,8 @@ scoped_refptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
     // This works because |runner| takes a ref to the proxy.
     runner = base::ThreadTaskRunnerHandle::Get();
   }
-  scoped_ptr<AttachmentStoreBase> backend(new InMemoryAttachmentStore(runner));
+  scoped_ptr<AttachmentStoreBackend> backend(
+      new InMemoryAttachmentStore(runner));
   return scoped_refptr<AttachmentStore>(
       new AttachmentStoreHandle(backend.Pass(), runner));
 }
@@ -50,6 +48,18 @@ scoped_refptr<AttachmentStore> AttachmentStore::CreateOnDiskStore(
   attachment_store->Init(callback);
 
   return attachment_store;
+}
+
+AttachmentStoreBackend::AttachmentStoreBackend(
+    const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner)
+    : callback_task_runner_(callback_task_runner) {
+}
+
+AttachmentStoreBackend::~AttachmentStoreBackend() {
+}
+
+void AttachmentStoreBackend::PostCallback(const base::Closure& callback) {
+  callback_task_runner_->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace syncer

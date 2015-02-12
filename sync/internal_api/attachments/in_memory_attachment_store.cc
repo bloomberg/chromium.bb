@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 
 namespace syncer {
 
@@ -22,8 +23,8 @@ void AppendMetadata(AttachmentMetadataList* list,
 }  // namespace
 
 InMemoryAttachmentStore::InMemoryAttachmentStore(
-    const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner)
-    : callback_task_runner_(callback_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner)
+    : AttachmentStoreBackend(callback_task_runner) {
   // Object is created on one thread but used on another.
   DetachFromThread();
 }
@@ -31,15 +32,17 @@ InMemoryAttachmentStore::InMemoryAttachmentStore(
 InMemoryAttachmentStore::~InMemoryAttachmentStore() {
 }
 
-void InMemoryAttachmentStore::Init(const InitCallback& callback) {
+void InMemoryAttachmentStore::Init(
+    const AttachmentStore::InitCallback& callback) {
   DCHECK(CalledOnValidThread());
-  callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, SUCCESS));
+  PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
 }
 
-void InMemoryAttachmentStore::Read(const AttachmentIdList& ids,
-                                   const ReadCallback& callback) {
+void InMemoryAttachmentStore::Read(
+    const AttachmentIdList& ids,
+    const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = SUCCESS;
+  AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
   AttachmentIdList::const_iterator id_iter = ids.begin();
   AttachmentIdList::const_iterator id_end = ids.end();
   scoped_ptr<AttachmentMap> result_map(new AttachmentMap);
@@ -56,31 +59,29 @@ void InMemoryAttachmentStore::Read(const AttachmentIdList& ids,
     }
   }
   if (!unavailable_attachments->empty()) {
-    result_code = UNSPECIFIED_ERROR;
+    result_code = AttachmentStore::UNSPECIFIED_ERROR;
   }
-  callback_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 result_code,
-                 base::Passed(&result_map),
-                 base::Passed(&unavailable_attachments)));
+  PostCallback(base::Bind(callback, result_code, base::Passed(&result_map),
+                          base::Passed(&unavailable_attachments)));
 }
 
-void InMemoryAttachmentStore::Write(const AttachmentList& attachments,
-                                    const WriteCallback& callback) {
+void InMemoryAttachmentStore::Write(
+    const AttachmentList& attachments,
+    const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentList::const_iterator iter = attachments.begin();
   AttachmentList::const_iterator end = attachments.end();
   for (; iter != end; ++iter) {
     attachments_.insert(std::make_pair(iter->GetId(), *iter));
   }
-  callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, SUCCESS));
+  PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
 }
 
-void InMemoryAttachmentStore::Drop(const AttachmentIdList& ids,
-                                   const DropCallback& callback) {
+void InMemoryAttachmentStore::Drop(
+    const AttachmentIdList& ids,
+    const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result = SUCCESS;
+  AttachmentStore::Result result = AttachmentStore::SUCCESS;
   AttachmentIdList::const_iterator ids_iter = ids.begin();
   AttachmentIdList::const_iterator ids_end = ids.end();
   for (; ids_iter != ids_end; ++ids_iter) {
@@ -89,14 +90,14 @@ void InMemoryAttachmentStore::Drop(const AttachmentIdList& ids,
       attachments_.erase(attachments_iter);
     }
   }
-  callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+  PostCallback(base::Bind(callback, result));
 }
 
 void InMemoryAttachmentStore::ReadMetadata(
     const AttachmentIdList& ids,
-    const ReadMetadataCallback& callback) {
+    const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = SUCCESS;
+  AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
   scoped_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
   AttachmentIdList::const_iterator ids_iter = ids.begin();
@@ -107,18 +108,16 @@ void InMemoryAttachmentStore::ReadMetadata(
     if (attachments_iter != attachments_.end()) {
       AppendMetadata(metadata_list.get(), attachments_iter->second);
     } else {
-      result_code = UNSPECIFIED_ERROR;
+      result_code = AttachmentStore::UNSPECIFIED_ERROR;
     }
   }
-  callback_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback, result_code, base::Passed(&metadata_list)));
+  PostCallback(base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 void InMemoryAttachmentStore::ReadAllMetadata(
-    const ReadMetadataCallback& callback) {
+    const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = SUCCESS;
+  AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
   scoped_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
 
@@ -126,9 +125,7 @@ void InMemoryAttachmentStore::ReadAllMetadata(
        iter != attachments_.end(); ++iter) {
     AppendMetadata(metadata_list.get(), iter->second);
   }
-  callback_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback, result_code, base::Passed(&metadata_list)));
+  PostCallback(base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 }  // namespace syncer

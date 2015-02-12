@@ -24,11 +24,16 @@ namespace syncer {
 class Attachment;
 class AttachmentId;
 
-// A place to locally store and access Attachments.
+// AttachmentStore is a place to locally store and access Attachments.
 //
+// AttachmentStore class is an interface exposed to data type and
+// AttachmentService code.
+// It also contains factory methods for default attachment store
+// implementations.
 // Destroying this object does not necessarily cancel outstanding async
 // operations. If you need cancel like semantics, use WeakPtr in the callbacks.
-class SYNC_EXPORT AttachmentStoreBase {
+class SYNC_EXPORT AttachmentStore
+    : public base::RefCountedThreadSafe<AttachmentStore> {
  public:
   // TODO(maniscalco): Consider udpating Read and Write methods to support
   // resumable transfers (bug 353292).
@@ -41,7 +46,8 @@ class SYNC_EXPORT AttachmentStoreBase {
     STORE_INITIALIZATION_FAILED = 2,  // AttachmentStore initialization failed.
     // When adding a value here, you must increment RESULT_SIZE below.
   };
-  const int RESULT_SIZE = 10; // Size of the Result enum; used for histograms.
+  static const int RESULT_SIZE =
+      10;  // Size of the Result enum; used for histograms.
 
   typedef base::Callback<void(const Result&)> InitCallback;
   typedef base::Callback<void(const Result&,
@@ -53,8 +59,7 @@ class SYNC_EXPORT AttachmentStoreBase {
                               scoped_ptr<AttachmentMetadataList>)>
       ReadMetadataCallback;
 
-  AttachmentStoreBase();
-  virtual ~AttachmentStoreBase();
+  AttachmentStore();
 
   // Asynchronously initializes attachment store.
   //
@@ -117,15 +122,6 @@ class SYNC_EXPORT AttachmentStoreBase {
   // |callback| will be invoked when finished. If any of the metadata entries
   // could not be read, |callback|'s Result will be UNSPECIFIED_ERROR.
   virtual void ReadAllMetadata(const ReadMetadataCallback& callback) = 0;
-};
-
-// AttachmentStore is an interface exposed to data type and AttachmentService
-// code. Also contains factory methods for default implementations.
-class SYNC_EXPORT AttachmentStore
-    : public AttachmentStoreBase,
-      public base::RefCountedThreadSafe<AttachmentStore> {
- public:
-  AttachmentStore();
 
   // Creates an AttachmentStoreHandle backed by in-memory implementation of
   // attachment store. For now frontend lives on the same thread as backend.
@@ -145,7 +141,45 @@ class SYNC_EXPORT AttachmentStore
 
  protected:
   friend class base::RefCountedThreadSafe<AttachmentStore>;
-  ~AttachmentStore() override;
+  virtual ~AttachmentStore();
+};
+
+// Interface for AttachmentStore backends.
+//
+// AttachmentStoreBackend provides interface for different backends (on-disk,
+// in-memory). Factory methods in AttachmentStore create corresponding backend
+// and pass reference to AttachmentStoreHandle.
+// All functions in AttachmentStoreBackend mirror corresponding functions in
+// AttachmentStore.
+// All callbacks and result codes are used directly from AttachmentStore.
+// AttachmentStoreHandle only passes callbacks and results, there is no need to
+// declare separate set.
+class SYNC_EXPORT AttachmentStoreBackend {
+ public:
+  explicit AttachmentStoreBackend(
+      const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner);
+  virtual ~AttachmentStoreBackend();
+  virtual void Init(const AttachmentStore::InitCallback& callback) = 0;
+  virtual void Read(const AttachmentIdList& ids,
+                    const AttachmentStore::ReadCallback& callback) = 0;
+  virtual void Write(const AttachmentList& attachments,
+                     const AttachmentStore::WriteCallback& callback) = 0;
+  virtual void Drop(const AttachmentIdList& ids,
+                    const AttachmentStore::DropCallback& callback) = 0;
+  virtual void ReadMetadata(
+      const AttachmentIdList& ids,
+      const AttachmentStore::ReadMetadataCallback& callback) = 0;
+  virtual void ReadAllMetadata(
+      const AttachmentStore::ReadMetadataCallback& callback) = 0;
+
+ protected:
+  // Helper function to post callback on callback_task_runner.
+  void PostCallback(const base::Closure& callback);
+
+ private:
+  scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(AttachmentStoreBackend);
 };
 
 }  // namespace syncer

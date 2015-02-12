@@ -84,30 +84,33 @@ leveldb::Status WriteStoreMetadata(
 OnDiskAttachmentStore::OnDiskAttachmentStore(
     const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner,
     const base::FilePath& path)
-    : callback_task_runner_(callback_task_runner), path_(path) {
+    : AttachmentStoreBackend(callback_task_runner), path_(path) {
 }
 
 OnDiskAttachmentStore::~OnDiskAttachmentStore() {
 }
 
-void OnDiskAttachmentStore::Init(const InitCallback& callback) {
+void OnDiskAttachmentStore::Init(
+    const AttachmentStore::InitCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = OpenOrCreate(path_);
-  UMA_HISTOGRAM_ENUMERATION("Sync.Attachments.StoreInitResult",
-                            result_code, RESULT_SIZE);
-  callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result_code));
+  AttachmentStore::Result result_code = OpenOrCreate(path_);
+  UMA_HISTOGRAM_ENUMERATION("Sync.Attachments.StoreInitResult", result_code,
+                            AttachmentStore::RESULT_SIZE);
+  PostCallback(base::Bind(callback, result_code));
 }
 
-void OnDiskAttachmentStore::Read(const AttachmentIdList& ids,
-                                 const ReadCallback& callback) {
+void OnDiskAttachmentStore::Read(
+    const AttachmentIdList& ids,
+    const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
   scoped_ptr<AttachmentMap> result_map(new AttachmentMap());
   scoped_ptr<AttachmentIdList> unavailable_attachments(new AttachmentIdList());
 
-  Result result_code = STORE_INITIALIZATION_FAILED;
+  AttachmentStore::Result result_code =
+      AttachmentStore::STORE_INITIALIZATION_FAILED;
 
   if (db_) {
-    result_code = SUCCESS;
+    result_code = AttachmentStore::SUCCESS;
     AttachmentIdList::const_iterator iter = ids.begin();
     const AttachmentIdList::const_iterator end = ids.end();
     for (; iter != end; ++iter) {
@@ -119,43 +122,44 @@ void OnDiskAttachmentStore::Read(const AttachmentIdList& ids,
         unavailable_attachments->push_back(*iter);
       }
     }
-    result_code =
-        unavailable_attachments->empty() ? SUCCESS : UNSPECIFIED_ERROR;
+    result_code = unavailable_attachments->empty()
+                      ? AttachmentStore::SUCCESS
+                      : AttachmentStore::UNSPECIFIED_ERROR;
   } else {
     *unavailable_attachments = ids;
   }
 
-  callback_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 result_code,
-                 base::Passed(&result_map),
-                 base::Passed(&unavailable_attachments)));
+  PostCallback(base::Bind(callback, result_code, base::Passed(&result_map),
+                          base::Passed(&unavailable_attachments)));
 }
 
-void OnDiskAttachmentStore::Write(const AttachmentList& attachments,
-                                  const WriteCallback& callback) {
+void OnDiskAttachmentStore::Write(
+    const AttachmentList& attachments,
+    const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = STORE_INITIALIZATION_FAILED;
+  AttachmentStore::Result result_code =
+      AttachmentStore::STORE_INITIALIZATION_FAILED;
 
   if (db_) {
-    result_code = SUCCESS;
+    result_code = AttachmentStore::SUCCESS;
     AttachmentList::const_iterator iter = attachments.begin();
     const AttachmentList::const_iterator end = attachments.end();
     for (; iter != end; ++iter) {
       if (!WriteSingleAttachment(*iter))
-        result_code = UNSPECIFIED_ERROR;
+        result_code = AttachmentStore::UNSPECIFIED_ERROR;
     }
   }
-  callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result_code));
+  PostCallback(base::Bind(callback, result_code));
 }
 
-void OnDiskAttachmentStore::Drop(const AttachmentIdList& ids,
-                                 const DropCallback& callback) {
+void OnDiskAttachmentStore::Drop(
+    const AttachmentIdList& ids,
+    const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = STORE_INITIALIZATION_FAILED;
+  AttachmentStore::Result result_code =
+      AttachmentStore::STORE_INITIALIZATION_FAILED;
   if (db_) {
-    result_code = SUCCESS;
+    result_code = AttachmentStore::SUCCESS;
     leveldb::WriteOptions write_options = MakeWriteOptions();
     AttachmentIdList::const_iterator iter = ids.begin();
     const AttachmentIdList::const_iterator end = ids.end();
@@ -169,21 +173,23 @@ void OnDiskAttachmentStore::Drop(const AttachmentIdList& ids,
         // DB::Delete doesn't check if record exists, it returns ok just like
         // AttachmentStore::Drop should.
         DVLOG(1) << "DB::Write failed: status=" << status.ToString();
-        result_code = UNSPECIFIED_ERROR;
+        result_code = AttachmentStore::UNSPECIFIED_ERROR;
       }
     }
   }
-  callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result_code));
+  PostCallback(base::Bind(callback, result_code));
 }
 
-void OnDiskAttachmentStore::ReadMetadata(const AttachmentIdList& ids,
-                                         const ReadMetadataCallback& callback) {
+void OnDiskAttachmentStore::ReadMetadata(
+    const AttachmentIdList& ids,
+    const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = STORE_INITIALIZATION_FAILED;
+  AttachmentStore::Result result_code =
+      AttachmentStore::STORE_INITIALIZATION_FAILED;
   scoped_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
   if (db_) {
-    result_code = SUCCESS;
+    result_code = AttachmentStore::SUCCESS;
     AttachmentIdList::const_iterator iter = ids.begin();
     const AttachmentIdList::const_iterator end = ids.end();
     for (; iter != end; ++iter) {
@@ -192,24 +198,23 @@ void OnDiskAttachmentStore::ReadMetadata(const AttachmentIdList& ids,
         metadata_list->push_back(
             MakeAttachmentMetadata(*iter, record_metadata));
       } else {
-        result_code = UNSPECIFIED_ERROR;
+        result_code = AttachmentStore::UNSPECIFIED_ERROR;
       }
     }
   }
-  callback_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback, result_code, base::Passed(&metadata_list)));
+  PostCallback(base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 void OnDiskAttachmentStore::ReadAllMetadata(
-    const ReadMetadataCallback& callback) {
+    const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
-  Result result_code = STORE_INITIALIZATION_FAILED;
+  AttachmentStore::Result result_code =
+      AttachmentStore::STORE_INITIALIZATION_FAILED;
   scoped_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
 
   if (db_) {
-    result_code = SUCCESS;
+    result_code = AttachmentStore::SUCCESS;
     scoped_ptr<leveldb::Iterator> db_iterator(
         db_->NewIterator(MakeNonCachingReadOptions()));
     DCHECK(db_iterator);
@@ -228,7 +233,7 @@ void OnDiskAttachmentStore::ReadAllMetadata(
       attachment_store_pb::RecordMetadata record_metadata;
       if (!record_metadata.ParseFromString(db_iterator->value().ToString())) {
         DVLOG(1) << "RecordMetadata::ParseFromString failed";
-        result_code = UNSPECIFIED_ERROR;
+        result_code = AttachmentStore::UNSPECIFIED_ERROR;
         continue;
       }
       metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
@@ -237,13 +242,11 @@ void OnDiskAttachmentStore::ReadAllMetadata(
     if (!db_iterator->status().ok()) {
       DVLOG(1) << "DB Iterator failed: status="
                << db_iterator->status().ToString();
-      result_code = UNSPECIFIED_ERROR;
+      result_code = AttachmentStore::UNSPECIFIED_ERROR;
     }
   }
 
-  callback_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback, result_code, base::Passed(&metadata_list)));
+  PostCallback(base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
@@ -262,7 +265,7 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   if (!status.ok()) {
     DVLOG(1) << "DB::Open failed: status=" << status.ToString()
              << ", path=" << path.AsUTF8Unsafe();
-    return UNSPECIFIED_ERROR;
+    return AttachmentStore::UNSPECIFIED_ERROR;
   }
 
   db.reset(db_raw);
@@ -271,7 +274,7 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   status = ReadStoreMetadata(db.get(), &metadata);
   if (!status.ok() && !status.IsNotFound()) {
     DVLOG(1) << "ReadStoreMetadata failed: status=" << status.ToString();
-    return UNSPECIFIED_ERROR;
+    return AttachmentStore::UNSPECIFIED_ERROR;
   }
   if (status.IsNotFound()) {
     // Brand new database.
@@ -279,7 +282,7 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
     status = WriteStoreMetadata(db.get(), metadata);
     if (!status.ok()) {
       DVLOG(1) << "WriteStoreMetadata failed: status=" << status.ToString();
-      return UNSPECIFIED_ERROR;
+      return AttachmentStore::UNSPECIFIED_ERROR;
     }
   }
   DCHECK(status.ok());
@@ -288,11 +291,11 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
 
   if (metadata.schema_version() != kCurrentSchemaVersion) {
     DVLOG(1) << "Unknown schema version: " << metadata.schema_version();
-    return UNSPECIFIED_ERROR;
+    return AttachmentStore::UNSPECIFIED_ERROR;
   }
 
   db_ = db.Pass();
-  return SUCCESS;
+  return AttachmentStore::SUCCESS;
 }
 
 scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(

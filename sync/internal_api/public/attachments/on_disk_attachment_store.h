@@ -29,7 +29,7 @@ namespace syncer {
 
 // On-disk implementation of AttachmentStore. Stores attachments in leveldb
 // database in |path| directory.
-class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
+class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
                                           public base::NonThreadSafe {
  public:
   // Constructs attachment store.
@@ -38,15 +38,19 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
       const base::FilePath& path);
   ~OnDiskAttachmentStore() override;
 
-  // AttachmentStoreBase implementation.
-  void Init(const InitCallback& callback) override;
-  void Read(const AttachmentIdList& ids, const ReadCallback& callback) override;
+  // AttachmentStoreBackend implementation.
+  void Init(const AttachmentStore::InitCallback& callback) override;
+  void Read(const AttachmentIdList& ids,
+            const AttachmentStore::ReadCallback& callback) override;
   void Write(const AttachmentList& attachments,
-             const WriteCallback& callback) override;
-  void Drop(const AttachmentIdList& ids, const DropCallback& callback) override;
-  void ReadMetadata(const AttachmentIdList& ids,
-                    const ReadMetadataCallback& callback) override;
-  void ReadAllMetadata(const ReadMetadataCallback& callback) override;
+             const AttachmentStore::WriteCallback& callback) override;
+  void Drop(const AttachmentIdList& ids,
+            const AttachmentStore::DropCallback& callback) override;
+  void ReadMetadata(
+      const AttachmentIdList& ids,
+      const AttachmentStore::ReadMetadataCallback& callback) override;
+  void ReadAllMetadata(
+      const AttachmentStore::ReadMetadataCallback& callback) override;
 
  private:
   friend class OnDiskAttachmentStoreSpecificTest;
@@ -54,7 +58,7 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
   // Opens leveldb database at |path|, creating it if needed. In the future
   // upgrade code will be invoked from OpenOrCreate as well. If open fails
   // result is UNSPECIFIED_ERROR.
-  Result OpenOrCreate(const base::FilePath& path);
+  AttachmentStore::Result OpenOrCreate(const base::FilePath& path);
   // Reads single attachment from store. Returns nullptr in case of errors.
   scoped_ptr<Attachment> ReadSingleAttachment(
       const AttachmentId& attachment_id);
@@ -74,9 +78,10 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
       const AttachmentId& attachment_id,
       const attachment_store_pb::RecordMetadata& record_metadata);
 
-  scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
   const base::FilePath path_;
   scoped_ptr<leveldb::DB> db_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnDiskAttachmentStore);
 };
 
 }  // namespace syncer

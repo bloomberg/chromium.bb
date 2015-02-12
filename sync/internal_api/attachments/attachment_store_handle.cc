@@ -15,13 +15,13 @@ namespace {
 
 // NoOp is needed to bind base::Passed(backend) in AttachmentStoreHandle dtor.
 // It doesn't need to do anything.
-void NoOp(scoped_ptr<AttachmentStoreBase> backend) {
+void NoOp(scoped_ptr<AttachmentStoreBackend> backend) {
 }
 
 }  // namespace
 
 AttachmentStoreHandle::AttachmentStoreHandle(
-    scoped_ptr<AttachmentStoreBase> backend,
+    scoped_ptr<AttachmentStoreBackend> backend,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner)
     : backend_(backend.Pass()), backend_task_runner_(backend_task_runner) {
   DCHECK(backend_);
@@ -40,45 +40,40 @@ AttachmentStoreHandle::~AttachmentStoreHandle() {
 void AttachmentStoreHandle::Init(const InitCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AttachmentStoreBase::Init,
+      FROM_HERE, base::Bind(&AttachmentStoreBackend::Init,
                             base::Unretained(backend_.get()), callback));
 }
 
 void AttachmentStoreHandle::Read(const AttachmentIdList& ids,
                                  const ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
-  backend_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&AttachmentStoreBase::Read,
-                                            base::Unretained(backend_.get()),
-                                            ids,
-                                            callback));
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AttachmentStoreBackend::Read,
+                            base::Unretained(backend_.get()), ids, callback));
 }
 
 void AttachmentStoreHandle::Write(const AttachmentList& attachments,
                                   const WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
-  backend_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&AttachmentStoreBase::Write,
-                                            base::Unretained(backend_.get()),
-                                            attachments,
-                                            callback));
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AttachmentStoreBackend::Write,
+                 base::Unretained(backend_.get()), attachments, callback));
 }
 
 void AttachmentStoreHandle::Drop(const AttachmentIdList& ids,
                                  const DropCallback& callback) {
   DCHECK(CalledOnValidThread());
-  backend_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&AttachmentStoreBase::Drop,
-                                            base::Unretained(backend_.get()),
-                                            ids,
-                                            callback));
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AttachmentStoreBackend::Drop,
+                            base::Unretained(backend_.get()), ids, callback));
 }
 
 void AttachmentStoreHandle::ReadMetadata(const AttachmentIdList& ids,
                                          const ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AttachmentStoreBase::ReadMetadata,
+      FROM_HERE, base::Bind(&AttachmentStoreBackend::ReadMetadata,
                             base::Unretained(backend_.get()), ids, callback));
 }
 
@@ -86,7 +81,7 @@ void AttachmentStoreHandle::ReadAllMetadata(
     const ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AttachmentStoreBase::ReadAllMetadata,
+      FROM_HERE, base::Bind(&AttachmentStoreBackend::ReadAllMetadata,
                             base::Unretained(backend_.get()), callback));
 }
 

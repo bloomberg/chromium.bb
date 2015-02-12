@@ -37,7 +37,7 @@ class SYNC_EXPORT AttachmentStoreHandle : public AttachmentStore,
                                           public base::NonThreadSafe {
  public:
   AttachmentStoreHandle(
-      scoped_ptr<AttachmentStoreBase> backend,
+      scoped_ptr<AttachmentStoreBackend> backend,
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner);
 
   // AttachmentStore implementation.
@@ -57,7 +57,7 @@ class SYNC_EXPORT AttachmentStoreHandle : public AttachmentStore,
   // AttachmentStoreHandle to bind backend through base::Unretained for posts.
   // Backend is deleted on backend_task_runner, after that backend_ pointer is
   // invalid.
-  scoped_ptr<AttachmentStoreBase> backend_;
+  scoped_ptr<AttachmentStoreBackend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentStoreHandle);

@@ -19,7 +19,7 @@ namespace syncer {
 
 namespace {
 
-class MockAttachmentStore : public AttachmentStoreBase {
+class MockAttachmentStore : public AttachmentStoreBackend {
  public:
   MockAttachmentStore(const base::Closure& init_called,
                       const base::Closure& read_called,
@@ -28,7 +28,8 @@ class MockAttachmentStore : public AttachmentStoreBase {
                       const base::Closure& read_metadata_called,
                       const base::Closure& read_all_metadata_called,
                       const base::Closure& dtor_called)
-      : init_called_(init_called),
+      : AttachmentStoreBackend(nullptr),
+        init_called_(init_called),
         read_called_(read_called),
         write_called_(write_called),
         drop_called_(drop_called),
@@ -38,31 +39,33 @@ class MockAttachmentStore : public AttachmentStoreBase {
 
   ~MockAttachmentStore() override { dtor_called_.Run(); }
 
-  void Init(const InitCallback& callback) override {
+  void Init(const AttachmentStore::InitCallback& callback) override {
     init_called_.Run();
   }
 
   void Read(const AttachmentIdList& ids,
-            const ReadCallback& callback) override {
+            const AttachmentStore::ReadCallback& callback) override {
     read_called_.Run();
   }
 
   void Write(const AttachmentList& attachments,
-             const WriteCallback& callback) override {
+             const AttachmentStore::WriteCallback& callback) override {
     write_called_.Run();
   }
 
   void Drop(const AttachmentIdList& ids,
-            const DropCallback& callback) override {
+            const AttachmentStore::DropCallback& callback) override {
     drop_called_.Run();
   }
 
-  void ReadMetadata(const AttachmentIdList& ids,
-                    const ReadMetadataCallback& callback) override {
+  void ReadMetadata(
+      const AttachmentIdList& ids,
+      const AttachmentStore::ReadMetadataCallback& callback) override {
     read_metadata_called_.Run();
   }
 
-  void ReadAllMetadata(const ReadMetadataCallback& callback) override {
+  void ReadAllMetadata(
+      const AttachmentStore::ReadMetadataCallback& callback) override {
     read_all_metadata_called_.Run();
   }
 
@@ -89,7 +92,7 @@ class AttachmentStoreHandleTest : public testing::Test {
         dtor_call_count_(0) {}
 
   void SetUp() override {
-    scoped_ptr<AttachmentStoreBase> backend(new MockAttachmentStore(
+    scoped_ptr<AttachmentStoreBackend> backend(new MockAttachmentStore(
         base::Bind(&AttachmentStoreHandleTest::InitCalled,
                    base::Unretained(this)),
         base::Bind(&AttachmentStoreHandleTest::ReadCalled,
