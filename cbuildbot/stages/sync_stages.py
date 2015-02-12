@@ -422,7 +422,7 @@ class LKGMSyncStage(SyncStage):
     manifest_path = os.path.join(self._build_root, mv_dir)
     manifest_repo = self._GetManifestVersionsRepoUrl(read_only=True)
     manifest_version.RefreshManifestCheckout(manifest_path, manifest_repo)
-    return os.path.join(manifest_path, lkgm_manager.LKGMManager.LKGM_PATH)
+    return os.path.join(manifest_path, self._run.config.manifest)
 
 
 class ManifestVersionedSyncStage(SyncStage):

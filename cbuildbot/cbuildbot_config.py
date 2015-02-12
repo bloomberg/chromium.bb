@@ -1283,6 +1283,7 @@ chrome_try = _config(
   build_type=constants.CHROME_PFQ_TYPE,
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
+  manifest=constants.LKGM_MANIFEST,
   important=False,
   manifest_version=False,
 )
@@ -1311,6 +1312,7 @@ chrome_perf = chrome_info.derive(
                          timeout=90 * 60, critical=True, num=1)],
   use_chrome_lkgm=True,
   use_lkgm=False,
+  manifest=constants.DEFAULT_MANIFEST,
   useflags=append_useflags(['-cros-debug']),
 )
 

@@ -119,7 +119,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   PROJECT_SDK_SUBDIR = 'project-sdk'
 
   # Set path in repository to keep latest approved LKGM manifest.
-  LKGM_PATH = 'LKGM/lkgm.xml'
+  LKGM_PATH = constants.LKGM_MANIFEST
 
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
