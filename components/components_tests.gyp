@@ -981,9 +981,9 @@
             }],
             ['OS == "linux"', {
               'sources': [
-                  # content_extractor is a standalone content extraction tool built as
+                  # content_extractor_browsertest is a standalone content extraction tool built as
                   # a MANUAL component_browsertest.
-                  'dom_distiller/standalone/content_extractor.cc',
+                  'dom_distiller/standalone/content_extractor_browsertest.cc',
                 ],
             }],
             ['OS=="win"', {
