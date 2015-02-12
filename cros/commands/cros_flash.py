@@ -19,7 +19,6 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils
-from chromite.lib import project
 from chromite.lib import remote_access
 
 
@@ -256,8 +255,7 @@ class RemoteDeviceUpdater(object):
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
-               yes=False, ping=True, disable_verification=False,
-               ignore_device_board=False):
+               yes=False, ping=True, disable_verification=False):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
@@ -278,7 +276,6 @@ class RemoteDeviceUpdater(object):
     # Do not wipe if debug is set.
     self.wipe = wipe and not debug
     self.yes = yes
-    self.ignore_device_board = ignore_device_board
 
   # pylint: disable=unbalanced-tuple-unpacking
   @classmethod
@@ -521,17 +518,10 @@ class RemoteDeviceUpdater(object):
           base_dir=self.DEVICE_BASE_DIR, ping=self.ping) as device:
         device_connected = True
 
-        self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                             override_board=self.board,
-                                             force=self.yes)
-        logging.info('Board is %s', self.board)
-
-        # Make sure that a project is found and compatible with the device.
-        proj = project.FindProjectByName(self.board)
-        if not proj:
-          cros_build_lib.Die('Could not find project for %s', self.board)
-        if not (self.ignore_device_board or proj.Inherits(device.board)):
-          cros_build_lib.Die('Device %s incompatible with board', device.board)
+        board = cros_build_lib.GetBoard(device_board=device.board,
+                                        override_board=self.board,
+                                        force=self.yes)
+        logging.info('Board is %s', board)
 
         payload_dir = self.tempdir
         if os.path.isdir(self.image):
@@ -560,7 +550,7 @@ class RemoteDeviceUpdater(object):
               device_addr = '%s:%d' % (device_addr, self.ssh_port)
             # Translate the xbuddy path to get the exact image to use.
             translated_path = ds_wrapper.GetImagePathWithXbuddy(
-                self.image, self.board, static_dir=DEVSERVER_STATIC_DIR,
+                self.image, board, static_dir=DEVSERVER_STATIC_DIR,
                 device=device_addr)
             logging.info('Using image %s', translated_path)
             # Convert the translated path to be used in the update request.
@@ -569,7 +559,7 @@ class RemoteDeviceUpdater(object):
 
             # Launch a local devserver to generate/serve update payloads.
             ds_wrapper.GetUpdatePayloads(
-                image_path, payload_dir, board=self.board,
+                image_path, payload_dir, board=board,
                 src_image_to_delta=self.src_image_to_delta,
                 static_dir=DEVSERVER_STATIC_DIR)
 
@@ -750,10 +740,6 @@ Examples:
     update.add_argument(
         '--disable-rootfs-verification', default=False, action='store_true',
         help='Disable rootfs verification after update is completed.')
-    parser.add_argument(
-        '--ignore-device-board', action='store_true',
-        help='Do not require that device be compatible with current '
-        'project/board.')
 
     usb = parser.add_argument_group('USB specific options')
     usb.add_argument(
@@ -835,8 +821,7 @@ Examples:
             debug=self.options.debug,
             yes=self.options.yes,
             ping=self.options.ping,
-            disable_verification=self.options.disable_rootfs_verification,
-            ignore_device_board=self.options.ignore_device_board)
+            disable_verification=self.options.disable_rootfs_verification)
 
         # Perform device update.
         updater.Run()
