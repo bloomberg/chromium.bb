@@ -32,7 +32,7 @@ Bluetooth* NavigatorBluetooth::bluetooth()
     return m_bluetooth.get();
 }
 
-void NavigatorBluetooth::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorBluetooth)
 {
     visitor->trace(m_bluetooth);
     WillBeHeapSupplement<Navigator>::trace(visitor);

@@ -24,7 +24,7 @@ public:
     static Bluetooth* bluetooth(Navigator&);
     Bluetooth* bluetooth();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     NavigatorBluetooth();

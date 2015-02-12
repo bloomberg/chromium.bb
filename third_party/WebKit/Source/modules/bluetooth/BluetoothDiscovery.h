@@ -20,7 +20,7 @@ class BluetoothDiscovery
 public:
     ScriptPromise requestDevice(ScriptState*);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 };
 
 } // namespace blink

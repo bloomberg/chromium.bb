@@ -35,7 +35,7 @@ public:
     static void dispose(WebBluetoothDevice*);
 
     // Interface required by Garbage Collection:
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     // IDL exposed interface:
     String instanceID() { return m_webDevice.instanceID; }
