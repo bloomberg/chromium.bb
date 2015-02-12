@@ -12,6 +12,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -37,6 +38,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     private final EditText mCardUnmaskInput;
     private final Spinner mMonthSpinner;
     private final Spinner mYearSpinner;
+    private final View mMainContents;
+    private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
     private final TextView mVerificationView;
 
@@ -73,6 +76,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mCardUnmaskInput = (EditText) v.findViewById(R.id.card_unmask_input);
         mMonthSpinner = (Spinner) v.findViewById(R.id.expiration_month);
         mYearSpinner = (Spinner) v.findViewById(R.id.expiration_year);
+        mMainContents = v.findViewById(R.id.main_contents);
+        mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
         mVerificationView = (TextView) v.findViewById(R.id.verification_message);
         ((ImageView) v.findViewById(R.id.cvc_hint_image)).setImageResource(drawableId);
@@ -121,29 +126,21 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     }
 
     public void disableAndWaitForVerification() {
-        mCardUnmaskInput.setEnabled(false);
-        mMonthSpinner.setEnabled(false);
-        mYearSpinner.setEnabled(false);
-
-        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-
+        setInputsEnabled(false);
         mVerificationProgressBar.setVisibility(View.VISIBLE);
-        mVerificationView.setVisibility(View.GONE);
+        // TODO(estade): l10n
+        mVerificationView.setText("Verifying card");
     }
 
     public void verificationFinished(boolean success) {
-        mVerificationProgressBar.setVisibility(View.GONE);
         if (!success) {
-            TextView message = mVerificationView;
-            message.setText("Verification failed. Please try again.");
-            message.setVisibility(View.VISIBLE);
-            mCardUnmaskInput.setEnabled(true);
-            mMonthSpinner.setEnabled(true);
-            mYearSpinner.setEnabled(true);
+            setInputsEnabled(true);
             setInitialFocus();
             // TODO(estade): UI decision - should we clear the input?
         } else {
+            mVerificationProgressBar.setVisibility(View.GONE);
             mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
+            mVerificationView.setText("Your card is verified");
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
                 public void run() {
@@ -213,5 +210,26 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
             return false;
         }
         return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());
+    }
+
+    /**
+     * Sets the enabled state of the main contents, and hides or shows the verification overlay.
+     * @param enabled True if the inputs should be useable, false if the verification overlay
+     *        obscures them.
+     */
+    private void setInputsEnabled(boolean enabled) {
+        mCardUnmaskInput.setEnabled(enabled);
+        mMonthSpinner.setEnabled(enabled);
+        mYearSpinner.setEnabled(enabled);
+        mMainContents.setAlpha(enabled ? 1.0f : 0.15f);
+        mMainContents.setImportantForAccessibility(
+                enabled ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+                        : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+        ((ViewGroup) mMainContents).setDescendantFocusability(
+                enabled ? ViewGroup.FOCUS_BEFORE_DESCENDANTS
+                        : ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(enabled);
+
+        mVerificationOverlay.setVisibility(enabled ? View.GONE : View.VISIBLE);
     }
 }

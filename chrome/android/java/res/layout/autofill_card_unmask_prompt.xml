@@ -5,65 +5,86 @@
      found in the LICENSE file.
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/instructions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="10dp"
-        android:gravity="start" />
+    android:layout_height="wrap_content">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/main_contents"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <!-- TODO(estade): add accessibility content descriptions. -->
-        <Spinner
-            android:id="@+id/expiration_month"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/instructions"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:visibility="gone" />
+            android:textSize="16sp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="10dp"
+            android:gravity="start" />
 
-        <Spinner
-            android:id="@+id/expiration_year"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:visibility="gone" />
+            android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/card_unmask_input"
-            android:inputType="number"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginStart="16dp"
-            android:ems="4"
-            android:hint="@string/card_unmask_input_hint" />
+            <!-- TODO(estade): add accessibility content descriptions. -->
+            <Spinner
+                android:id="@+id/expiration_month"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:visibility="gone" />
 
-        <ImageView
-            android:id="@+id/cvc_hint_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="16dp" />
+            <Spinner
+                android:id="@+id/expiration_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:visibility="gone" />
 
+            <EditText
+                android:id="@+id/card_unmask_input"
+                android:inputType="number"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="16dp"
+                android:ems="4"
+                android:hint="@string/card_unmask_input_hint" />
+
+            <ImageView
+                android:id="@+id/cvc_hint_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/verification_overlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/main_contents"
+        android:layout_alignBottom="@+id/main_contents"
+        android:layout_alignStart="@+id/main_contents"
+        android:layout_alignEnd="@+id/main_contents"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <!-- TODO(estade): should be material styled. -->
         <ProgressBar
             style="@android:style/Widget.ProgressBar.Small"
             android:id="@+id/verification_progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="30dp"
             android:visibility="gone" />
 
         <ImageView
@@ -71,16 +92,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/verify_checkmark"
-            android:layout_gravity="center_vertical"
             android:visibility="gone" />
 
         <TextView
             android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="start"
-            android:visibility="gone" />
-     </LinearLayout>
-
-</LinearLayout>
+            android:textColor="?android:attr/colorAccent"
+            android:textStyle="bold" />
+    </LinearLayout>
+</RelativeLayout>
