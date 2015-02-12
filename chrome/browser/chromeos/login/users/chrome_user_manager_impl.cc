@@ -385,8 +385,14 @@ void ChromeUserManagerImpl::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       user_manager::User* user =
           ProfileHelper::Get()->GetUserByProfile(profile);
-      if (user != NULL)
+      if (user != NULL) {
         user->set_profile_is_created();
+
+        if (user->HasGaiaAccount()) {
+          UserImageManager* image_manager = GetUserImageManager(user->email());
+          image_manager->UserProfileCreated();
+        }
+      }
 
       // If there is pending user switch, do it now.
       if (!GetPendingUserSwitchID().empty()) {

@@ -43,6 +43,9 @@ class UserImageManager {
   // Indicates that a user has just logged in.
   virtual void UserLoggedIn(bool user_is_new, bool user_is_local) = 0;
 
+  // Indicates that a user profile was created.
+  virtual void UserProfileCreated() = 0;
+
   // Sets user image to the default image with index |image_index|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
   virtual void SaveUserDefaultImageIndex(int image_index) = 0;

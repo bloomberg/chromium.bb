@@ -609,6 +609,11 @@ void UserImageManagerImpl::UserLoggedIn(bool user_is_new,
   profile_image_url_ = GURL();
   profile_image_requested_ = false;
 
+  user_image_sync_observer_.reset();
+  TryToCreateImageSyncObserver();
+}
+
+void UserImageManagerImpl::UserProfileCreated() {
   if (IsUserLoggedInAndHasGaiaAccount()) {
     TryToInitDownloadedProfileImage();
 
@@ -633,9 +638,6 @@ void UserImageManagerImpl::UserLoggedIn(bool user_is_new,
     profile_download_one_shot_timer_.Stop();
     profile_download_periodic_timer_.Stop();
   }
-
-  user_image_sync_observer_.reset();
-  TryToCreateImageSyncObserver();
 }
 
 void UserImageManagerImpl::SaveUserDefaultImageIndex(int default_image_index) {
