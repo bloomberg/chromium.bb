@@ -331,7 +331,8 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      * first call to onMeasure().
      */
     void onContentCreated() {
-        mMessageView.setLayoutParams(new LayoutParams(0, mMargin / 4, 0, 0));
+        int messageTopMargin = mMessageTextView != null ? mMargin / 4 : 0;
+        mMessageView.setLayoutParams(new LayoutParams(0, messageTopMargin, 0, 0));
         mMainGroup = new Group(Group.filterNullViews(mIconView, mMessageView));
 
         View[] buttons = Group.filterNullViews(mCustomButton, mTertiaryButton,
