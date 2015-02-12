@@ -27,6 +27,9 @@ function touchTempFile(fileName)
 function removeTempFile(fileName)
 {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://127.0.0.1:8000/resources/reset-temp-file.php?filename=" + fileName, false);
+    xhr.open("GET", "http://127.0.0.1:8000/resources/reset-temp-file.php?filename=" + fileName, false);
     xhr.send();
+    // Echo any errors that the script emits.
+    if (xhr.responseText > 0)
+        console.log("removeTempFile('" + fileName + "'): " + xhr.responseText);
 }
