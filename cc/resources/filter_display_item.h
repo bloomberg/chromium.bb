@@ -7,13 +7,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/filter_operations.h"
 #include "cc/resources/display_item.h"
-#include "skia/ext/refptr.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 class SkCanvas;
 class SkDrawPictureCallback;
-class SkImageFilter;
 
 namespace cc {
 
@@ -21,10 +20,9 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
  public:
   ~FilterDisplayItem() override;
 
-  static scoped_ptr<FilterDisplayItem> Create(
-      skia::RefPtr<SkImageFilter> filter,
-      gfx::RectF bounds) {
-    return make_scoped_ptr(new FilterDisplayItem(filter, bounds));
+  static scoped_ptr<FilterDisplayItem> Create(const FilterOperations& filters,
+                                              gfx::RectF bounds) {
+    return make_scoped_ptr(new FilterDisplayItem(filters, bounds));
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
@@ -35,10 +33,10 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
-  FilterDisplayItem(skia::RefPtr<SkImageFilter> filter, gfx::RectF bounds);
+  FilterDisplayItem(const FilterOperations& filters, gfx::RectF bounds);
 
  private:
-  skia::RefPtr<SkImageFilter> filter_;
+  FilterOperations filters_;
   gfx::RectF bounds_;
 };
 
