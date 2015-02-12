@@ -25,6 +25,7 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
@@ -131,8 +132,18 @@ void AshWindowTreeHostX11::UpdateDisplayID(int64 id1, int64 id2) {
 }
 
 void AshWindowTreeHostX11::PrepareForShutdown() {
-  if (ui::PlatformEventSource::GetInstance())
+  // Block the root window from dispatching events because it is weird for a
+  // ScreenPositionClient not to be attached to the root window and for
+  // ui::EventHandlers to be unable to convert the event's location to screen
+  // coordinates.
+  window()->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+
+  if (ui::PlatformEventSource::GetInstance()) {
+    // Block X events which are not turned into ui::Events from getting
+    // processed. (e.g. ConfigureNotify)
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  }
 }
 
 void AshWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {

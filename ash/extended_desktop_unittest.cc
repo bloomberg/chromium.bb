@@ -878,6 +878,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
 
   // Deleting 2nd display. The lock window still should get the events.
   UpdateDisplay("100x100");
+  event_generator.set_current_target(root_windows[0]);
   event_generator.PressKey(ui::VKEY_C, 0);
   event_generator.ReleaseKey(ui::VKEY_C, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());

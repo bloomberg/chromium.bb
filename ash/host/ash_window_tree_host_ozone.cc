@@ -8,7 +8,9 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
 #include "base/command_line.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_ozone.h"
+#include "ui/events/null_event_targeter.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
 #include "ui/ozone/public/input_controller.h"
@@ -33,6 +35,7 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
       scoped_ptr<RootWindowTransformer> transformer) override;
   gfx::Insets GetHostInsets() const override;
   aura::WindowTreeHost* AsWindowTreeHost() override;
+  void PrepareForShutdown() override;
   void SetRootTransform(const gfx::Transform& transform) override;
   gfx::Transform GetRootTransform() const override;
   gfx::Transform GetInverseRootTransform() const override;
@@ -83,6 +86,15 @@ gfx::Insets AshWindowTreeHostOzone::GetHostInsets() const {
 
 aura::WindowTreeHost* AshWindowTreeHostOzone::AsWindowTreeHost() {
   return this;
+}
+
+void AshWindowTreeHostOzone::PrepareForShutdown() {
+  // Block the root window from dispatching events because it is weird for a
+  // ScreenPositionClient not to be attached to the root window and for
+  // ui::EventHandlers to be unable to convert the event's location to screen
+  // coordinates.
+  window()->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
 }
 
 void AshWindowTreeHostOzone::SetRootTransform(const gfx::Transform& transform) {

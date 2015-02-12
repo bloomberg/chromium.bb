@@ -131,6 +131,8 @@
         'gestures/gesture_types.h',
         'gestures/motion_event_aura.cc',
         'gestures/motion_event_aura.h',
+        'null_event_targeter.cc',
+        'null_event_targeter.h',
         'ozone/events_ozone.cc',
         'win/events_win.cc',
         'x/events_x.cc',

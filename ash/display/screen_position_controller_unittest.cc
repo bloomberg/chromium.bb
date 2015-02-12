@@ -7,12 +7,15 @@
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 
 #if defined(OS_WIN)
@@ -22,17 +25,22 @@
 #define MAYBE_ConvertHostPointToScreenHiDPI DISABLED_ConvertHostPointToScreenHiDPI
 #define MAYBE_ConvertHostPointToScreenRotate DISABLED_ConvertHostPointToScreenRotate
 #define MAYBE_ConvertHostPointToScreenUIScale DISABLED_ConvertHostPointToScreenUIScale
+#define MAYBE_ConvertToScreenWhileRemovingSecondaryDisplay \
+  DISABLED_ConvertToScreenWhileRemovingSecondaryDisplay
 #else
 #define MAYBE_ConvertHostPointToScreen ConvertHostPointToScreen
 #define MAYBE_ConvertHostPointToScreenHiDPI ConvertHostPointToScreenHiDPI
 #define MAYBE_ConvertHostPointToScreenRotate ConvertHostPointToScreenRotate
 #define MAYBE_ConvertHostPointToScreenUIScale ConvertHostPointToScreenUIScale
+#define MAYBE_ConvertToScreenWhileRemovingSecondaryDisplay \
+  ConvertToScreenWhileRemovingSecondaryDisplay
 #endif
 
 namespace ash {
 namespace test {
 
 namespace {
+
 void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
   DisplayLayout layout =
       Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout();
@@ -274,6 +282,84 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenUIScale) {
   // The point is on the 2nd host. Point on 1nd host (60, 60)
   // 1/2 * 1.5 = (45,45)
   EXPECT_EQ("45,45", ConvertHostPointToScreen(60, -340));
+}
+
+namespace {
+
+// EventHandler which tracks whether it got any MouseEvents whose location could
+// not be converted to screen coordinates.
+class ConvertToScreenEventHandler : public ui::EventHandler {
+ public:
+  ConvertToScreenEventHandler() : could_convert_to_screen_(true) {
+    aura::Env::GetInstance()->AddPreTargetHandler(this);
+  }
+  ~ConvertToScreenEventHandler() override {
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  }
+
+  bool could_convert_to_screen() const { return could_convert_to_screen_; }
+
+ private:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+      return;
+
+    aura::Window* root =
+        static_cast<aura::Window*>(event->target())->GetRootWindow();
+    if (!aura::client::GetScreenPositionClient(root))
+      could_convert_to_screen_ = false;
+  }
+
+  bool could_convert_to_screen_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConvertToScreenEventHandler);
+};
+
+}  // namespace
+
+// Test that events are only dispatched when a ScreenPositionClient is available
+// to convert the event to screen coordinates. The ScreenPositionClient is
+// detached from the root window prior to the root window being destroyed. Test
+// that no events are dispatched at this time.
+TEST_F(ScreenPositionControllerTest,
+       MAYBE_ConvertToScreenWhileRemovingSecondaryDisplay) {
+  UpdateDisplay("600x600,600x600");
+  RunAllPendingInMessageLoop();
+
+  // Create a window on the secondary display.
+  window_->SetBoundsInScreen(gfx::Rect(600, 0, 400, 400),
+                             ScreenUtil::GetSecondaryDisplay());
+
+  // Move the mouse cursor over |window_|. Synthetic mouse moves are dispatched
+  // asynchronously when a window which contains the mouse cursor is destroyed.
+  // We want to check that none of these synthetic events are dispatched after
+  // ScreenPositionClient has been detached from the root window.
+  GetEventGenerator().MoveMouseTo(800, 200);
+  EXPECT_TRUE(window_->GetBoundsInScreen().Contains(
+      aura::Env::GetInstance()->last_mouse_location()));
+
+  aura::Window::Windows root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  aura::WindowTracker tracker;
+  tracker.Add(root_windows[1]);
+  scoped_ptr<ConvertToScreenEventHandler> event_handler(
+      new ConvertToScreenEventHandler);
+
+  // Remove the secondary monitor.
+  UpdateDisplay("600x600");
+
+  // The secondary root window is not immediately destroyed.
+  EXPECT_TRUE(tracker.Contains(root_windows[1]));
+
+  RunAllPendingInMessageLoop();
+
+  // Check that we waited long enough and that the secondary root window was
+  // destroyed.
+  EXPECT_FALSE(tracker.Contains(root_windows[1]));
+
+  // Check that we could convert all of the mouse events we got to screen
+  // coordinates.
+  EXPECT_TRUE(event_handler->could_convert_to_screen());
 }
 
 }  // namespace test

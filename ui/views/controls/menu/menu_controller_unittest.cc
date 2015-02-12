@@ -8,7 +8,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_handler.h"
-#include "ui/events/event_targeter.h"
+#include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/test/views_test_base.h"
@@ -54,20 +54,6 @@ class TestPlatformEventSource : public ui::PlatformEventSource {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
-};
-
-class TestNullTargeter : public ui::EventTargeter {
- public:
-  TestNullTargeter() {}
-  ~TestNullTargeter() override {}
-
-  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                      ui::Event* event) override {
-    return NULL;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestNullTargeter);
 };
 
 class TestDispatcherClient : public aura::client::DispatcherClient {
@@ -264,7 +250,7 @@ TEST_F(MenuControllerTest, EventTargeter) {
     scoped_ptr<Widget> owner(CreateOwnerWidget());
     aura::ScopedWindowTargeter scoped_targeter(
         owner->GetNativeWindow()->GetRootWindow(),
-        scoped_ptr<ui::EventTargeter>(new TestNullTargeter));
+        scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
     message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&MenuControllerTest::DispatchEscapeAndExpect,

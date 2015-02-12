@@ -102,6 +102,8 @@ component("events") {
     "events_stub.cc",
     "gestures/gesture_recognizer_impl_mac.cc",
     "gestures/gesture_types.h",
+    "null_event_targeter.cc",
+    "null_event_targeter.h",
     "win/events_win.cc",
   ]
 
