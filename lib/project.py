@@ -172,7 +172,11 @@ class Project(object):
 
 
 def _FindProjectInOverlays(name, base=None):
-  """Returns the parent project of |base| called |name|.
+  """Returns the parent project of |base| that matches |name|.
+
+  Will prefer an exact match, but if one does not exist then it would settle
+  for the private repo name. This is needed for backward compatibility with
+  Chrome OS repo naming convention and should be adapted accordingly.
 
   Args:
     name: Overlay/project name to look for.
@@ -185,18 +189,23 @@ def _FindProjectInOverlays(name, base=None):
     return None
   if base is None:
     base = name
+
+  private_proj = None
   try:
     for overlay in portage_util.FindOverlays('both', base):
       try:
-        p = Project(overlay)
-        if p.config.get('name') == name:
-          return p
+        proj = Project(overlay)
+        proj_name = proj.config.get('name')
+        if proj_name == name:
+          return proj
+        if proj_name.rstrip('-private') == name:
+          private_proj = proj
       except ProjectNotFound:
         pass
   except portage_util.MissingOverlayException:
     pass
 
-  return None
+  return private_proj
 
 
 def FindProjectInPath(path=None):

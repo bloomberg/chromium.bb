@@ -92,7 +92,7 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
     with osutils.ChdirContext(subdir):
       self.assertEqual(content, project.FindProjectInPath().config)
 
-  def testProjectByName(self):
+  def testProjectByNameExact(self):
     """Test that we can get the project for a given name."""
     first = os.path.join(self.tempdir, 'foo')
     osutils.WriteFile(os.path.join(first, 'make.conf'), 'hello', makedirs=True)
@@ -103,9 +103,28 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
     hello = os.path.join(self.tempdir, 'hello')
     project.Project(hello, initial_config={'name': 'hello'})
 
+    hello_private = os.path.join(self.tempdir, 'hello-private')
+    project.Project(hello_private, initial_config={'name': 'hello-private'})
+
     with mock.patch('chromite.lib.portage_util.FindOverlays',
-                    return_value=[first, second, hello]):
+                    return_value=[first, second, hello, hello_private]):
       self.assertEquals(hello, project.FindProjectByName('hello').project_dir)
+
+  def testProjectByNamePrivate(self):
+    """Test that we can get the project even if the overlay is private."""
+    first = os.path.join(self.tempdir, 'foo')
+    osutils.WriteFile(os.path.join(first, 'make.conf'), 'hello', makedirs=True)
+
+    second = os.path.join(self.tempdir, 'bar')
+    project.Project(second, initial_config={'name': 'bar'})
+
+    hello_private = os.path.join(self.tempdir, 'hello-private')
+    project.Project(hello_private, initial_config={'name': 'hello-private'})
+
+    with mock.patch('chromite.lib.portage_util.FindOverlays',
+                    return_value=[first, second, hello_private]):
+      self.assertEquals(hello_private,
+                        project.FindProjectByName('hello').project_dir)
 
   def testProjectCreation(self):
     """Test that project initialization throws the right errors."""
