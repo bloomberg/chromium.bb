@@ -92,6 +92,7 @@ class Display : private gpu::GpuControl {
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
   uint32 CreateStreamTexture(uint32 texture_id) override;
+  void SetLock(base::Lock*) override;
 
  private:
   EGLNativeDisplayType display_id_;

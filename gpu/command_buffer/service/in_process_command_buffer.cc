@@ -903,6 +903,10 @@ uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
   return stream_id;
 }
 
+void InProcessCommandBuffer::SetLock(base::Lock*) {
+  NOTIMPLEMENTED();
+}
+
 uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(
     uint32 client_texture_id) {
 #if defined(OS_ANDROID)

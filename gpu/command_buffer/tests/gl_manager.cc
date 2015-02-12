@@ -429,4 +429,8 @@ uint32 GLManager::CreateStreamTexture(uint32 texture_id) {
   return 0;
 }
 
+void GLManager::SetLock(base::Lock*) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace gpu

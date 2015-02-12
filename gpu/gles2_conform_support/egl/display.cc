@@ -335,4 +335,8 @@ uint32 Display::CreateStreamTexture(uint32 texture_id) {
   return 0;
 }
 
+void Display::SetLock(base::Lock*) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace egl

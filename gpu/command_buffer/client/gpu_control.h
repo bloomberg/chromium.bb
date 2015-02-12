@@ -17,6 +17,10 @@
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 
+namespace base {
+class Lock;
+}
+
 namespace gfx {
 class GpuMemoryBuffer;
 }
@@ -74,6 +78,12 @@ class GPU_EXPORT GpuControl {
   // Attaches an external stream to the texture given by |texture_id| and
   // returns a stream identifier.
   virtual uint32_t CreateStreamTexture(uint32_t texture_id) = 0;
+
+  // Sets a lock this will be held on every callback from the GPU
+  // implementation. This lock must be set and must be held on every call into
+  // the GPU implementation if it is to be used from multiple threads. This
+  // may not be supported with all implementations.
+  virtual void SetLock(base::Lock*) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);

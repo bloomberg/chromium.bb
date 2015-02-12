@@ -116,6 +116,7 @@ class CommandBufferProxyImpl
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
   uint32 CreateStreamTexture(uint32 texture_id) override;
+  void SetLock(base::Lock* lock) override;
 
   int GetRouteID() const;
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
@@ -157,6 +158,11 @@ class CommandBufferProxyImpl
   typedef base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer>
       GpuMemoryBufferMap;
 
+  void CheckLock() {
+    if (lock_)
+      lock_->AssertAcquired();
+  }
+
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly
   // verify that the context has not been lost.
@@ -175,6 +181,8 @@ class CommandBufferProxyImpl
 
   // The shared memory area used to update state.
   gpu::CommandBufferSharedState* shared_state() const;
+
+  base::Lock* lock_;
 
   // Unowned list of DeletionObservers.
   ObserverList<DeletionObserver> deletion_observers_;

@@ -156,6 +156,10 @@ uint32 PpapiCommandBufferProxy::CreateStreamTexture(uint32 texture_id) {
   return 0;
 }
 
+void PpapiCommandBufferProxy::SetLock(base::Lock*) {
+  NOTIMPLEMENTED();
+}
+
 uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   uint32 sync_point = 0;
   if (last_state_.error == gpu::error::kNoError) {
