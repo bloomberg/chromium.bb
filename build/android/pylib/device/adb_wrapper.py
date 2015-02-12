@@ -300,26 +300,42 @@ class AdbWrapper(object):
           device_serial=self._device_serial)
 
   def Logcat(self, clear=False, dump=False, filter_spec=None,
-             logcat_format=None, timeout=None):
-    """Get an iterator over the logcat output.
+             logcat_format=None, timeout=None, retries=_DEFAULT_RETRIES):
+    """Get an iterable over the logcat output.
 
     Args:
-      filter_spec: (optional) Spec to filter the logcat.
-      timeout: (optional) Timeout per try in seconds.
+      clear: If true, clear the logcat.
+      dump: If true, dump the current logcat contents.
+      filter_spec: If set, spec to filter the logcat.
+      logcat_format: If set, the format in which the logcat should be output.
+        Options include "brief", "process", "tag", "thread", "raw", "time",
+        "threadtime", and "long"
+      timeout: (optional) If set, timeout per try in seconds. If clear or dump
+        is set, defaults to _DEFAULT_TIMEOUT.
+      retries: (optional) If clear or dump is set, the number of retries to
+        attempt. Otherwise, does nothing.
 
     Yields:
       logcat output line by line.
     """
     cmd = ['logcat']
+    use_iter = True
     if clear:
       cmd.append('-c')
+      use_iter = False
     if dump:
       cmd.append('-d')
+      use_iter = False
     if logcat_format:
       cmd.extend(['-v', logcat_format])
     if filter_spec is not None:
       cmd.append(filter_spec)
-    return self._IterRunDeviceAdbCmd(cmd, timeout)
+
+    if use_iter:
+      return self._IterRunDeviceAdbCmd(cmd, timeout)
+    else:
+      timeout = timeout if timeout is not None else _DEFAULT_TIMEOUT
+      return self._RunDeviceAdbCmd(cmd, timeout, retries)
 
   def Forward(self, local, remote, timeout=_DEFAULT_TIMEOUT,
               retries=_DEFAULT_RETRIES):
