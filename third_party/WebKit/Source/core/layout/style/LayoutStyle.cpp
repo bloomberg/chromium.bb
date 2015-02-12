@@ -708,12 +708,16 @@ void LayoutStyle::updatePropertySpecificDifferences(const LayoutStyle& other, St
             diff.setTextOrColorChanged();
         } else if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
             if (rareNonInheritedData->m_textDecorationStyle != other.rareNonInheritedData->m_textDecorationStyle
-                || rareNonInheritedData->m_textDecorationColor != other.rareNonInheritedData->m_textDecorationColor)
+                || rareNonInheritedData->m_textDecorationColor != other.rareNonInheritedData->m_textDecorationColor
+                || rareNonInheritedData->m_visitedLinkTextDecorationColor != other.rareNonInheritedData->m_visitedLinkTextDecorationColor)
                 diff.setTextOrColorChanged();
         } else if (rareInheritedData.get() != other.rareInheritedData.get()) {
             if (rareInheritedData->textFillColor() != other.rareInheritedData->textFillColor()
                 || rareInheritedData->textStrokeColor() != other.rareInheritedData->textStrokeColor()
                 || rareInheritedData->textEmphasisColor() != other.rareInheritedData->textEmphasisColor()
+                || rareInheritedData->visitedLinkTextFillColor() != other.rareInheritedData->visitedLinkTextFillColor()
+                || rareInheritedData->visitedLinkTextStrokeColor() != other.rareInheritedData->visitedLinkTextStrokeColor()
+                || rareInheritedData->visitedLinkTextEmphasisColor() != other.rareInheritedData->visitedLinkTextEmphasisColor()
                 || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill
                 || rareInheritedData->appliedTextDecorations != other.rareInheritedData->appliedTextDecorations)
                 diff.setTextOrColorChanged();

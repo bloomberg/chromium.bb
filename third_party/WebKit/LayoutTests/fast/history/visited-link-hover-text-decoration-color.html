@@ -6,12 +6,12 @@ if (window.testRunner) {
 }
 </script>
 <style>
-div { color: red; }
-a:visited { color: inherit }
-a, a:hover { color: green; text-decoration: none }
+div { text-decoration-color: red; }
+a:visited { text-decoration-color: inherit }
+a, a:hover { color: green; text-decoration-color: green }
 </style>
 <div>
-    <a id="anchor" href="">Should be green when hovered</a>
+    <a id="anchor" href="">Should be green (including underline) when hovered</a>
 </div>
 <script>
 if (window.testRunner) {

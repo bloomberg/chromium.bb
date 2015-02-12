@@ -6,12 +6,12 @@ if (window.testRunner) {
 }
 </script>
 <style>
-div { color: red; }
-a:visited { color: inherit }
-a, a:hover { color: green; text-decoration: none }
+div { -webkit-text-stroke-width: 1px; -webkit-text-stroke-color: red }
+a:visited { -webkit-text-stroke-color: inherit }
+a, a:hover {  -webkit-text-stroke-color: green; color: initial; text-decoration: none }
 </style>
 <div>
-    <a id="anchor" href="">Should be green when hovered</a>
+    <a id="anchor" href="">Should have green stroke when hovered</a>
 </div>
 <script>
 if (window.testRunner) {
