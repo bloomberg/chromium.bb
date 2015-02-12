@@ -42,7 +42,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/font_helper_chromeos.h"
-#include "ui/gfx/platform_font_pango.h"
+#include "ui/gfx/platform_font_linux.h"
 #endif
 
 #if defined(OS_WIN)
@@ -671,7 +671,7 @@ void ResourceBundle::AddDataPack(DataPack* data_pack) {
 }
 
 void ResourceBundle::InitDefaultFontList() {
-#if defined(OS_CHROMEOS) && defined(USE_PANGO)
+#if defined(OS_CHROMEOS)
   std::string font_family = base::UTF16ToUTF8(
       GetLocalizedString(IDS_UI_FONT_FAMILY_CROS));
   ui::ReplaceNotoSansWithRobotoIfEnabled(&font_family);
@@ -680,7 +680,7 @@ void ResourceBundle::InitDefaultFontList() {
   // TODO(yukishiino): Remove SetDefaultFontDescription() once the migration to
   // the font list is done.  We will no longer need SetDefaultFontDescription()
   // after every client gets started using a FontList instead of a Font.
-  gfx::PlatformFontPango::SetDefaultFontDescription(font_family);
+  gfx::PlatformFontLinux::SetDefaultFontDescription(font_family);
 #else
   // Use a single default font as the default font list.
   gfx::FontList::SetDefaultFontDescription(std::string());

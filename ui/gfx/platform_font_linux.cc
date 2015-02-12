@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/platform_font_pango.h"
+#include "ui/gfx/platform_font_linux.h"
 
 #include <algorithm>
 #include <string>
@@ -30,7 +30,7 @@ namespace {
 const char* kFallbackFontFamilyName = "sans";
 
 // The default font, used for the default constructor.
-base::LazyInstance<scoped_refptr<PlatformFontPango>>::Leaky g_default_font =
+base::LazyInstance<scoped_refptr<PlatformFontLinux>>::Leaky g_default_font =
     LAZY_INSTANCE_INITIALIZER;
 
 // Creates a SkTypeface for the passed-in Font::FontStyle and family. If a
@@ -62,13 +62,13 @@ skia::RefPtr<SkTypeface> CreateSkTypeface(int style, std::string* family) {
 }  // namespace
 
 #if defined(OS_CHROMEOS)
-std::string* PlatformFontPango::default_font_description_ = NULL;
+std::string* PlatformFontLinux::default_font_description_ = NULL;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// PlatformFontPango, public:
+// PlatformFontLinux, public:
 
-PlatformFontPango::PlatformFontPango() {
+PlatformFontLinux::PlatformFontLinux() {
   if (!g_default_font.Get()) {
     std::string family = kFallbackFontFamilyName;
     int size_pixels = 12;
@@ -98,14 +98,14 @@ PlatformFontPango::PlatformFontPango() {
     }
 #endif
 
-    g_default_font.Get() = new PlatformFontPango(
+    g_default_font.Get() = new PlatformFontLinux(
         CreateSkTypeface(style, &family), family, size_pixels, style, params);
   }
 
   InitFromPlatformFont(g_default_font.Get().get());
 }
 
-PlatformFontPango::PlatformFontPango(const std::string& font_name,
+PlatformFontLinux::PlatformFontLinux(const std::string& font_name,
                                      int font_size_pixels) {
   FontRenderParamsQuery query(false);
   query.families.push_back(font_name);
@@ -116,17 +116,17 @@ PlatformFontPango::PlatformFontPango(const std::string& font_name,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PlatformFontPango, PlatformFont implementation:
+// PlatformFontLinux, PlatformFont implementation:
 
 // static
-void PlatformFontPango::ReloadDefaultFont() {
+void PlatformFontLinux::ReloadDefaultFont() {
   // Reset the scoped_refptr.
   g_default_font.Get() = nullptr;
 }
 
 #if defined(OS_CHROMEOS)
 // static
-void PlatformFontPango::SetDefaultFontDescription(
+void PlatformFontLinux::SetDefaultFontDescription(
     const std::string& font_description) {
   delete default_font_description_;
   default_font_description_ = new std::string(font_description);
@@ -134,7 +134,7 @@ void PlatformFontPango::SetDefaultFontDescription(
 
 #endif
 
-Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
+Font PlatformFontLinux::DeriveFont(int size_delta, int style) const {
   const int new_size = font_size_pixels_ + size_delta;
   DCHECK_GT(new_size, 0);
 
@@ -148,45 +148,45 @@ Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
   query.pixel_size = new_size;
   query.style = style;
 
-  return Font(new PlatformFontPango(typeface, new_family, new_size, style,
+  return Font(new PlatformFontLinux(typeface, new_family, new_size, style,
                                     gfx::GetFontRenderParams(query, NULL)));
 }
 
-int PlatformFontPango::GetHeight() const {
+int PlatformFontLinux::GetHeight() const {
   return height_pixels_;
 }
 
-int PlatformFontPango::GetBaseline() const {
+int PlatformFontLinux::GetBaseline() const {
   return ascent_pixels_;
 }
 
-int PlatformFontPango::GetCapHeight() const {
+int PlatformFontLinux::GetCapHeight() const {
   return cap_height_pixels_;
 }
 
-int PlatformFontPango::GetExpectedTextWidth(int length) const {
+int PlatformFontLinux::GetExpectedTextWidth(int length) const {
   return round(static_cast<float>(length) * average_width_pixels_);
 }
 
-int PlatformFontPango::GetStyle() const {
+int PlatformFontLinux::GetStyle() const {
   return style_;
 }
 
-std::string PlatformFontPango::GetFontName() const {
+std::string PlatformFontLinux::GetFontName() const {
   return font_family_;
 }
 
-std::string PlatformFontPango::GetActualFontNameForTesting() const {
+std::string PlatformFontLinux::GetActualFontNameForTesting() const {
   SkString family_name;
   typeface_->getFamilyName(&family_name);
   return family_name.c_str();
 }
 
-int PlatformFontPango::GetFontSize() const {
+int PlatformFontLinux::GetFontSize() const {
   return font_size_pixels_;
 }
 
-const FontRenderParams& PlatformFontPango::GetFontRenderParams() {
+const FontRenderParams& PlatformFontLinux::GetFontRenderParams() {
 #if defined(OS_CHROMEOS)
   float current_scale_factor = GetFontRenderParamsDeviceScaleFactor();
   if (current_scale_factor != device_scale_factor_) {
@@ -203,9 +203,9 @@ const FontRenderParams& PlatformFontPango::GetFontRenderParams() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PlatformFontPango, private:
+// PlatformFontLinux, private:
 
-PlatformFontPango::PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
+PlatformFontLinux::PlatformFontLinux(const skia::RefPtr<SkTypeface>& typeface,
                                      const std::string& family,
                                      int size_pixels,
                                      int style,
@@ -213,9 +213,9 @@ PlatformFontPango::PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
   InitFromDetails(typeface, family, size_pixels, style, render_params);
 }
 
-PlatformFontPango::~PlatformFontPango() {}
+PlatformFontLinux::~PlatformFontLinux() {}
 
-void PlatformFontPango::InitFromDetails(
+void PlatformFontLinux::InitFromDetails(
     const skia::RefPtr<SkTypeface>& typeface,
     const std::string& font_family,
     int font_size_pixels,
@@ -249,7 +249,7 @@ void PlatformFontPango::InitFromDetails(
   average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
 }
 
-void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
+void PlatformFontLinux::InitFromPlatformFont(const PlatformFontLinux* other) {
   typeface_ = other->typeface_;
   font_family_ = other->font_family_;
   font_size_pixels_ = other->font_size_pixels_;
@@ -269,13 +269,13 @@ void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
 
 // static
 PlatformFont* PlatformFont::CreateDefault() {
-  return new PlatformFontPango;
+  return new PlatformFontLinux;
 }
 
 // static
 PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
-  return new PlatformFontPango(font_name, font_size);
+  return new PlatformFontLinux(font_name, font_size);
 }
 
 }  // namespace gfx

@@ -422,8 +422,8 @@
     },
     'linux_fonts': {
       'filepath': 'ui/gfx/font_render_params_.*|'\
-                  'ui/gfx/platform_font_pango.*|'\
-                  'ui/gfx/render_text_linux.*',
+                  'ui/gfx/platform_font_linux.*|'\
+                  'ui/gfx/render_text_harfbuzz.*',
     },
     'linux_sandboxing': {
       'filepath': 'sandbox/linux/',

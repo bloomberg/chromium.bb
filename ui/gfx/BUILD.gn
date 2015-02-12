@@ -154,6 +154,8 @@ component("gfx") {
     "platform_font_android.cc",
     "platform_font_ios.h",
     "platform_font_ios.mm",
+    "platform_font_linux.cc",
+    "platform_font_linux.h",
     "platform_font_mac.h",
     "platform_font_mac.mm",
     "platform_font_win.cc",
@@ -319,15 +321,6 @@ component("gfx") {
   # Linux.
   if (is_linux) {
     configs += [ "//build/config/linux:fontconfig" ]
-    sources += [
-      "platform_font_pango.cc",
-      "platform_font_pango.h",
-    ]
-  }
-
-  # Ozone stuff.
-  if (use_ozone) {
-    sources += [ "platform_font_ozone.cc" ]
   }
 
   if (!use_aura) {
@@ -346,11 +339,8 @@ component("gfx") {
     sources -= [ "path_x11.cc" ]
   }
 
-  if (use_pango) {
+  if (use_cairo) {
     configs += [ "//build/config/linux:pangocairo" ]
-  }
-  if (use_pango && use_ozone) {
-    sources -= [ "platform_font_ozone.cc" ]
   }
 }
 
@@ -397,11 +387,13 @@ source_set("test_support") {
 
 test("gfx_unittests") {
   sources = [
+    "font_render_params_linux_unittest.cc",
     "font_unittest.cc",
     "image/image_family_unittest.cc",
     "image/image_ios_unittest.mm",
     "image/image_skia_unittest.cc",
     "image/image_unittest.cc",
+    "platform_font_linux_unittest.cc",
     "screen_unittest.cc",
     "test/run_all_unittests.cc",
     "text_elider_unittest.cc",
@@ -473,31 +465,10 @@ test("gfx_unittests") {
     "//ui/resources:ui_test_pak",
   ]
 
-  if (use_pango) {
-    sources += [
-      "font_render_params_linux_unittest.cc",
-      "platform_font_pango_unittest.cc",
-    ]
-    configs += [
-      "//build/config/linux:pangocairo",
-      "//build/config/linux:pangoft2",
-    ]
-  }
-
   if (!is_mac && !is_ios) {
     sources += [
       "transform_unittest.cc",
       "interpolated_transform_unittest.cc",
-    ]
-  }
-
-  if (use_ozone && !use_pango) {
-    sources -= [
-      "canvas_unittest.cc",
-      "font_list_unittest.cc",
-      "font_unittest.cc",
-      "render_text_unittest.cc",
-      "text_elider_unittest.cc",
     ]
   }
 

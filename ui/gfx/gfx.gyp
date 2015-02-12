@@ -232,11 +232,10 @@
         'platform_font_android.cc',
         'platform_font_ios.h',
         'platform_font_ios.mm',
+        'platform_font_linux.cc',
+        'platform_font_linux.h',
         'platform_font_mac.h',
         'platform_font_mac.mm',
-        'platform_font_ozone.cc',
-        'platform_font_pango.cc',
-        'platform_font_pango.h',
         'platform_font_win.cc',
         'platform_font_win.h',
         'range/range.cc',
@@ -400,12 +399,9 @@
             'x/gfx_x11.gyp:gfx_x11',
           ],
         }],
-        ['use_pango==1', {
+        ['use_cairo==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:pangocairo',
-          ],
-          'sources!': [
-            'platform_font_ozone.cc',
           ],
         }],
         ['desktop_linux==1 or chromeos==1', {

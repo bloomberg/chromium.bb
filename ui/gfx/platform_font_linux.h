@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_PLATFORM_FONT_PANGO_H_
-#define UI_GFX_PLATFORM_FONT_PANGO_H_
+#ifndef UI_GFX_PLATFORM_FONT_LINUX_H_
+#define UI_GFX_PLATFORM_FONT_LINUX_H_
 
 #include <string>
 
@@ -19,14 +19,13 @@ class SkPaint;
 
 namespace gfx {
 
-// TODO(derat): Rename this to PlatformFontLinux.
-class GFX_EXPORT PlatformFontPango : public PlatformFont {
+class GFX_EXPORT PlatformFontLinux : public PlatformFont {
  public:
   // TODO(derat): Get rid of the default constructor in favor of using
   // gfx::FontList (which also has the concept of a default font but may contain
   // multiple font families) everywhere. See http://crbug.com/398885#c16.
-  PlatformFontPango();
-  PlatformFontPango(const std::string& font_name, int font_size_pixels);
+  PlatformFontLinux();
+  PlatformFontLinux(const std::string& font_name, int font_size_pixels);
 
   // Resets and reloads the cached system font used by the default constructor.
   // This function is useful when the system font has changed, for example, when
@@ -54,12 +53,12 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
-  PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
+  PlatformFontLinux(const skia::RefPtr<SkTypeface>& typeface,
                     const std::string& family,
                     int size_pixels,
                     int style,
                     const FontRenderParams& params);
-  ~PlatformFontPango() override;
+  ~PlatformFontLinux() override;
 
   // Initializes this object based on the passed-in details. If |typeface| is
   // empty, a new typeface will be loaded.
@@ -70,8 +69,8 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
       int style,
       const FontRenderParams& params);
 
-  // Initializes this object as a copy of another PlatformFontPango.
-  void InitFromPlatformFont(const PlatformFontPango* other);
+  // Initializes this object as a copy of another PlatformFontLinux.
+  void InitFromPlatformFont(const PlatformFontLinux* other);
 
   skia::RefPtr<SkTypeface> typeface_;
 
@@ -98,9 +97,9 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   static std::string* default_font_description_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformFontPango);
+  DISALLOW_COPY_AND_ASSIGN(PlatformFontLinux);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_PLATFORM_FONT_PANGO_H_
+#endif  // UI_GFX_PLATFORM_FONT_LINUX_H_

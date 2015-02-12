@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/platform_font_pango.h"
+#include "ui/gfx/platform_font_linux.h"
 
 namespace chromeos {
 
@@ -86,7 +86,7 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
       }
     }
   }
-  gfx::PlatformFontPango::ReloadDefaultFont();
+  gfx::PlatformFontLinux::ReloadDefaultFont();
   if (!data->callback.is_null())
     data->callback.Run(data->result);
 }
