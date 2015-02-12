@@ -88,6 +88,10 @@ CHROMEOS_EXPORT extern const char kLoginManager[];
 CHROMEOS_EXPORT extern const char kLoginProfile[];
 CHROMEOS_EXPORT extern const char kLoginUser[];
 CHROMEOS_EXPORT extern const char kMemoryPressureThresholds[];
+CHROMEOS_EXPORT extern const char kConservativeThreshold[];
+CHROMEOS_EXPORT extern const char kAggressiveCacheDiscardThreshold[];
+CHROMEOS_EXPORT extern const char kAggressiveTabDiscardThreshold[];
+CHROMEOS_EXPORT extern const char kAggressiveThreshold[];
 CHROMEOS_EXPORT extern const char kNaturalScrollDefault[];
 CHROMEOS_EXPORT extern const char kOobeGuestSession[];
 CHROMEOS_EXPORT extern const char kOobeSkipPostLogin[];
@@ -104,6 +108,7 @@ CHROMEOS_EXPORT extern const char kDisableTimeZoneTrackingOption[];
 
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 
+CHROMEOS_EXPORT bool MemoryPressureHandlingEnabled();
 CHROMEOS_EXPORT base::MemoryPressureObserverChromeOS::MemoryPressureThresholds
 GetMemoryPressureThresholds();
 

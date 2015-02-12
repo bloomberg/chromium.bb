@@ -5,6 +5,7 @@
 #include "chromeos/chromeos_switches.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 
 // TODO(rsorokin): alphabetize all of these switches so they
 // match the order from the .h file
@@ -221,9 +222,14 @@ const char kLoginProfile[] = "login-profile";
 // Specifies the user which is already logged in.
 const char kLoginUser[] = "login-user";
 
-// The memory pressure thresholds selection which is used to decide when a
-// memory pressure event needs to get fired.
+// The memory pressure thresholds selection which is used to decide whether and
+// when a memory pressure event needs to get fired.
+const char kMemoryPressureHandlingOff[] = "memory-pressure-off";
 const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
+const char kConservativeThreshold[] = "conservative";
+const char kAggressiveCacheDiscardThreshold[] = "aggressive-cache-discard";
+const char kAggressiveTabDiscardThreshold[] = "aggressive-tab-discard";
+const char kAggressiveThreshold[] = "aggressive";
 
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
@@ -312,27 +318,49 @@ bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
 
+bool MemoryPressureHandlingEnabled() {
+  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableMemoryPressureSystemChromeOS)) ||
+      (base::FieldTrialList::FindFullName(kMemoryPressureThresholds) ==
+       kMemoryPressureHandlingOff))
+    return false;
+  return true;
+}
+
 base::MemoryPressureObserverChromeOS::MemoryPressureThresholds
 GetMemoryPressureThresholds() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           kMemoryPressureThresholds)) {
+    const std::string group_name =
+        base::FieldTrialList::FindFullName(kMemoryPressureThresholds);
+    if (group_name == kConservativeThreshold)
+      return base::MemoryPressureObserverChromeOS::THRESHOLD_CONSERVATIVE;
+    if (group_name == kAggressiveCacheDiscardThreshold)
+      return base::MemoryPressureObserverChromeOS::
+          THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
+    if (group_name == kAggressiveTabDiscardThreshold)
+      return base::MemoryPressureObserverChromeOS::
+          THRESHOLD_AGGRESSIVE_TAB_DISCARD;
+    if (group_name == kAggressiveThreshold)
+      return base::MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE;
     return base::MemoryPressureObserverChromeOS::THRESHOLD_DEFAULT;
   }
+
   const std::string option =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kMemoryPressureThresholds);
-  if (option == "1") {
+  if (option == kConservativeThreshold)
     return base::MemoryPressureObserverChromeOS::THRESHOLD_CONSERVATIVE;
-  }
-  if (option == "2") {
+  if (option == kAggressiveCacheDiscardThreshold)
     return base::MemoryPressureObserverChromeOS::
         THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
-  }
-  if (option == "3") {
+  if (option == kAggressiveTabDiscardThreshold)
     return base::MemoryPressureObserverChromeOS::
         THRESHOLD_AGGRESSIVE_TAB_DISCARD;
-  }
-  return base::MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE;
+  if (option == kAggressiveThreshold)
+    return base::MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE;
+
+  return base::MemoryPressureObserverChromeOS::THRESHOLD_DEFAULT;
 }
 
 }  // namespace switches

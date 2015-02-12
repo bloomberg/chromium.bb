@@ -308,15 +308,19 @@ const Experiment::Choice kEnableGpuRasterizationChoices[] = {
 
 #if defined(OS_CHROMEOS)
 const Experiment::Choice kMemoryPressureThresholdChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_CONSERVATIVE_THRESHOLDS,
-    chromeos::switches::kMemoryPressureThresholds, "1" },
-  { IDS_FLAGS_AGGRESSIVE_CACHE_DISCARD_THRESHOLDS,
-    chromeos::switches::kMemoryPressureThresholds, "2" },
-  { IDS_FLAGS_AGGRESSIVE_TAB_DISCARD_THRESHOLDS,
-    chromeos::switches::kMemoryPressureThresholds, "3" },
-  { IDS_FLAGS_AGGRESSIVE_THRESHOLDS,
-    chromeos::switches::kMemoryPressureThresholds, "4" },
+    { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+    { IDS_FLAGS_CONSERVATIVE_THRESHOLDS,
+      chromeos::switches::kMemoryPressureThresholds,
+      chromeos::switches::kConservativeThreshold },
+    { IDS_FLAGS_AGGRESSIVE_CACHE_DISCARD_THRESHOLDS,
+      chromeos::switches::kMemoryPressureThresholds,
+      chromeos::switches::kAggressiveCacheDiscardThreshold },
+    { IDS_FLAGS_AGGRESSIVE_TAB_DISCARD_THRESHOLDS,
+      chromeos::switches::kMemoryPressureThresholds,
+      chromeos::switches::kAggressiveTabDiscardThreshold },
+    { IDS_FLAGS_AGGRESSIVE_THRESHOLDS,
+      chromeos::switches::kMemoryPressureThresholds,
+      chromeos::switches::kAggressiveThreshold },
 };
 #endif
 
