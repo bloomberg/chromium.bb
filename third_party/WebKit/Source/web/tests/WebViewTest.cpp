@@ -1998,6 +1998,49 @@ private:
     int m_textIsUpdated;
 };
 
+// This test verifies the text input flags are correctly exposed to script.
+TEST_F(WebViewTest, TextInputFlags)
+{
+    NonUserInputTextUpdateWebViewClient client;
+    std::string url = m_baseURL + "text_input_flags.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "text_input_flags.html");
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    webViewImpl->setInitialFocus(false);
+
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewImpl->mainFrame());
+    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
+
+    // (A) <input>
+    // (A.1) Verifies autocorrect/autocomplete/spellcheck flags are Off.
+    HTMLInputElement* inputElement = toHTMLInputElement(document->getElementById("input"));
+    document->setFocusedElement(inputElement);
+    webViewImpl->setFocus(true);
+    WebTextInputInfo info = webViewImpl->textInputInfo();
+    EXPECT_EQ(
+        WebTextInputFlagAutocompleteOff | WebTextInputFlagAutocorrectOff | WebTextInputFlagSpellcheckOff,
+        info.flags);
+
+    // (A.2) Verifies autocorrect/autocomplete/spellcheck flags are On.
+    inputElement = toHTMLInputElement(document->getElementById("input2"));
+    document->setFocusedElement(inputElement);
+    webViewImpl->setFocus(true);
+    info = webViewImpl->textInputInfo();
+    EXPECT_EQ(
+        WebTextInputFlagAutocompleteOn | WebTextInputFlagAutocorrectOn | WebTextInputFlagSpellcheckOn,
+        info.flags);
+
+    // (B) <textarea> Verifies the default text input flags are
+    // WebTextInputFlagNone.
+    HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(document->getElementById("textarea"));
+    document->setFocusedElement(textAreaElement);
+    webViewImpl->setFocus(true);
+    info = webViewImpl->textInputInfo();
+    EXPECT_EQ(WebTextInputFlagNone, info.flags);
+
+    // Free the webView before freeing the NonUserInputTextUpdateWebViewClient.
+    m_webViewHelper.reset();
+}
+
 // This test verifies that WebWidgetClient::didUpdateTextOfFocusedElementByNonUserInput is
 // called iff value of a focused element is modified via script.
 TEST_F(WebViewTest, NonUserInputTextUpdate)

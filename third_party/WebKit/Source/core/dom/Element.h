@@ -499,6 +499,8 @@ public:
 
     virtual void trace(Visitor*) override;
 
+    SpellcheckAttributeState spellcheckAttributeState() const;
+
 protected:
     Element(const QualifiedName& tagName, Document*, ConstructionType);
 
@@ -624,8 +626,6 @@ private:
     virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     QualifiedName m_tagName;
-
-    SpellcheckAttributeState spellcheckAttributeState() const;
 
     void updateNamedItemRegistration(const AtomicString& oldName, const AtomicString& newName);
     void updateExtraNamedItemRegistration(const AtomicString& oldName, const AtomicString& newName);
