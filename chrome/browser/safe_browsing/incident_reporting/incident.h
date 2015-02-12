@@ -26,8 +26,9 @@ enum class IncidentType : int32_t {
   BLACKLIST_LOAD = 3,
   OMNIBOX_INTERACTION = 4,
   VARIATIONS_SEED_SIGNATURE = 5,
+  SCRIPT_REQUEST = 6,
   // Values for new incident types go here.
-  NUM_TYPES = 6
+  NUM_TYPES = 7
 };
 
 // An abstract incident. Subclasses provide type-specific functionality to

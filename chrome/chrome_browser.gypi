@@ -1486,7 +1486,7 @@
     'chrome_browser_libsecret_sources': [
        'browser/password_manager/native_backend_libsecret.cc',
        'browser/password_manager/native_backend_libsecret.h',
-    ], 
+    ],
     'chrome_browser_google_sources': [
       'browser/google/chrome_google_url_tracker_client.cc',
       'browser/google/chrome_google_url_tracker_client.h',
@@ -2344,6 +2344,10 @@
       'browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h',
       'browser/safe_browsing/incident_reporting/preference_validation_delegate.cc',
       'browser/safe_browsing/incident_reporting/preference_validation_delegate.h',
+      'browser/safe_browsing/incident_reporting/script_request_detector.cc',
+      'browser/safe_browsing/incident_reporting/script_request_detector.h',
+      'browser/safe_browsing/incident_reporting/script_request_incident.cc',
+      'browser/safe_browsing/incident_reporting/script_request_incident.h',
       'browser/safe_browsing/incident_reporting/tracked_preference_incident.cc',
       'browser/safe_browsing/incident_reporting/tracked_preference_incident.h',
       'browser/safe_browsing/incident_reporting/variations_seed_signature_analyzer.cc',

@@ -59,6 +59,7 @@ class DownloadProtectionService;
 #if defined(FULL_SAFE_BROWSING)
 class IncidentReportingService;
 class OffDomainInclusionDetector;
+class ScriptRequestDetector;
 #endif
 }
 
@@ -267,6 +268,8 @@ class SafeBrowsingService
 #if defined(FULL_SAFE_BROWSING)
   scoped_ptr<safe_browsing::OffDomainInclusionDetector>
       off_domain_inclusion_detector_;
+
+  scoped_ptr<safe_browsing::ScriptRequestDetector> script_request_detector_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
