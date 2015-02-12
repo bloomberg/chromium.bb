@@ -314,6 +314,11 @@ MANIFEST_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
 MANIFEST_VERSIONS_GS_URL = 'gs://chromeos-manifest-versions'
 TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
 
+# Standard directories under buildroot for cloning these repos.
+EXTERNAL_MANIFEST_VERSIONS_PATH = 'manifest-versions'
+INTERNAL_MANIFEST_VERSIONS_PATH = 'manifest-versions-internal'
+PROJECT_SDK_MANIFEST_VERSIONS_PATH = 'manifest-versions-project-sdk'
+
 STREAK_COUNTERS = 'streak_counters'
 
 PATCH_BRANCH = 'patch_branch'

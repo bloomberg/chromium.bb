@@ -39,6 +39,8 @@ from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 
+# It's normal for unittests to access protected members.
+# pylint: disable=protected-access
 
 class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests the ManifestVersionedSync stage."""
@@ -88,11 +90,25 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
   def testCommitProjectSDKManifest(self, _mock_push):
     """Tests that we can 'push' an SDK manifest."""
     # Create test manifest
+    MANIFEST_CONTENTS = 'bogus value'
     manifest = os.path.join(self.tempdir, 'sdk.xml')
-    osutils.WriteFile(manifest, 'bogus value')
+    osutils.WriteFile(manifest, MANIFEST_CONTENTS)
 
-    sync_stages.ManifestVersionedSyncStage.CommitProjectSDKManifest(
-        manifest, 'test_release', 'test_version', True)
+    self.sync_stage.CommitProjectSDKManifest(manifest, 'test_version', True)
+
+    project_sdk_dir = os.path.join(
+        self.sync_stage._build_root, 'manifest-versions-project-sdk',
+        'project-sdk')
+    manifest_path = os.path.join(project_sdk_dir, 'test_version.xml')
+    latest_path = os.path.join(project_sdk_dir, 'latest.xml')
+
+    # Ensure new manifest was created, correctly.
+    contents = osutils.ReadFile(manifest_path)
+    self.assertEqual(contents, MANIFEST_CONTENTS)
+
+    # Ensure link to latest manifest was updated.
+    self.assertTrue(os.path.exists(latest_path))
+    self.assertEqual(os.path.realpath(latest_path), manifest_path)
 
 class MockPatch(mock.MagicMock):
   """MagicMock for a GerritPatch-like object."""
