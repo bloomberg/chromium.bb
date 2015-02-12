@@ -368,6 +368,9 @@ function report(data) {
 }
 
 function executeTest(test_target) {
+  if (test_target.length == 0) {
+    return Promise.resolve();
+  }
   return doFetch(test_target[0])
     .then(function(message) {
         var checks = test_target[1].concat(showComment);

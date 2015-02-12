@@ -21,23 +21,7 @@ if (self.importScripts) {
 }
 
 var TEST_TARGETS = [
-  [BASE_URL + 'method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, authCheck1]],
-  [BASE_URL + 'method=GET&headers={}',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET]],
-  [BASE_URL + 'method=GET&headers=CUSTOM',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, noCustomHeader]],
-  [BASE_URL + 'method=POST&headers=CUSTOM',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsPOST, noCustomHeader]],
-  [BASE_URL + 'method=PUT',
-   [fetchError]],
-  [BASE_URL + 'method=XXX',
-   [fetchError]],
-
+  // Test mode=same-origin.
   [BASE_URL + 'mode=same-origin&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET, authCheck1]],
@@ -57,23 +41,7 @@ var TEST_TARGETS = [
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsXXX, hasCustomHeader]],
 
-  [BASE_URL + 'mode=no-cors&method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, authCheck1]],
-  [BASE_URL + 'mode=no-cors&method=GET&headers={}',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET]],
-  [BASE_URL + 'mode=no-cors&method=GET&headers=CUSTOM',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, noCustomHeader]],
-  [BASE_URL + 'mode=no-cors&method=POST&headers=CUSTOM',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsPOST, noCustomHeader]],
-  [BASE_URL + 'mode=no-cors&method=PUT',
-   [fetchError]],
-  [BASE_URL + 'mode=no-cors&method=XXX',
-   [fetchError]],
-
+  // Test mode=cors.
   [BASE_URL + 'mode=cors&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET, authCheck1]],
@@ -94,7 +62,7 @@ var TEST_TARGETS = [
    [methodIsXXX, hasCustomHeader]],
 
   // Referer check
-  [BASE_URL,
+  [BASE_URL + 'mode=same-origin',
    [fetchResolved],
    [checkJsonpHeader.bind(this, 'Referer', referer)]],
 ];

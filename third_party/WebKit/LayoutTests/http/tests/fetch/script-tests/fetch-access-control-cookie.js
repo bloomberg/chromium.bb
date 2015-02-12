@@ -12,7 +12,9 @@ var TEST_TARGETS = [];
 // but not the cookieCheckX in the same request.
 
 // Test same-origin requests.
-['same-origin', 'cors', 'no-cors'].forEach(function(mode) {
+// The same set of requests are also in fetch-access-control-cookie-no-cors.js,
+// with different mode (no-cors).
+['same-origin', 'cors'].forEach(function(mode) {
     // At first, cookie is cookie=cookie1.
     TEST_TARGETS.push(
       // Set cookie=cookieA by credentials=same-origin.
@@ -127,46 +129,25 @@ TEST_TARGETS.push(
    [fetchResolved, hasBody, typeCors], [cookieCheckB]],
   [OTHER_CHECK_URL + 'otherCheck10', [fetchResolved], [cookieCheckB]],
 
-  // Tests for mode=no-cors.
-
-  // Try to set cookieC, but
-  // cookie is not sent/updated because credentials flag is not set.
-  [OTHER_BASE_URL + 'mode=no-cors&credentials=omit&SetCookie=cookieC',
-   [fetchResolved, noBody, typeOpaque],
-   onlyOnServiceWorkerProxiedTest([cookieCheckNone])],
-  [OTHER_CHECK_URL + 'otherCheck11', [fetchResolved], [cookieCheckB]],
-
-  // Set cookieC with opaque response. Response is opaque, but cookie is set.
-  [OTHER_BASE_URL + 'mode=no-cors&credentials=include&SetCookie=cookieC',
-   [fetchResolved, noBody, typeOpaque],
-   onlyOnServiceWorkerProxiedTest([cookieCheckB])],
-  [OTHER_CHECK_URL + 'otherCheck12', [fetchResolved], [cookieCheckC]],
-
-  // Set cookieA with opaque response. Response is opaque, but cookie is set.
-  [OTHER_BASE_URL + 'mode=no-cors&credentials=same-origin&SetCookie=cookieA',
-   [fetchResolved, noBody, typeOpaque],
-   onlyOnServiceWorkerProxiedTest([cookieCheckC])],
-  [OTHER_CHECK_URL + 'otherCheck13', [fetchResolved], [cookieCheckA]],
-
   // Tests for mode=same-origin.
   // Rejected as Network Error before entering basic fetch or HTTP fetch,
   // so no cookies are set.
 
-  // Try to set cookieB.
-  [OTHER_BASE_URL + 'mode=same-origin&credentials=omit&SetCookie=cookieB',
+  // Try to set cookieC.
+  [OTHER_BASE_URL + 'mode=same-origin&credentials=omit&SetCookie=cookieC',
    [fetchRejected]],
-  [OTHER_CHECK_URL + 'otherCheck14', [fetchResolved], [cookieCheckA]],
+  [OTHER_CHECK_URL + 'otherCheck11', [fetchResolved], [cookieCheckB]],
 
-  // Try to set cookieB.
-  [OTHER_BASE_URL + 'mode=same-origin&credentials=include&SetCookie=cookieB',
+  // Try to set cookieC.
+  [OTHER_BASE_URL + 'mode=same-origin&credentials=include&SetCookie=cookieC',
    [fetchRejected]],
-  [OTHER_CHECK_URL + 'otherCheck15', [fetchResolved], [cookieCheckA]],
+  [OTHER_CHECK_URL + 'otherCheck12', [fetchResolved], [cookieCheckB]],
 
-  // Try to set cookieB.
+  // Try to set cookieC.
   [OTHER_BASE_URL +
-   'mode=same-origin&credentials=same-origin&SetCookie=cookieB',
+   'mode=same-origin&credentials=same-origin&SetCookie=cookieC',
    [fetchRejected]],
-  [OTHER_CHECK_URL + 'otherCheck16', [fetchResolved], [cookieCheckA]]
+  [OTHER_CHECK_URL + 'otherCheck13', [fetchResolved], [cookieCheckB]]
 );
 
 if (self.importScripts) {

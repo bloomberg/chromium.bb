@@ -17,7 +17,6 @@ var HTTPS_REDIRECT_URL =
 var HTTPS_OTHER_REDIRECT_URL =
   'https://localhost:8443/serviceworker/resources/redirect.php?ACAOrigin=*&Redirect=';
 
-testBlockMixedContent('same-origin');
-testBlockMixedContent('cors');
+testBlockMixedContent('no-cors');
 
 done();
