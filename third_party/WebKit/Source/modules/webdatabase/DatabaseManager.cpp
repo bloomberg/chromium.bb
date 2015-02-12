@@ -44,11 +44,24 @@
 
 namespace blink {
 
+static DatabaseManager* s_databaseManager;
+
 DatabaseManager& DatabaseManager::manager()
 {
     ASSERT(isMainThread());
-    DEFINE_STATIC_LOCAL(DatabaseManager, dbManager, ());
-    return dbManager;
+    if (!s_databaseManager)
+        s_databaseManager = new DatabaseManager();
+    return *s_databaseManager;
+}
+
+void DatabaseManager::terminateDatabaseThread()
+{
+    ASSERT(isMainThread());
+    if (!s_databaseManager || s_databaseManager->m_contextMap.isEmpty())
+        return;
+    // We have at most one DatabaseContext, which is for the main thread.
+    ASSERT(s_databaseManager->m_contextMap.size() == 1);
+    (*s_databaseManager->m_contextMap.values().begin())->stopDatabases();
 }
 
 DatabaseManager::DatabaseManager()

@@ -12,6 +12,7 @@ namespace blink {
 class ModulesInitializer : public CoreInitializer {
 public:
     virtual void init() override;
+    static void terminateThreads();
 };
 
 } // namespace blink

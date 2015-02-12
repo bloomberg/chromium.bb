@@ -12,6 +12,7 @@
 #include "modules/EventModulesNames.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/IndexedDBNames.h"
+#include "modules/webdatabase/DatabaseManager.h"
 
 namespace blink {
 
@@ -29,6 +30,11 @@ void ModulesInitializer::init()
     CoreInitializer::init();
 
     ASSERT(isInitialized());
+}
+
+void ModulesInitializer::terminateThreads()
+{
+    DatabaseManager::terminateDatabaseThread();
 }
 
 } // namespace blink

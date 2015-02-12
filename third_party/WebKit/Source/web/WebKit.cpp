@@ -208,6 +208,8 @@ void shutdown()
     // worker termination.
     WorkerThread::terminateAndWaitForAllWorkers();
 
+    ModulesInitializer::terminateThreads();
+
     // Detach the main thread before starting the shutdown sequence
     // so that the main thread won't get involved in a GC during the shutdown.
     ThreadState::detachMainThread();

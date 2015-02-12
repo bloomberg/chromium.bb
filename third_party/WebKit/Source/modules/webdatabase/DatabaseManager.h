@@ -46,6 +46,7 @@ class DatabaseManager {
     WTF_MAKE_NONCOPYABLE(DatabaseManager); WTF_MAKE_FAST_ALLOCATED;
 public:
     static DatabaseManager& manager();
+    static void terminateDatabaseThread();
 
     // These 2 methods are for DatabaseContext (un)registration, and should only
     // be called by the DatabaseContext constructor and destructor.
