@@ -55,7 +55,6 @@ chrome_200_percent.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 delegate_execute.exe: %(VersionDir)s\
-libpeerconnection.dll: %(VersionDir)s\
 metro_driver.dll: %(VersionDir)s\
 SecondaryTile.png: %(VersionDir)s\
 widevinecdmadapter.dll: %(VersionDir)s\
