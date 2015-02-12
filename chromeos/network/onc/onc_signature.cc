@@ -291,6 +291,7 @@ const OncFieldSignature cellular_with_state_fields[] = {
     { ::onc::cellular::kProviderRequiresRoaming, &kBoolSignature},
     { ::onc::cellular::kRoamingState, &kStringSignature},
     { ::onc::cellular::kServingOperator, &kCellularProviderSignature},
+    { ::onc::cellular::kSignalStrength, &kIntegerSignature},
     { ::onc::cellular::kSIMLockStatus, &kSIMLockStatusSignature},
     { ::onc::cellular::kSIMPresent, &kBoolSignature},
     { ::onc::cellular::kSupportNetworkScan, &kBoolSignature},

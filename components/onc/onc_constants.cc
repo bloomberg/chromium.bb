@@ -119,6 +119,7 @@ const char kRoamingState[] = "RoamingState";
 const char kHome[] = "Home";
 const char kRoaming[] = "Roaming";
 const char kServingOperator[] = "ServingOperator";
+const char kSignalStrength[] = "SignalStrength";
 const char kSIMLockStatus[] = "SIMLockStatus";
 const char kSIMPresent[] = "SIMPresent";
 const char kSupportedCarriers[] = "SupportedCarriers";

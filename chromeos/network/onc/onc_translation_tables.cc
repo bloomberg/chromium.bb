@@ -169,6 +169,7 @@ const FieldTranslationEntry cellular_fields[] = {
     { ::onc::cellular::kNetworkTechnology, shill::kNetworkTechnologyProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kRoamingState, shill::kRoamingStateProperty},
+    { ::onc::cellular::kSignalStrength, shill::kSignalStrengthProperty},
     {NULL}};
 
 const FieldTranslationEntry network_fields[] = {
