@@ -33,7 +33,7 @@ namespace blink {
 // during an entire linebox tree layout pass (aka layoutInlineChildren).
 class LineLayoutState {
 public:
-    LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, RenderFlowThread* flowThread)
+    LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutFlowThread* flowThread)
         : m_lastFloat(0)
         , m_endLine(0)
         , m_floatIndex(0)
@@ -96,8 +96,8 @@ public:
     LayoutUnit adjustedLogicalLineTop() const { return m_adjustedLogicalLineTop; }
     void setAdjustedLogicalLineTop(LayoutUnit value) { m_adjustedLogicalLineTop = value; }
 
-    RenderFlowThread* flowThread() const { return m_flowThread; }
-    void setFlowThread(RenderFlowThread* thread) { m_flowThread = thread; }
+    LayoutFlowThread* flowThread() const { return m_flowThread; }
+    void setFlowThread(LayoutFlowThread* thread) { m_flowThread = thread; }
 
 private:
     Vector<RenderBlockFlow::FloatWithRect> m_floats;
@@ -122,7 +122,7 @@ private:
 
     bool m_usesPaintInvalidationBounds;
 
-    RenderFlowThread* m_flowThread;
+    LayoutFlowThread* m_flowThread;
 };
 
 }

@@ -32,13 +32,13 @@
 
 namespace blink {
 
-LayoutMultiColumnSet::LayoutMultiColumnSet(RenderFlowThread* flowThread)
+LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flowThread)
     : RenderRegion(0, flowThread)
     , m_fragmentainerGroups(*this)
 {
 }
 
-LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(RenderFlowThread& flowThread, const LayoutStyle& parentStyle)
+LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(LayoutFlowThread& flowThread, const LayoutStyle& parentStyle)
 {
     Document& document = flowThread.document();
     LayoutMultiColumnSet* renderer = new LayoutMultiColumnSet(&flowThread);
@@ -97,7 +97,7 @@ LayoutUnit LayoutMultiColumnSet::logicalBottomInFlowThread() const
 bool LayoutMultiColumnSet::heightIsAuto() const
 {
     LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
-    if (!flowThread->isRenderPagedFlowThread()) {
+    if (!flowThread->isLayoutPagedFlowThread()) {
         if (multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance)
             return true;
         if (RenderBox* next = nextSiblingBox()) {

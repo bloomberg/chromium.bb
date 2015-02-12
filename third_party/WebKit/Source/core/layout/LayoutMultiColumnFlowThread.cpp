@@ -362,7 +362,7 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
 
     // This looks like a spanner, but if we're inside something unbreakable, it's not to be treated as one.
     for (RenderBlock* ancestor = descendant->containingBlock(); ancestor; ancestor = ancestor->containingBlock()) {
-        if (ancestor->isRenderFlowThread()) {
+        if (ancestor->isLayoutFlowThread()) {
             ASSERT(ancestor == this);
             return true;
         }
@@ -407,7 +407,7 @@ void LayoutMultiColumnFlowThread::willBeRemovedFromTree()
     for (LayoutMultiColumnSet* columnSet = firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet())
         columnSet->detachRegion();
     multiColumnBlockFlow()->resetMultiColumnFlowThread();
-    RenderFlowThread::willBeRemovedFromTree();
+    LayoutFlowThread::willBeRemovedFromTree();
 }
 
 LayoutUnit LayoutMultiColumnFlowThread::skipColumnSpanner(RenderBox* renderer, LayoutUnit logicalTopInFlowThread)
@@ -582,7 +582,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
 
 void LayoutMultiColumnFlowThread::computePreferredLogicalWidths()
 {
-    RenderFlowThread::computePreferredLogicalWidths();
+    LayoutFlowThread::computePreferredLogicalWidths();
 
     // The min/max intrinsic widths calculated really tell how much space elements need when
     // laid out inside the columns. In order to eventually end up with the desired column width,
@@ -626,7 +626,7 @@ void LayoutMultiColumnFlowThread::layout()
     m_lastSetWorkedOn = firstMultiColumnSet();
     if (m_lastSetWorkedOn)
         m_lastSetWorkedOn->beginFlow(LayoutUnit());
-    RenderFlowThread::layout();
+    LayoutFlowThread::layout();
     if (LayoutMultiColumnSet* lastSet = lastMultiColumnSet()) {
         ASSERT(lastSet == m_lastSetWorkedOn);
         if (!lastSet->nextSiblingMultiColumnBox()) {

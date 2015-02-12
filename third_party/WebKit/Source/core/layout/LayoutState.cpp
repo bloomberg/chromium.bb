@@ -27,7 +27,7 @@
 #include "core/layout/LayoutState.h"
 
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderFlowThread.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
 #include "platform/Partitions.h"
@@ -54,7 +54,7 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     , m_next(renderer.view()->layoutState())
     , m_renderer(renderer)
 {
-    m_flowThread = renderer.isRenderFlowThread() ? toRenderFlowThread(&renderer) : m_next->flowThread();
+    m_flowThread = renderer.isLayoutFlowThread() ? toLayoutFlowThread(&renderer) : m_next->flowThread();
     renderer.view()->pushLayoutState(*this);
     bool fixed = renderer.isOutOfFlowPositioned() && renderer.style()->position() == FixedPosition;
     if (fixed) {
@@ -73,7 +73,7 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     }
     // If we establish a new page height, then cache the offset to the top of the first page.
     // We can compare this later on to figure out what part of the page we're actually on,
-    if (pageLogicalHeight || m_columnInfo || renderer.isRenderFlowThread()) {
+    if (pageLogicalHeight || m_columnInfo || renderer.isLayoutFlowThread()) {
         m_pageLogicalHeight = pageLogicalHeight;
         bool isFlipped = renderer.style()->isFlippedBlocksWritingMode();
         m_pageOffset = LayoutSize(m_layoutOffset.width() + (!isFlipped ? renderer.borderLeft() + renderer.paddingLeft() : renderer.borderRight() + renderer.paddingRight()),

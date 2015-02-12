@@ -60,7 +60,7 @@ namespace blink {
 // group has its own column height, but the column height is uniform within a group.
 class LayoutMultiColumnSet : public RenderRegion {
 public:
-    static LayoutMultiColumnSet* createAnonymous(RenderFlowThread&, const LayoutStyle& parentStyle);
+    static LayoutMultiColumnSet* createAnonymous(LayoutFlowThread&, const LayoutStyle& parentStyle);
 
     const MultiColumnFragmentainerGroup& firstFragmentainerGroup() const { return m_fragmentainerGroups.first(); }
     const MultiColumnFragmentainerGroup& lastFragmentainerGroup() const { return m_fragmentainerGroups.last(); }
@@ -147,7 +147,7 @@ public:
     unsigned actualColumnCount() const;
 
 protected:
-    LayoutMultiColumnSet(RenderFlowThread*);
+    LayoutMultiColumnSet(LayoutFlowThread*);
 
 private:
     virtual void insertedIntoTree() override final;

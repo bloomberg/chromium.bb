@@ -821,7 +821,7 @@ inline RenderBox* RenderBox::previousSiblingMultiColumnBox() const
 {
     ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
     RenderBox* previousBox = previousSiblingBox();
-    if (previousBox->isRenderFlowThread())
+    if (previousBox->isLayoutFlowThread())
         return 0;
     return previousBox;
 }

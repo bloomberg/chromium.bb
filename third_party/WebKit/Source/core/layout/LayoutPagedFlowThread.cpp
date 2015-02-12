@@ -3,37 +3,37 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderPagedFlowThread.h"
+#include "core/layout/LayoutPagedFlowThread.h"
 
 namespace blink {
 
-RenderPagedFlowThread* RenderPagedFlowThread::createAnonymous(Document& document, const LayoutStyle& parentStyle)
+LayoutPagedFlowThread* LayoutPagedFlowThread::createAnonymous(Document& document, const LayoutStyle& parentStyle)
 {
-    RenderPagedFlowThread* renderer = new RenderPagedFlowThread();
+    LayoutPagedFlowThread* renderer = new LayoutPagedFlowThread();
     renderer->setDocumentForAnonymous(&document);
     renderer->setStyle(LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
 }
 
-const char* RenderPagedFlowThread::renderName() const
+const char* LayoutPagedFlowThread::renderName() const
 {
-    return "RenderPagedFlowThread";
+    return "LayoutPagedFlowThread";
 }
 
-bool RenderPagedFlowThread::needsNewWidth() const
+bool LayoutPagedFlowThread::needsNewWidth() const
 {
     return progressionIsInline() != pagedBlockFlow()->style()->hasInlinePaginationAxis();
 }
 
-void RenderPagedFlowThread::updateLogicalWidth()
+void LayoutPagedFlowThread::updateLogicalWidth()
 {
     // As long as we inherit from LayoutMultiColumnFlowThread, we need to bypass its implementation
     // here. We're not split into columns, so the flow thread width will just be whatever is
     // available in the containing block.
-    RenderFlowThread::updateLogicalWidth();
+    LayoutFlowThread::updateLogicalWidth();
 }
 
-void RenderPagedFlowThread::layout()
+void LayoutPagedFlowThread::layout()
 {
     setProgressionIsInline(pagedBlockFlow()->style()->hasInlinePaginationAxis());
     LayoutMultiColumnFlowThread::layout();

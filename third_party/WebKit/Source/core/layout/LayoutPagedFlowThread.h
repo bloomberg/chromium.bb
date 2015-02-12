@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RenderPagedFlowThread_h
-#define RenderPagedFlowThread_h
+#ifndef LayoutPagedFlowThread_h
+#define LayoutPagedFlowThread_h
 
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 
@@ -11,15 +11,15 @@ namespace blink {
 
 // A flow thread for paged overflow. FIXME: The current implementation relies on the multicol
 // implementation, but it in the long run it would be better to have what's common between
-// LayoutMultiColumnFlowThread and RenderPagedFlowThread in RenderFlowThread, and have both of them
+// LayoutMultiColumnFlowThread and LayoutPagedFlowThread in LayoutFlowThread, and have both of them
 // inherit from that one.
-class RenderPagedFlowThread : public LayoutMultiColumnFlowThread {
+class LayoutPagedFlowThread : public LayoutMultiColumnFlowThread {
 public:
-    static RenderPagedFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
+    static LayoutPagedFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
 
     RenderBlockFlow* pagedBlockFlow() const { return toRenderBlockFlow(parent()); }
 
-    virtual bool isRenderPagedFlowThread() const override { return true; }
+    virtual bool isLayoutPagedFlowThread() const override { return true; }
     virtual const char* renderName() const override;
     virtual bool needsNewWidth() const override;
     virtual void updateLogicalWidth() override;
@@ -31,4 +31,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderPagedFlowThread_h
+#endif // LayoutPagedFlowThread_h

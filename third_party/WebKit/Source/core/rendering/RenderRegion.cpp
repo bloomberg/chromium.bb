@@ -30,11 +30,11 @@
 #include "config.h"
 #include "core/rendering/RenderRegion.h"
 
-#include "core/rendering/RenderFlowThread.h"
+#include "core/layout/LayoutFlowThread.h"
 
 namespace blink {
 
-RenderRegion::RenderRegion(Element* element, RenderFlowThread* flowThread)
+RenderRegion::RenderRegion(Element* element, LayoutFlowThread* flowThread)
     : RenderBlockFlow(element)
     , m_flowThread(flowThread)
     , m_isValid(false)
@@ -105,13 +105,13 @@ void RenderRegion::layoutBlock(bool relayoutChildren)
     RenderBlockFlow::layoutBlock(relayoutChildren);
 
     // FIXME: We need to find a way to set up overflow properly. Our flow thread hasn't gotten a layout
-    // yet, so we can't look to it for correct information. It's possible we could wait until after the RenderFlowThread
+    // yet, so we can't look to it for correct information. It's possible we could wait until after the LayoutFlowThread
     // gets a layout, and then try to propagate overflow information back to the region, and then mark for a second layout.
-    // That second layout would then be able to use the information from the RenderFlowThread to set up overflow.
+    // That second layout would then be able to use the information from the LayoutFlowThread to set up overflow.
     //
-    // The big problem though is that overflow needs to be region-specific. We can't simply use the RenderFlowThread's global
+    // The big problem though is that overflow needs to be region-specific. We can't simply use the LayoutFlowThread's global
     // overflow values, since then we'd always think any narrow region had huge overflow (all the way to the width of the
-    // RenderFlowThread itself).
+    // LayoutFlowThread itself).
 }
 
 void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const

@@ -128,8 +128,8 @@ void RenderTreeBuilderForElement::createRenderer()
         return;
     }
 
-    // Make sure the LayoutObject already knows it is going to be added to a RenderFlowThread before we set the style
-    // for the first time. Otherwise code using inRenderFlowThread() in the styleWillChange and styleDidChange will fail.
+    // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
+    // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
     newRenderer->setFlowThreadState(parentRenderer->flowThreadState());
 
     LayoutObject* nextRenderer = this->nextRenderer();
@@ -159,8 +159,8 @@ void RenderTreeBuilderForText::createRenderer()
         return;
     }
 
-    // Make sure the LayoutObject already knows it is going to be added to a RenderFlowThread before we set the style
-    // for the first time. Otherwise code using inRenderFlowThread() in the styleWillChange and styleDidChange will fail.
+    // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
+    // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
     newRenderer->setFlowThreadState(parentRenderer->flowThreadState());
 
     LayoutObject* nextRenderer = this->nextRenderer();

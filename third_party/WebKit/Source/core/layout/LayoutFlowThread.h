@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef RenderFlowThread_h
-#define RenderFlowThread_h
+#ifndef LayoutFlowThread_h
+#define LayoutFlowThread_h
 
 #include "core/layout/LayerFragment.h"
 #include "core/rendering/RenderBlockFlow.h"
@@ -41,26 +41,26 @@ class RenderRegion;
 
 typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
-// RenderFlowThread is used to collect all the render objects that participate in a
+// LayoutFlowThread is used to collect all the render objects that participate in a
 // flow thread. It will also help in doing the layout. However, it will not render
 // directly to screen. Instead, RenderRegion objects will redirect their paint
 // and nodeAtPoint methods to this object. Each RenderRegion will actually be a viewPort
-// of the RenderFlowThread.
+// of the LayoutFlowThread.
 
-class RenderFlowThread: public RenderBlockFlow {
+class LayoutFlowThread: public RenderBlockFlow {
 public:
-    RenderFlowThread();
-    virtual ~RenderFlowThread() { };
+    LayoutFlowThread();
+    virtual ~LayoutFlowThread() { };
 
-    virtual bool isRenderFlowThread() const override final { return true; }
+    virtual bool isLayoutFlowThread() const override final { return true; }
     virtual bool isLayoutMultiColumnFlowThread() const { return false; }
-    virtual bool isRenderPagedFlowThread() const { return false; }
+    virtual bool isLayoutPagedFlowThread() const { return false; }
 
     virtual bool supportsPaintInvalidationStateCachedOffsets() const override { return false; }
 
     virtual void layout() override;
 
-    // Always create a Layer for the RenderFlowThread so that we
+    // Always create a Layer for the LayoutFlowThread so that we
     // can easily avoid drawing the children directly.
     virtual LayerType layerTypeRequired() const override final { return NormalLayer; }
 
@@ -155,7 +155,7 @@ protected:
     bool m_pageLogicalSizeChanged : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFlowThread, isRenderFlowThread());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlowThread, isLayoutFlowThread());
 
 // These structures are used by PODIntervalTree for debugging.
 #ifndef NDEBUG
@@ -170,4 +170,4 @@ template <> struct ValueToString<LayoutMultiColumnSet*> {
 
 } // namespace blink
 
-#endif // RenderFlowThread_h
+#endif // LayoutFlowThread_h

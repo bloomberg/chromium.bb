@@ -64,7 +64,7 @@ class PositionWithAffinity;
 class PseudoStyleRequest;
 class RenderBoxModelObject;
 class RenderBlock;
-class RenderFlowThread;
+class LayoutFlowThread;
 class LayoutGeometryMap;
 class Layer;
 class LayoutLayerModelObject;
@@ -195,7 +195,7 @@ public:
 
     // Function to return our enclosing flow thread if we are contained inside one. This
     // function follows the containing block chain.
-    RenderFlowThread* flowThreadContainingBlock() const
+    LayoutFlowThread* flowThreadContainingBlock() const
     {
         if (flowThreadState() == NotInsideFlowThread)
             return 0;
@@ -284,11 +284,11 @@ protected:
     {
         m_parent = parent;
 
-        // Only update if our flow thread state is different from our new parent and if we're not a RenderFlowThread.
-        // A RenderFlowThread is always considered to be inside itself, so it never has to change its state
+        // Only update if our flow thread state is different from our new parent and if we're not a LayoutFlowThread.
+        // A LayoutFlowThread is always considered to be inside itself, so it never has to change its state
         // in response to parent changes.
         FlowThreadState newState = parent ? parent->flowThreadState() : NotInsideFlowThread;
-        if (newState != flowThreadState() && !isRenderFlowThread())
+        if (newState != flowThreadState() && !isLayoutFlowThread())
             setFlowThreadStateIncludingDescendants(newState);
     }
 
@@ -385,7 +385,7 @@ public:
     virtual bool isLayoutLayerModelObject() const { return false; }
     virtual bool isRenderBlock() const { return false; }
     virtual bool isRenderBlockFlow() const { return false; }
-    virtual bool isRenderFlowThread() const { return false; }
+    virtual bool isLayoutFlowThread() const { return false; }
     virtual bool isRenderInline() const { return false; }
     virtual bool isRenderPart() const { return false; }
 
@@ -508,7 +508,7 @@ public:
         // RenderBlock::createAnonymousBlock(). This includes creating an anonymous
         // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
         // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
-        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread() && !isLayoutMultiColumnSet()
+        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder();
     }
@@ -1088,7 +1088,7 @@ protected:
         LayoutObjectProgress,
         LayoutObjectQuote,
         LayoutObjectRenderButton,
-        LayoutObjectRenderFlowThread,
+        LayoutObjectLayoutFlowThread,
         LayoutObjectRenderFullScreen,
         LayoutObjectRenderFullScreenPlaceholder,
         LayoutObjectRenderGrid,
@@ -1215,9 +1215,9 @@ private:
 
     const LayoutLayerModelObject* enclosingCompositedContainer() const;
 
-    RenderFlowThread* locateFlowThreadContainingBlock() const;
-    void removeFromRenderFlowThread();
-    void removeFromRenderFlowThreadRecursive(RenderFlowThread*);
+    LayoutFlowThread* locateFlowThreadContainingBlock() const;
+    void removeFromLayoutFlowThread();
+    void removeFromLayoutFlowThreadRecursive(LayoutFlowThread*);
 
     LayoutStyle* cachedFirstLineStyle() const;
     StyleDifference adjustStyleDifference(StyleDifference) const;

@@ -41,6 +41,7 @@
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTheme.h"
@@ -58,7 +59,6 @@
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderRegion.h"
@@ -853,7 +853,7 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, 
             // We are placing a column-span element inside a block.
             RenderBlockFlow* newBox = createAnonymousColumnSpanBlock();
 
-            if (columnsBlockAncestor != this && !isRenderFlowThread()) {
+            if (columnsBlockAncestor != this && !isLayoutFlowThread()) {
                 // We are nested inside a multi-column element and are being split by the span. We have to break up
                 // our block into continuations.
                 RenderBoxModelObject* oldContinuation = continuation();
@@ -1064,7 +1064,7 @@ void RenderBlock::removeLeftoverAnonymousBlock(RenderBlock* child)
     child->m_next = nullptr;
 
     // Remove all the information in the flow thread associated with the leftover anonymous block.
-    child->removeFromRenderFlowThread();
+    child->removeFromLayoutFlowThread();
 
     // RenderGrid keeps track of its children, we must notify it about changes in the tree.
     if (child->parent()->isRenderGrid())
@@ -1534,7 +1534,7 @@ void RenderBlock::addVisualOverflowFromTheme()
 bool RenderBlock::createsNewFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
-        || style()->specifiesColumns() || isRenderFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot()
+        || style()->specifiesColumns() || isLayoutFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot()
         || isDocumentElement() || (document().regionBasedColumnsEnabled() ? isColumnSpanAll() : style()->columnSpan()) || isGridItem();
 }
 
@@ -1835,7 +1835,7 @@ bool RenderBlock::isSelectionRoot() const
         || isPositioned() || isFloating()
         || isTableCell() || isInlineBlockOrInlineTable()
         || hasTransformRelatedProperty() || hasReflection() || hasMask() || isWritingModeRoot()
-        || isRenderFlowThread() || isFlexItemIncludingDeprecated())
+        || isLayoutFlowThread() || isFlexItemIncludingDeprecated())
         return true;
 
     if (view() && view()->selectionStart()) {
@@ -3620,7 +3620,7 @@ LayoutUnit RenderBlock::nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundar
 LayoutUnit RenderBlock::pageLogicalHeightForOffset(LayoutUnit offset) const
 {
     RenderView* renderView = view();
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread)
         return renderView->layoutState()->pageLogicalHeight();
     return flowThread->pageLogicalHeightForOffset(offset + offsetFromLogicalTopOfFirstPage());
@@ -3631,7 +3631,7 @@ LayoutUnit RenderBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, P
     RenderView* renderView = view();
     offset += offsetFromLogicalTopOfFirstPage();
 
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread) {
         LayoutUnit pageLogicalHeight = renderView->layoutState()->pageLogicalHeight();
         LayoutUnit remainingHeight = pageLogicalHeight - intMod(offset, pageLogicalHeight);
@@ -3648,13 +3648,13 @@ LayoutUnit RenderBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, P
 
 void RenderBlock::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)
 {
-    if (RenderFlowThread* flowThread = flowThreadContainingBlock())
+    if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
         flowThread->setPageBreak(offsetFromLogicalTopOfFirstPage() + offset, spaceShortage);
 }
 
 void RenderBlock::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight)
 {
-    if (RenderFlowThread* flowThread = flowThreadContainingBlock())
+    if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
         flowThread->updateMinimumPageHeight(offsetFromLogicalTopOfFirstPage() + offset, minHeight);
     else if (ColumnInfo* colInfo = view()->layoutState()->columnInfo())
         colInfo->updateMinimumColumnHeight(minHeight);

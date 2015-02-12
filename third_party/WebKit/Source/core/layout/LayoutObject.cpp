@@ -51,6 +51,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutObjectInlines.h"
@@ -69,7 +70,6 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderImageResourceStyleImage.h"
@@ -281,7 +281,7 @@ void LayoutObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
 {
     for (LayoutObject *object = this; object; object = object->nextInPreOrder(this)) {
         // If object is a fragmentation context it already updated the descendants flag accordingly.
-        if (object->isRenderFlowThread())
+        if (object->isLayoutFlowThread())
             continue;
         ASSERT(state != object->flowThreadState());
         object->setFlowThreadState(state);
@@ -604,21 +604,21 @@ RenderBox* LayoutObject::enclosingScrollableBox() const
     return 0;
 }
 
-RenderFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
+LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
 {
     ASSERT(flowThreadState() != NotInsideFlowThread);
 
     // See if we have the thread cached because we're in the middle of layout.
     if (LayoutState* layoutState = view()->layoutState()) {
-        if (RenderFlowThread* flowThread = layoutState->flowThread())
+        if (LayoutFlowThread* flowThread = layoutState->flowThread())
             return flowThread;
     }
 
     // Not in the middle of layout so have to find the thread the slow way.
     LayoutObject* curr = const_cast<LayoutObject*>(this);
     while (curr) {
-        if (curr->isRenderFlowThread())
-            return toRenderFlowThread(curr);
+        if (curr->isLayoutFlowThread())
+            return toLayoutFlowThread(curr);
         curr = curr->containingBlock();
     }
     return 0;
@@ -2051,7 +2051,7 @@ LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o, const Layout
         offset -= toRenderBox(o)->scrolledContentOffset();
 
     if (offsetDependsOnPoint)
-        *offsetDependsOnPoint = hasColumns() || o->isRenderFlowThread();
+        *offsetDependsOnPoint = hasColumns() || o->isLayoutFlowThread();
 
     return offset;
 }
@@ -2359,7 +2359,7 @@ void LayoutObject::insertedIntoTree()
     if (!isFloating() && parent()->childrenInline())
         parent()->dirtyLinesFromChangedChild(this);
 
-    if (RenderFlowThread* flowThread = parent()->flowThreadContainingBlock())
+    if (LayoutFlowThread* flowThread = parent()->flowThreadContainingBlock())
         flowThread->flowThreadDescendantWasInserted(this);
 }
 
@@ -2385,14 +2385,14 @@ void LayoutObject::willBeRemovedFromTree()
     if (isOutOfFlowPositioned() && parent()->childrenInline())
         parent()->dirtyLinesFromChangedChild(this);
 
-    removeFromRenderFlowThread();
+    removeFromLayoutFlowThread();
 
     // Update cached boundaries in SVG renderers if a child is removed.
     if (parent()->isSVG())
         parent()->setNeedsBoundariesUpdate();
 }
 
-void LayoutObject::removeFromRenderFlowThread()
+void LayoutObject::removeFromLayoutFlowThread()
 {
     if (flowThreadState() == NotInsideFlowThread)
         return;
@@ -2405,15 +2405,15 @@ void LayoutObject::removeFromRenderFlowThread()
     // doesn't have the flow thread in its containing block chain. We still need to notify the flow
     // thread when the renderer removed happens to be a spanner, so that we get rid of the spanner
     // placeholder, and column sets around the placeholder get merged.
-    RenderFlowThread* flowThread = isColumnSpanAll() ? parent()->flowThreadContainingBlock() : flowThreadContainingBlock();
-    removeFromRenderFlowThreadRecursive(flowThread);
+    LayoutFlowThread* flowThread = isColumnSpanAll() ? parent()->flowThreadContainingBlock() : flowThreadContainingBlock();
+    removeFromLayoutFlowThreadRecursive(flowThread);
 }
 
-void LayoutObject::removeFromRenderFlowThreadRecursive(RenderFlowThread* renderFlowThread)
+void LayoutObject::removeFromLayoutFlowThreadRecursive(LayoutFlowThread* renderFlowThread)
 {
     if (const LayoutObjectChildList* children = virtualChildren()) {
         for (LayoutObject* child = children->firstChild(); child; child = child->nextSibling())
-            child->removeFromRenderFlowThreadRecursive(renderFlowThread);
+            child->removeFromLayoutFlowThreadRecursive(renderFlowThread);
     }
 
     if (renderFlowThread && renderFlowThread != this)
@@ -2436,7 +2436,7 @@ void LayoutObject::destroyAndCleanupAnonymousWrappers()
         if (destroyRootParent->isRenderBlock() && toRenderBlock(destroyRootParent)->isAnonymousBlockContinuation())
             break;
         // A flow thread is tracked by its containing block. Whether its children are removed or not is irrelevant.
-        if (destroyRootParent->isRenderFlowThread())
+        if (destroyRootParent->isLayoutFlowThread())
             break;
         // Column spans are tracked elsewhere.
         if (destroyRootParent->isAnonymousColumnSpanBlock())

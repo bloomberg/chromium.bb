@@ -1651,7 +1651,7 @@ LayoutSize RenderBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
                 *offsetDependsOnPoint = true;
         } else {
             offset += topLeftLocationOffset();
-            if (o->isRenderFlowThread()) {
+            if (o->isLayoutFlowThread()) {
                 // So far the point has been in flow thread coordinates (i.e. as if everything in
                 // the fragmentation context lived in one tall single column). Convert it to a
                 // visual point now.
@@ -2408,7 +2408,7 @@ bool RenderBox::skipContainingBlockForPercentHeightCalculation(const RenderBox* 
 
     // Flow threads for multicol or paged overflow should be skipped. They are invisible to the DOM,
     // and percent heights of children should be resolved against the multicol or paged container.
-    if (containingBlock->isRenderFlowThread())
+    if (containingBlock->isLayoutFlowThread())
         return true;
 
     // For quirks mode and anonymous blocks, we skip auto-height containingBlocks when computing percentages.
@@ -4076,7 +4076,7 @@ LayoutRectOutsets RenderBox::computeVisualEffectOverflowOutsets() const
 void RenderBox::addOverflowFromChild(RenderBox* child, const LayoutSize& delta)
 {
     // Never allow flow threads to propagate overflow up to a parent.
-    if (child->isRenderFlowThread())
+    if (child->isLayoutFlowThread())
         return;
 
     // Only propagate layout overflow from the child if the child isn't clipping its overflow.  If it is, then

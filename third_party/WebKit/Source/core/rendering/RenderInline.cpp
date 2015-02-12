@@ -27,6 +27,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -37,7 +38,6 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1167,7 +1167,7 @@ LayoutSize RenderInline::offsetFromContainer(const LayoutObject* container, cons
     if (offsetDependsOnPoint) {
         *offsetDependsOnPoint = container->hasColumns()
             || (container->isBox() && container->style()->isFlippedBlocksWritingMode())
-            || container->isRenderFlowThread();
+            || container->isLayoutFlowThread();
     }
 
     return offset;

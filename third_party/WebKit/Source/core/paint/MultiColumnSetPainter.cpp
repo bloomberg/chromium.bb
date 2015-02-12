@@ -34,7 +34,7 @@ void MultiColumnSetPainter::paintObject(const PaintInfo& paintInfo, const Layout
 
 void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_renderMultiColumnSet.flowThread()->isRenderPagedFlowThread())
+    if (m_renderMultiColumnSet.flowThread()->isLayoutPagedFlowThread())
         return;
 
     const LayoutStyle& blockStyle = m_renderMultiColumnSet.multiColumnBlockFlow()->styleRef();

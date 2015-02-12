@@ -34,11 +34,11 @@
 
 namespace blink {
 
-class RenderFlowThread;
+class LayoutFlowThread;
 
 class RenderRegion : public RenderBlockFlow {
 public:
-    explicit RenderRegion(Element*, RenderFlowThread*);
+    explicit RenderRegion(Element*, LayoutFlowThread*);
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderRegion || RenderBlockFlow::isOfType(type); }
 
@@ -46,7 +46,7 @@ public:
     LayoutRect flowThreadPortionOverflowRect() const;
     LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
 
-    RenderFlowThread* flowThread() const { return m_flowThread; }
+    LayoutFlowThread* flowThread() const { return m_flowThread; }
 
     // Valid regions do not create circular dependencies with other flows.
     bool isValid() const { return m_isValid; }
@@ -73,7 +73,7 @@ private:
     virtual void layoutBlock(bool relayoutChildren) override final;
 
 protected:
-    RenderFlowThread* m_flowThread;
+    LayoutFlowThread* m_flowThread;
 
 private:
     bool m_isValid : 1;

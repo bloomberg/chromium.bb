@@ -29,14 +29,14 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderFlowThread.h"
+#include "core/layout/LayoutFlowThread.h"
 
 #include "core/layout/LayoutMultiColumnSet.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
 
-RenderFlowThread::RenderFlowThread()
+LayoutFlowThread::LayoutFlowThread()
     : RenderBlockFlow(0)
     , m_regionsInvalidated(false)
     , m_regionsHaveUniformLogicalHeight(true)
@@ -45,13 +45,13 @@ RenderFlowThread::RenderFlowThread()
     setFlowThreadState(InsideOutOfFlowThread);
 }
 
-void RenderFlowThread::removeRegionFromThread(LayoutMultiColumnSet* columnSet)
+void LayoutFlowThread::removeRegionFromThread(LayoutMultiColumnSet* columnSet)
 {
     ASSERT(columnSet);
     m_multiColumnSetList.remove(columnSet);
 }
 
-void RenderFlowThread::invalidateRegions()
+void LayoutFlowThread::invalidateRegions()
 {
     if (m_regionsInvalidated) {
         ASSERT(selfNeedsLayout());
@@ -63,7 +63,7 @@ void RenderFlowThread::invalidateRegions()
     m_regionsInvalidated = true;
 }
 
-void RenderFlowThread::validateRegions()
+void LayoutFlowThread::validateRegions()
 {
     if (m_regionsInvalidated) {
         m_regionsInvalidated = false;
@@ -93,21 +93,21 @@ void RenderFlowThread::validateRegions()
     generateColumnSetIntervalTree();
 }
 
-void RenderFlowThread::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutFlowThread::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(paintInvalidationContainer != this); // A flow thread should never be an invalidation container.
     rect = fragmentsBoundingBox(rect);
     RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
-void RenderFlowThread::layout()
+void LayoutFlowThread::layout()
 {
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
     RenderBlockFlow::layout();
     m_pageLogicalSizeChanged = false;
 }
 
-void RenderFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     computedValues.m_position = logicalTop;
     computedValues.m_extent = 0;
@@ -118,14 +118,14 @@ void RenderFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, L
     }
 }
 
-bool RenderFlowThread::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutFlowThread::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     if (hitTestAction == HitTestBlockBackground)
         return false;
     return RenderBlockFlow::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction);
 }
 
-LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
+LayoutUnit LayoutFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
 {
     LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
     if (!columnSet)
@@ -134,7 +134,7 @@ LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
     return columnSet->pageLogicalHeight();
 }
 
-LayoutUnit RenderFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offset, PageBoundaryRule pageBoundaryRule)
+LayoutUnit LayoutFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offset, PageBoundaryRule pageBoundaryRule)
 {
     LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
     if (!columnSet)
@@ -152,21 +152,21 @@ LayoutUnit RenderFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offs
     return remainingHeight;
 }
 
-RenderRegion* RenderFlowThread::firstRegion() const
+RenderRegion* LayoutFlowThread::firstRegion() const
 {
     if (!hasValidRegionInfo())
         return 0;
     return m_multiColumnSetList.first();
 }
 
-RenderRegion* RenderFlowThread::lastRegion() const
+RenderRegion* LayoutFlowThread::lastRegion() const
 {
     if (!hasValidRegionInfo())
         return 0;
     return m_multiColumnSetList.last();
 }
 
-void RenderFlowThread::generateColumnSetIntervalTree()
+void LayoutFlowThread::generateColumnSetIntervalTree()
 {
     // FIXME: Optimize not to clear the interval all the time. This implies manually managing the tree nodes lifecycle.
     m_multiColumnSetIntervalTree.clear();
@@ -175,7 +175,7 @@ void RenderFlowThread::generateColumnSetIntervalTree()
         m_multiColumnSetIntervalTree.add(MultiColumnSetIntervalTree::createInterval(columnSet->logicalTopInFlowThread(), columnSet->logicalBottomInFlowThread(), columnSet));
 }
 
-void RenderFlowThread::collectLayerFragments(LayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
+void LayoutFlowThread::collectLayerFragments(LayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
 {
     ASSERT(!m_regionsInvalidated);
 
@@ -185,7 +185,7 @@ void RenderFlowThread::collectLayerFragments(LayerFragments& layerFragments, con
     }
 }
 
-LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const
+LayoutRect LayoutFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const
 {
     ASSERT(!m_regionsInvalidated);
 
@@ -206,7 +206,7 @@ LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     return result;
 }
 
-void RenderFlowThread::MultiColumnSetSearchAdapter::collectIfNeeded(const MultiColumnSetInterval& interval)
+void LayoutFlowThread::MultiColumnSetSearchAdapter::collectIfNeeded(const MultiColumnSetInterval& interval)
 {
     if (m_result)
         return;

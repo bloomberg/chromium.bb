@@ -28,6 +28,7 @@
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -36,7 +37,6 @@
 #include "core/layout/style/ShadowList.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextFragment.h"
@@ -563,7 +563,7 @@ void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
     if (!o)
         return;
 
-    if (o->isRenderFlowThread())
+    if (o->isLayoutFlowThread())
         transformState.move(o->columnOffset(LayoutPoint(transformState.mappedPoint())));
 
     o->mapAbsoluteToLocalPoint(mode, transformState);

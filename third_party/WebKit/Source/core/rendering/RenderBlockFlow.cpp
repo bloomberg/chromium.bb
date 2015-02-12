@@ -38,15 +38,15 @@
 #include "core/html/HTMLDialogElement.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
+#include "core/layout/LayoutPagedFlowThread.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/paint/BlockFlowPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderFlowThread.h"
-#include "core/rendering/RenderPagedFlowThread.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/TransformState.h"
@@ -150,7 +150,7 @@ static bool inNormalFlow(RenderBox* child)
     RenderBlock* curr = child->containingBlock();
     RenderView* renderView = child->view();
     while (curr && curr != renderView) {
-        if (curr->hasColumns() || curr->isRenderFlowThread())
+        if (curr->hasColumns() || curr->isLayoutFlowThread())
             return true;
         if (curr->isFloatingOrOutOfFlowPositioned())
             return false;
@@ -229,8 +229,8 @@ void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogi
 
         if (!hasSpecifiedPageLogicalHeight && !pageLogicalHeight)
             colInfo->clearForcedBreaks();
-    } else if (isRenderFlowThread()) {
-        RenderFlowThread* flowThread = toRenderFlowThread(this);
+    } else if (isLayoutFlowThread()) {
+        LayoutFlowThread* flowThread = toLayoutFlowThread(this);
 
         // FIXME: This is a hack to always make sure we have a page logical height, if said height
         // is known. The page logical height thing in LayoutState is meaningless for flow
@@ -792,7 +792,7 @@ static inline LayoutUnit calculateMinimumPageHeight(const LayoutStyle& style, Ro
     return lineBottom - lineTop;
 }
 
-void RenderBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta, RenderFlowThread* flowThread)
+void RenderBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta, LayoutFlowThread* flowThread)
 {
     // FIXME: For now we paginate using line overflow. This ensures that lines don't overlap at all when we
     // put a strut between them for pagination purposes. However, this really isn't the desired rendering, since
@@ -1090,7 +1090,7 @@ MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
 {
     const LayoutStyle& blockStyle = blockFlow->styleRef();
     ASSERT(blockFlow->isRenderView() || blockFlow->parent());
-    m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isRenderFlowThread() && !blockFlow->isRenderView();
+    m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isLayoutFlowThread() && !blockFlow->isRenderView();
 
     m_canCollapseMarginBeforeWithChildren = m_canCollapseWithChildren && !beforeBorderPadding && blockStyle.marginBeforeCollapse() != MSEPARATE;
 
@@ -1726,7 +1726,7 @@ bool RenderBlockFlow::mustSeparateMarginAfterForChild(const RenderBox& child) co
 LayoutUnit RenderBlockFlow::applyBeforeBreak(RenderBox& child, LayoutUnit logicalOffset)
 {
     // FIXME: Add page break checking here when we support printing.
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
     bool isInsideMulticolFlowThread = flowThread;
     bool checkColumnBreaks = isInsideMulticolFlowThread || view()->layoutState()->isPaginatingColumns();
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
@@ -1750,7 +1750,7 @@ LayoutUnit RenderBlockFlow::applyBeforeBreak(RenderBox& child, LayoutUnit logica
 LayoutUnit RenderBlockFlow::applyAfterBreak(RenderBox& child, LayoutUnit logicalOffset, MarginInfo& marginInfo)
 {
     // FIXME: Add page break checking here when we support printing.
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
     bool isInsideMulticolFlowThread = flowThread;
     bool checkColumnBreaks = isInsideMulticolFlowThread || view()->layoutState()->isPaginatingColumns();
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
@@ -3061,7 +3061,7 @@ LayoutMultiColumnFlowThread* RenderBlockFlow::createMultiColumnFlowThread(FlowTh
         return LayoutMultiColumnFlowThread::createAnonymous(document(), styleRef());
     case PagedFlowThread:
         // Paged overflow is currently done using the multicol implementation.
-        return RenderPagedFlowThread::createAnonymous(document(), styleRef());
+        return LayoutPagedFlowThread::createAnonymous(document(), styleRef());
     default:
         ASSERT_NOT_REACHED();
         return nullptr;

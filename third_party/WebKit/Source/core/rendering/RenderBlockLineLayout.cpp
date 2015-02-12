@@ -26,6 +26,7 @@
 #include "core/layout/BidiRunForLine.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/TextRunConstructor.h"
@@ -37,7 +38,6 @@
 #include "core/layout/line/TrailingFloatsRootInlineBox.h"
 #include "core/layout/line/WordMeasurement.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
-#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderView.h"
@@ -1516,7 +1516,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
 
 void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
 {
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
     bool clearLinesForPagination = firstLineBox() && flowThread && !flowThread->hasRegions();
 
     // Figure out if we should clear out our line boxes.

@@ -58,6 +58,7 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/HitTestingTransformState.h"
+#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -65,7 +66,6 @@
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderReplica.h"
@@ -448,7 +448,7 @@ static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const Layer* laye
 {
     Layer* paginationLayer = layer->enclosingPaginationLayer();
     ASSERT(paginationLayer);
-    RenderFlowThread* flowThread = toRenderFlowThread(paginationLayer->renderer());
+    LayoutFlowThread* flowThread = toLayoutFlowThread(paginationLayer->renderer());
 
     // First make the flow thread rectangle relative to the flow thread, not to |layer|.
     LayoutPoint offsetWithinPaginationLayer;
@@ -480,7 +480,7 @@ void Layer::updatePaginationRecursive(bool needsPaginationUpdate)
     m_isPaginated = false;
     m_enclosingPaginationLayer = 0;
 
-    if (useRegionBasedColumns() && renderer()->isRenderFlowThread())
+    if (useRegionBasedColumns() && renderer()->isLayoutFlowThread())
         needsPaginationUpdate = true;
 
     if (needsPaginationUpdate)
@@ -506,7 +506,7 @@ void Layer::updatePagination()
     // genuinely know if it is going to have to split itself up when painting only its contents (and not any other descendant
     // layers). We track an enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
     // to that layer easily.
-    if (usesRegionBasedColumns && renderer()->isRenderFlowThread()) {
+    if (usesRegionBasedColumns && renderer()->isLayoutFlowThread()) {
         m_enclosingPaginationLayer = this;
         return;
     }
@@ -1174,7 +1174,7 @@ LayoutRect Layer::transparencyClipBox(const Layer* layer, const Layer* rootLayer
         // We have to break up the transformed extent across our columns.
         // Split our box up into the actual fragment boxes that render in the columns/pages and unite those together to
         // get our true bounding box.
-        RenderFlowThread* enclosingFlowThread = toRenderFlowThread(paginationLayer->renderer());
+        LayoutFlowThread* enclosingFlowThread = toLayoutFlowThread(paginationLayer->renderer());
         result = enclosingFlowThread->fragmentsBoundingBox(result);
 
         LayoutPoint rootLayerDelta;
@@ -1354,9 +1354,9 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
     const LayoutLayerModelObject* renderer = layer->renderer();
     EPosition position = renderer->style()->position();
 
-    // FIXME: Positioning of out-of-flow(fixed, absolute) elements collected in a RenderFlowThread
+    // FIXME: Positioning of out-of-flow(fixed, absolute) elements collected in a LayoutFlowThread
     // may need to be revisited in a future patch.
-    // If the fixed renderer is inside a RenderFlowThread, we should not compute location using localToAbsolute,
+    // If the fixed renderer is inside a LayoutFlowThread, we should not compute location using localToAbsolute,
     // since localToAbsolute maps the coordinates from flow thread to regions coordinates and regions can be
     // positioned in a completely different place in the viewport (RenderView).
     if (position == FixedPosition && (!ancestorLayer || ancestorLayer == renderer->view()->layer())) {
@@ -1419,8 +1419,8 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
         parentLayer = layer->parent();
         bool foundAncestorFirst = false;
         while (parentLayer) {
-            // RenderFlowThread is a positioned container, child of RenderView, positioned at (0,0).
-            // This implies that, for out-of-flow positioned elements inside a RenderFlowThread,
+            // LayoutFlowThread is a positioned container, child of RenderView, positioned at (0,0).
+            // This implies that, for out-of-flow positioned elements inside a LayoutFlowThread,
             // we are bailing out before reaching root layer.
             if (parentLayer->isPositionedContainer())
                 break;
@@ -1433,8 +1433,8 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
             parentLayer = parentLayer->parent();
         }
 
-        // We should not reach RenderView layer past the RenderFlowThread layer for any
-        // children of the RenderFlowThread.
+        // We should not reach RenderView layer past the LayoutFlowThread layer for any
+        // children of the LayoutFlowThread.
         ASSERT(!renderer->flowThreadContainingBlock() || parentLayer != renderer->view()->layer());
 
         if (foundAncestorFirst) {
@@ -1497,7 +1497,7 @@ LayoutPoint Layer::visualOffsetFromAncestor(const Layer* ancestorLayer) const
         return offset;
     }
 
-    RenderFlowThread* flowThread = toRenderFlowThread(paginationLayer->renderer());
+    LayoutFlowThread* flowThread = toLayoutFlowThread(paginationLayer->renderer());
     convertToLayerCoords(paginationLayer, offset);
     offset = flowThread->flowThreadPointToVisualPoint(offset);
     if (ancestorLayer == paginationLayer)
@@ -1593,7 +1593,7 @@ void Layer::collectFragments(LayerFragments& fragments, const Layer* rootLayer, 
     layerBoundingBoxInFlowThread.intersect(backgroundRectInFlowThread.rect());
 
     // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
-    RenderFlowThread* enclosingFlowThread = toRenderFlowThread(enclosingPaginationLayer()->renderer());
+    LayoutFlowThread* enclosingFlowThread = toLayoutFlowThread(enclosingPaginationLayer()->renderer());
     LayoutPoint offsetOfPaginationLayerFromRoot; // Visual offset from the root layer to the nearest fragmentation context.
     bool rootLayerIsInsidePaginationLayer = rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer();
     if (rootLayerIsInsidePaginationLayer) {
@@ -2431,10 +2431,10 @@ LayoutRect Layer::boundingBoxForCompositing(const Layer* ancestorLayer, Calculat
     if (isRootLayer())
         return m_renderer->view()->unscaledDocumentRect();
 
-    // The layer created for the RenderFlowThread is just a helper for painting and hit-testing,
+    // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
     // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute
     // the correct size for the rendered content of the multicol container.
-    if (useRegionBasedColumns() && renderer()->isRenderFlowThread())
+    if (useRegionBasedColumns() && renderer()->isLayoutFlowThread())
         return LayoutRect();
 
     LayoutRect result = clipper().localClipRect();
