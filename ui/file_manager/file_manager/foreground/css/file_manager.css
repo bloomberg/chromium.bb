@@ -109,7 +109,7 @@ a:focus {
   position: relative;
 }
 
-/* List/grid and preview are inside this container. */
+/* List and grid are inside this container. */
 .dialog-main {
   align-items: stretch;
   background: rgb(245, 245, 245);
@@ -163,7 +163,6 @@ div.splitter {
   left: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
   position: absolute;
   right: 0;
   top: 0;
@@ -520,7 +519,6 @@ body.selecting #search-box {
 
 .progressable[progress] .ok,
 .progressable[progress] #filename-input-box,
-.progressable[progress] #preview-lines,
 .progressable[progress] .file-type {
   display: none;
 }
@@ -609,7 +607,6 @@ html[dir='rtl'] .breadcrumbs .separator {
 #detail-table > list,
 .thumbnail-grid {
   flex: auto;
-  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
 }
 
 #file-list {
@@ -722,8 +719,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 /* The cr.ui.Grid representing the detailed file list. */
 .thumbnail-grid {
   overflow-y: auto;
-  /* padding-bottom will be overridden by JS for preview panel. */
-  padding: 7px 7px 0 7px;
+  padding: 7px;
   width: 100%;
 }
 
@@ -952,38 +948,6 @@ li[renaming=''] .filename-label {
   width: 100%;
 }
 
-/* Bottom pane describing current selection. */
-.preview-panel {
-  -webkit-transition: background-color 150ms ease;
-  align-items: center;
-  background: rgb(250, 250, 250);
-  border-top: 1px solid rgb(210, 210, 210);
-  bottom: 0;
-  display: flex;
-  flex-direction: row;
-  height: 51px;
-  left: 0;
-  opacity: 1;
-  padding: 0 10px 0 7px;
-  position: absolute;
-  right: 0;
-  z-index: 3;
-}
-
-.preview-panel[visibility=hiding] {
-  -webkit-transform: translate(0, 5px);
-  opacity: 0;
-  /* Using all seems to cause preview panel and checkbox flicking issue. */
-  transition: opacity 220ms ease,
-              -webkit-transform 220ms ease;
-}
-
-.preview-panel[visibility=hidden] {
-  display: none;
-  opacity: 0;
-}
-
-.preview-panel > .left,
 .dialog-footer > .left {
   align-items: center;
   display: flex;
@@ -991,67 +955,9 @@ li[renaming=''] .filename-label {
   flex-direction: row;
 }
 
-.preview-panel > .right,
 .dialog-footer > .right {
   flex: none;
   justify-content: flex-end;
-}
-
-.preview-panel .preparing-label {
-  -webkit-margin-start: 30px;
-  flex: none;
-}
-
-.preview-panel .progress-bar {
-  flex: auto;
-}
-
-.preview-panel .preview-text {
-  color: #333;
-}
-
-.preview-thumbnails {
-  display: flex;
-  flex-direction: row;
-  padding-left: 25px;
-}
-
-.preview-thumbnails > .img-container {
-  background-color: white;
-  background-size: 35px 35px;  /* For file icons. */
-  border: 2px solid white;
-  box-shadow: 0 1px 1px rgba(80, 80, 80, 0.5);
-  box-sizing: border-box;
-  cursor: pointer;
-  height: 35px;
-  margin: 0 0 0 -25px;  /* Overlapped images. */
-  overflow: hidden;
-  position: relative;
-  width: 35px;
-}
-
-.preview-thumbnails > .popup {
-  -webkit-transform: translate(0, 3px) scale(0.95);
-  background-color: #f2f2f2;
-  border: 2px solid #fff;
-  bottom: 8px;
-  box-shadow: 0 0 0 1px #F0F0F0,
-              0 0 0 2px #D0D0D0,
-              2px 2px 6px rgba(0, 0, 0, 0.2);
-  display: flex;
-  left: -8px;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 180ms ease-in 300ms,
-              -webkit-transform 180ms ease-in 300ms;
-  z-index: 1000;
-}
-
-.preview-thumbnails.has-zoom:hover > .popup {
-  -webkit-transform: translate(0, 0) scale(1.0);
-  opacity: 1;
-  pointer-events: auto;
 }
 
 @-webkit-keyframes fadeIn {
@@ -1061,19 +967,6 @@ li[renaming=''] .filename-label {
   to {
     opacity: 1;
   }
-}
-
-.preview-thumbnails img {
-  -webkit-animation: fadeIn 180ms ease-in-out;
-}
-
-.preview-thumbnails img.cached {
-  -webkit-animation: fadeIn 0;
-}
-
-.preview-thumbnails > .popup > img {
-  flex: 1 1 0;
-  -webkit-user-drag: none;
 }
 
 /* Table splitter element */
@@ -1124,10 +1017,6 @@ li[renaming=''] .filename-label {
   content: '\00a0';
   position: relative;
   top: -1px;
-}
-
-.preview-container .table-header {
-  border-radius: 0 4px 0 0;
 }
 
 /* Text label in a table header. */
@@ -1221,10 +1110,6 @@ li[renaming=''] .filename-label {
   opacity: 1;
 }
 
-.preview-panel .spacer {
-  flex: auto;
-}
-
 #delete-button[disabled] {
   display: none;
 }
@@ -1237,26 +1122,6 @@ li[renaming=''] .filename-label {
 #share-button {
   display: block;
   min-width: 0;  /* overrride */
-}
-
-#preview-lines {
-  -webkit-margin-end: 10px;
-  -webkit-margin-start: 10px;
-  flex: auto;
-}
-
-/* The selection summary text at the bottom of the preview pane. */
-.preview-summary {
-  color: #666;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.preview-summary .calculating-size {
-  margin-left: 5px;
-  opacity: 0.5;
 }
 
 .detail-name > * {

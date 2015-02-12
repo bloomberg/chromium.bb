@@ -980,7 +980,7 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
   chrome.fileManagerPrivate.onDirectoryChanged.addListener(
       this.privateOnDirectoryChangedBound_);
 
-  this.scrollBar_ = new MainPanelScrollBar();
+  this.scrollBar_ = new ScrollBar();
   this.scrollBar_.initialize(this.parentElement, this);
 
   /**

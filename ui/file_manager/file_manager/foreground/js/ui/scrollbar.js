@@ -157,8 +157,8 @@ ScrollBar.prototype.onMouseMove_ = function(event) {
     this.onMouseUp_(event);
     return;
   }
-  var clientSize = this.getClientHeight();
-  var totalSize = this.getTotalHeight();
+  var clientSize = this.clientHeight_;
+  var totalSize = this.scrollHeight_;
   // TODO(hirono): Fix the geometric calculation.  crbug.com/253779
   var buttonSize = Math.max(50, clientSize / totalSize * clientSize);
   var buttonPosition = this.buttonPressedPosition_ +
@@ -202,10 +202,10 @@ ScrollBar.prototype.redraw_ = function() {
   if (!this.view_)
     return;
 
-  var clientSize = this.getClientHeight();
+  var clientSize = this.clientHeight_;
   var clientTop = this.offsetTop_;
   var scrollPosition = this.scrollTop_;
-  var totalSize = this.getTotalHeight();
+  var totalSize = this.scrollHeight_;
   var hidden = totalSize <= clientSize;
 
   var buttonSize = Math.max(50, clientSize / totalSize * clientSize);
@@ -231,76 +231,4 @@ ScrollBar.prototype.redraw_ = function() {
 
   this.lastButtonTop_ = buttonTop;
   this.lastButtonSize_ = buttonSize;
-};
-
-/**
- * Returns the viewport height of the view.
- * @return {number} The viewport height of the view in px.
- * @protected
- */
-ScrollBar.prototype.getClientHeight = function() {
-  return this.clientHeight_;
-};
-
-/**
- * Returns the total height of the view.
- * @return {number} The total height of the view in px.
- * @protected
- */
-ScrollBar.prototype.getTotalHeight = function() {
-  return this.scrollHeight_;
-};
-
-/**
- * Creates a new scroll bar for elements in the main panel.
- * @extends {ScrollBar}
- * @constructor
- */
-var MainPanelScrollBar = cr.ui.define('div');
-
-/**
- * Inherits after ScrollBar.
- */
-MainPanelScrollBar.prototype.__proto__ = ScrollBar.prototype;
-
-/** @override */
-MainPanelScrollBar.prototype.decorate = function() {
-  ScrollBar.prototype.decorate.call(this);
-
-  /**
-   * Margin for the transparent preview panel at the bottom.
-   * @type {number}
-   * @private
-   */
-  this.bottomMarginForPanel_ = 0;
-};
-
-/**
- * GReturns the viewport height of the view, considering the preview panel.
- *
- * @return {number} The viewport height of the view in px.
- * @override
- * @protected
- */
-MainPanelScrollBar.prototype.getClientHeight = function() {
-  return this.clientHeight_ - this.bottomMarginForPanel_;
-};
-
-/**
- * Returns the total height of the view, considering the preview panel.
- *
- * @return {number} The total height of the view in px.
- * @override
- * @protected
- */
-MainPanelScrollBar.prototype.getTotalHeight = function() {
-  return this.scrollHeight_ - this.bottomMarginForPanel_;
-};
-
-/**
- * Sets the bottom margin height of the view for the transparent preview panel.
- * @param {number} margin Margin to be set in px.
- */
-MainPanelScrollBar.prototype.setBottomMarginForPanel = function(margin) {
-  this.bottomMarginForPanel_ = margin;
 };

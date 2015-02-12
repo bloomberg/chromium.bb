@@ -87,9 +87,6 @@ DialogFooter.prototype = {
  * @return {!DialogFooter} Dialog footer created with the found element.
  */
 DialogFooter.findDialogFooter = function(dialogType, document) {
-  // If the footer panel exists, the buttons are placed there. Otherwise,
-  // the buttons are on the preview panel.
-  var hasFooterPanel = dialogType == DialogType.SELECT_SAVEAS_FILE;
   return new DialogFooter(
       dialogType,
       queryRequiredElement(document, '.dialog-footer'),

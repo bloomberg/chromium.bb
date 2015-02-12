@@ -297,7 +297,7 @@ FileTable.decorate = function(
   self.setRenderFunction(self.renderTableRow_.bind(self,
       self.getRenderFunction()));
 
-  self.scrollBar_ = new MainPanelScrollBar();
+  self.scrollBar_ = new ScrollBar();
   self.scrollBar_.initialize(self, self.list);
   // Keep focus on the file list when clicking on the header.
   self.header.addEventListener('mousedown', function(e) {
@@ -806,15 +806,6 @@ FileTable.prototype.renderCheckmark_ = function() {
       (this.ownerDocument.createElement('div'));
   checkmark.className = 'detail-checkmark';
   return checkmark;
-};
-
-/**
- * Sets the margin height for the transparent preview panel at the bottom.
- * @param {number} margin Margin to be set in px.
- */
-FileTable.prototype.setBottomMarginForPanel = function(margin) {
-  this.list_.style.paddingBottom = margin + 'px';
-  this.scrollBar_.setBottomMarginForPanel(margin);
 };
 
 /**

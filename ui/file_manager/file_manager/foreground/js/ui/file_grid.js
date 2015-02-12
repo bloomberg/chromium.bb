@@ -45,9 +45,8 @@ FileGrid.decorate = function(
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
 
-  self.scrollBar_ = new MainPanelScrollBar();
+  self.scrollBar_ = new ScrollBar();
   self.scrollBar_.initialize(self.parentElement, self);
-  self.setBottomMarginForPanel(0);
 
   /**
    * Map of URL and ListItem generated at the previous update time.
@@ -377,17 +376,6 @@ FileGrid.Item.decorate = function(li, entry, grid, previousItem) {
   // Override the default role 'listitem' to 'option' to match the parent's
   // role (listbox).
   li.setAttribute('role', 'option');
-};
-
-/**
- * Sets the margin height for the transparent preview panel at the bottom.
- * @param {number} margin Margin to be set in px.
- */
-FileGrid.prototype.setBottomMarginForPanel = function(margin) {
-  // +20 bottom margin is needed to match the bottom margin size with the
-  // margin between its items.
-  this.style.paddingBottom = (margin + 20) + 'px';
-  this.scrollBar_.setBottomMarginForPanel(margin);
 };
 
 /**
