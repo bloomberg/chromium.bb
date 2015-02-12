@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
