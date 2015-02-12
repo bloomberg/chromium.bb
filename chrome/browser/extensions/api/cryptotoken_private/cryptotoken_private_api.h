@@ -22,22 +22,6 @@ class InfoBar;
 namespace extensions {
 namespace api {
 
-class CryptotokenPrivateRequestPermissionFunction
-    : public UIThreadExtensionFunction {
- public:
-  CryptotokenPrivateRequestPermissionFunction();
-  DECLARE_EXTENSION_FUNCTION("cryptotokenPrivate.requestPermission",
-                             CRYPTOTOKENPRIVATE_REQUESTPERMISSION)
- protected:
-  ~CryptotokenPrivateRequestPermissionFunction() override {}
-  ResponseAction Run() override;
-
- private:
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  void OnInfobarResponse(cryptotoken_private::PermissionResult result);
-};
-
 class CryptotokenPrivateCanOriginAssertAppIdFunction
     : public UIThreadExtensionFunction {
   public:

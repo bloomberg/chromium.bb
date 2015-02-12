@@ -6,34 +6,10 @@
 // be used by cryptotoken component extension.
 namespace cryptotokenPrivate {
 
-  // Possible results from requesting user permission.
-  enum PermissionResult {
-    // User explicitly allowed
-    ALLOWED,
-    // User explicitly denied
-    DENIED,
-    // Inconclusive, e.g. the tab was closed or navigated away
-    DISMISSED
-  };
-
-  // Callback for permission prompt
-  callback PermissionCallback = void(PermissionResult result);
-
   // Callback for appId check
   callback AppIdCallback = void(boolean result);
 
   interface Functions {
-    // Explicitly gathers approval from the user that an origin in a tab may
-    // to talk to their security keys. This may be used e.g. before registering
-    // a key, since it creates a stable identifier for that particular key, even
-    // across browser instances.
-    // |tabId| is the tab id from the chrome.tabs API, and |securityOrigin| is
-    // the origin as seen by the extension, to verify that it is correct and has
-    // not been navigated away from.
-    static void requestPermission(long tabId,
-                                  DOMString securityOrigin,
-                                  PermissionCallback callback);
-
     // Checks whether the origin is allowed to assert the appId, according to
     // the same origin policy defined at
     // http://fidoalliance.org/specs/fido-u2f-v1.0-ps-20141009/
