@@ -6899,7 +6899,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
 
     // Create child frames in the target frame before testing the swap.
     FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
-    remoteFrame->createRemoteChild("", &remoteFrameClient);
+    remoteFrame->createRemoteChild("", WebSandboxFlags::None, &remoteFrameClient);
 
     FrameTestHelpers::TestWebFrameClient client;
     WebFrame* localFrame = WebLocalFrame::create(&client);

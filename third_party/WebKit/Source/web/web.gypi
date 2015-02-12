@@ -78,6 +78,8 @@
       'PopupMenuImpl.h',
       'PrerendererClientImpl.cpp',
       'PrerendererClientImpl.h',
+      'RemoteBridgeFrameOwner.cpp',
+      'RemoteBridgeFrameOwner.h',
       'RemoteFrameClientImpl.cpp',
       'RemoteFrameClientImpl.h',
       'ScrollbarGroup.cpp',

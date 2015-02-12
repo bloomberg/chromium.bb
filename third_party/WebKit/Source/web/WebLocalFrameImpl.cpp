@@ -204,6 +204,7 @@
 #include "web/MIDIClientProxy.h"
 #include "web/NotificationPermissionClientImpl.h"
 #include "web/PageOverlay.h"
+#include "web/RemoteBridgeFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
 #include "web/TextFinder.h"
@@ -1855,7 +1856,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
 void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame)
 {
     Frame* oldFrame = toCoreFrame(oldWebFrame);
-    OwnPtrWillBePersistent<FrameOwner> tempOwner = adoptPtrWillBeNoop(new PlaceholderFrameOwner());
+    OwnPtrWillBePersistent<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone);
     m_frame = LocalFrame::create(&m_frameLoaderClientImpl, oldFrame->host(), tempOwner.get());
     m_frame->setOwner(oldFrame->owner());
     m_frame->tree().setName(oldFrame->tree().name());

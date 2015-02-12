@@ -20,23 +20,6 @@ class FrameHost;
 class FrameOwner;
 class RemoteFrame;
 
-// FIXME: This is just a placeholder frame owner to supply to RemoteFrame when
-// the parent is also a remote frame. Strictly speaking, this shouldn't be
-// necessary, since a remote frame shouldn't ever need to communicate with a
-// remote parent (there are no sandbox flags to retrieve in this case, nor can
-// the RemoteFrame itself load a document). In most circumstances, the check for
-// frame->owner() can be replaced with a check for frame->tree().parent(). Once
-// that's done, this class can be removed.
-class PlaceholderFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<PlaceholderFrameOwner>, public FrameOwner {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PlaceholderFrameOwner);
-public:
-    virtual bool isLocal() const override;
-    virtual SandboxFlags sandboxFlags() const override;
-    virtual void dispatchLoad() override;
-
-    virtual void trace(Visitor*) override;
-};
-
 class WebRemoteFrameImpl final : public RefCountedWillBeGarbageCollectedFinalized<WebRemoteFrameImpl>, public WebRemoteFrame {
 public:
     explicit WebRemoteFrameImpl(WebRemoteFrameClient*);
@@ -187,7 +170,9 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*) override;
+    // FIXME(alexmos): remove once Chrome side is updated to use sandbox flags.
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) override;
+    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) override;
 
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
 

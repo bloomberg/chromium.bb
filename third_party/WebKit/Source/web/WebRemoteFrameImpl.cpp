@@ -15,90 +15,11 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebPerformance.h"
 #include "public/web/WebRange.h"
-#include "web/WebLocalFrameImpl.h"
+#include "web/RemoteBridgeFrameOwner.h"
 #include "web/WebViewImpl.h"
 #include <v8/include/v8.h>
 
 namespace blink {
-
-namespace {
-
-// Helper class to bridge communication for a local frame with a remote parent.
-// Currently, it serves two purposes:
-// 1. Allows the local frame's loader to retrieve sandbox flags associated with
-//    its owner element in another process.
-// 2. Trigger a load event on its owner element once it finishes a load.
-class RemoteBridgeFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteBridgeFrameOwner);
-public:
-    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
-    {
-        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame, flags));
-    }
-
-    virtual bool isLocal() const override
-    {
-        return false;
-    }
-
-    virtual SandboxFlags sandboxFlags() const override
-    {
-        return m_sandboxFlags;
-    }
-
-    void setSandboxFlags(SandboxFlags flags)
-    {
-        m_sandboxFlags = flags;
-    }
-
-    virtual void dispatchLoad() override;
-
-    virtual void trace(Visitor*);
-
-private:
-    explicit RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>, SandboxFlags);
-
-    RefPtrWillBeMember<WebLocalFrameImpl> m_frame;
-    SandboxFlags m_sandboxFlags;
-};
-
-RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
-    : m_frame(frame)
-    , m_sandboxFlags(flags)
-{
-}
-
-void RemoteBridgeFrameOwner::trace(Visitor* visitor)
-{
-    visitor->trace(m_frame);
-    FrameOwner::trace(visitor);
-}
-
-void RemoteBridgeFrameOwner::dispatchLoad()
-{
-    // FIXME: Implement. Most likely goes through m_frame->client().
-}
-
-} // namespace
-
-bool PlaceholderFrameOwner::isLocal() const
-{
-    return false;
-}
-
-SandboxFlags PlaceholderFrameOwner::sandboxFlags() const
-{
-    return 0;
-}
-
-void PlaceholderFrameOwner::dispatchLoad()
-{
-}
-
-void PlaceholderFrameOwner::trace(Visitor* visitor)
-{
-    FrameOwner::trace(visitor);
-}
 
 WebRemoteFrame* WebRemoteFrame::create(WebRemoteFrameClient* client)
 {
@@ -822,11 +743,17 @@ void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner,
     m_frame->tree().setName(name, nullAtom);
 }
 
+// FIXME(alexmos): remove once Chrome side is updated to use sandbox flags.
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebRemoteFrameClient* client)
+{
+    return createRemoteChild(name, WebSandboxFlags::None, client);
+}
+
+WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
 {
     WebRemoteFrameImpl* child = toWebRemoteFrameImpl(WebRemoteFrame::create(client));
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
-        m_ownersForChildren.add(child, adoptPtrWillBeNoop(new PlaceholderFrameOwner));
+        m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(nullptr, static_cast<SandboxFlags>(sandboxFlags)));
     appendChild(child);
     child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name);
     return child;
