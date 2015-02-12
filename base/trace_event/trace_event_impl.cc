@@ -30,7 +30,6 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
@@ -74,7 +73,7 @@ const size_t kTraceEventVectorBigBufferChunks =
     512000000 / kTraceBufferChunkSize;
 const size_t kTraceEventVectorBufferChunks = 256000 / kTraceBufferChunkSize;
 const size_t kTraceEventRingBufferChunks = kTraceEventVectorBufferChunks / 4;
-const size_t kTraceEventBufferSizeInBytes = 10 * 1024 * 1024;
+const size_t kTraceEventBatchChunks = 1000 / kTraceBufferChunkSize;
 // Can store results for 30 seconds with 1 ms sampling interval.
 const size_t kMonitorTraceEventBufferChunks = 30000 / kTraceBufferChunkSize;
 // ECHO_TO_CONSOLE needs a small buffer to hold the unfinished COMPLETE events.
@@ -1212,8 +1211,7 @@ TraceLog::TraceLog()
       event_callback_category_filter_(
           CategoryFilter::kDefaultCategoryFilterString),
       thread_shared_chunk_index_(0),
-      generation_(0),
-      use_worker_thread_(false) {
+      generation_(0) {
   // Trace is enabled or disabled on one thread while other threads are
   // accessing the enabled flag. We don't care whether edge-case events are
   // traced or not, so we allow races on the enabled flag to keep the trace
@@ -1686,9 +1684,7 @@ void TraceLog::SetEventCallbackDisabled() {
 //    - The message loop will be removed from thread_message_loops_;
 //    If this is the last message loop, finish the flush;
 // 4. If any thread hasn't finish its flush in time, finish the flush.
-void TraceLog::Flush(const TraceLog::OutputCallback& cb,
-                     bool use_worker_thread) {
-  use_worker_thread_ = use_worker_thread;
+void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
   if (IsEnabled()) {
     // Can't flush when tracing is enabled because otherwise PostTask would
     // - generate more trace events;
@@ -1742,7 +1738,6 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb,
   FinishFlush(generation);
 }
 
-// Usually it runs on a different thread.
 void TraceLog::ConvertTraceEventsToTraceFormat(
     scoped_ptr<TraceBuffer> logged_events,
     const TraceLog::OutputCallback& flush_output_callback) {
@@ -1757,17 +1752,19 @@ void TraceLog::ConvertTraceEventsToTraceFormat(
     scoped_refptr<RefCountedString> json_events_str_ptr =
         new RefCountedString();
 
-    while (json_events_str_ptr->size() < kTraceEventBufferSizeInBytes) {
+    for (size_t i = 0; i < kTraceEventBatchChunks; ++i) {
       const TraceBufferChunk* chunk = logged_events->NextChunk();
-      has_more_events = chunk != NULL;
-      if (!chunk)
+      if (!chunk) {
+        has_more_events = false;
         break;
+      }
       for (size_t j = 0; j < chunk->size(); ++j) {
-        if (json_events_str_ptr->size())
+        if (i > 0 || j > 0)
           json_events_str_ptr->data().append(",\n");
         chunk->GetEventAt(j)->AppendAsJSON(&(json_events_str_ptr->data()));
       }
     }
+
     flush_output_callback.Run(json_events_str_ptr, has_more_events);
   } while (has_more_events);
 }
@@ -1789,16 +1786,6 @@ void TraceLog::FinishFlush(int generation) {
     flush_message_loop_proxy_ = NULL;
     flush_output_callback = flush_output_callback_;
     flush_output_callback_.Reset();
-  }
-
-  if (use_worker_thread_ &&
-      WorkerPool::PostTask(
-          FROM_HERE,
-          Bind(&TraceLog::ConvertTraceEventsToTraceFormat,
-               Passed(&previous_logged_events),
-               flush_output_callback),
-          true)) {
-    return;
   }
 
   ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),

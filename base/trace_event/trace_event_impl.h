@@ -538,11 +538,10 @@ class BASE_EXPORT TraceLog {
   // Due to the implementation of thread-local buffers, flush can't be
   // done when tracing is enabled. If called when tracing is enabled, the
   // callback will be called directly with (empty_string, false) to indicate
-  // the end of this unsuccessful flush. Flush does the serialization
-  // on the same thread if the caller doesn't set use_worker_thread explicitly.
+  // the end of this unsuccessful flush.
   typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
                               bool has_more_events)> OutputCallback;
-  void Flush(const OutputCallback& cb, bool use_worker_thread = false);
+  void Flush(const OutputCallback& cb);
   void FlushButLeaveBufferIntact(const OutputCallback& flush_output_callback);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
@@ -711,9 +710,7 @@ class BASE_EXPORT TraceLog {
   // |generation| is used in the following callbacks to check if the callback
   // is called for the flush of the current |logged_events_|.
   void FlushCurrentThread(int generation);
-  // Usually it runs on a different thread.
-  static void ConvertTraceEventsToTraceFormat(
-      scoped_ptr<TraceBuffer> logged_events,
+  void ConvertTraceEventsToTraceFormat(scoped_ptr<TraceBuffer> logged_events,
       const TraceLog::OutputCallback& flush_output_callback);
   void FinishFlush(int generation);
   void OnFlushTimeout(int generation);
@@ -806,7 +803,6 @@ class BASE_EXPORT TraceLog {
   OutputCallback flush_output_callback_;
   scoped_refptr<MessageLoopProxy> flush_message_loop_proxy_;
   subtle::AtomicWord generation_;
-  bool use_worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceLog);
 };
