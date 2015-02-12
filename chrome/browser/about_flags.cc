@@ -1728,7 +1728,7 @@ const Experiment kExperiments[] = {
     "enable-wallet-card-import",
     IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_NAME,
     IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_DESCRIPTION,
-    kOsCrOS | kOsWin | kOsLinux | kOsAndroid,
+    kOsCrOS | kOsMac | kOsWin | kOsLinux | kOsAndroid,
     SINGLE_VALUE_TYPE(autofill::switches::kEnableWalletCardImport)
   },
   {
