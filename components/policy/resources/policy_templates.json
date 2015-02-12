@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 289
+#   For your editing convenience: highest ID currently used: 292
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4233,6 +4233,59 @@
       'desc': '''Report list of device users that have recently logged in.
 
       If the policy is set to false, the users will not be reported.''',
+    },
+    {
+      'name': 'ReportDeviceHardwareStatus',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:42-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 290,
+      'caption': '''Report hardware status''',
+      'desc': '''Report hardware statistics such as CPU/RAM usage.
+
+      If the policy is set to false, the statistics will not be reported.
+      If set to true or left unset, statistics will be reported.''',
+    },
+    {
+      'name': 'ReportDeviceSessionStatus',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:42-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 291,
+      'caption': '''Report information about active kiosk sessions''',
+      'desc': '''Report information about the active kiosk session, such as
+      application ID and version.
+
+      If the policy is set to false, the session information will not be
+      reported. If set to true or left unset, session information will be
+      reported.''',
+    },
+    {
+      'name': 'ReportUploadFrequency',
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 60000 },
+      'supported_on': ['chrome_os:42-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 180000,
+      'id': 292,
+      'caption': '''Frequency of device status report uploads''',
+      'desc': '''How frequently device status uploads are sent, in milliseconds.
+
+      If this policy is unset, the default frequency is 3 hours. The minimum
+      allowed frequency is 60 seconds.''',
     },
     {
       'name': 'DeviceUserWhitelist',

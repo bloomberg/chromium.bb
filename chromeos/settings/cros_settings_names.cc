@@ -100,6 +100,15 @@ const char kReportDeviceUsers[] = "cros.device_status.report_users";
 const char kReportDeviceHardwareStatus[] =
     "cros.device_status.report_hardware_status";
 
+// Determines whether the device reports kiosk session status (app IDs,
+// versions, etc) in device status reports to the device management server.
+const char kReportDeviceSessionStatus[] =
+    "cros.device_status.report_session_status";
+
+// How frequently device status reports are uploaded, in milliseconds.
+const char kReportUploadFrequency[] =
+    "cros.device_status.report_upload_frequency";
+
 // This policy should not appear in the protobuf ever but is used internally to
 // signal that we are running in a "safe-mode" for policy recovery.
 const char kPolicyMissingMitigationMode[] =

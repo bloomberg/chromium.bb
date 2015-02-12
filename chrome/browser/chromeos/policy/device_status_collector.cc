@@ -132,6 +132,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       report_network_interfaces_(false),
       report_users_(false),
       report_hardware_status_(false),
+      report_session_status_(false),
       weak_factory_(this) {
   if (volume_info_fetcher_.is_null())
     volume_info_fetcher_ = base::Bind(&GetVolumeInfo);
@@ -166,6 +167,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceUsers, callback);
   hardware_status_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceHardwareStatus, callback);
+  session_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceSessionStatus, callback);
 
   // The last known location is persisted in local state. This makes location
   // information available immediately upon startup and avoids the need to
@@ -261,6 +264,11 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(
       chromeos::kReportDeviceHardwareStatus, &report_hardware_status_)) {
     report_hardware_status_ = true;
+  }
+
+  if (!cros_settings_->GetBoolean(
+      chromeos::kReportDeviceSessionStatus, &report_session_status_)) {
+    report_session_status_ = true;
   }
 
   // Device location reporting is disabled by default because it is

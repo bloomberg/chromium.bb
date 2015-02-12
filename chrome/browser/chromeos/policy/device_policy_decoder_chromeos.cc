@@ -388,6 +388,30 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     new base::FundamentalValue(container.report_users()),
                     NULL);
     }
+    if (container.has_report_hardware_status()) {
+      policies->Set(key::kReportDeviceHardwareStatus,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    new base::FundamentalValue(
+                        container.report_hardware_status()),
+                    NULL);
+    }
+    if (container.has_report_session_status()) {
+      policies->Set(key::kReportDeviceSessionStatus,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    new base::FundamentalValue(
+                        container.report_session_status()),
+                    NULL);
+    }
+    if (container.has_device_status_frequency()) {
+      policies->Set(key::kReportUploadFrequency,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    DecodeIntegerValue(
+                        container.device_status_frequency()).release(),
+                    NULL);
+    }
   }
 }
 

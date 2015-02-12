@@ -718,7 +718,6 @@ extern const char kHardwareAccelerationModeEnabled[];
 extern const char kHardwareAccelerationModePrevious[];
 
 extern const char kDevicePolicyRefreshRate[];
-extern const char kDeviceStatusUploadRate[];
 
 extern const char kFactoryResetRequested[];
 extern const char kDebuggingFeaturesRequested[];

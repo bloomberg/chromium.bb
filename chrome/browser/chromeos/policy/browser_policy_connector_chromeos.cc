@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
-#include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
@@ -313,9 +312,6 @@ void BrowserPolicyConnectorChromeOS::RegisterPrefs(
   registry->RegisterIntegerPref(
       prefs::kDevicePolicyRefreshRate,
       CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
-  registry->RegisterIntegerPref(
-      prefs::kDeviceStatusUploadRate,
-      StatusUploader::kDefaultUploadDelayMs);
 }
 
 void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {

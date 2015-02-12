@@ -13,6 +13,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/common/chrome_paths.h"
@@ -65,6 +66,53 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   virtual void TearDown() override {
     DeviceSettingsTestBase::TearDown();
+  }
+
+  // Helper routine to enable/disable all reporting settings in policy.
+  void SetReportingSettings(bool enable_reporting, int frequency) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::DeviceReportingProto* proto =
+        device_policy_.payload().mutable_device_reporting();
+    proto->set_report_version_info(enable_reporting);
+    proto->set_report_activity_times(enable_reporting);
+    proto->set_report_boot_mode(enable_reporting);
+    proto->set_report_location(enable_reporting);
+    proto->set_report_network_interfaces(enable_reporting);
+    proto->set_report_users(enable_reporting);
+    proto->set_report_hardware_status(enable_reporting);
+    proto->set_report_session_status(enable_reporting);
+    proto->set_device_status_frequency(frequency);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Helper routine to ensure all reporting policies have been correctly
+  // decoded.
+  void VerifyReportingSettings(bool expected_enable_state,
+                               int expected_frequency) {
+    const char* reporting_settings[] = {
+      kReportDeviceVersionInfo,
+      kReportDeviceActivityTimes,
+      kReportDeviceBootMode,
+      // Device location reporting is not currently supported.
+      // kReportDeviceLocation,
+      kReportDeviceNetworkInterfaces,
+      kReportDeviceUsers,
+      kReportDeviceHardwareStatus,
+      kReportDeviceSessionStatus
+    };
+
+    const base::FundamentalValue expected_enable_value(expected_enable_state);
+    for (const auto& setting : reporting_settings) {
+      EXPECT_TRUE(base::Value::Equals(provider_->Get(setting),
+                                      &expected_enable_value))
+          << "Value for " << setting << " does not match expected";
+    }
+    const base::FundamentalValue expected_frequency_value(expected_frequency);
+    EXPECT_TRUE(base::Value::Equals(provider_->Get(kReportUploadFrequency),
+                                    &expected_frequency_value));
   }
 
   ScopedTestingLocalState local_state_;
@@ -342,6 +390,19 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
 
   // Verify that the updated state has been decoded correctly.
   EXPECT_FALSE(provider_->Get(kDeviceDisabled));
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodeReportingSettings) {
+  // Turn on all reporting and verify that the reporting settings have been
+  // decoded correctly.
+  const int status_frequency = 50000;
+  SetReportingSettings(true, status_frequency);
+  VerifyReportingSettings(true, status_frequency);
+
+  // Turn off all reporting and verify that the settings are decoded
+  // correctly.
+  SetReportingSettings(false, status_frequency);
+  VerifyReportingSettings(false, status_frequency);
 }
 
 } // namespace chromeos

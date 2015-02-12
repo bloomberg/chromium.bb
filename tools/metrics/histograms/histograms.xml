@@ -46483,6 +46483,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
              RemoteAccessHostTokenValidationUrl"/>
   <int value="289"
       label="Policy overrides for Debug builds of the remote access host"/>
+  <int value="290" label="Report hardware statistics such as CPU/RAM usage."/>
+  <int value="291"
+      label="Report session statistics such as which app was run."/>
+  <int value="292" label="How often the device status reports are uploaded."/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

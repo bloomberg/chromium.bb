@@ -61,11 +61,13 @@ const char* const kKnownSettings[] = {
     kReleaseChannelDelegated,
     kReportDeviceActivityTimes,
     kReportDeviceBootMode,
+    kReportDeviceHardwareStatus,
     kReportDeviceLocation,
     kReportDeviceNetworkInterfaces,
+    kReportDeviceSessionStatus,
     kReportDeviceUsers,
-  kReportDeviceHardwareStatus,
     kReportDeviceVersionInfo,
+    kReportUploadFrequency,
     kServiceAccountIdentity,
     kSignedDataRoamingEnabled,
     kStartUpFlags,
@@ -310,6 +312,16 @@ void DecodeReportingPolicies(
       new_values_cache->SetBoolean(
           kReportDeviceHardwareStatus,
           reporting_policy.report_hardware_status());
+    }
+    if (reporting_policy.has_report_session_status()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceSessionStatus,
+          reporting_policy.report_session_status());
+    }
+    if (reporting_policy.has_device_status_frequency()) {
+      new_values_cache->SetInteger(
+          kReportUploadFrequency,
+          reporting_policy.device_status_frequency());
     }
   }
 }

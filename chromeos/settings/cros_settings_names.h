@@ -57,6 +57,8 @@ CHROMEOS_EXPORT extern const char kReportDeviceLocation[];
 CHROMEOS_EXPORT extern const char kReportDeviceNetworkInterfaces[];
 CHROMEOS_EXPORT extern const char kReportDeviceUsers[];
 CHROMEOS_EXPORT extern const char kReportDeviceHardwareStatus[];
+CHROMEOS_EXPORT extern const char kReportDeviceSessionStatus[];
+CHROMEOS_EXPORT extern const char kReportUploadFrequency[];
 
 CHROMEOS_EXPORT extern const char kPolicyMissingMitigationMode[];
 

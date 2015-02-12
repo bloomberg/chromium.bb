@@ -9,20 +9,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace base {
-class PrefService;
 class SequencedTaskRunner;
 }
 
 namespace policy {
 
 class CloudPolicyClient;
-class DeviceManagementRequestJob;
 class DeviceStatusCollector;
 
 // Class responsible for periodically uploading device status from the
@@ -36,7 +34,6 @@ class StatusUploader {
   // valid and registered through the lifetime of this StatusUploader
   // object.
   StatusUploader(
-      PrefService* local_state,
       CloudPolicyClient* client,
       scoped_ptr<DeviceStatusCollector> collector,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
@@ -59,12 +56,12 @@ class StatusUploader {
   // be scheduled.
   void ScheduleNextStatusUpload();
 
+  // Updates the upload frequency from settings and schedules a new upload
+  // if appropriate.
+  void RefreshUploadFrequency();
+
   // CloudPolicyClient used to issue requests to the server.
   CloudPolicyClient* client_;
-
-  // The job associated with any ongoing requests to the cloud. We currently
-  // only support a single active request at a time.
-  scoped_ptr<DeviceManagementRequestJob> request_job_;
 
   // DeviceStatusCollector that provides status for uploading.
   scoped_ptr<DeviceStatusCollector> collector_;
@@ -72,8 +69,12 @@ class StatusUploader {
   // TaskRunner used for scheduling upload tasks.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Pref item that specifies what our upload delay is currently.
-  scoped_ptr<IntegerPrefMember> upload_delay_;
+  // How long to wait between status uploads.
+  base::TimeDelta upload_frequency_;
+
+  // Observer to changes in the upload frequency.
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      upload_frequency_observer_;
 
   // The time the last upload was performed.
   base::Time last_upload_;

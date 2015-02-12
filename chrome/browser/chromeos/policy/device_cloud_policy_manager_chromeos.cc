@@ -318,7 +318,6 @@ void DeviceCloudPolicyManagerChromeOS::NotifyDisconnected() {
 void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
   status_uploader_.reset(
       new StatusUploader(
-          local_state_,
           client(),
           make_scoped_ptr(new DeviceStatusCollector(
               local_state_,

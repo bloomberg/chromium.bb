@@ -235,6 +235,7 @@ class DeviceStatusCollector {
   bool report_network_interfaces_;
   bool report_users_;
   bool report_hardware_status_;
+  bool report_session_status_;
 
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;
@@ -250,6 +251,8 @@ class DeviceStatusCollector {
       users_subscription_;
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       hardware_status_subscription_;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      session_status_subscription_;
 
   base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
 
