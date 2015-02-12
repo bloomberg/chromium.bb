@@ -568,8 +568,8 @@
             '..',
           ],
           'sources': [
-            'tools/crash_service/main.cc',
             '../content/public/common/content_switches.cc',
+            'tools/crash_service/main.cc',
           ],
           'defines': [
             'COMPILE_CONTENT_STATICALLY',

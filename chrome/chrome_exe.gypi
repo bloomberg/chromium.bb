@@ -492,12 +492,12 @@
             '../win8/delegate_execute/delegate_execute.gyp:*',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_exe_version.rc',
             'app/chrome_crash_reporter_client.cc',
             'app/chrome_crash_reporter_client.h',
             'app/chrome_exe.rc',
             'common/crash_keys.cc',
             'common/crash_keys.h',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_exe_version.rc',
           ],
           'sources!': [
             # We still want the _win entry point for sandbox, etc.
@@ -599,15 +599,15 @@
               'type': 'executable',
               'product_name': 'nacl64',
               'sources': [
-                'app/chrome_crash_reporter_client.cc',
-                'common/crash_keys.cc',
-                'nacl/nacl_exe_win_64.cc',
                 '../content/app/startup_helper_win.cc',
                 '../content/common/sandbox_init_win.cc',
                 '../content/common/sandbox_win.cc',
                 '../content/public/common/content_switches.cc',
                 '../content/public/common/sandboxed_process_launcher_delegate.cc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/nacl64_exe_version.rc',
+                'app/chrome_crash_reporter_client.cc',
+                'common/crash_keys.cc',
+                'nacl/nacl_exe_win_64.cc',
               ],
               'dependencies': [
                 'chrome_version_resources',

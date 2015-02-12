@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Given a GYP/GN filename as an argument, sort C++ source files in that file.
+"""Given a GYP/GN filename, sort C-ish source files in that file.
 
 Shows a diff and prompts for confirmation before doing the deed.
 Works great with tools/git/for-all-touched-files.py.
@@ -26,7 +26,7 @@ def SortSources(original_lines):
   Returns:
     Lines of the sorted content as a list of strings.
 
-  The algorithm is fairly naive. The code tries to find a list of C++ source
+  The algorithm is fairly naive. The code tries to find a list of C-ish source
   file names by a simple regex, then sort them. The code does not try to
   understand the syntax of the build files, hence there are many cases that
   the code cannot handle correctly (ex. comments within a list of source file
@@ -36,7 +36,7 @@ def SortSources(original_lines):
   output_lines = []
   sources = []
   for line in original_lines:
-    if re.search(r'^\s+[\'"].*\.(c|cc|cpp|h)[\'"],$', line):
+    if re.search(r'^\s+[\'"].*\.(c|cc|cpp|h|mm|rc)[\'"],$', line):
       sources.append(line)
     else:
       if sources:

@@ -67,10 +67,10 @@
             'installer/gcapi/gcapi_last_run_test.cc',
             'installer/gcapi/gcapi_omaha_experiment_test.cc',
             'installer/gcapi/gcapi_reactivation_test.cc',
-            'installer/gcapi/gcapi_test_registry_overrider.cc',
-            'installer/gcapi/gcapi_test_registry_overrider.h',
             'installer/gcapi/gcapi_test.cc',
             'installer/gcapi/gcapi_test.rc',
+            'installer/gcapi/gcapi_test_registry_overrider.cc',
+            'installer/gcapi/gcapi_test_registry_overrider.h',
             'installer/gcapi/resource.h',
           ],
         },
@@ -93,6 +93,7 @@
             '..',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             'installer/setup/compat_checks_unittest.cc',
             'installer/setup/setup_constants.cc',
             'installer/util/advanced_firewall_manager_win_unittest.cc',
@@ -137,7 +138,6 @@
             'installer/util/uninstall_metrics_unittest.cc',
             'installer/util/wmi_unittest.cc',
             'installer/util/work_item_list_unittest.cc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
           ],
           'msvs_settings': {
             'VCManifestTool': {
