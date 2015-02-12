@@ -178,6 +178,8 @@ html[dir='rtl'] .overlay .page .action-area {
 
 .gray-bottom-bar {
   background-color: #f5f5f5;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
   border-color: #e7e7e7;
   border-top-style: solid;
   border-width: 1px;
