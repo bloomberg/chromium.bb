@@ -19,7 +19,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -995,8 +994,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   blink::initialize(blink_platform_impl_.get());
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
-
-  isolate->SetCounterFunction(base::StatsTable::FindLocation);
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
 

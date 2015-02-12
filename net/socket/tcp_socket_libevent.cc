@@ -9,9 +9,10 @@
 #include <sys/socket.h>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
@@ -538,9 +539,6 @@ int TCPSocketLibevent::HandleConnectCompleted(int rv) const {
 }
 
 void TCPSocketLibevent::LogConnectBegin(const AddressList& addresses) const {
-  base::StatsCounter connects("tcp.connect");
-  connects.Increment();
-
   net_log_.BeginEvent(NetLog::TYPE_TCP_CONNECT,
                       addresses.CreateNetLogCallback());
 }
@@ -597,9 +595,6 @@ int TCPSocketLibevent::HandleReadCompleted(IOBuffer* buf, int rv) {
                       CreateNetLogSocketErrorCallback(rv, errno));
     return rv;
   }
-
-  base::StatsCounter read_bytes("tcp.read_bytes");
-  read_bytes.Add(rv);
   net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, rv,
                                 buf->data());
   NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(rv);
@@ -631,9 +626,6 @@ int TCPSocketLibevent::HandleWriteCompleted(IOBuffer* buf, int rv) {
                       CreateNetLogSocketErrorCallback(rv, errno));
     return rv;
   }
-
-  base::StatsCounter write_bytes("tcp.write_bytes");
-  write_bytes.Add(rv);
   net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, rv,
                                 buf->data());
   NetworkActivityMonitor::GetInstance()->IncrementBytesSent(rv);

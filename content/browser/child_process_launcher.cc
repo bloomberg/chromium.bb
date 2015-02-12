@@ -43,7 +43,6 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "base/metrics/stats_table.h"
 #include "base/posix/global_descriptors.h"
 #include "content/browser/file_descriptor_info_impl.h"
 #endif
@@ -344,13 +343,6 @@ void ChildProcessLauncher::Context::LaunchInternal(
 #else
   files_to_register->Transfer(kPrimaryIPCChannel, ipcfd.Pass());
 #endif
-  base::StatsTable* stats_table = base::StatsTable::current();
-  if (stats_table &&
-      base::SharedMemory::IsHandleValid(stats_table->GetSharedMemoryHandle())) {
-    base::FileDescriptor fd = stats_table->GetSharedMemoryHandle();
-    DCHECK(!fd.auto_close);
-    files_to_register->Share(kStatsTableSharedMemFd, fd.fd);
-  }
 #endif
 
 #if defined(OS_ANDROID)

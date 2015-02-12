@@ -6,7 +6,6 @@
 #define CHROME_APP_CHROME_MAIN_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/stats_counters.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/app/content_main_delegate.h"
 
@@ -56,13 +55,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif  // defined(OS_MACOSX)
 
   ChromeContentClient chrome_content_client_;
-
-  // startup_timer_ will hold a reference to stats_counter_timer_. Therefore,
-  // the declaration order of these variables matters. Changing this order will
-  // cause startup_timer_ to be freed before stats_counter_timer_, leaving a
-  // dangling reference.
-  scoped_ptr<base::StatsCounterTimer> stats_counter_timer_;
-  scoped_ptr<base::StatsScope<base::StatsCounterTimer> > startup_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegate);
 };

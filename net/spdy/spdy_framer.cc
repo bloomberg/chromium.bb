@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/stats_counters.h"
 #include "base/third_party/valgrind/memcheck.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
@@ -3246,11 +3245,6 @@ void SpdyFramer::SerializeNameValueBlock(
     LOG(DFATAL) << "Could not obtain compressor.";
     return;
   }
-
-  base::StatsCounter compressed_frames("spdy.CompressedFrames");
-  base::StatsCounter pre_compress_bytes("spdy.PreCompressSize");
-  base::StatsCounter post_compress_bytes("spdy.PostCompressSize");
-
   // Create an output frame.
   // Since we'll be performing lots of flushes when compressing the data,
   // zlib's lower bounds may be insufficient.
@@ -3287,11 +3281,6 @@ void SpdyFramer::SerializeNameValueBlock(
   int compressed_size = compressed_max_size - compressor->avail_out;
   builder->Seek(compressed_size);
   builder->RewriteLength(*this);
-
-  pre_compress_bytes.Add(uncompressed_len);
-  post_compress_bytes.Add(compressed_size);
-
-  compressed_frames.Increment();
 }
 
 }  // namespace net

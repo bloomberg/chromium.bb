@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/stats_counters.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"

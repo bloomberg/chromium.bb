@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -2742,8 +2741,6 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const std::string& http_method,
     const std::string& mime_type,
     ResourceType resource_type) {
-  base::StatsCounter cache("WebKit.CacheHit");
-  cache.Increment();
 
   // Send out a notification that we loaded a resource from our memory cache.
   int cert_id = 0;

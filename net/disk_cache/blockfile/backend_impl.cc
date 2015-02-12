@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -505,7 +504,6 @@ EntryImpl* BackendImpl::OpenEntryImpl(const std::string& key) {
             static_cast<base::HistogramBase::Sample>(use_hours));
   stats_.OnEvent(Stats::OPEN_HIT);
   web_fonts_histogram::RecordCacheHit(cache_entry);
-  SIMPLE_STATS_COUNTER("disk_cache.hit");
   return cache_entry;
 }
 
@@ -601,7 +599,6 @@ EntryImpl* BackendImpl::CreateEntryImpl(const std::string& key) {
 
   CACHE_UMA(AGE_MS, "CreateTime", 0, start);
   stats_.OnEvent(Stats::CREATE_HIT);
-  SIMPLE_STATS_COUNTER("disk_cache.miss");
   Trace("create entry hit ");
   FlushIndex();
   cache_entry->AddRef();

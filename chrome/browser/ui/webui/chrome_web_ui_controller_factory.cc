@@ -245,8 +245,7 @@ bool IsAboutUI(const GURL& url) {
           url.host() == chrome::kChromeUICreditsHost ||
           url.host() == chrome::kChromeUIDNSHost ||
           url.host() == chrome::kChromeUIMemoryHost ||
-          url.host() == chrome::kChromeUIMemoryRedirectHost ||
-          url.host() == chrome::kChromeUIStatsHost
+          url.host() == chrome::kChromeUIMemoryRedirectHost
 #if !defined(OS_ANDROID)
           || url.host() == chrome::kChromeUITermsHost
 #endif

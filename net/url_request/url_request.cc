@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/stats_counters.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -553,8 +552,6 @@ URLRequest::URLRequest(const GURL& url,
       creation_time_(base::TimeTicks::Now()),
       notified_before_network_start_(false),
       cookie_store_(cookie_store ? cookie_store : context->cookie_store()) {
-  SIMPLE_STATS_COUNTER("URLRequestCount");
-
   // Sanity check out environment.
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";

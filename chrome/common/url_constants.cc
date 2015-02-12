@@ -230,7 +230,6 @@ const char kChromeUISettingsFrameHost[] = "settings-frame";
 const char kChromeUIShorthangHost[] = "shorthang";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISSLClientCertificateSelectorHost[] = "select-cert";
-const char kChromeUIStatsHost[] = "stats";
 const char kChromeUISuggestionsHost[] = "suggestions";
 const char kChromeUISuggestionsInternalsHost[] = "suggestions-internals";
 const char kChromeUISupervisedUserPassphrasePageHost[] =
@@ -594,7 +593,6 @@ const char* const kChromeHostURLs[] = {
   kChromeUIPredictorsHost,
   kChromeUIProfilerHost,
   kChromeUISignInInternalsHost,
-  kChromeUIStatsHost,
   kChromeUISuggestionsHost,
   kChromeUISyncInternalsHost,
   kChromeUITermsHost,

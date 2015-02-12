@@ -7,16 +7,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/stats_counters.h"
 #include "base/strings/string_util.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/common/plugin_list.h"
 
 namespace content {
-
-const char kPluginLibrariesLoadedCounter[] = "PluginLibrariesLoaded";
-const char kPluginInstancesActiveCounter[] = "PluginInstancesActive";
 
 // A list of all the instantiated plugins.
 static std::vector<scoped_refptr<PluginLib> >* g_loaded_libs;
@@ -71,7 +67,6 @@ PluginLib::PluginLib(const WebPluginInfo& info)
       instance_count_(0),
       skip_unload_(false),
       defer_unload_(false) {
-  base::StatsCounter(kPluginLibrariesLoadedCounter).Increment();
   memset(static_cast<void*>(&plugin_funcs_), 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(make_scoped_refptr(this));
 
@@ -79,7 +74,6 @@ PluginLib::PluginLib(const WebPluginInfo& info)
 }
 
 PluginLib::~PluginLib() {
-  base::StatsCounter(kPluginLibrariesLoadedCounter).Decrement();
   if (saved_data_ != 0) {
     // TODO - delete the savedData object here
   }
@@ -151,13 +145,11 @@ void PluginLib::PreventLibraryUnload() {
 PluginInstance* PluginLib::CreateInstance(const std::string& mime_type) {
   PluginInstance* new_instance = new PluginInstance(this, mime_type);
   instance_count_++;
-  base::StatsCounter(kPluginInstancesActiveCounter).Increment();
   DCHECK_NE(static_cast<PluginInstance*>(NULL), new_instance);
   return new_instance;
 }
 
 void PluginLib::CloseInstance() {
-  base::StatsCounter(kPluginInstancesActiveCounter).Decrement();
   instance_count_--;
   // If a plugin is running in its own process it will get unloaded on process
   // shutdown.

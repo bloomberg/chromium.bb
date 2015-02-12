@@ -7,7 +7,6 @@
 #include "components/network_hints/renderer/dns_prefetch_queue.h"
 
 #include "base/logging.h"
-#include "base/metrics/stats_counters.h"
 
 namespace network_hints {
 
@@ -46,8 +45,6 @@ DnsQueue::PushResult DnsQueue::Push(const char* source,
   if (0 < size_ && readable_ + length < buffer_sentinel_ &&
     0 == strncmp(source, &buffer_[readable_], unsigned_length) &&
     '\0' == buffer_[readable_ + unsigned_length]) {
-    SIMPLE_STATS_COUNTER("DNS.PrefetchDnsRedundantPush");
-
     // We already wrote this name to the queue, so we'll skip this repeat.
     return REDUNDANT_PUSH;
   }
@@ -63,10 +60,8 @@ DnsQueue::PushResult DnsQueue::Push(const char* source,
     available_space += buffer_size_;
   }
 
-  if (length + 1 >= available_space) {
-    SIMPLE_STATS_COUNTER("DNS.PrefetchDnsQueueFull");
+  if (length + 1 >= available_space)
     return OVERFLOW_PUSH;  // Not enough space to push.
-  }
 
   BufferSize dest = writeable_;
   BufferSize space_till_wrap = buffer_sentinel_ - dest;

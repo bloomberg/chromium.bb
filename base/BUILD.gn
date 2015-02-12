@@ -402,10 +402,6 @@ component("base") {
     "metrics/sparse_histogram.h",
     "metrics/statistics_recorder.cc",
     "metrics/statistics_recorder.h",
-    "metrics/stats_counters.cc",
-    "metrics/stats_counters.h",
-    "metrics/stats_table.cc",
-    "metrics/stats_table.h",
     "metrics/user_metrics.cc",
     "metrics/user_metrics.h",
     "metrics/user_metrics_action.h",
@@ -1242,7 +1238,6 @@ test("base_unittests") {
     "metrics/histogram_snapshot_manager_unittest.cc",
     "metrics/histogram_unittest.cc",
     "metrics/sparse_histogram_unittest.cc",
-    "metrics/stats_table_unittest.cc",
     "metrics/statistics_recorder_unittest.cc",
     "observer_list_unittest.cc",
     "os_compat_android_unittest.cc",
@@ -1386,7 +1381,6 @@ test("base_unittests") {
 
   if (is_ios) {
     sources -= [
-      "metrics/stats_table_uinittest.cc",  # Requires spawning a process.
       "process/memory_unittest.cc",
       "process/memory_unittest_mac.h",
       "process/memory_unittest_mac.mm",

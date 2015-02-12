@@ -16,7 +16,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -539,11 +538,9 @@ blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
 }
 
 void BlinkPlatformImpl::decrementStatsCounter(const char* name) {
-  base::StatsCounter(name).Decrement();
 }
 
 void BlinkPlatformImpl::incrementStatsCounter(const char* name) {
-  base::StatsCounter(name).Increment();
 }
 
 void BlinkPlatformImpl::histogramCustomCounts(

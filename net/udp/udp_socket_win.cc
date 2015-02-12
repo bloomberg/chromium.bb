@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "net/base/io_buffer.h"
@@ -699,8 +698,6 @@ void UDPSocketWin::LogRead(int result,
         CreateNetLogUDPDataTranferCallback(result, bytes, address));
   }
 
-  base::StatsCounter read_bytes("udp.read_bytes");
-  read_bytes.Add(result);
   NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(result);
 }
 
@@ -718,8 +715,6 @@ void UDPSocketWin::LogWrite(int result,
         CreateNetLogUDPDataTranferCallback(result, bytes, address));
   }
 
-  base::StatsCounter write_bytes("udp.write_bytes");
-  write_bytes.Add(result);
   NetworkActivityMonitor::GetInstance()->IncrementBytesSent(result);
 }
 

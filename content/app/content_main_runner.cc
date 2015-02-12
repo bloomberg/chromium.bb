@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
@@ -211,38 +210,6 @@ static base::ProcessId GetBrowserPid(const base::CommandLine& command_line) {
 }
 #endif
 
-static void InitializeStatsTable(const base::CommandLine& command_line) {
-  // Initialize the Stats Counters table.  With this initialized,
-  // the StatsViewer can be utilized to read counters outside of
-  // Chrome.  These lines can be commented out to effectively turn
-  // counters 'off'.  The table is created and exists for the life
-  // of the process.  It is not cleaned up.
-  if (command_line.HasSwitch(switches::kEnableStatsTable)) {
-    // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
-    // leaking shared memory regions on posix platforms.
-#if defined(OS_POSIX)
-    // Stats table is in the global file descriptors table on Posix.
-    base::GlobalDescriptors* global_descriptors =
-        base::GlobalDescriptors::GetInstance();
-    base::FileDescriptor table_ident;
-    if (global_descriptors->MaybeGet(kStatsTableSharedMemFd) != -1) {
-      // Open the shared memory file descriptor passed by the browser process.
-      table_ident = base::FileDescriptor(
-          global_descriptors->Get(kStatsTableSharedMemFd), false);
-    }
-#elif defined(OS_WIN)
-    // Stats table is in a named segment on Windows. Use the PID to make this
-    // unique on the system.
-    std::string table_ident =
-      base::StringPrintf("%s-%u", kStatsFilename,
-          static_cast<unsigned int>(GetBrowserPid(command_line)));
-#endif
-    base::StatsTable* stats_table =
-        new base::StatsTable(table_ident, kStatsMaxThreads, kStatsMaxCounters);
-    base::StatsTable::set_current(stats_table);
-  }
-}
-
 class ContentClientInitializer {
  public:
   static void Set(const std::string& process_type,
@@ -333,11 +300,6 @@ int RunZygote(const MainFunctionParams& main_function_params,
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   ContentClientInitializer::Set(process_type, delegate);
-
-  // The StatsTable must be initialized in each process; we already
-  // initialized for the browser process, now we need to initialize
-  // within the new processes as well.
-  InitializeStatsTable(command_line);
 
   MainFunctionParams main_params(command_line);
   main_params.zygote_child = true;
@@ -754,8 +716,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     CHECK(gin::IsolateHolder::LoadV8Snapshot());
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 #endif  // OS_ANDROID
-
-    InitializeStatsTable(command_line);
 
     if (delegate_)
       delegate_->PreSandboxStartup();

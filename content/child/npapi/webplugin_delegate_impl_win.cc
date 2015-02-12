@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/stats_counters.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -1053,8 +1052,6 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
   paint_event.event = WM_PAINT;
   paint_event.wParam = PtrToUlong(hdc);
   paint_event.lParam = reinterpret_cast<uintptr_t>(&damage_rect_win);
-  base::StatsRate plugin_paint("Plugin.Paint");
-  base::StatsScope<base::StatsRate> scope(plugin_paint);
   instance()->NPP_HandleEvent(&paint_event);
   window_.window = old_dc;
 }

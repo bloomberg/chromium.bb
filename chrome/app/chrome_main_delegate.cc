@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
@@ -689,10 +688,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // command line flags. Maybe move the chrome PathProvider down here also?
   component_updater::RegisterPathProvider(chrome::DIR_USER_DATA);
 
-  stats_counter_timer_.reset(new base::StatsCounterTimer("Chrome.Init"));
-  startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
-                       (*stats_counter_timer_));
-
   // Enable Message Loop related state asap.
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     base::MessageLoop::EnableHistogrammer(true);
@@ -807,8 +802,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
 }
 
 void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
-  startup_timer_->Stop();  // End of Startup Time Measurement.
-
   // Note: If you are adding a new process type below, be sure to adjust the
   // AdjustLinuxOOMScore function too.
 #if defined(OS_LINUX)

@@ -12,7 +12,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/metrics/stats_counters.h"
 #include "base/pending_task.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -132,11 +131,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   HandleRendererErrorTestParameters(parsed_command_line);
 
   RendererMainPlatformDelegate platform(parameters);
-
-
-  base::StatsCounterTimer stats_counter_timer("Content.RendererInit");
-  base::StatsScope<base::StatsCounterTimer> startup_timer(stats_counter_timer);
-
   RendererMessageLoopObserver task_observer;
 #if defined(OS_MACOSX)
   // As long as scrollbars on Mac are painted with Cocoa, the message pump
@@ -214,10 +208,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     RenderProcessImpl render_process;
     new RenderThreadImpl(main_message_loop.Pass());
 #endif
-
     base::HighResolutionTimerManager hi_res_timer_manager;
-
-    startup_timer.Stop();  // End of Startup Time Measurement.
 
     if (run_loop) {
 #if defined(OS_MACOSX)

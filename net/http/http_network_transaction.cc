@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -163,8 +162,6 @@ HttpNetworkTransaction::~HttpNetworkTransaction() {
 int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
                                   const CompletionCallback& callback,
                                   const BoundNetLog& net_log) {
-  SIMPLE_STATS_COUNTER("HttpNetworkTransaction.Count");
-
   net_log_ = net_log;
   request_ = request_info;
 

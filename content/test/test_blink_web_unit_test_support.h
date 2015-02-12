@@ -95,7 +95,6 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   base::ScopedTempDir file_system_root_;
   scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
-  scoped_ptr<base::StatsTable> stats_table_;
   scoped_ptr<RendererScheduler> renderer_scheduler_;
   scoped_ptr<WebSchedulerImpl> web_scheduler_;
 

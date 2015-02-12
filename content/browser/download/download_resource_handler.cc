@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"

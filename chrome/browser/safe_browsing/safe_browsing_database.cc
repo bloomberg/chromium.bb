@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/sha1.h"
@@ -1089,13 +1088,11 @@ void SafeBrowsingDatabaseNew::InsertAddChunk(
   if (chunk_data.IsPrefix()) {
     const size_t c = chunk_data.PrefixCount();
     for (size_t i = 0; i < c; ++i) {
-      STATS_COUNTER("SB.PrefixAdd", 1);
       store->WriteAddPrefix(encoded_chunk_id, chunk_data.PrefixAt(i));
     }
   } else {
     const size_t c = chunk_data.FullHashCount();
     for (size_t i = 0; i < c; ++i) {
-      STATS_COUNTER("SB.PrefixAddFull", 1);
       store->WriteAddHash(encoded_chunk_id, chunk_data.FullHashAt(i));
     }
   }
@@ -1120,7 +1117,6 @@ void SafeBrowsingDatabaseNew::InsertSubChunk(
   if (chunk_data.IsPrefix()) {
     const size_t c = chunk_data.PrefixCount();
     for (size_t i = 0; i < c; ++i) {
-      STATS_COUNTER("SB.PrefixSub", 1);
       const int add_chunk_id = chunk_data.AddChunkNumberAt(i);
       const int encoded_add_chunk_id = EncodeChunkId(add_chunk_id, list_id);
       store->WriteSubPrefix(encoded_chunk_id, encoded_add_chunk_id,
@@ -1129,7 +1125,6 @@ void SafeBrowsingDatabaseNew::InsertSubChunk(
   } else {
     const size_t c = chunk_data.FullHashCount();
     for (size_t i = 0; i < c; ++i) {
-      STATS_COUNTER("SB.PrefixSubFull", 1);
       const int add_chunk_id = chunk_data.AddChunkNumberAt(i);
       const int encoded_add_chunk_id = EncodeChunkId(add_chunk_id, list_id);
       store->WriteSubHash(encoded_chunk_id, encoded_add_chunk_id,

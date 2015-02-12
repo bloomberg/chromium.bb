@@ -554,7 +554,6 @@
         'metrics/histogram_snapshot_manager_unittest.cc',
         'metrics/histogram_unittest.cc',
         'metrics/sparse_histogram_unittest.cc',
-        'metrics/stats_table_unittest.cc',
         'metrics/statistics_recorder_unittest.cc',
         'observer_list_unittest.cc',
         'os_compat_android_unittest.cc',
@@ -708,8 +707,6 @@
             ['exclude', '^process/process_unittest\\.cc$'],
             ['exclude', '^process/process_util_unittest\\.cc$'],
             ['include', '^process/process_util_unittest_ios\\.cc$'],
-            # Requires spawning processes.
-            ['exclude', '^metrics/stats_table_unittest\\.cc$'],
             # iOS does not use message_pump_libevent.
             ['exclude', '^message_loop/message_pump_libevent_unittest\\.cc$'],
           ],

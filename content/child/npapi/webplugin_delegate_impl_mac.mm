@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/stats_counters.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -435,9 +434,6 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   if (!have_called_set_window_ || (use_buffer_context_ && !buffer_context_))
     return;
   DCHECK(!use_buffer_context_ || buffer_context_ == context);
-
-  base::StatsRate plugin_paint("Plugin.Paint");
-  base::StatsScope<base::StatsRate> scope(plugin_paint);
 
   gfx::Rect paint_rect = damage_rect;
   if (use_buffer_context_) {

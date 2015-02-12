@@ -5,7 +5,6 @@
 #include "chrome/browser/task_manager/task_manager.h"
 
 #include "base/compiler_specific.h"
-#include "base/metrics/stats_table.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
@@ -187,10 +186,6 @@ class TaskManagerView : public views::ButtonListener,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // Called by the column picker to pick up any new stat counters that
-  // may have appeared since last time.
-  void UpdateStatsCounters();
-
   // views::ContextMenuController:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
@@ -363,7 +358,6 @@ void TaskManagerView::Init() {
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_USER_HANDLES_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN, false);
 
-  UpdateStatsCounters();
   tab_table_->SetObserver(this);
   tab_table_->set_context_menu_controller(this);
   set_context_menu_controller(this);
@@ -379,32 +373,6 @@ void TaskManagerView::Init() {
 
   ui::Accelerator ctrl_w(ui::VKEY_W, ui::EF_CONTROL_DOWN);
   AddAccelerator(ctrl_w);
-}
-
-void TaskManagerView::UpdateStatsCounters() {
-  base::StatsTable* stats = base::StatsTable::current();
-  if (stats != NULL) {
-    int max = stats->GetMaxCounters();
-    // skip the first row (it's header data)
-    for (int i = 1; i < max; i++) {
-      const char* row = stats->GetRowName(i);
-      if (row != NULL && row[0] != '\0' && !tab_table_->HasColumn(i)) {
-        // TODO(erikkay): Use l10n to get display names for stats.  Right
-        // now we're just displaying the internal counter name.  Perhaps
-        // stat names not in the string table would be filtered out.
-        ui::TableColumn col;
-        col.id = i;
-        col.title = base::ASCIIToUTF16(row);
-        col.alignment = ui::TableColumn::RIGHT;
-        // TODO(erikkay): Width is hard-coded right now, so many column
-        // names are clipped.
-        col.width = 90;
-        col.sortable = true;
-        columns_.push_back(col);
-        tab_table_->AddColumn(col);
-      }
-    }
-  }
 }
 
 void TaskManagerView::ViewHierarchyChanged(
@@ -601,7 +569,6 @@ void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
 void TaskManagerView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
-  UpdateStatsCounters();
   ui::SimpleMenuModel menu_model(this);
   for (std::vector<ui::TableColumn>::iterator i(columns_.begin());
        i != columns_.end(); ++i) {

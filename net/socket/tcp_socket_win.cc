@@ -9,7 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/metrics/stats_counters.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/win/windows_version.h"
 #include "net/base/address_list.h"
@@ -524,9 +523,6 @@ int TCPSocketWin::Write(IOBuffer* buf,
   DCHECK_GT(buf_len, 0);
   DCHECK(!core_->write_iobuffer_.get());
 
-  base::StatsCounter writes("tcp.writes");
-  writes.Increment();
-
   WSABUF write_buffer;
   write_buffer.len = buf_len;
   write_buffer.buf = buf->data();
@@ -546,8 +542,6 @@ int TCPSocketWin::Write(IOBuffer* buf,
                    << " bytes, but " << rv << " bytes reported.";
         return ERR_WINSOCK_UNEXPECTED_WRITTEN_BYTES;
       }
-      base::StatsCounter write_bytes("tcp.write_bytes");
-      write_bytes.Add(rv);
       net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, rv,
                                     buf->data());
       NetworkActivityMonitor::GetInstance()->IncrementBytesSent(rv);
@@ -889,9 +883,6 @@ void TCPSocketWin::DoConnectComplete(int result) {
 }
 
 void TCPSocketWin::LogConnectBegin(const AddressList& addresses) {
-  base::StatsCounter connects("tcp.connect");
-  connects.Increment();
-
   net_log_.BeginEvent(NetLog::TYPE_TCP_CONNECT,
                       addresses.CreateNetLogCallback());
 }
@@ -942,9 +933,6 @@ int TCPSocketWin::DoRead(IOBuffer* buf, int buf_len,
       return net_error;
     }
   } else {
-    base::StatsCounter read_bytes("tcp.read_bytes");
-    if (rv > 0)
-      read_bytes.Add(rv);
     net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, rv,
                                   buf->data());
     NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(rv);
@@ -1030,8 +1018,6 @@ void TCPSocketWin::DidCompleteWrite() {
                  << " bytes reported.";
       rv = ERR_WINSOCK_UNEXPECTED_WRITTEN_BYTES;
     } else {
-      base::StatsCounter write_bytes("tcp.write_bytes");
-      write_bytes.Add(num_bytes);
       net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, num_bytes,
                                     core_->write_iobuffer_->data());
       NetworkActivityMonitor::GetInstance()->IncrementBytesSent(num_bytes);

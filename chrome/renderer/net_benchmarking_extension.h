@@ -5,7 +5,9 @@
 #ifndef CHROME_RENDERER_NET_BENCHMARKING_EXTENSION_H_
 #define CHROME_RENDERER_NET_BENCHMARKING_EXTENSION_H_
 
-#include "chrome/renderer/benchmarking_extension.h"
+namespace v8 {
+class Extension;
+}
 
 namespace extensions_v8 {
 

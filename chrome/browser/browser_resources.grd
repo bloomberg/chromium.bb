@@ -90,8 +90,6 @@
         <include name="IDR_ABOUT_NACL_CSS" file="resources\about_nacl.css" flattenhtml="true" type="chrome_html" />
         <include name="IDR_ABOUT_NACL_JS" file="resources\about_nacl.js" type="BINDATA" />
       </if>
-      <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_ABOUT_STATS_JS" file="resources\about_stats.js" type="BINDATA" />
       <if expr="not is_android">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys\about_sys.html" flattenhtml="true" type="BINDATA" />
       </if>
