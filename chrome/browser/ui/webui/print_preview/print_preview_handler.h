@@ -22,6 +22,7 @@
 #endif  // ENABLE_SERVICE_DISCOVERY
 
 class AccountReconcilor;
+class PrinterHandler;
 class PrintSystemTaskProxy;
 
 namespace base {
@@ -289,6 +290,10 @@ class PrintPreviewHandler
       base::DictionaryValue* printer_value);
 #endif
 
+  // Lazily creates |extension_printer_handler_| that can be used to handle
+  // extension printers requests.
+  void EnsureExtensionPrinterHandlerSet();
+
   // Called when a list of printers is reported by an extension.
   // |printers|: The list of printers managed by the extension.
   // |done|: Whether all the extensions have reported the list of printers
@@ -356,6 +361,10 @@ class PrintPreviewHandler
   scoped_ptr<local_discovery::PrivetLocalPrintOperation>
       privet_local_print_operation_;
 #endif
+
+  // Handles requests for extension printers. Created lazily by calling
+  // |EnsureExtensionPrinterHandlerSet|.
+  scoped_ptr<PrinterHandler> extension_printer_handler_;
 
   // Notifies tests that want to know if the PDF has been saved. This doesn't
   // notify the test if it was a successful save, only that it was attempted.

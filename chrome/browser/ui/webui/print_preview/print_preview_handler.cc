@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -87,10 +88,6 @@
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/privet_constants.h"
-#endif
-
-#if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #endif
 
 using content::BrowserThread;
@@ -720,20 +717,12 @@ void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
 
 void PrintPreviewHandler::HandleGetExtensionPrinters(
     const base::ListValue* args) {
-#if defined(ENABLE_EXTENSIONS)
-  // TODO(tbarzic): Handle case where a new search is initiated before the
-  // previous one finishes. Currently, in this case Web UI layer may get
-  // multiple events with printer list from some extensions, and it may get
-  // fooled by |done| flag from the first search into marking the search
-  // complete.
-  extensions::PrinterProviderAPI::GetFactoryInstance()
-      ->Get(preview_web_contents()->GetBrowserContext())
-      ->DispatchGetPrintersRequested(
-          base::Bind(&PrintPreviewHandler::OnGotPrintersForExtension,
-                     weak_factory_.GetWeakPtr()));
-#else
-  OnGotPrintersForExtension(base::ListValue(), true /* done */);
-#endif
+  EnsureExtensionPrinterHandlerSet();
+  // Make sure all in progress requests are canceled before new printer search
+  // starts.
+  extension_printer_handler_->Reset();
+  extension_printer_handler_->StartGetPrinters(base::Bind(
+      &PrintPreviewHandler::OnGotPrintersForExtension, base::Unretained(this)));
 }
 
 void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
@@ -742,16 +731,11 @@ void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
   bool ok = args->GetString(0, &printer_id);
   DCHECK(ok);
 
-#if defined(ENABLE_EXTENSIONS)
-  extensions::PrinterProviderAPI::GetFactoryInstance()
-      ->Get(preview_web_contents()->GetBrowserContext())
-      ->DispatchGetCapabilityRequested(
-          printer_id,
-          base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterCapabilities,
-                     weak_factory_.GetWeakPtr(), printer_id));
-#else
-  OnGotExtensionPrinterCapabilities(printer_id, base::DictionaryValue());
-#endif
+  EnsureExtensionPrinterHandlerSet();
+  extension_printer_handler_->StartGetCapability(
+      printer_id,
+      base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterCapabilities,
+                 base::Unretained(this)));
 }
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
@@ -900,8 +884,21 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 #endif
 
   if (print_with_extension) {
-    // TODO(tbarzic): Implement this and record UMA stats.
-    OnExtensionPrintResult(false, "NOT_IMPLEMENTED");
+    // TODO(tbarzic): Record UMA stats.
+
+    base::string16 title;
+    scoped_refptr<base::RefCountedBytes> data;
+    if (!GetPreviewDataAndTitle(&data, &title)) {
+      LOG(ERROR) << "Nothing to print; no preview available.";
+      OnExtensionPrintResult(false, "NO_DATA");
+      return;
+    }
+
+    EnsureExtensionPrinterHandlerSet();
+    extension_printer_handler_->StartPrint(
+        *settings, data,
+        base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
+                   base::Unretained(this)));
     return;
   }
 
@@ -1644,6 +1641,14 @@ void PrintPreviewHandler::FillPrinterDescription(
 }
 
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
+
+void PrintPreviewHandler::EnsureExtensionPrinterHandlerSet() {
+  if (extension_printer_handler_.get())
+    return;
+
+  extension_printer_handler_ =
+      PrinterHandler::CreateForExtensionPrinters(Profile::FromWebUI(web_ui()));
+}
 
 void PrintPreviewHandler::OnGotPrintersForExtension(
     const base::ListValue& printers,
