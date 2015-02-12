@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/memory/singleton.h"
 #include "ui/events/event_processor.h"
@@ -290,6 +291,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   ui::test::EventGenerator* owner_;
   NSWindow* window_;
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
+  base::scoped_nsobject<NSMenu> fake_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
 };
@@ -299,6 +301,27 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac()
       window_(NULL) {
   DCHECK(!ui::test::EventGenerator::default_delegate);
   ui::test::EventGenerator::default_delegate = this;
+  // Install a fake "edit" menu. This is normally provided by Chrome's
+  // MainMenu.xib, but src/ui shouldn't depend on that.
+  fake_menu_.reset([[NSMenu alloc] initWithTitle:@"Edit"]);
+  struct {
+    NSString* title;
+    SEL action;
+    NSString* key_equivalent;
+  } fake_menu_item[] = {
+      {@"Undo", @selector(undo:), @"z"},
+      {@"Redo", @selector(redo:), @"Z"},
+      {@"Copy", @selector(copy:), @"c"},
+      {@"Cut", @selector(cut:), @"x"},
+      {@"Paste", @selector(paste:), @"v"},
+      {@"Select All", @selector(selectAll:), @"a"},
+  };
+  for (size_t i = 0; i < arraysize(fake_menu_item); ++i) {
+    [fake_menu_ insertItemWithTitle:fake_menu_item[i].title
+                             action:fake_menu_item[i].action
+                      keyEquivalent:fake_menu_item[i].key_equivalent
+                            atIndex:i];
+  }
 }
 
 EventGeneratorDelegateMac::~EventGeneratorDelegateMac() {
@@ -330,10 +353,15 @@ void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
   NSEvent* ns_event = cocoa_test_event_utils::SynthesizeKeyEvent(
       window_, event->type() == ui::ET_KEY_PRESSED, event->key_code(),
       modifiers);
-  if (owner_->targeting_application())
+  if (owner_->targeting_application()) {
     [NSApp sendEvent:ns_event];
-  else
-    EmulateSendEvent(window_, ns_event);
+    return;
+  }
+
+  if ([fake_menu_ performKeyEquivalent:ns_event])
+    return;
+
+  EmulateSendEvent(window_, ns_event);
 }
 
 void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
@@ -342,6 +370,15 @@ void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
   swizzle_pressed_.reset();
   owner_ = owner;
   window_ = window;
+
+  // Normally, edit menu items have a `nil` target. This results in -[NSMenu
+  // performKeyEquivalent:] relying on -[NSApplication targetForAction:to:from:]
+  // to find a target starting at the first responder of the key window. Since
+  // non-interactive tests have no key window, that won't work. So set (or
+  // clear) the target explicitly on all menu items.
+  [[fake_menu_ itemArray] makeObjectsPerformSelector:@selector(setTarget:)
+                                          withObject:[window firstResponder]];
+
   if (owner_) {
     swizzle_pressed_.reset(new base::mac::ScopedObjCClassSwizzler(
         [NSEvent class],

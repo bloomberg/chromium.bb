@@ -340,6 +340,30 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     SendKeyEvent(key, alt, shift, control, caps);
   }
 
+  // Sends Shift+Delete if supported, otherwise Cmd+X again.
+  void SendAlternateCut() {
+    if (TestingNativeMac())
+      SendKeyEvent(ui::VKEY_X, false, true);
+    else
+      SendKeyEvent(ui::VKEY_DELETE, true, false);
+  }
+
+  // Sends Ctrl+Insert if supported, otherwise Cmd+C again.
+  void SendAlternateCopy() {
+    if (TestingNativeMac())
+      SendKeyEvent(ui::VKEY_C, false, true);
+    else
+      SendKeyEvent(ui::VKEY_INSERT, false, true);
+  }
+
+  // Sends Shift+Insert if supported, otherwise Cmd+V again.
+  void SendAlternatePaste() {
+    if (TestingNativeMac())
+      SendKeyEvent(ui::VKEY_V, false, true);
+    else
+      SendKeyEvent(ui::VKEY_INSERT, true, false);
+  }
+
   View* GetFocusedView() {
     return widget_->GetFocusManager()->GetFocusedView();
   }
@@ -580,7 +604,7 @@ TEST_F(TextfieldTest, PasswordTest) {
   EXPECT_FALSE(textfield_->IsCommandIdEnabled(IDS_APP_COPY));
   textfield_->ExecuteCommand(IDS_APP_COPY, 0);
   SendKeyEvent(ui::VKEY_C, false, true);
-  SendKeyEvent(ui::VKEY_INSERT, false, true);
+  SendAlternateCopy();
   EXPECT_STR_EQ("foo", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_STR_EQ("password", textfield_->text());
   // [Shift]+[Delete] should just delete without copying text to the clipboard.
@@ -591,7 +615,7 @@ TEST_F(TextfieldTest, PasswordTest) {
   EXPECT_TRUE(textfield_->IsCommandIdEnabled(IDS_APP_PASTE));
   textfield_->ExecuteCommand(IDS_APP_PASTE, 0);
   SendKeyEvent(ui::VKEY_V, false, true);
-  SendKeyEvent(ui::VKEY_INSERT, true, false);
+  SendAlternatePaste();
   EXPECT_STR_EQ("foo", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_STR_EQ("foofoofoo", textfield_->text());
 }
@@ -1137,16 +1161,18 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
   EXPECT_TRUE(textfield_->enabled());
   EXPECT_TRUE(textfield_->IsFocusable());
 
-  SendKeyEvent(ui::VKEY_HOME);
+  bool shift = false;
+  SendHomeEvent(shift);
   EXPECT_EQ(0U, textfield_->GetCursorPosition());
-  SendKeyEvent(ui::VKEY_END);
+  SendEndEvent(shift);
   EXPECT_EQ(9U, textfield_->GetCursorPosition());
 
-  SendKeyEvent(ui::VKEY_LEFT, false, false);
+  SendKeyEvent(ui::VKEY_LEFT, shift, false);
   EXPECT_EQ(8U, textfield_->GetCursorPosition());
-  SendKeyEvent(ui::VKEY_LEFT, false, true);
+  SendWordEvent(ui::VKEY_LEFT, shift);
   EXPECT_EQ(5U, textfield_->GetCursorPosition());
-  SendKeyEvent(ui::VKEY_LEFT, true, true);
+  shift = true;
+  SendWordEvent(ui::VKEY_LEFT, shift);
   EXPECT_EQ(0U, textfield_->GetCursorPosition());
   EXPECT_STR_EQ("read ", textfield_->GetSelectedText());
   textfield_->SelectAll(false);
@@ -1157,7 +1183,7 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
   EXPECT_FALSE(textfield_->IsCommandIdEnabled(IDS_APP_CUT));
   textfield_->ExecuteCommand(IDS_APP_CUT, 0);
   SendKeyEvent(ui::VKEY_X, false, true);
-  SendKeyEvent(ui::VKEY_DELETE, true, false);
+  SendAlternateCut();
   EXPECT_STR_EQ("Test", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_STR_EQ("read only", textfield_->text());
 
@@ -1165,7 +1191,7 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
   EXPECT_FALSE(textfield_->IsCommandIdEnabled(IDS_APP_PASTE));
   textfield_->ExecuteCommand(IDS_APP_PASTE, 0);
   SendKeyEvent(ui::VKEY_V, false, true);
-  SendKeyEvent(ui::VKEY_INSERT, true, false);
+  SendAlternatePaste();
   EXPECT_STR_EQ("read only", textfield_->text());
 
   // Copy should work normally.
@@ -1177,7 +1203,7 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
   SendKeyEvent(ui::VKEY_C, false, true);
   EXPECT_STR_EQ("read only", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "Test");
-  SendKeyEvent(ui::VKEY_INSERT, false, true);
+  SendAlternateCopy();
   EXPECT_STR_EQ("read only", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
 
   // SetText should work even in read only mode.
@@ -1416,7 +1442,7 @@ TEST_F(TextfieldTest, CutCopyPaste) {
   // Ensure [Shift]+[Delete] cuts.
   textfield_->SetText(ASCIIToUTF16("123"));
   textfield_->SelectAll(false);
-  SendKeyEvent(ui::VKEY_DELETE, true, false);
+  SendAlternateCut();
   EXPECT_STR_EQ("123", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_STR_EQ("", textfield_->text());
   EXPECT_EQ(ui::CLIPBOARD_TYPE_COPY_PASTE, GetAndResetCopiedToClipboard());
@@ -1442,7 +1468,7 @@ TEST_F(TextfieldTest, CutCopyPaste) {
   // Ensure [Ctrl]+[Insert] copies.
   textfield_->SetText(ASCIIToUTF16("345"));
   textfield_->SelectAll(false);
-  SendKeyEvent(ui::VKEY_INSERT, false, true);
+  SendAlternateCopy();
   EXPECT_STR_EQ("345", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_STR_EQ("345", textfield_->text());
   EXPECT_EQ(ui::CLIPBOARD_TYPE_COPY_PASTE, GetAndResetCopiedToClipboard());
@@ -1456,7 +1482,7 @@ TEST_F(TextfieldTest, CutCopyPaste) {
   EXPECT_STR_EQ("abc", textfield_->text());
   SendKeyEvent(ui::VKEY_V, false, true);
   EXPECT_STR_EQ("abcabc", textfield_->text());
-  SendKeyEvent(ui::VKEY_INSERT, true, false);
+  SendAlternatePaste();
   EXPECT_STR_EQ("abcabcabc", textfield_->text());
   SendKeyEvent(ui::VKEY_V, true, false, true, false);
   EXPECT_STR_EQ("abcabcabc", textfield_->text());

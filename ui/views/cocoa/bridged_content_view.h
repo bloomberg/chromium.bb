@@ -20,7 +20,8 @@ class View;
 // The NSView that sits as the root contentView of the NSWindow, whilst it has
 // a views::RootView present. Bridges requests from Cocoa to the hosted
 // views::View.
-@interface BridgedContentView : NSView<NSTextInputClient> {
+@interface BridgedContentView
+    : NSView<NSTextInputClient, NSUserInterfaceValidations> {
  @private
   // Weak. The hosted RootView, owned by hostedView_->GetWidget().
   views::View* hostedView_;

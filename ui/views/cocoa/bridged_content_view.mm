@@ -65,6 +65,12 @@ gfx::Point MovePointToWindow(const NSPoint& point,
              domCode:(ui::DomCode)domCode
           eventFlags:(int)eventFlags;
 
+// Menu action handlers.
+- (void)cut:(id)sender;
+- (void)copy:(id)sender;
+- (void)paste:(id)sender;
+- (void)selectAll:(id)sender;
+
 @end
 
 @implementation BridgedContentView
@@ -158,6 +164,38 @@ gfx::Point MovePointToWindow(const NSPoint& point,
   // Otherwise, process the action as a regular key event.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
   hostedView_->GetWidget()->OnKeyEvent(&event);
+}
+
+- (void)cut:(id)sender {
+  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_CUT));
+  [self handleAction:IDS_APP_CUT
+             keyCode:ui::VKEY_X
+             domCode:ui::DomCode::KEY_X
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)copy:(id)sender {
+  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_COPY));
+  [self handleAction:IDS_APP_COPY
+             keyCode:ui::VKEY_C
+             domCode:ui::DomCode::KEY_C
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)paste:(id)sender {
+  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_PASTE));
+  [self handleAction:IDS_APP_PASTE
+             keyCode:ui::VKEY_V
+             domCode:ui::DomCode::KEY_V
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)selectAll:(id)sender {
+  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_SELECT_ALL));
+  [self handleAction:IDS_APP_SELECT_ALL
+             keyCode:ui::VKEY_A
+             domCode:ui::DomCode::KEY_A
+          eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 // NSView implementation.
@@ -573,6 +611,26 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 
 - (NSArray*)validAttributesForMarkedText {
   return @[];
+}
+
+// NSUserInterfaceValidations protocol implementation.
+
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  if (!textInputClient_)
+    return NO;
+
+  SEL action = [item action];
+
+  if (action == @selector(cut:))
+    return textInputClient_->IsEditingCommandEnabled(IDS_APP_CUT);
+  if (action == @selector(copy:))
+    return textInputClient_->IsEditingCommandEnabled(IDS_APP_COPY);
+  if (action == @selector(paste:))
+    return textInputClient_->IsEditingCommandEnabled(IDS_APP_PASTE);
+  if (action == @selector(selectAll:))
+    return textInputClient_->IsEditingCommandEnabled(IDS_APP_SELECT_ALL);
+
+  return NO;
 }
 
 // NSAccessibility informal protocol implementation.
