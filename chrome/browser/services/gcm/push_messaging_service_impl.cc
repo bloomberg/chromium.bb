@@ -379,9 +379,7 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
     // close itself when the next push message arrives?
     content::PlatformNotificationData notification_data;
     // TODO(johnme): Switch to FormatOriginForDisplay from crbug.com/402698
-    notification_data.title = l10n_util::GetStringFUTF16(
-        IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_TITLE,
-        base::UTF8ToUTF16(application_id.origin.host()));
+    notification_data.title = base::UTF8ToUTF16(application_id.origin.host());
     notification_data.direction =
         content::PlatformNotificationData::NotificationDirectionLeftToRight;
     notification_data.body =
