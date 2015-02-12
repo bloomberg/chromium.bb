@@ -167,7 +167,6 @@ PolicyWatcher::PolicyWatcher(
       owned_policy_service_(owned_policy_service.Pass()) {
   // Initialize the default values for each policy.
   default_values_->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
-  default_values_->SetBoolean(key::kRemoteAccessHostRequireTwoFactor, false);
   default_values_->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
   default_values_->SetBoolean(key::kRemoteAccessHostMatchUsername, false);
   default_values_->SetString(key::kRemoteAccessHostDomain, std::string());

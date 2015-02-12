@@ -17,6 +17,24 @@
 
 namespace remoting {
 
+MATCHER_P(IsPolicies, dict, "") {
+  bool equal = arg->Equals(dict);
+  if (!equal) {
+    std::string actual_value;
+    base::JSONWriter::WriteWithOptions(
+        arg, base::JSONWriter::OPTIONS_PRETTY_PRINT, &actual_value);
+
+    std::string expected_value;
+    base::JSONWriter::WriteWithOptions(
+        dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &expected_value);
+
+    *result_listener << "Policies are not equal. ";
+    *result_listener << "Expected policy: " << expected_value << ". ";
+    *result_listener << "Actual policy: " << actual_value << ".";
+  }
+  return equal;
+}
+
 class MockPolicyCallback {
  public:
   MockPolicyCallback(){};
@@ -44,6 +62,8 @@ class PolicyWatcherTest : public testing::Test {
     policy_loader_ = new policy::FakeAsyncPolicyLoader(message_loop_proxy_);
     policy_watcher_ =
         PolicyWatcher::CreateFromPolicyLoader(make_scoped_ptr(policy_loader_));
+
+    schema_ = policy::Schema::Wrap(policy::GetChromeSchemaData());
 
     nat_true_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal, true);
     nat_false_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
@@ -157,6 +177,12 @@ class PolicyWatcherTest : public testing::Test {
     policy_watcher_->SignalTransientPolicyError();
   }
 
+  const policy::Schema* GetPolicySchema() { return &schema_; }
+
+  const base::DictionaryValue& GetDefaultValues() {
+    return *(policy_watcher_->default_values_);
+  }
+
   MOCK_METHOD0(PostPolicyWatcherShutdown, void());
 
   static const char* kHostDomain;
@@ -198,12 +224,13 @@ class PolicyWatcherTest : public testing::Test {
   base::DictionaryValue port_range_full_;
   base::DictionaryValue port_range_empty_;
 
+  policy::Schema schema_;
+
  private:
   void SetDefaults(base::DictionaryValue& dict) {
     dict.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal, true);
     dict.SetBoolean(policy::key::kRemoteAccessHostAllowRelayedConnection, true);
     dict.SetString(policy::key::kRemoteAccessHostUdpPortRange, "");
-    dict.SetBoolean(policy::key::kRemoteAccessHostRequireTwoFactor, false);
     dict.SetString(policy::key::kRemoteAccessHostDomain, std::string());
     dict.SetBoolean(policy::key::kRemoteAccessHostMatchUsername, false);
     dict.SetString(policy::key::kRemoteAccessHostTalkGadgetPrefix,
@@ -220,29 +247,15 @@ class PolicyWatcherTest : public testing::Test {
 #if !defined(NDEBUG)
     dict.SetString(policy::key::kRemoteAccessHostDebugOverridePolicies, "");
 #endif
+
+    ASSERT_THAT(&dict, IsPolicies(&GetDefaultValues()))
+        << "Sanity check that defaults expected by the test code "
+        << "match what is stored in PolicyWatcher::default_values_";
   }
 };
 
 const char* PolicyWatcherTest::kHostDomain = "google.com";
 const char* PolicyWatcherTest::kPortRange = "12400-12409";
-
-MATCHER_P(IsPolicies, dict, "") {
-  bool equal = arg->Equals(dict);
-  if (!equal) {
-    std::string actual_value;
-    base::JSONWriter::WriteWithOptions(
-        arg, base::JSONWriter::OPTIONS_PRETTY_PRINT, &actual_value);
-
-    std::string expected_value;
-    base::JSONWriter::WriteWithOptions(
-        dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &expected_value);
-
-    *result_listener << "Policies are not equal. ";
-    *result_listener << "Expected policy: " << expected_value << ". ";
-    *result_listener << "Actual policy: " << actual_value << ".";
-  }
-  return equal;
-}
 
 TEST_F(PolicyWatcherTest, None) {
   EXPECT_CALL(mock_policy_callback_,
@@ -489,6 +502,47 @@ TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
   for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
     SignalTransientErrorForTest();
   }
+}
+
+TEST_F(PolicyWatcherTest, PolicySchemaAndPolicyWatcherShouldBeInSync) {
+  // This test verifies that
+  // 1) policy schema (generated out of policy_templates.json)
+  // and
+  // 2) PolicyWatcher's code (i.e. contents of the |default_values_| field)
+  // are kept in-sync.
+
+  std::set<std::string> expected_schema_keys;
+  for (base::DictionaryValue::Iterator i(GetDefaultValues()); !i.IsAtEnd();
+       i.Advance()) {
+    expected_schema_keys.insert(i.key());
+  }
+#if defined(OS_WIN)
+  // RemoteAccessHostMatchUsername is marked in policy_templates.json as not
+  // supported on Windows and therefore is (by design) excluded from the schema.
+  expected_schema_keys.erase(policy::key::kRemoteAccessHostMatchUsername);
+#endif
+#if defined(NDEBUG)
+  // Policy schema / policy_templates.json cannot differ between debug and
+  // release builds so we compensate below to account for the fact that
+  // PolicyWatcher::default_values_ does differ between debug and release.
+  expected_schema_keys.insert(
+      policy::key::kRemoteAccessHostDebugOverridePolicies);
+#endif
+
+  std::set<std::string> actual_schema_keys;
+  const policy::Schema* schema = GetPolicySchema();
+  ASSERT_TRUE(schema->valid());
+  for (auto it = schema->GetPropertiesIterator(); !it.IsAtEnd(); it.Advance()) {
+    std::string key = it.key();
+    if (key.find("RemoteAccessHost") == std::string::npos) {
+      // For now PolicyWatcher::GetPolicySchema() mixes Chrome and Chromoting
+      // policies, so we have to skip them here.
+      continue;
+    }
+    actual_schema_keys.insert(key);
+  }
+
+  EXPECT_THAT(actual_schema_keys, testing::ContainerEq(expected_schema_keys));
 }
 
 // Unit tests cannot instantiate PolicyWatcher on ChromeOS
