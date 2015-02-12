@@ -423,6 +423,10 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   // Pin the app to the relevant launcher depending on the OS.
   Profile* current_profile = profile_->GetOriginalProfile();
   chrome::HostDesktopType desktop = browser->host_desktop_type();
+
+// On Mac, shortcuts are automatically created for hosted apps when they are
+// installed, so there is no need to call this again."
+#if !defined(OS_MACOSX)
   if (desktop != chrome::HOST_DESKTOP_TYPE_ASH) {
     web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX)
@@ -440,6 +444,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     ChromeLauncherController::instance()->PinAppWithID(extension->id());
 #endif
   }
+#endif
 
   // Show the newly installed app in the app launcher, in finder (on Mac) or
   // chrome://apps.
