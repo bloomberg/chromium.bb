@@ -53,6 +53,27 @@ class PingPongTestClient {
   scoped_ptr<Channel> channel_;
 };
 
+// This class locks the current thread to a particular CPU core. This is
+// important because otherwise the different threads and processes of these
+// tests end up on different CPU cores which means that all of the cores are
+// lightly loaded so the OS (Windows and Linux) fails to ramp up the CPU
+// frequency, leading to unpredictable and often poor performance.
+class LockThreadAffinity {
+ public:
+  explicit LockThreadAffinity(int cpu_number);
+  ~LockThreadAffinity();
+
+ private:
+  bool affinity_set_ok_;
+#if defined(OS_WIN)
+  DWORD_PTR old_affinity_;
+#elif defined(OS_LINUX)
+  cpu_set_t old_cpuset_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(LockThreadAffinity);
+};
+
 }
 }
 

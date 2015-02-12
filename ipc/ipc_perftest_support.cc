@@ -26,6 +26,10 @@
 namespace IPC {
 namespace test {
 
+// Avoid core 0 due to conflicts with Intel's Power Gadget.
+// Setting thread affinity will fail harmlessly on single/dual core machines.
+const int kSharedCore = 2;
+
 // This class simply collects stats about abstract "events" (each of which has a
 // start time and an end time).
 class EventTimeTracker {
@@ -244,6 +248,7 @@ void IPCChannelPerfTestBase::RunTestChannelPingPong(
   ASSERT_TRUE(ConnectChannel());
   ASSERT_TRUE(StartClient());
 
+  LockThreadAffinity thread_locker(kSharedCore);
   for (size_t i = 0; i < params.size(); i++) {
     listener.SetTestParams(params[i].message_count(),
                            params[i].message_size());
@@ -284,6 +289,7 @@ void IPCChannelPerfTestBase::RunTestChannelProxyPingPong(
   listener.Init(channel_proxy());
   ASSERT_TRUE(StartClient());
 
+  LockThreadAffinity thread_locker(kSharedCore);
   for (size_t i = 0; i < params.size(); i++) {
     listener.SetTestParams(params[i].message_count(),
                            params[i].message_size());
@@ -326,6 +332,7 @@ scoped_ptr<Channel> PingPongTestClient::CreateChannel(
 }
 
 int PingPongTestClient::RunMain() {
+  LockThreadAffinity thread_locker(kSharedCore);
   scoped_ptr<Channel> channel = CreateChannel(listener_.get());
   listener_->Init(channel.get());
   CHECK(channel->Connect());
@@ -336,6 +343,38 @@ int PingPongTestClient::RunMain() {
 
 scoped_refptr<base::TaskRunner> PingPongTestClient::task_runner() {
   return main_message_loop_.message_loop_proxy();
+}
+
+LockThreadAffinity::LockThreadAffinity(int cpu_number)
+    : affinity_set_ok_(false) {
+#if defined(OS_WIN)
+  const DWORD_PTR thread_mask = 1 << cpu_number;
+  old_affinity_ = SetThreadAffinityMask(GetCurrentThread(), thread_mask);
+  affinity_set_ok_ = old_affinity_ != 0;
+#elif defined(OS_LINUX)
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(cpu_number, &cpuset);
+  auto get_result = sched_getaffinity(0, sizeof(old_cpuset_), &old_cpuset_);
+  DCHECK_EQ(0, get_result);
+  auto set_result = sched_setaffinity(0, sizeof(cpuset), &cpuset);
+  // Check for get_result failure, even though it should always succeed.
+  affinity_set_ok_ = (set_result == 0) && (get_result == 0);
+#endif
+  if (!affinity_set_ok_)
+    LOG(WARNING) << "Failed to set thread affinity to CPU " << cpu_number;
+}
+
+LockThreadAffinity::~LockThreadAffinity() {
+  if (!affinity_set_ok_)
+    return;
+#if defined(OS_WIN)
+  auto set_result = SetThreadAffinityMask(GetCurrentThread(), old_affinity_);
+  DCHECK_NE(0u, set_result);
+#elif defined(OS_LINUX)
+  auto set_result = sched_setaffinity(0, sizeof(old_cpuset_), &old_cpuset_);
+  DCHECK_EQ(0, set_result);
+#endif
 }
 
 }  // namespace test
