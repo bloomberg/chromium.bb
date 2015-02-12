@@ -42,11 +42,13 @@
 
 namespace blink {
 
+class ArchiveResourceCollection;
 class CSSStyleSheetResource;
 class DocumentResource;
 class FetchContext;
 class FontResource;
 class ImageResource;
+class MHTMLArchive;
 class RawResource;
 class ScriptResource;
 class SubstituteData;
@@ -129,6 +131,9 @@ public:
     void preload(Resource::Type, FetchRequest&, const String& charset);
     void printPreloadStats();
 
+    void addAllArchiveResources(MHTMLArchive*);
+    ArchiveResourceCollection* archiveResourceCollection() const { return m_archiveResourceCollection.get(); }
+
     void setDefersLoading(bool);
     void stopFetching();
     bool isFetching() const;
@@ -187,6 +192,7 @@ private:
     void preCacheDataURIImage(const FetchRequest&);
     void preCacheSubstituteDataForMainResource(const FetchRequest&, const SubstituteData&);
     void storeResourceTimingInitiatorInformation(Resource*);
+    bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
 
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
     RevalidationPolicy determineRevalidationPolicy(Resource::Type, const FetchRequest&, Resource* existingResource) const;
@@ -221,6 +227,7 @@ private:
     DocumentLoader* m_documentLoader;
 
     OwnPtr<ListHashSet<Resource*>> m_preloads;
+    OwnPtrWillBePersistent<ArchiveResourceCollection> m_archiveResourceCollection;
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;

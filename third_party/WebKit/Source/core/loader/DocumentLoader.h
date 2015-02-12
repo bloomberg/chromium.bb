@@ -47,7 +47,6 @@
 
 namespace blink {
     class ApplicationCacheHost;
-    class ArchiveResourceCollection;
     class ResourceFetcher;
     class DocumentInit;
     class LocalFrame;
@@ -103,8 +102,6 @@ namespace blink {
         bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
         void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
 
-        bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
-
         bool shouldContinueForNavigationPolicy(const ResourceRequest&, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, NavigationPolicy = NavigationPolicyCurrentTab, bool isTransitionNavigation = false);
         NavigationType navigationType() const { return m_navigationType; }
         void setNavigationType(NavigationType navigationType) { m_navigationType = navigationType; }
@@ -149,7 +146,6 @@ namespace blink {
         bool maybeCreateArchive();
 
         void prepareSubframeArchiveLoadIfNeeded();
-        void addAllArchiveResources(MHTMLArchive*);
 
         void willSendRequest(ResourceRequest&, const ResourceResponse&);
         void finishedLoading(double finishTime);
@@ -196,7 +192,6 @@ namespace blink {
 
         NavigationType m_navigationType;
 
-        OwnPtrWillBePersistent<ArchiveResourceCollection> m_archiveResourceCollection;
         RefPtrWillBePersistent<MHTMLArchive> m_archive;
 
         bool m_loadingMainResource;

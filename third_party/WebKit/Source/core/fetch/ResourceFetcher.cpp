@@ -66,6 +66,8 @@
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "platform/mhtml/ArchiveResource.h"
+#include "platform/mhtml/ArchiveResourceCollection.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -797,7 +799,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
             return nullptr;
         }
 
-        if (!m_documentLoader || !m_documentLoader->scheduleArchiveLoad(resource.get(), request.resourceRequest()))
+        if (!scheduleArchiveLoad(resource.get(), request.resourceRequest()))
             resource->load(this, request.options());
 
         // For asynchronous loads that immediately fail, it's sufficient to return a
@@ -1327,6 +1329,34 @@ void ResourceFetcher::clearPreloads()
             memoryCache()->remove(resource);
     }
     m_preloads.clear();
+}
+
+void ResourceFetcher::addAllArchiveResources(MHTMLArchive* archive)
+{
+    ASSERT(archive);
+    if (!m_archiveResourceCollection)
+        m_archiveResourceCollection = ArchiveResourceCollection::create();
+    m_archiveResourceCollection->addAllResources(archive);
+}
+
+bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequest& request)
+{
+    if (!m_archiveResourceCollection)
+        return false;
+
+    ArchiveResource* archiveResource = m_archiveResourceCollection->archiveResourceForURL(request.url());
+    if (!archiveResource) {
+        resource->error(Resource::LoadError);
+        return true;
+    }
+
+    resource->setLoading(true);
+    resource->responseReceived(archiveResource->response(), nullptr);
+    SharedBuffer* data = archiveResource->data();
+    if (data)
+        resource->appendData(data->data(), data->size());
+    resource->finish();
+    return true;
 }
 
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)

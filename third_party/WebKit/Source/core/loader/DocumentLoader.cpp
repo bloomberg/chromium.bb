@@ -597,7 +597,7 @@ bool DocumentLoader::maybeCreateArchive()
         return false;
     }
 
-    addAllArchiveResources(m_archive.get());
+    m_fetcher->addAllArchiveResources(m_archive.get());
     ArchiveResource* mainResource = m_archive->mainResource();
 
     // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
@@ -611,20 +611,12 @@ bool DocumentLoader::maybeCreateArchive()
     return true;
 }
 
-void DocumentLoader::addAllArchiveResources(MHTMLArchive* archive)
-{
-    ASSERT(archive);
-    if (!m_archiveResourceCollection)
-        m_archiveResourceCollection = ArchiveResourceCollection::create();
-    m_archiveResourceCollection->addAllResources(archive);
-}
-
 void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
 {
     if (!m_frame->tree().parent() || !m_frame->tree().parent()->isLocalFrame())
         return;
 
-    ArchiveResourceCollection* parentCollection = toLocalFrame(m_frame->tree().parent())->loader().documentLoader()->m_archiveResourceCollection.get();
+    ArchiveResourceCollection* parentCollection = toLocalFrame(m_frame->tree().parent())->loader().documentLoader()->fetcher()->archiveResourceCollection();
     if (!parentCollection)
         return;
 
@@ -632,31 +624,10 @@ void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
 
     if (!m_archive)
         return;
-    addAllArchiveResources(m_archive.get());
+    m_fetcher->addAllArchiveResources(m_archive.get());
 
     ArchiveResource* mainResource = m_archive->mainResource();
     m_substituteData = SubstituteData(mainResource->data(), mainResource->mimeType(), mainResource->textEncoding(), KURL());
-}
-
-bool DocumentLoader::scheduleArchiveLoad(Resource* cachedResource, const ResourceRequest& request)
-{
-    if (!m_archive)
-        return false;
-
-    ASSERT(m_archiveResourceCollection);
-    ArchiveResource* archiveResource = m_archiveResourceCollection->archiveResourceForURL(request.url());
-    if (!archiveResource) {
-        cachedResource->error(Resource::LoadError);
-        return true;
-    }
-
-    cachedResource->setLoading(true);
-    cachedResource->responseReceived(archiveResource->response(), nullptr);
-    SharedBuffer* data = archiveResource->data();
-    if (data)
-        cachedResource->appendData(data->data(), data->size());
-    cachedResource->finish();
-    return true;
 }
 
 const AtomicString& DocumentLoader::responseMIMEType() const
