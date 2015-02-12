@@ -69,10 +69,6 @@ public:
     bool determineViewport(FloatSize&) const;
 
 private:
-    static float convertValueFromUserUnitsToPercentage(float value, SVGLengthMode, const FloatSize&);
-    static float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, const FloatSize&);
-    static float convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize);
-
     float convertValueFromUserUnitsToEMS(float value) const;
     float convertValueFromEMSToUserUnits(float value) const;
 

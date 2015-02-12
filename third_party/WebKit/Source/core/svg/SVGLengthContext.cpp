@@ -31,6 +31,25 @@
 
 namespace blink {
 
+static inline float dimensionForLengthMode(SVGLengthMode mode, const FloatSize& viewportSize)
+{
+    switch (mode) {
+    case LengthModeWidth:
+        return viewportSize.width();
+    case LengthModeHeight:
+        return viewportSize.height();
+    case LengthModeOther:
+        return sqrtf(viewportSize.diagonalLengthSquared() / 2);
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+static float convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize)
+{
+    return value.scaleByPercentage(dimensionForLengthMode(value.unitMode(), viewportSize));
+}
+
 SVGLengthContext::SVGLengthContext(const SVGElement* context)
     : m_context(context)
 {
@@ -89,7 +108,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
         FloatSize viewportSize;
         if (!determineViewport(viewportSize))
             return 0;
-        return convertValueFromPercentageToUserUnits(value, mode, viewportSize) / 100;
+        return value * dimensionForLengthMode(mode, viewportSize) / 100;
     }
     case LengthTypeEMS:
         return convertValueFromEMSToUserUnits(value);
@@ -122,7 +141,9 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
         FloatSize viewportSize;
         if (!determineViewport(viewportSize))
             return 0;
-        return convertValueFromUserUnitsToPercentage(value * 100, mode, viewportSize);
+        // LengthTypePercentage is represented with 100% = 100.0.
+        // Good for accuracy but could eventually be changed.
+        return value * 100 / dimensionForLengthMode(mode, viewportSize);
     }
     case LengthTypeEMS:
         return convertValueFromUserUnitsToEMS(value);
@@ -144,35 +165,6 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 
     ASSERT_NOT_REACHED();
     return 0;
-}
-
-static inline float dimensionForLengthMode(SVGLengthMode mode, const FloatSize& viewportSize)
-{
-    switch (mode) {
-    case LengthModeWidth:
-        return viewportSize.width();
-    case LengthModeHeight:
-        return viewportSize.height();
-    case LengthModeOther:
-        return sqrtf(viewportSize.diagonalLengthSquared() / 2);
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLengthMode mode, const FloatSize& viewportSize)
-{
-    return value / dimensionForLengthMode(mode, viewportSize) * 100;
-}
-
-float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLengthMode mode, const FloatSize& viewportSize)
-{
-    return value * dimensionForLengthMode(mode, viewportSize);
-}
-
-float SVGLengthContext::convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize)
-{
-    return value.scaleByPercentage(dimensionForLengthMode(value.unitMode(), viewportSize));
 }
 
 static inline LayoutStyle* layoutStyleForLengthResolving(const SVGElement* context)

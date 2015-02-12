@@ -166,10 +166,6 @@ float SVGLength::value(const SVGLengthContext& context) const
 
 void SVGLength::setValue(float value, const SVGLengthContext& context)
 {
-    // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
-    if (m_unitType == LengthTypePercentage)
-        value = value / 100;
-
     m_valueInSpecifiedUnits = context.convertValueFromUserUnits(value, unitMode(), unitType());
 }
 
