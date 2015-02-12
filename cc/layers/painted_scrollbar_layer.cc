@@ -4,9 +4,12 @@
 
 #include "cc/layers/painted_scrollbar_layer.h"
 
+#include <algorithm>
+
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/math_util.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/trees/layer_tree_host.h"
@@ -16,6 +19,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSize.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -38,6 +42,7 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar,
     : scrollbar_(scrollbar.Pass()),
       scroll_layer_id_(scroll_layer_id),
       clip_layer_id_(Layer::INVALID_ID),
+      internal_contents_scale_(0.f),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()),
       is_overlay_(scrollbar_->IsOverlay()),
@@ -82,10 +87,10 @@ int PaintedScrollbarLayer::MaxTextureSize() {
 }
 
 float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
-  // If the scaled content_bounds() is bigger than the max texture size of the
-  // device, we need to clamp it by rescaling, since content_bounds() is used
+  // If the scaled bounds() is bigger than the max texture size of the
+  // device, we need to clamp it by rescaling, since this is used
   // below to set the texture size.
-  gfx::Size scaled_bounds = ComputeContentBoundsForScale(scale, scale);
+  gfx::Size scaled_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
   if (scaled_bounds.width() > MaxTextureSize() ||
       scaled_bounds.height() > MaxTextureSize()) {
     if (scaled_bounds.width() > scaled_bounds.height())
@@ -96,25 +101,16 @@ float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
   return scale;
 }
 
-void PaintedScrollbarLayer::CalculateContentsScale(
-    float ideal_contents_scale,
-    float* contents_scale_x,
-    float* contents_scale_y,
-    gfx::Size* content_bounds) {
-  ContentsScalingLayer::CalculateContentsScale(
-      ClampScaleToMaxTextureSize(ideal_contents_scale),
-      contents_scale_x,
-      contents_scale_y,
-      content_bounds);
-}
-
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
-  ContentsScalingLayer::PushPropertiesTo(layer);
+  Layer::PushPropertiesTo(layer);
 
   PushScrollClipPropertiesTo(layer);
 
   PaintedScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(layer);
+
+  scrollbar_layer->set_internal_contents_scale_and_bounds(
+      internal_contents_scale_, internal_content_bounds_);
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
@@ -160,7 +156,7 @@ void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
     thumb_resource_ = nullptr;
   }
 
-  ContentsScalingLayer::SetLayerTreeHost(host);
+  Layer::SetLayerTreeHost(host);
 }
 
 gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
@@ -168,10 +164,10 @@ gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
   // Don't intersect with the bounds as in LayerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
   gfx::Rect expanded_rect = gfx::ScaleToEnclosingRect(
-      layer_rect, contents_scale_x(), contents_scale_y());
-  // We should never return a rect bigger than the content_bounds().
+      layer_rect, internal_contents_scale_, internal_contents_scale_);
+  // We should never return a rect bigger than the content bounds.
   gfx::Size clamped_size = expanded_rect.size();
-  clamped_size.SetToMin(content_bounds());
+  clamped_size.SetToMin(internal_content_bounds_);
   expanded_rect.set_size(clamped_size);
   return expanded_rect;
 }
@@ -202,8 +198,36 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   }
 }
 
+void PaintedScrollbarLayer::UpdateInternalContentScale() {
+  float scale = layer_tree_host()->device_scale_factor();
+  if (layer_tree_host()
+          ->settings()
+          .layer_transforms_should_scale_layer_contents) {
+    gfx::Vector2dF transform_scales =
+        MathUtil::ComputeTransform2dScaleComponents(draw_transform(), scale);
+    scale = std::max(transform_scales.x(), transform_scales.y());
+  }
+  bool changed = false;
+  changed |= UpdateProperty(ClampScaleToMaxTextureSize(scale),
+                            &internal_contents_scale_);
+  changed |= UpdateProperty(
+      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), internal_contents_scale_)),
+      &internal_content_bounds_);
+  if (changed) {
+    // If the content scale or bounds change, repaint.
+    SetNeedsDisplay();
+  }
+}
+
 bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
                                    const OcclusionTracker<Layer>* occlusion) {
+  {
+    base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
+                                                  true);
+    Layer::Update(queue, occlusion);
+    UpdateInternalContentScale();
+  }
+
   UpdateThumbAndTrackGeometry();
 
   gfx::Rect track_layer_rect = gfx::Rect(location_, bounds());
@@ -225,12 +249,7 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
   if (!has_thumb_ && thumb_resource_) {
     thumb_resource_ = nullptr;
     SetNeedsPushProperties();
-  }
-
-  {
-    base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
-                                                  true);
-    ContentsScalingLayer::Update(queue, occlusion);
+    updated = true;
   }
 
   if (update_rect_.IsEmpty() && track_resource_)

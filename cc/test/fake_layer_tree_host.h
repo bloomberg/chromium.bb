@@ -51,10 +51,11 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
   bool needs_commit() { return needs_commit_; }
 
- private:
+ protected:
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                     const LayerTreeSettings& settings);
 
+ private:
   FakeImplProxy proxy_;
   FakeLayerTreeHostClient* client_;
   TestSharedBitmapManager manager_;

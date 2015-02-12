@@ -40,6 +40,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
   FakeScrollbar* fake_scrollbar() {
     return fake_scrollbar_;
   }
+  using PaintedScrollbarLayer::UpdateInternalContentScale;
   using PaintedScrollbarLayer::UpdateThumbAndTrackGeometry;
 
  private:
