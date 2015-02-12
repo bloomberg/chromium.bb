@@ -84,6 +84,9 @@ private:
 
     static void logErrorMessage(ExecutionContext*, const String& message);
 
+    // m_contextMap can have two or more entries even though we don't support
+    // Web SQL on workers because single Blink process can have multiple main
+    // contexts.
     typedef PersistentHeapHashMap<ExecutionContext*, Member<DatabaseContext>> ContextMap;
     ContextMap m_contextMap;
 #if ENABLE(ASSERT)

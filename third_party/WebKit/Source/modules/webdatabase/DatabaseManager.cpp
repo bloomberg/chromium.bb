@@ -57,11 +57,10 @@ DatabaseManager& DatabaseManager::manager()
 void DatabaseManager::terminateDatabaseThread()
 {
     ASSERT(isMainThread());
-    if (!s_databaseManager || s_databaseManager->m_contextMap.isEmpty())
+    if (!s_databaseManager)
         return;
-    // We have at most one DatabaseContext, which is for the main thread.
-    ASSERT(s_databaseManager->m_contextMap.size() == 1);
-    (*s_databaseManager->m_contextMap.values().begin())->stopDatabases();
+    for (const Member<DatabaseContext>& context : s_databaseManager->m_contextMap.values())
+        context->stopDatabases();
 }
 
 DatabaseManager::DatabaseManager()
