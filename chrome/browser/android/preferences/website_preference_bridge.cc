@@ -15,6 +15,7 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -190,15 +191,32 @@ static void GetPushNotificationOrigins(JNIEnv* env,
 
 static jint GetPushNotificationSettingForOrigin(JNIEnv* env, jclass clazz,
     jstring origin, jstring embedder) {
-  return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      origin, embedder);
+  return DesktopNotificationProfileUtil::GetContentSetting(
+      ProfileManager::GetActiveUserProfile(),
+      GURL(ConvertJavaStringToUTF8(env, origin)));
 }
 
 static void SetPushNotificationSettingForOrigin(JNIEnv* env, jclass clazz,
     jstring origin, jstring embedder, jint value) {
-  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
-  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      origin, ContentSettingsPattern::FromURLNoWildcard(embedder_url), value);
+  // TODO(peter): Web Notification permission behaves differently from all other
+  // permission types. See https://crbug.com/416894.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
+
+  switch (value) {
+    case -1:
+      DesktopNotificationProfileUtil::ClearSetting(
+          profile, ContentSettingsPattern::FromURLNoWildcard(url));
+      break;
+    case 1:
+      DesktopNotificationProfileUtil::GrantPermission(profile, url);
+      break;
+    case 2:
+      DesktopNotificationProfileUtil::DenyPermission(profile, url);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 static void GetVoiceAndVideoCaptureOrigins(JNIEnv* env,
