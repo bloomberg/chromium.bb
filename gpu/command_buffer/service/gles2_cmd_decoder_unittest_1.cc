@@ -248,7 +248,7 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramInfoLog, 0>(
   attach_cmd.Init(client_program_id_, kClientFragmentShaderId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
 
-  program->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+  program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                 base::Bind(&ShaderCacheCb));
 };
 

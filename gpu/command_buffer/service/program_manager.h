@@ -24,7 +24,6 @@ class ProgramCache;
 class ProgramManager;
 class Shader;
 class ShaderManager;
-class ShaderTranslator;
 
 // This is used to track which attributes a particular program needs
 // so we can verify at glDrawXXX time that every attribute is either disabled
@@ -179,12 +178,12 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   bool AttachShader(ShaderManager* manager, Shader* shader);
   bool DetachShader(ShaderManager* manager, Shader* shader);
 
+  void CompileAttachedShaders();
+  bool AttachedShadersExist() const;
   bool CanLink() const;
 
   // Performs glLinkProgram and related activities.
   bool Link(ShaderManager* manager,
-            ShaderTranslator* vertex_translator,
-            ShaderTranslator* fragment_shader,
             VaryingsPackingOption varyings_packing_option,
             const ShaderCacheCallback& shader_callback);
 

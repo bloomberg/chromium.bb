@@ -1174,14 +1174,26 @@ TEST_P(GLES2DecoderWithShaderTest,
 }
 
 TEST_P(GLES2DecoderTest, CompileShaderValidArgs) {
+  // Compile shader should not actually call any GL calls yet.
+  CompileShader cmd;
+  cmd.Init(client_shader_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  // Getting the shader compilation state should trigger the actual GL calls.
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
   EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
   EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_COMPILE_STATUS, _))
       .WillOnce(SetArgPointee<2>(GL_TRUE))
       .RetiresOnSaturation();
-  CompileShader cmd;
-  cmd.Init(client_shader_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+
+  GetShaderiv status_cmd;
+  status_cmd.Init(client_shader_id_, GL_COMPILE_STATUS,
+                  kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(status_cmd));
 }
 
 TEST_P(GLES2DecoderTest, CompileShaderInvalidArgs) {

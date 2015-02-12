@@ -4,7 +4,9 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -185,6 +187,68 @@ TEST_F(GLProgramTest, UniformsInCurrentProgram) {
   uint8 expected_color[] = { 0, 0, 255, 255, };
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color));
   GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
+TEST_F(GLProgramTest, DeferCompileWithExt) {
+  // This test must have extensions enabled.
+  gles2::ContextGroup* context_group = gl_.decoder()->GetContextGroup();
+  gles2::FeatureInfo* feature_info = context_group->feature_info();
+  const gles2::FeatureInfo::FeatureFlags& flags = feature_info->feature_flags();
+  if (!flags.ext_frag_depth)
+    return;
+
+  static const char* v_shdr_str = R"(
+      attribute vec4 vPosition;
+      void main()
+      {
+        gl_Position = vPosition;
+      }
+  )";
+  static const char* f_shdr_str = R"(
+      #extension GL_EXT_frag_depth : enable
+      void main()
+      {
+        gl_FragDepthEXT = 1.0;
+      }
+  )";
+
+  // First compile and link to be shader compiles.
+  GLuint vs_good = GLTestHelper::CompileShader(GL_VERTEX_SHADER, v_shdr_str);
+  GLuint fs_good = GLTestHelper::CompileShader(GL_FRAGMENT_SHADER, f_shdr_str);
+  GLuint program_good = GLTestHelper::LinkProgram(vs_good, fs_good);
+  GLint linked_good = 0;
+  glGetProgramiv(program_good, GL_LINK_STATUS, &linked_good);
+  EXPECT_NE(0, linked_good);
+
+  // Disable extension and be sure shader no longer compiles.
+  ASSERT_TRUE(glEnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation"));
+  GLuint vs_bad = GLTestHelper::CompileShader(GL_VERTEX_SHADER, v_shdr_str);
+  GLuint fs_bad = GLTestHelper::CompileShader(GL_FRAGMENT_SHADER, f_shdr_str);
+  GLuint program_bad = GLTestHelper::LinkProgram(vs_bad, fs_bad);
+  GLint linked_bad = 0;
+  glGetProgramiv(program_bad, GL_LINK_STATUS, &linked_bad);
+  EXPECT_EQ(0, linked_bad);
+
+  // Relinking good compilations without extension disabled should still link.
+  GLuint program_defer_good = GLTestHelper::LinkProgram(vs_good, fs_good);
+  GLint linked_defer_good = 0;
+  glGetProgramiv(program_defer_good, GL_LINK_STATUS, &linked_defer_good);
+  EXPECT_NE(0, linked_defer_good);
+
+  // linking bad compilations with extension enabled should still not link.
+  GLuint vs_bad2 = GLTestHelper::CompileShader(GL_VERTEX_SHADER, v_shdr_str);
+  GLuint fs_bad2 = GLTestHelper::CompileShader(GL_FRAGMENT_SHADER, f_shdr_str);
+  glRequestExtensionCHROMIUM("GL_EXT_frag_depth");
+  GLuint program_bad2 = GLTestHelper::LinkProgram(vs_bad2, fs_bad2);
+  GLint linked_bad2 = 0;
+  glGetProgramiv(program_bad2, GL_LINK_STATUS, &linked_bad2);
+  EXPECT_EQ(0, linked_bad2);
+
+  // Be sure extension was actually turned on by recompiling.
+  GLuint vs_good2 = GLTestHelper::LoadShader(GL_VERTEX_SHADER, v_shdr_str);
+  GLuint fs_good2 = GLTestHelper::LoadShader(GL_FRAGMENT_SHADER, f_shdr_str);
+  GLuint program_good2 = GLTestHelper::SetupProgram(vs_good2, fs_good2);
+  EXPECT_NE(0u, program_good2);
 }
 
 }  // namespace gpu

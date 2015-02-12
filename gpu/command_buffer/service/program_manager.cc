@@ -24,7 +24,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shader_manager.h"
-#include "gpu/command_buffer/service/shader_translator.h"
 #include "third_party/re2/re2/re2.h"
 
 using base::TimeDelta;
@@ -515,46 +514,12 @@ void Program::ExecuteBindAttribLocationCalls() {
 }
 
 bool Program::Link(ShaderManager* manager,
-                   ShaderTranslator* vertex_translator,
-                   ShaderTranslator* fragment_translator,
                    Program::VaryingsPackingOption varyings_packing_option,
                    const ShaderCacheCallback& shader_callback) {
   ClearLinkStatus();
-  if (!CanLink()) {
+
+  if (!AttachedShadersExist()) {
     set_log_info("missing shaders");
-    return false;
-  }
-  if (DetectAttribLocationBindingConflicts()) {
-    set_log_info("glBindAttribLocation() conflicts");
-    return false;
-  }
-  std::string conflicting_name;
-  if (DetectUniformsMismatch(&conflicting_name)) {
-    std::string info_log = "Uniforms with the same name but different "
-                           "type/precision: " + conflicting_name;
-    set_log_info(ProcessLogInfo(info_log).c_str());
-    return false;
-  }
-  if (DetectVaryingsMismatch(&conflicting_name)) {
-    std::string info_log = "Varyings with the same name but different type, "
-                           "or statically used varyings in fragment shader are "
-                           "not declared in vertex shader: " + conflicting_name;
-    set_log_info(ProcessLogInfo(info_log).c_str());
-    return false;
-  }
-  if (DetectBuiltInInvariantConflicts()) {
-    set_log_info("Invariant settings for certain built-in varyings "
-                 "have to match");
-    return false;
-  }
-  if (DetectGlobalNameConflicts(&conflicting_name)) {
-    std::string info_log = "Name conflicts between an uniform and an "
-                           "attribute: " + conflicting_name;
-    set_log_info(ProcessLogInfo(info_log).c_str());
-    return false;
-  }
-  if (!CheckVaryingsPacking(varyings_packing_option)) {
-    set_log_info("Varyings over maximum register limit");
     return false;
   }
 
@@ -565,19 +530,15 @@ bool Program::Link(ShaderManager* manager,
     DCHECK(!attached_shaders_[0]->last_compiled_source().empty() &&
            !attached_shaders_[1]->last_compiled_source().empty());
     ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
-        attached_shaders_[0]->last_compiled_source(),
-        vertex_translator,
-        attached_shaders_[1]->last_compiled_source(),
-        fragment_translator,
+        attached_shaders_[0]->last_compiled_signature(),
+        attached_shaders_[1]->last_compiled_signature(),
         &bind_attrib_location_map_);
 
     if (status == ProgramCache::LINK_SUCCEEDED) {
       ProgramCache::ProgramLoadResult success =
           cache->LoadLinkedProgram(service_id(),
                                    attached_shaders_[0].get(),
-                                   vertex_translator,
                                    attached_shaders_[1].get(),
-                                   fragment_translator,
                                    &bind_attrib_location_map_,
                                    shader_callback);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
@@ -586,6 +547,47 @@ bool Program::Link(ShaderManager* manager,
   }
 
   if (link) {
+    CompileAttachedShaders();
+
+    if (!CanLink()) {
+      set_log_info("invalid shaders");
+      return false;
+    }
+    if (DetectAttribLocationBindingConflicts()) {
+      set_log_info("glBindAttribLocation() conflicts");
+      return false;
+    }
+    std::string conflicting_name;
+    if (DetectUniformsMismatch(&conflicting_name)) {
+      std::string info_log = "Uniforms with the same name but different "
+                             "type/precision: " + conflicting_name;
+      set_log_info(ProcessLogInfo(info_log).c_str());
+      return false;
+    }
+    if (DetectVaryingsMismatch(&conflicting_name)) {
+      std::string info_log = "Varyings with the same name but different type, "
+                             "or statically used varyings in fragment shader "
+                             "are not declared in vertex shader: " +
+                             conflicting_name;
+      set_log_info(ProcessLogInfo(info_log).c_str());
+      return false;
+    }
+    if (DetectBuiltInInvariantConflicts()) {
+      set_log_info("Invariant settings for certain built-in varyings "
+                   "have to match");
+      return false;
+    }
+    if (DetectGlobalNameConflicts(&conflicting_name)) {
+      std::string info_log = "Name conflicts between an uniform and an "
+                             "attribute: " + conflicting_name;
+      set_log_info(ProcessLogInfo(info_log).c_str());
+      return false;
+    }
+    if (!CheckVaryingsPacking(varyings_packing_option)) {
+      set_log_info("Varyings over maximum register limit");
+      return false;
+    }
+
     ExecuteBindAttribLocationCalls();
     before_time = TimeTicks::Now();
     if (cache && gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
@@ -604,9 +606,7 @@ bool Program::Link(ShaderManager* manager,
       if (cache) {
         cache->SaveLinkedProgram(service_id(),
                                  attached_shaders_[0].get(),
-                                 vertex_translator,
                                  attached_shaders_[1].get(),
-                                 fragment_translator,
                                  &bind_attrib_location_map_,
                                  shader_callback);
       }
@@ -999,6 +999,23 @@ void Program::DetachShaders(ShaderManager* shader_manager) {
       DetachShader(shader_manager, attached_shaders_[ii].get());
     }
   }
+}
+
+void Program::CompileAttachedShaders() {
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    Shader* shader = attached_shaders_[ii].get();
+    if (shader) {
+      shader->DoCompile();
+    }
+  }
+}
+
+bool Program::AttachedShadersExist() const {
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    if (!attached_shaders_[ii].get())
+      return false;
+  }
+  return true;
 }
 
 bool Program::CanLink() const {

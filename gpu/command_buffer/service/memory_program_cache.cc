@@ -15,7 +15,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/shader_manager.h"
-#include "gpu/command_buffer/service/shader_translator.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace {
@@ -173,9 +172,7 @@ void MemoryProgramCache::ClearBackend() {
 ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     GLuint program,
     Shader* shader_a,
-    const ShaderTranslatorInterface* translator_a,
     Shader* shader_b,
-    const ShaderTranslatorInterface* translator_b,
     const LocationMap* bind_attrib_location_map,
     const ShaderCacheCallback& shader_callback) {
   char a_sha[kHashLength];
@@ -183,9 +180,9 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   DCHECK(shader_a && !shader_a->last_compiled_source().empty() &&
          shader_b && !shader_b->last_compiled_source().empty());
   ComputeShaderHash(
-      shader_a->last_compiled_source(), translator_a, a_sha);
+      shader_a->last_compiled_signature(), a_sha);
   ComputeShaderHash(
-      shader_b->last_compiled_source(), translator_b, b_sha);
+      shader_b->last_compiled_signature(), b_sha);
 
   char sha[kHashLength];
   ComputeProgramHash(a_sha,
@@ -235,9 +232,7 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
 void MemoryProgramCache::SaveLinkedProgram(
     GLuint program,
     const Shader* shader_a,
-    const ShaderTranslatorInterface* translator_a,
     const Shader* shader_b,
-    const ShaderTranslatorInterface* translator_b,
     const LocationMap* bind_attrib_location_map,
     const ShaderCacheCallback& shader_callback) {
   GLenum format;
@@ -259,9 +254,9 @@ void MemoryProgramCache::SaveLinkedProgram(
   DCHECK(shader_a && !shader_a->last_compiled_source().empty() &&
          shader_b && !shader_b->last_compiled_source().empty());
   ComputeShaderHash(
-      shader_a->last_compiled_source(), translator_a, a_sha);
+      shader_a->last_compiled_signature(), a_sha);
   ComputeShaderHash(
-      shader_b->last_compiled_source(), translator_b, b_sha);
+      shader_b->last_compiled_signature(), b_sha);
 
   char sha[kHashLength];
   ComputeProgramHash(a_sha,

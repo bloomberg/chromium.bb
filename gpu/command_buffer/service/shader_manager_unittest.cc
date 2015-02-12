@@ -140,14 +140,14 @@ TEST_F(ShaderManagerTest, DoCompile) {
   EXPECT_TRUE(shader1->last_compiled_source().empty());
 
   // Check that DoCompile() will not work if RequestCompile() was not called.
-  MockShaderTranslator translator;
-  shader1->DoCompile(&translator, Shader::kANGLE);
+  shader1->DoCompile();
   EXPECT_EQ(Shader::kShaderStateWaiting, shader1->shader_state());
   EXPECT_FALSE(shader1->valid());
 
   // Check RequestCompile() will update the state and last compiled source, but
   // still keep the actual compile state invalid.
-  shader1->RequestCompile();
+  scoped_refptr<ShaderTranslatorInterface> translator(new MockShaderTranslator);
+  shader1->RequestCompile(translator, Shader::kANGLE);
   EXPECT_EQ(Shader::kShaderStateCompileRequested, shader1->shader_state());
   EXPECT_STREQ(kClient1Source, shader1->last_compiled_source().c_str());
   EXPECT_FALSE(shader1->valid());

@@ -761,14 +761,15 @@ void TestHelper::SetShaderStates(
   const NameMap* name_map = (expected_name_map && expected_valid) ?
       expected_name_map : &empty_name_map;
 
-  MockShaderTranslator translator;
-  EXPECT_CALL(translator, Translate(_,
-                                    NotNull(),  // log_info
-                                    NotNull(),  // translated_source
-                                    NotNull(),  // attrib_map
-                                    NotNull(),  // uniform_map
-                                    NotNull(),  // varying_map
-                                    NotNull()))  // name_map
+  MockShaderTranslator* mock_translator = new MockShaderTranslator;
+  scoped_refptr<ShaderTranslatorInterface> translator(mock_translator);
+  EXPECT_CALL(*mock_translator, Translate(_,
+                                          NotNull(),  // log_info
+                                          NotNull(),  // translated_source
+                                          NotNull(),  // attrib_map
+                                          NotNull(),  // uniform_map
+                                          NotNull(),  // varying_map
+                                          NotNull()))  // name_map
       .WillOnce(DoAll(SetArgumentPointee<1>(*log_info),
                       SetArgumentPointee<2>(*translated_source),
                       SetArgumentPointee<3>(*attrib_map),
@@ -790,8 +791,8 @@ void TestHelper::SetShaderStates(
         .WillOnce(SetArgumentPointee<2>(GL_TRUE))
         .RetiresOnSaturation();
   }
-  shader->RequestCompile();
-  shader->DoCompile(&translator, Shader::kGL);
+  shader->RequestCompile(translator, Shader::kGL);
+  shader->DoCompile();
 }
 
 // static

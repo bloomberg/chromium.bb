@@ -190,16 +190,14 @@ TEST_F(MemoryProgramCacheTest, CacheSave) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->last_compiled_source(),
-      NULL,
-      fragment_shader_->last_compiled_source(),
-      NULL,
+      vertex_shader_->last_compiled_signature(),
+      fragment_shader_->last_compiled_signature(),
       NULL));
   EXPECT_EQ(1, shader_cache_count());
 }
@@ -215,16 +213,14 @@ TEST_F(MemoryProgramCacheTest, LoadProgram) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->last_compiled_source(),
-      NULL,
-      fragment_shader_->last_compiled_source(),
-      NULL,
+      vertex_shader_->last_compiled_signature(),
+      fragment_shader_->last_compiled_signature(),
       NULL));
   EXPECT_EQ(1, shader_cache_count());
 
@@ -232,10 +228,8 @@ TEST_F(MemoryProgramCacheTest, LoadProgram) {
 
   cache_->LoadProgram(shader_cache_shader());
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->last_compiled_source(),
-      NULL,
-      fragment_shader_->last_compiled_source(),
-      NULL,
+      vertex_shader_->last_compiled_signature(),
+      fragment_shader_->last_compiled_signature(),
       NULL));
 }
 
@@ -250,8 +244,8 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
   EXPECT_EQ(1, shader_cache_count());
@@ -275,9 +269,7 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_SUCCESS, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
@@ -305,8 +297,8 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
   EXPECT_EQ(1, shader_cache_count());
@@ -333,9 +325,7 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_SUCCESS, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
@@ -363,8 +353,8 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnLinkFalse) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
@@ -372,9 +362,7 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnLinkFalse) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
@@ -391,8 +379,8 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentSource) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
@@ -402,9 +390,7 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentSource) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
@@ -416,9 +402,7 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentSource) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
@@ -439,9 +423,7 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentMap) {
   binding_map["test"] = 512;
   cache_->SaveLinkedProgram(kProgramId,
                             vertex_shader_,
-                            NULL,
                             fragment_shader_,
-                            NULL,
                             &binding_map,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
@@ -450,18 +432,14 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentMap) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       &binding_map,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
@@ -479,8 +457,8 @@ TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
 
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator1);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
@@ -488,7 +466,7 @@ TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
   const GLuint kEvictingBinaryLength = kCacheSizeBytes - kBinaryLength + 1;
 
   // save old source and modify for new program
-  const std::string& old_source = fragment_shader_->last_compiled_source();
+  const std::string& old_sig = fragment_shader_->last_compiled_signature();
   fragment_shader_->set_source("al sdfkjdk");
   TestHelper::SetShaderStates(gl_.get(), fragment_shader_, true);
 
@@ -504,24 +482,18 @@ TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
   SetExpectationsForSaveLinkedProgram(kEvictingProgramId, &emulator2);
   cache_->SaveLinkedProgram(kEvictingProgramId,
                             vertex_shader_,
-                            NULL,
                             fragment_shader_,
-                            NULL,
                             NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->last_compiled_source(),
-      NULL,
-      fragment_shader_->last_compiled_source(),
-      NULL,
+      vertex_shader_->last_compiled_signature(),
+      fragment_shader_->last_compiled_signature(),
       NULL));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN, cache_->GetLinkedProgramStatus(
-      old_source,
-      NULL,
-      fragment_shader_->last_compiled_source(),
-      NULL,
+      old_sig,
+      fragment_shader_->last_compiled_signature(),
       NULL));
 }
 
@@ -537,16 +509,14 @@ TEST_F(MemoryProgramCacheTest, SaveCorrectProgram) {
 
   vertex_shader_->set_source("different!");
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator1);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->last_compiled_source(),
-      NULL,
-      fragment_shader_->last_compiled_source(),
-      NULL,
+      vertex_shader_->last_compiled_signature(),
+      fragment_shader_->last_compiled_signature(),
       NULL));
 }
 
@@ -561,16 +531,14 @@ TEST_F(MemoryProgramCacheTest, LoadCorrectProgram) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
-      vertex_shader_->last_compiled_source(),
-      NULL,
-      fragment_shader_->last_compiled_source(),
-      NULL,
+      vertex_shader_->last_compiled_signature(),
+      fragment_shader_->last_compiled_signature(),
       NULL));
 
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
@@ -579,9 +547,7 @@ TEST_F(MemoryProgramCacheTest, LoadCorrectProgram) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_SUCCESS, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));
@@ -598,8 +564,8 @@ TEST_F(MemoryProgramCacheTest, OverwriteOnNewSave) {
   ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
 
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
@@ -610,8 +576,8 @@ TEST_F(MemoryProgramCacheTest, OverwriteOnNewSave) {
   }
   ProgramBinaryEmulator emulator2(kBinaryLength, kFormat, test_binary2);
   SetExpectationsForSaveLinkedProgram(kProgramId, &emulator2);
-  cache_->SaveLinkedProgram(kProgramId, vertex_shader_, NULL,
-                            fragment_shader_, NULL, NULL,
+  cache_->SaveLinkedProgram(kProgramId, vertex_shader_,
+                            fragment_shader_, NULL,
                             base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                                        base::Unretained(this)));
 
@@ -619,9 +585,7 @@ TEST_F(MemoryProgramCacheTest, OverwriteOnNewSave) {
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_SUCCESS, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
-      NULL,
       fragment_shader_,
-      NULL,
       NULL,
       base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
                  base::Unretained(this))));

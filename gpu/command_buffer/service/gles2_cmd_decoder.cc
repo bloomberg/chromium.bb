@@ -1825,8 +1825,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   error::Error current_decoder_error_;
 
   bool use_shader_translator_;
-  scoped_refptr<ShaderTranslator> vertex_translator_;
-  scoped_refptr<ShaderTranslator> fragment_translator_;
+  scoped_refptr<ShaderTranslatorInterface> vertex_translator_;
+  scoped_refptr<ShaderTranslatorInterface> fragment_translator_;
 
   DisallowedFeatures disallowed_features_;
 
@@ -5842,15 +5842,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   }
 
   LogClientServiceForInfo(program, program_id, "glLinkProgram");
-  ShaderTranslator* vertex_translator = NULL;
-  ShaderTranslator* fragment_translator = NULL;
-  if (use_shader_translator_) {
-    vertex_translator = vertex_translator_.get();
-    fragment_translator = fragment_translator_.get();
-  }
   if (program->Link(shader_manager(),
-                    vertex_translator,
-                    fragment_translator,
                     workarounds().count_all_in_varyings_packing ?
                         Program::kCountAll : Program::kCountOnlyStaticallyUsed,
                     shader_cache_callback_)) {
@@ -7096,24 +7088,17 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   if (!shader) {
     return;
   }
-  ShaderTranslator* translator = NULL;
+
+  scoped_refptr<ShaderTranslatorInterface> translator;
   if (use_shader_translator_) {
-    translator = shader->shader_type() == GL_VERTEX_SHADER ?
-        vertex_translator_.get() : fragment_translator_.get();
+      translator = shader->shader_type() == GL_VERTEX_SHADER ?
+                   vertex_translator_ : fragment_translator_;
   }
 
-  shader->RequestCompile();
-
-  // TODO(dyen): Currently we compile immediately when glCompileShader is
-  // requested. Eventually this should be deffered to the linker stage.
-  shader->DoCompile(
-     translator,
-     feature_info_->feature_flags().angle_translated_shader_source ?
-         Shader::kANGLE : Shader::kGL);
-
-  // CompileShader can be very slow.  Exit command processing to allow for
-  // context preemption and GPU watchdog checks.
-  ExitCommandProcessingEarly();
+  const Shader::TranslatedShaderSourceType source_type =
+      feature_info_->feature_flags().angle_translated_shader_source ?
+      Shader::kANGLE : Shader::kGL;
+  shader->RequestCompile(translator, source_type);
 }
 
 void GLES2DecoderImpl::DoGetShaderiv(
@@ -7122,6 +7107,19 @@ void GLES2DecoderImpl::DoGetShaderiv(
   if (!shader) {
     return;
   }
+
+  // Compile now for statuses that require it.
+  switch (pname) {
+    case GL_COMPILE_STATUS:
+    case GL_INFO_LOG_LENGTH:
+    case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
+      shader->DoCompile();
+      break;
+
+    default:
+    break;
+  }
+
   switch (pname) {
     case GL_SHADER_SOURCE_LENGTH:
       *params = shader->source().size();
@@ -7179,6 +7177,9 @@ error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
     return error::kNoError;
   }
 
+  // Make sure translator has been utilized in compile.
+  shader->DoCompile();
+
   bucket->SetFromString(shader->translated_source().c_str());
   return error::kNoError;
 }
@@ -7214,6 +7215,10 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     bucket->SetFromString("");
     return error::kNoError;
   }
+
+  // Shader must be compiled in order to get the info log.
+  shader->DoCompile();
+
   bucket->SetFromString(shader->log_info().c_str());
   return error::kNoError;
 }

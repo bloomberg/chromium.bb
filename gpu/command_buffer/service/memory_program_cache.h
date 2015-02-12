@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_cache.h"
-#include "gpu/command_buffer/service/shader_translator.h"
 
 namespace gpu {
 namespace gles2 {
@@ -29,16 +28,12 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
   ProgramLoadResult LoadLinkedProgram(
       GLuint program,
       Shader* shader_a,
-      const ShaderTranslatorInterface* translator_a,
       Shader* shader_b,
-      const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map,
       const ShaderCacheCallback& shader_callback) override;
   void SaveLinkedProgram(GLuint program,
                          const Shader* shader_a,
-                         const ShaderTranslatorInterface* translator_a,
                          const Shader* shader_b,
-                         const ShaderTranslatorInterface* translator_b,
                          const LocationMap* bind_attrib_location_map,
                          const ShaderCacheCallback& shader_callback) override;
 

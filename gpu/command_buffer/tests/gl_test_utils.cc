@@ -31,12 +31,19 @@ bool GLTestHelper::CheckGLError(const char* msg, int line) {
    return success;
 }
 
-GLuint GLTestHelper::LoadShader(GLenum type, const char* shaderSrc) {
+GLuint GLTestHelper::CompileShader(GLenum type, const char* shaderSrc) {
   GLuint shader = glCreateShader(type);
   // Load the shader source
   glShaderSource(shader, 1, &shaderSrc, NULL);
   // Compile the shader
   glCompileShader(shader);
+
+  return shader;
+}
+
+GLuint GLTestHelper::LoadShader(GLenum type, const char* shaderSrc) {
+  GLuint shader = CompileShader(type, shaderSrc);
+
   // Check the compile status
   GLint value = 0;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
@@ -52,7 +59,7 @@ GLuint GLTestHelper::LoadShader(GLenum type, const char* shaderSrc) {
   return shader;
 }
 
-GLuint GLTestHelper::SetupProgram(
+GLuint GLTestHelper::LinkProgram(
     GLuint vertex_shader, GLuint fragment_shader) {
   // Create the program object
   GLuint program = glCreateProgram();
@@ -60,6 +67,13 @@ GLuint GLTestHelper::SetupProgram(
   glAttachShader(program, fragment_shader);
   // Link the program
   glLinkProgram(program);
+
+  return program;
+}
+
+GLuint GLTestHelper::SetupProgram(
+    GLuint vertex_shader, GLuint fragment_shader) {
+  GLuint program = LinkProgram(vertex_shader, fragment_shader);
   // Check the link status
   GLint linked = 0;
   glGetProgramiv(program, GL_LINK_STATUS, &linked);

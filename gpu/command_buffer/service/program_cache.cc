@@ -20,15 +20,13 @@ void ProgramCache::Clear() {
 }
 
 ProgramCache::LinkedProgramStatus ProgramCache::GetLinkedProgramStatus(
-    const std::string& untranslated_a,
-    const ShaderTranslatorInterface* translator_a,
-    const std::string& untranslated_b,
-    const ShaderTranslatorInterface* translator_b,
+    const std::string& shader_signature_a,
+    const std::string& shader_signature_b,
     const std::map<std::string, GLint>* bind_attrib_location_map) const {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
-  ComputeShaderHash(untranslated_a, translator_a, a_sha);
-  ComputeShaderHash(untranslated_b, translator_b, b_sha);
+  ComputeShaderHash(shader_signature_a, a_sha);
+  ComputeShaderHash(shader_signature_b, b_sha);
 
   char sha[kHashLength];
   ComputeProgramHash(a_sha,
@@ -46,15 +44,13 @@ ProgramCache::LinkedProgramStatus ProgramCache::GetLinkedProgramStatus(
 }
 
 void ProgramCache::LinkedProgramCacheSuccess(
-    const std::string& shader_a,
-    const ShaderTranslatorInterface* translator_a,
-    const std::string& shader_b,
-    const ShaderTranslatorInterface* translator_b,
+    const std::string& shader_signature_a,
+    const std::string& shader_signature_b,
     const LocationMap* bind_attrib_location_map) {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
-  ComputeShaderHash(shader_a, translator_a, a_sha);
-  ComputeShaderHash(shader_b, translator_b, b_sha);
+  ComputeShaderHash(shader_signature_a, a_sha);
+  ComputeShaderHash(shader_signature_b, b_sha);
   char sha[kHashLength];
   ComputeProgramHash(a_sha,
                      b_sha,
@@ -71,13 +67,9 @@ void ProgramCache::LinkedProgramCacheSuccess(const std::string& program_hash) {
 
 void ProgramCache::ComputeShaderHash(
     const std::string& str,
-    const ShaderTranslatorInterface* translator,
     char* result) const {
-  std::string s((
-      translator ? translator->GetStringForOptionsThatWouldAffectCompilation() :
-                   std::string()) + str);
-  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(s.c_str()),
-                      s.length(), reinterpret_cast<unsigned char*>(result));
+  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(str.c_str()),
+                      str.length(), reinterpret_cast<unsigned char*>(result));
 }
 
 void ProgramCache::Evict(const std::string& program_hash) {

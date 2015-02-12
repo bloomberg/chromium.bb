@@ -242,7 +242,7 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
 
     program_->AttachShader(&shader_manager_, vertex_shader);
     program_->AttachShader(&shader_manager_, fragment_shader);
-    program_->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+    program_->Link(NULL, Program::kCountOnlyStaticallyUsed,
                    base::Bind(&ShaderCacheCb));
   }
 
@@ -272,7 +272,7 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
       SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
                   service_id);
     }
-    program->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+    program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                   base::Bind(&ShaderCacheCb));
     GLint link_status;
     program->GetProgramiv(GL_LINK_STATUS, &link_status);
@@ -715,7 +715,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   ASSERT_TRUE(program != NULL);
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
-  program->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+  program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                 base::Bind(&ShaderCacheCb));
   GLint value = 0;
   program->GetProgramiv(GL_ACTIVE_ATTRIBUTES, &value);
@@ -784,7 +784,7 @@ TEST_F(ProgramManagerWithShaderTest, SimilarArrayNames) {
   ASSERT_TRUE(program != NULL);
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
-  program->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+  program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                 base::Bind(&ShaderCacheCb));
 
   // Check that we get the correct locations.
@@ -880,7 +880,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   ASSERT_TRUE(program!= NULL);
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
-  program->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+  program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                 base::Bind(&ShaderCacheCb));
   // Check that we got the good type, not the bad.
   // Check Attribs
@@ -1728,7 +1728,7 @@ TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
     const size_t kNumUniforms = arraysize(kUniforms);
     SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
                 kServiceProgramId);
-    program->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+    program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                   base::Bind(&ShaderCacheCb));
     SetupExpectationsForClearingUniforms(kUniforms, kNumUniforms);
     manager_.ClearUniforms(program);
@@ -1801,7 +1801,7 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
   const size_t kNumUniforms = arraysize(kUniforms);
   SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
               kServiceProgramId);
-  program->Link(NULL, NULL, NULL, Program::kCountOnlyStaticallyUsed,
+  program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                 base::Bind(&ShaderCacheCb));
 
   EXPECT_EQ(kUniform1DesiredLocation,
@@ -1862,9 +1862,7 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
   void SetProgramCached() {
     cache_->LinkedProgramCacheSuccess(
         vertex_shader_->source(),
-        NULL,
         fragment_shader_->source(),
-        NULL,
         &program_->bind_attrib_location_map());
   }
 
@@ -1881,9 +1879,7 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
     EXPECT_CALL(*cache_.get(), SaveLinkedProgram(
         program->service_id(),
         vertex_shader,
-        NULL,
         fragment_shader,
-        NULL,
         &program->bind_attrib_location_map(),
         _)).Times(1);
   }
@@ -1901,9 +1897,7 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
     EXPECT_CALL(*cache_.get(), SaveLinkedProgram(
         program->service_id(),
         vertex_shader,
-        NULL,
         fragment_shader,
-        NULL,
         &program->bind_attrib_location_map(),
         _)).Times(0);
   }
@@ -1925,9 +1919,7 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
     EXPECT_CALL(*cache_.get(),
                 LoadLinkedProgram(service_program_id,
                                   vertex_shader,
-                                  NULL,
                                   fragment_shader,
-                                  NULL,
                                   &program->bind_attrib_location_map(),
                                   _))
         .WillOnce(Return(result));
@@ -2018,8 +2010,8 @@ TEST_F(ProgramManagerWithCacheTest, CacheProgramOnSuccessfulLink) {
   SetShadersCompiled();
   SetExpectationsForProgramLink();
   SetExpectationsForProgramCached();
-  EXPECT_TRUE(program_->Link(NULL, NULL, NULL,
-      Program::kCountOnlyStaticallyUsed, base::Bind(&ShaderCacheCb)));
+  EXPECT_TRUE(program_->Link(NULL, Program::kCountOnlyStaticallyUsed,
+                             base::Bind(&ShaderCacheCb)));
 }
 
 TEST_F(ProgramManagerWithCacheTest, LoadProgramOnProgramCacheHit) {
@@ -2032,8 +2024,8 @@ TEST_F(ProgramManagerWithCacheTest, LoadProgramOnProgramCacheHit) {
   SetExpectationsForNotCachingProgram();
   SetExpectationsForProgramLoadSuccess();
 
-  EXPECT_TRUE(program_->Link(NULL, NULL, NULL,
-      Program::kCountOnlyStaticallyUsed, base::Bind(&ShaderCacheCb)));
+  EXPECT_TRUE(program_->Link(NULL, Program::kCountOnlyStaticallyUsed,
+                             base::Bind(&ShaderCacheCb)));
 }
 
 }  // namespace gles2

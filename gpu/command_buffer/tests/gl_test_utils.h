@@ -18,11 +18,19 @@ class GLTestHelper {
   static bool CheckGLError(const char* msg, int line);
 
   // Compiles a shader.
-  // Returns shader, 0 on failure..
+  // Does not check for errors, always returns shader.
+  static GLuint CompileShader(GLenum type, const char* shaderSrc);
+
+  // Compiles a shader and checks for compilation errors.
+  // Returns shader, 0 on failure.
   static GLuint LoadShader(GLenum type, const char* shaderSrc);
 
   // Attaches 2 shaders and links them to a program.
-  // Returns program, 0 on failure..
+  // Does not check for errors, always returns program.
+  static GLuint LinkProgram(GLuint vertex_shader, GLuint fragment_shader);
+
+  // Attaches 2 shaders, links them to a program, and checks for errors.
+  // Returns program, 0 on failure.
   static GLuint SetupProgram(GLuint vertex_shader, GLuint fragment_shader);
 
   // Compiles 2 shaders, attaches and links them to a program
