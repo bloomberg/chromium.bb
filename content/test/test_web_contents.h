@@ -6,7 +6,6 @@
 #define CONTENT_TEST_TEST_WEB_CONTENTS_H_
 
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
@@ -48,7 +47,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                    const GURL& url,
                                    const Referrer& referrer,
                                    ui::PageTransition transition) override;
-  WebPreferences TestComputeWebkitPrefs() override;
 
   // State accessor.
   bool cross_navigation_pending() {

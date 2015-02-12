@@ -493,13 +493,6 @@ RendererPreferences InterstitialPageImpl::GetRendererPrefs(
   return renderer_preferences_;
 }
 
-WebPreferences InterstitialPageImpl::ComputeWebkitPrefs() {
-  if (!enabled())
-    return WebPreferences();
-
-  return render_view_host_->ComputeWebkitPrefs(url_);
-}
-
 void InterstitialPageImpl::RenderWidgetDeleted(
     RenderWidgetHostImpl* render_widget_host) {
   // TODO(creis): Remove this method once we verify the shutdown path is sane.

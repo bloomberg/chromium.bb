@@ -146,7 +146,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool private_api,
       const content::SocketPermissionRequest* params) override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
-                           const GURL& url,
                            content::WebPreferences* web_prefs) override;
 #if defined(VIDEO_HOLE)
   content::ExternalVideoSurfaceContainer*

@@ -330,7 +330,7 @@ void RenderViewHostImpl::SyncRendererPrefs() {
                                         GetProcess()->GetBrowserContext())));
 }
 
-WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
+WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   TRACE_EVENT0("browser", "RenderViewHostImpl::GetWebkitPrefs");
   WebPreferences prefs;
 
@@ -524,7 +524,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
     prefs.v8_cache_options = V8_CACHE_OPTIONS_DEFAULT;
   }
 
-  GetContentClient()->browser()->OverrideWebkitPrefs(this, url, &prefs);
+  GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
 }
 
@@ -1346,7 +1346,7 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
   if (updating_web_preferences_)
     return;
   updating_web_preferences_ = true;
-  UpdateWebkitPreferences(delegate_->ComputeWebkitPrefs());
+  UpdateWebkitPreferences(ComputeWebkitPrefs());
   updating_web_preferences_ = false;
 }
 

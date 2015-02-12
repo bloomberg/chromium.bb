@@ -246,7 +246,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* render_view_host,
-    const GURL& url,
     WebPreferences* prefs) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRunLayoutTest))

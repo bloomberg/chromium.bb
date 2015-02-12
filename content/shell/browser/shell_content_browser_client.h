@@ -47,7 +47,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
-                           const GURL& url,
                            WebPreferences* prefs) override;
   void ResourceDispatcherHostCreated() override;
   AccessTokenStore* CreateAccessTokenStore() override;

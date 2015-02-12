@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/layout.h"
@@ -210,6 +211,7 @@ class TestRenderViewHost
   // RenderViewHostImpl, see below.
   void SimulateWasHidden() override;
   void SimulateWasShown() override;
+  WebPreferences TestComputeWebkitPrefs() override;
 
   void TestOnUpdateStateWithFile(
       int page_id, const base::FilePath& file_path);

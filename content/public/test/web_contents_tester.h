@@ -17,7 +17,6 @@ class RenderViewHost;
 class SiteInstance;
 class WebContents;
 struct Referrer;
-struct WebPreferences;
 
 // This interface allows embedders of content/ to write tests that depend on a
 // test version of WebContents.  This interface can be retrieved from any
@@ -90,9 +89,6 @@ class WebContentsTester {
       const GURL& url,
       const Referrer& referrer,
       ui::PageTransition transition) = 0;
-
-  // Promote ComputeWebkitPrefs to public.
-  virtual WebPreferences TestComputeWebkitPrefs() = 0;
 };
 
 }  // namespace content

@@ -146,7 +146,6 @@ content::AccessTokenStore* CastContentBrowserClient::CreateAccessTokenStore() {
 
 void CastContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
-    const GURL& url,
     content::WebPreferences* prefs) {
   prefs->allow_scripts_to_close_windows = true;
   // TODO(lcwu): http://crbug.com/391089. This pref is set to true by default

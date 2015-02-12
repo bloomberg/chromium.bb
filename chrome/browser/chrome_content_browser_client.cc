@@ -2128,7 +2128,7 @@ bool ChromeContentBrowserClient::IsFastShutdownPossible() {
 }
 
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
-    RenderViewHost* rvh, const GURL& url, WebPreferences* web_prefs) {
+    RenderViewHost* rvh, WebPreferences* web_prefs) {
   Profile* profile = Profile::FromBrowserContext(
       rvh->GetProcess()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
@@ -2251,7 +2251,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
-    extra_parts_[i]->OverrideWebkitPrefs(rvh, url, web_prefs);
+    extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(

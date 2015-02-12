@@ -43,7 +43,6 @@ class ChromeContentBrowserClientParts {
   virtual void SiteInstanceGotProcess(content::SiteInstance* site_instance) {}
   virtual void SiteInstanceDeleting(content::SiteInstance* site_instance) {}
   virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
-                                   const GURL& url,
                                    content::WebPreferences* web_prefs) {}
   virtual void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) {}
   virtual void GetAdditionalAllowedSchemesForFileSystem(

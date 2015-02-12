@@ -22,10 +22,6 @@ WebContents* RenderViewHostDelegate::GetAsWebContents() {
   return NULL;
 }
 
-WebPreferences RenderViewHostDelegate::ComputeWebkitPrefs() {
-  return WebPreferences();
-}
-
 bool RenderViewHostDelegate::IsFullscreenForCurrentTab() const {
   return false;
 }

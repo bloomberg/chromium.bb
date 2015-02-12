@@ -533,7 +533,6 @@ bool AwContentBrowserClient::AllowPepperSocketAPI(
 
 void AwContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* rvh,
-    const GURL& url,
     content::WebPreferences* web_prefs) {
   if (!preferences_populater_.get()) {
     preferences_populater_ = make_scoped_ptr(native_factory_->

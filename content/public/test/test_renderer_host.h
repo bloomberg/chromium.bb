@@ -39,6 +39,7 @@ class RenderViewHostDelegate;
 class TestRenderFrameHostFactory;
 class TestRenderViewHostFactory;
 class WebContents;
+struct WebPreferences;
 
 // An interface and utility for driving tests of RenderFrameHost.
 class RenderFrameHostTester {
@@ -126,6 +127,9 @@ class RenderViewHostTester {
   // tell it it has been hidden or restored from having been hidden.
   virtual void SimulateWasHidden() = 0;
   virtual void SimulateWasShown() = 0;
+
+  // Promote ComputeWebkitPrefs to public.
+  virtual WebPreferences TestComputeWebkitPrefs() = 0;
 };
 
 // You can instantiate only one class like this at a time.  During its

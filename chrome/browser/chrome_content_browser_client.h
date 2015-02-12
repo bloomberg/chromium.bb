@@ -228,7 +228,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::AccessTokenStore* CreateAccessTokenStore() override;
   bool IsFastShutdownPossible() override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
-                           const GURL& url,
                            content::WebPreferences* prefs) override;
   void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) override;
   void ClearCache(content::RenderViewHost* rvh) override;

@@ -449,7 +449,6 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
 
 void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(
     RenderViewHost* rvh,
-    const GURL& url,
     WebPreferences* web_prefs) {
   const ExtensionRegistry* registry =
       ExtensionRegistry::Get(rvh->GetProcess()->GetBrowserContext());

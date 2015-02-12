@@ -261,6 +261,10 @@ void TestRenderViewHost::SimulateWasShown() {
   WasShown(ui::LatencyInfo());
 }
 
+WebPreferences TestRenderViewHost::TestComputeWebkitPrefs() {
+  return ComputeWebkitPrefs();
+}
+
 void TestRenderViewHost::TestOnStartDragging(
     const DropData& drop_data) {
   blink::WebDragOperationsMask drag_operation = blink::WebDragOperationEvery;

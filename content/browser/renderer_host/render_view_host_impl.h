@@ -200,9 +200,6 @@ class CONTENT_EXPORT RenderViewHostImpl
     return render_view_termination_status_;
   }
 
-  // Returns the content specific prefs for this RenderViewHost.
-  WebPreferences ComputeWebkitPrefs(const GURL& url);
-
   // Tracks whether this RenderViewHost is in an active state (rather than
   // pending swap out, pending deletion, or swapped out), according to its main
   // frame RenderFrameHost.
@@ -371,6 +368,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
   // to fire.
   static const int64 kUnloadTimeoutMS;
+
+  // Returns the content specific prefs for this RenderViewHost.
+  // TODO(creis): Move most of this method to RenderProcessHost, since it's
+  // mostly the same across all RVHs in a process.  Move the rest to RFH.
+  // See https://crbug.com/304341.
+  WebPreferences ComputeWebkitPrefs();
 
   // Returns whether the current RenderProcessHost has read access to the files
   // reported in |state|.

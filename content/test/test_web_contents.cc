@@ -102,10 +102,6 @@ void TestWebContents::TestDidNavigateWithReferrer(
   rfhi->frame_tree_node()->navigator()->DidNavigate(rfhi, params);
 }
 
-WebPreferences TestWebContents::TestComputeWebkitPrefs() {
-  return ComputeWebkitPrefs();
-}
-
 bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,

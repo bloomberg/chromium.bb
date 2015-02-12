@@ -139,10 +139,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const = 0;
 
-  // Computes a WebPreferences object that will be used by the renderer
-  // associated with the owning render view host.
-  virtual WebPreferences ComputeWebkitPrefs();
-
   // Notification the user has made a gesture while focus was on the
   // page. This is used to avoid uninitiated user downloads (aka carpet
   // bombing), see DownloadRequestLimiter for details.

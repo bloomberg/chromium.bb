@@ -435,7 +435,6 @@ class CONTENT_EXPORT WebContentsImpl
                            const base::string16& source_id) override;
   RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
-  WebPreferences ComputeWebkitPrefs() override;
   void OnUserGesture() override;
   void OnIgnoredUIEvent() override;
   void RendererUnresponsive(RenderViewHost* render_view_host) override;
