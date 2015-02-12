@@ -864,6 +864,11 @@ void AcceleratorController::RegisterAccelerators(
 bool AcceleratorController::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
+  if (nonrepeatable_actions_.find(action) != nonrepeatable_actions_.end() &&
+      accelerator.IsRepeat()) {
+    return false;
+  }
+
   AcceleratorProcessingRestriction restriction =
       GetAcceleratorProcessingRestriction(action);
   if (restriction != RESTRICTION_NONE)
@@ -998,17 +1003,12 @@ bool AcceleratorController::CanPerformAction(
   return false;
 }
 
-void  AcceleratorController::PerformAction(AcceleratorAction action,
-                                           const ui::Accelerator& accelerator) {
+void AcceleratorController::PerformAction(AcceleratorAction action,
+                                          const ui::Accelerator& accelerator) {
   AcceleratorProcessingRestriction restriction =
       GetAcceleratorProcessingRestriction(action);
   if (restriction != RESTRICTION_NONE)
     return;
-
-  if (nonrepeatable_actions_.find(action) != nonrepeatable_actions_.end() &&
-      accelerator.IsRepeat()) {
-    return;
-  }
 
   // If your accelerator invokes more than one line of code, please either
   // implement it in your module's controller code (like TOGGLE_MIRROR_MODE

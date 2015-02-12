@@ -343,20 +343,23 @@ const size_t kActionsAllowedAtModalWindowLength =
     arraysize(kActionsAllowedAtModalWindow);
 
 const AcceleratorAction kNonrepeatableActions[] = {
-  // TODO(mazda): Add other actions which should not be repeated.
-  CYCLE_BACKWARD_MRU,
-  CYCLE_FORWARD_MRU,
-  TOGGLE_OVERVIEW,
-  EXIT,
-  PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
-  ROTATE_SCREEN,
-  ROTATE_WINDOW,
-  SCALE_UI_UP,
-  SCALE_UI_DOWN,
-  SCALE_UI_RESET,
-  TOGGLE_FULLSCREEN,
-  TOGGLE_MAXIMIZED,
-  WINDOW_MINIMIZE,
+    // TODO(mazda): Add other actions which should not be repeated.
+    CYCLE_BACKWARD_MRU,
+    CYCLE_FORWARD_MRU,
+    TOGGLE_OVERVIEW,
+    EXIT,
+    PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
+    ROTATE_SCREEN,
+    ROTATE_WINDOW,
+    SCALE_UI_UP,
+    SCALE_UI_DOWN,
+    SCALE_UI_RESET,
+    TOGGLE_FULLSCREEN,
+    TOGGLE_MAXIMIZED,
+    WINDOW_MINIMIZE,
+#if defined(OS_CHROMEOS)
+    LOCK_SCREEN,
+#endif
 };
 
 const size_t kNonrepeatableActionsLength =
