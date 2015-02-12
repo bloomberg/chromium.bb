@@ -878,6 +878,13 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   base::CommandLine::StringType gpu_launcher =
       browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
 
+#if defined(OS_ANDROID)
+  // crbug.com/447735. readlink("self/proc/exe") sometimes fails on Android
+  // at startup with EACCES. As a workaround ignore this here, since the
+  // executable name is actually not used or useful anyways.
+  base::CommandLine* cmd_line =
+      new base::CommandLine(base::CommandLine::NO_PROGRAM);
+#else
 #if defined(OS_LINUX)
   int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
                                            ChildProcessHost::CHILD_NORMAL;
@@ -890,6 +897,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     return false;
 
   base::CommandLine* cmd_line = new base::CommandLine(exe_path);
+#endif
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
