@@ -1365,13 +1365,13 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
 
   // The value of "should replace entry" will be tested, but it's an error to
   // specify it when there are no entries. Create a simple entry to be replaced.
-  const GURL url0("http://foo0");
+  const GURL url0("http://foo/0");
   controller.LoadURL(
       url0, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   main_test_rfh()->SendNavigate(0, url0);
 
   // Set up the pending entry.
-  const GURL url1("http://foo1");
+  const GURL url1("http://foo/1");
   controller.LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
 
