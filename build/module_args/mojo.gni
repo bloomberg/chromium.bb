@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# To use the prebuilt shell, simply omit this variable. Note that the prebuilt
-# shell will be used only on platforms for which it is published (currently
-# Linux and Android).
-# use_prebuilt_mojo_shell = false
+# This variable should point to the parent directory of the Mojo SDK.
+mojo_sdk_root = "//third_party/mojo/src"
+
+# Chromium builds the network service from source, as it is the
+# producer of the network service.
+use_prebuilt_network_service = false
