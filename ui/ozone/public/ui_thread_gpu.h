@@ -8,6 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 
+namespace base {
+class Thread;
+}
+
 namespace ui {
 
 class FakeGpuProcess;
@@ -28,6 +32,7 @@ class OZONE_EXPORT UiThreadGpu {
  private:
   scoped_ptr<FakeGpuProcess> fake_gpu_process_;
   scoped_ptr<FakeGpuProcessHost> fake_gpu_process_host_;
+  scoped_ptr<base::Thread> io_helper_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(UiThreadGpu);
 };

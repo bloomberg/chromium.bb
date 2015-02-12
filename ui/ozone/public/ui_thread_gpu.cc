@@ -28,14 +28,17 @@ class FakeGpuProcess : public IPC::Sender {
 
   void Init() {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    ui::OzonePlatform::GetInstance()
-        ->GetGpuPlatformSupport()
-        ->GetMessageFilter()
-        ->OnFilterAdded(this);
 
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupport()
         ->OnChannelEstablished(this);
+  }
+
+  void InitOnIO() {
+    ui::OzonePlatform::GetInstance()
+        ->GetGpuPlatformSupport()
+        ->GetMessageFilter()
+        ->OnFilterAdded(this);
   }
 
   bool Send(IPC::Message* msg) override {
@@ -96,7 +99,15 @@ UiThreadGpu::~UiThreadGpu() {
 }
 
 bool UiThreadGpu::Initialize() {
+  io_helper_thread_.reset(new base::Thread("IOHelperThread"));
+  if (!io_helper_thread_->StartWithOptions(
+          base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
+    return false;
+
   fake_gpu_process_.reset(new FakeGpuProcess);
+  io_helper_thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&FakeGpuProcess::InitOnIO,
+                            base::Unretained(fake_gpu_process_.get())));
   fake_gpu_process_->Init();
 
   fake_gpu_process_host_.reset(new FakeGpuProcessHost);
