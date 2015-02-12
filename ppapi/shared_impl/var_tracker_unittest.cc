@@ -42,7 +42,6 @@ class VarTrackerTest : public testing::Test {
   // Test implementation.
   virtual void SetUp() override {
     ASSERT_EQ(0, mock_var_alive_count);
-    ProxyLock::EnableLockingOnThreadForTest();
   }
   virtual void TearDown() override {}
 

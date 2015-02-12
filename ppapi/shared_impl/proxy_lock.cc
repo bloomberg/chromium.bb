@@ -79,15 +79,13 @@ void ProxyLock::DisableLocking() {
   g_disable_locking = true;
 }
 
-// static
-void ProxyLock::DisableLockingOnThreadForTest() {
+ProxyLock::LockingDisablerForTest::LockingDisablerForTest() {
   // Note, we don't DCHECK that this flag isn't already set, because multiple
   // unit tests may run in succession and all set it.
   g_disable_locking_for_thread.Get().Set(true);
 }
 
-// static
-void ProxyLock::EnableLockingOnThreadForTest() {
+ProxyLock::LockingDisablerForTest::~LockingDisablerForTest() {
   g_disable_locking_for_thread.Get().Set(false);
 }
 

@@ -59,12 +59,11 @@ class PPAPI_SHARED_EXPORT ProxyLock {
   // We have some unit tests where one thread pretends to be the host and one
   // pretends to be the plugin. This allows the lock to do nothing on only one
   // thread to support these tests. See TwoWayTest for more information.
-  static void DisableLockingOnThreadForTest();
-
-  // Enables locking on the current thread. Although locking is enabled by
-  // default, unit tests that rely on the lock being enabled should *still*
-  // call this, since a previous test may have disabled locking.
-  static void EnableLockingOnThreadForTest();
+  class PPAPI_SHARED_EXPORT LockingDisablerForTest {
+   public:
+    LockingDisablerForTest();
+    ~LockingDisablerForTest();
+  };
 
  private:
   friend class content::HostGlobals;

@@ -20,6 +20,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/resource_message_test_sink.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -290,6 +291,9 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
   GlobalsConfiguration globals_config_;
   scoped_ptr<ppapi::TestGlobals> host_globals_;
   scoped_ptr<HostDispatcher> host_dispatcher_;
+  // The host side of the real proxy doesn't lock, so this disables locking for
+  // the thread the host side of the test runs on.
+  scoped_ptr<ProxyLock::LockingDisablerForTest> disable_locking_;
   DelegateMock delegate_mock_;
 };
 

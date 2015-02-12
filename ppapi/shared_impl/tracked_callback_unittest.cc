@@ -26,7 +26,6 @@ class TrackedCallbackTest : public testing::Test {
   PP_Instance pp_instance() const { return pp_instance_; }
 
   virtual void SetUp() override {
-    ProxyLock::EnableLockingOnThreadForTest();
     ProxyAutoLock lock;
     globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
   }

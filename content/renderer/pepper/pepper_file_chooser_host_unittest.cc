@@ -36,7 +36,6 @@ class PepperFileChooserHostTest : public RenderViewTest {
   void SetUp() override {
     SetContentClient(&client_);
     RenderViewTest::SetUp();
-    ppapi::ProxyLock::DisableLockingOnThreadForTest();
 
     globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
   }
@@ -51,6 +50,8 @@ class PepperFileChooserHostTest : public RenderViewTest {
  private:
   PP_Instance pp_instance_;
 
+  // Disables locking for the duration of the test.
+  ppapi::ProxyLock::LockingDisablerForTest disable_locking_;
   ppapi::TestGlobals globals_;
   TestContentClient client_;
 };

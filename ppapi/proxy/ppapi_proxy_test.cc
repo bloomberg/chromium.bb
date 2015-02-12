@@ -18,7 +18,6 @@
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_message_loop_proxy.h"
-#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -229,12 +228,8 @@ void PluginProxyTestHarness::CreatePluginGlobals() {
   if (globals_config_ == PER_THREAD_GLOBALS) {
     plugin_globals_.reset(new PluginGlobals(PpapiGlobals::PerThreadForTest()));
     PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
-    // Enable locking in case some other unit test ran before us and disabled
-    // locking.
-    ProxyLock::EnableLockingOnThreadForTest();
   } else {
     plugin_globals_.reset(new PluginGlobals());
-    ProxyLock::EnableLockingOnThreadForTest();
   }
 }
 
@@ -464,13 +459,11 @@ void HostProxyTestHarness::TearDownHarness() {
 }
 
 void HostProxyTestHarness::CreateHostGlobals() {
+  disable_locking_.reset(new ProxyLock::LockingDisablerForTest);
   if (globals_config_ == PER_THREAD_GLOBALS) {
     host_globals_.reset(new TestGlobals(PpapiGlobals::PerThreadForTest()));
     PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
-    // The host side of the proxy does not lock.
-    ProxyLock::DisableLockingOnThreadForTest();
   } else {
-    ProxyLock::DisableLockingOnThreadForTest();
     host_globals_.reset(new TestGlobals());
   }
 }
