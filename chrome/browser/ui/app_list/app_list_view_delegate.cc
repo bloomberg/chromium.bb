@@ -689,6 +689,7 @@ views::View* AppListViewDelegate::CreateStartPageWebView(
   views::WebView* web_view = new views::WebView(
       web_contents->GetBrowserContext());
   web_view->SetPreferredSize(size);
+  web_view->SetResizeBackgroundColor(SK_ColorTRANSPARENT);
   web_view->SetWebContents(web_contents);
   return web_view;
 }
