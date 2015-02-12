@@ -19,8 +19,16 @@
   margin-bottom: 10px;
 }
 
+#supervised-user-list .list-item {
+  align-items: center;
+  display: flex;
+}
+
+#supervised-user-list .profile-img {
+  flex-shrink: 0;
+}
+
 #supervised-user-list .profile-name {
-  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

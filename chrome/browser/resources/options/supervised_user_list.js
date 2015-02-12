@@ -23,6 +23,7 @@ cr.define('options.supervisedUserOptions', function() {
    */
   function SupervisedUserListItem(entry) {
     var el = cr.doc.createElement('div');
+    el.className = 'list-item';
     el.supervisedUser_ = entry;
     el.__proto__ = SupervisedUserListItem.prototype;
     el.decorate();
