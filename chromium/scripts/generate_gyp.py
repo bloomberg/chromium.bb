@@ -438,16 +438,16 @@ class SourceSet(object):
 
     # Only build a non-trivial conditional if it's a subset of all supported
     # architectures. targets. Arch conditions look like:
-    #   (cpu_arch == "arm" || (cpu_arch == "arm" && arm_use_neon))
+    #   (current_cpu == "arm" || (current_cpu == "arm" && arm_use_neon))
     arch_conditions = []
     if self.architectures != set(SUPPORTED_ARCHITECTURES):
       for arch in self.architectures:
         if arch == 'arm-neon':
-          arch_conditions.append('(cpu_arch == "arm" && arm_use_neon)')
+          arch_conditions.append('(current_cpu == "arm" && arm_use_neon)')
         elif arch == 'ia32':
-          arch_conditions.append('cpu_arch == "x86"')
+          arch_conditions.append('current_cpu == "x86"')
         else:
-          arch_conditions.append('cpu_arch == "%s"' % arch)
+          arch_conditions.append('current_cpu == "%s"' % arch)
 
     # Only build a non-trivial conditional if it's a subset of all supported
     # targets. Branding conditions look like:

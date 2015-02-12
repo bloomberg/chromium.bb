@@ -19,7 +19,7 @@ sig_files = [ "chromium/ffmpegsumo.sigs" ]
 # outputs of an action via a function.
 stubs_filename_root = "ffmpeg_stubs"
 
-if ((cpu_arch == "x86" || cpu_arch == "x64") && os_config != "linux-noasm") {
+if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm") {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
     sources = ffmpeg_yasm_sources
@@ -27,9 +27,9 @@ if ((cpu_arch == "x86" || cpu_arch == "x64") && os_config != "linux-noasm") {
     # Ensure the architecture defines go in the command line before the -P
     # file below, so don't use defines.
     yasm_flags = []
-    if (cpu_arch == "x86") {
+    if (current_cpu == "x86") {
       yasm_flags += [ "-DARCH_X86_32" ]
-    } else if (cpu_arch == "x64") {
+    } else if (current_cpu == "x64") {
       yasm_flags += [ "-DARCH_X86_64" ]
     }
 
@@ -69,7 +69,7 @@ action("ffmpeg_generate_stubs") {
   inputs = [ extra_header ]
 
   if (is_win) {
-    if (build_cpu_arch == "x64") {
+    if (current_cpu == "x64") {
       outfile_type = "windows_lib_x64"
     } else {
       outfile_type = "windows_lib"
@@ -214,12 +214,12 @@ if (build_ffmpegsumo) {
         # all.
         cflags += [ "-w" ]
       }
-      if (cpu_arch == "x86") {
+      if (current_cpu == "x86") {
         # Turn off valgrind build option that breaks ffmpeg builds.
         # TODO(ajwong): The gyp file had special removals for
         # debug_extra_cflags and release_extra_cflags. Do we care?
 #cflags -= [ "-fno-omit-frame-pointer" ]
-      } else if (cpu_arch == "arm") {
+      } else if (current_cpu == "arm") {
         # TODO(ihf): See the long comment in build_ffmpeg.sh
         # We want to be consistent with CrOS and have configured
         # ffmpeg for thumb. Protect yourself from -marm.
@@ -237,7 +237,7 @@ if (build_ffmpegsumo) {
         } else {
           cflags += [ "-DHAVE_VFP_ARGS=0" ]
         }
-      } else if (cpu_arch == "mipsel") {
+      } else if (current_cpu == "mipsel") {
         cflags += [
           "-mips32",
           "-EL",
@@ -297,14 +297,14 @@ if (build_ffmpegsumo) {
 #                    'mac_real_dsym': 1,
 #                  },
 #              }],
-      if (cpu_arch != "x64") {
+      if (current_cpu != "x64") {
         # This is needed because even though FFmpeg now builds
         # with -fPIC, it's not quite a complete PIC build, only
         # partial :( Thus we need to instruct the linker to allow
         # relocations for read-only segments for this target to be
         # able to generated the shared library on Mac.
         #
-#TODO(ajwong): Check if this can be cpu_arch == "x86"
+#TODO(ajwong): Check if this can be current_cpu == "x86"
         # Note -read_only_relocs cannot be used in x86_64
         #
         # This makes Mark sad, but he's okay with it since it is
@@ -380,7 +380,7 @@ if (build_ffmpegsumo) {
         "/ignore:4217", # locally defined symbol 'symbol' imported in
                         #   function 'function'
       ]
-      if (cpu_arch == "x64") {
+      if (current_cpu == "x64") {
         # TODO(wolenetz): We should fix this.  http://crbug.com/171009
         cflags += [
           "/wd4267"  # Conversion from size_t to 'type'.
@@ -389,7 +389,7 @@ if (build_ffmpegsumo) {
       deps += [ ":ffmpeg_generate_def" ]
     }
 
-    if ((cpu_arch == "x86" || cpu_arch == "x64") &&
+    if ((current_cpu == "x86" || current_cpu == "x64") &&
         os_config != "linux-noasm") {
       deps += [ ":ffmpeg_yasm" ]
     }

@@ -32,15 +32,15 @@ assert(ffmpeg_branding == "Chromium" ||
        ffmpeg_branding == "ChromeOS" ||
        ffmpeg_branding == "Ensemble")
 
-if (cpu_arch == "x86") {
+if (current_cpu == "x86") {
   ffmpeg_arch = "ia32"
-} else if (cpu_arch == "arm" && arm_version == 7 && arm_use_neon) {
+} else if (current_cpu == "arm" && arm_version == 7 && arm_use_neon) {
   ffmpeg_arch = "arm-neon"
 } else {
-  ffmpeg_arch = cpu_arch
+  ffmpeg_arch = current_cpu
 }
 
-os_config = os
+os_config = current_os
 if ((is_linux || is_chromeos) && is_msan) {
   os_config = "linux-noasm"
 } else if (is_chromeos) {
