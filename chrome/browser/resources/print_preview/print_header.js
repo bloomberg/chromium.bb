@@ -83,6 +83,8 @@ cr.define('print_preview', function() {
       var summaryEl = this.getChildElement('.summary');
       summaryEl.innerHTML = '';
       summaryEl.textContent = message;
+      this.getChildElement('button.print').classList.toggle('loading', false);
+      this.getChildElement('button.cancel').classList.toggle('loading', false);
     },
 
     /** @override */
