@@ -377,10 +377,15 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     // Filter out custom menu elements and add them into the data.
     populateCustomMenuItems(defaultMenu, &data);
 
-    // Extract suggested filename for saving file.
     if (isHTMLAnchorElement(r.URLElement())) {
         HTMLAnchorElement* anchor = toHTMLAnchorElement(r.URLElement());
+
+        // Extract suggested filename for saving file.
         data.suggestedFilename = anchor->fastGetAttribute(HTMLNames::downloadAttr);
+
+        // If the anchor wants to suppress the referrer, update the referrerPolicy accordingly.
+        if (anchor->hasRel(RelationNoReferrer))
+            data.referrerPolicy = WebReferrerPolicyNever;
     }
 
     data.node = r.innerNonSharedNode();
