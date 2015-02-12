@@ -515,6 +515,7 @@ static void GL_BINDING_CALL Mock_glGetTransformFeedbackVarying(GLuint program,
                                                                GLuint index,
                                                                GLsizei bufSize,
                                                                GLsizei* length,
+                                                               GLsizei* size,
                                                                GLenum* type,
                                                                char* name);
 static void GL_BINDING_CALL

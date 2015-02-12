@@ -642,7 +642,7 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'versions': [{ 'name': 'glGetTransformFeedbackVarying' }],
   'arguments': 'GLuint program, GLuint index, GLsizei bufSize, '
-               'GLsizei* length, GLenum* type, char* name', },
+               'GLsizei* length, GLsizei* size, GLenum* type, char* name', },
 { 'return_type': 'void',
   'names': ['glGetTranslatedShaderSourceANGLE'],
   'arguments':

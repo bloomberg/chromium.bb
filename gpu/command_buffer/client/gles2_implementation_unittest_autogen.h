@@ -985,6 +985,7 @@ TEST_F(GLES2ImplementationTest, GetTexParameteriv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<Result::Type>(1), result);
 }
+// TODO(zmo): Implement unit test for GetTransformFeedbackVarying
 // TODO(zmo): Implement unit test for GetUniformBlockIndex
 // TODO(zmo): Implement unit test for GetUniformfv
 // TODO(zmo): Implement unit test for GetUniformiv

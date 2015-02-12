@@ -155,7 +155,7 @@ struct UniformBlockInfo {
   uint32_t binding;  // UNIFORM_BLOCK_BINDING
   uint32_t data_size;  // UNIFORM_BLOCK_DATA_SIZE
   uint32_t name_offset;  // offset from UniformBlocksHeader to start of name.
-  uint32_t name_length;  // UNIFORM_BLOCK_BLOCK_NAME_LENGTH
+  uint32_t name_length;  // UNIFORM_BLOCK_NAME_LENGTH
   uint32_t active_uniforms;  // UNIFORM_BLOCK_ACTIVE_UNIFORMS
   // offset from UniformBlocksHeader to |active_uniforms| indices.
   uint32_t active_uniform_offset;
@@ -169,6 +169,21 @@ struct UniformBlockInfo {
 struct UniformBlocksHeader {
   uint32_t num_uniform_blocks;
   // UniformBlockInfo uniform_blocks[num_uniform_blocks];
+};
+
+// The data for one TransformFeedbackVarying from
+// GetTransformFeedbackVaringCHROMIUM.
+struct TransformFeedbackVaryingInfo {
+  uint32_t size;
+  uint32_t type;
+  uint32_t name_offset;  // offset from Header to start of name.
+  uint32_t name_length;  // including the null terminator.
+};
+
+// The format of the bucket filled out by GetTransformFeedbackVaryingsCHROMIUM
+struct TransformFeedbackVaryingsHeader {
+  uint32_t num_transform_feedback_varyings;
+  // TransformFeedbackVaryingInfo varyings[num_transform_feedback_varyings];
 };
 
 // The format of QuerySync used by EXT_occlusion_query_boolean

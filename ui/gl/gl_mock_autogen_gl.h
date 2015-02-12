@@ -390,11 +390,12 @@ MOCK_METHOD3(GetTexParameterfv,
              void(GLenum target, GLenum pname, GLfloat* params));
 MOCK_METHOD3(GetTexParameteriv,
              void(GLenum target, GLenum pname, GLint* params));
-MOCK_METHOD6(GetTransformFeedbackVarying,
+MOCK_METHOD7(GetTransformFeedbackVarying,
              void(GLuint program,
                   GLuint index,
                   GLsizei bufSize,
                   GLsizei* length,
+                  GLsizei* size,
                   GLenum* type,
                   char* name));
 MOCK_METHOD4(

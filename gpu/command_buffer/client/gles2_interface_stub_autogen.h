@@ -244,6 +244,13 @@ void GetShaderSource(GLuint shader,
 const GLubyte* GetString(GLenum name) override;
 void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) override;
 void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) override;
+void GetTransformFeedbackVarying(GLuint program,
+                                 GLuint index,
+                                 GLsizei bufsize,
+                                 GLsizei* length,
+                                 GLsizei* size,
+                                 GLenum* type,
+                                 char* name) override;
 GLuint GetUniformBlockIndex(GLuint program, const char* name) override;
 void GetUniformfv(GLuint program, GLint location, GLfloat* params) override;
 void GetUniformiv(GLuint program, GLint location, GLint* params) override;
@@ -567,6 +574,10 @@ void GetUniformBlocksCHROMIUM(GLuint program,
                               GLsizei bufsize,
                               GLsizei* size,
                               void* info) override;
+void GetTransformFeedbackVaryingsCHROMIUM(GLuint program,
+                                          GLsizei bufsize,
+                                          GLsizei* size,
+                                          void* info) override;
 GLuint CreateStreamTextureCHROMIUM(GLuint texture) override;
 GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                            GLsizei width,

@@ -153,6 +153,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Return false on overflow.
   bool GetUniformBlocks(CommonDecoder::Bucket* bucket) const;
 
+  // Gets all the TransformFeedbackVarying info.
+  // Return false on overflow.
+  bool GetTransformFeedbackVaryings(CommonDecoder::Bucket* bucket) const;
+
   // Sets the sampler values for a uniform.
   // This is safe to call for any location. If the location is not
   // a sampler uniform nothing will happen.

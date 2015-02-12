@@ -2255,6 +2255,30 @@ _FUNCTION_INFO = {
     'result': ['uint32_t'],
     'unsafe': True,
   },
+  'GetTransformFeedbackVarying': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'cmd_args':
+        'GLidProgram program, GLuint index, uint32_t name_bucket_id, '
+        'void* result',
+    'result': [
+      'int32_t success',
+      'int32_t size',
+      'uint32_t type',
+    ],
+    'unsafe': True,
+  },
+  'GetTransformFeedbackVaryingsCHROMIUM': {
+    'type': 'Custom',
+    'expectation': False,
+    'impl_func': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+    'cmd_args': 'GLidProgram program, uint32_t bucket_id',
+    'result': ['uint32_t'],
+    'unsafe': True,
+  },
   'GetUniformfv': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],

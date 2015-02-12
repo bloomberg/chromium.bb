@@ -2568,6 +2568,84 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
   return result;
 }
 
+bool GLES2Implementation::GetTransformFeedbackVaryingHelper(
+    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
+    GLenum* type, char* name) {
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  typedef cmds::GetTransformFeedbackVarying::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return false;
+  }
+  // Set as failed so if the command fails we'll recover.
+  result->success = false;
+  helper_->GetTransformFeedbackVarying(
+      program, index, kResultBucketId, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  if (result->success) {
+    if (size) {
+      *size = result->size;
+    }
+    if (type) {
+      *type = result->type;
+    }
+    if (length || name) {
+      std::vector<int8> str;
+      GetBucketContents(kResultBucketId, &str);
+      GLsizei max_size = std::min(bufsize, static_cast<GLsizei>(str.size()));
+      if (max_size > 0) {
+        --max_size;
+      }
+      if (length) {
+        *length = max_size;
+      }
+      if (name) {
+        if (max_size > 0) {
+          memcpy(name, &str[0], max_size);
+          name[max_size] = '\0';
+        } else if (bufsize > 0) {
+          name[0] = '\0';
+        }
+      }
+    }
+  }
+  return result->success != 0;
+}
+
+void GLES2Implementation::GetTransformFeedbackVarying(
+    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
+    GLenum* type, char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetTransformFeedbackVarying("
+      << program << ", " << index << ", " << bufsize << ", "
+      << static_cast<const void*>(length) << ", "
+      << static_cast<const void*>(size) << ", "
+      << static_cast<const void*>(type) << ", "
+      << static_cast<const void*>(name) << ", ");
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetTransformFeedbackVarying",
+               "bufsize < 0");
+    return;
+  }
+  TRACE_EVENT0("gpu", "GLES2::GetTransformFeedbackVarying");
+  bool success =
+      share_group_->program_info_manager()->GetTransformFeedbackVarying(
+          this, program, index, bufsize, length, size, type, name);
+  if (success) {
+    if (size) {
+      GPU_CLIENT_LOG("  size: " << *size);
+    }
+    if (type) {
+      GPU_CLIENT_LOG("  type: " << GLES2Util::GetStringEnum(*type));
+    }
+    if (name) {
+      GPU_CLIENT_LOG("  name: " << name);
+    }
+  }
+  CheckGLError();
+}
+
 void GLES2Implementation::GetUniformfv(
     GLuint program, GLint location, GLfloat* params) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -3696,6 +3774,48 @@ void GLES2Implementation::GetUniformBlocksCHROMIUM(
   if (static_cast<size_t>(bufsize) < result.size()) {
     SetGLError(GL_INVALID_OPERATION,
                "glUniformBlocksCHROMIUM", "bufsize is too small for result.");
+    return;
+  }
+  memcpy(info, &result[0], result.size());
+}
+
+void GLES2Implementation::GetTransformFeedbackVaryingsCHROMIUMHelper(
+    GLuint program, std::vector<int8>* result) {
+  DCHECK(result);
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->GetTransformFeedbackVaryingsCHROMIUM(program, kResultBucketId);
+  GetBucketContents(kResultBucketId, result);
+}
+
+void GLES2Implementation::GetTransformFeedbackVaryingsCHROMIUM(
+    GLuint program, GLsizei bufsize, GLsizei* size, void* info) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetTransformFeedbackVaryingsCHROMIUM",
+               "bufsize less than 0.");
+    return;
+  }
+  if (size == NULL) {
+    SetGLError(GL_INVALID_VALUE, "glGetTransformFeedbackVaryingsCHROMIUM",
+               "size is null.");
+    return;
+  }
+  // Make sure they've set size to 0 else the value will be undefined on
+  // lost context.
+  DCHECK_EQ(0, *size);
+  std::vector<int8> result;
+  GetTransformFeedbackVaryingsCHROMIUMHelper(program, &result);
+  if (result.empty()) {
+    return;
+  }
+  *size = result.size();
+  if (!info) {
+    return;
+  }
+  if (static_cast<size_t>(bufsize) < result.size()) {
+    SetGLError(GL_INVALID_OPERATION, "glGetTransformFeedbackVaryingsCHROMIUM",
+               "bufsize is too small for result.");
     return;
   }
   memcpy(info, &result[0], result.size());

@@ -228,6 +228,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       GLsizei* length, char* name);
   bool GetActiveUniformBlockivHelper(
       GLuint program, GLuint index, GLenum pname, GLint* params);
+  void GetTransformFeedbackVaryingsCHROMIUMHelper(
+      GLuint program, std::vector<int8>* result);
+  bool GetTransformFeedbackVaryingHelper(
+      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
+      GLint* size, GLenum* type, char* name);
 
   void FreeUnusedSharedMemory();
   void FreeEverything();

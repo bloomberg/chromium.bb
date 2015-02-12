@@ -945,6 +945,18 @@ void GetTexParameteriv(GLenum target,
   }
 }
 
+void GetTransformFeedbackVarying(GLuint program,
+                                 GLuint index,
+                                 uint32_t name_bucket_id,
+                                 uint32_t result_shm_id,
+                                 uint32_t result_shm_offset) {
+  gles2::cmds::GetTransformFeedbackVarying* c =
+      GetCmdSpace<gles2::cmds::GetTransformFeedbackVarying>();
+  if (c) {
+    c->Init(program, index, name_bucket_id, result_shm_id, result_shm_offset);
+  }
+}
+
 void GetUniformBlockIndex(GLuint program,
                           uint32_t name_bucket_id,
                           uint32_t index_shm_id,
@@ -2191,6 +2203,14 @@ void GetProgramInfoCHROMIUM(GLuint program, uint32_t bucket_id) {
 void GetUniformBlocksCHROMIUM(GLuint program, uint32_t bucket_id) {
   gles2::cmds::GetUniformBlocksCHROMIUM* c =
       GetCmdSpace<gles2::cmds::GetUniformBlocksCHROMIUM>();
+  if (c) {
+    c->Init(program, bucket_id);
+  }
+}
+
+void GetTransformFeedbackVaryingsCHROMIUM(GLuint program, uint32_t bucket_id) {
+  gles2::cmds::GetTransformFeedbackVaryingsCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::GetTransformFeedbackVaryingsCHROMIUM>();
   if (c) {
     c->Init(program, bucket_id);
   }

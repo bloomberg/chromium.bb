@@ -101,6 +101,7 @@ GL_APICALL void         GL_APIENTRY glGetShaderSource (GLidShader shader, GLsize
 GL_APICALL const GLubyte* GL_APIENTRY glGetString (GLenumStringType name);
 GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenumGetTexParamTarget target, GLenumTextureParameter pname, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetTexParameteriv (GLenumGetTexParamTarget target, GLenumTextureParameter pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetTransformFeedbackVarying (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLsizei* size, GLenum* type, char* name);
 GL_APICALL GLuint       GL_APIENTRY glGetUniformBlockIndex (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetUniformfv (GLidProgram program, GLintUniformLocation location, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetUniformiv (GLidProgram program, GLintUniformLocation location, GLint* params);
@@ -248,6 +249,7 @@ GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* exte
 GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL void         GL_APIENTRY glGetUniformBlocksCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
+GL_APICALL void         GL_APIENTRY glGetTransformFeedbackVaryingsCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL GLuint       GL_APIENTRY glCreateImageCHROMIUM (ClientBuffer buffer, GLsizei width, GLsizei height, GLenum internalformat);
 GL_APICALL void         GL_APIENTRY glDestroyImageCHROMIUM (GLuint image_id);

@@ -66,14 +66,21 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
   void UniformBlockBinding(
       GLES2Implementation* gl, GLuint program, GLuint index, GLuint binding);
 
+  bool GetTransformFeedbackVarying(
+      GLES2Implementation* gl, GLuint program, GLuint index, GLsizei bufsize,
+      GLsizei* length, GLsizei* size, GLenum* type, char* name);
+
  private:
   friend class ProgramInfoManagerTest;
 
   FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest, UpdateES3UniformBlocks);
+  FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest,
+                           UpdateES3TransformFeedbackVaryings);
 
   enum ProgramInfoType {
     kES2,
     kES3UniformBlocks,
+    kES3TransformFeedbackVaryings,
     kNone,
   };
 
@@ -111,6 +118,14 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
       GLboolean referenced_by_fragment_shader;
       std::string name;
     };
+    struct TransformFeedbackVarying {
+      TransformFeedbackVarying();
+      ~TransformFeedbackVarying();
+
+      GLsizei size;
+      GLenum type;
+      std::string name;
+    };
 
     Program();
     ~Program();
@@ -135,11 +150,17 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     // Update the binding if the |index| uniform block is in the cache.
     void UniformBlockBinding(GLuint index, GLuint binding);
 
+    const TransformFeedbackVarying* GetTransformFeedbackVarying(
+        GLuint index) const;
+
     // Updates the ES2 only program info after a successful link.
     void UpdateES2(const std::vector<int8>& result);
 
     // Updates the ES3 UniformBlock info after a successful link.
     void UpdateES3UniformBlocks(const std::vector<int8>& result);
+
+    // Updates the ES3 TransformFeedbackVaryings info after a successful link.
+    void UpdateES3TransformFeedbackVaryings(const std::vector<int8>& result);
 
     bool IsCached(ProgramInfoType type) const;
 
@@ -167,6 +188,13 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
 
     // Uniform blocks by index.
     std::vector<UniformBlock> uniform_blocks_;
+
+    bool cached_es3_transform_feedback_varyings_;
+
+    uint32_t transform_feedback_varying_max_length_;
+
+    // TransformFeedback varyings by index.
+    std::vector<TransformFeedbackVarying> transform_feedback_varyings_;
 
     base::hash_map<std::string, GLint> frag_data_locations_;
   };

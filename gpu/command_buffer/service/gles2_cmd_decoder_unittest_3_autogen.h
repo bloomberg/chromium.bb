@@ -12,6 +12,15 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest3, VertexAttrib4fValidArgs) {
+  EXPECT_CALL(*gl_, VertexAttrib4f(1, 2, 3, 4, 5));
+  SpecializedSetup<cmds::VertexAttrib4f, 0>(true);
+  cmds::VertexAttrib4f cmd;
+  cmd.Init(1, 2, 3, 4, 5);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest3, VertexAttrib4fvImmediateValidArgs) {
   cmds::VertexAttrib4fvImmediate& cmd =
       *GetImmediateAs<cmds::VertexAttrib4fvImmediate>();
@@ -169,6 +178,8 @@ TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): GetProgramInfoCHROMIUM
 
 // TODO(gman): GetUniformBlocksCHROMIUM
+
+// TODO(gman): GetTransformFeedbackVaryingsCHROMIUM
 
 // TODO(gman): GetTranslatedShaderSourceANGLE
 // TODO(gman): PostSubBufferCHROMIUM

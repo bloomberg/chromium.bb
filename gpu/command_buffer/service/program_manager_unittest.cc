@@ -1227,6 +1227,103 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetUniformBlocksValid) {
   EXPECT_EQ(0, memcmp(&data, bucket_data, sizeof(Data)));
 }
 
+TEST_F(ProgramManagerWithShaderTest,
+       ProgramInfoGetTransformFeedbackVaryingsNone) {
+  CommonDecoder::Bucket bucket;
+  const Program* program = manager_.GetProgram(kClientProgramId);
+  ASSERT_TRUE(program != NULL);
+  // The program's previous link failed.
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_FALSE))
+      .RetiresOnSaturation();
+  EXPECT_TRUE(program->GetTransformFeedbackVaryings(&bucket));
+  EXPECT_EQ(sizeof(TransformFeedbackVaryingsHeader), bucket.size());
+  TransformFeedbackVaryingsHeader* header =
+      bucket.GetDataAs<TransformFeedbackVaryingsHeader*>(
+          0, sizeof(TransformFeedbackVaryingsHeader));
+  EXPECT_TRUE(header != NULL);
+  EXPECT_EQ(0u, header->num_transform_feedback_varyings);
+  // Zero uniform blocks.
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(
+                  kServiceProgramId, GL_TRANSFORM_FEEDBACK_VARYINGS, _))
+      .WillOnce(SetArgPointee<2>(0))
+      .RetiresOnSaturation();
+  EXPECT_TRUE(program->GetTransformFeedbackVaryings(&bucket));
+  EXPECT_EQ(sizeof(TransformFeedbackVaryingsHeader), bucket.size());
+  header = bucket.GetDataAs<TransformFeedbackVaryingsHeader*>(
+      0, sizeof(TransformFeedbackVaryingsHeader));
+  EXPECT_TRUE(header != NULL);
+  EXPECT_EQ(0u, header->num_transform_feedback_varyings);
+}
+
+TEST_F(ProgramManagerWithShaderTest,
+       ProgramInfoGetTransformFeedbackVaryingsValid) {
+  CommonDecoder::Bucket bucket;
+  const Program* program = manager_.GetProgram(kClientProgramId);
+  ASSERT_TRUE(program != NULL);
+  struct Data {
+    TransformFeedbackVaryingsHeader header;
+    TransformFeedbackVaryingInfo entry[2];
+    char name0[4];
+    char name1[8];
+  };
+  Data data;
+  // The names needs to be of size 4*k-1 to avoid padding in the struct Data.
+  // This is a testing only problem.
+  const char* kName[] = { "cow", "chicken" };
+  data.header.num_transform_feedback_varyings = 2;
+  data.entry[0].size = 1;
+  data.entry[0].type = GL_FLOAT_VEC2;
+  data.entry[0].name_offset = ComputeOffset(&data, data.name0);
+  data.entry[0].name_length = arraysize(data.name0);
+  data.entry[1].size = 2;
+  data.entry[1].type = GL_FLOAT;
+  data.entry[1].name_offset = ComputeOffset(&data, data.name1);
+  data.entry[1].name_length = arraysize(data.name1);
+  memcpy(data.name0, kName[0], arraysize(data.name0));
+  memcpy(data.name1, kName[1], arraysize(data.name1));
+
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(
+                  kServiceProgramId, GL_TRANSFORM_FEEDBACK_VARYINGS, _))
+      .WillOnce(SetArgPointee<2>(data.header.num_transform_feedback_varyings))
+      .RetiresOnSaturation();
+  GLsizei max_length = 1 + std::max(strlen(kName[0]), strlen(kName[1]));
+  EXPECT_CALL(*(gl_.get()),
+              GetProgramiv(kServiceProgramId,
+                           GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(max_length))
+      .RetiresOnSaturation();
+  for (uint32_t ii = 0; ii < data.header.num_transform_feedback_varyings;
+       ++ii) {
+    EXPECT_CALL(*(gl_.get()),
+                GetTransformFeedbackVarying(
+                    kServiceProgramId, ii, max_length, _, _, _, _))
+        .WillOnce(DoAll(
+            SetArgPointee<3>(data.entry[ii].name_length - 1),
+            SetArgPointee<4>(data.entry[ii].size),
+            SetArgPointee<5>(data.entry[ii].type),
+            SetArrayArgument<6>(
+                kName[ii], kName[ii] + data.entry[ii].name_length)))
+        .RetiresOnSaturation();
+  }
+  program->GetTransformFeedbackVaryings(&bucket);
+  EXPECT_EQ(sizeof(Data), bucket.size());
+  Data* bucket_data = bucket.GetDataAs<Data*>(0, sizeof(Data));
+  EXPECT_TRUE(bucket_data != NULL);
+  EXPECT_EQ(0, memcmp(&data, bucket_data, sizeof(Data)));
+}
+
 // Some drivers optimize out unused uniform array elements, so their
 // location would be -1.
 TEST_F(ProgramManagerWithShaderTest, UnusedUniformArrayElements) {

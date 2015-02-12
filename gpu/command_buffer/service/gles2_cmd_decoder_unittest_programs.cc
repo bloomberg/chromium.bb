@@ -43,7 +43,6 @@ using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
@@ -120,6 +119,52 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformBlocksCHROMIUMInvalidArgs) {
       bucket->GetDataAs<UniformBlocksHeader*>(0, sizeof(UniformBlocksHeader));
   ASSERT_TRUE(header != NULL);
   EXPECT_EQ(0u, header->num_uniform_blocks);
+}
+
+TEST_P(GLES2DecoderWithShaderTest,
+       GetTransformFeedbackVaryingsCHROMIUMValidArgs) {
+  const uint32 kBucketId = 123;
+  GetTransformFeedbackVaryingsCHROMIUM cmd;
+  cmd.Init(client_program_id_, kBucketId);
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              GetProgramiv(
+                  kServiceProgramId, GL_TRANSFORM_FEEDBACK_VARYINGS, _))
+      .WillOnce(SetArgPointee<2>(0))
+      .RetiresOnSaturation();
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  EXPECT_EQ(sizeof(TransformFeedbackVaryingsHeader), bucket->size());
+  TransformFeedbackVaryingsHeader* header =
+      bucket->GetDataAs<TransformFeedbackVaryingsHeader*>(
+          0, sizeof(TransformFeedbackVaryingsHeader));
+  EXPECT_TRUE(header != NULL);
+  EXPECT_EQ(0u, header->num_transform_feedback_varyings);
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderWithShaderTest,
+       GetTransformFeedbackVaryingsCHROMIUMInvalidArgs) {
+  const uint32 kBucketId = 123;
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  EXPECT_TRUE(bucket == NULL);
+  GetTransformFeedbackVaryingsCHROMIUM cmd;
+  cmd.Init(kInvalidClientId, kBucketId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  EXPECT_EQ(sizeof(TransformFeedbackVaryingsHeader), bucket->size());
+  TransformFeedbackVaryingsHeader* header =
+      bucket->GetDataAs<TransformFeedbackVaryingsHeader*>(
+          0, sizeof(TransformFeedbackVaryingsHeader));
+  ASSERT_TRUE(header != NULL);
+  EXPECT_EQ(0u, header->num_transform_feedback_varyings);
 }
 
 TEST_P(GLES2DecoderWithShaderTest, GetUniformivSucceeds) {
@@ -344,7 +389,7 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersSucceeds) {
   Result* result = static_cast<Result*>(shared_memory_address_);
   result->size = 0;
   EXPECT_CALL(*gl_, GetAttachedShaders(kServiceProgramId, 1, _, _)).WillOnce(
-      DoAll(SetArgumentPointee<2>(1), SetArgumentPointee<3>(kServiceShaderId)));
+      DoAll(SetArgPointee<2>(1), SetArgPointee<3>(kServiceShaderId)));
   cmd.Init(client_program_id_,
            shared_memory_id_,
            shared_memory_offset_,
@@ -409,7 +454,7 @@ TEST_P(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatSucceeds) {
   const GLint precision = 16;
   EXPECT_CALL(*gl_, GetShaderPrecisionFormat(_, _, _, _))
       .WillOnce(DoAll(SetArrayArgument<2>(range, range + 2),
-                      SetArgumentPointee<3>(precision)))
+                      SetArgPointee<3>(precision)))
       .RetiresOnSaturation();
   cmd.Init(GL_VERTEX_SHADER,
            GL_HIGH_FLOAT,
@@ -959,13 +1004,13 @@ TEST_P(GLES2DecoderWithShaderTest, GetShaderInfoLogValidArgs) {
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
   EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
   EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_COMPILE_STATUS, _))
-      .WillOnce(SetArgumentPointee<2>(GL_FALSE))
+      .WillOnce(SetArgPointee<2>(GL_FALSE))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1))
+      .WillOnce(SetArgPointee<2>(strlen(kInfo) + 1))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetShaderInfoLog(kServiceShaderId, strlen(kInfo) + 1, _, _))
-      .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
+      .WillOnce(DoAll(SetArgPointee<2>(strlen(kInfo)),
                       SetArrayArgument<3>(kInfo, kInfo + strlen(kInfo) + 1)));
   compile_cmd.Init(client_shader_id_);
   cmd.Init(client_shader_id_, kBucketId);
@@ -987,11 +1032,152 @@ TEST_P(GLES2DecoderWithShaderTest, GetShaderInfoLogInvalidArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES2DecoderWithShaderTest, GetTransformFeedbackVaryingSucceeds) {
+  const GLuint kIndex = 1;
+  const uint32 kBucketId = 123;
+  const char kName[] = "HolyCow";
+  const GLsizei kBufferSize = static_cast<GLsizei>(strlen(kName) + 1);
+  const GLsizei kSize = 2;
+  const GLenum kType = GL_FLOAT_VEC2;
+  GetTransformFeedbackVarying cmd;
+  typedef GetTransformFeedbackVarying::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->success = 0;
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId,
+                                 GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(kBufferSize))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              GetTransformFeedbackVarying(
+                  kServiceProgramId, kIndex, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<3>(kBufferSize - 1),
+                      SetArgPointee<4>(kSize),
+                      SetArgPointee<5>(kType),
+                      SetArrayArgument<6>(kName, kName + kBufferSize)))
+      .RetiresOnSaturation();
+  cmd.Init(client_program_id_,
+           kIndex,
+           kBucketId,
+           shared_memory_id_,
+           shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_NE(0, result->success);
+  EXPECT_EQ(kSize, static_cast<GLsizei>(result->size));
+  EXPECT_EQ(kType, static_cast<GLenum>(result->type));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  EXPECT_EQ(
+      0, memcmp(bucket->GetData(0, bucket->size()), kName, bucket->size()));
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetTransformFeedbackVaryingNotInitFails) {
+  const GLuint kIndex = 1;
+  const uint32 kBucketId = 123;
+  GetTransformFeedbackVarying cmd;
+  typedef GetTransformFeedbackVarying::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->success = 1;
+  cmd.Init(client_program_id_,
+           kIndex,
+           kBucketId,
+           shared_memory_id_,
+           shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetTransformFeedbackVaryingBadProgramFails) {
+  const GLuint kIndex = 1;
+  const uint32 kBucketId = 123;
+  GetTransformFeedbackVarying cmd;
+  typedef GetTransformFeedbackVarying::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->success = 0;
+  cmd.Init(kInvalidClientId,
+           kIndex,
+           kBucketId,
+           shared_memory_id_,
+           shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->success);
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetTransformFeedbackVaryingBadParamsFails) {
+  const GLuint kIndex = 1;
+  const uint32 kBucketId = 123;
+  const GLsizei kBufferSize = 10;
+  GetTransformFeedbackVarying cmd;
+  typedef GetTransformFeedbackVarying::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->success = 0;
+  cmd.Init(client_program_id_,
+           kIndex,
+           kBucketId,
+           shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId,
+                                 GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(kBufferSize))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_INVALID_VALUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              GetTransformFeedbackVarying(
+                  kServiceProgramId, kIndex, _, _, _, _, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->success);
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderWithShaderTest,
+       GetTransformFeedbackVaryingBadSharedMemoryFails) {
+  const GLuint kIndex = 1;
+  const uint32 kBucketId = 123;
+  GetTransformFeedbackVarying cmd;
+  typedef GetTransformFeedbackVarying::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->success = 0;
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmd.Init(client_program_id_,
+           kIndex,
+           kBucketId,
+           kInvalidSharedMemoryId,
+           shared_memory_offset_);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(client_program_id_,
+           kIndex,
+           kBucketId,
+           shared_memory_id_,
+           kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest, CompileShaderValidArgs) {
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
   EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
   EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_COMPILE_STATUS, _))
-      .WillOnce(SetArgumentPointee<2>(GL_TRUE))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
       .RetiresOnSaturation();
   CompileShader cmd;
   cmd.Init(client_shader_id_);

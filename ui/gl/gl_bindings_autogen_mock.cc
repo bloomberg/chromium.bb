@@ -1445,11 +1445,12 @@ MockGLInterface::Mock_glGetTransformFeedbackVarying(GLuint program,
                                                     GLuint index,
                                                     GLsizei bufSize,
                                                     GLsizei* length,
+                                                    GLsizei* size,
                                                     GLenum* type,
                                                     char* name) {
   MakeFunctionUnique("glGetTransformFeedbackVarying");
-  interface_->GetTransformFeedbackVarying(program, index, bufSize, length, type,
-                                          name);
+  interface_->GetTransformFeedbackVarying(program, index, bufSize, length, size,
+                                          type, name);
 }
 
 void GL_BINDING_CALL

@@ -445,6 +445,16 @@ void GLES2GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
 void GLES2GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetTexParameteriv(target, pname, params);
 }
+void GLES2GetTransformFeedbackVarying(GLuint program,
+                                      GLuint index,
+                                      GLsizei bufsize,
+                                      GLsizei* length,
+                                      GLsizei* size,
+                                      GLenum* type,
+                                      char* name) {
+  gles2::GetGLContext()->GetTransformFeedbackVarying(program, index, bufsize,
+                                                     length, size, type, name);
+}
 GLuint GLES2GetUniformBlockIndex(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetUniformBlockIndex(program, name);
 }
@@ -1067,6 +1077,13 @@ void GLES2GetUniformBlocksCHROMIUM(GLuint program,
                                    void* info) {
   gles2::GetGLContext()->GetUniformBlocksCHROMIUM(program, bufsize, size, info);
 }
+void GLES2GetTransformFeedbackVaryingsCHROMIUM(GLuint program,
+                                               GLsizei bufsize,
+                                               GLsizei* size,
+                                               void* info) {
+  gles2::GetGLContext()->GetTransformFeedbackVaryingsCHROMIUM(program, bufsize,
+                                                              size, info);
+}
 GLuint GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
   return gles2::GetGLContext()->CreateStreamTextureCHROMIUM(texture);
 }
@@ -1665,6 +1682,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGetTexParameteriv),
     },
     {
+     "glGetTransformFeedbackVarying",
+     reinterpret_cast<GLES2FunctionPointer>(glGetTransformFeedbackVarying),
+    },
+    {
      "glGetUniformBlockIndex",
      reinterpret_cast<GLES2FunctionPointer>(glGetUniformBlockIndex),
     },
@@ -2243,6 +2264,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetUniformBlocksCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glGetUniformBlocksCHROMIUM),
+    },
+    {
+     "glGetTransformFeedbackVaryingsCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(
+         glGetTransformFeedbackVaryingsCHROMIUM),
     },
     {
      "glCreateStreamTextureCHROMIUM",

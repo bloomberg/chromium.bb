@@ -249,6 +249,13 @@ virtual void GetTexParameterfv(GLenum target,
                                GLenum pname,
                                GLfloat* params) = 0;
 virtual void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) = 0;
+virtual void GetTransformFeedbackVarying(GLuint program,
+                                         GLuint index,
+                                         GLsizei bufsize,
+                                         GLsizei* length,
+                                         GLsizei* size,
+                                         GLenum* type,
+                                         char* name) = 0;
 virtual GLuint GetUniformBlockIndex(GLuint program, const char* name) = 0;
 virtual void GetUniformfv(GLuint program, GLint location, GLfloat* params) = 0;
 virtual void GetUniformiv(GLuint program, GLint location, GLint* params) = 0;
@@ -582,6 +589,10 @@ virtual void GetUniformBlocksCHROMIUM(GLuint program,
                                       GLsizei bufsize,
                                       GLsizei* size,
                                       void* info) = 0;
+virtual void GetTransformFeedbackVaryingsCHROMIUM(GLuint program,
+                                                  GLsizei bufsize,
+                                                  GLsizei* size,
+                                                  void* info) = 0;
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) = 0;
 virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                                    GLsizei width,

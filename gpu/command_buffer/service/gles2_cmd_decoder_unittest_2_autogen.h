@@ -85,6 +85,8 @@ TEST_P(GLES2DecoderTest2, GetTexParameterivInvalidArgs2_1) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
 }
+// TODO(gman): GetTransformFeedbackVarying
+
 // TODO(gman): GetUniformBlockIndex
 
 // TODO(gman): GetUniformfv
@@ -1538,15 +1540,6 @@ TEST_P(GLES2DecoderTest2, VertexAttrib3fvImmediateValidArgs) {
   EXPECT_CALL(*gl_, VertexAttrib3fv(1, reinterpret_cast<GLfloat*>(
                                            ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, VertexAttrib4fValidArgs) {
-  EXPECT_CALL(*gl_, VertexAttrib4f(1, 2, 3, 4, 5));
-  SpecializedSetup<cmds::VertexAttrib4f, 0>(true);
-  cmds::VertexAttrib4f cmd;
-  cmd.Init(1, 2, 3, 4, 5);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

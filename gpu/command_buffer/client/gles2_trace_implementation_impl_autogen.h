@@ -670,6 +670,19 @@ void GLES2TraceImplementation::GetTexParameteriv(GLenum target,
   gl_->GetTexParameteriv(target, pname, params);
 }
 
+void GLES2TraceImplementation::GetTransformFeedbackVarying(GLuint program,
+                                                           GLuint index,
+                                                           GLsizei bufsize,
+                                                           GLsizei* length,
+                                                           GLsizei* size,
+                                                           GLenum* type,
+                                                           char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::GetTransformFeedbackVarying");
+  gl_->GetTransformFeedbackVarying(program, index, bufsize, length, size, type,
+                                   name);
+}
+
 GLuint GLES2TraceImplementation::GetUniformBlockIndex(GLuint program,
                                                       const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetUniformBlockIndex");
@@ -1688,6 +1701,16 @@ void GLES2TraceImplementation::GetUniformBlocksCHROMIUM(GLuint program,
                                                         void* info) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetUniformBlocksCHROMIUM");
   gl_->GetUniformBlocksCHROMIUM(program, bufsize, size, info);
+}
+
+void GLES2TraceImplementation::GetTransformFeedbackVaryingsCHROMIUM(
+    GLuint program,
+    GLsizei bufsize,
+    GLsizei* size,
+    void* info) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::GetTransformFeedbackVaryingsCHROMIUM");
+  gl_->GetTransformFeedbackVaryingsCHROMIUM(program, bufsize, size, info);
 }
 
 GLuint GLES2TraceImplementation::CreateStreamTextureCHROMIUM(GLuint texture) {

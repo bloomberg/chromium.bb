@@ -3447,15 +3447,17 @@ static void GL_BINDING_CALL Debug_glGetTransformFeedbackVarying(GLuint program,
                                                                 GLuint index,
                                                                 GLsizei bufSize,
                                                                 GLsizei* length,
+                                                                GLsizei* size,
                                                                 GLenum* type,
                                                                 char* name) {
   GL_SERVICE_LOG("glGetTransformFeedbackVarying"
                  << "(" << program << ", " << index << ", " << bufSize << ", "
                  << static_cast<const void*>(length) << ", "
+                 << static_cast<const void*>(size) << ", "
                  << static_cast<const void*>(type) << ", "
                  << static_cast<const void*>(name) << ")");
-  g_driver_gl.debug_fn.glGetTransformFeedbackVaryingFn(program, index, bufSize,
-                                                       length, type, name);
+  g_driver_gl.debug_fn.glGetTransformFeedbackVaryingFn(
+      program, index, bufSize, length, size, type, name);
 }
 
 static void GL_BINDING_CALL
@@ -6776,10 +6778,11 @@ void GLApiBase::glGetTransformFeedbackVaryingFn(GLuint program,
                                                 GLuint index,
                                                 GLsizei bufSize,
                                                 GLsizei* length,
+                                                GLsizei* size,
                                                 GLenum* type,
                                                 char* name) {
   driver_->fn.glGetTransformFeedbackVaryingFn(program, index, bufSize, length,
-                                              type, name);
+                                              size, type, name);
 }
 
 void GLApiBase::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
@@ -8599,12 +8602,13 @@ void TraceGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
                                                  GLuint index,
                                                  GLsizei bufSize,
                                                  GLsizei* length,
+                                                 GLsizei* size,
                                                  GLenum* type,
                                                  char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "TraceGLAPI::glGetTransformFeedbackVarying")
   gl_api_->glGetTransformFeedbackVaryingFn(program, index, bufSize, length,
-                                           type, name);
+                                           size, type, name);
 }
 
 void TraceGLApi::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
@@ -10723,6 +10727,7 @@ void NoContextGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
                                                      GLuint index,
                                                      GLsizei bufSize,
                                                      GLsizei* length,
+                                                     GLsizei* size,
                                                      GLenum* type,
                                                      char* name) {
   NOTREACHED() << "Trying to call glGetTransformFeedbackVarying() without "

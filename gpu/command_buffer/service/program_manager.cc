@@ -1303,6 +1303,7 @@ bool Program::GetUniformBlocks(CommonDecoder::Bucket* bucket) const {
   GLuint program = service_id();
 
   uint32_t header_size = sizeof(UniformBlocksHeader);
+  bucket->SetSize(header_size);  // In case we fail.
 
   uint32_t num_uniform_blocks = 0;
   GLint param = GL_FALSE;
@@ -1316,10 +1317,6 @@ bool Program::GetUniformBlocks(CommonDecoder::Bucket* bucket) const {
   if (num_uniform_blocks == 0) {
     // Although spec allows an implementation to return uniform block info
     // even if a link fails, for consistency, we disallow that.
-    bucket->SetSize(header_size);
-    UniformBlocksHeader* header =
-        bucket->GetDataAs<UniformBlocksHeader*>(0, header_size);
-    header->num_uniform_blocks = 0;
     return true;
   }
 
@@ -1390,7 +1387,7 @@ bool Program::GetUniformBlocks(CommonDecoder::Bucket* bucket) const {
 
   bucket->SetSize(total_size);
   UniformBlocksHeader* header =
-      bucket->GetDataAs<UniformBlocksHeader*>(0, total_size);
+      bucket->GetDataAs<UniformBlocksHeader*>(0, header_size);
   UniformBlockInfo* entries = bucket->GetDataAs<UniformBlockInfo*>(
       header_size, entry_size);
   char* data = bucket->GetDataAs<char*>(header_size + entry_size, data_size);
@@ -1405,8 +1402,8 @@ bool Program::GetUniformBlocks(CommonDecoder::Bucket* bucket) const {
   std::vector<GLint> params;
   for (uint32_t ii = 0; ii < num_uniform_blocks; ++ii) {
     // Get active uniform name.
-    memcpy(data, names[ii].c_str(), blocks[ii].name_length);
-    data += blocks[ii].name_length;
+    memcpy(data, names[ii].c_str(), names[ii].length() + 1);
+    data += names[ii].length() + 1;
 
     // Get active uniform indices.
     if (params.size() < blocks[ii].active_uniforms)
@@ -1420,6 +1417,96 @@ bool Program::GetUniformBlocks(CommonDecoder::Bucket* bucket) const {
       indices[uu] = static_cast<uint32_t>(params[uu]);
     }
     data += num_bytes;
+  }
+  DCHECK_EQ(ComputeOffset(header, data), total_size);
+  return true;
+}
+
+bool Program::GetTransformFeedbackVaryings(
+    CommonDecoder::Bucket* bucket) const {
+  // The data is packed into the bucket in the following order
+  //   1) header
+  //   2) N entries of varying data (except for name)
+  //   3) name1, name2, ..., nameN
+  //
+  // We query all the data directly through GL calls, assuming they are
+  // cheap through MANGLE.
+
+  DCHECK(bucket);
+  GLuint program = service_id();
+
+  uint32_t header_size = sizeof(TransformFeedbackVaryingsHeader);
+  bucket->SetSize(header_size);  // In case we fail.
+
+  uint32_t num_transform_feedback_varyings = 0;
+  GLint param = GL_FALSE;
+  // We assume program is a valid program service id.
+  glGetProgramiv(program, GL_LINK_STATUS, &param);
+  if (param == GL_TRUE) {
+    param = 0;
+    glGetProgramiv(program, GL_TRANSFORM_FEEDBACK_VARYINGS, &param);
+    num_transform_feedback_varyings = static_cast<uint32_t>(param);
+  }
+  if (num_transform_feedback_varyings == 0) {
+    return true;
+  }
+
+  std::vector<TransformFeedbackVaryingInfo> varyings(
+      num_transform_feedback_varyings);
+  base::CheckedNumeric<uint32_t> size = sizeof(TransformFeedbackVaryingInfo);
+  size *= num_transform_feedback_varyings;
+  uint32_t entry_size = size.ValueOrDefault(0);
+  size += header_size;
+  std::vector<std::string> names(num_transform_feedback_varyings);
+  GLint max_name_length = 0;
+  glGetProgramiv(
+      program, GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, &max_name_length);
+  if (max_name_length < 1)
+    max_name_length = 1;
+  std::vector<char> buffer(max_name_length);
+  for (uint32_t ii = 0; ii < num_transform_feedback_varyings; ++ii) {
+    GLsizei var_size = 0;
+    GLsizei var_name_length = 0;
+    GLenum var_type = 0;
+    glGetTransformFeedbackVarying(
+        program, ii, max_name_length,
+        &var_name_length, &var_size, &var_type, &buffer[0]);
+    varyings[ii].size = static_cast<uint32_t>(var_size);
+    varyings[ii].type = static_cast<uint32_t>(var_type);
+    varyings[ii].name_offset = static_cast<uint32_t>(size.ValueOrDefault(0));
+    DCHECK_GT(max_name_length, var_name_length);
+    names[ii] = std::string(&buffer[0], var_name_length);
+    // TODO(zmo): optimize the name mapping lookup.
+    const std::string* original_name = GetOriginalNameFromHashedName(names[ii]);
+    if (original_name)
+      names[ii] = *original_name;
+    varyings[ii].name_length = names[ii].size() + 1;
+    size += names[ii].size();
+    size += 1;
+  }
+  if (!size.IsValid())
+    return false;
+  uint32_t total_size = size.ValueOrDefault(0);
+  DCHECK_LE(header_size + entry_size, total_size);
+  uint32_t data_size = total_size - header_size - entry_size;
+
+  bucket->SetSize(total_size);
+  TransformFeedbackVaryingsHeader* header =
+      bucket->GetDataAs<TransformFeedbackVaryingsHeader*>(0, header_size);
+  TransformFeedbackVaryingInfo* entries =
+      bucket->GetDataAs<TransformFeedbackVaryingInfo*>(header_size, entry_size);
+  char* data = bucket->GetDataAs<char*>(header_size + entry_size, data_size);
+  DCHECK(header);
+  DCHECK(entries);
+  DCHECK(data);
+
+  // Copy over data for the header and entries.
+  header->num_transform_feedback_varyings = num_transform_feedback_varyings;
+  memcpy(entries, &varyings[0], entry_size);
+
+  for (uint32_t ii = 0; ii < num_transform_feedback_varyings; ++ii) {
+    memcpy(data, names[ii].c_str(), names[ii].length() + 1);
+    data += names[ii].length() + 1;
   }
   DCHECK_EQ(ComputeOffset(header, data), total_size);
   return true;

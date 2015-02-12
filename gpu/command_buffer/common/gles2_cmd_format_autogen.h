@@ -4641,6 +4641,83 @@ static_assert(offsetof(GetTexParameteriv, params_shm_id) == 12,
 static_assert(offsetof(GetTexParameteriv, params_shm_offset) == 16,
               "offset of GetTexParameteriv params_shm_offset should be 16");
 
+struct GetTransformFeedbackVarying {
+  typedef GetTransformFeedbackVarying ValueType;
+  static const CommandId kCmdId = kGetTransformFeedbackVarying;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  struct Result {
+    int32_t success;
+    int32_t size;
+    uint32_t type;
+  };
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            GLuint _index,
+            uint32_t _name_bucket_id,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    program = _program;
+    index = _index;
+    name_bucket_id = _name_bucket_id;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            GLuint _index,
+            uint32_t _name_bucket_id,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_program, _index, _name_bucket_id,
+                                       _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t index;
+  uint32_t name_bucket_id;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+static_assert(sizeof(GetTransformFeedbackVarying) == 24,
+              "size of GetTransformFeedbackVarying should be 24");
+static_assert(offsetof(GetTransformFeedbackVarying, header) == 0,
+              "offset of GetTransformFeedbackVarying header should be 0");
+static_assert(offsetof(GetTransformFeedbackVarying, program) == 4,
+              "offset of GetTransformFeedbackVarying program should be 4");
+static_assert(offsetof(GetTransformFeedbackVarying, index) == 8,
+              "offset of GetTransformFeedbackVarying index should be 8");
+static_assert(
+    offsetof(GetTransformFeedbackVarying, name_bucket_id) == 12,
+    "offset of GetTransformFeedbackVarying name_bucket_id should be 12");
+static_assert(
+    offsetof(GetTransformFeedbackVarying, result_shm_id) == 16,
+    "offset of GetTransformFeedbackVarying result_shm_id should be 16");
+static_assert(
+    offsetof(GetTransformFeedbackVarying, result_shm_offset) == 20,
+    "offset of GetTransformFeedbackVarying result_shm_offset should be 20");
+static_assert(offsetof(GetTransformFeedbackVarying::Result, success) == 0,
+              "offset of GetTransformFeedbackVarying Result success should be "
+              "0");
+static_assert(offsetof(GetTransformFeedbackVarying::Result, size) == 4,
+              "offset of GetTransformFeedbackVarying Result size should be "
+              "4");
+static_assert(offsetof(GetTransformFeedbackVarying::Result, type) == 8,
+              "offset of GetTransformFeedbackVarying Result type should be "
+              "8");
+
 struct GetUniformBlockIndex {
   typedef GetUniformBlockIndex ValueType;
   static const CommandId kCmdId = kGetUniformBlockIndex;
@@ -10771,6 +10848,48 @@ static_assert(offsetof(GetUniformBlocksCHROMIUM, program) == 4,
               "offset of GetUniformBlocksCHROMIUM program should be 4");
 static_assert(offsetof(GetUniformBlocksCHROMIUM, bucket_id) == 8,
               "offset of GetUniformBlocksCHROMIUM bucket_id should be 8");
+
+struct GetTransformFeedbackVaryingsCHROMIUM {
+  typedef GetTransformFeedbackVaryingsCHROMIUM ValueType;
+  static const CommandId kCmdId = kGetTransformFeedbackVaryingsCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program, uint32_t _bucket_id) {
+    SetHeader();
+    program = _program;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _program, uint32_t _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_program, _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t bucket_id;
+};
+
+static_assert(sizeof(GetTransformFeedbackVaryingsCHROMIUM) == 12,
+              "size of GetTransformFeedbackVaryingsCHROMIUM should be 12");
+static_assert(
+    offsetof(GetTransformFeedbackVaryingsCHROMIUM, header) == 0,
+    "offset of GetTransformFeedbackVaryingsCHROMIUM header should be 0");
+static_assert(
+    offsetof(GetTransformFeedbackVaryingsCHROMIUM, program) == 4,
+    "offset of GetTransformFeedbackVaryingsCHROMIUM program should be 4");
+static_assert(
+    offsetof(GetTransformFeedbackVaryingsCHROMIUM, bucket_id) == 8,
+    "offset of GetTransformFeedbackVaryingsCHROMIUM bucket_id should be 8");
 
 struct GetTranslatedShaderSourceANGLE {
   typedef GetTranslatedShaderSourceANGLE ValueType;

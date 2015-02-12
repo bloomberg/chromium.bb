@@ -397,6 +397,7 @@ void glGetTransformFeedbackVaryingFn(GLuint program,
                                      GLuint index,
                                      GLsizei bufSize,
                                      GLsizei* length,
+                                     GLsizei* size,
                                      GLenum* type,
                                      char* name) override;
 void glGetTranslatedShaderSourceANGLEFn(GLuint shader,

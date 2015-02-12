@@ -387,6 +387,14 @@ void GLES2InterfaceStub::GetTexParameteriv(GLenum /* target */,
                                            GLenum /* pname */,
                                            GLint* /* params */) {
 }
+void GLES2InterfaceStub::GetTransformFeedbackVarying(GLuint /* program */,
+                                                     GLuint /* index */,
+                                                     GLsizei /* bufsize */,
+                                                     GLsizei* /* length */,
+                                                     GLsizei* /* size */,
+                                                     GLenum* /* type */,
+                                                     char* /* name */) {
+}
 GLuint GLES2InterfaceStub::GetUniformBlockIndex(GLuint /* program */,
                                                 const char* /* name */) {
   return 0;
@@ -986,6 +994,12 @@ void GLES2InterfaceStub::GetUniformBlocksCHROMIUM(GLuint /* program */,
                                                   GLsizei /* bufsize */,
                                                   GLsizei* /* size */,
                                                   void* /* info */) {
+}
+void GLES2InterfaceStub::GetTransformFeedbackVaryingsCHROMIUM(
+    GLuint /* program */,
+    GLsizei /* bufsize */,
+    GLsizei* /* size */,
+    void* /* info */) {
 }
 GLuint GLES2InterfaceStub::CreateStreamTextureCHROMIUM(GLuint /* texture */) {
   return 0;

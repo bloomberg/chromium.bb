@@ -481,6 +481,7 @@ typedef void(GL_BINDING_CALL* glGetTransformFeedbackVaryingProc)(
     GLuint index,
     GLsizei bufSize,
     GLsizei* length,
+    GLsizei* size,
     GLenum* type,
     char* name);
 typedef void(GL_BINDING_CALL* glGetTranslatedShaderSourceANGLEProc)(
@@ -1644,6 +1645,7 @@ class GL_EXPORT GLApi {
                                                GLuint index,
                                                GLsizei bufSize,
                                                GLsizei* length,
+                                               GLsizei* size,
                                                GLenum* type,
                                                char* name) = 0;
   virtual void glGetTranslatedShaderSourceANGLEFn(GLuint shader,

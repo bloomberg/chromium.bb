@@ -36,6 +36,13 @@ class ProgramInfoManagerTest : public testing::Test {
     uint32_t indices1[1];
   };
 
+  struct TransformFeedbackVaryingsData {
+    TransformFeedbackVaryingsHeader header;
+    TransformFeedbackVaryingInfo entry[2];
+    char name0[4];
+    char name1[8];
+  };
+
   void SetUp() override {
     program_info_manager_.reset(new ProgramInfoManager);
     program_info_manager_->CreateInfo(kClientProgramId);
@@ -78,6 +85,23 @@ class ProgramInfoManagerTest : public testing::Test {
     data->indices0[1] = kIndices[0][1];
     memcpy(data->name1, kName[1], arraysize(data->name1));
     data->indices1[0] = kIndices[1][0];
+  }
+
+  void SetupTransformFeedbackVaryingsData(TransformFeedbackVaryingsData* data) {
+    // The names needs to be of size 4*k-1 to avoid padding in the struct Data.
+    // This is a testing only problem.
+    const char* kName[] = { "cow", "chicken" };
+    data->header.num_transform_feedback_varyings = 2;
+    data->entry[0].size = 1;
+    data->entry[0].type = GL_FLOAT_VEC2;
+    data->entry[0].name_offset = ComputeOffset(data, data->name0);
+    data->entry[0].name_length = arraysize(data->name0);
+    data->entry[1].size = 2;
+    data->entry[1].type = GL_FLOAT;
+    data->entry[1].name_offset = ComputeOffset(data, data->name1);
+    data->entry[1].name_length = arraysize(data->name1);
+    memcpy(data->name0, kName[0], arraysize(data->name0));
+    memcpy(data->name1, kName[1], arraysize(data->name1));
   }
 
   scoped_ptr<ProgramInfoManager> program_info_manager_;
@@ -124,6 +148,40 @@ TEST_F(ProgramInfoManagerTest, UpdateES3UniformBlocks) {
 
   EXPECT_EQ(GL_INVALID_INDEX, program_->GetUniformBlockIndex("BadName"));
   EXPECT_EQ(NULL, program_->GetUniformBlock(data.header.num_uniform_blocks));
+}
+
+TEST_F(ProgramInfoManagerTest, UpdateES3TransformFeedbackVaryings) {
+  TransformFeedbackVaryingsData data;
+  SetupTransformFeedbackVaryingsData(&data);
+  const std::string kName[] = { data.name0, data.name1 };
+  std::vector<int8> result(sizeof(data));
+  memcpy(&result[0], &data, sizeof(data));
+  EXPECT_FALSE(program_->IsCached(
+      ProgramInfoManager::kES3TransformFeedbackVaryings));
+  program_->UpdateES3TransformFeedbackVaryings(result);
+  EXPECT_TRUE(program_->IsCached(
+      ProgramInfoManager::kES3TransformFeedbackVaryings));
+
+  GLint transform_feedback_varying_count = 0;
+  EXPECT_TRUE(program_->GetProgramiv(
+      GL_TRANSFORM_FEEDBACK_VARYINGS, &transform_feedback_varying_count));
+  EXPECT_EQ(data.header.num_transform_feedback_varyings,
+            static_cast<uint32_t>(transform_feedback_varying_count));
+  GLint max_name_length = 0;
+  EXPECT_TRUE(program_->GetProgramiv(
+      GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, &max_name_length));
+  for (uint32_t ii = 0; ii < data.header.num_transform_feedback_varyings;
+       ++ii) {
+    const Program::TransformFeedbackVarying* varying =
+        program_->GetTransformFeedbackVarying(ii);
+    EXPECT_TRUE(varying != NULL);
+    EXPECT_EQ(data.entry[ii].size, static_cast<uint32_t>(varying->size));
+    EXPECT_EQ(data.entry[ii].type, varying->type);
+    EXPECT_EQ(kName[ii], varying->name);
+    EXPECT_GE(max_name_length, static_cast<GLint>(varying->name.size()) + 1);
+  }
+  EXPECT_EQ(NULL, program_->GetTransformFeedbackVarying(
+  data.header.num_transform_feedback_varyings));
 }
 
 TEST_F(ProgramInfoManagerTest, GetUniformBlockIndexCached) {
@@ -225,6 +283,30 @@ TEST_F(ProgramInfoManagerTest, GetActiveUniformBlockivCached) {
         GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER, params));
     EXPECT_EQ(data.entry[ii].referenced_by_fragment_shader,
               static_cast<uint32_t>(params[0]));
+  }
+}
+
+TEST_F(ProgramInfoManagerTest, GetTransformFeedbackVaryingCached) {
+  TransformFeedbackVaryingsData data;
+  SetupTransformFeedbackVaryingsData(&data);
+  std::vector<int8> result(sizeof(data));
+  memcpy(&result[0], &data, sizeof(data));
+  program_->UpdateES3TransformFeedbackVaryings(result);
+  const char* kName[] = { data.name0, data.name1 };
+  GLsizei buf_size = std::max(strlen(kName[0]), strlen(kName[1])) + 1;
+  for (uint32_t ii = 0; ii < data.header.num_transform_feedback_varyings;
+       ++ii) {
+    std::vector<char> buffer(buf_size);
+    GLsizei length = 0;
+    GLsizei size = 0;
+    GLenum type = 0;
+    EXPECT_EQ(true, program_info_manager_->GetTransformFeedbackVarying(
+        NULL, kClientProgramId, ii, buf_size,
+        &length, &size, &type, &buffer[0]));
+    EXPECT_EQ(data.entry[ii].size, static_cast<uint32_t>(size));
+    EXPECT_EQ(data.entry[ii].type, static_cast<uint32_t>(type));
+    EXPECT_STREQ(kName[ii], &buffer[0]);
+    EXPECT_EQ(strlen(kName[ii]), static_cast<size_t>(length));
   }
 }
 

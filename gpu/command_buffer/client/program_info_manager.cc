@@ -54,13 +54,25 @@ ProgramInfoManager::Program::UniformBlock::UniformBlock()
 ProgramInfoManager::Program::UniformBlock::~UniformBlock() {
 }
 
+ProgramInfoManager::Program::TransformFeedbackVarying::
+TransformFeedbackVarying()
+    : size(0),
+      type(0) {
+}
+
+ProgramInfoManager::Program::TransformFeedbackVarying::
+~TransformFeedbackVarying() {
+}
+
 ProgramInfoManager::Program::Program()
     : cached_es2_(false),
       max_attrib_name_length_(0),
       max_uniform_name_length_(0),
       link_status_(false),
       cached_es3_uniform_blocks_(false),
-      active_uniform_block_max_name_length_(0) {
+      active_uniform_block_max_name_length_(0),
+      cached_es3_transform_feedback_varyings_(false),
+      transform_feedback_varying_max_length_(0) {
 }
 
 ProgramInfoManager::Program::~Program() {
@@ -162,6 +174,12 @@ bool ProgramInfoManager::Program::GetProgramiv(
     case GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH:
       *params = static_cast<GLint>(active_uniform_block_max_name_length_);
       return true;
+    case GL_TRANSFORM_FEEDBACK_VARYINGS:
+      *params = static_cast<GLint>(transform_feedback_varyings_.size());
+      return true;
+    case GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH:
+      *params = static_cast<GLint>(transform_feedback_varying_max_length_);
+      return true;
     default:
       NOTREACHED();
       break;
@@ -184,6 +202,12 @@ void ProgramInfoManager::Program::UniformBlockBinding(
   if (index < uniform_blocks_.size()) {
     uniform_blocks_[index].binding = binding;
   }
+}
+
+const ProgramInfoManager::Program::TransformFeedbackVarying*
+ProgramInfoManager::Program::GetTransformFeedbackVarying(GLuint index) const {
+  return (index < transform_feedback_varyings_.size()) ?
+      &transform_feedback_varyings_[index] : NULL;
 }
 
 void ProgramInfoManager::Program::UpdateES2(const std::vector<int8>& result) {
@@ -313,12 +337,75 @@ void ProgramInfoManager::Program::UpdateES3UniformBlocks(
   cached_es3_uniform_blocks_ = true;
 }
 
+void ProgramInfoManager::Program::UpdateES3TransformFeedbackVaryings(
+    const std::vector<int8>& result) {
+  if (cached_es3_transform_feedback_varyings_) {
+    return;
+  }
+  if (result.empty()) {
+    // This should only happen on a lost context.
+    return;
+  }
+  transform_feedback_varyings_.clear();
+  transform_feedback_varying_max_length_ = 0;
+
+  // |result| comes from GPU process. We consider it trusted data. Therefore,
+  // no need to check for overflows as the GPU side did the checks already.
+  uint32_t header_size = sizeof(TransformFeedbackVaryingsHeader);
+  DCHECK_GE(result.size(), header_size);
+  const TransformFeedbackVaryingsHeader* header =
+      LocalGetAs<const TransformFeedbackVaryingsHeader*>(
+          result, 0, header_size);
+  DCHECK(header);
+  if (header->num_transform_feedback_varyings == 0) {
+    DCHECK_EQ(result.size(), header_size);
+    // TODO(zmo): Here we can't tell if no TransformFeedback varyings are
+    // defined, or the previous link failed.
+    return;
+  }
+  transform_feedback_varyings_.resize(header->num_transform_feedback_varyings);
+
+  uint32_t entry_size = sizeof(TransformFeedbackVaryingInfo) *
+      header->num_transform_feedback_varyings;
+  DCHECK_GE(result.size(), header_size + entry_size);
+  uint32_t data_size = result.size() - header_size - entry_size;
+  DCHECK_LT(0u, data_size);
+  const TransformFeedbackVaryingInfo* entries =
+      LocalGetAs<const TransformFeedbackVaryingInfo*>(
+          result, header_size, entry_size);
+  DCHECK(entries);
+  const char* data = LocalGetAs<const char*>(
+      result, header_size + entry_size, data_size);
+  DCHECK(data);
+
+  uint32_t size = 0;
+  for (uint32_t ii = 0; ii < header->num_transform_feedback_varyings; ++ii) {
+    transform_feedback_varyings_[ii].size =
+        static_cast<GLsizei>(entries[ii].size);
+    transform_feedback_varyings_[ii].type =
+        static_cast<GLenum>(entries[ii].type);
+    DCHECK_LE(1u, entries[ii].name_length);
+    if (entries[ii].name_length > transform_feedback_varying_max_length_) {
+      transform_feedback_varying_max_length_ = entries[ii].name_length;
+    }
+    size += entries[ii].name_length;
+    DCHECK_GE(data_size, size);
+    transform_feedback_varyings_[ii].name =
+        std::string(data, entries[ii].name_length - 1);
+    data += entries[ii].name_length;
+  }
+  DCHECK_EQ(data_size, size);
+  cached_es3_transform_feedback_varyings_ = true;
+}
+
 bool ProgramInfoManager::Program::IsCached(ProgramInfoType type) const {
   switch (type) {
     case kES2:
       return cached_es2_;
     case kES3UniformBlocks:
       return cached_es3_uniform_blocks_;
+    case kES3TransformFeedbackVaryings:
+      return cached_es3_transform_feedback_varyings_;
     case kNone:
       return true;
     default:
@@ -361,12 +448,18 @@ ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
         base::AutoUnlock unlock(lock_);
         // lock_ can't be held across IPC call or else it may deadlock in
         // pepper. http://crbug.com/418651
-
-        // TODO(zmo): Uncomment the below line once GetUniformBlocksCHROMIUM
-        // command is implemented.
-        // gl->GetUniformBlocksCHROMIUMHeler(program, &result);
+        gl->GetUniformBlocksCHROMIUMHelper(program, &result);
       }
       info->UpdateES3UniformBlocks(result);
+      break;
+    case kES3TransformFeedbackVaryings:
+      {
+        base::AutoUnlock unlock(lock_);
+        // lock_ can't be held across IPC call or else it may deadlock in
+        // pepper. http://crbug.com/418651
+        gl->GetTransformFeedbackVaryingsCHROMIUMHelper(program, &result);
+      }
+      info->UpdateES3TransformFeedbackVaryings(result);
     default:
       NOTREACHED();
       return NULL;
@@ -403,6 +496,10 @@ bool ProgramInfoManager::GetProgramiv(
     case GL_ACTIVE_UNIFORM_BLOCKS:
     case GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH:
       type = kES3UniformBlocks;
+      break;
+    case GL_TRANSFORM_FEEDBACK_VARYINGS:
+    case GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH:
+      type = kES3TransformFeedbackVaryings;
       break;
     default:
       return false;
@@ -657,6 +754,41 @@ void ProgramInfoManager::UniformBlockBinding(
       info->UniformBlockBinding(index, binding);
     }
   }
+}
+
+bool ProgramInfoManager::GetTransformFeedbackVarying(
+    GLES2Implementation* gl, GLuint program, GLuint index, GLsizei bufsize,
+    GLsizei* length, GLsizei* size, GLenum* type, char* name) {
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program, kES3TransformFeedbackVaryings);
+    if (info) {
+      const Program::TransformFeedbackVarying* varying =
+          info->GetTransformFeedbackVarying(index);
+      if (varying) {
+        if (size) {
+          *size = varying->size;
+        }
+        if (type) {
+          *type = varying->type;
+        }
+        if (length || name) {
+          GLsizei max_size = std::min(
+              bufsize - 1, static_cast<GLsizei>(varying->name.size()));
+          if (length) {
+            *length = static_cast<GLsizei>(max_size);
+          }
+          if (name && bufsize > 0) {
+            memcpy(name, varying->name.c_str(), max_size);
+            name[max_size] = '\0';
+          }
+        }
+        return true;
+      }
+    }
+  }
+  return gl->GetTransformFeedbackVaryingHelper(
+      program, index, bufsize, length, size, type, name);
 }
 
 }  // namespace gles2
