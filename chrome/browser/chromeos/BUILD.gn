@@ -125,6 +125,8 @@ source_set("chromeos") {
     ":drive_proto",
   ]
 
+  defines = []
+
   sources = rebase_path(gypi_values.browser_chromeos_sources, ".", "//chrome") +
             rebase_path(gypi_values.browser_chromeos_extension_sources,
                         ".",
