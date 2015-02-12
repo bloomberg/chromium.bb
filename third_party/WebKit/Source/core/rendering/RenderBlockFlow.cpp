@@ -2559,7 +2559,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
 void RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool makeChildPaintOtherFloats)
 {
     // Prevent floats from being added to the canvas by the root element, e.g., <html>.
-    if (!child->containsFloats() || child->isRenderRegion() || child->createsNewFormattingContext())
+    if (!child->containsFloats() || child->isLayoutRegion() || child->createsNewFormattingContext())
         return;
 
     LayoutUnit childLogicalTop = child->logicalTop();

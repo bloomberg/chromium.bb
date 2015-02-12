@@ -33,7 +33,7 @@
 namespace blink {
 
 LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flowThread)
-    : RenderRegion(0, flowThread)
+    : LayoutRegion(0, flowThread)
     , m_fragmentainerGroups(*this)
 {
 }
@@ -231,14 +231,14 @@ const char* LayoutMultiColumnSet::renderName() const
 
 void LayoutMultiColumnSet::insertedIntoTree()
 {
-    RenderRegion::insertedIntoTree();
+    LayoutRegion::insertedIntoTree();
 
     attachRegion();
 }
 
 void LayoutMultiColumnSet::willBeRemovedFromTree()
 {
-    RenderRegion::willBeRemovedFromTree();
+    LayoutRegion::willBeRemovedFromTree();
 
     detachRegion();
 }

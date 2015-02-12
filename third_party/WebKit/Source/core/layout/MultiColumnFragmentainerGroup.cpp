@@ -175,7 +175,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(LayerFragments& fragme
     // Now we can compare with the flow thread portions owned by each column. First let's
     // see if the rect intersects our flow thread portion at all.
     LayoutRect clippedRect(layerBoundsInFlowThread);
-    clippedRect.intersect(m_columnSet.RenderRegion::flowThreadPortionOverflowRect()); // FIXME: clean up this mess.
+    clippedRect.intersect(m_columnSet.LayoutRegion::flowThreadPortionOverflowRect()); // FIXME: clean up this mess.
     if (clippedRect.isEmpty())
         return;
 

@@ -28,37 +28,37 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderRegion.h"
+#include "core/layout/LayoutRegion.h"
 
 #include "core/layout/LayoutFlowThread.h"
 
 namespace blink {
 
-RenderRegion::RenderRegion(Element* element, LayoutFlowThread* flowThread)
+LayoutRegion::LayoutRegion(Element* element, LayoutFlowThread* flowThread)
     : RenderBlockFlow(element)
     , m_flowThread(flowThread)
     , m_isValid(false)
 {
 }
 
-LayoutUnit RenderRegion::pageLogicalWidth() const
+LayoutUnit LayoutRegion::pageLogicalWidth() const
 {
     ASSERT(m_flowThread);
     return m_flowThread->isHorizontalWritingMode() ? contentWidth() : contentHeight();
 }
 
-LayoutUnit RenderRegion::pageLogicalHeight() const
+LayoutUnit LayoutRegion::pageLogicalHeight() const
 {
     ASSERT(m_flowThread);
     return m_flowThread->isHorizontalWritingMode() ? contentHeight() : contentWidth();
 }
 
-LayoutRect RenderRegion::flowThreadPortionOverflowRect() const
+LayoutRect LayoutRegion::flowThreadPortionOverflowRect() const
 {
     return overflowRectForFlowThreadPortion(flowThreadPortionRect(), isFirstRegion(), isLastRegion());
 }
 
-LayoutRect RenderRegion::overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const
+LayoutRect LayoutRegion::overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const
 {
     ASSERT(isValid());
 
@@ -86,21 +86,21 @@ LayoutRect RenderRegion::overflowRectForFlowThreadPortion(const LayoutRect& flow
     return clipRect;
 }
 
-bool RenderRegion::isFirstRegion() const
+bool LayoutRegion::isFirstRegion() const
 {
     ASSERT(isValid());
 
     return m_flowThread->firstRegion() == this;
 }
 
-bool RenderRegion::isLastRegion() const
+bool LayoutRegion::isLastRegion() const
 {
     ASSERT(isValid());
 
     return m_flowThread->lastRegion() == this;
 }
 
-void RenderRegion::layoutBlock(bool relayoutChildren)
+void LayoutRegion::layoutBlock(bool relayoutChildren)
 {
     RenderBlockFlow::layoutBlock(relayoutChildren);
 
@@ -114,7 +114,7 @@ void RenderRegion::layoutBlock(bool relayoutChildren)
     // LayoutFlowThread itself).
 }
 
-void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+void LayoutRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     if (!isValid()) {
         RenderBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);

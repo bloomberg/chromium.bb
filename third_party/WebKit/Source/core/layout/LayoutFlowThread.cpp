@@ -152,14 +152,14 @@ LayoutUnit LayoutFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offs
     return remainingHeight;
 }
 
-RenderRegion* LayoutFlowThread::firstRegion() const
+LayoutRegion* LayoutFlowThread::firstRegion() const
 {
     if (!hasValidRegionInfo())
         return 0;
     return m_multiColumnSetList.first();
 }
 
-RenderRegion* LayoutFlowThread::lastRegion() const
+LayoutRegion* LayoutFlowThread::lastRegion() const
 {
     if (!hasValidRegionInfo())
         return 0;

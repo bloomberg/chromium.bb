@@ -358,7 +358,7 @@ public:
     bool isRenderImage() const { return isOfType(LayoutObjectRenderImage); }
     bool isLayoutMultiColumnSet() const { return isOfType(LayoutObjectLayoutMultiColumnSet); }
     bool isLayoutMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder); }
-    bool isRenderRegion() const { return isOfType(LayoutObjectRenderRegion); }
+    bool isLayoutRegion() const { return isOfType(LayoutObjectLayoutRegion); }
     bool isRenderScrollbarPart() const { return isOfType(LayoutObjectRenderScrollbarPart); }
     bool isRenderView() const { return isOfType(LayoutObjectRenderView); }
     bool isReplica() const { return isOfType(LayoutObjectReplica); }
@@ -1098,7 +1098,7 @@ protected:
         LayoutObjectLayoutMultiColumnSet,
         LayoutObjectLayoutMultiColumnSpannerPlaceholder,
         LayoutObjectRenderPart,
-        LayoutObjectRenderRegion,
+        LayoutObjectLayoutRegion,
         LayoutObjectRenderScrollbarPart,
         LayoutObjectRenderView,
         LayoutObjectReplica,

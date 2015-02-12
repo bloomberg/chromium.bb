@@ -37,14 +37,14 @@
 namespace blink {
 
 class LayoutMultiColumnSet;
-class RenderRegion;
+class LayoutRegion;
 
 typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
 // LayoutFlowThread is used to collect all the render objects that participate in a
 // flow thread. It will also help in doing the layout. However, it will not render
-// directly to screen. Instead, RenderRegion objects will redirect their paint
-// and nodeAtPoint methods to this object. Each RenderRegion will actually be a viewPort
+// directly to screen. Instead, LayoutRegion objects will redirect their paint
+// and nodeAtPoint methods to this object. Each LayoutRegion will actually be a viewPort
 // of the LayoutFlowThread.
 
 class LayoutFlowThread: public RenderBlockFlow {
@@ -98,8 +98,8 @@ public:
     bool regionsHaveUniformLogicalHeight() const { return m_regionsHaveUniformLogicalHeight; }
 
     // FIXME: These 2 functions should return a LayoutMultiColumnSet.
-    RenderRegion* firstRegion() const;
-    RenderRegion* lastRegion() const;
+    LayoutRegion* firstRegion() const;
+    LayoutRegion* lastRegion() const;
 
     virtual bool addForcedRegionBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
 

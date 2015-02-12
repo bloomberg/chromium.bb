@@ -28,8 +28,8 @@
 #define LayoutMultiColumnSet_h
 
 #include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "core/layout/LayoutRegion.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
-#include "core/rendering/RenderRegion.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -58,7 +58,7 @@ namespace blink {
 // may need to group the columns, so that we get one MultiColumnFragmentainerGroup for each outer
 // fragmentainer (page / column) that the inner multicol container lives in. Each fragmentainer
 // group has its own column height, but the column height is uniform within a group.
-class LayoutMultiColumnSet : public RenderRegion {
+class LayoutMultiColumnSet : public LayoutRegion {
 public:
     static LayoutMultiColumnSet* createAnonymous(LayoutFlowThread&, const LayoutStyle& parentStyle);
 
@@ -67,7 +67,7 @@ public:
     MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit);
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || RenderRegion::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || LayoutRegion::isOfType(type); }
 
     virtual LayoutUnit pageLogicalWidth() const final { return flowThread()->logicalWidth(); }
     virtual LayoutUnit pageLogicalHeight() const final;
@@ -134,7 +134,7 @@ public:
     void attachRegion();
     void detachRegion();
 
-    // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
+    // The top of the nearest page inside the region. For LayoutRegions, this is just the logical top of the
     // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
     // page.
     LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;

@@ -1824,7 +1824,7 @@ bool CompositedLayerMapping::containsPaintedContent() const
     if (layoutObject->isReplaced() && !isCompositedPlugin(layoutObject))
         return true;
 
-    if (layoutObject->isRenderRegion())
+    if (layoutObject->isLayoutRegion())
         return true;
 
     if (layoutObject->node() && layoutObject->node()->isDocumentNode()) {
@@ -2120,7 +2120,7 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
     context->setDeviceScaleFactor(deviceScaleFactor);
 
     if (paintInfo.renderLayer->compositingState() != PaintsIntoGroupedBacking) {
-        // FIXME: GraphicsLayers need a way to split for RenderRegions.
+        // FIXME: GraphicsLayers need a way to split for LayoutRegions.
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
         LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 

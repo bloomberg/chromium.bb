@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef RenderRegion_h
-#define RenderRegion_h
+#ifndef LayoutRegion_h
+#define LayoutRegion_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
@@ -36,11 +36,11 @@ namespace blink {
 
 class LayoutFlowThread;
 
-class RenderRegion : public RenderBlockFlow {
+class LayoutRegion : public RenderBlockFlow {
 public:
-    explicit RenderRegion(Element*, LayoutFlowThread*);
+    explicit LayoutRegion(Element*, LayoutFlowThread*);
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderRegion || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutRegion || RenderBlockFlow::isOfType(type); }
 
     virtual LayoutRect flowThreadPortionRect() const = 0;
     LayoutRect flowThreadPortionOverflowRect() const;
@@ -55,7 +55,7 @@ public:
     bool isFirstRegion() const;
     bool isLastRegion() const;
 
-    // These methods represent the width and height of a "page" and for a RenderRegion they are just
+    // These methods represent the width and height of a "page" and for a LayoutRegion they are just
     // the content width and content height of a region. For LayoutMultiColumnSets, however, they
     // will be the width and height of a single column or page in the set.
     virtual LayoutUnit pageLogicalWidth() const;
@@ -64,7 +64,7 @@ public:
     virtual bool canHaveChildren() const override final { return false; }
     virtual bool canHaveGeneratedChildren() const override final { return true; }
 
-    virtual const char* renderName() const override { return "RenderRegion"; }
+    virtual const char* renderName() const override { return "LayoutRegion"; }
 
 protected:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
@@ -79,8 +79,8 @@ private:
     bool m_isValid : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderRegion, isRenderRegion());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRegion, isLayoutRegion());
 
 } // namespace blink
 
-#endif // RenderRegion_h
+#endif // LayoutRegion_h
