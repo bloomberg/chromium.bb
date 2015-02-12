@@ -421,9 +421,11 @@ public:
     virtual void setSharedTimerFireInterval(double) { }
     virtual void stopSharedTimer() { }
 
-    // Callable from a background WebKit thread.
+    // Callable from a background WebKit thread. Deprecated: use mainThread()->postTask() instead.
     virtual void callOnMainThread(void (*func)(void*), void* context) { }
 
+    // Returns an interface to the main thread. Can be null if blink was initialized on a thread without a message loop.
+    BLINK_PLATFORM_EXPORT WebThread* mainThread() const;
 
     // Vibration -----------------------------------------------------------
 
@@ -662,7 +664,10 @@ public:
     virtual WebNavigatorConnectProvider* navigatorConnectProvider() { return 0; }
 
 protected:
+    BLINK_PLATFORM_EXPORT Platform();
     virtual ~Platform() { }
+
+    WebThread* m_mainThread;
 };
 
 } // namespace blink

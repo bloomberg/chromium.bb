@@ -83,6 +83,22 @@ public:
     }
 };
 
+class MainThreadTaskRunner: public WebThread::Task {
+    WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
+public:
+    MainThreadTaskRunner(WTF::MainThreadFunction* function, void* context)
+        : m_function(function)
+        , m_context(context) { }
+
+    void run() override
+    {
+        m_function(m_context);
+    }
+private:
+    WTF::MainThreadFunction* m_function;
+    void* m_context;
+};
+
 } // namespace
 
 static WebThread::TaskObserver* s_endOfTaskRunner = 0;
@@ -104,7 +120,7 @@ void initialize(Platform* platform)
     ThreadState::current()->addInterruptor(s_isolateInterruptor);
     ThreadState::current()->registerTraceDOMWrappers(V8PerIsolateData::mainThreadIsolate(), V8GCController::traceDOMWrappers);
 
-    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
+    // currentThread is null if we are running on a thread without a message loop.
     if (WebThread* currentThread = platform->currentThread()) {
         ASSERT(!s_endOfTaskRunner);
         s_endOfTaskRunner = new EndOfTaskRunner;
@@ -134,7 +150,7 @@ static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    Platform::current()->callOnMainThread(function, context);
+    Platform::current()->mainThread()->postTask(new MainThreadTaskRunner(function, context));
 }
 
 void initializeWithoutV8(Platform* platform)
@@ -151,7 +167,7 @@ void initializeWithoutV8(Platform* platform)
     Heap::init();
 
     ThreadState::attachMainThread();
-    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
+    // currentThread() is null if we are running on a thread without a message loop.
     if (WebThread* currentThread = platform->currentThread()) {
         ASSERT(!s_pendingGCRunner);
         s_pendingGCRunner = new PendingGCRunner;
@@ -172,7 +188,7 @@ void initializeWithoutV8(Platform* platform)
 
 void shutdown()
 {
-    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
+    // currentThread() is null if we are running on a thread without a message loop.
     if (Platform::current()->currentThread()) {
         // We don't need to (cannot) remove s_endOfTaskRunner from the current
         // message loop, because the message loop is already destructed before
@@ -184,7 +200,7 @@ void shutdown()
     ASSERT(s_isolateInterruptor);
     ThreadState::current()->removeInterruptor(s_isolateInterruptor);
 
-    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
+    // currentThread() is null if we are running on a thread without a message loop.
     if (Platform::current()->currentThread()) {
         ASSERT(s_pendingGCRunner);
         delete s_pendingGCRunner;
