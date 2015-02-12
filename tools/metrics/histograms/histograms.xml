@@ -15920,6 +15920,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.CacheState.AllBytes">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <summary>Counts of response bytes by cache state.</summary>
+</histogram>
+
+<histogram name="Net.CacheState.AllRequests" enum="NetCacheState">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    State of the cache for a request, delta-encoding eligible or otherwise.
+  </summary>
+</histogram>
+
+<histogram name="Net.CacheState.EncodeableBytes">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    Counts of response bytes by cache state for delta-encoding eligible
+    requests.
+  </summary>
+</histogram>
+
+<histogram name="Net.CacheState.EncodeableRequests" enum="NetCacheState">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <summary>State of the cache for a delta-encoding eligible request.</summary>
+</histogram>
+
 <histogram name="Net.CertCommonNameFallback" enum="BooleanCommonNameMatch">
   <owner>rsleevi@chromium.org</owner>
   <summary>
@@ -52740,6 +52769,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="javascript"/>
   <int value="7" label="about"/>
   <int value="8" label="chrome"/>
+</enum>
+
+<enum name="NetCacheState" type="int">
+  <int value="0" label="FROM_CACHE"/>
+  <int value="1" label="STILL_VALID"/>
+  <int value="2" label="NO_LONGER_VALID"/>
+  <int value="3" label="NO_ENTRY"/>
 </enum>
 
 <enum name="NetConnectivityProtocolStatus" type="int">
