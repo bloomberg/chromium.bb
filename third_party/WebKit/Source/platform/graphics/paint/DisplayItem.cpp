@@ -49,6 +49,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::LinkHighlight: return "DrawingLinkHighlight";
     case DisplayItem::PageOverlay: return "PageOverlay";
     case DisplayItem::PageWidgetDelegateBackgroundFallback: return "DrawingPageWidgetDelegateBackgroundFallback";
+    case DisplayItem::PopupContainerBorder: return "DrawingPopupContainerBorder";
     case DisplayItem::Resizer: return "DrawingResizer";
     case DisplayItem::SVGFilter: return "DrawingSVGFilter";
     case DisplayItem::ScrollbarCorner: return "DrawingScrollbarCorner";

@@ -40,6 +40,8 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
+
+class DisplayItemList;
 class WebContentLayer;
 class WebGestureEvent;
 class WebKeyboardEvent;
@@ -81,7 +83,7 @@ public:
 
     // WebContentLayerClient
     virtual void paintContents(WebCanvas*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override final;
-    virtual void paintContents(WebDisplayItemList*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override final { }
+    virtual void paintContents(WebDisplayItemList*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override final;
 
     // WebPopupMenuImpl
     void initialize(PopupContainer* widget, const WebRect& bounds);
@@ -113,6 +115,10 @@ public:
 
     // PopupContainerClient methods:
     virtual void popupClosed(PopupContainer*) override final;
+    void invalidateDisplayItemClient(DisplayItemClient) override final;
+    void invalidateAllDisplayItems() override final;
+
+    DisplayItemList* displayItemList();
 
     WebWidgetClient* m_client;
     WebSize m_size;
@@ -125,6 +131,8 @@ public:
     // This is a non-owning ref. The popup will notify us via popupClosed()
     // before it is destroyed.
     PopupContainer* m_widget;
+
+    OwnPtr<DisplayItemList> m_displayItemList;
 };
 
 DEFINE_TYPE_CASTS(WebPopupMenuImpl, WebWidget, widget, widget->isPopupMenu(), widget.isPopupMenu());

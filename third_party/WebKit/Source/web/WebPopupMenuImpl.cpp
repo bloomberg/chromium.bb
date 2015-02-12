@@ -38,8 +38,10 @@
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformWheelEvent.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -215,11 +217,26 @@ void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, Web
     if (!m_widget)
         return;
 
-    if (!rect.isEmpty()) {
-        GraphicsContext context(canvas, nullptr,
-            paintingControl == PaintingControlSetting::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
-        m_widget->paint(&context, rect);
-    }
+    GraphicsContext context(canvas, displayItemList(),
+        paintingControl == PaintingControlSetting::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
+    m_widget->paint(&context, rect);
+
+    if (DisplayItemList* displayItemList = this->displayItemList())
+        displayItemList->endNewPaints();
+}
+
+void WebPopupMenuImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& clip, WebContentLayerClient::PaintingControlSetting paintingControl)
+{
+    if (!m_widget)
+        return;
+
+    if (paintingControl == WebContentLayerClient::DisplayListCachingDisabled && m_displayItemList)
+        m_displayItemList->invalidateAll();
+
+    paintContents(static_cast<WebCanvas*>(nullptr), clip, paintingControl);
+
+    for (const auto& item : displayItemList()->paintList())
+        item->appendToWebDisplayItemList(webDisplayItemList);
 }
 
 void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect)
@@ -400,6 +417,31 @@ void WebPopupMenuImpl::popupClosed(PopupContainer* widget)
     }
     if (m_client)
         m_client->closeWidgetSoon();
+}
+
+void WebPopupMenuImpl::invalidateDisplayItemClient(DisplayItemClient client)
+{
+    if (m_displayItemList) {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+        m_displayItemList->invalidate(client);
+    }
+}
+
+void WebPopupMenuImpl::invalidateAllDisplayItems()
+{
+    if (m_displayItemList) {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+        m_displayItemList->invalidateAll();
+    }
+}
+
+DisplayItemList* WebPopupMenuImpl::displayItemList()
+{
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return nullptr;
+    if (!m_displayItemList)
+        m_displayItemList = DisplayItemList::create();
+    return m_displayItemList.get();
 }
 
 } // namespace blink

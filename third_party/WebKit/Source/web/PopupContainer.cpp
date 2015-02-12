@@ -39,6 +39,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/paint/TransformRecorder.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
@@ -48,6 +49,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebPopupType.h"
 #include "public/web/WebViewClient.h"
@@ -354,38 +356,32 @@ void PopupContainer::hide()
     m_listBox->abandon();
 }
 
-void PopupContainer::paint(GraphicsContext* gc, const IntRect& rect)
+void PopupContainer::paint(GraphicsContext* gc, const IntRect& paintRect)
 {
-    // Adjust coords for scrolled frame.
-    IntRect r = intersection(rect, frameRect());
-    int tx = x();
-    int ty = y();
+    TransformRecorder transformRecorder(*gc, displayItemClient(), AffineTransform::translation(x(),  y()));
+    IntRect adjustedPaintRect = intersection(paintRect, frameRect());
+    adjustedPaintRect.moveBy(-location());
 
-    r.move(-tx, -ty);
-
-    gc->translate(static_cast<float>(tx), static_cast<float>(ty));
-    m_listBox->paint(gc, r);
-    gc->translate(-static_cast<float>(tx), -static_cast<float>(ty));
-
-    paintBorder(gc, rect);
+    m_listBox->paint(gc, adjustedPaintRect);
+    paintBorder(gc, adjustedPaintRect);
 }
 
 void PopupContainer::paintBorder(GraphicsContext* gc, const IntRect& rect)
 {
+    DrawingRecorder drawingRecorder(gc, displayItemClient(), DisplayItem::PopupContainerBorder, boundsRect());
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
+
     // FIXME: Where do we get the border color from?
     Color borderColor(127, 157, 185);
 
-    gc->setStrokeStyle(NoStroke);
-    gc->setFillColor(borderColor);
+    gc->setStrokeStyle(SolidStroke);
+    gc->setStrokeThickness(borderSize);
+    gc->setStrokeColor(borderColor);
 
-    int tx = x();
-    int ty = y();
-
-    // top, left, bottom, right
-    gc->drawRect(IntRect(tx, ty, width(), borderSize));
-    gc->drawRect(IntRect(tx, ty, borderSize, height()));
-    gc->drawRect(IntRect(tx, ty + height() - borderSize, width(), borderSize));
-    gc->drawRect(IntRect(tx + width() - borderSize, ty, borderSize, height()));
+    FloatRect borderRect(boundsRect());
+    borderRect.inflate(-gc->strokeThickness() / 2);
+    gc->strokeRect(borderRect);
 }
 
 ChromeClient& PopupContainer::chromeClient()
@@ -480,11 +476,13 @@ void PopupContainer::invalidateRect(const IntRect& rect)
 {
     if (HostWindow* h = hostWindow())
         h->invalidateRect(rect);
+    if (m_client)
+        m_client->invalidateDisplayItemClient(displayItemClient());
 }
 
 HostWindow* PopupContainer::hostWindow() const
 {
-    return const_cast<PopupContainerClient*>(m_client);
+    return m_client;
 }
 
 IntPoint PopupContainer::convertChildToSelf(const Widget* child, const IntPoint& point) const

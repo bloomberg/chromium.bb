@@ -63,6 +63,7 @@ public:
         LinkHighlight,
         PageOverlay,
         PageWidgetDelegateBackgroundFallback,
+        PopupContainerBorder,
         Resizer,
         SVGFilter,
         ScrollbarCorner,

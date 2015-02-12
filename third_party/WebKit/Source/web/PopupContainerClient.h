@@ -32,6 +32,7 @@
 #define PopupContainerClient_h
 
 #include "platform/HostWindow.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "web/PopupContainer.h"
 
 namespace blink {
@@ -39,6 +40,11 @@ namespace blink {
 class PopupContainerClient : public HostWindow {
 public:
     virtual void popupClosed(PopupContainer*) = 0;
+
+    // Mark display items within the popup as invalid.
+    // FIXME: Consider whether these should be moved to HostWindow.
+    virtual void invalidateDisplayItemClient(DisplayItemClient) = 0;
+    virtual void invalidateAllDisplayItems() = 0;
 };
 
 } // namespace blink

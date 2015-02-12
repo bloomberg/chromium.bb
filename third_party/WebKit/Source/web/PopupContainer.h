@@ -34,6 +34,7 @@
 
 #include "platform/PopupMenuStyle.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/heap/Handle.h"
 #include "web/PopupListBox.h"
 
@@ -123,6 +124,8 @@ private:
 
     PopupContainer(PopupMenuClient*, bool deviceSupportsTouch);
     virtual ~PopupContainer();
+
+    DisplayItemClient displayItemClient() { return toDisplayItemClient(this); }
 
     // Paint the border.
     void paintBorder(GraphicsContext*, const IntRect&);
