@@ -82,9 +82,6 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // starting/stopping the service.
   typedef base::Callback<void (AsyncResult result)> CompletionCallback;
 
-  // Callback type for GetVersion().
-  typedef base::Callback<void (const std::string&)> GetVersionCallback;
-
   struct UsageStatsConsent {
     // Indicates whether crash dump reporting is supported by the host.
     bool supported;
@@ -142,14 +139,6 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     // the operation is completed.
     virtual void Stop(const CompletionCallback& done) = 0;
 
-    // Caches the native handle of the plugin window so it can be used to focus
-    // elevation prompts properly.
-    virtual void SetWindow(void* window_handle) = 0;
-
-    // Get the version of the daemon as a dotted decimal string of the form
-    // major.minor.build.patch, if it is installed, or "" otherwise.
-    virtual std::string GetVersion() = 0;
-
     // Get the user's consent to crash reporting.
     virtual UsageStatsConsent GetUsageStatsConsent() = 0;
   };
@@ -199,14 +188,6 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // GetState until the state is STATE_STOPPED.
   void Stop(const CompletionCallback& done);
 
-  // Caches the native handle of the plugin window so it can be used to focus
-  // elevation prompts properly.
-  void SetWindow(void* window_handle);
-
-  // Get the version of the daemon as a dotted decimal string of the form
-  // major.minor.build.patch, if it is installed, or "" otherwise.
-  void GetVersion(const GetVersionCallback& done);
-
   // Get the user's consent to crash reporting.
   void GetUsageStatsConsent(const GetUsageStatsConsentCallback& done);
 
@@ -222,8 +203,6 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done);
   void DoStop(const CompletionCallback& done);
-  void DoSetWindow(void* window_handle, const base::Closure& done);
-  void DoGetVersion(const GetVersionCallback& done);
   void DoGetUsageStatsConsent(const GetUsageStatsConsentCallback& done);
 
   // "Trampoline" callbacks that schedule the next pending request and then
@@ -237,9 +216,6 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   void InvokeConsentCallbackAndScheduleNext(
       const GetUsageStatsConsentCallback& done,
       const UsageStatsConsent& consent);
-  void InvokeVersionCallbackAndScheduleNext(
-      const GetVersionCallback& done,
-      const std::string& version);
 
   // Queue management methods.
   void ScheduleNext();

@@ -274,37 +274,6 @@ void DaemonControllerDelegateLinux::Stop(
   done.Run(result);
 }
 
-void DaemonControllerDelegateLinux::SetWindow(void* window_handle) {
-  // noop
-}
-
-std::string DaemonControllerDelegateLinux::GetVersion() {
-  base::FilePath script_path;
-  if (!GetScriptPath(&script_path)) {
-    return std::string();
-  }
-  base::CommandLine command_line(script_path);
-  command_line.AppendArg("--host-version");
-
-  std::string version;
-  int exit_code = 0;
-  int result =
-      base::GetAppOutputWithExitCode(command_line, &version, &exit_code);
-  if (!result || exit_code != 0) {
-    LOG(ERROR) << "Failed to run \"" << command_line.GetCommandLineString()
-               << "\". Exit code: " << exit_code;
-    return std::string();
-  }
-
-  base::TrimWhitespaceASCII(version, base::TRIM_ALL, &version);
-  if (!base::ContainsOnlyChars(version, "0123456789.")) {
-    LOG(ERROR) << "Received invalid host version number: " << version;
-    return std::string();
-  }
-
-  return version;
-}
-
 DaemonController::UsageStatsConsent
 DaemonControllerDelegateLinux::GetUsageStatsConsent() {
   // Crash dump collection is not implemented on Linux yet.

@@ -430,14 +430,6 @@ void DaemonControllerDelegateWin::Stop(
   InvokeCompletionCallback(done, result);
 }
 
-void DaemonControllerDelegateWin::SetWindow(void* window_handle) {
-}
-
-std::string DaemonControllerDelegateWin::GetVersion() {
-  // TODO (weitaosu): Remove this as GetVersion is not used anymore.
-  return std::string();
-}
-
 DaemonController::UsageStatsConsent
 DaemonControllerDelegateWin::GetUsageStatsConsent() {
   DaemonController::UsageStatsConsent consent;

@@ -120,9 +120,7 @@ int StartMe2MeNativeMessagingHost() {
   if (command_line->HasSwitch(kParentWindowSwitchName)) {
     std::string native_view =
         command_line->GetSwitchValueASCII(kParentWindowSwitchName);
-    if (base::StringToInt64(native_view, &native_view_handle)) {
-      daemon_controller->SetWindow(reinterpret_cast<void*>(native_view_handle));
-    } else {
+    if (!base::StringToInt64(native_view, &native_view_handle)) {
       LOG(WARNING) << "Invalid parameter value --" << kParentWindowSwitchName
                    << "=" << native_view;
     }

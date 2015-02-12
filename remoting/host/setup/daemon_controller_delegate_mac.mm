@@ -92,35 +92,6 @@ void DaemonControllerDelegateMac::Stop(
   ShowPreferencePane("", done);
 }
 
-void DaemonControllerDelegateMac::SetWindow(void* window_handle) {
-  // noop
-}
-
-std::string DaemonControllerDelegateMac::GetVersion() {
-  std::string version = "";
-  std::string command_line = remoting::kHostHelperScriptPath;
-  command_line += " --host-version";
-  FILE* script_output = popen(command_line.c_str(), "r");
-  if (script_output) {
-    char buffer[100];
-    char* result = fgets(buffer, sizeof(buffer), script_output);
-    pclose(script_output);
-    if (result) {
-      // The string is guaranteed to be null-terminated, but probably contains
-      // a newline character, which we don't want.
-      for (int i = 0; result[i]; ++i) {
-        if (result[i] < ' ') {
-          result[i] = 0;
-          break;
-        }
-      }
-      version = result;
-    }
-  }
-
-  return version;
-}
-
 DaemonController::UsageStatsConsent
 DaemonControllerDelegateMac::GetUsageStatsConsent() {
   DaemonController::UsageStatsConsent consent;

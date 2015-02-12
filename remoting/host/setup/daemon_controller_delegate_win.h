@@ -27,8 +27,6 @@ class DaemonControllerDelegateWin : public DaemonController::Delegate {
       scoped_ptr<base::DictionaryValue> config,
       const DaemonController::CompletionCallback& done) override;
   virtual void Stop(const DaemonController::CompletionCallback& done) override;
-  virtual void SetWindow(void* window_handle) override;
-  virtual std::string GetVersion() override;
   virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateWin);
