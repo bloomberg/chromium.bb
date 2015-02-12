@@ -846,6 +846,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   bool print_to_pdf = false;
   bool is_cloud_printer = false;
   bool print_with_privet = false;
+  bool print_with_extension = false;
 
   bool open_pdf_in_preview = false;
 #if defined(OS_MACOSX)
@@ -855,6 +856,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   if (!open_pdf_in_preview) {
     settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
     settings->GetBoolean(printing::kSettingPrintWithPrivet, &print_with_privet);
+    settings->GetBoolean(printing::kSettingPrintWithExtension,
+                         &print_with_extension);
     is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
   }
 
@@ -895,6 +898,12 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
   }
 #endif
+
+  if (print_with_extension) {
+    // TODO(tbarzic): Implement this and record UMA stats.
+    OnExtensionPrintResult(false, "NOT_IMPLEMENTED");
+    return;
+  }
 
   scoped_refptr<base::RefCountedBytes> data;
   base::string16 title;
@@ -1654,6 +1663,19 @@ void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(
 
   web_ui()->CallJavascriptFunction("onExtensionCapabilitiesSet",
                                    base::StringValue(printer_id), capabilities);
+}
+
+void PrintPreviewHandler::OnExtensionPrintResult(bool success,
+                                                 const std::string& status) {
+  if (success) {
+    ClosePreviewDialog();
+    return;
+  }
+
+  // TODO(tbarzic): This function works for extension printers case too, but it
+  // should be renamed to something more generic.
+  web_ui()->CallJavascriptFunction("onPrivetPrintFailed",
+                                   base::StringValue(status));
 }
 
 void PrintPreviewHandler::RegisterForMergeSession() {

@@ -529,6 +529,7 @@ cr.define('print_preview', function() {
               PrintPreview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW) {
         if ((this.destinationStore_.selectedDestination.isLocal &&
              !this.destinationStore_.selectedDestination.isPrivet &&
+             !this.destinationStore_.selectedDestination.isExtension &&
              this.destinationStore_.selectedDestination.id !=
                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) ||
              this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW) {

@@ -327,10 +327,6 @@ cr.define('print_preview', function() {
       assert(!opt_showSystemDialog || (cr.isWindows && destination.isLocal),
              'Implemented for Windows only');
 
-      // TODO(tbarzic): Implement this.
-      assert(!destination.isExtension,
-             'Printing to extension printers not yet implemented.');
-
       var ticket = {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
         'mediaSize': printTicketStore.mediaSize.getValue(),
@@ -351,6 +347,7 @@ cr.define('print_preview', function() {
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         'printWithCloudPrint': !destination.isLocal,
         'printWithPrivet': destination.isPrivet,
+        'printWithExtension': destination.isExtension,
         'deviceName': destination.id,
         'isFirstRequest': false,
         'requestID': -1,
@@ -381,7 +378,7 @@ cr.define('print_preview', function() {
         };
       }
 
-      if (destination.isPrivet) {
+      if (destination.isPrivet || destination.isExtension) {
         ticket['ticket'] = printTicketStore.createPrintTicket(destination);
         ticket['capabilities'] = JSON.stringify(destination.capabilities);
       }

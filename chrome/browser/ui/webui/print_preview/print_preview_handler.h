@@ -303,6 +303,12 @@ class PrintPreviewHandler
       const std::string& printer_id,
       const base::DictionaryValue& capabilities);
 
+  // Called when an extension print job is completed.
+  // |success|: Whether the job succeeded.
+  // |status|: The returned print job status. Useful for reporting a specific
+  //     error.
+  void OnExtensionPrintResult(bool success, const std::string& status);
+
   // Register/unregister from notifications of changes done to the GAIA
   // cookie.
   void RegisterForMergeSession();

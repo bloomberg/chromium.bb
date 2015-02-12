@@ -160,6 +160,10 @@ const char kSettingPrintToPDF[] = "printToPDF";
 // not.
 const char kSettingPrintWithPrivet[] = "printWithPrivet";
 
+// Print using extension option: true if destination is an extension printer,
+// false if not.
+const char kSettingPrintWithExtension[] = "printWithExtension";
+
 // Ticket option. Contains the ticket in CJT format.
 const char kSettingTicket[] = "ticket";
 
