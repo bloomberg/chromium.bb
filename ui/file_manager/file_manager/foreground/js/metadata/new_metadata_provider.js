@@ -196,15 +196,33 @@ MetadataProviderCallbackRequest.prototype.storeProperties = function(
  * @struct
  */
 function MetadataProviderCache() {
-  // TODO(hirono): Pass the correct maximum size of cache.
+  var cache = new LRUCache(0);
   MetadataCacheSet.call(
-      this, new MetadataCacheSetStorageForLRUCache(new LRUCache(100)));
+      this, new MetadataCacheSetStorageForLRUCache(cache));
+
+  /**
+   * @private {!LRUCache}
+   * @const
+   */
+  this.cache_ = cache;
 
   /**
    * @private {number}
    */
   this.requestIdCounter_ = 0;
+
+  /**
+   * @private {number}
+   */
+  this.requestedCacheSize_ = 0;
 }
+
+/**
+ * Margin of the cache size. This amount of caches may be kept in addition.
+ * @private {number}
+ * @const
+ */
+MetadataProviderCache.EVICTION_THRESHOLD_MARGIN_ = 250;
 
 MetadataProviderCache.prototype.__proto__ = MetadataCacheSet.prototype;
 
@@ -214,4 +232,17 @@ MetadataProviderCache.prototype.__proto__ = MetadataCacheSet.prototype;
  */
 MetadataProviderCache.prototype.generateRequestId = function() {
   return this.requestIdCounter_++;
+};
+
+/**
+ * Increases/decreases cache size.
+ * TODO(hirono): Consider better cache lifetime management.
+ *
+ * @param {number} diff Differences to be added to the current cache size.
+ */
+MetadataProviderCache.prototype.updateCacheSizeBy = function(diff) {
+  this.requestedCacheSize_ = Math.max(this.requestedCacheSize_ + diff, 0);
+  this.cache_.setMaxSize(
+      this.requestedCacheSize_ * 2 +
+      MetadataProviderCache.EVICTION_THRESHOLD_MARGIN_);
 };

@@ -4,6 +4,7 @@
 
 function TestMetadataProvider(cache) {
   NewMetadataProvider.call(this, cache, ['property', 'propertyA', 'propertyB']);
+  cache.updateCacheSizeBy(5);
   this.requestCount = 0;
 }
 
@@ -24,6 +25,7 @@ TestMetadataProvider.prototype.getImpl = function(requests) {
 
 function TestEmptyMetadataProvider(cache) {
   NewMetadataProvider.call(this, cache, ['property']);
+  cache.updateCacheSizeBy(5);
 }
 
 TestEmptyMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
@@ -37,6 +39,7 @@ TestEmptyMetadataProvider.prototype.getImpl = function(requests) {
 function ManualTestMetadataProvider(cache) {
   NewMetadataProvider.call(
       this, cache, ['propertyA', 'propertyB', 'propertyC']);
+  cache.updateCacheSizeBy(5);
   this.callback = [];
 }
 

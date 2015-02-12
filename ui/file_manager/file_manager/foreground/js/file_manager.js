@@ -866,6 +866,7 @@ FileManager.prototype = /** @struct */ {
         this.fileFilter_,
         this.fileWatcher_,
         this.metadataCache_,
+        this.metadataProviderCache_,
         this.fileSystemMetadata_,
         this.volumeManager_,
         this.fileOperationManager_);

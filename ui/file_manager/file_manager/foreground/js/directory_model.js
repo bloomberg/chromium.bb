@@ -16,7 +16,8 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {FileFilter} fileFilter Instance of FileFilter.
  * @param {FileWatcher} fileWatcher Instance of FileWatcher.
  * @param {MetadataCache} metadataCache The metadata cache service.
- * @param {!FileSystemMetadata} fileSystemMetadata The metadata cache
+ * @param {!MetadataProviderCache} metadataProviderCache Metadata cache.
+ * @param {!FileSystemMetadata} fileSystemMetadata Metadata model.
  *     service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
  * @param {!FileOperationManager} fileOperationManager File operation manager.
@@ -24,8 +25,8 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @extends {cr.EventTarget}
  */
 function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
-                        fileSystemMetadata, volumeManager,
-                        fileOperationManager) {
+                        metadataProviderCache, fileSystemMetadata,
+                        volumeManager, fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
 
@@ -44,7 +45,7 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
                                     this.onFilterChanged_.bind(this));
 
   this.currentFileListContext_ = new FileListContext(
-      fileFilter, metadataCache, fileSystemMetadata);
+      fileFilter, metadataCache, metadataProviderCache, fileSystemMetadata);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 

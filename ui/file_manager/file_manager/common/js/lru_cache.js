@@ -189,6 +189,14 @@ LRUCache.prototype.setMaxSize = function(value) {
 };
 
 /**
+ * Returns the max size of the cache.
+ * @return {number}
+ */
+LRUCache.prototype.getMaxSize = function() {
+  return this.maxSize_;
+};
+
+/**
  * Evicts the oldest cache node.
  * @private
  */
