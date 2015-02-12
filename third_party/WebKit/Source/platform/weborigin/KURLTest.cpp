@@ -696,6 +696,7 @@ TEST(KURLTest, strippedForUseAsReferrer)
         {"http://me:pass@news.google.com:8888/", "http://news.google.com:8888/"},
         {"https://www.google.com/a?f#b", "https://www.google.com/a?f"},
         {"file:///tmp/test.html", ""},
+        {"https://www.google.com/#", "https://www.google.com/"},
     };
 
     for (size_t i = 0; i < arraysize(referrerCases); i++) {
