@@ -65,7 +65,10 @@ SupervisedUserPrefStore::SupervisedUserPrefStore(
 
 bool SupervisedUserPrefStore::GetValue(const std::string& key,
                                        const base::Value** value) const {
-  DCHECK(prefs_);
+  // TODO(bauerb): Temporary CHECK to force a clean crash while investigating
+  // https://crbug.com/425785. Remove (or change back to DCHECK) once the bug
+  // is fixed.
+  CHECK(prefs_);
   return prefs_->GetValue(key, value);
 }
 

@@ -63,10 +63,15 @@ void SupervisedUserSettingsService::Init(
   PersistentPrefStore* store = new JsonPrefStore(
       path, sequenced_task_runner, scoped_ptr<PrefFilter>());
   Init(store);
-  if (load_synchronously)
+  if (load_synchronously) {
     store_->ReadPrefs();
-  else
+    // TODO(bauerb): Temporary CHECK while investigating
+    // https://crbug.com/425785. Remove (or change to DCHECK) once the bug
+    // is fixed.
+    CHECK(store_->IsInitializationComplete());
+  } else {
     store_->ReadPrefsAsync(NULL);
+  }
 }
 
 void SupervisedUserSettingsService::Init(
@@ -294,8 +299,10 @@ void SupervisedUserSettingsService::OnPrefValueChanged(const std::string& key) {
 }
 
 void SupervisedUserSettingsService::OnInitializationCompleted(bool success) {
-  DCHECK(success);
-  DCHECK(IsReady());
+  // TODO(bauerb): Temporary CHECK while investigating https://crbug.com/425785.
+  // Remove (or change back to DCHECK) once the bug is fixed.
+  CHECK(success);
+  CHECK(IsReady());
   InformSubscribers();
 }
 
