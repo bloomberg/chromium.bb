@@ -455,6 +455,77 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   using ReadTransaction = ThreadSafeStateManager::ReadTransaction;
   using WriteTransaction = ThreadSafeStateManager::WriteTransaction;
 
+  // Manages the non-thread safe (i.e. only to be accessed to the database's
+  // main thread) state of this class.
+  class DatabaseStateManager {
+   public:
+    explicit DatabaseStateManager(const base::ThreadChecker& thread_checker)
+        : thread_checker_(thread_checker),
+          corruption_detected_(false),
+          change_detected_(false) {}
+
+    void init_filename_base(const base::FilePath& filename_base) {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(filename_base_.empty()) << "filename already initialized";
+      filename_base_ = filename_base;
+    }
+
+    const base::FilePath& filename_base() {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      return filename_base_;
+    }
+
+    void set_corruption_detected() {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      corruption_detected_ = true;
+    }
+
+    void reset_corruption_detected() {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      corruption_detected_ = false;
+    }
+
+    bool corruption_detected() {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      return corruption_detected_;
+    }
+
+    void set_change_detected() {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      change_detected_ = true;
+    }
+
+    void reset_change_detected() {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      change_detected_ = false;
+    }
+
+    bool change_detected() {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      return change_detected_;
+    }
+
+   private:
+    // The SafeBrowsingDatabase's ThreadChecker, used to verify that this class'
+    // state is only ever accessed from the database's main thread.
+    const base::ThreadChecker& thread_checker_;
+
+    // The base filename passed to Init(), used to generate the store and prefix
+    // set filenames used to store data on disk.
+    base::FilePath filename_base_;
+
+    // Set if corruption is detected during the course of an update.
+    // Causes the update functions to fail with no side effects, until
+    // the next call to |UpdateStarted()|.
+    bool corruption_detected_;
+
+    // Set to true if any chunks are added or deleted during an update.
+    // Used to optimize away database update.
+    bool change_detected_;
+
+    DISALLOW_COPY_AND_ASSIGN(DatabaseStateManager);
+  };
+
   bool PrefixSetContainsUrl(const GURL& url,
                             PrefixSetId prefix_set_id,
                             std::vector<SBPrefix>* prefix_hits,
@@ -568,51 +639,44 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   ThreadSafeStateManager state_manager_;
 
-  // The base filename passed to Init(), used to generate the store and prefix
-  // set filenames used to store data on disk.
-  base::FilePath filename_base_;
+  DatabaseStateManager db_state_manager_;
 
-  // Underlying persistent store for chunk data.
-  // For browsing related (phishing and malware URLs) chunks and prefixes.
-  scoped_ptr<SafeBrowsingStore> browse_store_;
+  // Underlying persistent stores for chunk data:
+  //   - |browse_store_|: For browsing related (phishing and malware URLs)
+  //     chunks and prefixes.
+  //   - |download_store_|: For download related (download URL and binary hash)
+  //     chunks and prefixes.
+  //   - |csd_whitelist_store_|: For the client-side phishing detection
+  //     whitelist chunks and full-length hashes.  This list only contains 256
+  //     bit hashes.
+  //   - |download_whitelist_store_|: For the download whitelist chunks and
+  //     full-length hashes.  This list only contains 256 bit hashes.
+  //   - |inclusion_whitelist_store_|: For the inclusion whitelist. Same format
+  //     as |download_whitelist_store_|.
+  //   - |extension_blacklist_store_|: For extension IDs.
+  //   - |side_effect_free_whitelist_store_|: For side-effect free whitelist.
+  //   - |ip_blacklist_store_|: For IP blacklist.
+  //   - |unwanted_software_store_|: For unwanted software list (format
+  //     identical to browsing lists).
+  //
+  // The stores themselves will be modified throughout the existence of this
+  // database, but shouldn't ever be swapped out (hence the const scoped_ptr --
+  // which could be swapped for C++11's std::optional when that's available).
+  // They are NonThreadSafe and should thus only be accessed on the database's
+  // main thread as enforced by SafeBrowsingStoreFile's implementation.
+  const scoped_ptr<SafeBrowsingStore> browse_store_;
+  const scoped_ptr<SafeBrowsingStore> download_store_;
+  const scoped_ptr<SafeBrowsingStore> csd_whitelist_store_;
+  const scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
+  const scoped_ptr<SafeBrowsingStore> inclusion_whitelist_store_;
+  const scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;
+  const scoped_ptr<SafeBrowsingStore> side_effect_free_whitelist_store_;
+  const scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
+  const scoped_ptr<SafeBrowsingStore> unwanted_software_store_;
 
-  // For download related (download URL and binary hash) chunks and prefixes.
-  scoped_ptr<SafeBrowsingStore> download_store_;
-
-  // For the client-side phishing detection whitelist chunks and full-length
-  // hashes.  This list only contains 256 bit hashes.
-  scoped_ptr<SafeBrowsingStore> csd_whitelist_store_;
-
-  // For the download whitelist chunks and full-length hashes.  This list only
-  // contains 256 bit hashes.
-  scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
-
-  // For the off-domain inclusion whitelist chunks and full-length hashes.  This
-  // list only contains 256 bit hashes.
-  scoped_ptr<SafeBrowsingStore> inclusion_whitelist_store_;
-
-  // For extension IDs.
-  scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;
-
-  // For side-effect free whitelist.
-  scoped_ptr<SafeBrowsingStore> side_effect_free_whitelist_store_;
-
-  // For IP blacklist.
-  scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
-
-  // For unwanted software list.
-  scoped_ptr<SafeBrowsingStore> unwanted_software_store_;
-
-  // Set if corruption is detected during the course of an update.
-  // Causes the update functions to fail with no side effects, until
-  // the next call to |UpdateStarted()|.
-  bool corruption_detected_;
-
-  // Set to true if any chunks are added or deleted during an update.
-  // Used to optimize away database update.
-  bool change_detected_;
-
-  // Used to schedule resetting the database because of corruption.
+  // Used to schedule resetting the database because of corruption. This factory
+  // and the WeakPtrs it issues should only be used on the database's main
+  // thread.
   base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;
 };
 

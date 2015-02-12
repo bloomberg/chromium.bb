@@ -670,6 +670,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
     SafeBrowsingStore* ip_blacklist_store,
     SafeBrowsingStore* unwanted_software_store)
     : state_manager_(thread_checker_),
+      db_state_manager_(thread_checker_),
       browse_store_(browse_store),
       download_store_(download_store),
       csd_whitelist_store_(csd_whitelist_store),
@@ -679,8 +680,6 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
       side_effect_free_whitelist_store_(side_effect_free_whitelist_store),
       ip_blacklist_store_(ip_blacklist_store),
       unwanted_software_store_(unwanted_software_store),
-      corruption_detected_(false),
-      change_detected_(false),
       reset_factory_(this) {
   DCHECK(browse_store_.get());
 }
@@ -693,10 +692,7 @@ SafeBrowsingDatabaseNew::~SafeBrowsingDatabaseNew() {
 void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // This should not be run multiple times.
-  DCHECK(filename_base_.empty());
-
-  filename_base_ = filename_base;
+  db_state_manager_.init_filename_base(filename_base);
 
   // TODO(shess): The various stores are really only necessary while doing
   // updates (see |UpdateFinished()|) or when querying a store directly (see
@@ -716,27 +712,29 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
     txn->clear_prefix_gethash_cache();
 
     browse_store_->Init(
-        BrowseDBFilename(filename_base_),
+        BrowseDBFilename(db_state_manager_.filename_base()),
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
 
     if (unwanted_software_store_.get()) {
       unwanted_software_store_->Init(
-          UnwantedSoftwareDBFilename(filename_base_),
+          UnwantedSoftwareDBFilename(db_state_manager_.filename_base()),
           base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                      base::Unretained(this)));
     }
-    LoadPrefixSet(BrowseDBFilename(filename_base_), txn.get(),
-                  PrefixSetId::BROWSE, FAILURE_BROWSE_PREFIX_SET_READ);
+    LoadPrefixSet(BrowseDBFilename(db_state_manager_.filename_base()),
+                  txn.get(), PrefixSetId::BROWSE,
+                  FAILURE_BROWSE_PREFIX_SET_READ);
     if (unwanted_software_store_.get()) {
-      LoadPrefixSet(UnwantedSoftwareDBFilename(filename_base_), txn.get(),
-                    PrefixSetId::UNWANTED_SOFTWARE,
-                    FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_READ);
+      LoadPrefixSet(
+          UnwantedSoftwareDBFilename(db_state_manager_.filename_base()),
+          txn.get(), PrefixSetId::UNWANTED_SOFTWARE,
+          FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_READ);
     }
 
     if (side_effect_free_whitelist_store_.get()) {
       const base::FilePath side_effect_free_whitelist_filename =
-          SideEffectFreeWhitelistDBFilename(filename_base_);
+          SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base());
       side_effect_free_whitelist_store_->Init(
           side_effect_free_whitelist_filename,
           base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
@@ -749,9 +747,9 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
       // Delete any files of the side-effect free sidelist that may be around
       // from when it was previously enabled.
       SafeBrowsingStoreFile::DeleteStore(
-          SideEffectFreeWhitelistDBFilename(filename_base_));
-      base::DeleteFile(PrefixSetForFilename(
-                           SideEffectFreeWhitelistDBFilename(filename_base_)),
+          SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base()));
+      base::DeleteFile(PrefixSetForFilename(SideEffectFreeWhitelistDBFilename(
+                           db_state_manager_.filename_base())),
                        false);
     }
   }
@@ -760,14 +758,14 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 
   if (download_store_.get()) {
     download_store_->Init(
-        DownloadDBFilename(filename_base_),
+        DownloadDBFilename(db_state_manager_.filename_base()),
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
   }
 
   if (csd_whitelist_store_.get()) {
     csd_whitelist_store_->Init(
-        CsdWhitelistDBFilename(filename_base_),
+        CsdWhitelistDBFilename(db_state_manager_.filename_base()),
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
 
@@ -785,7 +783,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 
   if (download_whitelist_store_.get()) {
     download_whitelist_store_->Init(
-        DownloadWhitelistDBFilename(filename_base_),
+        DownloadWhitelistDBFilename(db_state_manager_.filename_base()),
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
 
@@ -803,7 +801,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 
   if (inclusion_whitelist_store_.get()) {
     inclusion_whitelist_store_->Init(
-        InclusionWhitelistDBFilename(filename_base_),
+        InclusionWhitelistDBFilename(db_state_manager_.filename_base()),
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
 
@@ -821,14 +819,14 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 
   if (extension_blacklist_store_.get()) {
     extension_blacklist_store_->Init(
-        ExtensionBlacklistDBFilename(filename_base_),
+        ExtensionBlacklistDBFilename(db_state_manager_.filename_base()),
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
   }
 
   if (ip_blacklist_store_.get()) {
     ip_blacklist_store_->Init(
-        IpBlacklistDBFilename(filename_base_),
+        IpBlacklistDBFilename(db_state_manager_.filename_base()),
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
 
@@ -1138,7 +1136,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(
     const std::vector<SBChunkData*>& chunks) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (corruption_detected_ || chunks.empty())
+  if (db_state_manager_.corruption_detected() || chunks.empty())
     return;
 
   const base::TimeTicks before = base::TimeTicks::Now();
@@ -1150,7 +1148,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
 
-  change_detected_ = true;
+  db_state_manager_.set_change_detected();
 
   // TODO(shess): I believe that the list is always add or sub.  Can this use
   // that productively?
@@ -1173,7 +1171,7 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
     const std::vector<SBChunkDelete>& chunk_deletes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (corruption_detected_ || chunk_deletes.empty())
+  if (db_state_manager_.corruption_detected() || chunk_deletes.empty())
     return;
 
   const std::string& list_name = chunk_deletes.front().list_name;
@@ -1183,7 +1181,7 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
 
-  change_detected_ = true;
+  db_state_manager_.set_change_detected();
 
   for (size_t i = 0; i < chunk_deletes.size(); ++i) {
     std::vector<int> chunk_numbers;
@@ -1322,8 +1320,8 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
                            safe_browsing_util::kUnwantedUrlList,
                            lists);
 
-  corruption_detected_ = false;
-  change_detected_ = false;
+  db_state_manager_.reset_corruption_detected();
+  db_state_manager_.reset_change_detected();
   return true;
 }
 
@@ -1377,15 +1375,15 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
     }
   }
 
-  if (corruption_detected_)
+  if (db_state_manager_.corruption_detected())
     return;
 
   // Unroll the transaction if there was a protocol error or if the
   // transaction was empty.  This will leave the prefix set, the
   // pending hashes, and the prefix miss cache in place.
-  if (!update_succeeded || !change_detected_) {
+  if (!update_succeeded || !db_state_manager_.change_detected()) {
     // Track empty updates to answer questions at http://crbug.com/72216 .
-    if (update_succeeded && !change_detected_)
+    if (update_succeeded && !db_state_manager_.change_detected())
       UMA_HISTOGRAM_COUNTS("SB2.DatabaseUpdateKilobytes", 0);
     browse_store_->CancelUpdate();
     if (download_store_.get())
@@ -1408,53 +1406,51 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   }
 
   if (download_store_) {
-    UpdateHashPrefixStore(DownloadDBFilename(filename_base_),
+    UpdateHashPrefixStore(DownloadDBFilename(db_state_manager_.filename_base()),
                           download_store_.get(),
                           FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH);
   }
 
-  UpdatePrefixSetUrlStore(BrowseDBFilename(filename_base_),
-                          browse_store_.get(),
-                          PrefixSetId::BROWSE,
+  UpdatePrefixSetUrlStore(BrowseDBFilename(db_state_manager_.filename_base()),
+                          browse_store_.get(), PrefixSetId::BROWSE,
                           FAILURE_BROWSE_DATABASE_UPDATE_FINISH,
-                          FAILURE_BROWSE_PREFIX_SET_WRITE,
-                          true);
+                          FAILURE_BROWSE_PREFIX_SET_WRITE, true);
 
-  UpdateWhitelistStore(CsdWhitelistDBFilename(filename_base_),
-                       csd_whitelist_store_.get(),
-                       SBWhitelistId::CSD);
-  UpdateWhitelistStore(DownloadWhitelistDBFilename(filename_base_),
-                       download_whitelist_store_.get(),
-                       SBWhitelistId::DOWNLOAD);
-  UpdateWhitelistStore(InclusionWhitelistDBFilename(filename_base_),
-                       inclusion_whitelist_store_.get(),
-                       SBWhitelistId::INCLUSION);
+  UpdateWhitelistStore(
+      CsdWhitelistDBFilename(db_state_manager_.filename_base()),
+      csd_whitelist_store_.get(), SBWhitelistId::CSD);
+  UpdateWhitelistStore(
+      DownloadWhitelistDBFilename(db_state_manager_.filename_base()),
+      download_whitelist_store_.get(), SBWhitelistId::DOWNLOAD);
+  UpdateWhitelistStore(
+      InclusionWhitelistDBFilename(db_state_manager_.filename_base()),
+      inclusion_whitelist_store_.get(), SBWhitelistId::INCLUSION);
 
   if (extension_blacklist_store_) {
-    UpdateHashPrefixStore(ExtensionBlacklistDBFilename(filename_base_),
-                          extension_blacklist_store_.get(),
-                          FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH);
+    UpdateHashPrefixStore(
+        ExtensionBlacklistDBFilename(db_state_manager_.filename_base()),
+        extension_blacklist_store_.get(),
+        FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH);
   }
 
   if (side_effect_free_whitelist_store_) {
-    UpdatePrefixSetUrlStore(SideEffectFreeWhitelistDBFilename(filename_base_),
-                            side_effect_free_whitelist_store_.get(),
-                            PrefixSetId::SIDE_EFFECT_FREE_WHITELIST,
-                            FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH,
-                            FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE,
-                            false);
+    UpdatePrefixSetUrlStore(
+        SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base()),
+        side_effect_free_whitelist_store_.get(),
+        PrefixSetId::SIDE_EFFECT_FREE_WHITELIST,
+        FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH,
+        FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE, false);
   }
 
   if (ip_blacklist_store_)
     UpdateIpBlacklistStore();
 
   if (unwanted_software_store_) {
-    UpdatePrefixSetUrlStore(UnwantedSoftwareDBFilename(filename_base_),
-                            unwanted_software_store_.get(),
-                            PrefixSetId::UNWANTED_SOFTWARE,
-                            FAILURE_UNWANTED_SOFTWARE_DATABASE_UPDATE_FINISH,
-                            FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_WRITE,
-                            true);
+    UpdatePrefixSetUrlStore(
+        UnwantedSoftwareDBFilename(db_state_manager_.filename_base()),
+        unwanted_software_store_.get(), PrefixSetId::UNWANTED_SOFTWARE,
+        FAILURE_UNWANTED_SOFTWARE_DATABASE_UPDATE_FINISH,
+        FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_WRITE, true);
   }
 }
 
@@ -1607,7 +1603,7 @@ void SafeBrowsingDatabaseNew::UpdateIpBlacklistStore() {
   }
 
   const base::FilePath ip_blacklist_filename =
-      IpBlacklistDBFilename(filename_base_);
+      IpBlacklistDBFilename(db_state_manager_.filename_base());
 
   RecordFileSizeHistogram(ip_blacklist_filename);
 
@@ -1635,7 +1631,7 @@ void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RecordFailure(FAILURE_DATABASE_CORRUPT_HANDLER);
-  corruption_detected_ = true;  // Stop updating the database.
+  db_state_manager_.set_corruption_detected();  // Stop updating the database.
   ResetDatabase();
 
   // NOTE(shess): ResetDatabase() should remove the corruption, so this should
@@ -1653,7 +1649,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(const base::FilePath& db_filename,
                                             FailureType read_failure_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(txn);
-  DCHECK(!filename_base_.empty());
+  DCHECK(!db_state_manager_.filename_base().empty());
 
   // Only use the prefix set if database is present and non-empty.
   if (!GetFileSizeOrZero(db_filename))
@@ -1676,7 +1672,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(const base::FilePath& db_filename,
 
 bool SafeBrowsingDatabaseNew::Delete() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!filename_base_.empty());
+  DCHECK(!db_state_manager_.filename_base().empty());
 
   // TODO(shess): This is a mess.  SafeBrowsingFileStore::Delete() closes the
   // store before calling DeleteStore().  DeleteStore() deletes transient files
@@ -1712,7 +1708,8 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r5)
     RecordFailure(FAILURE_DATABASE_STORE_DELETE);
 
-  const base::FilePath browse_filename = BrowseDBFilename(filename_base_);
+  const base::FilePath browse_filename =
+      BrowseDBFilename(db_state_manager_.filename_base());
   const base::FilePath bloom_filter_filename =
       BloomFilterForFilename(browse_filename);
   const bool r6 = base::DeleteFile(bloom_filter_filename, false);
@@ -1726,13 +1723,13 @@ bool SafeBrowsingDatabaseNew::Delete() {
     RecordFailure(FAILURE_BROWSE_PREFIX_SET_DELETE);
 
   const base::FilePath extension_blacklist_filename =
-      ExtensionBlacklistDBFilename(filename_base_);
+      ExtensionBlacklistDBFilename(db_state_manager_.filename_base());
   const bool r8 = base::DeleteFile(extension_blacklist_filename, false);
   if (!r8)
     RecordFailure(FAILURE_EXTENSION_BLACKLIST_DELETE);
 
   const base::FilePath side_effect_free_whitelist_filename =
-      SideEffectFreeWhitelistDBFilename(filename_base_);
+      SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base());
   const bool r9 = base::DeleteFile(side_effect_free_whitelist_filename,
                                    false);
   if (!r9)
@@ -1746,13 +1743,13 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r10)
     RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE);
 
-  const bool r11 = base::DeleteFile(IpBlacklistDBFilename(filename_base_),
-                                    false);
+  const bool r11 = base::DeleteFile(
+      IpBlacklistDBFilename(db_state_manager_.filename_base()), false);
   if (!r11)
     RecordFailure(FAILURE_IP_BLACKLIST_DELETE);
 
-  const bool r12 =
-      base::DeleteFile(UnwantedSoftwareDBFilename(filename_base_), false);
+  const bool r12 = base::DeleteFile(
+      UnwantedSoftwareDBFilename(db_state_manager_.filename_base()), false);
   if (!r12)
     RecordFailure(FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_DELETE);
 
