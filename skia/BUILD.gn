@@ -136,15 +136,7 @@ config("skia_config") {
   defines = gypi_blink_skia_defines.blink_skia_defines
   defines += gypi_skia_defines.skia_for_chromium_defines
 
-  defines += [
-    "SK_ENABLE_INST_COUNT=0",
-    "GR_GL_CUSTOM_SETUP_HEADER=\"GrGLConfig_chrome.h\"",
-    "SK_ENABLE_LEGACY_API_ALIASING=1",
-    "SK_ATTR_DEPRECATED=SK_NOTHING_ARG1",
-    "GR_GL_IGNORE_ES3_MSAA=0",
-    "SK_WILL_NEVER_DRAW_PERSPECTIVE_TEXT",
-    "SK_SUPPORT_LEGACY_GETTOTALCLIP",
-  ]
+  defines += []
 
   if (component_mode == "shared_library") {
     defines += [ "SKIA_DLL" ]
@@ -158,12 +150,6 @@ config("skia_config") {
     defines += [ "SK_SUPPORT_GPU=1" ]
   } else {
     defines += [ "SK_SUPPORT_GPU=0" ]
-  }
-
-  # For POSIX platforms, prefer the Mutex implementation provided by Skia
-  # since it does not generate static initializers.
-  if (is_posix) {
-    defines += [ "SK_USE_POSIX_THREADS" ]
   }
 
   if (is_android) {
@@ -199,25 +185,7 @@ config("skia_library_config") {
     include_dirs += [ "//third_party/skia/include/utils/ios" ]
   }
 
-  defines = [
-    #skia_export_defines ???) TODO
-
-    # skia uses static initializers to initialize the serialization logic
-    # of its "pictures" library. This is currently not used in chrome; if
-    # it ever gets used the processes that use it need to call
-    # SkGraphics::Init().
-    "SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0",
-
-    # Forcing the unoptimized path for the offset image filter in skia until
-    # all filters used in Blink support the optimized path properly
-    "SK_DISABLE_OFFSETIMAGEFILTER_OPTIMIZATION",
-    "IGNORE_ROT_AA_RECT_OPT",
-    "SK_IGNORE_BLURRED_RRECT_OPT",
-
-    # this flag forces Skia not to use typographic metrics with GDI.
-    "SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS",
-    "SK_USE_DISCARDABLE_SCALEDIMAGECACHE",
-  ]
+  defines = []
 
   if (component_mode == "shared_library") {
     defines += [ "SKIA_IMPLEMENTATION=1" ]
