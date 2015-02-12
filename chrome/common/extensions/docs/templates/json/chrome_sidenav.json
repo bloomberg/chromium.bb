@@ -876,6 +876,10 @@
                 "href": "/native-client/glossary"
               },
               {
+                "title": "Contributor Ideas",
+                "href": "/native-client/reference/ideas"
+              },
+              {
                 "title": "Native Client Manifest (nmf) Format",
                 "href": "/native-client/reference/nacl-manifest-format"
               },

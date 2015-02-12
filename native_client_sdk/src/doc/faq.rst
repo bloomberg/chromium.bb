@@ -201,6 +201,11 @@ standardize Portable Native Client when it gains more traction. A good
 example is our :doc:`PNaCl bitcode reference manual
 <reference/pnacl-bitcode-abi>`.
 
+How can I contribute to Native Client?
+--------------------------------------
+
+Read about :doc:`contributor ideas <reference/ideas>`.
+
 What are the supported instruction set architectures?
 -----------------------------------------------------
 
@@ -241,7 +246,8 @@ languages such as Rust_, Go_, or Objective-C, but there may still be a few rough
 edges.
 
 If you're interested in getting other languages working, please contact the
-Native Client team by way of the native-client-discuss_ mailing list.
+Native Client team by way of the native-client-discuss_ mailing list, and read
+through :doc:`contributor ideas <reference/ideas>`.
 
 Do you only support Chrome? What about other browsers?
 ------------------------------------------------------
@@ -450,7 +456,9 @@ Is my favorite third-party library available for Native Client?
 Google has ported several third-party libraries to Native Client; such libraries
 are available in the naclports_ project. We encourage you to contribute
 libraries to naclports, and/or to host your own ported libraries, and to let the
-team know about it on native-client-discuss_ when you do.
+team know about it on native-client-discuss_ when you do. You can also read
+through :doc:`contributor ideas <reference/ideas>` to find ideas of new projects
+to port.
 
 Do all the files in an application need to be served from the same domain?
 --------------------------------------------------------------------------

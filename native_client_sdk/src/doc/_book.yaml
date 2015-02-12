@@ -69,6 +69,8 @@ toc:
   - title: "Glossary"
     path: /native-client/dev/glossary
   - include: /native-client/dev/_reference_toc.yaml
+  - title: "Contributor Ideas"
+    path: /native-client/dev/reference/ideas
   - title: "Native Client Manifest (nmf) Format"
     path: /native-client/dev/reference/nacl-manifest-format
   - title: "Contents of PNaCl Bitcode Files"
