@@ -28,9 +28,9 @@ class _MapsMeasurement(page_test.PageTest):
     total = re.search('total=([0-9]+)', test_results).group(1)
     render = re.search('render=([0-9.]+),([0-9.]+)', test_results).group(2)
     results.AddValue(scalar.ScalarValue(
-        results.current_page, 'total_time', 'ms', total))
+        results.current_page, 'total_time', 'ms', int(total)))
     results.AddValue(scalar.ScalarValue(
-        results.current_page, 'render_mean_time', 'ms', render))
+        results.current_page, 'render_mean_time', 'ms', float(render)))
 
 class MapsPage(page_module.Page):
   def __init__(self, page_set, base_dir):
