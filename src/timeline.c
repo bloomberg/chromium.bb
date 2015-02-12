@@ -31,6 +31,7 @@
 
 #include "timeline.h"
 #include "compositor.h"
+#include "file-util.h"
 
 struct timeline_log {
 	clock_t clk_id;
@@ -45,31 +46,25 @@ static struct timeline_log timeline_ = { CLOCK_MONOTONIC, NULL, 0 };
 static int
 weston_timeline_do_open(void)
 {
-	time_t t;
-	struct tm *tmp;
+	const char *prefix = "weston-timeline-";
+	const char *suffix = ".log";
 	char fname[1000];
-	int ret;
 
-	t = time(NULL);
-	tmp = localtime(&t);
-	if (!tmp) {
-		weston_log("Conversion to local time failed, "
-			   "cannot open timeline log file.\n");
-		return -1;
-	}
-
-	ret = strftime(fname, sizeof(fname),
-		       "weston-timeline-%F_%H-%M-%S.log", tmp);
-	if (ret == 0) {
-		weston_log("Time formatting failed, "
-			   "cannot open timeline log file.\n");
-		return -1;
-	}
-
-	timeline_.file = fopen(fname, "w");
+	timeline_.file = file_create_dated(prefix, suffix,
+					   fname, sizeof(fname));
 	if (!timeline_.file) {
-		weston_log("Cannot open '%s' for writing: %s\n",
-			   fname, strerror(errno));
+		const char *msg;
+
+		switch (errno) {
+		case ETIME:
+			msg = "failure in datetime formatting";
+			break;
+		default:
+			msg = strerror(errno);
+		}
+
+		weston_log("Cannot open '%s*%s' for writing: %s\n",
+			   prefix, suffix, msg);
 		return -1;
 	}
 
