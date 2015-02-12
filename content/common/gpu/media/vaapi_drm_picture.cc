@@ -102,14 +102,17 @@ bool VaapiDrmPicture::Initialize() {
   if (!make_context_current_.Run())
     return false;
 
-  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
-                                          texture_id());
-  gl_image_ = ui::GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForPixmap(
-      pixmap_, size(), gfx::GpuMemoryBuffer::BGRA_8888, GL_RGBA);
-  if (!gl_image_) {
-    LOG(ERROR) << "Failed to create GLImage";
+  // Create an EGLImage out of the same buffer.
+  gl_image_ = new gfx::GLImageLinuxDMABuffer(size(), GL_RGBA);
+  if (!gl_image_->Initialize(base::FileDescriptor(dmabuf_fd, false),
+                             gfx::GpuMemoryBuffer::BGRA_8888, dmabuf_pitch)) {
+    LOG(ERROR) << "Failed to create a GLImageLinuxDMABuffer for a NativePixmap";
     return false;
   }
+
+  // Bind the EGLImage to the given GL texture.
+  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
+                                          texture_id());
   if (!gl_image_->BindTexImage(GL_TEXTURE_EXTERNAL_OES)) {
     LOG(ERROR) << "Failed to bind texture to GLImage";
     return false;
