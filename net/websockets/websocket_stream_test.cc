@@ -29,9 +29,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_frame.h"
-#include "net/websockets/websocket_handshake_request_info.h"
-#include "net/websockets/websocket_handshake_response_info.h"
-#include "net/websockets/websocket_handshake_stream_create_helper.h"
+#include "net/websockets/websocket_stream_create_test_base.h"
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -39,25 +37,6 @@
 
 namespace net {
 namespace {
-
-typedef std::pair<std::string, std::string> HeaderKeyValuePair;
-
-std::vector<HeaderKeyValuePair> ToVector(const HttpRequestHeaders& headers) {
-  HttpRequestHeaders::Iterator it(headers);
-  std::vector<HeaderKeyValuePair> result;
-  while (it.GetNext())
-    result.push_back(HeaderKeyValuePair(it.name(), it.value()));
-  return result;
-}
-
-std::vector<HeaderKeyValuePair> ToVector(const HttpResponseHeaders& headers) {
-  void* iter = NULL;
-  std::string name, value;
-  std::vector<HeaderKeyValuePair> result;
-  while (headers.EnumerateHeaderLines(&iter, &name, &value))
-    result.push_back(HeaderKeyValuePair(name, value));
-  return result;
-}
 
 // Simple builder for a DeterministicSocketData object to save repetitive code.
 // It always sets the connect data to MockConnect(SYNCHRONOUS, OK), so it cannot
@@ -89,30 +68,14 @@ class MockWeakTimer : public base::MockTimer,
       : MockTimer(retain_user_task, is_repeating) {}
 };
 
-// A sub-class of WebSocketHandshakeStreamCreateHelper which always sets a
-// deterministic key to use in the WebSocket handshake.
-class DeterministicKeyWebSocketHandshakeStreamCreateHelper
-    : public WebSocketHandshakeStreamCreateHelper {
+class WebSocketStreamCreateTest : public ::testing::Test,
+                                  public WebSocketStreamCreateTestBase {
  public:
-  DeterministicKeyWebSocketHandshakeStreamCreateHelper(
-      WebSocketStream::ConnectDelegate* connect_delegate,
-      const std::vector<std::string>& requested_subprotocols)
-      : WebSocketHandshakeStreamCreateHelper(connect_delegate,
-                                             requested_subprotocols) {}
-
-  void OnStreamCreated(WebSocketBasicHandshakeStream* stream) override {
-    stream->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
-  }
-};
-
-class WebSocketStreamCreateTest : public ::testing::Test {
- public:
-  WebSocketStreamCreateTest() : has_failed_(false), ssl_fatal_(false) {}
   ~WebSocketStreamCreateTest() override {
     // Permit any endpoint locks to be released.
     stream_request_.reset();
     stream_.reset();
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void CreateAndConnectCustomResponse(
@@ -162,100 +125,6 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   void AddRawExpectations(scoped_ptr<DeterministicSocketData> socket_data) {
     url_request_context_host_.AddRawExpectations(socket_data.Pass());
   }
-
-  // A wrapper for CreateAndConnectStreamForTesting that knows about our default
-  // parameters.
-  void CreateAndConnectStream(const std::string& socket_url,
-                              const std::vector<std::string>& sub_protocols,
-                              const std::string& origin,
-                              scoped_ptr<base::Timer> timer) {
-    for (size_t i = 0; i < ssl_data_.size(); ++i) {
-      scoped_ptr<SSLSocketDataProvider> ssl_data(ssl_data_[i]);
-      ssl_data_[i] = NULL;
-      url_request_context_host_.AddSSLSocketDataProvider(ssl_data.Pass());
-    }
-    ssl_data_.clear();
-    scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
-        new TestConnectDelegate(this));
-    WebSocketStream::ConnectDelegate* delegate = connect_delegate.get();
-    scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper(
-        new DeterministicKeyWebSocketHandshakeStreamCreateHelper(
-            delegate, sub_protocols));
-    stream_request_ = ::net::CreateAndConnectStreamForTesting(
-        GURL(socket_url),
-        create_helper.Pass(),
-        url::Origin(origin),
-        url_request_context_host_.GetURLRequestContext(),
-        BoundNetLog(),
-        connect_delegate.Pass(),
-        timer ? timer.Pass() : scoped_ptr<base::Timer>(
-            new base::Timer(false, false)));
-  }
-
-  static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
-
-  // A simple function to make the tests more readable. Creates an empty vector.
-  static std::vector<std::string> NoSubProtocols() {
-    return std::vector<std::string>();
-  }
-
-  const std::string& failure_message() const { return failure_message_; }
-  bool has_failed() const { return has_failed_; }
-
-  class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
-   public:
-    explicit TestConnectDelegate(WebSocketStreamCreateTest* owner)
-        : owner_(owner) {}
-
-    void OnSuccess(scoped_ptr<WebSocketStream> stream) override {
-      stream.swap(owner_->stream_);
-    }
-
-    void OnFailure(const std::string& message) override {
-      owner_->has_failed_ = true;
-      owner_->failure_message_ = message;
-    }
-
-    void OnStartOpeningHandshake(
-        scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
-      // Can be called multiple times (in the case of HTTP auth). Last call
-      // wins.
-      owner_->request_info_ = request.Pass();
-    }
-    void OnFinishOpeningHandshake(
-        scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
-      if (owner_->response_info_)
-        ADD_FAILURE();
-      owner_->response_info_ = response.Pass();
-    }
-    void OnSSLCertificateError(
-        scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
-            ssl_error_callbacks,
-        const SSLInfo& ssl_info,
-        bool fatal) override {
-      owner_->ssl_error_callbacks_ = ssl_error_callbacks.Pass();
-      owner_->ssl_info_ = ssl_info;
-      owner_->ssl_fatal_ = fatal;
-    }
-
-   private:
-    WebSocketStreamCreateTest* owner_;
-  };
-
-  WebSocketTestURLRequestContextHost url_request_context_host_;
-  scoped_ptr<WebSocketStreamRequest> stream_request_;
-  // Only set if the connection succeeded.
-  scoped_ptr<WebSocketStream> stream_;
-  // Only set if the connection failed.
-  std::string failure_message_;
-  bool has_failed_;
-  scoped_ptr<WebSocketHandshakeRequestInfo> request_info_;
-  scoped_ptr<WebSocketHandshakeResponseInfo> response_info_;
-  scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks> ssl_error_callbacks_;
-  SSLInfo ssl_info_;
-  bool ssl_fatal_;
-  ScopedVector<SSLSocketDataProvider> ssl_data_;
-  ScopedWebSocketEndpointZeroUnlockDelay zero_unlock_delay_;
 };
 
 // There are enough tests of the Sec-WebSocket-Extensions header that they
@@ -271,7 +140,7 @@ class WebSocketStreamCreateExtensionTest : public WebSocketStreamCreateTest {
         "ws://localhost/testing_path", "localhost", "/testing_path",
         NoSubProtocols(), "http://localhost", "",
         "Sec-WebSocket-Extensions: " + extensions_header_value + "\r\n");
-    RunUntilIdle();
+    WaitUntilConnectDone();
   }
 };
 
@@ -430,7 +299,7 @@ TEST_F(WebSocketStreamCreateTest, SimpleSuccess) {
                            NoSubProtocols(), "http://localhost", "", "");
   EXPECT_FALSE(request_info_);
   EXPECT_FALSE(response_info_);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
   EXPECT_TRUE(request_info_);
@@ -453,12 +322,12 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
                                  kResponse);
   EXPECT_FALSE(request_info_);
   EXPECT_FALSE(response_info_);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(stream_);
   ASSERT_TRUE(request_info_);
   ASSERT_TRUE(response_info_);
   std::vector<HeaderKeyValuePair> request_headers =
-      ToVector(request_info_->headers);
+      RequestHeadersToVector(request_info_->headers);
   // We examine the contents of request_info_ and response_info_
   // mainly only in this test case.
   EXPECT_EQ(GURL("ws://localhost/"), request_info_->url);
@@ -487,7 +356,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
             request_headers[11]);
 
   std::vector<HeaderKeyValuePair> response_headers =
-      ToVector(*response_info_->headers.get());
+      ResponseHeadersToVector(*response_info_->headers.get());
   ASSERT_EQ(6u, response_headers.size());
   // Sort the headers for ease of verification.
   std::sort(response_headers.begin(), response_headers.end());
@@ -513,7 +382,7 @@ TEST_F(WebSocketStreamCreateTest, PathIsUsed) {
   CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
                            "/testing_path", NoSubProtocols(),
                            "http://localhost", "", "");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
@@ -523,7 +392,7 @@ TEST_F(WebSocketStreamCreateTest, OriginIsUsed) {
   CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
                            "/testing_path", NoSubProtocols(),
                            "http://google.com", "", "");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
@@ -538,7 +407,7 @@ TEST_F(WebSocketStreamCreateTest, SubProtocolIsUsed) {
                            "Sec-WebSocket-Protocol: chatv11.chromium.org, "
                            "chatv20.chromium.org\r\n",
                            "Sec-WebSocket-Protocol: chatv20.chromium.org\r\n");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(stream_);
   EXPECT_FALSE(has_failed());
   EXPECT_EQ("chatv20.chromium.org", stream_->GetSubProtocol());
@@ -550,7 +419,7 @@ TEST_F(WebSocketStreamCreateTest, UnsolicitedSubProtocol) {
                            "/testing_path", NoSubProtocols(),
                            "http://google.com", "",
                            "Sec-WebSocket-Protocol: chatv20.chromium.org\r\n");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
@@ -566,7 +435,7 @@ TEST_F(WebSocketStreamCreateTest, UnacceptedSubProtocol) {
   CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
                            "/testing_path", sub_protocols, "http://localhost",
                            "Sec-WebSocket-Protocol: chat.example.com\r\n", "");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
@@ -586,7 +455,7 @@ TEST_F(WebSocketStreamCreateTest, MultipleSubProtocolsInResponse) {
                            "chatv20.chromium.org\r\n",
                            "Sec-WebSocket-Protocol: chatv11.chromium.org, "
                            "chatv20.chromium.org\r\n");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
@@ -605,7 +474,7 @@ TEST_F(WebSocketStreamCreateTest, UnmatchedSubProtocolInResponse) {
                            "Sec-WebSocket-Protocol: chatv11.chromium.org, "
                            "chatv20.chromium.org\r\n",
                            "Sec-WebSocket-Protocol: chatv21.chromium.org\r\n");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
@@ -643,7 +512,7 @@ TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateInflates) {
               "\xc1\x07"  // WebSocket header (FIN + RSV1, Text payload 7 bytes)
               "\xf2\x48\xcd\xc9\xc9\x07\x00",  // "Hello" DEFLATE compressed
               9));
-  RunUntilIdle();
+  WaitUntilConnectDone();
 
   ASSERT_TRUE(stream_);
   ScopedVector<WebSocketFrame> frames;
@@ -820,7 +689,7 @@ TEST_F(WebSocketStreamCreateTest, DoubleAccept) {
   CreateAndConnectStandard(
       "ws://localhost/", "localhost", "/", NoSubProtocols(), "http://localhost",
       "", "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
@@ -840,7 +709,7 @@ TEST_F(WebSocketStreamCreateTest, InvalidStatusCode) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kInvalidStatusCodeResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
             failure_message());
@@ -860,7 +729,7 @@ TEST_F(WebSocketStreamCreateTest, RedirectsRejected) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kRedirectResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 302",
             failure_message());
@@ -881,7 +750,7 @@ TEST_F(WebSocketStreamCreateTest, MalformedResponse) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kMalformedResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: Invalid status line",
             failure_message());
@@ -897,7 +766,7 @@ TEST_F(WebSocketStreamCreateTest, MissingUpgradeHeader) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kMissingUpgradeResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: 'Upgrade' header is missing",
             failure_message());
@@ -908,7 +777,7 @@ TEST_F(WebSocketStreamCreateTest, DoubleUpgradeHeader) {
   CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                            NoSubProtocols(), "http://localhost", "",
                            "Upgrade: HTTP/2.0\r\n");
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
             "'Upgrade' header must not appear more than once in a response",
@@ -926,7 +795,7 @@ TEST_F(WebSocketStreamCreateTest, IncorrectUpgradeHeader) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kMissingUpgradeResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
             "'Upgrade' header value is not 'WebSocket': hogefuga",
@@ -943,7 +812,7 @@ TEST_F(WebSocketStreamCreateTest, MissingConnectionHeader) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kMissingConnectionResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
             "'Connection' header is missing",
@@ -961,7 +830,7 @@ TEST_F(WebSocketStreamCreateTest, IncorrectConnectionHeader) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kMissingConnectionResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
             "'Connection' header value must contain 'Upgrade'",
@@ -979,7 +848,7 @@ TEST_F(WebSocketStreamCreateTest, AdditionalTokenInConnectionHeader) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kAdditionalConnectionTokenResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
@@ -994,7 +863,7 @@ TEST_F(WebSocketStreamCreateTest, MissingSecWebSocketAccept) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kMissingAcceptResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
             "'Sec-WebSocket-Accept' header is missing",
@@ -1012,7 +881,7 @@ TEST_F(WebSocketStreamCreateTest, WrongSecWebSocketAccept) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kIncorrectAcceptResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
             "Incorrect 'Sec-WebSocket-Accept' header value",
@@ -1024,7 +893,8 @@ TEST_F(WebSocketStreamCreateTest, Cancellation) {
   CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                            NoSubProtocols(), "http://localhost", "", "");
   stream_request_.reset();
-  RunUntilIdle();
+  // WaitUntilConnectDone doesn't work in this case.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
   EXPECT_FALSE(request_info_);
@@ -1038,7 +908,7 @@ TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost", socket_data.Pass());
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_REFUSED",
             failure_message());
@@ -1053,7 +923,7 @@ TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
       MockConnect(ASYNC, ERR_CONNECTION_TIMED_OUT));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost", socket_data.Pass());
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_TIMED_OUT",
             failure_message());
@@ -1075,7 +945,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimeout) {
   EXPECT_TRUE(weak_timer->IsRunning());
 
   weak_timer->Fire();
-  RunUntilIdle();
+  WaitUntilConnectDone();
 
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("WebSocket opening handshake timed out", failure_message());
@@ -1094,7 +964,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
   ASSERT_TRUE(weak_timer);
   EXPECT_TRUE(weak_timer->IsRunning());
 
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
   ASSERT_TRUE(weak_timer);
@@ -1116,7 +986,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
   ASSERT_TRUE(weak_timer.get());
   EXPECT_TRUE(weak_timer->IsRunning());
 
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_REFUSED",
             failure_message());
@@ -1133,7 +1003,8 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringConnect) {
                                   "http://localhost",
                                   socket_data.Pass());
   stream_request_.reset();
-  RunUntilIdle();
+  // WaitUntilConnectDone doesn't work in this case.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
 }
@@ -1154,7 +1025,8 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringWrite) {
                                   make_scoped_ptr(socket_data));
   socket_data->Run();
   stream_request_.reset();
-  RunUntilIdle();
+  // WaitUntilConnectDone doesn't work in this case.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(request_info_);
@@ -1179,7 +1051,8 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
                                   socket_data.Pass());
   socket_data_raw_ptr->Run();
   stream_request_.reset();
-  RunUntilIdle();
+  // WaitUntilConnectDone doesn't work in this case.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(request_info_);
@@ -1199,7 +1072,7 @@ TEST_F(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
   CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                            NoSubProtocols(), "http://localhost", "",
                            set_cookie_headers);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_FALSE(response_info_);
 }
@@ -1238,12 +1111,13 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
                                   NoSubProtocols(),
                                   "http://localhost",
                                   raw_socket_data.Pass());
-  RunUntilIdle();
+  // WaitUntilConnectDone doesn't work in this case.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(has_failed());
   ASSERT_TRUE(ssl_error_callbacks_);
   ssl_error_callbacks_->CancelSSLRequest(ERR_CERT_AUTHORITY_INVALID,
                                          &ssl_info_);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
 }
 
@@ -1259,10 +1133,11 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
   url_request_context_host_.AddRawExpectations(BuildNullSocketData());
   CreateAndConnectStandard("wss://localhost/", "localhost", "/",
                            NoSubProtocols(), "http://localhost", "", "");
-  RunUntilIdle();
+  // WaitUntilConnectDone doesn't work in this case.
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(ssl_error_callbacks_);
   ssl_error_callbacks_->ContinueSSLRequest();
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
@@ -1273,7 +1148,7 @@ TEST_F(WebSocketStreamCreateBasicAuthTest, FailureNoCredentials) {
   CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
                                  NoSubProtocols(), "http://localhost", "",
                                  kUnauthorizedResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("HTTP Authentication failed; no valid credentials available",
             failure_message());
@@ -1284,7 +1159,7 @@ TEST_F(WebSocketStreamCreateBasicAuthTest, SuccessPasswordInUrl) {
   CreateAndConnectAuthHandshake("ws://foo:bar@localhost/",
                                 "Zm9vOmJhcg==",
                                 WebSocketStandardResponse(std::string()));
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
   ASSERT_TRUE(response_info_);
@@ -1294,7 +1169,7 @@ TEST_F(WebSocketStreamCreateBasicAuthTest, SuccessPasswordInUrl) {
 TEST_F(WebSocketStreamCreateBasicAuthTest, FailureIncorrectPasswordInUrl) {
   CreateAndConnectAuthHandshake(
       "ws://foo:baz@localhost/", "Zm9vOmJheg==", kUnauthorizedResponse);
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_TRUE(response_info_);
 }
@@ -1311,7 +1186,7 @@ TEST_F(WebSocketStreamCreateDigestAuthTest, DigestPasswordInUrl) {
       "http://localhost",
       helper_.BuildSocketData2(kAuthorizedRequest,
                                WebSocketStandardResponse(std::string())));
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
   ASSERT_TRUE(response_info_);
@@ -1348,7 +1223,7 @@ TEST_F(WebSocketStreamCreateUMATest, Connected) {
     creation.CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                                       creation.NoSubProtocols(),
                                       "http://localhost", "", "");
-    creation.RunUntilIdle();
+    creation.WaitUntilConnectDone();
   }
 
   scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
@@ -1376,7 +1251,7 @@ TEST_F(WebSocketStreamCreateUMATest, Failed) {
     creation.CreateAndConnectCustomResponse(
         "ws://localhost/", "localhost", "/", creation.NoSubProtocols(),
         "http://localhost", "", kInvalidStatusCodeResponse);
-    creation.RunUntilIdle();
+    creation.WaitUntilConnectDone();
   }
 
   scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
@@ -1409,7 +1284,7 @@ TEST_F(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost", socket_data.Pass());
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
 }
 
@@ -1435,7 +1310,7 @@ TEST_F(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
   url_request_context_host_.SetProxyConfig("https=proxy:8000");
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost", socket_data.Pass());
-  RunUntilIdle();
+  WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Establishing a tunnel via proxy server failed.",
             failure_message());
