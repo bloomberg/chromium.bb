@@ -69,9 +69,10 @@ from pylib.device import device_errors
 def OutputJsonList(json_input, json_output):
   with file(json_input, 'r') as i:
     all_steps = json.load(i)
-  step_names = all_steps['steps'].keys()
+  step_values = [{'test': k, 'device_affinity': v['device_affinity']}
+      for k, v in all_steps['steps'].iteritems()]
   with file(json_output, 'w') as o:
-    o.write(json.dumps(step_names))
+    o.write(json.dumps(step_values))
   return 0
 
 
