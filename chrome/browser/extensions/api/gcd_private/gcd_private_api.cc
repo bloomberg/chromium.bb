@@ -358,6 +358,7 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
       std::string ssid;
 
       if (!wifi->GetString(kPrivetKeySSID, &ssid)) {
+        LOG(ERROR) << "Missing " << kPrivetKeySSID;
         return callback.Run(gcd_private::STATUS_SETUPPARSEERROR,
                             base::DictionaryValue());
       }
@@ -368,6 +369,7 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
 
         PasswordMap::iterator found = wifi_passwords_.find(ssid);
         if (found == wifi_passwords_.end()) {
+          LOG(ERROR) << "Password is unknown";
           return callback.Run(gcd_private::STATUS_WIFIPASSWORDERROR,
                               base::DictionaryValue());
         }

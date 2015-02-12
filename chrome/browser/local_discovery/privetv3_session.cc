@@ -189,6 +189,9 @@ void PrivetV3Session::FetcherDelegate::OnError(
     PrivetURLFetcher::ErrorType error) {
   if (session_) {
     DeleteThis();
+    LOG(ERROR) << "PrivetURLFetcher url: " << fetcher->url()
+               << ", error: " << error
+               << ", response code: " << fetcher->response_code();
     callback_.Run(Result::STATUS_CONNECTIONERROR, base::DictionaryValue());
   }
 }
@@ -199,6 +202,7 @@ void PrivetV3Session::FetcherDelegate::OnParsedJson(
     bool has_error) {
   if (session_) {
     DeleteThis();
+    LOG_IF(ERROR, has_error) << "Response: " << value;
     callback_.Run(
         has_error ? Result::STATUS_DEVICEERROR : Result::STATUS_SUCCESS, value);
   }
@@ -250,6 +254,7 @@ void PrivetV3Session::OnInfoDone(const InitCallback& callback,
   std::string version;
   if (!response.GetString(kPrivetV3InfoKeyVersion, &version) ||
       version != kPrivetV3InfoVersion) {
+    LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR, pairing_types);
   }
 
@@ -257,6 +262,7 @@ void PrivetV3Session::OnInfoDone(const InitCallback& callback,
   const base::ListValue* pairing = nullptr;
   if (!response.GetDictionary(kPrivetV3InfoKeyAuth, &authentication) ||
       !authentication->GetList(kPrivetV3KeyPairing, &pairing)) {
+    LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR, pairing_types);
   }
 
@@ -264,6 +270,7 @@ void PrivetV3Session::OnInfoDone(const InitCallback& callback,
   if (!ContainsString(*authentication, kPrivetV3KeyCrypto,
                       kPrivetV3CryptoP224Spake2) ||
       !ContainsString(*authentication, kPrivetV3KeyMode, kPrivetV3KeyPairing)) {
+    LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR, pairing_types);
   }
 
@@ -300,6 +307,7 @@ void PrivetV3Session::OnPairingStartDone(
 
   if (!response.GetString(kPrivetV3KeySessionId, &session_id_) ||
       !GetDecodedString(response, kPrivetV3KeyDeviceCommitment, &commitment_)) {
+    LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
 
@@ -308,8 +316,10 @@ void PrivetV3Session::OnPairingStartDone(
 
 void PrivetV3Session::ConfirmCode(const std::string& code,
                                   const ResultCallback& callback) {
-  if (session_id_.empty())
+  if (session_id_.empty()) {
+    LOG(ERROR) << "Pairing is not started";
     return callback.Run(Result::STATUS_SESSIONERROR);
+  }
 
   spake_.reset(new crypto::P224EncryptedKeyExchange(
       crypto::P224EncryptedKeyExchange::kPeerTypeClient, code));
@@ -342,6 +352,7 @@ void PrivetV3Session::OnPairingConfirmDone(
   std::string signature;
   if (!GetDecodedString(response, kPrivetV3KeyCertFingerprint, &fingerprint) ||
       !GetDecodedString(response, kPrivetV3KeyCertSignature, &signature)) {
+    LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
 
@@ -351,6 +362,7 @@ void PrivetV3Session::OnPairingConfirmDone(
   if (!hmac.Init(reinterpret_cast<const unsigned char*>(key.c_str()),
                  key.size()) ||
       !hmac.Verify(fingerprint, signature)) {
+    LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
 
@@ -358,7 +370,7 @@ void PrivetV3Session::OnPairingConfirmDone(
   if (!hmac.Sign(session_id_,
                  reinterpret_cast<unsigned char*>(string_as_array(&auth_code)),
                  auth_code.size())) {
-    NOTREACHED();
+    LOG(FATAL) << "Signing failed";
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
   // From now this is expected certificate.
@@ -391,6 +403,7 @@ void PrivetV3Session::OnAuthenticateDone(
   if (!response.GetString(kPrivetV3KeyAccessToken, &access_token) ||
       !response.GetString(kPrivetV3KeyTokenType, &token_type) ||
       !response.GetString(kPrivetV3KeyScope, &scope)) {
+    LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
 
@@ -404,8 +417,10 @@ void PrivetV3Session::SendMessage(const std::string& api,
                                   const MessageCallback& callback) {
   // TODO(vitalybuka): Implement validating HTTPS certificate using
   // fingerprint_.
-  if (fingerprint_.empty())
+  if (fingerprint_.empty()) {
+    LOG(ERROR) << "Session is not paired";
     return callback.Run(Result::STATUS_SESSIONERROR, base::DictionaryValue());
+  }
 
   StartPostRequest(api, input, callback);
 }

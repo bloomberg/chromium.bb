@@ -232,7 +232,8 @@ void PrivetURLFetcher::SetUploadFilePath(
 }
 
 void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source->GetResponseCode() == net::HTTP_SERVICE_UNAVAILABLE) {
+  if (source->GetResponseCode() == net::HTTP_SERVICE_UNAVAILABLE ||
+      source->GetResponseCode() == net::URLFetcher::RESPONSE_CODE_INVALID) {
     ScheduleRetry(kPrivetTimeoutOnError);
     return;
   }
@@ -259,7 +260,8 @@ bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
   }
 
   if (source->GetResponseCode() != net::HTTP_OK &&
-      source->GetResponseCode() != net::HTTP_PARTIAL_CONTENT) {
+      source->GetResponseCode() != net::HTTP_PARTIAL_CONTENT &&
+      source->GetResponseCode() != net::HTTP_BAD_REQUEST) {
     delegate_->OnError(this, RESPONSE_CODE_ERROR);
     return true;
   }
