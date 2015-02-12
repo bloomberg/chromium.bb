@@ -12,6 +12,7 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebTraceLocation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/OwnPtr.h"
@@ -260,13 +261,13 @@ private:
             EXPECT_EQ((Task*)0, m_task);
         }
 
-        virtual void postTask(Task* task)
+        void postTask(const WebTraceLocation&, Task* task) override
         {
             EXPECT_EQ((Task*)0, m_task);
             m_task = task;
         }
 
-        virtual void postDelayedTask(Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
+        void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
 
         virtual bool isCurrentThread() const override { return true; }
         virtual PlatformThreadId threadId() const override

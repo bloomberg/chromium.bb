@@ -5,6 +5,7 @@
 #include "config.h"
 #include "public/platform/WebThread.h"
 
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
 
 #if OS(WIN)
@@ -22,3 +23,17 @@ static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t), "size of platfor
 #error Unexpected platform
 #endif
 }
+
+namespace blink {
+
+void WebThread::postTask(Task* task)
+{
+    postTask(FROM_HERE, task);
+}
+
+void WebThread::postDelayedTask(Task* task, long long delayMs)
+{
+    postDelayedTask(FROM_HERE, task, delayMs);
+}
+
+} // namespace blink

@@ -56,8 +56,8 @@ public:
     // postTask() and postDelayedTask() take ownership of the passed Task
     // object. It is safe to invoke postTask() and postDelayedTask() from any
     // thread.
-    virtual void postTask(Task*) = 0;
-    virtual void postDelayedTask(Task*, long long delayMs) = 0;
+    virtual void postTask(const WebTraceLocation&, Task*) = 0;
+    virtual void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) = 0;
 
     virtual bool isCurrentThread() const = 0;
     virtual PlatformThreadId threadId() const { return 0; }
@@ -75,6 +75,11 @@ public:
     virtual void exitRunLoop() = 0;
 
     virtual ~WebThread() { }
+
+    // FIXME: Remove these deprecated entry points once all the clients have
+    // been moved over (http://crbug.com/450977).
+    virtual void postTask(Task*);
+    virtual void postDelayedTask(Task*, long long delayMs);
 };
 
 } // namespace blink
