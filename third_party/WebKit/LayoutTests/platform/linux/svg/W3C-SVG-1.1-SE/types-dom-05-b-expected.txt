@@ -7,10 +7,10 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (10,13) size 368x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 368x21
           chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 47 width 368.00: "Test side effects of assigning to valueAsString"
-      RenderSVGRect {rect} at (10,40) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=40.00] [width=30.00] [height=30.00]
-      RenderSVGRect {rect} at (10,80) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=80.00] [width=30.00] [height=30.00]
-      RenderSVGRect {rect} at (10,120) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=120.00] [width=30.00] [height=30.00]
-      RenderSVGRect {rect} at (10,160) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=160.00] [width=30.00] [height=30.00]
+      LayoutSVGRect {rect} at (10,40) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=40.00] [width=30.00] [height=30.00]
+      LayoutSVGRect {rect} at (10,80) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=80.00] [width=30.00] [height=30.00]
+      LayoutSVGRect {rect} at (10,120) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=120.00] [width=30.00] [height=30.00]
+      LayoutSVGRect {rect} at (10,160) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=160.00] [width=30.00] [height=30.00]
       LayoutSVGContainer {g} at (50,46) size 178x137
         LayoutSVGText {text} at (50,46) size 169x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 169x17
@@ -29,4 +29,4 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 228x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.6 $"
-    RenderSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

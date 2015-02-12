@@ -25,22 +25,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderSVGRect_h
-#define RenderSVGRect_h
+#ifndef LayoutSVGRect_h
+#define LayoutSVGRect_h
 
 #include "core/rendering/svg/RenderSVGShape.h"
 
 namespace blink {
 
-class RenderSVGRect final : public RenderSVGShape {
+class LayoutSVGRect final : public RenderSVGShape {
 public:
-    explicit RenderSVGRect(SVGRectElement*);
-    virtual ~RenderSVGRect();
+    explicit LayoutSVGRect(SVGRectElement*);
+    virtual ~LayoutSVGRect();
 
     virtual ShapeGeometryCodePath geometryCodePath() const override { return m_usePathFallback ? PathGeometry : RectGeometryFastPath; }
 
 private:
-    virtual const char* renderName() const override { return "RenderSVGRect"; }
+    virtual const char* renderName() const override { return "LayoutSVGRect"; }
 
     virtual void updateShapeFromElement() override;
     virtual bool isShapeEmpty() const override { return m_usePathFallback ? RenderSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }

@@ -26,23 +26,23 @@
  */
 
 #include "config.h"
+#include "core/layout/svg/LayoutSVGRect.h"
 
-#include "core/rendering/svg/RenderSVGRect.h"
 #include "core/svg/SVGRectElement.h"
 
 namespace blink {
 
-RenderSVGRect::RenderSVGRect(SVGRectElement* node)
+LayoutSVGRect::LayoutSVGRect(SVGRectElement* node)
     : RenderSVGShape(node)
     , m_usePathFallback(false)
 {
 }
 
-RenderSVGRect::~RenderSVGRect()
+LayoutSVGRect::~LayoutSVGRect()
 {
 }
 
-void RenderSVGRect::updateShapeFromElement()
+void LayoutSVGRect::updateShapeFromElement()
 {
     // Before creating a new object we need to clear the cached bounding box
     // to avoid using garbage.
@@ -90,7 +90,7 @@ void RenderSVGRect::updateShapeFromElement()
     m_strokeBoundingBox = m_outerStrokeRect;
 }
 
-bool RenderSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
+bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
 {
     // The optimized code below does not support non-simple strokes so we need
     // to fall back to RenderSVGShape::shapeDependentStrokeContains in these cases.
@@ -103,7 +103,7 @@ bool RenderSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
     return m_outerStrokeRect.contains(point, FloatRect::InsideOrOnStroke) && !m_innerStrokeRect.contains(point, FloatRect::InsideButNotOnStroke);
 }
 
-bool RenderSVGRect::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
+bool LayoutSVGRect::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
 {
     if (m_usePathFallback)
         return RenderSVGShape::shapeDependentFillContains(point, fillRule);
@@ -111,7 +111,7 @@ bool RenderSVGRect::shapeDependentFillContains(const FloatPoint& point, const Wi
 }
 
 // Returns true if the stroke is continuous and definitely uses miter joins.
-bool RenderSVGRect::definitelyHasSimpleStroke() const
+bool LayoutSVGRect::definitelyHasSimpleStroke() const
 {
     const SVGLayoutStyle& svgStyle = style()->svgStyle();
 

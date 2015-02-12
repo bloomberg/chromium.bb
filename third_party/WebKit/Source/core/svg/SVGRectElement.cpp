@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGRectElement.h"
 
-#include "core/rendering/svg/RenderSVGRect.h"
+#include "core/layout/svg/LayoutSVGRect.h"
 #include "core/svg/SVGLength.h"
 
 namespace blink {
@@ -119,7 +119,7 @@ bool SVGRectElement::selfHasRelativeLengths() const
 
 LayoutObject* SVGRectElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGRect(this);
+    return new LayoutSVGRect(this);
 }
 
 } // namespace blink

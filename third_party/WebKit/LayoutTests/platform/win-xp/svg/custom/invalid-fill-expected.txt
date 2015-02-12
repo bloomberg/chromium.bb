@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 641x214
     LayoutSVGContainer {g} at (0,0) size 641x214
-      RenderSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-      RenderSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FFA500]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+      LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+      LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FFA500]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
       LayoutSVGContainer {g} at (10,115) size 631x99
         LayoutSVGText {text} at (10,115) size 226x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 226x19

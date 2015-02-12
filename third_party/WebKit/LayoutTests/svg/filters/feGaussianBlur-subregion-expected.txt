@@ -9,5 +9,5 @@ layer at (0,0) size 100x100
           [feGaussianBlur stdDeviation="10.00, 10.00"]
             [feColorMatrix type="MATRIX" values="0.00 1.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
               [SourceGraphic]
-    RenderSVGRect {rect} at (0,0) size 70x70 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=40.00] [height=40.00]
+    LayoutSVGRect {rect} at (0,0) size 70x70 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=40.00] [height=40.00]
       [filter="Blur"] LayoutSVGResourceFilter {filter} at (-10,-10) size 80x80

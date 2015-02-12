@@ -7,28 +7,28 @@ layer at (0,0) size 450x500
         chunk 1 (middle anchor) text run 1 at (147.50,20.00) startOffset 0 endOffset 22 width 155.00: "textLength with Anchor"
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (200,3) size 50x24
-        RenderSVGRect {rect} at (200,5) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+        LayoutSVGRect {rect} at (200,5) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
         RenderSVGPath {line} at (224,3) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
       LayoutSVGContainer {g} at (49,0) size 352x46
-        RenderSVGRect {rect} at (49,0) size 352x46 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+        LayoutSVGRect {rect} at (49,0) size 352x46 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
         LayoutSVGContainer {use} at (200,3) size 50x24
           LayoutSVGContainer {g} at (200,3) size 50x24
-            RenderSVGRect {rect} at (200,5) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+            LayoutSVGRect {rect} at (200,5) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
             RenderSVGPath {line} at (224,3) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
       LayoutSVGContainer {g} at (49,0) size 352x46
-        RenderSVGRect {rect} at (49,0) size 352x46 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+        LayoutSVGRect {rect} at (49,0) size 352x46 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
         LayoutSVGContainer {use} at (200,3) size 50x24
           LayoutSVGContainer {g} at (200,3) size 50x24
-            RenderSVGRect {rect} at (200,5) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+            LayoutSVGRect {rect} at (200,5) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
             RenderSVGPath {line} at (224,3) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
     LayoutSVGContainer {g} at (49,29) size 352x464
       LayoutSVGContainer {g} at (49,29) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
         LayoutSVGContainer {use} at (49,29) size 352x47
           LayoutSVGContainer {g} at (49,29) size 352x47
-            RenderSVGRect {rect} at (49,29) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,29) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,33) size 50x24
               LayoutSVGContainer {g} at (200,33) size 50x24
-                RenderSVGRect {rect} at (200,35) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,35) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,33) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (202,7) size 46x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 45x15
@@ -39,10 +39,10 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (49,74) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,75.00)}]
         LayoutSVGContainer {use} at (49,74) size 352x47
           LayoutSVGContainer {g} at (49,74) size 352x47
-            RenderSVGRect {rect} at (49,74) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,74) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,78) size 50x24
               LayoutSVGContainer {g} at (200,78) size 50x24
-                RenderSVGRect {rect} at (200,80) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,80) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,78) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (200,7) size 50x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 50x15
@@ -53,10 +53,10 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (49,119) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
         LayoutSVGContainer {use} at (49,119) size 352x47
           LayoutSVGContainer {g} at (49,119) size 352x47
-            RenderSVGRect {rect} at (49,119) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,119) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,123) size 50x24
               LayoutSVGContainer {g} at (200,123) size 50x24
-                RenderSVGRect {rect} at (200,125) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,125) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,123) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (221,7) size 8x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 8x15
@@ -67,10 +67,10 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (49,164) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,165.00)}]
         LayoutSVGContainer {use} at (49,164) size 352x47
           LayoutSVGContainer {g} at (49,164) size 352x47
-            RenderSVGRect {rect} at (49,164) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,164) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,168) size 50x24
               LayoutSVGContainer {g} at (200,168) size 50x24
-                RenderSVGRect {rect} at (200,170) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,170) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,168) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (200,7) size 50x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 50x15
@@ -81,10 +81,10 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (49,209) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
         LayoutSVGContainer {use} at (49,209) size 352x47
           LayoutSVGContainer {g} at (49,209) size 352x47
-            RenderSVGRect {rect} at (49,209) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,209) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,213) size 50x24
               LayoutSVGContainer {g} at (200,213) size 50x24
-                RenderSVGRect {rect} at (200,215) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,215) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,213) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (202,7) size 46x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 46x15
@@ -99,10 +99,10 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (49,254) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,255.00)}]
         LayoutSVGContainer {use} at (49,254) size 352x47
           LayoutSVGContainer {g} at (49,254) size 352x47
-            RenderSVGRect {rect} at (49,254) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,254) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,258) size 50x24
               LayoutSVGContainer {g} at (200,258) size 50x24
-                RenderSVGRect {rect} at (200,260) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,260) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,258) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (200,7) size 50x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 50x15
@@ -113,10 +113,10 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (49,299) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,300.00)}]
         LayoutSVGContainer {use} at (49,299) size 352x47
           LayoutSVGContainer {g} at (49,299) size 352x47
-            RenderSVGRect {rect} at (49,299) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,299) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,303) size 50x24
               LayoutSVGContainer {g} at (200,303) size 50x24
-                RenderSVGRect {rect} at (200,305) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,305) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,303) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (200,7) size 50x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 50x15
@@ -127,10 +127,10 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (49,344) size 352x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,345.00)}]
         LayoutSVGContainer {use} at (49,344) size 352x47
           LayoutSVGContainer {g} at (49,344) size 352x47
-            RenderSVGRect {rect} at (49,344) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
+            LayoutSVGRect {rect} at (49,344) size 352x47 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=0.00] [width=350.00] [height=45.00]
             LayoutSVGContainer {g} at (200,348) size 50x24
               LayoutSVGContainer {g} at (200,348) size 50x24
-                RenderSVGRect {rect} at (200,350) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
+                LayoutSVGRect {rect} at (200,350) size 50x20 [fill={[type=SOLID] [color=#DDE8FF]}] [x=200.00] [y=5.00] [width=50.00] [height=20.00]
                 RenderSVGPath {line} at (224,348) size 2x24 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=3.00] [x2=225.00] [y2=27.00]
         LayoutSVGText {text} at (200,7) size 50x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 28x15
@@ -144,8 +144,8 @@ layer at (0,0) size 450x500
           LayoutSVGInlineText {#text} at (0,0) size 294x15
             chunk 1 (middle anchor) text run 1 at (78.00,40.00) startOffset 0 endOffset 55 width 294.00: "textLength=\"50\" lengthAdjust=\"spacingAndGlyphs\" (tspan)"
       LayoutSVGContainer {g} at (49,379) size 352x114 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,390.00)}]
-        RenderSVGRect {rect} at (49,389) size 352x97 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=95.00]
-        RenderSVGRect {rect} at (112,395) size 26x80 [fill={[type=SOLID] [color=#DDE8FF]}] [x=112.50] [y=5.00] [width=25.00] [height=80.00]
+        LayoutSVGRect {rect} at (49,389) size 352x97 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=50.00] [y=0.00] [width=350.00] [height=95.00]
+        LayoutSVGRect {rect} at (112,395) size 26x80 [fill={[type=SOLID] [color=#DDE8FF]}] [x=112.50] [y=5.00] [width=25.00] [height=80.00]
         RenderSVGPath {line} at (124,393) size 2x84 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=125.00] [y1=3.00] [x2=125.00] [y2=87.00]
         LayoutSVGText {text} at (112,-11) size 26x114 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 25x114
@@ -163,7 +163,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 1 at (160.00,68.80) startOffset 0 endOffset 15 width 78.00: "font-size=\"100\""
     LayoutSVGContainer {use} at (0,0) size 448x498
       LayoutSVGContainer {g} at (0,0) size 448x498
-        RenderSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
+        LayoutSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
         LayoutSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
           RenderSVGViewportContainer {svg} at (418,466) size 28x30
             RenderSVGPath {path} at (418,468) size 14x19 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 C 3 226 33 247 55 232 C 14 306 -1 332 0 356 C 0 370 13 398 44 383 C 52 379 79 358 96 342 C 110 341 120 331 138 314 C 155 328 174 324 190 307 C 212 309 272 229 234 199 C 231 175 204 162 181 181 C 175 179 168 180 163 182 C 185 147 206 100 212 77 C 219 47 188 36 172 44 Z"]

@@ -12,22 +12,22 @@ layer at (0,0) size 450x500
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourcePattern {pattern} [id="pattern1"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
           RenderSVGEllipse {circle} at (0,0) size 20x20 [fill={[type=SOLID] [color=#FF0000]}] [cx=10.00] [cy=10.00] [r=10.00]
-          RenderSVGRect {rect} at (10,10) size 15x15 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=15.00] [height=15.00]
+          LayoutSVGRect {rect} at (10,10) size 15x15 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=15.00] [height=15.00]
         LayoutSVGResourcePattern {pattern} [id="pattern2"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
           RenderSVGEllipse {circle} at (0,0) size 20x20 [fill={[type=SOLID] [color=#FF0000]}] [cx=10.00] [cy=10.00] [r=10.00]
-          RenderSVGRect {rect} at (10,10) size 15x15 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=15.00] [height=15.00]
+          LayoutSVGRect {rect} at (10,10) size 15x15 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=15.00] [height=15.00]
         LayoutSVGResourcePattern {pattern} [id="pattern3"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
           RenderSVGEllipse {circle} at (0,0) size 20x20 [fill={[type=SOLID] [color=#FF0000]}] [cx=10.00] [cy=10.00] [r=10.00]
-          RenderSVGRect {rect} at (10,10) size 15x15 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=15.00] [height=15.00]
+          LayoutSVGRect {rect} at (10,10) size 15x15 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=15.00] [height=15.00]
         LayoutSVGResourcePattern {pattern} [id="pattern4"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]
           RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.25] [cy=0.33] [r=0.25]
-          RenderSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#008000]}] [x=0.25] [y=0.33] [width=0.38] [height=0.50]
+          LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#008000]}] [x=0.25] [y=0.33] [width=0.38] [height=0.50]
         LayoutSVGResourcePattern {pattern} [id="pattern5"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]
           RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.25] [cy=0.33] [r=0.25]
-          RenderSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#008000]}] [x=0.25] [y=0.33] [width=0.38] [height=0.50]
+          LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#008000]}] [x=0.25] [y=0.33] [width=0.38] [height=0.50]
         LayoutSVGResourcePattern {pattern} [id="pattern6"] [patternUnits=userSpaceOnUse] [patternContentUnits=objectBoundingBox]
           RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.25] [cy=0.33] [r=0.25]
-          RenderSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#008000]}] [x=0.25] [y=0.33] [width=0.38] [height=0.50]
+          LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#008000]}] [x=0.25] [y=0.33] [width=0.38] [height=0.50]
         LayoutSVGResourcePattern {pattern} [id="pattern7"] [patternUnits=userSpaceOnUse] [patternContentUnits=objectBoundingBox]
           RenderSVGEllipse {circle} at (0,0) size 40x40 [fill={[type=SOLID] [color=#FF0000]}] [cx=20.00] [cy=20.00] [r=20.00]
         LayoutSVGResourcePattern {pattern} [id="pattern8"] [patternUnits=userSpaceOnUse] [patternContentUnits=objectBoundingBox]
@@ -39,7 +39,7 @@ layer at (0,0) size 450x500
           RenderSVGEllipse {circle} at (0,0) size 60x60 [fill={[type=RADIAL-GRADIENT] [id="redToYellow"]}] [cx=20.00] [cy=20.00] [r=40.00]
       LayoutSVGContainer {g} at (14,108) size 412x293 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-5.00,100.00)}]
         LayoutSVGContainer {g} at (14,108) size 136x44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,20.00)}]
-          RenderSVGRect {rect} at (14,119) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern1"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (14,119) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern1"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern1"
@@ -54,7 +54,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 47x13
                 chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 10 width 46.94: "no viewbox"
         LayoutSVGContainer {g} at (14,158) size 187x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,70.00)}]
-          RenderSVGRect {rect} at (14,169) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern2"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (14,169) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern2"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern2"
@@ -66,7 +66,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 85x13
                 chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 20 width 84.51: "contentUnits=default"
         LayoutSVGContainer {g} at (14,208) size 175x44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,120.00)}]
-          RenderSVGRect {rect} at (14,219) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern3"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (14,219) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern3"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern3"
@@ -81,7 +81,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 69x13
                 chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 16 width 68.40: "overflow=visible"
         LayoutSVGContainer {g} at (14,258) size 189x44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,170.00)}]
-          RenderSVGRect {rect} at (14,269) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern4"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (14,269) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern4"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern4"
@@ -96,7 +96,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 69x13
                 chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 16 width 68.40: "overflow=visible"
         LayoutSVGContainer {g} at (14,308) size 189x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,220.00)}]
-          RenderSVGRect {rect} at (14,319) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern5"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (14,319) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern5"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern5"
@@ -108,7 +108,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 138x13
                 chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 30 width 137.29: "contentUnits=objectBoundingBox"
         LayoutSVGContainer {g} at (14,358) size 189x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,270.00)}]
-          RenderSVGRect {rect} at (14,369) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern6"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (14,369) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern6"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern6"
@@ -120,7 +120,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 138x13
                 chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 30 width 137.29: "contentUnits=objectBoundingBox"
         LayoutSVGContainer {g} at (219,108) size 198x44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,20.00)}]
-          RenderSVGRect {rect} at (219,119) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern7"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (219,119) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern7"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern7"
@@ -135,7 +135,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 147x13
                 chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 32 width 146.99: "viewBox preserveAspectRatio=none"
         LayoutSVGContainer {g} at (219,158) size 207x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,70.00)}]
-          RenderSVGRect {rect} at (219,169) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern8"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (219,169) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern8"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern8"
@@ -147,7 +147,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 156x13
                 chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 33 width 155.32: "preserveAspectRatio=xMinYmin meet"
         LayoutSVGContainer {g} at (219,208) size 206x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,120.00)}]
-          RenderSVGRect {rect} at (219,219) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern9"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
+          LayoutSVGRect {rect} at (219,219) size 42x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern9"]}] [x=0.00] [y=0.00] [width=40.00] [height=30.00]
           LayoutSVGText {text} at (0,-12) size 38x13 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 38x13
               chunk 1 text run 1 at (0.00,-2.00) startOffset 0 endOffset 9 width 37.76: "#pattern9"
@@ -160,7 +160,7 @@ layer at (0,0) size 450x500
                 chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 16 width 68.40: "overflow=visible"
     LayoutSVGContainer {use} at (0,0) size 448x498
       LayoutSVGContainer {g} at (0,0) size 448x498
-        RenderSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
+        LayoutSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
         LayoutSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
           RenderSVGViewportContainer {svg} at (418,466) size 28x30
             RenderSVGPath {path} at (418,468) size 14x19 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 C 3 226 33 247 55 232 C 14 306 -1 332 0 356 C 0 370 13 398 44 383 C 52 379 79 358 96 342 C 110 341 120 331 138 314 C 155 328 174 324 190 307 C 212 309 272 229 234 199 C 231 175 204 162 181 181 C 175 179 168 180 163 182 C 185 147 206 100 212 77 C 219 47 188 36 172 44 Z"]
