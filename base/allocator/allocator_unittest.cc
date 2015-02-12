@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <algorithm>   // for min()
 
-#include "base/atomicops.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Number of bits in a size_t.
@@ -15,10 +15,6 @@ static const int kSizeBits = 8 * sizeof(size_t);
 static const size_t kMaxSize = ~static_cast<size_t>(0);
 // Maximum positive size of a size_t if it were signed.
 static const size_t kMaxSignedSize = ((size_t(1) << (kSizeBits-1)) - 1);
-// An allocation size which is not too big to be reasonable.
-static const size_t kNotTooBig = 100000;
-// An allocation size which is just too big.
-static const size_t kTooBig = ~static_cast<size_t>(0);
 
 namespace {
 
@@ -82,197 +78,6 @@ static int NextSize(int size) {
   }
 }
 
-template <class AtomicType>
-static void TestAtomicIncrement() {
-  // For now, we just test single threaded execution
-
-  // use a guard value to make sure the NoBarrier_AtomicIncrement doesn't go
-  // outside the expected address bounds.  This is in particular to
-  // test that some future change to the asm code doesn't cause the
-  // 32-bit NoBarrier_AtomicIncrement to do the wrong thing on 64-bit machines.
-  struct {
-    AtomicType prev_word;
-    AtomicType count;
-    AtomicType next_word;
-  } s;
-
-  AtomicType prev_word_value, next_word_value;
-  memset(&prev_word_value, 0xFF, sizeof(AtomicType));
-  memset(&next_word_value, 0xEE, sizeof(AtomicType));
-
-  s.prev_word = prev_word_value;
-  s.count = 0;
-  s.next_word = next_word_value;
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, 1), 1);
-  EXPECT_EQ(s.count, 1);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, 2), 3);
-  EXPECT_EQ(s.count, 3);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, 3), 6);
-  EXPECT_EQ(s.count, 6);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, -3), 3);
-  EXPECT_EQ(s.count, 3);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, -2), 1);
-  EXPECT_EQ(s.count, 1);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, -1), 0);
-  EXPECT_EQ(s.count, 0);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, -1), -1);
-  EXPECT_EQ(s.count, -1);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, -4), -5);
-  EXPECT_EQ(s.count, -5);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-
-  EXPECT_EQ(base::subtle::NoBarrier_AtomicIncrement(&s.count, 5), 0);
-  EXPECT_EQ(s.count, 0);
-  EXPECT_EQ(s.prev_word, prev_word_value);
-  EXPECT_EQ(s.next_word, next_word_value);
-}
-
-
-#define NUM_BITS(T) (sizeof(T) * 8)
-
-
-template <class AtomicType>
-static void TestCompareAndSwap() {
-  AtomicType value = 0;
-  AtomicType prev = base::subtle::NoBarrier_CompareAndSwap(&value, 0, 1);
-  EXPECT_EQ(1, value);
-  EXPECT_EQ(0, prev);
-
-  // Use test value that has non-zero bits in both halves, more for testing
-  // 64-bit implementation on 32-bit platforms.
-  const AtomicType k_test_val = (static_cast<uint64_t>(1) <<
-                                 (NUM_BITS(AtomicType) - 2)) + 11;
-  value = k_test_val;
-  prev = base::subtle::NoBarrier_CompareAndSwap(&value, 0, 5);
-  EXPECT_EQ(k_test_val, value);
-  EXPECT_EQ(k_test_val, prev);
-
-  value = k_test_val;
-  prev = base::subtle::NoBarrier_CompareAndSwap(&value, k_test_val, 5);
-  EXPECT_EQ(5, value);
-  EXPECT_EQ(k_test_val, prev);
-}
-
-
-template <class AtomicType>
-static void TestAtomicExchange() {
-  AtomicType value = 0;
-  AtomicType new_value = base::subtle::NoBarrier_AtomicExchange(&value, 1);
-  EXPECT_EQ(1, value);
-  EXPECT_EQ(0, new_value);
-
-  // Use test value that has non-zero bits in both halves, more for testing
-  // 64-bit implementation on 32-bit platforms.
-  const AtomicType k_test_val = (static_cast<uint64_t>(1) <<
-                                 (NUM_BITS(AtomicType) - 2)) + 11;
-  value = k_test_val;
-  new_value = base::subtle::NoBarrier_AtomicExchange(&value, k_test_val);
-  EXPECT_EQ(k_test_val, value);
-  EXPECT_EQ(k_test_val, new_value);
-
-  value = k_test_val;
-  new_value = base::subtle::NoBarrier_AtomicExchange(&value, 5);
-  EXPECT_EQ(5, value);
-  EXPECT_EQ(k_test_val, new_value);
-}
-
-
-template <class AtomicType>
-static void TestAtomicIncrementBounds() {
-  // Test increment at the half-width boundary of the atomic type.
-  // It is primarily for testing at the 32-bit boundary for 64-bit atomic type.
-  AtomicType test_val = static_cast<uint64_t>(1) << (NUM_BITS(AtomicType) / 2);
-  AtomicType value = test_val - 1;
-  AtomicType new_value = base::subtle::NoBarrier_AtomicIncrement(&value, 1);
-  EXPECT_EQ(test_val, value);
-  EXPECT_EQ(value, new_value);
-
-  base::subtle::NoBarrier_AtomicIncrement(&value, -1);
-  EXPECT_EQ(test_val - 1, value);
-}
-
-// This is a simple sanity check that values are correct. Not testing
-// atomicity
-template <class AtomicType>
-static void TestStore() {
-  const AtomicType kVal1 = static_cast<AtomicType>(0xa5a5a5a5a5a5a5a5LL);
-  const AtomicType kVal2 = static_cast<AtomicType>(-1);
-
-  AtomicType value;
-
-  base::subtle::NoBarrier_Store(&value, kVal1);
-  EXPECT_EQ(kVal1, value);
-  base::subtle::NoBarrier_Store(&value, kVal2);
-  EXPECT_EQ(kVal2, value);
-
-  base::subtle::Acquire_Store(&value, kVal1);
-  EXPECT_EQ(kVal1, value);
-  base::subtle::Acquire_Store(&value, kVal2);
-  EXPECT_EQ(kVal2, value);
-
-  base::subtle::Release_Store(&value, kVal1);
-  EXPECT_EQ(kVal1, value);
-  base::subtle::Release_Store(&value, kVal2);
-  EXPECT_EQ(kVal2, value);
-}
-
-// This is a simple sanity check that values are correct. Not testing
-// atomicity
-template <class AtomicType>
-static void TestLoad() {
-  const AtomicType kVal1 = static_cast<AtomicType>(0xa5a5a5a5a5a5a5a5LL);
-  const AtomicType kVal2 = static_cast<AtomicType>(-1);
-
-  AtomicType value;
-
-  value = kVal1;
-  EXPECT_EQ(kVal1, base::subtle::NoBarrier_Load(&value));
-  value = kVal2;
-  EXPECT_EQ(kVal2, base::subtle::NoBarrier_Load(&value));
-
-  value = kVal1;
-  EXPECT_EQ(kVal1, base::subtle::Acquire_Load(&value));
-  value = kVal2;
-  EXPECT_EQ(kVal2, base::subtle::Acquire_Load(&value));
-
-  value = kVal1;
-  EXPECT_EQ(kVal1, base::subtle::Release_Load(&value));
-  value = kVal2;
-  EXPECT_EQ(kVal2, base::subtle::Release_Load(&value));
-}
-
-template <class AtomicType>
-static void TestAtomicOps() {
-  TestCompareAndSwap<AtomicType>();
-  TestAtomicExchange<AtomicType>();
-  TestAtomicIncrementBounds<AtomicType>();
-  TestStore<AtomicType>();
-  TestLoad<AtomicType>();
-}
-
 static void TestCalloc(size_t n, size_t s, bool ok) {
   char* p = reinterpret_cast<char*>(calloc(n, s));
   if (!ok) {
@@ -287,80 +92,10 @@ static void TestCalloc(size_t n, size_t s, bool ok) {
   }
 }
 
-// MSVC C4530 complains about exception handler usage when exceptions are
-// disabled.  Temporarily disable that warning so we can test that they are, in
-// fact, disabled.
-#if defined(OS_WIN)
-#pragma warning(push)
-#pragma warning(disable: 4530)
-#endif
-
-// A global test counter for number of times the NewHandler is called.
-static int news_handled = 0;
-static void TestNewHandler() {
-  ++news_handled;
-  throw std::bad_alloc();
-}
-
-// Because we compile without exceptions, we expect these will not throw.
-static void TestOneNewWithoutExceptions(void* (*func)(size_t),
-                                        bool should_throw) {
-  // success test
-  try {
-    void* ptr = (*func)(kNotTooBig);
-    EXPECT_NE(reinterpret_cast<void*>(NULL), ptr) <<
-        "allocation should not have failed.";
-  } catch(...) {
-    EXPECT_EQ(0, 1) << "allocation threw unexpected exception.";
-  }
-
-  // failure test
-  try {
-    void* rv = (*func)(kTooBig);
-    EXPECT_EQ(NULL, rv);
-    EXPECT_FALSE(should_throw) << "allocation should have thrown.";
-  } catch(...) {
-    EXPECT_TRUE(should_throw) << "allocation threw unexpected exception.";
-  }
-}
-
-static void TestNothrowNew(void* (*func)(size_t)) {
-  news_handled = 0;
-
-  // test without new_handler:
-  std::new_handler saved_handler = std::set_new_handler(0);
-  TestOneNewWithoutExceptions(func, false);
-
-  // test with new_handler:
-  std::set_new_handler(TestNewHandler);
-  TestOneNewWithoutExceptions(func, true);
-  EXPECT_EQ(news_handled, 1) << "nothrow new_handler was not called.";
-  std::set_new_handler(saved_handler);
-}
-
-#if defined(OS_WIN)
-#pragma warning(pop)
-#endif
-
 }  // namespace
 
 //-----------------------------------------------------------------------------
 
-TEST(Atomics, AtomicIncrementWord) {
-  TestAtomicIncrement<base::subtle::AtomicWord>();
-}
-
-TEST(Atomics, AtomicIncrement32) {
-  TestAtomicIncrement<base::subtle::Atomic32>();
-}
-
-TEST(Atomics, AtomicOpsWord) {
-  TestAtomicIncrement<base::subtle::AtomicWord>();
-}
-
-TEST(Atomics, AtomicOps32) {
-  TestAtomicIncrement<base::subtle::Atomic32>();
-}
 
 TEST(Allocators, Malloc) {
   // Try allocating data with a bunch of alignments and sizes
@@ -392,11 +127,6 @@ TEST(Allocators, Calloc) {
   TestCalloc(kMaxSignedSize, 3, false);
   TestCalloc(3, kMaxSignedSize, false);
   TestCalloc(kMaxSignedSize, kMaxSignedSize, false);
-}
-
-TEST(Allocators, New) {
-  TestNothrowNew(&::operator new);
-  TestNothrowNew(&::operator new[]);
 }
 
 // This makes sure that reallocing a small number of bytes in either
@@ -458,23 +188,6 @@ TEST(Allocators, Realloc2) {
   free(p);
 }
 
-// tcmalloc uses these semantics but system allocators can return NULL for
-// realloc(ptr, 0).
-#if defined(USE_TCMALLOC)
-TEST(Allocators, ReallocZero) {
-  // Test that realloc to zero does not return NULL.
-  for (int size = 0; size >= 0; size = NextSize(size)) {
-    char* ptr = reinterpret_cast<char*>(malloc(size));
-    EXPECT_NE(static_cast<char*>(NULL), ptr);
-    ptr = reinterpret_cast<char*>(realloc(ptr, 0));
-    EXPECT_NE(static_cast<char*>(NULL), ptr);
-    if (ptr)
-      free(ptr);
-  }
-}
-#endif
-
-#ifdef WIN32
 // Test recalloc
 TEST(Allocators, Recalloc) {
   for (int src_size = 0; src_size >= 0; src_size = NextSize(src_size)) {
@@ -499,7 +212,7 @@ TEST(Allocators, AlignedMalloc) {
   // Try allocating data with a bunch of alignments and sizes
   static const int kTestAlignments[] = {8, 16, 256, 4096, 8192, 16384};
   for (int size = 1; size > 0; size = NextSize(size)) {
-    for (int i = 0; i < ARRAYSIZE(kTestAlignments); ++i) {
+    for (int i = 0; i < arraysize(kTestAlignments); ++i) {
       unsigned char* ptr = static_cast<unsigned char*>(
           _aligned_malloc(size, kTestAlignments[i]));
       CheckAlignment(ptr, kTestAlignments[i]);
@@ -525,9 +238,6 @@ TEST(Allocators, AlignedMalloc) {
     }
   }
 }
-
-#endif
-
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
