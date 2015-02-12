@@ -138,7 +138,6 @@ private:
     unsigned m_hideTimerBehaviorFlags;
     bool m_isMouseOverControls : 1;
     bool m_isPausedForScrubbing : 1;
-    bool m_wasLastEventTouch : 1;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControls, isMediaControls());
