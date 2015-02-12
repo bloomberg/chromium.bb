@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Generated from the Linux kernel's calls.S.
-#ifndef SANDBOX_LINUX_SERVICES_ARM_LINUX_SYSCALLS_H_
-#define SANDBOX_LINUX_SERVICES_ARM_LINUX_SYSCALLS_H_
+#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_ARM_LINUX_SYSCALLS_H_
+#define SANDBOX_LINUX_SYSTEM_HEADERS_ARM_LINUX_SYSCALLS_H_
 
 #if !defined(__arm__) || !defined(__ARM_EABI__)
 #error "Including header on wrong architecture"
@@ -1405,5 +1405,5 @@
 #define __ARM_NR_cmpxchg (__ARM_NR_BASE+0x00fff0)
 #endif
 
-#endif  // SANDBOX_LINUX_SERVICES_ARM_LINUX_SYSCALLS_H_
+#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ARM_LINUX_SYSCALLS_H_
 

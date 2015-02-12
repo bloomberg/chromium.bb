@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Generated from the Linux kernel's calls.S.
-#ifndef SANDBOX_LINUX_SERVICES_MIPS64_LINUX_SYSCALLS_H_
-#define SANDBOX_LINUX_SERVICES_MIPS64_LINUX_SYSCALLS_H_
+#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_
+#define SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_
 
 #if !defined(__mips__) || (_MIPS_SIM != _ABI64)
 #error "Including header on wrong architecture"
@@ -1263,4 +1263,4 @@
 #define __NR_seccomp (__NR_Linux + 312)
 #endif
 
-#endif  // SANDBOX_LINUX_SERVICES_MIPS64_LINUX_SYSCALLS_H_
+#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_

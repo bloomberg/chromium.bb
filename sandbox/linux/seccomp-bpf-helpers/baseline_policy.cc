@@ -18,8 +18,8 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
+#include "sandbox/linux/system_headers/linux_syscalls.h"
 
 // Changing this implementation will have an effect on *all* policies.
 // Currently this means: Renderer/Worker, GPU, Flash and NaCl.

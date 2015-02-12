@@ -1,6 +1,4 @@
 include_rules = [
   # TODO(mdempsky): Eliminate cyclic dependency on seccomp-bpf.
   "+sandbox/linux/seccomp-bpf",
-  "+sandbox/linux/services", # for bpf_dsl_more_unittest.cc
-  "+sandbox/linux/syscall_broker", # for bpf_dsl_more_unittest.cc
 ]

@@ -18,7 +18,7 @@ namespace sandbox {
 namespace {
 
 // NOTE: most tests for the SandboxBPF class are currently in
-// bpf_dsl_more_unittest.cc.
+// integration_tests/.
 
 TEST(SandboxBPF, CreateDestroy) {
   // Give an opportunity to dynamic tools to perform some simple testing.

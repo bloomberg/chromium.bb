@@ -101,11 +101,12 @@ test("sandbox_linux_unittests") {
   }
   if (use_seccomp_bpf) {
     sources += [
-      "bpf_dsl/bpf_dsl_more_unittest.cc",
       "bpf_dsl/bpf_dsl_unittest.cc",
       "bpf_dsl/codegen_unittest.cc",
       "bpf_dsl/cons_unittest.cc",
       "bpf_dsl/syscall_set_unittest.cc",
+      "integration_tests/bpf_dsl_seccomp_unittest.cc",
+      "integration_tests/seccomp_broker_process_unittest.cc",
       "seccomp-bpf-helpers/baseline_policy_unittest.cc",
       "seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc",
       "seccomp-bpf/bpf_tests_unittest.cc",
@@ -116,11 +117,11 @@ test("sandbox_linux_unittests") {
   }
   if (compile_credentials) {
     sources += [
+      "integration_tests/namespace_unix_domain_socket_unittest.cc",
       "services/credentials_unittest.cc",
       "services/namespace_sandbox_unittest.cc",
       "services/namespace_utils_unittest.cc",
       "services/proc_util_unittest.cc",
-      "services/unix_domain_socket_unittest.cc",
     ]
   }
 }
@@ -278,16 +279,16 @@ component("sandbox_services") {
 
 source_set("sandbox_services_headers") {
   sources = [
-    "services/android_arm_ucontext.h",
-    "services/android_arm64_ucontext.h",
-    "services/android_futex.h",
-    "services/android_ucontext.h",
-    "services/android_i386_ucontext.h",
-    "services/arm_linux_syscalls.h",
-    "services/arm64_linux_syscalls.h",
-    "services/linux_syscalls.h",
-    "services/x86_32_linux_syscalls.h",
-    "services/x86_64_linux_syscalls.h",
+    "system_headers/android_arm_ucontext.h",
+    "system_headers/android_arm64_ucontext.h",
+    "system_headers/android_futex.h",
+    "system_headers/android_ucontext.h",
+    "system_headers/android_i386_ucontext.h",
+    "system_headers/arm_linux_syscalls.h",
+    "system_headers/arm64_linux_syscalls.h",
+    "system_headers/linux_syscalls.h",
+    "system_headers/x86_32_linux_syscalls.h",
+    "system_headers/x86_64_linux_syscalls.h",
   ]
 }
 

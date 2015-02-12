@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
-#include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/system_headers/linux_syscalls.h"
 
 namespace sandbox {
 

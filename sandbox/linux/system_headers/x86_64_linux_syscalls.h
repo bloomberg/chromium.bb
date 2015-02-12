@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Generated from the Linux kernel's syscall_64.tbl.
-#ifndef SANDBOX_LINUX_SERVICES_X86_64_LINUX_SYSCALLS_H_
-#define SANDBOX_LINUX_SERVICES_X86_64_LINUX_SYSCALLS_H_
+#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_X86_64_LINUX_SYSCALLS_H_
+#define SANDBOX_LINUX_SYSTEM_HEADERS_X86_64_LINUX_SYSCALLS_H_
 
 #if !defined(__x86_64__)
 #error "Including header on wrong architecture"
@@ -1290,5 +1290,5 @@
 #define __NR_memfd_create 319
 #endif
 
-#endif  // SANDBOX_LINUX_SERVICES_X86_64_LINUX_SYSCALLS_H_
+#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_X86_64_LINUX_SYSCALLS_H_
 

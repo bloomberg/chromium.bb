@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SERVICES_ANDROID_X86_64_UCONTEXT_H_
-#define SANDBOX_LINUX_SERVICES_ANDROID_X86_64_UCONTEXT_H_
+#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_X86_64_UCONTEXT_H_
+#define SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_X86_64_UCONTEXT_H_
 
 // We do something compatible with glibc. Hopefully, at some point Android will
 // provide that for us, and __BIONIC_HAVE_UCONTEXT_T should be defined.
@@ -85,4 +85,4 @@ typedef struct ucontext {
 #include <sys/ucontext.h>
 #endif  // __BIONIC_HAVE_UCONTEXT_T
 
-#endif  // SANDBOX_LINUX_SERVICES_ANDROID_X86_64_UCONTEXT_H_
+#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_X86_64_UCONTEXT_H_

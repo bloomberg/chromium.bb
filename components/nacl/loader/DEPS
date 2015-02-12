@@ -8,6 +8,7 @@ include_rules = [
   "+sandbox/linux/seccomp-bpf-helpers",
   "+sandbox/linux/services",
   "+sandbox/linux/suid",
+  "+sandbox/linux/system_headers",
   "+sandbox/win/src",
   "+ppapi/c",  # header files only
 

@@ -24,8 +24,8 @@
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
-#include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
+#include "sandbox/linux/system_headers/linux_syscalls.h"
 
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Arg;

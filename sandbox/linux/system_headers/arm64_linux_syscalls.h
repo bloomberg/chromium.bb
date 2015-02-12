@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SERVICES_ARM64_LINUX_SYSCALLS_H_
-#define SANDBOX_LINUX_SERVICES_ARM64_LINUX_SYSCALLS_H_
+#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_ARM64_LINUX_SYSCALLS_H_
+#define SANDBOX_LINUX_SYSTEM_HEADERS_ARM64_LINUX_SYSCALLS_H_
 
 #include <asm-generic/unistd.h>
 
@@ -1059,4 +1059,4 @@
 #define __NR_getrandom 278
 #endif
 
-#endif  // SANDBOX_LINUX_SERVICES_ARM64_LINUX_SYSCALLS_H_
+#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ARM64_LINUX_SYSCALLS_H_

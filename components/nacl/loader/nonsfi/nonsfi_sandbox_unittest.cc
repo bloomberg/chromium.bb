@@ -39,7 +39,7 @@
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
-#include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/system_headers/linux_syscalls.h"
 #include "third_party/lss/linux_syscall_support.h"  // for MAKE_PROCESS_CPUCLOCK
 
 namespace {
