@@ -50,12 +50,12 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   int GetHeightForWidth(int w) const override;
   void Layout() override;
 
-  autofill::PasswordForm form_;
-  password_manager::CredentialType credential_type_;
+  const autofill::PasswordForm form_;
+  const password_manager::CredentialType credential_type_;
 
   views::ImageView* image_view_;
-  views::Label* full_name_label_;
-  views::Label* username_label_;
+  views::Label* upper_label_;
+  views::Label* lower_label_;
 
   base::WeakPtrFactory<CredentialsItemView> weak_ptr_factory_;
 

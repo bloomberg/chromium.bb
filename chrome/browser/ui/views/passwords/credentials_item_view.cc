@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -18,13 +21,29 @@ namespace {
 // The default spacing between the icon and text.
 const int kSpacing = 5;
 
-gfx::Size GetTextLabelsSize(const views::Label* full_name_label,
-                            const views::Label* username_label) {
-  gfx::Size full_name = full_name_label->GetPreferredSize();
-  gfx::Size username = username_label ? username_label->GetPreferredSize() :
-                                         gfx::Size();
-  return gfx::Size(std::max(full_name.width(), username.width()),
-                   full_name.height() + username.height());
+gfx::Size GetTextLabelsSize(const views::Label* upper_label,
+                            const views::Label* lower_label) {
+  gfx::Size upper_label_size = upper_label->GetPreferredSize();
+  gfx::Size lower_label_size = lower_label ? lower_label->GetPreferredSize() :
+                                             gfx::Size();
+  return gfx::Size(std::max(upper_label_size.width(), lower_label_size.width()),
+                   upper_label_size.height() + lower_label_size.height());
+}
+
+// Returns either full name or username if the former is empty.
+const base::string16& GetUpperLabelText(const autofill::PasswordForm& form) {
+  return form.display_name.empty() ? form.username_value : form.display_name;
+}
+
+// Returns IDP information for federated credentials and username or empty
+// string for non-federated ones.
+base::string16 GetLowerLabelText(const autofill::PasswordForm& form) {
+  if (!form.federation_url.is_empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER,
+        base::ASCIIToUTF16(form.federation_url.host()));
+  }
+  return form.display_name.empty() ? base::string16() : form.username_value;
 }
 
 class CircularImageView : public views::ImageView {
@@ -60,6 +79,8 @@ CredentialsItemView::CredentialsItemView(
     : LabelButton(button_listener, base::string16()),
       form_(form),
       credential_type_(credential_type),
+      upper_label_(nullptr),
+      lower_label_(nullptr),
       weak_ptr_factory_(this) {
   set_notify_enter_exit_on_child(true);
   // Create an image-view for the avatar. Make sure it ignores events so that
@@ -79,20 +100,20 @@ CredentialsItemView::CredentialsItemView(
   }
   AddChildView(image_view_);
 
-  // Add a label to show the full name.
-  // TODO(vasilii): temporarily the label shows username.
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  full_name_label_ = new views::Label(
-      form_.username_value, rb->GetFontList(ui::ResourceBundle::BoldFont));
-  full_name_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(full_name_label_);
+  upper_label_ = new views::Label(
+      GetUpperLabelText(form_), rb->GetFontList(ui::ResourceBundle::BoldFont));
+  upper_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(upper_label_);
 
-  // Add a label to show the user name.
-  username_label_ = new views::Label(
-      form_.username_value, rb->GetFontList(ui::ResourceBundle::SmallFont));
-  username_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  username_label_->SetEnabled(false);
-  AddChildView(username_label_);
+  base::string16 lower_text = GetLowerLabelText(form_);
+  if (!lower_text.empty()) {
+    lower_label_ = new views::Label(
+        lower_text, rb->GetFontList(ui::ResourceBundle::SmallFont));
+    lower_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    lower_label_->SetEnabled(false);
+    AddChildView(lower_label_);
+  }
 
   SetFocusable(true);
 }
@@ -100,7 +121,7 @@ CredentialsItemView::CredentialsItemView(
 CredentialsItemView::~CredentialsItemView() = default;
 
 gfx::Size CredentialsItemView::GetPreferredSize() const {
-  gfx::Size labels_size = GetTextLabelsSize(full_name_label_, username_label_);
+  gfx::Size labels_size = GetTextLabelsSize(upper_label_, lower_label_);
   gfx::Size size = gfx::Size(kAvatarImageSize + labels_size.width(),
                              std::max(kAvatarImageSize, labels_size.height()));
   const gfx::Insets insets(GetInsets());
@@ -126,17 +147,17 @@ void CredentialsItemView::Layout() {
   image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
   image_view_->SetBoundsRect(gfx::Rect(image_origin, image_size));
 
-  gfx::Size full_name_size = full_name_label_->GetPreferredSize();
+  gfx::Size full_name_size = upper_label_->GetPreferredSize();
   gfx::Size username_size =
-      username_label_ ? username_label_->GetPreferredSize() : gfx::Size();
+      lower_label_ ? lower_label_->GetPreferredSize() : gfx::Size();
   int y_offset = (child_area.height() -
       (full_name_size.height() + username_size.height())) / 2;
   gfx::Point label_origin(image_origin.x() + image_size.width() + kSpacing,
                           child_area.origin().y() + y_offset);
-  full_name_label_->SetBoundsRect(gfx::Rect(label_origin, full_name_size));
-  if (username_label_) {
+  upper_label_->SetBoundsRect(gfx::Rect(label_origin, full_name_size));
+  if (lower_label_) {
     label_origin.Offset(0, full_name_size.height());
-    username_label_->SetBoundsRect(gfx::Rect(label_origin, username_size));
+    lower_label_->SetBoundsRect(gfx::Rect(label_origin, username_size));
   }
 }
 

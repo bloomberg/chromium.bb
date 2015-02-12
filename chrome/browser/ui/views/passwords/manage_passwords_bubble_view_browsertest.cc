@@ -253,14 +253,20 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
+  GURL origin("https://example.com");
   ScopedVector<autofill::PasswordForm> local_credentials;
+  test_form()->origin = origin;
   test_form()->display_name = base::ASCIIToUTF16("Peter");
+  test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
   test_form()->avatar_url = GURL("broken url");
   local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+  ScopedVector<autofill::PasswordForm> federated_credentials;
   GURL avatar_url("https://google.com/avatar.png");
   test_form()->avatar_url = avatar_url;
-  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
-  GURL origin("https://example.com");
+  test_form()->display_name = base::ASCIIToUTF16("Peter Pen");
+  test_form()->federation_url = GURL("https://google.com/federation");
+  federated_credentials.push_back(new autofill::PasswordForm(*test_form()));
+
   // Prepare to capture the network request.
   TestURLFetcherCallback url_callback;
   net::FakeURLFetcherFactory factory(
@@ -271,8 +277,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
                           net::URLRequestStatus::FAILED);
   EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
 
-  SetupChooseCredentials(local_credentials.Pass(),
-                         ScopedVector<autofill::PasswordForm>(), origin);
+  SetupChooseCredentials(local_credentials.Pass(), federated_credentials.Pass(),
+                         origin);
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   EXPECT_CALL(*this, OnChooseCredential(
       Field(&password_manager::CredentialInfo::type,
