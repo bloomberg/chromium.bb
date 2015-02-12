@@ -2490,6 +2490,8 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // UpdateSessionHistory and update page_id_ even in this case, so that
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
+    DCHECK(render_view_->history_list_length_ > 0 ||
+           !navigation_state->should_replace_current_entry());
     if (GetLoadingUrl() != GURL(kSwappedOutURL) &&
         !navigation_state->should_replace_current_entry()) {
       // Advance our offset in session history, applying the length limit.
@@ -4156,7 +4158,9 @@ void RenderFrameImpl::OpenURL(WebFrame* frame,
     DocumentState* document_state = DocumentState::FromDataSource(ds);
     NavigationState* navigation_state = document_state->navigation_state();
     if (navigation_state->is_content_initiated()) {
-      params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
+      params.should_replace_current_entry =
+          ds->replacesCurrentHistoryItem() &&
+          render_view_->history_list_length_;
     } else {
       // This is necessary to preserve the should_replace_current_entry value on
       // cross-process redirects, in the event it was set by a previous process.

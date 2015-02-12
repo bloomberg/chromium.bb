@@ -1362,6 +1362,15 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
 // commit.
 TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   NavigationControllerImpl& controller = controller_impl();
+
+  // The value of "should replace entry" will be tested, but it's an error to
+  // specify it when there are no entries. Create a simple entry to be replaced.
+  const GURL url0("http://foo0");
+  controller.LoadURL(
+      url0, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  main_test_rfh()->SendNavigate(0, url0);
+
+  // Set up the pending entry.
   const GURL url1("http://foo1");
   controller.LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
@@ -1374,8 +1383,6 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   scoped_refptr<base::RefCountedBytes> post_data =
       base::RefCountedBytes::TakeVector(&post_data_vector);
   GlobalRequestID transfer_id(3, 4);
-  std::vector<GURL> redirects;
-  redirects.push_back(GURL("http://foo2"));
 
   // Set non-persisted values on the pending entry.
   NavigationEntryImpl* pending_entry =
@@ -1391,7 +1398,8 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   EXPECT_TRUE(pending_entry->should_replace_entry());
   EXPECT_TRUE(pending_entry->should_clear_history_list());
 
-  main_test_rfh()->SendNavigate(0, url1);
+  // Fake a commit response.
+  main_test_rfh()->SendNavigate(1, url1);
 
   // Certain values that are only used for pending entries get reset after
   // commit.

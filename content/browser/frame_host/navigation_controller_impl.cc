@@ -727,7 +727,9 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
   if (params.redirect_chain.size() > 0)
     entry->SetRedirectChain(params.redirect_chain);
-  if (params.should_replace_current_entry)
+  // Don't allow an entry replacement if there is no entry to replace.
+  // http://crbug.com/457149
+  if (params.should_replace_current_entry && entries_.size() > 0)
     entry->set_should_replace_entry(true);
   entry->set_should_clear_history_list(params.should_clear_history_list);
   entry->SetIsOverridingUserAgent(override);
@@ -1553,6 +1555,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(NavigationEntryImpl* entry,
   DiscardNonCommittedEntriesInternal();
 
   int current_size = static_cast<int>(entries_.size());
+  DCHECK(current_size > 0 || !replace);
 
   if (current_size > 0) {
     // Prune any entries which are in front of the current entry.

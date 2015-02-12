@@ -8,8 +8,11 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/bindings_policy.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -136,6 +139,33 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // offset via JavaScript. Checking just the history length, though, is enough;
   // if the replacement failed, there would be a new history entry and thus an
   // incorrect length.
+}
+
+// When spawning a new page from a WebUI page, make sure that the browser and
+// renderer agree about the length of the history list, and that both get it
+// right.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       CorrectLengthWithNewTabNavigatingFromWebUI) {
+  GURL web_ui_page(std::string(kChromeUIScheme) + "://" +
+                   std::string(kChromeUIGpuHost));
+  EXPECT_TRUE(NavigateToURL(shell(), web_ui_page));
+  EXPECT_EQ(BINDINGS_POLICY_WEB_UI,
+      shell()->web_contents()->GetRenderViewHost()->GetEnabledBindings());
+
+  ShellAddedObserver observer;
+  std::string page_url = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html").spec();
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.open('" + page_url + "', '_blank')"));
+  Shell* shell2 = observer.GetShell();
+  WaitForLoadStop(shell2->web_contents());
+
+  EXPECT_EQ(1, shell2->web_contents()->GetController().GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell2));
+
+  // Again, as above, there's no way to access the renderer's notion of the
+  // history offset via JavaScript. Checking just the history length, again,
+  // will have to suffice.
 }
 
 namespace {
