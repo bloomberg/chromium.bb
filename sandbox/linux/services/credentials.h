@@ -26,7 +26,9 @@ namespace sandbox {
 class SANDBOX_EXPORT Credentials {
  public:
   // Drop all capabilities in the effective, inheritable and permitted sets for
-  // the current process.
+  // the current process. For security reasons, since capabilities are
+  // per-thread, the caller is responsible for ensuring it is single-threaded
+  // when calling this API.
   static bool DropAllCapabilities() WARN_UNUSED_RESULT;
   // Return true iff there is any capability in any of the capabilities sets
   // of the current process.

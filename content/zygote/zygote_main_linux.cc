@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/font_config_ipc_linux.h"
+#include "content/common/sandbox_linux/sandbox_debug_handling_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_switches.h"
@@ -39,7 +40,6 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
 #include "crypto/nss_util.h"
-#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -71,40 +71,6 @@
 namespace content {
 
 namespace {
-
-void DoChrootSignalHandler(int) {
-  const int old_errno = errno;
-  const char kFirstMessage[] = "Chroot signal handler called.\n";
-  ignore_result(write(STDERR_FILENO, kFirstMessage, sizeof(kFirstMessage) - 1));
-
-  const int chroot_ret = chroot("/");
-
-  char kSecondMessage[100];
-  const ssize_t printed =
-      base::strings::SafeSPrintf(kSecondMessage,
-                                 "chroot() returned %d. Errno is %d.\n",
-                                 chroot_ret,
-                                 errno);
-  if (printed > 0 && printed < static_cast<ssize_t>(sizeof(kSecondMessage))) {
-    ignore_result(write(STDERR_FILENO, kSecondMessage, printed));
-  }
-  errno = old_errno;
-}
-
-// This is a quick hack to allow testing sandbox crash reports in production
-// binaries.
-// This installs a signal handler for SIGUSR2 that performs a chroot().
-// In most of our BPF policies, it is a "watched" system call which will
-// trigger a SIGSYS signal whose handler will crash.
-// This has been added during the investigation of https://crbug.com/415842.
-void InstallSandboxCrashTestHandler() {
-  struct sigaction act = {};
-  act.sa_handler = DoChrootSignalHandler;
-  CHECK_EQ(0, sigemptyset(&act.sa_mask));
-  act.sa_flags = 0;
-
-  PCHECK(0 == sigaction(SIGUSR2, &act, NULL));
-}
 
 void CloseFds(const std::vector<int>& fds) {
   for (const auto& it : fds) {
@@ -401,24 +367,6 @@ static bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
   return true;
 }
 
-static bool MaybeSetProcessNonDumpable() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
-    // If sandbox debugging is allowed, install a handler for sandbox-related
-    // crash testing.
-    InstallSandboxCrashTestHandler();
-    return true;
-  }
-
-  if (prctl(PR_SET_DUMPABLE, 0) != 0) {
-    PLOG(ERROR) << "Failed to set non-dumpable flag";
-    return false;
-  }
-
-  return prctl(PR_GET_DUMPABLE) == 0;
-}
-
 // Enter the setuid sandbox. This requires the current process to have been
 // created through the setuid sandbox.
 static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
@@ -453,25 +401,15 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
     CHECK(CreateInitProcessReaper(post_fork_parent_callback));
   }
 
-  CHECK(MaybeSetProcessNonDumpable());
+  CHECK(SandboxDebugHandling::SetDumpableStatusAndHandlers());
   return true;
 }
 
-static void EnterNamespaceSandbox(base::Closure* post_fork_parent_callback) {
-  pid_t pid = getpid();
-  if (sandbox::NamespaceSandbox::InNewPidNamespace()) {
-    CHECK_EQ(1, pid);
-  }
+static void EnterNamespaceSandbox(LinuxSandbox* linux_sandbox,
+                                  base::Closure* post_fork_parent_callback) {
+  linux_sandbox->EngageNamespaceSandbox();
 
-  CHECK(sandbox::Credentials::MoveToNewUserNS());
-  CHECK(sandbox::Credentials::DropFileSystemAccess());
-  CHECK(sandbox::Credentials::DropAllCapabilities());
-
-  // This needs to happen after moving to a new user NS, since doing so involves
-  // writing the UID/GID map.
-  CHECK(MaybeSetProcessNonDumpable());
-
-  if (pid == 1) {
+  if (getpid() == 1) {
     CHECK(CreateInitProcessReaper(post_fork_parent_callback));
   }
 }
@@ -550,7 +488,7 @@ static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
     CHECK(EnterSuidSandbox(setuid_sandbox, post_fork_parent_callback))
         << "Failed to enter setuid sandbox";
   } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
-    EnterNamespaceSandbox(post_fork_parent_callback);
+    EnterNamespaceSandbox(linux_sandbox, post_fork_parent_callback);
   } else {
     CHECK(!using_layer1_sandbox);
   }

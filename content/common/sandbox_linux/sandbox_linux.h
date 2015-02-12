@@ -29,6 +29,14 @@ namespace content {
 
 // A singleton class to represent and change our sandboxing state for the
 // three main Linux sandboxes.
+// The sandboxing model allows using two layers of sandboxing. The first layer
+// can be implemented either with unprivileged namespaces or with the setuid
+// sandbox. This class provides a way to engage the namespace sandbox, but does
+// not deal with the legacy setuid sandbox directly.
+// The second layer is mainly based on seccomp-bpf and is engaged with
+// InitializeSandbox(). InitializeSandbox() is also responsible for "sealing"
+// the first layer of sandboxing. That is, InitializeSandbox must always be
+// called to have any meaningful sandboxing at all.
 class LinuxSandbox {
  public:
   // This is a list of sandbox IPC methods which the renderer may send to the
@@ -58,15 +66,24 @@ class LinuxSandbox {
   // a fork().
   void PreinitializeSandbox();
 
+  // Check that the current process is the init process of a new PID
+  // namespace and then proceed to drop access to the file system by using
+  // a new unprivileged namespace. This is a layer-1 sandbox.
+  // In order for this sandbox to be effective, it must be "sealed" by calling
+  // InitializeSandbox().
+  void EngageNamespaceSandbox();
+
   // Return a list of file descriptors to close if PreinitializeSandbox() ran
   // but InitializeSandbox() won't. Avoid using.
   // TODO(jln): get rid of this hack.
   std::vector<int> GetFileDescriptorsToClose();
 
-  // Initialize the sandbox with the given pre-built configuration. Currently
-  // seccomp-bpf and address space limitations (the setuid sandbox works
-  // differently and is set-up in the Zygote). This will instantiate the
-  // LinuxSandbox singleton if it doesn't already exist.
+  // Seal an eventual layer-1 sandbox and initialize the layer-2 sandbox with
+  // an adequate policy depending on the process type and command line
+  // arguments.
+  // Currently the layer-2 sandbox is composed of seccomp-bpf and address space
+  // limitations. This will instantiate the LinuxSandbox singleton if it
+  // doesn't already exist.
   // This function should only be called without any thread running.
   static bool InitializeSandbox();
 

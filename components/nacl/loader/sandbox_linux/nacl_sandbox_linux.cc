@@ -115,7 +115,10 @@ void NaClSandbox::InitializeLayerOneSandbox() {
     layer_one_enabled_ = true;
   } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
     CHECK(sandbox::Credentials::MoveToNewUserNS());
+    // This relies on SealLayerOneSandbox() to be called later.
+    CHECK(!HasOpenDirectory());
     CHECK(sandbox::Credentials::DropFileSystemAccess());
+    CHECK(IsSingleThreaded());
     CHECK(sandbox::Credentials::DropAllCapabilities());
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;

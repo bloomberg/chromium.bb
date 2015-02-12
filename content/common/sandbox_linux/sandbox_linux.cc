@@ -28,10 +28,12 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/common/sandbox_linux/sandbox_debug_handling_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
+#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/thread_helpers.h"
@@ -180,6 +182,27 @@ void LinuxSandbox::PreinitializeSandbox() {
   yama_is_enforcing_ = (yama_status & Yama::STATUS_PRESENT) &&
                        (yama_status & Yama::STATUS_ENFORCING);
   pre_initialized_ = true;
+}
+
+void LinuxSandbox::EngageNamespaceSandbox() {
+  CHECK(pre_initialized_);
+  // Check being in a new PID namespace created by the namespace sandbox and
+  // being the init process.
+  CHECK(sandbox::NamespaceSandbox::InNewPidNamespace());
+  const pid_t pid = getpid();
+  CHECK_EQ(1, pid);
+
+  CHECK(sandbox::Credentials::MoveToNewUserNS());
+  // Note: this requires SealSandbox() to be called later in this process to be
+  // safe, as this class is keeping a file descriptor to /proc.
+  CHECK(!HasOpenDirectories());
+  CHECK(sandbox::Credentials::DropFileSystemAccess());
+  CHECK(IsSingleThreaded());
+  CHECK(sandbox::Credentials::DropAllCapabilities());
+
+  // This needs to happen after moving to a new user NS, since doing so involves
+  // writing the UID/GID map.
+  CHECK(SandboxDebugHandling::SetDumpableStatusAndHandlers());
 }
 
 std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
