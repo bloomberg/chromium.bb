@@ -153,7 +153,7 @@ public class NotificationUIManager {
     private int displayNotification(String notificationId, String title, String body, Bitmap icon,
                                     String origin, byte[] notificationData) {
         if (icon == null || icon.getWidth() == 0) {
-            icon = getIconGenerator().generateIconForUrl(origin);
+            icon = getIconGenerator().generateIconForUrl(origin, true);
         }
 
         Resources res = mAppContext.getResources();

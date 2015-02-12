@@ -101,12 +101,13 @@ public class RoundedIconGenerator {
      * Returns a Bitmap representing the icon to be used for |url|.
      *
      * @param url URL for which the icon should be generated.
+     * @param includePrivateRegistries Should private registries be considered as TLDs?
      * @return The generated icon, or NULL if |url| is empty or the domain cannot be resolved.
      */
-    public Bitmap generateIconForUrl(String url) {
+    public Bitmap generateIconForUrl(String url, boolean includePrivateRegistries) {
         if (TextUtils.isEmpty(url)) return null;
 
-        String domain = UrlUtilities.getDomainAndRegistry(url, false);
+        String domain = UrlUtilities.getDomainAndRegistry(url, includePrivateRegistries);
         if (TextUtils.isEmpty(domain)) {
             if (url.startsWith(UrlConstants.CHROME_SCHEME)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME)) {
@@ -117,5 +118,20 @@ public class RoundedIconGenerator {
         }
 
         return generateIconForText(domain);
+    }
+
+    /**
+     * Returns a Bitmap representing the icon to be used for |url|. Private registries such
+     * as "appspot.com" will not be considered as effective TLDs.
+     *
+     * @TODO(beverloo) Update all call-sites of rounded icons to be explicit about whether
+     * private registries should be considered, matching the getDomainAndRegistry requirements.
+     * See https://crbug.com/458104.
+     *
+     * @param url URL for which the icon should be generated.
+     * @return The generated icon, or NULL if |url| is empty or the domain cannot be resolved.
+     */
+    public Bitmap generateIconForUrl(String url) {
+        return generateIconForUrl(url, false);
     }
 }
