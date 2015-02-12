@@ -249,8 +249,9 @@ class FullBuildArchive(BuildArchive):
 
   def GetBuilderName(self):
     """Gets builder bot name based on platform."""
-    # TODO(qyearsley): Change this name when more platforms are supported.
-    return 'bisect_builder'
+    if self._platform == 'linux':
+      return 'linux_full_bisect_builder'
+    raise NotImplementedError('Unsupported platform "%s".' % sys.platform)
 
 class AndroidChromeBuildArchive(BuildArchive):
   """Represents a place where builds of android-chrome type are stored.

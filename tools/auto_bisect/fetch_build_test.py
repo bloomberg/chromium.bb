@@ -77,7 +77,7 @@ class BuildArchiveTest(unittest.TestCase):
   def test_FullBuildArchive_Linux_BuilderName(self):
     archive = fetch_build.FullBuildArchive()
     archive._platform = 'linux'
-    self.assertEqual('bisect_builder', archive.GetBuilderName())
+    self.assertEqual('linux_full_bisect_builder', archive.GetBuilderName())
 
   def test_FullBuildArchive_Windows_BuildTime(self):
     archive = fetch_build.FullBuildArchive()
