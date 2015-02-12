@@ -2,19 +2,23 @@
 <body>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="vibration-utils.js"></script>
 </head>
 <script>
-description("Accessing navigator.vibrate on a closed window.");
+description("Accessing navigator.getBattery() on a closed window.");
 
 window.jsTestIsAsync = true;
 
 var w;
+var nav;
+
 function processMessage(event) {
     if (event.data == "opened") {
+        nav = w.navigator;
+        shouldBeTrue("typeof(nav.getBattery()) == 'object'");
         w.close();
+        w = null;
     } else if (event.data == "closed") {
-        shouldBeFalse("w.navigator.vibrate([])");
+        shouldBeUndefined("nav.getBattery()");
         finishJSTest();
     }
 }

@@ -22,7 +22,7 @@ if (window.gamepadController) {
         testRunner.setCanOpenWindows();
         testRunner.waitUntilDone();
     }
-    w = window.open('resources/gamepad-detached-no-crash-new-window.html');
+    w = window.open('../resources/window-postmessage-open-close.html');
     expectedLength = w.navigator.getGamepads().length;
     window.addEventListener("message", processMessage, false);
 } else {

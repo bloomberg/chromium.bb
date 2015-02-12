@@ -43,9 +43,8 @@ ScriptPromise BatteryManager::startRequest(ScriptState* scriptState)
     m_resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_resolver->promise();
 
-    ASSERT(executionContext());
     // If the context is in a stopped state already, do not start updating.
-    if (m_state == Resolved || executionContext()->activeDOMObjectsAreStopped()) {
+    if (m_state == Resolved || !executionContext() || executionContext()->activeDOMObjectsAreStopped()) {
         // FIXME: Consider returning the same promise in this case. See crbug.com/385025.
         m_state = Resolved;
         m_resolver->resolve(this);
