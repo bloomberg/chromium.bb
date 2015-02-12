@@ -331,8 +331,10 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
                               error.state(),
                               GoogleServiceAuthError::NUM_STATES);
     if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
+      // Network errors are negative in the code, but the histogram data type
+      // expects the corresponding positive value.
       UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAInitialFetchOAuth2NetworkError,
-                                  error.network_error());
+                                  -error.network_error());
     }
   }
 
