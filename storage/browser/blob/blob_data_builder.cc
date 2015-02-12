@@ -5,6 +5,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 
 #include "base/time/time.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 
 namespace storage {
 
@@ -28,20 +29,8 @@ void BlobDataBuilder::AppendFile(const base::FilePath& file_path,
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToFilePathRange(file_path, offset, length,
                               expected_modification_time);
-  items_.push_back(new BlobDataItem(element.Pass()));
-}
-
-void BlobDataBuilder::AppendFile(
-    const base::FilePath& file_path,
-    uint64_t offset,
-    uint64_t length,
-    const base::Time& expected_modification_time,
-    scoped_refptr<ShareableFileReference> shareable_file) {
-  DCHECK(length > 0);
-  scoped_ptr<DataElement> element(new DataElement());
-  element->SetToFilePathRange(file_path, offset, length,
-                              expected_modification_time);
-  items_.push_back(new BlobDataItem(element.Pass(), shareable_file));
+  items_.push_back(
+      new BlobDataItem(element.Pass(), ShareableFileReference::Get(file_path)));
 }
 
 void BlobDataBuilder::AppendBlob(const std::string& uuid,

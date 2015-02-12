@@ -33,19 +33,12 @@ class STORAGE_EXPORT BlobDataBuilder {
   void AppendData(const char* data, size_t length);
 
   // You must know the length of the file, you cannot use kuint64max to specify
-  // the whole file.
+  // the whole file.  This method creates a ShareableFileReference to the given
+  // file, which is stored in this builder.
   void AppendFile(const base::FilePath& file_path,
                   uint64_t offset,
                   uint64_t length,
                   const base::Time& expected_modification_time);
-
-  // You must know the length of the file, you cannot use kuint64max to specify
-  // the whole file.
-  void AppendFile(const base::FilePath& file_path,
-                  uint64_t offset,
-                  uint64_t length,
-                  const base::Time& expected_modification_time,
-                  scoped_refptr<ShareableFileReference> shareable_file);
 
   void AppendBlob(const std::string& uuid, uint64_t offset, uint64_t length);
 
