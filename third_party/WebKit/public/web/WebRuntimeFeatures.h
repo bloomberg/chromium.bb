@@ -112,6 +112,7 @@ public:
     BLINK_EXPORT static void enableSessionStorage(bool);
 
     BLINK_EXPORT static void enableSlimmingPaint(bool);
+    BLINK_EXPORT static bool slimmingPaintDisplayItemCacheEnabled();
 
     BLINK_EXPORT static void enableTouch(bool);
 

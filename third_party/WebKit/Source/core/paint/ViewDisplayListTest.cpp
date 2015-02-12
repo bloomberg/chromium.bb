@@ -26,7 +26,9 @@ namespace blink {
 
 class ViewDisplayListTest : public RenderingTest {
 public:
-    ViewDisplayListTest() : m_renderView(nullptr) { }
+    ViewDisplayListTest()
+        : m_renderView(nullptr)
+        , m_originalDisplayItemCacheEnabled(false) { }
 
 protected:
     RenderView* renderView() { return m_renderView; }
@@ -37,6 +39,7 @@ private:
     virtual void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
+        m_originalDisplayItemCacheEnabled = RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled();
 
         RenderingTest::SetUp();
         enableCompositing();
@@ -48,10 +51,11 @@ private:
     virtual void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
-        RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(false);
+        RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(m_originalDisplayItemCacheEnabled);
     }
 
     RenderView* m_renderView;
+    bool m_originalDisplayItemCacheEnabled;
 };
 
 class TestDisplayItem : public DisplayItem {
@@ -420,8 +424,10 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
 }
 
-TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
+TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
 {
+    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(false);
+
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
