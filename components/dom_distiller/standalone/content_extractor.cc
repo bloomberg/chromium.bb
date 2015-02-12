@@ -40,21 +40,21 @@ namespace dom_distiller {
 
 namespace {
 
-typedef base::hash_map<std::string, std::string> UrlToDomainMap;
+typedef base::hash_map<std::string, std::string> FileToUrlMap;
 
 }
 
 // Factory for creating a Distiller that creates different DomDistillerOptions
-// for different URLs, i.e. a specific kOriginalDomain option for each URL.
+// for different URLs, i.e. a specific kOriginalUrl option for each URL.
 class TestDistillerFactoryImpl : public DistillerFactory {
  public:
   TestDistillerFactoryImpl(
       scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
       const dom_distiller::proto::DomDistillerOptions& dom_distiller_options,
-      const UrlToDomainMap& url_to_domain_map)
+      const FileToUrlMap& file_to_url_map)
       : distiller_url_fetcher_factory_(distiller_url_fetcher_factory.Pass()),
         dom_distiller_options_(dom_distiller_options),
-        url_to_domain_map_(url_to_domain_map) {
+        file_to_url_map_(file_to_url_map) {
   }
 
   ~TestDistillerFactoryImpl() override {}
@@ -62,8 +62,10 @@ class TestDistillerFactoryImpl : public DistillerFactory {
   scoped_ptr<Distiller> CreateDistillerForUrl(const GURL& url) override {
     dom_distiller::proto::DomDistillerOptions options;
     options = dom_distiller_options_;
-    UrlToDomainMap::const_iterator it = url_to_domain_map_.find(url.spec());
-    if (it != url_to_domain_map_.end()) options.set_original_domain(it->second);
+    FileToUrlMap::const_iterator it = file_to_url_map_.find(url.spec());
+    if (it != file_to_url_map_.end()) {
+      options.set_original_url(it->second);
+    }
     scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
         *distiller_url_fetcher_factory_, options));
     return distiller.Pass();
@@ -72,7 +74,7 @@ class TestDistillerFactoryImpl : public DistillerFactory {
  private:
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory_;
   dom_distiller::proto::DomDistillerOptions dom_distiller_options_;
-  UrlToDomainMap url_to_domain_map_;
+  FileToUrlMap file_to_url_map_;
 };
 
 namespace {
@@ -99,12 +101,12 @@ const char* kExtractTextOnly = "extract-text-only";
 // Indicates to include debug output.
 const char* kDebugLevel = "debug-level";
 
-// The original domain of the page if |kUrlSwitch| is a file.
-const char* kOriginalDomain = "original-domain";
+// The original URL of the page if |kUrlSwitch| is a file.
+const char* kOriginalUrl = "original-url";
 
-// A semi-colon-separated (i.e. ';') list of original domains corresponding to
+// A semi-colon-separated (i.e. ';') list of original URLs corresponding to
 // "kUrlsSwitch".
-const char* kOriginalDomains = "original-domains";
+const char* kOriginalUrls = "original-urls";
 
 // Maximum number of concurrent started extractor requests.
 const int kMaxExtractorTasks = 8;
@@ -112,7 +114,7 @@ const int kMaxExtractorTasks = 8;
 scoped_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
     const base::FilePath& db_path,
-    const UrlToDomainMap& url_to_domain_map) {
+    const FileToUrlMap& file_to_url_map) {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken());
@@ -145,7 +147,7 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
   scoped_ptr<DistillerFactory> distiller_factory(
       new TestDistillerFactoryImpl(distiller_url_fetcher_factory.Pass(),
                                    options,
-                                   url_to_domain_map));
+                                   file_to_url_map));
 
   // Setting up PrefService for DistilledPagePrefs.
   user_prefs::TestingPrefServiceSyncable* pref_service =
@@ -227,7 +229,7 @@ class ContentExtractionRequest : public ViewRequestDelegate {
 
   static ScopedVector<ContentExtractionRequest> CreateForCommandLine(
       const base::CommandLine& command_line,
-      UrlToDomainMap* url_to_domain_map) {
+      FileToUrlMap* file_to_url_map) {
     ScopedVector<ContentExtractionRequest> requests;
     if (command_line.HasSwitch(kUrlSwitch)) {
       GURL url;
@@ -235,31 +237,32 @@ class ContentExtractionRequest : public ViewRequestDelegate {
       url = GURL(url_string);
       if (url.is_valid()) {
         requests.push_back(new ContentExtractionRequest(url));
-        if (command_line.HasSwitch(kOriginalDomain)) {
-          (*url_to_domain_map)[url.spec()] =
-              command_line.GetSwitchValueASCII(kOriginalDomain);
+        if (command_line.HasSwitch(kOriginalUrl)) {
+          (*file_to_url_map)[url.spec()] =
+              command_line.GetSwitchValueASCII(kOriginalUrl);
         }
       }
     } else if (command_line.HasSwitch(kUrlsSwitch)) {
       std::string urls_string = command_line.GetSwitchValueASCII(kUrlsSwitch);
       std::vector<std::string> urls;
       base::SplitString(urls_string, ' ', &urls);
-      // Check for original-domains switch, which must exactly pair up with
-      // |kUrlsSwitch| i.e. number of domains must be same as that of urls.
-      std::vector<std::string> domains;
-      if (command_line.HasSwitch(kOriginalDomains)) {
-        std::string domains_string =
-            command_line.GetSwitchValueASCII( kOriginalDomains);
-        base::SplitString(domains_string, ';', &domains);
-        if (domains.size() != urls.size()) domains.clear();
+      // Check for original-urls switch, which must exactly pair up with
+      // |kUrlsSwitch| i.e. number of original urls must be same as that of
+      // urls.
+      std::vector<std::string> original_urls;
+      if (command_line.HasSwitch(kOriginalUrls)) {
+        std::string original_urls_string =
+            command_line.GetSwitchValueASCII(kOriginalUrls);
+        base::SplitString(original_urls_string, ' ', &original_urls);
+        if (original_urls.size() != urls.size()) original_urls.clear();
       }
       for (size_t i = 0; i < urls.size(); ++i) {
         GURL url(urls[i]);
         if (url.is_valid()) {
           requests.push_back(new ContentExtractionRequest(url));
-          // Only regard non-empty domain.
-          if (!domains.empty() && !domains[i].empty()) {
-              (*url_to_domain_map)[url.spec()] = domains[i];
+          // Only regard non-empty original urls.
+          if (!original_urls.empty() && !original_urls[i].empty()) {
+              (*file_to_url_map)[url.spec()] = original_urls[i];
           }
         } else {
           ADD_FAILURE() << "Bad url";
@@ -320,14 +323,14 @@ class ContentExtractor : public ContentBrowserTest {
   void Start() {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
-    UrlToDomainMap url_to_domain_map;
+    FileToUrlMap file_to_url_map;
     requests_ = ContentExtractionRequest::CreateForCommandLine(
-        command_line, &url_to_domain_map);
+        command_line, &file_to_url_map);
     content::BrowserContext* context =
         shell()->web_contents()->GetBrowserContext();
     service_ = CreateDomDistillerService(context,
                                          db_dir_.path(),
-                                         url_to_domain_map);
+                                         file_to_url_map);
     PumpQueue();
   }
 

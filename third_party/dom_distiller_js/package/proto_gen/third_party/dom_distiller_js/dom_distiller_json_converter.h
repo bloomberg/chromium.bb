@@ -744,7 +744,7 @@ namespace dom_distiller {
             if (!dict->GetString("3", &field_value)) {
               goto error;
             }
-            message->set_original_domain(field_value);
+            message->set_original_url(field_value);
           }
           return true;
 
@@ -760,8 +760,8 @@ namespace dom_distiller {
           if (message.has_debug_level()) {
             dict->SetInteger("2", message.debug_level());
           }
-          if (message.has_original_domain()) {
-            dict->SetString("3", message.original_domain());
+          if (message.has_original_url()) {
+            dict->SetString("3", message.original_url());
           }
           return dict.Pass();
         }
