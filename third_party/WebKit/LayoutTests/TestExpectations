@@ -184,14 +184,6 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
-crbug.com/438852 fast/dynamic/text-combine.html [ NeedsRebaseline ]
-crbug.com/438852 fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/438852 fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-crbug.com/438852 virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/438852 [ Mac ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-crbug.com/438852 virtual/slimmingpaint/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/438852 virtual/slimmingpaint/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-
 # These failures need to be investigated.
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFailure ]
 # This needs a rebaseline after crbug.com/452967
@@ -814,7 +806,7 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/453002 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure Pass ]
-crbug.com/453002 [ Win ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ ImageOnlyFailure Pass ]
+crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ ImageOnlyFailure Pass ]
