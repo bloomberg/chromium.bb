@@ -207,7 +207,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       network_view_(nullptr),
       debugging_screen_actor_(nullptr),
       eula_view_(nullptr),
-      hid_detection_screen_actor_(nullptr),
+      hid_detection_view_(nullptr),
       reset_screen_actor_(nullptr),
       autolaunch_screen_actor_(nullptr),
       kiosk_enable_screen_actor_(nullptr),
@@ -291,7 +291,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   HIDDetectionScreenHandler* hid_detection_screen_handler =
       new HIDDetectionScreenHandler(core_handler_);
-  hid_detection_screen_actor_ = hid_detection_screen_handler;
+  hid_detection_view_ = hid_detection_screen_handler;
   AddScreenHandler(hid_detection_screen_handler);
 
   error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
@@ -449,8 +449,8 @@ AutoEnrollmentCheckScreenActor* OobeUI::GetAutoEnrollmentCheckScreenActor() {
   return auto_enrollment_check_screen_actor_;
 }
 
-HIDDetectionScreenActor* OobeUI::GetHIDDetectionScreenActor() {
-  return hid_detection_screen_actor_;
+HIDDetectionView* OobeUI::GetHIDDetectionView() {
+  return hid_detection_view_;
 }
 
 ControllerPairingScreenActor* OobeUI::GetControllerPairingScreenActor() {
