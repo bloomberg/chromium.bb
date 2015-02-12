@@ -36458,6 +36458,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The build version of the software reporter cleaner tool.</summary>
 </histogram>
 
+<histogram name="SoftwareReporter.LastUploadResult" enum="BooleanSuccess">
+  <owner>mad@chromium.org</owner>
+  <summary>The result of the most recent SRT log upload.</summary>
+</histogram>
+
 <histogram name="SoftwareReporter.MajorVersion">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -36486,6 +36491,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>mad@chromium.org</owner>
   <summary>
     The registration and execution steps for the software reporter.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.UploadFailureCount">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    The total count of SRT log upload failures experienced by this machine for
+    all time. This value is reported at startup by Chrome and is capped at 64.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.UploadLongestFailureRun">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    The longest run of upload failures logged by SRT runs. This value is
+    reported at startup by Chrome and is capped at 64.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.UploadSuccessCount">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    The total count of successful SRT log uploads experienced by this machine
+    for all time. This value is reported at startup by Chrome and is capped at
+    64.
   </summary>
 </histogram>
 

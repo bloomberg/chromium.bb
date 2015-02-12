@@ -25,6 +25,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -87,10 +88,11 @@ const base::FilePath::CharType kSwReporterExeName[] =
 const wchar_t kSoftwareRemovalToolRegistryKey[] =
     L"Software\\Google\\Software Removal Tool";
 const wchar_t kCleanerSuffixRegistryKey[] = L"Cleaner";
-const wchar_t kExitCodeRegistryValueName[] = L"ExitCode";
-const wchar_t kVersionRegistryValueName[] = L"Version";
-const wchar_t kStartTimeRegistryValueName[] = L"StartTime";
 const wchar_t kEndTimeRegistryValueName[] = L"EndTime";
+const wchar_t kExitCodeRegistryValueName[] = L"ExitCode";
+const wchar_t kStartTimeRegistryValueName[] = L"StartTime";
+const wchar_t kUploadResultsValueName[] = L"UploadResults";
+const wchar_t kVersionRegistryValueName[] = L"Version";
 
 // Field trial strings.
 const char kSRTPromptTrialName[] = "SRTPromptFieldTrial";
@@ -132,6 +134,37 @@ void ReportVersionWithUma(const base::Version& version) {
     major_version += version.components()[2];
   }
   UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MajorVersion", major_version);
+}
+
+void ReportUploadsWithUma(const base::string16& upload_results) {
+  base::WStringTokenizer tokenizer(upload_results, L";");
+  int failure_count = 0;
+  int success_count = 0;
+  int longest_failure_run = 0;
+  int current_failure_run = 0;
+  bool last_result = false;
+  while (tokenizer.GetNext()) {
+    if (tokenizer.token() == L"0") {
+      ++failure_count;
+      ++current_failure_run;
+      last_result = false;
+    } else {
+      ++success_count;
+      current_failure_run = 0;
+      last_result = true;
+    }
+
+    if (current_failure_run > longest_failure_run)
+      longest_failure_run = current_failure_run;
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("SoftwareReporter.UploadFailureCount",
+                           failure_count);
+  UMA_HISTOGRAM_COUNTS_100("SoftwareReporter.UploadSuccessCount",
+                           success_count);
+  UMA_HISTOGRAM_COUNTS_100("SoftwareReporter.UploadLongestFailureRun",
+                           longest_failure_run);
+  UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
 }
 
 // This function is called on the UI thread to report the SwReporter exit code
@@ -415,6 +448,12 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
       UMA_HISTOGRAM_BOOLEAN(
           "SoftwareReporter.Cleaner.HasRebooted",
           static_cast<uint64>(elapsed.InMilliseconds()) > ::GetTickCount());
+    }
+
+    if (cleaner_key.HasValue(kUploadResultsValueName)) {
+      base::string16 upload_results;
+      cleaner_key.ReadValue(kUploadResultsValueName, &upload_results);
+      ReportUploadsWithUma(upload_results);
     }
   }
 
