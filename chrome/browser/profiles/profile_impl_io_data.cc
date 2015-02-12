@@ -459,6 +459,8 @@ void ProfileImplIOData::InitializeInternal(
 
   main_context->set_net_log(io_thread->net_log());
 
+  data_reduction_proxy_io_data()->Init();
+
   network_delegate_ = data_reduction_proxy_io_data()->CreateNetworkDelegate(
       chrome_network_delegate.Pass(), true).Pass();
 

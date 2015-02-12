@@ -39,9 +39,9 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyAuthRequestHandler;
 class DataReductionProxyConfigurator;
 class DataReductionProxyParams;
+class DataReductionProxyRequestOptions;
 class DataReductionProxyStatisticsPrefs;
 class DataReductionProxyUsageStats;
 
@@ -62,7 +62,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   DataReductionProxyNetworkDelegate(
       scoped_ptr<net::NetworkDelegate> network_delegate,
       DataReductionProxyParams* params,
-      DataReductionProxyAuthRequestHandler* handler,
+      DataReductionProxyRequestOptions* handler,
       const DataReductionProxyConfigurator* configurator);
   ~DataReductionProxyNetworkDelegate() override;
 
@@ -148,8 +148,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // Must outlive this DataReductionProxyNetworkDelegate.
   DataReductionProxyUsageStats* data_reduction_proxy_usage_stats_;
 
-  DataReductionProxyAuthRequestHandler*
-      data_reduction_proxy_auth_request_handler_;
+  DataReductionProxyRequestOptions* data_reduction_proxy_request_options_;
 
   base::WeakPtr<DataReductionProxyStatisticsPrefs>
       data_reduction_proxy_statistics_prefs_;

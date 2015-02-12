@@ -63,7 +63,7 @@ void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
           browser_context->GetRequestContext());
 
   // This PostTask has to be called after GetRequestContext, because SetKeyOnIO
-  // needs a valid DataReductionProxyAuthRequestHandler object.
+  // needs a valid DataReductionProxyRequestOptions object.
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&AwURLRequestContextGetter::SetKeyOnIO,

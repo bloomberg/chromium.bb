@@ -99,6 +99,10 @@ class DataReductionProxyParams {
   static bool IsIncludedInAndroidOnePromoFieldTrial(
       const char* build_fingerprint);
 
+  // Returns true if this client has the command line switch to enable Lo-Fi
+  // mode.
+  static bool IsLoFiEnabled();
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is

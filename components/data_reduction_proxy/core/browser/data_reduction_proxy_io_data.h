@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
 namespace net {
 class NetLog;
@@ -45,6 +45,10 @@ class DataReductionProxyIOData {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   virtual ~DataReductionProxyIOData();
+
+  // Initializes IOData objects on the IO thread. Must be called before using
+  // members.
+  void Init();
 
   // Initializes preferences, including a preference to track whether the
   // Data Reduction Proxy is enabled.
@@ -82,8 +86,8 @@ class DataReductionProxyIOData {
     return event_store_.get();
   }
 
-  DataReductionProxyAuthRequestHandler* auth_request_handler() const {
-    return auth_request_handler_.get();
+  DataReductionProxyRequestOptions* request_options() const {
+    return request_options_.get();
   }
 
   net::ProxyDelegate* proxy_delegate() const {
@@ -129,7 +133,7 @@ class DataReductionProxyIOData {
   scoped_ptr<DataReductionProxyUsageStats> usage_stats_;
 
   // Constructs credentials suitable for authenticating the client.
-  scoped_ptr<DataReductionProxyAuthRequestHandler> auth_request_handler_;
+  scoped_ptr<DataReductionProxyRequestOptions> request_options_;
 
   // A net log.
   net::NetLog* net_log_;
@@ -140,6 +144,8 @@ class DataReductionProxyIOData {
 
   // Used
   bool shutdown_on_ui_;
+  bool initialized_;
+  bool network_delegate_created_;
 
   // Preference that determines if the Data Reduction Proxy has been enabled
   // by the user. In practice, this can be overridden by the command line.

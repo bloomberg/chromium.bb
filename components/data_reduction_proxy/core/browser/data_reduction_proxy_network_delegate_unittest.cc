@@ -15,10 +15,10 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
@@ -91,7 +91,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
             ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
 
-    auth_handler_.reset(new DataReductionProxyAuthRequestHandler(
+    request_options_.reset(new DataReductionProxyRequestOptions(
         kClient, params_.get(), message_loop_proxy()));
 
     configurator_.reset(new DataReductionProxyConfigurator(
@@ -100,7 +100,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     data_reduction_proxy_network_delegate_.reset(
         new DataReductionProxyNetworkDelegate(
             scoped_ptr<net::NetworkDelegate>(new TestNetworkDelegate()),
-            params_.get(), auth_handler_.get(), configurator_.get()));
+            params_.get(), request_options_.get(), configurator_.get()));
   }
 
   const net::ProxyConfig& GetProxyConfig() const {
@@ -154,7 +154,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   }
 
   scoped_ptr<TestDataReductionProxyParams> params_;
-  scoped_ptr<DataReductionProxyAuthRequestHandler> auth_handler_;
+  scoped_ptr<DataReductionProxyRequestOptions> request_options_;
   scoped_ptr<DataReductionProxyConfigurator> configurator_;
   scoped_ptr<DataReductionProxyNetworkDelegate>
       data_reduction_proxy_network_delegate_;

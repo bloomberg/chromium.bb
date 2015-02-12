@@ -18,9 +18,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -274,7 +274,7 @@ net::NetLog* AwURLRequestContextGetter::GetNetLog() {
 void AwURLRequestContextGetter::SetKeyOnIO(const std::string& key) {
   DCHECK(AwBrowserContext::GetDefault()->GetDataReductionProxyIOData());
   AwBrowserContext::GetDefault()->GetDataReductionProxyIOData()->
-      auth_request_handler()->InitAuthentication(key);
+      request_options()->SetKeyOnIO(key);
 }
 
 }  // namespace android_webview

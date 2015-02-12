@@ -171,6 +171,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           BrowserThread::GetMessageLoopProxyForThread(
               BrowserThread::UI)));
+  data_reduction_proxy_io_data_->Init();
   data_reduction_proxy_settings_->SetProxyConfigurator(
       data_reduction_proxy_io_data_->configurator());
 

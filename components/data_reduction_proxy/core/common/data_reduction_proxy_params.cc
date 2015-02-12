@@ -98,6 +98,12 @@ bool DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
   return (fingerprint.find(kAndroidOneIdentifier) != std::string::npos);
 }
 
+// static
+bool DataReductionProxyParams::IsLoFiEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+}
+
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()
     : proxy_servers(),
       is_fallback(false),
