@@ -1,4 +1,4 @@
-PASS re('a') threw exception TypeError: re is not a function.
+PASS re('a') threw exception TypeError: object is not a function.
 PASS re.exec('a') is ['a']
 PASS successfullyParsed is true
 
