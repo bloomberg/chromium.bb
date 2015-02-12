@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "jni/RecordHistogram_jni.h"
 
 namespace base {
@@ -46,17 +47,42 @@ class HistogramCache {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
     HistogramBase* histogram = FindLocked(j_histogram_key);
-    if (histogram)
+    int boundary = static_cast<int>(j_boundary);
+    if (histogram) {
+      DCHECK(histogram->HasConstructionArguments(1, boundary, boundary + 1));
       return histogram;
+    }
 
     std::string histogram_name = ConvertJavaStringToUTF8(env, j_histogram_name);
-    // Note: This caching bypasses the boundary validation that occurs between
-    // repeated lookups by the same name. It is up to the caller to ensure that
-    // the provided boundary remains consistent.
-    int boundary = static_cast<int>(j_boundary);
     histogram =
         LinearHistogram::FactoryGet(histogram_name, 1, boundary, boundary + 1,
                                     HistogramBase::kUmaTargetedHistogramFlag);
+    return InsertLocked(j_histogram_key, histogram);
+  }
+
+  HistogramBase* CustomTimesHistogram(JNIEnv* env,
+                                      jstring j_histogram_name,
+                                      jint j_histogram_key,
+                                      jlong j_min,
+                                      jlong j_max,
+                                      jint j_bucket_count) {
+    DCHECK(j_histogram_name);
+    DCHECK(j_histogram_key);
+    HistogramBase* histogram = FindLocked(j_histogram_key);
+    int64 min = static_cast<int64>(j_min);
+    int64 max = static_cast<int64>(j_max);
+    int bucket_count = static_cast<int>(j_bucket_count);
+    if (histogram) {
+      DCHECK(histogram->HasConstructionArguments(min, max, bucket_count));
+      return histogram;
+    }
+
+    std::string histogram_name = ConvertJavaStringToUTF8(env, j_histogram_name);
+    // This intentionally uses FactoryGet and not FactoryTimeGet. FactoryTimeGet
+    // is just a convenience for constructing the underlying Histogram with
+    // TimeDelta arguments.
+    histogram = Histogram::FactoryGet(histogram_name, min, max, bucket_count,
+                                      HistogramBase::kUmaTargetedHistogramFlag);
     return InsertLocked(j_histogram_key, histogram);
   }
 
@@ -105,6 +131,20 @@ void RecordEnumeratedHistogram(JNIEnv* env,
   g_histograms.Get()
       .EnumeratedHistogram(env, j_histogram_name, j_histogram_key, j_boundary)
       ->Add(sample);
+}
+
+void RecordCustomTimesHistogramMilliseconds(JNIEnv* env,
+                                            jclass clazz,
+                                            jstring j_histogram_name,
+                                            jint j_histogram_key,
+                                            jlong j_duration,
+                                            jlong j_min,
+                                            jlong j_max,
+                                            jint j_num_buckets) {
+  g_histograms.Get()
+      .CustomTimesHistogram(env, j_histogram_name, j_histogram_key, j_min,
+                            j_max, j_num_buckets)
+      ->AddTime(TimeDelta::FromMilliseconds(static_cast<int64>(j_duration)));
 }
 
 void Initialize(JNIEnv* env, jclass) {

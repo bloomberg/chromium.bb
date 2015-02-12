@@ -7,16 +7,21 @@ package org.chromium.base.metrics;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
 
+import java.util.concurrent.TimeUnit;
+
 /**
- * Java API for recording UMA histograms. As opposed to macros used in native code, these calls are
- * not caching the histogram pointer; also, the JNI calls are relatively costly - avoid calling
- * these methods in performance-critical code.
+ * Java API for recording UMA histograms. Internally, the histogram will be cached by
+ * System.identityHashCode(name).
+ *
+ * Note: the JNI calls are relatively costly - avoid calling these methods in performance-critical
+ * code.
  */
 @JNINamespace("base::android")
 public class RecordHistogram {
     /**
      * Records a sample in a boolean UMA histogram of the given name. Boolean histogram has two
-     * buckets, corresponding to success (true) and failure (false).
+     * buckets, corresponding to success (true) and failure (false). This is the Java equivalent of
+     * the UMA_HISTOGRAM_BOOLEAN C++ macro.
      * @param name name of the histogram
      * @param sample sample to be recorded, either true or false
      */
@@ -26,7 +31,8 @@ public class RecordHistogram {
 
     /**
      * Records a sample in an enumerated histogram of the given name and boundary. Note that
-     * |boundary| identifies the histogram - it should be the same at every invocation.
+     * |boundary| identifies the histogram - it should be the same at every invocation. This is the
+     * Java equivalent of the UMA_HISTOGRAM_ENUMERATION C++ macro.
      * @param name name of the histogram
      * @param sample sample to be recorded, at least 0 and at most |boundary| - 1
      * @param boundary upper bound for legal sample values - all sample values has to be strictly
@@ -34,6 +40,64 @@ public class RecordHistogram {
      */
     public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
         nativeRecordEnumeratedHistogram(name, System.identityHashCode(name), sample, boundary);
+    }
+
+    /**
+     * Records a sample in a histogram of times. Useful for recording short durations. This is the
+     * Java equivalent of the UMA_HISTOGRAM_TIMES C++ macro.
+     * @param name name of the histogram
+     * @param duration duration to be recorded
+     * @param timeUnit the unit of the duration argument
+     */
+    public static void recordTimesHistogram(String name, long duration, TimeUnit timeUnit) {
+        recordCustomTimesHistogramMilliseconds(
+                name, timeUnit.toMillis(duration), 1, TimeUnit.SECONDS.toMillis(10), 50);
+    }
+
+    /**
+     * Records a sample in a histogram of times. Useful for recording medium durations. This is the
+     * Java equivalent of the UMA_HISTOGRAM_MEDIUM_TIMES C++ macro.
+     * @param name name of the histogram
+     * @param duration duration to be recorded
+     * @param timeUnit the unit of the duration argument
+     */
+    public static void recordMediumTimesHistogram(String name, long duration, TimeUnit timeUnit) {
+        recordCustomTimesHistogramMilliseconds(
+                name, timeUnit.toMillis(duration), 10, TimeUnit.MINUTES.toMillis(3), 50);
+    }
+
+    /**
+     * Records a sample in a histogram of times. Useful for recording long durations. This is the
+     * Java equivalent of the UMA_HISTOGRAM_LONG_TIMES C++ macro.
+     * @param name name of the histogram
+     * @param duration duration to be recorded
+     * @param timeUnit the unit of the duration argument
+     */
+    public static void recordLongTimesHistogram(String name, long duration, TimeUnit timeUnit) {
+        recordCustomTimesHistogramMilliseconds(
+                name, timeUnit.toMillis(duration), 1, TimeUnit.HOURS.toMillis(1), 50);
+    }
+
+    /**
+     * Records a sample in a histogram of times with custom buckets. This is the Java equivalent of
+     * the UMA_HISTOGRAM_CUSTOM_TIMES C++ macro.
+     * @param name name of the histogram
+     * @param duration duration to be recorded
+     * @param min the minimum bucket value
+     * @param max the maximum bucket value
+     * @param timeUnit the unit of the duration, min, and max arguments
+     * @param numBuckets the number of buckets
+     */
+    public static void recordCustomTimesHistogram(
+            String name, long duration, long min, long max, TimeUnit timeUnit, int numBuckets) {
+        recordCustomTimesHistogramMilliseconds(name, timeUnit.toMillis(duration),
+                timeUnit.toMillis(min), timeUnit.toMillis(max), numBuckets);
+    }
+
+    private static void recordCustomTimesHistogramMilliseconds(
+            String name, long duration, long min, long max, int numBuckets) {
+        nativeRecordCustomTimesHistogramMilliseconds(
+                name, System.identityHashCode(name), duration, min, max, numBuckets);
     }
 
     /**
@@ -52,6 +116,9 @@ public class RecordHistogram {
     public static void initialize() {
         nativeInitialize();
     }
+
+    private static native void nativeRecordCustomTimesHistogramMilliseconds(
+            String name, int key, long duration, long min, long max, int numBuckets);
 
     private static native void nativeRecordBooleanHistogram(String name, int key, boolean sample);
     private static native void nativeRecordEnumeratedHistogram(

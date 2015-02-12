@@ -10,6 +10,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests for the Java API for recording UMA histograms.
  */
@@ -73,6 +75,43 @@ public class RecordHistogramTest extends InstrumentationTestCase {
         RecordHistogram.recordEnumeratedHistogram(histogram, 2, boundary);
         assertEquals(2, zeroCount.getDelta());
         assertEquals(0, oneCount.getDelta());
+        assertEquals(1, twoCount.getDelta());
+    }
+
+    /**
+     * Tests recording of custom times histograms.
+     */
+    @SmallTest
+    public void testRecordCustomTimesHistogram() {
+        String histogram = "HelloWorld.CustomTimesMetric";
+        HistogramDelta zeroCount = new HistogramDelta(histogram, 0);
+        HistogramDelta oneCount = new HistogramDelta(histogram, 1);
+        HistogramDelta twoCount = new HistogramDelta(histogram, 100);
+
+        assertEquals(0, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(0, twoCount.getDelta());
+
+        TimeUnit milli = TimeUnit.MILLISECONDS;
+
+        RecordHistogram.recordCustomTimesHistogram(histogram, 0, 1, 100, milli, 3);
+        assertEquals(1, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(0, twoCount.getDelta());
+
+        RecordHistogram.recordCustomTimesHistogram(histogram, 0, 1, 100, milli, 3);
+        assertEquals(2, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(0, twoCount.getDelta());
+
+        RecordHistogram.recordCustomTimesHistogram(histogram, 95, 1, 100, milli, 3);
+        assertEquals(2, zeroCount.getDelta());
+        assertEquals(1, oneCount.getDelta());
+        assertEquals(0, twoCount.getDelta());
+
+        RecordHistogram.recordCustomTimesHistogram(histogram, 200, 1, 100, milli, 3);
+        assertEquals(2, zeroCount.getDelta());
+        assertEquals(1, oneCount.getDelta());
         assertEquals(1, twoCount.getDelta());
     }
 }
