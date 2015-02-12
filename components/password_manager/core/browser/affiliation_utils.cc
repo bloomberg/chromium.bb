@@ -301,4 +301,9 @@ bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line) {
   return StartsWithASCII(group_name, "Enabled", /*case_sensitive=*/false);
 }
 
+bool IsValidAndroidFacetURI(const std::string& url) {
+  FacetURI facet = FacetURI::FromPotentiallyInvalidSpec(url);
+  return facet.IsValidAndroidFacetURI();
+}
+
 }  // namespace password_manager

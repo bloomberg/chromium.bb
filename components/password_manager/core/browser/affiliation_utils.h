@@ -165,6 +165,9 @@ struct AffiliatedFacetsWithUpdateTime {
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
                                 const AffiliatedFacets& b);
 
+// A shorter way to spell FacetURI::IsValidAndroidFacetURI().
+bool IsValidAndroidFacetURI(const std::string& uri);
+
 // Returns whether or not affiliation based matching is enabled, either via
 // command line flags or field trials. The command line flag, if present, always
 // takes precedence.

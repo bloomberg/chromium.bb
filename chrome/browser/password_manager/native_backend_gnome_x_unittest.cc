@@ -1060,6 +1060,37 @@ TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
 }
 
+TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
+  NativeBackendGnome backend(42);
+  backend.Init();
+
+  PasswordForm observed_android_form;
+  observed_android_form.scheme = PasswordForm::SCHEME_HTML;
+  observed_android_form.signon_realm =
+      "android://7x7IDboo8u9YKraUsbmVkuf1-@net.rateflix.app/";
+  PasswordForm saved_android_form = observed_android_form;
+  saved_android_form.username_value = base::UTF8ToUTF16("randomusername");
+  saved_android_form.password_value = base::UTF8ToUTF16("password");
+  saved_android_form.date_created = base::Time::Now();
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), saved_android_form));
+
+  ScopedVector<autofill::PasswordForm> form_list;
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::GetLogins),
+                 base::Unretained(&backend), observed_android_form,
+                 &form_list));
+
+  RunBothThreads();
+
+  EXPECT_EQ(1u, form_list.size());
+  EXPECT_EQ(saved_android_form, *form_list[0]);
+}
+
 TEST_F(NativeBackendGnomeTest, RemoveLoginsCreatedBetween) {
   CheckRemoveLoginsBetween(CREATED);
 }

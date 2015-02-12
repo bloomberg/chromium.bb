@@ -916,6 +916,42 @@ TEST_F(NativeBackendKWalletTest, ListLoginsAppends) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
+TEST_F(NativeBackendKWalletTest, AndroidCredentials) {
+  NativeBackendKWalletStub backend(42);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+
+  PasswordForm observed_android_form;
+  observed_android_form.scheme = PasswordForm::SCHEME_HTML;
+  observed_android_form.signon_realm =
+      "android://7x7IDboo8u9YKraUsbmVkuf1-@net.rateflix.app/";
+  PasswordForm saved_android_form = observed_android_form;
+  saved_android_form.username_value = base::UTF8ToUTF16("randomusername");
+  saved_android_form.password_value = base::UTF8ToUTF16("password");
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend), saved_android_form));
+
+  ScopedVector<autofill::PasswordForm> form_list;
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&NativeBackendKWalletStub::GetLogins),
+          base::Unretained(&backend), observed_android_form, &form_list));
+
+  RunDBThread();
+
+  EXPECT_EQ(1u, form_list.size());
+
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&saved_android_form);
+  ExpectationArray expected;
+  expected.push_back(
+      make_pair(std::string(saved_android_form.signon_realm), forms));
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+}
+
 TEST_F(NativeBackendKWalletTest, RemoveLoginsCreatedBetween) {
   TestRemoveLoginsBetween(CREATED);
 }

@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -118,7 +119,7 @@ void AddCallback(int err, sql::Statement* /*stmt*/) {
 }
 
 bool DoesMatchConstraints(const PasswordForm& form) {
-  if (form.origin.is_empty()) {
+  if (!IsValidAndroidFacetURI(form.signon_realm) && form.origin.is_empty()) {
     DLOG(ERROR) << "Constraint violation: form.origin is empty";
     return false;
   }

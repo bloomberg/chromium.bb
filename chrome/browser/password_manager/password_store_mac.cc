@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/mac/security_wrappers.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "content/public/browser/browser_thread.h"
@@ -416,12 +417,19 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
     form->blacklisted_by_user = true;
   }
 
-  form->origin = URLFromComponents(form->ssl_valid, server, port, path);
-  // TODO(stuartmorgan): Handle proxies, which need a different signon_realm
-  // format.
-  form->signon_realm = form->origin.GetOrigin().spec();
-  if (form->scheme != PasswordForm::SCHEME_HTML) {
-    form->signon_realm.append(security_domain);
+  // Android facet URLs aren't parsed correctly by GURL and need to be handled
+  // separately.
+  if (password_manager::IsValidAndroidFacetURI(server)) {
+    form->signon_realm = server;
+    form->origin = GURL();
+  } else {
+    form->origin = URLFromComponents(form->ssl_valid, server, port, path);
+    // TODO(stuartmorgan): Handle proxies, which need a different signon_realm
+    // format.
+    form->signon_realm = form->origin.GetOrigin().spec();
+    if (form->scheme != PasswordForm::SCHEME_HTML) {
+      form->signon_realm.append(security_domain);
+    }
   }
   return true;
 }
@@ -575,6 +583,19 @@ bool ExtractSignonRealmComponents(const std::string& signon_realm,
                                   UInt32* port,
                                   bool* is_secure,
                                   std::string* security_domain) {
+  // GURL does not parse Android facet URIs correctly.
+  if (password_manager::IsValidAndroidFacetURI(signon_realm)) {
+    if (server)
+      *server = signon_realm;
+    if (is_secure)
+      *is_secure = true;
+    if (port)
+      *port = 0;
+    if (security_domain)
+      security_domain->clear();
+    return true;
+  }
+
   // The signon_realm will be the Origin portion of a URL for an HTML form,
   // and the same but with the security domain as a path for HTTP auth.
   GURL realm_as_url(signon_realm);
@@ -718,9 +739,12 @@ bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
            form.signon_realm, &server, &port, &is_secure, &security_domain)) {
     return false;
   }
+  std::string path;
+  // Path doesn't make sense for Android app credentials.
+  if (!password_manager::IsValidAndroidFacetURI(form.signon_realm))
+    path = form.origin.path();
   std::string username = base::UTF16ToUTF8(form.username_value);
   std::string password = base::UTF16ToUTF8(form.password_value);
-  std::string path = form.origin.path();
   SecProtocolType protocol = is_secure ? kSecProtocolTypeHTTPS
                                        : kSecProtocolTypeHTTP;
   SecKeychainItemRef new_item = NULL;
