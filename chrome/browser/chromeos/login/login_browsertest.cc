@@ -4,10 +4,14 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +23,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,6 +36,16 @@ using ::testing::AnyNumber;
 using ::testing::Return;
 
 namespace {
+
+const char kTestUser[] = "test-user@gmail.com";
+const char kPassword[] = "password";
+
+void FilterFrameByName(std::set<content::RenderFrameHost*>* frame_set,
+                       const std::string& frame_name,
+                       content::RenderFrameHost* frame) {
+  if (frame->GetFrameName() == frame_name)
+    frame_set->insert(frame);
+}
 
 class LoginUserTest : public InProcessBrowserTest {
  protected:
@@ -69,6 +86,61 @@ class LoginSigninTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     ASSERT_TRUE(tracing::BeginTracingWithWatch(
         "ui", "ui", "ShowLoginWebUI", 1));
+  }
+};
+
+class LoginTest : public chromeos::LoginManagerTest {
+ public:
+  LoginTest() : LoginManagerTest(true) {}
+  ~LoginTest() override {}
+
+  content::RenderFrameHost* GetNamedFrame(const std::string& frame_name) {
+    std::set<content::RenderFrameHost*> frame_set;
+    web_contents()->ForEachFrame(
+        base::Bind(&FilterFrameByName, &frame_set, frame_name));
+    return frame_set.empty() ? NULL : *frame_set.begin();
+  }
+
+  void ExecuteJsInGaiaAuthFrame(const std::string& js) {
+    content::RenderFrameHost* frame = GetNamedFrame("signin-frame");
+    ASSERT_TRUE(frame);
+    ASSERT_TRUE(content::ExecuteScript(frame, js));
+  }
+
+  void StartGaiaAuthOffline() {
+    content::DOMMessageQueue message_queue;
+    const std::string js = "(function() {"
+      "var frame = $('signin-frame');"
+      "var onload= function() {"
+        "frame.removeEventListener('load', onload);"
+        "console.error('#### onload frame.src=' + frame.src);"
+        "window.domAutomationController.setAutomationId(0);"
+        "window.domAutomationController.send('frameLoaded');"
+      "};"
+      "frame.addEventListener('load', onload);"
+      "$('error-offline-login-link').onclick();"
+      "console.error('#### original frame.src=' + frame.src);"
+    "})();";
+    ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+
+    std::string message;
+    do {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    } while (message != "\"frameLoaded\"");
+  }
+
+  void SubmitGaiaAuthOfflineForm(const std::string& user_email,
+                                 const std::string& password) {
+    // Note the input elements must match gaia_auth/offline.html.
+    std::string js =
+        "(function(){"
+          "document.getElementsByName('email')[0].value = '$Email';"
+          "document.getElementsByName('password')[0].value = '$Password';"
+          "document.getElementById('submit-button').click();"
+        "})();";
+    ReplaceSubstringsAfterOffset(&js, 0, "$Email", user_email);
+    ReplaceSubstringsAfterOffset(&js, 0, "$Password", password);
+    ExecuteJsInGaiaAuthFrame(js);
   }
 };
 
@@ -123,6 +195,32 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
   EXPECT_TRUE(tracing::WaitForWatchEvent(no_timeout));
   std::string json_events;
   ASSERT_TRUE(tracing::EndTracing(&json_events));
+}
+
+IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
+  RegisterUser(kTestUser);
+  chromeos::StartupUtils::MarkOobeCompleted();
+  chromeos::CrosSettings::Get()->SetBoolean(
+      chromeos::kAccountsPrefShowUserNamesOnSignIn, false);
+}
+
+IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+  bool show_user;
+  ASSERT_TRUE(chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_user));
+  ASSERT_FALSE(show_user);
+
+  StartGaiaAuthOffline();
+
+  chromeos::UserContext user_context(kTestUser);
+  user_context.SetKey(chromeos::Key(kPassword));
+  SetExpectedCredentials(user_context);
+
+  SubmitGaiaAuthOfflineForm(kTestUser, kPassword);
+
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources()).Wait();
 }
 
 }  // namespace
