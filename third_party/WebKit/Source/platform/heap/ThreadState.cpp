@@ -257,8 +257,9 @@ ThreadState::ThreadState()
         s_mainThreadUnderestimatedStackSize = StackFrameDepth::getUnderestimatedStackSize() - sizeof(void*);
     }
 
-    for (int heapIndex = 0; heapIndex < NumberOfHeaps; heapIndex++)
-        m_heaps[heapIndex] = new ThreadHeap(this, heapIndex);
+    for (int heapIndex = 0; heapIndex < LargeObjectHeap; heapIndex++)
+        m_heaps[heapIndex] = new ThreadHeapForHeapPage(this, heapIndex);
+    m_heaps[LargeObjectHeap] = new ThreadHeapForLargeObject(this, LargeObjectHeap);
 
     m_weakCallbackStack = new CallbackStack();
 }

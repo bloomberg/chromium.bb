@@ -51,7 +51,6 @@ class Isolate;
 
 namespace blink {
 
-class BaseHeap;
 class BaseHeapPage;
 class CallbackStack;
 struct GCInfo;
@@ -186,6 +185,7 @@ enum TypedHeaps {
     InlineVectorBackingHeap,
     HashTableBackingHeap,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
+    LargeObjectHeap,
     // Values used for iteration of heap segments.
     NumberOfHeaps,
 };
@@ -480,8 +480,8 @@ public:
     //
     // The heap is split into multiple heap parts based on object
     // types. To get the index for a given type, use
-    // HeapTypeTrait<Type>::index.
-    ThreadHeap* heap(int index) const { return m_heaps[index]; }
+    // HeapIndexTrait<Type>::index.
+    ThreadHeap* heap(int heapIndex) const { return m_heaps[heapIndex]; }
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Infrastructure to determine if an address is within one of the
