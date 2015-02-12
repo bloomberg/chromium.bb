@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/loader/UniqueIdentifier.h"
+#include "core/fetch/UniqueIdentifier.h"
 
 namespace blink {
 
