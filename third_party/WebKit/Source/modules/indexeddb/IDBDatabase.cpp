@@ -111,13 +111,6 @@ int64_t IDBDatabase::nextTransactionId()
     return atomicIncrement(&currentTransactionId);
 }
 
-void IDBDatabase::ackReceivedBlobs(const Vector<String>& uuids)
-{
-    if (!m_backend)
-        return;
-    m_backend->ackReceivedBlobs(uuids);
-}
-
 void IDBDatabase::indexCreated(int64_t objectStoreId, const IDBIndexMetadata& metadata)
 {
     IDBDatabaseMetadata::ObjectStoreMap::iterator it = m_metadata.objectStores.find(objectStoreId);

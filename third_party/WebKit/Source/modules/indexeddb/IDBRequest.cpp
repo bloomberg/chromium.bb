@@ -206,6 +206,8 @@ void IDBRequest::setResultCursor(IDBCursor* cursor, IDBKey* key, IDBKey* primary
 void IDBRequest::setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
 {
     m_blobs = adoptPtr(new IDBBlobHolder(blobInfo));
+    if (!m_blobs->getUUIDs().isEmpty() && m_transaction && m_transaction->backendDB())
+        m_transaction->backendDB()->ackReceivedBlobs(m_blobs->getUUIDs());
 }
 
 bool IDBRequest::shouldEnqueueEvent() const

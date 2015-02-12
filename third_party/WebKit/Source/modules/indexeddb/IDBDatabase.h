@@ -115,9 +115,6 @@ public:
 
     static int64_t nextTransactionId();
 
-    // Acknowledge receipt of the blobs (referenced by their UUID's).
-    void ackReceivedBlobs(const Vector<String>& uuids);
-
     static const char indexDeletedErrorMessage[];
     static const char isKeyCursorErrorMessage[];
     static const char noKeyOrKeyRangeErrorMessage[];
