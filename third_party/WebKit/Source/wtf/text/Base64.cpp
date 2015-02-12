@@ -18,7 +18,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
    This code is based on the java implementation in HTTPClient
-   package by Ronald Tschalär Copyright (C) 1996-1999.
+   package by Ronald Tschalaer Copyright (C) 1996-1999.
 */
 
 #include "config.h"

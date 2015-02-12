@@ -859,11 +859,11 @@ IntSize BoxPainter::calculateFillTileSize(const RenderBoxModelObject& obj, const
         return flooredIntSize(tileSize);
     }
     case SizeNone: {
-        // If both values are ‘auto’ then the intrinsic width and/or height of the image should be used, if any.
+        // If both values are 'auto' then the intrinsic width and/or height of the image should be used, if any.
         if (!imageIntrinsicSize.isEmpty())
             return imageIntrinsicSize;
 
-        // If the image has neither an intrinsic width nor an intrinsic height, its size is determined as for ‘contain’.
+        // If the image has neither an intrinsic width nor an intrinsic height, its size is determined as for 'contain'.
         type = Contain;
     }
     case Contain:
@@ -910,7 +910,7 @@ bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext*
 
     IntSize imageSize = obj.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(), RenderBoxModelObject::DoNotScaleByEffectiveZoom);
 
-    // If both values are ‘auto’ then the intrinsic width and/or height of the image should be used, if any.
+    // If both values are 'auto' then the intrinsic width and/or height of the image should be used, if any.
     styleImage->setContainerSizeForRenderer(&obj, imageSize, style.effectiveZoom());
 
     int imageWidth = imageSize.width();

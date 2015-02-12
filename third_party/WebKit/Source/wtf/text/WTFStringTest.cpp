@@ -132,20 +132,21 @@ TEST(WTF, StringReplaceWithLiteral)
     ASSERT_STREQ("1224", testString.utf8().data());
 
     // Cases for 16Bit source.
-    testString = String::fromUTF8("résumé");
+    // U+00E9 (=0xC3 0xA9 in UTF-8) is e with accent.
+    testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
     ASSERT_FALSE(testString.is8Bit());
-    testString.replaceWithLiteral(UChar(0x00E9 /*U+00E9 is 'é'*/), "e");
+    testString.replaceWithLiteral(UChar(0x00E9), "e");
     ASSERT_STREQ("resume", testString.utf8().data());
 
-    testString = String::fromUTF8("résumé");
+    testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
     ASSERT_FALSE(testString.is8Bit());
-    testString.replaceWithLiteral(UChar(0x00E9 /*U+00E9 is 'é'*/), "");
+    testString.replaceWithLiteral(UChar(0x00E9), "");
     ASSERT_STREQ("rsum", testString.utf8().data());
 
-    testString = String::fromUTF8("résumé");
+    testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
     ASSERT_FALSE(testString.is8Bit());
     testString.replaceWithLiteral('3', "NotFound");
-    ASSERT_STREQ("résumé", testString.utf8().data());
+    ASSERT_STREQ("r\xC3\xA9sum\xC3\xA9", testString.utf8().data());
 }
 
 TEST(WTF, StringComparisonOfSameStringVectors)

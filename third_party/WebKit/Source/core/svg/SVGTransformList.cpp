@@ -299,8 +299,8 @@ void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElem
     bool isToAnimation = animationElement->animationMode() == ToAnimation;
 
     // Spec: To animations provide specific functionality to get a smooth change from the underlying value to the
-    // ‘to’ attribute value, which conflicts mathematically with the requirement for additive transform animations
-    // to be post-multiplied. As a consequence, in SVG 1.1 the behavior of to animations for ‘animateTransform’ is undefined
+    // 'to' attribute value, which conflicts mathematically with the requirement for additive transform animations
+    // to be post-multiplied. As a consequence, in SVG 1.1 the behavior of to animations for 'animateTransform' is undefined
     // FIXME: This is not taken into account yet.
     RefPtrWillBeRawPtr<SVGTransformList> fromList = isToAnimation ? PassRefPtrWillBeRawPtr<SVGTransformList>(this) : toSVGTransformList(fromValue);
     RefPtrWillBeRawPtr<SVGTransformList> toList = toSVGTransformList(toValue);
@@ -346,8 +346,8 @@ float SVGTransformList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase
         return -1;
 
     // Spec: http://www.w3.org/TR/SVG/animate.html#complexDistances
-    // Paced animations assume a notion of distance between the various animation values defined by the ‘to’, ‘from’, ‘by’ and ‘values’ attributes.
-    // Distance is defined only for scalar types (such as <length>), colors and the subset of transformation types that are supported by ‘animateTransform’.
+    // Paced animations assume a notion of distance between the various animation values defined by the 'to', 'from', 'by' and 'values' attributes.
+    // Distance is defined only for scalar types (such as <length>), colors and the subset of transformation types that are supported by 'animateTransform'.
     return SVGTransformDistance(at(0), toList->at(0)).distance();
 }
 

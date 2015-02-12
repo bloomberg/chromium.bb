@@ -179,9 +179,9 @@ GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const La
     }
     case NamedGridAreaPosition:
     {
-        // First attempt to match the grid area’s edge to a named grid area: if there is a named line with the name
+        // First attempt to match the grid area's edge to a named grid area: if there is a named line with the name
         // ''<custom-ident>-start (for grid-*-start) / <custom-ident>-end'' (for grid-*-end), contributes the first such
-        // line to the grid item’s placement.
+        // line to the grid item's placement.
         String namedGridLine = position.namedGridLine();
         ASSERT(isValidNamedLineOrArea(namedGridLine, gridContainerStyle, side));
 
@@ -191,7 +191,7 @@ GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const La
             return adjustGridPositionForSide(implicitLineIter->value[0], side);
 
         // Otherwise, if there is a named line with the specified name, contributes the first such line to the grid
-        // item’s placement.
+        // item's placement.
         NamedGridLinesMap::const_iterator explicitLineIter = gridLineNames.find(namedGridLine);
         if (explicitLineIter != gridLineNames.end())
             return adjustGridPositionForSide(explicitLineIter->value[0], side);
