@@ -224,6 +224,18 @@ static bool selectorMatchesShadowRoot(const CSSSelector* selector)
     return selector && selector->isShadowPseudoElement();
 }
 
+static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(const Element& element)
+{
+    ContainerNode* parent = element.parentOrShadowHostNode();
+    if (!parent)
+        return nullptr;
+    if (parent->isShadowRoot())
+        return (toShadowRoot(parent)->type() == ShadowRoot::UserAgentShadowRoot) ? nullptr : toShadowRoot(parent)->host();
+    if (!parent->isElementNode())
+        return nullptr;
+    return toElement(parent);
+}
+
 template<typename SiblingTraversalStrategy>
 SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const ContainerNode* node, const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
 {
@@ -339,7 +351,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         {
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            for (nextContext.element = context.element->parentOrShadowHostElement(); nextContext.element; nextContext.element = nextContext.element->parentOrShadowHostElement()) {
+            for (nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*nextContext.element)) {
                 Match match = this->match(nextContext, siblingTraversalStrategy, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
