@@ -94,6 +94,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     isWebviewSignin: false,
 
+    /**
+     * Whether screen is shown.
+     * @type {boolean}
+     * @private
+     */
+    isShown_: false,
+
     /** @override */
     decorate: function() {
       this.isWebviewSignin = loadTimeData.getValue('isWebviewSignin');
@@ -254,6 +261,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       // Button header is always visible when sign in is presented.
       // Header is hidden once GAIA reports on successful sign in.
       Oobe.getInstance().headerHidden = false;
+      this.isShown_ = true;
+      if (this.isWebviewSignin && !this.loading)
+        this.gaiaAuthHost_.setFocus();
     },
 
     /**
@@ -262,6 +272,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onBeforeHide: function() {
       chrome.send('loginUIStateChanged', ['gaia-signin', false]);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
+      this.isShown_ = false;
     },
 
     /**
@@ -417,6 +428,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onAuthReady_: function() {
       this.loading = false;
+      if (this.isWebviewSignin && this.isShown_)
+        this.gaiaAuthHost_.setFocus();
       this.clearLoadingTimer_();
 
       // Show deferred error bubble.

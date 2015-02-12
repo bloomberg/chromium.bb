@@ -150,6 +150,13 @@ cr.define('cr.login', function() {
     this.loaded_ = false;
   };
 
+  /**
+   * Set focus in Gaia on default input.
+   */
+  Authenticator.prototype.setFocus = function() {
+    this.onFocus_();
+  };
+
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     var url = this.idpOrigin_ + (data.gaiaPath || IDP_PATH);
 
@@ -222,7 +229,16 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onFocus_ = function(e) {
-    this.webview_.focus();
+    var currentUrl = this.webview_.src;
+    if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
+      var msg = {
+        'method': 'focusready'
+      };
+      // TODO(rsorokin): Get rid of this check once issue crbug.com/456118 is
+      // fixed.
+      if (this.webview_.contentWindow)
+        this.webview_.contentWindow.postMessage(msg, currentUrl);
+    }
   };
 
   /**
@@ -343,7 +359,6 @@ cr.define('cr.login', function() {
   Authenticator.prototype.onLoadStop_ = function(e) {
     if (!this.loaded_) {
       this.loaded_ = true;
-      this.webview_.focus();
       this.dispatchEvent(new Event('ready'));
     }
   };
