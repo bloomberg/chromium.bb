@@ -604,10 +604,10 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
       profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
           type, &provider_id);
 
-  // For Plugins, display the obsolete ASK setting as DETECT.
+  // For Plugins, display the obsolete ASK setting as BLOCK.
   if (type == ContentSettingsType::CONTENT_SETTINGS_TYPE_PLUGINS &&
       default_setting == ContentSetting::CONTENT_SETTING_ASK) {
-    default_setting = ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
+    default_setting = ContentSetting::CONTENT_SETTING_BLOCK;
   }
 
   base::DictionaryValue filter_settings;

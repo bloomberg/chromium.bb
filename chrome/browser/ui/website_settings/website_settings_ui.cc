@@ -169,10 +169,10 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
   if (effective_setting == CONTENT_SETTING_DEFAULT) {
     effective_setting = default_setting;
 
-    // For Plugins, ASK is obsolete. Show as DETECT to reflect actual behavior.
+    // For Plugins, ASK is obsolete. Show as BLOCK to reflect actual behavior.
     if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
         default_setting == CONTENT_SETTING_ASK) {
-      effective_setting = CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
+      effective_setting = CONTENT_SETTING_BLOCK;
     }
   }
 

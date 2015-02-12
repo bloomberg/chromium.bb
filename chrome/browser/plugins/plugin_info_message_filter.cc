@@ -415,11 +415,11 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   }
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
-      plugin_setting == CONTENT_SETTING_ASK) {
+  if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     status->value =
         ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
-  } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
+  } else if (plugin_setting == CONTENT_SETTING_BLOCK ||
+             plugin_setting == CONTENT_SETTING_ASK) {
     status->value =
         is_managed ? ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy
                    : ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
