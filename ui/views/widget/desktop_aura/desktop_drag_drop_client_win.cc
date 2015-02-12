@@ -43,6 +43,9 @@ int DesktopDragDropClientWin::StartDragAndDrop(
 
   drag_source_ = new ui::DragSourceWin;
   scoped_refptr<ui::DragSourceWin> drag_source_copy = drag_source_;
+  drag_source_copy->set_data(&data);
+  ui::OSExchangeDataProviderWin::GetDataObjectImpl(data)
+      ->set_in_drag_loop(true);
 
   DWORD effect;
 
@@ -56,6 +59,7 @@ int DesktopDragDropClientWin::StartDragAndDrop(
       ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source_.get(),
       ui::DragDropTypes::DragOperationToDropEffect(operation), &effect);
   stopwatch.Stop();
+  drag_source_copy->set_data(nullptr);
 
   if (alive)
     drag_drop_in_progress_ = false;

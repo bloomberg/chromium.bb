@@ -4,9 +4,11 @@
 
 #include "ui/base/dragdrop/drag_source_win.h"
 
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+
 namespace ui {
 
-DragSourceWin::DragSourceWin() : cancel_drag_(false) {
+DragSourceWin::DragSourceWin() : cancel_drag_(false), data_(nullptr) {
 }
 
 HRESULT DragSourceWin::QueryContinueDrag(BOOL escape_pressed, DWORD key_state) {
@@ -50,6 +52,12 @@ ULONG DragSourceWin::AddRef() {
 ULONG DragSourceWin::Release() {
   base::RefCountedThreadSafe<DragSourceWin>::Release();
   return 0;
+}
+
+void DragSourceWin::OnDragSourceDrop() {
+  DCHECK(data_);
+  ui::OSExchangeDataProviderWin::GetDataObjectImpl(*data_)
+      ->set_in_drag_loop(false);
 }
 
 }  // namespace ui

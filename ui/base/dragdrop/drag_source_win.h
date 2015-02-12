@@ -13,6 +13,8 @@
 
 namespace ui {
 
+class OSExchangeData;
+
 // A base IDropSource implementation. Handles notifications sent by an active
 // drag-drop operation as the user mouses over other drop targets on their
 // system. This object tells Windows whether or not the drag should continue,
@@ -40,14 +42,21 @@ class UI_BASE_EXPORT DragSourceWin
   ULONG __stdcall AddRef();
   ULONG __stdcall Release();
 
+  // Used to set the active data object for the current drag operation. The
+  // caller must ensure that |data| is not destroyed before the nested drag loop
+  // terminates.
+  void set_data(const OSExchangeData* data) { data_ = data; }
+
  protected:
   virtual void OnDragSourceCancel() {}
-  virtual void OnDragSourceDrop() {}
+  virtual void OnDragSourceDrop();
   virtual void OnDragSourceMove() {}
 
  private:
   // Set to true if we want to cancel the drag operation.
   bool cancel_drag_;
+
+  const OSExchangeData* data_;
 
   DISALLOW_COPY_AND_ASSIGN(DragSourceWin);
 };
