@@ -182,15 +182,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(kJavascript);
 }
 
-// Circular lock: crbug.com/457061
-#if defined(THREAD_SANITIZER)
-#define MAYBE_CanMakeAudioCallAndThenRenegotiateToVideo DISABLED_CanMakeAudioCallAndThenRenegotiateToVideo
-#else
-#define MAYBE_CanMakeAudioCallAndThenRenegotiateToVideo CanMakeAudioCallAndThenRenegotiateToVideo
-#endif
-
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanMakeAudioCallAndThenRenegotiateToVideo) {
+                       CanMakeAudioCallAndThenRenegotiateToVideo) {
   const char* kJavascript =
       "callAndRenegotiateToVideo({audio: true}, {audio: true, video:true});";
   MakeTypicalPeerConnectionCall(kJavascript);
