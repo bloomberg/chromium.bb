@@ -2,47 +2,37 @@
 <!-- Copyright 2013 The Chromium Authors. All rights reserved.
 
      Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file.
--->
+     found in the LICENSE file. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:orientation="horizontal"
-    android:gravity="center">
+    android:id="@+id/pickers"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="horizontal" >
 
-    <LinearLayout android:id="@+id/pickers"
+    <!-- Position in year -->
+
+    <NumberPicker
+        android:id="@+id/position_in_year"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@string/accessibility_date_picker_month"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
 
-        <!-- Position in year -->
-        <NumberPicker
-            android:id="@+id/position_in_year"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:contentDescription="@string/accessibility_date_picker_month"
-            />
+    <!-- Year -->
 
-        <!-- Year -->
-        <NumberPicker
-            android:id="@+id/year"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:contentDescription="@string/accessibility_date_picker_year"
-            />
-
-    </LinearLayout>
+    <NumberPicker
+        android:id="@+id/year"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@string/accessibility_date_picker_year"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
 
 </LinearLayout>
