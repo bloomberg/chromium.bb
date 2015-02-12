@@ -74,7 +74,7 @@ TEST(SuggestionAnswerTest, DifferentValuesAreUnequal) {
   // Same but with different text for one of the text fields.
   answer2 = SuggestionAnswer::copy(answer1.get());
   EXPECT_TRUE(answer1->Equals(*answer2));
-  answer2->first_line_.text_fields_[0].text_ = "some text";
+  answer2->first_line_.text_fields_[0].text_ = base::UTF8ToUTF16("some text");
   EXPECT_FALSE(answer1->Equals(*answer2));
 
   // Same but with a new URL on the second line.
@@ -211,9 +211,9 @@ TEST(SuggestionAnswerTest, ValidPropertyValues) {
 
   const SuggestionAnswer::ImageLine& first_line = answer->first_line();
   EXPECT_EQ(2U, first_line.text_fields().size());
-  EXPECT_EQ("text", first_line.text_fields()[0].text());
+  EXPECT_EQ(base::UTF8ToUTF16("text"), first_line.text_fields()[0].text());
   EXPECT_EQ(8, first_line.text_fields()[0].type());
-  EXPECT_EQ("moar text", first_line.text_fields()[1].text());
+  EXPECT_EQ(base::UTF8ToUTF16("moar text"), first_line.text_fields()[1].text());
   EXPECT_EQ(0, first_line.text_fields()[1].type());
 
   EXPECT_FALSE(first_line.additional_text());
@@ -224,15 +224,18 @@ TEST(SuggestionAnswerTest, ValidPropertyValues) {
 
   const SuggestionAnswer::ImageLine& second_line = answer->second_line();
   EXPECT_EQ(1U, second_line.text_fields().size());
-  EXPECT_EQ("other text", second_line.text_fields()[0].text());
+  EXPECT_EQ(
+      base::UTF8ToUTF16("other text"), second_line.text_fields()[0].text());
   EXPECT_EQ(5, second_line.text_fields()[0].type());
 
   EXPECT_TRUE(second_line.additional_text());
-  EXPECT_EQ("slatfatf", second_line.additional_text()->text());
+  EXPECT_EQ(
+      base::UTF8ToUTF16("slatfatf"), second_line.additional_text()->text());
   EXPECT_EQ(42, second_line.additional_text()->type());
 
   EXPECT_TRUE(second_line.status_text());
-  EXPECT_EQ("oh hi, Mark", second_line.status_text()->text());
+  EXPECT_EQ(
+      base::UTF8ToUTF16("oh hi, Mark"), second_line.status_text()->text());
   EXPECT_EQ(729347, second_line.status_text()->type());
 
   EXPECT_FALSE(second_line.image_url().is_valid());

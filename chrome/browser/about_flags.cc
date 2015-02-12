@@ -27,6 +27,7 @@
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/omnibox/omnibox_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
 #include "content/public/browser/user_metrics.h"
@@ -44,7 +45,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/common/chrome_version_info.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/omnibox/omnibox_switches.h"
 #else
 #include "ui/message_center/message_center_switches.h"
 #endif
@@ -1904,16 +1904,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)
   },
 #endif
-#if defined(OS_ANDROID)
   {
     "answers-in-suggest",
     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_NAME,
     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_DESCRIPTION,
-    kOsAndroid,
+    kOsAndroid | kOsWin | kOsLinux | kOsCrOS,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAnswersInSuggest,
                               switches::kDisableAnswersInSuggest)
   },
-#endif
 #if defined(OS_ANDROID)
   {
     "enable-data-reduction-proxy-dev",

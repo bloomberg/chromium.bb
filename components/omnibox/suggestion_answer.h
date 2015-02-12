@@ -46,13 +46,13 @@ class SuggestionAnswer {
     static bool ParseTextField(const base::DictionaryValue* field_json,
                                TextField* text_field);
 
-    const std::string& text() const { return text_; }
+    const base::string16& text() const { return text_; }
     int type() const { return type_; }
 
     bool Equals(const TextField& field) const;
 
    private:
-    std::string text_;
+    base::string16 text_;
     int type_;
 
     FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);

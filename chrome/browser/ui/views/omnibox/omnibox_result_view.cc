@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/suggestion_answer.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -532,10 +533,17 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
     int x = GetMirroredXForRect(text_bounds_);
     mirroring_context_->Initialize(x, text_bounds_.width());
     InitContentsRenderTextIfNecessary();
-    if (!description_rendertext_ && !match_.description.empty()) {
-      description_rendertext_.reset(
-          CreateClassifiedRenderText(
-              match_.description, match_.description_class, true).release());
+
+    if (!description_rendertext_) {
+      if (match_.answer) {
+        base::string16 text;
+        for (const auto& textfield : match_.answer->second_line().text_fields())
+          text += textfield.text();
+        description_rendertext_ = CreateRenderText(text);
+      } else if (!match_.description.empty()) {
+        description_rendertext_ = CreateClassifiedRenderText(
+            match_.description, match_.description_class, true);
+      }
     }
     PaintMatch(match_, contents_rendertext_.get(),
                description_rendertext_.get(), canvas, x);

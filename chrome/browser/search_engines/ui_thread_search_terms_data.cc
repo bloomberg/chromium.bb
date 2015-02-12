@@ -122,14 +122,9 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
     return OmniboxFieldTrial::EnableAnswersInSuggest() ?
         "chrome-mobile-ext-ansg" : "chrome-mobile-ext";
   }
-  return OmniboxFieldTrial::EnableAnswersInSuggest() ?
-      "chrome-ext-ansg" : "chrome-ext";
-#elif defined(OS_IOS)
-  return OmniboxFieldTrial::EnableAnswersInSuggest() ?
-      "chrome-ext-ansg" : "chrome-ext";
-#else
-  return "chrome-ext";
 #endif
+  return OmniboxFieldTrial::EnableAnswersInSuggest() ?
+      "chrome-ext-ansg" : "chrome-ext";
 }
 
 bool UIThreadSearchTermsData::EnableAnswersInSuggest() const {

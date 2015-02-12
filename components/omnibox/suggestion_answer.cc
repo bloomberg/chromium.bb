@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "net/base/escape.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -32,9 +33,12 @@ SuggestionAnswer::TextField::~TextField() {}
 // static
 bool SuggestionAnswer::TextField::ParseTextField(
     const base::DictionaryValue* field_json, TextField* text_field) {
-  return field_json->GetString(kAnswerJsonText, &text_field->text_) &&
+  bool parsed = field_json->GetString(kAnswerJsonText, &text_field->text_) &&
       !text_field->text_.empty() &&
       field_json->GetInteger(kAnswerJsonTextType, &text_field->type_);
+  if (parsed)
+    text_field->text_ = net::UnescapeForHTML(text_field->text_);
+  return parsed;
 }
 
 bool SuggestionAnswer::TextField::Equals(const TextField& field) const {
