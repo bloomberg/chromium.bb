@@ -5,19 +5,14 @@
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/display/types/display_mode.h"
-#include "ui/display/types/display_snapshot.h"
-#include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
-#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
@@ -169,18 +164,15 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 }
 
 DriGpuPlatformSupport::DriGpuPlatformSupport(
-    const scoped_refptr<DriWrapper>& drm,
     DrmDeviceManager* drm_device_manager,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager,
     scoped_ptr<NativeDisplayDelegateDri> ndd)
     : sender_(NULL),
-      drm_(drm),
       drm_device_manager_(drm_device_manager),
       window_manager_(window_manager),
       screen_manager_(screen_manager),
       ndd_(ndd.Pass()) {
-  ndd_->AddGraphicsDevice(drm_);
   filter_ = new DriGpuPlatformSupportMessageFilter(
       window_manager, base::Bind(&DriGpuPlatformSupport::SetIOTaskRunner,
                                  base::Unretained(this)),
@@ -273,70 +265,20 @@ void DriGpuPlatformSupport::OnForceDPMSOn() {
 }
 
 void DriGpuPlatformSupport::OnRefreshNativeDisplays() {
-  std::vector<DisplaySnapshot_Params> displays;
-  std::vector<DisplaySnapshot*> native_displays = ndd_->GetDisplays();
-
-  for (size_t i = 0; i < native_displays.size(); ++i)
-    displays.push_back(GetDisplaySnapshotParams(*native_displays[i]));
-
-  sender_->Send(new OzoneHostMsg_UpdateNativeDisplays(displays));
+  sender_->Send(new OzoneHostMsg_UpdateNativeDisplays(ndd_->GetDisplays()));
 }
 
 void DriGpuPlatformSupport::OnConfigureNativeDisplay(
     int64_t id,
     const DisplayMode_Params& mode_param,
     const gfx::Point& origin) {
-  DisplaySnapshot* display = ndd_->FindDisplaySnapshot(id);
-  if (!display) {
-    LOG(ERROR) << "There is no display with ID " << id;
-    sender_->Send(new OzoneHostMsg_DisplayConfigured(id, false));
-    return;
-  }
-
-  const DisplayMode* mode = NULL;
-  for (size_t i = 0; i < display->modes().size(); ++i) {
-    if (mode_param.size == display->modes()[i]->size() &&
-        mode_param.is_interlaced == display->modes()[i]->is_interlaced() &&
-        mode_param.refresh_rate == display->modes()[i]->refresh_rate()) {
-      mode = display->modes()[i];
-      break;
-    }
-  }
-
-  // If the display doesn't have the mode natively, then lookup the mode from
-  // other displays and try using it on the current display (some displays
-  // support panel fitting and they can use different modes even if the mode
-  // isn't explicitly declared).
-  if (!mode)
-    mode = ndd_->FindDisplayMode(mode_param.size, mode_param.is_interlaced,
-                                 mode_param.refresh_rate);
-
-  if (!mode) {
-    LOG(ERROR) << "Failed to find mode: size=" << mode_param.size.ToString()
-               << " is_interlaced=" << mode_param.is_interlaced
-               << " refresh_rate=" << mode_param.refresh_rate;
-    sender_->Send(new OzoneHostMsg_DisplayConfigured(id, false));
-    return;
-  }
-
-  bool success = ndd_->Configure(*display, mode, origin);
-  if (success) {
-    display->set_origin(origin);
-    display->set_current_mode(mode);
-  }
-
-  sender_->Send(new OzoneHostMsg_DisplayConfigured(id, success));
+  sender_->Send(new OzoneHostMsg_DisplayConfigured(
+      id, ndd_->ConfigureDisplay(id, mode_param, origin)));
 }
 
 void DriGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {
-  DisplaySnapshot* display = ndd_->FindDisplaySnapshot(id);
-  bool success = false;
-  if (display)
-    success = ndd_->Configure(*display, NULL, gfx::Point());
-  else
-    LOG(ERROR) << "There is no display with ID " << id;
-
-  sender_->Send(new OzoneHostMsg_DisplayConfigured(id, success));
+  sender_->Send(
+      new OzoneHostMsg_DisplayConfigured(id, ndd_->DisableDisplay(id)));
 }
 
 void DriGpuPlatformSupport::OnTakeDisplayControl() {
@@ -348,11 +290,11 @@ void DriGpuPlatformSupport::OnRelinquishDisplayControl() {
 }
 
 void DriGpuPlatformSupport::OnAddGraphicsDevice(const base::FilePath& path) {
-  NOTIMPLEMENTED();
+  ndd_->AddGraphicsDevice(path);
 }
 
 void DriGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
-  NOTIMPLEMENTED();
+  ndd_->RemoveGraphicsDevice(path);
 }
 
 void DriGpuPlatformSupport::RelinquishGpuResources(
@@ -362,12 +304,7 @@ void DriGpuPlatformSupport::RelinquishGpuResources(
 
 void DriGpuPlatformSupport::SetIOTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
-  io_task_runner_ = io_task_runner;
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  // Only surfaceless path supports async page flips.
-  if (cmd->HasSwitch(switches::kOzoneUseSurfaceless)) {
-    drm_->InitializeTaskRunner(io_task_runner_);
-  }
+  ndd_->InitializeIOTaskRunner(io_task_runner);
 }
 
 IPC::MessageFilter* DriGpuPlatformSupport::GetMessageFilter() {
