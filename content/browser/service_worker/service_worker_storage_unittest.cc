@@ -992,6 +992,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
                                     MSG_ROUTING_NONE,
                                     1 /* dummy provider_id */,
+                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
                                     context_->AsWeakPtr(),
                                     NULL));
   registration_->active_version()->AddControllee(host.get());
@@ -1045,6 +1046,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
                                     MSG_ROUTING_NONE,
                                     1 /* dummy provider_id */,
+                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
                                     context_->AsWeakPtr(),
                                     NULL));
   registration_->active_version()->AddControllee(host.get());
@@ -1143,6 +1145,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
                                     MSG_ROUTING_NONE,
                                     1 /* dummy provider_id */,
+                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
                                     context_->AsWeakPtr(),
                                     NULL));
   registration_->active_version()->AddControllee(host.get());

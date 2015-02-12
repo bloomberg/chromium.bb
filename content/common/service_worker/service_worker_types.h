@@ -50,6 +50,19 @@ static const int64 kInvalidServiceWorkerResponseId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
 static const int kInvalidServiceWorkerClientId = 0;
 
+// ServiceWorker provider type.
+enum ServiceWorkerProviderType {
+  SERVICE_WORKER_PROVIDER_UNKNOWN,
+
+  // For Documents and SharedWorkers.
+  SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
+
+  // For ServiceWorkers.
+  SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+
+  SERVICE_WORKER_PROVIDER_TYPE_LAST = SERVICE_WORKER_PROVIDER_FOR_CONTROLLER
+};
+
 enum FetchRequestMode {
   FETCH_REQUEST_MODE_SAME_ORIGIN,
   FETCH_REQUEST_MODE_NO_CORS,

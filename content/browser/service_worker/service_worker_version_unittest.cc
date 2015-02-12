@@ -386,6 +386,7 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
                                     MSG_ROUTING_NONE /* render_frame_id */,
                                     1 /* dummy provider_id */,
+                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
                                     helper_->context()->AsWeakPtr(),
                                     NULL));
   version_->AddControllee(host.get());

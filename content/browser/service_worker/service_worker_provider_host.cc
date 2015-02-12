@@ -91,19 +91,22 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int render_process_id,
     int render_frame_id,
     int provider_id,
+    ServiceWorkerProviderType provider_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
       render_thread_id_(kDocumentMainThreadId),
       provider_id_(provider_id),
+      provider_type_(provider_type),
       context_(context),
       dispatcher_host_(dispatcher_host),
       allow_association_(true),
       is_claiming_(false) {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  if (render_frame_id == MSG_ROUTING_NONE) {
-    // Actual thread id is set when the worker context gets started.
+  DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
+  if (provider_type_ == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
+    // Actual thread id is set when the service worker context gets started.
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
   }
 }
@@ -169,8 +172,8 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
   bool should_notify_controllerchange =
       is_claiming_ || (previous_version && version && version->skip_waiting());
 
-  // SetController message should be sent only for the document context.
-  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  // SetController message should be sent only for controllees.
+  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE, provider_type_);
   Send(new ServiceWorkerMsg_SetControllerServiceWorker(
       render_thread_id_, provider_id(),
       CreateAndRegisterServiceWorkerHandle(version),
@@ -221,8 +224,8 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
   if (!dispatcher_host_)
     return;
 
-  // Disassociation message should be sent only for the document context.
-  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  // Disassociation message should be sent only for controllees.
+  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE, provider_type_);
   Send(new ServiceWorkerMsg_DisassociateRegistration(
       render_thread_id_, provider_id()));
 }
@@ -341,6 +344,7 @@ void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(MSG_ROUTING_NONE, render_frame_id_);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
 
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
@@ -357,6 +361,7 @@ void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   render_frame_id_ = MSG_ROUTING_NONE;
   render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
   provider_id_ = kInvalidServiceWorkerProviderId;
+  provider_type_ = SERVICE_WORKER_PROVIDER_UNKNOWN;
   dispatcher_host_ = nullptr;
 }
 
@@ -364,6 +369,7 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     int new_process_id,
     int new_frame_id,
     int new_provider_id,
+    ServiceWorkerProviderType new_provider_type,
     ServiceWorkerDispatcherHost* new_dispatcher_host) {
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, new_process_id);
@@ -373,6 +379,7 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
   render_frame_id_ = new_frame_id;
   render_thread_id_ = kDocumentMainThreadId;
   provider_id_ = new_provider_id;
+  provider_type_ = new_provider_type;
   dispatcher_host_ = new_dispatcher_host;
 
   for (const GURL& pattern : associated_patterns_)
@@ -483,8 +490,8 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
   attrs.active = CreateAndRegisterServiceWorkerHandle(
       associated_registration_->active_version());
 
-  // Association message should be sent only for the document context.
-  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  // Association message should be sent only for controllees.
+  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE, provider_type_);
   dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
       render_thread_id_, provider_id(), handle->GetObjectInfo(), attrs));
 }

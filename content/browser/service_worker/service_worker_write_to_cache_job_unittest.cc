@@ -189,6 +189,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         kMockRenderProcessId,
         MSG_ROUTING_NONE,
         kMockProviderId,
+        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
         context()->AsWeakPtr(),
         nullptr));
     provider_host_ = host->AsWeakPtr();

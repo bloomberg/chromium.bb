@@ -510,8 +510,10 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 
-void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id,
-                                                    int render_frame_id) {
+void ServiceWorkerDispatcherHost::OnProviderCreated(
+    int provider_id,
+    int render_frame_id,
+    ServiceWorkerProviderType provider_type) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnProviderCreated");
   if (!GetContext())
@@ -524,6 +526,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id,
       new ServiceWorkerProviderHost(render_process_id_,
                                     render_frame_id,
                                     provider_id,
+                                    provider_type,
                                     GetContext()->AsWeakPtr(),
                                     this));
   GetContext()->AddProviderHost(provider_host.Pass());

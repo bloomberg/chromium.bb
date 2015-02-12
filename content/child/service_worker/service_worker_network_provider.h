@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
 
@@ -36,7 +37,8 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
   static ServiceWorkerNetworkProvider* FromDocumentState(
       base::SupportsUserData* document_state);
 
-  explicit ServiceWorkerNetworkProvider(int render_frame_id);
+  ServiceWorkerNetworkProvider(int render_frame_id,
+                               ServiceWorkerProviderType type);
   ~ServiceWorkerNetworkProvider() override;
 
   int provider_id() const { return provider_id_; }

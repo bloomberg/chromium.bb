@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;
@@ -90,7 +91,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                          int request_id,
                          int provider_id,
                          const GURL& document_url);
-  void OnProviderCreated(int provider_id, int render_frame_id);
+  void OnProviderCreated(int provider_id,
+                         int render_frame_id,
+                         ServiceWorkerProviderType provider_type);
   void OnProviderDestroyed(int provider_id);
   void OnSetHostedVersionId(int provider_id, int64 version_id);
   void OnWorkerReadyForInspection(int embedded_worker_id);

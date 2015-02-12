@@ -39,6 +39,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerState,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseType,
                           blink::WebServiceWorkerResponseTypeLast)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerProviderType,
+                          content::SERVICE_WORKER_PROVIDER_TYPE_LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(request_context_type)
@@ -151,9 +154,13 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessageToWorker,
 // |provider_id| is unique within its child process.
 // |render_frame_id| identifies the frame associated with the provider, it will
 // it will be MSG_ROUTING_NONE if the context is a worker instead of a document.
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_ProviderCreated,
+// |provider_type| identifies whether this provider is for ServiceWorker
+// controllees (documents and SharedWorkers) or for controllers
+// (ServiceWorkers).
+IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_ProviderCreated,
                      int /* provider_id */,
-                     int /* render_frame_id */)
+                     int /* render_frame_id */,
+                     content::ServiceWorkerProviderType /* provider_type */)
 
 // Informs the browser of a ServiceWorkerProvider being destroyed.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,

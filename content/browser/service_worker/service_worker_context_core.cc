@@ -417,6 +417,7 @@ ServiceWorkerContextCore::TransferProviderHostOut(
       new ServiceWorkerProviderHost(process_id,
                                     transferee->frame_id(),
                                     provider_id,
+                                    transferee->provider_type(),
                                     AsWeakPtr(),
                                     transferee->dispatcher_host());
   map->Replace(provider_id, replacement);
@@ -433,6 +434,7 @@ void ServiceWorkerContextCore::TransferProviderHostIn(
   transferee->CompleteCrossSiteTransfer(new_process_id,
                                         temp->frame_id(),
                                         new_provider_id,
+                                        temp->provider_type(),
                                         temp->dispatcher_host());
   map->Replace(new_provider_id, transferee.release());
   delete temp;

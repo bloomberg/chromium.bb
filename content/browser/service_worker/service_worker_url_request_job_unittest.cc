@@ -143,6 +143,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
             kProcessID,
             MSG_ROUTING_NONE,
             kProviderID,
+            SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
             helper_->context()->AsWeakPtr(),
             nullptr));
     provider_host->AssociateRegistration(registration_.get());

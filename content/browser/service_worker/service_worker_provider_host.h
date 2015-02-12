@@ -49,10 +49,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::Callback<void(const ServiceWorkerClientInfo&)>;
 
   // If |render_frame_id| is MSG_ROUTING_NONE, this provider host works for the
-  // worker context.
+  // worker context, i.e. ServiceWorker or SharedWorker.
+  // |provider_type| gives additional information whether the provider is
+  // created for controller (ServiceWorker) or controllee (Document or
+  // SharedWorker).
   ServiceWorkerProviderHost(int render_process_id,
                             int render_frame_id,
                             int provider_id,
+                            ServiceWorkerProviderType provider_type,
                             base::WeakPtr<ServiceWorkerContextCore> context,
                             ServiceWorkerDispatcherHost* dispatcher_host);
   virtual ~ServiceWorkerProviderHost();
@@ -96,6 +100,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void SetTopmostFrameUrl(const GURL& url);
   const GURL& topmost_frame_url() const { return topmost_frame_url_; }
+
+  ServiceWorkerProviderType provider_type() const { return provider_type_; }
 
   // Associates to |registration| to listen for its version change events.
   void AssociateRegistration(ServiceWorkerRegistration* registration);
@@ -161,6 +167,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       int new_process_id,
       int new_frame_id,
       int new_provider_id,
+      ServiceWorkerProviderType new_provider_type,
       ServiceWorkerDispatcherHost* dispatcher_host);
   ServiceWorkerDispatcherHost* dispatcher_host() const {
     return dispatcher_host_;
@@ -212,6 +219,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   int render_frame_id_;
   int render_thread_id_;
   int provider_id_;
+  ServiceWorkerProviderType provider_type_;
   GURL document_url_;
   GURL topmost_frame_url_;
 

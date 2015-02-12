@@ -47,8 +47,11 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kMockRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */,
-        1 /* provider_id */, context()->AsWeakPtr(), nullptr));
+        kMockRenderProcessId,
+        MSG_ROUTING_NONE /* render_frame_id */,
+        1 /* provider_id */,
+        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
+        context()->AsWeakPtr(), nullptr));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());
 

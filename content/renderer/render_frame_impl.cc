@@ -2270,7 +2270,8 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   if (!ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(datasource))) {
     scoped_ptr<ServiceWorkerNetworkProvider>
-        network_provider(new ServiceWorkerNetworkProvider(routing_id_));
+        network_provider(new ServiceWorkerNetworkProvider(
+            routing_id_, SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
     ServiceWorkerNetworkProvider::AttachToDocumentState(
         DocumentState::FromDataSource(datasource),
         network_provider.Pass());

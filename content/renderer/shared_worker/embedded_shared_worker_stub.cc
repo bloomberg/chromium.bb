@@ -7,14 +7,21 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
+#include "content/child/request_extra_data.h"
 #include "content/child/scoped_child_process_reference.h"
+#include "content/child/service_worker/service_worker_handle_reference.h"
+#include "content/child/service_worker/service_worker_network_provider.h"
+#include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/shared_worker_devtools_agent.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_permission_client_proxy.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebServiceWorkerNetworkProvider.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
 
@@ -49,6 +56,58 @@ class SharedWorkerWebApplicationCacheHostImpl
   virtual void selectCacheWithoutManifest() {}
   virtual bool selectCacheWithManifest(const blink::WebURL& manifestURL) {
     return true;
+  }
+};
+
+// We store an instance of this class in the "extra data" of the WebDataSource
+// and attach a ServiceWorkerNetworkProvider to it as base::UserData.
+// (see createServiceWorkerNetworkProvider).
+class DataSourceExtraData
+    : public blink::WebDataSource::ExtraData,
+      public base::SupportsUserData {
+ public:
+  DataSourceExtraData() {}
+  virtual ~DataSourceExtraData() {}
+};
+
+// Called on the main thread only and blink owns it.
+class WebServiceWorkerNetworkProviderImpl
+    : public blink::WebServiceWorkerNetworkProvider {
+ public:
+  // Blink calls this method for each request starting with the main script,
+  // we tag them with the provider id.
+  virtual void willSendRequest(
+      blink::WebDataSource* data_source,
+      blink::WebURLRequest& request) {
+    ServiceWorkerNetworkProvider* provider =
+        GetNetworkProviderFromDataSource(data_source);
+    scoped_ptr<RequestExtraData> extra_data(new RequestExtraData);
+    extra_data->set_service_worker_provider_id(provider->provider_id());
+    request.setExtraData(extra_data.release());
+  }
+
+  virtual bool isControlledByServiceWorker(
+      blink::WebDataSource& data_source) {
+    ServiceWorkerNetworkProvider* provider =
+        GetNetworkProviderFromDataSource(&data_source);
+    return provider->context()->controller_handle_id() !=
+        kInvalidServiceWorkerHandleId;
+  }
+
+  virtual int64_t serviceWorkerID(
+      blink::WebDataSource& data_source) {
+    ServiceWorkerNetworkProvider* provider =
+        GetNetworkProviderFromDataSource(&data_source);
+    if (provider->context()->controller())
+      return provider->context()->controller()->version_id();
+    return kInvalidServiceWorkerVersionId;
+  }
+
+ private:
+  ServiceWorkerNetworkProvider* GetNetworkProviderFromDataSource(
+      const blink::WebDataSource* data_source) {
+    return ServiceWorkerNetworkProvider::FromDocumentState(
+        static_cast<DataSourceExtraData*>(data_source->extraData()));
   }
 };
 
@@ -169,6 +228,26 @@ blink::WebWorkerPermissionClientProxy*
       origin.isUnique(),
       route_id_,
       ChildThreadImpl::current()->thread_safe_sender());
+}
+
+blink::WebServiceWorkerNetworkProvider*
+EmbeddedSharedWorkerStub::createServiceWorkerNetworkProvider(
+    blink::WebDataSource* data_source) {
+  // Create a content::ServiceWorkerNetworkProvider for this data source so
+  // we can observe its requests.
+  scoped_ptr<ServiceWorkerNetworkProvider> provider(
+      new ServiceWorkerNetworkProvider(
+          MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
+
+  // The provider is kept around for the lifetime of the DataSource
+  // and ownership is transferred to the DataSource.
+  DataSourceExtraData* extra_data = new DataSourceExtraData();
+  data_source->setExtraData(extra_data);
+  ServiceWorkerNetworkProvider::AttachToDocumentState(
+      extra_data, provider.Pass());
+
+  // Blink is responsible for deleting the returned object.
+  return new WebServiceWorkerNetworkProviderImpl();
 }
 
 void EmbeddedSharedWorkerStub::sendDevToolsMessage(

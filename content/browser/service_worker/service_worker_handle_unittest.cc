@@ -90,6 +90,7 @@ class ServiceWorkerHandleTest : public testing::Test {
 
     provider_host_.reset(new ServiceWorkerProviderHost(
         kRenderProcessId, kRenderFrameId, 1,
+        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
         helper_->context()->AsWeakPtr(), dispatcher_host_.get()));
 
     helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);

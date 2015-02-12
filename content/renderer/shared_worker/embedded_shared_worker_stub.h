@@ -58,6 +58,8 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   virtual blink::WebWorkerPermissionClientProxy*
       createWorkerPermissionClientProxy(
           const blink::WebSecurityOrigin& origin) override;
+  virtual blink::WebServiceWorkerNetworkProvider*
+      createServiceWorkerNetworkProvider(blink::WebDataSource*) override;
   virtual void sendDevToolsMessage(
       int call_id,
       const blink::WebString& message,

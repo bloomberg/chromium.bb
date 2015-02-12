@@ -182,6 +182,7 @@ scoped_ptr<ServiceWorkerProviderHost> ServiceWorkerJobTest::CreateControllee() {
       new ServiceWorkerProviderHost(33 /* dummy render_process id */,
                                     MSG_ROUTING_NONE /* render_frame_id */,
                                     1 /* dummy provider_id */,
+                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
                                     helper_->context()->AsWeakPtr(),
                                     NULL));
 }
