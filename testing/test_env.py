@@ -73,8 +73,8 @@ def get_sanitizer_env(cmd, asan, lsan, msan, tsan):
     # fact, it needs symbolization to be able to apply suppressions.
     symbolization_options = ['symbolize=1',
                              'external_symbolizer_path=%s' % symbolizer_path]
-  elif asan or msan:
-    # ASan uses a script for offline symbolization.
+  elif (asan or msan) and sys.platform not in ['win32', 'cygwin']:
+    # ASan uses a script for offline symbolization, except on Windows.
     # Important note: when running ASan with leak detection enabled, we must use
     # the LSan symbolization options above.
     symbolization_options = ['symbolize=0']
@@ -183,7 +183,13 @@ def run_executable(cmd, env):
   lsan = '--lsan=1' in cmd
   msan = '--msan=1' in cmd
   tsan = '--tsan=1' in cmd
-  use_symbolization_script = (asan or msan) and not lsan
+  if sys.platform in ['win32', 'cygwin']:
+    # Symbolization works in-process on Windows even when sandboxed.
+    use_symbolization_script = False
+  else:
+    # LSan doesn't support sandboxing yet, so we use the in-process symbolizer.
+    # Note that ASan and MSan can work together with LSan.
+    use_symbolization_script = (asan or msan) and not lsan
 
   if asan or lsan or msan or tsan:
     extra_env.update(get_sanitizer_env(cmd, asan, lsan, msan, tsan))
