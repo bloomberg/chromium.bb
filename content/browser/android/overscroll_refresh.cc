@@ -412,6 +412,7 @@ OverscrollRefresh::OverscrollRefresh(ui::ResourceManager* resource_manager,
                                      bool mirror)
     : client_(client),
       scrolled_to_top_(true),
+      overflow_y_hidden_(false),
       scroll_consumption_state_(DISABLED),
       effect_(new Effect(resource_manager, target_drag_offset_pixels, mirror)) {
   DCHECK(client);
@@ -427,7 +428,7 @@ void OverscrollRefresh::Reset() {
 
 void OverscrollRefresh::OnScrollBegin() {
   ReleaseWithoutActivation();
-  if (scrolled_to_top_)
+  if (scrolled_to_top_ && !overflow_y_hidden_)
     scroll_consumption_state_ = AWAITING_SCROLL_UPDATE_ACK;
 }
 
@@ -495,9 +496,11 @@ bool OverscrollRefresh::IsAwaitingScrollUpdateAck() const {
 
 void OverscrollRefresh::UpdateDisplay(
     const gfx::SizeF& viewport_size,
-    const gfx::Vector2dF& content_scroll_offset) {
+    const gfx::Vector2dF& content_scroll_offset,
+    bool root_overflow_y_hidden) {
   viewport_size_ = viewport_size;
   scrolled_to_top_ = content_scroll_offset.y() == 0;
+  overflow_y_hidden_ = root_overflow_y_hidden;
 }
 
 void OverscrollRefresh::Release(bool allow_activation) {

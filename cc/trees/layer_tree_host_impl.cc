@@ -1458,6 +1458,16 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   active_tree_->GetViewportSelection(&metadata.selection_start,
                                      &metadata.selection_end);
 
+  LayerImpl* root_layer_for_overflow = OuterViewportScrollLayer()
+                                           ? OuterViewportScrollLayer()
+                                           : InnerViewportScrollLayer();
+  if (root_layer_for_overflow) {
+    metadata.root_overflow_x_hidden =
+        !root_layer_for_overflow->user_scrollable_horizontal();
+    metadata.root_overflow_y_hidden =
+        !root_layer_for_overflow->user_scrollable_vertical();
+  }
+
   if (!InnerViewportScrollLayer())
     return metadata;
 

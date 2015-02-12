@@ -37,7 +37,8 @@ class CONTENT_EXPORT OverscrollRefreshClient {
 
 // Simple pull-to-refresh styled effect. Listens to scroll events, conditionally
 // activating when:
-//   1) The scroll begins when the page has no vertical scroll offset.
+//   1) The scroll begins when the page's root layer 1) has no vertical scroll
+//      offset and 2) lacks the overflow-y:hidden property.
 //   2) The page doesn't consume the initial scroll events.
 //   3) The initial scroll direction is upward.
 // The actual page reload action is triggered only when the effect is active
@@ -81,7 +82,8 @@ class CONTENT_EXPORT OverscrollRefresh {
   // Update the effect according to the most recent display parameters,
   // Note: All dimensions are in device pixels.
   void UpdateDisplay(const gfx::SizeF& viewport_size,
-                     const gfx::Vector2dF& content_scroll_offset);
+                     const gfx::Vector2dF& content_scroll_offset,
+                     bool root_overflow_y_hidden);
 
   // Reset the effect to its inactive state, immediately detaching and
   // disabling any active effects.
@@ -100,6 +102,7 @@ class CONTENT_EXPORT OverscrollRefresh {
 
   gfx::SizeF viewport_size_;
   bool scrolled_to_top_;
+  bool overflow_y_hidden_;
 
   enum ScrollConsumptionState {
     DISABLED,

@@ -252,8 +252,10 @@ void OverscrollControllerAndroid::OnFrameMetadataUpdated(
   gfx::Vector2dF content_scroll_offset =
       gfx::ScaleVector2d(frame_metadata.root_scroll_offset, scale_factor);
 
-  if (refresh_effect_)
-    refresh_effect_->UpdateDisplay(viewport_size, content_scroll_offset);
+  if (refresh_effect_) {
+    refresh_effect_->UpdateDisplay(viewport_size, content_scroll_offset,
+                                   frame_metadata.root_overflow_y_hidden);
+  }
 
   if (glow_effect_) {
     glow_effect_->UpdateDisplay(viewport_size, content_size,
