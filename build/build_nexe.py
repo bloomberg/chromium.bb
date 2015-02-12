@@ -918,7 +918,7 @@ def Main(argv):
         # Raise it again here.
         if (isinstance(out, tuple) and len(out) == 3 and
             isinstance(out[1], Exception)):
-          raise out[0], None, out[2]
+          raise out[0], out[1], out[2]
         elif out and len(out) == 2:
           src_to_obj[out[0]] = out[1]
         else:
