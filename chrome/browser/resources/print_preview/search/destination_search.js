@@ -264,6 +264,11 @@ cr.define('print_preview', function() {
           print_preview.UserInfo.EventType.USERS_CHANGED,
           this.onUsersChanged_.bind(this));
 
+      this.tracker.add(
+          this.getChildElement('.button-strip .cancel-button'),
+          'click',
+          this.cancel.bind(this));
+
       this.tracker.add(window, 'resize', this.onWindowResize_.bind(this));
 
       this.updateThrobbers_();
@@ -297,7 +302,8 @@ cr.define('print_preview', function() {
           parseInt(elStyle.getPropertyValue('padding-bottom'), 10) -
           this.getChildElement('.lists').offsetTop -
           this.getChildElement('.invitation-container').offsetHeight -
-          this.getChildElement('.cloudprint-promo').offsetHeight;
+          this.getChildElement('.cloudprint-promo').offsetHeight -
+          this.getChildElement('.action-area').offsetHeight;
     },
 
     /**

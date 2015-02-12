@@ -66,9 +66,8 @@
 
 #destination-search .invitation-container {
   -webkit-animation: invitation-fadein 500ms;
-  background-color: rgb(249, 237, 190);
-  border-top: solid 1px rgb(245, 233, 183);
-  padding: 12px;
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
 }
 
 @-webkit-keyframes invitation-fadein {
@@ -82,7 +81,6 @@
 
 #destination-search .invitation-text {
   padding-bottom: 12px;
-  text-align: center;
 }
 
 #destination-search .invitation-buttons {
@@ -102,9 +100,6 @@
 #destination-search .cloudprint-promo {
   -webkit-box-align: center;
   -webkit-user-select: none;
-  background-color: rgb(249, 237, 190);
-  display: -webkit-box;
-  padding: 12px;
 }
 
 #destination-search .cloudprint-promo .sign-in[is='action-link'] {

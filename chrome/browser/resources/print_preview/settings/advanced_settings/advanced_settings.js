@@ -70,12 +70,12 @@ cr.define('print_preview', function() {
       print_preview.Overlay.prototype.enterDocument.call(this);
 
       this.tracker.add(
-          this.getChildElement('#cancel-button'),
+          this.getChildElement('.button-strip .cancel-button'),
           'click',
           this.cancel.bind(this));
 
       this.tracker.add(
-          this.getChildElement('#done-button'),
+          this.getChildElement('.button-strip .done-button'),
           'click',
           this.onApplySettings_.bind(this));
 
@@ -110,7 +110,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     onEnterPressedInternal: function() {
-      var doneButton = this.getChildElement('#done-button');
+      var doneButton = this.getChildElement('.button-strip .done-button');
       if (!doneButton.disabled)
         doneButton.click();
       return !doneButton.disabled;
