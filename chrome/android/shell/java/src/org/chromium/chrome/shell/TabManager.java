@@ -227,7 +227,7 @@ public class TabManager extends LinearLayout {
             assert parent == mContentViewHolder;
             mContentViewHolder.removeView(mTabModelWrapper);
         }
-        mToolbar.showAddButton(false);
+        mToolbar.updateToolBarButtonState();
     }
 
     /**
@@ -245,7 +245,7 @@ public class TabManager extends LinearLayout {
         if (mTabModelWrapper.getParent() == null) {
             mContentViewHolder.addView(mTabModelWrapper);
         }
-        mToolbar.showAddButton(true);
+        mToolbar.updateToolBarButtonState();
         InputMethodManager mImm = (InputMethodManager) getContext().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
         mImm.hideSoftInputFromWindow(mContentViewHolder.getWindowToken(), 0);
