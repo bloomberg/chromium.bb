@@ -756,7 +756,7 @@ void ThreadState::setGCState(GCState gcState)
     switch (gcState) {
     case NoGCScheduled:
         checkThread();
-        RELEASE_ASSERT(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
+        RELEASE_ASSERT(m_gcState == StoppingOtherThreads || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
         break;
     case IdleGCScheduled:
     case PreciseGCScheduled:
