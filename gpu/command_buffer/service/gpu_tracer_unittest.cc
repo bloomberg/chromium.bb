@@ -5,43 +5,30 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
+#include "gpu/command_buffer/service/gpu_timing.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_mock.h"
-#include "ui/gl/gl_surface_stub.h"
 
 namespace gpu {
 namespace gles2 {
+namespace {
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::AtMost;
 using ::testing::Exactly;
 using ::testing::Invoke;
 using ::testing::NotNull;
 using ::testing::Return;
 
-class FakeCPUTime : public CPUTime {
- public:
-  FakeCPUTime()
-      : current_cpu_time_(0) {
-  }
-
-  int64 GetCurrentTime() override {
-    return current_cpu_time_;
-  }
-
-  void SetFakeCPUTime(int64 cpu_time) {
-    current_cpu_time_ = cpu_time;
-  }
-
- protected:
-  ~FakeCPUTime() override {}
-
-  int64 current_cpu_time_;
-};
+int64 g_fakeCPUTime = 0;
+int64 FakeCpuTime() {
+  return g_fakeCPUTime;
+}
 
 class MockOutputter : public Outputter {
  public:
@@ -163,10 +150,10 @@ class GlFakeQueries {
 
 class GPUTracerTester : public GPUTracer {
  public:
-  GPUTracerTester(GpuTracerType tracer_type, gles2::GLES2Decoder* decoder)
-      : GPUTracer(decoder),
-        tracing_enabled_(0),
-        test_tracer_type_(tracer_type) {
+  explicit GPUTracerTester(gles2::GLES2Decoder* decoder)
+      : GPUTracer(decoder), tracing_enabled_(0) {
+    gpu_timing_.SetCpuTimeForTesting(base::Bind(&FakeCpuTime));
+
     // Force tracing to be dependent on our mock variable here.
     gpu_trace_srv_category = &tracing_enabled_;
     gpu_trace_dev_category = &tracing_enabled_;
@@ -182,10 +169,6 @@ class GPUTracerTester : public GPUTracer {
     set_outputter_ = outputter;
   }
 
-  void SetCPUTime(scoped_refptr<CPUTime> cputime) {
-    set_cputime_ = cputime;
-  }
-
  protected:
   scoped_refptr<Outputter> CreateOutputter(const std::string& name) override {
     if (set_outputter_.get()) {
@@ -194,72 +177,52 @@ class GPUTracerTester : public GPUTracer {
     return new MockOutputter();
   }
 
-  scoped_refptr<CPUTime> CreateCPUTime() override {
-    if (set_cputime_.get()) {
-      return set_cputime_;
-    }
-    return new FakeCPUTime();
-  }
-
-  GpuTracerType DetermineTracerType() override {
-    return test_tracer_type_;
-  }
-
   void PostTask() override {
     // Process synchronously.
     Process();
   }
 
   unsigned char tracing_enabled_;
-  GpuTracerType test_tracer_type_;
 
   scoped_refptr<Outputter> set_outputter_;
-  scoped_refptr<CPUTime> set_cputime_;
 };
 
 class BaseGpuTest : public GpuServiceTest {
  public:
-  BaseGpuTest(GpuTracerType test_tracer_type)
-      : test_tracer_type_(test_tracer_type) {
+  explicit BaseGpuTest(GPUTiming::TimerType test_timer_type)
+      : test_timer_type_(test_timer_type) {
+    gpu_timing_.SetCpuTimeForTesting(base::Bind(&FakeCpuTime));
+    gpu_timing_.SetTimerTypeForTesting(test_timer_type);
   }
 
  protected:
   void SetUp() override {
+    g_fakeCPUTime = 0;
     const char* gl_version = "3.2";
-    const char* extensions = nullptr;
-    if (GetTracerType() == kTracerTypeDisjointTimer) {
+    const char* extensions = "";
+    if (GetTimerType() == GPUTiming::kTimerTypeDisjoint) {
       gl_version = "opengl es 3.0";
       extensions = "GL_EXT_disjoint_timer_query";
-    } else if (GetTracerType() == kTracerTypeARBTimer) {
+    } else if (GetTimerType() == GPUTiming::kTimerTypeARB) {
       // TODO(sievers): The tracer should not depend on ARB_occlusion_query.
       // Try merge Query APIs (core, ARB, EXT) into a single binding each.
       extensions = "GL_ARB_timer_query GL_ARB_occlusion_query";
     }
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     gl_fake_queries_.Reset();
-    gl_surface_ = new gfx::GLSurfaceStub();
-    gl_context_ = new gfx::GLContextStub();
-    gl_context_->MakeCurrent(gl_surface_.get());
 
     outputter_ref_ = new MockOutputter();
-    cpu_time_ref_ = new FakeCPUTime;
   }
 
   void TearDown() override {
     outputter_ref_ = NULL;
-    cpu_time_ref_ = NULL;
 
-    gl_context_->ReleaseCurrent(gl_surface_.get());
-    gl_context_ = NULL;
-    gl_surface_ = NULL;
-
-    gl_.reset();
     gl_fake_queries_.Reset();
     GpuServiceTest::TearDown();
   }
 
   void ExpectTraceQueryMocks() {
-    if (GetTracerType() != kTracerTypeInvalid) {
+    if (GetTimerType() != GPUTiming::kTimerTypeInvalid) {
       // Delegate query APIs used by GPUTrace to a GlFakeQueries
       EXPECT_CALL(*gl_, GenQueriesARB(2, NotNull())).Times(AtLeast(1))
           .WillRepeatedly(
@@ -270,7 +233,7 @@ class BaseGpuTest : public GpuServiceTest {
           .WillRepeatedly(
                Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectivARB));
 
-      if (GetTracerType() == kTracerTypeDisjointTimer) {
+      if (GetTimerType() == GPUTiming::kTimerTypeDisjoint) {
         EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, _))
           .WillRepeatedly(
                Invoke(&gl_fake_queries_, &GlFakeQueries::GetInteger64v));
@@ -323,14 +286,14 @@ class BaseGpuTest : public GpuServiceTest {
                             const std::string& name, int64 expect_start_time,
                             int64 expect_end_time) {
     ExpectOutputterBeginMocks(outputter, category, name);
-    ExpectOutputterEndMocks(outputter, category, name,
-                            expect_start_time, expect_end_time,
-                            GetTracerType() != kTracerTypeInvalid);
+    ExpectOutputterEndMocks(outputter, category, name, expect_start_time,
+                            expect_end_time,
+                            GetTimerType() != GPUTiming::kTimerTypeInvalid);
   }
 
   void ExpectTracerOffsetQueryMocks() {
     // Disjoint check should only be called by kTracerTypeDisjointTimer type.
-    if (GetTracerType() == kTracerTypeDisjointTimer) {
+    if (GetTimerType() == GPUTiming::kTimerTypeDisjoint) {
       EXPECT_CALL(*gl_, GetIntegerv(GL_GPU_DISJOINT_EXT, _)).Times(AtLeast(1))
           .WillRepeatedly(
               Invoke(&gl_fake_queries_, &GlFakeQueries::GetIntegerv));
@@ -338,36 +301,31 @@ class BaseGpuTest : public GpuServiceTest {
       EXPECT_CALL(*gl_, GetIntegerv(GL_GPU_DISJOINT_EXT, _)).Times(Exactly(0));
     }
 
-    // Timer offset calculation should only happen for the regular timer.
-    if (GetTracerType() != kTracerTypeARBTimer) {
+    if (GetTimerType() != GPUTiming::kTimerTypeARB) {
       EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, NotNull()))
           .Times(Exactly(0));
     } else {
       EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, NotNull()))
-          .Times(AtLeast(1))
+          .Times(AtMost(1))
           .WillRepeatedly(
               Invoke(&gl_fake_queries_, &GlFakeQueries::GetInteger64v));
     }
   }
 
-  GpuTracerType GetTracerType() { return test_tracer_type_; }
+  GPUTiming::TimerType GetTimerType() { return test_timer_type_; }
 
-  GpuTracerType test_tracer_type_;
+  GPUTiming::TimerType test_timer_type_;
   GlFakeQueries gl_fake_queries_;
 
+  GPUTiming gpu_timing_;
   scoped_refptr<MockOutputter> outputter_ref_;
-  scoped_refptr<FakeCPUTime> cpu_time_ref_;
-
-  scoped_refptr<gfx::GLSurface> gl_surface_;
-  scoped_refptr<gfx::GLContext> gl_context_;
 };
 
 // Test GPUTrace calls all the correct gl calls.
 class BaseGpuTraceTest : public BaseGpuTest {
  public:
-  BaseGpuTraceTest(GpuTracerType test_tracer_type)
-      : BaseGpuTest(test_tracer_type) {
-  }
+  explicit BaseGpuTraceTest(GPUTiming::TimerType test_timer_type)
+      : BaseGpuTest(test_timer_type) {}
 
   void DoTraceTest() {
     // Expected results
@@ -386,12 +344,14 @@ class BaseGpuTraceTest : public BaseGpuTest {
     ExpectOutputterMocks(outputter_ref_.get(), category_name, trace_name,
                          expect_start_time, expect_end_time);
 
-    scoped_refptr<GPUTrace> trace =
-        new GPUTrace(outputter_ref_, cpu_time_ref_, category_name, trace_name,
-                     offset_time, GetTracerType());
+    scoped_refptr<GPUTrace> trace = new GPUTrace(
+        outputter_ref_, &gpu_timing_, category_name, trace_name, true);
+
+    gpu_timing_.SetOffsetForTesting(
+        offset_time, test_timer_type_ == GPUTiming::kTimerTypeARB);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
-    cpu_time_ref_->SetFakeCPUTime(expect_start_time);
+    g_fakeCPUTime = expect_start_time;
     trace->Start(true);
 
     // Shouldn't be available before End() call
@@ -413,22 +373,18 @@ class BaseGpuTraceTest : public BaseGpuTest {
     trace->Process();
 
     outputter_ref_ = NULL;
-    cpu_time_ref_ = NULL;
   }
 };
 
 class GpuARBTimerTraceTest : public BaseGpuTraceTest {
  public:
-  GpuARBTimerTraceTest()
-      : BaseGpuTraceTest(kTracerTypeARBTimer) {
-  }
+  GpuARBTimerTraceTest() : BaseGpuTraceTest(GPUTiming::kTimerTypeARB) {}
 };
 
 class GpuDisjointTimerTraceTest : public BaseGpuTraceTest {
  public:
   GpuDisjointTimerTraceTest()
-      : BaseGpuTraceTest(kTracerTypeDisjointTimer) {
-  }
+      : BaseGpuTraceTest(GPUTiming::kTimerTypeDisjoint) {}
 };
 
 TEST_F(GpuARBTimerTraceTest, ARBTimerTraceTest) {
@@ -442,25 +398,23 @@ TEST_F(GpuDisjointTimerTraceTest, DisjointTimerTraceTest) {
 // Test GPUTracer calls all the correct gl calls.
 class BaseGpuTracerTest : public BaseGpuTest {
  public:
-  BaseGpuTracerTest(GpuTracerType test_tracer_type)
-      : BaseGpuTest(test_tracer_type) {
-  }
+  explicit BaseGpuTracerTest(GPUTiming::TimerType test_timer_type)
+      : BaseGpuTest(test_timer_type) {}
 
   void DoBasicTracerTest() {
     ExpectTracerOffsetQueryMocks();
 
     MockGLES2Decoder decoder;
-    GPUTracerTester tracer(test_tracer_type_, &decoder);
+    EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
+    GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
 
     tracer.SetOutputter(outputter_ref_);
-    tracer.SetCPUTime(cpu_time_ref_);
 
     ASSERT_TRUE(tracer.BeginDecoding());
     ASSERT_TRUE(tracer.EndDecoding());
 
     outputter_ref_ = NULL;
-    cpu_time_ref_ = NULL;
   }
 
   void DoTracerMarkersTest() {
@@ -482,14 +436,14 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     MockGLES2Decoder decoder;
-    GPUTracerTester tracer(test_tracer_type_, &decoder);
+    EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
+    GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
 
     tracer.SetOutputter(outputter_ref_);
-    tracer.SetCPUTime(cpu_time_ref_);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
-    cpu_time_ref_->SetFakeCPUTime(expect_start_time);
+    g_fakeCPUTime = expect_start_time;
 
     ASSERT_TRUE(tracer.BeginDecoding());
 
@@ -501,7 +455,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
       gl_fake_queries_.SetCurrentGLTime(
           start_timestamp +
           (i * base::Time::kNanosecondsPerMicrosecond));
-      cpu_time_ref_->SetFakeCPUTime(expect_start_time + i);
+      g_fakeCPUTime = expect_start_time + i;
 
       // Each trace name should be different to differentiate.
       const char num_char = static_cast<char>('0' + i);
@@ -520,7 +474,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
       gl_fake_queries_.SetCurrentGLTime(
           end_timestamp +
           (i * base::Time::kNanosecondsPerMicrosecond));
-      cpu_time_ref_->SetFakeCPUTime(expect_end_time + i);
+      g_fakeCPUTime = expect_start_time + i;
 
       // Each trace name should be different to differentiate.
       const char num_char = static_cast<char>('0' + i);
@@ -528,9 +482,9 @@ class BaseGpuTracerTest : public BaseGpuTest {
       std::string source_trace_name = trace_name + num_char;
 
       ExpectOutputterEndMocks(outputter_ref_.get(), source_category,
-                              source_trace_name,
-                              expect_start_time + i, expect_end_time + i,
-                              GetTracerType() != kTracerTypeInvalid);
+                              source_trace_name, expect_start_time + i,
+                              expect_end_time + i,
+                              GetTimerType() != GPUTiming::kTimerTypeInvalid);
 
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
 
@@ -544,7 +498,6 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ASSERT_TRUE(tracer.EndDecoding());
 
     outputter_ref_ = NULL;
-    cpu_time_ref_ = NULL;
   }
 
   void DoDisjointTest() {
@@ -568,14 +521,14 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     MockGLES2Decoder decoder;
-    GPUTracerTester tracer(test_tracer_type_, &decoder);
+    EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
+    GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
 
     tracer.SetOutputter(outputter_ref_);
-    tracer.SetCPUTime(cpu_time_ref_);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
-    cpu_time_ref_->SetFakeCPUTime(expect_start_time);
+    g_fakeCPUTime = expect_start_time;
 
     ASSERT_TRUE(tracer.BeginDecoding());
 
@@ -586,7 +539,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ASSERT_TRUE(tracer.Begin(category_name, trace_name, source));
 
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
-    cpu_time_ref_->SetFakeCPUTime(expect_end_time);
+    g_fakeCPUTime = expect_end_time;
     gl_fake_queries_.SetDisjoint();
 
     ExpectOutputterEndMocks(outputter_ref_.get(), category_name, trace_name,
@@ -596,29 +549,23 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ASSERT_TRUE(tracer.EndDecoding());
 
     outputter_ref_ = NULL;
-    cpu_time_ref_ = NULL;
   }
 };
 
 class InvalidTimerTracerTest : public BaseGpuTracerTest {
  public:
-  InvalidTimerTracerTest()
-      : BaseGpuTracerTest(kTracerTypeInvalid) {
-  }
+  InvalidTimerTracerTest() : BaseGpuTracerTest(GPUTiming::kTimerTypeInvalid) {}
 };
 
 class GpuARBTimerTracerTest : public BaseGpuTracerTest {
  public:
-  GpuARBTimerTracerTest()
-      : BaseGpuTracerTest(kTracerTypeARBTimer) {
-  }
+  GpuARBTimerTracerTest() : BaseGpuTracerTest(GPUTiming::kTimerTypeARB) {}
 };
 
 class GpuDisjointTimerTracerTest : public BaseGpuTracerTest {
  public:
   GpuDisjointTimerTracerTest()
-      : BaseGpuTracerTest(kTracerTypeDisjointTimer) {
-  }
+      : BaseGpuTracerTest(GPUTiming::kTimerTypeDisjoint) {}
 };
 
 TEST_F(InvalidTimerTracerTest, InvalidTimerBasicTracerTest) {
@@ -649,38 +596,53 @@ TEST_F(GpuDisjointTimerTracerTest, DisjointTimerDisjointTraceTest) {
   DoDisjointTest();
 }
 
+class GPUTracerTest : public GpuServiceTest {
+ protected:
+  void SetUp() override {
+    g_fakeCPUTime = 0;
+    GpuServiceTest::SetUpWithGLVersion("3.2", "");
+    decoder_.reset(new MockGLES2Decoder());
+    EXPECT_CALL(*decoder_, GetGLContext())
+        .Times(AtMost(1))
+        .WillRepeatedly(Return(GetGLContext()));
+    tracer_tester_.reset(new GPUTracerTester(decoder_.get()));
+  }
+
+  void TearDown() override {
+    tracer_tester_ = nullptr;
+    decoder_ = nullptr;
+    GpuServiceTest::TearDown();
+  }
+  scoped_ptr<MockGLES2Decoder> decoder_;
+  scoped_ptr<GPUTracerTester> tracer_tester_;
+};
+
+TEST_F(GPUTracerTest, IsTracingTest) {
+  EXPECT_FALSE(tracer_tester_->IsTracing());
+  tracer_tester_->SetTracingEnabled(true);
+  EXPECT_TRUE(tracer_tester_->IsTracing());
+}
 // Test basic functionality of the GPUTracerTester.
-TEST(GPUTracerTester, IsTracingTest) {
-  MockGLES2Decoder decoder;
-  GPUTracerTester tracer_tester(kTracerTypeInvalid, &decoder);
-  EXPECT_FALSE(tracer_tester.IsTracing());
-  tracer_tester.SetTracingEnabled(true);
-  EXPECT_TRUE(tracer_tester.IsTracing());
+TEST_F(GPUTracerTest, DecodeTest) {
+  ASSERT_TRUE(tracer_tester_->BeginDecoding());
+  EXPECT_FALSE(tracer_tester_->BeginDecoding());
+  ASSERT_TRUE(tracer_tester_->EndDecoding());
+  EXPECT_FALSE(tracer_tester_->EndDecoding());
 }
 
-TEST(GPUTracerTester, DecodeTest) {
-  MockGLES2Decoder decoder;
-  GPUTracerTester tracer_tester(kTracerTypeInvalid, &decoder);
-  ASSERT_TRUE(tracer_tester.BeginDecoding());
-  EXPECT_FALSE(tracer_tester.BeginDecoding());
-  ASSERT_TRUE(tracer_tester.EndDecoding());
-  EXPECT_FALSE(tracer_tester.EndDecoding());
-}
-
-TEST(GPUTracerTester, TraceDuringDecodeTest) {
-  MockGLES2Decoder decoder;
-  GPUTracerTester tracer_tester(kTracerTypeInvalid, &decoder);
+TEST_F(GPUTracerTest, TraceDuringDecodeTest) {
   const std::string category_name("trace_category");
   const std::string trace_name("trace_test");
 
-  EXPECT_FALSE(tracer_tester.Begin(category_name, trace_name,
-                                   kTraceGroupMarker));
+  EXPECT_FALSE(
+      tracer_tester_->Begin(category_name, trace_name, kTraceGroupMarker));
 
-  ASSERT_TRUE(tracer_tester.BeginDecoding());
-  EXPECT_TRUE(tracer_tester.Begin(category_name, trace_name,
-                                  kTraceGroupMarker));
-  ASSERT_TRUE(tracer_tester.EndDecoding());
+  ASSERT_TRUE(tracer_tester_->BeginDecoding());
+  EXPECT_TRUE(
+      tracer_tester_->Begin(category_name, trace_name, kTraceGroupMarker));
+  ASSERT_TRUE(tracer_tester_->EndDecoding());
 }
 
+}  // namespace
 }  // namespace gles2
 }  // namespace gpu

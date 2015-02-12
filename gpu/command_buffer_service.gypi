@@ -87,6 +87,8 @@
     'command_buffer/service/gpu_switches.h',
     'command_buffer/service/gpu_tracer.cc',
     'command_buffer/service/gpu_tracer.h',
+    'command_buffer/service/gpu_timing.cc',
+    'command_buffer/service/gpu_timing.h',
     'command_buffer/service/id_manager.h',
     'command_buffer/service/id_manager.cc',
     'command_buffer/service/image_factory.cc',

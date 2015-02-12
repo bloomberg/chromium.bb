@@ -51,5 +51,8 @@ void GpuServiceTest::TearDown() {
   testing::Test::TearDown();
 }
 
+gfx::GLContext* GpuServiceTest::GetGLContext() {
+  return context_.get();
+}
 }  // namespace gles2
 }  // namespace gpu
