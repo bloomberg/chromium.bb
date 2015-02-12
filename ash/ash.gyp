@@ -5,7 +5,6 @@
 {
   'variables': {
     'chromium_code': 1,
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     # These files lists are shared with the GN build.
     'ash_sources': [
       'accelerators/accelerator_commands.cc',
