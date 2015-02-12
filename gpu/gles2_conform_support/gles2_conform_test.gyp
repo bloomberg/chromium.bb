@@ -137,12 +137,9 @@
                 4018,  # signed/unsigned mismatch
                 4101,  # unreferenced local variable
                 4715,  # not all control paths return a value
+                4267,  # size_t/unsigned int conversion
               ],
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  'AdditionalOptions': ['/UNOMINMAX'],
-                },
-              },
+              'defines!': [ 'NOMINMAX' ],
             }],
             ['OS=="mac"', {
               'defines': [
