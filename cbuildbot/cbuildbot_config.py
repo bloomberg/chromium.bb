@@ -165,6 +165,25 @@ def IsCanaryType(b_type):
   """Returns True if this build type is a Canary."""
   return b_type == constants.CANARY_TYPE
 
+def GetDefaultWaterfall(build_config):
+  if not (build_config['important'] or build_config['master']):
+    return None
+  if build_config['branch']:
+    return None
+
+  b_type = build_config['build_type']
+  if (
+      IsPFQType(b_type) or
+      IsCQType(b_type) or
+      IsCanaryType(b_type) or
+      b_type in (
+        constants.PRE_CQ_LAUNCHER_TYPE,
+      )):
+    if build_config['internal']:
+      return constants.WATERFALL_INTERNAL
+    else:
+      return constants.WATERFALL_EXTERNAL
+
 
 # List of usable cbuildbot configs; see add_config method.
 # TODO(mtennant): This is seriously buried in this file.  Move to top
@@ -660,6 +679,10 @@ _settings = dict(
 # buildbot_waterfall_name -- If set, tells buildbot what name to give to the
 # corresponding builder on its waterfall.
   buildbot_waterfall_name=None,
+
+# active_waterfall -- If not None, the name (in constants.CIDB_KNOWN_WATERFALLS)
+#                     of the waterfall that this target should be active on.
+  active_waterfall=None,
 )
 
 
@@ -3200,3 +3223,97 @@ def GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
       return index
 
   return len(type_order)
+
+
+# This is a list of configs that should be included on the main waterfall, but
+# aren't included by default (see IsDefaultMainWaterfall). This loosely
+# corresponds to the set of experimental or self-standing configs.
+_waterfall_config_map = {
+    constants.WATERFALL_EXTERNAL: frozenset([
+      # Experimental Paladins
+      'amd64-generic_freon-paladin',
+
+      # Incremental
+      'amd64-generic-incremental',
+      'daisy-incremental',
+      'x86-generic-incremental',
+
+      # Full
+      'amd64-generic-full',
+      'arm-generic-full',
+      'daisy-full',
+      'mipsel-o32-generic-full',
+
+      # ASAN
+      'amd64-generic-asan',
+      'x86-generic-asan',
+
+      # Utility
+      'chromiumos-sdk',
+      'refresh-packages',
+    ]),
+
+    constants.WATERFALL_INTERNAL: frozenset([
+      # Experimental Paladins
+      'daisy_skate-paladin',
+      'nyan_freon-paladin',
+      'panther_embedded-minimal-paladin',
+      'urara-paladin',
+      'whirlwind-paladin',
+
+      # Experimental Canaries
+      'auron-b-release-group',
+      'ivybridge-freon-release-group',
+      'jecht-release-group',
+      'rambi-d-release-group',
+      'rambi-freon-a-release-group',
+      'rambi-freon-b-release-group',
+      'rambi-freon-c-release-group',
+      'sandybridge-freon-release-group',
+      'veyron-b-release-group',
+      'veyron-c-release-group',
+      'veyron-release-group',
+
+      # Experimental Canaries (Group)
+      'bobcat-release',
+      'cosmos-release',
+      'daisy_winter-release',
+      'gizmo-release',
+      'kayle-release',
+      'lemmings-release',
+      'nyan_freon-release',
+      'panther_embedded-minimal-release',
+      'panther_moblab-release',
+      'peppy-release',
+      'rush_ryu-release',
+      'strago-release',
+      'urara-release',
+
+      # Experimental PFQs.
+      'peach_pit-chrome-pfq',
+
+      # Incremental Builders.
+      'mario-incremental',
+
+      # Firmware Builders.
+      'link-depthcharge-full-firmware',
+
+      # SDK Builders.
+      'panther_embedded-project-sdk',
+
+      # Toolchain Builders.
+      'internal-toolchain-major',
+      'internal-toolchain-minor',
+    ]),
+}
+
+def _SetupWaterfalls():
+  for name, c in config.iteritems():
+    c['active_waterfall'] = GetDefaultWaterfall(c)
+
+  # Apply manual configs.
+  for waterfall, names in _waterfall_config_map.iteritems():
+    for name in names:
+      config[name]['active_waterfall'] = waterfall
+
+_SetupWaterfalls()

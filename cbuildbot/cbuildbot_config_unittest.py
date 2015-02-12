@@ -750,3 +750,38 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     old = cbuildbot_config.config['storm-paladin']
     new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], old['vm_tests'])
+
+  # pylint: disable=protected-access
+  def testWaterfallManualConfigIsValid(self):
+    """Verify the correctness of the manual waterfall configuration."""
+    all_build_names = set(cbuildbot_config.config.iterkeys())
+    redundant = set()
+    seen = set()
+    for waterfall, names in cbuildbot_config._waterfall_config_map.iteritems():
+      for build_name in names:
+        # Every build in the configuration map must be valid.
+        self.assertTrue(build_name in all_build_names,
+                        "Invalid build name in manual waterfall config: %s" % (
+                            build_name,))
+        # No build should appear in multiple waterfalls.
+        self.assertFalse(build_name in seen,
+                         "Duplicate manual config for board: %s" % (
+                             build_name,))
+        seen.add(build_name)
+
+        # The manual configuration must be applied and override any default
+        # configuration.
+        config = cbuildbot_config.config[build_name]
+        self.assertEqual(config['active_waterfall'], waterfall,
+                         "Manual waterfall membership is not in the "
+                         "configuration for: %s" % (build_name,))
+
+
+        default_waterfall = cbuildbot_config.GetDefaultWaterfall(config)
+        if config['active_waterfall'] == default_waterfall:
+          redundant.add(build_name)
+
+    # No configurations should be redundant with defaults.
+    self.assertFalse(redundant,
+                     "Manual waterfall configs are automatically included: "
+                     "%s" % (sorted(redundant),))

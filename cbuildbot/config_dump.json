@@ -1,5 +1,6 @@
 {
     "_default": {
+        "active_waterfall": null,
         "afdo_generate": false,
         "afdo_generate_min": false,
         "afdo_update_ebuild": false,
@@ -99,6 +100,7 @@
         ]
     },
     "alex-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-alex"
         ],
@@ -168,6 +170,7 @@
         ]
     },
     "amd64-generic-asan": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "amd64-generic"
         ],
@@ -201,6 +204,7 @@
         ]
     },
     "amd64-generic-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "amd64-generic"
         ],
@@ -246,6 +250,7 @@
         "vm_tests": []
     },
     "amd64-generic-full": {
+        "active_waterfall": "chromiumos",
         "archive_build_debug": true,
         "boards": [
             "amd64-generic"
@@ -271,6 +276,7 @@
         "usepkg_build_packages": false
     },
     "amd64-generic-incremental": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "amd64-generic"
         ],
@@ -329,6 +335,7 @@
         "vm_tests": []
     },
     "amd64-generic-paladin": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "amd64-generic"
         ],
@@ -455,6 +462,7 @@
         ]
     },
     "amd64-generic_freon-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "amd64-generic_freon"
         ],
@@ -550,6 +558,7 @@
         "vm_tests": []
     },
     "amd64-generic_freon-paladin": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "amd64-generic_freon"
         ],
@@ -628,6 +637,7 @@
         ]
     },
     "arm-generic-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "arm-generic"
         ],
@@ -679,6 +689,7 @@
         "vm_tests": []
     },
     "arm-generic-full": {
+        "active_waterfall": "chromiumos",
         "archive_build_debug": true,
         "boards": [
             "arm-generic"
@@ -733,6 +744,7 @@
         "vm_tests": []
     },
     "arm-generic-paladin": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "arm-generic"
         ],
@@ -809,6 +821,7 @@
         "vm_tests": []
     },
     "arm-generic_freon-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "arm-generic_freon"
         ],
@@ -1207,6 +1220,7 @@
         "name": "auron-b-full-group"
     },
     "auron-b-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -1646,6 +1660,7 @@
         "vm_tests": []
     },
     "auron-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "auron"
         ],
@@ -1969,6 +1984,7 @@
         ]
     },
     "auron-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -4374,6 +4390,7 @@
         "vm_tests": []
     },
     "beaglebone-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "beaglebone"
         ],
@@ -4441,6 +4458,7 @@
         "vm_tests": []
     },
     "beaglebone-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "archive_build_debug": true,
@@ -4660,6 +4678,7 @@
         "name": "beltino-a-full-group"
     },
     "beltino-a-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -4861,6 +4880,7 @@
         "name": "beltino-b-full-group"
     },
     "beltino-b-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -5743,6 +5763,7 @@
         ]
     },
     "bobcat-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -6229,6 +6250,7 @@
         "vm_tests": []
     },
     "butterfly-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "butterfly"
         ],
@@ -8195,6 +8217,7 @@
         "vm_tests": []
     },
     "chromiumos-sdk": {
+        "active_waterfall": "chromiumos",
         "archive_build_debug": true,
         "boards": [
             "x86-generic",
@@ -9829,6 +9852,7 @@
         "vm_tests": []
     },
     "cosmos-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -10425,6 +10449,7 @@
         "vm_tests": []
     },
     "daisy-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "daisy"
         ],
@@ -10562,6 +10587,7 @@
         "vm_tests": []
     },
     "daisy-full": {
+        "active_waterfall": "chromiumos",
         "archive_build_debug": true,
         "boards": [
             "daisy"
@@ -10687,6 +10713,7 @@
         "name": "daisy-full-group"
     },
     "daisy-incremental": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "daisy"
         ],
@@ -10736,6 +10763,7 @@
         "vm_tests": []
     },
     "daisy-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "daisy"
         ],
@@ -11061,6 +11089,7 @@
         "vm_tests": []
     },
     "daisy-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -11806,6 +11835,7 @@
         "vm_tests": []
     },
     "daisy_skate-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "daisy_skate"
         ],
@@ -11992,6 +12022,7 @@
         "vm_tests": []
     },
     "daisy_skate-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "daisy_skate"
         ],
@@ -12535,6 +12566,7 @@
         "vm_tests": []
     },
     "daisy_spring-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "daisy_spring"
         ],
@@ -13122,6 +13154,7 @@
         "vm_tests": []
     },
     "daisy_winter-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -15669,6 +15702,7 @@
         "name": "external-mixed-pre-cq"
     },
     "falco-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "falco"
         ],
@@ -15811,6 +15845,7 @@
         "usepkg_build_packages": false
     },
     "falco-full-compile-paladin": {
+        "active_waterfall": "chromeos",
         "board_replace": true,
         "boards": [
             "falco"
@@ -15870,6 +15905,7 @@
         "vm_tests": []
     },
     "falco-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "falco"
         ],
@@ -16841,6 +16877,7 @@
         "vm_tests": []
     },
     "gizmo-paladin": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "gizmo"
         ],
@@ -16883,6 +16920,7 @@
         "vm_tests": []
     },
     "gizmo-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -19633,6 +19671,7 @@
         "vm_tests": []
     },
     "internal-toolchain-major": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "boards": [
             "x86-alex",
@@ -19665,6 +19704,7 @@
         "usepkg_build_packages": false
     },
     "internal-toolchain-minor": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "boards": [
             "x86-alex",
@@ -19760,6 +19800,7 @@
         "name": "ivybridge-freon-full-group"
     },
     "ivybridge-freon-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -19928,6 +19969,7 @@
         "name": "ivybridge-full-group"
     },
     "ivybridge-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -20723,6 +20765,7 @@
         ]
     },
     "jecht-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -21142,6 +21185,7 @@
         "vm_tests": []
     },
     "kayle-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "kayle"
         ],
@@ -21214,6 +21258,7 @@
         "vm_tests": []
     },
     "kayle-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -22799,6 +22844,7 @@
         "vm_tests": []
     },
     "lemmings-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -23319,6 +23365,7 @@
         "vm_tests": []
     },
     "leon-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "leon"
         ],
@@ -23805,6 +23852,7 @@
         "vm_tests": []
     },
     "link-depthcharge-full-firmware": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "boards": [
             "link"
@@ -23929,6 +23977,7 @@
         "vm_tests": []
     },
     "link-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "link"
         ],
@@ -24842,6 +24891,7 @@
         "vm_tests": []
     },
     "lumpy-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "afdo_generate": true,
         "boards": [
             "lumpy"
@@ -24986,6 +25036,7 @@
         "usepkg_build_packages": false
     },
     "lumpy-incremental-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "lumpy"
         ],
@@ -25043,6 +25094,7 @@
         "vm_tests": []
     },
     "lumpy-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "lumpy"
         ],
@@ -25961,6 +26013,7 @@
         "vm_tests": []
     },
     "mario-incremental": {
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-mario"
         ],
@@ -25974,6 +26027,7 @@
         "uprev": false
     },
     "master-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "afdo_update_ebuild": true,
         "boards": [],
         "build_type": "chrome",
@@ -25992,6 +26046,7 @@
         "uprev": false
     },
     "master-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [],
         "build_type": "paladin",
         "chrome_sdk": true,
@@ -26023,6 +26078,7 @@
         "vm_tests": []
     },
     "master-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -27441,6 +27497,7 @@
         "vm_tests": []
     },
     "mipsel-o32-generic-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "mipsel-o32-generic"
         ],
@@ -27492,6 +27549,7 @@
         "vm_tests": []
     },
     "mipsel-o32-generic-full": {
+        "active_waterfall": "chromiumos",
         "archive_build_debug": true,
         "boards": [
             "mipsel-o32-generic"
@@ -27546,6 +27604,7 @@
         "vm_tests": []
     },
     "mipsel-o32-generic-paladin": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "mipsel-o32-generic"
         ],
@@ -28029,6 +28088,7 @@
         "vm_tests": []
     },
     "monroe-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "monroe"
         ],
@@ -28500,6 +28560,7 @@
         "vm_tests": []
     },
     "nyan-full-compile-paladin": {
+        "active_waterfall": "chromeos",
         "board_replace": true,
         "boards": [
             "nyan"
@@ -28690,6 +28751,7 @@
         "vm_tests": []
     },
     "nyan-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "nyan"
         ],
@@ -29011,6 +29073,7 @@
         "vm_tests": []
     },
     "nyan-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -30423,6 +30486,7 @@
         "vm_tests": []
     },
     "nyan_freon-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "nyan_freon"
         ],
@@ -30496,6 +30560,7 @@
         "vm_tests": []
     },
     "nyan_freon-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -31461,6 +31526,7 @@
         "vm_tests": []
     },
     "panther-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "panther"
         ],
@@ -31834,6 +31900,7 @@
         "vm_tests": []
     },
     "panther_embedded-minimal-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "panther_embedded"
         ],
@@ -31851,6 +31918,7 @@
         "vm_tests": []
     },
     "panther_embedded-minimal-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -31890,6 +31958,7 @@
         "vm_tests": []
     },
     "panther_embedded-project-sdk": {
+        "active_waterfall": "chromeos",
         "boards": [
             "panther_embedded"
         ],
@@ -32042,6 +32111,7 @@
         "vm_tests": []
     },
     "panther_moblab-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "panther_moblab"
         ],
@@ -32112,6 +32182,7 @@
         "vm_tests": []
     },
     "panther_moblab-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -32595,6 +32666,7 @@
         "vm_tests": []
     },
     "parrot-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "parrot"
         ],
@@ -34744,6 +34816,7 @@
         "name": "peach-full-group"
     },
     "peach-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -35398,6 +35471,7 @@
         "vm_tests": []
     },
     "peach_pit-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "peach_pit"
         ],
@@ -35583,6 +35657,7 @@
         "vm_tests": []
     },
     "peach_pit-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "peach_pit"
         ],
@@ -35949,6 +36024,7 @@
         "vm_tests": []
     },
     "peppy-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "peppy"
         ],
@@ -36121,6 +36197,7 @@
         "vm_tests": []
     },
     "peppy-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "peppy"
         ],
@@ -36194,6 +36271,7 @@
         "vm_tests": []
     },
     "peppy-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -36485,6 +36563,7 @@
         "vm_tests": []
     },
     "peppy_freon-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "peppy_freon"
         ],
@@ -36620,6 +36699,7 @@
         "vm_tests": []
     },
     "peppy_freon-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "peppy_freon"
         ],
@@ -37131,6 +37211,7 @@
         "name": "pineview-full-group"
     },
     "pineview-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -37601,6 +37682,7 @@
         "name": "pre-cq-group"
     },
     "pre-cq-launcher": {
+        "active_waterfall": "chromeos",
         "boards": [],
         "build_type": "priest",
         "chrome_sdk": true,
@@ -39352,6 +39434,7 @@
         "name": "rambi-a-full-group"
     },
     "rambi-a-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -39690,6 +39773,7 @@
         "name": "rambi-b-full-group"
     },
     "rambi-b-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -40028,6 +40112,7 @@
         "name": "rambi-c-full-group"
     },
     "rambi-c-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -40411,6 +40496,7 @@
         "name": "rambi-d-full-group"
     },
     "rambi-d-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -40802,6 +40888,7 @@
         "name": "rambi-freon-a-full-group"
     },
     "rambi-freon-a-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -41136,6 +41223,7 @@
         "name": "rambi-freon-b-full-group"
     },
     "rambi-freon-b-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -41470,6 +41558,7 @@
         "name": "rambi-freon-c-full-group"
     },
     "rambi-freon-c-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -41737,6 +41826,7 @@
         "vm_tests": []
     },
     "rambi-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "rambi"
         ],
@@ -42604,6 +42694,7 @@
         "vm_tests": []
     },
     "refresh-packages": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic",
             "arm-generic"
@@ -43694,6 +43785,7 @@
         "vm_tests": []
     },
     "rush_ryu-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "rush_ryu"
         ],
@@ -43838,6 +43930,7 @@
         "vm_tests": []
     },
     "rush_ryu-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "rush_ryu"
         ],
@@ -43912,6 +44005,7 @@
         "vm_tests": []
     },
     "rush_ryu-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -44434,6 +44528,7 @@
         "vm_tests": []
     },
     "samus-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "samus"
         ],
@@ -44504,6 +44599,7 @@
         "vm_tests": []
     },
     "samus-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -44919,6 +45015,7 @@
         "name": "sandybridge-freon-full-group"
     },
     "sandybridge-freon-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -45252,6 +45349,7 @@
         "name": "sandybridge-full-group"
     },
     "sandybridge-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -46087,6 +46185,7 @@
         ]
     },
     "slippy-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -47628,6 +47727,7 @@
         "vm_tests": []
     },
     "storm-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "storm"
         ],
@@ -47703,6 +47803,7 @@
         "vm_tests": []
     },
     "storm-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -48155,6 +48256,7 @@
         "vm_tests": []
     },
     "stout-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "stout"
         ],
@@ -49330,6 +49432,7 @@
         "vm_tests": []
     },
     "strago-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -49789,6 +49892,7 @@
         "vm_tests": []
     },
     "stumpy-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "stumpy"
         ],
@@ -50803,6 +50907,7 @@
         "vm_tests": []
     },
     "stumpy_moblab-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "stumpy_moblab"
         ],
@@ -50873,6 +50978,7 @@
         "vm_tests": []
     },
     "stumpy_moblab-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -53477,6 +53583,7 @@
         "vm_tests": []
     },
     "urara-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "urara"
         ],
@@ -53536,6 +53643,7 @@
         "vm_tests": []
     },
     "urara-release": {
+        "active_waterfall": "chromeos",
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -53945,6 +54053,7 @@
         "name": "veyron-b-full-group"
     },
     "veyron-b-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -54227,6 +54336,7 @@
         "name": "veyron-c-full-group"
     },
     "veyron-c-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -54465,6 +54575,7 @@
         "name": "veyron-full-group"
     },
     "veyron-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,
@@ -58216,6 +58327,7 @@
         "vm_tests": []
     },
     "veyron_pinky-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_pinky"
         ],
@@ -58360,6 +58472,7 @@
         "vm_tests": []
     },
     "veyron_pinky-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_pinky"
         ],
@@ -59878,6 +59991,7 @@
         "vm_tests": []
     },
     "whirlwind-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "whirlwind"
         ],
@@ -59952,6 +60066,7 @@
         "vm_tests": []
     },
     "whirlwind-release": {
+        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -61513,6 +61628,7 @@
         "vm_tests": []
     },
     "wolf-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "wolf"
         ],
@@ -61888,6 +62004,7 @@
         ]
     },
     "wolf-tot-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "wolf"
         ],
@@ -62238,6 +62355,7 @@
         "vm_tests": []
     },
     "x86-alex-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-alex"
         ],
@@ -63212,6 +63330,7 @@
         ]
     },
     "x86-generic-asan": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic"
         ],
@@ -63250,6 +63369,7 @@
         ]
     },
     "x86-generic-chromium-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-generic"
         ],
@@ -63322,6 +63442,7 @@
         "usepkg_build_packages": false
     },
     "x86-generic-incremental": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic"
         ],
@@ -63379,6 +63500,7 @@
         "vm_tests": []
     },
     "x86-generic-paladin": {
+        "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic"
         ],
@@ -63716,6 +63838,7 @@
         "vm_tests": []
     },
     "x86-mario-nowithdebug-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-mario"
         ],
@@ -63740,6 +63863,7 @@
         "vm_tests": []
     },
     "x86-mario-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-mario"
         ],
@@ -64417,6 +64541,7 @@
         "vm_tests": []
     },
     "x86-zgb-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "x86-zgb"
         ],
