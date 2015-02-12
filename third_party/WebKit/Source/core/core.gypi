@@ -3770,6 +3770,7 @@
             'html/HTMLTextFormControlElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
+            'html/canvas/CanvasRenderingContext2DTest.cpp',
             'html/forms/FileInputTypeTest.cpp',
             'html/parser/HTMLParserThreadTest.cpp',
             'html/parser/HTMLSrcsetParserTest.cpp',

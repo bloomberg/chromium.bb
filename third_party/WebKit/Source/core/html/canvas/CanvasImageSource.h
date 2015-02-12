@@ -68,6 +68,7 @@ public:
     virtual FloatSize sourceSize() const = 0;
     virtual FloatSize defaultDestinationSize() const { return sourceSize(); }
     virtual const KURL& sourceURL() const { return blankURL(); }
+    virtual bool isOpaque() const { return false; }
 
 protected:
     virtual ~CanvasImageSource() { }

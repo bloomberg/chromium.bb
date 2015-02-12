@@ -45,12 +45,10 @@ void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
 {
     m_imageBuffer = imageBuffer;
     if (m_currentFrame && m_imageBuffer) {
-        m_imageBuffer->context()->setClient(this);
         m_imageBuffer->resetCanvas(m_currentFrame->getRecordingCanvas());
     }
     if (m_fallbackSurface) {
         m_fallbackSurface->setImageBuffer(imageBuffer);
-        m_imageBuffer->context()->setClient(0);
     }
 }
 
@@ -84,7 +82,6 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
     }
 
     if (m_imageBuffer) {
-        m_imageBuffer->context()->setClient(0);
         m_imageBuffer->resetCanvas(m_fallbackSurface->canvas());
         m_imageBuffer->context()->setAccelerated(m_fallbackSurface->isAccelerated());
     }

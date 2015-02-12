@@ -32,7 +32,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Gradient.h"
-#include "platform/graphics/GraphicsContextClient.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/text/BidiResolver.h"
@@ -87,7 +86,6 @@ private:
 
 GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemList, DisabledMode disableContextOrPainting)
     : m_canvas(canvas)
-    , m_client(0)
     , m_displayItemList(displayItemList)
     , m_clipRecorderStack(0)
     , m_paintStateStack()
@@ -1134,22 +1132,7 @@ void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, s
     if (contextDisabled())
         return;
 
-    if (m_client) {
-        SkRect rect = SkRect::MakeXYWH(x, y, info.width(), info.height());
-        m_client->willDrawRect(this, rect, 0, GraphicsContextClient::NoImage, GraphicsContextClient::UntransformedUnclippedFill);
-    }
-
     m_canvas->writePixels(info, pixels, rowBytes, x, y);
-}
-
-template<typename T>
-inline GraphicsContextClient::ImageType toImageType(T* image)
-{
-    if (!image)
-        return GraphicsContextClient::NoImage;
-    if (image->isOpaque())
-        return GraphicsContextClient::OpaqueImage;
-    return GraphicsContextClient::NonOpaqueImage;
 }
 
 void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
@@ -1161,11 +1144,6 @@ void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar
     ASSERT(!isRecording() || !bitmap.getTexture());
     if (contextDisabled())
         return;
-
-    if (m_client) {
-        SkRect rect = SkRect::MakeXYWH(left, top, bitmap.width(), bitmap.height());
-        m_client->willDrawRect(this, rect, paint, toImageType(&bitmap), GraphicsContextClient::Fill);
-    }
 
     m_canvas->drawBitmap(bitmap, left, top, paint);
 }
@@ -1184,9 +1162,6 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
     SkCanvas::DrawBitmapRectFlags flags =
         immutableState()->shouldClampToSourceRect() ? SkCanvas::kNone_DrawBitmapRectFlag : SkCanvas::kBleed_DrawBitmapRectFlag;
 
-    if (m_client)
-        m_client->willDrawRect(this, dst, paint, toImageType(&bitmap), GraphicsContextClient::Fill);
-
     m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint, flags);
 }
 
@@ -1196,9 +1171,6 @@ void GraphicsContext::drawImage(const SkImage* image, SkScalar left, SkScalar to
     if (contextDisabled())
         return;
 
-    if (m_client)
-        m_client->willDrawRect(this, SkRect::MakeXYWH(left, top, image->width(), image->height()), paint, toImageType(image), GraphicsContextClient::Fill);
-
     m_canvas->drawImage(image, left, top, paint);
 }
 
@@ -1207,9 +1179,6 @@ void GraphicsContext::drawImageRect(const SkImage* image, const SkRect* src, con
     ASSERT(m_canvas);
     if (contextDisabled())
         return;
-
-    if (m_client)
-        m_client->willDrawRect(this, dst, paint, toImageType(image), GraphicsContextClient::Fill);
 
     m_canvas->drawImageRect(image, src, dst, paint);
 }
@@ -1237,9 +1206,6 @@ void GraphicsContext::drawRect(const SkRect& rect, const SkPaint& paint)
     ASSERT(m_canvas);
     if (contextDisabled())
         return;
-
-    if (m_client)
-        m_client->willDrawRect(this, rect, &paint, GraphicsContextClient::NoImage, GraphicsContextClient::FillOrStroke);
 
     m_canvas->drawRect(rect, paint);
 }
@@ -1519,9 +1485,6 @@ void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion
     if (contextDisabled())
         return;
 
-    if (op != SkRegion::kIntersect_Op && op != SkRegion::kReplace_Op)
-        setHasComplexClip();
-
     m_canvas->clipRect(rect, op, aa == AntiAliased);
 }
 
@@ -1531,9 +1494,6 @@ void GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion
     if (contextDisabled())
         return;
 
-    if (!path.isRect(0) || (op != SkRegion::kIntersect_Op && op != SkRegion::kReplace_Op))
-        setHasComplexClip();
-
     m_canvas->clipPath(path, op, aa == AntiAliased);
 }
 
@@ -1542,9 +1502,6 @@ void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegi
     ASSERT(m_canvas);
     if (contextDisabled())
         return;
-
-    if (!rect.isRect() || (op != SkRegion::kIntersect_Op && op != SkRegion::kReplace_Op))
-        setHasComplexClip();
 
     m_canvas->clipRRect(rect, op, aa == AntiAliased);
 }
@@ -1940,12 +1897,6 @@ int GraphicsContext::preparePaintForDrawRectToRect(
     paint->setFilterLevel(static_cast<SkPaint::FilterLevel>(resampling));
 
     return initialSaveCount;
-}
-
-void GraphicsContext::setClient(GraphicsContextClient* client)
-{
-    ASSERT(client == 0 || m_client == 0); // No clobbering
-    m_client = client;
 }
 
 } // namespace blink

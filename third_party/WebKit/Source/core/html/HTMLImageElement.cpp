@@ -725,4 +725,11 @@ void HTMLImageElement::setUseFallbackContent()
     EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
     ensureUserAgentShadowRoot();
 }
+
+bool HTMLImageElement::isOpaque() const
+{
+    Image* image = const_cast<HTMLImageElement*>(this)->imageContents();
+    return image && image->currentFrameKnownToBeOpaque();
+}
+
 }

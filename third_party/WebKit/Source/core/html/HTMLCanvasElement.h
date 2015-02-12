@@ -155,6 +155,7 @@ public:
     virtual bool wouldTaintOrigin(SecurityOrigin*) const override;
     virtual FloatSize sourceSize() const override;
     virtual bool isCanvasElement() const override { return true; }
+    virtual bool isOpaque() const override;
 
     // ImageBufferClient implementation
     virtual void notifySurfaceInvalid() override;
@@ -165,6 +166,9 @@ public:
     void doDeferredPaintInvalidation();
 
     virtual void trace(Visitor*) override;
+
+    // Methods used for testing
+    void createImageBufferUsingSurface(PassOwnPtr<ImageBufferSurface>);
 
 protected:
     virtual void didMoveToNewDocument(Document& oldDocument) override;
@@ -182,7 +186,7 @@ private:
     PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> createSurfaceFactory(const IntSize& deviceSize, int* msaaSampleCount) const;
     PassOwnPtr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
     void createImageBuffer();
-    void createImageBufferInternal();
+    void createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface);
     bool shouldUseDisplayList(const IntSize& deviceSize);
 
     void setSurfaceSize(const IntSize&);

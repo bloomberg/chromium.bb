@@ -84,6 +84,7 @@ public:
     virtual PassRefPtr<SkPicture> getPicture();
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
     virtual void willDrawVideo() { }
+    virtual void willOverwriteCanvas() { }
     virtual PassRefPtr<SkImage> newImageSnapshot() const;
     virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode, bool needsCopy);
 

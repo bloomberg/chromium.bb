@@ -114,6 +114,7 @@ public:
     const SkBitmap& bitmap() const;
 
     void willAccessPixels() { m_surface->willAccessPixels(); }
+    void willOverwriteCanvas() { m_surface->willOverwriteCanvas(); }
 
     PassRefPtr<Image> copyImage(BackingStoreCopy = CopyBackingStore, ScaleBehavior = Scaled) const;
     // Give hints on the faster copyImage Mode, return DontCopyBackingStore if it supports the DontCopyBackingStore behavior

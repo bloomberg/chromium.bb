@@ -61,7 +61,6 @@ class ClipRecorderStack;
 class DisplayItemList;
 class ImageBuffer;
 class KURL;
-class GraphicsContextClient;
 
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;
@@ -105,10 +104,6 @@ public:
 #endif
 
     bool hasStroke() const { return strokeStyle() != NoStroke && strokeThickness() > 0; }
-
-    // Returns true if the clip is anything more than an intersection of rectangles
-    bool hasComplexClip() const { return immutableState()->hasComplexClip(); }
-    void setHasComplexClip() { mutableState()->setHasComplexClip(); }
 
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
     void setStrokeThickness(float thickness) { mutableState()->setStrokeThickness(thickness); }
@@ -203,8 +198,6 @@ public:
 
     bool isAccelerated() const { return m_accelerated; }
     void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
-
-    void setClient(GraphicsContextClient*);
 
     // The text region is empty until tracking is turned on.
     // It is never clerared by the context.
@@ -469,8 +462,6 @@ private:
 
     // null indicates painting is contextDisabled. Never delete this object.
     SkCanvas* m_canvas;
-
-    GraphicsContextClient* m_client;
 
     // This being null indicates not to paint into a DisplayItemList, and instead directly into the canvas.
     DisplayItemList* m_displayItemList;

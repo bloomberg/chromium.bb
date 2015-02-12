@@ -163,6 +163,7 @@ public:
     void drawImage(const CanvasImageSourceUnion&, float x, float y, ExceptionState&);
     void drawImage(const CanvasImageSourceUnion&, float x, float y, float width, float height, ExceptionState&);
     void drawImage(const CanvasImageSourceUnion&, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
+    void drawImage(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1);
     PassRefPtrWillBeRawPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
@@ -219,6 +220,8 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
+    friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
+
     enum Direction {
         DirectionInherit,
         DirectionRTL,
@@ -275,6 +278,7 @@ private:
         bool m_realizedFont;
 
         bool m_hasClip;
+        bool m_hasComplexClip;
 
         ClipList m_clipList;
     };
@@ -306,8 +310,6 @@ private:
     void applyStrokePattern();
     void applyFillPattern();
 
-    void drawImageInternal(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-
     void fillInternal(const Path&, const String& windingRuleString);
     void strokeInternal(const Path&);
     void clipInternal(const Path&, const String& windingRuleString);
@@ -336,6 +338,19 @@ private:
     bool hasClip() { return state().m_hasClip; }
 
     void validateStateStack();
+
+    enum DrawType {
+        ClipFill, // Fill that is already known to cover the current clip
+        UntransformedUnclippedFill
+    };
+
+    enum ImageType {
+        NoImage,
+        OpaqueImage,
+        NonOpaqueImage
+    };
+
+    void checkOverdraw(const SkRect&, const SkPaint*, ImageType, DrawType);
 
     virtual bool is2d() const override { return true; }
     virtual bool isAccelerated() const override;

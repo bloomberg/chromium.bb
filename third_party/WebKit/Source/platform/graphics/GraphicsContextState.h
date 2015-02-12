@@ -141,11 +141,6 @@ public:
     bool shouldClampToSourceRect() const { return m_shouldClampToSourceRect; }
     void setShouldClampToSourceRect(bool shouldClampToSourceRect) { m_shouldClampToSourceRect = shouldClampToSourceRect; }
 
-    // Returns true if clip is more than just a rectangle or intersection
-    // of rectangles.
-    bool hasComplexClip() const;
-    void setHasComplexClip();
-
 private:
     GraphicsContextState();
     explicit GraphicsContextState(const GraphicsContextState&);
@@ -189,7 +184,6 @@ private:
 
     bool m_shouldAntialias : 1;
     bool m_shouldClampToSourceRect : 1;
-    bool m_hasComplexClip : 1;
 };
 
 } // namespace blink

@@ -92,12 +92,13 @@ public:
     virtual void ensureFallbackContent();
     virtual void ensurePrimaryContent();
 
-    // CanvasImageSourceImplementations
+    // CanvasImageSource implementation
     virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
     virtual bool wouldTaintOrigin(SecurityOrigin*) const override;
     virtual FloatSize sourceSize() const override;
     virtual FloatSize defaultDestinationSize() const override;
     virtual const KURL& sourceURL() const override;
+    virtual bool isOpaque() const override;
 
     // public so that HTMLPictureElement can call this as well.
     void selectSourceURL(ImageLoader::UpdateFromElementBehavior);

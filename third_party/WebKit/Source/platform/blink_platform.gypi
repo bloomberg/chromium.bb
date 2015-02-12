@@ -500,8 +500,6 @@
       'graphics/GraphicsContext.cpp',
       'graphics/GraphicsContext.h',
       'graphics/GraphicsContextAnnotation.h',
-      'graphics/GraphicsContextClient.cpp',
-      'graphics/GraphicsContextClient.h',
       'graphics/GraphicsContextState.cpp',
       'graphics/GraphicsContextState.h',
       'graphics/GraphicsContextStateSaver.h',

@@ -607,7 +607,7 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, surfaceFactory.release(), opacityMode));
         if (surface->isValid())
             return surface.release();
-        surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount); // recreate because old previous one was released
+        surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount); // recreate because previous one was released
     }
 
     return surfaceFactory->createSurface(deviceSize, opacityMode);
@@ -615,12 +615,12 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
 
 void HTMLCanvasElement::createImageBuffer()
 {
-    createImageBufferInternal();
+    createImageBufferInternal(nullptr);
     if (m_didFailToCreateImageBuffer && m_context->is2d())
         toCanvasRenderingContext2D(m_context.get())->loseContext();
 }
 
-void HTMLCanvasElement::createImageBufferInternal()
+void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface)
 {
     ASSERT(!m_imageBuffer);
     ASSERT(!m_contextStateSaver);
@@ -631,8 +631,13 @@ void HTMLCanvasElement::createImageBufferInternal()
     if (!canCreateImageBuffer(size()))
         return;
 
-    int msaaSampleCount;
-    OwnPtr<ImageBufferSurface> surface = createImageBufferSurface(size(), &msaaSampleCount);
+    int msaaSampleCount = 0;
+    OwnPtr<ImageBufferSurface> surface;
+    if (externalSurface) {
+        surface = externalSurface;
+    } else {
+        surface = createImageBufferSurface(size(), &msaaSampleCount);
+    }
     m_imageBuffer = ImageBuffer::create(surface.release());
     if (!m_imageBuffer)
         return;
@@ -746,6 +751,12 @@ ImageBuffer* HTMLCanvasElement::buffer() const
     if (!hasImageBuffer() && !m_didFailToCreateImageBuffer)
         const_cast<HTMLCanvasElement*>(this)->createImageBuffer();
     return m_imageBuffer.get();
+}
+
+void HTMLCanvasElement::createImageBufferUsingSurface(PassOwnPtr<ImageBufferSurface> surface)
+{
+    discardImageBuffer();
+    createImageBufferInternal(surface);
 }
 
 void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
@@ -871,4 +882,9 @@ FloatSize HTMLCanvasElement::sourceSize() const
     return FloatSize(width(), height());
 }
 
+bool HTMLCanvasElement::isOpaque() const
+{
+    return m_context && !m_context->hasAlpha();
 }
+
+} // blink
