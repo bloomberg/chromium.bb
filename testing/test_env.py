@@ -80,13 +80,16 @@ def get_sanitizer_env(cmd, asan, lsan, msan, tsan):
     symbolization_options = ['symbolize=0']
     # Set the path to llvm-symbolizer to be used by asan_symbolize.py
     extra_env['LLVM_SYMBOLIZER_PATH'] = symbolizer_path
+  else:
+    symbolization_options = []
 
   if asan:
     asan_options = symbolization_options[:]
     if lsan:
       asan_options.append('detect_leaks=1')
 
-    extra_env['ASAN_OPTIONS'] = ' '.join(asan_options)
+    if asan_options:
+      extra_env['ASAN_OPTIONS'] = ' '.join(asan_options)
 
     if sys.platform == 'darwin':
       isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
