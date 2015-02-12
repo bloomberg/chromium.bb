@@ -814,15 +814,16 @@ void FrameView::performPreLayoutTasks()
         m_inSynchronousPostLayout = false;
     }
 
+    bool wasResized = wasViewportResized();
     Document* document = m_frame->document();
-    if (wasViewportResized())
+    if (wasResized)
         document->notifyResizeForViewportUnits();
 
     // Viewport-dependent media queries may cause us to need completely different style information.
-    if (!document->styleResolver() || document->styleResolver()->mediaQueryAffectedByViewportChange()) {
+    if (!document->styleResolver() || (wasResized && document->styleResolver()->mediaQueryAffectedByViewportChange())) {
         document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
-    } else {
+    } else if (wasResized) {
         document->evaluateMediaQueryList();
     }
 
