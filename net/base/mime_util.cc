@@ -527,23 +527,29 @@ static const char kMP4VideoCodecsExpression[] =
     "mp4a.40.05,mp4a.40.29";
 
 static const MediaFormatStrict format_codec_mappings[] = {
-  { "video/webm", "opus,vorbis,vp8,vp8.0,vp9,vp9.0" },
-  { "audio/webm", "opus,vorbis" },
-  { "audio/wav", "1" },
-  { "audio/x-wav", "1" },
-  { "video/ogg", "opus,theora,vorbis" },
-  { "audio/ogg", "opus,vorbis" },
-  { "application/ogg", "opus,theora,vorbis" },
-  { "audio/mpeg", "mp3" },
-  { "audio/mp3", "" },
-  { "audio/x-mp3", "" },
-  { "audio/mp4", kMP4AudioCodecsExpression },
-  { "audio/x-m4a", kMP4AudioCodecsExpression },
-  { "video/mp4", kMP4VideoCodecsExpression },
-  { "video/x-m4v", kMP4VideoCodecsExpression },
-  { "application/x-mpegurl", kMP4VideoCodecsExpression },
-  { "application/vnd.apple.mpegurl", kMP4VideoCodecsExpression }
-};
+    {"video/webm", "opus,vorbis,vp8,vp8.0,vp9,vp9.0"},
+    {"audio/webm", "opus,vorbis"},
+    {"audio/wav", "1"},
+    {"audio/x-wav", "1"},
+// Android does not support Opus in Ogg container.
+#if defined(OS_ANDROID)
+    {"video/ogg", "theora,vorbis"},
+    {"audio/ogg", "vorbis"},
+    {"application/ogg", "theora,vorbis"},
+#else
+    {"video/ogg", "opus,theora,vorbis"},
+    {"audio/ogg", "opus,vorbis"},
+    {"application/ogg", "opus,theora,vorbis"},
+#endif
+    {"audio/mpeg", "mp3"},
+    {"audio/mp3", ""},
+    {"audio/x-mp3", ""},
+    {"audio/mp4", kMP4AudioCodecsExpression},
+    {"audio/x-m4a", kMP4AudioCodecsExpression},
+    {"video/mp4", kMP4VideoCodecsExpression},
+    {"video/x-m4v", kMP4VideoCodecsExpression},
+    {"application/x-mpegurl", kMP4VideoCodecsExpression},
+    {"application/vnd.apple.mpegurl", kMP4VideoCodecsExpression}};
 
 struct CodecIDMappings {
   const char* const codec_id;
