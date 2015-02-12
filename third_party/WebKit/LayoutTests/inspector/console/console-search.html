@@ -24,9 +24,11 @@ function test()
         InspectorTest.addResult(result);
     }
 
-    function setQuery(text)
+    function setQuery(text, isRegex, caseSensitive)
     {
         consoleView._searchableView._searchInputElement.value = text;
+        consoleView._searchableView._regexButton.setToggled(isRegex || false);
+        consoleView._searchableView._caseSensitiveButton.setToggled(caseSensitive || false);
         consoleView._searchableView.showSearchField();
     }
 
@@ -142,6 +144,45 @@ function test()
 
                 next();
             });
+        },
+
+        function testCaseSensitiveRegex(next)
+        {
+            function dumpMatches()
+            {
+                var matches = document.querySelectorAll(".highlighted-search-result");
+                addResult("number of visible matches: " + matches.length);
+                for (var i = 0; i < matches.length; ++i)
+                    addResult("  match " + i + ": " + matches[i].className);
+                    addResult("");
+            }
+
+            InspectorTest.addResult("Test case insensitive regex search");
+            setQuery(". MATCH", true, false);
+            consoleView._searchableView.handleFindNextShortcut();
+            dumpMatches();
+
+            InspectorTest.addResult("Test case sensitive plain text search without matches");
+            setQuery("match", false, true);
+            consoleView._searchableView.handleFindNextShortcut();
+            dumpMatches();
+
+            InspectorTest.addResult("Test case sensitive plain text search with matches");
+            setQuery("MATCH", false, true);
+            consoleView._searchableView.handleFindNextShortcut();
+            dumpMatches();
+
+            InspectorTest.addResult("Test case sensitive regex search without matches");
+            setQuery(". match", true, true);
+            consoleView._searchableView.handleFindNextShortcut();
+            dumpMatches();
+
+            InspectorTest.addResult("Test case sensitive regex search with matches");
+            setQuery(". MATCH", true, true);
+            consoleView._searchableView.handleFindNextShortcut();
+            dumpMatches();
+
+            next();
         }
     ]);
 }

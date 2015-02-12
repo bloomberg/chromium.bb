@@ -234,3 +234,26 @@ Running: testCanJumpForwardBetweenTreeElementMatches
 matched tree element: field_1
 matched tree element: field_199
 
+Running: testCaseSensitiveRegex
+Test case insensitive regex search
+number of visible matches: 2
+  match 0: highlighted-search-result current-search-result
+  match 1: highlighted-search-result
+
+Test case sensitive plain text search without matches
+number of visible matches: 0
+
+Test case sensitive plain text search with matches
+number of visible matches: 2
+  match 0: highlighted-search-result current-search-result
+  match 1: highlighted-search-result
+
+Test case sensitive regex search without matches
+number of visible matches: 0
+
+Test case sensitive regex search with matches
+number of visible matches: 2
+  match 0: highlighted-search-result current-search-result
+  match 1: highlighted-search-result
+
+
