@@ -37,9 +37,7 @@ bool ShadowData::operator==(const ShadowData& o) const
 
 ShadowData ShadowData::blend(const ShadowData& from, double progress) const
 {
-    if (style() != from.style())
-        return *this;
-
+    ASSERT(style() == from.style());
     return ShadowData(blink::blend(from.location(), location(), progress),
         clampTo(blink::blend(from.blur(), blur(), progress), 0.0f),
         blink::blend(from.spread(), spread(), progress),
