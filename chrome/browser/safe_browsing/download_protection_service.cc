@@ -485,14 +485,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
       *reason = REASON_INVALID_URL;
       return false;
     }
+    if (!download_protection_util::IsBinaryFile(target_path)) {
+      *reason = REASON_NOT_BINARY_FILE;
+      return false;
+    }
     if ((!final_url.IsStandard() && !final_url.SchemeIsBlob() &&
          !final_url.SchemeIs(url::kDataScheme)) ||
         final_url.SchemeIsFile()) {
       *reason = REASON_UNSUPPORTED_URL_SCHEME;
-      return false;
-    }
-    if (!download_protection_util::IsBinaryFile(target_path)) {
-      *reason = REASON_NOT_BINARY_FILE;
       return false;
     }
     *type = download_protection_util::GetDownloadType(target_path);

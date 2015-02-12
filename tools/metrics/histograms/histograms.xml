@@ -31513,7 +31513,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Records a histogram of the reason why downloads are marked as being
     malicious or clean by the improved SafeBrowsing binary download protection.
     Note that UNSUPPORTED_URL_SCHEME was split out of the INVALID_URL bucket in
-    M41.
+    M41. The NOT_BINARY_FILE check was moved before the UNSUPPORTED_URL_SCHEME
+    check in M42.
   </summary>
 </histogram>
 
