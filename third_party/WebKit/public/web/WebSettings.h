@@ -88,7 +88,7 @@ public:
     enum HoverType {
         HoverTypeNone = 1 << 0,
         // Indicates that the primary pointing system can hover, but it requires
-        // a significant action on the user’s part. e.g. hover on “long press”.
+        // a significant action on the user's part. e.g. hover on "long press".
         HoverTypeOnDemand = 1 << 1,
         HoverTypeHover = 1 << 2
     };
