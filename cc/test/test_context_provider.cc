@@ -13,7 +13,7 @@
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "third_party/skia/include/gpu/gl/SkNullGLContext.h"
 
 namespace cc {
 
@@ -95,11 +95,11 @@ class GrContext* TestContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
 
-  skia::RefPtr<const GrGLInterface> null_interface =
-      skia::AdoptRef(GrGLCreateNullInterface());
+  skia::RefPtr<class SkGLContext> gl_context =
+      skia::AdoptRef(SkNullGLContext::Create(kNone_GrGLStandard));
+  gl_context->makeCurrent();
   gr_context_ = skia::AdoptRef(GrContext::Create(
-      kOpenGL_GrBackend,
-      reinterpret_cast<GrBackendContext>(null_interface.get())));
+      kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(gl_context->gl())));
   return gr_context_.get();
 }
 
