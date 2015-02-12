@@ -425,6 +425,8 @@ public class ContentViewCore
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
 
+    private boolean mIsMobileOptimizedHint;
+
     // Tracks whether a selection is currently active.  When applied to selected text, indicates
     // whether the last selected text is still highlighted.
     private boolean mHasSelection;
@@ -766,6 +768,7 @@ public class ContentViewCore
             public void didNavigateMainFrame(String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
                 if (!isNavigationToDifferentPage) return;
+                mIsMobileOptimizedHint = false;
                 hidePopupsAndClearSelection();
                 resetScrollInProgress();
             }
@@ -2242,8 +2245,10 @@ public class ContentViewCore
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
             float contentWidth, float contentHeight,
             float viewportWidth, float viewportHeight,
-            float controlsOffsetYCss, float contentOffsetYCss) {
+            float controlsOffsetYCss, float contentOffsetYCss,
+            boolean isMobileOptimizedHint) {
         TraceEvent.begin("ContentViewCore:updateFrameInfo");
+        mIsMobileOptimizedHint = isMobileOptimizedHint;
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).
         final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
@@ -2950,6 +2955,15 @@ public class ContentViewCore
      */
     public RenderCoordinates getRenderCoordinates() {
         return mRenderCoordinates;
+    }
+
+    /**
+     * @return Whether the current page seems to be mobile-optimized. This hint is based upon
+     *         rendered frames and may return different values when called multiple times for the
+     *         same page (particularly during page load).
+     */
+    public boolean getIsMobileOptimizedHint() {
+        return mIsMobileOptimizedHint;
     }
 
     @CalledByNative

@@ -1316,8 +1316,8 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
 
 void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     const cc::CompositorFrameMetadata& frame_metadata) {
-  gesture_provider_.SetDoubleTapSupportForPageEnabled(
-      !IsMobileOptimizedFrame(frame_metadata));
+  bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
+  gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
   if (!content_view_core_)
     return;
@@ -1340,7 +1340,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.root_layer_size,
       frame_metadata.scrollable_viewport_size,
       frame_metadata.location_bar_offset,
-      frame_metadata.location_bar_content_translation);
+      frame_metadata.location_bar_content_translation,
+      is_mobile_optimized);
 #if defined(VIDEO_HOLE)
   if (host_ && host_->IsRenderView()) {
     RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
