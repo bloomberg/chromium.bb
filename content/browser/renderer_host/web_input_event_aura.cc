@@ -6,12 +6,33 @@
 
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace content {
+
+namespace {
+
+gfx::Point GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
+  if (!event.target())
+    return event.root_location();
+
+  aura::Window* root =
+      static_cast<aura::Window*>(event.target())->GetRootWindow();
+  aura::client::ScreenPositionClient* spc =
+      aura::client::GetScreenPositionClient(root);
+  if (!spc)
+    return event.root_location();
+
+  gfx::Point screen_location(event.root_location());
+  spc->ConvertPointToScreen(root, &screen_location);
+  return screen_location;
+}
+
+}  // namespace
 
 #if defined(OS_WIN)
 blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
@@ -166,9 +187,9 @@ blink::WebMouseEvent MakeWebMouseEvent(const ui::MouseEvent& event) {
   if (event.native_event().message)
     return webkit_event;
 #endif
-  const gfx::Point root_point = event.root_location();
-  webkit_event.globalX = root_point.x();
-  webkit_event.globalY = root_point.y();
+  const gfx::Point screen_point = GetScreenLocationFromEvent(event);
+  webkit_event.globalX = screen_point.x();
+  webkit_event.globalY = screen_point.y();
 
   return webkit_event;
 }
@@ -190,9 +211,9 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
   webkit_event.windowX = webkit_event.x = event.x();
   webkit_event.windowY = webkit_event.y = event.y();
 
-  const gfx::Point root_point = event.root_location();
-  webkit_event.globalX = root_point.x();
-  webkit_event.globalY = root_point.y();
+  const gfx::Point screen_point = GetScreenLocationFromEvent(event);
+  webkit_event.globalX = screen_point.x();
+  webkit_event.globalY = screen_point.y();
 
   // Scroll events generated from the mouse wheel when the control key is held
   // don't trigger scrolling. Instead, they may cause zooming.
@@ -221,9 +242,9 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(const ui::ScrollEvent& event) {
   webkit_event.windowX = webkit_event.x = event.x();
   webkit_event.windowY = webkit_event.y = event.y();
 
-  const gfx::Point root_point = event.root_location();
-  webkit_event.globalX = root_point.x();
-  webkit_event.globalY = root_point.y();
+  const gfx::Point screen_point = GetScreenLocationFromEvent(event);
+  webkit_event.globalX = screen_point.x();
+  webkit_event.globalY = screen_point.y();
 
   return webkit_event;
 }
@@ -258,9 +279,9 @@ blink::WebGestureEvent MakeWebGestureEvent(const ui::GestureEvent& event) {
   gesture_event.x = event.x();
   gesture_event.y = event.y();
 
-  const gfx::Point root_point = event.root_location();
-  gesture_event.globalX = root_point.x();
-  gesture_event.globalY = root_point.y();
+  const gfx::Point screen_point = GetScreenLocationFromEvent(event);
+  gesture_event.globalX = screen_point.x();
+  gesture_event.globalY = screen_point.y();
 
   return gesture_event;
 }
@@ -277,9 +298,9 @@ blink::WebGestureEvent MakeWebGestureEvent(const ui::ScrollEvent& event) {
   gesture_event.x = event.x();
   gesture_event.y = event.y();
 
-  const gfx::Point root_point = event.root_location();
-  gesture_event.globalX = root_point.x();
-  gesture_event.globalY = root_point.y();
+  const gfx::Point screen_point = GetScreenLocationFromEvent(event);
+  gesture_event.globalX = screen_point.x();
+  gesture_event.globalY = screen_point.y();
 
   return gesture_event;
 }
