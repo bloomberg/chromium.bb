@@ -1821,7 +1821,6 @@
     { "name": "madars.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "magneticanvil.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "mimeit.de", "include_subdomains": true, "mode": "force-https" },
-    { "name": "miniku.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "mobilcom-debitel-empfehlen.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "morethanadream.lv", "include_subdomains": true, "mode": "force-https" },
     { "name": "narodniki.com", "include_subdomains": true, "mode": "force-https" },
