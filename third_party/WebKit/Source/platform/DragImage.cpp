@@ -70,7 +70,7 @@ const float kMaxDragLabelStringWidth = (kMaxDragLabelWidth - 2 * kDragLabelBorde
 const float kDragLinkLabelFontSize = 11;
 const float kDragLinkUrlFontSize = 10;
 
-PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnum shouldRespectImageOrientation, float deviceScaleFactor)
+PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnum shouldRespectImageOrientation, float deviceScaleFactor, InterpolationQuality interpolationQuality)
 {
     if (!image)
         return nullptr;
@@ -101,14 +101,14 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
             canvas.concat(affineTransformToSkMatrix(orientation.transformFromDefault(sizeRespectingOrientation)));
             canvas.drawBitmapRect(bitmap->bitmap(), 0, destRect);
 
-            return adoptPtr(new DragImage(skBitmap, deviceScaleFactor));
+            return adoptPtr(new DragImage(skBitmap, deviceScaleFactor, interpolationQuality));
         }
     }
 
     SkBitmap skBitmap;
     if (!bitmap->bitmap().copyTo(&skBitmap, kN32_SkColorType))
         return nullptr;
-    return adoptPtr(new DragImage(skBitmap, deviceScaleFactor));
+    return adoptPtr(new DragImage(skBitmap, deviceScaleFactor, interpolationQuality));
 }
 
 static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescription& systemFont)
@@ -223,9 +223,10 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     return DragImage::create(image.get(), DoNotRespectImageOrientation, deviceScaleFactor);
 }
 
-DragImage::DragImage(const SkBitmap& bitmap, float resolutionScale)
+DragImage::DragImage(const SkBitmap& bitmap, float resolutionScale, InterpolationQuality interpolationQuality)
     : m_bitmap(bitmap)
     , m_resolutionScale(resolutionScale)
+    , m_interpolationQuality(interpolationQuality)
 {
 }
 
@@ -270,10 +271,10 @@ void DragImage::fitToMaxSize(const IntSize& srcSize, const IntSize& maxSize)
 
 void DragImage::scale(float scaleX, float scaleY)
 {
+    skia::ImageOperations::ResizeMethod resizeMethod = m_interpolationQuality == InterpolationNone ? skia::ImageOperations::RESIZE_BOX : skia::ImageOperations::RESIZE_LANCZOS3;
     int imageWidth = scaleX * m_bitmap.width();
     int imageHeight = scaleY * m_bitmap.height();
-    m_bitmap = skia::ImageOperations::Resize(
-        m_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, imageWidth, imageHeight);
+    m_bitmap = skia::ImageOperations::Resize(m_bitmap, resizeMethod, imageWidth, imageHeight);
 }
 
 void DragImage::dissolveToFraction(float fraction)

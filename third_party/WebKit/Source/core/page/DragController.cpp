@@ -826,8 +826,9 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
     OwnPtr<DragImage> dragImage;
     IntPoint origin;
 
+    InterpolationQuality interpolationQuality = element->computedStyle()->imageRendering() == ImageRenderingPixelated ? InterpolationNone : InterpolationHigh;
     if (image->size().height() * image->size().width() <= MaxOriginalImageArea
-        && (dragImage = DragImage::create(image, element->renderer() ? element->renderer()->shouldRespectImageOrientation() : DoNotRespectImageOrientation))) {
+        && (dragImage = DragImage::create(image, element->renderer() ? element->renderer()->shouldRespectImageOrientation() : DoNotRespectImageOrientation, 1 /* deviceScaleFactor */, interpolationQuality))) {
         IntSize originalSize = imageRect.size();
         origin = imageRect.location();
 

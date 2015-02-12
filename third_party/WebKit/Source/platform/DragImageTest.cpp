@@ -211,4 +211,39 @@ TEST(DragImageTest, InvalidRotatedBitmapImage)
     }
 }
 
+TEST(DragImageTest, InterpolationNone)
+{
+    SkBitmap expectedBitmap;
+    expectedBitmap.allocN32Pixels(4, 4);
+    {
+        SkAutoLockPixels lock(expectedBitmap);
+        expectedBitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 2, 2), 0xFFFFFFFF);
+        expectedBitmap.eraseArea(SkIRect::MakeXYWH(0, 2, 2, 2), 0xFF000000);
+        expectedBitmap.eraseArea(SkIRect::MakeXYWH(2, 0, 2, 2), 0xFF000000);
+        expectedBitmap.eraseArea(SkIRect::MakeXYWH(2, 2, 2, 2), 0xFFFFFFFF);
+    }
+
+    RefPtr<TestImage> testImage(TestImage::create(IntSize(2, 2)));
+    const SkBitmap& testBitmap = testImage->nativeImageForCurrentFrame()->bitmap();
+    {
+        SkAutoLockPixels lock(testBitmap);
+        testBitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 1, 1), 0xFFFFFFFF);
+        testBitmap.eraseArea(SkIRect::MakeXYWH(0, 1, 1, 1), 0xFF000000);
+        testBitmap.eraseArea(SkIRect::MakeXYWH(1, 0, 1, 1), 0xFF000000);
+        testBitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
+    }
+
+    OwnPtr<DragImage> dragImage = DragImage::create(testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
+    ASSERT_TRUE(dragImage);
+    dragImage->scale(2, 2);
+    const SkBitmap& dragBitmap = dragImage->bitmap();
+    {
+        SkAutoLockPixels lock1(dragBitmap);
+        SkAutoLockPixels lock2(expectedBitmap);
+        for (int x = 0; x < dragBitmap.width(); ++x)
+            for (int y = 0; y < dragBitmap.height(); ++y)
+                EXPECT_EQ(expectedBitmap.getColor(x, y), dragBitmap.getColor(x, y));
+    }
+}
+
 } // anonymous namespace

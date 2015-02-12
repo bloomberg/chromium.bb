@@ -27,6 +27,7 @@
 #define DragImage_h
 
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -40,7 +41,7 @@ class KURL;
 
 class PLATFORM_EXPORT DragImage {
 public:
-    static PassOwnPtr<DragImage> create(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation, float deviceScaleFactor = 1);
+    static PassOwnPtr<DragImage> create(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation, float deviceScaleFactor = 1, InterpolationQuality = InterpolationHigh);
     static PassOwnPtr<DragImage> create(const KURL&, const String& label, const FontDescription& systemFont, float deviceScaleFactor);
     ~DragImage();
 
@@ -53,12 +54,13 @@ public:
     void dissolveToFraction(float fraction);
 
 private:
-    DragImage(const SkBitmap&, float resolutionScale);
+    DragImage(const SkBitmap&, float resolutionScale, InterpolationQuality);
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     SkBitmap m_bitmap;
     float m_resolutionScale;
+    InterpolationQuality m_interpolationQuality;
 };
 
 }
