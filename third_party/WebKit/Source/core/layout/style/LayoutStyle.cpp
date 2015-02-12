@@ -667,7 +667,13 @@ bool LayoutStyle::diffNeedsPaintInvalidationObject(const LayoutStyle& other) con
             || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
             || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
             || !rareNonInheritedData->shapeOutsideDataEquivalent(*other.rareNonInheritedData.get())
-            || !rareNonInheritedData->clipPathDataEquivalent(*other.rareNonInheritedData.get()))
+            || !rareNonInheritedData->clipPathDataEquivalent(*other.rareNonInheritedData.get())
+            || (visitedLinkBorderLeftColor() != other.visitedLinkBorderLeftColor() && borderLeftWidth())
+            || (visitedLinkBorderRightColor() != other.visitedLinkBorderRightColor() && borderRightWidth())
+            || (visitedLinkBorderBottomColor() != other.visitedLinkBorderBottomColor() && borderBottomWidth())
+            || (visitedLinkBorderTopColor() != other.visitedLinkBorderTopColor() && borderTopWidth())
+            || (visitedLinkOutlineColor() != other.visitedLinkOutlineColor() && outlineWidth())
+            || (visitedLinkBackgroundColor() != other.visitedLinkBackgroundColor()))
             return true;
     }
 
