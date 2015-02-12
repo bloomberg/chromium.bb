@@ -439,11 +439,11 @@ public:
 
     Address payload()
     {
-        return address() + sizeof(NormalPage) + headerPadding();
+        return address() + pageHeaderSize();
     }
     size_t payloadSize()
     {
-        return (blinkPagePayloadSize() - sizeof(NormalPage) - headerPadding()) & ~allocationMask;
+        return (blinkPagePayloadSize() - pageHeaderSize()) & ~allocationMask;
     }
     Address payloadEnd() { return payload() + payloadSize(); }
     bool containedInObjectPayload(Address address) { return payload() <= address && address < payloadEnd(); }
@@ -485,11 +485,12 @@ public:
     }
 #endif
     virtual size_t size() override { return blinkPageSize; }
-    // Compute the amount of padding we have to add to a header to make
-    // the size of the header plus the padding a multiple of 8 bytes.
-    static size_t headerPadding()
+    static size_t pageHeaderSize()
     {
-        return (sizeof(NormalPage) + allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
+        // Compute the amount of padding we have to add to a header to make
+        // the size of the header plus the padding a multiple of 8 bytes.
+        size_t paddingSize = (sizeof(NormalPage) + allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
+        return sizeof(NormalPage) + paddingSize;
     }
 
 
@@ -560,19 +561,20 @@ public:
 #endif
     virtual size_t size()
     {
-        return sizeof(LargeObjectPage) + headerPadding() +  sizeof(HeapObjectHeader) + m_payloadSize;
+        return pageHeaderSize() +  sizeof(HeapObjectHeader) + m_payloadSize;
     }
-    // Compute the amount of padding we have to add to a header to make
-    // the size of the header plus the padding a multiple of 8 bytes.
-    static size_t headerPadding()
+    static size_t pageHeaderSize()
     {
-        return (sizeof(LargeObjectPage) + allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
+        // Compute the amount of padding we have to add to a header to make
+        // the size of the header plus the padding a multiple of 8 bytes.
+        size_t paddingSize = (sizeof(LargeObjectPage) + allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
+        return sizeof(LargeObjectPage) + paddingSize;
     }
     virtual bool isLargeObjectPage() override { return true; }
 
     HeapObjectHeader* heapObjectHeader()
     {
-        Address headerAddress = address() + sizeof(LargeObjectPage) + headerPadding();
+        Address headerAddress = address() + pageHeaderSize();
         return reinterpret_cast<HeapObjectHeader*>(headerAddress);
     }
 

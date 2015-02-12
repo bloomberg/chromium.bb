@@ -1064,7 +1064,7 @@ Address LargeObjectHeap::allocateLargeObjectPage(size_t allocationSize, size_t g
 
 Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t gcInfoIndex)
 {
-    size_t largeObjectSize = sizeof(LargeObjectPage) + LargeObjectPage::headerPadding() + allocationSize;
+    size_t largeObjectSize = LargeObjectPage::pageHeaderSize() + allocationSize;
     // If ASan is supported we add allocationGranularity bytes to the allocated
     // space and poison that to detect overflows
 #if defined(ADDRESS_SANITIZER)
@@ -1075,7 +1075,7 @@ Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t
     PageMemory* pageMemory = PageMemory::allocate(largeObjectSize);
     threadState()->allocatedRegionsSinceLastGC().append(pageMemory->region());
     Address largeObjectAddress = pageMemory->writableStart();
-    Address headerAddress = largeObjectAddress + sizeof(LargeObjectPage) + LargeObjectPage::headerPadding();
+    Address headerAddress = largeObjectAddress + LargeObjectPage::pageHeaderSize();
 #if ENABLE(ASSERT)
     // Verify that the allocated PageMemory is expectedly zeroed.
     for (size_t i = 0; i < largeObjectSize; ++i)
