@@ -33,6 +33,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_script_context.h"
+#include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -298,13 +299,7 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
     const blink::WebServiceWorkerResponse& web_response) {
   DCHECK(script_context_);
   ServiceWorkerHeaderMap headers;
-  const blink::WebVector<blink::WebString>& header_keys =
-      web_response.getHeaderKeys();
-  for (size_t i = 0; i < header_keys.size(); ++i) {
-    const base::string16& key = header_keys[i];
-    headers[base::UTF16ToUTF8(key)] =
-        base::UTF16ToUTF8(web_response.getHeader(key));
-  }
+  GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
   ServiceWorkerResponse response(web_response.url(),
                                  web_response.status(),
                                  web_response.statusText().utf8(),

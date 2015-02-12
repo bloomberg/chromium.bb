@@ -394,6 +394,8 @@
       'renderer/service_worker/service_worker_cache_storage_dispatcher.h',
       'renderer/service_worker/service_worker_script_context.cc',
       'renderer/service_worker/service_worker_script_context.h',
+      'renderer/service_worker/service_worker_type_util.cc',
+      'renderer/service_worker/service_worker_type_util.h',
       'renderer/shared_memory_seqlock_reader.cc',
       'renderer/shared_memory_seqlock_reader.h',
       'renderer/shared_worker_repository.cc',

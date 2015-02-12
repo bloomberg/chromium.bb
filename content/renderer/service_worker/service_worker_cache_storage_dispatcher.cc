@@ -15,6 +15,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/service_worker/service_worker_script_context.h"
+#include "content/renderer/service_worker/service_worker_type_util.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
@@ -29,29 +30,10 @@ using blink::WebServiceWorkerRequest;
 
 namespace {
 
-class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
- public:
-  HeaderVisitor(ServiceWorkerHeaderMap* headers) : headers_(headers) {}
-  virtual ~HeaderVisitor() {}
-
-  virtual void visitHeader(const blink::WebString& name,
-                           const blink::WebString& value) {
-    headers_->insert(ServiceWorkerHeaderMap::value_type(
-        base::UTF16ToASCII(name), base::UTF16ToASCII(value)));
-  }
-
- private:
-  ServiceWorkerHeaderMap* headers_;
-};
-
-scoped_ptr<HeaderVisitor> MakeHeaderVisitor(ServiceWorkerHeaderMap* headers) {
-  return scoped_ptr<HeaderVisitor>(new HeaderVisitor(headers)).Pass();
-}
-
 ServiceWorkerFetchRequest FetchRequestFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request) {
   ServiceWorkerHeaderMap headers;
-  web_request.visitHTTPHeaderFields(MakeHeaderVisitor(&headers).get());
+  GetServiceWorkerHeaderMapFromWebRequest(web_request, &headers);
 
   return ServiceWorkerFetchRequest(
       web_request.url(), base::UTF16ToASCII(web_request.method()), headers,
@@ -87,7 +69,7 @@ blink::WebVector<blink::WebServiceWorkerRequest> WebRequestsFromRequests(
 ServiceWorkerResponse ResponseFromWebResponse(
     const blink::WebServiceWorkerResponse& web_response) {
   ServiceWorkerHeaderMap headers;
-  web_response.visitHTTPHeaderFields(MakeHeaderVisitor(&headers).get());
+  GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
   // We don't support streaming for cache.
   DCHECK(web_response.streamURL().isEmpty());
   return ServiceWorkerResponse(web_response.url(),

@@ -665,12 +665,16 @@ void ServiceWorkerCache::MatchDidReadMetadata(
 
   for (int i = 0; i < metadata->response().headers_size(); ++i) {
     const ServiceWorkerCacheHeaderMap header = metadata->response().headers(i);
+    DCHECK(header.name().find('\0') == std::string::npos);
+    DCHECK(header.value().find('\0') == std::string::npos);
     response->headers.insert(std::make_pair(header.name(), header.value()));
   }
 
   ServiceWorkerHeaderMap cached_request_headers;
   for (int i = 0; i < metadata->request().headers_size(); ++i) {
     const ServiceWorkerCacheHeaderMap header = metadata->request().headers(i);
+    DCHECK(header.name().find('\0') == std::string::npos);
+    DCHECK(header.value().find('\0') == std::string::npos);
     cached_request_headers[header.name()] = header.value();
   }
 
@@ -841,6 +845,8 @@ void ServiceWorkerCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
            put_context->request->headers.begin();
        it != put_context->request->headers.end();
        ++it) {
+    DCHECK(it->first.find('\0') == std::string::npos);
+    DCHECK(it->second.find('\0') == std::string::npos);
     ServiceWorkerCacheHeaderMap* header_map = request_metadata->add_headers();
     header_map->set_name(it->first);
     header_map->set_value(it->second);
@@ -856,6 +862,8 @@ void ServiceWorkerCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
            put_context->response->headers.begin();
        it != put_context->response->headers.end();
        ++it) {
+    DCHECK(it->first.find('\0') == std::string::npos);
+    DCHECK(it->second.find('\0') == std::string::npos);
     ServiceWorkerCacheHeaderMap* header_map = response_metadata->add_headers();
     header_map->set_name(it->first);
     header_map->set_value(it->second);
@@ -1128,6 +1136,8 @@ void ServiceWorkerCache::KeysDidReadMetadata(
 
     for (int i = 0; i < metadata->request().headers_size(); ++i) {
       const ServiceWorkerCacheHeaderMap header = metadata->request().headers(i);
+      DCHECK(header.name().find('\0') == std::string::npos);
+      DCHECK(header.value().find('\0') == std::string::npos);
       req_headers.insert(std::make_pair(header.name(), header.value()));
     }
   } else {
