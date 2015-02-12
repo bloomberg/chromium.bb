@@ -293,6 +293,17 @@ void RendererSchedulerImpl::StartIdlePeriod() {
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("renderer.scheduler", &is_tracing);
+  if (is_tracing && !estimated_next_frame_begin_.is_null() &&
+      base::TimeTicks::Now() > estimated_next_frame_begin_) {
+    TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+        "renderer.scheduler",
+        "RendererSchedulerIdlePeriod",
+        this,
+        "DeadlineOverrun",
+        estimated_next_frame_begin_.ToInternalValue());
+  }
   TRACE_EVENT_ASYNC_END0("renderer.scheduler",
                          "RendererSchedulerIdlePeriod", this);
   DCHECK(main_thread_checker_.CalledOnValidThread());

@@ -596,6 +596,15 @@
         category_group, name, id, TRACE_EVENT_FLAG_NONE, "step", step, \
         arg1_name, arg1_val)
 
+// Similar to TRACE_EVENT_ASYNC_STEP_INTOx but with a custom |at| timestamp
+// provided.
+#define TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category_group, name, \
+        id, step, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_STEP_INTO, category_group, name, id, \
+        static_cast<int>(base::PlatformThread::CurrentId()), \
+        timestamp, TRACE_EVENT_FLAG_NONE, "step", step)
+
 // Records a single ASYNC_STEP_PAST event for |step| immediately. If the
 // category is not enabled, then this does nothing. The |name| and |id| must
 // match the ASYNC_BEGIN event above. The |step| param identifies this step
