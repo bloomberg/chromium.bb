@@ -750,7 +750,7 @@ inline bool toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, v8::Isol
 
     // FIXME: The specification states that the length property should be used as fallback, if value
     // is not a platform object that supports indexed properties. If it supports indexed properties,
-    // length should actually be one greater than value's maximum indexed property index.
+    // length should actually be one greater than value’s maximum indexed property index.
     v8::TryCatch block;
     v8::Local<v8::Value> lengthValue = object->Get(lengthSymbol);
     if (block.HasCaught()) {

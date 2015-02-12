@@ -701,10 +701,10 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         return;
     }
 
-    // Spec: If the SVG fragment identifier addresses a 'view' element within an SVG document (e.g., MyDrawing.svg#MyView
-    // or MyDrawing.svg#xpointer(id('MyView'))) then the closest ancestor 'svg' element is displayed in the viewport.
-    // Any view specification attributes included on the given 'view' element override the corresponding view specification
-    // attributes on the closest ancestor 'svg' element.
+    // Spec: If the SVG fragment identifier addresses a ‘view’ element within an SVG document (e.g., MyDrawing.svg#MyView
+    // or MyDrawing.svg#xpointer(id('MyView'))) then the closest ancestor ‘svg’ element is displayed in the viewport.
+    // Any view specification attributes included on the given ‘view’ element override the corresponding view specification
+    // attributes on the closest ancestor ‘svg’ element.
     if (isSVGViewElement(anchorNode)) {
         SVGViewElement& viewElement = toSVGViewElement(*anchorNode);
 

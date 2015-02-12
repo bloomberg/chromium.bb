@@ -1566,7 +1566,7 @@ LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
         if (hasOrthogonalWritingMode)
             return startOfRowForChild(child);
 
-        // Otherwise this this is equivalent to 'start'.
+        // Otherwise this this is equivalent to 'start’.
         return startOfRowForChild(child);
     case ItemPositionRight:
         // The alignment axis (column axis) and the inline axis are parallell in
@@ -1575,7 +1575,7 @@ LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
         if (hasOrthogonalWritingMode)
             return endOfRowForChild(child);
 
-        // Otherwise this this is equivalent to 'start'.
+        // Otherwise this this is equivalent to 'start’.
         return startOfRowForChild(child);
     case ItemPositionCenter:
         return centeredRowPositionForChild(child);

@@ -669,10 +669,10 @@ static String replaceUnmatchedSurrogates(const String& string)
             // 0xD800 <= c <= 0xDBFF
             ASSERT(U16_IS_LEAD(c));
             if (i == n - 1) {
-                // 1. If i = n-1, then append to U a U+FFFD REPLACEMENT CHARACTER.
+                // 1. If i = n−1, then append to U a U+FFFD REPLACEMENT CHARACTER.
                 u.append(WTF::Unicode::replacementCharacter);
             } else {
-                // 2. Otherwise, i < n-1:
+                // 2. Otherwise, i < n−1:
                 ASSERT(i < n - 1);
                 // ....1. Let d be the code unit in S at index i+1.
                 UChar d = s[i + 1];
