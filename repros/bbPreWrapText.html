@@ -1,0 +1,78 @@
+<html>
+    <style>
+        #a {
+            border: 1px solid black;
+            width: 210px;
+            white-space: pre;
+        }
+
+        #b {
+            border: 1px solid black;
+            width: 210px;
+            white-space: pre-wrap;
+        }
+
+        #c {
+            border: 1px solid black;
+            width: 210px;
+            white-space: -bb-pre-wrap-text;
+        }
+
+        .fl {
+            float: left;
+            white-space: pre;
+        }
+
+        .yes::before {
+            color: green;
+            content: "yes";
+        }
+
+        .no::before {
+            color: red;
+            content: "no";
+        }
+    </style>
+    <body>
+        <p>white-space: pre</p>
+
+        <div class="fl">Wrapping: </div><div class="no"/>
+        <div>The word 'wrapped' is not wrapped to the second line</div><br/>
+
+        <div class="fl">Space collapsing: </div><div class="no"/>
+        <div>The spaces between the start of the 3rd line and the end quotation are not collapsed</div><br/>
+
+        <div id="a" contenteditable></div>
+        <br />
+
+        <p>white-space: pre-wrap</p>
+
+        <div class="fl">Wrapping: </div><div class="yes"/>
+        <div>The word 'wrapped' is wrapped to the second line</div><br/>
+
+        <div class="fl">Space collapsing: </div><div class="yes"/>
+        <div>The spaces between the start of the 3rd line and the end quotation are collapsed</div><br/>
+
+        <div id="b" contenteditable></div>
+        <br />
+
+
+        <p>white-space: -bb-pre-wrap-text</p>
+
+        <div class="fl">Wrapping: </div><div class="yes"/>
+        <div>The word 'wrapped' is wrapped to the second line</div><br/>
+
+        <div class="fl">Space collapsing: </div><div class="no"/>
+        <div>The spaces between the start of the 3rd line and the end quotation are not collapsed</div><br/>
+
+        <div id="c" contenteditable></div>
+    <body>
+    <script>
+        var text = "This is the first line. This is a wrapped line. The white spaces in '                                                       ' are preserved.";
+
+        document.getElementById('a').innerText = text;
+        document.getElementById('b').innerText = text;
+        document.getElementById('c').innerText = text;
+    </script>
+</html>
+
