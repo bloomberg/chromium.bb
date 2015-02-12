@@ -1582,7 +1582,7 @@
       'android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerServiceFactory.java',
       'android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerTabUtils.java',
       'android/java/src/org/chromium/chrome/browser/download/ChromeDownloadDelegate.java',
-      'android/java/src/org/chromium/chrome/browser/EnhancedBookmarksBridge.java',
+      'android/java/src/org/chromium/chrome/browser/enhanced_bookmarks/EnhancedBookmarksBridge.java',
       'android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java',
       'android/java/src/org/chromium/chrome/browser/findinpage/FindInPageBridge.java',
       'android/java/src/org/chromium/chrome/browser/ForeignSessionHelper.java',
