@@ -146,6 +146,13 @@ static void SendTextEvent(JNIEnv* env,
       ConvertJavaStringToUTF8(env, text));
 }
 
+static void EnableVideoChannel(JNIEnv* env,
+                               jclass clazz,
+                               jboolean enable) {
+  remoting::ChromotingJniRuntime::GetInstance()->session()->EnableVideoChannel(
+      enable);
+}
+
 static void OnThirdPartyTokenFetched(JNIEnv* env,
                                      jclass clazz,
                                      jstring token,

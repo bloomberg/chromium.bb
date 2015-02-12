@@ -87,6 +87,9 @@ class ChromotingJniInstance
 
   void SendTextEvent(const std::string& text);
 
+  // Enables or disables the video channel. May be called from any thread.
+  void EnableVideoChannel(bool enable);
+
   void SendClientMessage(const std::string& type, const std::string& data);
 
   // Records paint time for statistics logging, if enabled. May be called from

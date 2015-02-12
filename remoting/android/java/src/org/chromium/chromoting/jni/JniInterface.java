@@ -383,6 +383,21 @@ public class JniInterface {
     private static native void nativeSendTextEvent(String text);
 
     /**
+     * Enables or disables the video channel. Called on the UI thread in response to Activity
+     * lifecycle events.
+     */
+    public static void enableVideoChannel(boolean enable) {
+        if (!sConnected) {
+            return;
+        }
+
+        nativeEnableVideoChannel(enable);
+    }
+
+    /** Native implementation of enableVideoChannel() */
+    private static native void nativeEnableVideoChannel(boolean enable);
+
+    /**
      * Sets the redraw callback to the provided functor. Provide a value of null whenever the
      * window is no longer visible so that we don't continue to draw onto it. Called on the UI
      * thread.

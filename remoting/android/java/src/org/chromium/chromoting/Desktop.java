@@ -66,24 +66,28 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
     protected void onStart() {
         super.onStart();
         mActivityLifecycleListener.onActivityStarted(this);
+        JniInterface.enableVideoChannel(true);
     }
 
     @Override
     protected void onPause() {
         if (isFinishing()) mActivityLifecycleListener.onActivityPaused(this);
         super.onPause();
+        JniInterface.enableVideoChannel(false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mActivityLifecycleListener.onActivityResumed(this);
+        JniInterface.enableVideoChannel(true);
     }
 
     @Override
     protected void onStop() {
         mActivityLifecycleListener.onActivityStopped(this);
         super.onStop();
+        JniInterface.enableVideoChannel(false);
     }
 
     /** Called when the activity is finally finished. */

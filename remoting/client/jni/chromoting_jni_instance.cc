@@ -252,6 +252,19 @@ void ChromotingJniInstance::SendTextEvent(const std::string& text) {
   client_->input_stub()->InjectTextEvent(event);
 }
 
+void ChromotingJniInstance::EnableVideoChannel(bool enable) {
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::EnableVideoChannel, this, enable));
+    return;
+  }
+
+  protocol::VideoControl video_control;
+  video_control.set_enable(enable);
+  client_->host_stub()->ControlVideo(video_control);
+}
+
 void ChromotingJniInstance::SendClientMessage(const std::string& type,
                                               const std::string& data) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
