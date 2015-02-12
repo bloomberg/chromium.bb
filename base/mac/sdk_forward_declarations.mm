@@ -23,6 +23,8 @@ NSString* const NSWindowDidExitFullScreenNotification =
 NSString* const NSWindowDidChangeBackingPropertiesNotification =
     @"NSWindowDidChangeBackingPropertiesNotification";
 
+NSString* const CBAdvertisementDataServiceDataKey = @"kCBAdvDataServiceData";
+
 #endif  // MAC_OS_X_VERSION_10_7
 
 // Replicate specific 10.9 SDK declarations for building with prior SDKs.
@@ -31,6 +33,8 @@ NSString* const NSWindowDidChangeBackingPropertiesNotification =
 
 NSString* const NSWindowDidChangeOcclusionStateNotification =
     @"NSWindowDidChangeOcclusionStateNotification";
+
+NSString* const CBAdvertisementDataIsConnectable = @"kCBAdvDataIsConnectable";
 
 #endif  // MAC_OS_X_VERSION_10_9
 
