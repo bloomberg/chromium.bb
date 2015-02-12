@@ -195,8 +195,8 @@
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] stringifier;
 
-    [NotEnumerable] getter Window (unsigned long index);
-    [Custom, NotEnumerable] getter Window (DOMString name);
+    [NotEnumerable, DoNotCheckSecurity] getter Window (unsigned long index);
+    [Custom, NotEnumerable, DoNotCheckSecurity] getter Window (DOMString name);
 };
 
 // http://www.whatwg.org/specs/web-apps/current-work/#transferable-objects

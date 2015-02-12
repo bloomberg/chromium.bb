@@ -350,23 +350,27 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
 
     // Search named items in the document.
     Document* doc = frame->document();
+    if (!doc || !doc->isHTMLDocument())
+        return;
 
-    if (doc && doc->isHTMLDocument()) {
-        if (toHTMLDocument(doc)->hasNamedItem(propName) || doc->hasElementWithId(propName)) {
-            RefPtrWillBeRawPtr<HTMLCollection> items = doc->windowNamedItems(propName);
-            if (!items->isEmpty()) {
-                if (items->hasExactlyOneItem()) {
-                    v8SetReturnValueFast(info, items->item(0), window);
-                    return;
-                }
-                v8SetReturnValueFast(info, items.release(), window);
+    // This is an AllCanRead interceptor.  Check that the caller has access to the named results.
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, DoNotReportSecurityError))
+        return;
+
+    if (toHTMLDocument(doc)->hasNamedItem(propName) || doc->hasElementWithId(propName)) {
+        RefPtrWillBeRawPtr<HTMLCollection> items = doc->windowNamedItems(propName);
+        if (!items->isEmpty()) {
+            if (items->hasExactlyOneItem()) {
+                v8SetReturnValueFast(info, items->item(0), window);
                 return;
             }
+            v8SetReturnValueFast(info, items.release(), window);
+            return;
         }
     }
 }
 
-bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
+static bool securityCheck(v8::Local<v8::Object> host)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Handle<v8::Object> window = V8Window::findInstanceInPrototypeChain(host, isolate);
@@ -386,63 +390,17 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
     if (target->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         target->loader().didAccessInitialDocument();
 
-    if (key->IsString()) {
-        DEFINE_STATIC_LOCAL(const AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
-
-        AtomicString name = toCoreAtomicString(key.As<v8::String>());
-        Frame* childFrame = target->tree().scopedChild(name);
-        // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
-        // because that would generate infinite recursion.
-        if (type == v8::ACCESS_HAS && childFrame)
-            return true;
-        // We need to explicitly compare against nameOfProtoProperty because
-        // V8's JSObject::LocalLookup finds __proto__ before
-        // interceptors and even when __proto__ isn't a "real named property".
-        v8::Handle<v8::String> keyString = key.As<v8::String>();
-        if (type == v8::ACCESS_GET
-            && childFrame
-            && !host->HasRealNamedProperty(keyString)
-            && !window->HasRealNamedProperty(keyString)
-            && name != nameOfProtoProperty)
-            return true;
-    }
-
     return BindingSecurity::shouldAllowAccessToFrame(isolate, target, DoNotReportSecurityError);
+}
+
+bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
+{
+    return securityCheck(host);
 }
 
 bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Handle<v8::Object> window = V8Window::findInstanceInPrototypeChain(host, isolate);
-    if (window.IsEmpty())
-        return false;
-
-    DOMWindow* targetWindow = V8Window::toImpl(window);
-    ASSERT(targetWindow);
-    if (!targetWindow->isLocalDOMWindow())
-        return false;
-
-    LocalFrame* target = toLocalDOMWindow(targetWindow)->frame();
-    if (!target)
-        return false;
-
-    // Notify the loader's client if the initial document has been accessed.
-    if (target->loader().stateMachine()->isDisplayingInitialEmptyDocument())
-        target->loader().didAccessInitialDocument();
-
-    Frame* childFrame = target->tree().scopedChild(index);
-
-    // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
-    // because that would generate infinite recursion.
-    if (type == v8::ACCESS_HAS && childFrame)
-        return true;
-    if (type == v8::ACCESS_GET
-        && childFrame
-        && !host->HasRealIndexedProperty(index)
-        && !window->HasRealIndexedProperty(index))
-        return true;
-
-    return BindingSecurity::shouldAllowAccessToFrame(isolate, target, DoNotReportSecurityError);
+    return securityCheck(host);
 }
 
 v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

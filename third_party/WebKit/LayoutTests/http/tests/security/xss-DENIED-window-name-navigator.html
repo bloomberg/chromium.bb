@@ -4,6 +4,24 @@ if (window.testRunner)
 </script>
 <iframe sandbox="allow-scripts"
         src="data:text/html,<script>
+            try {
+              top.navigator;
+              alert('FAIL');
+            } catch(e) {
+              alert(e);
+            }
+            this.x = 7;
             window.name='navigator';
-            alert(top.navigator === undefined ? 'PASS' : 'FAIL');
+            alert(top.navigator === this ? 'PASS' : 'FAIL');
+            alert(top.navigator.x === 7 ? 'PASS' : 'FAIL');
+            </script>"></iframe>
+<iframe sandbox="allow-scripts"
+        src="data:text/html,<script>
+            alert(top.navigator !== this ? 'PASS' : 'FAIL');
+            try {
+              top.navigator.x;
+              alert('FAIL');
+            } catch(e) {
+              alert(e);
+            }
             </script>"></iframe>

@@ -358,7 +358,13 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% set indexed_property_enumerator_callback =
            'indexedPropertyEnumerator<%s>' % cpp_class
            if indexed_property_getter.is_enumerable else '0' %}
-    functionTemplate->{{set_on_template}}()->SetHandler(v8::IndexedPropertyHandlerConfiguration({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}}));
+    {
+        v8::IndexedPropertyHandlerConfiguration config({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}});
+        {% if indexed_property_getter.do_not_check_security %}
+        config.flags = v8::PropertyHandlerFlags::kAllCanRead;
+        {% endif %}
+        functionTemplate->{{set_on_template}}()->SetHandler(config);
+    }
     {% endif %}
     {% if named_property_getter %}
     {# if have named properties, MUST have a named property getter #}
@@ -376,7 +382,13 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% set named_property_enumerator_callback =
            '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class
            if named_property_getter.is_enumerable else '0' %}
-    functionTemplate->{{set_on_template}}()->SetHandler(v8::NamedPropertyHandlerConfiguration({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}}));
+    {
+        v8::NamedPropertyHandlerConfiguration config({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
+        {% if named_property_getter.do_not_check_security %}
+        config.flags = v8::PropertyHandlerFlags::kAllCanRead;
+        {% endif %}
+        functionTemplate->{{set_on_template}}()->SetHandler(config);
+    }
     {% endif %}
     {% if iterator_method %}
     {% filter per_context_enabled(iterator_method.per_context_enabled_function) %}

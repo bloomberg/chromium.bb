@@ -1,4 +1,4 @@
-ALERT: PASS: Access to parent[0].a threw exception.
+ALERT: undefined
 ALERT: PASS: Access to parent[0].f() threw exception.
 
 This test passes if the access is forbidden.
