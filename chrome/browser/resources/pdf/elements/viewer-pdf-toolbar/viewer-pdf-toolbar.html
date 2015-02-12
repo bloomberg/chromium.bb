@@ -2,6 +2,7 @@
 <link rel="import" href="../viewer-page-selector/viewer-page-selector.html">
 <link rel="import" href="chrome://resources/polymer/core-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/core-toolbar/core-toolbar.html">
+<link rel="import" href="chrome://resources/polymer/core-transition/core-transition-css.html">
 <link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
@@ -9,23 +10,32 @@
 <polymer-element name="viewer-pdf-toolbar">
 <template>
   <link rel="stylesheet" href="viewer-pdf-toolbar.css">
-  <paper-shadow z="1">
+  <div id="animatable">
+    <paper-shadow fit></paper-shadow>
     <paper-progress value="{{loadProgress}}"></paper-progress>
     <core-toolbar class="core-narrow">
-      <span flex>{{docTitle}}</span>
+      <div id="aligner" horizontal justified layout center>
+        <span id="title" class="invisible ">{{docTitle}}</span>
 
-      <viewer-page-selector id="pageselector" index="{{pageIndex}}"
-          docLength="{{docLength}}" flex></viewer-page-selector>
+        <viewer-page-selector id="pageselector" class="invisible"
+            index="{{pageIndex}}" docLength="{{docLength}}">
+        </viewer-page-selector>
 
-      <paper-icon-button icon="image:rotate-right"
-          on-click="{{rotateRight}}"></paper-icon-button>
-      <paper-icon-button icon="bookmark-outline"
-          on-click="{{toggleBookmarks}}"></paper-icon-button>
-      <paper-icon-button icon="file-download"
-          on-click="{{save}}"></paper-icon-button>
-      <paper-icon-button icon="print" on-click="{{print}}"></paper-icon-button>
+        <div id="buttons" class="invisible">
+          <paper-icon-button icon="image:rotate-right"
+              on-click="{{rotateRight}}"></paper-icon-button>
+          <template if="{{hasBookmarks}}">
+            <paper-icon-button icon="bookmark-outline"
+                on-click="{{toggleBookmarks}}"></paper-icon-button>
+          </template>
+          <paper-icon-button icon="save"
+              on-click="{{save}}"></paper-icon-button>
+          <paper-icon-button icon="print"
+              on-click="{{print}}"></paper-icon-button>
+        </div>
+      </div>
     </core-toolbar>
-  </paper-shadow>
+  </div>
 </template>
 <script src="viewer-pdf-toolbar.js"></script>
 </polymer-element>

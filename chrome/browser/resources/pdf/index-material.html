@@ -2,10 +2,11 @@
 <html i18n-values="dir:textdirection;lang:language">
 <head>
   <meta charset="utf-8">
-  <link rel="import" href="elements/viewer-bookmarks-pane/viewer-bookmarks-pane.html">
+  <link rel="import" href="elements/viewer-bookmarks-content/viewer-bookmarks-content.html">
   <link rel="import" href="elements/viewer-button/viewer-button.html">
   <link rel="import" href="elements/viewer-error-screen/viewer-error-screen.html">
   <link rel="import" href="elements/viewer-page-selector/viewer-page-selector.html">
+  <link rel="import" href="elements/viewer-pane/viewer-pane.html">
   <link rel="import" href="elements/viewer-password-screen/viewer-password-screen.html">
   <link rel="import" href="elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html">
   <link rel="import" href="elements/viewer-toolbar/viewer-toolbar.html">
@@ -17,7 +18,9 @@
 
 <viewer-pdf-toolbar id="material-toolbar"></viewer-pdf-toolbar>
 
-<viewer-bookmarks-pane id="bookmarks-pane" heading="Bookmarks"></viewer-bookmarks-pane>
+<viewer-pane id="bookmarks-pane" heading="Bookmarks">
+  <viewer-bookmarks-content id="bookmarks-container"></viewer-bookmarks-content>
+</viewer-pane>
 
 <div id="sizer"></div>
 <viewer-password-screen id="password-screen"></viewer-password-screen>
@@ -44,6 +47,7 @@
 <viewer-error-screen id="error-screen"></viewer-error-screen>
 
 </body>
+<script src="ui_manager.js"></script>
 <script src="viewport.js"></script>
 <script src="open_pdf_params_parser.js"></script>
 <script src="navigator.js"></script>

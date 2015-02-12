@@ -19,7 +19,9 @@ body {
 viewer-pdf-toolbar {
   position: fixed;
   width: 100%;
-  z-index: 4;
+  /* TODO(alexandrec): the viewer-pane's paper-dialog is set to z-index: 12
+   * internally by the polymer element. Figure out why that is happening. */
+  z-index: 1000;
 }
 
 #plugin {

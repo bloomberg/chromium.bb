@@ -73,7 +73,7 @@ function PDFViewer(streamDetails) {
 
   this.isPrintPreview_ =
       this.streamDetails_.originalUrl.indexOf('chrome://print') == 0;
-  this.isMaterial_ = location.pathname.substring(1) == 'index-material.html';
+  this.isMaterial_ = location.pathname.substring(1) === 'index-material.html';
 
   // The sizer element is placed behind the plugin element to cause scrollbars
   // to be displayed in the window. It is sized according to the document size
@@ -88,6 +88,11 @@ function PDFViewer(streamDetails) {
   this.errorScreen_ = $('error-screen');
   this.materialToolbar_ = $('material-toolbar');
   this.bookmarksPane_ = $('bookmarks-pane');
+
+  if (this.isMaterial_) {
+    this.uiManager_ = new UiManager(window, this.materialToolbar_,
+        [this.bookmarksPane_]);
+  }
 
   // Create the viewport.
   this.viewport_ = new Viewport(window,
@@ -133,7 +138,6 @@ function PDFViewer(streamDetails) {
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
-
   // Setup the button event listeners.
   $('fit-to-width-button').addEventListener('click',
       this.viewport_.fitToWidth.bind(this.viewport_));
@@ -148,7 +152,7 @@ function PDFViewer(streamDetails) {
     this.materialToolbar_.addEventListener('save', this.save_.bind(this));
     this.materialToolbar_.addEventListener('print', this.print_.bind(this));
     this.materialToolbar_.addEventListener('toggle-bookmarks', function() {
-      this.bookmarksPane_.toggle();
+      this.bookmarksPane_.buttonToggle();
     }.bind(this));
     this.materialToolbar_.addEventListener('rotate-right',
         this.rotateClockwise_.bind(this));
@@ -515,8 +519,10 @@ PDFViewer.prototype = {
         break;
       case 'bookmarks':
         this.bookmarks_ = message.data.bookmarks;
-        if (this.isMaterial_)
-          this.bookmarksPane_.bookmarks = message.data.bookmarks;
+        if (this.isMaterial_ && this.bookmarks_.length !== 0) {
+          $('bookmarks-container').bookmarks = this.bookmarks;
+          this.materialToolbar_.hasBookmarks = true;
+        }
         break;
     }
   },
