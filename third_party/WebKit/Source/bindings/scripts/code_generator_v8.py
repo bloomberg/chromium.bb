@@ -140,31 +140,23 @@ class TypedefResolver(Visitor):
 
     def _resolve_typedefs(self, typed_object):
         """Resolve typedefs to actual types in the object."""
-        idl_type = typed_object.idl_type
-        if not idl_type:
-            return
-        resolved_idl_type = idl_type.resolve_typedefs(self.typedefs)
-        if resolved_idl_type.is_union_type:
-            self.additional_includes.add(
-                self.info_provider.include_path_for_union_types)
-        # Need to re-assign typed_object.idl_type, not just mutate idl_type,
-        # since type(idl_type) may change.
-        typed_object.idl_type = resolved_idl_type
+        for attribute_name in typed_object.idl_type_attributes:
+            try:
+                idl_type = getattr(typed_object, attribute_name)
+            except AttributeError:
+                continue
+            if not idl_type:
+                continue
+            resolved_idl_type = idl_type.resolve_typedefs(self.typedefs)
+            if resolved_idl_type.is_union_type:
+                self.additional_includes.add(
+                    self.info_provider.include_path_for_union_types)
+            # Need to re-assign the attribute, not just mutate idl_type, since
+            # type(idl_type) may change.
+            setattr(typed_object, attribute_name, resolved_idl_type)
 
-    def visit_callback_function(self, callback_function):
-        self._resolve_typedefs(callback_function)
-
-    def visit_attribute(self, attribute):
-        self._resolve_typedefs(attribute)
-
-    def visit_constant(self, constant):
-        self._resolve_typedefs(constant)
-
-    def visit_operation(self, operation):
-        self._resolve_typedefs(operation)
-
-    def visit_argument(self, argument):
-        self._resolve_typedefs(argument)
+    def visit_typed_object(self, typed_object):
+        self._resolve_typedefs(typed_object)
 
 
 class CodeGeneratorBase(object):

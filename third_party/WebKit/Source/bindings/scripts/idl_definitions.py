@@ -54,7 +54,7 @@ IdlDefinitions
     IdlException < IdlInterface
         (same contents as IdlInterface)
 
-TypedObject :: Object with a type.
+TypedObject :: Object with one or more attributes that is a type.
 
 IdlArgument is 'picklable', as it is stored in interfaces_info.
 
@@ -79,7 +79,7 @@ class TypedObject(object):
     by the TypedefResolver before passing data to the code generator.
     """
     __metaclass__ = abc.ABCMeta
-    idl_type = None
+    idl_type_attributes = ('idl_type',)
 
 
 ################################################################################
@@ -215,7 +215,7 @@ class IdlDictionary(object):
             member.accept(visitor)
 
 
-class IdlDictionaryMember(object):
+class IdlDictionaryMember(TypedObject):
     def __init__(self, idl_name, node):
         self.default_value = None
         self.extended_attributes = {}
@@ -326,6 +326,12 @@ class IdlInterface(object):
             custom_constructor.accept(visitor)
         for operation in self.operations:
             operation.accept(visitor)
+        if self.iterable:
+            self.iterable.accept(visitor)
+        elif self.maplike:
+            self.maplike.accept(visitor)
+        elif self.setlike:
+            self.setlike.accept(visitor)
 
     def process_stringifier(self):
         """Add the stringifier's attribute or named operation child, if it has
@@ -506,6 +512,7 @@ class IdlOperation(TypedObject):
         self.specials = []
         self.is_constructor = False
         self.idl_name = idl_name
+        self.idl_type = None
         self.is_static = False
 
         if not node:
@@ -522,7 +529,6 @@ class IdlOperation(TypedObject):
             if special_keyword in property_dictionary:
                 self.specials.append(special_keyword.lower())
 
-        self.idl_type = None
         children = node.GetChildren()
         for child in children:
             child_class = child.GetClass()
@@ -664,7 +670,7 @@ class IdlStringifier(object):
 # Iterable, Maplike, Setlike
 ################################################################################
 
-class IdlIterableOrMaplikeOrSetlike(object):
+class IdlIterableOrMaplikeOrSetlike(TypedObject):
     def __init__(self, idl_name, node):
         self.extended_attributes = {}
         self.type_children = []
@@ -680,6 +686,8 @@ class IdlIterableOrMaplikeOrSetlike(object):
 
 
 class IdlIterable(IdlIterableOrMaplikeOrSetlike):
+    idl_type_attributes = ('key_type', 'value_type')
+
     def __init__(self, idl_name, node):
         super(IdlIterable, self).__init__(idl_name, node)
 
@@ -693,8 +701,13 @@ class IdlIterable(IdlIterableOrMaplikeOrSetlike):
             raise ValueError('Unexpected number of type children: %d' % len(self.type_children))
         del self.type_children
 
+    def accept(self, visitor):
+        visitor.visit_iterable(self)
+
 
 class IdlMaplike(IdlIterableOrMaplikeOrSetlike):
+    idl_type_attributes = ('key_type', 'value_type')
+
     def __init__(self, idl_name, node):
         super(IdlMaplike, self).__init__(idl_name, node)
 
@@ -707,8 +720,13 @@ class IdlMaplike(IdlIterableOrMaplikeOrSetlike):
             raise ValueError('Unexpected number of children: %d' % len(self.type_children))
         del self.type_children
 
+    def accept(self, visitor):
+        visitor.visit_maplike(self)
+
 
 class IdlSetlike(IdlIterableOrMaplikeOrSetlike):
+    idl_type_attributes = ('value_type',)
+
     def __init__(self, idl_name, node):
         super(IdlSetlike, self).__init__(idl_name, node)
 
@@ -719,6 +737,9 @@ class IdlSetlike(IdlIterableOrMaplikeOrSetlike):
         else:
             raise ValueError('Unexpected number of children: %d' % len(self.type_children))
         del self.type_children
+
+    def accept(self, visitor):
+        visitor.visit_setlike(self)
 
 
 ################################################################################
@@ -964,26 +985,38 @@ class Visitor(object):
     def visit_definitions(self, definitions):
         pass
 
-    def visit_callback_function(self, callback_function):
+    def visit_typed_object(self, typed_object):
         pass
+
+    def visit_callback_function(self, callback_function):
+        self.visit_typed_object(callback_function)
 
     def visit_dictionary(self, dictionary):
         pass
 
     def visit_dictionary_member(self, member):
-        pass
+        self.visit_typed_object(member)
 
     def visit_interface(self, interface):
         pass
 
     def visit_attribute(self, attribute):
-        pass
+        self.visit_typed_object(attribute)
 
     def visit_constant(self, constant):
-        pass
+        self.visit_typed_object(constant)
 
     def visit_operation(self, operation):
-        pass
+        self.visit_typed_object(operation)
 
     def visit_argument(self, argument):
-        pass
+        self.visit_typed_object(argument)
+
+    def visit_iterable(self, iterable):
+        self.visit_typed_object(iterable)
+
+    def visit_maplike(self, maplike):
+        self.visit_typed_object(maplike)
+
+    def visit_setlike(self, setlike):
+        self.visit_typed_object(setlike)

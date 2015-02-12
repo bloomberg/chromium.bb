@@ -10936,10 +10936,10 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int key;
-    V8StringResource<> value;
+    StringOrDouble value;
     {
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(key, toInt32(info[0], exceptionState), exceptionState);
-        TOSTRING_VOID_INTERNAL(value, info[1]);
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8StringOrDouble::toImpl(info.GetIsolate(), info[1], value, exceptionState), exceptionState);
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     RefPtr<TestObject> result = impl->setForBinding(scriptState, key, value, exceptionState);
