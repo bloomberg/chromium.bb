@@ -349,7 +349,8 @@ void TracingControllerImpl::OnDisableRecordingDone() {
     // Flush asynchronously now, because we don't have any children to wait for.
     TraceLog::GetInstance()->Flush(
         base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        true);
   }
 
   // Notify all child processes.
@@ -682,7 +683,8 @@ void TracingControllerImpl::OnDisableRecordingAcked(
     // called with the last of the local trace data.
     TraceLog::GetInstance()->Flush(
         base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        true);
     return;
   }
 
