@@ -6,10 +6,8 @@
 
 #include "base/base64.h"
 #include "base/prefs/testing_pref_service.h"
-#include "base/sha1.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/compression_utils.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,16 +60,19 @@ std::string SerializeSeed(const variations::VariationsSeed& seed) {
   return serialized_seed;
 }
 
-// Serializes |seed| to base64-encoded protobuf binary format.
-std::string SerializeSeedBase64(const variations::VariationsSeed& seed,
-                                std::string* hash) {
+// Compresses |data| using Gzip compression and returns the result.
+std::string Compress(const std::string& data) {
+  std::string compressed;
+  const bool result = metrics::GzipCompress(data, &compressed);
+  EXPECT_TRUE(result);
+  return compressed;
+}
+
+// Serializes |seed| to compressed base64-encoded protobuf binary format.
+std::string SerializeSeedBase64(const variations::VariationsSeed& seed) {
   std::string serialized_seed = SerializeSeed(seed);
-  if (hash != NULL) {
-    std::string sha1 = base::SHA1HashString(serialized_seed);
-    *hash = base::HexEncode(sha1.data(), sha1.size());
-  }
   std::string base64_serialized_seed;
-  base::Base64Encode(serialized_seed, &base64_serialized_seed);
+  base::Base64Encode(Compress(serialized_seed), &base64_serialized_seed);
   return base64_serialized_seed;
 }
 
@@ -87,49 +88,40 @@ bool PrefHasDefaultValue(const TestingPrefServiceSimple& prefs,
 TEST(VariationsSeedStoreTest, LoadSeed) {
   // Store good seed data to test if loading from prefs works.
   const variations::VariationsSeed seed = CreateTestSeed();
-  std::string seed_hash;
-  const std::string base64_seed = SerializeSeedBase64(seed, &seed_hash);
+  const std::string base64_seed = SerializeSeedBase64(seed);
 
   TestingPrefServiceSimple prefs;
   VariationsSeedStore::RegisterPrefs(prefs.registry());
-  prefs.SetString(prefs::kVariationsSeed, base64_seed);
+  prefs.SetString(prefs::kVariationsCompressedSeed, base64_seed);
 
   TestVariationsSeedStore seed_store(&prefs);
 
   variations::VariationsSeed loaded_seed;
-  // Check that loading a seed without a hash pref set works correctly.
+  // Check that loading a seed works correctly.
   EXPECT_TRUE(seed_store.LoadSeed(&loaded_seed));
 
   // Check that the loaded data is the same as the original.
   EXPECT_EQ(SerializeSeed(seed), SerializeSeed(loaded_seed));
   // Make sure the pref hasn't been changed.
-  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
-  EXPECT_EQ(base64_seed, prefs.GetString(prefs::kVariationsSeed));
-
-  // Check that loading a seed with the correct hash works.
-  prefs.SetString(prefs::kVariationsSeedHash, seed_hash);
-  loaded_seed.Clear();
-  EXPECT_TRUE(seed_store.LoadSeed(&loaded_seed));
-  EXPECT_EQ(SerializeSeed(seed), SerializeSeed(loaded_seed));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
+  EXPECT_EQ(base64_seed, prefs.GetString(prefs::kVariationsCompressedSeed));
 
   // Check that loading a bad seed returns false and clears the pref.
-  prefs.ClearPref(prefs::kVariationsSeed);
-  prefs.SetString(prefs::kVariationsSeed, "this should fail");
-  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+  prefs.SetString(prefs::kVariationsCompressedSeed, "this should fail");
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed));
-  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
 
   // Check that having no seed in prefs results in a return value of false.
-  prefs.ClearPref(prefs::kVariationsSeed);
+  prefs.ClearPref(prefs::kVariationsCompressedSeed);
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed));
 }
 
 TEST(VariationsSeedStoreTest, GetInvalidSignature) {
   const variations::VariationsSeed seed = CreateTestSeed();
-  std::string seed_hash;
-  const std::string base64_seed = SerializeSeedBase64(seed, &seed_hash);
+  const std::string base64_seed = SerializeSeedBase64(seed);
 
   TestingPrefServiceSimple prefs;
   VariationsSeedStore::RegisterPrefs(prefs.registry());
@@ -191,19 +183,20 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
 
   EXPECT_TRUE(seed_store.StoreSeedForTesting(serialized_seed));
   // Make sure the pref was actually set.
-  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
 
-  std::string loaded_serialized_seed = prefs.GetString(prefs::kVariationsSeed);
-  std::string decoded_serialized_seed;
-  ASSERT_TRUE(base::Base64Decode(loaded_serialized_seed,
-                                 &decoded_serialized_seed));
+  std::string loaded_compressed_seed =
+      prefs.GetString(prefs::kVariationsCompressedSeed);
+  std::string decoded_compressed_seed;
+  ASSERT_TRUE(base::Base64Decode(loaded_compressed_seed,
+                                 &decoded_compressed_seed));
   // Make sure the stored seed from pref is the same as the seed we created.
-  EXPECT_EQ(serialized_seed, decoded_serialized_seed);
+  EXPECT_EQ(Compress(serialized_seed), decoded_compressed_seed);
 
   // Check if trying to store a bad seed leaves the pref unchanged.
-  prefs.ClearPref(prefs::kVariationsSeed);
+  prefs.ClearPref(prefs::kVariationsCompressedSeed);
   EXPECT_FALSE(seed_store.StoreSeedForTesting("should fail"));
-  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
 }
 
 TEST(VariationsSeedStoreTest, StoreSeedData_ParsedSeed) {

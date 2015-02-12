@@ -292,6 +292,10 @@ bool MasterPreferences::GetExtensionsBlock(
       master_preferences::kExtensionsBlock, extensions);
 }
 
+std::string MasterPreferences::GetCompressedVariationsSeed() const {
+  return ExtractPrefString(prefs::kVariationsCompressedSeed);
+}
+
 std::string MasterPreferences::GetVariationsSeed() const {
   return ExtractPrefString(prefs::kVariationsSeed);
 }

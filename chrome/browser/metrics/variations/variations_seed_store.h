@@ -86,6 +86,9 @@ class VariationsSeedStore {
   // Clears all prefs related to variations seed storage.
   void ClearPrefs();
 
+  // Reads the variations seed data from prefs; returns true on success.
+  bool ReadSeedData(std::string* seed_data);
+
   // The pref service used to persist the variations seed.
   PrefService* local_state_;
 

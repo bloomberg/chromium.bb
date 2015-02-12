@@ -156,6 +156,9 @@ class MasterPreferences {
   //
   bool GetExtensionsBlock(base::DictionaryValue** extensions) const;
 
+  // Returns the compressed variations seed entry from the master prefs.
+  std::string GetCompressedVariationsSeed() const;
+
   // Returns the variations seed entry from the master prefs.
   std::string GetVariationsSeed() const;
 

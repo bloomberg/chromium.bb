@@ -1308,6 +1308,9 @@ const char kCrashReportingEnabled[] =
     "user_experience_metrics_crash.reporting_enabled";
 #endif
 
+// Base64-encoded compressed serialized form of the variations seed protobuf.
+const char kVariationsCompressedSeed[] = "variations_compressed_seed";
+
 // 64-bit integer serialization of the base::Time from the last successful seed
 // fetch (i.e. when the Variations server responds with 200 or 304).
 const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
@@ -1315,14 +1318,11 @@ const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
 // String for the restrict parameter to be appended to the variations URL.
 const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
 
-// String serialized form of variations seed protobuf.
+// Base64-encoded serialized form of the variations seed protobuf.
 const char kVariationsSeed[] = "variations_seed";
 
 // 64-bit integer serialization of the base::Time from the last seed received.
 const char kVariationsSeedDate[] = "variations_seed_date";
-
-// SHA-1 hash of the serialized variations seed data (hex encoded).
-const char kVariationsSeedHash[] = "variations_seed_hash";
 
 // Digital signature of the binary variations seed data, base64-encoded.
 const char kVariationsSeedSignature[] = "variations_seed_signature";

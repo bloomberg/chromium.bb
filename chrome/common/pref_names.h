@@ -442,11 +442,11 @@ extern const char kMetricsReportingEnabled[];
 extern const char kCrashReportingEnabled[];
 #endif
 
+extern const char kVariationsCompressedSeed[];
 extern const char kVariationsLastFetchTime[];
 extern const char kVariationsRestrictParameter[];
 extern const char kVariationsSeed[];
 extern const char kVariationsSeedDate[];
-extern const char kVariationsSeedHash[];
 extern const char kVariationsSeedSignature[];
 
 extern const char kDeviceOpenNetworkConfiguration[];

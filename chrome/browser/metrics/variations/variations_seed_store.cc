@@ -5,12 +5,13 @@
 #include "chrome/browser/metrics/variations/variations_seed_store.h"
 
 #include "base/base64.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/compression_utils.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "crypto/signature_verifier.h"
 
@@ -66,12 +67,27 @@ enum VariationSeedEmptyState {
   VARIATIONS_SEED_INVALID_SIGNATURE,
   VARIATIONS_SEED_CORRUPT_BASE64,
   VARIATIONS_SEED_CORRUPT_PROTOBUF,
+  VARIATIONS_SEED_CORRUPT_GZIP,
   VARIATIONS_SEED_EMPTY_ENUM_SIZE,
 };
 
 void RecordVariationSeedEmptyHistogram(VariationSeedEmptyState state) {
   UMA_HISTOGRAM_ENUMERATION("Variations.SeedEmpty", state,
                             VARIATIONS_SEED_EMPTY_ENUM_SIZE);
+}
+
+enum VariationsSeedStoreResult {
+  VARIATIONS_SEED_STORE_SUCCESS,
+  VARIATIONS_SEED_STORE_FAILED_EMPTY,
+  VARIATIONS_SEED_STORE_FAILED_PARSE,
+  VARIATIONS_SEED_STORE_FAILED_SIGNATURE,
+  VARIATIONS_SEED_STORE_FAILED_GZIP,
+  VARIATIONS_SEED_STORE_RESULT_ENUM_SIZE,
+};
+
+void RecordVariationsSeedStoreHistogram(VariationsSeedStoreResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Variations.SeedStoreResult", result,
+                            VARIATIONS_SEED_STORE_RESULT_ENUM_SIZE);
 }
 
 // Note: UMA histogram enum - don't re-order or remove entries.
@@ -123,20 +139,10 @@ VariationsSeedStore::~VariationsSeedStore() {
 
 bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
   invalid_base64_signature_.clear();
-  const std::string base64_seed_data =
-      local_state_->GetString(prefs::kVariationsSeed);
-  if (base64_seed_data.empty()) {
-    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_EMPTY);
-    return false;
-  }
 
-  // If the decode process fails, assume the pref value is corrupt and clear it.
   std::string seed_data;
-  if (!base::Base64Decode(base64_seed_data, &seed_data)) {
-    ClearPrefs();
-    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_BASE64);
+  if (!ReadSeedData(&seed_data))
     return false;
-  }
 
   const std::string base64_seed_signature =
       local_state_->GetString(prefs::kVariationsSeedSignature);
@@ -171,15 +177,14 @@ bool VariationsSeedStore::StoreSeedData(
     const base::Time& date_fetched,
     variations::VariationsSeed* parsed_seed) {
   if (seed_data.empty()) {
-    VLOG(1) << "Variations seed data is empty, rejecting the seed.";
+    RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_EMPTY);
     return false;
   }
 
   // Only store the seed data if it parses correctly.
   variations::VariationsSeed seed;
   if (!seed.ParseFromString(seed_data)) {
-    VLOG(1) << "Variations seed data is not in valid proto format, "
-            << "rejecting the seed.";
+    RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_PARSE);
     return false;
   }
 
@@ -189,20 +194,27 @@ bool VariationsSeedStore::StoreSeedData(
     UMA_HISTOGRAM_ENUMERATION("Variations.StoreSeedSignature", result,
                               VARIATIONS_SEED_SIGNATURE_ENUM_SIZE);
     if (result != VARIATIONS_SEED_SIGNATURE_VALID) {
-      VLOG(1) << "Variations seed signature missing or invalid with result: "
-              << result << ". Rejecting the seed.";
+      RecordVariationsSeedStoreHistogram(
+          VARIATIONS_SEED_STORE_FAILED_SIGNATURE);
       return false;
     }
   }
 
+  // Compress the seed before base64-encoding and storing.
+  std::string compressed_seed_data;
+  if (!metrics::GzipCompress(seed_data, &compressed_seed_data)) {
+    RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_GZIP);
+    return false;
+  }
+
   std::string base64_seed_data;
-  base::Base64Encode(seed_data, &base64_seed_data);
+  base::Base64Encode(compressed_seed_data, &base64_seed_data);
 
   // TODO(asvitkine): This pref is no longer being used. Remove it completely
-  // in a couple of releases.
-  local_state_->ClearPref(prefs::kVariationsSeedHash);
+  // in M45+.
+  local_state_->ClearPref(prefs::kVariationsSeed);
 
-  local_state_->SetString(prefs::kVariationsSeed, base64_seed_data);
+  local_state_->SetString(prefs::kVariationsCompressedSeed, base64_seed_data);
   UpdateSeedDateAndLogDayChange(date_fetched);
   local_state_->SetString(prefs::kVariationsSeedSignature,
                           base64_seed_signature);
@@ -210,6 +222,7 @@ bool VariationsSeedStore::StoreSeedData(
   if (parsed_seed)
     seed.Swap(parsed_seed);
 
+  RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_SUCCESS);
   return true;
 }
 
@@ -235,18 +248,50 @@ void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
 
 // static
 void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kVariationsCompressedSeed, std::string());
   registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
-  registry->RegisterStringPref(prefs::kVariationsSeedHash, std::string());
   registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
                               base::Time().ToInternalValue());
   registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
 }
 
 void VariationsSeedStore::ClearPrefs() {
+  local_state_->ClearPref(prefs::kVariationsCompressedSeed);
   local_state_->ClearPref(prefs::kVariationsSeed);
   local_state_->ClearPref(prefs::kVariationsSeedDate);
-  local_state_->ClearPref(prefs::kVariationsSeedHash);
   local_state_->ClearPref(prefs::kVariationsSeedSignature);
+}
+
+bool VariationsSeedStore::ReadSeedData(std::string* seed_data) {
+  std::string base64_seed_data =
+      local_state_->GetString(prefs::kVariationsCompressedSeed);
+  const bool is_compressed = !base64_seed_data.empty();
+  // If there's no compressed seed, fall back to the uncompressed one.
+  if (!is_compressed)
+    base64_seed_data = local_state_->GetString(prefs::kVariationsSeed);
+
+  if (base64_seed_data.empty()) {
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_EMPTY);
+    return false;
+  }
+
+  // If the decode process fails, assume the pref value is corrupt and clear it.
+  std::string decoded_data;
+  if (!base::Base64Decode(base64_seed_data, &decoded_data)) {
+    ClearPrefs();
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_BASE64);
+    return false;
+  }
+
+  if (!is_compressed) {
+    seed_data->swap(decoded_data);
+  } else if (!metrics::GzipUncompress(decoded_data, seed_data)) {
+    ClearPrefs();
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_GZIP);
+    return false;
+  }
+
+  return true;
 }
 
 VariationsSeedStore::VerifySignatureResult

@@ -542,6 +542,8 @@ void SetupMasterPrefsFromInstallPrefs(
       installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &out_prefs->import_bookmarks_path);
 
+  out_prefs->compressed_variations_seed =
+      install_prefs.GetCompressedVariationsSeed();
   out_prefs->variations_seed = install_prefs.GetVariationsSeed();
   out_prefs->variations_seed_signature =
       install_prefs.GetVariationsSeedSignature();
