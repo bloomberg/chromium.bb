@@ -184,6 +184,14 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
+crbug.com/438852 fast/dynamic/text-combine.html [ NeedsRebaseline ]
+crbug.com/438852 fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/438852 fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/438852 virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/438852 [ Mac ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/438852 virtual/slimmingpaint/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/438852 virtual/slimmingpaint/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+
 # These failures need to be investigated.
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFailure ]
 # This needs a rebaseline after crbug.com/452967

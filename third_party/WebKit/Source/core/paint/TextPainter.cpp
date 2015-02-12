@@ -55,9 +55,9 @@ void TextPainter::paint(int startOffset, int endOffset, int length, const Style&
 {
     GraphicsContextStateSaver stateSaver(*m_graphicsContext, false);
     updateGraphicsContext(textStyle, stateSaver);
-    if (m_combinedText && m_combinedText->isTransformNeeded()) {
+    if (m_combinedText) {
         m_graphicsContext->save();
-        m_combinedText->transform(*m_graphicsContext, m_textBounds);
+        m_combinedText->transformToInlineCoordinates(*m_graphicsContext, m_textBounds);
         paintInternal<PaintText>(startOffset, endOffset, length, cachedTextBlob);
         m_graphicsContext->restore();
     } else {

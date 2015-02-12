@@ -26,17 +26,20 @@
 
 namespace blink {
 
+// RenderCombineText uses different coordinate systems for layout and inlineTextBox,
+// because it is treated as 1em-box character in vertical flow for the layout,
+// while its inline box is in horizontal flow.
 class RenderCombineText final : public RenderText {
 public:
     RenderCombineText(Node*, PassRefPtr<StringImpl>);
 
     void updateFont();
-    void adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const;
-    bool isTransformNeeded() const { return m_scaleX < 1.0f; }
-    void transform(GraphicsContext&, const FloatRect& boxRect) const;
     bool isCombined() const { return m_isCombined; }
     float combinedTextWidth(const Font& font) const { return font.fontDescription().computedSize(); }
     const Font& originalFont() const { return parent()->style()->font(); }
+    void transformToInlineCoordinates(GraphicsContext&, const FloatRect& boxRect) const;
+    void transformLayoutRect(FloatRect& boxRect) const;
+    float inlineWidthForLayout() const;
 
 private:
     virtual bool isCombineText() const override { return true; }
@@ -46,6 +49,10 @@ private:
     virtual void setTextInternal(PassRefPtr<StringImpl>) override;
     void updateIsCombined();
 
+    float offsetX(const FloatRect& boxRect) const;
+    float offsetXNoScale(const FloatRect& boxRect) const;
+    float offsetY() const { return style()->font().fontDescription().computedPixelSize(); }
+
     float m_combinedTextWidth;
     float m_scaleX;
     bool m_isCombined : 1;
@@ -53,6 +60,25 @@ private:
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderCombineText, isCombineText());
+
+inline float RenderCombineText::inlineWidthForLayout() const
+{
+    ASSERT(!m_needsFontUpdate);
+    return m_combinedTextWidth;
+}
+
+inline float RenderCombineText::offsetX(const FloatRect& boxRect) const
+{
+    ASSERT(!m_needsFontUpdate);
+    return (boxRect.height() - m_combinedTextWidth / m_scaleX) / 2;
+}
+
+inline float RenderCombineText::offsetXNoScale(const FloatRect& boxRect) const
+{
+    ASSERT(!m_needsFontUpdate);
+    return (boxRect.height() - m_combinedTextWidth) / 2;
+}
+
 
 } // namespace blink
 

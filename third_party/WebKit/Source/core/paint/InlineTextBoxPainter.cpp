@@ -117,6 +117,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         }
         if (combinedText) {
             combinedText->updateFont();
+            boxRect.setWidth(combinedText->inlineWidthForLayout());
         } else {
             shouldRotate = true;
             context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
@@ -137,8 +138,6 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     const Font& font = styleToUse.font();
 
     FloatPoint textOrigin = FloatPoint(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
-    if (combinedText)
-        combinedText->adjustTextOrigin(textOrigin, boxRect);
 
     // 1. Paint backgrounds behind text if needed. Examples of such backgrounds include selection
     // and composition highlights.
@@ -149,8 +148,12 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
         paintDocumentMarkers(context, boxOrigin, styleToUse, font, true);
 
-        if (haveSelection && !useCustomUnderlines)
-            paintSelection(context, boxOrigin, styleToUse, font, selectionStyle.fillColor);
+        if (haveSelection && !useCustomUnderlines) {
+            if (combinedText)
+                paintSelection<InlineTextBoxPainter::PaintOptions::CombinedText>(context, boxRect, styleToUse, font, selectionStyle.fillColor, combinedText);
+            else
+                paintSelection<InlineTextBoxPainter::PaintOptions::Normal>(context, boxRect, styleToUse, font, selectionStyle.fillColor);
+        }
     }
 
     // 2. Now paint the foreground, including text and decorations like underline/overline (in quirks mode only).
@@ -429,7 +432,8 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext* pt, const FloatP
     pt->drawLineForDocumentMarker(FloatPoint(boxOrigin.x() + start, boxOrigin.y() + underlineOffset), width, lineStyleForMarkerType(marker->type()));
 }
 
-void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, const LayoutStyle& style, const Font& font, Color textColor)
+template <InlineTextBoxPainter::PaintOptions options>
+void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const FloatRect& boxRect, const LayoutStyle& style, const Font& font, Color textColor, RenderCombineText* combinedText)
 {
     // See if we have a selection to paint at all.
     int sPos, ePos;
@@ -460,16 +464,28 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const FloatP
     if (respectHyphen)
         ePos = textRun.length();
 
+    GraphicsContextStateSaver stateSaver(*context);
+
+    if (options == InlineTextBoxPainter::PaintOptions::CombinedText) {
+        ASSERT(combinedText);
+        // We can't use the height of m_inlineTextBox because RenderCombineText's inlineTextBox is horizontal within vertical flow
+        FloatRect clipRect = boxRect;
+        combinedText->transformLayoutRect(clipRect);
+        context->clip(clipRect);
+        combinedText->transformToInlineCoordinates(*context, boxRect);
+        context->drawHighlightForText(font, textRun, boxRect.location(), boxRect.height(), c, sPos, ePos);
+        return;
+    }
+
     LayoutUnit selectionBottom = m_inlineTextBox.root().selectionBottom();
     LayoutUnit selectionTop = m_inlineTextBox.root().selectionTopAdjustedForPrecedingBlock();
 
     int deltaY = roundToInt(m_inlineTextBox.renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - selectionTop);
     int selHeight = std::max(0, roundToInt(selectionBottom - selectionTop));
 
-    FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
+    FloatPoint localOrigin(boxRect.x(), boxRect.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_inlineTextBox.logicalWidth(), selHeight));
 
-    GraphicsContextStateSaver stateSaver(*context);
     context->clip(clipRect);
     context->drawHighlightForText(font, textRun, localOrigin, selHeight, c, sPos, ePos);
 }

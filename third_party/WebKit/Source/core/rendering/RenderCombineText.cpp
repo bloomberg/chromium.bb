@@ -66,22 +66,31 @@ float RenderCombineText::width(unsigned from, unsigned length, const Font& font,
     return RenderText::width(from, length, font, xPosition, direction, fallbackFonts, glyphOverflow);
 }
 
-void RenderCombineText::adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const
+void scaleHorizontallyAndTranslate(GraphicsContext& context, float scaleX, float centerX, float offsetX, float offsetY)
 {
-    ASSERT(!m_needsFontUpdate);
-    if (!m_isCombined)
-        return;
-    float renderingWidth = m_combinedTextWidth / m_scaleX;
-    textOrigin.move(boxRect.height() / 2 - renderingWidth / 2, style()->font().fontDescription().computedPixelSize());
+    context.concatCTM(AffineTransform(scaleX, 0, 0, 1, centerX * (1.0f - scaleX) + offsetX * scaleX, offsetY));
 }
 
-void RenderCombineText::transform(GraphicsContext& context, const FloatRect& boxRect) const
+void RenderCombineText::transformToInlineCoordinates(GraphicsContext& context, const FloatRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
-    ASSERT(isTransformNeeded());
-    auto centerX = boxRect.x() + boxRect.width() / 2;
-    AffineTransform transform(m_scaleX, 0, 0, 1, centerX * (1 - m_scaleX), 0);
-    context.concatCTM(transform);
+    ASSERT(m_isCombined);
+    if (m_scaleX >= 1.0f) {
+        // Fast path, more than 90% of cases
+        ASSERT(m_scaleX == 1.0f);
+        context.concatCTM(AffineTransform::translation(offsetXNoScale(boxRect), offsetY()));
+        return;
+    }
+    ASSERT(m_scaleX > 0.0f);
+    const float centerX = boxRect.x() + boxRect.width() / 2;
+    scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX(boxRect), offsetY());
+}
+
+void RenderCombineText::transformLayoutRect(FloatRect& boxRect) const
+{
+    ASSERT(!m_needsFontUpdate);
+    ASSERT(m_isCombined);
+    boxRect.move(offsetXNoScale(boxRect), offsetY());
 }
 
 void RenderCombineText::updateIsCombined()

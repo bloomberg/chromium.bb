@@ -15,11 +15,13 @@ struct PaintInfo;
 class Color;
 class DocumentMarker;
 class FloatPoint;
+class FloatRect;
 class Font;
 class GraphicsContext;
 class InlineTextBox;
 class LayoutPoint;
 class LayoutStyle;
+class RenderCombineText;
 
 class InlineTextBoxPainter {
 public:
@@ -33,9 +35,12 @@ public:
     static void removeFromTextBlobCache(InlineTextBox&);
 
 private:
+    enum class PaintOptions { Normal, CombinedText };
+
     void paintCompositionBackgrounds(GraphicsContext*, const FloatPoint& boxOrigin, const LayoutStyle&, const Font&, bool useCustomUnderlines);
     void paintSingleCompositionBackgroundRun(GraphicsContext*, const FloatPoint& boxOrigin, const LayoutStyle&, const Font&, Color backgroundColor, int startPos, int endPos);
-    void paintSelection(GraphicsContext*, const FloatPoint& boxOrigin, const LayoutStyle&, const Font&, Color textColor);
+    template <PaintOptions>
+    void paintSelection(GraphicsContext*, const FloatRect& boxRect, const LayoutStyle&, const Font&, Color textColor, RenderCombineText* = nullptr);
     void paintDecoration(GraphicsContext*, const FloatPoint& boxOrigin, TextDecoration);
     void paintCompositionUnderline(GraphicsContext*, const FloatPoint& boxOrigin, const CompositionUnderline&);
     unsigned underlinePaintStart(const CompositionUnderline&);
