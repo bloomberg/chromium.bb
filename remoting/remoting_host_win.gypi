@@ -201,8 +201,6 @@
         'host/it2me/it2me_native_messaging_host_main.h',
         'host/setup/me2me_native_messaging_host_main.cc',
         'host/setup/me2me_native_messaging_host_main.h',
-        'host/verify_config_window_win.cc',
-        'host/verify_config_window_win.h',
         'host/win/chromoting_module.cc',
         'host/win/chromoting_module.h',
         'host/win/core.cc',
