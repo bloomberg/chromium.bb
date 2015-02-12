@@ -43,6 +43,7 @@
 #include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
+#include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
@@ -479,7 +480,7 @@ static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
 
   // Check that the pre-sandbox initialization didn't spawn threads.
 #if !defined(THREAD_SANITIZER)
-  DCHECK(linux_sandbox->IsSingleThreaded());
+  DCHECK(sandbox::ThreadHelpers::IsSingleThreaded());
 #endif
 
   sandbox::SetuidSandboxClient* setuid_sandbox =

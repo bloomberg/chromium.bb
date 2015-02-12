@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_SERVICES_PROC_UTIL_H_
 #define SANDBOX_LINUX_SERVICES_PROC_UTIL_H_
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "sandbox/sandbox_export.h"
 
@@ -30,6 +31,9 @@ class SANDBOX_EXPORT ProcUtil {
   // If |proc_fd| is -1 and /proc is not available, this function will return
   // false.
   static bool HasOpenDirectory(int proc_fd);
+
+  // Open /proc/self/task/ or crash if it cannot.
+  static base::ScopedFD OpenProcSelfTask();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProcUtil);

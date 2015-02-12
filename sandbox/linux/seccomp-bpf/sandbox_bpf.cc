@@ -34,6 +34,7 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
+#include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
@@ -114,6 +115,10 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
         "Cannot repeatedly start sandbox. Create a separate Sandbox "
         "object instead.");
     return false;
+  }
+
+  if (!proc_task_fd_.is_valid()) {
+    SetProcTaskFd(ProcUtil::OpenProcSelfTask());
   }
 
   const bool supports_tsync = KernelSupportsSeccompTsync();

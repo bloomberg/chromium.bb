@@ -17,6 +17,7 @@
     '../..',
   ],
   'sources': [
+    'services/proc_util_unittest.cc',
     'services/scoped_process_unittest.cc',
     'services/syscall_wrappers_unittest.cc',
     'services/thread_helpers_unittests.cc',
@@ -59,7 +60,6 @@
         'services/credentials_unittest.cc',
         'services/namespace_sandbox_unittest.cc',
         'services/namespace_utils_unittest.cc',
-        'services/proc_util_unittest.cc',
       ],
     }],
   ],

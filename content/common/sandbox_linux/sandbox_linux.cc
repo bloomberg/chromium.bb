@@ -90,17 +90,18 @@ bool IsRunningTSAN() {
 
 // Try to open /proc/self/task/ with the help of |proc_fd|. |proc_fd| can be
 // -1. Will return -1 on error and set errno like open(2).
+// TODO(jln): get rid of this ugly interface.
 int OpenProcTaskFd(int proc_fd) {
   int proc_self_task = -1;
   if (proc_fd >= 0) {
     // If a handle to /proc is available, use it. This allows to bypass file
     // system restrictions.
-    proc_self_task =
-        openat(proc_fd, "self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    proc_self_task = HANDLE_EINTR(
+        openat(proc_fd, "self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC));
   } else {
     // Otherwise, make an attempt to access the file system directly.
-    proc_self_task =
-        open("/proc/self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    proc_self_task = HANDLE_EINTR(openat(AT_FDCWD, "/proc/self/task/",
+                                         O_RDONLY | O_DIRECTORY | O_CLOEXEC));
   }
   return proc_self_task;
 }
@@ -161,7 +162,7 @@ void LinuxSandbox::PreinitializeSandbox() {
   // not closed.
   // If LinuxSandbox::PreinitializeSandbox() runs, InitializeSandbox() must run
   // as well.
-  proc_fd_ = open("/proc", O_DIRECTORY | O_RDONLY | O_CLOEXEC);
+  proc_fd_ = HANDLE_EINTR(open("/proc", O_DIRECTORY | O_RDONLY | O_CLOEXEC));
   CHECK_GE(proc_fd_, 0);
   // We "pre-warm" the code that detects supports for seccomp BPF.
   if (SandboxSeccompBPF::IsSeccompBPFDesired()) {

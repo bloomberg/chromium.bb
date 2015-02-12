@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace sandbox {
@@ -31,7 +32,8 @@ typedef scoped_ptr<DIR, DIRCloser> ScopedDIR;
 
 int ProcUtil::CountOpenFds(int proc_fd) {
   DCHECK_LE(0, proc_fd);
-  int proc_self_fd = openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY);
+  int proc_self_fd = HANDLE_EINTR(
+      openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY | O_CLOEXEC));
   PCHECK(0 <= proc_self_fd);
 
   // Ownership of proc_self_fd is transferred here, it must not be closed
@@ -107,6 +109,15 @@ bool ProcUtil::HasOpenDirectory(int proc_fd) {
 
   // No open unmanaged directories found.
   return false;
+}
+
+//static
+base::ScopedFD ProcUtil::OpenProcSelfTask() {
+  base::ScopedFD proc_self_task(
+   HANDLE_EINTR(
+      open("/proc/self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
+  PCHECK(proc_self_task.is_valid());
+  return proc_self_task.Pass();
 }
 
 }  // namespace sandbox

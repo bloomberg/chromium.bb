@@ -221,6 +221,8 @@
       'sources': [
         'services/init_process_reaper.cc',
         'services/init_process_reaper.h',
+        'services/proc_util.cc',
+        'services/proc_util.h',
         'services/scoped_process.cc',
         'services/scoped_process.h',
         'services/syscall_wrappers.cc',
@@ -258,8 +260,6 @@
             'services/namespace_sandbox.h',
             'services/namespace_utils.cc',
             'services/namespace_utils.h',
-            'services/proc_util.cc',
-            'services/proc_util.h',
           ],
           'dependencies': [
             # for capabilities.cc.

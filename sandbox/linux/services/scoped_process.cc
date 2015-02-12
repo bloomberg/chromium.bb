@@ -39,7 +39,7 @@ ScopedProcess::ScopedProcess(const base::Closure& child_callback)
   PCHECK(0 == pipe(pipe_fds_));
 #if !defined(THREAD_SANITIZER)
   // Make sure that we can safely fork().
-  CHECK(ThreadHelpers::IsSingleThreaded(-1));
+  CHECK(ThreadHelpers::IsSingleThreaded());
 #endif
   child_process_id_ = fork();
   PCHECK(0 <= child_process_id_);

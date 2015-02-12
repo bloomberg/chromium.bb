@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "sandbox/linux/services/proc_util.h"
 
 namespace sandbox {
 
@@ -97,19 +98,6 @@ void RunWhileTrue(const base::Callback<bool(void)>& cb) {
   NOTREACHED();
 }
 
-// Return a ScopedFD to /proc/self/task/. If |proc_self_task| is -1, try to
-// open it directly, otherwise duplicate it.
-base::ScopedFD OpenProcSelfTask(int proc_self_task) {
-  DCHECK_LE(-1, proc_self_task);
-  if (-1 == proc_self_task) {
-    return base::ScopedFD(HANDLE_EINTR(
-        open("/proc/self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
-  }
-
-  return base::ScopedFD(HANDLE_EINTR(
-      openat(proc_self_task, "./", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
-}
-
 bool IsMultiThreaded(int proc_self_task) {
   return !ThreadHelpers::IsSingleThreaded(proc_self_task);
 }
@@ -118,17 +106,27 @@ bool IsMultiThreaded(int proc_self_task) {
 
 // static
 bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
-  DCHECK_LE(-1, proc_self_task);
-  base::ScopedFD task_fd(OpenProcSelfTask(proc_self_task));
-  CHECK(task_fd.is_valid());
-  return IsSingleThreadedImpl(task_fd.get());
+  DCHECK_LE(0, proc_self_task);
+  return IsSingleThreadedImpl(proc_self_task);
+}
+
+// static
+bool ThreadHelpers::IsSingleThreaded() {
+  base::ScopedFD task_fd(ProcUtil::OpenProcSelfTask());
+  return IsSingleThreaded(task_fd.get());
 }
 
 // static
 void ThreadHelpers::AssertSingleThreaded(int proc_self_task) {
+  DCHECK_LE(0, proc_self_task);
   const base::Callback<bool(void)> cb =
       base::Bind(&IsMultiThreaded, proc_self_task);
   RunWhileTrue(cb);
+}
+
+void ThreadHelpers::AssertSingleThreaded() {
+  base::ScopedFD task_fd(ProcUtil::OpenProcSelfTask());
+  AssertSingleThreaded(task_fd.get());
 }
 
 // static

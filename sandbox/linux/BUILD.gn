@@ -66,6 +66,7 @@ source_set("sandbox_linux_test_utils") {
 # The main sandboxing test target.
 test("sandbox_linux_unittests") {
   sources = [
+    "services/proc_util_unittest.cc",
     "services/scoped_process_unittest.cc",
     "services/syscall_wrappers_unittest.cc",
     "services/thread_helpers_unittests.cc",
@@ -121,7 +122,6 @@ test("sandbox_linux_unittests") {
       "services/credentials_unittest.cc",
       "services/namespace_sandbox_unittest.cc",
       "services/namespace_utils_unittest.cc",
-      "services/proc_util_unittest.cc",
     ]
   }
 }
@@ -231,14 +231,16 @@ component("sandbox_services") {
   sources = [
     "services/init_process_reaper.cc",
     "services/init_process_reaper.h",
+    "services/proc_util.cc",
+    "services/proc_util.h",
     "services/scoped_process.cc",
     "services/scoped_process.h",
     "services/syscall_wrappers.cc",
     "services/syscall_wrappers.h",
     "services/thread_helpers.cc",
     "services/thread_helpers.h",
-    "services/yama.h",
     "services/yama.cc",
+    "services/yama.h",
     "syscall_broker/broker_channel.cc",
     "syscall_broker/broker_channel.h",
     "syscall_broker/broker_client.cc",
@@ -264,8 +266,6 @@ component("sandbox_services") {
       "services/namespace_sandbox.h",
       "services/namespace_utils.cc",
       "services/namespace_utils.h",
-      "services/proc_util.cc",
-      "services/proc_util.h",
     ]
 
     # For capabilities.cc.

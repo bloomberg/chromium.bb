@@ -57,12 +57,12 @@ class ScopedProcSelfTask {
 TEST(ThreadHelpers, IsSingleThreadedBasic) {
   ScopedProcSelfTask task;
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
-  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(-1));
+  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded());
 
   base::Thread thread("sandbox_tests");
   ASSERT_TRUE(thread.Start());
   ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
-  ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(-1));
+  ASSERT_FALSE(ThreadHelpers::IsSingleThreaded());
   // Explicitly stop the thread here to not pollute the next test.
   ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(task.fd(), &thread));
 }
@@ -70,10 +70,10 @@ TEST(ThreadHelpers, IsSingleThreadedBasic) {
 SANDBOX_TEST(ThreadHelpers, AssertSingleThreaded) {
   ScopedProcSelfTask task;
   SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded(task.fd()));
-  SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded(-1));
+  SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded());
 
   ThreadHelpers::AssertSingleThreaded(task.fd());
-  ThreadHelpers::AssertSingleThreaded(-1);
+  ThreadHelpers::AssertSingleThreaded();
 }
 
 TEST(ThreadHelpers, IsSingleThreadedIterated) {
@@ -108,7 +108,7 @@ TEST(ThreadHelpers, IsSingleThreadedStartAndStop) {
 }
 
 SANDBOX_TEST(ThreadHelpers, AssertSingleThreadedAfterThreadStopped) {
-  SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded(-1));
+  SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded());
 
   base::Thread thread1("sandbox_tests");
   base::Thread thread2("sandbox_tests");
@@ -116,14 +116,14 @@ SANDBOX_TEST(ThreadHelpers, AssertSingleThreadedAfterThreadStopped) {
   for (int i = 0; i < GetRaceTestIterations(); ++i) {
     SANDBOX_ASSERT(thread1.Start());
     SANDBOX_ASSERT(thread2.Start());
-    SANDBOX_ASSERT(!ThreadHelpers::IsSingleThreaded(-1));
+    SANDBOX_ASSERT(!ThreadHelpers::IsSingleThreaded());
 
     thread1.Stop();
     thread2.Stop();
     // This will wait on /proc/ to reflect the state of threads in the
     // process.
-    ThreadHelpers::AssertSingleThreaded(-1);
-    SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded(-1));
+    ThreadHelpers::AssertSingleThreaded();
+    SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded());
   }
 }
 
@@ -137,7 +137,7 @@ SANDBOX_DEATH_TEST(
         ThreadHelpers::GetAssertSingleThreadedErrorMessageForTests())) {
   base::Thread thread1("sandbox_tests");
   SANDBOX_ASSERT(thread1.Start());
-  ThreadHelpers::AssertSingleThreaded(-1);
+  ThreadHelpers::AssertSingleThreaded();
 }
 #endif  // !defined(NDEBUG)
 
