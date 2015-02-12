@@ -17,14 +17,15 @@ namespace blink {
 
 namespace {
 
-class ConnectCallbacks : public WebNavigatorConnectCallbacks {
+// FIXME: remove this class when content side changes have landed.
+class OldConnectCallbacks : public WebNavigatorConnectCallbacks {
 public:
-    ConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, PassRefPtrWillBeRawPtr<MessagePort> port)
+    OldConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, PassRefPtrWillBeRawPtr<MessagePort> port)
         : m_resolver(resolver), m_port(port)
     {
         ASSERT(m_resolver);
     }
-    ~ConnectCallbacks() override { }
+    ~OldConnectCallbacks() override { }
 
     void onSuccess() override
     {
@@ -45,6 +46,39 @@ public:
 private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
     RefPtrWillBePersistent<MessagePort> m_port;
+    WTF_MAKE_NONCOPYABLE(OldConnectCallbacks);
+};
+
+class ConnectCallbacks : public WebNavigatorConnectPortCallbacks {
+public:
+    ConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+        ASSERT(m_resolver);
+    }
+    ~ConnectCallbacks() override { }
+
+    void onSuccess(WebMessagePortChannel* channelRaw) override
+    {
+        OwnPtr<WebMessagePortChannel> channel = adoptPtr(channelRaw);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            return;
+        }
+        RefPtrWillBeRawPtr<MessagePort> port = MessagePort::create(*m_resolver->executionContext());
+        port->entangle(channel.release());
+        m_resolver->resolve(port);
+    }
+
+    void onError() override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            return;
+        }
+        m_resolver->reject(DOMException::create(AbortError));
+    }
+
+private:
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
     WTF_MAKE_NONCOPYABLE(ConnectCallbacks);
 };
 
@@ -58,25 +92,18 @@ ScriptPromise NavigatorConnect::connect(ScriptState* scriptState, const String& 
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    // Create a new MessageChannel, but immediately disentangle port2 (extract
-    // the WebMessagePortChannel from the port and mark it as being transfered).
-    // This way we have:
-    // - Ownership of port1 is kept in the ConnectCallbacks and later passed to
-    //     javascript (or released if the connection is not accepted).
-    // - Ownership of port2 (or more precisely the WebMessagePortChannel backing
-    //     it) is passed to the content layer to be transfered to the service
-    //     provider.
-    // - Ownership of the MessageChannel object itself will be released at the
-    //    end of this method. This is okay as it's the ports themselves that
-    //    represent the actual message channel. MessageChannel is only used to
-    //    create a pair of ports.
+    provider->connect(
+        scriptState->executionContext()->completeURL(url),
+        scriptState->executionContext()->securityOrigin()->toString(),
+        new ConnectCallbacks(resolver));
+    // FIXME: remove this old codepath once the content side has been updated.
     RefPtrWillBeRawPtr<MessageChannel> channel(MessageChannel::create(scriptState->executionContext()));
     OwnPtr<WebMessagePortChannel> webchannel = channel->port2()->disentangle();
     provider->connect(
         scriptState->executionContext()->completeURL(url),
         scriptState->executionContext()->securityOrigin()->toString(),
         webchannel.leakPtr(),
-        new ConnectCallbacks(resolver, channel->port1()));
+        new OldConnectCallbacks(resolver, channel->port1()));
     return promise;
 }
 
