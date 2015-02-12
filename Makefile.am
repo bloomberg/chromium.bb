@@ -884,6 +884,8 @@ libshared_la_SOURCES =				\
 	shared/config-parser.c			\
 	shared/option-parser.c			\
 	shared/config-parser.h			\
+	shared/file-util.c			\
+	shared/file-util.h			\
 	shared/os-compatibility.c		\
 	shared/os-compatibility.h
 
