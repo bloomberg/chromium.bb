@@ -787,7 +787,6 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/453002 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure Pass ]
-crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ ImageOnlyFailure Pass ]
@@ -1900,6 +1899,11 @@ crbug.com/451759 fast/images/drag-image.html [ Failure ]
 crbug.com/451759 virtual/deferred/fast/images/drag-image.html [ Failure ]
 crbug.com/451759 virtual/slimmingpaint/fast/images/drag-image.html [ Failure ]
 crbug.com/458417 [ XP ] http/tests/fetch/workers/fetch.html [ Pass Timeout ]
+crbug.com/458077 [ Mac Linux ] fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/458077 [ Win ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/452326 [ Mac ] fast/text/emphasis-complex.html [ NeedsRebaseline ]
+crbug.com/452326 [ Mac ] virtual/slimmingpaint/fast/text/emphasis-complex.html [ NeedsRebaseline ]
+crbug.com/452326 [ Mac ] virtual/antialiasedtext/fast/text/emphasis-complex.html [ NeedsRebaseline ]
 
 # These baselines need to be reviewed and perhaps updated after the mass-rebaselining
 # on 2015-02-06 (after the change in r189636).
