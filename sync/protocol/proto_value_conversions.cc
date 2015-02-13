@@ -327,6 +327,8 @@ base::DictionaryValue* AutofillProfileSpecificsToValue(
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(guid);
   SET_STR(origin);
+  SET_INT64(use_count);
+  SET_INT64(use_date);
 
   SET_STR_REP(name_first);
   SET_STR_REP(name_middle);

@@ -144,7 +144,8 @@ class CreditCard : public AutofillDataModel {
   // Determines if |this| is a local version of the server card |other|.
   bool IsLocalDuplicateOfServerCard(const CreditCard& other) const;
 
-  // Used by tests.
+  // Equality operators compare GUIDs, origins, and the contents.
+  // Usage metadata (use count, use date, modification date) are NOT compared.
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;
 

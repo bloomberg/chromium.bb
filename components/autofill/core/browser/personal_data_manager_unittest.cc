@@ -2870,4 +2870,60 @@ TEST_F(PersonalDataManagerTest, MaxTimesToShowAddressBookPrompt) {
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+TEST_F(PersonalDataManagerTest, RecordUseOf) {
+  AutofillProfile profile(autofill::test::GetFullProfile());
+  EXPECT_EQ(0U, profile.use_count());
+  EXPECT_EQ(base::Time(), profile.use_date());
+  EXPECT_EQ(base::Time(), profile.modification_date());
+  personal_data_->AddProfile(profile);
+
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card, "John Dillinger",
+                          "423456789012" /* Visa */, "01", "2010");
+  EXPECT_EQ(0U, credit_card.use_count());
+  EXPECT_EQ(base::Time(), credit_card.use_date());
+  EXPECT_EQ(base::Time(), credit_card.modification_date());
+  personal_data_->AddCreditCard(credit_card);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Notify the PDM that the profile and credit card were used.
+  AutofillProfile* added_profile =
+      personal_data_->GetProfileByGUID(profile.guid());
+  ASSERT_TRUE(added_profile);
+  EXPECT_EQ(*added_profile, profile);
+  EXPECT_EQ(0U, added_profile->use_count());
+  EXPECT_EQ(base::Time(), added_profile->use_date());
+  EXPECT_NE(base::Time(), added_profile->modification_date());
+  personal_data_->RecordUseOf(profile);
+
+  CreditCard* added_card =
+      personal_data_->GetCreditCardByGUID(credit_card.guid());
+  ASSERT_TRUE(added_card);
+  EXPECT_EQ(*added_card, credit_card);
+  EXPECT_EQ(0U, added_card->use_count());
+  EXPECT_EQ(base::Time(), added_card->use_date());
+  EXPECT_NE(base::Time(), added_card->modification_date());
+  personal_data_->RecordUseOf(credit_card);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Verify usage stats are updated.
+  added_profile = personal_data_->GetProfileByGUID(profile.guid());
+  ASSERT_TRUE(added_profile);
+  EXPECT_EQ(1U, added_profile->use_count());
+  EXPECT_NE(base::Time(), added_profile->use_date());
+  EXPECT_NE(base::Time(), added_profile->modification_date());
+
+  added_card = personal_data_->GetCreditCardByGUID(credit_card.guid());
+  ASSERT_TRUE(added_card);
+  EXPECT_EQ(1U, added_card->use_count());
+  EXPECT_NE(base::Time(), added_card->use_date());
+  EXPECT_NE(base::Time(), added_card->modification_date());
+}
+
 }  // namespace autofill

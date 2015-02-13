@@ -464,6 +464,26 @@ bool PersonalDataManager::ImportFormData(
   return false;
 }
 
+void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
+  if (!database_.get())
+    return;
+
+  CreditCard* credit_card = GetCreditCardByGUID(data_model.guid());
+  if (credit_card && credit_card->record_type() == CreditCard::LOCAL_CARD) {
+    credit_card->RecordUse();
+    database_->UpdateCreditCard(*credit_card);
+    Refresh();
+    return;
+  }
+
+  AutofillProfile* profile = GetProfileByGUID(data_model.guid());
+  if (profile) {
+    profile->RecordUse();
+    database_->UpdateAutofillProfile(*profile);
+    Refresh();
+  }
+}
+
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (is_off_the_record_)
     return;

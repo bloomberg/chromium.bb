@@ -11,8 +11,8 @@ namespace autofill {
 
 AutofillDataModel::AutofillDataModel(const std::string& guid,
                                      const std::string& origin)
-    : guid_(guid),
-      origin_(origin) {}
+    : guid_(guid), origin_(origin), use_count_(0) {
+}
 AutofillDataModel::~AutofillDataModel() {}
 
 base::string16 AutofillDataModel::GetInfoForVariant(
@@ -24,6 +24,11 @@ base::string16 AutofillDataModel::GetInfoForVariant(
 
 bool AutofillDataModel::IsVerified() const {
   return !origin_.empty() && !GURL(origin_).is_valid();
+}
+
+void AutofillDataModel::RecordUse() {
+  ++use_count_;
+  use_date_ = base::Time::Now();
 }
 
 }  // namespace autofill

@@ -81,6 +81,10 @@ class PersonalDataManager : public KeyedService,
   bool ImportFormData(const FormStructure& form,
                       scoped_ptr<CreditCard>* credit_card);
 
+  // Called to indicate |data_model| was used (to fill in a form). Updates
+  // the database accordingly.
+  virtual void RecordUseOf(const AutofillDataModel& data_model);
+
   // Saves |imported_profile| to the WebDB if it exists. Returns the guid of
   // the new or updated profile, or the empty string if no profile was saved.
   virtual std::string SaveImportedProfile(

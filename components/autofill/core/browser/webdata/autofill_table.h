@@ -34,7 +34,9 @@ struct FormFieldData;
 //
 // Note: The database stores time in seconds, UTC.
 //
-// autofill
+// autofill             This table contains autocomplete history data (not
+//                      structured information).
+//
 //   name               The name of the input as specified in the html.
 //   value              The literal contents of the text field.
 //   value_lower        The contents of the text field made lower_case.
@@ -65,6 +67,9 @@ struct FormFieldData;
 //                      contiguous.  The canonical example is CEDEX in France.
 //                      Added in version 54.
 //   country_code
+//   use_count          The number of times this profile has been used to fill
+//                      a form.
+//   last_use           The date this profile was last used to fill a form.
 //   date_modified      The date on which this profile was last modified.
 //                      Added in version 30.
 //   origin             The domain of origin for this profile.
@@ -120,6 +125,9 @@ struct FormFieldData;
 //   expiration_year
 //   card_number_encrypted
 //                      Stores encrypted credit card number.
+//   use_count          The number of times this card has been used to fill
+//                      a form.
+//   last_use           The date this card was last used to fill a form.
 //   date_modified      The date on which this entry was last modified.
 //                      Added in version 30.
 //   origin             The domain of origin for this profile.
@@ -360,6 +368,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion56AddProfileLanguageCodeForFormatting();
   bool MigrateToVersion57AddFullNameField();
   bool MigrateToVersion60AddServerCards();
+  bool MigrateToVersion61AddUsageStats();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;

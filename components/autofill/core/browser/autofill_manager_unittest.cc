@@ -87,7 +87,17 @@ class TestPersonalDataManager : public PersonalDataManager {
     local_credit_cards_.push_back(credit_card);
   }
 
-  virtual void RemoveByGUID(const std::string& guid) override {
+  void RecordUseOf(const AutofillDataModel& data_model) override {
+    CreditCard* credit_card = GetCreditCardWithGUID(data_model.guid().c_str());
+    if (credit_card)
+      credit_card->RecordUse();
+
+    AutofillProfile* profile = GetProfileWithGUID(data_model.guid().c_str());
+    if (profile)
+      profile->RecordUse();
+  }
+
+  void RemoveByGUID(const std::string& guid) override {
     CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
     if (credit_card) {
       local_credit_cards_.erase(
@@ -1397,14 +1407,25 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  SuggestionBackendID guid("00000000-0000-0000-0000-000000000001", 0);
-  SuggestionBackendID empty(std::string(), 0);
+  std::string guid("00000000-0000-0000-0000-000000000001");
+  AutofillProfile* profile =
+      autofill_manager_->GetProfileWithGUID(guid.c_str());
+  ASSERT_TRUE(profile);
+  EXPECT_EQ(0U, profile->use_count());
+  EXPECT_EQ(base::Time(), profile->use_date());
+
+  SuggestionBackendID profile_id(guid, 0);
+  SuggestionBackendID card_id(std::string(), 0);
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-      MakeFrontendID(empty, guid), &response_page_id, &response_data);
+                                     MakeFrontendID(card_id, profile_id),
+                                     &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(
       response_page_id, response_data, kDefaultPageID, false);
+
+  EXPECT_EQ(1U, profile->use_count());
+  EXPECT_NE(base::Time(), profile->use_date());
 }
 
 // Test that we correctly fill an address form from an auxiliary profile.

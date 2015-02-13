@@ -14,11 +14,11 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 60;
+const int WebDatabase::kCurrentVersionNumber = 61;
 
 namespace {
 
-const int kCompatibleVersionNumber = 59;
+const int kCompatibleVersionNumber = 61;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.

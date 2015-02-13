@@ -1002,6 +1002,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
         static_cast<const AutofillProfile*>(data_model)->language_code();
   }
 
+  if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
+    personal_data_->RecordUseOf(*data_model);
+
   // If the relevant section is auto-filled, we should fill |field| but not the
   // rest of the form.
   if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {

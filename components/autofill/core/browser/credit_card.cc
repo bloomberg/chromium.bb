@@ -542,6 +542,10 @@ base::string16 CreditCard::TypeAndLastFourDigits() const {
 }
 
 void CreditCard::operator=(const CreditCard& credit_card) {
+  set_use_count(credit_card.use_count());
+  set_use_date(credit_card.use_date());
+  set_modification_date(credit_card.modification_date());
+
   if (this == &credit_card)
     return;
 

@@ -120,7 +120,6 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
 
   GUIDToProfileMap remaining_profiles;
   CreateGUIDToProfileMap(profiles_.get(), &remaining_profiles);
-
   DataBundle bundle;
   // Go through and check for all the profiles that sync already knows about.
   for (syncer::SyncDataList::const_iterator sync_iter =
@@ -389,6 +388,16 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     diff = true;
   }
 
+  if (static_cast<size_t>(specifics.use_count()) != profile->use_count()) {
+    profile->set_use_count(specifics.use_count());
+    diff = true;
+  }
+
+  if (specifics.use_date() != profile->use_date().ToTimeT()) {
+    profile->set_use_date(base::Time::FromTimeT(specifics.use_date()));
+    diff = true;
+  }
+
   return diff;
 }
 
@@ -411,6 +420,8 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
 
   specifics->set_guid(profile.guid());
   specifics->set_origin(profile.origin());
+  specifics->set_use_count(profile.use_count());
+  specifics->set_use_date(profile.use_date().ToTimeT());
 
   std::vector<base::string16> values;
   profile.GetRawMultiInfo(NAME_FIRST, &values);
@@ -501,7 +512,6 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
     }
     return existing_profile;
   }
-
 
   // New profile synced.
   AutofillProfile* new_profile = new AutofillProfile(
@@ -649,10 +659,10 @@ bool AutofillProfileSyncableService::MergeProfile(
     const AutofillProfile& merge_from,
     AutofillProfile* merge_into,
     const std::string& app_locale) {
-  // Overwrites all single values and adds to mutli-values. Does not overwrite
+  // Overwrites all single values and adds to multi-values. Does not overwrite
   // GUID.
   merge_into->OverwriteWithOrAddTo(merge_from, app_locale);
-  return !merge_into->EqualsSansGuid(merge_from);
+  return !merge_into->EqualsForSyncPurposes(merge_from);
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {

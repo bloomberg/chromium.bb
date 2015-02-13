@@ -288,6 +288,10 @@ AutofillProfile::~AutofillProfile() {
 }
 
 AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
+  set_use_count(profile.use_count());
+  set_use_date(profile.use_date());
+  set_modification_date(profile.modification_date());
+
   if (this == &profile)
     return *this;
 
@@ -539,10 +543,11 @@ bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
          Compare(profile) == 0;
 }
 
-bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
-  return origin() == profile.origin() &&
-         language_code() == profile.language_code() &&
-         Compare(profile) == 0;
+bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
+    const {
+  return use_count() == profile.use_count() &&
+         use_date() == profile.use_date() &&
+         EqualsSansGuid(profile);
 }
 
 bool AutofillProfile::operator==(const AutofillProfile& profile) const {
@@ -673,6 +678,9 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
   DCHECK(!IsVerified() || profile.IsVerified());
   set_origin(profile.origin());
   set_language_code(profile.language_code());
+  set_use_count(profile.use_count() + use_count());
+  if (profile.use_date() > use_date())
+    set_use_date(profile.use_date());
 
   ServerFieldTypeSet field_types;
   profile.GetNonEmptyTypes(app_locale, &field_types);
@@ -1097,6 +1105,12 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
 
   NOTREACHED();
   return NULL;
+}
+
+bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
+  return origin() == profile.origin() &&
+         language_code() == profile.language_code() &&
+         Compare(profile) == 0;
 }
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

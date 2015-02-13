@@ -20,6 +20,12 @@ package sync_pb;
 message AutofillProfileSpecifics {
   optional string guid = 15;
   optional string origin = 16;
+  optional int64 use_count = 22;
+
+  // The time_t value of the last time this profile was used. This
+  // value makes sense wrt base::Time::To/FromTimeT, which measures
+  // from the Windows epoch.
+  optional int64 use_date = 23;
 
   // Contact info.
   repeated string name_first = 2;
