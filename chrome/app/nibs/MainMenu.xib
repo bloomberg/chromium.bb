@@ -1056,6 +1056,15 @@
 							</array>
 						</object>
 					</object>
+					<object class="NSMenuItem" id="594819081">
+						<reference key="NSMenu" ref="6368794"/>
+						<string key="NSTitle">^IDS_PROFILES_OPTIONS_GROUP_NAME</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="657443692"/>
+						<reference key="NSMixedImage" ref="5855623"/>
+						<int key="NSTag">46100</int>
+					</object>
 					<object class="NSMenuItem" id="772963131">
 						<reference key="NSMenu" ref="6368794"/>
 						<string key="NSTitle">^IDS_WINDOW_MENU_MAC</string>
@@ -1187,15 +1196,6 @@
 							</array>
 							<string key="NSName">_NSWindowsMenu</string>
 						</object>
-					</object>
-					<object class="NSMenuItem" id="594819081">
-						<reference key="NSMenu" ref="6368794"/>
-						<string key="NSTitle">^IDS_PROFILES_OPTIONS_GROUP_NAME</string>
-						<string key="NSKeyEquiv"/>
-						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="657443692"/>
-						<reference key="NSMixedImage" ref="5855623"/>
-						<int key="NSTag">46100</int>
 					</object>
 					<object class="NSMenuItem" id="356313222">
 						<reference key="NSMenu" ref="6368794"/>
