@@ -690,9 +690,9 @@ Download.prototype.update = function(download) {
       this.nodeFileName_.classList.remove('interrupted');
     }
 
-    showInline(this.nodeFileLink_,
-               this.state_ == Download.States.COMPLETE &&
-                   !this.fileExternallyRemoved_);
+    showInlineBlock(this.nodeFileLink_,
+                    this.state_ == Download.States.COMPLETE &&
+                        !this.fileExternallyRemoved_);
     // nodeFileName_ has to be inline-block to avoid the 'interaction' with
     // nodeStatus_. If both are inline, it appears that their text contents
     // are merged before the bidi algorithm is applied leading to an
