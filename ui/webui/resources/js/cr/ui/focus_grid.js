@@ -86,7 +86,7 @@ cr.define('cr.ui', function() {
      */
     getRowIndexForTarget: function(target) {
       for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].contains(target))
+        if (this.rows[i].focusableElements.indexOf(target) >= 0)
           return i;
       }
       return -1;

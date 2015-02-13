@@ -162,13 +162,13 @@ cr.define('cr.ui', function() {
      */
     onKeydown_: function(e) {
       var element = assertInstanceof(e.target, Element);
-      if (!this.contains(element))
+      var elementIndex = this.focusableElements.indexOf(element);
+      if (elementIndex < 0)
         return;
 
       if (this.delegate && this.delegate.onKeydown(this, e))
         return;
 
-      var elementIndex = this.focusableElements.indexOf(element);
       var index = -1;
 
       if (e.keyIdentifier == 'Left')
