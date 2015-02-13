@@ -18,7 +18,6 @@ enum ViewType {
   VIEW_TYPE_BACKGROUND_CONTENTS,
   VIEW_TYPE_EXTENSION_BACKGROUND_PAGE,
   VIEW_TYPE_EXTENSION_DIALOG,
-  VIEW_TYPE_EXTENSION_INFOBAR,
   VIEW_TYPE_EXTENSION_POPUP,
   VIEW_TYPE_LAUNCHER_PAGE,
   VIEW_TYPE_PANEL,
@@ -33,7 +32,6 @@ extern const char kViewTypeAll[];
 extern const char kViewTypeAppWindow[];
 extern const char kViewTypeBackgroundPage[];
 extern const char kViewTypeExtensionDialog[];
-extern const char kViewTypeInfobar[];
 extern const char kViewTypeLauncherPage[];
 extern const char kViewTypePanel[];
 extern const char kViewTypePopup[];

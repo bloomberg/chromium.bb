@@ -10,7 +10,6 @@ const char kViewTypeTabContents[] = "TAB";
 const char kViewTypeBackgroundPage[] = "BACKGROUND";
 const char kViewTypePopup[] = "POPUP";
 const char kViewTypePanel[] = "PANEL";
-const char kViewTypeInfobar[] = "INFOBAR";
 const char kViewTypeExtensionDialog[] = "EXTENSION_DIALOG";
 const char kViewTypeAppWindow[] = "APP_WINDOW";
 const char kViewTypeLauncherPage[] = "LAUNCHER_PAGE";

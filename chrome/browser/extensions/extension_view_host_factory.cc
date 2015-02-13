@@ -114,15 +114,6 @@ ExtensionViewHost* ExtensionViewHostFactory::CreatePopupHost(const GURL& url,
 }
 
 // static
-ExtensionViewHost* ExtensionViewHostFactory::CreateInfobarHost(
-    const GURL& url,
-    Browser* browser) {
-  DCHECK(browser);
-  return CreateViewHost(
-      url, browser->profile(), browser, VIEW_TYPE_EXTENSION_INFOBAR);
-}
-
-// static
 ExtensionViewHost* ExtensionViewHostFactory::CreateDialogHost(
     const GURL& url,
     Profile* profile) {

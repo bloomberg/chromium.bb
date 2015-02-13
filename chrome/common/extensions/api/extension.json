@@ -79,9 +79,9 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["tab", "infobar", "notification", "popup"],
+                "enum": ["tab", "notification", "popup"],
                 "optional": true,
-                "description": "The type of view to get. If omitted, returns all views (including background pages and tabs). Valid values: 'tab', 'infobar', 'notification', 'popup'."
+                "description": "The type of view to get. If omitted, returns all views (including background pages and tabs). Valid values: 'tab', 'notification', 'popup'."
               },
               "windowId": {
                 "type": "integer",

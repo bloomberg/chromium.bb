@@ -97,7 +97,6 @@
       'chromeos_info_private.json',
       'extension.json',
       'idltest.idl',
-      'infobars.json',
       'media_player_private.json',
       'music_manager_private.idl',
       'principals_private.idl',

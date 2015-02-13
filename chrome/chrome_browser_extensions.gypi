@@ -577,8 +577,6 @@
       'browser/extensions/extension_gcm_app_handler.h',
       'browser/extensions/extension_icon_manager.cc',
       'browser/extensions/extension_icon_manager.h',
-      'browser/extensions/extension_infobar_delegate.cc',
-      'browser/extensions/extension_infobar_delegate.h',
       'browser/extensions/extension_install_checker.cc',
       'browser/extensions/extension_install_checker.h',
       'browser/extensions/extension_install_prompt.cc',

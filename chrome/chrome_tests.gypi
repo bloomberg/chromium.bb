@@ -295,7 +295,6 @@
       'browser/importer/ie_importer_browsertest_win.cc',
       'browser/importer/importer_unittest_utils.cc',
       'browser/importer/importer_unittest_utils.h',
-      'browser/infobars/infobar_extension_apitest.cc',
       'browser/infobars/infobars_browsertest.cc',
       'browser/invalidation/profile_invalidation_provider_factory_browsertest.cc',
       'browser/lifetime/browser_close_manager_browsertest.cc',

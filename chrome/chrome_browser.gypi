@@ -1306,8 +1306,6 @@
       'browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h',
       'browser/guest_view/web_view/context_menu_content_type_web_view.cc',
       'browser/guest_view/web_view/context_menu_content_type_web_view.h',
-      'browser/infobars/infobar_extension_api.cc',
-      'browser/infobars/infobar_extension_api.h',
       'browser/media/cast_transport_host_filter.cc',
       'browser/media/cast_transport_host_filter.h',
       'browser/metrics/extensions_metrics_provider.cc',

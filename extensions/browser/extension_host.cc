@@ -130,7 +130,6 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   // Not used for panels, see PanelHost.
   DCHECK(host_type == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
          host_type == VIEW_TYPE_EXTENSION_DIALOG ||
-         host_type == VIEW_TYPE_EXTENSION_INFOBAR ||
          host_type == VIEW_TYPE_EXTENSION_POPUP);
   host_contents_.reset(WebContents::Create(
       WebContents::CreateParams(browser_context_, site_instance))),
@@ -346,18 +345,16 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
   if (document_element_available_)
     return;
   document_element_available_ = true;
-  OnDocumentAvailable();
-}
 
-void ExtensionHost::OnDocumentAvailable() {
-  DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
-  ExtensionSystem::Get(browser_context_)
-      ->runtime_data()
-      ->SetBackgroundPageReady(extension_->id(), true);
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-      content::Source<const Extension>(extension_),
-      content::NotificationService::NoDetails());
+  if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    ExtensionSystem::Get(browser_context_)
+        ->runtime_data()
+        ->SetBackgroundPageReady(extension_->id(), true);
+    content::NotificationService::current()->Notify(
+        extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+        content::Source<const Extension>(extension_),
+        content::NotificationService::NoDetails());
+  }
 }
 
 void ExtensionHost::CloseContents(WebContents* contents) {

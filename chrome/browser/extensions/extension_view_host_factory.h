@@ -23,8 +23,6 @@ class ExtensionViewHostFactory {
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
   static ExtensionViewHost* CreatePopupHost(const GURL& url, Browser* browser);
-  static ExtensionViewHost* CreateInfobarHost(const GURL& url,
-                                              Browser* browser);
 
   // Some dialogs may not be associated with a particular browser window and
   // hence only require a |profile|.

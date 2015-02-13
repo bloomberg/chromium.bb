@@ -137,9 +137,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // EXTENSION_HOST_DID_STOP_LOADING notification is sent.
   virtual void OnDidStopLoading();
 
-  // Called once when the document first becomes available.
-  virtual void OnDocumentAvailable();
-
   // Navigates to the initial page.
   virtual void LoadInitialURL();
 

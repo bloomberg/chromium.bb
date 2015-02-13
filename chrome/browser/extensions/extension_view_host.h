@@ -23,8 +23,8 @@ namespace extensions {
 class ExtensionView;
 
 // The ExtensionHost for an extension that backs a view in the browser UI. For
-// example, this could be an extension popup, infobar or dialog, but not a
-// background page.
+// example, this could be an extension popup or dialog, but not a background
+// page.
 // TODO(gbillock): See if we can remove WebContentsModalDialogManager here.
 class ExtensionViewHost
     : public ExtensionHost,
@@ -57,7 +57,6 @@ class ExtensionViewHost
 
   // ExtensionHost
   void OnDidStopLoading() override;
-  void OnDocumentAvailable() override;
   void LoadInitialURL() override;
   bool IsBackgroundPage() const override;
 
@@ -111,9 +110,6 @@ class ExtensionViewHost
   // Implemented per-platform. Create the platform-specific ExtensionView.
   static scoped_ptr<ExtensionView> CreateExtensionView(ExtensionViewHost* host,
                                                        Browser* browser);
-
-  // Insert a default style sheet for Extension Infobars.
-  void InsertInfobarCSS();
 
   // Optional view that shows the rendered content in the UI.
   scoped_ptr<ExtensionView> view_;

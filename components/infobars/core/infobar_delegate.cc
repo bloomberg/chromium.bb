@@ -52,10 +52,6 @@ ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return nullptr;
 }
 
-ExtensionInfoBarDelegate* InfoBarDelegate::AsExtensionInfoBarDelegate() {
-  return nullptr;
-}
-
 InsecureContentInfoBarDelegate*
     InfoBarDelegate::AsInsecureContentInfoBarDelegate() {
   return nullptr;

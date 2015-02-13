@@ -595,12 +595,6 @@
   [
     302,
     "apps/declare_permissions.html",
-    "apps/infobars.html",
-    "redirects to /extensions/infobars.html"
-  ],
-  [
-    302,
-    "apps/declare_permissions.html",
     "apps/signedInDevices.html",
     "redirects to /extensions/signedInDevices.html"
   ],
@@ -962,12 +956,6 @@
     "apps/private_apis.html",
     "apps/idltest.html",
     "target page not found"
-  ],
-  [
-    302,
-    "apps/private_apis.html",
-    "apps/infobars.html",
-    "redirects to /extensions/infobars.html"
   ],
   [
     302,

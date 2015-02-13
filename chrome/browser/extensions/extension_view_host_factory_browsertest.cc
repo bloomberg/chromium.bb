@@ -36,17 +36,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest, CreateExtensionHosts) {
   }
 
   {
-    // Infobar hosts are created with the correct type and profile.
-    scoped_ptr<ExtensionViewHost> host(
-        ExtensionViewHostFactory::CreateInfobarHost(extension->url(),
-                                                    browser()));
-    EXPECT_EQ(extension.get(), host->extension());
-    EXPECT_EQ(browser_context, host->browser_context());
-    EXPECT_EQ(VIEW_TYPE_EXTENSION_INFOBAR, host->extension_host_type());
-    EXPECT_TRUE(host->view());
-  }
-
-  {
     // Dialog hosts are created with the correct type and profile.
     scoped_ptr<ExtensionViewHost> host(
         ExtensionViewHostFactory::CreateDialogHost(extension->url(),

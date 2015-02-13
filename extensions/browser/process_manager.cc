@@ -209,7 +209,6 @@ struct ProcessManager::ExtensionRenderViewData {
       case VIEW_TYPE_APP_WINDOW:
       case VIEW_TYPE_BACKGROUND_CONTENTS:
       case VIEW_TYPE_EXTENSION_DIALOG:
-      case VIEW_TYPE_EXTENSION_INFOBAR:
       case VIEW_TYPE_EXTENSION_POPUP:
       case VIEW_TYPE_LAUNCHER_PAGE:
       case VIEW_TYPE_PANEL:

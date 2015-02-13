@@ -63,7 +63,6 @@ ExtensionViewHost::ExtensionViewHost(
       associated_web_contents_(NULL) {
   // Not used for panels, see PanelHost.
   DCHECK(host_type == VIEW_TYPE_EXTENSION_DIALOG ||
-         host_type == VIEW_TYPE_EXTENSION_INFOBAR ||
          host_type == VIEW_TYPE_EXTENSION_POPUP);
 }
 
@@ -103,13 +102,6 @@ void ExtensionViewHost::UnhandledKeyboardEvent(
 void ExtensionViewHost::OnDidStopLoading() {
   DCHECK(did_stop_loading());
   view_->DidStopLoading();
-}
-
-void ExtensionViewHost::OnDocumentAvailable() {
-  if (extension_host_type() == VIEW_TYPE_EXTENSION_INFOBAR) {
-    // No style sheet for other types, at the moment.
-    InsertInfobarCSS();
-  }
 }
 
 void ExtensionViewHost::LoadInitialURL() {
@@ -312,14 +304,6 @@ void ExtensionViewHost::Observe(int type,
     return;
   }
   ExtensionHost::Observe(type, source, details);
-}
-
-void ExtensionViewHost::InsertInfobarCSS() {
-  static const base::StringPiece css(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_EXTENSIONS_INFOBAR_CSS));
-
-  host_contents()->InsertCSS(css.as_string());
 }
 
 }  // namespace extensions
