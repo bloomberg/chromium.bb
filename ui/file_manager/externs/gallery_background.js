@@ -17,9 +17,8 @@ window.initialize = function(backgroundComponents) {};
 
 /**
  * @param {!Array.<!Entry>} entries Array of entries.
- * @param {!Array.<!Entry>} selectedEntries Array of selected entries.
  */
-window.loadEntries = function(entries, selectedEntries) {};
+window.loadEntries = function(entries) {};
 
 /**
  * This definition is required by

@@ -87,6 +87,7 @@
           './error_banner.js',
           './gallery_data_model.js',
           './gallery_item.js',
+          './gallery_util.js',
           './mosaic_mode.js',
           './ribbon.js',
           './slide_mode.js',
