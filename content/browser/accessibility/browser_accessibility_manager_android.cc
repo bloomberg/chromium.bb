@@ -253,12 +253,9 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoBooleanAttributes(
       env, obj, info,
       id,
-      node->CanScrollForward(),
-      node->CanScrollBackward(),
       node->IsCheckable(),
       node->IsChecked(),
       node->IsClickable(),
-      node->IsEditableText(),
       node->IsEnabled(),
       node->IsFocusable(),
       node->IsFocused(),
@@ -266,6 +263,16 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       node->IsScrollable(),
       node->IsSelected(),
       node->IsVisibleToUser());
+  Java_BrowserAccessibilityManager_addAccessibilityNodeInfoActions(
+      env, obj, info,
+      id,
+      node->CanScrollForward(),
+      node->CanScrollBackward(),
+      node->IsClickable(),
+      node->IsEditableText(),
+      node->IsEnabled(),
+      node->IsFocusable(),
+      node->IsFocused());
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoClassName(
       env, obj, info,
       base::android::ConvertUTF8ToJavaString(env, node->GetClassName()).obj());
@@ -292,8 +299,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       absolute_rect.width(), absolute_rect.height(),
       is_root);
 
-  // New KitKat APIs
-  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoKitKatAttributes(
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoLollipopAttributes(
       env, obj, info,
       node->CanOpenPopup(),
       node->IsContentInvalid(),
@@ -392,8 +398,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
       break;
   }
 
-  // Backwards-compatible fallback for new KitKat APIs.
-  Java_BrowserAccessibilityManager_setAccessibilityEventKitKatAttributes(
+  Java_BrowserAccessibilityManager_setAccessibilityEventLollipopAttributes(
       env, obj, event,
       node->CanOpenPopup(),
       node->IsContentInvalid(),
