@@ -211,9 +211,11 @@ public class BrowserAccessibilityManager {
                 }
                 return true;
             case AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS:
+                // ALWAYS respond with TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED whether we thought
+                // it had focus or not, so that the Android framework cache is correct.
+                sendAccessibilityEvent(virtualViewId,
+                        AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
                 if (mAccessibilityFocusId == virtualViewId) {
-                    sendAccessibilityEvent(mAccessibilityFocusId,
-                            AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
                     mAccessibilityFocusId = View.NO_ID;
                     mAccessibilityFocusRect = null;
                 }
