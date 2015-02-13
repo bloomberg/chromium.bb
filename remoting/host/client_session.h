@@ -40,6 +40,7 @@ class AudioScheduler;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class InputInjector;
+class MouseShapePump;
 class ScreenControls;
 class VideoEncoder;
 class VideoFramePump;
@@ -222,7 +223,8 @@ class ClientSession
   // |video_frame_pump_| may be nullptr if the video channel is not required -
   // see ResetVideoPipeline().
   scoped_refptr<AudioScheduler> audio_scheduler_;
-  scoped_refptr<VideoFramePump> video_frame_pump_;
+  scoped_ptr<VideoFramePump> video_frame_pump_;
+  scoped_ptr<MouseShapePump> mouse_shape_pump_;
 
   // The set of all capabilities supported by the client.
   scoped_ptr<std::string> client_capabilities_;

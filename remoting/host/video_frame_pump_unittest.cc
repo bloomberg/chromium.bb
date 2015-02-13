@@ -12,8 +12,8 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
+#include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/fake_desktop_capturer.h"
-#include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/video.pb.h"
@@ -21,32 +21,18 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
 
-using ::remoting::protocol::MockClientStub;
 using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::AnyNumber;
-using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Expectation;
-using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
-using ::testing::Return;
-using ::testing::ReturnRef;
-using ::testing::SaveArg;
 
 namespace remoting {
 
 namespace {
-
-ACTION(FinishEncode) {
-  scoped_ptr<VideoPacket> packet(new VideoPacket());
-  return packet.release();
-}
 
 ACTION(FinishSend) {
   arg1.Run();
@@ -56,24 +42,6 @@ ACTION(FinishSend) {
 
 static const int kWidth = 640;
 static const int kHeight = 480;
-static const int kCursorWidth = 64;
-static const int kCursorHeight = 32;
-static const int kHotspotX = 11;
-static const int kHotspotY = 12;
-
-class MockVideoEncoder : public VideoEncoder {
- public:
-  MockVideoEncoder() {}
-  virtual ~MockVideoEncoder() {}
-
-  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) {
-    return make_scoped_ptr(EncodePtr(frame));
-  }
-  MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame& frame));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockVideoEncoder);
-};
 
 class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
  public:
@@ -85,67 +53,58 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 
+  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) override {
+    return make_scoped_ptr(new VideoPacket());
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadCheckVideoEncoder);
 };
 
-class ThreadCheckDesktopCapturer : public FakeDesktopCapturer {
+class ThreadCheckDesktopCapturer : public webrtc::DesktopCapturer {
  public:
   ThreadCheckDesktopCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : task_runner_(task_runner) {
-  }
+      : task_runner_(task_runner), callback_(nullptr) {}
   ~ThreadCheckDesktopCapturer() override {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 
+  void Start(Callback* callback) override {
+    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+    EXPECT_FALSE(callback_);
+    EXPECT_TRUE(callback);
+
+    callback_ = callback;
+  }
+
+  void Capture(const webrtc::DesktopRegion& rect) override {
+    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+
+    scoped_ptr<webrtc::DesktopFrame> frame(
+        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
+    frame->mutable_updated_region()->SetRect(
+        webrtc::DesktopRect::MakeXYWH(0, 0, 10, 10));
+    callback_->OnCaptureCompleted(frame.release());
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  webrtc::DesktopCapturer::Callback* callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadCheckDesktopCapturer);
 };
 
-class ThreadCheckMouseCursorMonitor : public FakeMouseCursorMonitor {
- public:
-  ThreadCheckMouseCursorMonitor(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : task_runner_(task_runner) {
-  }
-  ~ThreadCheckMouseCursorMonitor() override {
-    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  }
-
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadCheckMouseCursorMonitor);
-};
-
 class VideoFramePumpTest : public testing::Test {
  public:
-  VideoFramePumpTest();
-
   void SetUp() override;
   void TearDown() override;
 
   void StartVideoFramePump(
       scoped_ptr<webrtc::DesktopCapturer> capturer,
-      scoped_ptr<VideoEncoder> encoder,
-      scoped_ptr<webrtc::MouseCursorMonitor> mouse_monitor);
-  void StopVideoFramePump();
-
-  // webrtc::DesktopCapturer mocks.
-  void OnCapturerStart(webrtc::DesktopCapturer::Callback* callback);
-  void OnCaptureFrame(const webrtc::DesktopRegion& region);
-
-  // webrtc::MouseCursorMonitor mocks.
-  void OnMouseCursorMonitorInit(
-      webrtc::MouseCursorMonitor::Callback* callback,
-      webrtc::MouseCursorMonitor::Mode mode);
-  void OnCaptureMouse();
-  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape);
+      scoped_ptr<VideoEncoder> encoder);
 
  protected:
   base::MessageLoop message_loop_;
@@ -153,34 +112,21 @@ class VideoFramePumpTest : public testing::Test {
   scoped_refptr<AutoThreadTaskRunner> capture_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> encode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
-  scoped_refptr<VideoFramePump> scheduler_;
+  scoped_ptr<VideoFramePump> pump_;
 
-  MockClientStub client_stub_;
   MockVideoStub video_stub_;
-
-  // Points to the callback passed to webrtc::DesktopCapturer::Start().
-  webrtc::DesktopCapturer::Callback* capturer_callback_;
-
-  // Points to the callback passed to webrtc::MouseCursor::Init().
-  webrtc::MouseCursorMonitor::Callback* mouse_monitor_callback_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VideoFramePumpTest);
 };
-
-VideoFramePumpTest::VideoFramePumpTest()
-    : capturer_callback_(nullptr),
-      mouse_monitor_callback_(nullptr) {
-}
 
 void VideoFramePumpTest::SetUp() {
   main_task_runner_ = new AutoThreadTaskRunner(
       message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
-  capture_task_runner_ = main_task_runner_;
-  encode_task_runner_ = main_task_runner_;
+  capture_task_runner_ = AutoThread::Create("capture", main_task_runner_);
+  encode_task_runner_ = AutoThread::Create("encode", main_task_runner_);
 }
 
 void VideoFramePumpTest::TearDown() {
+  pump_.reset();
+
   // Release the task runners, so that the test can quit.
   capture_task_runner_ = nullptr;
   encode_task_runner_ = nullptr;
@@ -190,158 +136,31 @@ void VideoFramePumpTest::TearDown() {
   run_loop_.Run();
 }
 
-void VideoFramePumpTest::StartVideoFramePump(
-    scoped_ptr<webrtc::DesktopCapturer> capturer,
-    scoped_ptr<VideoEncoder> encoder,
-    scoped_ptr<webrtc::MouseCursorMonitor> mouse_monitor) {
-  scheduler_ = new VideoFramePump(
-      capture_task_runner_,
-      encode_task_runner_,
-      main_task_runner_,
-      capturer.Pass(),
-      mouse_monitor.Pass(),
-      encoder.Pass(),
-      &client_stub_,
-      &video_stub_);
-  scheduler_->Start();
-}
-
-void VideoFramePumpTest::StopVideoFramePump() {
-  scheduler_->Stop();
-  scheduler_ = nullptr;
-}
-
-void VideoFramePumpTest::OnCapturerStart(
-    webrtc::DesktopCapturer::Callback* callback) {
-  EXPECT_FALSE(capturer_callback_);
-  EXPECT_TRUE(callback);
-
-  capturer_callback_ = callback;
-}
-
-void VideoFramePumpTest::OnCaptureFrame(const webrtc::DesktopRegion& region) {
-  scoped_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
-  frame->mutable_updated_region()->SetRect(
-      webrtc::DesktopRect::MakeXYWH(0, 0, 10, 10));
-  capturer_callback_->OnCaptureCompleted(frame.release());
-}
-
-void VideoFramePumpTest::OnCaptureMouse() {
-  EXPECT_TRUE(mouse_monitor_callback_);
-
-  scoped_ptr<webrtc::MouseCursor> mouse_cursor(
-      new webrtc::MouseCursor(
-          new webrtc::BasicDesktopFrame(
-              webrtc::DesktopSize(kCursorWidth, kCursorHeight)),
-          webrtc::DesktopVector(kHotspotX, kHotspotY)));
-
-  mouse_monitor_callback_->OnMouseCursor(mouse_cursor.release());
-}
-
-void VideoFramePumpTest::OnMouseCursorMonitorInit(
-    webrtc::MouseCursorMonitor::Callback* callback,
-    webrtc::MouseCursorMonitor::Mode mode) {
-  EXPECT_FALSE(mouse_monitor_callback_);
-  EXPECT_TRUE(callback);
-
-  mouse_monitor_callback_ = callback;
-}
-
-void VideoFramePumpTest::SetCursorShape(
-    const protocol::CursorShapeInfo& cursor_shape) {
-  EXPECT_TRUE(cursor_shape.has_width());
-  EXPECT_EQ(kCursorWidth, cursor_shape.width());
-  EXPECT_TRUE(cursor_shape.has_height());
-  EXPECT_EQ(kCursorHeight, cursor_shape.height());
-  EXPECT_TRUE(cursor_shape.has_hotspot_x());
-  EXPECT_EQ(kHotspotX, cursor_shape.hotspot_x());
-  EXPECT_TRUE(cursor_shape.has_hotspot_y());
-  EXPECT_EQ(kHotspotY, cursor_shape.hotspot_y());
-  EXPECT_TRUE(cursor_shape.has_data());
-  EXPECT_EQ(kCursorWidth * kCursorHeight * webrtc::DesktopFrame::kBytesPerPixel,
-            static_cast<int>(cursor_shape.data().size()));
-}
-
 // This test mocks capturer, encoder and network layer to simulate one capture
-// cycle. When the first encoded packet is submitted to the network
-// VideoFramePump is instructed to come to a complete stop. We expect the stop
-// sequence to be executed successfully.
+// cycle.
 TEST_F(VideoFramePumpTest, StartAndStop) {
-  scoped_ptr<webrtc::MockScreenCapturer> capturer(
-      new webrtc::MockScreenCapturer());
-  scoped_ptr<MockMouseCursorMonitor> cursor_monitor(
-      new MockMouseCursorMonitor());
+  scoped_ptr<ThreadCheckDesktopCapturer> capturer(
+      new ThreadCheckDesktopCapturer(capture_task_runner_));
+  scoped_ptr<ThreadCheckVideoEncoder> encoder(
+      new ThreadCheckVideoEncoder(encode_task_runner_));
 
-  {
-    InSequence s;
-
-    EXPECT_CALL(*cursor_monitor, Init(_, _))
-        .WillOnce(
-            Invoke(this, &VideoFramePumpTest::OnMouseCursorMonitorInit));
-
-    EXPECT_CALL(*cursor_monitor, Capture())
-        .WillRepeatedly(Invoke(this, &VideoFramePumpTest::OnCaptureMouse));
-  }
-
-  Expectation capturer_start =
-      EXPECT_CALL(*capturer, Start(_))
-          .WillOnce(Invoke(this, &VideoFramePumpTest::OnCapturerStart));
-
-  // First the capturer is called.
-  Expectation capturer_capture = EXPECT_CALL(*capturer, Capture(_))
-      .After(capturer_start)
-      .WillRepeatedly(Invoke(this, &VideoFramePumpTest::OnCaptureFrame));
-
-  scoped_ptr<MockVideoEncoder> encoder(new MockVideoEncoder());
-
-  // Expect the encoder be called.
-  EXPECT_CALL(*encoder, EncodePtr(_))
-      .WillRepeatedly(FinishEncode());
-
-  // By default delete the arguments when ProcessVideoPacket is received.
-  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .WillRepeatedly(FinishSend());
+  base::RunLoop run_loop;
 
   // When the first ProcessVideoPacket is received we stop the VideoFramePump.
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
           FinishSend(),
-          InvokeWithoutArgs(this, &VideoFramePumpTest::StopVideoFramePump)))
+          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(client_stub_, SetCursorShape(_))
-      .WillOnce(Invoke(this, &VideoFramePumpTest::SetCursorShape));
-
   // Start video frame capture.
-  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor(
-      new FakeMouseCursorMonitor());
-  StartVideoFramePump(capturer.Pass(), encoder.Pass(), cursor_monitor.Pass());
+  pump_.reset(new VideoFramePump(encode_task_runner_,
+                                 make_scoped_ptr(new DesktopCapturerProxy(
+                                     capture_task_runner_, capturer.Pass())),
+                                 encoder.Pass(), &video_stub_));
 
-  // Run until there are no more pending tasks from the VideoFramePump.
-  // Otherwise, a lingering frame capture might attempt to trigger a capturer
-  // expectation action and crash.
-  base::RunLoop().RunUntilIdle();
-}
-
-// Verify that the capturer, encoder and mouse monitor are torn down on the
-// correct threads.
-TEST_F(VideoFramePumpTest, DeleteOnThreads) {
-  capture_task_runner_ = AutoThread::Create("capture", main_task_runner_);
-  encode_task_runner_ = AutoThread::Create("encode", main_task_runner_);
-
-  scoped_ptr<webrtc::DesktopCapturer> capturer(
-      new ThreadCheckDesktopCapturer(capture_task_runner_));
-  scoped_ptr<VideoEncoder> encoder(
-      new ThreadCheckVideoEncoder(encode_task_runner_));
-  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor(
-      new ThreadCheckMouseCursorMonitor(capture_task_runner_));
-
-  // Start and stop the scheduler, so it will tear down the screen capturer,
-  // video encoder and mouse monitor.
-  StartVideoFramePump(capturer.Pass(), encoder.Pass(),
-                      mouse_cursor_monitor.Pass());
-  StopVideoFramePump();
+  // Run MessageLoop until the first frame is received..
+  run_loop.Run();
 }
 
 }  // namespace remoting

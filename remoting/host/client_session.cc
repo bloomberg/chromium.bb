@@ -17,9 +17,11 @@
 #include "remoting/codec/video_encoder_vpx.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/audio_scheduler.h"
+#include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/mouse_shape_pump.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/video_frame_pump.h"
@@ -29,6 +31,7 @@
 #include "remoting/protocol/clipboard_thread_proxy.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
 // Default DPI to assume for old clients that use notifyClientDimensions.
 const int kDefaultDPI = 96;
@@ -142,21 +145,21 @@ void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
     VLOG(1) << "Received VideoControl (enable="
             << video_control.enable() << ")";
     pause_video_ = !video_control.enable();
-    if (video_frame_pump_.get())
+    if (video_frame_pump_)
       video_frame_pump_->Pause(pause_video_);
   }
   if (video_control.has_lossless_encode()) {
     VLOG(1) << "Received VideoControl (lossless_encode="
             << video_control.lossless_encode() << ")";
     lossless_video_encode_ = video_control.lossless_encode();
-    if (video_frame_pump_.get())
+    if (video_frame_pump_)
       video_frame_pump_->SetLosslessEncode(lossless_video_encode_);
   }
   if (video_control.has_lossless_color()) {
     VLOG(1) << "Received VideoControl (lossless_color="
             << video_control.lossless_color() << ")";
     lossless_video_color_ = video_control.lossless_color();
-    if (video_frame_pump_.get())
+    if (video_frame_pump_)
       video_frame_pump_->SetLosslessColor(lossless_video_color_);
   }
 }
@@ -368,10 +371,9 @@ void ClientSession::OnConnectionClosed(
     audio_scheduler_->Stop();
     audio_scheduler_ = nullptr;
   }
-  if (video_frame_pump_.get()) {
-    video_frame_pump_->Stop();
-    video_frame_pump_ = nullptr;
-  }
+
+  video_frame_pump_.reset();
+  mouse_shape_pump_.reset();
 
   client_clipboard_factory_.InvalidateWeakPtrs();
   input_injector_.reset();
@@ -434,10 +436,8 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 void ClientSession::ResetVideoPipeline() {
   DCHECK(CalledOnValidThread());
 
-  if (video_frame_pump_.get()) {
-    video_frame_pump_->Stop();
-    video_frame_pump_ = nullptr;
-  }
+  mouse_shape_pump_.reset();
+  video_frame_pump_.reset();
 
   // Create VideoEncoder and DesktopCapturer to match the session's video
   // channel configuration.
@@ -452,23 +452,25 @@ void ClientSession::ResetVideoPipeline() {
   if (!video_capturer || !video_encoder)
     return;
 
-  // Create a VideoFramePump to pump frames from the capturer to the client.
-  video_frame_pump_ = new VideoFramePump(
-      video_capture_task_runner_,
-      video_encode_task_runner_,
-      network_task_runner_,
-      video_capturer.Pass(),
-      desktop_environment_->CreateMouseCursorMonitor(),
-      video_encoder.Pass(),
-      connection_->client_stub(),
-      &mouse_clamping_filter_);
+  // Create MouseShapePump to send mouse cursor shape.
+  mouse_shape_pump_.reset(
+      new MouseShapePump(video_capture_task_runner_,
+                         desktop_environment_->CreateMouseCursorMonitor(),
+                         connection_->client_stub()));
+
+  // Create a VideoFramePump to pump frames from the capturer to the client.'
+  //
+  // TODO(sergeyu): Move DesktopCapturerProxy creation to DesktopEnvironment.
+  // When using IpcDesktopCapturer the capture thread is not useful.
+  scoped_ptr<DesktopCapturerProxy> capturer_proxy(new DesktopCapturerProxy(
+      video_capture_task_runner_, video_capturer.Pass()));
+  video_frame_pump_.reset(
+      new VideoFramePump(video_encode_task_runner_, capturer_proxy.Pass(),
+                         video_encoder.Pass(), &mouse_clamping_filter_));
 
   // Apply video-control parameters to the new scheduler.
   video_frame_pump_->SetLosslessEncode(lossless_video_encode_);
   video_frame_pump_->SetLosslessColor(lossless_video_color_);
-
-  // Start capturing the screen.
-  video_frame_pump_->Start();
 
   // Pause capturing if necessary.
   video_frame_pump_->Pause(pause_video_);

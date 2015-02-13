@@ -5,38 +5,29 @@
 #ifndef REMOTING_HOST_VIDEO_FRAME_PUMP_H_
 #define REMOTING_HOST_VIDEO_FRAME_PUMP_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "remoting/codec/video_encoder.h"
+#include "remoting/host/capture_scheduler.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace media {
-class DesktopCapturer;
-}  // namespace media
-
 namespace remoting {
 
-class CaptureScheduler;
-
 namespace protocol {
-class CursorShapeInfo;
-class CursorShapeStub;
 class VideoStub;
 }  // namespace protocol
 
-// Class responsible for scheduling frame captures from a
-// webrtc::DesktopCapturer, delivering them to a VideoEncoder to encode, and
+// Class responsible for scheduling frame captures from a screen capturer.,
+// delivering them to a VideoEncoder to encode, and
 // finally passing the encoded video packets to the specified VideoStub to send
 // on the network.
 //
@@ -71,35 +62,20 @@ class VideoStub;
 // of the capture, encode and network processes.  However, it also needs to
 // rate-limit captures to avoid overloading the host system, either by consuming
 // too much CPU, or hogging the host's graphics subsystem.
-//
-// TODO(sergeyu): Rename this class to VideoFramePump.
-class VideoFramePump : public base::RefCountedThreadSafe<VideoFramePump>,
-                       public webrtc::DesktopCapturer::Callback,
-                       public webrtc::MouseCursorMonitor::Callback {
+class VideoFramePump : public webrtc::DesktopCapturer::Callback {
  public:
   // Enables timestamps for generated frames. Used for testing.
   static void EnableTimestampsForTests();
 
   // Creates a VideoFramePump running capture, encode and network tasks on the
-  // supplied TaskRunners.  Video and cursor shape updates will be pumped to
-  // |video_stub| and |client_stub|, which must remain valid until Stop() is
-  // called. |capturer| is used to capture frames.
+  // supplied TaskRunners. Video will be pumped to |video_stub|, which must
+  // outlive the pump..
   VideoFramePump(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_ptr<webrtc::DesktopCapturer> capturer,
-      scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
       scoped_ptr<VideoEncoder> encoder,
-      protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
-
-  // Starts scheduling frame captures.
-  void Start();
-
-  // Stop scheduling frame captures. This object cannot be re-used once
-  // it has been stopped.
-  void Stop();
+  ~VideoFramePump() override;
 
   // Pauses or resumes scheduling of frame captures.  Pausing/resuming captures
   // only affects capture scheduling and does not stop/start the capturer.
@@ -115,39 +91,12 @@ class VideoFramePump : public base::RefCountedThreadSafe<VideoFramePump>,
   void SetLosslessColor(bool want_lossless);
 
  private:
-  friend class base::RefCountedThreadSafe<VideoFramePump>;
-  ~VideoFramePump() override;
-
-  // Capturer thread ----------------------------------------------------------
-
-  // TODO(sergeyu): Move all methods that run on the capture thread to a
-  // separate class and make VideoFramePump not ref-counted.
-
-  // webrtc::DesktopCapturer::Callback implementation.
+  // webrtc::DesktopCapturer::Callback interface.
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
-  // webrtc::MouseCursorMonitor::Callback implementation.
-  void OnMouseCursor(webrtc::MouseCursor* mouse_cursor) override;
-  void OnMouseCursorPosition(webrtc::MouseCursorMonitor::CursorState state,
-                             const webrtc::DesktopVector& position) override;
-
-  // Starts the capturer on the capture thread.
-  void StartOnCaptureThread();
-
-  // Stops scheduling frame captures on the capture thread.
-  void StopOnCaptureThread();
-
-  // Captures next frame on the capture thread.
-  void CaptureNextFrameOnCaptureThread();
-
-  // Network thread -----------------------------------------------------------
-
-  // Captures a new frame. Called by CaptureScheduler.
+  // Callback for CaptureScheduler.
   void CaptureNextFrame();
-
-  // Encodes and sends |frame|.
-  void EncodeAndSendFrame(scoped_ptr<webrtc::DesktopFrame> frame);
 
   // Sends encoded frame
   void SendEncodedFrame(int64 latest_event_timestamp,
@@ -164,36 +113,32 @@ class VideoFramePump : public base::RefCountedThreadSafe<VideoFramePump>,
   // Callback for |video_stub_| called after a keep-alive packet is sent.
   void OnKeepAlivePacketSent();
 
-  // Send updated cursor shape to client.
-  void SendCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
+  base::ThreadChecker thread_checker_;
 
-  // Task runners used by this class.
-  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
+  // Task runner used to run |encoder_|.
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
-  // Used to capture frames. Always accessed on the capture thread.
+  // Capturer used to capture the screen.
   scoped_ptr<webrtc::DesktopCapturer> capturer_;
-
-  // Used to capture mouse cursor shapes. Always accessed on the capture thread.
-  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
 
   // Used to encode captured frames. Always accessed on the encode thread.
   scoped_ptr<VideoEncoder> encoder_;
 
-  // Interfaces through which video frames and cursor shapes are passed to the
-  // client. These members are always accessed on the network thread.
-  protocol::CursorShapeStub* cursor_stub_;
+  // Interface through which video frames are passed to the client.
   protocol::VideoStub* video_stub_;
 
   // Timer used to ensure that we send empty keep-alive frames to the client
   // even when the video stream is paused or encoder is busy.
-  scoped_ptr<base::DelayTimer<VideoFramePump> > keep_alive_timer_;
+  base::Timer keep_alive_timer_;
+
+  // CaptureScheduler calls CaptureNextFrame() whenever a new frame needs to be
+  // captured.
+  CaptureScheduler capture_scheduler_;
 
   // Number updated by the caller to trace performance.
   int64 latest_event_timestamp_;
 
-  scoped_ptr<CaptureScheduler> capture_scheduler_;
+  base::WeakPtrFactory<VideoFramePump> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFramePump);
 };
