@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'filesystem_passing',

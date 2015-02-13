@@ -47,7 +47,6 @@ void GetDentsHelper::AddDirent(ino_t ino, const char* name, size_t namelen) {
   dirents_.push_back(dirent());
   dirent& entry = dirents_.back();
   entry.d_ino = ino;
-  entry.d_off = sizeof(dirent);
   entry.d_reclen = sizeof(dirent);
 
   if (namelen == 0)

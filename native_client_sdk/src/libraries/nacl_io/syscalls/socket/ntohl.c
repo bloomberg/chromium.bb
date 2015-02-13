@@ -4,7 +4,7 @@
 
 #include "nacl_io/ossocket.h"
 
-#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) && !defined(__BIONIC__)
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) && !defined(__BIONIC__) && !defined(__APPLE__)
 
 #include <string.h>
 

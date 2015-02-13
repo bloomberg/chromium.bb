@@ -328,9 +328,25 @@ int JsFs::VScanVar(PP_Var dict_var, const char* format, va_list args) {
       case 'd': {
         int32_t* value = va_arg(args, int32_t*);
         if (!GetVarInt32(value_var, value)) {
-          LOG_ERROR("Expected int32_t value for key \"%s\"", key);
+          LOG_ERROR("Expected int32_t value for key \"%s\" (got %d)", key,
+                    value_var.type);
           ok = false;
         }
+        break;
+      }
+      case 'h': {
+        // Only '%hd' is supported.
+        ++p;
+        assert(*p == 'd');
+        // Read 32-bit value from Pepper and truncate to 16-bits.
+        int32_t value = 0;
+        if (!GetVarInt32(value_var, &value)) {
+          LOG_ERROR("Expected int32_t value for key \"%s\" (got %d)", key,
+                    value_var.type);
+          ok = false;
+        }
+        int16_t* short_value = va_arg(args, int16_t*);
+        *short_value = (int16_t)value;
         break;
       }
       case 'u': {

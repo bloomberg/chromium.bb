@@ -591,7 +591,7 @@ TEST_F(SocketTestWithServer, LargeSend) {
 
 TEST_F(SocketTestUDP, Listen) {
   EXPECT_EQ(-1, ki_listen(sock1_, 10));
-  EXPECT_EQ(errno, ENOTSUP);
+  EXPECT_EQ(errno, EOPNOTSUPP);
 }
 
 TEST_F(SocketTestUDP, Sockopt_BUFSIZE) {
@@ -692,7 +692,12 @@ TEST_F(SocketTestTCP, Listen) {
   // expected length.
   sockaddr_in client_addr2;
   memset(&client_addr2, 0, sizeof(client_addr2));
-  socklen_t truncated_len = sizeof(client_addr2.sin_family);
+
+  // truncated_len is the size of the structure up to and including sin_family.
+  // TODO(sbc): Fix this test so it doesn't depend on the layout of the
+  // sockaddr_in structure.
+  socklen_t truncated_len = offsetof(sockaddr_in, sin_family) +
+      sizeof(client_addr2.sin_family);
   ASSERT_GT(sizeof(sockaddr_in), truncated_len);
   ASSERT_EQ(0, ki_getsockname(client_sock, (sockaddr*)&client_addr2,
                               &truncated_len));

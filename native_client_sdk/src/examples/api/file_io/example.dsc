@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'file_io',

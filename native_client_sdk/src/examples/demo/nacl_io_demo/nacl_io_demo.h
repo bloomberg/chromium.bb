@@ -22,4 +22,4 @@ extern PPB_Var* g_ppb_var;
 extern PPB_VarArray* g_ppb_var_array;
 extern PPB_VarDictionary* g_ppb_var_dictionary;
 
-#endif /* NACL_IO_DEMO_H_ */
+#endif  /* NACL_IO_DEMO_H_ */

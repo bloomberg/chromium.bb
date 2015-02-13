@@ -34,7 +34,7 @@
 
 #endif
 
-#if !defined(__native_client__)
+#if !defined(__native_client__) && !defined(__APPLE__)
 #define PRIoff "ld"
 #else
 #define PRIoff "lld"

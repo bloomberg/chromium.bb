@@ -312,7 +312,6 @@ TEST(MemFsNodeTest, Directory) {
     std::multiset<std::string> dirnames;
     for (int i = 0; i < num_dirents; ++i) {
       EXPECT_LT(0, d[i].d_ino);  // 0 is an invalid inode number.
-      EXPECT_EQ(sizeof(dirent), d[i].d_off);
       EXPECT_EQ(sizeof(dirent), d[i].d_reclen);
       dirnames.insert(d[i].d_name);
     }

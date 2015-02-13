@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 
 #include "nacl_io/osdirent.h"
+#include "nacl_io/osinttypes.h"
 
 #include "nacl_io_demo.h"
 
@@ -462,8 +463,8 @@ int HandleFwrite(struct PP_Var params,
 
   size_t bytes_written = fwrite(data, 1, data_len, file);
   if (ferror(file)) {
-    *out_error = PrintfToNewString("Wrote %d bytes, but ferror() returns true",
-                                   bytes_written);
+    *out_error = PrintfToNewString(
+        "Wrote %" PRIuS " bytes, but ferror() returns true", bytes_written);
     return 1;
   }
 
@@ -497,8 +498,8 @@ int HandleFread(struct PP_Var params,
   buffer[bytes_read] = 0;
 
   if (ferror(file)) {
-    *out_error = PrintfToNewString("Read %d bytes, but ferror() returns true",
-                                   bytes_read);
+    *out_error = PrintfToNewString(
+        "Read %" PRIuS " bytes, but ferror() returns true", bytes_read);
     free(buffer);
     return 1;
   }

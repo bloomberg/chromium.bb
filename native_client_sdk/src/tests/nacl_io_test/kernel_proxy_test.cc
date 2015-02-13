@@ -268,8 +268,8 @@ TEST_F(KernelProxyTest, WorkingDirectory) {
 
   EXPECT_EQ(0, ki_chdir("/"));
 
-  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
-  EXPECT_EQ(-1, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IRUSR | S_IWUSR));
+  EXPECT_EQ(-1, ki_mkdir("/foo", S_IRUSR | S_IWUSR));
   EXPECT_EQ(EEXIST, errno);
 
   memset(text, 0, sizeof(text));
@@ -291,9 +291,9 @@ TEST_F(KernelProxyTest, FDPathMapping) {
 
   int fd1, fd2, fd3, fd4, fd5;
 
-  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
-  EXPECT_EQ(0, ki_mkdir("/foo/bar", S_IREAD | S_IWRITE));
-  EXPECT_EQ(0, ki_mkdir("/example", S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IRUSR | S_IWUSR));
+  EXPECT_EQ(0, ki_mkdir("/foo/bar", S_IRUSR | S_IWUSR));
+  EXPECT_EQ(0, ki_mkdir("/example", S_IRUSR | S_IWUSR));
   ki_chdir("/foo");
 
   fd1 = ki_open("/example", O_RDONLY, 0);
@@ -352,15 +352,15 @@ TEST_F(KernelProxyTest, BasicReadWrite) {
   EXPECT_EQ(ENOENT, errno);
 
   // Create "/foo"
-  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
-  EXPECT_EQ(-1, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IRUSR | S_IWUSR));
+  EXPECT_EQ(-1, ki_mkdir("/foo", S_IRUSR | S_IWUSR));
   EXPECT_EQ(EEXIST, errno);
 
   // Delete "/foo"
   EXPECT_EQ(0, ki_rmdir("/foo"));
 
   // Recreate "/foo"
-  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IRUSR | S_IWUSR));
 
   // Fail to open "/foo/bar"
   EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY, 0));
@@ -600,7 +600,7 @@ TEST_F(KernelProxyTest, DescriptorAllocationConsistency) {
 TEST_F(KernelProxyTest, Lstat) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
-  ASSERT_EQ(0, ki_mkdir("/bar", S_IREAD | S_IWRITE));
+  ASSERT_EQ(0, ki_mkdir("/bar", S_IRUSR | S_IWUSR));
 
   struct stat buf;
   EXPECT_EQ(0, ki_lstat("/foo", &buf));

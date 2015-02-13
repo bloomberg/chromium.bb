@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 #if !defined(__GLIBC__)
-#if defined(__BIONIC__)
+#if defined(__BIONIC__) || defined(__APPLE__)
 const
 #endif
 char* gai_strerror(int errcode) {

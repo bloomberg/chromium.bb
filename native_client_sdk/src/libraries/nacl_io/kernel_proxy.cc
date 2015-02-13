@@ -1157,7 +1157,9 @@ int KernelProxy::sigaction(int signum,
     case SIGHUP:
     case SIGINT:
     case SIGPIPE:
+#if defined(SIGPOLL)
     case SIGPOLL:
+#endif
     case SIGPROF:
     case SIGTERM:
     case SIGCHLD:
@@ -1730,8 +1732,9 @@ int KernelProxy::socket(int domain, int type, int protocol) {
 
   int open_flags = O_RDWR;
 
+#if defined(SOCK_CLOEXEC)
   if (type & SOCK_CLOEXEC) {
-#ifdef O_CLOEXEC
+#if defined(O_CLOEXEC)
     // The NaCl newlib version of fcntl.h doesn't currently define
     // O_CLOEXEC.
     // TODO(sbc): remove this guard once it gets added.
@@ -1739,11 +1742,14 @@ int KernelProxy::socket(int domain, int type, int protocol) {
 #endif
     type &= ~SOCK_CLOEXEC;
   }
+#endif
 
+#if defined(SOCK_NONBLOCK)
   if (type & SOCK_NONBLOCK) {
     open_flags |= O_NONBLOCK;
     type &= ~SOCK_NONBLOCK;
   }
+#endif
 
   SocketNode* sock = NULL;
   switch (type) {

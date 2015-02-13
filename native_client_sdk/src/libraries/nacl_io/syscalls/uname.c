@@ -6,8 +6,13 @@
 #include <string.h>
 #include <sys/utsname.h>
 
-#if !defined(_UTSNAME_LENGTH) && defined(__BIONIC__)
+#if !defined(_UTSNAME_LENGTH)
+#if defined(__BIONIC__)
 #define _UTSNAME_LENGTH SYS_NMLN
+#endif
+#if defined(__APPLE__)
+#define _UTSNAME_LENGTH _SYS_NAMELEN
+#endif
 #endif
 
 int uname(struct utsname* buf) {

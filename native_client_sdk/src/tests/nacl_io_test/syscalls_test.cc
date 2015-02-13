@@ -48,10 +48,10 @@ TEST_F(SyscallsTest, Realpath) {
   int result;
 
 #if defined(__native_client__)
-  ASSERT_EQ(0, mkdir("/tmp", S_IREAD | S_IWRITE));
+  ASSERT_EQ(0, mkdir("/tmp", S_IRUSR | S_IWUSR));
 #endif
 
-  result = mkdir("/tmp/bar", S_IREAD | S_IWRITE);
+  result = mkdir("/tmp/bar", S_IRUSR | S_IWUSR);
 #if defined(__native_client__)
   ASSERT_EQ(0, result);
 #else

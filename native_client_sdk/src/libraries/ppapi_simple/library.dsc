@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'linux'],
+  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'linux', 'mac'],
   'TARGETS': [
     {
       'NAME' : 'ppapi_simple',

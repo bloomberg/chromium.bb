@@ -65,7 +65,9 @@ void TtyNode::InitTermios() {
   termios_.c_cc[VEOF] = 4;
   termios_.c_cc[VTIME] = 0;
   termios_.c_cc[VMIN] = 1;
+#if defined(VSWTC) /* Not defined on on Mac */
   termios_.c_cc[VSWTC] = 0;
+#endif
   termios_.c_cc[VSTART] = 17;
   termios_.c_cc[VSTOP] = 19;
   termios_.c_cc[VSUSP] = 26;
@@ -261,6 +263,10 @@ Error TtyNode::ProcessInput(const char* buffer, size_t num_bytes) {
 }
 
 Error TtyNode::VIoctl(int request, va_list args) {
+  /*
+   * Casts required for some of these case statements in order to silence
+   * compiler warning when built with darwin headers.
+   */
   switch (request) {
     case TIOCNACLOUTPUT: {
       struct tioc_nacl_output* arg = va_arg(args, struct tioc_nacl_output*);
@@ -280,7 +286,7 @@ Error TtyNode::VIoctl(int request, va_list args) {
       struct PP_Var* message = va_arg(args, struct PP_Var*);
       return ProcessInput(*message);
     }
-    case TIOCSWINSZ: {
+    case (unsigned int)TIOCSWINSZ: {
       struct winsize* size = va_arg(args, struct winsize*);
       {
         AUTO_LOCK(node_lock_);
@@ -299,7 +305,7 @@ Error TtyNode::VIoctl(int request, va_list args) {
       }
       return 0;
     }
-    case TIOCGWINSZ: {
+    case (unsigned int)TIOCGWINSZ: {
       struct winsize* size = va_arg(args, struct winsize*);
       size->ws_row = rows_;
       size->ws_col = cols_;

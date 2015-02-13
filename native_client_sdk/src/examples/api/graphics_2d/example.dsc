@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'bionic', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'graphics_2d',

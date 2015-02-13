@@ -21,6 +21,14 @@ AR ?= ar
 ARFLAGS = -crs
 STRIP ?= strip
 
+ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
+$(warning To skip the host build use:)
+$(warning "make all_versions NO_HOST_BUILDS=1")
+$(error Unable to find gcc in PATH while building Host build)
+endif
+
+HOST_WARNINGS ?= -Wno-long-long -Wall -Werror
+HOST_CFLAGS = -fPIC -pthread $(HOST_WARNINGS) -I$(NACL_SDK_ROOT)/include
 
 ifneq ($(OSNAME),mac)
 # Adding -Wl,-Bsymbolic means that symbols defined within the module are always
@@ -30,19 +38,11 @@ ifneq ($(OSNAME),mac)
 # -pthread is not needed on mac (libpthread is a symlink to libSystem) and
 # in fact generated a warning if passed at link time.
 HOST_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET).map -Wl,-Bsymbolic -pthread
+HOST_CFLAGS += -I$(NACL_SDK_ROOT)/include/mac
 else
 HOST_LDFLAGS ?= -Wl,-map -Wl,$(OUTDIR)/$(TARGET).map
+HOST_CFLAGS += -I$(NACL_SDK_ROOT)/include/linux
 endif
-
-
-ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
-$(warning To skip the host build use:)
-$(warning "make all_versions NO_HOST_BUILDS=1")
-$(error Unable to find gcc in PATH while building Host build)
-endif
-
-HOST_WARNINGS ?= -Wno-long-long -Wall -Werror
-HOST_CFLAGS = -fPIC -pthread $(HOST_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 
 
 #

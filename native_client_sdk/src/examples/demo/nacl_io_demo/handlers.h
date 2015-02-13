@@ -38,4 +38,4 @@ int HandleSend(struct PP_Var params, struct PP_Var* out, const char** error);
 int HandleRecv(struct PP_Var params, struct PP_Var* out, const char** error);
 int HandleClose(struct PP_Var params, struct PP_Var* out, const char** error);
 
-#endif /* HANDLERS_H_ */
+#endif  /* HANDLERS_H_ */

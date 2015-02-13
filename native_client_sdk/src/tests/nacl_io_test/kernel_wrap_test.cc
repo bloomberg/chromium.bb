@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The linux host build of nacl_io can't do wrapping of syscalls so all
+// The linux/mac host build of nacl_io can't do wrapping of syscalls so all
 // these tests must be disabled.
-#if !defined(__linux__)
+#if !defined(__linux__) && !defined(__APPLE__)
 
 #include <unistd.h>
 

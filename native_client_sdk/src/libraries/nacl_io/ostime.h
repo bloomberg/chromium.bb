@@ -1,7 +1,7 @@
 /* Copyright (c) 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
+
 #ifndef LIBRARIES_NACL_IO_OSTIME_H_
 #define LIBRARIES_NACL_IO_OSTIME_H_
 
@@ -22,12 +22,18 @@ int clock_settime(clockid_t clock_id, const struct timespec* tp);
 #include <utime.h>
 #include <sys/time.h>
 
-#ifdef __GLIBC__
+#if defined(__GLIBC__)
 #define st_atimensec st_atim.tv_nsec
 #define st_mtimensec st_mtim.tv_nsec
 #define st_ctimensec st_ctim.tv_nsec
 #endif
 
+#if defined(__APPLE__) && !defined(_POSIX_C_SOURCE)
+#define st_atimensec st_atimespec.tv_nsec
+#define st_mtimensec st_mtimespec.tv_nsec
+#define st_ctimensec st_ctimespec.tv_nsec
 #endif
 
-#endif  // LIBRARIES_NACL_IO_OSUNISTD_H_
+#endif
+
+#endif  /* LIBRARIES_NACL_IO_OSUNISTD_H_ */

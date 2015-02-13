@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'load_progress',

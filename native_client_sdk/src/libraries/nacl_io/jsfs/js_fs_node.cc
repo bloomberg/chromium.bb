@@ -78,9 +78,13 @@ const char* format = "%d%lld%d%d%d%d%lld%lld%lld%lld%lld%lld%lld";
 const char* format = "%d%lld%d%d%d%d%lld%lld%d%d%lld%lld%lld";
 #endif
 #else
-#define FIELD(x)                              \
-  assert(sizeof(stat->x) >= sizeof(int32_t)); \
-  strcat(format, sizeof(stat->x) == sizeof(int64_t) ? "%lld" : "%d");
+#define FIELD(x)                               \
+  if (sizeof(stat->x) == sizeof(int64_t))      \
+    strcat(format, "%lld");                    \
+  else if (sizeof(stat->x) == sizeof(int16_t)) \
+    strcat(format, "%hd");                     \
+  else                                         \
+    strcat(format, "%d");
 
   // For host builds, we'll build up the format string at runtime.
   char format[100] = "%d";  // First field is "error".
@@ -123,7 +127,7 @@ const char* format = "%d%lld%d%d%d%d%lld%lld%d%d%lld%lld%lld";
   if (result != 13) {
     LOG_ERROR(
         "Expected \"st_*\" and \"error\" fields in response (should be 13 "
-        "total).");
+        "total, got %d).", result);
     return EINVAL;
   }
 
@@ -352,7 +356,6 @@ Error JsFsNode::GetDents(size_t offs,
     uint32_t d_name_len;
     const char* d_name = var_iface_->VarToUtf8(d_name_var, &d_name_len);
 
-    dirents[i].d_off = sizeof(dirent);
     dirents[i].d_reclen = sizeof(dirent);
     strncpy(dirents[i].d_name, d_name, sizeof(dirents[i].d_name));
   }

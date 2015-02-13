@@ -4,7 +4,7 @@
 
 // The Chromium build system defines __linux__ even for native client builds,
 // so guard against __native_client__ being defined as well.
-#if defined(WIN32) || (defined(__linux__) && !defined(__native_client__))
+#if defined(WIN32) || defined(__APPLE__) || (defined(__linux__) && !defined(__native_client__))
 
 #include <errno.h>
 
@@ -82,11 +82,16 @@ int _real_getcwd(char* pathname, size_t len) {
   return ENOSYS;
 }
 
+int _real_isatty(int fd, int* result) {
+  *result = isatty(fd);
+  return *result ? 0 : -1;
+}
+
 #endif
 
 // The Chromium build system defines __linux__ even for native client builds,
 // so guard against __native_client__ being defined as well.
-#if defined(__linux__) && !defined(__native_client__)
+#if defined(__APPLE__) || defined(__linux__) && !defined(__native_client__)
 
 void kernel_wrap_init() {
 }

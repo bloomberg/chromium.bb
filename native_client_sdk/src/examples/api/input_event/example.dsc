@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl', 'linux', 'win'],
   'TARGETS': [
     {
       'NAME' : 'input_event',

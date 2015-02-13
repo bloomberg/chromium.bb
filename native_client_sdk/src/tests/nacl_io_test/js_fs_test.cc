@@ -648,8 +648,13 @@ TEST_F(JsFsNodeTest, GetStat) {
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_nlink", 3));
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_uid", 4));
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_gid", 5));
+#ifdef __APPLE__
+  ASSERT_EQ(true, SetDictKeyValue(&response, "st_rdev", (dev_t) 6));
+  ASSERT_EQ(true, SetDictKeyValue(&response, "st_size", (off_t) 7));
+#else
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_rdev", (int64_t) 6));
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_size", (int64_t) 7));
+#endif
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_blksize", 8));
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_blocks", 9));
   ASSERT_EQ(true, SetDictKeyValue(&response, "st_atime", (int64_t) 10));
@@ -822,11 +827,9 @@ TEST_F(JsFsNodeTest, GetDents) {
   EXPECT_EQ(0, node_->GetDents(0, buf, sizeof(dirent) * 2, &bytes_written));
   EXPECT_EQ(sizeof(dirent) * 2, bytes_written);
   EXPECT_EQ(2, buf[0].d_ino);
-  EXPECT_EQ(sizeof(dirent), buf[0].d_off);
   EXPECT_EQ(sizeof(dirent), buf[0].d_reclen);
   EXPECT_STREQ(".", buf[0].d_name);
   EXPECT_EQ(3, buf[1].d_ino);
-  EXPECT_EQ(sizeof(dirent), buf[1].d_off);
   EXPECT_EQ(sizeof(dirent), buf[1].d_reclen);
   EXPECT_STREQ("..", buf[1].d_name);
 }

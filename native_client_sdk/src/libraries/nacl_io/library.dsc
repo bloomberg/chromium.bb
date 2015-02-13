@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl', 'linux', 'mac'],
   'SEARCH': [
     '.',
     'pepper',
@@ -259,6 +259,12 @@
         "utime.h",
       ],
       'DEST': 'include/pnacl',
+    },
+    {
+      'FILES': [
+        "sys/mount.h",
+      ],
+      'DEST': 'include/mac',
     },
     {
       'FILES': [
