@@ -56,7 +56,7 @@ class Notification final : public RefCountedGarbageCollectedEventTargetWithInlin
 public:
     // Used for JavaScript instantiations of the Notification object. Will automatically schedule for
     // the notification to be displayed to the user.
-    static Notification* create(ExecutionContext*, const String& title, const NotificationOptions&);
+    static Notification* create(ExecutionContext*, const String& title, const NotificationOptions&, ExceptionState&);
 
     // Used for embedder-created Notification objects. Will initialize the Notification's state as showing.
     static Notification* create(ExecutionContext*, const String& persistentId, const WebNotificationData&);

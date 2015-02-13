@@ -87,6 +87,8 @@ public:
 
     BLINK_EXPORT static void enableMediaSource(bool);
 
+    BLINK_EXPORT static void enableNotificationConstructor(bool);
+
     BLINK_EXPORT static void enableNotifications(bool);
 
     BLINK_EXPORT static void enableNavigatorContentUtils(bool);

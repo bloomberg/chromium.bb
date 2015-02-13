@@ -40,6 +40,7 @@
 #include "core/frame/UseCounter.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationPermissionClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSerializedOrigin.h"
@@ -56,8 +57,15 @@ WebNotificationManager* notificationManager()
 
 } // namespace
 
-Notification* Notification::create(ExecutionContext* context, const String& title, const NotificationOptions& options)
+Notification* Notification::create(ExecutionContext* context, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
 {
+    // The Web Notification constructor may be disabled through a runtime feature. The
+    // behavior of the constructor is changing, but not completely agreed upon yet.
+    if (!RuntimeEnabledFeatures::notificationConstructorEnabled()) {
+        exceptionState.throwTypeError("Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.");
+        return nullptr;
+    }
+
     Notification* notification = new Notification(title, context);
 
     notification->setBody(options.body());

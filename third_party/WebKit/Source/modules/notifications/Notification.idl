@@ -36,6 +36,7 @@
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     MeasureAs=NotificationCreated,
+    RaisesException=Constructor,
     RuntimeEnabled=Notifications,
 ] interface Notification : EventTarget {
     [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute DOMString permission;
