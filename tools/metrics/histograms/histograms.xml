@@ -47859,6 +47859,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="958" label="CRYPTOTOKENPRIVATE_CANORIGINASSERTAPPID"/>
   <int value="959" label="EASYUNLOCKPRIVATE_SETAUTOPAIRINGRESULT"/>
   <int value="960" label="FILEMANAGERPRIVATE_ISUMAENABLED"/>
+  <int value="961" label="WEBVIEWINTERNAL_SETALLOWSCALING"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

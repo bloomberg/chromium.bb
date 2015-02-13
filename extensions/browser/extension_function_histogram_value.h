@@ -1019,6 +1019,7 @@ enum HistogramValue {
   CRYPTOTOKENPRIVATE_CANORIGINASSERTAPPID,
   EASYUNLOCKPRIVATE_SETAUTOPAIRINGRESULT,
   FILEMANAGERPRIVATE_ISUMAENABLED,
+  WEBVIEWINTERNAL_SETALLOWSCALING,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

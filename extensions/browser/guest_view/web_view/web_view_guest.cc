@@ -443,6 +443,11 @@ void WebViewGuest::HandleKeyboardEvent(
   GuestViewBase::HandleKeyboardEvent(source, event);
 }
 
+bool WebViewGuest::PreHandleGestureEvent(content::WebContents* source,
+                                         const blink::WebGestureEvent& event) {
+  return !allow_scaling_ && GuestViewBase::PreHandleGestureEvent(source, event);
+}
+
 void WebViewGuest::LoadProgressChanged(content::WebContents* source,
                                        double progress) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
@@ -638,6 +643,7 @@ WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents)
       guest_opaque_(true),
       javascript_dialog_helper_(this),
       current_zoom_factor_(1.0),
+      allow_scaling_(false),
       weak_ptr_factory_(this) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
@@ -966,6 +972,10 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
   // there is a RenderWidgetHostView available.
   SetAllowTransparency(allow_transparency);
 
+  bool allow_scaling = false;
+  params.GetBoolean(webview::kAttributeAllowScaling, &allow_scaling);
+  SetAllowScaling(allow_scaling);
+
   bool is_pending_new_window = false;
   if (GetOpener()) {
     // We need to do a navigation here if the target URL has changed between
@@ -1042,6 +1052,10 @@ void WebViewGuest::SetAllowTransparency(bool allow) {
     web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
         SK_ColorTRANSPARENT);
   }
+}
+
+void WebViewGuest::SetAllowScaling(bool allow) {
+  allow_scaling_ = allow;
 }
 
 bool WebViewGuest::LoadDataWithBaseURL(const std::string& data_url,

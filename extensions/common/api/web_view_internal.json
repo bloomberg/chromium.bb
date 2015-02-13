@@ -370,6 +370,20 @@
         ]
       },
       {
+        "name": "setAllowScaling",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "boolean",
+            "name": "allow"
+          }
+        ]
+      },
+      {
         "name": "setName",
         "type": "function",
         "parameters": [

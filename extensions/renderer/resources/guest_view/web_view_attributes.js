@@ -104,6 +104,24 @@ AllowTransparencyAttribute.prototype.handleMutation = function(oldValue,
                                        this.getValue());
 };
 
+// Attribute that specifies whether transparency is allowed in the webview.
+function AllowScalingAttribute(webViewImpl) {
+  BooleanAttribute.call(
+      this, WebViewConstants.ATTRIBUTE_ALLOWSCALING, webViewImpl);
+}
+
+AllowScalingAttribute.prototype.__proto__ = BooleanAttribute.prototype;
+
+AllowScalingAttribute.prototype.handleMutation = function(oldValue,
+                                                          newValue) {
+  if (!this.webViewImpl.guest.getId()) {
+    return;
+  }
+
+  WebViewInternal.setAllowScaling(this.webViewImpl.guest.getId(),
+                                  this.getValue());
+};
+
 // Attribute used to define the demension limits of autosizing.
 function AutosizeDimensionAttribute(name, webViewImpl) {
   WebViewAttribute.call(this, name, webViewImpl);
@@ -286,6 +304,8 @@ WebViewImpl.prototype.setupWebViewAttributes = function() {
 
   this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY] =
       new AllowTransparencyAttribute(this);
+  this.attributes[WebViewConstants.ATTRIBUTE_ALLOWSCALING] =
+      new AllowScalingAttribute(this);
   this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE] =
       new AutosizeAttribute(this);
   this.attributes[WebViewConstants.ATTRIBUTE_NAME] =

@@ -186,6 +186,23 @@ bool WebViewInternalSetAllowTransparencyFunction::RunAsyncSafe(
   return true;
 }
 
+WebViewInternalSetAllowScalingFunction::
+    WebViewInternalSetAllowScalingFunction() {
+}
+
+WebViewInternalSetAllowScalingFunction::
+    ~WebViewInternalSetAllowScalingFunction() {
+}
+
+bool WebViewInternalSetAllowScalingFunction::RunAsyncSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::SetAllowScaling::Params> params(
+      webview::SetAllowScaling::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  guest->SetAllowScaling(params->allow);
+  SendResponse(true);
+  return true;
+}
+
 WebViewInternalSetZoomFunction::WebViewInternalSetZoomFunction() {
 }
 

@@ -8,6 +8,7 @@ namespace webview {
 
 // Attributes.
 const char kAttributeAllowTransparency[] = "allowtransparency";
+const char kAttributeAllowScaling[] = "allowscaling";
 const char kAttributeName[] = "name";
 const char kAttributeSrc[] = "src";
 

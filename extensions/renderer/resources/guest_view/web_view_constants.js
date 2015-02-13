@@ -8,6 +8,7 @@
 var WebViewConstants = {
   // Attributes.
   ATTRIBUTE_ALLOWTRANSPARENCY: 'allowtransparency',
+  ATTRIBUTE_ALLOWSCALING: 'allowscaling',
   ATTRIBUTE_AUTOSIZE: 'autosize',
   ATTRIBUTE_MAXHEIGHT: 'maxheight',
   ATTRIBUTE_MAXWIDTH: 'maxwidth',

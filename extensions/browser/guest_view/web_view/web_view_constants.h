@@ -11,6 +11,7 @@ namespace webview {
 
 // Attributes.
 extern const char kAttributeAllowTransparency[];
+extern const char kAttributeAllowScaling[];
 extern const char kAttributeName[];
 extern const char kAttributeSrc[];
 

@@ -79,6 +79,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Set the zoom factor.
   void SetZoom(double zoom_factor);
 
+  void SetAllowScaling(bool allow);
+
   // Sets the transparency of the guest.
   void SetAllowTransparency(bool allow);
 
@@ -126,6 +128,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
   void RendererResponsive(content::WebContents* source) override;
   void RendererUnresponsive(content::WebContents* source) override;
   void RequestMediaAccessPermission(
@@ -361,6 +365,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // Stores the current zoom factor.
   double current_zoom_factor_;
+
+  // Determines if this guest accepts pinch-zoom gestures.
+  bool allow_scaling_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
