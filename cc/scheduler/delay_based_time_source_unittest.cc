@@ -508,23 +508,6 @@ TEST(DelayBasedTimeSourceTest, TestDeactivateAndReactivateAfterNextTickTime) {
   EXPECT_EQ(13, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
-TEST(DelayBasedTimeSourceTest, TestOverflow) {
-  // int(big_now / interval) < 0, so this causes a crash if the number of
-  // intervals elapsed is attempted to be stored in an int.
-  base::TimeDelta interval = base::TimeDelta::FromInternalValue(4000);
-  base::TimeTicks big_now = base::TimeTicks::FromInternalValue(8635916564000);
-
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
-      new base::TestSimpleTaskRunner;
-  FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(interval, task_runner.get());
-  timer->SetClient(&client);
-  timer->SetNow(big_now);
-  timer->SetActive(true);
-  EXPECT_EQ(0, task_runner->NextPendingTaskDelay().InMilliseconds());
-}
-
 TEST(DelayBasedTimeSourceTest, TestReturnValueWhenTimerIsDeActivated) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;

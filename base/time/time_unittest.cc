@@ -715,6 +715,62 @@ TEST(TimeTicks, NowFromSystemTraceTime) {
   HighResClockTest(&TimeTicks::NowFromSystemTraceTime);
 }
 
+TEST(TimeTicks, SnappedToNextTickBasic) {
+  base::TimeTicks phase = base::TimeTicks::FromInternalValue(4000);
+  base::TimeDelta interval = base::TimeDelta::FromInternalValue(1000);
+  base::TimeTicks timestamp;
+
+  // Timestamp in previous interval.
+  timestamp = base::TimeTicks::FromInternalValue(3500);
+  EXPECT_EQ(4000,
+            timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+
+  // Timestamp in next interval.
+  timestamp = base::TimeTicks::FromInternalValue(4500);
+  EXPECT_EQ(5000,
+            timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+
+  // Timestamp multiple intervals before.
+  timestamp = base::TimeTicks::FromInternalValue(2500);
+  EXPECT_EQ(3000,
+            timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+
+  // Timestamp multiple intervals after.
+  timestamp = base::TimeTicks::FromInternalValue(6500);
+  EXPECT_EQ(7000,
+            timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+
+  // Timestamp on previous interval.
+  timestamp = base::TimeTicks::FromInternalValue(3000);
+  EXPECT_EQ(3000,
+            timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+
+  // Timestamp on next interval.
+  timestamp = base::TimeTicks::FromInternalValue(5000);
+  EXPECT_EQ(5000,
+            timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+
+  // Timestamp equal to phase.
+  timestamp = base::TimeTicks::FromInternalValue(4000);
+  EXPECT_EQ(4000,
+            timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+}
+
+TEST(TimeTicks, SnappedToNextTickOverflow) {
+  // int(big_timestamp / interval) < 0, so this causes a crash if the number of
+  // intervals elapsed is attempted to be stored in an int.
+  base::TimeTicks phase = base::TimeTicks::FromInternalValue(0);
+  base::TimeDelta interval = base::TimeDelta::FromInternalValue(4000);
+  base::TimeTicks big_timestamp =
+      base::TimeTicks::FromInternalValue(8635916564000);
+
+  EXPECT_EQ(8635916564000,
+            big_timestamp.SnappedToNextTick(phase, interval).ToInternalValue());
+  EXPECT_EQ(8635916564000,
+            big_timestamp.SnappedToNextTick(big_timestamp, interval)
+                .ToInternalValue());
+}
+
 TEST(TimeDelta, FromAndIn) {
   EXPECT_TRUE(TimeDelta::FromDays(2) == TimeDelta::FromHours(48));
   EXPECT_TRUE(TimeDelta::FromHours(3) == TimeDelta::FromMinutes(180));

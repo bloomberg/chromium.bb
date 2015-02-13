@@ -680,6 +680,12 @@ class BASE_EXPORT TimeTicks {
     return ticks_;
   }
 
+  // Returns |this| snapped to the next tick, given a |tick_phase| and
+  // repeating |tick_interval| in both directions. |this| may be before,
+  // after, or equal to the |tick_phase|.
+  TimeTicks SnappedToNextTick(TimeTicks tick_phase,
+                              TimeDelta tick_interval) const;
+
   TimeTicks& operator=(TimeTicks other) {
     ticks_ = other.ticks_;
     return *this;
