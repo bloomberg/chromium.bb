@@ -42,7 +42,23 @@ class MockConnectionToClient : public ConnectionToClient {
   MOCK_METHOD0(session, Session*());
   MOCK_METHOD0(Disconnect, void());
 
+  void set_clipboard_stub(ClipboardStub* clipboard_stub) override {
+    clipboard_stub_ = clipboard_stub;
+  }
+  void set_host_stub(HostStub* host_stub) override { host_stub_ = host_stub; }
+  void set_input_stub(InputStub* input_stub) override {
+    input_stub_ = input_stub;
+  }
+
+  ClipboardStub* clipboard_stub() { return clipboard_stub_; }
+  HostStub* host_stub() { return host_stub_; }
+  InputStub* input_stub() { return input_stub_; }
+
  private:
+  ClipboardStub* clipboard_stub_;
+  HostStub* host_stub_;
+  InputStub* input_stub_;
+
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClient);
 };
 

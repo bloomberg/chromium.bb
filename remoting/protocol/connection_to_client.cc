@@ -20,9 +20,6 @@ namespace protocol {
 
 ConnectionToClient::ConnectionToClient(protocol::Session* session)
     : handler_(nullptr),
-      clipboard_stub_(nullptr),
-      host_stub_(nullptr),
-      input_stub_(nullptr),
       session_(session) {
   session_->SetEventHandler(this);
 }
@@ -74,32 +71,17 @@ ClientStub* ConnectionToClient::client_stub() {
 void ConnectionToClient::set_clipboard_stub(
     protocol::ClipboardStub* clipboard_stub) {
   DCHECK(CalledOnValidThread());
-  clipboard_stub_ = clipboard_stub;
-}
-
-ClipboardStub* ConnectionToClient::clipboard_stub() {
-  DCHECK(CalledOnValidThread());
-  return clipboard_stub_;
+  control_dispatcher_->set_clipboard_stub(clipboard_stub);
 }
 
 void ConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
   DCHECK(CalledOnValidThread());
-  host_stub_ = host_stub;
-}
-
-HostStub* ConnectionToClient::host_stub() {
-  DCHECK(CalledOnValidThread());
-  return host_stub_;
+  control_dispatcher_->set_host_stub(host_stub);
 }
 
 void ConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
   DCHECK(CalledOnValidThread());
-  input_stub_ = input_stub;
-}
-
-InputStub* ConnectionToClient::input_stub() {
-  DCHECK(CalledOnValidThread());
-  return input_stub_;
+  event_dispatcher_->set_input_stub(input_stub);
 }
 
 void ConnectionToClient::OnSessionStateChange(Session::State state) {
@@ -121,13 +103,10 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       control_dispatcher_.reset(new HostControlDispatcher());
       control_dispatcher_->Init(session_.get(),
                                 session_->config().control_config(), this);
-      control_dispatcher_->set_clipboard_stub(clipboard_stub_);
-      control_dispatcher_->set_host_stub(host_stub_);
 
       event_dispatcher_.reset(new HostEventDispatcher());
       event_dispatcher_->Init(session_.get(), session_->config().event_config(),
                               this);
-      event_dispatcher_->set_input_stub(input_stub_);
       event_dispatcher_->set_event_timestamp_callback(base::Bind(
           &ConnectionToClient::OnEventTimestamp, base::Unretained(this)));
 

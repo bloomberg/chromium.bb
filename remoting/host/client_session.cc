@@ -94,8 +94,6 @@ ClientSession::ClientSession(
       mouse_clamping_filter_(&remote_input_filter_),
       disable_input_filter_(mouse_clamping_filter_.input_filter()),
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
-      auth_input_filter_(&disable_input_filter_),
-      auth_clipboard_filter_(&disable_clipboard_filter_),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
       audio_task_runner_(audio_task_runner),
@@ -105,22 +103,12 @@ ClientSession::ClientSession(
       network_task_runner_(network_task_runner),
       ui_task_runner_(ui_task_runner),
       pairing_registry_(pairing_registry),
+      is_authenticated_(false),
       pause_video_(false),
       lossless_video_encode_(false),
       lossless_video_color_(false),
       weak_factory_(this) {
   connection_->SetEventHandler(this);
-
-  // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
-  // set before channels are connected. Make it possible to set stubs
-  // later and set them only when connection is authenticated.
-  connection_->set_clipboard_stub(&auth_clipboard_filter_);
-  connection_->set_host_stub(this);
-  connection_->set_input_stub(&auth_input_filter_);
-
-  // |auth_*_filter_|'s states reflect whether the session is authenticated.
-  auth_input_filter_.set_enabled(false);
-  auth_clipboard_filter_.set_enabled(false);
 
   // Create a manager for the configured extensions, if any.
   extension_manager_.reset(new HostExtensionSessionManager(extensions, this));
@@ -289,11 +277,7 @@ void ClientSession::OnConnectionAuthenticated(
   DCHECK(!screen_controls_);
   DCHECK(!video_frame_pump_);
 
-  auth_input_filter_.set_enabled(true);
-  auth_clipboard_filter_.set_enabled(true);
-
-  clipboard_echo_filter_.set_client_stub(connection_->client_stub());
-  mouse_clamping_filter_.set_video_stub(connection_->video_stub());
+  is_authenticated_ = true;
 
   if (max_duration_ > base::TimeDelta()) {
     // TODO(simonmorris): Let Disconnect() tell the client that the
@@ -317,6 +301,12 @@ void ClientSession::OnConnectionAuthenticated(
     return;
   }
 
+  // Connect host stub.
+  connection_->set_host_stub(this);
+
+  // Connect video stub.
+  mouse_clamping_filter_.set_video_stub(connection_->video_stub());
+
   // Collate the set of capabilities to offer the client, if it supports them.
   host_capabilities_ = desktop_environment_->GetCapabilities();
   if (!host_capabilities_.empty())
@@ -329,9 +319,14 @@ void ClientSession::OnConnectionAuthenticated(
   // Create the event executor.
   input_injector_ = desktop_environment_->CreateInputInjector();
 
-  // Connect the host clipboard and input stubs.
+  // Connect the host input stubs.
+  connection_->set_input_stub(&disable_input_filter_);
   host_input_filter_.set_input_stub(input_injector_.get());
+
+  // Connect the clipboard stubs.
+  connection_->set_clipboard_stub(&disable_clipboard_filter_);
   clipboard_echo_filter_.set_host_stub(input_injector_.get());
+  clipboard_echo_filter_.set_client_stub(connection_->client_stub());
 
   // Create a GnubbyAuthHandler to proxy gnubbyd messages.
   gnubby_auth_handler_ = desktop_environment_->CreateGnubbyAuthHandler(
@@ -345,7 +340,6 @@ void ClientSession::OnConnectionChannelsConnected(
 
   // Negotiate capabilities with the client.
   VLOG(1) << "Host capabilities: " << host_capabilities_;
-
   protocol::Capabilities capabilities;
   capabilities.set_capabilities(host_capabilities_);
   connection_->client_stub()->SetCapabilities(capabilities);
@@ -380,14 +374,8 @@ void ClientSession::OnConnectionClosed(
   weak_factory_.InvalidateWeakPtrs();
 
   // If the client never authenticated then the session failed.
-  if (!auth_input_filter_.enabled())
+  if (!is_authenticated_)
     event_handler_->OnSessionAuthenticationFailed(this);
-
-  // Block any further input events from the client.
-  // TODO(wez): Fix ChromotingHost::OnSessionClosed not to check our
-  // is_authenticated(), so that we can disable |auth_*_filter_| here.
-  disable_input_filter_.set_enabled(false);
-  disable_clipboard_filter_.set_enabled(false);
 
   // Ensure that any pressed keys or buttons are released.
   input_tracker_.ReleaseAll();

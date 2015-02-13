@@ -92,14 +92,11 @@ class ConnectionToClient : public base::NonThreadSafe,
   virtual AudioStub* audio_stub();
   virtual ClientStub* client_stub();
 
-  // Set/get the stubs which will handle messages we receive from the client.
-  // All stubs MUST be set before the session's channels become connected.
+  // Set the stubs which will handle messages we receive from the client. These
+  // must be called in EventHandler::OnConnectionAuthenticated().
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub);
-  virtual ClipboardStub* clipboard_stub();
   virtual void set_host_stub(HostStub* host_stub);
-  virtual HostStub* host_stub();
   virtual void set_input_stub(InputStub* input_stub);
-  virtual InputStub* input_stub();
 
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
@@ -121,11 +118,6 @@ class ConnectionToClient : public base::NonThreadSafe,
 
   // Event handler for handling events sent from this object.
   EventHandler* handler_;
-
-  // Stubs that are called for incoming messages.
-  ClipboardStub* clipboard_stub_;
-  HostStub* host_stub_;
-  InputStub* input_stub_;
 
   // The libjingle channel used to send and receive data from the remote client.
   scoped_ptr<Session> session_;

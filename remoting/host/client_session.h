@@ -141,7 +141,7 @@ class ClientSession
     return connection_.get();
   }
 
-  bool is_authenticated() { return auth_input_filter_.enabled();  }
+  bool is_authenticated() { return is_authenticated_;  }
 
   const std::string* client_capabilities() const {
     return client_capabilities_.get();
@@ -184,10 +184,6 @@ class ClientSession
   // Filters used to manage enabling & disabling of input & clipboard.
   protocol::InputFilter disable_input_filter_;
   protocol::ClipboardFilter disable_clipboard_filter_;
-
-  // Filters used to disable input & clipboard when we're not authenticated.
-  protocol::InputFilter auth_input_filter_;
-  protocol::ClipboardFilter auth_clipboard_filter_;
 
   // Factory for weak pointers to the client clipboard stub.
   // This must appear after |clipboard_echo_filter_|, so that it won't outlive
@@ -239,6 +235,9 @@ class ClientSession
 
   // Used to manage extension functionality.
   scoped_ptr<HostExtensionSessionManager> extension_manager_;
+
+  // Set to true if the client was authenticated successfully.
+  bool is_authenticated_;
 
   // Used to store video channel pause & lossless parameters.
   bool pause_video_;

@@ -10,11 +10,12 @@
 namespace remoting {
 namespace protocol {
 
-MockConnectionToClient::MockConnectionToClient(
-    Session* session,
-    HostStub* host_stub)
-    : ConnectionToClient(session) {
-  set_host_stub(host_stub);
+MockConnectionToClient::MockConnectionToClient(Session* session,
+                                               HostStub* host_stub)
+    : ConnectionToClient(session),
+      clipboard_stub_(nullptr),
+      host_stub_(host_stub),
+      input_stub_(nullptr) {
 }
 
 MockConnectionToClient::~MockConnectionToClient() {}

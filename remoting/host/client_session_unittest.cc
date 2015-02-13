@@ -42,6 +42,7 @@ using protocol::SessionConfig;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtMost;
+using testing::AtLeast;
 using testing::CreateFunctor;
 using testing::DeleteArg;
 using testing::DoAll;
@@ -310,7 +311,15 @@ webrtc::MouseCursorMonitor* ClientSessionTest::CreateMouseCursorMonitor() {
 }
 
 void ClientSessionTest::ConnectClientSession() {
+  // Stubs should be set only after connection is authenticated.
+  EXPECT_FALSE(connection_->clipboard_stub());
+  EXPECT_FALSE(connection_->input_stub());
+
   client_session_->OnConnectionAuthenticated(client_session_->connection());
+
+  EXPECT_TRUE(connection_->clipboard_stub());
+  EXPECT_TRUE(connection_->input_stub());
+
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
 }
 
@@ -346,126 +355,94 @@ MATCHER_P2(EqualsClipboardEvent, m, d, "") {
 TEST_F(ClientSessionTest, ClipboardStubFilter) {
   CreateClientSession();
 
-  protocol::ClipboardEvent clipboard_event1;
-  clipboard_event1.set_mime_type(kMimeTypeTextUtf8);
-  clipboard_event1.set_data("a");
-
-  protocol::ClipboardEvent clipboard_event2;
-  clipboard_event2.set_mime_type(kMimeTypeTextUtf8);
-  clipboard_event2.set_data("b");
-
-  protocol::ClipboardEvent clipboard_event3;
-  clipboard_event3.set_mime_type(kMimeTypeTextUtf8);
-  clipboard_event3.set_data("c");
-
-  Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
-  EXPECT_CALL(*input_injector_, StartPtr(_))
-      .After(authenticated);
-  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
-      .After(authenticated);
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*input_injector_, StartPtr(_));
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
 
   // Wait for the first video packet to be captured to make sure that
   // the injected input will go though. Otherwise mouse events will be blocked
   // by the mouse clamping filter.
-  Sequence s;
+  base::RunLoop run_loop;
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .InSequence(s)
-      .After(authenticated)
-      .WillOnce(DoAll(
-          // This event should get through to the clipboard stub.
-          InjectClipboardEvent(connection_, clipboard_event2),
-          InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
-          // This event should not get through to the clipboard stub,
-          // because the client has disconnected.
-          InjectClipboardEvent(connection_, clipboard_event3),
-          InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
-  EXPECT_CALL(*input_injector_, InjectClipboardEvent(EqualsClipboardEvent(
-      kMimeTypeTextUtf8, "b")))
-      .InSequence(s);
-  EXPECT_CALL(session_event_handler_, OnSessionClosed(_))
-      .InSequence(s);
+      .Times(AtLeast(1))
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  // This event should not get through to the clipboard stub,
-  // because the client isn't authenticated yet.
-  connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event1);
+  {
+    EXPECT_CALL(*input_injector_, InjectClipboardEvent(EqualsClipboardEvent(
+                                      kMimeTypeTextUtf8, "a")));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(1, true)));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(1, false)));
+    EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
+
+    EXPECT_CALL(*input_injector_, InjectClipboardEvent(EqualsClipboardEvent(
+                                      kMimeTypeTextUtf8, "c")));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(3, true)));
+    EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseEvent(300, 301)));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(3, false)));
+  }
 
   ConnectClientSession();
-}
 
-TEST_F(ClientSessionTest, InputStubFilter) {
-  CreateClientSession();
+  // With for the first frame.
+  run_loop.Run();
 
-  protocol::KeyEvent key_event1;
-  key_event1.set_pressed(true);
-  key_event1.set_usb_keycode(1);
+  // Inject test events that are expected to be injected.
+  protocol::ClipboardEvent clipboard_event;
+  clipboard_event.set_mime_type(kMimeTypeTextUtf8);
+  clipboard_event.set_data("a");
+  connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event);
 
-  protocol::KeyEvent key_event2_down;
-  key_event2_down.set_pressed(true);
-  key_event2_down.set_usb_keycode(2);
+  protocol::KeyEvent key_event;
+  key_event.set_pressed(true);
+  key_event.set_usb_keycode(1);
+  connection_->input_stub()->InjectKeyEvent(key_event);
 
-  protocol::KeyEvent key_event2_up;
-  key_event2_up.set_pressed(false);
-  key_event2_up.set_usb_keycode(2);
+  protocol::MouseEvent mouse_event;
+  mouse_event.set_x(100);
+  mouse_event.set_y(101);
+  connection_->input_stub()->InjectMouseEvent(mouse_event);
 
-  protocol::KeyEvent key_event3;
-  key_event3.set_pressed(true);
-  key_event3.set_usb_keycode(3);
+  base::RunLoop().RunUntilIdle();
 
-  protocol::MouseEvent mouse_event1;
-  mouse_event1.set_x(100);
-  mouse_event1.set_y(101);
+  // Disable input.
+  client_session_->SetDisableInputs(true);
 
-  protocol::MouseEvent mouse_event2;
-  mouse_event2.set_x(200);
-  mouse_event2.set_y(201);
+  // These event shouldn't get though to the input injector.
+  clipboard_event.set_data("b");
+  connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event);
 
-  protocol::MouseEvent mouse_event3;
-  mouse_event3.set_x(300);
-  mouse_event3.set_y(301);
+  key_event.set_pressed(true);
+  key_event.set_usb_keycode(2);
+  connection_->input_stub()->InjectKeyEvent(key_event);
+  key_event.set_pressed(false);
+  key_event.set_usb_keycode(2);
+  connection_->input_stub()->InjectKeyEvent(key_event);
 
-  Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
-  EXPECT_CALL(*input_injector_, StartPtr(_))
-      .After(authenticated);
-  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
-      .After(authenticated);
+  mouse_event.set_x(200);
+  mouse_event.set_y(201);
+  connection_->input_stub()->InjectMouseEvent(mouse_event);
 
-  // Wait for the first video packet to be captured to make sure that
-  // the injected input will go though. Otherwise mouse events will be blocked
-  // by the mouse clamping filter.
-  Sequence s;
-  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .InSequence(s)
-      .After(authenticated)
-      .WillOnce(DoAll(
-          // These events should get through to the input stub.
-          InjectKeyEvent(connection_, key_event2_down),
-          InjectKeyEvent(connection_, key_event2_up),
-          InjectMouseEvent(connection_, mouse_event2),
-          InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
-          // These events should not get through to the input stub,
-          // because the client has disconnected.
-          InjectKeyEvent(connection_, key_event3),
-          InjectMouseEvent(connection_, mouse_event3),
-          InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
-  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(2, true)))
-      .InSequence(s);
-  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(2, false)))
-      .InSequence(s);
-  EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseEvent(200, 201)))
-      .InSequence(s);
-  EXPECT_CALL(session_event_handler_, OnSessionClosed(_))
-      .InSequence(s);
+  base::RunLoop().RunUntilIdle();
 
-  // These events should not get through to the input stub,
-  // because the client isn't authenticated yet.
-  connection_->input_stub()->InjectKeyEvent(key_event1);
-  connection_->input_stub()->InjectMouseEvent(mouse_event1);
+  // Enable input again.
+  client_session_->SetDisableInputs(false);
 
-  ConnectClientSession();
+  clipboard_event.set_data("c");
+  connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event);
+  base::RunLoop().RunUntilIdle();
+
+  key_event.set_pressed(true);
+  key_event.set_usb_keycode(3);
+  connection_->input_stub()->InjectKeyEvent(key_event);
+
+  mouse_event.set_x(300);
+  mouse_event.set_y(301);
+  connection_->input_stub()->InjectMouseEvent(mouse_event);
+
+  client_session_->DisconnectSession();
+  client_session_->OnConnectionClosed(connection_, protocol::OK);
+  client_session_.reset();
 }
 
 TEST_F(ClientSessionTest, LocalInputTest) {
