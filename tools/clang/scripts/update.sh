@@ -31,13 +31,6 @@ ABS_LLVM_DIR="${PWD}/${LLVM_DIR}"
 ABS_LLVM_BUILD_DIR="${PWD}/${LLVM_BUILD_DIR}"
 ABS_COMPILER_RT_DIR="${PWD}/${COMPILER_RT_DIR}"
 
-
-# Use both the clang revision and the plugin revisions to test for updates.
-BLINKGCPLUGIN_REVISION=\
-$(grep 'set(LIBRARYNAME' "$THIS_DIR"/../blink_gc_plugin/CMakeLists.txt \
-    | cut -d ' ' -f 2 | tr -cd '[0-9]')
-CLANG_AND_PLUGINS_REVISION="${CLANG_REVISION}-${BLINKGCPLUGIN_REVISION}"
-
 # ${A:-a} returns $A if it's set, a else.
 LLVM_REPO_URL=${LLVM_URL:-https://llvm.org/svn/llvm-project}
 
@@ -52,6 +45,21 @@ fi
 # Die if any command dies, error on undefined variable expansions.
 set -eu
 
+
+if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
+  # Use a real version number rather than HEAD to make sure that
+  # --print-revision, stamp file logic, etc. all works naturally.
+  CLANG_REVISION=$(svn info "$LLVM_REPO_URL" \
+      | grep 'Last Changed Rev' | awk '{ printf $4; }')
+fi
+
+# Use both the clang revision and the plugin revisions to test for updates.
+BLINKGCPLUGIN_REVISION=\
+$(grep 'set(LIBRARYNAME' "$THIS_DIR"/../blink_gc_plugin/CMakeLists.txt \
+    | cut -d ' ' -f 2 | tr -cd '[0-9]')
+CLANG_AND_PLUGINS_REVISION="${CLANG_REVISION}-${BLINKGCPLUGIN_REVISION}"
+
+
 OS="$(uname -s)"
 
 # Parse command line options.
@@ -62,6 +70,7 @@ bootstrap=
 with_android=yes
 chrome_tools="plugins;blink_gc_plugin"
 gcc_toolchain=
+with_patches=yes
 
 if [[ "${OS}" = "Darwin" ]]; then
   with_android=
@@ -87,6 +96,9 @@ while [[ $# > 0 ]]; do
       ;;
     --without-android)
       with_android=
+      ;;
+    --without-patches)
+      with_patches=
       ;;
     --with-chrome-tools)
       shift
@@ -125,6 +137,7 @@ while [[ $# > 0 ]]; do
       echo "--gcc-toolchain: Set the prefix for which GCC version should"
       echo "    be used for building. For example, to use gcc in"
       echo "    /opt/foo/bin/gcc, use '--gcc-toolchain '/opt/foo"
+      echo "--without-patches: Don't apply local patches."
       echo
       exit 1
       ;;
@@ -136,6 +149,15 @@ while [[ $# > 0 ]]; do
   esac
   shift
 done
+
+if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
+  force_local_build=yes
+
+  # Skip local patches when using HEAD: they probably don't apply anymore.
+  with_patches=
+
+  echo "LLVM_FORCE_HEAD_REVISION was set; using r${CLANG_REVISION}"
+fi
 
 if [[ -n "$if_needed" ]]; then
   if [[ "${OS}" == "Darwin" ]]; then
@@ -296,9 +318,11 @@ if [ "${OS}" = "Darwin" ]; then
                  "${LIBCXXABI_DIR}"
 fi
 
-# Apply patch for tests failing with --disable-pthreads (llvm.org/PR11974)
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+if [[ -n "$with_patches" ]]; then
+
+  # Apply patch for tests failing with --disable-pthreads (llvm.org/PR11974)
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- third_party/llvm/tools/clang/test/Index/crash-recovery-modules.m	(revision 202554)
 +++ third_party/llvm/tools/clang/test/Index/crash-recovery-modules.m	(working copy)
 @@ -12,6 +12,8 @@
@@ -327,12 +351,12 @@ cat << 'EOF' |
    const char *HeaderBottom = "\n};\n#endif\n";
    const char *MFile = "#include \"HeaderFile.h\"\nint main() {"
 EOF
-patch -p0
-popd
+  patch -p0
+  popd
 
-# Apply r223211: "Revert r222997."
-pushd "${LLVM_DIR}"
-cat << 'EOF' |
+  # Apply r223211: "Revert r222997."
+  pushd "${LLVM_DIR}"
+  cat << 'EOF' |
 --- a/lib/Transforms/Instrumentation/MemorySanitizer.cpp
 +++ b/lib/Transforms/Instrumentation/MemorySanitizer.cpp
 @@ -921,8 +921,6 @@ struct MemorySanitizerVisitor : public InstVisitor<MemorySanitizerVisitor> {
@@ -376,12 +400,12 @@ cat << 'EOF' |
  
    void visitAtomicRMWInst(AtomicRMWInst &I) {
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-# Apply r223219: "Preserve LD_LIBRARY_PATH when using the 'env' command"
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+  # Apply r223219: "Preserve LD_LIBRARY_PATH when using the 'env' command"
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- a/test/Driver/env.c
 +++ b/test/Driver/env.c
 @@ -5,12 +5,14 @@
@@ -402,12 +426,12 @@ cat << 'EOF' |
  // RUN:     --sysroot=%S/Inputs/basic_linux_tree \
  // RUN:   | FileCheck --check-prefix=CHECK-LD-32 %s
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-# Revert r220714: "Frontend: Define __EXCEPTIONS if -fexceptions is passed"
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+  # Revert r220714: "Frontend: Define __EXCEPTIONS if -fexceptions is passed"
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- a/lib/Frontend/InitPreprocessor.cpp
 +++ b/lib/Frontend/InitPreprocessor.cpp
 @@ -566,7 +566,7 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
@@ -448,12 +472,12 @@ index 0791075..c13f429 100644
  // RUN: %clang_cc1 -x objective-c++ -fobjc-exceptions -fexceptions -fcxx-exceptions -E -dM %s | FileCheck -check-prefix=CHECK-OBJC-CXX %s 
  // CHECK-OBJC-CXX: #define OBJC_ZEROCOST_EXCEPTIONS 1
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-# Apply r223177: "Ensure typos in the default values of template parameters get diagnosed."
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+  # Apply r223177: "Ensure typos in the default values of template parameters get diagnosed."
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- a/lib/Parse/ParseTemplate.cpp
 +++ b/lib/Parse/ParseTemplate.cpp
 @@ -676,7 +676,7 @@ Parser::ParseNonTypeTemplateParameter(unsigned Depth, unsigned Position) {
@@ -492,12 +516,12 @@ index bff1d76..7bf9258 100644
 +template <int I = defaultArg> struct S {};  // expected-error {{use of undeclared identifier 'defaultArg'; did you mean 'DefaultArg'?}}
 +S<1> s;
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-# Apply r223209: "Handle delayed corrections in a couple more error paths in ParsePostfixExpressionSuffix."
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+  # Apply r223209: "Handle delayed corrections in a couple more error paths in ParsePostfixExpressionSuffix."
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- a/lib/Parse/ParseExpr.cpp
 +++ b/lib/Parse/ParseExpr.cpp
 @@ -1390,6 +1390,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
@@ -531,12 +555,12 @@ index 7bf9258..f7ef015 100644
 +                     // expected-error {{expected expression}}
 +}
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-# Apply r223705: "Handle possible TypoExprs in member initializers."
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+  # Apply r223705: "Handle possible TypoExprs in member initializers."
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- a/lib/Sema/SemaDeclCXX.cpp
 +++ b/lib/Sema/SemaDeclCXX.cpp
 @@ -2813,6 +2813,11 @@ Sema::BuildMemInitializer(Decl *ConstructorD,
@@ -567,12 +591,12 @@ index f7ef015..d303b58 100644
 +  explicit SomeClass() : Kind(kSum) {}  // expected-error {{use of undeclared identifier 'kSum'; did you mean 'kNum'?}}
 +};
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-# Apply r224172: "Typo correction: Ignore temporary binding exprs after overload resolution"
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+  # Apply r224172: "Typo correction: Ignore temporary binding exprs after overload resolution"
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- a/lib/Sema/SemaExprCXX.cpp
 +++ b/lib/Sema/SemaExprCXX.cpp
 @@ -6105,8 +6105,13 @@ public:
@@ -620,12 +644,12 @@ index d303b58..d42888f 100644
 +    printf("ar: %d\n", ar.val);
 +}
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-# Apply r224173: "Implement feedback on r224172 in PR21899"
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
+  # Apply r224173: "Implement feedback on r224172 in PR21899"
+  pushd "${CLANG_DIR}"
+  cat << 'EOF' |
 --- a/lib/Sema/SemaExprCXX.cpp
 +++ b/lib/Sema/SemaExprCXX.cpp
 @@ -6105,7 +6105,7 @@ public:
@@ -670,13 +694,12 @@ index d42888f..7879d29 100644
 +  Overload(resulta);
  }
 EOF
-patch -p1
-popd
+  patch -p1
+  popd
 
-
-# This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
-pushd "${LLVM_DIR}"
-cat << 'EOF' |
+  # This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
+  pushd "${LLVM_DIR}"
+  cat << 'EOF' |
 Index: test/Bindings/Go/go.test
 ===================================================================
 --- test/Bindings/Go/go.test    (revision 223109)
@@ -687,9 +710,10 @@ Index: test/Bindings/Go/go.test
  
  ; REQUIRES: shell
 EOF
-patch -p0
-popd
+  patch -p0
+  popd
 
+fi
 
 # Echo all commands.
 set -x
