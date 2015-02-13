@@ -171,9 +171,6 @@ class RendererBlinkPlatformImpl::MimeRegistry
       const blink::WebString& key_system);
   virtual bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
                                            const blink::WebString& codecs);
-  bool supportsEncryptedMediaMIMEType(const WebString& key_system,
-                                      const WebString& mime_type,
-                                      const WebString& codecs) override;
   virtual blink::WebString mimeTypeForExtension(
       const blink::WebString& file_extension);
   virtual blink::WebString mimeTypeFromFile(
@@ -456,33 +453,6 @@ bool RendererBlinkPlatformImpl::MimeRegistry::supportsMediaSourceMIMEType(
     return false;
   return media::StreamParserFactory::IsTypeSupported(
       mime_type_ascii, parsed_codec_ids);
-}
-
-// TODO(jrummell): This method is only used by unprefixed EME, and should not
-// be called when http://crbug.com/385874 is fixed. Remove this method once
-// that happens.
-bool RendererBlinkPlatformImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
-    const WebString& key_system,
-    const WebString& mime_type,
-    const WebString& codecs) {
-  // Chromium only supports ASCII parameters.
-  if (!base::IsStringASCII(key_system) || !base::IsStringASCII(mime_type) ||
-      !base::IsStringASCII(codecs)) {
-    return false;
-  }
-
-  if (key_system.isEmpty())
-    return false;
-
-  const std::string mime_type_ascii = base::UTF16ToASCII(mime_type);
-
-  std::vector<std::string> codec_vector;
-  bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
-  net::ParseCodecString(base::UTF16ToASCII(codecs), &codec_vector,
-                        strip_suffix);
-
-  return media::IsSupportedKeySystemWithMediaMimeType(
-      mime_type_ascii, codec_vector, base::UTF16ToASCII(key_system));
 }
 
 WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(

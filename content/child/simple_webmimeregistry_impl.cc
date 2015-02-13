@@ -68,14 +68,6 @@ bool SimpleWebMimeRegistryImpl::supportsMediaSourceMIMEType(
   return false;
 }
 
-bool SimpleWebMimeRegistryImpl::supportsEncryptedMediaMIMEType(
-    const blink::WebString& key_system,
-    const blink::WebString& mime_type,
-    const blink::WebString& codecs) {
-  // Media features are only supported at the content/renderer layer.
-  return false;
-}
-
 WebMimeRegistry::SupportsType
     SimpleWebMimeRegistryImpl::supportsNonImageMIMEType(
     const WebString& mime_type) {
