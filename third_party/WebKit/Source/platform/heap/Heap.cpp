@@ -2348,6 +2348,9 @@ void Heap::postGC(ThreadState::GCType gcType)
 
 void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType)
 {
+    ASSERT(!ThreadState::current()->isSweepingInProgress());
+    ASSERT(!ThreadState::current()->sweepForbidden());
+
     ThreadState* state = ThreadState::current();
     ThreadState::GCState originalGCState = state->gcState();
     state->setGCState(ThreadState::StoppingOtherThreads);
@@ -2429,6 +2432,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
 
 void Heap::collectGarbageForTerminatingThread(ThreadState* state)
 {
+    ASSERT(!ThreadState::current()->isSweepingInProgress());
+    ASSERT(!ThreadState::current()->sweepForbidden());
+
     // We explicitly do not enter a safepoint while doing thread specific
     // garbage collection since we don't want to allow a global GC at the
     // same time as a thread local GC.
