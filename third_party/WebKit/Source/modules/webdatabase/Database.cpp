@@ -27,6 +27,7 @@
 #include "modules/webdatabase/Database.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/ConsoleMessage.h"
