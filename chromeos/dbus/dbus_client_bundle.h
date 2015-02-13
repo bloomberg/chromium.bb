@@ -28,6 +28,7 @@ class CrosDisksClient;
 class CryptohomeClient;
 class DebugDaemonClient;
 class EasyUnlockClient;
+class LeadershipDaemonManagerClient;
 class LorgnetteManagerClient;
 class ShillDeviceClient;
 class ShillIPConfigClient;
@@ -85,6 +86,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     SYSTEM_CLOCK =         1 << 18,
     UPDATE_ENGINE =        1 << 19,
     PEER_DAEMON =          1 << 20,
+    LEADERSHIP_DAEMON =    1 << 21,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -165,6 +167,10 @@ class CHROMEOS_EXPORT DBusClientBundle {
 
   EasyUnlockClient* easy_unlock_client() {
     return easy_unlock_client_.get();
+  }
+
+  LeadershipDaemonManagerClient* leadership_daemon_manager_client() {
+    return leadership_daemon_manager_client_.get();
   }
 
   LorgnetteManagerClient* lorgnette_manager_client() {
@@ -287,6 +293,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debug_daemon_client_;
   scoped_ptr<EasyUnlockClient> easy_unlock_client_;
+  scoped_ptr<LeadershipDaemonManagerClient> leadership_daemon_manager_client_;
   scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
   scoped_ptr<PeerDaemonManagerClient> peer_daemon_manager_client_;
   scoped_ptr<PrivetDaemonClient> privet_daemon_client_;

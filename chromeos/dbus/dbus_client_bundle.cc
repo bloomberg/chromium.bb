@@ -44,6 +44,7 @@
 #include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_introspectable_client.h"
+#include "chromeos/dbus/fake_leadership_daemon_manager_client.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_modem_messaging_client.h"
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
@@ -65,6 +66,7 @@
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
+#include "chromeos/dbus/leadership_daemon_manager_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
@@ -103,6 +105,7 @@ const struct {
     { "cryptohome",  DBusClientBundle::CRYPTOHOME },
     { "debug_daemon",  DBusClientBundle::DEBUG_DAEMON },
     { "easy_unlock",  DBusClientBundle::EASY_UNLOCK },
+    { "leadership_daemon",  DBusClientBundle::LEADERSHIP_DAEMON },
     { "lorgnette_manager",  DBusClientBundle::LORGNETTE_MANAGER },
     { "shill",  DBusClientBundle::SHILL },
     { "gsm_sms",  DBusClientBundle::GSM_SMS },
@@ -276,6 +279,14 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     privet_daemon_client_.reset(PrivetDaemonClient::Create());
   else
     privet_daemon_client_.reset(new FakePrivetDaemonClient);
+
+  if (!IsUsingStub(LEADERSHIP_DAEMON)) {
+    leadership_daemon_manager_client_.reset(
+        LeadershipDaemonManagerClient::Create());
+  } else {
+    leadership_daemon_manager_client_.reset(
+        new FakeLeadershipDaemonManagerClient);
+  }
 
   power_manager_client_.reset(PowerManagerClient::Create(
       IsUsingStub(POWER_MANAGER) ? STUB_DBUS_CLIENT_IMPLEMENTATION

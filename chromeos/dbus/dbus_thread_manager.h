@@ -45,6 +45,7 @@ class EasyUnlockClient;
 class GsmSMSClient;
 class ImageBurnerClient;
 class IntrospectableClient;
+class LeadershipDaemonManagerClient;
 class LorgnetteManagerClient;
 class ModemMessagingClient;
 class NfcAdapterClient;
@@ -136,6 +137,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   GsmSMSClient* GetGsmSMSClient();
   ImageBurnerClient* GetImageBurnerClient();
   IntrospectableClient* GetIntrospectableClient();
+  LeadershipDaemonManagerClient* GetLeadershipDaemonManagerClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
   ModemMessagingClient* GetModemMessagingClient();
   NfcAdapterClient* GetNfcAdapterClient();
@@ -223,6 +225,8 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetCryptohomeClient(scoped_ptr<CryptohomeClient> client);
   void SetDebugDaemonClient(scoped_ptr<DebugDaemonClient> client);
   void SetEasyUnlockClient(scoped_ptr<EasyUnlockClient> client);
+  void SetLeadershipDaemonManagerClient(
+      scoped_ptr<LeadershipDaemonManagerClient> client);
   void SetLorgnetteManagerClient(scoped_ptr<LorgnetteManagerClient> client);
   void SetShillDeviceClient(scoped_ptr<ShillDeviceClient> client);
   void SetShillIPConfigClient(scoped_ptr<ShillIPConfigClient> client);
