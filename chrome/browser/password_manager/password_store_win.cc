@@ -23,29 +23,29 @@ using password_manager::PasswordStoreDefault;
 // Handles requests to PasswordWebDataService.
 class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
  public:
+  typedef base::Callback<void(ScopedVector<PasswordForm>)> ResultCallback;
+
   DBHandler(const scoped_refptr<PasswordWebDataService>& web_data_service,
             PasswordStoreWin* password_store)
       : web_data_service_(web_data_service), password_store_(password_store) {}
 
   ~DBHandler();
 
-  // Requests the IE7 login for |form|. This is async. |callback_runner| will be
+  // Requests the IE7 login for |form|. This is async. |result_callback| will be
   // run when complete.
-  void GetIE7Login(
-      const PasswordForm& form,
-      const PasswordStoreWin::ConsumerCallbackRunner& callback_runner);
+  void GetIE7Login(const PasswordForm& form,
+                   const ResultCallback& result_callback);
 
  private:
   struct RequestInfo {
     RequestInfo() {}
 
     RequestInfo(PasswordForm* request_form,
-                const PasswordStoreWin::ConsumerCallbackRunner& runner)
-        : form(request_form),
-          callback_runner(runner) {}
+                const ResultCallback& result_callback)
+        : form(request_form), result_callback(result_callback) {}
 
     PasswordForm* form;
-    PasswordStoreWin::ConsumerCallbackRunner callback_runner;
+    ResultCallback result_callback;
   };
 
   // Holds info associated with in-flight GetIE7Login requests.
@@ -86,7 +86,7 @@ PasswordStoreWin::DBHandler::~DBHandler() {
 
 void PasswordStoreWin::DBHandler::GetIE7Login(
     const PasswordForm& form,
-    const PasswordStoreWin::ConsumerCallbackRunner& callback_runner) {
+    const ResultCallback& result_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   IE7PasswordInfo info;
   info.url_hash =
@@ -94,7 +94,7 @@ void PasswordStoreWin::DBHandler::GetIE7Login(
   PasswordWebDataService::Handle handle =
       web_data_service_->GetIE7Login(info, this);
   pending_requests_[handle] =
-      RequestInfo(new PasswordForm(form), callback_runner);
+      RequestInfo(new PasswordForm(form), result_callback);
 }
 
 ScopedVector<autofill::PasswordForm> PasswordStoreWin::DBHandler::GetIE7Results(
@@ -145,19 +145,18 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
   DCHECK(i != pending_requests_.end());
 
   scoped_ptr<PasswordForm> form(i->second.form);
-  PasswordStoreWin::ConsumerCallbackRunner callback_runner(
-      i->second.callback_runner);
+  ResultCallback result_callback(i->second.result_callback);
   pending_requests_.erase(i);
 
   if (!result) {
     // The WDS returns NULL if it is shutting down. Run callback with empty
     // result.
-    callback_runner.Run(ScopedVector<autofill::PasswordForm>());
+    result_callback.Run(ScopedVector<autofill::PasswordForm>());
     return;
   }
 
   DCHECK_EQ(PASSWORD_IE7_RESULT, result->GetType());
-  callback_runner.Run(GetIE7Results(result, *form));
+  result_callback.Run(GetIE7Results(result, *form));
 }
 
 PasswordStoreWin::PasswordStoreWin(
@@ -186,10 +185,9 @@ void PasswordStoreWin::Shutdown() {
   PasswordStoreDefault::Shutdown();
 }
 
-void PasswordStoreWin::GetLoginsImpl(
-    const PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
-    const ConsumerCallbackRunner& callback_runner) {
+void PasswordStoreWin::GetLoginsImpl(const PasswordForm& form,
+                                     AuthorizationPromptPolicy prompt_policy,
+                                     scoped_ptr<GetLoginsRequest> request) {
   // When importing from IE7, the credentials are first stored into a temporary
   // Web SQL database. Then, after each GetLogins() request that does not yield
   // any matches from the LoginDatabase, the matching credentials in the Web SQL
@@ -201,8 +199,11 @@ void PasswordStoreWin::GetLoginsImpl(
   // first place. See: https://crbug.com/456119.
   ScopedVector<autofill::PasswordForm> matched_forms(
       FillMatchingLogins(form, prompt_policy));
-  if (matched_forms.empty() && db_handler_)
-    db_handler_->GetIE7Login(form, callback_runner);
-  else
-    callback_runner.Run(matched_forms.Pass());
+  if (matched_forms.empty() && db_handler_) {
+    db_handler_->GetIE7Login(
+        form, base::Bind(&GetLoginsRequest::NotifyConsumerWithResults,
+                         base::Owned(request.release())));
+  } else {
+    request->NotifyConsumerWithResults(matched_forms.Pass());
+  }
 }

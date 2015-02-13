@@ -131,34 +131,30 @@ class PasswordStore : protected PasswordStoreSync,
 
   typedef base::Callback<PasswordStoreChangeList(void)> ModificationTask;
 
+  // Represents a single GetLogins() request. Implements functionality to filter
+  // results and send them to the consumer on the consumer's message loop.
   class GetLoginsRequest {
    public:
     explicit GetLoginsRequest(PasswordStoreConsumer* consumer);
-    virtual ~GetLoginsRequest();
+    ~GetLoginsRequest();
+
+    // Removes any credentials in |results| that were saved before the cutoff,
+    // then notifies the consumer with the remaining results.
+    // Note that if this method is not called before destruction, the consumer
+    // will not be notified.
+    void NotifyConsumerWithResults(
+        ScopedVector<autofill::PasswordForm> results);
 
     void set_ignore_logins_cutoff(base::Time cutoff) {
       ignore_logins_cutoff_ = cutoff;
     }
 
-    // Removes any logins in the result list that were saved before the cutoff.
-    void ApplyIgnoreLoginsCutoff();
-
-    // Forward the result to the consumer on the original message loop.
-    void ForwardResult();
-
-    ScopedVector<autofill::PasswordForm>* result() { return &result_; }
-
    private:
     // See GetLogins(). Logins older than this will be removed from the reply.
     base::Time ignore_logins_cutoff_;
 
-    base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
-
-    // The result of the request. It is filled in on the PasswordStore's task
-    // thread and consumed on the UI thread.
-    ScopedVector<autofill::PasswordForm> result_;
-
     scoped_refptr<base::MessageLoopProxy> origin_loop_;
+    base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
 
     DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
   };
@@ -195,9 +191,6 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time delete_begin,
       base::Time delete_end) = 0;
 
-  typedef base::Callback<void(ScopedVector<autofill::PasswordForm>)>
-      ConsumerCallbackRunner;
-
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with
   // the results when done.
@@ -205,7 +198,7 @@ class PasswordStore : protected PasswordStoreSync,
   // later be used by additional flavors of this method.
   virtual void GetLoginsImpl(const autofill::PasswordForm& form,
                              AuthorizationPromptPolicy prompt_policy,
-                             const ConsumerCallbackRunner& callback_runner);
+                             scoped_ptr<GetLoginsRequest> request);
 
   // Finds and returns all PasswordForms with the same signon_realm as |form|,
   // or with a signon_realm that is a PSL-match to that of |form|.
@@ -219,10 +212,6 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Finds all blacklist PasswordForms, and notifies the consumer.
   virtual void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) = 0;
-
-  // Dispatches the result to the PasswordStoreConsumer on the original caller's
-  // thread so the callback can be executed there. This should be the UI thread.
-  static void ForwardLoginsResult(scoped_ptr<GetLoginsRequest> request);
 
   // Log UMA stats for number of bulk deletions.
   void LogStatsForBulkDeletion(int num_deletions);
@@ -265,14 +254,6 @@ class PasswordStore : protected PasswordStoreSync,
                                           base::Time delete_end);
   void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
                                          base::Time delete_end);
-
-  // Moves |matched_forms| into the request's result vector, then calls
-  // |ForwardLoginsResult|. Temporarily used as an adapter between the API of
-  // |GetLoginsImpl| and |PasswordStoreConsumer|.
-  // TODO(dubroy): Get rid of this.
-  static void MoveAndForwardLoginsResult(
-      scoped_ptr<PasswordStore::GetLoginsRequest> request,
-      ScopedVector<autofill::PasswordForm> matched_forms);
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   // Creates PasswordSyncableService instance on the background thread.

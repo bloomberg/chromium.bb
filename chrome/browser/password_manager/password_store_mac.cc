@@ -1110,16 +1110,16 @@ ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(
     scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  DCHECK(request->result()->empty());
-  FillBlacklistLogins(request->result());
-  ForwardLoginsResult(request.Pass());
+  ScopedVector<autofill::PasswordForm> obtained_forms;
+  FillBlacklistLogins(&obtained_forms);
+  request->NotifyConsumerWithResults(obtained_forms.Pass());
 }
 
 void PasswordStoreMac::GetAutofillableLoginsImpl(
     scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  DCHECK(request->result()->empty());
-  FillAutofillableLogins(request->result());
-  ForwardLoginsResult(request.Pass());
+  ScopedVector<autofill::PasswordForm> obtained_forms;
+  FillAutofillableLogins(&obtained_forms);
+  request->NotifyConsumerWithResults(obtained_forms.Pass());
 }
 
 bool PasswordStoreMac::FillAutofillableLogins(

@@ -43,24 +43,23 @@ PasswordStore::GetLoginsRequest::GetLoginsRequest(
 PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
 }
 
-void PasswordStore::GetLoginsRequest::ApplyIgnoreLoginsCutoff() {
+void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
+    ScopedVector<autofill::PasswordForm> results) {
   if (!ignore_logins_cutoff_.is_null()) {
     ScopedVector<autofill::PasswordForm> remaining_logins;
-    remaining_logins.reserve(result_.size());
-    for (auto& login : result_) {
+    remaining_logins.reserve(results.size());
+    for (auto& login : results) {
       if (login->date_created >= ignore_logins_cutoff_) {
         remaining_logins.push_back(login);
         login = nullptr;
       }
     }
-    remaining_logins.swap(result_);
+    results = remaining_logins.Pass();
   }
-}
 
-void PasswordStore::GetLoginsRequest::ForwardResult() {
   origin_loop_->PostTask(
       FROM_HERE, base::Bind(&PasswordStoreConsumer::OnGetPasswordStoreResults,
-                            consumer_weak_, base::Passed(&result_)));
+                            consumer_weak_, base::Passed(&results)));
 }
 
 PasswordStore::PasswordStore(
@@ -127,11 +126,8 @@ void PasswordStore::GetLogins(const PasswordForm& form,
   }
   scoped_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
   request->set_ignore_logins_cutoff(ignore_logins_cutoff);
-
-  ConsumerCallbackRunner callback_runner =
-      base::Bind(&MoveAndForwardLoginsResult, base::Passed(&request));
   ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl, this, form,
-                          prompt_policy, callback_runner));
+                          prompt_policy, base::Passed(&request)));
 }
 
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
@@ -196,27 +192,12 @@ PasswordStore::GetBackgroundTaskRunner() {
   return db_thread_runner_;
 }
 
-void PasswordStore::GetLoginsImpl(
-    const autofill::PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
-    const ConsumerCallbackRunner& callback_runner) {
-  callback_runner.Run(FillMatchingLogins(form, prompt_policy));
+void PasswordStore::GetLoginsImpl(const autofill::PasswordForm& form,
+                                  AuthorizationPromptPolicy prompt_policy,
+                                  scoped_ptr<GetLoginsRequest> request) {
+  request->NotifyConsumerWithResults(FillMatchingLogins(form, prompt_policy));
 }
 
-// static
-void PasswordStore::ForwardLoginsResult(scoped_ptr<GetLoginsRequest> request) {
-  request->ApplyIgnoreLoginsCutoff();
-  request->ForwardResult();
-}
-
-// static
-void PasswordStore::MoveAndForwardLoginsResult(
-    scoped_ptr<PasswordStore::GetLoginsRequest> request,
-    ScopedVector<autofill::PasswordForm> matched_forms) {
-  DCHECK(request->result()->empty());
-  request->result()->swap(matched_forms);
-  ForwardLoginsResult(request.Pass());
-}
 
 void PasswordStore::LogStatsForBulkDeletion(int num_deletions) {
   UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsDeletedByBulkDelete",

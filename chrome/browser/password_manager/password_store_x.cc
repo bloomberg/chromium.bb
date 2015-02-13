@@ -164,13 +164,14 @@ void PasswordStoreX::GetAutofillableLoginsImpl(
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
     if (!obtained_forms.empty())
       allow_fallback_ = false;
-    request->result()->swap(obtained_forms);
+    request->NotifyConsumerWithResults(obtained_forms.Pass());
+    return;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetAutofillableLoginsImpl(request.Pass());
     return;
   }
   // The consumer will be left hanging unless we reply.
-  ForwardLoginsResult(request.Pass());
+  request->NotifyConsumerWithResults(ScopedVector<autofill::PasswordForm>());
 }
 
 void PasswordStoreX::GetBlacklistLoginsImpl(
@@ -182,13 +183,14 @@ void PasswordStoreX::GetBlacklistLoginsImpl(
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
     if (!obtained_forms.empty())
       allow_fallback_ = false;
-    request->result()->swap(obtained_forms);
+    request->NotifyConsumerWithResults(obtained_forms.Pass());
+    return;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetBlacklistLoginsImpl(request.Pass());
     return;
   }
   // The consumer will be left hanging unless we reply.
-  ForwardLoginsResult(request.Pass());
+  request->NotifyConsumerWithResults(ScopedVector<autofill::PasswordForm>());
 }
 
 bool PasswordStoreX::FillAutofillableLogins(

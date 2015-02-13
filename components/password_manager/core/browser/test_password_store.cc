@@ -47,11 +47,12 @@ bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
 
 void TestPasswordStore::GetAutofillableLoginsImpl(
     scoped_ptr<GetLoginsRequest> request) {
+  ScopedVector<autofill::PasswordForm> results;
   for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second)
-      request->result()->push_back(new autofill::PasswordForm(form));
+      results.push_back(new autofill::PasswordForm(form));
   }
-  ForwardLoginsResult(request.Pass());
+  request->NotifyConsumerWithResults(results.Pass());
 }
 
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(

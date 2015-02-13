@@ -46,7 +46,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
   // password_manager::PasswordStore:
   void GetLoginsImpl(const autofill::PasswordForm& form,
                      AuthorizationPromptPolicy prompt_policy,
-                     const ConsumerCallbackRunner& callback_runner) override;
+                     scoped_ptr<GetLoginsRequest> request) override;
 
   scoped_ptr<DBHandler> db_handler_;
 
