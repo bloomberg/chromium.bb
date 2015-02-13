@@ -63,6 +63,17 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="16dp" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/error_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="10dp"
+            android:gravity="start"
+            android:textColor="@color/input_underline_error_color"
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout

@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.autofill;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,6 +41,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     private final EditText mCardUnmaskInput;
     private final Spinner mMonthSpinner;
     private final Spinner mYearSpinner;
+    private final TextView mErrorMessage;
     private final View mMainContents;
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
@@ -76,6 +80,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mCardUnmaskInput = (EditText) v.findViewById(R.id.card_unmask_input);
         mMonthSpinner = (Spinner) v.findViewById(R.id.expiration_month);
         mYearSpinner = (Spinner) v.findViewById(R.id.expiration_year);
+        mErrorMessage = (TextView) v.findViewById(R.id.error_message);
         mMainContents = v.findViewById(R.id.main_contents);
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
@@ -119,6 +124,10 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
                 setInitialFocus();
             }
         });
+
+        // Calling this from here clobbers the input's background shadow, which is otherwise
+        // highly resistant to styling.
+        setInputError(null);
     }
 
     public void dismiss() {
@@ -130,11 +139,13 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mVerificationProgressBar.setVisibility(View.VISIBLE);
         // TODO(estade): l10n
         mVerificationView.setText("Verifying card");
+        setInputError(null);
     }
 
     public void verificationFinished(boolean success) {
         if (!success) {
             setInputsEnabled(true);
+            setInputError("Credit card could not be verified. Try again.");
             setInitialFocus();
             // TODO(estade): UI decision - should we clear the input?
         } else {
@@ -231,5 +242,27 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(enabled);
 
         mVerificationOverlay.setVisibility(enabled ? View.GONE : View.VISIBLE);
+    }
+
+    /**
+     * Sets the error message on the cvc input.
+     * @param message The error message to show, or null if the error state should be cleared.
+     */
+    private void setInputError(String message) {
+        mErrorMessage.setText(message);
+        mErrorMessage.setVisibility(message == null ? View.GONE : View.VISIBLE);
+
+        // The rest of this code makes L-specific assumptions about the background being used to
+        // draw the TextInput.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+
+        // The input is always active or in an error state. Simply clearing the color
+        // filter resets the color to input_underline_color, even when it's active.
+        int strokeColor = mDialog.getContext().getResources().getColor(
+                message == null ? R.color.light_active_color
+                                : R.color.input_underline_error_color);
+
+        mCardUnmaskInput.getBackground().mutate().setColorFilter(
+                new PorterDuffColorFilter(strokeColor, PorterDuff.Mode.SRC_IN));
     }
 }
