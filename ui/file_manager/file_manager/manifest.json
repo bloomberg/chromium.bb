@@ -31,6 +31,7 @@
     "https://*.googleusercontent.com/",
     "https://docs.google.com/",
     "https://drive.google.com/",
+    "https://www.google-analytics.com/",
     "mediaPlayerPrivate",
     "metricsPrivate",
     "notifications",
@@ -169,6 +170,7 @@
         "chrome://resources/js/cr.js",
         "chrome://resources/js/cr/event_target.js",
         "chrome://resources/js/cr/ui/array_data_model.js",
+        "chrome://resources/js/analytics.js",
         "common/js/async_util.js",
         "common/js/file_type.js",
         "common/js/progress_center_common.js",
@@ -195,6 +197,6 @@
       ]
     },
     // chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp is the image loader extension.
-    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp; style-src 'self' 'unsafe-inline' chrome://resources; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com chrome://resources; object-src 'self'"
+    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp; style-src 'self' 'unsafe-inline' chrome://resources; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com https://www.google-analytics.com chrome://resources; object-src 'self'"
   }
 }

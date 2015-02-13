@@ -64,6 +64,8 @@
 //<include src="../../../../webui/resources/js/cr/ui/menu.js">
 //<include src="../../../../webui/resources/js/cr/ui/menu_button.js">
 //<include src="../../../../webui/resources/js/cr/ui/context_menu_handler.js">
+//
+//<include src="../../../../webui/resources/js/analytics.js">
 
 (function() {
 // 'strict mode' is invoked for this scope.

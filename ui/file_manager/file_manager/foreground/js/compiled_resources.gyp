@@ -134,6 +134,7 @@
           '<(CLOSURE_DIR)/externs/command_line_private.js',
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
           '<(CLOSURE_DIR)/externs/metrics_private.js',
+          '../../../../../third_party/analytics/externs.js',
           '../../../externs/chrome_echo_private.js',
           '../../../externs/chrome_test.js',
           '../../../externs/connection.js',

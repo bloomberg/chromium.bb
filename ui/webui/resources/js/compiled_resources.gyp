@@ -56,5 +56,13 @@
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     },
+    {
+      'target_name': 'analytics',
+      'variables': {
+        'depends': ['../../../../third_party/analytics/google-analytics-bundle.js'],
+        'externs': ['../../../../third_party/analytics/externs.js']
+      },
+      'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
   ],
 }
