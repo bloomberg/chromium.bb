@@ -13654,6 +13654,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FULLSCREEN_ALLOW" desc="Text in the bubble button that grants permission for a site to enter fullscreen and/or lock the mouse.">
         Allow
       </message>
+      <message name="IDS_FULLSCREEN_DISMISS" desc="Text in the bubble button that allows a page to stay in fullscreen without persistent UI warning the user that they are in fullscreen mode.">
+        Dismiss
+      </message>
       <if expr="use_titlecase">
         <message name="IDS_FULLSCREEN_EXIT_FULLSCREEN" desc="In Title Case: Text in the bubble button that forces a webpage out of fullscreen mode.">
           Exit Full Screen

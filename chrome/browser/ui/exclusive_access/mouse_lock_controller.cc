@@ -143,7 +143,11 @@ bool MouseLockController::OnAcceptExclusiveAccessPermission() {
     ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
 
     // TODO(markusheintz): We should allow patterns for all possible URLs here.
-    if (pattern.IsValid()) {
+    //
+    // Do not store preference on file:// URLs, they don't have a clean
+    // origin policy.
+    // TODO(estark): Revisit this when crbug.com/455882 is fixed.
+    if (!url.SchemeIsFile() && pattern.IsValid()) {
       settings_map->SetContentSetting(pattern,
                                       ContentSettingsPattern::Wildcard(),
                                       CONTENT_SETTINGS_TYPE_MOUSELOCK,
@@ -222,10 +226,15 @@ void MouseLockController::UnlockMouse() {
 }
 
 ContentSetting MouseLockController::GetMouseLockSetting(const GURL& url) const {
+  // Always ask on file:// URLs, since we can't meaningfully make the
+  // decision stick for a particular origin.
+  // TODO(estark): Revisit this when crbug.com/455882 is fixed.
+  if (url.SchemeIsFile())
+    return CONTENT_SETTING_ASK;
+
   if (exclusive_access_manager()
           ->fullscreen_controller()
-          ->IsPrivilegedFullscreenForTab() ||
-      url.SchemeIsFile())
+          ->IsPrivilegedFullscreenForTab())
     return CONTENT_SETTING_ALLOW;
 
   HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();

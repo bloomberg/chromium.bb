@@ -138,8 +138,8 @@ base::string16 ExclusiveAccessBubble::GetCurrentDenyButtonText() const {
   return exclusive_access_bubble::GetDenyButtonTextForType(bubble_type_);
 }
 
-base::string16 ExclusiveAccessBubble::GetAllowButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
+base::string16 ExclusiveAccessBubble::GetCurrentAllowButtonText() const {
+  return exclusive_access_bubble::GetAllowButtonTextForType(bubble_type_, url_);
 }
 
 base::string16 ExclusiveAccessBubble::GetInstructionText() const {

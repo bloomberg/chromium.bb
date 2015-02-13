@@ -262,13 +262,16 @@ const float kHideDuration = 0.7;
   labelFrame.size = textFrame.size;
   [exitLabel_ setFrame:labelFrame];
 
-  // Update the title of denyButton_ according to the current bubbleType_,
-  // or show no button at all.
+  // Update the title of |allowButton_| and |denyButton_| according to the
+  // current |bubbleType_|, or show no button at all.
   if (exclusive_access_bubble::ShowButtonsForType(bubbleType_)) {
     NSString* denyButtonText =
       SysUTF16ToNSString(
         exclusive_access_bubble::GetDenyButtonTextForType(bubbleType_));
     [denyButton_ setTitle:denyButtonText];
+    NSString* allowButtonText = SysUTF16ToNSString(
+        exclusive_access_bubble::GetAllowButtonTextForType(bubbleType_, url_));
+    [allowButton_ setTitle:allowButtonText];
   } else {
     [self showButtons:NO];
   }

@@ -80,9 +80,9 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   // The following strings may change according to the content type and URL.
   base::string16 GetCurrentMessageText() const;
   base::string16 GetCurrentDenyButtonText() const;
+  base::string16 GetCurrentAllowButtonText() const;
 
   // The following strings never change.
-  base::string16 GetAllowButtonText() const;
   base::string16 GetInstructionText() const;
 
   // The browser this bubble is in.

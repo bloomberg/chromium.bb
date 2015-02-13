@@ -166,7 +166,6 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   mouse_lock_exit_instruction_->SetBackgroundColor(background()->get_color());
 
   button_view_ = new ButtonView(this, kPaddingPx);
-  button_view_->accept_button()->SetText(bubble->GetAllowButtonText());
 
   views::GridLayout* layout = new views::GridLayout(this);
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -224,6 +223,9 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
     button_view_->SetVisible(true);
     button_view_->deny_button()->SetText(bubble_->GetCurrentDenyButtonText());
     button_view_->deny_button()->SetMinSize(gfx::Size());
+    button_view_->accept_button()->SetText(
+        bubble_->GetCurrentAllowButtonText());
+    button_view_->accept_button()->SetMinSize(gfx::Size());
   } else {
     bool link_visible = true;
     base::string16 accelerator;

@@ -51,10 +51,12 @@ base::string16 GetLabelTextForType(ExclusiveAccessBubbleType type,
       case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
         return l10n_util::GetStringUTF16(
             IDS_FULLSCREEN_UNKNOWN_EXTENSION_TRIGGERED_FULLSCREEN);
-      default:
+      case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
         NOTREACHED();
         return base::string16();
     }
+    NOTREACHED();
+    return base::string16();
   }
   switch (type) {
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
@@ -80,10 +82,12 @@ base::string16 GetLabelTextForType(ExclusiveAccessBubbleType type,
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
       return l10n_util::GetStringFUTF16(
           IDS_FULLSCREEN_EXTENSION_TRIGGERED_FULLSCREEN, host);
-    default:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
       NOTREACHED();
       return base::string16();
   }
+  NOTREACHED();
+  return base::string16();
 }
 
 base::string16 GetDenyButtonTextForType(ExclusiveAccessBubbleType type) {
@@ -99,12 +103,39 @@ base::string16 GetDenyButtonTextForType(ExclusiveAccessBubbleType type) {
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
       NOTREACHED();  // No button in this case.
       return base::string16();
-    default:
-      NOTREACHED();
+  }
+  NOTREACHED();
+  return base::string16();
+}
+
+base::string16 GetAllowButtonTextForType(ExclusiveAccessBubbleType type,
+                                         const GURL& url) {
+  switch (type) {
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
+      // Show a Dismiss button instead of Allow for file:// URLs; on
+      // file:// URLs, the preference is not saved for the origin, so
+      // the user is opting to just Dismiss the dialog rather than Allow
+      // future fullscreen attempts.
+      if (url.SchemeIsFile())
+        return l10n_util::GetStringUTF16(IDS_FULLSCREEN_DISMISS);
+      return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
+      return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
+      NOTREACHED();  // No button in this case.
       return base::string16();
   }
+  NOTREACHED();
+  return base::string16();
 }
 
 bool ShowButtonsForType(ExclusiveAccessBubbleType type) {

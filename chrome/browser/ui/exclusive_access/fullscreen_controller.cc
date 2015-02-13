@@ -340,14 +340,21 @@ bool FullscreenController::OnAcceptExclusiveAccessPermission() {
     // succeed no matter what the embedder is. For example, if youtube.com
     // is visited and user selects ALLOW. Later user visits example.com which
     // embeds youtube.com in an iframe, which is then ALLOWED to go fullscreen.
+    GURL requester = GetRequestingOrigin();
+    GURL embedder = GetEmbeddingOrigin();
     ContentSettingsPattern primary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(GetRequestingOrigin());
+        ContentSettingsPattern::FromURLNoWildcard(requester);
     ContentSettingsPattern secondary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(GetEmbeddingOrigin());
+        ContentSettingsPattern::FromURLNoWildcard(embedder);
 
     // ContentSettings requires valid patterns and the patterns might be invalid
     // in some edge cases like if the current frame is about:blank.
-    if (primary_pattern.IsValid() && secondary_pattern.IsValid()) {
+    //
+    // Do not store preference on file:// URLs, they don't have a clean
+    // origin policy.
+    // TODO(estark): Revisit this when crbug.com/455882 is fixed.
+    if (!requester.SchemeIsFile() && !embedder.SchemeIsFile() &&
+        primary_pattern.IsValid() && secondary_pattern.IsValid()) {
       HostContentSettingsMap* settings_map =
           profile()->GetHostContentSettingsMap();
       settings_map->SetContentSetting(
@@ -502,7 +509,13 @@ ContentSetting FullscreenController::GetFullscreenSetting() const {
 
   GURL url = GetRequestingOrigin();
 
-  if (IsPrivilegedFullscreenForTab() || url.SchemeIsFile())
+  // Always ask on file:// URLs, since we can't meaningfully make the
+  // decision stick for a particular origin.
+  // TODO(estark): Revisit this when crbug.com/455882 is fixed.
+  if (url.SchemeIsFile())
+    return CONTENT_SETTING_ASK;
+
+  if (IsPrivilegedFullscreenForTab())
     return CONTENT_SETTING_ALLOW;
 
   // If the permission was granted to the website with no embedder, it should

@@ -41,9 +41,19 @@ PermissionMenuModel::PermissionMenuModel(
   }
   AddCheckItem(CONTENT_SETTING_DEFAULT, label);
 
-  // Media only support CONTENTE_SETTTING_ALLOW for https.
-  if (permission_.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
-      url.SchemeIsSecure()) {
+  // CONTENT_SETTING_ALLOW and CONTENT_SETTING_BLOCK are not allowed for
+  // fullscreen or mouse lock on file:// URLs, because there wouldn't be
+  // a reasonable origin with which to associate the preference.
+  // TODO(estark): Revisit this when crbug.com/455882 is fixed.
+  bool is_exclusive_access_on_file =
+      (permission_.type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
+       permission_.type == CONTENT_SETTINGS_TYPE_MOUSELOCK) &&
+      url.SchemeIsFile();
+
+  // Media only support CONTENT_SETTTING_ALLOW for https.
+  if ((permission_.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+       url.SchemeIsSecure()) &&
+      !is_exclusive_access_on_file) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
     AddCheckItem(CONTENT_SETTING_ALLOW, label);
@@ -55,7 +65,8 @@ PermissionMenuModel::PermissionMenuModel(
     AddCheckItem(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, label);
   }
 
-  if (permission_.type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+  if (permission_.type != CONTENT_SETTINGS_TYPE_FULLSCREEN &&
+      !is_exclusive_access_on_file) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
     AddCheckItem(CONTENT_SETTING_BLOCK, label);

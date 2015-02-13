@@ -40,6 +40,8 @@ base::string16 GetLabelTextForType(ExclusiveAccessBubbleType type,
                                    const GURL& url,
                                    extensions::ExtensionRegistry* registry);
 base::string16 GetDenyButtonTextForType(ExclusiveAccessBubbleType type);
+base::string16 GetAllowButtonTextForType(ExclusiveAccessBubbleType type,
+                                         const GURL& url);
 bool ShowButtonsForType(ExclusiveAccessBubbleType type);
 void PermissionRequestedByType(ExclusiveAccessBubbleType type,
                                bool* tab_fullscreen,

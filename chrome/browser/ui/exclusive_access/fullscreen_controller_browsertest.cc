@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -11,17 +9,12 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/render_view_host.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_navigation_observer.h"
 
-using url::kAboutBlankURL;
 using content::WebContents;
 using ui::PAGE_TRANSITION_TYPED;
-
-class FullscreenControllerBrowserTest: public FullscreenControllerTest {
-};
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        PendingMouseLockExitsOnTabSwitch) {
@@ -73,4 +66,28 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
     mouse_lock_observer.Wait();
   }
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, MouseLockOnFileURL) {
+  static const base::FilePath::CharType* kEmptyFile =
+      FILE_PATH_LITERAL("empty.html");
+  GURL file_url(ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(kEmptyFile)));
+  AddTabAtIndex(0, file_url, PAGE_TRANSITION_TYPED);
+  RequestToLockMouse(true, false);
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
+  static const base::FilePath::CharType* kEmptyFile =
+      FILE_PATH_LITERAL("empty.html");
+  GURL file_url(ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(kEmptyFile)));
+  AddTabAtIndex(0, file_url, PAGE_TRANSITION_TYPED);
+  RequestToLockMouse(true, false);
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
 }
