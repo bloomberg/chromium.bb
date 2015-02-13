@@ -12,6 +12,7 @@
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -2213,6 +2214,24 @@ TEST_F(TextfieldTouchSelectionTest, TapOnSelection) {
   textfield_->GetSelectionRange(&range);
   EXPECT_TRUE(test_api_->touch_selection_controller());
   EXPECT_EQ(tap_range, range);
+}
+
+TEST_F(TextfieldTest, AccessiblePasswordTest) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("password"));
+
+  ui::AXViewState state_regular;
+  textfield_->GetAccessibleState(&state_regular);
+  EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, state_regular.role);
+  EXPECT_EQ(ASCIIToUTF16("password"), state_regular.value);
+  EXPECT_FALSE(state_regular.HasStateFlag(ui::AX_STATE_PROTECTED));
+
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  ui::AXViewState state_protected;
+  textfield_->GetAccessibleState(&state_protected);
+  EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, state_protected.role);
+  EXPECT_EQ(ASCIIToUTF16("********"), state_protected.value);
+  EXPECT_TRUE(state_protected.HasStateFlag(ui::AX_STATE_PROTECTED));
 }
 
 }  // namespace views

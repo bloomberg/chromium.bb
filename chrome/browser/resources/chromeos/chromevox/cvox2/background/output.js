@@ -157,7 +157,7 @@ Output.RULES = {
       speak: '@describe_tab($name)'
     },
     textField: {
-      speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text)'
+      speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text) $protected'
     },
     toolbar: {
       enter: '$name $role'
