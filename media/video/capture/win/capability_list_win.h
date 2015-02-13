@@ -18,7 +18,7 @@ namespace media {
 
 struct CapabilityWin {
   CapabilityWin(int index, const VideoCaptureFormat& format)
-      : stream_index(index), supported_format(format) {}
+      : stream_index(index), supported_format(format), info_header() {}
 
   // Used by VideoCaptureDeviceWin.
   CapabilityWin(int index, const VideoCaptureFormat& format,
