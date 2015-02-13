@@ -16,7 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/process/process.h"
+#include "base/process/process_info.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -55,13 +55,8 @@ bool CanRegister() {
     return false;
   }
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    base::IntegrityLevel level = base::INTEGRITY_UNKNOWN;
-    if (!GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level)) {
+    if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY)
       return false;
-    }
-    if (level != base::HIGH_INTEGRITY) {
-      return false;
-    }
   }
   return true;
 }

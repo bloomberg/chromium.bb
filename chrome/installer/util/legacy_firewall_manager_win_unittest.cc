@@ -5,7 +5,7 @@
 #include "chrome/installer/util/legacy_firewall_manager_win.h"
 
 #include "base/path_service.h"
-#include "base/process/process_handle.h"
+#include "base/process/process_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace installer {
@@ -17,9 +17,7 @@ class LegacyFirewallManagerTest : public ::testing::Test {
  protected:
   // Sets up the test fixture.
   virtual void SetUp() override {
-    base::IntegrityLevel level = base::INTEGRITY_UNKNOWN;
-    if (GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level) &&
-        level != base::HIGH_INTEGRITY) {
+    if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
       LOG(WARNING) << "Not elevated. Skipping the test.";
       return;
     };

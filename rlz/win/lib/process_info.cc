@@ -9,7 +9,7 @@
 #include <windows.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/process/process_handle.h"
+#include "base/process/process_info.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
@@ -100,12 +100,13 @@ bool ProcessInfo::HasAdminRights() {
       has_rights = true;
     } else if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
       TOKEN_ELEVATION_TYPE elevation;
-      base::IntegrityLevel level;
-
-      if (SUCCEEDED(GetElevationType(&elevation)) &&
-        base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level))
-        has_rights = (elevation == TokenElevationTypeFull) ||
-                     (level == base::HIGH_INTEGRITY);
+      if (SUCCEEDED(GetElevationType(&elevation))) {
+        base::IntegrityLevel level = base::GetCurrentProcessIntegrityLevel();
+        if (level != base::INTEGRITY_UNKNOWN) {
+          has_rights = (elevation == TokenElevationTypeFull) ||
+                       (level == base::HIGH_INTEGRITY);
+        }
+      }
     } else {
       long group = 0;
       if (GetUserGroup(&group))

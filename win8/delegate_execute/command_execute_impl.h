@@ -12,7 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/process/process_handle.h"
+#include "base/process/process_info.h"
 #include "win8/delegate_execute/resource.h"       // main symbols
 
 EXTERN_C const GUID CLSID_CommandExecuteImpl;

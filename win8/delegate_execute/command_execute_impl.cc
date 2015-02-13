@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/message_window.h"
 #include "base/win/registry.h"
@@ -287,8 +286,7 @@ STDMETHODIMP CommandExecuteImpl::Initialize(LPCWSTR name,
     verb_ = name;
   }
 
-  base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(),
-                                 &integrity_level_);
+  integrity_level_ = base::GetCurrentProcessIntegrityLevel();
   return S_OK;
 }
 
