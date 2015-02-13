@@ -172,6 +172,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyTop:
     case CSSPropertyVerticalAlign:
     case CSSPropertyWordSpacing:
+    case CSSPropertyWebkitColumnRuleWidth:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
 
@@ -187,7 +188,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             fallBackToLegacy = true;
 
         // FIXME: Handle keywords e.g. 'thick'
-        if (property == CSSPropertyOutlineWidth)
+        if (property == CSSPropertyOutlineWidth || CSSPropertyWebkitColumnRuleWidth)
             fallBackToLegacy = true;
         break;
     case CSSPropertyOrphans:
@@ -202,7 +203,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyStrokeOpacity:
     case CSSPropertyStrokeMiterlimit:
     case CSSPropertyZoom:
-    case CSSPropertyWebkitColumnRuleWidth:
         if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue)) {
             if (property == CSSPropertyOpacity)
                 StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValueCaches(property, end, element, *fromCSSValue, *toCSSValue);
