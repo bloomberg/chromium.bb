@@ -217,6 +217,7 @@ dist_yaml_TESTS =				\
 	yaml/vi-g1_backward.yaml		\
 	yaml/vi-g1_harness.yaml			\
 	yaml/zh-chn.yaml				\
+	yaml/issue-35.yaml				\
 	yaml/issue-238.yaml
 
 TEST_EXTENSIONS = .yaml
