@@ -1913,7 +1913,8 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
     id ^= process_id_hash_;
 
-  TimeTicks now = OffsetTimestamp(timestamp);
+  TimeTicks offset_event_timestamp = OffsetTimestamp(timestamp);
+  TimeTicks now = OffsetNow();
   TimeTicks thread_now = ThreadNow();
 
   ThreadLocalEventBuffer* thread_local_event_buffer = NULL;
@@ -1986,8 +1987,8 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
 
     if (trace_event) {
-      trace_event->Initialize(thread_id, now, thread_now, phase,
-                              category_group_enabled, name, id,
+      trace_event->Initialize(thread_id, offset_event_timestamp, thread_now,
+                              phase, category_group_enabled, name, id,
                               num_args, arg_names, arg_types, arg_values,
                               convertable_values, flags);
 
@@ -2025,7 +2026,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     EventCallback event_callback = reinterpret_cast<EventCallback>(
         subtle::NoBarrier_Load(&event_callback_));
     if (event_callback) {
-      event_callback(now,
+      event_callback(offset_event_timestamp,
                      phase == TRACE_EVENT_PHASE_COMPLETE ?
                          TRACE_EVENT_PHASE_BEGIN : phase,
                      category_group_enabled, name, id,
@@ -2034,6 +2035,9 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
   }
 
+  // Use |now| instead of |offset_event_timestamp| to compute overhead, because
+  // event timestamp may be not the real time that we started to add the event
+  // (e.g. event with zero timestamp or that was generated some time ago).
   if (thread_local_event_buffer)
     thread_local_event_buffer->ReportOverhead(now, thread_now);
 
