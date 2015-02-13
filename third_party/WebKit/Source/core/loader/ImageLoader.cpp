@@ -35,8 +35,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutVideo.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderVideo.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -442,7 +442,7 @@ RenderImageResource* ImageLoader::renderImageResource()
         return toRenderSVGImage(renderer)->imageResource();
 
     if (renderer->isVideo())
-        return toRenderVideo(renderer)->imageResource();
+        return toLayoutVideo(renderer)->imageResource();
 
     return 0;
 }

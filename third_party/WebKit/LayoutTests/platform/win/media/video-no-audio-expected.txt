@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,34) size 784x288
         RenderText {#text} at (0,0) size 0x0
 layer at (8,42) size 352x288
-  RenderVideo {VIDEO} at (0,0) size 352x288
+  LayoutVideo {VIDEO} at (0,0) size 352x288
 layer at (8,42) size 352x288
   RenderFlexibleBox {DIV} at (0,0) size 352x288
     RenderBlock {DIV} at (0,253) size 352x35

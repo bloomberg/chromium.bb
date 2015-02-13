@@ -18,6 +18,6 @@ layer at (0,0) size 785x850
           text run at (0,353) width 4: " "
         RenderBR {BR} at (492,368) size 0x0
 layer at (12,44) size 488x368
-  RenderVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]
+  LayoutVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]
 layer at (12,469) size 488x368
-  RenderVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]
+  LayoutVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]

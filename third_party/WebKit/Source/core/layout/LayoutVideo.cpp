@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderVideo.h"
+#include "core/layout/LayoutVideo.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
@@ -38,29 +38,29 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderVideo::RenderVideo(HTMLVideoElement* video)
+LayoutVideo::LayoutVideo(HTMLVideoElement* video)
     : RenderMedia(video)
 {
     setIntrinsicSize(calculateIntrinsicSize());
 }
 
-RenderVideo::~RenderVideo()
+LayoutVideo::~LayoutVideo()
 {
 }
 
-LayoutSize RenderVideo::defaultSize()
+LayoutSize LayoutVideo::defaultSize()
 {
     return LayoutSize(defaultWidth, defaultHeight);
 }
 
-void RenderVideo::intrinsicSizeChanged()
+void LayoutVideo::intrinsicSizeChanged()
 {
     if (videoElement()->shouldDisplayPosterImage())
         RenderMedia::intrinsicSizeChanged();
     updateIntrinsicSize();
 }
 
-void RenderVideo::updateIntrinsicSize()
+void LayoutVideo::updateIntrinsicSize()
 {
     LayoutSize size = calculateIntrinsicSize();
     size.scale(style()->effectiveZoom());
@@ -77,7 +77,7 @@ void RenderVideo::updateIntrinsicSize()
     setNeedsLayoutAndFullPaintInvalidation();
 }
 
-LayoutSize RenderVideo::calculateIntrinsicSize()
+LayoutSize LayoutVideo::calculateIntrinsicSize()
 {
     HTMLVideoElement* video = videoElement();
 
@@ -110,7 +110,7 @@ LayoutSize RenderVideo::calculateIntrinsicSize()
     return defaultSize();
 }
 
-void RenderVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
+void LayoutVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 {
     RenderMedia::imageChanged(newImage, rect);
 
@@ -125,7 +125,7 @@ void RenderVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     updateIntrinsicSize();
 }
 
-IntRect RenderVideo::videoBox() const
+IntRect LayoutVideo::videoBox() const
 {
     const LayoutSize* overriddenIntrinsicSize = 0;
     if (videoElement()->shouldDisplayPosterImage())
@@ -134,40 +134,40 @@ IntRect RenderVideo::videoBox() const
     return pixelSnappedIntRect(replacedContentRect(overriddenIntrinsicSize));
 }
 
-bool RenderVideo::shouldDisplayVideo() const
+bool LayoutVideo::shouldDisplayVideo() const
 {
     return !videoElement()->shouldDisplayPosterImage();
 }
 
-void RenderVideo::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutVideo::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     VideoPainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-bool RenderVideo::acceleratedRenderingInUse()
+bool LayoutVideo::acceleratedRenderingInUse()
 {
     WebLayer* webLayer = mediaElement()->platformLayer();
     return webLayer && !webLayer->isOrphan();
 }
 
-void RenderVideo::layout()
+void LayoutVideo::layout()
 {
     updatePlayer();
     RenderMedia::layout();
 }
 
-HTMLVideoElement* RenderVideo::videoElement() const
+HTMLVideoElement* LayoutVideo::videoElement() const
 {
     return toHTMLVideoElement(node());
 }
 
-void RenderVideo::updateFromElement()
+void LayoutVideo::updateFromElement()
 {
     RenderMedia::updateFromElement();
     updatePlayer();
 }
 
-void RenderVideo::updatePlayer()
+void LayoutVideo::updatePlayer()
 {
     updateIntrinsicSize();
 
@@ -181,22 +181,22 @@ void RenderVideo::updatePlayer()
     videoElement()->setNeedsCompositingUpdate();
 }
 
-LayoutUnit RenderVideo::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
+LayoutUnit LayoutVideo::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
 {
     return RenderReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 }
 
-LayoutUnit RenderVideo::computeReplacedLogicalHeight() const
+LayoutUnit LayoutVideo::computeReplacedLogicalHeight() const
 {
     return RenderReplaced::computeReplacedLogicalHeight();
 }
 
-LayoutUnit RenderVideo::minimumReplacedHeight() const
+LayoutUnit LayoutVideo::minimumReplacedHeight() const
 {
     return RenderReplaced::minimumReplacedHeight();
 }
 
-bool RenderVideo::supportsAcceleratedRendering() const
+bool LayoutVideo::supportsAcceleratedRendering() const
 {
     return !!mediaElement()->platformLayer();
 }
@@ -214,35 +214,35 @@ static const RenderBlock* rendererPlaceholder(const LayoutObject* renderer)
     return fullScreen->placeholder();
 }
 
-LayoutUnit RenderVideo::offsetLeft() const
+LayoutUnit LayoutVideo::offsetLeft() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetLeft();
     return RenderMedia::offsetLeft();
 }
 
-LayoutUnit RenderVideo::offsetTop() const
+LayoutUnit LayoutVideo::offsetTop() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetTop();
     return RenderMedia::offsetTop();
 }
 
-LayoutUnit RenderVideo::offsetWidth() const
+LayoutUnit LayoutVideo::offsetWidth() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetWidth();
     return RenderMedia::offsetWidth();
 }
 
-LayoutUnit RenderVideo::offsetHeight() const
+LayoutUnit LayoutVideo::offsetHeight() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetHeight();
     return RenderMedia::offsetHeight();
 }
 
-CompositingReasons RenderVideo::additionalCompositingReasons() const
+CompositingReasons LayoutVideo::additionalCompositingReasons() const
 {
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
         HTMLMediaElement* media = toHTMLMediaElement(node());

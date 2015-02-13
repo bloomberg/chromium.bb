@@ -44,9 +44,9 @@
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutVideo.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderMediaControlElements.h"
-#include "core/rendering/RenderVideo.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -698,7 +698,7 @@ void MediaControlTextTrackContainerElement::updateSizes()
 
     if (!mediaElement().renderer() || !mediaElement().renderer()->isVideo())
         return;
-    videoBox = toRenderVideo(mediaElement().renderer())->videoBox();
+    videoBox = toLayoutVideo(mediaElement().renderer())->videoBox();
 
     if (m_videoDisplaySize == videoBox)
         return;

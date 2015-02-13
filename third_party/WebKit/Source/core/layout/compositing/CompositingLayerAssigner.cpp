@@ -119,7 +119,7 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     const Layer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
 
     // FIXME: this special case for video exists only to deal with corner cases
-    // where a RenderVideo does not report that it needs to be directly composited.
+    // where a LayoutVideo does not report that it needs to be directly composited.
     // Video does not currently support sharing a backing, but this could be
     // generalized in the future. The following layout tests fail if we permit the
     // video to share a backing with other layers.

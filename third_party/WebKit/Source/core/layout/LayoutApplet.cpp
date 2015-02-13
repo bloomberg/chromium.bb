@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2006, 2007, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2009, 2012 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -19,24 +19,23 @@
  *
  */
 
-#ifndef RenderApplet_h
-#define RenderApplet_h
+#include "config.h"
+#include "core/layout/LayoutApplet.h"
 
-#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/frame/UseCounter.h"
+#include "core/html/HTMLAppletElement.h"
 
 namespace blink {
 
-class HTMLAppletElement;
+LayoutApplet::LayoutApplet(HTMLAppletElement* applet)
+    : RenderEmbeddedObject(applet)
+{
+    setInline(true);
+    UseCounter::count(document(), UseCounter::HTMLAppletElement);
+}
 
-class RenderApplet final : public RenderEmbeddedObject {
-public:
-    explicit RenderApplet(HTMLAppletElement*);
-    virtual ~RenderApplet();
-
-private:
-    virtual const char* renderName() const override { return "RenderApplet"; }
-};
+LayoutApplet::~LayoutApplet()
+{
+}
 
 } // namespace blink
-
-#endif // RenderApplet_h

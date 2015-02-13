@@ -8,26 +8,26 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/LayoutVideo.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/ImagePainter.h"
-#include "core/rendering/RenderVideo.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
 
 void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    WebMediaPlayer* mediaPlayer = m_renderVideo.mediaElement()->webMediaPlayer();
-    bool displayingPoster = m_renderVideo.videoElement()->shouldDisplayPosterImage();
+    WebMediaPlayer* mediaPlayer = m_layoutVideo.mediaElement()->webMediaPlayer();
+    bool displayingPoster = m_layoutVideo.videoElement()->shouldDisplayPosterImage();
     if (!displayingPoster && !mediaPlayer)
         return;
 
-    LayoutRect rect = m_renderVideo.videoBox();
+    LayoutRect rect = m_layoutVideo.videoBox();
     if (rect.isEmpty())
         return;
     rect.moveBy(paintOffset);
 
-    LayoutRect contentRect = m_renderVideo.contentBoxRect();
+    LayoutRect contentRect = m_layoutVideo.contentBoxRect();
     contentRect.moveBy(paintOffset);
     GraphicsContext* context = paintInfo.context;
     bool clip = !contentRect.contains(rect);
@@ -37,9 +37,9 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     }
 
     if (displayingPoster)
-        ImagePainter(m_renderVideo).paintIntoRect(context, rect);
-    else if ((m_renderVideo.document().view() && m_renderVideo.document().view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers) || !m_renderVideo.acceleratedRenderingInUse())
-        m_renderVideo.videoElement()->paintCurrentFrameInContext(context, pixelSnappedIntRect(rect));
+        ImagePainter(m_layoutVideo).paintIntoRect(context, rect);
+    else if ((m_layoutVideo.document().view() && m_layoutVideo.document().view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers) || !m_layoutVideo.acceleratedRenderingInUse())
+        m_layoutVideo.videoElement()->paintCurrentFrameInContext(context, pixelSnappedIntRect(rect));
 
     if (clip)
         context->restore();

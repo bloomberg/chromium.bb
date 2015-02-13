@@ -11,7 +11,7 @@ layer at (8,50) size 402x302
     RenderBlock (anonymous) at (1,1) size 400x304
       RenderText {#text} at (0,0) size 0x0
 layer at (9,51) size 400x300
-  RenderVideo {VIDEO} at (0,0) size 400x300
+  LayoutVideo {VIDEO} at (0,0) size 400x300
 layer at (9,51) size 400x300
   RenderFlexibleBox {DIV} at (0,0) size 400x300
     RenderBlock {DIV} at (0,265) size 400x35

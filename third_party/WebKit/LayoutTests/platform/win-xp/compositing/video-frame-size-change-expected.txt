@@ -12,9 +12,9 @@ layer at (0,0) size 800x245
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
 layer at (8,52) size 320x180
-  RenderVideo {VIDEO} at (0,0) size 320x180
+  LayoutVideo {VIDEO} at (0,0) size 320x180
 layer at (332,52) size 320x180
-  RenderVideo {VIDEO} at (324,0) size 320x180
+  LayoutVideo {VIDEO} at (324,0) size 320x180
 layer at (8,52) size 320x180
   RenderFlexibleBox {DIV} at (0,0) size 320x180
     RenderBlock {DIV} at (0,145) size 320x35

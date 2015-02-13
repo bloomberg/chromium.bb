@@ -33,8 +33,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/layout/LayoutApplet.h"
 #include "core/plugins/PluginPlaceholder.h"
-#include "core/rendering/RenderApplet.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/Widget.h"
 #include "platform/weborigin/KURL.h"
@@ -98,7 +98,7 @@ LayoutObject* HTMLAppletElement::createRenderer(const LayoutStyle& style)
     if (usePlaceholderContent())
         return new RenderBlockFlow(this);
 
-    return new RenderApplet(this);
+    return new LayoutApplet(this);
 }
 
 RenderPart* HTMLAppletElement::renderPartForJSBindings() const

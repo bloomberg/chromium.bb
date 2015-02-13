@@ -14,17 +14,17 @@ layer at (0,0) size 800x600
           RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
 layer at (8,42) size 320x240
-  RenderVideo {VIDEO} at (0,0) size 320x240
+  LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,282) size 160x120
-  RenderVideo {VIDEO} at (0,240) size 160x120
+  LayoutVideo {VIDEO} at (0,240) size 160x120
 layer at (168,282) size 160x120
-  RenderVideo {VIDEO} at (0,0) size 160x120
+  LayoutVideo {VIDEO} at (0,0) size 160x120
 layer at (328,282) size 160x120
-  RenderVideo {VIDEO} at (160,0) size 160x120
+  LayoutVideo {VIDEO} at (160,0) size 160x120
 layer at (8,402) size 160x120
-  RenderVideo {VIDEO} at (0,0) size 160x120
+  LayoutVideo {VIDEO} at (0,0) size 160x120
 layer at (168,402) size 160x120
-  RenderVideo {VIDEO} at (160,0) size 160x120
+  LayoutVideo {VIDEO} at (160,0) size 160x120
 layer at (8,42) size 320x240
   RenderFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
@@ -58,14 +58,14 @@ layer at (168,402) size 160x85
 layer at (328,402) size 320x120
   RenderBlock (relative positioned) {DIV} at (320,360) size 320x120
 layer at (328,402) size 160x120
-  RenderVideo {VIDEO} at (0,0) size 160x120
+  LayoutVideo {VIDEO} at (0,0) size 160x120
 layer at (328,402) size 160x120
   RenderFlexibleBox {DIV} at (0,0) size 160x120
     RenderBlock {DIV} at (0,85) size 160x35
 layer at (328,402) size 160x85
   RenderFlexibleBox {DIV} at (0,0) size 160x85
 layer at (488,402) size 160x120
-  RenderVideo {VIDEO} at (160,0) size 160x120
+  LayoutVideo {VIDEO} at (160,0) size 160x120
 layer at (488,402) size 160x120
   RenderFlexibleBox {DIV} at (0,0) size 160x120
     RenderBlock {DIV} at (0,85) size 160x35

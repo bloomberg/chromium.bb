@@ -22,4 +22,4 @@ layer at (0,0) size 800x394
       RenderBlock (anonymous) at (0,117.72) size 784x250
         RenderText {#text} at (0,0) size 0x0
 layer at (18,146) size 500x225
-  RenderVideo {VIDEO} at (10,10) size 500x225 [bgcolor=#808080]
+  LayoutVideo {VIDEO} at (10,10) size 500x225 [bgcolor=#808080]

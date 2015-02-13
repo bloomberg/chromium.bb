@@ -39,6 +39,7 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/layout/LayerStackingNode.h"
 #include "core/layout/LayerStackingNodeIterator.h"
+#include "core/layout/LayoutVideo.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositingInputsUpdater.h"
 #include "core/layout/compositing/CompositingLayerAssigner.h"
@@ -54,7 +55,6 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -163,7 +163,7 @@ bool LayerCompositor::preferCompositingToLCDTextEnabled() const
     return m_compositingReasonFinder.hasOverflowScrollTrigger();
 }
 
-static RenderVideo* findFullscreenVideoRenderer(Document& document)
+static LayoutVideo* findFullscreenVideoRenderer(Document& document)
 {
     // Recursively find the document that is in fullscreen.
     Element* fullscreenElement = Fullscreen::fullscreenElementFrom(document);
@@ -181,7 +181,7 @@ static RenderVideo* findFullscreenVideoRenderer(Document& document)
     LayoutObject* renderer = fullscreenElement->renderer();
     if (!renderer)
         return 0;
-    return toRenderVideo(renderer);
+    return toLayoutVideo(renderer);
 }
 
 void LayerCompositor::updateIfNeededRecursive()
@@ -264,7 +264,7 @@ void LayerCompositor::applyOverlayFullscreenVideoAdjustment()
         return;
 
     bool isLocalRoot = m_renderView.frame()->isLocalRoot();
-    RenderVideo* video = findFullscreenVideoRenderer(m_renderView.document());
+    LayoutVideo* video = findFullscreenVideoRenderer(m_renderView.document());
     if (!video || !video->layer()->hasCompositedLayerMapping()) {
         if (isLocalRoot) {
             GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();

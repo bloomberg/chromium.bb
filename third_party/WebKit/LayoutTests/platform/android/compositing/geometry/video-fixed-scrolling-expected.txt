@@ -9,7 +9,7 @@ layer at (0,0) size 785x1016
         RenderText {#text} at (0,0) size 425x19
           text run at (0,0) width 425: "The blue bar should be in front of the video, and at the top of the page."
 layer at (8,88) size 400x300
-  RenderVideo {VIDEO} at (0,80) size 400x300
+  LayoutVideo {VIDEO} at (0,80) size 400x300
 layer at (0,50) size 500x60
   RenderBlock (positioned) {DIV} at (0,0) size 500x60 [bgcolor=#0000FFCC]
 scrolled to 0,50

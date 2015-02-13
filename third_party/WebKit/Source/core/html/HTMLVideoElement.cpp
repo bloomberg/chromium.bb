@@ -37,8 +37,8 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutVideo.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderVideo.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -78,7 +78,7 @@ bool HTMLVideoElement::rendererIsNeeded(const LayoutStyle& style)
 
 LayoutObject* HTMLVideoElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderVideo(this);
+    return new LayoutVideo(this);
 }
 
 void HTMLVideoElement::attach(const AttachContext& context)

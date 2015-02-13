@@ -40,6 +40,7 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/LayerStackingNodeIterator.h"
+#include "core/layout/LayoutVideo.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/KeyframeList.h"
 #include "core/page/Chrome.h"
@@ -53,7 +54,6 @@
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -78,7 +78,7 @@ static IntRect contentsRect(const LayoutObject* renderer)
         return IntRect();
 
     return renderer->isVideo() ?
-        toRenderVideo(renderer)->videoBox() :
+        toLayoutVideo(renderer)->videoBox() :
         pixelSnappedIntRect(toRenderBox(renderer)->contentBoxRect());
 }
 
@@ -1813,7 +1813,7 @@ bool CompositedLayerMapping::containsPaintedContent() const
     LayoutObject* layoutObject = renderer();
     // FIXME: we could optimize cases where the image, video or canvas is known to fill the border box entirely,
     // and set background color on the layer in that case, instead of allocating backing store and painting.
-    if (layoutObject->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
+    if (layoutObject->isVideo() && toLayoutVideo(renderer())->shouldDisplayVideo())
         return m_owningLayer.hasBoxDecorationsOrBackground();
 
     if (m_owningLayer.hasVisibleBoxDecorations())

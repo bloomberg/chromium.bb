@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderVideo_h
-#define RenderVideo_h
+#ifndef LayoutVideo_h
+#define LayoutVideo_h
 
 #include "core/rendering/RenderMedia.h"
 
@@ -32,10 +32,10 @@ namespace blink {
 
 class HTMLVideoElement;
 
-class RenderVideo final : public RenderMedia {
+class LayoutVideo final : public RenderMedia {
 public:
-    RenderVideo(HTMLVideoElement*);
-    virtual ~RenderVideo();
+    LayoutVideo(HTMLVideoElement*);
+    virtual ~LayoutVideo();
 
     IntRect videoBox() const;
 
@@ -56,7 +56,7 @@ private:
 
     virtual void imageChanged(WrappedImagePtr, const IntRect*) override;
 
-    virtual const char* renderName() const override { return "RenderVideo"; }
+    virtual const char* renderName() const override { return "LayoutVideo"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || RenderMedia::isOfType(type); }
 
@@ -81,8 +81,8 @@ private:
     LayoutSize m_cachedImageSize;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderVideo, isVideo());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutVideo, isVideo());
 
 } // namespace blink
 
-#endif // RenderVideo_h
+#endif // LayoutVideo_h
