@@ -535,6 +535,7 @@ WebContents* PrerenderManager::SwapInternal(
   // At this point, we've determined that we will use the prerender.
   content::RenderProcessHost* process_host =
       prerender_data->contents()->GetRenderViewHost()->GetProcess();
+  process_host->RemoveObserver(this);
   prerender_process_hosts_.erase(process_host);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -1624,7 +1625,8 @@ bool PrerenderManager::MayReuseProcessHost(
 void PrerenderManager::RenderProcessHostDestroyed(
     content::RenderProcessHost* host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prerender_process_hosts_.erase(host);
+  size_t erased = prerender_process_hosts_.erase(host);
+  DCHECK_EQ(1u, erased);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PrerenderTracker::RemovePrerenderCookieStoreOnIOThread,
