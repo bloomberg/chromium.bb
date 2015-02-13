@@ -68,7 +68,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBox
 
 namespace {
 
-PassRefPtr<CSSPrimitiveValue> findValue(InterpolableList* lengthBox, size_t i, CSSPrimitiveValue* start[], CSSPrimitiveValue* end[])
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> findValue(InterpolableList* lengthBox, size_t i, CSSPrimitiveValue* start[], CSSPrimitiveValue* end[])
 {
     if (lengthBox->get(i)->isBool()) {
         if (toInterpolableBool(lengthBox->get(i))->value())
