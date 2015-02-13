@@ -89,6 +89,8 @@ class PerfContextProvider : public ContextProvider {
         reinterpret_cast<GrBackendContext>(null_interface.get())));
     return gr_context_.get();
   }
+  void SetupLock() override {}
+  base::Lock* GetLock() override { return &context_lock_; }
   bool IsContextLost() override { return false; }
   void VerifyContexts() override {}
   void DeleteCachedResources() override {}
@@ -103,6 +105,7 @@ class PerfContextProvider : public ContextProvider {
   scoped_ptr<PerfGLES2Interface> context_gl_;
   skia::RefPtr<class GrContext> gr_context_;
   TestContextSupport support_;
+  base::Lock context_lock_;
 };
 
 enum TileTaskWorkerPoolType {

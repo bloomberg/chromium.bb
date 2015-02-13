@@ -44,6 +44,13 @@ cc::ContextProvider::Capabilities ContextProviderMojo::ContextCapabilities() {
   return capabilities_;
 }
 
+void ContextProviderMojo::SetupLock() {
+}
+
+base::Lock* ContextProviderMojo::GetLock() {
+  return &context_lock_;
+}
+
 bool ContextProviderMojo::IsContextLost() {
   return context_lost_;
 }

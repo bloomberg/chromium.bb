@@ -12,6 +12,10 @@
 
 class GrContext;
 
+namespace base {
+class Lock;
+}
+
 namespace gpu {
 class ContextSupport;
 namespace gles2 { class GLES2Interface; }
@@ -38,6 +42,13 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
 
     CC_EXPORT Capabilities();
   };
+
+  // Sets up a lock so this context can be used from multiple threads.
+  virtual void SetupLock() = 0;
+
+  // Returns the lock that should be held if using this context from multiple
+  // threads.
+  virtual base::Lock* GetLock() = 0;
 
   // Returns the capabilities of the currently bound 3d context.
   virtual Capabilities ContextCapabilities() = 0;

@@ -118,6 +118,7 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
   if (success && worker_context_provider_.get()) {
     success = worker_context_provider_->BindToCurrentThread();
     if (success) {
+      worker_context_provider_->SetupLock();
       // The destructor resets the context lost callback, so base::Unretained
       // is safe, as long as the worker threads stop using the context before
       // the output surface is destroyed.

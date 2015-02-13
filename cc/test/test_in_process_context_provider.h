@@ -5,6 +5,7 @@
 #ifndef CC_TEST_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 #define CC_TEST_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 
+#include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_image_factory.h"
@@ -31,6 +32,8 @@ class TestInProcessContextProvider : public ContextProvider {
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  void SetupLock() override;
+  base::Lock* GetLock() override;
   Capabilities ContextCapabilities() override;
   bool IsContextLost() override;
   void VerifyContexts() override;
@@ -51,6 +54,7 @@ class TestInProcessContextProvider : public ContextProvider {
   TestImageFactory image_factory_;
   scoped_ptr<gpu::GLInProcessContext> context_;
   skia::RefPtr<class GrContext> gr_context_;
+  base::Lock context_lock_;
 };
 
 }  // namespace cc

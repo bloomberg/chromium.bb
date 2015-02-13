@@ -41,6 +41,8 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  void SetupLock() override;
+  base::Lock* GetLock() override;
   Capabilities ContextCapabilities() override;
   bool IsContextLost() override;
   void VerifyContexts() override;
@@ -78,6 +80,8 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
   base::Lock main_thread_lock_;
   bool destroyed_;
+
+  base::Lock context_lock_;
 
   class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;

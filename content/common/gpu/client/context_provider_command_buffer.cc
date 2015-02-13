@@ -64,6 +64,7 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
 
   // Destroy references to the context3d_ before leaking it.
   if (context3d_->GetCommandBufferProxy()) {
+    context3d_->GetCommandBufferProxy()->SetLock(nullptr);
     context3d_->GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(
         CommandBufferProxyImpl::MemoryAllocationChangedCallback());
   }
@@ -129,6 +130,15 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   gr_context_.reset(
       new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
   return gr_context_->get();
+}
+
+void ContextProviderCommandBuffer::SetupLock() {
+  DCHECK(context3d_);
+  context3d_->GetCommandBufferProxy()->SetLock(&context_lock_);
+}
+
+base::Lock* ContextProviderCommandBuffer::GetLock() {
+  return &context_lock_;
 }
 
 cc::ContextProvider::Capabilities

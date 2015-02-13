@@ -124,6 +124,13 @@ class GrContext* TestInProcessContextProvider::GrContext() {
   return gr_context_.get();
 }
 
+void TestInProcessContextProvider::SetupLock() {
+}
+
+base::Lock* TestInProcessContextProvider::GetLock() {
+  return &context_lock_;
+}
+
 ContextProvider::Capabilities
 TestInProcessContextProvider::ContextCapabilities() {
   ContextProvider::Capabilities capabilities;

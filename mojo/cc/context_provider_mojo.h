@@ -6,6 +6,7 @@
 #define MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
@@ -21,6 +22,8 @@ class ContextProviderMojo : public cc::ContextProvider {
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  void SetupLock() override;
+  base::Lock* GetLock() override;
   Capabilities ContextCapabilities() override;
   bool IsContextLost() override;
   void VerifyContexts() override {}
@@ -46,6 +49,8 @@ class ContextProviderMojo : public cc::ContextProvider {
   ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
   bool context_lost_;
+
+  base::Lock context_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProviderMojo);
 };

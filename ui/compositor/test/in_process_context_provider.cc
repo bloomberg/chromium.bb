@@ -170,6 +170,13 @@ class GrContext* InProcessContextProvider::GrContext() {
   return gr_context_.get();
 }
 
+void InProcessContextProvider::SetupLock() {
+}
+
+base::Lock* InProcessContextProvider::GetLock() {
+  return &context_lock_;
+}
+
 bool InProcessContextProvider::IsContextLost() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

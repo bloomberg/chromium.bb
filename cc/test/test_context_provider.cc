@@ -103,6 +103,13 @@ class GrContext* TestContextProvider::GrContext() {
   return gr_context_.get();
 }
 
+void TestContextProvider::SetupLock() {
+}
+
+base::Lock* TestContextProvider::GetLock() {
+  return &context_lock_;
+}
+
 bool TestContextProvider::IsContextLost() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());

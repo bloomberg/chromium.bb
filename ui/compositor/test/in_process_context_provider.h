@@ -48,6 +48,8 @@ class InProcessContextProvider : public cc::ContextProvider {
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  void SetupLock() override;
+  base::Lock* GetLock() override;
   bool IsContextLost() override;
   void VerifyContexts() override;
   void DeleteCachedResources() override;
@@ -76,6 +78,8 @@ class InProcessContextProvider : public cc::ContextProvider {
 
   base::Lock destroyed_lock_;
   bool destroyed_;
+
+  base::Lock context_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextProvider);
 };
