@@ -1089,6 +1089,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
 }
 
 int SSLClientSocketOpenSSL::DoChannelIDLookup() {
+  net_log_.AddEvent(NetLog::TYPE_SSL_CHANNEL_ID_REQUESTED);
   GotoState(STATE_CHANNEL_ID_LOOKUP_COMPLETE);
   return channel_id_service_->GetOrCreateChannelID(
       host_and_port_.host(),
@@ -1135,6 +1136,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
 
   // Return to the handshake.
   set_channel_id_sent(true);
+  net_log_.AddEvent(NetLog::TYPE_SSL_CHANNEL_ID_PROVIDED);
   GotoState(STATE_HANDSHAKE);
   return OK;
 }
