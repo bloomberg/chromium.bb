@@ -139,16 +139,17 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     expected['cpu_time'] = ('ms', 57)
     expected['v8_gc_incremental_marking'] = ('ms', 6.0)
     expected['v8_gc_incremental_marking_outside_idle'] = ('ms', 4.0)
-    expected['v8_gc_incremental_marking_percentage_idle'] = ('%', 100 * 2 / 6.0)
+    expected['v8_gc_incremental_marking_percentage_idle'] = \
+        ('idle%', 100 * 2 / 6.0)
     expected['v8_gc_scavenger'] = ('ms', 7.0)
     expected['v8_gc_scavenger_outside_idle'] = ('ms', 4.0)
-    expected['v8_gc_scavenger_percentage_idle'] = ('%', 100 * 3 / 7.0)
+    expected['v8_gc_scavenger_percentage_idle'] = ('idle%', 100 * 3 / 7.0)
     expected['v8_gc_mark_compactor'] = ('ms', 9.0)
     expected['v8_gc_mark_compactor_outside_idle'] = ('ms', 4.0)
-    expected['v8_gc_mark_compactor_percentage_idle'] = ('%', 100 * 5 / 9.0)
+    expected['v8_gc_mark_compactor_percentage_idle'] = ('idle%', 100 * 5 / 9.0)
     expected['v8_gc_total'] = ('ms', 22.0)
     expected['v8_gc_total_outside_idle'] = ('ms', 12.0)
-    expected['v8_gc_total_percentage_idle'] = ('%', 100 * 10 / 22.0)
+    expected['v8_gc_total_percentage_idle'] = ('idle%', 100 * 10 / 22.0)
 
     self._AssertResultsEqual(expected, _ActualValues(results))
 
@@ -179,19 +180,19 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     expected['v8_gc_incremental_marking_outside_idle'] = ('ms', 8.0)
     expected['v8_gc_incremental_marking_idle_deadline_overrun'] = ('ms', 8.0)
     expected['v8_gc_incremental_marking_percentage_idle'] = \
-        ('%', 100 * 6 / 14.0)
+        ('idle%', 100 * 6 / 14.0)
     expected['v8_gc_scavenger'] = ('ms', 14.0)
     expected['v8_gc_scavenger_outside_idle'] = ('ms', 6.0)
     expected['v8_gc_scavenger_idle_deadline_overrun'] = ('ms', 6.0)
-    expected['v8_gc_scavenger_percentage_idle'] = ('%', 100 * 8 / 14.0)
+    expected['v8_gc_scavenger_percentage_idle'] = ('idle%', 100 * 8 / 14.0)
     expected['v8_gc_mark_compactor'] = ('ms', 22.0)
     expected['v8_gc_mark_compactor_outside_idle'] = ('ms', 13.0)
     expected['v8_gc_mark_compactor_idle_deadline_overrun'] = ('ms', 13.0)
-    expected['v8_gc_mark_compactor_percentage_idle'] = ('%', 100 * 9 / 22.0)
+    expected['v8_gc_mark_compactor_percentage_idle'] = ('idle%', 100 * 9 / 22.0)
     expected['v8_gc_total'] = ('ms', 50.0)
     expected['v8_gc_total_outside_idle'] = ('ms', 27.0)
     expected['v8_gc_total_idle_deadline_overrun'] = ('ms', 27.0)
-    expected['v8_gc_total_percentage_idle'] = ('%', 100 * 23 / 50.0)
+    expected['v8_gc_total_percentage_idle'] = ('idle%', 100 * 23 / 50.0)
 
     self._AssertResultsEqual(expected, _ActualValues(results))
 
@@ -216,7 +217,7 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     expected['v8_gc_scavenger_outside_idle'] = ('ms', expected_outside_idle)
     expected['v8_gc_scavenger_idle_deadline_overrun'] = ('ms', 6.0)
     expected['v8_gc_scavenger_percentage_idle'] = \
-        ('%', 100 * (4.0 - expected_outside_idle) / 4.0)
+        ('idle%', 100 * (4.0 - expected_outside_idle) / 4.0)
     expected['v8_gc_total'] = expected['v8_gc_scavenger']
     expected['v8_gc_total_outside_idle'] = \
         expected['v8_gc_scavenger_outside_idle']
@@ -248,15 +249,15 @@ def _GetEmptyResults():
           'v8_gc_incremental_marking': ('ms', 0.0),
           'v8_gc_incremental_marking_idle_deadline_overrun': ('ms', 0.0),
           'v8_gc_incremental_marking_outside_idle': ('ms', 0.0),
-          'v8_gc_incremental_marking_percentage_idle': ('%', 0.0),
+          'v8_gc_incremental_marking_percentage_idle': ('idle%', 0.0),
           'v8_gc_mark_compactor': ('ms', 0.0),
           'v8_gc_mark_compactor_idle_deadline_overrun': ('ms', 0.0),
           'v8_gc_mark_compactor_outside_idle': ('ms', 0.0),
-          'v8_gc_mark_compactor_percentage_idle': ('%', 0.0),
+          'v8_gc_mark_compactor_percentage_idle': ('idle%', 0.0),
           'v8_gc_scavenger': ('ms', 0.0),
           'v8_gc_scavenger_idle_deadline_overrun': ('ms', 0.0),
           'v8_gc_scavenger_outside_idle': ('ms', 0.0),
-          'v8_gc_scavenger_percentage_idle': ('%', 0.0),
+          'v8_gc_scavenger_percentage_idle': ('idle%', 0.0),
           'v8_gc_total': ('ms', 0.0),
           'v8_gc_total_idle_deadline_overrun': ('ms', 0.0),
           'v8_gc_total_outside_idle': ('ms', 0.0)}

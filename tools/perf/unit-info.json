@@ -192,5 +192,9 @@
   "vsyncs": {
     "improvement_direction": "down",
     "why": "Used in smoothness benchmarks. Number of vsyncs to generate a frame, never < 1.0"
+  },
+  "idle%": {
+    "improvement_direction": "up",
+    "why": "Percentage of work done in idle time."
   }
 }

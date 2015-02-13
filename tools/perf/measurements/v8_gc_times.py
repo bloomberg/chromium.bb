@@ -109,7 +109,7 @@ class V8GCTimes(page_test.PageTest):
           ('Total idle task deadline overrun for %s idle tasks'
            % v8_event_stat.result_description)))
       results.AddValue(scalar.ScalarValue(results.current_page,
-          '%s_percentage_idle' % v8_event_stat.result_name, '%',
+          '%s_percentage_idle' % v8_event_stat.result_name, 'idle%',
           v8_event_stat.percentage_thread_duration_during_idle,
           ('Percentage of %s spent in idle time' %
            v8_event_stat.result_description)))
@@ -136,7 +136,7 @@ class V8GCTimes(page_test.PageTest):
         'Total idle task deadline overrun for all idle tasks garbage '
         'collection events'))
     results.AddValue(scalar.ScalarValue(results.current_page,
-        'v8_gc_total_percentage_idle', '%', gc_total_percentage_idle,
+        'v8_gc_total_percentage_idle', 'idle%', gc_total_percentage_idle,
         'Percentage of the thread duration of all garbage collection events '
         'spent inside of idle tasks'))
 
