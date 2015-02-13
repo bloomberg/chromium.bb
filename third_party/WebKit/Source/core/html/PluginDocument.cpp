@@ -96,9 +96,7 @@ void PluginDocumentParser::createDocumentStructure()
     frame->loader().dispatchDocumentElementAvailable();
 
     RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
-    body->setAttribute(marginwidthAttr, "0");
-    body->setAttribute(marginheightAttr, "0");
-    body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
+    body->setAttribute(styleAttr, "background-color: rgb(38,38,38); height: 100%; width: 100%; overflow: hidden; margin: 0");
     rootElement->appendChild(body);
 
     m_embedElement = HTMLEmbedElement::create(*document());
