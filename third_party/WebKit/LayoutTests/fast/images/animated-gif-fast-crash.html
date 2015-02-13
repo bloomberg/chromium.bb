@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+Tests fast animating gif (10ms per frame). Passes if it doesn't crash.<br>
+<img src="resources/animated-10color-fast.gif">
+<script>
+
+// Delay 50ms to trigger the bug of invalidation during paint.
+function delay() {
+  var startTime = new Date().getTime();
+  while (new Date().getTime() - startTime < 50);
+}
+
+var count = 3;
+
+function displayOneFrame() {
+  delay();
+  if (--count >= 0)
+    testRunner.displayAsyncThen(displayOneFrame);
+  else
+    testRunner.notifyDone();
+}
+
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+  displayOneFrame();
+}
+
+</script>

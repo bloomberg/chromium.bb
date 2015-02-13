@@ -112,7 +112,7 @@ void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
         m_didIncrementVisuallyNonEmptyPixelCount = true;
     }
 
-    repaintOrMarkForLayout(rect);
+    invalidatePaintAndMarkForLayoutIfNeeded();
 }
 
 void LayoutImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize)
@@ -131,7 +131,7 @@ void LayoutImage::updateInnerContentRect()
         m_imageResource->setContainerSizeForRenderer(containerSize);
 }
 
-void LayoutImage::repaintOrMarkForLayout(const IntRect* rect)
+void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
 {
     LayoutSize oldIntrinsicSize = intrinsicSize();
     LayoutSize newIntrinsicSize = m_imageResource->intrinsicSize(style()->effectiveZoom());
@@ -170,24 +170,7 @@ void LayoutImage::repaintOrMarkForLayout(const IntRect* rect)
         updateInnerContentRect();
     }
 
-    LayoutRect paintInvalidationRect;
-    if (rect) {
-        // The image changed rect is in source image coordinates (without zoom),
-        // so map from the bounds of the image to the contentsBox.
-        const FloatSize imageSizeWithoutZoom(m_imageResource->imageSize(1 / style()->effectiveZoom()));
-        paintInvalidationRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), imageSizeWithoutZoom), contentBoxRect()));
-        // Guard against too-large changed rects.
-        paintInvalidationRect.intersect(contentBoxRect());
-    } else {
-        paintInvalidationRect = contentBoxRect();
-    }
-
-    {
-        DisableCompositingQueryAsserts disabler;
-        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
-        DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-        invalidatePaintRectangle(paintInvalidationRect);
-    }
+    setShouldDoFullPaintInvalidation();
 
     // Tell any potential compositing layers that the image needs updating.
     contentChanged(ImageChanged);
@@ -228,14 +211,7 @@ void LayoutImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     if (path.isEmpty())
         return;
 
-    const LayoutStyle* areaElementStyle = areaElement->computedStyle();
-    unsigned short outlineWidth = areaElementStyle->outlineWidth();
-
-    IntRect paintInvalidationRect = enclosingIntRect(path.boundingRect());
-    paintInvalidationRect.moveBy(-IntPoint(absoluteContentBoxOffset()));
-    paintInvalidationRect.inflate(outlineWidth);
-
-    repaintOrMarkForLayout(&paintInvalidationRect);
+    invalidatePaintAndMarkForLayoutIfNeeded();
 }
 
 bool LayoutImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox*) const

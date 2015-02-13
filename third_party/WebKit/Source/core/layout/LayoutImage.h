@@ -100,7 +100,7 @@ private:
 
     virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const override final;
 
-    void repaintOrMarkForLayout(const IntRect* = 0);
+    void invalidatePaintAndMarkForLayoutIfNeeded();
     void updateIntrinsicSizeIfNeeded(const LayoutSize&);
     // Update the size of the image to be rendered. Object-fit may cause this to be different from the CSS box's content rect.
     void updateInnerContentRect();
