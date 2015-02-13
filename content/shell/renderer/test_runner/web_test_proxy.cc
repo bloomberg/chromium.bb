@@ -375,6 +375,7 @@ blink::WebView* WebTestProxyBase::GetWebView() const {
 }
 
 void WebTestProxyBase::Reset() {
+  drag_image_.reset();
   animate_scheduled_ = false;
   resource_identifier_map_.clear();
   log_console_output_ = true;
@@ -564,6 +565,24 @@ void WebTestProxyBase::CapturePixelsAsync(
     const base::Callback<void(const SkBitmap&)>& callback) {
   TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
   DCHECK(!callback.is_null());
+
+  if (test_interfaces_->GetTestRunner()->shouldDumpDragImage()) {
+    if (drag_image_.isNull()) {
+      // This means the test called dumpDragImage but did not initiate a drag.
+      // Return a blank image so that the test fails.
+      SkBitmap bitmap;
+      bitmap.allocN32Pixels(1, 1);
+      {
+        SkAutoLockPixels lock(bitmap);
+        bitmap.eraseColor(0);
+      }
+      callback.Run(bitmap);
+      return;
+    }
+
+    callback.Run(drag_image_.getSkBitmap());
+    return;
+  }
 
   if (test_interfaces_->GetTestRunner()->isPrinting()) {
     base::MessageLoopProxy::current()->PostTask(
@@ -806,6 +825,10 @@ void WebTestProxyBase::StartDragging(blink::WebLocalFrame* frame,
                                      blink::WebDragOperationsMask mask,
                                      const blink::WebImage& image,
                                      const blink::WebPoint& point) {
+  if (test_interfaces_->GetTestRunner()->shouldDumpDragImage()) {
+    if (drag_image_.isNull())
+      drag_image_ = image;
+  }
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
   test_interfaces_->GetEventSender()->DoDragDrop(data, mask);

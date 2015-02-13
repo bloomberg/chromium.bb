@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/web_task.h"
+#include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -44,7 +45,6 @@ class WebDataSource;
 class WebDragData;
 class WebFileChooserCompletion;
 class WebFrame;
-class WebImage;
 class WebLocalFrame;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
@@ -253,6 +253,8 @@ class WebTestProxyBase {
   blink::WebWidget* web_widget_;
 
   WebTaskList task_list_;
+
+  blink::WebImage drag_image_;
 
   scoped_ptr<SpellCheckClient> spellcheck_;
   scoped_ptr<MockWebUserMediaClient> user_media_client_;
