@@ -16,6 +16,7 @@ namespace gcm {
 namespace {
 
 const char kGCMAccountMapperSenderId[] = "745476177629";
+const char kGCMAccountMapperSendTo[] = "google.com";
 const char kRegistrationId[] = "reg_id";
 
 AccountMapping MakeAccountMapping(const std::string& account_id,
@@ -194,7 +195,7 @@ void CustomFakeGCMDriver::SendImpl(const std::string& app_id,
                                    const std::string& receiver_id,
                                    const GCMClient::OutgoingMessage& message) {
   DCHECK_EQ(kGCMAccountMapperAppId, app_id);
-  DCHECK_EQ(kGCMAccountMapperSenderId, receiver_id);
+  DCHECK_EQ(kGCMAccountMapperSendTo, receiver_id);
 
   SetLastMessageAction(message.id, SEND_STARTED);
 }
