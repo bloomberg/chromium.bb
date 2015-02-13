@@ -3059,20 +3059,18 @@ destroy_shell_seat(struct wl_listener *listener, void *data)
 	struct shell_seat *shseat =
 		container_of(listener,
 			     struct shell_seat, seat_destroy_listener);
-	struct shell_surface *shsurf, *prev = NULL;
+	struct shell_surface *shsurf, *next;
 
 	if (shseat->popup_grab.grab.interface == &popup_grab_interface) {
 		weston_pointer_end_grab(shseat->popup_grab.grab.pointer);
 		shseat->popup_grab.client = NULL;
 
-		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
+		wl_list_for_each_safe(shsurf, next,
+				      &shseat->popup_grab.surfaces_list,
+				      popup.grab_link) {
 			shsurf->popup.shseat = NULL;
-			if (prev) {
-				wl_list_init(&prev->popup.grab_link);
-			}
-			prev = shsurf;
+			wl_list_init(&shsurf->popup.grab_link);
 		}
-		wl_list_init(&prev->popup.grab_link);
 	}
 
 	wl_list_remove(&shseat->seat_destroy_listener.link);
@@ -3328,7 +3326,7 @@ popup_grab_end(struct weston_pointer *pointer)
 	struct shell_seat *shseat =
 	    container_of(grab, struct shell_seat, popup_grab.grab);
 	struct shell_surface *shsurf;
-	struct shell_surface *prev = NULL;
+	struct shell_surface *next;
 
 	if (pointer->grab->interface == &popup_grab_interface) {
 		weston_pointer_end_grab(grab->pointer);
@@ -3336,15 +3334,13 @@ popup_grab_end(struct weston_pointer *pointer)
 		shseat->popup_grab.grab.interface = NULL;
 		assert(!wl_list_empty(&shseat->popup_grab.surfaces_list));
 		/* Send the popup_done event to all the popups open */
-		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
+		wl_list_for_each_safe(shsurf, next,
+				      &shseat->popup_grab.surfaces_list,
+				      popup.grab_link) {
 			shell_surface_send_popup_done(shsurf);
 			shsurf->popup.shseat = NULL;
-			if (prev) {
-				wl_list_init(&prev->popup.grab_link);
-			}
-			prev = shsurf;
+			wl_list_init(&shsurf->popup.grab_link);
 		}
-		wl_list_init(&prev->popup.grab_link);
 		wl_list_init(&shseat->popup_grab.surfaces_list);
 	}
 }
@@ -3356,7 +3352,7 @@ touch_popup_grab_end(struct weston_touch *touch)
 	struct shell_seat *shseat =
 	    container_of(grab, struct shell_seat, popup_grab.touch_grab);
 	struct shell_surface *shsurf;
-	struct shell_surface *prev = NULL;
+	struct shell_surface *next;
 
 	if (touch->grab->interface == &touch_popup_grab_interface) {
 		weston_touch_end_grab(grab->touch);
@@ -3364,15 +3360,13 @@ touch_popup_grab_end(struct weston_touch *touch)
 		shseat->popup_grab.touch_grab.interface = NULL;
 		assert(!wl_list_empty(&shseat->popup_grab.surfaces_list));
 		/* Send the popup_done event to all the popups open */
-		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
+		wl_list_for_each_safe(shsurf, next,
+				      &shseat->popup_grab.surfaces_list,
+				      popup.grab_link) {
 			shell_surface_send_popup_done(shsurf);
 			shsurf->popup.shseat = NULL;
-			if (prev) {
-				wl_list_init(&prev->popup.grab_link);
-			}
-			prev = shsurf;
+			wl_list_init(&shsurf->popup.grab_link);
 		}
-		wl_list_init(&prev->popup.grab_link);
 		wl_list_init(&shseat->popup_grab.surfaces_list);
 	}
 }
