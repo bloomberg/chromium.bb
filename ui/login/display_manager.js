@@ -86,6 +86,8 @@
   DESKTOP_USER_MANAGER: 'login-add-user'
 };
 
+/** @const */ var USER_ACTION_ROLLBACK_TOGGLED = 'rollback-toggled';
+
 cr.define('cr.ui.login', function() {
   var Bubble = cr.ui.Bubble;
 
@@ -378,7 +380,8 @@ cr.define('cr.ui.login', function() {
           $('version-labels').hidden = !$('version-labels').hidden;
       } else if (name == ACCELERATOR_RESET) {
         if (currentStepId == SCREEN_OOBE_RESET)
-          chrome.send('toggleRollbackOnResetScreen');
+          $('reset').send(login.Screen.CALLBACK_USER_ACTED,
+                          USER_ACTION_ROLLBACK_TOGGLED);
         else if (RESET_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) != -1)
           chrome.send('toggleResetScreen');
       } else if (name == ACCELERATOR_DEVICE_REQUISITION) {
