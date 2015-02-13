@@ -143,8 +143,6 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
 
     // The list of extensions that still have to respond to the event.
     std::set<std::string> extensions_;
-
-    DISALLOW_COPY_AND_ASSIGN(GetPrintersRequest);
   };
 
   // Keeps track of pending chrome.printerProvider.onGetPrintersRequested
@@ -156,7 +154,7 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
 
     // Adds a new request to the set of pending requests. Returns the id
     // assigned to the request.
-    int Add(scoped_ptr<GetPrintersRequest> request);
+    int Add(const GetPrintersCallback& callback);
 
     // Completes a request for an extension. It runs the request callback with
     // values reported by the extension.
@@ -169,9 +167,13 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
     // called as if the extension reported empty set of printers.
     void FailAllForExtension(const std::string& extension_id);
 
+    // Adds an extension id to the list of the extensions that need to respond
+    // to the event.
+    bool AddSource(int request_id, const std::string& extension_id);
+
    private:
     int last_request_id_;
-    std::map<int, GetPrintersRequest*> pending_requests_;
+    std::map<int, GetPrintersRequest> pending_requests_;
 
     DISALLOW_COPY_AND_ASSIGN(PendingGetPrintersRequests);
   };
@@ -252,10 +254,10 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
   // in the event. If the extension listens to the event, it's added to the set
   // of |request| sources. |request| is |GetPrintersRequest| object associated
   // with the event.
-  bool WillRequestPrinters(GetPrintersRequest* request,
+  bool WillRequestPrinters(int request_id,
                            content::BrowserContext* browser_context,
                            const Extension* extension,
-                           base::ListValue* args) const;
+                           base::ListValue* args);
 
   content::BrowserContext* browser_context_;
 

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 #include "extensions/browser/event_router.h"
@@ -108,12 +107,10 @@ void PrinterProviderAPI::DispatchGetPrintersRequested(
     return;
   }
 
-  scoped_ptr<GetPrintersRequest> request(new GetPrintersRequest(callback));
   // |pending_get_printers_requests_| take ownership of |request| which gets
   // NULLed out. Save the pointer before passing it to the requests, as it will
   // be needed later on.
-  GetPrintersRequest* raw_request_ptr = request.get();
-  int request_id = pending_get_printers_requests_.Add(request.Pass());
+  int request_id = pending_get_printers_requests_.Add(callback);
 
   scoped_ptr<base::ListValue> internal_args(new base::ListValue);
   // Request id is not part of the public API, but it will be massaged out in
@@ -128,7 +125,7 @@ void PrinterProviderAPI::DispatchGetPrintersRequested(
   // |BroadcastEvent| finishes.
   event->will_dispatch_callback =
       base::Bind(&PrinterProviderAPI::WillRequestPrinters,
-                 base::Unretained(this), raw_request_ptr);
+                 base::Unretained(this), request_id);
 
   event_router->BroadcastEvent(event.Pass());
 }
@@ -233,13 +230,12 @@ PrinterProviderAPI::PendingGetPrintersRequests::PendingGetPrintersRequests()
 }
 
 PrinterProviderAPI::PendingGetPrintersRequests::~PendingGetPrintersRequests() {
-  STLDeleteContainerPairSecondPointers(pending_requests_.begin(),
-                                       pending_requests_.end());
 }
 
 int PrinterProviderAPI::PendingGetPrintersRequests::Add(
-    scoped_ptr<GetPrintersRequest> request) {
-  pending_requests_[++last_request_id_] = request.release();
+    const GetPrintersCallback& callback) {
+  pending_requests_.insert(
+      std::make_pair(++last_request_id_, GetPrintersRequest(callback)));
   return last_request_id_;
 }
 
@@ -251,11 +247,9 @@ bool PrinterProviderAPI::PendingGetPrintersRequests::CompleteForExtension(
   if (it == pending_requests_.end())
     return false;
 
-  GetPrintersRequest* request = it->second;
-  request->ReportForExtension(extension_id, result);
-  if (request->IsDone()) {
+  it->second.ReportForExtension(extension_id, result);
+  if (it->second.IsDone()) {
     pending_requests_.erase(it);
-    delete request;
   }
   return true;
 }
@@ -270,6 +264,17 @@ void PrinterProviderAPI::PendingGetPrintersRequests::FailAllForExtension(
     ++it;
     CompleteForExtension(extension_id, request_id, base::ListValue());
   }
+}
+
+bool PrinterProviderAPI::PendingGetPrintersRequests::AddSource(
+    int request_id,
+    const std::string& extension_id) {
+  auto it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end())
+    return false;
+
+  it->second.AddSource(extension_id);
+  return true;
 }
 
 PrinterProviderAPI::PendingGetCapabilityRequests::PendingGetCapabilityRequests()
@@ -395,10 +400,10 @@ void PrinterProviderAPI::OnExtensionUnloaded(
 }
 
 bool PrinterProviderAPI::WillRequestPrinters(
-    PrinterProviderAPI::GetPrintersRequest* request,
+    int request_id,
     content::BrowserContext* browser_context,
     const Extension* extension,
-    base::ListValue* args) const {
+    base::ListValue* args) {
   if (!extension)
     return false;
   EventRouter* event_router = EventRouter::Get(browser_context_);
@@ -408,8 +413,7 @@ bool PrinterProviderAPI::WillRequestPrinters(
     return false;
   }
 
-  request->AddSource(extension->id());
-  return true;
+  return pending_get_printers_requests_.AddSource(request_id, extension->id());
 }
 
 template <>
