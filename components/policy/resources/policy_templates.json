@@ -1195,15 +1195,19 @@
       'name': 'EnableWebBasedSignin',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:35-'],
+      'supported_on': ['chrome.*:35-42'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 265,
       'caption': '''Enables the old web-based signin''',
       'desc': '''Enables the old web-based signin flow.
+
+      This setting should no longer be needed as of Chrome 41 and support will be removed entirely in Chrome 43.
+      This setting will be renamed in Chrome 42 as part of the deprecation process.
 
       This setting is useful for enterprise customers who are using SSO solutions that are not compatible with the new inline signin flow yet.
       If you enable this setting, the old web-based signin flow would be used.
