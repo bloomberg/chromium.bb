@@ -5,8 +5,6 @@
 #include "config.h"
 #include "modules/encryptedmedia/MediaKeyStatusMap.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "public/platform/WebData.h"
@@ -50,7 +48,7 @@ private:
 };
 
 // Represents an Iterator that loops through the set of MapEntrys.
-class MapIterationSource final : public PairIterable<DOMArrayBuffer*, String>::IterationSource {
+class MapIterationSource final : public PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource {
 public:
     MapIterationSource(MediaKeyStatusMap* map)
         : m_map(map)
@@ -58,7 +56,7 @@ public:
     {
     }
 
-    bool next(ScriptState* scriptState, DOMArrayBuffer*& key, String& value, ExceptionState&) override
+    bool next(ScriptState* scriptState, ArrayBufferOrArrayBufferView& key, String& value, ExceptionState&) override
     {
         // This simply advances an index and returns the next value if any,
         // so if the iterated object is mutated values may be skipped.
@@ -66,15 +64,15 @@ public:
             return false;
 
         const auto& entry = m_map->at(m_current++);
-        key = entry.keyId();
+        key.setArrayBuffer(entry.keyId());
         value = entry.status();
         return true;
     }
 
-    virtual void trace(Visitor* visitor) override
+    void trace(Visitor* visitor) override
     {
         visitor->trace(m_map);
-        PairIterable<DOMArrayBuffer*, String>::IterationSource::trace(visitor);
+        PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource::trace(visitor);
     }
 
 private:
@@ -100,19 +98,6 @@ const MediaKeyStatusMap::MapEntry& MediaKeyStatusMap::at(size_t index) const
     return *m_entries.at(index);
 }
 
-String MediaKeyStatusMap::get(const DOMArrayPiece& key)
-{
-    // If |key| is not found this returns the null string. However, it shows
-    // up in JavaScript as "".
-    size_t index = indexOf(key);
-    return (index < m_entries.size()) ? at(index).status() : String();
-}
-
-bool MediaKeyStatusMap::has(const DOMArrayPiece& key) const
-{
-    return indexOf(key) < m_entries.size();
-}
-
 size_t MediaKeyStatusMap::indexOf(const DOMArrayPiece& key) const
 {
     for (size_t index = 0; index < m_entries.size(); ++index) {
@@ -125,9 +110,19 @@ size_t MediaKeyStatusMap::indexOf(const DOMArrayPiece& key) const
     return m_entries.size();
 }
 
-PairIterable<DOMArrayBuffer*, String>::IterationSource* MediaKeyStatusMap::startIteration(ScriptState*, ExceptionState&)
+PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource* MediaKeyStatusMap::startIteration(ScriptState*, ExceptionState&)
 {
     return new MapIterationSource(this);
+}
+
+bool MediaKeyStatusMap::getMapEntry(ScriptState*, const ArrayBufferOrArrayBufferView& key, String& value, ExceptionState&)
+{
+    size_t index = indexOf(key);
+    if (index < m_entries.size()) {
+        value = at(index).status();
+        return true;
+    }
+    return false;
 }
 
 void MediaKeyStatusMap::trace(Visitor* visitor)

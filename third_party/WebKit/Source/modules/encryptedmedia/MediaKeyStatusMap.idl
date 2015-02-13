@@ -15,10 +15,5 @@ enum MediaKeyStatus {
     GarbageCollected,
 ] interface MediaKeyStatusMap {
     readonly attribute unsigned long size;
-
-    // This function returns undefined if |!this->has(key)|.
-    [TreatReturnedNullStringAs=Undefined] MediaKeyStatus get(BufferSource key);
-    boolean has(BufferSource key);
-
     readonly maplike <BufferSource, MediaKeyStatus>;
 };

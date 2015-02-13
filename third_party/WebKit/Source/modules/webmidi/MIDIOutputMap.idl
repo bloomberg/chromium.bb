@@ -10,8 +10,5 @@
     GarbageCollected,
 ] interface MIDIOutputMap {
     readonly attribute unsigned long size;
-    // This function returns undefined if |!this->has(id)|.
-    [ImplementedAs=getForBinding, CallWith=ScriptState] any get(DOMString id);
-    boolean has(DOMString key);
     readonly maplike<DOMString, MIDIOutput>;
 };

@@ -5,7 +5,6 @@
 #include "config.h"
 #include "modules/webmidi/MIDIOutputMap.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/V8MIDIOutput.h"
 
 namespace blink {
@@ -13,14 +12,6 @@ namespace blink {
 MIDIOutputMap::MIDIOutputMap(HeapHashMap<String, Member<MIDIOutput>> map)
     : MIDIPortMap<MIDIOutput>(map)
 {
-}
-
-ScriptValue MIDIOutputMap::getForBinding(ScriptState* scriptState, const String& id)
-{
-    MIDIOutput* result = get(id);
-    if (result)
-        return ScriptValue(scriptState, toV8(result, scriptState->context()->Global(), scriptState->isolate()));
-    return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
 }
 
 } // namespace blink

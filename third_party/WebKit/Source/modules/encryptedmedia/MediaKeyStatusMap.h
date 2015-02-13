@@ -6,8 +6,9 @@
 #define MediaKeyStatusMap_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/DOMArrayPiece.h"
-#include "core/dom/Iterable.h"
+#include "core/dom/Maplike.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
@@ -21,7 +22,7 @@ class WebData;
 // status known to a particular session. Since it can be updated any time there
 // is a keychange event, iteration order and completeness is not guaranteed
 // if the event loop runs.
-class MediaKeyStatusMap final : public GarbageCollected<MediaKeyStatusMap>, public ScriptWrappable, public PairIterable<DOMArrayBuffer*, String> {
+class MediaKeyStatusMap final : public GarbageCollected<MediaKeyStatusMap>, public ScriptWrappable, public Maplike<ArrayBufferOrArrayBufferView, String> {
     DEFINE_WRAPPERTYPEINFO();
 private:
     // MapEntry holds the keyId (DOMArrayBuffer) and status (MediaKeyStatus as
@@ -41,13 +42,12 @@ public:
 
     // IDL attributes / methods
     size_t size() const { return m_entries.size(); }
-    String get(const DOMArrayPiece& key);
-    bool has(const DOMArrayPiece& key) const;
 
     virtual void trace(Visitor*);
 
 private:
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+    bool getMapEntry(ScriptState*, const ArrayBufferOrArrayBufferView&, String&, ExceptionState&) override;
 
     size_t indexOf(const DOMArrayPiece& key) const;
 

@@ -6,10 +6,8 @@
 #define MIDIPortMap_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/dom/Iterable.h"
+#include "core/dom/Maplike.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
@@ -18,14 +16,12 @@
 namespace blink {
 
 template <typename T>
-class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>, public PairIterable<String, T*> {
+class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>, public Maplike<String, T*> {
 public:
     explicit MIDIPortMap(const HeapHashMap<String, Member<T>>& entries) : m_entries(entries) { }
 
     // IDL attributes / methods
     size_t size() const { return m_entries.size(); }
-    T* get(const String& key) const;
-    bool has(const String& key) const { return m_entries.contains(key); }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -39,6 +35,14 @@ private:
     typename PairIterable<String, T*>::IterationSource* startIteration(ScriptState*, ExceptionState&) override
     {
         return new MapIterationSource(this, m_entries.begin(), m_entries.end());
+    }
+
+    bool getMapEntry(ScriptState*, const String& key, T*& value, ExceptionState&) override
+    {
+        if (!m_entries.contains(key))
+            return false;
+        value = m_entries.get(key);
+        return true;
     }
 
     // Note: This template class relies on the fact that m_map.m_entries will
@@ -78,12 +82,6 @@ private:
 
     const MapType m_entries;
 };
-
-template <typename T>
-T* MIDIPortMap<T>::get(const String& key) const
-{
-    return has(key) ? m_entries.get(key) : 0;
-}
 
 } // namespace blink
 
