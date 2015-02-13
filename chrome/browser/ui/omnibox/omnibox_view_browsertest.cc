@@ -1877,10 +1877,3 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   omnibox_view->Update();
   EXPECT_EQ(url_c, omnibox_view->GetText());
 }
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscDisablesSearchTermReplacement) {
-  browser()->toolbar_model()->set_url_replacement_enabled(true);
-  chrome::FocusLocationBar(browser());
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
-  EXPECT_FALSE(browser()->toolbar_model()->url_replacement_enabled());
-}

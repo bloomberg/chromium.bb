@@ -23323,6 +23323,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="OriginChip.Pressed">
+  <obsolete>
+    Deprecated with CL 731423002. OriginChip has been removed.
+  </obsolete>
   <owner>gbillock@chromium.org</owner>
   <summary>The number of clicks on the origin chip.</summary>
 </histogram>

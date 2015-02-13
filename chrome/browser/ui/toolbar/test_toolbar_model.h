@@ -29,9 +29,6 @@ class TestToolbarModel : public ToolbarModel {
 
   void set_text(const base::string16& text) { text_ = text; }
   void set_url(const GURL& url) { url_ = url;}
-  void set_omit_url_due_to_origin_chip(bool omit_url_due_to_origin_chip) {
-    omit_url_due_to_origin_chip_ = omit_url_due_to_origin_chip;
-  }
   void set_perform_search_term_replacement(
       bool perform_search_term_replacement) {
     perform_search_term_replacement_ = perform_search_term_replacement;
@@ -48,11 +45,8 @@ class TestToolbarModel : public ToolbarModel {
   }
 
  private:
-  bool WouldOmitURLDueToOriginChip() const override;
-
   base::string16 text_;
   GURL url_;
-  bool omit_url_due_to_origin_chip_;
   bool perform_search_term_replacement_;
   SecurityLevel security_level_;
   int icon_;

@@ -109,8 +109,6 @@ class TestingOmniboxEditController : public OmniboxEditController {
   void OnChanged() override {}
   void OnSetFocus() override {}
   void ShowURL() override {}
-  void HideURL() override {}
-  void EndOriginChipAnimations(bool cancel_fade) override {}
   InstantController* GetInstant() override { return NULL; }
   WebContents* GetWebContents() override { return NULL; }
   ToolbarModel* GetToolbarModel() override { return toolbar_model_; }

@@ -105,13 +105,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   // bubble.
 
   // Do not show page info if the user has been editing the location
-  // bar, or the location bar is at the NTP. However, if the origin chip is
-  // enabled, the omnibox will be empty by default, so the page info should be
-  // shown in those cases as well.
-  if (chrome::ShouldDisplayOriginChip() ?
-          (owner_->GetOmniboxView()->model() &&
-           owner_->GetOmniboxView()->model()->user_input_in_progress()) :
-          owner_->GetOmniboxView()->IsEditingOrEmpty())
+  // bar, or the location bar is at the NTP.
+  if (owner_->GetOmniboxView()->IsEditingOrEmpty())
     return true;
 
   WebContents* tab = owner_->GetWebContents();

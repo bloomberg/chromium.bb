@@ -8,7 +8,6 @@
 
 ToolbarModel::ToolbarModel()
     : input_in_progress_(false),
-      origin_chip_enabled_(true),
       url_replacement_enabled_(true) {
 }
 
@@ -16,11 +15,6 @@ ToolbarModel::~ToolbarModel() {
 }
 
 bool ToolbarModel::WouldReplaceURL() const {
-  return WouldOmitURLDueToOriginChip() ||
-      WouldPerformSearchTermReplacement(false);
+  return WouldPerformSearchTermReplacement(false);
 }
 
-bool ToolbarModel::ShouldShowOriginChip() const {
-  return chrome::ShouldDisplayOriginChip() && WouldOmitURLDueToOriginChip() &&
-      origin_chip_enabled();
-}

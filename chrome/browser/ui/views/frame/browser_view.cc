@@ -1079,15 +1079,7 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   LocationBarView* location_bar = GetLocationBarView();
   if (location_bar->omnibox_view()->IsFocusable()) {
     // Location bar got focus.
-    //
-    // select_all is true when it's expected that the user may want to copy
-    // the URL to the clipboard. If the URL is not being shown because the
-    // origin chip is enabled, show it now to support the same functionality.
-    if (select_all &&
-        location_bar->GetToolbarModel()->WouldOmitURLDueToOriginChip())
-      location_bar->ShowURL();
-    else
-      location_bar->FocusLocation(select_all);
+    location_bar->FocusLocation(select_all);
   } else {
     // If none of location bar got focus, then clear focus.
     views::FocusManager* focus_manager = GetFocusManager();

@@ -31,7 +31,6 @@ class LocationBarDecoration;
 class LocationIconDecoration;
 class ManagePasswordsDecoration;
 class MicSearchDecoration;
-class OriginChipDecoration;
 class PageActionDecoration;
 class Profile;
 class SearchButtonDecoration;
@@ -162,7 +161,6 @@ class LocationBarViewMac : public LocationBar,
   void OnChanged() override;
   void OnSetFocus() override;
   void ShowURL() override;
-  void EndOriginChipAnimations(bool cancel_fade) override;
   InstantController* GetInstant() override;
   content::WebContents* GetWebContents() override;
   ToolbarModel* GetToolbarModel() override;
@@ -185,10 +183,6 @@ class LocationBarViewMac : public LocationBar,
   // ZoomManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
-
- protected:
-  // OmniboxEditController:
-  void HideURL() override;
 
  private:
   friend ZoomDecorationTest;
@@ -272,9 +266,6 @@ class LocationBarViewMac : public LocationBar,
 
   // The right-hand-side search button that is shown on search result pages.
   scoped_ptr<SearchButtonDecoration> search_button_decoration_;
-
-  // The left-hand-side origin chip.
-  scoped_ptr<OriginChipDecoration> origin_chip_decoration_;
 
   // The right-hand-side button to manage passwords associated with a page.
   scoped_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;

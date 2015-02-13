@@ -8,7 +8,6 @@
 
 TestToolbarModel::TestToolbarModel()
     : ToolbarModel(),
-      omit_url_due_to_origin_chip_(false),
       perform_search_term_replacement_(false),
       security_level_(NONE),
       icon_(IDR_LOCATION_BAR_HTTP),
@@ -30,10 +29,6 @@ base::string16 TestToolbarModel::GetCorpusNameForMobile() const {
 
 GURL TestToolbarModel::GetURL() const {
   return url_;
-}
-
-bool TestToolbarModel::WouldOmitURLDueToOriginChip() const {
-  return omit_url_due_to_origin_chip_;
 }
 
 bool TestToolbarModel::WouldPerformSearchTermReplacement(

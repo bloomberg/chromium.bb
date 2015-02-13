@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
-#include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/omnibox/autocomplete_input.h"
@@ -229,7 +228,6 @@ void OmniboxViewViews::Update() {
   if (model()->UpdatePermanentText()) {
     // Something visibly changed.  Re-enable URL replacement.
     controller()->GetToolbarModel()->set_url_replacement_enabled(true);
-    controller()->GetToolbarModel()->set_origin_chip_enabled(true);
     model()->UpdatePermanentText();
 
     // Select all the new text if the user had all the old text selected, or if
@@ -259,8 +257,7 @@ void OmniboxViewViews::Update() {
 }
 
 void OmniboxViewViews::UpdatePlaceholderText() {
-  if (chrome::ShouldDisplayOriginChip() ||
-      OmniboxFieldTrial::DisplayHintTextWhenPossible())
+  if (OmniboxFieldTrial::DisplayHintTextWhenPossible())
     set_placeholder_text(GetHintText());
 }
 
@@ -692,8 +689,6 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
       // into view and shift the contents jarringly.
       SelectAll(true);
     }
-
-    HandleOriginChipMouseRelease();
   }
   select_all_on_mouse_release_ = false;
 }
@@ -788,9 +783,6 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 
 void OmniboxViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
   views::Textfield::AboutToRequestFocusFromTabTraversal(reverse);
-  // Tabbing into the omnibox should affect the origin chip in the same way
-  // clicking it should.
-  HandleOriginChipMouseRelease();
 }
 
 bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
@@ -846,11 +838,6 @@ void OmniboxViewViews::OnBlur() {
 
   // Tell the model to reset itself.
   model()->OnKillFocus();
-
-  // Ignore loss of focus if we lost focus because the website settings popup
-  // is open. When the popup is destroyed, focus will return to the Omnibox.
-  if (!WebsiteSettingsPopupView::IsPopupShowing())
-    OnDidKillFocus();
 
   // Make sure the beginning of the text is visible.
   SelectRange(gfx::Range(0));
@@ -1023,7 +1010,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (chrome::IsQueryExtractionEnabled() || chrome::ShouldDisplayOriginChip()) {
+  if (chrome::IsQueryExtractionEnabled()) {
     int select_all_position = menu_contents->GetIndexOfCommandId(
         IDS_APP_SELECT_ALL);
     DCHECK_GE(select_all_position, 0);

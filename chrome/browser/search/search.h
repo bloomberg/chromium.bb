@@ -55,13 +55,6 @@ enum DisplaySearchButtonConditions {
   DISPLAY_SEARCH_BUTTON_NUM_VALUES,
 };
 
-enum OriginChipCondition {
-  ORIGIN_CHIP_DISABLED = 0,
-  ORIGIN_CHIP_ALWAYS,
-  ORIGIN_CHIP_ON_SRP,
-  ORIGIN_CHIP_NUM_VALUES,
-};
-
 // Use this value for "start margin" to prevent the "es_sm" parameter from
 // being used.
 extern const int kDisableStartMargin;
@@ -190,12 +183,6 @@ GURL GetLocalInstantURL(Profile* profile);
 // the page would normally be to perform search term replacement; see also
 // ToolbarModel::WouldPerformSearchTermReplacement().
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions();
-
-// Returns true if the origin chip should be shown.
-bool ShouldDisplayOriginChip();
-
-// Returns a value indicating when the origin chip should be shown.
-OriginChipCondition GetOriginChipCondition();
 
 // Returns true if the local new tab page should show a Google logo and search
 // box for users whose default search provider is Google, or false if not.

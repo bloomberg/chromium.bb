@@ -89,7 +89,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
 
   // Implements ToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
-  bool InTabbedBrowser() const override;
 
   // Implements CommandUpdaterDelegate:
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition) override;

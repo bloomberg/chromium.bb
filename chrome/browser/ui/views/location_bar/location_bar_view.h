@@ -40,7 +40,6 @@ class KeywordHintView;
 class LocationIconView;
 class OpenPDFInReaderView;
 class ManagePasswordsIconView;
-class OriginChipView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
@@ -53,10 +52,6 @@ class ZoomView;
 
 namespace content {
 struct SSLStatus;
-}
-
-namespace gfx {
-class SlideAnimation;
 }
 
 namespace views {
@@ -82,7 +77,6 @@ class LocationBarView : public LocationBar,
                         public views::DragController,
                         public OmniboxEditController,
                         public DropdownBarHostDelegate,
-                        public gfx::AnimationDelegate,
                         public TemplateURLServiceObserver,
                         public SearchModelObserver,
                         public ui_zoom::ZoomEventManagerObserver {
@@ -257,7 +251,6 @@ class LocationBarView : public LocationBar,
   // OmniboxEditController:
   void Update(const content::WebContents* contents) override;
   void ShowURL() override;
-  void EndOriginChipAnimations(bool cancel_fade) override;
   ToolbarModel* GetToolbarModel() override;
   content::WebContents* GetWebContents() override;
 
@@ -274,11 +267,6 @@ class LocationBarView : public LocationBar,
   static const int kItemPadding;
   // Amount of padding built into the standard omnibox icons.
   static const int kIconInternalPadding;
-  // Amount of padding to place between the origin chip and the leading edge of
-  // the location bar.
-  static const int kOriginChipEdgeItemPadding;
-  // Amount of padding built into the origin chip.
-  static const int kOriginChipBuiltinPadding;
   // Space between the edge and a bubble.
   static const int kBubblePadding;
 
@@ -349,9 +337,6 @@ class LocationBarView : public LocationBar,
   // directions from its current location.
   double GetValueForAnimation(bool hide) const;
 
-  // Resets |show_url_animation_| and the color changes it causes.
-  void ResetShowAnimationAndColors();
-
   // LocationBar:
   void ShowFirstRunBubble() override;
   GURL GetDestinationURL() const override;
@@ -404,15 +389,10 @@ class LocationBarView : public LocationBar,
   void OnSetFocus() override;
   InstantController* GetInstant() override;
   const ToolbarModel* GetToolbarModel() const override;
-  void HideURL() override;
 
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
   void SetAnimationOffset(int offset) override;
-
-  // gfx::AnimationDelegate:
-  void AnimationProgressed(const gfx::Animation* animation) override;
-  void AnimationEnded(const gfx::Animation* animation) override;
 
   // TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
@@ -433,9 +413,6 @@ class LocationBarView : public LocationBar,
 
   // Object used to paint the border.
   scoped_ptr<views::Painter> border_painter_;
-
-  // The origin chip that may appear in the location bar.
-  OriginChipView* origin_chip_view_;
 
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;
@@ -515,46 +492,6 @@ class LocationBarView : public LocationBar,
   // drawing the widget so that we can draw the curved edges that attach to the
   // toolbar in the right location.
   int dropdown_animation_offset_;
-
-  // Origin chip animations.
-  //
-  // For the "show URL" animation, we instantly hide the origin chip and show
-  // the |omnibox_view_| in its place, containing the complete URL.  However, we
-  // clip that view (using the XXX_leading_inset_ and XXX_width_ members) so
-  // that only the hostname is visible.  We also offset the omnibox (using the
-  // XXX_offset_ members) so the hostname is in the same place as it was in the
-  // origin chip.  Finally, we set the selection text and background color of
-  // the text to match the pressed origin chip.  Then, as the animation runs,
-  // all of these values are animated to their steady-state values (no omnibox
-  // offset, no inset, width equal to the full omnibox text [which is reset to
-  // "no width clamp" after the animation ends], and standard selection colors).
-  //
-  // For the hide animation, we run the positioning and clipping parts of the
-  // animation in reverse, but instead of changing the selection color, because
-  // there usually isn't a selection when hiding, we leave the omnibox colors
-  // alone, and when the hide animation has ended, tell the origin chip to
-  // fade-in its background.
-  scoped_ptr<gfx::SlideAnimation> show_url_animation_;
-  scoped_ptr<gfx::SlideAnimation> hide_url_animation_;
-  // The omnibox offset may be positive or negative.  The starting offset is the
-  // amount necessary to shift the |omnibox_view_| by such that the hostname
-  // portion of the URL aligns with the hostname in the origin chip.  As the
-  // show animation runs, the current offset gradually moves to 0.
-  int starting_omnibox_offset_;
-  int current_omnibox_offset_;
-  // The leading inset is always positive.  The starting inset is the width of
-  // the text between the leading edge of the omnibox and the edge of the
-  // hostname, which is clipped off at the start of the show animation.  Note
-  // that in RTL mode, this will be the part of the URL that is logically after
-  // the hostname.  As the show animation runs, the current inset gradually
-  // moves to 0.
-  int starting_omnibox_leading_inset_;
-  int current_omnibox_leading_inset_;
-  // The width is always positive.  The ending width is the width of the entire
-  // omnibox URL.  As the show animation runs, the current width gradually moves
-  // from the width of the hostname to the ending value.
-  int current_omnibox_width_;
-  int ending_omnibox_width_;
 
   // This is a debug state variable that stores if the WebContents was null
   // during the last RefreshPageAction.

@@ -276,9 +276,6 @@ const char kDisableOfflineAutoReload[]       = "disable-offline-auto-reload";
 const char kDisableOfflineAutoReloadVisibleOnly[] =
     "disable-offline-auto-reload-visible-only";
 
-// Disable the origin chip.
-const char kDisableOriginChip[]             = "disable-origin-chip";
-
 // Disable the out of process PDF plugin.
 const char kDisableOutOfProcessPdf[]        = "disable-out-of-process-pdf";
 
@@ -479,17 +476,6 @@ const char kEnableOfflineAutoReloadVisibleOnly[] =
 const char kEnableOfflineLoadStaleCache[]   = "enable-offline-load-stale-cache";
 const char kDisableOfflineLoadStaleCache[]  =
     "disable-offline-load-stale-cache";
-
-// Controls which branch of the origin chip in location bar experiment is
-// enabled.
-//
-// We're using independent flags here (as opposed to a common flag with
-// different values) to be able to enable/disable the entire experience
-// associated with this feature server-side from the FieldTrial (the complete
-// experience includes other flag changes as well). It is not currently possible
-// to do that with "flag=value" flags.
-const char kEnableOriginChipAlways[]        = "enable-origin-chip-always";
-const char kEnableOriginChipOnSrp[]         = "enable-origin-chip-on-srp";
 
 // Enable the out of process PDF plugin.
 const char kEnableOutOfProcessPdf[]         = "enable-out-of-process-pdf";

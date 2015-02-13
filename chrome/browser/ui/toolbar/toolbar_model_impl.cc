@@ -192,9 +192,6 @@ base::string16 ToolbarModelImpl::GetText() const {
   if (!search_terms.empty())
     return search_terms;
 
-  if (WouldOmitURLDueToOriginChip())
-    return base::string16();
-
   return GetFormattedURL(NULL);
 }
 
@@ -261,11 +258,10 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 
 int ToolbarModelImpl::GetIcon() const {
   if (WouldPerformSearchTermReplacement(false)) {
-    // The secured version of the search icon is necessary if neither the search
-    // button nor origin chip are present to indicate the security state.
+    // The secured version of the search icon is necessary if the search button
+    // is not present to indicate the security state.
     return (chrome::GetDisplaySearchButtonConditions() ==
-        chrome::DISPLAY_SEARCH_BUTTON_NEVER) &&
-        !chrome::ShouldDisplayOriginChip() ?
+        chrome::DISPLAY_SEARCH_BUTTON_NEVER) ?
             IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
   }
 
@@ -331,48 +327,6 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
   }
 
   return !chrome::IsInstantNTP(delegate_->GetActiveWebContents());
-}
-
-bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
-  const char kInterstitialShownKey[] = "interstitial_shown";
-
-  // When users type URLs and hit enter, continue to show those URLs until
-  // the navigation commits or an interstitial is shown, because having the
-  // omnibox clear immediately feels like the input was ignored.
-  NavigationController* navigation_controller = GetNavigationController();
-  if (navigation_controller) {
-    NavigationEntry* pending_entry = navigation_controller->GetPendingEntry();
-    if (pending_entry) {
-      const NavigationEntry* visible_entry =
-          navigation_controller->GetVisibleEntry();
-      base::string16 unused;
-      // Keep track that we've shown the origin chip on an interstitial so it
-      // can be shown even after the interstitial was dismissed, to avoid
-      // showing the chip, removing it and then showing it again.
-      if (visible_entry &&
-          visible_entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL &&
-          !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
-        pending_entry->SetExtraData(kInterstitialShownKey, base::string16());
-      const ui::PageTransition transition_type =
-          pending_entry->GetTransitionType();
-      if ((transition_type & ui::PAGE_TRANSITION_TYPED) != 0 &&
-          !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
-        return false;
-    }
-  }
-
-  if (!delegate_->InTabbedBrowser() || !ShouldDisplayURL() ||
-      !url_replacement_enabled())
-    return false;
-
-  if (chrome::ShouldDisplayOriginChip())
-    return true;
-
-  const chrome::OriginChipCondition chip_condition =
-      chrome::GetOriginChipCondition();
-  return (chip_condition == chrome::ORIGIN_CHIP_ALWAYS) ||
-      ((chip_condition == chrome::ORIGIN_CHIP_ON_SRP) &&
-       WouldPerformSearchTermReplacement(false));
 }
 
 NavigationController* ToolbarModelImpl::GetNavigationController() const {

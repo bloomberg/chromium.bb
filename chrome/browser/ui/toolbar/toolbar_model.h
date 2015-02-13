@@ -54,11 +54,10 @@ class ToolbarModel {
   virtual ~ToolbarModel();
 
   // Returns the text to be displayed in the toolbar for the current page.
-  // The text is formatted in various ways:
+  // This will have been formatted for display to the user.
   //   - If the current page's URL is a search URL for the user's default search
   //     engine, the query will be extracted and returned for display instead
   //     of the URL.
-  //   - If the origin chip is enabled and visible, the text will be empty.
   //   - Otherwise, the text will contain the URL returned by GetFormattedURL().
   virtual base::string16 GetText() const = 0;
 
@@ -87,8 +86,7 @@ class ToolbarModel {
   virtual bool WouldPerformSearchTermReplacement(bool ignore_editing) const = 0;
 
   // Returns true if a call to GetText() would return something other than the
-  // URL because of either search term replacement or URL omission in favor of
-  // the origin chip.
+  // URL because of search term replacement.
   bool WouldReplaceURL() const;
 
   // Returns the security level that the toolbar should display.  If
@@ -115,29 +113,11 @@ class ToolbarModel {
   // in the location bar.
   virtual bool ShouldDisplayURL() const = 0;
 
-  // Returns true if a call to GetText() would return an empty string instead of
-  // the URL that would have otherwise been displayed because the host/origin is
-  // instead being displayed in the origin chip.  This returns false when we
-  // wouldn't have displayed a URL to begin with (e.g. for the NTP).
-  virtual bool WouldOmitURLDueToOriginChip() const = 0;
-
-  // Returns true if the origin should be shown based on the current state of
-  // the ToolbarModel.
-  bool ShouldShowOriginChip() const;
-
   // Whether the text in the omnibox is currently being edited.
   void set_input_in_progress(bool input_in_progress) {
     input_in_progress_ = input_in_progress;
   }
   bool input_in_progress() const { return input_in_progress_; }
-
-  // Whether the origin chip should be enabled.
-  void set_origin_chip_enabled(bool enabled) {
-    origin_chip_enabled_ = enabled;
-  }
-  bool origin_chip_enabled() const {
-    return origin_chip_enabled_;
-  }
 
   // Whether URL replacement should be enabled.
   void set_url_replacement_enabled(bool enabled) {
@@ -152,7 +132,6 @@ class ToolbarModel {
 
  private:
   bool input_in_progress_;
-  bool origin_chip_enabled_;
   bool url_replacement_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModel);

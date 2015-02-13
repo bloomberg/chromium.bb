@@ -89,18 +89,6 @@ base::string16 OmniboxView::GetClipboardText() {
 OmniboxView::~OmniboxView() {
 }
 
-void OmniboxView::HandleOriginChipMouseRelease() {
-  // Only hide if there isn't any current text in the Omnibox (e.g. search
-  // terms).
-  if (controller()->GetToolbarModel()->GetText().empty())
-    controller()->HideOriginChip();
-}
-
-void OmniboxView::OnDidKillFocus() {
-  if (chrome::ShouldDisplayOriginChip() && !model()->user_input_in_progress())
-    controller()->ShowOriginChip();
-}
-
 void OmniboxView::OpenMatch(const AutocompleteMatch& match,
                             WindowOpenDisposition disposition,
                             const GURL& alternate_nav_url,
@@ -167,7 +155,6 @@ void OmniboxView::SetUserText(const base::string16& text,
 
 void OmniboxView::ShowURL() {
   SetFocus();
-  controller_->GetToolbarModel()->set_origin_chip_enabled(false);
   controller_->GetToolbarModel()->set_url_replacement_enabled(false);
   model_->UpdatePermanentText();
   RevertWithoutResettingSearchTermReplacement();
@@ -175,14 +162,12 @@ void OmniboxView::ShowURL() {
 }
 
 void OmniboxView::HideURL() {
-  controller_->GetToolbarModel()->set_origin_chip_enabled(true);
   controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   model_->UpdatePermanentText();
   RevertWithoutResettingSearchTermReplacement();
 }
 
 void OmniboxView::RevertAll() {
-  controller_->GetToolbarModel()->set_origin_chip_enabled(true);
   controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   RevertWithoutResettingSearchTermReplacement();
 }

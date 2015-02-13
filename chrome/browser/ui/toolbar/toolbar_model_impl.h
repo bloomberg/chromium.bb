@@ -48,7 +48,6 @@ class ToolbarModelImpl : public ToolbarModel {
   int GetIconForSecurityLevel(SecurityLevel level) const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
-  bool WouldOmitURLDueToOriginChip() const override;
 
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved.

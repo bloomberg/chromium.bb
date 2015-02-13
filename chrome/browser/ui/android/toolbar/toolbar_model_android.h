@@ -36,7 +36,6 @@ class ToolbarModelAndroid : public ToolbarModelDelegate {
 
   // ToolbarDelegate:
   content::WebContents* GetActiveWebContents() const override;
-  bool InTabbedBrowser() const override;
 
   static bool RegisterToolbarModelAndroid(JNIEnv* env);
 

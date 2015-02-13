@@ -27,21 +27,5 @@ OmniboxEditController::OmniboxEditController(CommandUpdater* command_updater)
           ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
 }
 
-void OmniboxEditController::HideOriginChip() {
-  GetToolbarModel()->set_origin_chip_enabled(false);
-  OnChanged();
-}
-
-void OmniboxEditController::ShowOriginChip() {
-  // If URL replacement is still enabled, we can simply show the chip.  If it
-  // was disabled by an action to show the URL then the URL needs to be hidden.
-  if (GetToolbarModel()->url_replacement_enabled()) {
-    GetToolbarModel()->set_origin_chip_enabled(true);
-    OnChanged();
-  } else {
-    HideURL();
-  }
-}
-
 OmniboxEditController::~OmniboxEditController() {
 }

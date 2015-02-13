@@ -66,7 +66,6 @@ const char kAltInstantURLPath[] = "search";
 const char kAltInstantURLQueryParams[] = "&qbp=1";
 
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
-const char kOriginChipFlagName[] = "origin_chip";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 const char kEnableQueryExtractionFlagName[] = "query_extraction";
 #endif
@@ -601,28 +600,6 @@ DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
   return (value < DISPLAY_SEARCH_BUTTON_NUM_VALUES) ?
       static_cast<DisplaySearchButtonConditions>(value) :
       DISPLAY_SEARCH_BUTTON_NEVER;
-}
-
-bool ShouldDisplayOriginChip() {
-  return GetOriginChipCondition() != ORIGIN_CHIP_DISABLED;
-}
-
-OriginChipCondition GetOriginChipCondition() {
-  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kDisableOriginChip))
-    return ORIGIN_CHIP_DISABLED;
-  if (cl->HasSwitch(switches::kEnableOriginChipAlways))
-    return ORIGIN_CHIP_ALWAYS;
-  if (cl->HasSwitch(switches::kEnableOriginChipOnSrp))
-    return ORIGIN_CHIP_ON_SRP;
-
-  FieldTrialFlags flags;
-  if (!GetFieldTrialInfo(&flags))
-    return ORIGIN_CHIP_DISABLED;
-  uint64 value =
-      GetUInt64ValueForFlagWithDefault(kOriginChipFlagName, 0, flags);
-  return (value < ORIGIN_CHIP_NUM_VALUES) ?
-      static_cast<OriginChipCondition>(value) : ORIGIN_CHIP_DISABLED;
 }
 
 bool ShouldShowGoogleLocalNTP() {

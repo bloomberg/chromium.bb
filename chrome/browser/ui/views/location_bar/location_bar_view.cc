@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
-#include "chrome/browser/ui/views/location_bar/origin_chip_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/search_button.h"
@@ -103,9 +102,6 @@ using views::View;
 
 namespace {
 
-const gfx::Tween::Type kShowTweenType = gfx::Tween::LINEAR_OUT_SLOW_IN;
-const gfx::Tween::Type kHideTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
-
 // The search button images are made to look as if they overlay the normal edge
 // images, but to align things, the search button needs to be inset horizontally
 // by 1 px.
@@ -161,7 +157,6 @@ LocationBarView::LocationBarView(Browser* browser,
       browser_(browser),
       omnibox_view_(NULL),
       delegate_(delegate),
-      origin_chip_view_(NULL),
       location_icon_view_(NULL),
       ev_bubble_view_(NULL),
       ime_inline_autocomplete_view_(NULL),
@@ -180,12 +175,6 @@ LocationBarView::LocationBarView(Browser* browser,
       show_focus_rect_(false),
       template_url_service_(NULL),
       dropdown_animation_offset_(0),
-      starting_omnibox_offset_(0),
-      current_omnibox_offset_(0),
-      starting_omnibox_leading_inset_(0),
-      current_omnibox_leading_inset_(0),
-      current_omnibox_width_(0),
-      ending_omnibox_width_(0),
       web_contents_null_at_last_refresh_(true) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
@@ -278,11 +267,6 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
-  origin_chip_view_ = new OriginChipView(this, profile(), font_list);
-  origin_chip_view_->SetFocusable(false);
-  origin_chip_view_->set_drag_controller(this);
-  AddChildView(origin_chip_view_);
-
   const SkColor text_color = GetColor(ToolbarModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
       bubble_font_list, text_color, background_color, profile());
@@ -349,14 +333,6 @@ void LocationBarView::Init() {
   search_button_ = new SearchButton(this);
   search_button_->SetVisible(false);
   AddChildView(search_button_);
-
-  show_url_animation_.reset(new gfx::SlideAnimation(this));
-  show_url_animation_->SetTweenType(kShowTweenType);
-  show_url_animation_->SetSlideDuration(200);
-
-  hide_url_animation_.reset(new gfx::SlideAnimation(this));
-  hide_url_animation_->SetTweenType(kHideTweenType);
-  hide_url_animation_->SetSlideDuration(175);
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
@@ -475,7 +451,7 @@ void LocationBarView::SetTranslateIconToggled(bool on) {
 
 gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
   gfx::Point origin(omnibox_view_->bounds().origin());
-  origin.set_x(GetMirroredXInView(origin.x() - current_omnibox_offset_));
+  origin.set_x(GetMirroredXInView(origin.x()));
   views::View::ConvertPointToScreen(this, &origin);
   return origin;
 }
@@ -589,17 +565,13 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   // Compute width of omnibox-leading content.
   const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
   int leading_width = horizontal_edge_thickness;
-  // TODO(pkasting): Make the origin chip min width sane, and make the chip
-  // handle being shrunken down more gracefully; then uncomment this.
-  /*if (GetToolbarModel()->ShouldShowOriginChip())
-    leading_width += origin_chip_view_->GetMinimumSize().width();*/
   if (ShouldShowKeywordBubble()) {
     // The selected keyword view can collapse completely.
   } else if (ShouldShowEVBubble()) {
     leading_width += kBubblePadding +
         ev_bubble_view_->GetMinimumSizeForLabelText(
             GetToolbarModel()->GetEVCertName()).width();
-  } else if (!origin_chip_view_->visible()) {
+  } else {
     leading_width +=
         kItemPadding + location_icon_view_->GetMinimumSize().width();
   }
@@ -631,7 +603,6 @@ void LocationBarView::Layout() {
   if (!IsInitialized())
     return;
 
-  origin_chip_view_->SetVisible(GetToolbarModel()->ShouldShowOriginChip());
   selected_keyword_view_->SetVisible(false);
   location_icon_view_->SetVisible(false);
   ev_bubble_view_->SetVisible(false);
@@ -644,16 +615,6 @@ void LocationBarView::Layout() {
   LocationBarLayout trailing_decorations(
       LocationBarLayout::RIGHT_EDGE,
       kItemPadding - omnibox_view_->GetInsets().right());
-
-  const int origin_chip_preferred_width =
-      origin_chip_view_->GetPreferredSize().width();
-  const int origin_chip_width =
-      origin_chip_view_->visible() ? origin_chip_preferred_width : 0;
-  // Always give the origin chip view its desired size and lay it out, even when
-  // it's not visible, so we can calculate the correct animation values below
-  // when switching to tabs that have the origin chip hidden.
-  origin_chip_view_->SetBounds(0, 0, origin_chip_preferred_width, height());
-  origin_chip_view_->Layout();
 
   const int bubble_location_y = vertical_edge_thickness() + kBubblePadding;
   const base::string16 keyword(omnibox_view_->model()->keyword());
@@ -691,7 +652,7 @@ void LocationBarView::Layout() {
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, false,
                                       kMaxBubbleFraction, kBubblePadding,
                                       kItemPadding, ev_bubble_view_);
-  } else if (!origin_chip_view_->visible()) {
+  } else {
     leading_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
         location_icon_view_);
@@ -756,7 +717,7 @@ void LocationBarView::Layout() {
 
   // Perform layout.
   const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
-  int full_width = width() - horizontal_edge_thickness - origin_chip_width;
+  int full_width = width() - horizontal_edge_thickness;
 
   const gfx::Size search_button_size(search_button_->GetPreferredSize());
   const int search_button_reserved_width =
@@ -773,113 +734,10 @@ void LocationBarView::Layout() {
   int available_width = entry_width - location_needed_width;
   // The bounds must be wide enough for all the decorations to fit.
   gfx::Rect location_bounds(
-      origin_chip_width + horizontal_edge_thickness, vertical_edge_thickness(),
+      horizontal_edge_thickness, vertical_edge_thickness(),
       std::max(full_width, full_width - entry_width), location_height);
   leading_decorations.LayoutPass3(&location_bounds, &available_width);
   trailing_decorations.LayoutPass3(&location_bounds, &available_width);
-
-  // Calculate the animation parameters (see comments on these members in the
-  // header).  We have to do this in Layout, after |origin_chip_view_| is laid
-  // out, because that may affect the host label offset in the origin chip.
-  const base::string16& chip_text(origin_chip_view_->host_label_text());
-  // If the chip is clicked, the omnibox text will become the toolbar model's
-  // formatted URL.  We can't ask the omnibox for its current text, because
-  // while the chip is visible the current text is empty.
-  size_t prefix_end = 0;
-  const base::string16& omnibox_text(
-      GetToolbarModel()->GetFormattedURL(&prefix_end));
-  // Do a case-insensitive search to better match cases like
-  // "Settings" <-> "chrome://settings".  Skip any pre-hostname text.
-  size_t chip_text_offset = std::search(
-      omnibox_text.begin() + prefix_end, omnibox_text.end(),
-      chip_text.begin(), chip_text.end(),
-      base::CaseInsensitiveCompare<base::char16>()) - omnibox_text.begin();
-  // If we couldn't find the chip text, try checking whether the omnibox text
-  // starts with it, as is true for e.g. file: URLs.
-  if ((chip_text_offset >= omnibox_text.length()) &&
-      StartsWith(omnibox_text, chip_text, true))
-    chip_text_offset = 0;
-  const gfx::FontList& font_list = omnibox_view_->GetFontList();
-  const int chip_text_width = gfx::GetStringWidth(chip_text, font_list);
-  const int old_starting_offset = starting_omnibox_offset_;
-  const int old_starting_leading_inset = starting_omnibox_leading_inset_;
-  const int old_ending_width = ending_omnibox_width_;
-  starting_omnibox_offset_ = current_omnibox_offset_ = 0;
-  starting_omnibox_leading_inset_ = current_omnibox_leading_inset_ = 0;
-  ending_omnibox_width_ = gfx::GetStringWidth(omnibox_text, font_list);
-  if (chip_text_offset < omnibox_text.length()) {
-    if (base::i18n::IsRTL())
-      chip_text_offset += chip_text.length();
-    base::string16 extra_omnibox_text(base::i18n::IsRTL() ?
-        omnibox_text.substr(chip_text_offset) :
-        omnibox_text.substr(0, chip_text_offset));
-    starting_omnibox_leading_inset_ =
-        gfx::GetStringWidth(extra_omnibox_text, font_list);
-    starting_omnibox_offset_ = origin_chip_view_->HostLabelOffset() -
-        starting_omnibox_leading_inset_;
-    current_omnibox_width_ = chip_text_width;
-  } else {
-    // If the chip text wasn't found in the omnibox text, then instead of
-    // starting the show animation clipped to the "hostname", we'll start with
-    // the entire omnibox text visible, clipped to the remaining chip width, and
-    // only animate any necessary expansion of that width, without moving the
-    // omnibox bounds.
-    current_omnibox_width_ = origin_chip_view_->WidthFromStartOfLabels();
-  }
-
-  // End the animations immediately if the parameters have changed.
-  if ((starting_omnibox_offset_ != old_starting_offset) ||
-      (starting_omnibox_leading_inset_ != old_starting_leading_inset) ||
-      (ending_omnibox_width_ != old_ending_width))
-    EndOriginChipAnimations(true);
-
-  // Also end the animations immediately if there's nothing to animate (but do
-  // allow the chip to fade back in).
-  const ui::NativeTheme* native_theme = GetNativeTheme();
-  const SkColor ending_selection_text_color = native_theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionColor);
-  const SkColor ending_selection_background_color =
-      native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
-  if ((starting_omnibox_offset_ == 0) &&
-      (starting_omnibox_leading_inset_ == 0) &&
-      (ending_omnibox_width_ == chip_text_width) &&
-      (hide_url_animation_->is_animating() ||
-       ((ending_selection_text_color ==
-            origin_chip_view_->pressed_text_color()) &&
-        (ending_selection_background_color ==
-            origin_chip_view_->pressed_background_color()))))
-    EndOriginChipAnimations(false);
-
-  if (show_url_animation_->is_animating()) {
-    omnibox_view_->SetSelectionTextColor(gfx::Tween::ColorValueBetween(
-        show_url_animation_->GetCurrentValue(),
-        origin_chip_view_->pressed_text_color(),
-        ending_selection_text_color));
-    omnibox_view_->SetSelectionBackgroundColor(gfx::Tween::ColorValueBetween(
-        show_url_animation_->GetCurrentValue(),
-        origin_chip_view_->pressed_background_color(),
-        ending_selection_background_color));
-    current_omnibox_offset_ =
-        show_url_animation_->CurrentValueBetween(starting_omnibox_offset_, 0);
-    current_omnibox_leading_inset_ = show_url_animation_->CurrentValueBetween(
-        starting_omnibox_leading_inset_, 0);
-    current_omnibox_width_ = show_url_animation_->CurrentValueBetween(
-        chip_text_width, ending_omnibox_width_);
-  } else if (hide_url_animation_->is_animating()) {
-    current_omnibox_offset_ =
-        hide_url_animation_->CurrentValueBetween(0, starting_omnibox_offset_);
-    current_omnibox_leading_inset_ = hide_url_animation_->CurrentValueBetween(
-        0, starting_omnibox_leading_inset_);
-    current_omnibox_width_ = hide_url_animation_->CurrentValueBetween(
-        ending_omnibox_width_, chip_text_width);
-  }
-  // Contract |available_width| as necessary, but never expand it.  This way,
-  // we'll never draw suggested text at first and then have it disappear
-  // midway through the animation.
-  if (current_omnibox_offset_ > 0)
-    available_width -= current_omnibox_offset_;
-  location_bounds.Inset(current_omnibox_offset_, 0, 0, 0);
 
   // Layout out the suggested text view right aligned to the location
   // entry. Only show the suggested text if we can fit the text from one
@@ -998,35 +856,7 @@ void LocationBarView::ResetTabState(WebContents* contents) {
 }
 
 void LocationBarView::ShowURL() {
-  // Start the animation before calling ShowURL(), since the latter eventually
-  // calls back to Layout(), and if the animation is not marked as "running",
-  // we'll draw the omnibox in its final position briefly until the first
-  // animation callback reaches us.
-  if (chrome::ShouldDisplayOriginChip()) {
-    // If we're currently hiding, reverse the hide by swapping to the show
-    // animation, offset so that the text is in the same position.
-    if (hide_url_animation_->is_animating()) {
-      const double show_value = GetValueForAnimation(false);
-      hide_url_animation_->Reset();
-      show_url_animation_->Show();
-      // This must be done after calling Show() and is not equivalent to
-      // calling Reset(n) before Show(); Reset() would have caused the entire
-      // animation curve (and time) to run between this value and the final
-      // value, whereas Show() + SetCurrentValue() skips the animation forward
-      // to the supplied value.
-      show_url_animation_->SetCurrentValue(show_value);
-    } else {
-      show_url_animation_->Show();
-    }
-  }
   omnibox_view_->ShowURL();
-}
-
-void LocationBarView::EndOriginChipAnimations(bool cancel_fade) {
-  show_url_animation_->End();
-  hide_url_animation_->End();
-  if (cancel_fade)
-    origin_chip_view_->CancelFade();
 }
 
 ToolbarModel* LocationBarView::GetToolbarModel() {
@@ -1215,47 +1045,8 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 bool LocationBarView::ShouldShowEVBubble() const {
-  return !chrome::ShouldDisplayOriginChip() &&
+  return
       (GetToolbarModel()->GetSecurityLevel(false) == ToolbarModel::EV_SECURE);
-}
-
-double LocationBarView::GetValueForAnimation(bool hide) const {
-  int calculated_offset;
-  const gfx::Tween::Type tween_type = hide ? kHideTweenType : kShowTweenType;
-  int start_offset = starting_omnibox_offset_, end_offset = 0;
-  if (hide)
-    std::swap(start_offset, end_offset);
-  const int desired_offset = abs(current_omnibox_offset_);
-  // Binary-search the value space (0 <= value <= 1) to find the appropriate
-  // position.  We only bother to iterate to within 1/64 of the desired value,
-  // because the longer of the two animations will only run for twelve frames
-  // anyway (200 ms * 60 Hz), so at this point we'll have a maximum error of
-  // less than a fifth of an animation frame, which the user isn't going to
-  // notice.
-  //
-  // We have to use this method because Tween::CalculateValue() is not
-  // necessarily easily invertible.  Luckily, this only runs when the user
-  // reverses the animation (rare), and the limit on how many iterations we'll
-  // do ensures the cost is unnoticeable.
-  double value = 0.5;
-  double step = value / 2;
-  do {
-    calculated_offset = abs(gfx::Tween::IntValueBetween(
-        gfx::Tween::CalculateValue(tween_type, value), start_offset,
-        end_offset));
-    if (calculated_offset < desired_offset)
-      value += step;
-    else if (calculated_offset > desired_offset)
-      value -= step;
-    step /= 2;
-  } while ((calculated_offset != desired_offset) && (step >= (1.0 / 64)));
-  return value;
-}
-
-void LocationBarView::ResetShowAnimationAndColors() {
-  show_url_animation_->Reset();
-  omnibox_view_->UseDefaultSelectionTextColor();
-  omnibox_view_->UseDefaultSelectionBackgroundColor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1363,11 +1154,6 @@ void LocationBarView::UpdateGeneratedCreditCardView() {
 }
 
 void LocationBarView::SaveStateToContents(WebContents* contents) {
-  // If we're about to switch tabs, complete any current animations, so that if
-  // the user is in the midst of hiding the URL, when he returns to this tab,
-  // the URL will be hidden rather than shown.
-  // NOTE: This must be called before SaveStateToTab().
-  EndOriginChipAnimations(true);
   omnibox_view_->SaveStateToTab(contents);
 }
 
@@ -1487,25 +1273,17 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 void LocationBarView::PaintChildren(gfx::Canvas* canvas,
                                     const views::CullSet& cull_set) {
   // Paint all the children except for the omnibox itself, which may need to be
-  // clipped if it's animating in, and the origin chip and the search button,
-  // which will be painted after the border.
+  // clipped if it's animating in, and the search button, which will be painted
+  // after the border.
   for (int i = 0, count = child_count(); i < count; ++i) {
     views::View* child = child_at(i);
     if (!child->layer() && (child != omnibox_view_) &&
-        (child != origin_chip_view_) && (child != search_button_))
+        (child != search_button_))
       child->Paint(canvas, cull_set);
   }
 
   {
     gfx::ScopedCanvas scoped_canvas(canvas);
-    if (show_url_animation_->is_animating() ||
-        hide_url_animation_->is_animating()) {
-      gfx::Rect clip_rect(omnibox_view_->bounds());
-      clip_rect.Inset(current_omnibox_leading_inset_, 0, 0, 0);
-      clip_rect.set_width(current_omnibox_width_);
-      clip_rect.set_x(GetMirroredXForRect(clip_rect));
-      canvas->ClipRect(clip_rect);
-    }
     omnibox_view_->Paint(canvas, cull_set);
   }
 
@@ -1523,9 +1301,8 @@ void LocationBarView::PaintChildren(gfx::Canvas* canvas,
     border_rect.Inset(-kPopupEdgeThickness, 0);
   views::Painter::PaintPainterAt(canvas, border_painter_.get(), border_rect);
 
-  // The origin chip and the search button must be painted after the border so
-  // that the border shadow is not drawn over them.
-  origin_chip_view_->Paint(canvas, cull_set);
+  // The search button must be painted after the border so that the border
+  // shadow is not drawn over them.
   search_button_->Paint(canvas, cull_set);
 }
 
@@ -1568,12 +1345,10 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
 
 int LocationBarView::GetDragOperationsForView(views::View* sender,
                                               const gfx::Point& p) {
-  DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_) ||
-         (sender == origin_chip_view_));
+  DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
   WebContents* web_contents = delegate_->GetWebContents();
   return (web_contents && web_contents->GetURL().is_valid() &&
-          (!GetOmniboxView()->IsEditingOrEmpty() ||
-           sender == origin_chip_view_)) ?
+          (!GetOmniboxView()->IsEditingOrEmpty())) ?
       (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
       ui::DragDropTypes::DRAG_NONE;
 }
@@ -1604,8 +1379,6 @@ void LocationBarView::OnChanged() {
   search_button_->SetVisible(!is_popup_mode_ && meets_conditions);
   search_button_->UpdateIcon(icon_id == IDR_OMNIBOX_SEARCH);
 
-  origin_chip_view_->OnChanged();
-
   Layout();
   SchedulePaint();
 }
@@ -1622,23 +1395,6 @@ const ToolbarModel* LocationBarView::GetToolbarModel() const {
   return delegate_->GetToolbarModel();
 }
 
-void LocationBarView::HideURL() {
-  DCHECK(chrome::ShouldDisplayOriginChip());
-
-  // If we're currently showing, reverse the hide by swapping to the hide
-  // animation, offset so that the text is in the same position.
-  if (show_url_animation_->is_animating()) {
-    const double hide_value = GetValueForAnimation(true);
-    ResetShowAnimationAndColors();
-    hide_url_animation_->Show();
-    // This must be done after calling Show() and is not equivalent to Reset(n);
-    // see comments in ShowURL().
-    hide_url_animation_->SetCurrentValue(hide_value);
-  } else {
-    hide_url_animation_->Show();
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private DropdownBarHostDelegate implementation:
 
@@ -1648,29 +1404,6 @@ void LocationBarView::SetFocusAndSelection(bool select_all) {
 
 void LocationBarView::SetAnimationOffset(int offset) {
   dropdown_animation_offset_ = offset;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, private gfx::AnimationDelegate implementation:
-
-void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
-  DCHECK((animation == show_url_animation_.get()) ||
-      (animation == hide_url_animation_.get()));
-  Layout();
-  SchedulePaint();
-}
-
-void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == show_url_animation_.get()) {
-    ResetShowAnimationAndColors();
-    Layout();
-    SchedulePaint();
-  } else {
-    DCHECK(animation == hide_url_animation_.get());
-    hide_url_animation_->Reset();
-    origin_chip_view_->FadeIn();
-    omnibox_view_->HideURL();  // Calls OnChanged(), triggering layout.
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

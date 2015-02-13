@@ -238,8 +238,7 @@ void OmniboxViewMac::Update() {
 }
 
 void OmniboxViewMac::UpdatePlaceholderText() {
-  if (chrome::ShouldDisplayOriginChip() ||
-      OmniboxFieldTrial::DisplayHintTextWhenPossible()) {
+  if (OmniboxFieldTrial::DisplayHintTextWhenPossible()) {
     NSDictionary* placeholder_attributes = @{
       NSFontAttributeName : GetFieldFont(gfx::Font::NORMAL),
       NSForegroundColorAttributeName : [NSColor disabledControlTextColor]
@@ -836,16 +835,12 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
 void OmniboxViewMac::OnSetFocus(bool control_down) {
   model()->OnSetFocus(control_down);
   controller()->OnSetFocus();
-
-  HandleOriginChipMouseRelease();
 }
 
 void OmniboxViewMac::OnKillFocus() {
   // Tell the model to reset itself.
   model()->OnWillKillFocus();
   model()->OnKillFocus();
-
-  OnDidKillFocus();
 }
 
 void OmniboxViewMac::OnMouseDown(NSInteger button_number) {

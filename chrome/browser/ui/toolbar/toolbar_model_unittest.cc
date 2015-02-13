@@ -148,7 +148,6 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   void SetUp() override;
 
  protected:
-  void EnableOriginChipFieldTrial();
   void NavigateAndCheckText(const GURL& url,
                             const base::string16& expected_text,
                             bool would_perform_search_term_replacement,
@@ -182,13 +181,6 @@ void ToolbarModelTest::SetUp() {
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), &AutocompleteClassifierFactory::BuildInstanceFor);
   UIThreadSearchTermsData::SetGoogleBaseURL("http://google.com/");
-}
-
-void ToolbarModelTest::EnableOriginChipFieldTrial() {
-  field_trial_list_.reset(new base::FieldTrialList(
-      new metrics::SHA1EntropyProvider("platypus")));
-  base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                         "Group1 espv:2 origin_chip:1");
 }
 
 void ToolbarModelTest::NavigateAndCheckText(
@@ -286,42 +278,6 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_QueryExtraction) {
   }
 }
 
-// Test that we remove or replace URLs appropriately when the origin chip is
-// enabled.
-TEST_F(ToolbarModelTest, ShouldDisplayURL_OriginChip) {
-  EnableOriginChipFieldTrial();
-  AddTab(browser(), GURL(url::kAboutBlankURL));
-
-  // Check each case with the origin chip enabled but query extraction disabled.
-  EXPECT_TRUE(chrome::ShouldDisplayOriginChip());
-  EXPECT_FALSE(chrome::IsQueryExtractionEnabled());
-  for (size_t i = 0; i < arraysize(test_items); ++i) {
-    const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url, base::string16(), false,
-                         test_item.should_display_url);
-  }
-
-  // Check with both enabled.
-  chrome::EnableQueryExtractionForTesting();
-  EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
-  EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
-  for (size_t i = 0; i < arraysize(test_items); ++i) {
-    const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url, test_item.expected_text_both,
-                         test_item.would_perform_search_term_replacement,
-                         test_item.should_display_url);
-  }
-
-  // Disabling URL replacement should reset to only showing URLs.
-  browser()->toolbar_model()->set_url_replacement_enabled(false);
-  for (size_t i = 0; i < arraysize(test_items); ++i) {
-    const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url,
-                         test_item.expected_text_url_replacement_inactive,
-                         false, test_item.should_display_url);
-  }
-}
-
  // Verify that search terms are extracted while the page is loading.
 TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
   chrome::EnableQueryExtractionForTesting();
@@ -371,14 +327,11 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
       base::ASCIIToUTF16("tractor supply"), true, true);
 }
 
-// Popup windows don't have an origin chip, so test that URL display in a popup
-// ignores whether the origin chip is enabled and only respects the query
-// extraction flag.
+// Test that URL display in a popup respects the query extraction flag.
 TEST_F(PopupToolbarModelTest, ShouldDisplayURL) {
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
-  // Check with neither query extraction nor the origin chip enabled.
-  EXPECT_FALSE(chrome::ShouldDisplayOriginChip());
+  // Check with query extraction disabled.
   EXPECT_FALSE(chrome::IsQueryExtractionEnabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
@@ -387,19 +340,7 @@ TEST_F(PopupToolbarModelTest, ShouldDisplayURL) {
                          false, test_item.should_display_url);
   }
 
-  // Check with the origin chip enabled.
-  EnableOriginChipFieldTrial();
-  EXPECT_TRUE(chrome::ShouldDisplayOriginChip());
-  EXPECT_FALSE(chrome::IsQueryExtractionEnabled());
-  for (size_t i = 0; i < arraysize(test_items); ++i) {
-    const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url,
-                         test_item.expected_text_url_replacement_inactive,
-                         false, test_item.should_display_url);
-  }
-
-  // With both origin chip and query extraction enabled, only search term
-  // replacement should be performed.
+  // With query extraction enabled, search term replacement should be performed.
   chrome::EnableQueryExtractionForTesting();
   EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
   EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());

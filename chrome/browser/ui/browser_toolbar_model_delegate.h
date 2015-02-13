@@ -20,7 +20,6 @@ class BrowserToolbarModelDelegate : public ToolbarModelDelegate {
 
   // ToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
-  bool InTabbedBrowser() const override;
 
  private:
   Browser* browser_;

@@ -1451,7 +1451,6 @@
       'browser/ui/content_settings/content_setting_image_model_unittest.cc',
       'browser/ui/elide_url_unittest.cc',  # URL elider not used on Android.
       'browser/ui/exclusive_access/fullscreen_controller_state_unittest.cc',
-      'browser/ui/location_bar/origin_chip_info_unittest.cc',
       'browser/ui/omnibox/omnibox_controller_unittest.cc',
       'browser/ui/omnibox/omnibox_edit_unittest.cc',
       'browser/ui/omnibox/omnibox_popup_model_unittest.cc',
