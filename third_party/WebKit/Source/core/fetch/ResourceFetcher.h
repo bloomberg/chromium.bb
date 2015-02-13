@@ -227,7 +227,7 @@ private:
     DocumentLoader* m_documentLoader;
 
     OwnPtr<ListHashSet<Resource*>> m_preloads;
-    OwnPtrWillBePersistent<ArchiveResourceCollection> m_archiveResourceCollection;
+    OwnPtrWillBeMember<ArchiveResourceCollection> m_archiveResourceCollection;
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;

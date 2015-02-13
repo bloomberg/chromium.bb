@@ -1639,6 +1639,7 @@ void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy polic
 void ResourceFetcher::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
+    visitor->trace(m_archiveResourceCollection);
     visitor->trace(m_loaders);
     visitor->trace(m_nonBlockingLoaders);
     ResourceLoaderHost::trace(visitor);
