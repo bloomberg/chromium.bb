@@ -209,6 +209,18 @@
    fun:_ZN11CUIRenderer4DrawE6CGRectP9CGContextPK14__CFDictionaryPS5_
 }
 {
+   bug_173779_b
+   Memcheck:Uninitialized
+   ...
+   fun:img_data_lock
+   fun:CGSImageDataLock
+   fun:ripc_AcquireImage
+   fun:ripc_DrawImage*
+   fun:CGContextDrawImage*
+   ...
+   fun:-[NSImage hitTestRect:withImageDestinationRect:context:hints:flipped:]
+}
+{
   bug_340726
   Memcheck:Leak
   fun:_Znw*
