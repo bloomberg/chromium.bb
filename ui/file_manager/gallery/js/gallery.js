@@ -283,10 +283,22 @@ Gallery.prototype.initToolbarButton_ = function(className, title) {
 /**
  * Loads the content.
  *
- * @param {!Array.<Entry>} entries Array of entries.
  * @param {!Array.<Entry>} selectedEntries Array of selected entries.
  */
-Gallery.prototype.load = function(entries, selectedEntries) {
+Gallery.prototype.load = function(selectedEntries) {
+  GalleryUtil.createEntrySet(selectedEntries).then(function(allEntries) {
+    this.loadInternal_(allEntries, selectedEntries);
+  }.bind(this));
+};
+
+/**
+ * Loads the content.
+ *
+ * @param {!Array.<Entry>} entries Array of entries.
+ * @param {!Array.<Entry>} selectedEntries Array of selected entries.
+ * @private
+ */
+Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   // Obtains max chank size.
   var maxChunkSize = 20;
   var volumeInfo = this.volumeManager_.getVolumeInfo(entries[0]);
@@ -902,11 +914,10 @@ window.initialize = function(backgroundComponents) {
 
 /**
  * Loads entries.
- * @param {!Array.<Entry>} entries Array of entries.
  * @param {!Array.<Entry>} selectedEntries Array of selected entries.
  */
-window.loadEntries = function(entries, selectedEntries) {
-  gallery.load(entries, selectedEntries);
+window.loadEntries = function(selectedEntries) {
+  gallery.load(selectedEntries);
 };
 
 /**

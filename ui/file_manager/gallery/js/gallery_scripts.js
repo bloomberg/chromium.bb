@@ -66,6 +66,7 @@
 //<include src="gallery.js">
 //<include src="gallery_data_model.js">
 //<include src="gallery_item.js">
+//<include src="gallery_util.js">
 //<include src="mosaic_mode.js">
 //<include src="ribbon.js">
 //<include src="slide_mode.js">

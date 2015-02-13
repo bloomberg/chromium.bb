@@ -19,12 +19,13 @@ function setUp() {
   fileSystem.populate(filenames);
 }
 
-function testCreateEntrySet(callback) {
-  var emptrySelectionPromise = createEntrySet([]).then(function(results) {
+function testcreateEntrySet(callback) {
+  var emptySelectionPromise = GalleryUtil.createEntrySet([
+  ]).then(function(results) {
     assertEquals(0, results.length);
   });
 
-  var singleSelectionPromise = createEntrySet([
+  var singleSelectionPromise = GalleryUtil.createEntrySet([
     fileSystem.entries['/DCIM/photos0/IMG00002.jpg']
   ]).then(function(results) {
     assertEquals(3, results.length);
@@ -34,7 +35,7 @@ function testCreateEntrySet(callback) {
   });
 
   // If a hidden file is selected directly by users, includes it.
-  var singleHiddenSelectionPromise = createEntrySet([
+  var singleHiddenSelectionPromise = GalleryUtil.createEntrySet([
     fileSystem.entries['/DCIM/photos0/.HiddenFile.jpg']
   ]).then(function(results) {
     assertEquals(4, results.length);
@@ -44,7 +45,7 @@ function testCreateEntrySet(callback) {
     assertEquals('/DCIM/photos0/IMG00003.jpg', results[3].fullPath);
   });
 
-  var multipleSelectionPromise = createEntrySet([
+  var multipleSelectionPromise = GalleryUtil.createEntrySet([
     fileSystem.entries['/DCIM/photos0/IMG00001.jpg'],
     fileSystem.entries['/DCIM/photos0/IMG00002.jpg'],
   ]).then(function(results) {
@@ -53,7 +54,7 @@ function testCreateEntrySet(callback) {
     assertEquals('/DCIM/photos0/IMG00002.jpg', results[1].fullPath);
   });
 
-  var multipleSelectionReverseOrderPromise = createEntrySet([
+  var multipleSelectionReverseOrderPromise = GalleryUtil.createEntrySet([
     fileSystem.entries['/DCIM/photos0/IMG00002.jpg'],
     fileSystem.entries['/DCIM/photos0/IMG00001.jpg'],
   ]).then(function(results) {
@@ -62,7 +63,7 @@ function testCreateEntrySet(callback) {
     assertEquals('/DCIM/photos0/IMG00002.jpg', results[1].fullPath);
   });
 
-  var multipleHiddenSelectionPromise = createEntrySet([
+  var multipleHiddenSelectionPromise = GalleryUtil.createEntrySet([
     fileSystem.entries['/DCIM/photos0/IMG00001.jpg'],
     fileSystem.entries['/DCIM/photos0/.HiddenFile.jpg']
   ]).then(function(results) {
@@ -72,7 +73,7 @@ function testCreateEntrySet(callback) {
   });
 
   reportPromise(Promise.all([
-    emptrySelectionPromise,
+    emptySelectionPromise,
     singleSelectionPromise,
     singleHiddenSelectionPromise,
     multipleSelectionPromise,

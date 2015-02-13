@@ -65,52 +65,6 @@ function resolveEntries(entries) {
 }
 
 /**
- * Obtains the entry set from the entries passed from onLaunched events.
- * If an single entry is specified, the function returns all entries in the same
- * directory. Otherwise the function returns the passed entries.
- *
- * The function also filters non-image items and hidden items.
- *
- * @param {!Array.<!FileEntry>} originalEntries Entries passed from onLaunched
- *     events.
- * @return {!Promise} Promise to be fulfilled with entry array.
- */
-function createEntrySet(originalEntries) {
-  var entriesPromise;
-  if (originalEntries.length === 1) {
-    var parentPromise =
-        new Promise(originalEntries[0].getParent.bind(originalEntries[0]));
-    entriesPromise = parentPromise.then(function(parent) {
-      var reader = parent.createReader();
-      var readEntries = function() {
-        return new Promise(reader.readEntries.bind(reader)).then(
-            function(entries) {
-              if (entries.length === 0)
-                return [];
-              return readEntries().then(function(nextEntries) {
-                return entries.concat(nextEntries);
-              });
-            });
-      };
-      return readEntries();
-    }).then(function(entries) {
-      return entries.filter(function(entry) {
-        return originalEntries[0].toURL() === entry.toURL() ||
-            entry.name[0] !== '.';
-      });
-    });
-  } else {
-    entriesPromise = Promise.resolve(originalEntries);
-  }
-
-  return entriesPromise.then(function(entries) {
-    return entries.filter(FileType.isImage).sort(function(a, b) {
-      return a.name.localeCompare(b.name);
-    });
-  });
-}
-
-/**
  * Promise to be fulfilled with singleton instance of background components.
  * @type {Promise}
  */
@@ -178,10 +132,6 @@ function launch(selectedEntriesPromise) {
         });
   });
 
-  // If only 1 entry is selected, retrieve entries in the same directory.
-  // Otherwise, just use the selectedEntries as an entry set.
-  var allEntriesPromise = selectedEntriesPromise.then(createEntrySet);
-
   // Initialize the window document.
   return Promise.all([
     appWindowPromise,
@@ -190,11 +140,8 @@ function launch(selectedEntriesPromise) {
     var appWindow = /** @type {!chrome.app.window.AppWindow} */ (args[0]);
     var galleryWindow = /** @type {!GalleryWindow} */ (appWindow.contentWindow);
     galleryWindow.initialize(args[1]);
-    return Promise.all([
-      allEntriesPromise,
-      selectedEntriesPromise
-    ]).then(function(entries) {
-      galleryWindow.loadEntries(entries[0], entries[1]);
+    return selectedEntriesPromise.then(function(entries) {
+      galleryWindow.loadEntries(entries);
     });
   });
 }
