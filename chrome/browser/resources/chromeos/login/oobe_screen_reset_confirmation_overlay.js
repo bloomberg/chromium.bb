@@ -4,6 +4,7 @@
 
 cr.define('reset', function() {
 
+  var USER_ACTION_RESET_CONFIRM_DISMISSED = 'reset-confirm-dismissed';
   /**
    * ResetScreenConfirmationOverlay class
    * Encapsulated handling of the 'Confirm reset device' overlay OOBE page.
@@ -20,33 +21,12 @@ cr.define('reset', function() {
      */
     initializePage: function() {
       var overlay = $('reset-confirm-overlay');
-      overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
-
-      $('reset-confirm-dismiss').addEventListener('click', this.handleDismiss_);
-      $('reset-confirm-commit').addEventListener('click', this.handleCommit_);
-
+      overlay.addEventListener('cancelOverlay', function(e) {
+        $('reset').send(login.Screen.CALLBACK_USER_ACTED,
+                        USER_ACTION_RESET_CONFIRM_DISMISSED);
+        e.stopPropagation();
+      });
       $('overlay-reset').removeAttribute('hidden');
-    },
-
-    /**
-     * Handles a click on the dismiss button.
-     * @param {Event} e The click event.
-     */
-    handleDismiss_: function(e) {
-      $('reset').isConfirmational = false;
-      $('overlay-reset').setAttribute('hidden', true);
-      e.stopPropagation();
-    },
-
-    /**
-     * Handles a click on the commit button.
-     * @param {Event} e The click event.
-     */
-    handleCommit_: function(e) {
-      $('reset').isConfirmational = false;
-      chrome.send('powerwashOnReset', [$('reset').rollbackChecked]);
-      $('overlay-reset').setAttribute('hidden', true);
-      e.stopPropagation();
     },
   };
 
