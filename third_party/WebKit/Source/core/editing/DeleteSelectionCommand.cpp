@@ -781,7 +781,7 @@ void DeleteSelectionCommand::doApply()
     if (!m_hasSelectionToDelete)
         m_selectionToDelete = endingSelection();
 
-    if (!m_selectionToDelete.isNonOrphanedRange())
+    if (!m_selectionToDelete.isNonOrphanedRange() || !m_selectionToDelete.isContentEditable())
         return;
 
     // save this to later make the selection with
