@@ -15,7 +15,7 @@
 #include "chrome/renderer/media/cast_rtp_stream.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
-#include "content/public/renderer/v8_value_converter.h"
+#include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/script_context.h"
 #include "net/base/host_port_pair.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"

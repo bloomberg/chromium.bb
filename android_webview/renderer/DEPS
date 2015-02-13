@@ -9,6 +9,7 @@ include_rules = [
   "+components/printing/renderer",
   "+components/visitedlink/renderer",
 
+  "+content/public/child",
   "+content/public/renderer",
 
   "+media/base",

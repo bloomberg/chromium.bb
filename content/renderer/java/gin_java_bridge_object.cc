@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/android/gin_java_bridge_value.h"
-#include "content/public/renderer/v8_value_converter.h"
+#include "content/public/child/v8_value_converter.h"
 #include "content/renderer/java/gin_java_bridge_value_converter.h"
 #include "gin/function_template.h"
 #include "third_party/WebKit/public/web/WebFrame.h"

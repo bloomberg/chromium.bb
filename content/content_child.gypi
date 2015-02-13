@@ -27,6 +27,7 @@
       'public/child/image_decoder_utils.h',
       'public/child/request_peer.h',
       'public/child/resource_dispatcher_delegate.h',
+      'public/child/v8_value_converter.h',
     ],
     'private_child_sources': [
       'child/appcache/appcache_backend_proxy.cc',
@@ -219,6 +220,8 @@
       'child/thread_safe_sender.h',
       'child/threaded_data_provider.cc',
       'child/threaded_data_provider.h',
+      'child/v8_value_converter_impl.cc',
+      'child/v8_value_converter_impl.h',
       'child/web_data_consumer_handle_impl.cc',
       'child/web_data_consumer_handle_impl.h',
       'child/web_database_observer_impl.cc',

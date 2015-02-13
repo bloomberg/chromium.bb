@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "content/renderer/v8_value_converter_impl.h"
+#include "content/child/v8_value_converter_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 

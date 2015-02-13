@@ -5,7 +5,7 @@
 #include "extensions/renderer/send_request_natives.h"
 
 #include "base/json/json_reader.h"
-#include "content/public/renderer/v8_value_converter.h"
+#include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/script_context.h"
 

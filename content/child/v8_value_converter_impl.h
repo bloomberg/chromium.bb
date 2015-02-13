@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
-#define CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
+#ifndef CONTENT_CHILD_V8_VALUE_CONVERTER_IMPL_H_
+#define CONTENT_CHILD_V8_VALUE_CONVERTER_IMPL_H_
 
 #include <map>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/v8_value_converter.h"
+#include "content/public/child/v8_value_converter.h"
 
 namespace base {
 class BinaryValue;
@@ -95,4 +95,4 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
+#endif  // CONTENT_CHILD_V8_VALUE_CONVERTER_IMPL_H_
