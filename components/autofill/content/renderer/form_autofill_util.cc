@@ -5,6 +5,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 
 #include <map>
+#include <set>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -169,13 +170,16 @@ const base::string16 CombineAndCollapseWhitespace(
 
 // This is a helper function for the FindChildText() function (see below).
 // Search depth is limited with the |depth| parameter.
-base::string16 FindChildTextInner(const WebNode& node, int depth) {
+// |divs_to_skip| is a list of <div> tags to ignore if encountered.
+base::string16 FindChildTextInner(const WebNode& node,
+                                  int depth,
+                                  const std::set<WebNode>& divs_to_skip) {
   if (depth <= 0 || node.isNull())
     return base::string16();
 
   // Skip over comments.
   if (node.nodeType() == WebNode::CommentNode)
-    return FindChildTextInner(node.nextSibling(), depth - 1);
+    return FindChildTextInner(node.nextSibling(), depth - 1, divs_to_skip);
 
   if (node.nodeType() != WebNode::ElementNode &&
       node.nodeType() != WebNode::TextNode)
@@ -191,6 +195,9 @@ base::string16 FindChildTextInner(const WebNode& node, int depth) {
          IsAutofillableElement(element.toConst<WebFormControlElement>()))) {
       return base::string16();
     }
+
+    if (element.hasHTMLTagName("div") && ContainsKey(divs_to_skip, node))
+      return base::string16();
   }
 
   // Extract the text exactly at this node.
@@ -198,17 +205,35 @@ base::string16 FindChildTextInner(const WebNode& node, int depth) {
 
   // Recursively compute the children's text.
   // Preserve inter-element whitespace separation.
-  base::string16 child_text = FindChildTextInner(node.firstChild(), depth - 1);
+  base::string16 child_text =
+      FindChildTextInner(node.firstChild(), depth - 1, divs_to_skip);
   bool add_space = node.nodeType() == WebNode::TextNode && node_text.empty();
   node_text = CombineAndCollapseWhitespace(node_text, child_text, add_space);
 
   // Recursively compute the siblings' text.
   // Again, preserve inter-element whitespace separation.
   base::string16 sibling_text =
-      FindChildTextInner(node.nextSibling(), depth - 1);
+      FindChildTextInner(node.nextSibling(), depth - 1, divs_to_skip);
   add_space = node.nodeType() == WebNode::TextNode && node_text.empty();
   node_text = CombineAndCollapseWhitespace(node_text, sibling_text, add_space);
 
+  return node_text;
+}
+
+// Same as FindChildText() below, but with a list of div nodes to skip.
+// TODO(thestig): See if other FindChildText() callers can benefit from this.
+base::string16 FindChildTextWithIgnoreList(
+    const WebNode& node,
+    const std::set<WebNode>& divs_to_skip) {
+  if (node.isTextNode())
+    return node.nodeValue();
+
+  WebNode child = node.firstChild();
+
+  const int kChildSearchDepth = 10;
+  base::string16 node_text =
+      FindChildTextInner(child, kChildSearchDepth, divs_to_skip);
+  base::TrimWhitespace(node_text, base::TRIM_ALL, &node_text);
   return node_text;
 }
 
@@ -219,15 +244,7 @@ base::string16 FindChildTextInner(const WebNode& node, int depth) {
 // |innerText()|, the search depth and breadth are limited to a fixed threshold.
 // Whitespace is trimmed from text accumulated at descendant nodes.
 base::string16 FindChildText(const WebNode& node) {
-  if (node.isTextNode())
-    return node.nodeValue();
-
-  WebNode child = node.firstChild();
-
-  const int kChildSearchDepth = 10;
-  base::string16 node_text = FindChildTextInner(child, kChildSearchDepth);
-  base::TrimWhitespace(node_text, base::TRIM_ALL, &node_text);
-  return node_text;
+  return FindChildTextWithIgnoreList(node, std::set<WebNode>());
 }
 
 // Shared function for InferLabelFromPrevious() and InferLabelFromNext().
@@ -408,6 +425,7 @@ base::string16 InferLabelFromTableRow(const WebFormControlElement& element) {
 base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   WebNode node = element.parentNode();
   bool looking_for_parent = true;
+  std::set<WebNode> divs_to_skip;
 
   // Search the sibling and parent <div>s until we find a candidate label.
   base::string16 inferred_label;
@@ -416,15 +434,21 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kFieldSet, ("fieldset"));
   while (inferred_label.empty() && !node.isNull()) {
     if (HasTagName(node, kDiv)) {
-      inferred_label = FindChildText(node);
+      if (looking_for_parent)
+        inferred_label = FindChildTextWithIgnoreList(node, divs_to_skip);
+      else
+        inferred_label = FindChildText(node);
+
       // Avoid sibling DIVs that contain autofillable fields.
       if (!looking_for_parent && !inferred_label.empty()) {
         CR_DEFINE_STATIC_LOCAL(WebString, kSelector,
                                ("input, select, textarea"));
         blink::WebExceptionCode ec = 0;
         WebElement result_element = node.querySelector(kSelector, ec);
-        if (!result_element.isNull())
+        if (!result_element.isNull()) {
           inferred_label.clear();
+          divs_to_skip.insert(node);
+        }
       }
 
       looking_for_parent = false;
