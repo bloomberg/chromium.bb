@@ -1041,7 +1041,7 @@
                            'yukishiino+watch@chromium.org'],
     'timers': ['chirantan+watch@chromium.org'],
     'tools_emacs': ['dhollowa+watch@chromium.org'],
-    'tracing': ['dsinclair+watch@chromium.org', 'wfh+watch@chromium.org'],
+    'tracing': ['tracing+reviews@chromium.org', 'wfh+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
