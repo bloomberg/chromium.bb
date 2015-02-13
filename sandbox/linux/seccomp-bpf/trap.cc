@@ -14,9 +14,10 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
+#include "sandbox/linux/system_headers/linux_seccomp.h"
 
 // Android's signal.h doesn't define ucontext etc.
 #if defined(OS_ANDROID)

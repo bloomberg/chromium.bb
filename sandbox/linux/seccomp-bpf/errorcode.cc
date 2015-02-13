@@ -5,7 +5,7 @@
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 
 #include "sandbox/linux/seccomp-bpf/die.h"
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+#include "sandbox/linux/system_headers/linux_seccomp.h"
 
 namespace sandbox {
 

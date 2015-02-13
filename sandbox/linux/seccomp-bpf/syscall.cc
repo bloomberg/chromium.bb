@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+#include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 
 namespace sandbox {
 

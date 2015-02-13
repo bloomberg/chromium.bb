@@ -27,16 +27,17 @@
 #include "sandbox/linux/bpf_dsl/dump_bpf.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
+#include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
+#include "sandbox/linux/system_headers/linux_seccomp.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
 namespace sandbox {

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+#include "sandbox/linux/bpf_dsl/linux_syscall_ranges.h"
 
 namespace sandbox {
 

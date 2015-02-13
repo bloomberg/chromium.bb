@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+#include "sandbox/linux/bpf_dsl/linux_syscall_ranges.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace sandbox {

@@ -10,8 +10,8 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
+#include "sandbox/linux/system_headers/linux_seccomp.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace sandbox {
