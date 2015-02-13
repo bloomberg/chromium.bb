@@ -18,17 +18,17 @@ class AnimationLengthBoxStyleInterpolationTest : public ::testing::Test {
 protected:
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthBoxToInterpolableValue(const CSSValue& value)
     {
-        return LengthBoxStyleInterpolation::lengthBoxtoInterpolableValue(value);
+        return LengthBoxStyleInterpolation::lengthBoxtoInterpolableValue(value, value, false);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthBox(InterpolableValue* value)
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthBox(InterpolableValue* value, const CSSValue& start, const CSSValue& end)
     {
-        return LengthBoxStyleInterpolation::interpolableValueToLengthBox(value);
+        return LengthBoxStyleInterpolation::interpolableValueToLengthBox(value, start, end);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return interpolableValueToLengthBox(lengthBoxToInterpolableValue(*value).get());
+        return interpolableValueToLengthBox(lengthBoxToInterpolableValue(*value).get(), *value, *value);
     }
 
     static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double left, double right, double top, double bottom, CSSPrimitiveValue::UnitType unitType)
@@ -128,7 +128,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBox)
     rectEms->setBottom(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
 
     value = roundTrip(CSSPrimitiveValue::create(rectEms.release()));
-    testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::CSS_EMS);
+    testPrimitiveValue(value, -10, -10, -10, -10, CSSPrimitiveValue::CSS_EMS);
 }
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValues)
@@ -149,7 +149,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValues)
     rectPer->setBottom(CSSPrimitiveValue::create(-30, CSSPrimitiveValue::CSS_PERCENTAGE));
 
     value = roundTrip(CSSPrimitiveValue::create(rectPer.release()));
-    testPrimitiveValue(value, 30, 0, 30, 0, CSSPrimitiveValue::CSS_PERCENTAGE);
+    testPrimitiveValue(value, 30, -30, 30, -30, CSSPrimitiveValue::CSS_PERCENTAGE);
 }
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroBorderImageSlice)

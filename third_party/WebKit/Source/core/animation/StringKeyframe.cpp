@@ -292,12 +292,17 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         fallBackToLegacy = true;
 
         break;
+
     }
 
-    case CSSPropertyWebkitMaskBoxImageSlice:
-        if (LengthBoxStyleInterpolation::matchingFill(*toCSSValue, *fromCSSValue) && LengthBoxStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthBoxStyleInterpolation::createFromBorderImageSlice(*fromCSSValue, *toCSSValue, property);
+    case CSSPropertyClip:
+    case CSSPropertyBorderImageSlice:
+    case CSSPropertyWebkitMaskBoxImageSlice: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = LengthBoxStyleInterpolation::maybeCreateFrom(fromCSSValue, toCSSValue, property);
+        if (interpolation)
+            return interpolation.release();
         break;
+    }
 
     case CSSPropertyStrokeWidth:
         range = RangeNonNegative;
