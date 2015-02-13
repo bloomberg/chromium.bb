@@ -18,6 +18,7 @@ component("surfaces") {
 
   public_deps = [
     "//mojo/converters/geometry",
+    "//mojo/converters/transform",
     "//ui/gfx",
   ]
 

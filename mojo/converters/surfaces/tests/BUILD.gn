@@ -14,6 +14,7 @@ test("mojo_surfaces_lib_unittests") {
     "//gpu",
     "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
+    "//mojo/converters/transform",
     "//mojo/environment:chromium",
     "//skia",
     "//testing/gtest",

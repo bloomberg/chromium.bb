@@ -2,16 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_converters.gypi:mojo_geometry_lib
+# This target does NOT depend on skia. One can depend on this target to avoid
+# picking up a dependency on skia.
 component("geometry") {
   output_name = "mojo_geometry_lib"
 
   public_deps = [
-    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
   deps = [
-    "//skia",
-    "//ui/gfx/geometry",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
     "//third_party/mojo_services/src/geometry/public/interfaces",

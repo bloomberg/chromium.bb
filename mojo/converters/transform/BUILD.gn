@@ -1,0 +1,25 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("transform") {
+  output_name = "mojo_transform_lib"
+
+  public_deps = [
+    "//ui/gfx",
+  ]
+  deps = [
+    "//skia",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//third_party/mojo_services/src/geometry/public/interfaces",
+  ]
+
+  defines = [ "MOJO_TRANSFORM_IMPLEMENTATION" ]
+
+  sources = [
+    "mojo_transform_export.h",
+    "transform_converters.cc",
+    "transform_converters.h",
+  ]
+}

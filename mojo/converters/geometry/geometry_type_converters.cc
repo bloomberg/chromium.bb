@@ -87,26 +87,4 @@ gfx::RectF TypeConverter<gfx::RectF, RectFPtr>::Convert(const RectFPtr& input) {
   return gfx::RectF(input->x, input->y, input->width, input->height);
 }
 
-// static
-TransformPtr TypeConverter<TransformPtr, gfx::Transform>::Convert(
-    const gfx::Transform& input) {
-  std::vector<float> storage(16);
-  input.matrix().asRowMajorf(&storage[0]);
-  mojo::Array<float> matrix;
-  matrix.Swap(&storage);
-  TransformPtr transform(Transform::New());
-  transform->matrix = matrix.Pass();
-  return transform.Pass();
-}
-
-// static
-gfx::Transform TypeConverter<gfx::Transform, TransformPtr>::Convert(
-    const TransformPtr& input) {
-  if (input.is_null())
-    return gfx::Transform();
-  gfx::Transform transform(gfx::Transform::kSkipInitialization);
-  transform.matrix().setRowMajorf(&input->matrix.storage()[0]);
-  return transform;
-}
-
 }  // namespace mojo
