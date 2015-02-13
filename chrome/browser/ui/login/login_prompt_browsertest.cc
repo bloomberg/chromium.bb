@@ -1207,8 +1207,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   TestCrossOriginPrompt(test_page, auth_host);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       LoginInterstitialShouldReplaceExistingInterstitial) {
+IN_PROC_BROWSER_TEST_F(
+    LoginPromptBrowserTest,
+    DISABLED_LoginInterstitialShouldReplaceExistingInterstitial) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
       net::SpawnedTestServer::SSLOptions(
