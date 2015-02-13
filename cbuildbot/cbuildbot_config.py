@@ -2143,6 +2143,7 @@ _paladin_important_boards = frozenset([
   'stout',
   'stumpy',
   'stumpy_moblab',
+  'urara',
   'veyron_pinky',
   'wolf',
   'x86-alex',
@@ -2254,7 +2255,6 @@ external_brillo_paladin = paladin.derive(brillo)
 external_brillo_paladin.add_config('panther_embedded-minimal-paladin',
   boards=['panther_embedded'],
   profile='minimal',
-  important=False,
   trybot_list=True,
 )
 
@@ -3262,8 +3262,6 @@ _waterfall_config_map = {
       # Experimental Paladins
       'daisy_skate-paladin',
       'nyan_freon-paladin',
-      'panther_embedded-minimal-paladin',
-      'urara-paladin',
       'whirlwind-paladin',
 
       # Experimental Canaries

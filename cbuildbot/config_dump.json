@@ -31829,7 +31829,7 @@
         "vm_tests": []
     },
     "panther_embedded-minimal-paladin": {
-        "active_waterfall": "chromeos",
+        "active_waterfall": "chromiumos",
         "boards": [
             "panther_embedded"
         ],
@@ -31837,6 +31837,7 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "important": true,
         "manifest_version": true,
         "name": "panther_embedded-minimal-paladin",
         "prebuilts": "public",
@@ -53488,6 +53489,7 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
