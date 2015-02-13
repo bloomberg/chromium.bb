@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 
@@ -23,6 +24,13 @@ import org.chromium.content.browser.BrowserStartupController;
  * chrome layer.
  */
 public abstract class ChromiumApplication extends ContentApplication {
+
+    /**
+     * Returns whether the Activity is being shown in multi-window mode.
+     */
+    public boolean isMultiWindow(Activity activity) {
+        return false;
+    }
 
     /**
      * Returns the class name of the Settings activity.

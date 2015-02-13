@@ -6,6 +6,7 @@
 
 #include <jni.h>
 
+#include "base/metrics/histogram.h"
 #include "content/public/browser/user_metrics.h"
 #include "jni/UmaBridge_jni.h"
 
@@ -37,12 +38,45 @@ static void RecordUsingMenu(JNIEnv*,
 }
 
 // Android Beam
+
 static void RecordBeamCallbackSuccess(JNIEnv*, jclass) {
   RecordAction(UserMetricsAction("MobileBeamCallbackSuccess"));
 }
 
 static void RecordBeamInvalidAppState(JNIEnv*, jclass) {
   RecordAction(UserMetricsAction("MobileBeamInvalidAppState"));
+}
+
+// Data Saver
+
+static void RecordDataReductionProxyTurnedOn(JNIEnv*, jclass) {
+  RecordAction(UserMetricsAction("DataReductionProxy_TurnedOn"));
+}
+
+static void RecordDataReductionProxyTurnedOff(JNIEnv*, jclass) {
+  RecordAction(UserMetricsAction("DataReductionProxy_TurnedOff"));
+}
+
+static void RecordDataReductionProxyTurnedOnFromPromo(JNIEnv*, jclass) {
+  RecordAction(UserMetricsAction("DataReductionProxy_TurnedOnFromPromo"));
+}
+
+static void RecordDataReductionProxyPromoAction(
+    JNIEnv*, jclass, jint action, jint boundary) {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.PromoAction",
+                            action,
+                            boundary);
+}
+
+static void RecordDataReductionProxyPromoDisplayed(JNIEnv*, jclass) {
+  RecordAction(UserMetricsAction("DataReductionProxy_PromoDisplayed"));
+}
+
+static void RecordDataReductionProxySettings(
+    JNIEnv*, jclass, jint notification, jint boundary) {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.SettingsConversion",
+                            notification,
+                            boundary);
 }
 
 namespace chrome {

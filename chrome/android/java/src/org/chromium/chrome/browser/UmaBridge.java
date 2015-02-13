@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.chrome.browser.preferences.bandwidth.BandwidthReductionPreferences;
+import org.chromium.chrome.browser.preferences.bandwidth.DataReductionPromoScreen;
+
 /**
  * Static methods to record user actions.
  *
@@ -30,6 +33,7 @@ public class UmaBridge {
     }
 
     // Android beam
+
     public static void beamCallbackSuccess() {
         nativeRecordBeamCallbackSuccess();
     }
@@ -38,10 +42,66 @@ public class UmaBridge {
         nativeRecordBeamInvalidAppState();
     }
 
+    // Data Saver
+
+    /**
+     * Record that Data Saver was turned on.
+     */
+    public static void dataReductionProxyTurnedOn() {
+        nativeRecordDataReductionProxyTurnedOn();
+    }
+
+    /**
+     * Record that Data Saver was turned off.
+     */
+    public static void dataReductionProxyTurnedOff() {
+        nativeRecordDataReductionProxyTurnedOff();
+    }
+
+    /**
+     * Record that Data Saver was turned on immediately after the user viewed the promo screen.
+     */
+    public static void dataReductionProxyTurnedOnFromPromo() {
+        nativeRecordDataReductionProxyTurnedOnFromPromo();
+    }
+
+    /**
+     * Record the DataReductionProxy.PromoAction histogram.
+     * @param action User action at the promo screen
+     */
+    public static void dataReductionProxyPromoAction(int action) {
+        assert action >= 0 && action < DataReductionPromoScreen.ACTION_INDEX_BOUNDARY;
+        nativeRecordDataReductionProxyPromoAction(
+                action, DataReductionPromoScreen.ACTION_INDEX_BOUNDARY);
+    }
+
+    /**
+     * Record that the Data Saver promo was displayed.
+     */
+    public static void dataReductionProxyPromoDisplayed() {
+        nativeRecordDataReductionProxyPromoDisplayed();
+    }
+
+    /**
+     * Record the DataReductionProxy.SettingsConversion histogram.
+     * @param statusChange ON/OFF change at the data saver setting menu
+     */
+    public static void dataReductionProxySettings(int statusChange) {
+        assert statusChange >= 0
+                && statusChange < BandwidthReductionPreferences.DATA_REDUCTION_INDEX_BOUNDARY;
+        nativeRecordDataReductionProxySettings(
+                statusChange, BandwidthReductionPreferences.DATA_REDUCTION_INDEX_BOUNDARY);
+    }
+
     private static native void nativeRecordMenuShow();
     private static native void nativeRecordUsingMenu(boolean isByHwButton, boolean isDragging);
-
-    // Android Beam
     private static native void nativeRecordBeamInvalidAppState();
     private static native void nativeRecordBeamCallbackSuccess();
+    private static native void nativeRecordDataReductionProxyTurnedOn();
+    private static native void nativeRecordDataReductionProxyTurnedOff();
+    private static native void nativeRecordDataReductionProxyTurnedOnFromPromo();
+    private static native void nativeRecordDataReductionProxyPromoAction(int action, int boundary);
+    private static native void nativeRecordDataReductionProxyPromoDisplayed();
+    private static native void nativeRecordDataReductionProxySettings(int statusChange,
+            int boundary);
 }

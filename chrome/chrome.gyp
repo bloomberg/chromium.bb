@@ -624,6 +624,7 @@
             '../content/content.gyp:content_java',
             '../printing/printing.gyp:printing_java',
             '../sync/sync.gyp:sync_java',
+            '../third_party/android_data_chart/android_data_chart.gyp:android_data_chart_java',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
             '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',

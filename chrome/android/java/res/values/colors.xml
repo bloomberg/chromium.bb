@@ -52,9 +52,14 @@
     <color name="password_generation_explanation_text_color">#909090</color>
     <color name="password_generation_link_text_color">#5595e3</color>
 
-    <!--  Preferences Colors -->
+    <!-- Preferences Colors -->
     <color name="pref_accent_color">#03a9f4</color>
     <color name="expandable_group_dark_gray">#484848</color>
+
+    <!-- Data Saver Colors -->
+    <color name="data_reduction_compressed_color">@color/pref_accent_color</color>
+    <color name="data_reduction_original_color">#E1E1E1</color>
+    <color name="data_reduction_chart_background_color">#FAFAFA</color>
 
     <!-- Compositor Tab Title Colors -->
     <color name="compositor_tab_title_bar_text">#555555</color>

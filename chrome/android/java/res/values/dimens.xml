@@ -63,6 +63,11 @@
     <!-- Minimum height/width for a touchable item -->
     <dimen name="min_touch_target_size">48dp</dimen>
 
+    <!-- Data Saver -->
+    <dimen name="data_usage_chart_height">252dp</dimen>
+    <dimen name="data_reduction_promo_screen_width">320dp</dimen>
+    <dimen name="data_reduction_promo_screen_height">550dp</dimen>
+
     <!-- Text bubble dimensions -->
     <!-- Tooltip min distance from the edge of the screen. -->
     <dimen name="tooltip_min_edge_margin">3dp</dimen>

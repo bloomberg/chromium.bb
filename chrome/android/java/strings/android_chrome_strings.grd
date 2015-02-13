@@ -93,6 +93,14 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
+      <!-- Generic strings -->
+      <message name="IDS_CLOSE" desc="Content description for a button to close a dialog or popup" >
+        Close
+      </message>
+      <message name="IDS_NO_THANKS" desc="Generic label to say no thanks for a feature. [CHAR-LIMIT=32]">
+        No Thanks
+      </message>
+
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
         Settings
@@ -426,6 +434,67 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_ORIGIN_SETTINGS_STORAGE_TBYTES" desc="Unit appended to the storage usage value representing terabytes">
         TB
+      </message>
+
+      <!-- Data Saver -->
+      <message name="IDS_REDUCE_DATA_USAGE_TITLE" desc="Menu item for reducing data usage.">
+        Data Saver
+      </message>
+      <message name="IDS_REDUCE_DATA_USAGE_DESCRIPTION" desc="Description text for reducing data usage">
+        When this feature is turned on, Chrome will use Google servers to compress pages you visit before downloading them. SSL and incognito pages will not be included.
+      </message>
+      <message name="IDS_DATA_REDUCTION_MENU_ITEM_SUMMARY" desc="Summary text for data reduction menu item.">
+        <ph name="PERCENT">%1$s<ex>49%</ex></ph> data savings
+      </message>
+      <message name="IDS_DATA_REDUCTION_STATISTICS_TITLE" desc="Data reduction statistics title.">
+        Data savings
+      </message>
+      <message name="IDS_DATA_REDUCTION_STATISTICS_ORIGINAL_SIZE_SUFFIX" desc="Data Reduction statistics original size suffix" translateable="false">
+        <ph name="SIZE">%1$s<ex>972.1KB</ex></ph>
+      </message>
+      <message name="IDS_DATA_REDUCTION_ORIGINAL_SIZE_LABEL" desc="Data Reduction statistics original size label">
+        Original size
+      </message>
+      <message name="IDS_DATA_REDUCTION_STATISTICS_COMPRESSED_SIZE_SUFFIX" desc="Data Reduction statistics compressed size suffix" translateable="false">
+        <ph name="SIZE">%1$s<ex>492.4KB</ex></ph>
+      </message>
+      <message name="IDS_DATA_REDUCTION_COMPRESSED_SIZE_LABEL" desc="Data Reduction statistics compressed size label">
+        After compression
+      </message>
+      <message name="IDS_DATA_REDUCTION_PROXY_UNREACHABLE_WARN" desc="Warning message shown when Google data reduction proxy servers are not reachable.">
+        Chrome is unable to reach Google servers for data compression. Your data savings may be limited.
+      </message>
+      <message name="IDS_REDUCE_DATA_USAGE_LEARN_URL" desc="URL for learn more about reducing_data_usage" translateable="false">
+        https://support.google.com/chrome/?p=mobile_bandwidth
+      </message>
+      <message name="IDS_SAFE_BROWSING_DESCRIPTION" desc="Description text for safe browsing">
+        Chrome’s Safe Browsing system will also be used to detect malicious pages and protect you from phishing, malware, and harmful downloads.
+      </message>
+      <message name="IDS_DATA_REDUCTION_CAVEATS_DESCRIPTION" desc="Description text for usage caveats">
+        This feature may interfere with access to premium data services provided by your carrier.
+      </message>
+      <message name="IDS_DATA_REDUCTION_EXPERIMENT_DESCRIPTION" desc="Text to be displayed in settings when an experiment is running">
+        If you enable this feature, you will be part of an experiment that proxies HTTPS pages through Google servers.
+      </message>
+      <message name="IDS_DATA_REDUCTION_EXPERIMENT_LINK_URL" desc="A link provided in settings when an experiment is running" translateable="false">
+        <!-- Intentionally empty. This is overridden downstream. -->
+      </message>
+      <message name="IDS_DATA_REDUCTION_INFOBAR_TEXT" desc="Text to be displayed in the data reduction proxy infobar">
+        We are testing the proxying of HTTPS pages through Google servers as part of an experiment.
+      </message>
+
+      <!-- Data Saver Promo -->
+      <message name="IDS_DATA_REDUCTION_TITLE_1" desc="First part of the headline for the promo inviting users to enable Data Saver" >
+        You’re invited
+      </message>
+      <message name="IDS_DATA_REDUCTION_TITLE_2" desc="Second part of the headline for the promo inviting users to enable Data Saver" >
+        Try out a new feature from Chrome
+      </message>
+      <message name="IDS_DATA_REDUCTION_TITLE_3" desc="Third part of the headline for the promo inviting users to enable Data Saver" >
+        Save bandwidth and browse more securely
+      </message>
+      <message name="IDS_DATA_REDUCTION_ENABLE_BUTTON" desc="Button the user presses if they want to enable Data Saver" >
+        Enable
       </message>
 
       <!-- About Chrome preferences -->

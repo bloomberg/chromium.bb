@@ -82,8 +82,8 @@ public class ChartDataUsageView extends ChartView {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mOriginalSeries = (ChartNetworkSeriesView) findViewById(R.id.series);
-        mCompressedSeries = (ChartNetworkSeriesView) findViewById(R.id.detail_series);
+        mOriginalSeries = (ChartNetworkSeriesView) findViewById(R.id.original_series);
+        mCompressedSeries = (ChartNetworkSeriesView) findViewById(R.id.compressed_series);
 
         // tell everyone about our axis
         mOriginalSeries.init(mHoriz, mVert);

@@ -4,6 +4,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- Data usage chart dimensions -->
-    <dimen name="data_usage_chart_height">325dp</dimen>
+  <item type="id" name="compressed_series" />
+  <item type="id" name="original_series" />
 </resources>
