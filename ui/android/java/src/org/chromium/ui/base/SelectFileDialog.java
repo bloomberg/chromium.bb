@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -22,6 +21,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.JNINamespace;
 import org.chromium.ui.R;
+import org.chromium.ui.UiUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +43,6 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
     private static final String ALL_VIDEO_TYPES = VIDEO_TYPE + "*";
     private static final String ALL_AUDIO_TYPES = AUDIO_TYPE + "*";
     private static final String ANY_TYPES = "*/*";
-    private static final String CAPTURE_IMAGE_DIRECTORY = "browser-photos";
-    // Keep this variable in sync with the value defined in file_paths.xml.
-    private static final String IMAGE_FILE_PATH = "images";
 
     private final long mNativeSelectFileDialog;
     private List<String> mFileTypes;
@@ -76,12 +73,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
         camera.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                mCameraOutputUri = ContentUriUtils.getContentUriFromFile(
-                        context, getFileForImageCapture(context));
-            } else {
-                mCameraOutputUri = Uri.fromFile(getFileForImageCapture(context));
-            }
+            mCameraOutputUri =
+                    UiUtils.getUriForImageCaptureFile(context, getFileForImageCapture(context));
         } catch (IOException e) {
             Log.e(TAG, "Cannot retrieve content uri from file", e);
         }
@@ -93,9 +86,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
 
         camera.putExtra(MediaStore.EXTRA_OUTPUT, mCameraOutputUri);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            camera.setClipData(
-                    ClipData.newUri(context.getContentResolver(),
-                    IMAGE_FILE_PATH, mCameraOutputUri));
+            camera.setClipData(ClipData.newUri(
+                    context.getContentResolver(), UiUtils.IMAGE_FILE_PATH, mCameraOutputUri));
         }
         Intent camcorder = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         Intent soundRecorder = new Intent(
@@ -162,23 +154,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
      * @return file path for the captured image to be stored.
      */
     private File getFileForImageCapture(Context context) throws IOException {
-        File path;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            path = new File(context.getFilesDir(), IMAGE_FILE_PATH);
-            if (!path.exists() && !path.mkdir()) {
-                throw new IOException("Folder cannot be created.");
-            }
-        } else {
-            File externalDataDir = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DCIM);
-            path = new File(externalDataDir.getAbsolutePath()
-                    + File.separator + CAPTURE_IMAGE_DIRECTORY);
-            if (!path.exists() && !path.mkdirs()) {
-                path = externalDataDir;
-            }
-        }
-        File photoFile = File.createTempFile(
-                String.valueOf(System.currentTimeMillis()), ".jpg", path);
+        File photoFile = File.createTempFile(String.valueOf(System.currentTimeMillis()), ".jpg",
+                UiUtils.getDirectoryForImageCapture(context));
         return photoFile;
     }
 
