@@ -253,7 +253,7 @@ struct window {
 	struct xdg_popup *xdg_popup;
 
 	struct window *parent;
-	struct wl_surface *last_parent_surface;
+	struct window *last_parent;
 
 	struct ivi_surface *ivi_surface;
 
@@ -4031,21 +4031,21 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 static void
 window_sync_parent(struct window *window)
 {
-	struct wl_surface *parent_surface;
+	struct xdg_surface *parent_surface;
 
 	if (!window->xdg_surface)
 		return;
 
+	if (window->parent == window->last_parent)
+		return;
+
 	if (window->parent)
-		parent_surface = window->parent->main_surface->surface;
+		parent_surface = window->parent->xdg_surface;
 	else
 		parent_surface = NULL;
 
-	if (parent_surface == window->last_parent_surface)
-		return;
-
 	xdg_surface_set_parent(window->xdg_surface, parent_surface);
-	window->last_parent_surface = parent_surface;
+	window->last_parent = window->parent;
 }
 
 static void

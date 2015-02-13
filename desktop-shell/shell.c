@@ -3717,14 +3717,14 @@ xdg_surface_set_parent(struct wl_client *client,
 		       struct wl_resource *parent_resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-	struct weston_surface *parent;
+	struct shell_surface *parent;
 
-	if (parent_resource)
+	if (parent_resource) {
 		parent = wl_resource_get_user_data(parent_resource);
-	else
-		parent = NULL;
-
-	shell_surface_set_parent(shsurf, parent);
+		shell_surface_set_parent(shsurf, parent->surface);
+	} else {
+		shell_surface_set_parent(shsurf, NULL);
+	}
 }
 
 static void
