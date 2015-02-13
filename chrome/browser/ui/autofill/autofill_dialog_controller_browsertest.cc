@@ -1557,7 +1557,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
-                       DoesntWorkOnBrokenHttps) {
+                       DISABLED_DoesntWorkOnBrokenHttps) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
       SSLOptions(SSLOptions::CERT_EXPIRED),
