@@ -14,7 +14,7 @@
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
     defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(UNDEFINED_SANITIZER)
+    defined(UNDEFINED_SANITIZER) || defined(SANITIZER_COVERAGE)
 #include <sanitizer/common_interface_defs.h>
 #define ANY_OF_AMTLU_SANITIZER 1
 #endif

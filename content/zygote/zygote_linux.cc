@@ -37,10 +37,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 
-#if defined(ADDRESS_SANITIZER)
-#include <sanitizer/asan_interface.h>
-#endif
-
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
 namespace content {
@@ -165,8 +161,9 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
          it < extra_fds_.end(); ++it) {
       PCHECK(0 == IGNORE_EINTR(close(*it)));
     }
-#if !defined(ADDRESS_SANITIZER)
-    // TODO(earthdok): add watchdog thread before using this in non-ASAN builds.
+#if !defined(SANITIZER_COVERAGE)
+    // TODO(earthdok): add watchdog thread before using this in builds not
+    // using sanitizer coverage.
     CHECK(extra_children_.empty());
 #endif
     for (std::vector<base::ProcessHandle>::iterator it =

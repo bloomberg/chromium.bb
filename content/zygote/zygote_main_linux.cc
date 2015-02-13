@@ -65,8 +65,8 @@
 #include "third_party/libjingle/overrides/init_webrtc.h"
 #endif
 
-#if defined(ADDRESS_SANITIZER)
-#include <sanitizer/asan_interface.h>
+#if defined(SANITIZER_COVERAGE)
+#include <sanitizer/common_interface_defs.h>
 #endif
 
 namespace content {
@@ -415,7 +415,7 @@ static void EnterNamespaceSandbox(LinuxSandbox* linux_sandbox,
   }
 }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(SANITIZER_COVERAGE)
 const size_t kSanitizerMaxMessageLength = 1 * 1024 * 1024;
 
 // A helper process which collects code coverage data from the renderers over a
@@ -469,7 +469,7 @@ static pid_t ForkSanitizerCoverageHelper(
   }
 }
 
-#endif  // defined(ADDRESS_SANITIZER)
+#endif  // defined(SANITIZER_COVERAGE)
 
 static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
                                  const bool using_layer1_sandbox,
@@ -504,7 +504,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(SANITIZER_COVERAGE)
   const std::string sancov_file_name =
       "zygote." + base::Uint64ToString(base::RandUint64());
   base::ScopedFD sancov_file_fd(
@@ -520,7 +520,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   // sure the init process does not hold on to it.
   fds_to_close_post_fork.push_back(sancov_socket_fds[0]);
   fds_to_close_post_fork.push_back(sancov_socket_fds[1]);
-#endif
+#endif  // SANITIZER_COVERAGE
 
   // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -570,7 +570,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   std::vector<pid_t> extra_children;
   std::vector<int> extra_fds;
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(SANITIZER_COVERAGE)
   pid_t sancov_helper_pid = ForkSanitizerCoverageHelper(
       sancov_socket_fds[0], sancov_socket_fds[1], sancov_file_fd.Pass(),
       sandbox_fds_to_close_post_fork);
@@ -583,7 +583,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   // from the zygote. We must keep it open until the very end of the zygote's
   // lifetime, even though we don't explicitly use it.
   extra_fds.push_back(sancov_socket_fds[1]);
-#endif
+#endif  // SANITIZER_COVERAGE
 
   const int sandbox_flags = linux_sandbox->GetStatus();
 

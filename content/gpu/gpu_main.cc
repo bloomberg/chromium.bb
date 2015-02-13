@@ -58,8 +58,8 @@
 #include "content/common/sandbox_mac.h"
 #endif
 
-#if defined(ADDRESS_SANITIZER)
-#include <sanitizer/asan_interface.h>
+#if defined(SANITIZER_COVERAGE)
+#include <sanitizer/common_interface_defs.h>
 #endif
 
 const int kGpuTimeout = 10000;
@@ -489,7 +489,7 @@ bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
     LinuxSandbox::StopThread(watchdog_thread);
   }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(SANITIZER_COVERAGE)
   const std::string sancov_file_name =
       "gpu." + base::Uint64ToString(base::RandUint64());
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();

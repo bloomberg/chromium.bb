@@ -391,9 +391,12 @@
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/addresssanitizer
       'asan%': 0,
       'asan_blacklist%': '<(PRODUCT_DIR)/../../tools/memory/asan/blacklist.txt',
-      # Enable coverage gathering instrumentation in ASan. This flag also
-      # controls coverage granularity (1 for function-level coverage, 2 for
-      # block-level coverage).
+      # Enable coverage gathering instrumentation in sanitizer tools. This flag
+      # also controls coverage granularity (1 for function-level coverage, 2
+      # for block-level coverage).
+      'sanitizer_coverage%': 0,
+      # Deprecated, only works if |sanitizer_coverage| isn't set.
+      # TODO(glider): remove this flag.
       'asan_coverage%': 0,
       # Enable intra-object-overflow detection in ASan (experimental).
       'asan_field_padding%': 0,
@@ -1119,6 +1122,7 @@
     'asan%': '<(asan)',
     'asan_blacklist%': '<(asan_blacklist)',
     'asan_coverage%': '<(asan_coverage)',
+    'sanitizer_coverage%': '<(sanitizer_coverage)',
     'asan_field_padding%': '<(asan_field_padding)',
     'use_sanitizer_options%': '<(use_sanitizer_options)',
     'syzyasan%': '<(syzyasan)',
@@ -4247,11 +4251,26 @@
               }],
             ],
           }],
-          ['asan_coverage!=0', {
+          ['asan_coverage!=0 and sanitizer_coverage==0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize-coverage=<(asan_coverage)',
+                ],
+                'defines': [
+                  'SANITIZER_COVERAGE',
+                ],
+              }],
+            ],
+          }],
+          ['sanitizer_coverage!=0', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fsanitize-coverage=<(sanitizer_coverage)',
+                ],
+                'defines': [
+                  'SANITIZER_COVERAGE',
                 ],
               }],
             ],
@@ -4911,11 +4930,26 @@
               ],
             },
           }],
-          ['asan_coverage!=0', {
+          ['asan_coverage!=0 and sanitizer_coverage==0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize-coverage=<(asan_coverage)',
+                ],
+                'defines': [
+                  'SANITIZER_COVERAGE',
+                ],
+              }],
+            ],
+          }],
+          ['sanitizer_coverage!=0', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fsanitize-coverage=<(sanitizer_coverage)',
+                ],
+                'defines': [
+                  'SANITIZER_COVERAGE',
                 ],
               }],
             ],
