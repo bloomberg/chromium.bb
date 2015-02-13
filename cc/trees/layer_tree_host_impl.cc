@@ -68,7 +68,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -592,25 +591,20 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
 static void AppendQuadsForLayer(
     RenderPass* target_render_pass,
     LayerImpl* layer,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
-  layer->AppendQuads(
-      target_render_pass,
-      occlusion_tracker.GetCurrentOcclusionForLayer(layer->draw_transform()),
-      append_quads_data);
+  layer->AppendQuads(target_render_pass,
+                     layer->draw_properties().occlusion_in_content_space,
+                     append_quads_data);
 }
 
 static void AppendQuadsForRenderSurfaceLayer(
     RenderPass* target_render_pass,
     LayerImpl* layer,
     const RenderPass* contributing_render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
   RenderSurfaceImpl* surface = layer->render_surface();
   const gfx::Transform& draw_transform = surface->draw_transform();
-  const Occlusion& occlusion =
-      occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-          draw_transform);
+  const Occlusion& occlusion = surface->occlusion_in_content_space();
   SkColor debug_border_color = surface->GetDebugBorderColor();
   float debug_border_width = surface->GetDebugBorderWidth();
   LayerImpl* mask_layer = layer->mask_layer();
@@ -623,9 +617,8 @@ static void AppendQuadsForRenderSurfaceLayer(
   if (layer->has_replica()) {
     const gfx::Transform& replica_draw_transform =
         surface->replica_draw_transform();
-    const Occlusion& replica_occlusion =
-        occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-            replica_draw_transform);
+    Occlusion replica_occlusion = occlusion.GetOcclusionWithGivenDrawTransform(
+        surface->replica_draw_transform());
     SkColor replica_debug_border_color = surface->GetReplicaDebugBorderColor();
     float replica_debug_border_width = surface->GetReplicaDebugBorderWidth();
     // TODO(danakj): By using the same RenderSurfaceImpl for both the
@@ -645,16 +638,13 @@ static void AppendQuadsForRenderSurfaceLayer(
   }
 }
 
-static void AppendQuadsToFillScreen(
-    const gfx::Rect& root_scroll_layer_rect,
-    RenderPass* target_render_pass,
-    LayerImpl* root_layer,
-    SkColor screen_background_color,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker) {
+static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
+                                    RenderPass* target_render_pass,
+                                    LayerImpl* root_layer,
+                                    SkColor screen_background_color,
+                                    const Region& fill_region) {
   if (!root_layer || !SkColorGetA(screen_background_color))
     return;
-
-  Region fill_region = occlusion_tracker.ComputeVisibleRegionInScreen();
   if (fill_region.IsEmpty())
     return;
 
@@ -758,14 +748,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     root_pass->damage_rect = root_pass->output_rect;
   }
 
-  OcclusionTracker<LayerImpl> occlusion_tracker(
-      active_tree_->root_layer()->render_surface()->content_rect());
-  occlusion_tracker.set_minimum_tracking_size(
-      settings_.minimum_occlusion_tracking_size);
-
-  // Add quads to the Render passes in front-to-back order to allow for testing
-  // occlusion and performing culling during the tree walk.
-  typedef LayerIterator<LayerImpl> LayerIteratorType;
+  // Grab this region here before iterating layers. Taking copy requests from
+  // the layers while constructing the render passes will dirty the render
+  // surface layer list and this unoccluded region, flipping the dirty bit to
+  // true, and making us able to query for it without doing
+  // UpdateDrawProperties again. The value inside the Region is not actually
+  // changed until UpdateDrawProperties happens, so a reference to it is safe.
+  const Region& unoccluded_screen_space_region =
+      active_tree_->UnoccludedScreenSpaceRegion();
 
   // Typically when we are missing a texture and use a checkerboard quad, we
   // still draw the frame. However when the layer being checkerboarded is moving
@@ -783,18 +773,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   int num_missing_tiles = 0;
   int num_incomplete_tiles = 0;
 
-  LayerIteratorType end =
-      LayerIteratorType::End(frame->render_surface_layer_list);
-  for (LayerIteratorType it =
-           LayerIteratorType::Begin(frame->render_surface_layer_list);
-       it != end;
-       ++it) {
+  auto end = LayerIterator<LayerImpl>::End(frame->render_surface_layer_list);
+  for (auto it =
+           LayerIterator<LayerImpl>::Begin(frame->render_surface_layer_list);
+       it != end; ++it) {
     RenderPassId target_render_pass_id =
         it.target_render_surface_layer()->render_surface()->GetRenderPassId();
     RenderPass* target_render_pass =
         frame->render_passes_by_id[target_render_pass_id];
-
-    occlusion_tracker.EnterLayer(it);
 
     AppendQuadsData append_quads_data;
 
@@ -813,13 +799,12 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       AppendQuadsForRenderSurfaceLayer(target_render_pass,
                                        *it,
                                        contributing_render_pass,
-                                       occlusion_tracker,
                                        &append_quads_data);
     } else if (it.represents_itself() &&
                !it->visible_content_rect().IsEmpty()) {
       bool occluded =
-          occlusion_tracker.GetCurrentOcclusionForLayer(it->draw_transform())
-              .IsOccluded(it->visible_content_rect());
+          it->draw_properties().occlusion_in_content_space.IsOccluded(
+              it->visible_content_rect());
       if (!occluded && it->WillDraw(draw_mode, resource_provider_.get())) {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
 
@@ -835,7 +820,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
             AppendQuadsForLayer(render_pass,
                                 *it,
-                                occlusion_tracker,
                                 &append_quads_data);
 
             contributing_render_pass_id =
@@ -845,7 +829,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
         AppendQuadsForLayer(target_render_pass,
                             *it,
-                            occlusion_tracker,
                             &append_quads_data);
 
         // For layers that represent themselves, add composite frame timing
@@ -885,8 +868,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       if (RequiresHighResToDraw())
         draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
     }
-
-    occlusion_tracker.LeaveLayer(it);
   }
 
   if (have_copy_request ||
@@ -907,10 +888,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     frame->render_passes.back()->has_transparent_background = false;
     AppendQuadsToFillScreen(
         active_tree_->RootScrollLayerDeviceViewportBounds(),
-        frame->render_passes.back(),
-        active_tree_->root_layer(),
-        active_tree_->background_color(),
-        occlusion_tracker);
+        frame->render_passes.back(), active_tree_->root_layer(),
+        active_tree_->background_color(), unoccluded_screen_space_region);
   }
 
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);

@@ -14,6 +14,7 @@
 #include "cc/layers/layer_lists.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
+#include "cc/trees/occlusion.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -125,6 +126,13 @@ class CC_EXPORT RenderSurfaceImpl {
   void SetContentRect(const gfx::Rect& content_rect);
   gfx::Rect content_rect() const { return content_rect_; }
 
+  const Occlusion& occlusion_in_content_space() const {
+    return occlusion_in_content_space_;
+  }
+  void set_occlusion_in_content_space(const Occlusion& occlusion) {
+    occlusion_in_content_space_ = occlusion;
+  }
+
   LayerImplList& layer_list() { return layer_list_; }
   void AddContributingDelegatedRenderPassLayer(LayerImpl* layer);
   void ClearLayerLists();
@@ -174,6 +182,7 @@ class CC_EXPORT RenderSurfaceImpl {
   LayerImplList layer_list_;
   std::vector<DelegatedRendererLayerImpl*>
       contributing_delegated_render_pass_layer_list_;
+  Occlusion occlusion_in_content_space_;
 
   // The nearest ancestor target surface that will contain the contents of this
   // surface, and that ignores outside occlusion. This can point to itself.

@@ -6,6 +6,7 @@
 #define CC_LAYERS_DRAW_PROPERTIES_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/trees/occlusion.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
@@ -49,6 +50,9 @@ struct CC_EXPORT DrawProperties {
 
   // Transforms objects from content space to screen space (viewport space).
   gfx::Transform screen_space_transform;
+
+  // Known occlusion above the layer mapped to the content space of the layer.
+  Occlusion occlusion_in_content_space;
 
   // DrawProperties::opacity may be different than LayerType::opacity,
   // particularly in the case when a RenderSurface re-parents the layer's

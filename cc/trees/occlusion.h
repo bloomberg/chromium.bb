@@ -5,6 +5,8 @@
 #ifndef CC_TREES_OCCLUSION_H_
 #define CC_TREES_OCCLUSION_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/simple_enclosed_region.h"
@@ -25,6 +27,9 @@ class CC_EXPORT Occlusion {
   bool HasOcclusion() const;
   bool IsOccluded(const gfx::Rect& content_rect) const;
   gfx::Rect GetUnoccludedContentRect(const gfx::Rect& content_rect) const;
+
+  bool IsEqual(const Occlusion& other) const;
+  std::string ToString() const;
 
  private:
   gfx::Rect GetUnoccludedRectInTargetSurface(

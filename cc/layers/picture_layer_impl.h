@@ -57,8 +57,6 @@ class CC_EXPORT PictureLayerImpl
   void AppendQuads(RenderPass* render_pass,
                    const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
-  bool UpdateTiles(const Occlusion& occlusion_in_content_space,
-                   bool resourceless_software_draw) override;
   void NotifyTileStateChanged(const Tile* tile) override;
   void DidBeginTracing() override;
   void ReleaseResources() override;
@@ -81,6 +79,8 @@ class CC_EXPORT PictureLayerImpl
   void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
                           Region* new_invalidation,
                           const PictureLayerTilingSet* pending_set);
+  bool UpdateTiles(const Occlusion& occlusion_in_content_space,
+                   bool resourceless_software_draw);
 
   // Mask-related functions.
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,

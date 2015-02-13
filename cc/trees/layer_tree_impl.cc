@@ -549,12 +549,9 @@ bool LayerTreeImpl::UpdateDrawProperties() {
   render_surface_layer_list_.clear();
 
   {
-    TRACE_EVENT2("cc",
-                 "LayerTreeImpl::UpdateDrawProperties",
-                 "IsActive",
-                 IsActiveTree(),
-                 "SourceFrameNumber",
-                 source_frame_number_);
+    TRACE_EVENT2(
+        "cc", "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
+        "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
     LayerImpl* page_scale_layer =
         page_scale_layer_ ? page_scale_layer_ : InnerViewportContainerLayer();
     bool can_render_to_separate_surface =
@@ -577,66 +574,100 @@ bool LayerTreeImpl::UpdateDrawProperties() {
   }
 
   {
-    TRACE_EVENT_BEGIN2("cc", "LayerTreeImpl::UpdateTilePriorities", "IsActive",
-                       IsActiveTree(), "SourceFrameNumber",
-                       source_frame_number_);
-    scoped_ptr<OcclusionTracker<LayerImpl>> occlusion_tracker;
-    if (settings().use_occlusion_for_tile_prioritization) {
-      occlusion_tracker.reset(new OcclusionTracker<LayerImpl>(
-          root_layer()->render_surface()->content_rect()));
-      occlusion_tracker->set_minimum_tracking_size(
-          settings().minimum_occlusion_tracking_size);
-    }
-
-    bool resourceless_software_draw = (layer_tree_host_impl_->GetDrawMode() ==
-                                       DRAW_MODE_RESOURCELESS_SOFTWARE);
+    TRACE_EVENT2("cc", "LayerTreeImpl::UpdateDrawProperties::Occlusion",
+                 "IsActive", IsActiveTree(), "SourceFrameNumber",
+                 source_frame_number_);
+    OcclusionTracker<LayerImpl> occlusion_tracker(
+        root_layer()->render_surface()->content_rect());
+    occlusion_tracker.set_minimum_tracking_size(
+        settings().minimum_occlusion_tracking_size);
 
     // LayerIterator is used here instead of CallFunctionForSubtree to only
     // UpdateTilePriorities on layers that will be visible (and thus have valid
     // draw properties) and not because any ordering is required.
-    typedef LayerIterator<LayerImpl> LayerIteratorType;
-    LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
-    size_t layers_updated_count = 0;
-    bool tile_priorities_updated = false;
-    for (LayerIteratorType it =
-             LayerIteratorType::Begin(&render_surface_layer_list_);
-         it != end;
-         ++it) {
-      if (occlusion_tracker)
-        occlusion_tracker->EnterLayer(it);
+    auto end = LayerIterator<LayerImpl>::End(&render_surface_layer_list_);
+    for (auto it = LayerIterator<LayerImpl>::Begin(&render_surface_layer_list_);
+         it != end; ++it) {
+      occlusion_tracker.EnterLayer(it);
 
-      LayerImpl* layer = *it;
-      const Occlusion& occlusion_in_content_space =
-          occlusion_tracker ? occlusion_tracker->GetCurrentOcclusionForLayer(
-                                  layer->draw_transform())
-                            : Occlusion();
+      // There are very few render targets so this should be cheap to do for
+      // each layer instead of something more complicated.
+      bool inside_replica = false;
+      LayerImpl* layer = it->render_target();
+      while (layer && !inside_replica) {
+        if (layer->render_target()->has_replica())
+          inside_replica = true;
+        layer = layer->render_target()->parent();
+      }
+
+      // Don't use occlusion if a layer will appear in a replica, since the
+      // tile raster code does not know how to look for the replica and would
+      // consider it occluded even though the replica is visible.
+      // Since occlusion is only used for browser compositor (i.e.
+      // use_occlusion_for_tile_prioritization) and it won't use replicas,
+      // this should matter not.
 
       if (it.represents_itself()) {
-        tile_priorities_updated |= layer->UpdateTiles(
-            occlusion_in_content_space, resourceless_software_draw);
-        ++layers_updated_count;
+        Occlusion occlusion =
+            inside_replica ? Occlusion()
+                           : occlusion_tracker.GetCurrentOcclusionForLayer(
+                                 it->draw_transform());
+        it->draw_properties().occlusion_in_content_space = occlusion;
       }
 
-      if (!it.represents_contributing_render_surface()) {
-        if (occlusion_tracker)
-          occlusion_tracker->LeaveLayer(it);
+      if (it.represents_contributing_render_surface()) {
+        // Surfaces aren't used by the tile raster code, so they can have
+        // occlusion regardless of replicas.
+        Occlusion occlusion =
+            occlusion_tracker.GetCurrentOcclusionForContributingSurface(
+                it->render_surface()->draw_transform());
+        it->render_surface()->set_occlusion_in_content_space(occlusion);
+        // Masks are used to draw the contributing surface, so should have
+        // the same occlusion as the surface (nothing inside the surface
+        // occludes them).
+        if (LayerImpl* mask = it->mask_layer()) {
+          Occlusion mask_occlusion =
+              inside_replica
+                  ? Occlusion()
+                  : occlusion_tracker.GetCurrentOcclusionForContributingSurface(
+                        it->render_surface()->draw_transform() *
+                        it->draw_transform());
+          mask->draw_properties().occlusion_in_content_space = mask_occlusion;
+        }
+        if (LayerImpl* replica = it->replica_layer()) {
+          if (LayerImpl* mask = replica->mask_layer())
+            mask->draw_properties().occlusion_in_content_space = Occlusion();
+        }
+      }
+
+      occlusion_tracker.LeaveLayer(it);
+    }
+
+    unoccluded_screen_space_region_ =
+        occlusion_tracker.ComputeVisibleRegionInScreen();
+  }
+
+  {
+    TRACE_EVENT_BEGIN2("cc", "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
+                       "IsActive", IsActiveTree(), "SourceFrameNumber",
+                       source_frame_number_);
+    const bool resourceless_software_draw =
+        (layer_tree_host_impl_->GetDrawMode() ==
+         DRAW_MODE_RESOURCELESS_SOFTWARE);
+    static const Occlusion kEmptyOcclusion;
+    size_t layers_updated_count = 0;
+    bool tile_priorities_updated = false;
+    for (PictureLayerImpl* layer : picture_layers_) {
+      // TODO(danakj): Remove this to fix crbug.com/446751
+      if (!layer->IsDrawnRenderSurfaceLayerListMember())
         continue;
-      }
-
-      if (layer->mask_layer()) {
-        tile_priorities_updated |= layer->mask_layer()->UpdateTiles(
-            occlusion_in_content_space, resourceless_software_draw);
-        ++layers_updated_count;
-      }
-      if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
-        tile_priorities_updated |=
-            layer->replica_layer()->mask_layer()->UpdateTiles(
-                occlusion_in_content_space, resourceless_software_draw);
-        ++layers_updated_count;
-      }
-
-      if (occlusion_tracker)
-        occlusion_tracker->LeaveLayer(it);
+      ++layers_updated_count;
+      const Occlusion& occlusion =
+          settings().use_occlusion_for_tile_prioritization
+              ? layer->draw_properties().occlusion_in_content_space
+              : kEmptyOcclusion;
+      tile_priorities_updated |=
+          layer->UpdateTiles(occlusion, resourceless_software_draw);
     }
 
     if (tile_priorities_updated)
@@ -655,6 +686,13 @@ const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
   // If this assert triggers, then the list is dirty.
   DCHECK(!needs_update_draw_properties_);
   return render_surface_layer_list_;
+}
+
+const Region& LayerTreeImpl::UnoccludedScreenSpaceRegion() const {
+  // If this assert triggers, then the render_surface_layer_list_ is dirty, so
+  // the unoccluded_screen_space_region_ is not valid anymore.
+  DCHECK(!needs_update_draw_properties_);
+  return unoccluded_screen_space_region_;
 }
 
 gfx::Size LayerTreeImpl::ScrollableSize() const {

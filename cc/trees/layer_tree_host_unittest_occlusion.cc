@@ -5,623 +5,266 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "cc/layers/layer.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
+#include "cc/layers/picture_layer.h"
+#include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/test_occlusion_tracker.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 namespace {
 
-class TestLayer : public Layer {
- public:
-  static scoped_refptr<TestLayer> Create() {
-    return make_scoped_refptr(new TestLayer());
-  }
-
-  bool Update(ResourceUpdateQueue* update_queue,
-              const OcclusionTracker<Layer>* occlusion) override {
-    if (!occlusion)
-      return false;
-
-    const TestOcclusionTracker<Layer>* test_occlusion =
-        static_cast<const TestOcclusionTracker<Layer>*>(occlusion);
-    occlusion_ = UnionSimpleEnclosedRegions(
-        test_occlusion->occlusion_from_inside_target(),
-        test_occlusion->occlusion_from_outside_target());
-    return false;
-  }
-
-  const SimpleEnclosedRegion& occlusion() const { return occlusion_; }
-  const SimpleEnclosedRegion& expected_occlusion() const {
-    return expected_occlusion_;
-  }
-  void set_expected_occlusion(const gfx::Rect& occlusion) {
-    expected_occlusion_ = SimpleEnclosedRegion(occlusion);
-  }
-
- private:
-  TestLayer() : Layer() {
-    SetIsDrawable(true);
-  }
-  ~TestLayer() override {}
-
-  SimpleEnclosedRegion occlusion_;
-  SimpleEnclosedRegion expected_occlusion_;
-};
+#define EXPECT_OCCLUSION_EQ(expected, actual)              \
+  EXPECT_TRUE(expected.IsEqual(actual))                    \
+      << " Expected: " << expected.ToString() << std::endl \
+      << " Actual: " << actual.ToString();
 
 class LayerTreeHostOcclusionTest : public LayerTreeTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->minimum_occlusion_tracking_size = gfx::Size();
+  }
+};
+
+// Verify occlusion is set on the layer draw properties.
+class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
+    : public LayerTreeHostOcclusionTest {
  public:
-  LayerTreeHostOcclusionTest()
-      : root_(TestLayer::Create()),
-        child_(TestLayer::Create()),
-        child2_(TestLayer::Create()),
-        grand_child_(TestLayer::Create()),
-        mask_(TestLayer::Create()) {
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(100, 100));
+    root->SetIsDrawable(true);
+
+    scoped_refptr<Layer> child = Layer::Create();
+    child->SetBounds(gfx::Size(50, 60));
+    child->SetPosition(gfx::PointF(10.f, 5.5f));
+    child->SetContentsOpaque(true);
+    child->SetIsDrawable(true);
+    root->AddChild(child);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void DidCommit() override {
-    TestLayer* root = static_cast<TestLayer*>(layer_tree_host()->root_layer());
-    VerifyOcclusion(root);
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* child = root->children()[0];
 
+    // Verify the draw properties are valid.
+    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+
+    EXPECT_OCCLUSION_EQ(
+        Occlusion(child->draw_transform(), SimpleEnclosedRegion(),
+                  SimpleEnclosedRegion()),
+        child->draw_properties().occlusion_in_content_space);
+    EXPECT_OCCLUSION_EQ(
+        Occlusion(root->draw_transform(), SimpleEnclosedRegion(),
+                  SimpleEnclosedRegion(gfx::Rect(10, 6, 50, 59))),
+        root->draw_properties().occlusion_in_content_space);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestDrawPropertiesOnLayer);
+
+// Verify occlusion is set on the render surfaces.
+class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
+    : public LayerTreeHostOcclusionTest {
+ public:
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(100, 100));
+    root->SetIsDrawable(true);
+
+    scoped_refptr<Layer> child = Layer::Create();
+    child->SetBounds(gfx::Size(1, 1));
+    child->SetPosition(gfx::PointF(10.f, 5.5f));
+    child->SetIsDrawable(true);
+    child->SetForceRenderSurface(true);
+    root->AddChild(child);
+
+    scoped_refptr<Layer> child2 = Layer::Create();
+    child2->SetBounds(gfx::Size(10, 12));
+    child2->SetPosition(gfx::PointF(13.f, 8.5f));
+    child2->SetContentsOpaque(true);
+    child2->SetIsDrawable(true);
+    root->AddChild(child2);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* child = root->children()[0];
+    RenderSurfaceImpl* surface = child->render_surface();
+
+    // Verify the draw properties are valid.
+    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_EQ(child, child->render_target());
+
+    EXPECT_OCCLUSION_EQ(
+        Occlusion(surface->draw_transform(), SimpleEnclosedRegion(),
+                  SimpleEnclosedRegion(gfx::Rect(13, 9, 10, 11))),
+        surface->occlusion_in_content_space());
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostOcclusionTestDrawPropertiesOnSurface);
+
+// Verify occlusion is set on mask layers.
+class LayerTreeHostOcclusionTestDrawPropertiesOnMask
+    : public LayerTreeHostOcclusionTest {
+ public:
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(100, 100));
+    root->SetIsDrawable(true);
+
+    scoped_refptr<Layer> child = Layer::Create();
+    child->SetBounds(gfx::Size(30, 40));
+    child->SetPosition(gfx::PointF(10.f, 5.5f));
+    child->SetIsDrawable(true);
+    root->AddChild(child);
+
+    scoped_refptr<Layer> make_surface_bigger = Layer::Create();
+    make_surface_bigger->SetBounds(gfx::Size(100, 100));
+    make_surface_bigger->SetPosition(gfx::PointF(-10.f, -15.f));
+    make_surface_bigger->SetIsDrawable(true);
+    child->AddChild(make_surface_bigger);
+
+    scoped_refptr<Layer> mask = PictureLayer::Create(&client_);
+    mask->SetBounds(gfx::Size(30, 40));
+    mask->SetIsDrawable(true);
+    child->SetMaskLayer(mask.get());
+
+    scoped_refptr<Layer> child2 = Layer::Create();
+    child2->SetBounds(gfx::Size(10, 12));
+    child2->SetPosition(gfx::PointF(13.f, 8.5f));
+    child2->SetContentsOpaque(true);
+    child2->SetIsDrawable(true);
+    root->AddChild(child2);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* child = root->children()[0];
+    RenderSurfaceImpl* surface = child->render_surface();
+    LayerImpl* mask = child->mask_layer();
+
+    // Verify the draw properties are valid.
+    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_EQ(child, child->render_target());
+
+    gfx::Transform transform = surface->draw_transform();
+    transform.PreconcatTransform(child->draw_transform());
+
+    EXPECT_OCCLUSION_EQ(
+        Occlusion(transform, SimpleEnclosedRegion(),
+                  SimpleEnclosedRegion(gfx::Rect(13, 9, 10, 11))),
+        mask->draw_properties().occlusion_in_content_space);
     EndTest();
   }
 
   void AfterTest() override {}
 
-  void VerifyOcclusion(TestLayer* layer) const {
-    EXPECT_EQ(layer->expected_occlusion().ToString(),
-              layer->occlusion().ToString());
-
-    for (size_t i = 0; i < layer->children().size(); ++i) {
-      TestLayer* child = static_cast<TestLayer*>(layer->children()[i].get());
-      VerifyOcclusion(child);
-    }
-  }
-
-  void SetLayerPropertiesForTesting(TestLayer* layer,
-                                    TestLayer* parent,
-                                    const gfx::Transform& transform,
-                                    const gfx::PointF& position,
-                                    const gfx::Size& bounds,
-                                    bool opaque) const {
-    layer->RemoveAllChildren();
-    if (parent)
-      parent->AddChild(layer);
-    layer->SetTransform(transform);
-    layer->SetPosition(position);
-    layer->SetBounds(bounds);
-    layer->SetContentsOpaque(opaque);
-  }
-
- protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->minimum_occlusion_tracking_size = gfx::Size();
-  }
-
-  scoped_refptr<TestLayer> root_;
-  scoped_refptr<TestLayer> child_;
-  scoped_refptr<TestLayer> child2_;
-  scoped_refptr<TestLayer> grand_child_;
-  scoped_refptr<TestLayer> mask_;
-
-  gfx::Transform identity_matrix_;
+  FakeContentLayerClient client_;
 };
 
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestDrawPropertiesOnMask);
 
-class LayerTreeHostOcclusionTestOcclusionSurfaceClipping
+// Verify occlusion is set to empty inside the subtree of a replica. This is
+// done because the tile system does not know about replicas, and so would not
+// know that something is unoccluded on the replica even though it's occluded on
+// the original.
+class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
     : public LayerTreeHostOcclusionTest {
  public:
   void SetupTree() override {
-    // The child layer is a surface and the grand_child is opaque, but clipped
-    // to the child and root
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), false);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(100, 100));
+    root->SetIsDrawable(true);
 
-    child_->SetMasksToBounds(true);
-    child_->SetForceRenderSurface(true);
+    scoped_refptr<Layer> child = Layer::Create();
+    child->SetBounds(gfx::Size(1, 1));
+    child->SetPosition(gfx::PointF(10.f, 5.5f));
+    child->SetIsDrawable(true);
+    child->SetForceRenderSurface(true);
+    root->AddChild(child);
 
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
-    root_->set_expected_occlusion(gfx::Rect(10, 10, 10, 190));
+    scoped_refptr<Layer> replica = Layer::Create();
+    gfx::Transform translate;
+    translate.Translate(20.f, 4.f);
+    replica->SetTransform(translate);
+    child->SetReplicaLayer(replica.get());
 
-    layer_tree_host()->SetRootLayer(root_);
+    scoped_refptr<Layer> mask = PictureLayer::Create(&client_);
+    mask->SetBounds(gfx::Size(30, 40));
+    mask->SetIsDrawable(true);
+    child->SetMaskLayer(mask.get());
+
+    scoped_refptr<Layer> child2 = Layer::Create();
+    child2->SetBounds(gfx::Size(10, 12));
+    child2->SetPosition(gfx::PointF(13.f, 8.5f));
+    child2->SetContentsOpaque(true);
+    child2->SetIsDrawable(true);
+    root->AddChild(child2);
+
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
   }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* child = root->children()[0];
+    RenderSurfaceImpl* surface = child->render_surface();
+    LayerImpl* mask = child->mask_layer();
+
+    // Verify the draw properties are valid.
+    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_EQ(child, child->render_target());
+
+    // No occlusion from on child, which is part of the replica.
+    EXPECT_OCCLUSION_EQ(Occlusion(),
+                        child->draw_properties().occlusion_in_content_space);
+    // Occlusion on the surface is okay.
+    EXPECT_OCCLUSION_EQ(
+        Occlusion(surface->draw_transform(), SimpleEnclosedRegion(),
+                  SimpleEnclosedRegion(gfx::Rect(13, 9, 10, 11))),
+        surface->occlusion_in_content_space());
+    // No occlusion on the replica'd mask.
+    EXPECT_OCCLUSION_EQ(Occlusion(),
+                        mask->draw_properties().occlusion_in_content_space);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionSurfaceClipping);
-
-class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer is opaque, then it adds to the occlusion seen by the
-    // root_.
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetForceRenderSurface(true);
-
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
-    root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque);
-
-class LayerTreeHostOcclusionTestOcclusionTwoChildren
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // Add a second child to the root layer and the regions should merge
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), false);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetForceRenderSurface(true);
-
-    grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
-    root_->set_expected_occlusion(gfx::Rect(10, 10, 20, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionTwoChildren);
-
-class LayerTreeHostOcclusionTestOcclusionMask
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer has a mask on it, then it shouldn't contribute to
-    // occlusion on stuff below it.
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(20.f, 20.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(500, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetForceRenderSurface(true);
-    child_->SetMaskLayer(mask_.get());
-
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 180, 180));
-    root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionMask);
-
-class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer with a mask is below child2, then child2 should
-    // contribute to occlusion on everything, and child shouldn't contribute
-    // to the root_.
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetForceRenderSurface(true);
-    child_->SetMaskLayer(mask_.get());
-
-    grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
-    root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion);
-
-class LayerTreeHostOcclusionTestOcclusionOpacity
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer has a non-opaque opacity, then it shouldn't
-    // contribute to occlusion on stuff below it
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetForceRenderSurface(true);
-    child_->SetOpacity(0.5f);
-
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
-    root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionOpacity);
-
-class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer with non-opaque opacity is below child2, then
-    // child2 should contribute to occlusion on everything, and child shouldn't
-    // contribute to the root_.
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetForceRenderSurface(true);
-    child_->SetOpacity(0.5f);
-
-    grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
-    root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion);
-
-class LayerTreeHostOcclusionTestOcclusionBlending
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer has a blend mode, then it shouldn't
-    // contribute to occlusion on stuff below it
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetBlendMode(SkXfermode::kMultiply_Mode);
-    child_->SetForceRenderSurface(true);
-
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
-    root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionBlending);
-
-class LayerTreeHostOcclusionTestOcclusionBlendingBelowOcclusion
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer with a blend mode is below child2, then
-    // child2 should contribute to occlusion on everything, and child shouldn't
-    // contribute to the root_.
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetBlendMode(SkXfermode::kMultiply_Mode);
-
-    grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
-    root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionBlendingBelowOcclusion);
-
-class LayerTreeHostOcclusionTestOcclusionOpacityFilter
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    FilterOperations filters;
-    filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-
-    // If the child layer has a filter that changes alpha values, and is below
-    // child2, then child2 should contribute to occlusion on everything,
-    // and child shouldn't contribute to the root
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(child_.get(),
-                                 root_.get(),
-                                 identity_matrix_,
-                                 gfx::PointF(0.f, 0.f),
-                                 gfx::Size(500, 500),
-                                 true);
-    SetLayerPropertiesForTesting(grand_child_.get(),
-                                 child_.get(),
-                                 identity_matrix_,
-                                 gfx::PointF(0.f, 0.f),
-                                 gfx::Size(500, 500),
-                                 true);
-    SetLayerPropertiesForTesting(child2_.get(),
-                                 root_.get(),
-                                 identity_matrix_,
-                                 gfx::PointF(10.f, 10.f),
-                                 gfx::Size(30, 30),
-                                 true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetFilters(filters);
-
-    // child2_ occludes grand_child_, showing it does occlude inside child_'s
-    // subtree.
-    grand_child_->set_expected_occlusion(gfx::Rect(10, 10, 30, 30));
-    // grand_child_ occludes child_, showing there is more occlusion in
-    // child_'s subtree.
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 200, 200));
-    // child2_'s occlusion reaches the root, but child_'s subtree does not.
-    root_->set_expected_occlusion(gfx::Rect(10, 10, 30, 30));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionOpacityFilter);
-
-class LayerTreeHostOcclusionTestOcclusionBlurFilter
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    gfx::Transform child_transform;
-    child_transform.Translate(250.0, 250.0);
-    child_transform.Rotate(90.0);
-    child_transform.Translate(-250.0, -250.0);
-
-    FilterOperations filters;
-    filters.Append(FilterOperation::CreateBlurFilter(10.f));
-
-    // If the child layer has a filter that moves pixels/changes alpha, and is
-    // below child2, then child should not inherit occlusion from outside its
-    // subtree, and should not contribute to the root
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), child_transform,
-        gfx::PointF(30.f, 30.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 70.f), gfx::Size(500, 500), true);
-
-    child_->SetMasksToBounds(true);
-    child_->SetFilters(filters);
-
-    child_->set_expected_occlusion(gfx::Rect(10, 330, 160, 170));
-    root_->set_expected_occlusion(gfx::Rect(10, 70, 190, 130));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionBlurFilter);
-
-class LayerTreeHostOcclusionTestOcclusionCopyRequest
-    : public LayerTreeHostOcclusionTest {
- public:
-  static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
-
-  void SetupTree() override {
-    // If the child layer has copy request, and is below child2,
-    // then child should not inherit occlusion from outside its subtree.
-    // The child layer will still receive occlusion from inside, and
-    // the root layer will recive occlusion from child.
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(), gfx::Size(100, 100), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(), gfx::Size(75, 75), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(), gfx::Size(75, 50), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(0.f, 25.f), gfx::Size(75, 75), true);
-
-    child_->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-        base::Bind(&CopyOutputCallback)));
-    EXPECT_TRUE(child_->HasCopyRequest());
-
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 75, 50));
-    root_->set_expected_occlusion(gfx::Rect(0, 0, 75, 100));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionCopyRequest);
-
-class LayerTreeHostOcclusionTestOcclusionReplica
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // If the child layer has copy request, and is below child2,
-    // then child should not inherit occlusion from outside its subtree.
-    // The child layer will still receive occlusion from inside, and
-    // the root layer will recive occlusion from child.
-    SetLayerPropertiesForTesting(
-        root_.get(), NULL, identity_matrix_,
-        gfx::PointF(), gfx::Size(100, 100), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(), gfx::Size(75, 75), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(), gfx::Size(75, 50), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(0.f, 25.f), gfx::Size(75, 75), true);
-
-    scoped_refptr<Layer> replica_layer(Layer::Create());
-    child_->SetReplicaLayer(replica_layer.get());
-    EXPECT_TRUE(child_->has_replica());
-
-    child_->set_expected_occlusion(gfx::Rect(0, 0, 75, 50));
-    root_->set_expected_occlusion(gfx::Rect(0, 0, 75, 100));
-
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionReplica);
-
-class LayerTreeHostOcclusionTestManySurfaces
-    : public LayerTreeHostOcclusionTest {
- public:
-  void SetupTree() override {
-    // We create enough RenderSurfaces that it will trigger Vector reallocation
-    // while computing occlusion.
-    std::vector<scoped_refptr<TestLayer>> layers;
-    int num_surfaces = 200;
-    int root_width = 400;
-    int root_height = 400;
-
-    for (int i = 0; i < num_surfaces; ++i) {
-      layers.push_back(TestLayer::Create());
-      if (i == 0) {
-        SetLayerPropertiesForTesting(
-            layers.back().get(), NULL, identity_matrix_,
-            gfx::PointF(0.f, 0.f),
-            gfx::Size(root_width, root_height), true);
-      } else {
-        SetLayerPropertiesForTesting(
-            layers.back().get(), layers[layers.size() - 2].get(),
-            identity_matrix_,
-            gfx::PointF(1.f, 1.f),
-            gfx::Size(root_width-i, root_height-i), true);
-        layers.back()->SetForceRenderSurface(true);
-      }
-    }
-
-    for (int i = 1; i < num_surfaces; ++i) {
-      scoped_refptr<TestLayer> child = TestLayer::Create();
-      SetLayerPropertiesForTesting(
-          child.get(), layers[i].get(), identity_matrix_,
-          gfx::PointF(0.f, 0.f), gfx::Size(root_width, root_height), false);
-    }
-
-    for (int i = 0; i < num_surfaces-1; ++i) {
-      gfx::Rect expected_occlusion(1, 1, root_width-i-1, root_height-i-1);
-      layers[i]->set_expected_occlusion(expected_occlusion);
-    }
-
-    layer_tree_host()->SetRootLayer(layers[0]);
-    LayerTreeTest::SetupTree();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestManySurfaces);
+    LayerTreeHostOcclusionTestDrawPropertiesInsideReplica);
 
 }  // namespace
 }  // namespace cc

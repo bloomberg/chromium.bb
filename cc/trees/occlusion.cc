@@ -85,4 +85,16 @@ gfx::Rect Occlusion::GetUnoccludedRectInTargetSurface(
   return unoccluded_rect_in_target_surface;
 }
 
+bool Occlusion::IsEqual(const Occlusion& other) const {
+  return draw_transform_ == other.draw_transform_ &&
+         occlusion_from_inside_target_ == other.occlusion_from_inside_target_ &&
+         occlusion_from_outside_target_ == other.occlusion_from_outside_target_;
+}
+
+std::string Occlusion::ToString() const {
+  return draw_transform_.ToString() + "outside(" +
+         occlusion_from_outside_target_.ToString() + ") inside(" +
+         occlusion_from_inside_target_.ToString() + ")";
+}
+
 }  // namespace cc

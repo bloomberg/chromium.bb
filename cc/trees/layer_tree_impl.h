@@ -220,6 +220,7 @@ class CC_EXPORT LayerTreeImpl {
   void set_ui_resource_request_queue(const UIResourceRequestQueue& queue);
 
   const LayerImplList& RenderSurfaceLayerList() const;
+  const Region& UnoccludedScreenSpaceRegion() const;
 
   // These return the size of the root scrollable area and the size of
   // the user-visible scrolling viewport, in CSS layout coordinates.
@@ -381,6 +382,9 @@ class CC_EXPORT LayerTreeImpl {
 
   // List of visible layers for the most recently prepared frame.
   LayerImplList render_surface_layer_list_;
+  // After drawing the |render_surface_layer_list_| the areas in this region
+  // would not be fully covered by opaque content.
+  Region unoccluded_screen_space_region_;
 
   bool contents_textures_purged_;
   bool viewport_size_invalid_;
