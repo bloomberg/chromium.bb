@@ -92,6 +92,14 @@ void FrameTreeNode::ResetForNewProcess() {
   // commits before the old process cleans everything up.  Make sure the child
   // nodes get deleted before swapping to a new process.
   ScopedVector<FrameTreeNode> old_children = children_.Pass();
+
+  // Loop over all children removing them from the FrameTree. This will ensure
+  // that nodes are properly removed from the tree and notifications are sent.
+  // Note: since the |children_| vector is now empty, the calls into RemoveChild
+  // will be a noop and will not result in repeatedly traversing the list.
+  for (const auto& child : old_children)
+    frame_tree_->RemoveFrame(child);
+
   old_children.clear();  // May notify observers.
 }
 

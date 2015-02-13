@@ -252,4 +252,28 @@ TEST_F(FrameTreeTest, FailAddFrameWithWrongProcessId) {
   ASSERT_EQ("1: []", GetTreeState(frame_tree));
 }
 
+// Ensure that frames removed while a process has crashed are not preserved in
+// the global map of id->frame.
+TEST_F(FrameTreeTest, ProcessCrashClearsGlobalMap) {
+  // Add a couple child frames to the main frame.
+  FrameTreeNode* root = contents()->GetFrameTree()->root();
+
+  main_test_rfh()->OnCreateChildFrame(22, std::string(), SandboxFlags::NONE);
+  main_test_rfh()->OnCreateChildFrame(23, std::string(), SandboxFlags::NONE);
+
+  // Ensure they can be found by id.
+  int64 id1 = root->child_at(0)->frame_tree_node_id();
+  int64 id2 = root->child_at(1)->frame_tree_node_id();
+  EXPECT_TRUE(FrameTree::GloballyFindByID(id1));
+  EXPECT_TRUE(FrameTree::GloballyFindByID(id2));
+
+  // Crash the renderer.
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
+      0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+
+  // Ensure they cannot be found by id after the process has crashed.
+  EXPECT_FALSE(FrameTree::GloballyFindByID(id1));
+  EXPECT_FALSE(FrameTree::GloballyFindByID(id2));
+}
+
 }  // namespace content
