@@ -118,7 +118,7 @@ class InProcessAccessibilityBrowserTest : public InProcessBrowserTest {
 
 // Test that an accessible page doesn't fail the accessibility audit.
 IN_PROC_BROWSER_TEST_F(
-    InProcessAccessibilityBrowserTest, VerifyAccessibilityPass) {
+    InProcessAccessibilityBrowserTest, DISABLED_VerifyAccessibilityPass) {
   ASSERT_TRUE(NavigateToURL(kPassHTML));
 
   std::string test_result;
