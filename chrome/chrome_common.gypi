@@ -307,6 +307,7 @@
         '<(DEPTH)/components/components.gyp:cloud_devices_common',
         '<(DEPTH)/components/components.gyp:component_updater',
         '<(DEPTH)/components/components.gyp:content_settings_core_common',
+        '<(DEPTH)/components/components.gyp:favicon_base',
         '<(DEPTH)/components/components.gyp:json_schema',
         '<(DEPTH)/components/components.gyp:metrics',
         '<(DEPTH)/components/components.gyp:policy_component_common',
