@@ -6,8 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_RESET_SCREEN_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/screens/reset_view.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/screens/reset_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/web_ui.h"
 
 class PrefRegistrySimple;
@@ -15,33 +19,73 @@ class PrefRegistrySimple;
 namespace chromeos {
 
 // WebUI implementation of ResetScreenActor.
-class ResetScreenHandler : public ResetView,
-                           public BaseScreenHandler {
+class ResetScreenHandler : public ResetScreenActor,
+                           public BaseScreenHandler,
+                           public UpdateEngineClient::Observer {
  public:
   ResetScreenHandler();
   ~ResetScreenHandler() override;
 
-  // ResetView implementation:
-  void Bind(ResetModel& model) override;
-  void Unbind() override;
+  // ResetScreenActor implementation:
   void PrepareToShow() override;
   void Show() override;
   void Hide() override;
+  void SetDelegate(Delegate* delegate) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
+  // WebUIMessageHandler implementation:
+  void RegisterMessages() override;
+
+  // UpdateEngineClient::Observer implementation:
+  void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
+
+  void OnRollbackCheck(bool can_rollback);
+
   // Registers Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
+  // JS messages handlers.
+  void HandleOnCancel();
+  void HandleOnRestart();
+  void HandleOnPowerwash(bool rollback_checked);
+  void HandleOnLearnMore();
+  void HandleOnToggleRollback();
+  void HandleOnShowConfirm();
 
-  ResetModel* model_;
+  void ChooseAndApplyShowScenario();
+  void ShowWithParams();
+
+  Delegate* delegate_;
+
+  // Help application used for help dialogs.
+  scoped_refptr<HelpAppLauncher> help_app_;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
+
+  // Keeps whether restart is required before reset.
+  // False if first exec after boot.
+  bool restart_required_;
+
+  // Keeps whether previous reboot was requested from reset screen. Makes sense
+  // for first exec after boot situation.
+  bool reboot_was_requested_;
+
+  // Keeps whether rollback option is available.
+  bool rollback_available_;
+
+  // Keeps whether rollback option is active at the screen.
+  bool rollback_checked_;
+
+  // Whether rollback is initiated. Prevents screen-hide.
+  bool preparing_for_rollback_;
+
+  base::WeakPtrFactory<ResetScreenHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetScreenHandler);
 };

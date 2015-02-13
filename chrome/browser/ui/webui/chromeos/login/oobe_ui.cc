@@ -208,7 +208,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       debugging_screen_actor_(nullptr),
       eula_view_(nullptr),
       hid_detection_screen_actor_(nullptr),
-      reset_view_(nullptr),
+      reset_screen_actor_(nullptr),
       autolaunch_screen_actor_(nullptr),
       kiosk_enable_screen_actor_(nullptr),
       wrong_hwid_screen_actor_(nullptr),
@@ -260,7 +260,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(eula_screen_handler);
 
   ResetScreenHandler* reset_screen_handler = new ResetScreenHandler();
-  reset_view_ = reset_screen_handler;
+  reset_screen_actor_ = reset_screen_handler;
   AddScreenHandler(reset_screen_handler);
 
   KioskAutolaunchScreenHandler* autolaunch_screen_handler =
@@ -427,8 +427,8 @@ EnrollmentScreenActor* OobeUI::GetEnrollmentScreenActor() {
   return enrollment_screen_actor_;
 }
 
-ResetView* OobeUI::GetResetView() {
-  return reset_view_;
+ResetScreenActor* OobeUI::GetResetScreenActor() {
+  return reset_screen_actor_;
 }
 
 KioskAutolaunchScreenActor* OobeUI::GetKioskAutolaunchScreenActor() {
