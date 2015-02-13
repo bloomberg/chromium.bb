@@ -384,8 +384,6 @@ public class ContentViewCore
 
     private ContentViewClient mContentViewClient;
 
-    private ContentSettings mContentSettings;
-
     // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
     private long mNativeContentViewCore = 0;
 
@@ -744,7 +742,6 @@ public class ContentViewCore
                 webContents, viewAndroidNativePointer, windowNativePointer,
                 mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
-        mContentSettings = new ContentSettings(this, mNativeContentViewCore);
 
         setContainerViewInternals(internalDispatcher);
         mRenderCoordinates.reset();
@@ -957,7 +954,6 @@ public class ContentViewCore
         mWebContents = null;
         if (mViewAndroid != null) mViewAndroid.destroy();
         mNativeContentViewCore = 0;
-        mContentSettings = null;
         mJavaScriptInterfaces.clear();
         mRetainedJavaScriptObjects.clear();
         unregisterAccessibilityContentObserver();
@@ -1391,16 +1387,6 @@ public class ContentViewCore
         hidePopupsAndPreserveSelection();
         setInjectedAccessibility(false);
         mWebContents.onHide();
-    }
-
-    /**
-     * Return the ContentSettings object used to retrieve the settings for this
-     * ContentViewCore. For modifications, ChromeNativePreferences is to be used.
-     * @return A ContentSettings object that can be used to retrieve this
-     *         ContentViewCore's settings.
-     */
-    public ContentSettings getContentSettings() {
-        return mContentSettings;
     }
 
     private void hidePopupsAndClearSelection() {
@@ -2846,7 +2832,7 @@ public class ContentViewCore
                 return false;
             }
 
-            if (!mContentSettings.getJavaScriptEnabled()) {
+            if (!mContentViewClient.isJavascriptEnabled()) {
                 return false;
             }
 

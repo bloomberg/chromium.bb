@@ -116,7 +116,6 @@ public class AwContentsTest extends AwTestBase {
         awContents.loadUrl(new LoadUrlParams("http://www.google.com"));
         awContents.findAllAsync("search");
         assertNull(awContents.getUrl());
-        assertNull(awContents.getContentSettings());
         assertFalse(awContents.canGoBack());
         awContents.disableJavascriptInterfacesInspection();
         awContents.invokeZoomPicker();

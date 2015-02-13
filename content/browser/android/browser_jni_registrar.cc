@@ -12,7 +12,6 @@
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_readback_handler.h"
-#include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_render_view.h"
@@ -52,7 +51,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},
     {"ContentReadbackHandler",
      content::ContentReadbackHandler::RegisterContentReadbackHandler},
-    {"ContentSettings", content::ContentSettings::RegisterContentSettings},
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
     {"ContentViewCore", content::RegisterContentViewCore},
     {"ContentViewRenderView",

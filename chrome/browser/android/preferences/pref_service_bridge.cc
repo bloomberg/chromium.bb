@@ -413,20 +413,30 @@ static jboolean GetJavaScriptManaged(JNIEnv* env, jobject obj) {
 }
 
 static void SetJavaScriptEnabled(JNIEnv* env, jobject obj, jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kWebKitJavascriptEnabled, enabled);
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      enabled ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
 static jboolean GetJavaScriptEnabled(JNIEnv* env, jobject obj) {
-  // The user pref for Javascript is stored in kWebKitJavascriptEnabled for
-  // historical reasons, but the content setting is where a possibly managed
-  // value will be enforced.
-  jboolean javascript_enabled =
-      GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-  if (!GetJavaScriptManaged(env, obj)) {
-    javascript_enabled &= GetPrefService()->GetBoolean(
-        prefs::kWebKitJavascriptEnabled);
-  }
-  return javascript_enabled;
+  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+}
+
+static void MigrateJavascriptPreference(JNIEnv* env, jobject obj) {
+  const PrefService::Preference* javascript_pref =
+      GetPrefService()->FindPreference(prefs::kWebKitJavascriptEnabled);
+  DCHECK(javascript_pref);
+
+  if (!javascript_pref->HasUserSetting())
+    return;
+
+  bool javascript_enabled = false;
+  bool retval = javascript_pref->GetValue()->GetAsBoolean(&javascript_enabled);
+  DCHECK(retval);
+  SetJavaScriptEnabled(env, obj, javascript_enabled);
+  GetPrefService()->ClearPref(prefs::kWebKitJavascriptEnabled);
 }
 
 static void SetPasswordEchoEnabled(JNIEnv* env,

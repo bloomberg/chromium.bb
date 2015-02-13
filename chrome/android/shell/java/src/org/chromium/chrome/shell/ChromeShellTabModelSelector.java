@@ -6,6 +6,7 @@ package org.chromium.chrome.shell;
 
 import android.content.Context;
 
+import org.chromium.chrome.browser.ChromeContentViewClient;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -85,7 +86,7 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
     public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
             boolean incognito) {
         assert !incognito;
-        ContentViewClient client = new ContentViewClient() {
+        ContentViewClient client = new ChromeContentViewClient() {
             @Override
             public ContentVideoViewClient getContentVideoViewClient() {
                 return mContentVideoViewClient;

@@ -164,8 +164,7 @@ public class AccessibilityInjector extends WebContentsObserver {
      */
     public boolean accessibilityIsAvailable() {
         if (!getAccessibilityManager().isEnabled()
-                || mContentViewCore.getContentSettings() == null
-                || !mContentViewCore.getContentSettings().getJavaScriptEnabled()) {
+                || !mContentViewCore.getContentViewClient().isJavascriptEnabled()) {
             return false;
         }
 

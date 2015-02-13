@@ -443,7 +443,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * ContentViewClient that provides basic tab functionality and is meant to be extended
      * by child classes.
      */
-    protected class TabContentViewClient extends ContentViewClient {
+    protected class TabContentViewClient extends ChromeContentViewClient {
         @Override
         public void onUpdateTitle(String title) {
             updateTitle(title);

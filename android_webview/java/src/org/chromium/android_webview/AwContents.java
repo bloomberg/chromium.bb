@@ -45,7 +45,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
-import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
@@ -1263,13 +1262,6 @@ public class AwContents implements SmartClipProvider {
 
     public View getZoomControlsForTest() {
         return mZoomControls.getZoomControlsViewForTest();
-    }
-
-    /**
-     * @see ContentViewCore#getContentSettings()
-     */
-    public ContentSettings getContentSettings() {
-        return isDestroyed() ? null : mContentViewCore.getContentSettings();
     }
 
     /**

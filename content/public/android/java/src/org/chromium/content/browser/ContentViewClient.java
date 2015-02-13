@@ -154,6 +154,15 @@ public class ContentViewClient {
     }
 
     /**
+     * @return Whether javascript is enabled by the embedder.
+     */
+    // TODO(tedchoc): Only used for ICS accessibility injection, so remove this method when
+    //                that is no longer needed.
+    public boolean isJavascriptEnabled() {
+        return true;
+    }
+
+    /**
      * Check whether a key should be propagated to the embedder or not.
      * We need to send almost every key to Blink. However:
      * 1. We don't want to block the device on the renderer for

@@ -128,4 +128,9 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
             mAwContentsClient.onHideCustomView();
         }
     }
+
+    @Override
+    public boolean isJavascriptEnabled() {
+        return mAwSettings != null && mAwSettings.getJavaScriptEnabled();
+    }
 }

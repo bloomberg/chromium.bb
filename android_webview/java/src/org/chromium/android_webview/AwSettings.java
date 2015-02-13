@@ -23,7 +23,6 @@ import org.chromium.content_public.browser.WebContents;
 
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.
- * Use {@link org.chromium.content.browser.ContentSettings} for WebKit settings.
  *
  * Methods in this class can be called from any thread, including threads created by
  * the client of WebView.

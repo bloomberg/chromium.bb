@@ -307,8 +307,6 @@
       'browser/android/content_protocol_handler_impl.h',
       'browser/android/content_readback_handler.cc',
       'browser/android/content_readback_handler.h',
-      'browser/android/content_settings.cc',
-      'browser/android/content_settings.h',
       'browser/android/content_startup_flags.cc',
       'browser/android/content_startup_flags.h',
       'browser/android/content_video_view.cc',
