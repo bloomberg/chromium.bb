@@ -440,7 +440,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, NoScorer) {
   EXPECT_CALL(*classifier_, CancelPendingClassification());
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, NoScorer_Ref) {
+// Flaky: crbug.com/435719
+#if defined(LEAK_SANITIZER)
+#define MAYBE_NoScorer_Ref DISABLED_NoScorer_Ref
+#else
+#define MAYBE_NoScorer_Ref NoScorer_Ref
+#endif
+
+IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, MAYBE_NoScorer_Ref) {
   // Similar to the last test, but navigates within the page before
   // setting the scorer.
   ASSERT_FALSE(classifier_->is_ready());
