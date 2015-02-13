@@ -63,6 +63,7 @@
         'cocoa/menu_controller_unittest.mm',
         'cocoa/nsgraphics_context_additions_unittest.mm',
         'cocoa/nsview_additions_unittest.mm',
+        'cocoa/three_part_image_unittest.mm',
         'cocoa/tracking_area_unittest.mm',
         'dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
         'ime/candidate_window_unittest.cc',

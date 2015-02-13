@@ -75,12 +75,6 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
   // The tool tip text for this tab view.
   base::scoped_nsobject<NSString> toolTipText_;
-
-  // A one-element mask image cache.  This cache makes drawing roughly 16%
-  // faster.
-  base::ScopedCFTypeRef<CGImageRef> maskCache_;
-  CGFloat maskCacheWidth_;
-  CGFloat maskCacheScale_;
 }
 
 @property(retain, nonatomic) NSString* title;

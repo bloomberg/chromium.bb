@@ -19,7 +19,8 @@ class TabViewTest : public CocoaTest {
  public:
   TabViewTest() {
     NSRect frame = NSMakeRect(0, 0, kTabWidth, kTabHeight);
-    base::scoped_nsobject<TabView> view([[TabView alloc] initWithFrame:frame]);
+    base::scoped_nsobject<TabView> view(
+        [[TabView alloc] initWithFrame:frame controller:nil closeButton:nil]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }
