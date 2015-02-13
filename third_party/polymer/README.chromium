@@ -38,6 +38,10 @@ only difference that all inline JavaScript blocks are extracted from Polymer
 HTML elements to external JS files. This version of the Polymer is used in a web
 UI, where CSP forbids an execution of inline scripts. The extraction was made
 with the help of the Vulcanize tool (https://github.com/Polymer/vulcanize).
+- Stripped whitespace using sed (this or a similar command will be added to
+reproduce.sh shortly, but for now is done manually - see crbug.com/458315):
+    find components components-chromium -type f \( -name \*.html -o -name \*.css -o -name \*.js -o -name \*.md -o -name \*.sh -o -name \*.json -o -name \*.gitignore \) -print0 | xargs -0 sed -i 's/\r$//g'
+
 
 To restore a content of the 'components', 'components-chromium' directorires
 from scratch, run ./reproduce.sh (requires bower and vulcanize >= 0.7.2).
