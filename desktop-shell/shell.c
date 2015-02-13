@@ -3315,8 +3315,7 @@ shell_surface_send_popup_done(struct shell_surface *shsurf)
 	if (shell_surface_is_wl_shell_surface(shsurf))
 		wl_shell_surface_send_popup_done(shsurf->resource);
 	else if (shell_surface_is_xdg_popup(shsurf))
-		xdg_popup_send_popup_done(shsurf->resource,
-					  shsurf->popup.serial);
+		xdg_popup_send_popup_done(shsurf->resource);
 }
 
 static void

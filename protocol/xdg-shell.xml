@@ -415,7 +415,6 @@
 	that is, when the users clicks a surface that doesn't belong
 	to the client owning the popup surface.
       </description>
-      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
     </event>
 
   </interface>

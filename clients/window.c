@@ -4727,7 +4727,7 @@ menu_redraw_handler(struct widget *widget, void *data)
 }
 
 static void
-handle_popup_popup_done(void *data, struct xdg_popup *xdg_popup, uint32_t serial)
+handle_popup_popup_done(void *data, struct xdg_popup *xdg_popup)
 {
 	struct window *window = data;
 	struct menu *menu = window->main_surface->widget->user_data;
