@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <limits>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -28,6 +30,7 @@
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
+#include "sandbox/linux/services/resource_limits.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
@@ -67,6 +70,37 @@ bool MaybeSetProcessNonDumpable() {
   }
 
   return prctl(PR_GET_DUMPABLE) == 0;
+}
+
+void RestrictAddressSpaceUsage() {
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER)
+  // Sanitizers need to reserve huge chunks of the address space.
+  return;
+#endif
+
+  // Add a limit to the brk() heap that would prevent allocations that can't be
+  // indexed by an int. This helps working around typical security bugs.
+  // This could almost certainly be set to zero. GLibc's allocator and others
+  // would fall-back to mmap if brk() fails.
+  const rlim_t kNewDataSegmentMaxSize = std::numeric_limits<int>::max();
+  CHECK(sandbox::ResourceLimits::Lower(RLIMIT_DATA, kNewDataSegmentMaxSize));
+
+#if defined(ARCH_CPU_64_BITS)
+  // NaCl's x86-64 sandbox allocated 88GB address of space during startup:
+  // - The main sandbox is 4GB
+  // - There are two guard regions of 40GB each.
+  // - 4GB are allocated extra to have a 4GB-aligned address.
+  // See https://crbug.com/455839
+  //
+  // Set the limit to 128 GB and have some margin.
+  const rlim_t kNewAddressSpaceLimit = 1UL << 37;
+#else
+  // Some architectures such as X86 allow 32 bits processes to switch to 64
+  // bits when running under 64 bits kernels. Set a limit in case this happens.
+  const rlim_t kNewAddressSpaceLimit = std::numeric_limits<uint32_t>::max();
+#endif
+  CHECK(sandbox::ResourceLimits::Lower(RLIMIT_AS, kNewAddressSpaceLimit));
 }
 
 }  // namespace
@@ -152,6 +186,8 @@ void NaClSandbox::InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {
   DCHECK(!layer_one_sealed_);
   CHECK(IsSingleThreaded());
   CheckForExpectedNumberOfOpenFds();
+
+  RestrictAddressSpaceUsage();
 
   base::ScopedFD proc_self_task(GetProcSelfTask(proc_fd_.get()));
 

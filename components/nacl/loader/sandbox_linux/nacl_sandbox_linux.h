@@ -50,11 +50,13 @@ class NaClSandbox {
   bool HasOpenDirectory();
   // Will attempt to initialize the layer-1 sandbox, depending on flags and the
   // environment. It can only succeed if the current process is a child of the
-  // setuid sandbox.
+  // setuid sandbox or was started by the namespace sandbox.
   void InitializeLayerOneSandbox();
   // Will attempt to initialize the layer-2 sandbox, depending on flags and the
   // environment. |uses_nonsfi_mode| describes which seccomp-bpf policy is
   // appropriate.
+  // This layer will also add a limit to how much of the address space can be
+  // used.
   void InitializeLayerTwoSandbox(bool uses_nonsfi_mode);
   // Seal the layer-1 sandbox, making it enforcing.
   void SealLayerOneSandbox();

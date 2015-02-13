@@ -36,6 +36,7 @@
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
+#include "sandbox/linux/services/resource_limits.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
@@ -65,19 +66,6 @@ void LogSandboxStarted(const std::string& sandbox_name) {
       "Activated " + sandbox_name + " sandbox for process type: " +
       process_type + ".";
   VLOG(1) << activated_sandbox;
-}
-
-bool AddResourceLimit(int resource, rlim_t limit) {
-  struct rlimit old_rlimit;
-  if (getrlimit(resource, &old_rlimit))
-    return false;
-  // Make sure we don't raise the existing limit.
-  const struct rlimit new_rlimit = {
-      std::min(old_rlimit.rlim_cur, limit),
-      std::min(old_rlimit.rlim_max, limit)
-      };
-  int rc = setrlimit(resource, &new_rlimit);
-  return rc == 0;
 }
 
 bool IsRunningTSAN() {
@@ -420,17 +408,16 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   // allocations that can't be index by an int.
   const rlim_t kNewDataSegmentMaxSize = std::numeric_limits<int>::max();
 
-  bool limited_as = AddResourceLimit(RLIMIT_AS, address_space_limit);
-  bool limited_data = AddResourceLimit(RLIMIT_DATA, kNewDataSegmentMaxSize);
+  bool limited_as =
+      sandbox::ResourceLimits::Lower(RLIMIT_AS, address_space_limit);
+  bool limited_data =
+      sandbox::ResourceLimits::Lower(RLIMIT_DATA, kNewDataSegmentMaxSize);
 
   // Cache the resource limit before turning on the sandbox.
   base::SysInfo::AmountOfVirtualMemory();
 
   return limited_as && limited_data;
 #else
-  // Silence the compiler warning about unused function. This doesn't actually
-  // call AddResourceLimit().
-  ignore_result(AddResourceLimit);
   base::SysInfo::AmountOfVirtualMemory();
   return false;
 #endif  // !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) &&

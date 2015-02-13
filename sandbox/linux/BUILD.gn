@@ -67,6 +67,7 @@ source_set("sandbox_linux_test_utils") {
 test("sandbox_linux_unittests") {
   sources = [
     "services/proc_util_unittest.cc",
+    "services/resource_limits_unittests.cc",
     "services/scoped_process_unittest.cc",
     "services/syscall_wrappers_unittest.cc",
     "services/thread_helpers_unittests.cc",
@@ -234,6 +235,8 @@ component("sandbox_services") {
     "services/init_process_reaper.h",
     "services/proc_util.cc",
     "services/proc_util.h",
+    "services/resource_limits.cc",
+    "services/resource_limits.h",
     "services/scoped_process.cc",
     "services/scoped_process.h",
     "services/syscall_wrappers.cc",

@@ -19,6 +19,7 @@
   'sources': [
     'services/proc_util_unittest.cc',
     'services/scoped_process_unittest.cc',
+    'services/resource_limits_unittests.cc',
     'services/syscall_wrappers_unittest.cc',
     'services/thread_helpers_unittests.cc',
     'services/yama_unittests.cc',

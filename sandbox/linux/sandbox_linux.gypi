@@ -225,6 +225,8 @@
         'services/init_process_reaper.h',
         'services/proc_util.cc',
         'services/proc_util.h',
+        'services/resource_limits.cc',
+        'services/resource_limits.h',
         'services/scoped_process.cc',
         'services/scoped_process.h',
         'services/syscall_wrappers.cc',
