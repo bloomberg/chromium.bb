@@ -319,76 +319,144 @@ list.autocomplete-suggestions [selected] [file-type-icon='word'] {
 
 [volume-type-icon='archive'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_archive.png) 1x,
-      url(../images/volumes/2x/black_archive.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/archive.png) 1x,
+      url(../images/volumes/2x/archive.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='archive'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/archive_active.png) 1x,
+      url(../images/volumes/2x/archive_active.png) 2x);
 }
 
 [volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_downloads.png) 1x,
-      url(../images/volumes/2x/black_downloads.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/downloads.png) 1x,
+      url(../images/volumes/2x/downloads.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='downloads'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/downloads_active.png) 1x,
+      url(../images/volumes/2x/downloads_active.png) 2x);
 }
 
 [volume-type-icon='drive'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_drive.png) 1x,
-      url(../images/volumes/2x/black_drive.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/drive.png) 1x,
+      url(../images/volumes/2x/drive.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='drive'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/drive_active.png) 1x,
+      url(../images/volumes/2x/drive_active.png) 2x);
+}
+
+.drive-volume > .tree-row > [volume-type-icon='drive'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/service_drive.png) 1x,
+      url(../images/volumes/2x/service_drive.png) 2x);
+}
+
+.drive-volume > .tree-row[selected] > [volume-type-icon='drive'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/service_drive_active.png) 1x,
+      url(../images/volumes/2x/service_drive_active.png) 2x);
 }
 
 [volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_offline.png) 1x,
-      url(../images/volumes/2x/black_offline.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/offline.png) 1x,
+      url(../images/volumes/2x/offline.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='drive_offline'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/offline_active.png) 1x,
+      url(../images/volumes/2x/offline_active.png) 2x);
 }
 
 [volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_shared.png) 1x,
-      url(../images/volumes/2x/black_shared.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/shared.png) 1x,
+      url(../images/volumes/2x/shared.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='drive_shared_with_me'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/shared_active.png) 1x,
+      url(../images/volumes/2x/shared_active.png) 2x);
 }
 
 [volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_recent.png) 1x,
-      url(../images/volumes/2x/black_recent.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/recent.png) 1x,
+      url(../images/volumes/2x/recent.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='drive_recent'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/recent_active.png) 1x,
+      url(../images/volumes/2x/recent_active.png) 2x);
 }
 
 [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_usb.png) 1x,
-      url(../images/volumes/2x/black_usb.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/usb.png) 1x,
+      url(../images/volumes/2x/usb.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='removable'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/usb_active.png) 1x,
+      url(../images/volumes/2x/usb_active.png) 2x);
 }
 
 [volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_sd.png) 1x,
-      url(../images/volumes/2x/black_sd.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/sd.png) 1x,
+      url(../images/volumes/2x/sd.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='removable'][volume-subtype='sd'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/sd_active.png) 1x,
+      url(../images/volumes/2x/sd_active.png) 2x);
 }
 
 [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_optical.png) 1x,
-      url(../images/volumes/2x/black_optical.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/cd.png) 1x,
+      url(../images/volumes/2x/cd.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='removable'][volume-subtype='optical'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/cd_active.png) 1x,
+      url(../images/volumes/2x/cd_active.png) 2x);
 }
 
 [volume-type-icon='mtp'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_phone.png) 1x,
-      url(../images/volumes/2x/black_phone.png) 2x);
-  background-size: 14px;
+      url(../images/volumes/phone.png) 1x,
+      url(../images/volumes/2x/phone.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='mtp'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/phone_active.png) 1x,
+      url(../images/volumes/2x/phone_active.png) 2x);
 }
 
 [volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/black_hdd.png) 1x,
-      url(../images/volumes/2x/black_hdd.png) 2x);
+      url(../images/volumes/hard_drive.png) 1x,
+      url(../images/volumes/2x/hard_drive.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='removable'][volume-subtype='unknown'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/hard_drive_active.png) 1x,
+      url(../images/volumes/2x/hard_drive_active.png) 2x);
 }
