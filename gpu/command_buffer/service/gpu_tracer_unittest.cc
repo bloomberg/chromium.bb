@@ -141,9 +141,9 @@ class GlFakeQueries {
   }
 
  protected:
-  bool disjointed_;
-  GLint64 current_time_;
-  GLuint next_query_id_;
+  bool disjointed_ = false;
+  GLint64 current_time_ = 0;
+  GLuint next_query_id_ = 0;
   std::set<GLuint> alloced_queries_;
   std::map<GLuint, GLint64> query_timestamp_;
 };
