@@ -1884,7 +1884,7 @@ crbug.com/452326 virtual/slimmingpaint/fast/text/atsui-spacing-features.html [ N
 crbug.com/452326 virtual/slimmingpaint/fast/text/international/arabic-justify.html [ NeedsRebaseline ]
 crbug.com/452326 virtual/slimmingpaint/fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
 crbug.com/452326 virtual/slimmingpaint/fast/text/vertical-rl-rtl-linebreak.html [ NeedsRebaseline ]
-
+crbug.com/458417 [ XP ] http/tests/fetch/workers/fetch.html [ Pass Timeout ]
 
 # These baselines need to be reviewed and perhaps updated after the mass-rebaselining
 # on 2015-02-06 (after the change in r189636).
