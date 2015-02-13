@@ -110,11 +110,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailLoader) {
       FILE_PATH_LITERAL("foreground/js/thumbnail_loader_unittest.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Banners) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/ui/banners_unittest.html")));
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheItem) {
   RunTest(base::FilePath(FILE_PATH_LITERAL(
       "foreground/js/metadata/metadata_cache_item_unittest.html")));

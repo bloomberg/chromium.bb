@@ -3,97 +3,9 @@
 // found in the LICENSE file.
 
 /**
- * Manages showing and hiding the banner when needed.
- *
- * @param {DirectoryModel} directoryModel
- * @param {VolumeManagerWrapper} volumeManager
- * @constructor
- * @struct
- */
-function CloudImportBanner(directoryModel, volumeManager) {
-  this.directoryModel_ = directoryModel;
-  this.volumeManager_ = volumeManager;
-
-  /**
-   * @private {Element}
-   */
-  this.banner_ = document.querySelector('#cloud-import-banner');
-
-  /**
-   * @private {Element}
-   */
-  this.closeButton_ = this.banner_.querySelector('#cloud-import-banner-close');
-
-  /**
-   * @private {boolean}
-   */
-  this.dismissed_ = false;
-
-  // Check whether the dialog has ever been dismissed. If no, then initialize
-  // the banner.
-  chrome.storage.local.get(CloudImportBanner.DISMISSED_KEY,
-      /**
-       * @param {Object.<string, ?>} values
-       * @this {CloudImportBanner}
-       */
-      function(values) {
-        if (chrome.runtime.lastError)
-          return;
-        this.dismissed_ = !!values[CloudImportBanner.DISMISSED_KEY];
-
-        if (this.dismissed_)
-          return;
-
-        // Add event listeners.
-        this.closeButton_.addEventListener('click', this.onClose_.bind(this));
-        this.directoryModel_.addEventListener('directory-changed',
-            this.onDirectoryChanged_.bind(this));
-
-        // Maybe show the dialog for the current directory.
-        this.determineVisibility_();
-      }.bind(this));
-};
-
-/**
- * @const {string}
- */
-CloudImportBanner.DISMISSED_KEY = 'cloud-import-banner-dismissed';
-
-/**
- * @param {Event} event
- * @private
- */
-CloudImportBanner.prototype.onClose_ = function(event) {
-  this.banner_.hidden = true;
-  this.dismissed_ = true;
-
-  // Never show up the banner again.
-  var values = {};
-  values[CloudImportBanner.DISMISSED_KEY] = true;
-  chrome.storage.local.set(values);
-};
-
-/**
- * @param {Event} event
- * @private
- */
-CloudImportBanner.prototype.onDirectoryChanged_ = function(event) {
-  this.determineVisibility_();
-};
-
-/**
- * @private
- */
-CloudImportBanner.prototype.determineVisibility_ = function() {
-  this.banner_.hidden = this.dismissed_ || !importer.isMediaDirectory(
-      this.directoryModel_.getCurrentDirEntry(), this.volumeManager_);
-};
-
-/**
  * Responsible for showing following banners in the file list.
  *  - WelcomeBanner
  *  - AuthFailBanner
- *  - CloudImportBanner
  * @param {DirectoryModel} directoryModel The model.
  * @param {VolumeManagerWrapper} volumeManager The manager.
  * @param {Document} document HTML document.
@@ -146,18 +58,6 @@ function Banners(directoryModel, volumeManager, document, showOffers) {
     e.preventDefault();
   });
   this.maybeShowAuthFailBanner_();
-
-  // Cloud import banner.
-  this.cloudImportBanner_ = null;
-  importer.importEnabled().then(
-      /**
-       * @param {boolean} enabled
-       * @this {CloudImportBanner}
-       */
-      function(enabled) {
-        this.cloudImportBanner_ = new CloudImportBanner(
-            directoryModel, volumeManager);
-      }.bind(this));
 }
 
 /**
@@ -208,8 +108,7 @@ Banners.prototype.setWelcomeHeaderCounter_ = function(value) {
  * @param {number} value How many times the low space warning has dismissed.
  * @private
  */
-Banners.prototype.setWarningDismissedCounter_ =
-    function(value) {
+Banners.prototype.setWarningDismissedCounter_ = function(value) {
   var values = {};
   values[WARNING_DISMISSED_KEY] = value;
   chrome.storage.local.set(values);
@@ -221,8 +120,7 @@ Banners.prototype.setWarningDismissedCounter_ =
  * @param {string} areaName "local" or "sync".
  * @private
  */
-Banners.prototype.onStorageChange_ = function(changes,
-                                                               areaName) {
+Banners.prototype.onStorageChange_ = function(changes, areaName) {
   if (areaName == 'local' && WELCOME_HEADER_COUNTER_KEY in changes) {
     this.welcomeHeaderCounter_ = changes[WELCOME_HEADER_COUNTER_KEY].newValue;
   }
@@ -244,8 +142,7 @@ Banners.prototype.onDriveConnectionChanged_ = function() {
  * @param {string} messageId Resource ID of the message.
  * @private
  */
-Banners.prototype.prepareAndShowWelcomeBanner_ =
-    function(type, messageId) {
+Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   this.showWelcomeBanner_(type);
 
   var container = queryRequiredElement(
@@ -315,8 +212,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ =
  *     showing the warning.
  * @private
  */
-Banners.prototype.showLowDriveSpaceWarning_ =
-    function(show, opt_sizeStats) {
+Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
   var box = this.document_.querySelector('#volume-space-warning');
 
   // Avoid showing two banners.
