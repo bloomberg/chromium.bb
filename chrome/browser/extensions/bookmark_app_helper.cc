@@ -435,7 +435,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     creation_locations.on_desktop = false;
 #endif
     creation_locations.applications_menu_location =
-        web_app::APP_MENU_LOCATION_HIDDEN;
+        web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
     creation_locations.in_quick_launch_bar = true;
     web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                              creation_locations, current_profile, extension);

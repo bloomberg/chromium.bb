@@ -1103,8 +1103,10 @@ void UpdateShortcutsForAllApps(Profile* profile,
       registry->GenerateInstalledExtensionsSet();
   for (extensions::ExtensionSet::const_iterator it = everything->begin();
        it != everything->end(); ++it) {
-    if (web_app::ShouldCreateShortcutFor(profile, it->get()))
+    if (web_app::ShouldCreateShortcutFor(SHORTCUT_CREATION_AUTOMATED, profile,
+                                         it->get())) {
       web_app::UpdateAllShortcuts(base::string16(), profile, it->get());
+    }
   }
 
   callback.Run();

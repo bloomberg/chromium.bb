@@ -283,23 +283,32 @@ void GetShortcutInfoForApp(const extensions::Extension* extension,
       extension, profile, base::Bind(&IgnoreFileHandlersInfo, callback));
 }
 
-bool ShouldCreateShortcutFor(Profile* profile,
+bool ShouldCreateShortcutFor(web_app::ShortcutCreationReason reason,
+                             Profile* profile,
                              const extensions::Extension* extension) {
-  bool app_type_requires_shortcut = extension->is_platform_app();
+  // Shortcuts should never be created for component apps, or for apps that
+  // cannot be shown in the launcher.
+  if (extension->location() == extensions::Manifest::COMPONENT ||
+      !extensions::ui_util::CanDisplayInAppLauncher(extension, profile)) {
+    return false;
+  }
 
-// An additional check here for OS X. We need app shims to be
-// able to show them in the dock.
+  // Otherwise, always create shortcuts for v2 packaged apps.
+  if (extension->is_platform_app())
+    return true;
+
 #if defined(OS_MACOSX)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHostedAppShimCreation)) {
-    app_type_requires_shortcut =
-        app_type_requires_shortcut || extension->is_hosted_app();
+    return extension->is_hosted_app();
   }
-#endif
 
-  return (app_type_requires_shortcut &&
-          extension->location() != extensions::Manifest::COMPONENT &&
-          extensions::ui_util::CanDisplayInAppLauncher(extension, profile));
+  return false;
+#else
+  // For other platforms, allow shortcut creation if it was explicitly
+  // requested by the user (i.e. is not automatic).
+  return reason == SHORTCUT_CREATION_BY_USER;
+#endif
 }
 
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
@@ -407,7 +416,7 @@ void CreateShortcuts(ShortcutCreationReason reason,
                      const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!ShouldCreateShortcutFor(profile, app))
+  if (!ShouldCreateShortcutFor(reason, profile, app))
     return;
 
   GetInfoForApp(
