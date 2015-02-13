@@ -291,62 +291,54 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
-// Flaky. See http://crbug.com/360578.
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_OrientationNullTestWithAlert DISABLED_OrientationNullTestWithAlert
-#else
-#define MAYBE_OrientationNullTestWithAlert OrientationNullTestWithAlert
-#endif
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-    MAYBE_OrientationNullTestWithAlert) {
-  // The test page will register an event handler for orientation events,
-  // expects to get an event with null values. The test raises a modal alert
-  // dialog with a delay to test that the one-off null-event still propagates
-  // to window after the alert is dismissed and the callback is invoked which
-  // navigates to #pass.
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationNullTest) {
+  // The test page registers an event handler for orientation events and
+  // expects to get an event with null values, because no sensor data can be
+  // provided.
+  fetcher_->SetSensorDataAvailable(false);
+  GURL test_url = GetTestUrl("device_sensors",
+                             "device_orientation_null_test.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
+  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
+  fetcher_->started_orientation_.Wait();
+  fetcher_->stopped_orientation_.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionNullTest) {
+  // The test page registers an event handler for motion events and
+  // expects to get an event with null values, because no sensor data can be
+  // provided.
+  fetcher_->SetSensorDataAvailable(false);
+  GURL test_url = GetTestUrl("device_sensors",
+                             "device_motion_null_test.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
+
+  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
+  fetcher_->started_motion_.Wait();
+  fetcher_->stopped_motion_.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, NullTestWithAlert) {
+  // The test page registers an event handlers for motion/orientation events
+  // and expects to get events with null values. The test raises a modal alert
+  // dialog with a delay to test that the one-off null-events still propagate
+  // to window after the alert is dismissed and the callbacks are invoked which
+  // eventually navigate to #pass.
   fetcher_->SetSensorDataAvailable(false);
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
 
   GURL test_url = GetTestUrl("device_sensors",
-                             "device_orientation_null_test_with_alert.html");
+                             "device_sensors_null_test_with_alert.html");
   shell()->LoadURL(test_url);
 
   // TODO(timvolodine): investigate if it is possible to test this without
   // delay, crbug.com/360044.
-  WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(1000));
-
-  fetcher_->started_orientation_.Wait();
-  fetcher_->stopped_orientation_.Wait();
-  same_tab_observer.Wait();
-  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-}
-
-// Flaky. See http://crbug.com/360578.
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_MotionNullTestWithAlert DISABLED_MotionNullTestWithAlert
-#else
-#define MAYBE_MotionNullTestWithAlert MotionNullTestWithAlert
-#endif
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-    MAYBE_MotionNullTestWithAlert) {
-  // The test page will register an event handler for motion events,
-  // expects to get an event with null values. The test raises a modal alert
-  // dialog with a delay to test that the one-off null-event still propagates
-  // to window after the alert is dismissed and the callback is invoked which
-  // navigates to #pass.
-  fetcher_->SetSensorDataAvailable(false);
-  TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
-
-  GURL test_url =
-      GetTestUrl("device_sensors", "device_motion_null_test_with_alert.html");
-  shell()->LoadURL(test_url);
-
-  // TODO(timvolodine): investigate if it is possible to test this without
-  // delay, crbug.com/360044.
-  WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(1000));
+  WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(500));
 
   fetcher_->started_motion_.Wait();
   fetcher_->stopped_motion_.Wait();
+  fetcher_->started_orientation_.Wait();
+  fetcher_->stopped_orientation_.Wait();
   same_tab_observer.Wait();
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
