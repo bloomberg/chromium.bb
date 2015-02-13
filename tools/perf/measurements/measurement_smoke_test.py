@@ -5,8 +5,11 @@
 defined."""
 
 import os
+import optparse
 import logging
 import unittest
+
+from measurements import rasterize_and_record_micro
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
@@ -19,7 +22,6 @@ from telemetry.web_perf import timeline_based_measurement
 # Do NOT add new items to this list!
 # crbug.com/418375
 _ACTION_NAMES_WHITE_LIST = (
-  '',
   'RunPageInteractions',
 )
 
@@ -47,7 +49,7 @@ def _GetAllPossiblePageTestInstances():
   # enough for smoke test purpose.
   for benchmark_class in all_benchmarks_classes:
     options = options_for_unittests.GetCopy()
-    parser = options.CreateParser()
+    parser = optparse.OptionParser()
     benchmark_class.AddCommandLineArgs(parser)
     benchmark_module.AddCommandLineArgs(parser)
     benchmark_class.SetArgumentDefaults(parser)
@@ -64,6 +66,8 @@ class MeasurementSmokeTest(unittest.TestCase):
   def testNoNewActionNameToRunUsed(self):
     invalid_tests = []
     for test in _GetAllPossiblePageTestInstances():
+      if isinstance(test, rasterize_and_record_micro.RasterizeAndRecordMicro):
+        continue
       if not hasattr(test, 'action_name_to_run'):
         invalid_tests.append(test)
         logging.error('Test %s missing action_name_to_run attribute.',
