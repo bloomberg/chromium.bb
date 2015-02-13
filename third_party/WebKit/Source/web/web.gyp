@@ -56,7 +56,6 @@
             'dependencies': [
                 '../config.gyp:config',
                 '../platform/blink_platform.gyp:blink_common',
-                '../core/core.gyp:webcore',
                 '../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(angle_path)/src/angle.gyp:translator',
@@ -84,9 +83,6 @@
             'conditions': [
                 ['component=="shared_library"', {
                     'dependencies': [
-                        '../core/core.gyp:webcore_generated',
-                        '../core/core.gyp:webcore_testing',
-                        '../modules/modules.gyp:modules_testing',
                         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/testing/gmock.gyp:gmock',
@@ -95,8 +91,6 @@
                         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
                         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
-                        '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
-                        '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
                         '<(DEPTH)/third_party/modp_b64/modp_b64.gyp:modp_b64',
                         '<(DEPTH)/third_party/ots/ots.gyp:ots',
                         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
@@ -134,6 +128,23 @@
                                 '<(DEPTH)/third_party/nss/nss.gyp:*',
                             ],
                         }],
+                        ['link_core_modules_separately==1', {
+                            'dependencies': [
+                                '../core/core.gyp:webcore_shared',
+                                '../platform/blink_platform.gyp:blink_common',
+                                '../platform/blink_platform.gyp:blink_platform',
+                                '../wtf/wtf.gyp:wtf',
+                            ],
+                        }, {
+                            'dependencies': [
+                                '../core/core.gyp:webcore',
+                                '../core/core.gyp:webcore_generated',
+                                '../core/core.gyp:webcore_testing',
+                                '../modules/modules.gyp:modules_testing',
+                                '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
+                                '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
+                             ],
+                        }]
                     ],
                     'msvs_settings': {
                       'VCLinkerTool': {
@@ -144,6 +155,11 @@
                         ],
                       },
                     },
+                }, {
+                     # component=="static_library"
+                     'dependencies': [
+                        '../core/core.gyp:webcore',
+                     ],
                 }],
                 ['OS == "linux"', {
                     'dependencies': [
