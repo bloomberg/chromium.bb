@@ -3526,9 +3526,10 @@ WebHitTestResult WebViewImpl::hitTestResultAt(const WebPoint& point)
 
 HitTestResult WebViewImpl::coreHitTestResultAt(const WebPoint& point)
 {
-    IntPoint scaledPoint = point;
+    FloatPoint scaledPoint(point.x, point.y);
     scaledPoint.scale(1 / pageScaleFactor(), 1 / pageScaleFactor());
-    return hitTestResultForWindowPos(scaledPoint);
+    scaledPoint.moveBy(pinchViewportOffset());
+    return hitTestResultForWindowPos(flooredIntPoint(scaledPoint));
 }
 
 void WebViewImpl::copyImageAt(const WebPoint& point)
