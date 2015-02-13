@@ -80,14 +80,26 @@ public:
     Task(ImageLoader* loader, UpdateFromElementBehavior updateBehavior)
         : m_loader(loader)
         , m_shouldBypassMainWorldCSP(shouldBypassMainWorldCSP(loader))
-        , m_weakFactory(this)
         , m_updateBehavior(updateBehavior)
+        , m_weakFactory(this)
     {
     }
 
     virtual void run() override
     {
         if (m_loader) {
+#if ENABLE(OILPAN)
+            // Oilpan: this WebThread::Task microtask may run after the
+            // loader has been GCed, but not yet lazily swept & finalized
+            // (when this task's loader reference will be cleared.)
+            //
+            // Handle this transient condition by explicitly checking here
+            // before going ahead with the update operation. Unsafe to do it
+            // if so, as the objects that the loader refers to may have been
+            // finalized by this time.
+            if (Heap::willObjectBeLazilySwept(m_loader))
+                return;
+#endif
             m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
         }
     }
@@ -105,8 +117,8 @@ public:
 private:
     ImageLoader* m_loader;
     BypassMainWorldBehavior m_shouldBypassMainWorldCSP;
-    WeakPtrFactory<Task> m_weakFactory;
     UpdateFromElementBehavior m_updateBehavior;
+    WeakPtrFactory<Task> m_weakFactory;
 };
 
 ImageLoader::ImageLoader(Element* element)
