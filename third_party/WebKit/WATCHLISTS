@@ -139,8 +139,9 @@
                   '|LayoutTests/storage/indexeddb' \
                   '|public/platform/.*IDB'
     },
-    'rendering': {
-      'filepath': 'Source/core/rendering'
+    'layout': {
+      'filepath': 'Source/core/layout' \
+                  '|Source/core/rendering'
     },
     'compositing': {
       'filepath': 'Source/core/layout/compositing'
@@ -377,13 +378,13 @@
              'blink-reviews-wtf@chromium.org' ],
     'indexed_db': ['dgrogan@chromium.org',
                    'jsbell+idb@chromium.org', 'cmumford@chromium.org'],
-    'rendering': [ 'pdr+renderingwatchlist@chromium.org',
-                   'eae+blinkwatch@chromium.org',
-                   'jchaffraix+rendering@chromium.org',
-                   'leviw+renderwatch@chromium.org',
-                   'zoltan@webkit.org',
-                   'blink-reviews-rendering@chromium.org',
-                   'dominik.rottsches@intel.com' ],
+    'layout': [ 'pdr+renderingwatchlist@chromium.org',
+                'eae+blinkwatch@chromium.org',
+                'jchaffraix+rendering@chromium.org',
+                'leviw+renderwatch@chromium.org',
+                'zoltan@webkit.org',
+                'blink-reviews-rendering@chromium.org',
+                'dominik.rottsches@intel.com' ],
     'paint' : [ 'blink-reviews-paint@chromium.org',
                 'slimming-paint-reviews@chromium.org',
                 'dongseong.hwang@intel.com' ],
