@@ -332,7 +332,7 @@ DocumentLoadTiming* PerformanceTiming::documentLoadTiming() const
     if (!loader)
         return nullptr;
 
-    return loader->timing();
+    return &loader->timing();
 }
 
 ResourceLoadTiming* PerformanceTiming::resourceLoadTiming() const

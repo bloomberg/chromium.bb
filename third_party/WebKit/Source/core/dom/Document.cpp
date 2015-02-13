@@ -2618,12 +2618,12 @@ void Document::dispatchUnloadEvents()
             RefPtr<DocumentLoader> documentLoader =  m_frame->loader().provisionalDocumentLoader();
             m_loadEventProgress = UnloadEventInProgress;
             RefPtrWillBeRawPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
-            if (documentLoader && !documentLoader->timing()->unloadEventStart() && !documentLoader->timing()->unloadEventEnd()) {
-                DocumentLoadTiming* timing = documentLoader->timing();
-                ASSERT(timing->navigationStart());
-                timing->markUnloadEventStart();
+            if (documentLoader && !documentLoader->timing().unloadEventStart() && !documentLoader->timing().unloadEventEnd()) {
+                DocumentLoadTiming& timing = documentLoader->timing();
+                ASSERT(timing.navigationStart());
+                timing.markUnloadEventStart();
                 m_frame->localDOMWindow()->dispatchEvent(unloadEvent, this);
-                timing->markUnloadEventEnd();
+                timing.markUnloadEventEnd();
             } else {
                 m_frame->localDOMWindow()->dispatchEvent(unloadEvent, m_frame->document());
             }

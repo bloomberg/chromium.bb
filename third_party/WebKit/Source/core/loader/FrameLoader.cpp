@@ -953,7 +953,7 @@ void FrameLoader::commitProvisionalLoad()
     // Check if the destination page is allowed to access the previous page's timing information.
     if (m_frame->document()) {
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(pdl->request().url());
-        pdl->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
+        pdl->timing().setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
     }
 
     // The call to dispatchUnloadEvent() can execute arbitrary JavaScript.

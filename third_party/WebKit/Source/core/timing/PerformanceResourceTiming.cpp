@@ -44,7 +44,7 @@ namespace blink {
 static double monotonicTimeToDocumentMilliseconds(Document* document, double seconds)
 {
     ASSERT(seconds >= 0.0);
-    return document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(seconds) * 1000.0;
+    return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(seconds) * 1000.0;
 }
 
 PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool allowTimingDetails, bool allowRedirectDetails)

@@ -227,7 +227,7 @@ void DocumentLoader::finishedLoading(double finishTime)
         responseEndTime = m_timeOfLastDataReceived;
     if (!responseEndTime)
         responseEndTime = monotonicallyIncreasingTime();
-    timing()->setResponseEnd(responseEndTime);
+    timing().setResponseEnd(responseEndTime);
 
     commitIfReady();
     if (!frameLoader())
@@ -324,7 +324,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
         return;
     }
 
-    ASSERT(timing()->fetchStart());
+    ASSERT(timing().fetchStart());
     if (!redirectResponse.isNull()) {
         // If the redirecting url is not allowed to display content from the target origin,
         // then block the redirect.
@@ -334,7 +334,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
             cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
             return;
         }
-        timing()->addRedirect(redirectResponse.url(), newRequest.url());
+        timing().addRedirect(redirectResponse.url(), newRequest.url());
     }
 
     // If we're fielding a redirect in response to a POST, force a load from origin, since
@@ -668,7 +668,7 @@ void DocumentLoader::startLoadingMainResource()
 {
     RefPtr<DocumentLoader> protect(this);
     m_mainDocumentError = ResourceError();
-    timing()->markNavigationStart();
+    timing().markNavigationStart();
     ASSERT(!m_mainResource);
     ASSERT(!m_loadingMainResource);
     m_loadingMainResource = true;
@@ -676,9 +676,9 @@ void DocumentLoader::startLoadingMainResource()
     if (maybeLoadEmpty())
         return;
 
-    ASSERT(timing()->navigationStart());
-    ASSERT(!timing()->fetchStart());
-    timing()->markFetchStart();
+    ASSERT(timing().navigationStart());
+    ASSERT(!timing().fetchStart());
+    timing().markFetchStart();
     willSendRequest(m_request, ResourceResponse());
 
     // willSendRequest() may lead to our LocalFrame being detached or cancelling the load via nulling the ResourceRequest.

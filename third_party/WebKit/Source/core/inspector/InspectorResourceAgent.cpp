@@ -276,7 +276,7 @@ void InspectorResourceAgent::restore()
 static PassRefPtr<TypeBuilder::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing, DocumentLoader* loader)
 {
     return TypeBuilder::Network::ResourceTiming::create()
-        .setRequestTime(loader->timing()->monotonicTimeToPseudoWallTime(timing.requestTime()))
+        .setRequestTime(loader->timing().monotonicTimeToPseudoWallTime(timing.requestTime()))
         .setProxyStart(timing.calculateMillisecondDelta(timing.proxyStart()))
         .setProxyEnd(timing.calculateMillisecondDelta(timing.proxyEnd()))
         .setDnsStart(timing.calculateMillisecondDelta(timing.dnsStart()))
@@ -541,7 +541,7 @@ void InspectorResourceAgent::didFinishLoading(unsigned long identifier, Document
     double finishTime = 0.0;
     // FIXME: Expose all of the timing details to inspector and have it calculate finishTime.
     if (monotonicFinishTime)
-        finishTime = loader->timing()->monotonicTimeToPseudoWallTime(monotonicFinishTime);
+        finishTime = loader->timing().monotonicTimeToPseudoWallTime(monotonicFinishTime);
 
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->maybeDecodeDataToContent(requestId);

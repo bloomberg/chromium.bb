@@ -142,7 +142,7 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
     Document* document = toDocument(executionContext());
     ASSERT(document);
 
-    double timeStampInMilliseconds = 1000 * document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(timeStamp);
+    double timeStampInMilliseconds = 1000 * document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(timeStamp);
 
     m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStampInMilliseconds);
 }
@@ -162,7 +162,7 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
     } else {
         Document* document = toDocument(executionContext());
         ASSERT(document);
-        double documentStartTime = document->loader()->timing()->referenceMonotonicTime();
+        double documentStartTime = document->loader()->timing().referenceMonotonicTime();
         timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;
     }
 

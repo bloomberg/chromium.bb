@@ -113,7 +113,8 @@ namespace blink {
 
         void attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver>);
         void acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength);
-        DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
+        DocumentLoadTiming& timing() { return m_documentLoadTiming; }
+        const DocumentLoadTiming& timing() const { return m_documentLoadTiming; }
 
         ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }
 

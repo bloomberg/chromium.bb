@@ -115,7 +115,7 @@ void WebDataSourceImpl::setExtraData(ExtraData* extraData)
 
 void WebDataSourceImpl::setNavigationStartTime(double navigationStart)
 {
-    timing()->setNavigationStart(navigationStart);
+    timing().setNavigationStart(navigationStart);
 }
 
 WebNavigationType WebDataSourceImpl::toWebNavigationType(NavigationType type)

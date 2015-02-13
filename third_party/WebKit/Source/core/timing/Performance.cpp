@@ -49,7 +49,7 @@ static const size_t defaultResourceTimingBufferSize = 150;
 Performance::Performance(LocalFrame* frame)
     : DOMWindowProperty(frame)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
-    , m_referenceTime(frame && frame->host() ? frame->document()->loader()->timing()->referenceMonotonicTime() : 0.0)
+    , m_referenceTime(frame && frame->host() ? frame->document()->loader()->timing().referenceMonotonicTime() : 0.0)
     , m_userTiming(nullptr)
 {
 }

@@ -184,7 +184,7 @@ void AnimationTimeline::AnimationTimelineTiming::trace(Visitor* visitor)
 double AnimationTimeline::zeroTime()
 {
     if (!m_zeroTimeInitialized && m_document && m_document->loader()) {
-        m_zeroTime = m_document->loader()->timing()->referenceMonotonicTime();
+        m_zeroTime = m_document->loader()->timing().referenceMonotonicTime();
         m_zeroTimeInitialized = true;
     }
     return m_zeroTime;

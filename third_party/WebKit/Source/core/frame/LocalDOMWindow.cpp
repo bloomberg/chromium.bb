@@ -1556,14 +1556,14 @@ bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, PassRefP
 void LocalDOMWindow::dispatchLoadEvent()
 {
     RefPtrWillBeRawPtr<Event> loadEvent(Event::create(EventTypeNames::load));
-    if (frame() && frame()->loader().documentLoader() && !frame()->loader().documentLoader()->timing()->loadEventStart()) {
+    if (frame() && frame()->loader().documentLoader() && !frame()->loader().documentLoader()->timing().loadEventStart()) {
         // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed while dispatching
         // the event, so protect it to prevent writing the end time into freed memory.
         RefPtr<DocumentLoader> documentLoader = frame()->loader().documentLoader();
-        DocumentLoadTiming* timing = documentLoader->timing();
-        timing->markLoadEventStart();
+        DocumentLoadTiming& timing = documentLoader->timing();
+        timing.markLoadEventStart();
         dispatchEvent(loadEvent, document());
-        timing->markLoadEventEnd();
+        timing.markLoadEventEnd();
     } else
         dispatchEvent(loadEvent, document());
 

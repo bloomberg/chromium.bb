@@ -71,7 +71,7 @@ double SharedWorkerPerformance::getWorkerStart(ExecutionContext* context, Shared
     if (!document->loader())
         return 0;
 
-    double navigationStart = document->loader()->timing()->navigationStart();
+    double navigationStart = document->loader()->timing().navigationStart();
     return m_timeOrigin - navigationStart;
 }
 
