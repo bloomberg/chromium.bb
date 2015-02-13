@@ -5476,15 +5476,12 @@
             }],
           ],
           'conditions': [
+            # Building with Clang on Windows is a work in progress and very
+            # experimental. See crbug.com/82385.
             ['clang==1', {
-              # Building with Clang on Windows is a work in progress and very
-              # experimental. See crbug.com/82385.
               'VCCLCompilerTool': {
-                'WarnAsError': 'false',
-                'RuntimeTypeInfo': 'false',
                 'AdditionalOptions': [
                   '-fmsc-version=1800',
-                  '/fallback',
 
                   # Many files use intrinsics without including this header.
                   # TODO(hans): Fix those files, or move this to sub-GYPs.
@@ -5524,6 +5521,14 @@
                   '-Wno-unused-variable',
                   '-Wno-unused-local-typedef',  # http://crbug.com/411648
                   '-Wno-inconsistent-missing-override', #http://crbug.com/428099
+                ],
+              },
+            }],
+            ['clang==1 and target_arch=="ia32"', {
+              'VCCLCompilerTool': {
+                'WarnAsError': 'false',
+                'AdditionalOptions': [
+                  '/fallback',
                 ],
               },
             }],
