@@ -20,15 +20,22 @@ const int kTransitionMilliseconds = 200;
 // The time duration for widgets to fade in.
 const int kFadeInMilliseconds = 80;
 
+// The time duration for widgets to fade out.
+const int kFadeOutMilliseconds = 100;
+
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
+    case OVERVIEW_ANIMATION_SCROLL_SELECTOR_ITEM:
       return base::TimeDelta();
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
       return base::TimeDelta::FromMilliseconds(kFadeInMilliseconds);
+    case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_OUT:
+      return base::TimeDelta::FromMilliseconds(kFadeOutMilliseconds);
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_HIDE_WINDOW:
+    case OVERVIEW_ANIMATION_CANCEL_SELECTOR_ITEM_SCROLL:
       return base::TimeDelta::FromMilliseconds(kTransitionMilliseconds);
   }
   NOTREACHED();
@@ -44,6 +51,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
 
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
+    case OVERVIEW_ANIMATION_SCROLL_SELECTOR_ITEM:
       animation_settings_.SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
@@ -52,6 +60,10 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
           GetAnimationDuration(
               OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS),
           ui::LayerAnimationElement::OPACITY);
+      animation_settings_.SetPreemptionStrategy(
+          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+      break;
+    case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_OUT:
       animation_settings_.SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
@@ -65,23 +77,17 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;
+    case OVERVIEW_ANIMATION_CANCEL_SELECTOR_ITEM_SCROLL:
+      animation_settings_.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      animation_settings_.SetTweenType(gfx::Tween::EASE_IN_OUT);
+      break;
   }
   animation_settings_.SetTransitionDuration(
       GetAnimationDuration(animation_type));
 }
 
 ScopedOverviewAnimationSettings::~ScopedOverviewAnimationSettings() {
-}
-
-// static:
-void ScopedOverviewAnimationSettings::SetupFadeInAfterLayout(
-    aura::Window* window) {
-  ui::Layer* layer = window->layer();
-  layer->SetOpacity(0.0f);
-  ScopedOverviewAnimationSettings animation_settings(
-      OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-      window);
-  layer->SetOpacity(1.0f);
 }
 
 }  // namespace ash

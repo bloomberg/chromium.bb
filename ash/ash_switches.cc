@@ -39,6 +39,10 @@ const char kAshDisableScreenOrientationLock[] =
     "ash-disable-screen-orientation-lock";
 #endif
 
+// Disables gesture swipe to close windows while in Overview mode.
+const char kAshDisableSwipeToCloseInOverviewMode[] =
+    "ash-disable-swipe-to-close-in-overview-mode";
+
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.

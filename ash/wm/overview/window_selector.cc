@@ -5,6 +5,7 @@
 #include "ash/wm/overview/window_selector.h"
 
 #include <algorithm>
+#include <functional>
 #include <set>
 #include <vector>
 
