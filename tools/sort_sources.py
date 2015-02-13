@@ -18,8 +18,9 @@ from yes_no import YesNo
 
 SUFFIXES = ['c', 'cc', 'cpp', 'h', 'mm', 'rc', 'rc.version', 'ico', 'def',
             'release']
-PATTERN = re.compile('^\s+[\'"].*\.(%s)[\'"],$' %
-                     '|'.join([re.escape(x) for x in SUFFIXES]))
+SOURCE_PATTERN = re.compile('^\s+[\'"].*\.(%s)[\'"],$' %
+                            '|'.join([re.escape(x) for x in SUFFIXES]))
+COMMENT_PATTERN = re.compile('^\s+#')
 
 def SortSources(original_lines):
   """Sort source file names in |original_lines|.
@@ -30,21 +31,31 @@ def SortSources(original_lines):
   Returns:
     Lines of the sorted content as a list of strings.
 
-  The algorithm is fairly naive. The code tries to find a list of C-ish source
-  file names by a simple regex, then sort them. The code does not try to
-  understand the syntax of the build files, hence there are many cases that
-  the code cannot handle correctly (ex. comments within a list of source file
-  names).
+  The algorithm is fairly naive. The code tries to find a list of C-ish
+  source file names by a simple regex, then sort them. The code does not try
+  to understand the syntax of the build files, hence there are some cases
+  that the code cannot handle correctly (ex. blank lines within a list of
+  source file names).
   """
 
   output_lines = []
+  comments = []
   sources = []
   for line in original_lines:
-    if re.search(PATTERN, line):
-      sources.append(line)
+    if re.search(COMMENT_PATTERN, line):
+      comments.append(line)
+    elif re.search(SOURCE_PATTERN, line):
+      # Associate the line with the preceeding comments.
+      sources.append([line, comments])
+      comments = []
     else:
+      if comments:
+        output_lines.extend(comments)
+        comments = []
       if sources:
-        output_lines.extend(sorted(sources))
+        for source_line, source_comments in sorted(sources):
+          output_lines.extend(source_comments)
+          output_lines.append(source_line)
         sources = []
       output_lines.append(line)
   return output_lines
