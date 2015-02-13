@@ -10,6 +10,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
+import android.graphics.Region;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -177,6 +178,9 @@ public abstract class SwipableOverlayView extends ScrollView {
         mAnimatorListenerAdapter = createAnimatorListenerAdapter();
         mInterpolator = new DecelerateInterpolator(1.0f);
         mTabObserver = createTabObserver();
+
+        // We make this view 'draw' to provide a placeholder for its animations.
+        setWillNotDraw(false);
     }
 
     /**
@@ -686,6 +690,26 @@ public abstract class SwipableOverlayView extends ScrollView {
      */
     private boolean mayCancelCurrentAnimation() {
         return !mIsBeingDisplayedForFirstTime && !mIsDismissed;
+    }
+
+    /**
+     * Override gatherTransparentRegion to make this view's layout a placeholder for its
+     * animations. This is only called during layout, so it doesn't really make sense to apply
+     * post-layout properties like it does by default. Together with setWillNotDraw(false),
+     * this ensures no child animation within this view's layout will be clipped by a SurfaceView.
+     */
+    @Override
+    public boolean gatherTransparentRegion(Region region) {
+        float translationX = getTranslationX();
+        float translationY = getTranslationY();
+        setTranslationX(0);
+        setTranslationY(0);
+        boolean result = super.gatherTransparentRegion(region);
+        // Restoring TranslationX/Y invalidates this view unnecessarily. However, this function
+        // is called as part of layout, which implies a full redraw is about to occur anyway.
+        setTranslationX(translationX);
+        setTranslationY(translationY);
+        return result;
     }
 
     /**
