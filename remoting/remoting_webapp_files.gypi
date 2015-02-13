@@ -49,6 +49,7 @@
       'webapp/crd/js/client_screen.js',
       'webapp/crd/js/client_session.js',
       'webapp/crd/js/clipboard.js',
+      'webapp/crd/js/desktop_connected_view.js',
       'webapp/crd/js/hangout_session.js',
       'webapp/crd/js/session_connector.js',
       'webapp/crd/js/session_connector_impl.js',

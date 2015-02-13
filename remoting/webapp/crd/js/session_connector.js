@@ -97,7 +97,7 @@ remoting.SessionConnector.prototype.cancel = function() {};
 /**
  * Get the connection mode (Me2Me or IT2Me)
  *
- * @return {remoting.ClientSession.Mode}
+ * @return {remoting.DesktopConnectedView.Mode}
  */
 remoting.SessionConnector.prototype.getConnectionMode = function() {};
 

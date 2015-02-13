@@ -209,6 +209,12 @@ remoting.AppRemoting.prototype.getApplicationName = function() {
   return manifest.name;
 };
 
+/** @return {string} */
+remoting.AppRemoting.prototype.runApplicationUrl = function() {
+  return remoting.settings.APP_REMOTING_API_BASE_URL + '/applications/' +
+      remoting.settings.getAppRemotingApplicationId() + '/run';
+};
+
 /**
  * @return {string} The default remap keys for the current platform.
  */
@@ -342,10 +348,4 @@ remoting.AppRemoting.prototype.handleError = function(errorTag) {
   remoting.MessageWindow.showErrorMessage(
       chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
       chrome.i18n.getMessage(/** @type {string} */ (errorTag)));
-};
-
-/** @return {string} */
-remoting.AppRemoting.prototype.runApplicationUrl = function() {
-  return remoting.settings.APP_REMOTING_API_BASE_URL + '/applications/' +
-      remoting.settings.getAppRemotingApplicationId() + '/run';
 };

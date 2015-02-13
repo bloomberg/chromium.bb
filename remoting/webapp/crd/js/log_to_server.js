@@ -14,7 +14,7 @@ var remoting = remoting || {};
 
 /**
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
- * @param {remoting.ClientSession.Mode} mode The mode of this connection.
+ * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
  * @constructor
  */
 remoting.LogToServer = function(signalStrategy, mode) {

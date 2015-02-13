@@ -83,10 +83,10 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   this.clientJid_ = '';
 
   /**
-   * @type {remoting.ClientSession.Mode}
+   * @type {remoting.DesktopConnectedView.Mode}
    * @private
    */
-  this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
+  this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
 
   /**
    * @type {remoting.SignalStrategy}
@@ -229,7 +229,7 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
 remoting.SessionConnectorImpl.prototype.connectMe2Me =
     function(host, fetchPin, fetchThirdPartyToken,
              clientPairingId, clientPairedSecret) {
-  this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
+  this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.logHostOfflineErrors_ = false;
   this.connectMe2MeInternal_(
       host.hostId, host.jabberId, host.publicKey, host.hostName,
@@ -247,7 +247,7 @@ remoting.SessionConnectorImpl.prototype.connectMe2Me =
  * @return {void} Nothing.
  */
 remoting.SessionConnectorImpl.prototype.retryConnectMe2Me = function(host) {
-  this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
+  this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.logHostOfflineErrors_ = true;
   this.connectMe2MeInternal_(
       host.hostId, host.jabberId, host.publicKey, host.hostName,
@@ -267,7 +267,7 @@ remoting.SessionConnectorImpl.prototype.retryConnectMe2Me = function(host) {
  */
 remoting.SessionConnectorImpl.prototype.connectMe2App =
     function(host, fetchThirdPartyToken) {
-  this.connectionMode_ = remoting.ClientSession.Mode.APP_REMOTING;
+  this.connectionMode_ = remoting.DesktopConnectedView.Mode.APP_REMOTING;
   this.logHostOfflineErrors_ = true;
   this.connectMe2MeInternal_(
       host.hostId, host.jabberId, host.publicKey, host.hostName,
@@ -346,7 +346,7 @@ remoting.SessionConnectorImpl.prototype.connectIT2Me = function(accessCode) {
 
   this.hostId_ = normalizedAccessCode.substring(0, kSupportIdLen);
   this.passPhrase_ = normalizedAccessCode;
-  this.connectionMode_ = remoting.ClientSession.Mode.IT2ME;
+  this.connectionMode_ = remoting.DesktopConnectedView.Mode.IT2ME;
   remoting.identity.callWithToken(this.connectIT2MeWithToken_.bind(this),
                                   this.onError_);
 };
@@ -357,7 +357,7 @@ remoting.SessionConnectorImpl.prototype.connectIT2Me = function(accessCode) {
  * @return {void} Nothing.
  */
 remoting.SessionConnectorImpl.prototype.reconnect = function() {
-  if (this.connectionMode_ == remoting.ClientSession.Mode.IT2ME) {
+  if (this.connectionMode_ == remoting.DesktopConnectedView.Mode.IT2ME) {
     console.error('reconnect not supported for IT2Me.');
     return;
   }
@@ -386,7 +386,7 @@ remoting.SessionConnectorImpl.prototype.cancel = function() {
 /**
  * Get the connection mode (Me2Me or IT2Me)
  *
- * @return {remoting.ClientSession.Mode}
+ * @return {remoting.DesktopConnectedView.Mode}
  */
 remoting.SessionConnectorImpl.prototype.getConnectionMode = function() {
   return this.connectionMode_;
@@ -552,7 +552,7 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
           this.bound_.onStateChange);
 
       base.dispose(this.reconnector_);
-      if (this.connectionMode_ != remoting.ClientSession.Mode.IT2ME) {
+      if (this.connectionMode_ != remoting.DesktopConnectedView.Mode.IT2ME) {
         this.reconnector_ =
             new remoting.SmartReconnector(this, this.clientSession_);
       }

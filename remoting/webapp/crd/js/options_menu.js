@@ -33,11 +33,12 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
   this.newConnection_ = newConnection;
   this.fullscreen_ = fullscreen;
   this.startStopRecording_ = startStopRecording;
+
   /**
-   * @type {remoting.ClientSession}
+   * @type {remoting.DesktopConnectedView}
    * @private
    */
-  this.clientSession_ = null;
+  this.desktopConnectedView_ = null;
 
   this.sendCtrlAltDel_.addEventListener(
       'click', this.onSendCtrlAltDel_.bind(this), false);
@@ -60,28 +61,31 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
 };
 
 /**
- * @param {remoting.ClientSession} clientSession The active session, or null if
- *     there is no connection.
+ * @param {remoting.DesktopConnectedView} desktopConnectedView The view for the
+ *     active session, or null if there is no connection.
  */
-remoting.OptionsMenu.prototype.setClientSession = function(clientSession) {
-  this.clientSession_ = clientSession;
+remoting.OptionsMenu.prototype.setDesktopConnectedView = function(
+    desktopConnectedView) {
+  this.desktopConnectedView_ = desktopConnectedView;
 };
 
 remoting.OptionsMenu.prototype.onShow = function() {
-  if (this.clientSession_) {
+  if (this.desktopConnectedView_) {
     this.resizeToClient_.hidden =
-        this.clientSession_.getMode() == remoting.ClientSession.Mode.IT2ME;
+        this.desktopConnectedView_.getMode() ==
+            remoting.DesktopConnectedView.Mode.IT2ME;
     remoting.MenuButton.select(
-        this.resizeToClient_, this.clientSession_.getResizeToClient());
+        this.resizeToClient_, this.desktopConnectedView_.getResizeToClient());
     remoting.MenuButton.select(
-        this.shrinkToFit_, this.clientSession_.getShrinkToFit());
+        this.shrinkToFit_, this.desktopConnectedView_.getShrinkToFit());
     if (this.fullscreen_) {
       remoting.MenuButton.select(
           this.fullscreen_, remoting.fullscreen.isActive());
     }
     if (this.startStopRecording_) {
-      this.startStopRecording_.hidden = !this.clientSession_.canRecordVideo();
-      if (this.clientSession_.isRecordingVideo()) {
+      this.startStopRecording_.hidden =
+          !this.desktopConnectedView_.canRecordVideo();
+      if (this.desktopConnectedView_.isRecordingVideo()) {
         l10n.localizeElementFromTag(this.startStopRecording_,
                                     /*i18n-content*/'STOP_RECORDING');
       } else {
@@ -93,28 +97,30 @@ remoting.OptionsMenu.prototype.onShow = function() {
 };
 
 remoting.OptionsMenu.prototype.onSendCtrlAltDel_ = function() {
-  if (this.clientSession_) {
-    this.clientSession_.sendCtrlAltDel();
+  if (this.desktopConnectedView_) {
+    this.desktopConnectedView_.sendCtrlAltDel();
   }
 };
 
 remoting.OptionsMenu.prototype.onSendPrtScrn_ = function() {
-  if (this.clientSession_) {
-    this.clientSession_.sendPrintScreen();
+  if (this.desktopConnectedView_) {
+    this.desktopConnectedView_.sendPrintScreen();
   }
 };
 
 remoting.OptionsMenu.prototype.onResizeToClient_ = function() {
-  if (this.clientSession_) {
-    this.clientSession_.setScreenMode(this.clientSession_.getShrinkToFit(),
-                                      !this.clientSession_.getResizeToClient());
+  if (this.desktopConnectedView_) {
+    this.desktopConnectedView_.setScreenMode(
+        this.desktopConnectedView_.getShrinkToFit(),
+        !this.desktopConnectedView_.getResizeToClient());
   }
 };
 
 remoting.OptionsMenu.prototype.onShrinkToFit_ = function() {
-  if (this.clientSession_) {
-    this.clientSession_.setScreenMode(!this.clientSession_.getShrinkToFit(),
-                                      this.clientSession_.getResizeToClient());
+  if (this.desktopConnectedView_) {
+    this.desktopConnectedView_.setScreenMode(
+        !this.desktopConnectedView_.getShrinkToFit(),
+        this.desktopConnectedView_.getResizeToClient());
   }
 };
 
@@ -131,8 +137,8 @@ remoting.OptionsMenu.prototype.onFullscreen_ = function() {
 };
 
 remoting.OptionsMenu.prototype.onStartStopRecording_ = function() {
-  if (this.clientSession_) {
-    this.clientSession_.startStopRecording();
+  if (this.desktopConnectedView_) {
+    this.desktopConnectedView_.startStopRecording();
   }
 }
 

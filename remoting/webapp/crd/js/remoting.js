@@ -87,8 +87,9 @@ remoting.getExtensionInfo = function() {
  * the more intuitive way to end a Me2Me session, and re-connecting is easy.
  */
 remoting.promptClose = function() {
-  if (remoting.clientSession &&
-      remoting.clientSession.getMode() == remoting.ClientSession.Mode.IT2ME) {
+  if (remoting.desktopConnectedView &&
+      remoting.desktopConnectedView.getMode() ==
+          remoting.DesktopConnectedView.Mode.IT2ME) {
     switch (remoting.currentMode) {
       case remoting.AppMode.CLIENT_CONNECTING:
       case remoting.AppMode.HOST_WAITING_FOR_CODE:

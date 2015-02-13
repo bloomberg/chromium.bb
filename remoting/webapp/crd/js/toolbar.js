@@ -129,13 +129,14 @@ remoting.Toolbar.prototype.toggle = function() {
 };
 
 /**
- * @param {remoting.ClientSession} clientSession The active session, or null if
- *     there is no connection.
+ * @param {remoting.DesktopConnectedView} desktopConnectedView The view for
+ *     the active session, or null if there is no connection.
  */
-remoting.Toolbar.prototype.setClientSession = function(clientSession) {
+remoting.Toolbar.prototype.setDesktopConnectedView = function(
+    desktopConnectedView) {
   var connectedTo = document.getElementById('connected-to');
   connectedTo.innerText =
-      clientSession ? clientSession.getHostDisplayName() : "";
+      desktopConnectedView ? desktopConnectedView.getHostDisplayName() : "";
 };
 
 /**

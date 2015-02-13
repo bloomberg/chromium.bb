@@ -310,9 +310,9 @@ remoting.DesktopRemoting.prototype.handleError = function(errorTag) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
 
-  var mode = remoting.clientSession ? remoting.clientSession.getMode()
+  var mode = remoting.clientSession ? remoting.desktopConnectedView.getMode()
       : this.app_.getSessionConnector().getConnectionMode();
-  if (mode == remoting.ClientSession.Mode.IT2ME) {
+  if (mode == remoting.DesktopConnectedView.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
     remoting.hangoutSessionEvents.raiseEvent(
         remoting.hangoutSessionEvents.sessionStateChanged,

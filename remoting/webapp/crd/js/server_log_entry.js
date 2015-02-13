@@ -221,7 +221,7 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
  *
  * @param {remoting.ClientSession.State} state
  * @param {remoting.Error} connectionError
- * @param {remoting.ClientSession.Mode} mode
+ * @param {remoting.DesktopConnectedView.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
@@ -258,7 +258,7 @@ remoting.ServerLogEntry.prototype.addSessionDurationField = function(
  *
  * @param {remoting.StatsAccumulator} statsAccumulator
  * @param {string} connectionType
- * @param {remoting.ClientSession.Mode} mode
+ * @param {remoting.DesktopConnectedView.Mode} mode
  * @return {?remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeStats = function(statsAccumulator,
@@ -319,7 +319,7 @@ remoting.ServerLogEntry.prototype.addStatsField_ = function(
  * Makes a log entry for a "this session ID is old" event.
  *
  * @param {string} sessionId
- * @param {remoting.ClientSession.Mode} mode
+ * @param {remoting.DesktopConnectedView.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeSessionIdOld = function(sessionId, mode) {
@@ -337,7 +337,7 @@ remoting.ServerLogEntry.makeSessionIdOld = function(sessionId, mode) {
  * Makes a log entry for a "this session ID is new" event.
  *
  * @param {string} sessionId
- * @param {remoting.ClientSession.Mode} mode
+ * @param {remoting.DesktopConnectedView.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeSessionIdNew = function(sessionId, mode) {
@@ -489,7 +489,7 @@ remoting.ServerLogEntry.prototype.addWebappVersionField = function() {
 /**
  * Adds a field specifying the mode to this log entry.
  *
- * @param {remoting.ClientSession.Mode} mode
+ * @param {remoting.DesktopConnectedView.Mode} mode
  */
 remoting.ServerLogEntry.prototype.addModeField = function(mode) {
   this.set_(remoting.ServerLogEntry.KEY_MODE_,
@@ -500,16 +500,16 @@ remoting.ServerLogEntry.prototype.addModeField = function(mode) {
  * Gets the value of the mode field to be put in a log entry.
  *
  * @private
- * @param {remoting.ClientSession.Mode} mode
+ * @param {remoting.DesktopConnectedView.Mode} mode
  * @return {string}
  */
 remoting.ServerLogEntry.getModeField_ = function(mode) {
   switch(mode) {
-    case remoting.ClientSession.Mode.IT2ME:
+    case remoting.DesktopConnectedView.Mode.IT2ME:
       return remoting.ServerLogEntry.VALUE_MODE_IT2ME_;
-    case remoting.ClientSession.Mode.ME2ME:
+    case remoting.DesktopConnectedView.Mode.ME2ME:
       return remoting.ServerLogEntry.VALUE_MODE_ME2ME_;
-    case remoting.ClientSession.Mode.APP_REMOTING:
+    case remoting.DesktopConnectedView.Mode.APP_REMOTING:
       return remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING_;
     default:
       return remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_;
