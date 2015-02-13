@@ -22,21 +22,19 @@ class EvictionOrderComparator {
     if (a->IsEmpty() || b->IsEmpty())
       return b->IsEmpty() < a->IsEmpty();
 
-    WhichTree a_tree = a->NextTileIteratorTree(tree_priority_);
+    WhichTree a_tree = a->NextTileIteratorTree();
     const TilingSetEvictionQueue* a_queue =
         a_tree == ACTIVE_TREE ? a->active_queue.get() : a->pending_queue.get();
 
-    WhichTree b_tree = b->NextTileIteratorTree(tree_priority_);
+    WhichTree b_tree = b->NextTileIteratorTree();
     const TilingSetEvictionQueue* b_queue =
         b_tree == ACTIVE_TREE ? b->active_queue.get() : b->pending_queue.get();
 
     const Tile* a_tile = a_queue->Top();
     const Tile* b_tile = b_queue->Top();
 
-    const TilePriority& a_priority =
-        a_tile->priority_for_tree_priority(tree_priority_);
-    const TilePriority& b_priority =
-        b_tile->priority_for_tree_priority(tree_priority_);
+    const TilePriority& a_priority = a_tile->combined_priority();
+    const TilePriority& b_priority = b_tile->combined_priority();
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
     // If the priority bin differs, b is lower priority if it has the higher
@@ -63,8 +61,8 @@ class EvictionOrderComparator {
 
     // Otherwise if the occlusion differs, b is lower priority if it is
     // occluded.
-    bool a_is_occluded = a_tile->is_occluded_for_tree_priority(tree_priority_);
-    bool b_is_occluded = b_tile->is_occluded_for_tree_priority(tree_priority_);
+    bool a_is_occluded = a_tile->is_occluded_combined();
+    bool b_is_occluded = b_tile->is_occluded_combined();
     if (a_is_occluded != b_is_occluded)
       return b_is_occluded;
 
@@ -106,7 +104,7 @@ bool EvictionTilePriorityQueue::IsEmpty() const {
 
 Tile* EvictionTilePriorityQueue::Top() {
   DCHECK(!IsEmpty());
-  return paired_queues_.front()->Top(tree_priority_);
+  return paired_queues_.front()->Top();
 }
 
 void EvictionTilePriorityQueue::Pop() {
@@ -114,7 +112,7 @@ void EvictionTilePriorityQueue::Pop() {
 
   paired_queues_.pop_heap(EvictionOrderComparator(tree_priority_));
   PairedTilingSetQueue* paired_queue = paired_queues_.back();
-  paired_queue->Pop(tree_priority_);
+  paired_queue->Pop();
   paired_queues_.push_heap(EvictionOrderComparator(tree_priority_));
 }
 
@@ -145,11 +143,10 @@ bool EvictionTilePriorityQueue::PairedTilingSetQueue::IsEmpty() const {
          (!pending_queue || pending_queue->IsEmpty());
 }
 
-Tile* EvictionTilePriorityQueue::PairedTilingSetQueue::Top(
-    TreePriority tree_priority) {
+Tile* EvictionTilePriorityQueue::PairedTilingSetQueue::Top() {
   DCHECK(!IsEmpty());
 
-  WhichTree next_tree = NextTileIteratorTree(tree_priority);
+  WhichTree next_tree = NextTileIteratorTree();
   TilingSetEvictionQueue* next_queue =
       next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
   DCHECK(next_queue && !next_queue->IsEmpty());
@@ -159,11 +156,10 @@ Tile* EvictionTilePriorityQueue::PairedTilingSetQueue::Top(
   return tile;
 }
 
-void EvictionTilePriorityQueue::PairedTilingSetQueue::Pop(
-    TreePriority tree_priority) {
+void EvictionTilePriorityQueue::PairedTilingSetQueue::Pop() {
   DCHECK(!IsEmpty());
 
-  WhichTree next_tree = NextTileIteratorTree(tree_priority);
+  WhichTree next_tree = NextTileIteratorTree();
   TilingSetEvictionQueue* next_queue =
       next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
   DCHECK(next_queue && !next_queue->IsEmpty());
@@ -171,12 +167,11 @@ void EvictionTilePriorityQueue::PairedTilingSetQueue::Pop(
   next_queue->Pop();
 
   // If not empty, use Top to DCHECK the next iterator.
-  DCHECK_IMPLIES(!IsEmpty(), Top(tree_priority));
+  DCHECK_IMPLIES(!IsEmpty(), Top());
 }
 
 WhichTree
-EvictionTilePriorityQueue::PairedTilingSetQueue::NextTileIteratorTree(
-    TreePriority tree_priority) const {
+EvictionTilePriorityQueue::PairedTilingSetQueue::NextTileIteratorTree() const {
   DCHECK(!IsEmpty());
 
   // If we only have one iterator with tiles, return it.
@@ -192,10 +187,8 @@ EvictionTilePriorityQueue::PairedTilingSetQueue::NextTileIteratorTree(
   if (active_tile == pending_tile)
     return ACTIVE_TREE;
 
-  const TilePriority& active_priority =
-      active_tile->priority_for_tree_priority(tree_priority);
-  const TilePriority& pending_priority =
-      pending_tile->priority_for_tree_priority(tree_priority);
+  const TilePriority& active_priority = active_tile->combined_priority();
+  const TilePriority& pending_priority = pending_tile->combined_priority();
 
   // If the bins are the same and activation differs, then return the tree of
   // the tile not required for activation.

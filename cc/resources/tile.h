@@ -68,18 +68,8 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   void set_shared(bool is_shared) { is_shared_ = is_shared; }
   bool is_shared() const { return is_shared_; }
 
-  bool is_occluded_for_tree_priority(TreePriority tree_priority) const {
-    switch (tree_priority) {
-      case SMOOTHNESS_TAKES_PRIORITY:
-        return is_occluded_[ACTIVE_TREE];
-      case NEW_CONTENT_TAKES_PRIORITY:
-        return is_occluded_[PENDING_TREE];
-      case SAME_PRIORITY_FOR_BOTH_TREES:
-        return is_occluded_[ACTIVE_TREE] && is_occluded_[PENDING_TREE];
-      default:
-        NOTREACHED();
-        return false;
-    }
+  bool is_occluded_combined() const {
+    return is_occluded_[ACTIVE_TREE] && is_occluded_[PENDING_TREE];
   }
 
   // TODO(vmpstr): Move this to the iterators.

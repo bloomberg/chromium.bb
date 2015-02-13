@@ -25,10 +25,10 @@ class CC_EXPORT EvictionTilePriorityQueue {
     ~PairedTilingSetQueue();
 
     bool IsEmpty() const;
-    Tile* Top(TreePriority tree_priority);
-    void Pop(TreePriority tree_priority);
+    Tile* Top();
+    void Pop();
 
-    WhichTree NextTileIteratorTree(TreePriority tree_priority) const;
+    WhichTree NextTileIteratorTree() const;
 
     scoped_ptr<TilingSetEvictionQueue> active_queue;
     scoped_ptr<TilingSetEvictionQueue> pending_queue;

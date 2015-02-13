@@ -3969,8 +3969,7 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
                          tile->is_occluded(twin_tree)) {
                 EXPECT_TRUE(tile->is_occluded(tree));
                 EXPECT_FALSE(tile->is_occluded(twin_tree));
-                EXPECT_FALSE(
-                    tile->is_occluded_for_tree_priority(tree_priority));
+                EXPECT_FALSE(tile->is_occluded_combined());
               } else if (priority.distance_to_visible !=
                          twin_priority.distance_to_visible) {
                 EXPECT_LT(priority_for_tree_priority.distance_to_visible,
