@@ -18,15 +18,15 @@ const base::TimeDelta time_min = base::TimeDelta::FromMilliseconds(10);
 const base::TimeDelta time_max = base::TimeDelta::FromMinutes(3);
 const int time_bucket_count = 50;
 
-std::string ErrorToString(ErrorScreen::ErrorState error) {
+std::string ErrorToString(NetworkError::ErrorState error) {
   switch (error) {
-    case ErrorScreen::ERROR_STATE_PORTAL:
+    case NetworkError::ERROR_STATE_PORTAL:
       return ".Portal";
-    case ErrorScreen::ERROR_STATE_OFFLINE:
+    case NetworkError::ERROR_STATE_OFFLINE:
       return ".Offline";
-    case ErrorScreen::ERROR_STATE_PROXY:
+    case NetworkError::ERROR_STATE_PROXY:
       return ".Proxy";
-    case ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT:
+    case NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT:
       return ".AuthExtTimeout";
     default:
       NOTREACHED() << "Invalid ErrorState " << error;
@@ -35,12 +35,12 @@ std::string ErrorToString(ErrorScreen::ErrorState error) {
 }
 
 void StoreErrorScreenToHistogram(const std::string& screen_name,
-                                 ErrorScreen::ErrorState error) {
-  if (error <= ErrorScreen::ERROR_STATE_UNKNOWN ||
-      error > ErrorScreen::ERROR_STATE_NONE)
+                                 NetworkError::ErrorState error) {
+  if (error <= NetworkError::ERROR_STATE_UNKNOWN ||
+      error > NetworkError::ERROR_STATE_NONE)
     return;
   std::string histogram_name = kOobeErrorScreensCounterPrefix + screen_name;
-  int boundary = ErrorScreen::ERROR_STATE_NONE + 1;
+  int boundary = NetworkError::ERROR_STATE_NONE + 1;
   // This comes from UMA_HISTOGRAM_ENUMERATION macros. Can't use it because of
   // non const histogram name.
   base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
@@ -53,10 +53,10 @@ void StoreErrorScreenToHistogram(const std::string& screen_name,
 }
 
 void StoreTimeOnErrorScreenToHistogram(const std::string& screen_name,
-                                       ErrorScreen::ErrorState error,
+                                       NetworkError::ErrorState error,
                                        const base::TimeDelta& time_delta) {
-  if (error <= ErrorScreen::ERROR_STATE_UNKNOWN ||
-      error > ErrorScreen::ERROR_STATE_NONE)
+  if (error <= NetworkError::ERROR_STATE_UNKNOWN ||
+      error > NetworkError::ERROR_STATE_NONE)
     return;
   std::string histogram_name =
       kOobeTimeSpentOnErrorScreensPrefix + screen_name + ErrorToString(error);
@@ -79,19 +79,20 @@ ErrorScreensHistogramHelper::ErrorScreensHistogramHelper(
     const std::string& screen_name)
     : screen_name_(screen_name),
       was_shown_(false),
-      last_error_shown_(ErrorScreen::ERROR_STATE_NONE) {
+      last_error_shown_(NetworkError::ERROR_STATE_NONE) {
 }
 
 void ErrorScreensHistogramHelper::OnScreenShow() {
   was_shown_ = true;
 }
 
-void ErrorScreensHistogramHelper::OnErrorShow(ErrorScreen::ErrorState error) {
+void ErrorScreensHistogramHelper::OnErrorShow(NetworkError::ErrorState error) {
   OnErrorShowTime(error, base::Time::Now());
 }
 
-void ErrorScreensHistogramHelper::OnErrorShowTime(ErrorScreen::ErrorState error,
-                                                  base::Time now) {
+void ErrorScreensHistogramHelper::OnErrorShowTime(
+    NetworkError::ErrorState error,
+    base::Time now) {
   last_error_shown_ = error;
   if (error_screen_start_time_.is_null())
     error_screen_start_time_ = now;
@@ -111,8 +112,8 @@ void ErrorScreensHistogramHelper::OnErrorHideTime(base::Time now) {
 
 ErrorScreensHistogramHelper::~ErrorScreensHistogramHelper() {
   if (was_shown_) {
-    if (last_error_shown_ == ErrorScreen::ERROR_STATE_NONE) {
-      StoreErrorScreenToHistogram(screen_name_, ErrorScreen::ERROR_STATE_NONE);
+    if (last_error_shown_ == NetworkError::ERROR_STATE_NONE) {
+      StoreErrorScreenToHistogram(screen_name_, NetworkError::ERROR_STATE_NONE);
     } else {
       if (!error_screen_start_time_.is_null()) {
         time_on_error_screens_ += base::Time::Now() - error_screen_start_time_;

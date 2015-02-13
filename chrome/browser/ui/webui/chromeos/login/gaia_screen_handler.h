@@ -23,6 +23,7 @@ class ConsumerManagementService;
 namespace chromeos {
 
 class SigninScreenHandler;
+class SigninScreenHandlerDelegate;
 
 // A class that's used to specify the way how Gaia should be loaded.
 struct GaiaContext {
@@ -187,7 +188,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // TODO (ygorshenin@): GaiaScreenHandler should implement
   // NetworkStateInformer::Observer.
-  void UpdateState(ErrorScreenActor::ErrorReason reason);
+  void UpdateState(NetworkError::ErrorReason reason);
 
   // TODO (ygorshenin@): remove this dependency.
   void SetSigninScreenHandler(SigninScreenHandler* handler);

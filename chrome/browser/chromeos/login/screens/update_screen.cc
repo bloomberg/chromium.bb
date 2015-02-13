@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/update_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -349,7 +350,9 @@ void UpdateScreen::OnUserAction(const std::string& action_id) {
 #if !defined(OFFICIAL_BUILD)
   if (action_id == kUserActionCancelUpdateShortcut)
     CancelUpdate();
+  else
 #endif
+    BaseScreen::OnUserAction(action_id);
 }
 
 void UpdateScreen::OnContextKeyUpdated(
@@ -519,7 +522,7 @@ void UpdateScreen::StartUpdateCheck() {
 void UpdateScreen::ShowErrorMessage() {
   LOG(WARNING) << "UpdateScreen::ShowErrorMessage()";
   state_ = STATE_ERROR;
-  GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_UPDATE);
+  GetErrorScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
   get_base_screen_delegate()->ShowErrorScreen();
   histogram_helper_->OnErrorShow(GetErrorScreen()->GetErrorState());
 }
@@ -539,12 +542,12 @@ void UpdateScreen::UpdateErrorMessage(
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE,
+      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
                                       std::string());
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
       DCHECK(network);
-      GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
+      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
                                       network->name());
       if (is_first_portal_notification_) {
         is_first_portal_notification_ = false;
@@ -552,7 +555,7 @@ void UpdateScreen::UpdateErrorMessage(
       }
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
+      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_PROXY,
                                       std::string());
       break;
     default:

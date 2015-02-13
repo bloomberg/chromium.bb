@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ERROR_SCREENS_HISTOGRAM_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ERROR_SCREENS_HISTOGRAM_HELPER_H_
 
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include <string>
+
+#include "base/gtest_prod_util.h"
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 
 namespace chromeos {
 FORWARD_DECLARE_TEST(ErrorScreensHistogramHelperTest, TestShowHideTime);
@@ -16,7 +20,7 @@ class ErrorScreensHistogramHelper {
  public:
   explicit ErrorScreensHistogramHelper(const std::string& screen_name);
   void OnScreenShow();
-  void OnErrorShow(ErrorScreen::ErrorState error);
+  void OnErrorShow(NetworkError::ErrorState error);
   void OnErrorHide();
   ~ErrorScreensHistogramHelper();
 
@@ -27,12 +31,12 @@ class ErrorScreensHistogramHelper {
   FRIEND_TEST_ALL_PREFIXES(ErrorScreensHistogramHelperTest,
                            TestShowShowHideTime);
   // functions for testing.
-  void OnErrorShowTime(ErrorScreen::ErrorState error, base::Time now);
+  void OnErrorShowTime(NetworkError::ErrorState error, base::Time now);
   void OnErrorHideTime(base::Time now);
 
   std::string screen_name_;
   bool was_shown_;
-  ErrorScreen::ErrorState last_error_shown_;
+  NetworkError::ErrorState last_error_shown_;
   base::Time error_screen_start_time_;
   base::TimeDelta time_on_error_screens_;
 };

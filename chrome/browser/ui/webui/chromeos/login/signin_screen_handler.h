@@ -16,13 +16,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/touch_view_controller_delegate.h"
@@ -206,7 +205,7 @@ class SigninScreenHandler
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      ErrorScreenActor* error_screen_actor,
+      NetworkErrorModel* network_error_model,
       CoreOobeActor* core_oobe_actor,
       GaiaScreenHandler* gaia_screen_handler);
   ~SigninScreenHandler() override;
@@ -230,7 +229,7 @@ class SigninScreenHandler
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   void OnNetworkReady() override;
-  void UpdateState(ErrorScreenActor::ErrorReason reason) override;
+  void UpdateState(NetworkError::ErrorReason reason) override;
 
   // Required Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -259,12 +258,11 @@ class SigninScreenHandler
   // |params| argument.
   void UpdateUIState(UIState ui_state, base::DictionaryValue* params);
 
-  void UpdateStateInternal(ErrorScreenActor::ErrorReason reason,
-                           bool force_update);
+  void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
-                                  ErrorScreenActor::ErrorReason reason);
+                                  NetworkError::ErrorReason reason);
   void HideOfflineMessage(NetworkStateInformer::State state,
-                          ErrorScreenActor::ErrorReason reason);
+                          NetworkError::ErrorReason reason);
   void ReloadGaia(bool force_reload);
 
   // BaseScreenHandler implementation:
@@ -398,7 +396,6 @@ class SigninScreenHandler
   // Shows signin.
   void OnShowAddUser();
 
-  GaiaScreenHandler::FrameState FrameState() const;
   net::Error FrameError() const;
 
   // input_method::ImeKeyboard::Observer implementation:
@@ -437,7 +434,7 @@ class SigninScreenHandler
   bool webui_visible_;
   bool preferences_changed_delayed_;
 
-  ErrorScreenActor* error_screen_actor_;
+  NetworkErrorModel* network_error_model_;
   CoreOobeActor* core_oobe_actor_;
 
   bool is_first_update_state_call_;

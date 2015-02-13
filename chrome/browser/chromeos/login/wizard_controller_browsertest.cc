@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
   // in the proper state is displayed.
   ASSERT_EQ(GetErrorScreen(),
             WizardController::default_controller()->current_screen());
-  ASSERT_EQ(ErrorScreen::UI_STATE_LOCAL_STATE_ERROR,
+  ASSERT_EQ(NetworkError::UI_STATE_LOCAL_STATE_ERROR,
             GetErrorScreen()->GetUIState());
 
   WaitUntilJSIsReady();

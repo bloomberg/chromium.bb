@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -124,27 +126,27 @@ namespace chromeos {
 namespace {
 
 bool IsOnline(NetworkStateInformer::State state,
-              ErrorScreenActor::ErrorReason reason) {
+              NetworkError::ErrorReason reason) {
   return state == NetworkStateInformer::ONLINE &&
-      reason != ErrorScreenActor::ERROR_REASON_PORTAL_DETECTED &&
-      reason != ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT;
+         reason != NetworkError::ERROR_REASON_PORTAL_DETECTED &&
+         reason != NetworkError::ERROR_REASON_LOADING_TIMEOUT;
 }
 
 bool IsBehindCaptivePortal(NetworkStateInformer::State state,
-                           ErrorScreenActor::ErrorReason reason) {
+                           NetworkError::ErrorReason reason) {
   return state == NetworkStateInformer::CAPTIVE_PORTAL ||
-      reason == ErrorScreenActor::ERROR_REASON_PORTAL_DETECTED;
+         reason == NetworkError::ERROR_REASON_PORTAL_DETECTED;
 }
 
 bool IsProxyError(NetworkStateInformer::State state,
-                  ErrorScreenActor::ErrorReason reason,
+                  NetworkError::ErrorReason reason,
                   net::Error frame_error) {
   return state == NetworkStateInformer::PROXY_AUTH_REQUIRED ||
-      reason == ErrorScreenActor::ERROR_REASON_PROXY_AUTH_CANCELLED ||
-      reason == ErrorScreenActor::ERROR_REASON_PROXY_CONNECTION_FAILED ||
-      (reason == ErrorScreenActor::ERROR_REASON_FRAME_ERROR &&
-       (frame_error == net::ERR_PROXY_CONNECTION_FAILED ||
-        frame_error == net::ERR_TUNNEL_CONNECTION_FAILED));
+         reason == NetworkError::ERROR_REASON_PROXY_AUTH_CANCELLED ||
+         reason == NetworkError::ERROR_REASON_PROXY_CONNECTION_FAILED ||
+         (reason == NetworkError::ERROR_REASON_FRAME_ERROR &&
+          (frame_error == net::ERR_PROXY_CONNECTION_FAILED ||
+           frame_error == net::ERR_TUNNEL_CONNECTION_FAILED));
 }
 
 bool IsSigninScreen(const OobeUI::Screen screen) {
@@ -152,11 +154,11 @@ bool IsSigninScreen(const OobeUI::Screen screen) {
       screen == OobeUI::SCREEN_ACCOUNT_PICKER;
 }
 
-bool IsSigninScreenError(ErrorScreen::ErrorState error_state) {
-  return error_state == ErrorScreen::ERROR_STATE_PORTAL ||
-      error_state == ErrorScreen::ERROR_STATE_OFFLINE ||
-      error_state == ErrorScreen::ERROR_STATE_PROXY ||
-      error_state == ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT;
+bool IsSigninScreenError(NetworkError::ErrorState error_state) {
+  return error_state == NetworkError::ERROR_STATE_PORTAL ||
+         error_state == NetworkError::ERROR_STATE_OFFLINE ||
+         error_state == NetworkError::ERROR_STATE_PROXY ||
+         error_state == NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT;
 }
 
 // Returns network name by service path.
@@ -227,7 +229,7 @@ void LoginScreenContext::Init() {
 
 SigninScreenHandler::SigninScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
-    ErrorScreenActor* error_screen_actor,
+    NetworkErrorModel* network_error_model,
     CoreOobeActor* core_oobe_actor,
     GaiaScreenHandler* gaia_screen_handler)
     : ui_state_(UI_STATE_UNKNOWN),
@@ -239,7 +241,7 @@ SigninScreenHandler::SigninScreenHandler(
       network_state_informer_(network_state_informer),
       webui_visible_(false),
       preferences_changed_delayed_(false),
-      error_screen_actor_(error_screen_actor),
+      network_error_model_(network_error_model),
       core_oobe_actor_(core_oobe_actor),
       is_first_update_state_call_(true),
       offline_login_active_(false),
@@ -253,7 +255,7 @@ SigninScreenHandler::SigninScreenHandler(
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
-  DCHECK(error_screen_actor_);
+  DCHECK(network_error_model_);
   DCHECK(core_oobe_actor_);
   DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->SetSigninScreenHandler(this);
@@ -546,7 +548,7 @@ void SigninScreenHandler::OnNetworkReady() {
   gaia_screen_handler_->MaybePreloadAuthExtension();
 }
 
-void SigninScreenHandler::UpdateState(ErrorScreenActor::ErrorReason reason) {
+void SigninScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
   UpdateStateInternal(reason, false);
 }
 
@@ -611,9 +613,8 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
 
 // TODO(ygorshenin@): split this method into small parts.
 // TODO(ygorshenin@): move this logic to GaiaScreenHandler.
-void SigninScreenHandler::UpdateStateInternal(
-    ErrorScreenActor::ErrorReason reason,
-    bool force_update) {
+void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
+                                              bool force_update) {
   // Do nothing once user has signed in or sign in is in progress.
   // TODO(ygorshenin): We will end up here when processing network state
   // notification but no ShowSigninScreen() was called so delegate_ will be
@@ -672,7 +673,7 @@ void SigninScreenHandler::UpdateStateInternal(
   const bool is_online = IsOnline(state, reason);
   const bool is_behind_captive_portal = IsBehindCaptivePortal(state, reason);
   const bool is_gaia_loading_timeout =
-      (reason == ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
+      (reason == NetworkError::ERROR_REASON_LOADING_TIMEOUT);
   const bool is_gaia_error =
       FrameError() != net::OK && FrameError() != net::ERR_NETWORK_CHANGED;
   const bool is_gaia_signin = IsGaiaVisible() || IsGaiaHiddenByError();
@@ -686,7 +687,7 @@ void SigninScreenHandler::UpdateStateInternal(
       &SigninScreenHandler::ReloadGaia, weak_factory_.GetWeakPtr(), true));
 
   if (is_online || !is_behind_captive_portal)
-    error_screen_actor_->HideCaptivePortal();
+    network_error_model_->HideCaptivePortal();
 
   // Hide offline message (if needed) and return if current screen is
   // not a Gaia frame.
@@ -697,24 +698,24 @@ void SigninScreenHandler::UpdateStateInternal(
   }
 
   // Reload frame if network state is changed from {!ONLINE} -> ONLINE state.
-  if (reason == ErrorScreenActor::ERROR_REASON_NETWORK_STATE_CHANGED &&
+  if (reason == NetworkError::ERROR_REASON_NETWORK_STATE_CHANGED &&
       from_not_online_to_online_transition) {
     // Schedules a immediate retry.
     LOG(WARNING) << "Retry frame load since network has been changed.";
     reload_gaia.ScheduleCall();
   }
 
-  if (reason == ErrorScreenActor::ERROR_REASON_PROXY_CONFIG_CHANGED &&
+  if (reason == NetworkError::ERROR_REASON_PROXY_CONFIG_CHANGED &&
       error_screen_should_overlay) {
     // Schedules a immediate retry.
     LOG(WARNING) << "Retry frameload since proxy settings has been changed.";
     reload_gaia.ScheduleCall();
   }
 
-  if (reason == ErrorScreenActor::ERROR_REASON_FRAME_ERROR &&
+  if (reason == NetworkError::ERROR_REASON_FRAME_ERROR &&
       !IsProxyError(state, reason, FrameError())) {
     LOG(WARNING) << "Retry frame load due to reason: "
-                 << ErrorScreenActor::ErrorReasonString(reason);
+                 << NetworkError::ErrorReasonString(reason);
     reload_gaia.ScheduleCall();
   }
 
@@ -732,65 +733,63 @@ void SigninScreenHandler::UpdateStateInternal(
 }
 
 void SigninScreenHandler::SetupAndShowOfflineMessage(
-    NetworkStateInformer:: State state,
-    ErrorScreenActor::ErrorReason reason) {
+    NetworkStateInformer::State state,
+    NetworkError::ErrorReason reason) {
   const std::string network_path = network_state_informer_->network_path();
   const bool is_behind_captive_portal = IsBehindCaptivePortal(state, reason);
   const bool is_proxy_error = IsProxyError(state, reason, FrameError());
   const bool is_gaia_loading_timeout =
-      (reason == ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
+      (reason == NetworkError::ERROR_REASON_LOADING_TIMEOUT);
 
   if (is_proxy_error) {
-    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
-                                       std::string());
+    network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
+                                        std::string());
   } else if (is_behind_captive_portal) {
     // Do not bother a user with obsessive captive portal showing. This
     // check makes captive portal being shown only once: either when error
     // screen is shown for the first time or when switching from another
     // error screen (offline, proxy).
-    if (IsGaiaVisible() ||
-        (error_screen_actor_->error_state() !=
-         ErrorScreen::ERROR_STATE_PORTAL)) {
-      error_screen_actor_->FixCaptivePortal();
+    if (IsGaiaVisible() || (network_error_model_->GetErrorState() !=
+                            NetworkError::ERROR_STATE_PORTAL)) {
+      network_error_model_->FixCaptivePortal();
     }
     const std::string network_name = GetNetworkName(network_path);
-    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
-                                       network_name);
+    network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
+                                        network_name);
   } else if (is_gaia_loading_timeout) {
-    error_screen_actor_->SetErrorState(
-        ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT, std::string());
+    network_error_model_->SetErrorState(
+        NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT, std::string());
   } else {
-    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE,
-                                       std::string());
+    network_error_model_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                        std::string());
   }
 
-  const bool guest_signin_allowed = IsGuestSigninAllowed() &&
-      IsSigninScreenError(error_screen_actor_->error_state());
-  error_screen_actor_->AllowGuestSignin(guest_signin_allowed);
+  const bool guest_signin_allowed =
+      IsGuestSigninAllowed() &&
+      IsSigninScreenError(network_error_model_->GetErrorState());
+  network_error_model_->AllowGuestSignin(guest_signin_allowed);
 
-  const bool offline_login_allowed = IsOfflineLoginAllowed() &&
-      IsSigninScreenError(error_screen_actor_->error_state()) &&
-      error_screen_actor_->error_state() !=
-      ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT;
-  error_screen_actor_->AllowOfflineLogin(offline_login_allowed);
+  const bool offline_login_allowed =
+      IsOfflineLoginAllowed() &&
+      IsSigninScreenError(network_error_model_->GetErrorState()) &&
+      network_error_model_->GetErrorState() !=
+          NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT;
+  network_error_model_->AllowOfflineLogin(offline_login_allowed);
 
   if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
-    base::DictionaryValue params;
-    const std::string network_type = network_state_informer_->network_type();
-    params.SetString("lastNetworkType", network_type);
-    error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_SIGNIN);
-    error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
-    histogram_helper_->OnErrorShow(error_screen_actor_->error_state());
+    network_error_model_->SetUIState(NetworkError::UI_STATE_SIGNIN);
+    network_error_model_->SetParentScreen(OobeUI::SCREEN_GAIA_SIGNIN);
+    network_error_model_->Show();
+    histogram_helper_->OnErrorShow(network_error_model_->GetErrorState());
   }
 }
 
-void SigninScreenHandler::HideOfflineMessage(
-    NetworkStateInformer::State state,
-    ErrorScreenActor::ErrorReason reason) {
+void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
+                                             NetworkError::ErrorReason reason) {
   if (!IsSigninScreenHiddenByError())
     return;
 
-  error_screen_actor_->Hide();
+  network_error_model_->Hide();
   histogram_helper_->OnErrorHide();
 
   // Forces a reload for Gaia screen on hiding error message.
@@ -1221,7 +1220,7 @@ void SigninScreenHandler::HandleUnlockOnLoginSuccess() {
 }
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError() {
-  UpdateState(ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
+  UpdateState(NetworkError::ERROR_REASON_LOADING_TIMEOUT);
 }
 
 void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
@@ -1344,7 +1343,7 @@ bool SigninScreenHandler::IsGaiaHiddenByError() const {
 
 bool SigninScreenHandler::IsSigninScreenHiddenByError() const {
   return (GetCurrentScreen() == OobeUI::SCREEN_ERROR_MESSAGE) &&
-      (IsSigninScreen(error_screen_actor_->parent_screen()));
+         (IsSigninScreen(network_error_model_->GetParentScreen()));
 }
 
 bool SigninScreenHandler::IsGuestSigninAllowed() const {
@@ -1371,11 +1370,6 @@ void SigninScreenHandler::OnShowAddUser() {
   is_account_picker_showing_first_time_ = false;
   DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->ShowGaiaAsync(is_enrolling_consumer_management_);
-}
-
-GaiaScreenHandler::FrameState SigninScreenHandler::FrameState() const {
-  DCHECK(gaia_screen_handler_);
-  return gaia_screen_handler_->frame_state();
 }
 
 net::Error SigninScreenHandler::FrameError() const {

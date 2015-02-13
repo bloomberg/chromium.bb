@@ -12,12 +12,13 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "net/base/net_errors.h"
 
 namespace chromeos {
 
@@ -33,7 +34,7 @@ class EnrollmentScreenHandler
  public:
   EnrollmentScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      ErrorScreenActor* error_screen_actor);
+      NetworkErrorModel* network_error_model);
   ~EnrollmentScreenHandler() override;
 
   // Implements WebUIMessageHandler:
@@ -58,7 +59,7 @@ class EnrollmentScreenHandler
       ::login::LocalizedValuesBuilder* builder) override;
 
   // Implements NetworkStateInformer::NetworkStateInformerObserver
-  void UpdateState(ErrorScreenActor::ErrorReason reason) override;
+  void UpdateState(NetworkError::ErrorReason reason) override;
 
   // Implements WebUILoginView::FrameObserver
   void OnFrameError(const std::string& frame_unique_name) override;
@@ -70,12 +71,11 @@ class EnrollmentScreenHandler
   void HandleRetry();
   void HandleFrameLoadingCompleted(int status);
 
-  void UpdateStateInternal(ErrorScreenActor::ErrorReason reason,
-                           bool force_update);
+  void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
-                                  ErrorScreenActor::ErrorReason reason);
+                                  NetworkError::ErrorReason reason);
   void HideOfflineMessage(NetworkStateInformer::State state,
-                          ErrorScreenActor::ErrorReason reason);
+                          NetworkError::ErrorReason reason);
 
   net::Error frame_error() const { return frame_error_; }
   // Shows a given enrollment step.
@@ -127,7 +127,7 @@ class EnrollmentScreenHandler
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
-  ErrorScreenActor* error_screen_actor_;
+  NetworkErrorModel* network_error_model_;
 
   scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 

@@ -11,7 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 
 namespace chromeos {
@@ -76,7 +77,7 @@ class AutoEnrollmentCheckScreen
       policy::AutoEnrollmentState auto_enrollment_state);
 
   // Configures the error screen.
-  void ShowErrorScreen(ErrorScreen::ErrorState error_state);
+  void ShowErrorScreen(NetworkError::ErrorState error_state);
 
   // Asynchronously signals completion. The owner might destroy |this| in
   // response, so no code should be run after the completion of a message loop

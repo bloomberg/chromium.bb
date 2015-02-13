@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
@@ -347,9 +349,9 @@ void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
   if (network_state_informer_->state() != NetworkStateInformer::ONLINE)
     return;
   if (frame_state_ == FRAME_STATE_LOADED)
-    UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
+    UpdateState(NetworkError::ERROR_REASON_UPDATE);
   else if (frame_state_ == FRAME_STATE_ERROR)
-    UpdateState(ErrorScreenActor::ERROR_REASON_FRAME_ERROR);
+    UpdateState(NetworkError::ERROR_REASON_FRAME_ERROR);
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(
@@ -696,7 +698,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     if (focus_stolen_)
       HandleGaiaUIReady();
   }
-  signin_screen_handler_->UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
+  signin_screen_handler_->UpdateState(NetworkError::ERROR_REASON_UPDATE);
 
   if (core_oobe_actor_) {
     PrefService* prefs = g_browser_process->local_state();
@@ -750,7 +752,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   LoadGaia(context);
 }
 
-void GaiaScreenHandler::UpdateState(ErrorScreenActor::ErrorReason reason) {
+void GaiaScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
   if (signin_screen_handler_)
     signin_screen_handler_->UpdateState(reason);
 }

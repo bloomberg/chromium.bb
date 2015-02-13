@@ -7,6 +7,20 @@
  */
 
 login.createScreen('ErrorMessageScreen', 'error-message', function() {
+  var CONTEXT_KEY_ERROR_STATE_CODE = 'error-state-code';
+  var CONTEXT_KEY_ERROR_STATE_NETWORK = 'error-state-network';
+  var CONTEXT_KEY_GUEST_SIGNIN_ALLOWED = 'guest-signin-allowed';
+  var CONTEXT_KEY_OFFLINE_SIGNIN_ALLOWED = 'offline-signin-allowed';
+  var CONTEXT_KEY_SHOW_CONNECTING_INDICATOR = 'show-connecting-indicator';
+  var CONTEXT_KEY_UI_STATE = 'ui-state';
+
+  var USER_ACTION_CONFIGURE_CERTS = 'configure-certs';
+  var USER_ACTION_DIAGNOSE = 'diagnose';
+  var USER_ACTION_LAUNCH_OOBE_GUEST = 'launch-oobe-guest';
+  var USER_ACTION_LOCAL_STATE_POWERWASH = 'local-state-error-powerwash';
+  var USER_ACTION_REBOOT = 'reboot';
+  var USER_ACTION_SHOW_CAPTIVE_PORTAL = 'show-captive-portal';
+
   // Link which starts guest session for captive portal fixing.
   /** @const */ var FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
 
@@ -79,12 +93,38 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     decorate: function() {
       cr.ui.DropDown.decorate($('offline-networks-list'));
       this.updateLocalizedContent();
+
+      var self = this;
+      this.context.addObserver(CONTEXT_KEY_ERROR_STATE_CODE,
+                               function(error_state) {
+        self.setErrorState(error_state);
+      });
+      this.context.addObserver(CONTEXT_KEY_ERROR_STATE_NETWORK,
+                               function(network) {
+        self.setNetwork_(network);
+      });
+      this.context.addObserver(CONTEXT_KEY_GUEST_SIGNIN_ALLOWED,
+                               function(allowed) {
+        self.allowGuestSignin(allowed);
+      });
+      this.context.addObserver(CONTEXT_KEY_OFFLINE_SIGNIN_ALLOWED,
+                               function(allowed) {
+        self.allowOfflineLogin(allowed);
+      });
+      this.context.addObserver(CONTEXT_KEY_SHOW_CONNECTING_INDICATOR,
+                               function(show) {
+        self.showConnectingIndicator(show);
+      });
+      this.context.addObserver(CONTEXT_KEY_UI_STATE, function(ui_state) {
+        self.setUIState(ui_state);
+      });
     },
 
     /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
+      var self = this;
       $('auto-enrollment-offline-message-text').innerHTML =
           loadTimeData.getStringF(
               'autoEnrollmentOfflineMessageBody',
@@ -102,7 +142,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
         '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
         '</a>');
       $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
-        chrome.send('showCaptivePortal');
+        self.send(login.Screen.CALLBACK_USER_ACTED,
+                  USER_ACTION_SHOW_CAPTIVE_PORTAL);
       };
 
       $('captive-portal-proxy-message-text').innerHTML =
@@ -139,15 +180,18 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
           'guestSignin',
           '<a id="error-guest-signin-link" class="signin-link" href="#">',
           '</a>');
-      $('error-guest-signin-link').onclick = this.launchGuestSession_;
+      $('error-guest-signin-link').addEventListener(
+          'click',
+          this.launchGuestSession_.bind(this));
 
       $('error-guest-signin-fix-network').innerHTML = loadTimeData.getStringF(
           'guestSigninFixNetwork',
           '<a id="error-guest-fix-network-signin-link" class="signin-link" ' +
               'href="#">',
           '</a>');
-      $('error-guest-fix-network-signin-link').onclick =
-          this.launchGuestSession_;
+      $('error-guest-fix-network-signin-link').addEventListener(
+          'click',
+          this.launchGuestSession_.bind(this));
 
       $('error-offline-login').innerHTML = loadTimeData.getStringF(
           'offlineLogin',
@@ -175,18 +219,6 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     onBeforeShow: function(data) {
       cr.ui.Oobe.clearErrors();
       cr.ui.DropDown.show('offline-networks-list', false);
-      if (data === undefined)
-        return;
-      if ('uiState' in data)
-        this.setUIState(data['uiState']);
-      if ('errorState' in data && 'network' in data)
-        this.setErrorState(data['errorState'], data['network']);
-      if ('guestSigninAllowed' in data)
-        this.allowGuestSignin(data['guestSigninAllowed']);
-      if ('offlineLoginAllowed' in data)
-        this.allowOfflineLogin(data['offlineLoginAllowed']);
-      if ('showConnectingIndicator' in data)
-        this.showConnectingIndicator(data['showConnectingIndicator']);
     },
 
     /**
@@ -202,12 +234,13 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     get buttons() {
       var buttons = [];
+      var self = this;
 
       var rebootButton = this.ownerDocument.createElement('button');
       rebootButton.textContent = loadTimeData.getString('rebootButton');
       rebootButton.classList.add('show-with-ui-state-kiosk-mode');
       rebootButton.addEventListener('click', function(e) {
-        chrome.send('rebootButtonClicked');
+        self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_REBOOT);
         e.stopPropagation();
       });
       buttons.push(rebootButton);
@@ -216,7 +249,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       diagnoseButton.textContent = loadTimeData.getString('diagnoseButton');
       diagnoseButton.classList.add('show-with-ui-state-kiosk-mode');
       diagnoseButton.addEventListener('click', function(e) {
-        chrome.send('diagnoseButtonClicked');
+        self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_DIAGNOSE);
         e.stopPropagation();
       });
       buttons.push(diagnoseButton);
@@ -225,7 +258,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       certsButton.textContent = loadTimeData.getString('configureCertsButton');
       certsButton.classList.add('show-with-ui-state-kiosk-mode');
       certsButton.addEventListener('click', function(e) {
-        chrome.send('configureCertsClicked');
+        self.send(login.Screen.CALLBACK_USER_ACTED,
+                  USER_ACTION_CONFIGURE_CERTS);
         e.stopPropagation();
       });
       buttons.push(certsButton);
@@ -261,7 +295,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
         loadTimeData.getString('localStateErrorPowerwashButton');
       powerwashButton.classList.add('show-with-ui-state-local-state-error');
       powerwashButton.addEventListener('click', function(e) {
-        chrome.send('localStateErrorPowerwashButtonClicked');
+        self.send(login.Screen.CALLBACK_USER_ACTED,
+                  USER_ACTION_LOCAL_STATE_POWERWASH);
         e.stopPropagation();
       });
       buttons.push(powerwashButton);
@@ -291,17 +326,25 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     /**
       * Sets current error state of the screen.
       * @param {string} error_state New error state of the screen.
-      * @param {string} network Name of the current network
       * @private
       */
-    setErrorState_: function(error_state, network) {
+    setErrorState_: function(error_state) {
       this.classList.remove(this.error_state);
+      this.error_state = error_state;
+      this.classList.add(this.error_state);
+      this.onContentChange_();
+    },
+
+    /**
+     * Sets network.
+     * @param {string} network Name of the current network
+     * @private
+     */
+    setNetwork_: function(network) {
       var networkNameElems =
           document.getElementsByClassName(CURRENT_NETWORK_NAME_CLASS);
       for (var i = 0; i < networkNameElems.length; ++i)
         networkNameElems[i].textContent = network;
-      this.error_state = error_state;
-      this.classList.add(this.error_state);
       this.onContentChange_();
     },
 
@@ -318,8 +361,12 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      * @private
      */
     launchGuestSession_: function() {
-      chrome.send(Oobe.getInstance().isOobeUI() ?
-          'launchOobeGuestSession' : 'launchIncognito');
+      if (Oobe.getInstance().isOobeUI()) {
+        this.send(login.Screen.CALLBACK_USER_ACTED,
+                  USER_ACTION_LAUNCH_OOBE_GUEST);
+      } else {
+        chrome.send('launchIncognito');
+      }
     },
 
     /**
@@ -352,11 +399,10 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     /**
       * Sets current error state of the screen.
       * @param {number} error_state New error state of the screen.
-      * @param {string} network Name of the current network
       * @private
       */
-    setErrorState: function(error_state, network) {
-      this.setErrorState_(ERROR_STATES[error_state], network);
+    setErrorState: function(error_state) {
+      this.setErrorState_(ERROR_STATES[error_state]);
     },
 
     /**

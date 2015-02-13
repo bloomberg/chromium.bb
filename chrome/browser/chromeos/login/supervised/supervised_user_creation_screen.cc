@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
@@ -70,17 +71,15 @@ void ConfigureErrorScreen(ErrorScreen* screen,
       NOTREACHED();
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      screen->SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE,
-                            std::string());
+      screen->SetErrorState(NetworkError::ERROR_STATE_OFFLINE, std::string());
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      screen->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
+      screen->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
                             network ? network->name() : std::string());
       screen->FixCaptivePortal();
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      screen->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
-                            std::string());
+      screen->SetErrorState(NetworkError::ERROR_STATE_PROXY, std::string());
       break;
     default:
       NOTREACHED();
@@ -164,7 +163,7 @@ void SupervisedUserCreationScreen::OnPortalDetectionCompleted(
     on_error_screen_ = true;
     ErrorScreen* screen = get_base_screen_delegate()->GetErrorScreen();
     ConfigureErrorScreen(screen, network, state.status);
-    screen->SetUIState(ErrorScreen::UI_STATE_SUPERVISED);
+    screen->SetUIState(NetworkError::UI_STATE_SUPERVISED);
     get_base_screen_delegate()->ShowErrorScreen();
     histogram_helper_->OnErrorShow(screen->GetErrorState());
   }

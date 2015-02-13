@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
@@ -295,7 +297,10 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     screen->Initialize(nullptr /* context */);
     return screen.release();
   } else if (screen_name == kErrorScreenName) {
-    return new ErrorScreen(this, oobe_display_->GetErrorScreenActor());
+    scoped_ptr<ErrorScreen> screen(
+        new ErrorScreen(this, oobe_display_->GetNetworkErrorView()));
+    screen->Initialize(nullptr /* context */);
+    return screen.release();
   } else if (screen_name == kUpdateScreenName) {
     scoped_ptr<UpdateScreen> screen(new UpdateScreen(
         this, oobe_display_->GetUpdateView(), remora_controller_.get()));
@@ -1103,7 +1108,7 @@ void WizardController::AutoLaunchKioskApp() {
   if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
     // If the |cros_settings_| are permanently untrusted, show an error message
     // and refuse to auto-launch the kiosk app.
-    GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_LOCAL_STATE_ERROR);
+    GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
     SetStatusAreaVisible(false);
     ShowErrorScreen();
     return;
@@ -1155,7 +1160,7 @@ void WizardController::OnLocalStateInitialized(bool /* succeeded */) {
       PrefService::INITIALIZATION_STATUS_ERROR) {
     return;
   }
-  GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_LOCAL_STATE_ERROR);
+  GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
   SetStatusAreaVisible(false);
   ShowErrorScreen();
 }

@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"

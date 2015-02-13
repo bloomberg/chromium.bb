@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_error_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
@@ -216,18 +218,18 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, OpenPortalDialog) {
   ASSERT_TRUE(host);
   OobeUI* oobe = host->GetOobeUI();
   ASSERT_TRUE(oobe);
-  ErrorScreenActor* actor = oobe->GetErrorScreenActor();
-  ASSERT_TRUE(actor);
+  NetworkErrorView* network_error_view = oobe->GetNetworkErrorView();
+  ASSERT_TRUE(network_error_view);
 
   // Error screen asks portal detector to change detection strategy.
-  ErrorScreen error_screen(NULL, actor);
+  ErrorScreen error_screen(NULL, network_error_view);
 
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy_id());
   network_portal_detector()->NotifyObserversForTesting();
   OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN, strategy_id());
 
-  actor->ShowCaptivePortal();
+  error_screen.ShowCaptivePortal();
 }
 
 }  // namespace chromeos

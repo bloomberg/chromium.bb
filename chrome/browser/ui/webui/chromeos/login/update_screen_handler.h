@@ -34,6 +34,7 @@ class UpdateScreenHandler : public UpdateView,
   void Initialize() override;
 
  private:
+  // Observer is added in OobeUI.
   // NetworkDropdownHandler::Observer implementation:
   void OnConnectToNetworkRequested() override;
 

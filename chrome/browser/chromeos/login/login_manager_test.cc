@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 
+#include "base/command_line.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"

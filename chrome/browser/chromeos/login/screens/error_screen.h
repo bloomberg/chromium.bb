@@ -9,59 +9,48 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/error_screen_actor_delegate.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/login/auth/login_performer.h"
 
 namespace chromeos {
 
 class BaseScreenDelegate;
+class CaptivePortalWindowProxy;
+class NetworkErrorView;
 
 // Controller for the error screen.
-class ErrorScreen : public BaseScreen,
-                    public ErrorScreenActorDelegate,
-                    public LoginPerformer::Delegate {
+class ErrorScreen : public NetworkErrorModel, public LoginPerformer::Delegate {
  public:
-  enum UIState {
-    UI_STATE_UNKNOWN = 0,
-    UI_STATE_UPDATE,
-    UI_STATE_SIGNIN,
-    UI_STATE_SUPERVISED,
-    UI_STATE_KIOSK_MODE,
-    UI_STATE_LOCAL_STATE_ERROR,
-    UI_STATE_AUTO_ENROLLMENT_ERROR,
-    UI_STATE_ROLLBACK_ERROR,
-  };
-
-  enum ErrorState {
-    ERROR_STATE_UNKNOWN = 0,
-    ERROR_STATE_PORTAL,
-    ERROR_STATE_OFFLINE,
-    ERROR_STATE_PROXY,
-    ERROR_STATE_AUTH_EXT_TIMEOUT,
-    ERROR_STATE_NONE,
-    // States above are being logged to histograms.
-    // Please keep ERROR_STATE_NONE as the last one of the histogram values.
-    ERROR_STATE_KIOSK_ONLINE,
-  };
-
-  ErrorScreen(BaseScreenDelegate* base_screen_delegate,
-              ErrorScreenActor* actor);
+  ErrorScreen(BaseScreenDelegate* base_screen_delegate, NetworkErrorView* view);
   ~ErrorScreen() override;
 
-  // BaseScreen implementation.
+  // NetworkErrorModel:
   void PrepareToShow() override;
   void Show() override;
   void Hide() override;
-  std::string GetName() const override;
-
-  // ErrorScreenActorDelegate implementation:
-  void OnErrorShow() override;
-  void OnErrorHide() override;
-  void OnLaunchOobeGuestSession() override;
-  void OnActorDestroyed() override;
+  void OnShow() override;
+  void OnHide() override;
+  void OnUserAction(const std::string& action_id) override;
+  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
+  void AllowGuestSignin(bool allowed) override;
+  void AllowOfflineLogin(bool allowed) override;
+  void FixCaptivePortal() override;
+  NetworkError::UIState GetUIState() const override;
+  NetworkError::ErrorState GetErrorState() const override;
+  OobeUI::Screen GetParentScreen() const override;
+  void HideCaptivePortal() override;
+  void OnViewDestroyed(NetworkErrorView* view) override;
+  void SetUIState(NetworkError::UIState ui_state) override;
+  void SetErrorState(NetworkError::ErrorState error_state,
+                     const std::string& network) override;
+  void SetParentScreen(OobeUI::Screen parent_screen) override;
+  void SetHideCallback(const base::Closure& on_hide) override;
+  void ShowCaptivePortal() override;
+  void ShowConnectingIndicator(bool show) override;
 
   // LoginPerformer::Delegate implementation:
   void OnAuthFailure(const AuthFailure& error) override;
@@ -72,48 +61,48 @@ class ErrorScreen : public BaseScreen,
   void PolicyLoadFailed() override;
   void OnOnlineChecked(const std::string& username, bool success) override;
 
-  // Initializes captive portal dialog and shows that if needed.
-  void FixCaptivePortal();
-
-  // Shows captive portal dialog.
-  void ShowCaptivePortal();
-
-  // Hides captive portal dialog.
-  void HideCaptivePortal();
-
-  // Sets current UI state.
-  void SetUIState(UIState ui_state);
-
-  UIState GetUIState() const;
-
-  // Sets current error screen content according to current UI state,
-  // |error_state|, and |network|.
-  void SetErrorState(ErrorState error_state, const std::string& network);
-
-  ErrorState GetErrorState() const;
-
-  // Toggles the guest sign-in prompt.
-  void AllowGuestSignin(bool allow);
-
-  // Toggles the connection pending indicator.
-  void ShowConnectingIndicator(bool show);
-
-  void set_parent_screen(OobeDisplay::Screen parent_screen) {
-    parent_screen_ = parent_screen;
-  }
-  OobeDisplay::Screen parent_screen() const { return parent_screen_; }
-
  private:
+  // Default hide_closure for Hide().
+  void DefaultHideCallback();
+
+  // Handle user action to configure certificates.
+  void OnConfigureCerts();
+
+  // Handle user action to diagnose network configuration.
+  void OnDiagnoseButtonClicked();
+
+  // Handle user action to launch guest session from out-of-box.
+  void OnLaunchOobeGuestSession();
+
+  // Handle user action to launch Powerwash in case of
+  // Local State critical error.
+  void OnLocalStateErrorPowerwashButtonClicked();
+
+  // Handle uses action to reboot device.
+  void OnRebootButtonClicked();
+
   // Handles the response of an ownership check and starts the guest session if
   // applicable.
   void StartGuestSessionAfterOwnershipCheck(
       DeviceSettingsService::OwnershipStatus ownership_status);
 
-  ErrorScreenActor* actor_;
-
-  OobeDisplay::Screen parent_screen_;
+  NetworkErrorView* view_;
 
   scoped_ptr<LoginPerformer> guest_login_performer_;
+
+  // Proxy which manages showing of the window for captive portal entering.
+  scoped_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;
+
+  // Network state informer used to keep error screen up.
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
+
+  NetworkError::UIState ui_state_;
+  NetworkError::ErrorState error_state_;
+
+  OobeUI::Screen parent_screen_;
+
+  // Optional callback that is called when NetworkError screen is hidden.
+  scoped_ptr<base::Closure> on_hide_callback_;
 
   base::WeakPtrFactory<ErrorScreen> weak_factory_;
 

@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
@@ -182,15 +184,15 @@ bool AutoEnrollmentCheckScreen::UpdateCaptivePortalStatus(
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
       return false;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      ShowErrorScreen(ErrorScreen::ERROR_STATE_OFFLINE);
+      ShowErrorScreen(NetworkError::ERROR_STATE_OFFLINE);
       return true;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      ShowErrorScreen(ErrorScreen::ERROR_STATE_PORTAL);
+      ShowErrorScreen(NetworkError::ERROR_STATE_PORTAL);
       if (captive_portal_status_ != new_captive_portal_status)
         get_base_screen_delegate()->GetErrorScreen()->FixCaptivePortal();
       return true;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      ShowErrorScreen(ErrorScreen::ERROR_STATE_PROXY);
+      ShowErrorScreen(NetworkError::ERROR_STATE_PROXY);
       return true;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
       NOTREACHED() << "Bad status: CAPTIVE_PORTAL_STATUS_COUNT";
@@ -215,7 +217,7 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       return false;
     case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
-      ShowErrorScreen(ErrorScreen::ERROR_STATE_OFFLINE);
+      ShowErrorScreen(NetworkError::ERROR_STATE_OFFLINE);
       return true;
   }
 
@@ -225,11 +227,11 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
 }
 
 void AutoEnrollmentCheckScreen::ShowErrorScreen(
-    ErrorScreen::ErrorState error_state) {
+    NetworkError::ErrorState error_state) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
-  error_screen->SetUIState(ErrorScreen::UI_STATE_AUTO_ENROLLMENT_ERROR);
+  error_screen->SetUIState(NetworkError::UI_STATE_AUTO_ENROLLMENT_ERROR);
   error_screen->AllowGuestSignin(true);
   error_screen->SetErrorState(error_state,
                               network ? network->name() : std::string());

@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"

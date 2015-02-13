@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -47,7 +47,7 @@ class NetworkStateInformer
     NetworkStateInformerObserver() {}
     virtual ~NetworkStateInformerObserver() {}
 
-    virtual void UpdateState(ErrorScreenActor::ErrorReason reason) = 0;
+    virtual void UpdateState(NetworkError::ErrorReason reason) = 0;
     virtual void OnNetworkReady() {}
   };
 
@@ -92,7 +92,7 @@ class NetworkStateInformer
 
   void UpdateStateAndNotify();
 
-  void SendStateToObservers(ErrorScreenActor::ErrorReason reason);
+  void SendStateToObservers(NetworkError::ErrorReason reason);
 
   State state_;
   std::string network_path_;

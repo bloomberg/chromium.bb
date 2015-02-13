@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor_delegate.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
 namespace base {
@@ -20,26 +20,11 @@ namespace chromeos {
 
 class ErrorScreenActor {
  public:
-  // Possible network error reasons.
-  enum ErrorReason {
-    ERROR_REASON_PROXY_AUTH_CANCELLED = 0,
-    ERROR_REASON_PROXY_AUTH_SUPPLIED,
-    ERROR_REASON_PROXY_CONNECTION_FAILED,
-    ERROR_REASON_PROXY_CONFIG_CHANGED,
-    ERROR_REASON_LOADING_TIMEOUT,
-    ERROR_REASON_PORTAL_DETECTED,
-    // Reason for a case when default network has changed.
-    ERROR_REASON_NETWORK_STATE_CHANGED,
-    // Reason for a case when JS side requires error screen update.
-    ERROR_REASON_UPDATE,
-    ERROR_REASON_FRAME_ERROR
-  };
-
   ErrorScreenActor();
   virtual ~ErrorScreenActor();
 
-  ErrorScreen::UIState ui_state() const { return ui_state_; }
-  ErrorScreen::ErrorState error_state() const { return error_state_; }
+  NetworkError::UIState ui_state() const { return ui_state_; }
+  NetworkError::ErrorState error_state() const { return error_state_; }
 
   // Returns id of the screen behind error screen ("caller" screen).
   // Returns OobeUI::SCREEN_UNKNOWN if error screen isn't the current
@@ -70,8 +55,8 @@ class ErrorScreenActor {
   // Hides captive portal dialog.
   virtual void HideCaptivePortal() = 0;
 
-  virtual void SetUIState(ErrorScreen::UIState ui_state) = 0;
-  virtual void SetErrorState(ErrorScreen::ErrorState error_state,
+  virtual void SetUIState(NetworkError::UIState ui_state) = 0;
+  virtual void SetErrorState(NetworkError::ErrorState error_state,
                              const std::string& network) = 0;
 
   virtual void AllowGuestSignin(bool allowed) = 0;
@@ -79,11 +64,9 @@ class ErrorScreenActor {
 
   virtual void ShowConnectingIndicator(bool show) = 0;
 
-  static const char* ErrorReasonString(ErrorReason reason);
-
  protected:
-  ErrorScreen::UIState ui_state_;
-  ErrorScreen::ErrorState error_state_;
+  NetworkError::UIState ui_state_;
+  NetworkError::ErrorState error_state_;
   std::string network_;
 
   bool guest_signin_allowed_;

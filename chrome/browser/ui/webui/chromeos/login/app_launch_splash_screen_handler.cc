@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,14 +36,14 @@ std::string GetNetworkName(const std::string& service_path) {
 namespace chromeos {
 
 AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
-      const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      ErrorScreenActor* error_screen_actor)
+    const scoped_refptr<NetworkStateInformer>& network_state_informer,
+    NetworkErrorModel* network_error_model)
     : BaseScreenHandler(kJsScreenPath),
       delegate_(NULL),
       show_on_init_(false),
       state_(APP_LAUNCH_STATE_LOADING_AUTH_FILE),
       network_state_informer_(network_state_informer),
-      error_screen_actor_(error_screen_actor),
+      network_error_model_(network_error_model),
       online_state_(false),
       network_config_done_(false),
       network_config_requested_(false) {
@@ -128,7 +128,7 @@ void AppLaunchSplashScreenHandler::UpdateAppLaunchState(AppLaunchState state) {
     SetLaunchText(
         l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
   }
-  UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
+  UpdateState(NetworkError::ERROR_REASON_UPDATE);
 }
 
 void AppLaunchSplashScreenHandler::SetDelegate(
@@ -149,36 +149,36 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
   const std::string network_path = network_state_informer_->network_path();
   const std::string network_name = GetNetworkName(network_path);
 
-  error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_KIOSK_MODE);
-  error_screen_actor_->AllowGuestSignin(false);
-  error_screen_actor_->AllowOfflineLogin(false);
+  network_error_model_->SetUIState(NetworkError::UI_STATE_KIOSK_MODE);
+  network_error_model_->AllowGuestSignin(false);
+  network_error_model_->AllowOfflineLogin(false);
 
   switch (state) {
     case NetworkStateInformer::CAPTIVE_PORTAL: {
-      error_screen_actor_->SetErrorState(
-          ErrorScreen::ERROR_STATE_PORTAL, network_name);
-      error_screen_actor_->FixCaptivePortal();
+      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
+                                          network_name);
+      network_error_model_->FixCaptivePortal();
 
       break;
     }
     case NetworkStateInformer::PROXY_AUTH_REQUIRED: {
-      error_screen_actor_->SetErrorState(
-          ErrorScreen::ERROR_STATE_PROXY, network_name);
+      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
+                                          network_name);
       break;
     }
     case NetworkStateInformer::OFFLINE: {
-      error_screen_actor_->SetErrorState(
-          ErrorScreen::ERROR_STATE_OFFLINE, network_name);
+      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                          network_name);
       break;
     }
     case NetworkStateInformer::ONLINE: {
-      error_screen_actor_->SetErrorState(
-          ErrorScreen::ERROR_STATE_KIOSK_ONLINE, network_name);
+      network_error_model_->SetErrorState(
+          NetworkError::ERROR_STATE_KIOSK_ONLINE, network_name);
       break;
     }
     default:
-      error_screen_actor_->SetErrorState(
-          ErrorScreen::ERROR_STATE_OFFLINE, network_name);
+      network_error_model_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                          network_name);
       NOTREACHED();
       break;
   }
@@ -189,7 +189,8 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
     screen = oobe_ui->current_screen();
 
   if (screen != OobeUI::SCREEN_ERROR_MESSAGE)
-    error_screen_actor_->Show(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH, NULL);
+    network_error_model_->SetParentScreen(OobeUI::SCREEN_APP_LAUNCH_SPLASH);
+  network_error_model_->Show();
 }
 
 bool AppLaunchSplashScreenHandler::IsNetworkReady() {
@@ -202,7 +203,7 @@ void AppLaunchSplashScreenHandler::OnNetworkReady() {
 }
 
 void AppLaunchSplashScreenHandler::UpdateState(
-    ErrorScreenActor::ErrorReason reason) {
+    NetworkError::ErrorReason reason) {
   if (!delegate_ ||
       (state_ != APP_LAUNCH_STATE_PREPARING_NETWORK &&
        state_ != APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT)) {

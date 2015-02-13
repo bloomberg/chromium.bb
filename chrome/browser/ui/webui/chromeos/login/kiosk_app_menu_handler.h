@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -51,7 +52,7 @@ class KioskAppMenuHandler
   void OnKioskAppDataChanged(const std::string& app_id) override;
 
   // NetworkStateInformer::NetworkStateInformerObserver overrides:
-  void UpdateState(ErrorScreenActor::ErrorReason reason) override;
+  void UpdateState(NetworkError::ErrorReason reason) override;
 
   // True when WebUI is initialized. Otherwise don't allow calling JS functions.
   bool is_webui_initialized_;

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_ERROR_SCREEN_H_
 
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/chromeos/login/screens/network_error_model.h"
+#include "chrome/browser/chromeos/login/screens/network_error_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -14,31 +16,38 @@ namespace chromeos {
 class MockErrorScreen : public ErrorScreen {
  public:
   MockErrorScreen(BaseScreenDelegate* base_screen_delegate,
-                  ErrorScreenActor* actor);
+                  NetworkErrorView* view);
   ~MockErrorScreen() override;
+
+  void FixCaptivePortal() override;
+  void SetUIState(NetworkError::UIState ui_state) override;
+  void SetErrorState(NetworkError::ErrorState error_state,
+                     const std::string& network) override;
+
+  MOCK_METHOD0(MockFixCaptivePortal, void());
+  MOCK_METHOD1(MockSetUIState, void(NetworkError::UIState ui_state));
+  MOCK_METHOD2(MockSetErrorState,
+               void(NetworkError::ErrorState error_state,
+                    const std::string& network));
 };
 
-class MockErrorScreenActor : public ErrorScreenActor {
+class MockNetworkErrorView : public NetworkErrorView {
  public:
-  MockErrorScreenActor();
-  virtual ~MockErrorScreenActor();
+  MockNetworkErrorView();
+  virtual ~MockNetworkErrorView();
 
-  MOCK_METHOD1(SetDelegate, void(ErrorScreenActorDelegate* delegate));
-  MOCK_METHOD2(Show, void(OobeDisplay::Screen parent_screen,
-                          base::DictionaryValue* params));
-  MOCK_METHOD3(Show, void(OobeDisplay::Screen parent_screen,
-                          base::DictionaryValue* params,
-                          const base::Closure& on_hide));
-  MOCK_METHOD0(Hide, void(void));
-  MOCK_METHOD0(FixCaptivePortal, void(void));
-  MOCK_METHOD0(ShowCaptivePortal, void(void));
-  MOCK_METHOD0(HideCaptivePortal, void(void));
-  MOCK_METHOD1(SetUIState, void(ErrorScreen::UIState ui_state));
-  MOCK_METHOD2(SetErrorState, void(ErrorScreen::ErrorState error_state,
-                                   const std::string& network));
-  MOCK_METHOD1(AllowGuestSignin, void(bool allowed));
-  MOCK_METHOD1(AllowOfflineLogin, void(bool allowed));
-  MOCK_METHOD1(ShowConnectingIndicator, void(bool show));
+  void Bind(NetworkErrorModel& model) override;
+  void Unbind() override;
+
+  MOCK_METHOD0(PrepareToShow, void());
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD1(MockBind, void(NetworkErrorModel& model));
+  MOCK_METHOD0(MockUnbind, void());
+  MOCK_METHOD1(ShowScreen, void(OobeUI::Screen screen));
+
+ private:
+  NetworkErrorModel* model_;
 };
 
 }  // namespace chromeos

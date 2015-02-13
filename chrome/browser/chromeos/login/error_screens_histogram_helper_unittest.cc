@@ -6,6 +6,7 @@
 
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,10 +37,10 @@ TEST_F(ErrorScreensHistogramHelperTest, ShowScreenWithoutError) {
   helper_.reset();
   second_helper_->OnScreenShow();
   second_helper_.reset();
-  histograms_.ExpectUniqueSample(
-      "OOBE.NetworkErrorShown.TestScreen", ErrorScreen::ERROR_STATE_NONE, 1);
-  histograms_.ExpectUniqueSample(
-      "OOBE.NetworkErrorShown.TestScreen2", ErrorScreen::ERROR_STATE_NONE, 1);
+  histograms_.ExpectUniqueSample("OOBE.NetworkErrorShown.TestScreen",
+                                 NetworkError::ERROR_STATE_NONE, 1);
+  histograms_.ExpectUniqueSample("OOBE.NetworkErrorShown.TestScreen2",
+                                 NetworkError::ERROR_STATE_NONE, 1);
 }
 
 // Show 3 offline errors and 1 portal error. Make sure in time histograms logged
@@ -47,19 +48,19 @@ TEST_F(ErrorScreensHistogramHelperTest, ShowScreenWithoutError) {
 TEST_F(ErrorScreensHistogramHelperTest, ShowScreenAndError) {
   helper_->OnScreenShow();
   second_helper_->OnScreenShow();
-  helper_->OnErrorShow(ErrorScreen::ERROR_STATE_OFFLINE);
-  second_helper_->OnErrorShow(ErrorScreen::ERROR_STATE_PORTAL);
-  helper_->OnErrorShow(ErrorScreen::ERROR_STATE_OFFLINE);
+  helper_->OnErrorShow(NetworkError::ERROR_STATE_OFFLINE);
+  second_helper_->OnErrorShow(NetworkError::ERROR_STATE_PORTAL);
+  helper_->OnErrorShow(NetworkError::ERROR_STATE_OFFLINE);
   helper_->OnErrorHide();
   second_helper_->OnErrorHide();
-  helper_->OnErrorShow(ErrorScreen::ERROR_STATE_OFFLINE);
-  histograms_.ExpectUniqueSample(
-      "OOBE.NetworkErrorShown.TestScreen", ErrorScreen::ERROR_STATE_OFFLINE, 3);
-  histograms_.ExpectUniqueSample(
-      "OOBE.NetworkErrorShown.TestScreen2", ErrorScreen::ERROR_STATE_PORTAL, 1);
-  helper_->OnErrorShow(ErrorScreen::ERROR_STATE_PORTAL);
-  histograms_.ExpectBucketCount(
-      "OOBE.NetworkErrorShown.TestScreen", ErrorScreen::ERROR_STATE_PORTAL, 1);
+  helper_->OnErrorShow(NetworkError::ERROR_STATE_OFFLINE);
+  histograms_.ExpectUniqueSample("OOBE.NetworkErrorShown.TestScreen",
+                                 NetworkError::ERROR_STATE_OFFLINE, 3);
+  histograms_.ExpectUniqueSample("OOBE.NetworkErrorShown.TestScreen2",
+                                 NetworkError::ERROR_STATE_PORTAL, 1);
+  helper_->OnErrorShow(NetworkError::ERROR_STATE_PORTAL);
+  histograms_.ExpectBucketCount("OOBE.NetworkErrorShown.TestScreen",
+                                NetworkError::ERROR_STATE_PORTAL, 1);
   histograms_.ExpectTotalCount("OOBE.ErrorScreensTime.TestScreen.Portal", 0);
   helper_.reset();
   histograms_.ExpectTotalCount("OOBE.ErrorScreensTime.TestScreen.Portal", 1);
@@ -70,7 +71,7 @@ TEST_F(ErrorScreensHistogramHelperTest, TestShowHideTime) {
   helper_->OnScreenShow();
   second_helper_->OnScreenShow();
   base::Time now = base::Time::Now();
-  helper_->OnErrorShowTime(ErrorScreen::ERROR_STATE_PORTAL, now);
+  helper_->OnErrorShowTime(NetworkError::ERROR_STATE_PORTAL, now);
   now += base::TimeDelta::FromMilliseconds(1000);
   helper_->OnErrorHideTime(now);
   helper_.reset();
@@ -84,11 +85,11 @@ TEST_F(ErrorScreensHistogramHelperTest, TestShowHideShowHideTime) {
   helper_->OnScreenShow();
   second_helper_->OnScreenShow();
   base::Time now = base::Time::Now();
-  helper_->OnErrorShowTime(ErrorScreen::ERROR_STATE_PROXY, now);
+  helper_->OnErrorShowTime(NetworkError::ERROR_STATE_PROXY, now);
   now += base::TimeDelta::FromMilliseconds(1000);
   helper_->OnErrorHideTime(now);
   now += base::TimeDelta::FromMilliseconds(1000);
-  helper_->OnErrorShowTime(ErrorScreen::ERROR_STATE_PORTAL, now);
+  helper_->OnErrorShowTime(NetworkError::ERROR_STATE_PORTAL, now);
   now += base::TimeDelta::FromMilliseconds(1000);
   helper_->OnErrorHideTime(now);
   helper_.reset();
@@ -102,9 +103,9 @@ TEST_F(ErrorScreensHistogramHelperTest, TestShowShowHideTime) {
   helper_->OnScreenShow();
   second_helper_->OnScreenShow();
   base::Time now = base::Time::Now();
-  helper_->OnErrorShowTime(ErrorScreen::ERROR_STATE_PROXY, now);
+  helper_->OnErrorShowTime(NetworkError::ERROR_STATE_PROXY, now);
   now += base::TimeDelta::FromMilliseconds(1000);
-  helper_->OnErrorShowTime(ErrorScreen::ERROR_STATE_PORTAL, now);
+  helper_->OnErrorShowTime(NetworkError::ERROR_STATE_PORTAL, now);
   now += base::TimeDelta::FromMilliseconds(1000);
   helper_->OnErrorHideTime(now);
   helper_.reset();

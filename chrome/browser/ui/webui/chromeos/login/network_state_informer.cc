@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
@@ -140,7 +141,7 @@ void NetworkStateInformer::Observe(
   if (type == chrome::NOTIFICATION_SESSION_STARTED)
     registrar_.RemoveAll();
   else if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED)
-    SendStateToObservers(ErrorScreenActor::ERROR_REASON_PROXY_CONFIG_CHANGED);
+    SendStateToObservers(NetworkError::ERROR_REASON_PROXY_CONFIG_CHANGED);
   else
     NOTREACHED() << "Unknown notification: " << type;
 }
@@ -196,13 +197,13 @@ bool NetworkStateInformer::UpdateState() {
 
 void NetworkStateInformer::UpdateStateAndNotify() {
   if (UpdateState())
-    SendStateToObservers(ErrorScreenActor::ERROR_REASON_NETWORK_STATE_CHANGED);
+    SendStateToObservers(NetworkError::ERROR_REASON_NETWORK_STATE_CHANGED);
   else
-    SendStateToObservers(ErrorScreenActor::ERROR_REASON_UPDATE);
+    SendStateToObservers(NetworkError::ERROR_REASON_UPDATE);
 }
 
 void NetworkStateInformer::SendStateToObservers(
-    ErrorScreenActor::ErrorReason reason) {
+    NetworkError::ErrorReason reason) {
   FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
       UpdateState(reason));
 }

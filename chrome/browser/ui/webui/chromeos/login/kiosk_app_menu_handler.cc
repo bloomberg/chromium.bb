@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_details.h"
@@ -119,7 +120,7 @@ void KioskAppMenuHandler::HandleInitializeKioskApps(
     const base::ListValue* args) {
   is_webui_initialized_ = true;
   SendKioskApps();
-  UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
+  UpdateState(NetworkError::ERROR_REASON_UPDATE);
 }
 
 void KioskAppMenuHandler::HandleKioskAppsLoaded(
@@ -152,7 +153,7 @@ void KioskAppMenuHandler::OnKioskAppDataChanged(const std::string& app_id) {
   SendKioskApps();
 }
 
-void KioskAppMenuHandler::UpdateState(ErrorScreenActor::ErrorReason reason) {
+void KioskAppMenuHandler::UpdateState(NetworkError::ErrorReason reason) {
   if (network_state_informer_->state() == NetworkStateInformer::ONLINE)
     KioskAppManager::Get()->RetryFailedAppDataFetch();
 }

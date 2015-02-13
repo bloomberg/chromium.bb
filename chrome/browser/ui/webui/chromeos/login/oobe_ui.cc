@@ -294,21 +294,24 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   hid_detection_screen_actor_ = hid_detection_screen_handler;
   AddScreenHandler(hid_detection_screen_handler);
 
-  error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
+  error_screen_handler_ = new ErrorScreenHandler();
   AddScreenHandler(error_screen_handler_);
 
-  // Initialize ErrorScreen if it hasn't initialized.
+  // Initialize ErrorScreen if it hasn't initialized so that NetworkErrorModel
+  // is binded properly.
+  NetworkErrorModel* network_error_model = nullptr;
   if (WizardController::default_controller()) {
-    BaseScreen* screen = WizardController::default_controller()->GetScreen(
-        WizardController::kErrorScreenName);
-    CHECK(screen);
+    network_error_model = static_cast<NetworkErrorModel*>(
+        WizardController::default_controller()->GetScreen(
+            WizardController::kErrorScreenName));
+    CHECK(network_error_model);
   } else {
     error_screen_.reset(new ErrorScreen(nullptr, error_screen_handler_));
+    network_error_model = error_screen_.get();
   }
 
   EnrollmentScreenHandler* enrollment_screen_handler =
-      new EnrollmentScreenHandler(network_state_informer_,
-                                  error_screen_handler_);
+      new EnrollmentScreenHandler(network_state_informer_, network_error_model);
   enrollment_screen_actor_ = enrollment_screen_handler;
   AddScreenHandler(enrollment_screen_handler);
 
@@ -334,15 +337,14 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
           core_handler_, network_state_informer_, consumer_management);
   AddScreenHandler(gaia_screen_handler_);
 
-  signin_screen_handler_ = new SigninScreenHandler(network_state_informer_,
-                                                   error_screen_handler_,
-                                                   core_handler_,
-                                                   gaia_screen_handler_);
+  signin_screen_handler_ =
+      new SigninScreenHandler(network_state_informer_, network_error_model,
+                              core_handler_, gaia_screen_handler_);
   AddScreenHandler(signin_screen_handler_);
 
   AppLaunchSplashScreenHandler* app_launch_splash_screen_handler =
       new AppLaunchSplashScreenHandler(network_state_informer_,
-                                       error_screen_handler_);
+                                       network_error_model);
   AddScreenHandler(app_launch_splash_screen_handler);
   app_launch_splash_screen_actor_ = app_launch_splash_screen_handler;
 
@@ -469,7 +471,7 @@ UserImageView* OobeUI::GetUserImageView() {
   return user_image_view_;
 }
 
-ErrorScreenActor* OobeUI::GetErrorScreenActor() {
+NetworkErrorView* OobeUI::GetNetworkErrorView() {
   return error_screen_handler_;
 }
 

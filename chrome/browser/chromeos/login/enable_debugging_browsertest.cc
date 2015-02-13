@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"

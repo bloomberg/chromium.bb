@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/screens/app_launch_splash_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 
@@ -24,7 +25,7 @@ class AppLaunchSplashScreenHandler
  public:
   AppLaunchSplashScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      ErrorScreenActor* error_screen_actor);
+      NetworkErrorModel* network_error_model);
   ~AppLaunchSplashScreenHandler() override;
 
   // BaseScreenHandler implementation:
@@ -47,7 +48,7 @@ class AppLaunchSplashScreenHandler
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   void OnNetworkReady() override;
-  void UpdateState(ErrorScreenActor::ErrorReason reason) override;
+  void UpdateState(NetworkError::ErrorReason reason) override;
 
  private:
   void PopulateAppInfo(base::DictionaryValue* out_info);
@@ -64,11 +65,14 @@ class AppLaunchSplashScreenHandler
   AppLaunchState state_;
 
   scoped_refptr<NetworkStateInformer> network_state_informer_;
-  ErrorScreenActor* error_screen_actor_;
+  NetworkErrorModel* network_error_model_;
+
   // True if we are online.
   bool online_state_;
+
   // True if we have network config screen was already shown before.
   bool network_config_done_;
+
   // True if we have manually requested network config screen.
   bool network_config_requested_;
 
