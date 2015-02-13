@@ -36,6 +36,7 @@ import tempfile
 import time
 sheet_libraries_import_error = None
 try:
+# TODO(vabr) Remove this dependency http://crbug.com/418485#c4.
   from Sheet import Sheet
   from apiclient.discovery import build
   from gdata.gauth import OAuth2TokenFromCredentials
@@ -63,7 +64,7 @@ class SheetWriter(object):
     if sheet_libraries_import_error:
       raise sheet_libraries_import_error
     self.pkey = config.get("sheet_info", "pkey")
-    self.client_mail = config.get("sheet_info", "client_email")
+    self.client_email = config.get("sheet_info", "client_email")
     self.sheet_key = config.get("sheet_info", "sheet_key")
     _, self.access_token = self._authenticate()
     self.sheet = self._spredsheeet_for_logging()
