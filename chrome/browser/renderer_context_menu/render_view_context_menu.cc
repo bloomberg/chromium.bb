@@ -762,20 +762,8 @@ void RenderViewContextMenu::AppendMediaItems() {
 }
 
 void RenderViewContextMenu::AppendPluginItems() {
-  if (params_.page_url == params_.src_url) {
-    // Full page plugin, so show page menu items.
-    if (params_.link_url.is_empty() && params_.selection_text.empty())
-      AppendPageItems();
-  } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
-                                    IDS_CONTENT_CONTEXT_SAVEPAGEAS);
-    // The "Print" menu item should always be included for plugins. If
-    // content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)
-    // is true the item will be added inside AppendPrintItem(). Otherwise we
-    // add "Print" here.
-    if (!content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT))
-      menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
-  }
+  if (params_.link_url.is_empty() && params_.selection_text.empty())
+    AppendPageItems();
 }
 
 void RenderViewContextMenu::AppendPageItems() {
@@ -1787,6 +1775,9 @@ void RenderViewContextMenu::MediaPlayerActionAt(
 void RenderViewContextMenu::PluginActionAt(
     const gfx::Point& location,
     const WebPluginAction& action) {
-  source_web_contents_->GetRenderViewHost()->
-      ExecutePluginActionAtLocation(location, action);
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+  if (!render_frame_host)
+    return;
+  WebContents::FromRenderFrameHost(render_frame_host)->GetRenderViewHost()
+      ->ExecutePluginActionAtLocation(location, action);
 }
