@@ -423,6 +423,14 @@ void WebContentsViewMac::CloseTab() {
   [super dealloc];
 }
 
+- (BOOL)allowsVibrancy {
+  // Returning YES will allow rendering this view with vibrancy effect if it is
+  // incorporated into a view hierarchy that uses vibrancy, it will have no
+  // effect otherwise.
+  // For details see Apple documentation on NSView and NSVisualEffectView.
+  return YES;
+}
+
 // Registers for the view for the appropriate drag types.
 - (void)registerDragTypes {
   NSArray* types = [NSArray arrayWithObjects:
@@ -477,6 +485,13 @@ void WebContentsViewMac::CloseTab() {
   // saves us the effort of overriding this method in every possible
   // subview.
   return mouseDownCanMoveWindow_;
+}
+
+- (void)setOpaque:(BOOL)opaque {
+  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+      webContentsView_->web_contents()->GetRenderWidgetHostView());
+  DCHECK(view);
+  [view->cocoa_view() setOpaque:opaque];
 }
 
 - (void)pasteboard:(NSPasteboard*)sender provideDataForType:(NSString*)type {

@@ -68,6 +68,7 @@ class Layer;
       responderDelegate_;
   BOOL canBeKeyView_;
   BOOL closeOnDeactivate_;
+  BOOL opaque_;
   scoped_ptr<content::RenderWidgetHostViewMacEditCommandHelper>
       editCommand_helper_;
 
@@ -177,6 +178,7 @@ class Layer;
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
+- (void)setOpaque:(BOOL)opaque;
 - (void)setToolTipAtMousePoint:(NSString *)string;
 // True for always-on-top special windows (e.g. Balloons and Panels).
 - (BOOL)acceptsMouseEventsWhenInactive;

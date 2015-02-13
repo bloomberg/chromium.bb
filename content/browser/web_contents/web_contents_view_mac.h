@@ -45,6 +45,7 @@ CONTENT_EXPORT
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
+- (void)setOpaque:(BOOL)opaque;
 
 // Expose this, since sometimes one needs both the NSView and the
 // WebContentsImpl.
