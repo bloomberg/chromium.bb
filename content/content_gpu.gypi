@@ -9,11 +9,11 @@
     '../ui/gl/gl.gyp:gl',
   ],
   'sources': [
+    'gpu/gpu_child_thread.cc',
+    'gpu/gpu_child_thread.h',
     'gpu/gpu_main.cc',
     'gpu/gpu_process.cc',
     'gpu/gpu_process.h',
-    'gpu/gpu_child_thread.cc',
-    'gpu/gpu_child_thread.h',
     'gpu/gpu_watchdog_thread.cc',
     'gpu/gpu_watchdog_thread.h',
     'gpu/in_process_gpu_thread.cc',
