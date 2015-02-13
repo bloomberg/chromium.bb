@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-
   /**
    * The class name to set on the document element.
    * @const
@@ -29,10 +28,11 @@ cr.define('cr.ui', function() {
    */
   function FocusOutlineManager(doc) {
     this.classList_ = doc.documentElement.classList;
+
     var self = this;
+
     doc.addEventListener('keydown', function(e) {
-      if (e.keyCode == 9)  // Tab
-        self.focusByKeyboard_ = true;
+      self.focusByKeyboard_ = true;
     }, true);
 
     doc.addEventListener('mousedown', function(e) {
@@ -41,8 +41,19 @@ cr.define('cr.ui', function() {
 
     doc.addEventListener('focus', function(event) {
       // Update visibility only when focus is actually changed.
-      self.visible = self.focusByKeyboard_;
+      self.updateVisiblity_();
     }, true);
+
+    doc.addEventListener('focusout', function(event) {
+      window.setTimeout(function() {
+        if (!doc.hasFocus()) {
+          self.focusByKeyboard_ = true;
+          self.updateVisiblity_();
+        }
+      }, 0);
+    });
+
+    this.updateVisiblity_();
   }
 
   FocusOutlineManager.prototype = {
@@ -52,6 +63,11 @@ cr.define('cr.ui', function() {
      * @private
      */
     focusByKeyboard_: true,
+
+    /** @private */
+    updateVisiblity_: function() {
+      this.visible = this.focusByKeyboard_;
+    },
 
     /**
      * Whether the focus outline should be visible.

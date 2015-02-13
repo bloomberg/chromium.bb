@@ -22,6 +22,8 @@ cr.define('uber_frame', function() {
       navigationItems[i].addEventListener('click', onNavItemClicked);
     }
 
+    cr.ui.FocusOutlineManager.forDocument(this);
+
     window.addEventListener('message', handleWindowMessage);
     uber.invokeMethodOnParent('navigationControlsLoaded');
 
@@ -131,8 +133,7 @@ cr.define('uber_frame', function() {
    */
   function setContentChanging(enabled) {
     assert(isRTL());
-    document.documentElement.classList[enabled ? 'add' : 'remove'](
-        'changing-content');
+    document.documentElement.classList.toggle('changing-content', enabled);
   }
 
   /**
