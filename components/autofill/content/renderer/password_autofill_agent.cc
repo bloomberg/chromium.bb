@@ -893,16 +893,18 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   std::vector<PasswordForm> password_forms;
   for (size_t i = 0; i < forms.size(); ++i) {
     const blink::WebFormElement& form = forms[i];
-    bool is_form_visible = IsWebNodeVisible(form);
-    if (logger) {
-      LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE, form);
-      logger->LogBoolean(Logger::STRING_FORM_IS_VISIBLE, is_form_visible);
-    }
+    if (only_visible) {
+      bool is_form_visible = IsWebNodeVisible(form);
+      if (logger) {
+        LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE, form);
+        logger->LogBoolean(Logger::STRING_FORM_IS_VISIBLE, is_form_visible);
+      }
 
-    // If requested, ignore non-rendered forms, e.g. those styled with
-    // display:none.
-    if (only_visible && !is_form_visible)
-      continue;
+      // If requested, ignore non-rendered forms, e.g., those styled with
+      // display:none.
+      if (!is_form_visible)
+        continue;
+    }
 
     scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form, nullptr));
     if (password_form.get()) {
