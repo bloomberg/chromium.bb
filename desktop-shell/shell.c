@@ -3372,33 +3372,44 @@ touch_popup_grab_end(struct weston_touch *touch)
 }
 
 static void
-add_popup_grab(struct shell_surface *shsurf, struct shell_seat *shseat, int32_t type)
+add_popup_grab(struct shell_surface *shsurf,
+	       struct shell_seat *shseat,
+	       int32_t type)
 {
 	struct weston_seat *seat = shseat->seat;
 
 	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
 		shseat->popup_grab.type = type;
-		shseat->popup_grab.client = wl_resource_get_client(shsurf->resource);
+		shseat->popup_grab.client =
+			wl_resource_get_client(shsurf->resource);
 
 		if (type == POINTER) {
-			shseat->popup_grab.grab.interface = &popup_grab_interface;
-			/* We must make sure here that this popup was opened after
-			 * a mouse press, and not just by moving around with other
-			 * popups already open. */
+			shseat->popup_grab.grab.interface =
+				&popup_grab_interface;
+
+			/* We must make sure here that this popup was opened
+			 * after a mouse press, and not just by moving around
+			 * with other popups already open. */
 			if (shseat->seat->pointer->button_count > 0)
 				shseat->popup_grab.initial_up = 0;
 		} else if (type == TOUCH) {
-			shseat->popup_grab.touch_grab.interface = &touch_popup_grab_interface;
+			shseat->popup_grab.touch_grab.interface =
+				&touch_popup_grab_interface;
 		}
 
-		wl_list_insert(&shseat->popup_grab.surfaces_list, &shsurf->popup.grab_link);
+		wl_list_insert(&shseat->popup_grab.surfaces_list,
+			       &shsurf->popup.grab_link);
 
-		if (type == POINTER)
-			weston_pointer_start_grab(seat->pointer, &shseat->popup_grab.grab);
-		else if (type == TOUCH)
-			weston_touch_start_grab(seat->touch, &shseat->popup_grab.touch_grab);
+		if (type == POINTER) {
+			weston_pointer_start_grab(seat->pointer,
+						  &shseat->popup_grab.grab);
+		} else if (type == TOUCH) {
+			weston_touch_start_grab(seat->touch,
+						&shseat->popup_grab.touch_grab);
+		}
 	} else {
-		wl_list_insert(&shseat->popup_grab.surfaces_list, &shsurf->popup.grab_link);
+		wl_list_insert(&shseat->popup_grab.surfaces_list,
+			       &shsurf->popup.grab_link);
 	}
 }
 
