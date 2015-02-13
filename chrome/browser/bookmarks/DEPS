@@ -1,0 +1,43 @@
+include_rules = [
+  # Bookmarks is being made into a component (it will end up at
+  # //components/bookmarks and not depend on //chrome), so we have these basic
+  # rules followed by temporary exceptions.  Please don't add to the list of
+  # exceptions!
+  "-chrome/browser",
+  "+chrome/browser/bookmarks",
+  "+chrome/browser/browser_process.h",
+  "+chrome/browser/favicon",
+  "+chrome/browser/chrome_notification_types.h",
+  "+chrome/browser/policy/profile_policy_connector.h",
+  "+chrome/browser/policy/profile_policy_connector_factory.h",
+  "+chrome/browser/profiles/incognito_helpers.h",
+  "+chrome/browser/profiles/profile.h",
+  "+chrome/browser/profiles/startup_task_runner_service.h",
+  "+chrome/browser/profiles/startup_task_runner_service_factory.h",
+  "+chrome/browser/signin/signin_manager_factory.h",
+  "+chrome/browser/undo/bookmark_undo_service.h",
+  "+chrome/browser/undo/bookmark_undo_service_factory.h",
+
+  # TODO(tfarina): Bring this list to zero. crbug.com/144783
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  "!chrome/browser/history/history_service.h",
+  "!chrome/browser/history/history_service_factory.h",
+  "!chrome/browser/history/url_database.h",
+  # Do not add to the list of temporarily-allowed dependencies above,
+  # and please do not introduce more #includes of these files.
+]
+
+specific_include_rules = {
+  # For unit tests, it's fine to include utility process code.
+  '.*test\.cc': [
+    "+chrome/test/base/testing_profile.h",
+    "+chrome/utility/importer/bookmark_html_reader.h",
+  ],
+  # Allow to include flags_storage into enhanced_bookmarks_features.cc because
+  # it has a function used by about_flags.cc and it needs flags_storage.
+  # This should be removed after enhanced bookmarks experiment is over.
+  'enhanced_bookmarks_features\.cc': [
+    "+chrome/browser/flags_storage.h",
+  ],
+}
