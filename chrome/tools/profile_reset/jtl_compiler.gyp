@@ -30,10 +30,10 @@
       'sources': [
         '../../browser/profile_resetter/jtl_foundation.h',
         '../../browser/profile_resetter/jtl_instructions.h',
-        'jtl_compiler.h',
         'jtl_compiler.cc',
-        'jtl_parser.h',
+        'jtl_compiler.h',
         'jtl_parser.cc',
+        'jtl_parser.h',
       ],
     },
   ],

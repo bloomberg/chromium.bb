@@ -27,8 +27,8 @@
             '<(DEPTH)',
           ],
           'sources': [
-            'tools/validate_installation_main.cc',
             'tools/validate_installation.rc',
+            'tools/validate_installation_main.cc',
             'tools/validate_installation_resource.h',
           ],
         },

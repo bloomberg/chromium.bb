@@ -160,8 +160,8 @@
           '../../../../ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc',
           '../../../../ppapi/native_client/tests/ppapi_test_lib/internal_utils.cc',
           '../../../../ppapi/native_client/tests/ppapi_test_lib/module_instance.cc',
-          '../../../../ppapi/native_client/tests/ppapi_test_lib/testable_callback.cc',
           '../../../../ppapi/native_client/tests/ppapi_test_lib/test_interface.cc',
+          '../../../../ppapi/native_client/tests/ppapi_test_lib/testable_callback.cc',
         ]
       },
       'dependencies': [

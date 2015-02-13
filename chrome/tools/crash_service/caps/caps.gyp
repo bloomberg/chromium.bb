@@ -42,13 +42,13 @@
         '..',
       ],
       'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/caps/caps_version.rc',
         'exit_codes.h',
         'logger_win.cc',
         'logger_win.h',
         'main_win.cc',
         'process_singleton_win.cc',
         'process_singleton_win.h',
-        '<(SHARED_INTERMEDIATE_DIR)/caps/caps_version.rc',
       ],
       'dependencies': [
         'caps_resources',

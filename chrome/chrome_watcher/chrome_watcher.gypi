@@ -54,9 +54,9 @@
         '../..',
       ],
       'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_watcher/chrome_watcher_version.rc',
         'chrome_watcher.def',
         'chrome_watcher_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/chrome_watcher/chrome_watcher_version.rc',
       ],
       'dependencies': [
         'chrome_watcher_resources',

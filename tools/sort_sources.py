@@ -16,6 +16,10 @@ import sys
 
 from yes_no import YesNo
 
+SUFFIXES = ['c', 'cc', 'cpp', 'h', 'mm', 'rc', 'rc.version', 'ico', 'def',
+            'release']
+PATTERN = re.compile('^\s+[\'"].*\.(%s)[\'"],$' %
+                     '|'.join([re.escape(x) for x in SUFFIXES]))
 
 def SortSources(original_lines):
   """Sort source file names in |original_lines|.
@@ -36,7 +40,7 @@ def SortSources(original_lines):
   output_lines = []
   sources = []
   for line in original_lines:
-    if re.search(r'^\s+[\'"].*\.(c|cc|cpp|h|mm|rc)[\'"],$', line):
+    if re.search(PATTERN, line):
       sources.append(line)
     else:
       if sources:

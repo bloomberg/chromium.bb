@@ -15,6 +15,7 @@
     '<(SHARED_INTERMEDIATE_DIR)/chrome',
   ],
   'sources': [
+    '<(INTERMEDIATE_DIR)/packed_files.rc',
     'mini_installer/appid.h',
     'mini_installer/chrome.release',
     'mini_installer/chrome_appid.cc',
@@ -34,7 +35,6 @@
     'mini_installer/mini_string.h',
     'mini_installer/pe_resource.cc',
     'mini_installer/pe_resource.h',
-    '<(INTERMEDIATE_DIR)/packed_files.rc',
   ],
   # Disable precompiled headers for this project, to avoid
   # linker errors when building with VS 2008.
