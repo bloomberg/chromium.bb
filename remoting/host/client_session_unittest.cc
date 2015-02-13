@@ -445,7 +445,8 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   client_session_.reset();
 }
 
-TEST_F(ClientSessionTest, LocalInputTest) {
+// crbug.com/458691
+TEST_F(ClientSessionTest, DISABLED_LocalInputTest) {
   CreateClientSession();
 
   protocol::MouseEvent mouse_event1;
@@ -501,7 +502,8 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   ConnectClientSession();
 }
 
-TEST_F(ClientSessionTest, RestoreEventState) {
+// crbug.com/458691
+TEST_F(ClientSessionTest, DISABLED_RestoreEventState) {
   CreateClientSession();
 
   protocol::KeyEvent key1;
@@ -557,7 +559,8 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   ConnectClientSession();
 }
 
-TEST_F(ClientSessionTest, ClampMouseEvents) {
+// crbug.com/458691
+TEST_F(ClientSessionTest, DISABLED_ClampMouseEvents) {
   CreateClientSession();
 
   Expectation authenticated =
