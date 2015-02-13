@@ -12,7 +12,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/mojo/service_registration_manager.h"
+#include "extensions/browser/mojo/service_registration.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
@@ -31,11 +31,6 @@ ExtensionWebContentsObserver::~ExtensionWebContentsObserver() {}
 void ExtensionWebContentsObserver::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   NotifyRenderViewType(render_view_host);
-
-  // TODO(sammc): Call AddServicesToRenderFrame() for frames that aren't main
-  // frames.
-  ServiceRegistrationManager::GetSharedInstance()->AddServicesToRenderFrame(
-      render_view_host->GetMainFrame());
 
   const Extension* extension = GetExtension(render_view_host);
   if (!extension)
@@ -93,6 +88,11 @@ void ExtensionWebContentsObserver::RenderViewCreated(
     case Manifest::NUM_LOAD_TYPES:
       NOTREACHED();
   }
+}
+
+void ExtensionWebContentsObserver::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  RegisterCoreExtensionServices(render_frame_host);
 }
 
 void ExtensionWebContentsObserver::NotifyRenderViewType(
