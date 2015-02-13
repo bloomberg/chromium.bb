@@ -647,8 +647,12 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
 
 #if defined(ENABLE_EXTENSIONS)
-    // Clear the ephemeral apps cache.
-    EphemeralAppService::Get(profile_)->ClearCachedApps();
+    // Clear the ephemeral apps cache. This is NULL while testing. OTR Profile
+    // has neither apps nor an ExtensionService, so ClearCachedApps fails.
+    EphemeralAppService* ephemeral_app_service =
+        EphemeralAppService::Get(profile_);
+    if (ephemeral_app_service && !profile_->IsOffTheRecord())
+      ephemeral_app_service->ClearCachedApps();
 #endif
   }
 

@@ -34,6 +34,8 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -511,9 +513,24 @@ Browser::~Browser() {
 
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
-    // An incognito profile is no longer needed, this indirectly frees
-    // its cache and cookies once it gets destroyed at the appropriate time.
-    ProfileDestroyer::DestroyProfileWhenAppropriate(profile_);
+    if (profile_->IsGuestSession()) {
+// ChromeOS handles guest data independently.
+#if !defined(OS_CHROMEOS)
+      // Clear all browsing data once a Guest Session completes. The Guest
+      // profile has BrowserContextKeyedServices that the Incognito profile
+      // doesn't, so the ProfileDestroyer can't delete it properly.
+      // TODO(mlerman): Delete the guest using an improved ProfileDestroyer.
+      BrowsingDataRemover* data_remover =
+          BrowsingDataRemover::CreateForUnboundedRange(profile_);
+      data_remover->Remove(BrowsingDataRemover::REMOVE_ALL,
+                           BrowsingDataHelper::ALL);
+      // BrowsingDataRemover deletes itself.
+#endif
+    } else {
+      // An incognito profile is no longer needed, this indirectly frees
+      // its cache and cookies once it gets destroyed at the appropriate time.
+      ProfileDestroyer::DestroyProfileWhenAppropriate(profile_);
+    }
   }
 
   // There may be pending file dialogs, we need to tell them that we've gone

@@ -236,45 +236,6 @@ TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledWhenOnlyOneProfile) {
   testing_profile_manager.DeleteTestingProfile("p1");
 }
 
-TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledInGuestMode) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
-  // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
-  TestingProfileManager testing_profile_manager(
-      TestingBrowserProcess::GetGlobal());
-  ASSERT_TRUE(testing_profile_manager.SetUp());
-
-  // Set up guest a profile.
-  scoped_ptr<TestingProfile> original_profile =
-      TestingProfile::Builder().Build();
-  TestingProfile::Builder guest_builder;
-  guest_builder.SetGuestSession();
-  guest_builder.SetPath(ProfileManager::GetGuestProfilePath());
-  // Browsers in Guest mode must be off the record profiles.
-  TestingProfile* guest_profile =
-      guest_builder.BuildIncognito(original_profile.get());
-
-  ASSERT_TRUE(guest_profile->IsGuestSession());
-
-  // Create a new browser based on the guest profile.
-  Browser::CreateParams profile_params(guest_profile,
-                                       chrome::GetActiveDesktop());
-  scoped_ptr<Browser> guest_browser(
-      chrome::CreateBrowserWithTestWindowForParams(&profile_params));
-  chrome::BrowserCommandController command_controller(guest_browser.get());
-  const CommandUpdater* command_updater = command_controller.command_updater();
-#if defined(OS_CHROMEOS)
-  // Chrome OS uses system tray menu to handle multi-profiles.
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-#else
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-#endif
-}
-
 TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
