@@ -8,10 +8,8 @@
 #include "base/containers/small_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
+#include "gpu/perftests/measurements.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -103,9 +101,18 @@ class TextureUploadPerfTest : public testing::Test {
                                                   surface_.get(),
                                                   gfx::PreferIntegratedGpu);
 
+    ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
+    if (gpu_timing_.Initialize(gl_context_.get())) {
+      LOG(INFO) << "Gpu timing initialized with timer type: "
+                << gpu_timing_.GetTimerTypeName();
+      gpu_timing_.CheckAndResetTimerErrors();
+      gpu_timing_.InvalidateTimerOffset();
+    } else {
+      LOG(WARNING) << "Can't initialize gpu timing";
+    }
+
     // Prepare a simple program and a vertex buffer that will be
     // used to draw a quad on the offscreen surface.
-    ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
     vertex_shader_ = LoadShader(GL_VERTEX_SHADER, kVertexShader);
     fragment_shader_ = LoadShader(GL_FRAGMENT_SHADER, kFragmentShader);
     program_object_ = glCreateProgram();
@@ -153,26 +160,18 @@ class TextureUploadPerfTest : public testing::Test {
   }
 
  protected:
-  struct Measurement {
-    Measurement() : name(), wall_time(){};
-    Measurement(const std::string& name, const base::TimeDelta wall_time)
-        : name(name), wall_time(wall_time){};
-    std::string name;
-    base::TimeDelta wall_time;
-  };
   // Upload and draw on the offscren surface.
   // Return a list of pair. Each pair describe a gl operation and the wall
   // time elapsed in milliseconds.
   std::vector<Measurement> UploadAndDraw(const std::vector<uint8>& pixels,
                                          const GLenum format,
                                          const GLenum type) {
-    std::vector<Measurement> measurements;
     ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
 
-    base::ElapsedTimer total_timer;
+    MeasurementTimers total_timers(&gpu_timing_);
     GLuint texture_id = 0;
 
-    base::ElapsedTimer tex_timer;
+    MeasurementTimers tex_timers(&gpu_timing_);
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -184,9 +183,9 @@ class TextureUploadPerfTest : public testing::Test {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     CheckNoGlError();
-    measurements.push_back(Measurement("teximage2d", tex_timer.Elapsed()));
+    tex_timers.Record();
 
-    base::ElapsedTimer draw_timer;
+    MeasurementTimers draw_timers(&gpu_timing_);
     glUseProgram(program_object_);
     glUniform1i(sampler_location_, 0);
 
@@ -195,13 +194,13 @@ class TextureUploadPerfTest : public testing::Test {
     glEnableVertexAttribArray(0);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    measurements.push_back(Measurement("drawarrays", draw_timer.Elapsed()));
+    draw_timers.Record();
 
-    base::ElapsedTimer finish_timer;
+    MeasurementTimers finish_timers(&gpu_timing_);
     glFinish();
     CheckNoGlError();
-    measurements.push_back(Measurement("finish", finish_timer.Elapsed()));
-    measurements.push_back(Measurement("total", total_timer.Elapsed()));
+    finish_timers.Record();
+    total_timers.Record();
 
     glDeleteTextures(1, &texture_id);
 
@@ -214,12 +213,19 @@ class TextureUploadPerfTest : public testing::Test {
     // the appropriate format conversion.
     EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);
     EXPECT_EQ(pixels, pixels_rendered);
+
+    std::vector<Measurement> measurements;
+    measurements.push_back(total_timers.GetAsMeasurement("total"));
+    measurements.push_back(tex_timers.GetAsMeasurement("teximage2d"));
+    measurements.push_back(draw_timers.GetAsMeasurement("drawarrays"));
+    measurements.push_back(finish_timers.GetAsMeasurement("finish"));
     return measurements;
   }
 
   const gfx::Size size_;  // for the offscreen surface and the texture
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> surface_;
+  GPUTiming gpu_timing_;
 
   GLuint vertex_shader_ = 0;
   GLuint fragment_shader_ = 0;
@@ -241,16 +247,14 @@ TEST_F(TextureUploadPerfTest, glTexImage2d) {
       for (const Measurement& m : run) {
         auto& agg = aggregates[m.name];
         agg.name = m.name;
-        agg.wall_time += m.wall_time;
+        agg.Increment(m);
       }
     }
   }
 
   for (const auto& entry : aggregates) {
-    const auto& m = entry.second;
-    perf_test::PrintResult(
-        m.name, "", "", (m.wall_time / kUploadPerfTestRuns).InMillisecondsF(),
-        "ms", true);
+    const auto m = entry.second.Divide(kUploadPerfTestRuns);
+    m.PrintResult();
   }
 }
 

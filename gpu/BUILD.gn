@@ -249,6 +249,7 @@ if (!is_win || link_chrome_on_windows) {
 
   test("gpu_perftests") {
     sources = [
+      "perftests/measurements.cc",
       "perftests/run_all_tests.cc",
       "perftests/texture_upload_perftest.cc",
     ]
@@ -256,6 +257,7 @@ if (!is_win || link_chrome_on_windows) {
     deps = [
       "//base",
       "//base/test:test_support",
+      "//gpu/command_buffer/service",
       "//testing/gtest",
       "//testing/perf",
       "//ui/gfx/geometry",

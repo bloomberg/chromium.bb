@@ -291,8 +291,10 @@
         '../testing/perf/perf_test.gyp:perf_test',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
+        'command_buffer_service',
       ],
       'sources': [
+        'perftests/measurements.cc',
         'perftests/run_all_tests.cc',
         'perftests/texture_upload_perftest.cc',
       ],
