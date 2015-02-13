@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "net/http/http_chunked_decoder.h"
 
 namespace net {
 namespace test_server {
@@ -140,6 +141,13 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
         http_request_->headers["Content-Length"],
         &declared_content_length_);
     DCHECK(success) << "Malformed Content-Length header's value.";
+  } else if (http_request_->headers.count("Transfer-Encoding") > 0) {
+    if (http_request_->headers["Transfer-Encoding"] == "chunked") {
+      http_request_->has_content = true;
+      chunked_decoder_.reset(new HttpChunkedDecoder());
+      state_ = STATE_CONTENT;
+      return WAITING;
+    }
   }
   if (declared_content_length_ == 0) {
     // No content data, so parsing is finished.
@@ -155,6 +163,25 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
 
 HttpRequestParser::ParseResult HttpRequestParser::ParseContent() {
   const size_t available_bytes = buffer_.size() - buffer_position_;
+  if (chunked_decoder_.get()) {
+    int bytes_written = chunked_decoder_->FilterBuf(
+        const_cast<char*>(buffer_.data()) + buffer_position_, available_bytes);
+    http_request_->content.append(buffer_.data() + buffer_position_,
+                                  bytes_written);
+
+    if (chunked_decoder_->reached_eof()) {
+      buffer_ =
+          buffer_.substr(buffer_.size() - chunked_decoder_->bytes_after_eof());
+      buffer_position_ = 0;
+      state_ = STATE_ACCEPTED;
+      return ACCEPTED;
+    }
+    buffer_ = "";
+    buffer_position_ = 0;
+    state_ = STATE_CONTENT;
+    return WAITING;
+  }
+
   const size_t fetch_bytes = std::min(
       available_bytes,
       declared_content_length_ - http_request_->content.size());

@@ -4,6 +4,7 @@
 
 #include "net/test/embedded_test_server/http_request.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -74,6 +75,48 @@ TEST(HttpRequestTest, ParseRequestWithEmptyBody) {
   EXPECT_TRUE(request->has_content);
   EXPECT_EQ(1u, request->headers.count("Content-Length"));
   EXPECT_EQ("0", request->headers["Content-Length"]);
+}
+
+TEST(HttpRequestTest, ParseRequestWithChunkedBody) {
+  HttpRequestParser parser;
+
+  parser.ProcessChunk("POST /foobar.html HTTP/1.1\r\n");
+  parser.ProcessChunk("Transfer-Encoding: chunked\r\n\r\n");
+  parser.ProcessChunk("5\r\nhello\r\n");
+  parser.ProcessChunk("1\r\n \r\n");
+  parser.ProcessChunk("5\r\nworld\r\n");
+  parser.ProcessChunk("0\r\n\r\n");
+  ASSERT_EQ(HttpRequestParser::ACCEPTED, parser.ParseRequest());
+
+  scoped_ptr<HttpRequest> request = parser.GetRequest();
+  EXPECT_EQ("hello world", request->content);
+  EXPECT_TRUE(request->has_content);
+  EXPECT_EQ(1u, request->headers.count("Transfer-Encoding"));
+  EXPECT_EQ("chunked", request->headers["Transfer-Encoding"]);
+}
+
+TEST(HttpRequestTest, ParseRequestWithChunkedBodySlow) {
+  HttpRequestParser parser;
+
+  parser.ProcessChunk("POST /foobar.html HTTP/1.1\r\n");
+  parser.ProcessChunk("Transfer-Encoding: chunked\r\n\r\n");
+  std::string chunked_body = "5\r\nhello\r\n0\r\n\r\n";
+
+  // Send one character at a time, and make the parser parse the request.
+  for (size_t i = 0; i < chunked_body.size(); i++) {
+    parser.ProcessChunk(chunked_body.substr(i, 1));
+    // Except for the last pass, ParseRequest() should give WAITING.
+    if (i != chunked_body.size() - 1) {
+      ASSERT_EQ(HttpRequestParser::WAITING, parser.ParseRequest());
+    }
+  }
+  // All chunked data has been sent, the last ParseRequest should give ACCEPTED.
+  ASSERT_EQ(HttpRequestParser::ACCEPTED, parser.ParseRequest());
+  scoped_ptr<HttpRequest> request = parser.GetRequest();
+  EXPECT_EQ("hello", request->content);
+  EXPECT_TRUE(request->has_content);
+  EXPECT_EQ(1u, request->headers.count("Transfer-Encoding"));
+  EXPECT_EQ("chunked", request->headers["Transfer-Encoding"]);
 }
 
 TEST(HttpRequestTest, ParseRequestWithoutBody) {
