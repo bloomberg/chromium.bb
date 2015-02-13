@@ -9,11 +9,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/layers/contents_scaling_layer.h"
+#include "cc/layers/layer.h"
 
 namespace cc {
 
-class CC_EXPORT HeadsUpDisplayLayer : public ContentsScalingLayer {
+class CC_EXPORT HeadsUpDisplayLayer : public Layer {
  public:
   static scoped_refptr<HeadsUpDisplayLayer> Create();
 

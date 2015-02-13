@@ -37,7 +37,8 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
   scoped_ptr<HeadsUpDisplayLayerImpl> layer =
     HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
-  layer->SetContentBounds(gfx::Size(100, 100));
+  layer->SetBounds(gfx::Size(100, 100));
+  layer->draw_properties().ideal_contents_scale = 1.f;
 
   // Check regular hardware draw is ok.
   CheckDrawLayer(

@@ -128,6 +128,9 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   ScopedPtrVector<ScopedResource> resources_;
   skia::RefPtr<SkSurface> hud_surface_;
 
+  float internal_contents_scale_;
+  gfx::Size internal_content_bounds_;
+
   Graph fps_graph_;
   Graph paint_time_graph_;
   MemoryHistory::Entry memory_entry_;
