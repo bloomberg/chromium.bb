@@ -204,6 +204,7 @@ public:
     virtual float pageScaleFactor() const override;
     virtual void setDefaultPageScaleLimits(float minScale, float maxScale) override;
     virtual void setInitialPageScaleOverride(float) override;
+    virtual void setMaximumLegibleScale(float) override;
     virtual void setMainFrameScrollOffset(const WebPoint&) override;
     virtual void setPageScaleFactor(float) override;
     virtual void setPinchViewportOffset(const WebFloatPoint&) override;
@@ -535,7 +536,7 @@ private:
 
     IntRect visibleRectInDocument() const;
 
-    float legibleScale() const;
+    float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();
     void resumeTreeViewCommits();
     void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
@@ -663,6 +664,10 @@ private:
     double m_maximumZoomLevel;
 
     PageScaleConstraintsSet m_pageScaleConstraintsSet;
+
+    // This value, when multiplied by the font scale factor, gives the maximum
+    // page scale that can result from automatic zooms.
+    float m_maximumLegibleScale;
 
     // The scale moved to by the latest double tap zoom, if any.
     float m_doubleTapZoomPageScaleFactor;

@@ -375,6 +375,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_zoomLevel(0)
     , m_minimumZoomLevel(zoomFactorToZoomLevel(minTextSizeMultiplier))
     , m_maximumZoomLevel(zoomFactorToZoomLevel(maxTextSizeMultiplier))
+    , m_maximumLegibleScale(1)
     , m_doubleTapZoomPageScaleFactor(0)
     , m_doubleTapZoomPending(false)
     , m_enableFakePageScaleAnimationForTesting(false)
@@ -1159,16 +1160,15 @@ WebRect WebViewImpl::widenRectWithinPageBounds(const WebRect& source, int target
     return WebRect(newX, source.y, newWidth, source.height);
 }
 
-float WebViewImpl::legibleScale() const
+float WebViewImpl::maximumLegiblePageScale() const
 {
     // Pages should be as legible as on desktop when at dpi scale, so no
     // need to zoom in further when automatically determining zoom level
     // (after double tap, find in page, etc), though the user should still
     // be allowed to manually pinch zoom in further if they desire.
-    float legibleScale = 1;
     if (page())
-        legibleScale *= page()->settings().accessibilityFontScaleFactor();
-    return legibleScale;
+        return m_maximumLegibleScale * page()->settings().accessibilityFontScaleFactor();
+    return m_maximumLegibleScale;
 }
 
 void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll)
@@ -1192,7 +1192,7 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, co
                 static_cast<int>(minimumMargin * rect.width / m_size.width));
         // Fit block to screen, respecting limits.
         scale = static_cast<float>(m_size.width) / rect.width;
-        scale = std::min(scale, legibleScale());
+        scale = std::min(scale, maximumLegiblePageScale());
         if (pageScaleFactor() < defaultScaleWhenAlreadyLegible)
             scale = std::max(scale, defaultScaleWhenAlreadyLegible);
         scale = clampPageScaleFactorToLimits(scale);
@@ -2899,7 +2899,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
         // the caret height will become minReadableCaretHeightForNode (adjusted
         // for dpi and font scale factor).
         const int minReadableCaretHeightForNode = textboxRect.height() >= 2 * caret.height ? minReadableCaretHeightForTextArea : minReadableCaretHeight;
-        newScale = clampPageScaleFactorToLimits(legibleScale() * minReadableCaretHeightForNode / caret.height);
+        newScale = clampPageScaleFactorToLimits(maximumLegiblePageScale() * minReadableCaretHeightForNode / caret.height);
         newScale = std::max(newScale, pageScaleFactor());
     }
     const float deltaScale = newScale / pageScaleFactor();
@@ -3260,6 +3260,11 @@ void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverri
 
     m_pageScaleConstraintsSet.setNeedsReset(true);
     setUserAgentPageScaleConstraints(constraints);
+}
+
+void WebViewImpl::setMaximumLegibleScale(float maximumLegibleScale)
+{
+    m_maximumLegibleScale = maximumLegibleScale;
 }
 
 void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)

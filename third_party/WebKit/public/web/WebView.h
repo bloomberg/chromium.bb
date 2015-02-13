@@ -263,6 +263,11 @@ public:
     // page scale set in the page's viewport meta tag.
     virtual void setInitialPageScaleOverride(float) = 0;
 
+    // Sets the maximum page scale considered to be legible. Automatic zooms (e.g, double-tap
+    // or find in page) will have the page scale limited to this value times the font scale
+    // factor. Manual pinch zoom will not be affected by this limit.
+    virtual void setMaximumLegibleScale(float) = 0;
+
     // Reset any saved values for the scroll and scale state.
     virtual void resetScrollAndScaleState() = 0;
 
