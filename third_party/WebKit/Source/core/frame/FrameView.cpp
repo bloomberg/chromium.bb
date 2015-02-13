@@ -867,7 +867,8 @@ void FrameView::performLayout(LayoutObject* rootForThisLayout, bool inSubtreeLay
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
     int layoutMs = (WTF::currentTimeMS() - start);
     Platform::current()->histogramCustomCounts("Renderer.LayoutMs", layoutMs, 0, 1000 * 60, 50);
-    Platform::current()->histogramCustomCounts("Renderer.LineLayoutMs", m_lineLayoutMs, 0, 1000 * 60, 50);
+    // TODO(benjhayden): re-enable when safe
+    // Platform::current()->histogramCustomCounts("Renderer.LineLayoutMs", m_lineLayoutMs, 0, 1000 * 60, 50);
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()
