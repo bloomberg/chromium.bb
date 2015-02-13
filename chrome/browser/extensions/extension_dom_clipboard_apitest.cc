@@ -112,9 +112,12 @@ IN_PROC_BROWSER_TEST_F(ClipboardApiTest, HostedAppNoPermission) {
   ASSERT_TRUE(LoadHostedApp("hosted_app_no_permission", "main.html"))
       << message_;
 
-  EXPECT_FALSE(ExecuteCopyInSelectedTab()) << message_;
+  // TODO(dcheng): The test coverage here is incomplete. The content test utils
+  // for executing script force a user gesture, so it's impossible to test
+  // the no user gesture case without a lot of code duplication.
+  EXPECT_TRUE(ExecuteCopyInSelectedTab()) << message_;
   EXPECT_FALSE(ExecutePasteInSelectedTab()) << message_;
-  EXPECT_FALSE(ExecuteCommandInIframeInSelectedTab("copy")) << message_;
+  EXPECT_TRUE(ExecuteCommandInIframeInSelectedTab("copy")) << message_;
   EXPECT_FALSE(ExecuteCommandInIframeInSelectedTab("paste")) << message_;
 }
 
