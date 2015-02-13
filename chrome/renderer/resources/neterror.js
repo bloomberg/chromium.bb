@@ -152,6 +152,13 @@ function onDocumentLoad() {
       loadTimeData.valueExists('staleLoadButton') &&
           loadTimeData.getValue('staleLoadButton').msg) {
     controlButtonDiv.hidden = false;
+
+    // Set the secondary button state in the cases of two call to actions.
+    // Reload is secondary to stale load.
+    if (loadTimeData.valueExists('staleLoadButton') &&
+            loadTimeData.getValue('staleLoadButton').msg) {
+      reloadButton.classList.add('secondary-button');
+    }
   }
 
   // Add a main message paragraph.

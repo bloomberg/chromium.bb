@@ -11,15 +11,24 @@ var mobileNav = false;
 function onResize() {
   var helpOuterBox = document.querySelector('#details');
   var mainContent = document.querySelector('#main-content');
-  var mediaQuery = '(max-width: 420px) and (orientation: portrait),' +
-      '(max-width: 736px) and (max-height: 420px) and (orientation: landscape)';
+  var mediaQuery = '(min-width: 300px) and (max-width: 420px) and ' +
+      '(orientation: portrait), (max-width: 736px) and ' +
+      '(max-height: 420px) and (orientation: landscape)';
+  var detailsHidden = helpOuterBox.classList.contains('hidden');
 
   // Check for change in nav status.
   if (mobileNav != window.matchMedia(mediaQuery).matches) {
-    // Show the top content and reset the details section to hidden.
-    mainContent.classList.toggle('hidden', false);
-    helpOuterBox.classList.toggle('hidden', true);
     mobileNav = !mobileNav;
+
+    // Handle showing the top content / details sections according to state.
+    if (mobileNav) {
+      mainContent.classList.toggle('hidden', !detailsHidden);
+      helpOuterBox.classList.toggle('hidden', detailsHidden);
+    } else if (!detailsHidden) {
+      // Non mobile nav with visible details.
+      mainContent.classList.remove('hidden');
+      helpOuterBox.classList.remove('hidden');
+    }
   }
 }
 

@@ -48,19 +48,14 @@ a {
   content: -webkit-image-set(
       url(default_100_percent/common/error_network_generic.png) 1x,
       url(default_200_percent/common/error_network_generic.png) 2x);
-  height: 50px;
   padding-top: 20px;
-  width: 41px;
 }
 
 .icon-offline {
   content: -webkit-image-set(
       url(default_100_percent/offline/100-error-offline.png) 1x,
       url(default_200_percent/offline/200-error-offline.png) 2x);
-  height: 47px;
-  margin: 0 0 40px;
   position: relative;
-  width: 44px;
 }
 
 #content-top {
@@ -292,9 +287,8 @@ html[subframe] body {
   max-width: 600px;
   overflow: hidden;
   position: absolute;
-  top: 10px;
+  top: 35px;
   width: 44px;
-  z-index: 2;
 }
 
 .offline .runner-canvas {
@@ -304,6 +298,7 @@ html[subframe] body {
   overflow: hidden;
   position: absolute;
   top: 0;
+  z-index: 2;
 }
 
 .offline .controller {
@@ -348,5 +343,19 @@ html[subframe] body {
 @media (min-height: 240px) and (orientation: landscape) {
   .offline .interstitial-wrapper {
     margin-bottom: 20px;
+  }
+
+  .icon-offline {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-height: 320px) and (orientation: landscape) {
+  .icon-offline {
+    margin-bottom: 0;
+  }
+
+  .offline .runner-container {
+    top: 10px;
   }
 }
