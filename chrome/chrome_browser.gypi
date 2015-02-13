@@ -1080,6 +1080,10 @@
       'browser/sync/profile_sync_service_base.h',
       'browser/sync/sync_ui_util.cc',
       'browser/sync/sync_ui_util.h',
+      'browser/tracing/chrome_tracing_delegate.cc',
+      'browser/tracing/chrome_tracing_delegate.h',
+      'browser/tracing/crash_service_uploader.cc',
+      'browser/tracing/crash_service_uploader.h',
     ],
     'chrome_browser_win_sources': [
       'browser/browser_process_platform_part_aurawin.cc',

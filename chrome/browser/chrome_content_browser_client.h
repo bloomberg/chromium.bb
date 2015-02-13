@@ -253,6 +253,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::FilePath& storage_partition_path,
       ScopedVector<storage::FileSystemBackend>* additional_backends) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  content::TracingDelegate* GetTracingDelegate() override;
   bool IsPluginAllowedToCallRequestOSFileHandle(
       content::BrowserContext* browser_context,
       const GURL& url) override;

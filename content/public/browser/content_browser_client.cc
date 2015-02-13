@@ -312,6 +312,10 @@ DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
   return nullptr;
 }
 
+TracingDelegate* ContentBrowserClient::GetTracingDelegate() {
+  return nullptr;
+}
+
 bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     BrowserContext* browser_context,
     const GURL& url) {

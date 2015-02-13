@@ -2,28 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TRACING_TRACE_UPLOADER_H_
-#define CONTENT_BROWSER_TRACING_TRACE_UPLOADER_H_
+#ifndef CHROME_BROWSER_TRACING_CRASH_SERVICE_UPLOADER_H_
+#define CHROME_BROWSER_TRACING_CRASH_SERVICE_UPLOADER_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "content/public/browser/trace_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
-
-namespace content {
 
 namespace {
 
@@ -32,18 +30,13 @@ const int kMaxUploadBytes = 10000000;
 
 }  // namespace
 
-// TraceUploader uploads traces.
-class TraceUploader : public net::URLFetcherDelegate {
+// TraceCrashServiceUploader uploads traces to the Chrome crash service.
+class TraceCrashServiceUploader : public content::TraceUploader,
+                                  public net::URLFetcherDelegate {
  public:
-  typedef base::Callback<void(bool, const std::string&, const std::string&)>
-      UploadDoneCallback;
-  typedef base::Callback<void(int64, int64)> UploadProgressCallback;
-
-  TraceUploader(const std::string& product,
-                const std::string& version,
-                const std::string& upload_url,
-                net::URLRequestContextGetter* request_context);
-  ~TraceUploader() override;
+  explicit TraceCrashServiceUploader(
+      net::URLRequestContextGetter* request_context);
+  ~TraceCrashServiceUploader() override;
 
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -51,15 +44,20 @@ class TraceUploader : public net::URLFetcherDelegate {
                                 int64 current,
                                 int64 total) override;
 
-  // Compresses and uploads the given file contents.
+  // content::TraceUploader
   void DoUpload(const std::string& file_contents,
-                UploadProgressCallback progress_callback,
-                UploadDoneCallback done_callback);
+                const UploadProgressCallback& progress_callback,
+                const UploadDoneCallback& done_callback) override;
 
  private:
+  void DoUploadOnFileThread(const std::string& file_contents,
+                            const UploadProgressCallback& progress_callback,
+                            const UploadDoneCallback& done_callback);
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
-  void SetupMultipart(const std::string& trace_filename,
+  void SetupMultipart(const std::string& product,
+                      const std::string& version,
+                      const std::string& trace_filename,
                       const std::string& trace_contents,
                       std::string* post_data);
   void AddTraceFile(const std::string& trace_filename,
@@ -70,13 +68,9 @@ class TraceUploader : public net::URLFetcherDelegate {
                 int max_compressed_bytes,
                 char* compressed_contents,
                 int* compressed_bytes);
-  void CreateAndStartURLFetcher(const std::string& post_data);
+  void CreateAndStartURLFetcher(const std::string& upload_url,
+                                const std::string& post_data);
   void OnUploadError(std::string error_message);
-
-  std::string product_;
-  std::string version_;
-
-  std::string upload_url_;
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
   UploadProgressCallback progress_callback_;
@@ -84,9 +78,7 @@ class TraceUploader : public net::URLFetcherDelegate {
 
   net::URLRequestContextGetter* request_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(TraceUploader);
+  DISALLOW_COPY_AND_ASSIGN(TraceCrashServiceUploader);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_TRACING_TRACE_UPLOADER_H_
+#endif  // CHROME_BROWSER_TRACING_CRASH_SERVICE_UPLOADER_H_

@@ -105,6 +105,7 @@ class ResourceContext;
 class ServiceRegistry;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
+class TracingDelegate;
 class WebContents;
 class WebContentsViewDelegate;
 struct MainFunctionParams;
@@ -569,6 +570,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
   // It's valid to return nullptr.
   virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate();
+
+  // Creates a new TracingDelegate. The caller owns the returned value.
+  // It's valid to return nullptr.
+  virtual TracingDelegate* GetTracingDelegate();
 
   // Returns true if plugin referred to by the url can use
   // pp::FileIO::RequestOSFileHandle.

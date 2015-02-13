@@ -13,6 +13,9 @@
 
 namespace content {
 
+class TraceUploader;
+class TracingDelegate;
+
 // The C++ back-end for the chrome://tracing webui page.
 class CONTENT_EXPORT TracingUI : public WebUIController {
  public:
@@ -21,11 +24,11 @@ class CONTENT_EXPORT TracingUI : public WebUIController {
   void OnMonitoringStateChanged(bool is_monitoring);
   void DoUpload(const base::ListValue* args);
   void OnTraceUploadProgress(int64 current, int64 total);
-  void OnTraceUploadComplete(bool success,
-                             const std::string& report_id,
-                             const std::string& error_message);
+  void OnTraceUploadComplete(bool success, const std::string& feedback);
 
  private:
+  scoped_ptr<TracingDelegate> delegate_;
+  scoped_ptr<TraceUploader> trace_uploader_;
   base::WeakPtrFactory<TracingUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingUI);

@@ -73,6 +73,7 @@
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -2552,6 +2553,14 @@ ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
   return new DevToolsManagerDelegateAndroid();
 #else
   return new ChromeDevToolsManagerDelegate();
+#endif
+}
+
+content::TracingDelegate* ChromeContentBrowserClient::GetTracingDelegate() {
+#if !defined(OS_ANDROID)
+  return new ChromeTracingDelegate();
+#else
+  return nullptr;
 #endif
 }
 
