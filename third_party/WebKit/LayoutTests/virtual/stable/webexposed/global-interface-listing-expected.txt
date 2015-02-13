@@ -1349,6 +1349,14 @@ interface Promise
     method chain
     method constructor
     method then
+interface PushManager
+    method constructor
+    method getSubscription
+    method hasPermission
+    method subscribe
+interface PushSubscription
+    method constructor
+    method unsubscribe
 interface RTCIceCandidate
     method constructor
 interface RTCSessionDescription
@@ -1982,6 +1990,7 @@ interface ServiceWorkerContainer
     method register
 interface ServiceWorkerRegistration
     method constructor
+    method showNotification
     method unregister
 interface Set
     getter size

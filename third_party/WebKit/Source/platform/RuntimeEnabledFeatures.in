@@ -110,7 +110,7 @@ PrefixedEncryptedMedia status=stable
 PrefixedVideoFullscreen status=stable
 Presentation status=test
 PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
-PushMessaging status=experimental
+PushMessaging status=stable
 // Push messaging payloads are blocked on the Push API supporting encryption.
 PushMessagingData status=test
 QuotaPromise status=experimental
@@ -127,7 +127,7 @@ ShowModalDialog status=deprecated
 ServiceWorker status=stable
 ServiceWorkerCache status=stable
 ServiceWorkerClientAttributes status=stable
-ServiceWorkerNotifications status=experimental
+ServiceWorkerNotifications status=stable
 ServiceWorkerOnFetch status=stable
 SessionStorage status=stable
 SharedWorker status=stable

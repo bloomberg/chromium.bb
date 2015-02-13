@@ -152,6 +152,8 @@ public:
 
     BLINK_EXPORT static void enableReducedReferrerGranularity(bool);
 
+    BLINK_EXPORT static void enablePushMessaging(bool);
+
     BLINK_EXPORT static void enablePushMessagingData(bool);
 
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
