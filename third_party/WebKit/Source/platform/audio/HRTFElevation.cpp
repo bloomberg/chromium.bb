@@ -71,8 +71,8 @@ const int ElevationIndexTable[ElevationIndexTableSize] = {
 static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(const String& subjectName)
 {
     typedef HashMap<String, RefPtr<AudioBus>> AudioBusMap;
-    DEFINE_STATIC_LOCAL(AudioBusMap, audioBusMap, ());
-    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
+    AtomicallyInitializedStaticReference(AudioBusMap, audioBusMap, new AudioBusMap());
+    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex());
 
     MutexLocker locker(mutex);
     RefPtr<AudioBus> bus;
