@@ -143,6 +143,8 @@ public:
         EndSubtreePaintPhaseFirst = EndSubtreeFirst,
         EndSubtreePaintPhaseLast = EndSubtreePaintPhaseFirst + PaintPhaseMax,
         EndSubtreeLast = EndSubtreePaintPhaseLast,
+
+        TypeLast = EndSubtreeLast
     };
 
     virtual ~DisplayItem() { }
