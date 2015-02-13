@@ -1,0 +1,35 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  sources = [
+    "content_data_reduction_proxy_debug_ui_service.cc",
+    "content_data_reduction_proxy_debug_ui_service.h",
+    "data_reduction_proxy_debug_resource_throttle.cc",
+    "data_reduction_proxy_debug_resource_throttle.h",
+    "data_reduction_proxy_debug_ui_manager.cc",
+    "data_reduction_proxy_debug_ui_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//skia",
+  ]
+}
+
+if (is_android) {
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "data_reduction_proxy_debug_resource_throttle_unittest.cc",
+      "data_reduction_proxy_debug_ui_manager_unittest.cc",
+    ]
+
+    deps = [
+      ":browser",
+      "//testing/gtest",
+    ]
+  }
+}

@@ -627,6 +627,8 @@
             }],
             ['OS == "android"', {
               'sources': [
+                'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle_unittest.cc',
+                'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager_unittest.cc',
                 'invalidation/invalidation_service_android_unittest.cc',
               ],
               'sources!': [
@@ -646,6 +648,7 @@
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
               ],
               'dependencies': [
+                'components.gyp:data_reduction_proxy_content',
                 '../testing/android/native_test.gyp:native_test_native_code',
               ],
               'dependencies!': [

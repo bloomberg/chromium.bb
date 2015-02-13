@@ -103,6 +103,14 @@ class DataReductionProxyParams {
   // mode.
   static bool IsLoFiEnabled();
 
+  // Returns true if this client has the command line switch to show
+  // interstitials for data reduction proxy bypasses.
+  static bool WarnIfNoDataReductionProxy();
+
+  // Returns true if the Data Reduction Proxy supports the scheme of the
+  // provided |url|.
+  static bool CanProxyURLScheme(const GURL& url);
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is
@@ -148,8 +156,8 @@ class DataReductionProxyParams {
 
   // Returns true if this request would be bypassed by the data request proxy
   // based on applying the |data_reduction_proxy_config| param rules to the
-  // request URL.
-  bool IsBypassedByDataReductionProxyLocalRules(
+  // request URL. Virutal for testing.
+  virtual bool IsBypassedByDataReductionProxyLocalRules(
       const net::URLRequest& request,
       const net::ProxyConfig& data_reduction_proxy_config) const;
 
@@ -159,8 +167,8 @@ class DataReductionProxyParams {
   // proxies are bypassed, returns the minimum retry delay of the bypassed data
   // reduction proxies in min_retry_delay (if not NULL). If there are no
   // bypassed data reduction proxies for the request scheme, returns false and
-  // does not assign min_retry_delay.
-  bool AreDataReductionProxiesBypassed(
+  // does not assign min_retry_delay. Virtual for testing.
+  virtual bool AreDataReductionProxiesBypassed(
       const net::URLRequest& request,
       const net::ProxyConfig& data_reduction_proxy_config,
       base::TimeDelta* min_retry_delay) const;

@@ -55,5 +55,9 @@ const char kEnableDataReductionProxyAlt[] = "enable-data-reduction-proxy-alt";
 const char kEnableDataReductionProxyLoFi[] =
     "enable-data-reduction-proxy-lo-fi";
 
+// Enable the data reduction proxy bypass warning.
+const char kEnableDataReductionProxyBypassWarning[] =
+    "enable-data-reduction-proxy-bypass-warning";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

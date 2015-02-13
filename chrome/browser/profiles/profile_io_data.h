@@ -257,6 +257,11 @@ class ProfileIOData {
 
   bool IsDataReductionProxyEnabled() const;
 
+  data_reduction_proxy::DataReductionProxyIOData*
+  data_reduction_proxy_io_data() const {
+    return data_reduction_proxy_io_data_.get();
+  }
+
  protected:
   // A URLRequestContext for media that owns its HTTP factory, to ensure
   // it is deleted.
@@ -372,11 +377,6 @@ class ProfileIOData {
   void set_data_reduction_proxy_io_data(
       scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
           data_reduction_proxy_io_data) const;
-
-  data_reduction_proxy::DataReductionProxyIOData*
-  data_reduction_proxy_io_data() const {
-    return data_reduction_proxy_io_data_.get();
-  }
 
   net::FraudulentCertificateReporter* fraudulent_certificate_reporter() const {
     return fraudulent_certificate_reporter_.get();

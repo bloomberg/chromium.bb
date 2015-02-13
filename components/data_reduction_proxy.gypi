@@ -5,6 +5,28 @@
 
 {
   'targets': [
+   {
+      # GN Version: //components/data_reduction_proxy/content
+      'target_name': 'data_reduction_proxy_content',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../content/content.gyp:content_browser',
+        '../skia/skia.gyp:skia',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.cc',
+        'data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h',
+        'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.cc',
+        'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.h',
+        'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.cc',
+        'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.h',
+      ],
+    },
     {
       # GN version: //components/data_reduction_proxy/core/browser
       'target_name': 'data_reduction_proxy_core_browser',
@@ -36,6 +58,7 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_config.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h',
+        "data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h",
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.cc',
@@ -96,6 +119,7 @@
         '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'data_reduction_proxy_content',
         'data_reduction_proxy_core_browser',
         'data_reduction_proxy_core_common',
       ],

@@ -602,6 +602,7 @@ static_library("browser") {
     deps += [
       ":jni_headers",
       "//components/cdm/browser",
+      "//components/data_reduction_proxy/content/browser",
       "//components/enhanced_bookmarks",
       "//components/resources:components_resources",
       "//components/web_contents_delegate_android",
@@ -614,6 +615,7 @@ static_library("browser") {
       "//components/storage_monitor",
       "//components/web_modal",
     ]
+    defines += [ "ENABLE_DATA_REDUCTION_PROXY_DEBUGGING" ]
   }
 
   if (is_mac) {

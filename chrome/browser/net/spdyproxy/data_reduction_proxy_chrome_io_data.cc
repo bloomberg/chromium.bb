@@ -14,6 +14,10 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
+#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
+#include "components/data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h"
+#endif
+
 namespace content {
 class BrowserContext;
 }
@@ -58,6 +62,19 @@ CreateDataReductionProxyChromeIOData(
               io_task_runner,
               ui_task_runner));
   data_reduction_proxy_io_data->InitOnUIThread(prefs);
+
+#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
+  scoped_ptr<data_reduction_proxy::ContentDataReductionProxyDebugUIService>
+      data_reduction_proxy_ui_service(
+          new data_reduction_proxy::ContentDataReductionProxyDebugUIService(
+              base::Bind(&data_reduction_proxy::DataReductionProxyConfigurator::
+                             GetProxyConfigOnIOThread,
+                         base::Unretained(
+                             data_reduction_proxy_io_data->configurator())),
+              ui_task_runner, io_task_runner));
+  data_reduction_proxy_io_data->set_debug_ui_service(
+      data_reduction_proxy_ui_service.Pass());
+#endif
 
   return data_reduction_proxy_io_data.Pass();
 }

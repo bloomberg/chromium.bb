@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
@@ -103,6 +104,19 @@ class DataReductionProxyIOData {
     return usage_stats_.get();
   }
 
+  DataReductionProxyParams* params() const {
+    return params_.get();
+  }
+
+  DataReductionProxyDebugUIService* debug_ui_service() const {
+    return debug_ui_service_.get();
+  }
+
+  void set_debug_ui_service(
+      scoped_ptr<DataReductionProxyDebugUIService> ui_service) const {
+    debug_ui_service_= ui_service.Pass();
+  }
+
  private:
   // The type of Data Reduction Proxy client.
   Client client_;
@@ -112,9 +126,14 @@ class DataReductionProxyIOData {
 
   // Tracker of compression statistics to be displayed to the user.
   base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
+
   // |temporary_statistics_prefs_| is used only until DataReductionProxySettings
   // initialization and is dead after.
   scoped_ptr<DataReductionProxyStatisticsPrefs> temporary_statistics_prefs_;
+
+  // Holds the DataReductionProxyDebugUIManager for Data Reduction Proxy bypass
+  // interstitials.
+  mutable scoped_ptr<DataReductionProxyDebugUIService> debug_ui_service_;
 
   // Tracker of Data Reduction Proxy-related events, e.g., for logging.
   scoped_ptr<DataReductionProxyEventStore> event_store_;

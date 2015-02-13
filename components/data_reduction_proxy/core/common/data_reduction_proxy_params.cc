@@ -102,6 +102,22 @@ bool DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
 bool DataReductionProxyParams::IsLoFiEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+
+}
+
+//static
+bool DataReductionProxyParams::WarnIfNoDataReductionProxy() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          data_reduction_proxy::switches::
+          kEnableDataReductionProxyBypassWarning)) {
+    return true;
+  }
+  return false;
+}
+
+// static
+bool DataReductionProxyParams::CanProxyURLScheme(const GURL& url) {
+  return url.SchemeIs(url::kHttpScheme);
 }
 
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()

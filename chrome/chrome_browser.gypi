@@ -3371,6 +3371,7 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:cdm_browser',
+            '../components/components.gyp:data_reduction_proxy_content',
             '../components/components.gyp:enhanced_bookmarks',
             '../components/components.gyp:web_contents_delegate_android',
             '../components/components_resources.gyp:components_resources',
@@ -3385,6 +3386,7 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
           'sources': [ '<@(chrome_browser_android_sources)' ],
+          'defines': [ 'ENABLE_DATA_REDUCTION_PROXY_DEBUGGING' ],
         }],
         ['OS=="mac"', {
           'dependencies': [

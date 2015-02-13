@@ -2131,7 +2131,6 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableDelayAgnosticAec)
   },
-
   {
     "mark-non-secure-as",  // FLAGS:RECORD_UMA
      IDS_MARK_NON_SECURE_AS_NAME,
@@ -2139,7 +2138,6 @@ const Experiment kExperiments[] = {
      kOsAll,
      MULTI_VALUE_TYPE(kMarkNonSecureAsChoices)
   },
-
   {
     "enable-site-per-process",
     IDS_FLAGS_ENABLE_SITE_PER_PROCESS_NAME,
@@ -2173,6 +2171,16 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
                       kEnableDataReductionProxyLoFi)
   },
+#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
+  {
+    "enable-data-reduction-proxy-bypass-warnings",
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME,
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
+                      kEnableDataReductionProxyBypassWarning)
+  },
+#endif
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
@@ -2285,26 +2293,40 @@ bool SkipConditionalExperiment(const Experiment& experiment,
     return true;
   }
 
+#if defined(OS_ANDROID) || defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+#endif
+
 #if defined(OS_ANDROID)
   // enable-data-reduction-proxy-dev is only available for the Dev/Beta channel.
   if (!strcmp("enable-data-reduction-proxy-dev", experiment.internal_name) &&
-      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_BETA &&
-      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV) {
+      channel != chrome::VersionInfo::CHANNEL_BETA &&
+      channel != chrome::VersionInfo::CHANNEL_DEV) {
     return true;
   }
   // enable-data-reduction-proxy-alt is only available for the Dev channel.
   if (!strcmp("enable-data-reduction-proxy-alt", experiment.internal_name) &&
-      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV) {
+      channel != chrome::VersionInfo::CHANNEL_DEV) {
     return true;
   }
   // enable-data-reduction-proxy-lo-fi is only available for Chromium builds and
   // the Canary/Dev channel.
   if (!strcmp("enable-data-reduction-proxy-lo-fi", experiment.internal_name) &&
-      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV &&
-      chrome::VersionInfo::GetChannel() !=
-          chrome::VersionInfo::CHANNEL_CANARY &&
-      chrome::VersionInfo::GetChannel() !=
-          chrome::VersionInfo::CHANNEL_UNKNOWN) {
+      channel != chrome::VersionInfo::CHANNEL_DEV &&
+      channel != chrome::VersionInfo::CHANNEL_CANARY &&
+      channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {
+    return true;
+  }
+#endif
+
+#if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
+  // enable-data-reduction-proxy-bypass-warning is only available for Chromium
+  // builds and Canary/Dev channel.
+  if (!strcmp("enable-data-reduction-proxy-bypass-warnings",
+              experiment.internal_name) &&
+      channel != chrome::VersionInfo::CHANNEL_UNKNOWN &&
+      channel != chrome::VersionInfo::CHANNEL_CANARY &&
+      channel != chrome::VersionInfo::CHANNEL_DEV) {
     return true;
   }
 #endif
