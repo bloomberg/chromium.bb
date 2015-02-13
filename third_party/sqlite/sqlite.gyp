@@ -133,17 +133,6 @@
           'msvs_disabled_warnings': [
             4018, 4244, 4267,
           ],
-          'variables': {
-            'clang_warning_flags': [
-              # sqlite does `if (*a++ && *b++);` in a non-buggy way.
-              '-Wno-empty-body',
-              # sqlite has some `unsigned < 0` checks.
-              '-Wno-tautological-compare',
-              # Needed because we don't have this commit yet:
-              # https://github.com/mackyle/sqlite/commit/25df0fa050dcc9be7fb937b8e25be24049b3fef0
-              '-Wno-pointer-bool-conversion',
-            ],
-          },
           'conditions': [
             ['OS=="linux"', {
               'link_settings': {
