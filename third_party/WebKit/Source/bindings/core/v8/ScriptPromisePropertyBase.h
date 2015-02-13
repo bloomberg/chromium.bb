@@ -60,7 +60,7 @@ protected:
     void resetBase();
 
 private:
-    typedef Vector<OwnPtr<ScopedPersistent<v8::Object> > > WeakPersistentSet;
+    typedef Vector<OwnPtr<ScopedPersistent<v8::Object>>> WeakPersistentSet;
 
     void resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver>);
     v8::Local<v8::Object> ensureHolderWrapper(ScriptState*);

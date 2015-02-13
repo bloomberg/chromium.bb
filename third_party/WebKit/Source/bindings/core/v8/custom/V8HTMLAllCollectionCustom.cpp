@@ -43,7 +43,7 @@ namespace blink {
 template<class CallbackInfo>
 static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& info)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
     collection->namedItems(name, namedItems);
 
     if (!namedItems.size())

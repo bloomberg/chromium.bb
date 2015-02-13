@@ -58,7 +58,7 @@ public:
 
 private:
     v8::Isolate* m_isolate;
-    RefPtr<SharedPersistent<v8::String> > m_string;
+    RefPtr<SharedPersistent<v8::String>> m_string;
 };
 
 } // namespace blink

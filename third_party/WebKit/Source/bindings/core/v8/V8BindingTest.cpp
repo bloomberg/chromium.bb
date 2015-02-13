@@ -74,7 +74,7 @@ TEST_F(V8BindingTest, toImplArray)
         v8Array->Set(toV8(2), toV8(0.125));
 
         NonThrowableExceptionState exceptionState;
-        Vector<v8::Local<v8::Value> > v8HandleVector = toImplArray<v8::Local<v8::Value> >(v8Array, 0, m_scope.isolate(), exceptionState);
+        Vector<v8::Local<v8::Value>> v8HandleVector = toImplArray<v8::Local<v8::Value>>(v8Array, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(3U, v8HandleVector.size());
         EXPECT_EQ("Vini, vidi, vici.", toUSVString(v8HandleVector[0], exceptionState));
         EXPECT_EQ(65535U, toUInt32(v8HandleVector[1]));
@@ -101,7 +101,7 @@ TEST_F(V8BindingTest, toImplArray)
         v8StringArrayArray->Set(toV8(1), v8StringArray2);
 
         NonThrowableExceptionState exceptionState;
-        Vector<Vector<String> > stringVectorVector = toImplArray<Vector<String> >(v8StringArrayArray, 0, m_scope.isolate(), exceptionState);
+        Vector<Vector<String>> stringVectorVector = toImplArray<Vector<String>>(v8StringArrayArray, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(2U, stringVectorVector.size());
         EXPECT_EQ(2U, stringVectorVector[0].size());
         EXPECT_EQ("foo", stringVectorVector[0][0]);

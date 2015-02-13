@@ -29,14 +29,14 @@ public:
     virtual void voidMethod() override;
     virtual bool booleanMethod() override;
     virtual void voidMethodBooleanArg(bool boolArg) override;
-    virtual void voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg) override;
+    virtual void voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty>>& sequenceArg) override;
     virtual void voidMethodFloatArg(float floatArg) override;
     virtual void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
     virtual void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
     virtual void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
     virtual void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
-    virtual void voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& sequenceArg) override;
-    virtual void voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& arrayArg) override;
+    virtual void voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>& sequenceArg) override;
+    virtual void voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>& arrayArg) override;
 private:
     V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
 

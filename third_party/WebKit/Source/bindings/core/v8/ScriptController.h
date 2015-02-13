@@ -99,7 +99,7 @@ public:
     //
     // FIXME: Get rid of extensionGroup here.
     // FIXME: We don't want to support multiple scripts.
-    void executeScriptInIsolatedWorld(int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value> >* results);
+    void executeScriptInIsolatedWorld(int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value>>* results);
 
     // Returns true if argument is a JavaScript URL.
     bool executeScriptIfJavaScriptURL(const KURL&);
@@ -115,7 +115,7 @@ public:
     // Creates a property of the global object of a frame.
     void bindToWindowObject(LocalFrame*, const String& key, NPObject*);
 
-    PassRefPtr<SharedPersistent<v8::Object> > createPluginWrapper(Widget*);
+    PassRefPtr<SharedPersistent<v8::Object>> createPluginWrapper(Widget*);
 
     void enableEval();
     void disableEval(const String& errorMessage);
@@ -123,7 +123,7 @@ public:
     static bool canAccessFromCurrentOrigin(LocalFrame*);
 
     static void setCaptureCallStackForUncaughtExceptions(bool);
-    void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >&);
+    void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 
     bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
 

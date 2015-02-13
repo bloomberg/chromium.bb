@@ -168,7 +168,7 @@ TEST_F(ToV8Test, scriptValue)
 
 TEST_F(ToV8Test, vector)
 {
-    Vector<RefPtr<RefCountedScriptWrappable> > v;
+    Vector<RefPtr<RefCountedScriptWrappable>> v;
     v.append(RefCountedScriptWrappable::create("foo"));
     v.append(RefCountedScriptWrappable::create("bar"));
 
@@ -229,7 +229,7 @@ TEST_F(ToV8Test, basicTypeVectors)
 
 TEST_F(ToV8Test, heapVector)
 {
-    HeapVector<Member<GarbageCollectedScriptWrappable> > v;
+    HeapVector<Member<GarbageCollectedScriptWrappable>> v;
     v.append(new GarbageCollectedScriptWrappable("hoge"));
     v.append(new GarbageCollectedScriptWrappable("fuga"));
     v.append(nullptr);

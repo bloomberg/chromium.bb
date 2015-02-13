@@ -117,7 +117,7 @@ private:
     ScopedPersistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 
-    typedef Vector<OwnPtr<CustomElementBinding> > CustomElementBindingList;
+    typedef Vector<OwnPtr<CustomElementBinding>> CustomElementBindingList;
     CustomElementBindingList m_customElementBindings;
 
     // This is owned by a static hash map in V8DOMActivityLogger.

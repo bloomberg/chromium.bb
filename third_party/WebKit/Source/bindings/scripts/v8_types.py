@@ -243,11 +243,8 @@ IdlArrayOrSequenceType.native_array_element_type = property(
 
 
 def cpp_template_type(template, inner_type):
-    """Returns C++ template specialized to type, with space added if needed."""
-    if inner_type.endswith('>'):
-        format_string = '{template}<{inner_type} >'
-    else:
-        format_string = '{template}<{inner_type}>'
+    """Returns C++ template specialized to type."""
+    format_string = '{template}<{inner_type}>'
     return format_string.format(template=template, inner_type=inner_type)
 
 

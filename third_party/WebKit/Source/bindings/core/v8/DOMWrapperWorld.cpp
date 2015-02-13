@@ -89,7 +89,7 @@ static WorldMap& isolatedWorldMap()
     return map;
 }
 
-void DOMWrapperWorld::allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds)
+void DOMWrapperWorld::allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds)
 {
     ASSERT(isMainThread());
     worlds.append(&mainWorld());
@@ -151,7 +151,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(v8::Isolate* is
     return world.release();
 }
 
-typedef HashMap<int, RefPtr<SecurityOrigin> > IsolatedWorldSecurityOriginMap;
+typedef HashMap<int, RefPtr<SecurityOrigin>> IsolatedWorldSecurityOriginMap;
 static IsolatedWorldSecurityOriginMap& isolatedWorldSecurityOrigins()
 {
     ASSERT(isMainThread());

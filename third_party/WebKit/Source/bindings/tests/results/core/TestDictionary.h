@@ -146,15 +146,15 @@ private:
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     String m_enumMember;
     RefPtrWillBeMember<EventTarget> m_eventTargetMember;
-    Nullable<Vector<InternalDictionary> > m_internalDictionarySequenceMember;
+    Nullable<Vector<InternalDictionary>> m_internalDictionarySequenceMember;
     Nullable<int> m_longMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMember;
     Nullable<double> m_restrictedDoubleMember;
-    Nullable<Vector<String> > m_stringArrayMember;
+    Nullable<Vector<String>> m_stringArrayMember;
     String m_stringMember;
     String m_stringOrNullMember;
-    Nullable<Vector<String> > m_stringSequenceMember;
+    Nullable<Vector<String>> m_stringSequenceMember;
     TestInterface2OrUint8Array m_testInterface2OrUint8ArrayMember;
     Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollectedMember;
     Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollectedOrNullMember;

@@ -264,7 +264,7 @@ void ScriptController::disableEval(const String& errorMessage)
     v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(isolate(), errorMessage));
 }
 
-PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(Widget* widget)
+PassRefPtr<SharedPersistent<v8::Object>> ScriptController::createPluginWrapper(Widget* widget)
 {
     ASSERT(widget);
 
@@ -412,7 +412,7 @@ void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
     v8::V8::SetCaptureStackTraceForUncaughtExceptions(value, ScriptCallStack::maxCallStackSizeToCapture, stackTraceOptions);
 }
 
-void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >& result)
+void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>& result)
 {
     m_windowProxyManager->collectIsolatedContexts(result);
 }
@@ -567,7 +567,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     return handleScope.Escape(object);
 }
 
-void ScriptController::executeScriptInIsolatedWorld(int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value> >* results)
+void ScriptController::executeScriptInIsolatedWorld(int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value>>* results)
 {
     ASSERT(worldID > 0);
 

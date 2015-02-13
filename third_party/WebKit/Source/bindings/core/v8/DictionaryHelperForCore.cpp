@@ -375,7 +375,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vect
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vector<Vector<String> >& value, ExceptionState& exceptionState)
+bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vector<Vector<String>>& value, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))

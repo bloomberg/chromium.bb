@@ -79,7 +79,7 @@ private:
         return false;
     }
 
-    WTF::Deque<std::pair<const uint8_t*, size_t> > m_data;
+    WTF::Deque<std::pair<const uint8_t*, size_t>> m_data;
     bool m_finished;
     Mutex m_mutex;
     ThreadCondition m_haveData;

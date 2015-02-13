@@ -140,7 +140,7 @@ protected:
     RefPtr<ScriptState> m_pausedScriptState;
     bool m_breakpointsActivated;
     ScopedPersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
-    HashMap<String, OwnPtr<ScopedPersistent<v8::Script> > > m_compiledScripts;
+    HashMap<String, OwnPtr<ScopedPersistent<v8::Script>>> m_compiledScripts;
     v8::Isolate* m_isolate;
 
 private:

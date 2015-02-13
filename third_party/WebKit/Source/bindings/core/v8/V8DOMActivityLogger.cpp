@@ -13,8 +13,8 @@
 
 namespace blink {
 
-typedef HashMap<String, OwnPtr<V8DOMActivityLogger> > DOMActivityLoggerMapForMainWorld;
-typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int> > DOMActivityLoggerMapForIsolatedWorld;
+typedef HashMap<String, OwnPtr<V8DOMActivityLogger>> DOMActivityLoggerMapForMainWorld;
+typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int>> DOMActivityLoggerMapForIsolatedWorld;
 
 static DOMActivityLoggerMapForMainWorld& domActivityLoggersForMainWorld()
 {

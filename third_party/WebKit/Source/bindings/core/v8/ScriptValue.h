@@ -145,7 +145,7 @@ public:
 
 private:
     RefPtr<ScriptState> m_scriptState;
-    RefPtr<SharedPersistent<v8::Value> > m_value;
+    RefPtr<SharedPersistent<v8::Value>> m_value;
 };
 
 } // namespace blink

@@ -85,7 +85,7 @@ private:
         static const bool safeToCompareToEmptyOrDeleted = false;
     };
 
-    typedef WTF::HashMap<GCObject*, T, V8HandlePtrHash<GCObject> > HandleToT;
+    typedef WTF::HashMap<GCObject*, T, V8HandlePtrHash<GCObject>> HandleToT;
     HandleToT m_map;
 };
 
@@ -566,12 +566,12 @@ private:
     bool closeComposite(v8::Handle<v8::Value>*);
 
     SerializedScriptValueReader& m_reader;
-    Vector<v8::Local<v8::Value> > m_stack;
-    Vector<v8::Handle<v8::Value> > m_objectPool;
+    Vector<v8::Local<v8::Value>> m_stack;
+    Vector<v8::Handle<v8::Value>> m_objectPool;
     Vector<uint32_t> m_openCompositeReferenceStack;
     RawPtrWillBeMember<MessagePortArray> m_transferredMessagePorts;
     ArrayBufferContentsArray* m_arrayBufferContents;
-    Vector<v8::Handle<v8::Value> > m_arrayBuffers;
+    Vector<v8::Handle<v8::Value>> m_arrayBuffers;
     uint32_t m_version;
 };
 

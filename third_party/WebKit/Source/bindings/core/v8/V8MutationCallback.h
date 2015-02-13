@@ -47,7 +47,7 @@ public:
     }
     virtual ~V8MutationCallback();
 
-    virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >&, MutationObserver*) override;
+    virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord>>&, MutationObserver*) override;
     virtual ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
 
     virtual void trace(Visitor*) override;

@@ -81,7 +81,7 @@ private:
 
 class GarbageCollectedHolder : public GarbageCollectedScriptWrappable {
 public:
-    typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, Member<GarbageCollectedScriptWrappable>, Member<GarbageCollectedScriptWrappable> > Property;
+    typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, Member<GarbageCollectedScriptWrappable>, Member<GarbageCollectedScriptWrappable>> Property;
     GarbageCollectedHolder(ExecutionContext* executionContext)
         : GarbageCollectedScriptWrappable("holder")
         , m_property(new Property(executionContext, toGarbageCollectedScriptWrappable(), Property::Ready)) { }
@@ -103,7 +103,7 @@ class RefCountedHolder : public RefCountedScriptWrappable {
 public:
     // Do not resolve or reject the property with the holder itself. It leads
     // to a leak.
-    typedef ScriptPromiseProperty<RefCountedScriptWrappable*, RefPtr<RefCountedScriptWrappable>, RefPtr<RefCountedScriptWrappable> > Property;
+    typedef ScriptPromiseProperty<RefCountedScriptWrappable*, RefPtr<RefCountedScriptWrappable>, RefPtr<RefCountedScriptWrappable>> Property;
     static PassRefPtr<RefCountedHolder> create(ExecutionContext* executionContext)
     {
         return adoptRef(new RefCountedHolder(executionContext));

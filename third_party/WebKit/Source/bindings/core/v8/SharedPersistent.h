@@ -39,10 +39,10 @@
 namespace blink {
 
 template <typename T>
-class SharedPersistent : public RefCounted<SharedPersistent<T> > {
+class SharedPersistent : public RefCounted<SharedPersistent<T>> {
 WTF_MAKE_NONCOPYABLE(SharedPersistent);
 public:
-    static PassRefPtr<SharedPersistent<T> > create(v8::Handle<T> value, v8::Isolate* isolate)
+    static PassRefPtr<SharedPersistent<T>> create(v8::Handle<T> value, v8::Isolate* isolate)
     {
         return adoptRef(new SharedPersistent<T>(value, isolate));
     }

@@ -50,7 +50,7 @@ template <typename ElementType, typename PropertyType>
 void getScriptableObjectProperty(PropertyType property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = impl->pluginWrapper();
+    RefPtr<SharedPersistent<v8::Object>> wrapper = impl->pluginWrapper();
     if (!wrapper)
         return;
 
@@ -84,7 +84,7 @@ template <typename ElementType, typename PropertyType>
 void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = impl->pluginWrapper();
+    RefPtr<SharedPersistent<v8::Object>> wrapper = impl->pluginWrapper();
     if (!wrapper)
         return;
 
@@ -192,7 +192,7 @@ template <typename ElementType>
 void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = impl->pluginWrapper();
+    RefPtr<SharedPersistent<v8::Object>> wrapper = impl->pluginWrapper();
     if (!wrapper)
         return;
 

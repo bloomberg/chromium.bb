@@ -26,7 +26,7 @@ ScriptPromisePropertyBase::~ScriptPromisePropertyBase()
     clearWrappers();
 }
 
-static void clearHandle(const v8::WeakCallbackData<v8::Object, ScopedPersistent<v8::Object> >& data)
+static void clearHandle(const v8::WeakCallbackData<v8::Object, ScopedPersistent<v8::Object>>& data)
 {
     data.GetParameter()->clear();
 }
@@ -80,7 +80,7 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState)
     v8::HandleScope handleScope(m_isolate);
     size_t i = 0;
     while (i < m_wrappers.size()) {
-        const OwnPtr<ScopedPersistent<v8::Object> >& persistent = m_wrappers[i];
+        const OwnPtr<ScopedPersistent<v8::Object>>& persistent = m_wrappers[i];
         if (persistent->isEmpty()) {
             // wrapper has died.
             // Since v8 GC can run during the iteration and clear the reference,
@@ -125,7 +125,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState
     v8::Local<v8::Context> context = scriptState->context();
     size_t i = 0;
     while (i < m_wrappers.size()) {
-        const OwnPtr<ScopedPersistent<v8::Object> >& persistent = m_wrappers[i];
+        const OwnPtr<ScopedPersistent<v8::Object>>& persistent = m_wrappers[i];
         if (persistent->isEmpty()) {
             // wrapper has died.
             // Since v8 GC can run during the iteration and clear the reference,
@@ -140,7 +140,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState
         ++i;
     }
     v8::Local<v8::Object> wrapper = holder(context->Global(), m_isolate);
-    OwnPtr<ScopedPersistent<v8::Object> > weakPersistent = adoptPtr(new ScopedPersistent<v8::Object>);
+    OwnPtr<ScopedPersistent<v8::Object>> weakPersistent = adoptPtr(new ScopedPersistent<v8::Object>);
     weakPersistent->set(m_isolate, wrapper);
     weakPersistent->setWeak(weakPersistent.get(), &clearHandle);
     m_wrappers.append(weakPersistent.release());

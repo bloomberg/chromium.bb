@@ -81,7 +81,7 @@ public:
 
     // Weak traits:
     static const v8::PersistentContainerCallbackType kCallbackType = is_weak ? v8::kWeak : v8::kNotWeak;
-    typedef v8::PersistentValueMap<KeyType, ValueType, V8PersistentValueMapTraits<KeyType, ValueType, is_weak> > MapType;
+    typedef v8::PersistentValueMap<KeyType, ValueType, V8PersistentValueMapTraits<KeyType, ValueType, is_weak>> MapType;
 
     typedef void WeakCallbackDataType;
 
@@ -118,7 +118,7 @@ public:
  * removed as their values are being collected.
  */
 template<class KeyType, class ValueType, bool is_weak = true>
-class V8PersistentValueMap : public v8::PersistentValueMap<KeyType, ValueType, V8PersistentValueMapTraits<KeyType, ValueType, is_weak> > {
+class V8PersistentValueMap : public v8::PersistentValueMap<KeyType, ValueType, V8PersistentValueMapTraits<KeyType, ValueType, is_weak>> {
 public:
     typedef V8PersistentValueMapTraits<KeyType, ValueType, is_weak> Traits;
     explicit V8PersistentValueMap(v8::Isolate* isolate) : v8::PersistentValueMap<KeyType, ValueType, Traits>(isolate) { }

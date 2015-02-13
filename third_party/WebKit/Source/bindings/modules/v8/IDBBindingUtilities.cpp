@@ -165,7 +165,7 @@ static v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creat
 
 static const size_t maximumDepth = 2000;
 
-static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, Vector<v8::Local<v8::Array> >& stack, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, Vector<v8::Local<v8::Array>>& stack, bool allowExperimentalTypes = false)
 {
     if (value->IsNumber() && !std::isnan(value->NumberValue()))
         return IDBKey::createNumber(value->NumberValue());
@@ -209,7 +209,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
 
 static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, bool allowExperimentalTypes = false)
 {
-    Vector<v8::Local<v8::Array> > stack;
+    Vector<v8::Local<v8::Array>> stack;
     if (IDBKey* key = createIDBKeyFromValue(isolate, value, stack, allowExperimentalTypes))
         return key;
     return IDBKey::createInvalid();

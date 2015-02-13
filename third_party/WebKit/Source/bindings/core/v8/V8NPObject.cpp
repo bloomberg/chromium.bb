@@ -81,7 +81,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
         }
     }
     if (element) {
-        if (RefPtr<SharedPersistent<v8::Object> > wrapper = element->pluginWrapper()) {
+        if (RefPtr<SharedPersistent<v8::Object>> wrapper = element->pluginWrapper()) {
             v8::HandleScope handleScope(isolate);
             npObject = v8ObjectToNPObject(wrapper->newLocal(isolate));
         } else {

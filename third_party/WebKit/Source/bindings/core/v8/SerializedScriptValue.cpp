@@ -86,7 +86,7 @@ SerializedScriptValue::SerializedScriptValue()
 static void acculumateArrayBuffersForAllWorlds(v8::Isolate* isolate, DOMArrayBuffer* object, Vector<v8::Local<v8::ArrayBuffer>, 4>& buffers)
 {
     if (isMainThread()) {
-        Vector<RefPtr<DOMWrapperWorld> > worlds;
+        Vector<RefPtr<DOMWrapperWorld>> worlds;
         DOMWrapperWorld::allWorldsInMainThread(worlds);
         for (size_t i = 0; i < worlds.size(); i++) {
             v8::Handle<v8::Object> wrapper = worlds[i]->domDataStore().get(object, isolate);

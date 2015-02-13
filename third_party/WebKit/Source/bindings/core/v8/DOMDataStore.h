@@ -208,7 +208,7 @@ private:
     }
 
     bool m_isMainWorld;
-    OwnPtr<DOMWrapperMap<ScriptWrappable> > m_wrapperMap;
+    OwnPtr<DOMWrapperMap<ScriptWrappable>> m_wrapperMap;
 };
 
 template<>

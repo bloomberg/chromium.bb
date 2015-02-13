@@ -166,7 +166,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
-    Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptyTypeSequenceArg;
+    Vector<RefPtr<TestInterfaceEmpty>> testInterfaceEmptyTypeSequenceArg;
     {
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
