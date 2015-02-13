@@ -292,7 +292,7 @@ bool PDFUnsupportedFeaturePromptClient::ShouldExpire(
 
 void PDFUnsupportedFeaturePromptClient::Accept() {
   if (base::win::IsMetroProcess()) {
-    chrome::AttemptRestartWithModeSwitch();
+    chrome::AttemptRestartToDesktopMode();
     return;
   }
 

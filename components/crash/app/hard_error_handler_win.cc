@@ -102,12 +102,8 @@ bool HardErrorHandler(EXCEPTION_POINTERS* ex_info) {
     EntryPointNotFoundHardError(ex_info->ExceptionRecord);
     return true;
   } else if (FacilityFromException(exception) == FACILITY_GRAPHICS_KERNEL) {
-#if defined(USE_AURA)
     RaiseHardErrorMsg(exception, std::string(), std::string());
     return true;
-#else
-    return false;
-#endif
   }
   return false;
 }

@@ -186,45 +186,11 @@ bool ProcessLaunchNotification(
 // Move this function to a common place as the Windows 8 delegate_execute
 // handler can possibly use this.
 bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
-#if defined(USE_AURA)
   // Returning false from this function doesn't mean we don't launch immersive
   // mode in Aura. This function is specifically called in case when we need
   // to relaunch desktop launched chrome into immersive mode through 'relaunch'
   // menu. In case of Aura, we will use delegate_execute to do the relaunch.
   return false;
-#else
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return false;
-
-  if (base::win::IsProcessImmersive(base::GetCurrentProcessHandle()))
-    return false;
-
-  if (ShellIntegration::GetDefaultBrowser() != ShellIntegration::IS_DEFAULT)
-    return false;
-
-  base::IntegrityLevel integrity_level = base::INTEGRITY_UNKNOWN;
-  base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(),
-                                 &integrity_level);
-  if (integrity_level == base::HIGH_INTEGRITY)
-    return false;
-
-  base::FilePath default_user_data_dir;
-  if (!chrome::GetDefaultUserDataDirectory(&default_user_data_dir))
-    return false;
-
-  if (default_user_data_dir != user_data_dir)
-    return false;
-
-  base::win::RegKey reg_key;
-  DWORD reg_value = 0;
-  if (reg_key.Create(HKEY_CURRENT_USER, chrome::kMetroRegistryPath,
-                     KEY_READ) == ERROR_SUCCESS &&
-      reg_key.ReadValueDW(chrome::kLaunchModeValue,
-                          &reg_value) == ERROR_SUCCESS) {
-    return reg_value == 1;
-  }
-  return false;
-#endif
 }
 
 }  // namespace

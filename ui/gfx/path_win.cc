@@ -32,34 +32,4 @@ HRGN CreateHRGNFromSkPath(const SkPath& path) {
   return CreateHRGNFromSkRegion(region);
 }
 
-// See path_aura.cc for Aura definition of these methods:
-#if !defined(USE_AURA)
-
-NativeRegion Path::CreateNativeRegion() const {
-  return CreateHRGNFromSkPath(*this);
-}
-
-// static
-NativeRegion Path::IntersectRegions(NativeRegion r1, NativeRegion r2) {
-  HRGN dest = CreateRectRgn(0, 0, 1, 1);
-  CombineRgn(dest, r1, r2, RGN_AND);
-  return dest;
-}
-
-// static
-NativeRegion Path::CombineRegions(NativeRegion r1, NativeRegion r2) {
-  HRGN dest = CreateRectRgn(0, 0, 1, 1);
-  CombineRgn(dest, r1, r2, RGN_OR);
-  return dest;
-}
-
-// static
-NativeRegion Path::SubtractRegion(NativeRegion r1, NativeRegion r2) {
-  HRGN dest = CreateRectRgn(0, 0, 1, 1);
-  CombineRgn(dest, r1, r2, RGN_DIFF);
-  return dest;
-}
-
-#endif
-
 }  // namespace gfx

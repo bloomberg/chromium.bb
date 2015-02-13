@@ -170,23 +170,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
                       L"Inspect...",
                       ShellContextMenuItemInspectId,
                       true);
-#if defined(USE_AURA)
   NOTIMPLEMENTED();
-#else
-  gfx::Point screen_point(params.x, params.y);
-  POINT point = screen_point.ToPOINT();
-  ClientToScreen(web_contents_->GetNativeView(), &point);
-
-  int selection =
-      TrackPopupMenu(sub_menu,
-                     TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD,
-                     point.x, point.y,
-                     0,
-                     web_contents_->GetContentNativeView(),
-                     NULL);
-
-  MenuItemSelected(selection);
-#endif
   DestroyMenu(menu);
 }
 

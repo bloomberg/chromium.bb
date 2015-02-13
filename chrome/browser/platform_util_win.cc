@@ -211,27 +211,4 @@ void OpenExternal(Profile* profile, const GURL& url) {
                           base::Bind(&OpenExternalOnFileThread, url));
 }
 
-#if !defined(USE_AURA)
-gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
-  return ::GetAncestor(view, GA_ROOT);
-}
-
-gfx::NativeView GetParent(gfx::NativeView view) {
-  return ::GetParent(view);
-}
-
-bool IsWindowActive(gfx::NativeWindow window) {
-  return ::GetForegroundWindow() == window;
-}
-
-void ActivateWindow(gfx::NativeWindow window) {
-  ::SetForegroundWindow(window);
-}
-
-bool IsVisible(gfx::NativeView view) {
-  // MSVC complains if we don't include != 0.
-  return ::IsWindowVisible(view) != 0;
-}
-#endif
-
 }  // namespace platform_util

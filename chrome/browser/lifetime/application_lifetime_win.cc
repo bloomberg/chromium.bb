@@ -5,34 +5,25 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #include "base/bind.h"
+#include "base/environment.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/pref_names.h"
-#include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "base/environment.h"
-#include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/web_contents.h"
-#endif
+#include "ui/views/widget/widget.h"
 
 namespace chrome {
-
-#if !defined(USE_AURA)
-void HandleAppExitingForPlatform() {
-  views::Widget::CloseAllSecondaryWidgets();
-}
-#endif
 
 // Following set of functions, which are used to switch chrome mode after
 // restart are used for in places where either user explicitly wants to switch
@@ -41,28 +32,6 @@ void HandleAppExitingForPlatform() {
 // Here mode refers to Windows 8 modes such as Metro (also called immersive)
 // and desktop mode (Classic or traditional).
 
-// Mode switch based on current mode which is devised from current process.
-void AttemptRestartWithModeSwitch() {
-#if defined(USE_AURA)
-  // This function should be called only from non aura code path.
-  // In aura/ash windows world browser process is always non metro.
-  NOTREACHED();
-#else
-  // The kRestartSwitchMode preference does not exists for Windows 7 and older
-  // operating systems so there is no need for OS version check.
-  PrefService* prefs = g_browser_process->local_state();
-  if (base::win::IsMetroProcess()) {
-    prefs->SetString(prefs::kRelaunchMode,
-                     upgrade_util::kRelaunchModeDesktop);
-  } else {
-    prefs->SetString(prefs::kRelaunchMode,
-                     upgrade_util::kRelaunchModeMetro);
-  }
-  AttemptRestart();
-#endif
-}
-
-#if defined(USE_AURA)
 void ActivateDesktopHelper(AshExecutionStatus ash_execution_status) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string version_str;
@@ -91,7 +60,6 @@ void ActivateDesktopHelper(AshExecutionStatus ash_execution_status) {
   ChromeMetroViewerProcessHost::HandleActivateDesktop(
       path, ash_execution_status == ASH_TERMINATE);
 }
-#endif
 
 void AttemptRestartToDesktopMode() {
   PrefService* prefs = g_browser_process->local_state();

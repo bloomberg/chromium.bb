@@ -28,12 +28,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "ui/base/l10n/l10n_util.h"
-
-#if defined(USE_AURA)
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#endif
+#include "ui/base/l10n/l10n_util.h"
 
 namespace password_manager_util {
 namespace {
@@ -248,11 +245,7 @@ bool AuthenticateUser(gfx::NativeWindow window) {
 
   cui.cbSize = sizeof(CREDUI_INFO);
   cui.hwndParent = NULL;
-#if defined(USE_AURA)
   cui.hwndParent = window->GetHost()->GetAcceleratedWidget();
-#else
-  cui.hwndParent = window;
-#endif
 
   cui.pszMessageText = password_prompt.c_str();
   cui.pszCaptionText = product_name.c_str();

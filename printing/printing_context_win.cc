@@ -17,11 +17,8 @@
 #include "printing/printing_utils.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
-
-#if defined(USE_AURA)
 #include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/aura/window.h"
-#endif
 
 namespace printing {
 
@@ -362,14 +359,8 @@ PrintingContext::Result PrintingContextWin::InitializeSettings(
 
 HWND PrintingContextWin::GetRootWindow(gfx::NativeView view) {
   HWND window = NULL;
-#if defined(USE_AURA)
   if (view)
     window = view->GetHost()->GetAcceleratedWidget();
-#else
-  if (view && IsWindow(view)) {
-    window = GetAncestor(view, GA_ROOTOWNER);
-  }
-#endif
   if (!window) {
     // TODO(maruel):  crbug.com/1214347 Get the right browser window instead.
     return GetDesktopWindow();
