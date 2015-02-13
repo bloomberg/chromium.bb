@@ -229,6 +229,11 @@ class IDLParser(object):
     """Interface : INTERFACE identifier Inheritance '{' InterfaceMembers '}' ';'"""
     p[0] = self.BuildNamed('Interface', p, 2, ListFromConcat(p[3], p[5]))
 
+  # [5.1] Error recovery for interface.
+  def p_InterfaceError(self, p):
+    """Interface : INTERFACE identifier Inheritance '{' error"""
+    p[0] = self.BuildError(p, 'Interface')
+
   # [6]
   def p_Partial(self, p):
     """Partial : PARTIAL PartialDefinition"""

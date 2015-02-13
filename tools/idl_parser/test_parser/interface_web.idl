@@ -65,6 +65,13 @@ interface MyIFaceMissingArgument {
 };
 
 /* TREE
+ *Error(Unexpected keyword "double" after keyword "readonly".)
+ */
+interface MyIFaceMissingAttribute {
+  readonly double foo;
+};
+
+/* TREE
  *Interface(MyIFaceBig)
  *  Const(setString)
  *    PrimitiveType(DOMString)
