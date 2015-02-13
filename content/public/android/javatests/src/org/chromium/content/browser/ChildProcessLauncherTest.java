@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -241,6 +242,6 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
     }
 }

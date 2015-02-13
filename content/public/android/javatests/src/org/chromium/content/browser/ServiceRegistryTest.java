@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
 import org.chromium.content_shell.ShellMojoTestUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
@@ -98,7 +99,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         launchContentShellWithUrl("about://blank");
         mNativeTestEnvironment = ShellMojoTestUtils.setupTestEnvironment();
     }

@@ -44,6 +44,7 @@ import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.browser.ContentViewStatics;
@@ -236,7 +237,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         ResourceExtractor.setMandatoryPaksToExtract("");
 
         try {
-            LibraryLoader.ensureInitialized();
+            LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
         } catch (ProcessInitException e) {
             throw new RuntimeException("Error initializing WebView library", e);
         }

@@ -14,6 +14,7 @@ import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentMain;
@@ -99,17 +100,33 @@ public class BrowserStartupController {
     // of enqueued callbacks have been executed.
     private boolean mStartupSuccess;
 
-    BrowserStartupController(Context context) {
+    private int mLibraryProcessType;
+
+    BrowserStartupController(Context context, int libraryProcessType) {
         mContext = context;
         mAsyncStartupCallbacks = new ArrayList<StartupCallback>();
+        mLibraryProcessType = libraryProcessType;
     }
 
-    public static BrowserStartupController get(Context context) {
+    /**
+     * Get BrowserStartupController instance, create a new one if no existing.
+     *
+     * @param context the application context.
+     * @param libraryProcessType the type of process the shared library is loaded. it must be
+     *                           LibraryProcessType.PROCESS_BROWSER or
+     *                           LibraryProcessType.PROCESS_WEBVIEW.
+     * @return BrowserStartupController instance.
+     */
+    public static BrowserStartupController get(Context context, int libraryProcessType) {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            sInstance = new BrowserStartupController(context.getApplicationContext());
+            assert LibraryProcessType.PROCESS_BROWSER == libraryProcessType
+                    || LibraryProcessType.PROCESS_WEBVIEW == libraryProcessType;
+            sInstance = new BrowserStartupController(context.getApplicationContext(),
+                    libraryProcessType);
         }
+        assert sInstance.mLibraryProcessType == libraryProcessType : "Wrong process type";
         return sInstance;
     }
 
@@ -257,7 +274,7 @@ public class BrowserStartupController {
 
         // Normally Main.java will have already loaded the library asynchronously, we only need
         // to load it here if we arrived via another flow, e.g. bookmark access & sync setup.
-        LibraryLoader.ensureInitialized(mContext, true);
+        LibraryLoader.get(mLibraryProcessType).ensureInitialized(mContext, true);
 
         // TODO(yfriedman): Remove dependency on a command line flag for this.
         DeviceUtils.addDeviceSpecificUserAgentSwitch(mContext);

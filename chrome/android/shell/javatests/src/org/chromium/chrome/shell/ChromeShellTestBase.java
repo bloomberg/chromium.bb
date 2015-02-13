@@ -15,6 +15,7 @@ import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -46,7 +47,8 @@ public class ChromeShellTestBase extends BaseActivityInstrumentationTestCase<Chr
             public void run() {
                 CommandLine.initFromFile("/data/local/tmp/chrome-shell-command-line");
                 try {
-                    BrowserStartupController.get(targetContext).startBrowserProcessesSync(false);
+                    BrowserStartupController.get(targetContext, LibraryProcessType.PROCESS_BROWSER)
+                            .startBrowserProcessesSync(false);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "Unable to load native library.", e);
                     fail("Unable to load native library");

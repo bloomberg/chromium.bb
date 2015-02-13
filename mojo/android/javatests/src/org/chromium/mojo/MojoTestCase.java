@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 
 import org.chromium.base.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 
 /**
  * Base class to test mojo. Setup the environment.
@@ -24,7 +25,7 @@ public class MojoTestCase extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         nativeInitApplicationContext(getInstrumentation().getTargetContext());
         mTestEnvironmentPointer = nativeSetupTestEnvironment();
     }

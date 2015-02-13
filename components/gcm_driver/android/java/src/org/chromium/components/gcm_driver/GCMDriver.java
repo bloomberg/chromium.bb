@@ -12,6 +12,7 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
@@ -174,7 +175,8 @@ public class GCMDriver {
         ContentApplication.initCommandLine(context);
 
         try {
-            BrowserStartupController.get(context).startBrowserProcessesSync(false);
+            BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+                    .startBrowserProcessesSync(false);
             if (sInstance != null) {
                 task.run();
             } else {

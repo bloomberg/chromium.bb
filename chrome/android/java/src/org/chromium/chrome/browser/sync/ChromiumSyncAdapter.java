@@ -20,6 +20,7 @@ import com.google.protos.ipc.invalidation.Types;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -108,8 +109,9 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
                     ContentApplication.initCommandLine(getContext());
                     if (mAsyncStartup) {
                         try {
-                            BrowserStartupController.get(mApplication)
-                                    .startBrowserProcessesAsync(callback);
+                            BrowserStartupController.get(mApplication,
+                                    LibraryProcessType.PROCESS_BROWSER)
+                                            .startBrowserProcessesAsync(callback);
                         } catch (ProcessInitException e) {
                             Log.e(TAG, "Unable to load native library.", e);
                             System.exit(-1);
@@ -132,7 +134,8 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
     private void startBrowserProcessesSync(
             final BrowserStartupController.StartupCallback callback) {
         try {
-            BrowserStartupController.get(mApplication).startBrowserProcessesSync(false);
+            BrowserStartupController.get(mApplication, LibraryProcessType.PROCESS_BROWSER)
+                    .startBrowserProcessesSync(false);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             System.exit(-1);

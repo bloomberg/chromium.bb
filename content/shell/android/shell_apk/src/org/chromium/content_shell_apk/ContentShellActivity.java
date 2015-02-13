@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
@@ -59,7 +60,7 @@ public class ContentShellActivity extends Activity {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
         try {
-            LibraryLoader.ensureInitialized();
+            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ContentView initialization failed.", e);
             // Since the library failed to initialize nothing in the application
@@ -86,25 +87,27 @@ public class ContentShellActivity extends Activity {
         if (CommandLine.getInstance().hasSwitch(ContentSwitches.RUN_LAYOUT_TEST)
                 || CommandLine.getInstance().hasSwitch(ContentSwitches.DUMP_RENDER_TREE)) {
             try {
-                BrowserStartupController.get(this).startBrowserProcessesSync(false);
+                BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
+                        .startBrowserProcessesSync(false);
             } catch (ProcessInitException e) {
                 Log.e(TAG, "Failed to load native library.", e);
                 System.exit(-1);
             }
         } else {
             try {
-                BrowserStartupController.get(this).startBrowserProcessesAsync(
-                        new BrowserStartupController.StartupCallback() {
-                            @Override
-                            public void onSuccess(boolean alreadyStarted) {
-                                finishInitialization(savedInstanceState);
-                            }
+                BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
+                        .startBrowserProcessesAsync(
+                                new BrowserStartupController.StartupCallback() {
+                                    @Override
+                                    public void onSuccess(boolean alreadyStarted) {
+                                        finishInitialization(savedInstanceState);
+                                    }
 
-                            @Override
-                            public void onFailure() {
-                                initializationFailed();
-                            }
-                        });
+                                    @Override
+                                    public void onFailure() {
+                                        initializationFailed();
+                                    }
+                                });
             } catch (ProcessInitException e) {
                 Log.e(TAG, "Unable to load native library.", e);
                 System.exit(-1);

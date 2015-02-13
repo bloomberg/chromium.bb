@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.shell.preferences;
 
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.content.browser.BrowserStartupController;
@@ -15,7 +16,8 @@ public class ChromeShellPreferences extends Preferences {
 
     @Override
     protected void startBrowserProcessSync() throws ProcessInitException {
-        BrowserStartupController.get(this).startBrowserProcessesSync(false);
+        BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
+                .startBrowserProcessesSync(false);
     }
 
     @Override

@@ -15,6 +15,7 @@
         # android_webview_java in android_webview/java_library_common.mk.
         '../base/base.gyp:base_java_application_state',
         '../base/base.gyp:base_java_library_load_from_apk_status_codes',
+        '../base/base.gyp:base_java_library_process_type',
         '../base/base.gyp:base_java_memory_pressure_level',
         '../content/content.gyp:console_message_level_java',
         '../content/content.gyp:content_gamepad_mapping',

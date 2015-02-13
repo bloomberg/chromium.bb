@@ -15,6 +15,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.NetworkState;
 
@@ -100,7 +101,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         createTestNotifier(WatchForChanges.ONLY_WHEN_APP_IN_FOREGROUND);
     }
 

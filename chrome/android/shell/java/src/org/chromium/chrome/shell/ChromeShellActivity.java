@@ -25,6 +25,7 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.FileProviderHelper;
@@ -140,7 +141,8 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
                     }
                 };
         try {
-            BrowserStartupController.get(this).startBrowserProcessesAsync(callback);
+            BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
+                    .startBrowserProcessesAsync(callback);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             System.exit(-1);

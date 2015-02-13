@@ -14,6 +14,7 @@ import android.view.View;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content_shell.ShellManager;
@@ -36,12 +37,13 @@ public class ContentBrowserTestsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         try {
-            LibraryLoader.ensureInitialized();
+            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         } catch (ProcessInitException e) {
             Log.i(TAG, "Cannot load content_browsertests:" +  e);
             System.exit(-1);
         }
-        BrowserStartupController.get(getApplicationContext()).initChromiumBrowserProcessForTests();
+        BrowserStartupController.get(getApplicationContext(), LibraryProcessType.PROCESS_BROWSER)
+                .initChromiumBrowserProcessForTests();
 
         LayoutInflater inflater =
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);

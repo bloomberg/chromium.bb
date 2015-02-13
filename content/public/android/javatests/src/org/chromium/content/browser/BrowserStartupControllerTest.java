@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.AdvancedMockContext;
@@ -35,7 +36,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
         }
 
         private TestBrowserStartupController(Context context) {
-            super(context);
+            super(context, LibraryProcessType.PROCESS_BROWSER);
         }
 
         @Override

@@ -8,6 +8,7 @@ import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.test.util.ApplicationUtils;
@@ -54,14 +55,14 @@ public class NativeLibraryTestBase extends InstrumentationTestCase {
     private void nativeInitialization(boolean initBrowserProcess) {
         if (initBrowserProcess) {
             try {
-                BrowserStartupController.get(getInstrumentation().getTargetContext())
-                        .startBrowserProcessesSync(false);
+                BrowserStartupController.get(getInstrumentation().getTargetContext(),
+                        LibraryProcessType.PROCESS_BROWSER).startBrowserProcessesSync(false);
             } catch (ProcessInitException e) {
                 throw new Error(e);
             }
         } else {
             try {
-                LibraryLoader.ensureInitialized();
+                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
             } catch (ProcessInitException e) {
                 throw new Error(e);
             }

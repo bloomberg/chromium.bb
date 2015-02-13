@@ -51,7 +51,7 @@ RendererHistogramCode g_renderer_histogram_code = NO_PENDING_HISTOGRAM_CODE;
 
 static void RegisterChromiumAndroidLinkerRendererHistogram(
     JNIEnv* env,
-    jclass clazz,
+    jobject jcaller,
     jboolean requested_shared_relro,
     jboolean load_at_fixed_address_failed) {
   // Note a pending histogram value for later recording.
@@ -75,7 +75,7 @@ void RecordChromiumAndroidLinkerRendererHistogram() {
 
 static void RecordChromiumAndroidLinkerBrowserHistogram(
     JNIEnv* env,
-    jclass clazz,
+    jobject jcaller,
     jboolean is_using_browser_shared_relros,
     jboolean load_at_fixed_address_failed,
     jint library_load_from_apk_status) {
@@ -102,16 +102,17 @@ void SetLibraryLoadedHook(LibraryLoadedHook* func) {
   g_registration_callback = func;
 }
 
-static void InitCommandLine(JNIEnv* env, jclass clazz,
+static void InitCommandLine(JNIEnv* env,
+                            jobject jcaller,
                             jobjectArray init_command_line) {
   InitNativeCommandLineFromJavaArray(env, init_command_line);
 }
 
-static jboolean LibraryLoaded(JNIEnv* env, jclass clazz) {
+static jboolean LibraryLoaded(JNIEnv* env, jobject jcaller) {
   if (g_registration_callback == NULL) {
     return true;
   }
-  return g_registration_callback(env, clazz);
+  return g_registration_callback(env, NULL);
 }
 
 void LibraryLoaderExitHook() {
@@ -132,8 +133,13 @@ void SetVersionNumber(const char* version_number) {
   g_library_version_number = strdup(version_number);
 }
 
-jstring GetVersionNumber(JNIEnv* env, jclass clazz) {
+jstring GetVersionNumber(JNIEnv* env, jobject jcaller) {
   return ConvertUTF8ToJavaString(env, g_library_version_number).Release();
+}
+
+LibraryProcessType GetLibraryProcessType(JNIEnv* env) {
+  return static_cast<LibraryProcessType>(
+      Java_LibraryLoader_getLibraryProcessType(env));
 }
 
 }  // namespace android

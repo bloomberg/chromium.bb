@@ -22,6 +22,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessConnection;
@@ -165,7 +166,8 @@ public class ChildProcessService extends Service {
 
                     boolean loadAtFixedAddressFailed = false;
                     try {
-                        LibraryLoader.loadNow(getApplicationContext(), false);
+                        LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
+                                .loadNow(getApplicationContext(), false);
                         isLoaded = true;
                     } catch (ProcessInitException e) {
                         if (requestedSharedRelro) {
@@ -179,7 +181,8 @@ public class ChildProcessService extends Service {
                     if (!isLoaded && requestedSharedRelro) {
                         Linker.disableSharedRelros();
                         try {
-                            LibraryLoader.loadNow(getApplicationContext(), false);
+                            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
+                                    .loadNow(getApplicationContext(), false);
                             isLoaded = true;
                         } catch (ProcessInitException e) {
                             Log.e(TAG, "Failed to load native library on retry", e);
@@ -188,10 +191,10 @@ public class ChildProcessService extends Service {
                     if (!isLoaded) {
                         System.exit(-1);
                     }
-                    LibraryLoader.registerRendererProcessHistogram(
-                            requestedSharedRelro,
-                            loadAtFixedAddressFailed);
-                    LibraryLoader.initialize();
+                    LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
+                            .registerRendererProcessHistogram(requestedSharedRelro,
+                                    loadAtFixedAddressFailed);
+                    LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).initialize();
                     synchronized (mMainThread) {
                         mLibraryInitialized = true;
                         mMainThread.notifyAll();

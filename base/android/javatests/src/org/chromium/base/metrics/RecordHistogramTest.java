@@ -8,6 +8,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 
 import java.util.concurrent.TimeUnit;
@@ -19,7 +20,7 @@ public class RecordHistogramTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         RecordHistogram.initialize();
     }
 

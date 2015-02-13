@@ -10,6 +10,7 @@ import android.util.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.media.MediaDrmBridge;
@@ -32,14 +33,15 @@ public abstract class AwBrowserProcess {
     public static void loadLibrary() {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         try {
-            LibraryLoader.loadNow();
+            LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
+            libraryLoader.loadNow();
+            // Switch the command line implementation from Java to native.
+            // It's okay for the WebView to do this before initialization because we have
+            // setup the JNI bindings by this point.
+            libraryLoader.switchCommandLineForWebView();
         } catch (ProcessInitException e) {
             throw new RuntimeException("Cannot load WebView", e);
         }
-        // Switch the command line implementation from Java to native.
-        // It's okay for the WebView to do this before initialization because we have
-        // setup the JNI bindings by this point.
-        LibraryLoader.switchCommandLineForWebView();
     }
 
     /**
@@ -56,7 +58,8 @@ public abstract class AwBrowserProcess {
             @Override
             public void run() {
                 try {
-                    BrowserStartupController.get(context).startBrowserProcessesSync(true);
+                    BrowserStartupController.get(context, LibraryProcessType.PROCESS_WEBVIEW)
+                            .startBrowserProcessesSync(true);
                     initializePlatformKeySystem();
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Cannot initialize WebView", e);

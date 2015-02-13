@@ -1371,6 +1371,15 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //base:base_android_java_enums_srcjar
+          'target_name': 'base_java_library_process_type',
+          'type': 'none',
+          'variables': {
+            'source_file': 'android/library_loader/library_loader_hooks.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
           # GN: //base:base_java
           'target_name': 'base_java',
           'type': 'none',
@@ -1381,6 +1390,7 @@
           'dependencies': [
             'base_java_application_state',
             'base_java_library_load_from_apk_status_codes',
+            'base_java_library_process_type',
             'base_java_memory_pressure_level',
             'base_native_libraries_gen',
           ],

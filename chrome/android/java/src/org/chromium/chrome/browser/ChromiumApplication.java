@@ -10,6 +10,7 @@ import android.os.Build;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.LibraryProcessType;;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -79,7 +80,8 @@ public abstract class ChromiumApplication extends ContentApplication {
             throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
         Context applicationContext = getApplicationContext();
-        BrowserStartupController.get(applicationContext).startBrowserProcessesAsync(callback);
+        BrowserStartupController.get(applicationContext, LibraryProcessType.PROCESS_BROWSER)
+                .startBrowserProcessesAsync(callback);
     }
 
     /**

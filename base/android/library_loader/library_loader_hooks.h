@@ -12,6 +12,19 @@
 namespace base {
 namespace android {
 
+// The process the shared library is loaded in.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base.library_loader
+enum LibraryProcessType {
+  // The LibraryLoad has not been initialized.
+  PROCESS_UNINITIALIZED = 0,
+  // Shared library is running in browser process.
+  PROCESS_BROWSER = 1,
+  // Shared library is running in child process.
+  PROCESS_CHILD = 2,
+  // Shared library is running in webview process.
+  PROCESS_WEBVIEW = 3,
+};
+
 // Record any pending renderer histogram value as a histogram.  Pending values
 // are set by RegisterChromiumAndroidLinkerRendererHistogram.
 BASE_EXPORT void RecordChromiumAndroidLinkerRendererHistogram();
@@ -47,6 +60,9 @@ BASE_EXPORT void SetVersionNumber(const char* version_number);
 // Call on exit to delete the AtExitManager which OnLibraryLoadedOnUIThread
 // created.
 BASE_EXPORT void LibraryLoaderExitHook();
+
+// Return the process type the shared library is loaded in.
+BASE_EXPORT LibraryProcessType GetLibraryProcesssType();
 
 }  // namespace android
 }  // namespace base

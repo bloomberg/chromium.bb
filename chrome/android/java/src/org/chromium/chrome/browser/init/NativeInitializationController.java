@@ -12,6 +12,7 @@ import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessLauncher;
 
@@ -77,7 +78,8 @@ class NativeInitializationController {
             @Override
             public void run() {
                 try {
-                    LibraryLoader.ensureInitialized(mContext.getApplicationContext(), true);
+                    LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                            .ensureInitialized(mContext.getApplicationContext(), true);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "Unable to load native library.", e);
                     mActivityDelegate.onStartupFailure();
@@ -143,7 +145,14 @@ class NativeInitializationController {
             onResume();
         }
 
-        LibraryLoader.onNativeInitializationComplete(mContext.getApplicationContext());
+        try {
+            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                    .onNativeInitializationComplete(mContext.getApplicationContext());
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Unable to load native library.", e);
+            mActivityDelegate.onStartupFailure();
+            return;
+        }
     }
 
     /**
