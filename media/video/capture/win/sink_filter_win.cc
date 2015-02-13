@@ -35,8 +35,10 @@ SinkFilter::~SinkFilter() {
   input_pin_->SetOwner(NULL);
 }
 
-void SinkFilter::SetRequestedMediaFormat(const VideoCaptureFormat& format) {
-  input_pin_->SetRequestedMediaFormat(format);
+void SinkFilter::SetRequestedMediaFormat(VideoPixelFormat pixel_format,
+                                         float frame_rate,
+                                         const BITMAPINFOHEADER& info_header) {
+  input_pin_->SetRequestedMediaFormat(pixel_format, frame_rate, info_header);
 }
 
 const VideoCaptureFormat& SinkFilter::ResultingFormat() {

@@ -10,6 +10,7 @@
 #define MEDIA_VIDEO_CAPTURE_WIN_CAPABILITY_LIST_WIN_H_
 
 #include <list>
+#include <windows.h>
 
 #include "media/video/capture/video_capture_types.h"
 
@@ -18,14 +19,27 @@ namespace media {
 struct CapabilityWin {
   CapabilityWin(int index, const VideoCaptureFormat& format)
       : stream_index(index), supported_format(format) {}
-  int stream_index;
-  VideoCaptureFormat supported_format;
+
+  // Used by VideoCaptureDeviceWin.
+  CapabilityWin(int index, const VideoCaptureFormat& format,
+      const BITMAPINFOHEADER& info_header)
+      : stream_index(index),
+        supported_format(format),
+        info_header(info_header) {
+  }
+
+  const int stream_index;
+  const VideoCaptureFormat supported_format;
+
+  // |info_header| is only valid if DirectShow is used.
+  const BITMAPINFOHEADER info_header;
 };
 
 typedef std::list<CapabilityWin> CapabilityList;
 
-CapabilityWin GetBestMatchedCapability(const VideoCaptureFormat& requested,
-                                       const CapabilityList& capabilities);
+const CapabilityWin& GetBestMatchedCapability(
+    const VideoCaptureFormat& requested,
+    const CapabilityList& capabilities);
 
 }  // namespace media
 

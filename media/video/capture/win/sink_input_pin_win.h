@@ -24,7 +24,9 @@ class SinkInputPin : public PinBase {
   SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer);
   virtual ~SinkInputPin();
 
-  void SetRequestedMediaFormat(const VideoCaptureFormat& format);
+  void SetRequestedMediaFormat(VideoPixelFormat pixel_format,
+                               float frame_rate,
+                               const BITMAPINFOHEADER& info_header);
   // Returns the capability that is negotiated when this
   // pin is connected to a media filter.
   const VideoCaptureFormat& ResultingFormat();
@@ -36,7 +38,9 @@ class SinkInputPin : public PinBase {
   STDMETHOD(Receive)(IMediaSample* media_sample);
 
  private:
-  VideoCaptureFormat requested_format_;
+  VideoPixelFormat requested_pixel_format_;
+  float requested_frame_rate_;
+  BITMAPINFOHEADER requested_info_header_;
   VideoCaptureFormat resulting_format_;
   SinkFilterObserver* observer_;
 

@@ -16,9 +16,15 @@ namespace media {
 
 const REFERENCE_TIME kSecondsToReferenceTime = 10000000;
 
+
+static DWORD GetArea(const BITMAPINFOHEADER& info_header) {
+  return info_header.biWidth * info_header.biHeight;
+}
+
 SinkInputPin::SinkInputPin(IBaseFilter* filter,
                            SinkFilterObserver* observer)
-    : observer_(observer),
+    : requested_frame_rate_(0),
+      observer_(observer),
       PinBase(filter) {
 }
 
@@ -36,30 +42,23 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   pvi->bmiHeader.biPlanes = 1;
   pvi->bmiHeader.biClrImportant = 0;
   pvi->bmiHeader.biClrUsed = 0;
-  if (requested_format_.frame_rate > 0) {
+  if (requested_frame_rate_ > 0) {
     pvi->AvgTimePerFrame =
-        kSecondsToReferenceTime / requested_format_.frame_rate;
+        kSecondsToReferenceTime / requested_frame_rate_;
   }
 
   media_type->majortype = MEDIATYPE_Video;
   media_type->formattype = FORMAT_VideoInfo;
   media_type->bTemporalCompression = FALSE;
 
-  if (requested_format_.pixel_format == PIXEL_FORMAT_MJPEG) {
+  if (requested_pixel_format_ == PIXEL_FORMAT_MJPEG) {
     // If the requested pixel format is MJPEG, accept only MJPEG.
     // This is ok since the capabilities of the capturer have been
     // enumerated and we know that it is supported.
     if (index != 0)
       return false;
 
-    pvi->bmiHeader.biCompression = MAKEFOURCC('M', 'J', 'P', 'G');
-    pvi->bmiHeader.biBitCount = 0;
-    pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
-    pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
-    pvi->bmiHeader.biSizeImage = 0;
-    media_type->subtype = MEDIASUBTYPE_MJPG;
-    media_type->bFixedSizeSamples = FALSE;
-    media_type->lSampleSize = pvi->bmiHeader.biSizeImage;
+    pvi->bmiHeader = requested_info_header_;
     return true;
   }
 
@@ -67,28 +66,28 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
     case 0: {
       pvi->bmiHeader.biCompression = MAKEFOURCC('I', '4', '2', '0');
       pvi->bmiHeader.biBitCount = 12;  // bit per pixel
-      pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
-      pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
+      pvi->bmiHeader.biWidth = requested_info_header_.biWidth;
+      pvi->bmiHeader.biHeight = requested_info_header_.biHeight;
       pvi->bmiHeader.biSizeImage =
-          requested_format_.frame_size.GetArea() * 3 / 2;
+        GetArea(requested_info_header_) * 3 / 2;
       media_type->subtype = kMediaSubTypeI420;
       break;
     }
     case 1: {
       pvi->bmiHeader.biCompression = MAKEFOURCC('Y', 'U', 'Y', '2');
       pvi->bmiHeader.biBitCount = 16;
-      pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
-      pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
-      pvi->bmiHeader.biSizeImage = requested_format_.frame_size.GetArea() * 2;
+      pvi->bmiHeader.biWidth = requested_info_header_.biWidth;
+      pvi->bmiHeader.biHeight = requested_info_header_.biHeight;
+      pvi->bmiHeader.biSizeImage = GetArea(requested_info_header_) * 2;
       media_type->subtype = MEDIASUBTYPE_YUY2;
       break;
     }
     case 2: {
       pvi->bmiHeader.biCompression = BI_RGB;
       pvi->bmiHeader.biBitCount = 24;
-      pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
-      pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
-      pvi->bmiHeader.biSizeImage = requested_format_.frame_size.GetArea() * 3;
+      pvi->bmiHeader.biWidth = requested_info_header_.biWidth;
+      pvi->bmiHeader.biHeight = requested_info_header_.biHeight;
+      pvi->bmiHeader.biSizeImage = GetArea(requested_info_header_) * 3;
       media_type->subtype = MEDIASUBTYPE_RGB24;
       break;
     }
@@ -124,7 +123,7 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
     resulting_format_.frame_rate =
         static_cast<int>(kSecondsToReferenceTime / pvi->AvgTimePerFrame);
   } else {
-    resulting_format_.frame_rate = requested_format_.frame_rate;
+    resulting_format_.frame_rate = requested_frame_rate_;
   }
   if (sub_type == kMediaSubTypeI420 &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('I', '4', '2', '0')) {
@@ -159,8 +158,13 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   return S_OK;
 }
 
-void SinkInputPin::SetRequestedMediaFormat(const VideoCaptureFormat& format) {
-  requested_format_ = format;
+void SinkInputPin::SetRequestedMediaFormat(
+    VideoPixelFormat pixel_format,
+    float frame_rate,
+    const BITMAPINFOHEADER& info_header) {
+  requested_pixel_format_ = pixel_format;
+  requested_frame_rate_ = frame_rate;
+  requested_info_header_ = info_header;
   resulting_format_.frame_size.SetSize(0, 0);
   resulting_format_.frame_rate = 0;
   resulting_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;

@@ -178,7 +178,7 @@ void VideoCaptureDeviceWin::ScopedMediaType::Free() {
     return;
 
   DeleteMediaType(media_type_);
-  media_type_= NULL;
+  media_type_ = NULL;
 }
 
 AM_MEDIA_TYPE** VideoCaptureDeviceWin::ScopedMediaType::Receive() {
@@ -319,12 +319,11 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   // Get the camera capability that best match the requested format.
   const CapabilityWin found_capability =
       GetBestMatchedCapability(params.requested_format, capabilities_);
-  VideoCaptureFormat format = found_capability.supported_format;
 
   // Reduce the frame rate if the requested frame rate is lower
   // than the capability.
-  format.frame_rate =
-      std::min(format.frame_rate, params.requested_format.frame_rate);
+  float frame_rate = std::min(found_capability.supported_format.frame_rate,
+                              params.requested_format.frame_rate);
 
   ScopedComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
@@ -355,11 +354,13 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   if (media_type->formattype == FORMAT_VideoInfo) {
     VIDEOINFOHEADER* h =
         reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-    if (format.frame_rate > 0)
-      h->AvgTimePerFrame = kSecondsToReferenceTime / format.frame_rate;
+    if (frame_rate > 0)
+      h->AvgTimePerFrame = kSecondsToReferenceTime / frame_rate;
   }
   // Set the sink filter to request this format.
-  sink_filter_->SetRequestedMediaFormat(format);
+  sink_filter_->SetRequestedMediaFormat(
+    found_capability.supported_format.pixel_format, frame_rate,
+    found_capability.info_header);
   // Order the capture device to use this format.
   hr = stream_config->SetFormat(media_type.get());
   if (FAILED(hr)) {
@@ -515,7 +516,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
               ? (kSecondsToReferenceTime / static_cast<float>(time_per_frame))
               : 0.0;
 
-      capabilities_.emplace_back(stream_index, format);
+      capabilities_.emplace_back(stream_index, format, h->bmiHeader);
     }
   }
 

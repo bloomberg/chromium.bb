@@ -39,15 +39,16 @@ static bool CompareCapability(const VideoCaptureFormat& requested,
   return lhs.pixel_format < rhs.pixel_format;
 }
 
-CapabilityWin GetBestMatchedCapability(const VideoCaptureFormat& requested,
-                                       const CapabilityList& capabilities) {
+const CapabilityWin& GetBestMatchedCapability(
+  const VideoCaptureFormat& requested,
+  const CapabilityList& capabilities) {
   DCHECK(!capabilities.empty());
-  CapabilityWin best_match = capabilities.front();
+  const CapabilityWin* best_match = &(*capabilities.begin());
   for (const CapabilityWin& capability : capabilities) {
-    if (CompareCapability(requested, capability, best_match))
-      best_match = capability;
+    if (CompareCapability(requested, capability, *best_match))
+      best_match = &capability;
   }
-  return best_match;
+  return *best_match;
 }
 
 }  // namespace media
