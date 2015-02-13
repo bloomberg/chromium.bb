@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/deferred_download_observer.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -82,6 +83,17 @@ DownloadControllerAndroidImpl::~DownloadControllerAndroidImpl() {
 void DownloadControllerAndroidImpl::Init(JNIEnv* env, jobject obj) {
   java_object_ = new JavaObject;
   java_object_->obj = env->NewWeakGlobalRef(obj);
+}
+
+void DownloadControllerAndroidImpl::CancelDeferredDownload(
+    DeferredDownloadObserver* observer) {
+  for (auto iter = deferred_downloads_.begin();
+      iter != deferred_downloads_.end(); ++iter) {
+    if (*iter == observer) {
+      deferred_downloads_.erase(iter);
+      return;
+    }
+  }
 }
 
 void DownloadControllerAndroidImpl::CreateGETDownload(
@@ -201,14 +213,25 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // Call newHttpGetDownload
-  ScopedJavaLocalRef<jobject> view = GetContentView(render_process_id,
-                                                    render_view_id);
-  if (view.is_null()) {
+  WebContents* web_contents = GetWebContents(render_process_id, render_view_id);
+  if (!web_contents) {
     // The view went away. Can't proceed.
     LOG(ERROR) << "Download failed on URL:" << info.url.spec();
     return;
   }
-
+  ScopedJavaLocalRef<jobject> view =
+      GetContentViewCoreFromWebContents(web_contents);
+  if (view.is_null()) {
+    // ContentViewCore might not have been created yet, pass a callback to
+    // DeferredDownloadTaskManager so that the download can restart when
+    // ContentViewCore is created.
+    deferred_downloads_.push_back(new DeferredDownloadObserver(
+        web_contents,
+        base::Bind(&DownloadControllerAndroidImpl::StartAndroidDownload,
+                   base::Unretained(this), render_process_id, render_view_id,
+                   info)));
+    return;
+  }
   ScopedJavaLocalRef<jstring> jurl =
       ConvertUTF8ToJavaString(env, info.url.spec());
   ScopedJavaLocalRef<jstring> juser_agent =
@@ -329,18 +352,15 @@ void DownloadControllerAndroidImpl::OnDangerousDownload(DownloadItem* item) {
   }
 }
 
-ScopedJavaLocalRef<jobject> DownloadControllerAndroidImpl::GetContentView(
+WebContents* DownloadControllerAndroidImpl::GetWebContents(
     int render_process_id, int render_view_id) {
   RenderViewHost* render_view_host =
       RenderViewHost::FromID(render_process_id, render_view_id);
 
   if (!render_view_host)
-    return ScopedJavaLocalRef<jobject>();
+    return NULL;
 
-  WebContents* web_contents =
-      render_view_host->GetDelegate()->GetAsWebContents();
-
-  return GetContentViewCoreFromWebContents(web_contents);
+  return render_view_host->GetDelegate()->GetAsWebContents();
 }
 
 ScopedJavaLocalRef<jobject>
