@@ -155,6 +155,9 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->avatar_url = GURL(string_attr_map["avatar_url"]);
   form->federation_url = GURL(string_attr_map["federation_url"]);
   form->skip_zero_click = uint_attr_map["skip_zero_click"];
+  form->generation_upload_status =
+      static_cast<PasswordForm::GenerationUploadStatus>(
+          uint_attr_map["generation_upload_status"]);
 
   return form.Pass();
 }
@@ -243,6 +246,7 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
     { "avatar_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { "federation_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { "skip_zero_click", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
+    { "generation_upload_status", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     // This field is always "chrome" so that we can search for it.
     { "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { NULL }
@@ -362,6 +366,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "avatar_url", form.avatar_url.spec().c_str(),
       "federation_url", form.federation_url.spec().c_str(),
       "skip_zero_click", form.skip_zero_click,
+      "generation_upload_status", form.generation_upload_status,
       "application", app_string,
       NULL);
 }

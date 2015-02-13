@@ -233,6 +233,48 @@ class PasswordFormManagerTest : public testing::Test {
     return p->ShouldIgnoreResult(*form);
   }
 
+  // Save saved_match() for observed_form() where |observed_form_data|,
+  // |times_used|, and |status| are used to overwrite the default values for
+  // observed_form(). |field_type| is the upload that we expect from saving,
+  // with nullptr meaning no upload expected.
+  void AccountCreationUploadTest(const autofill::FormData& observed_form_data,
+                                 int times_used,
+                                 PasswordForm::GenerationUploadStatus status,
+                                 const autofill::ServerFieldType* field_type) {
+    TestPasswordManagerClient client_with_store(mock_store());
+    TestPasswordManager password_manager(&client_with_store);
+
+    PasswordForm form(*observed_form());
+
+    form.form_data = observed_form_data;
+
+    PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                     client_with_store.driver(), form, false);
+    ScopedVector<PasswordForm> result;
+    result.push_back(CreateSavedMatch(false));
+    result[0]->generation_upload_status = status;
+    result[0]->times_used = times_used;
+
+    PasswordForm form_to_save(form);
+    form_to_save.preferred = true;
+    form_to_save.username_value = result[0]->username_value;
+    form_to_save.password_value = result[0]->password_value;
+
+    SimulateFetchMatchingLoginsFromPasswordStore(&form_manager);
+    form_manager.OnGetPasswordStoreResults(result.Pass());
+
+    if (field_type) {
+      EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
+                  UploadPasswordForm(_, *field_type)).Times(1);
+    } else {
+      EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
+                  UploadPasswordForm(_, _)).Times(0);
+    }
+    form_manager.ProvisionallySave(
+        form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.Save();
+  }
+
   PasswordForm* observed_form() { return &observed_form_; }
   PasswordForm* saved_match() { return &saved_match_; }
   PasswordForm* CreateSavedMatch(bool blacklisted) {
@@ -1177,57 +1219,42 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   Mock::VerifyAndClearExpectations(&blacklist_form_manager);
 }
 
-TEST_F(PasswordFormManagerTest, UploadFormData_AccountCreationPassword) {
-  TestPasswordManagerClient client_with_store(mock_store());
-  TestPasswordManager password_manager(&client_with_store);
-
-  PasswordForm form(*observed_form());
-
+TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
+  autofill::FormData form_data;
   autofill::FormFieldData field;
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("Email");
   field.form_control_type = "text";
-  form.form_data.fields.push_back(field);
+  form_data.fields.push_back(field);
 
   field.label = ASCIIToUTF16("password");
   field.name = ASCIIToUTF16("password");
   field.form_control_type = "password";
-  form.form_data.fields.push_back(field);
+  form_data.fields.push_back(field);
 
-  PasswordFormManager form_manager(&password_manager, &client_with_store,
-                                   client_with_store.driver(), form, false);
-  ScopedVector<PasswordForm> simulated_results;
-  simulated_results.push_back(CreateSavedMatch(false));
+  // Form data is different than saved form data, account creation signal should
+  // be sent.
+  autofill::ServerFieldType field_type = autofill::ACCOUNT_CREATION_PASSWORD;
+  AccountCreationUploadTest(form_data, 0, PasswordForm::NO_SIGNAL_SENT,
+                            &field_type);
 
-  field.label = ASCIIToUTF16("full_name");
-  field.name = ASCIIToUTF16("full_name");
-  field.form_control_type = "text";
-  simulated_results[0]->form_data.fields.push_back(field);
+  // Non-zero times used will not upload since we only upload a positive signal
+  // at most once.
+  AccountCreationUploadTest(form_data, 1, PasswordForm::NO_SIGNAL_SENT,
+                            nullptr);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("Email");
-  field.form_control_type = "text";
-  simulated_results[0]->form_data.fields.push_back(field);
+  // Same form data as saved match and POSITIVE_SIGNAL_SENT means there should
+  // be a negative autofill ping sent.
+  field_type = autofill::NOT_ACCOUNT_CREATION_PASSWORD;
+  AccountCreationUploadTest(saved_match()->form_data, 2,
+                            PasswordForm::POSITIVE_SIGNAL_SENT, &field_type);
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
-  field.form_control_type = "password";
-  simulated_results[0]->form_data.fields.push_back(field);
-
-  PasswordForm form_to_save(form);
-  form_to_save.preferred = true;
-  form_to_save.username_value = simulated_results[0]->username_value;
-  form_to_save.password_value = simulated_results[0]->password_value;
-
-  SimulateFetchMatchingLoginsFromPasswordStore(&form_manager);
-  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
-
-  EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-              UploadPasswordForm(_, autofill::ACCOUNT_CREATION_PASSWORD))
-      .Times(1);
-  form_manager.ProvisionallySave(
-      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-  form_manager.Save();
+  // For any other GenerationUplaodStatus, no autofill upload should occur
+  // if the observed form data matches the saved form data.
+  AccountCreationUploadTest(saved_match()->form_data, 3,
+                            PasswordForm::NO_SIGNAL_SENT, nullptr);
+  AccountCreationUploadTest(saved_match()->form_data, 3,
+                            PasswordForm::NEGATIVE_SIGNAL_SENT, nullptr);
 }
 
 TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {

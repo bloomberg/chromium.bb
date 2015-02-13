@@ -251,8 +251,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Check to see if |pending| corresponds to an account creation form. If we
   // think that it does, we label it as such and upload this state to the
   // Autofill server, so that we will trigger password generation in the future.
-  void CheckForAccountCreationForm(const autofill::PasswordForm& pending,
-                                   const autofill::PasswordForm& observed);
+  // This function will update generation_upload_status of |pending| if an
+  // upload is performed.
+  void CheckForAccountCreationForm(const autofill::PasswordForm& observed,
+                                   autofill::PasswordForm* pending);
 
   // Update all login matches to reflect new preferred state - preferred flag
   // will be reset on all matched logins that different than the current
@@ -277,10 +279,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // duplicates.
   void SanitizePossibleUsernames(autofill::PasswordForm* form);
 
-  // Helper function to delegate uploading to the AutofillManager.
-  virtual void UploadPasswordForm(
-      const autofill::FormData& form_data,
-      const autofill::ServerFieldType& password_type);
+  // Helper function to delegate uploading to the AutofillManager. Returns true
+  // on success.
+  bool UploadPasswordForm(const autofill::FormData& form_data,
+                          const autofill::ServerFieldType& password_type);
 
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most

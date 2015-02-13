@@ -28,7 +28,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-const int kCurrentVersionNumber = 11;
+const int kCurrentVersionNumber = 12;
 static const int kCompatibleVersionNumber = 1;
 
 Pickle SerializeVector(const std::vector<base::string16>& vec) {
@@ -76,6 +76,7 @@ enum LoginTableColumns {
   COLUMN_AVATAR_URL,
   COLUMN_FEDERATION_URL,
   COLUMN_SKIP_ZERO_CLICK,
+  COLUMN_GENERATION_UPLOAD_STATUS,
 };
 
 void BindAddStatement(const PasswordForm& form,
@@ -111,6 +112,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindString(COLUMN_AVATAR_URL, form.avatar_url.spec());
   s->BindString(COLUMN_FEDERATION_URL, form.federation_url.spec());
   s->BindInt(COLUMN_SKIP_ZERO_CLICK, form.skip_zero_click);
+  s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS, form.generation_upload_status);
 }
 
 void AddCallback(int err, sql::Statement* /*stmt*/) {
@@ -152,7 +154,9 @@ void LogTimesUsedStat(const std::string& name, int sample) {
 }
 
 // Creates a table named |table_name| using our current schema.
-bool CreateNewTable(sql::Connection* db, const char* table_name) {
+bool CreateNewTable(sql::Connection* db,
+                    const char* table_name,
+                    const char* extra_columns) {
   std::string query = base::StringPrintf(
       "CREATE TABLE %s ("
       "origin_url VARCHAR NOT NULL, "
@@ -177,8 +181,10 @@ bool CreateNewTable(sql::Connection* db, const char* table_name) {
       "avatar_url VARCHAR,"
       "federation_url VARCHAR,"
       "skip_zero_click INTEGER,"
+      "%s"
       "UNIQUE (origin_url, username_element, username_value, "
-      "password_element, signon_realm))", table_name);
+      "password_element, signon_realm))",
+      table_name, extra_columns);
   return db->Execute(query.c_str());
 }
 
@@ -354,14 +360,19 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
           "password_type, possible_usernames, times_used, form_data, "
           "date_synced, display_name, avatar_url, federation_url, is_zero_click"
           " FROM logins";
-      if (!CreateNewTable(&db_, "logins_new") ||
-          !db_.Execute(copy_query) ||
+      if (!CreateNewTable(&db_, "logins_new", "") || !db_.Execute(copy_query) ||
           !db_.Execute("DROP TABLE logins") ||
           !db_.Execute("ALTER TABLE logins_new RENAME TO logins") ||
           !CreateIndexOnSignonRealm(&db_, "logins"))
         return false;
       meta_table_.SetVersionNumber(11);
     }
+    case 11:
+      if (!db_.Execute(
+              "ALTER TABLE logins ADD COLUMN "
+              "generation_upload_status INTEGER"))
+        return false;
+      meta_table_.SetVersionNumber(12);
     case kCurrentVersionNumber:
       // Already up to date
       return true;
@@ -373,7 +384,7 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
 
 bool LoginDatabase::InitLoginsTable() {
   if (!db_.DoesTableExist("logins")) {
-    if (!CreateNewTable(&db_, "logins")) {
+    if (!CreateNewTable(&db_, "logins", "generation_upload_status INTEGER,")) {
       NOTREACHED();
       return false;
     }
@@ -512,8 +523,8 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
       " signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       " scheme, password_type, possible_usernames, times_used, form_data, "
       " date_synced, display_name, avatar_url,"
-      " federation_url, skip_zero_click) VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      " federation_url, skip_zero_click, generation_upload_status) VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   BindAddStatement(form, encrypted_password, &s);
   db_.set_error_callback(base::Bind(&AddCallback));
   const bool success = s.Run();
@@ -531,8 +542,8 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
       " signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       " scheme, password_type, possible_usernames, times_used, form_data, "
       " date_synced, display_name, avatar_url,"
-      " federation_url, skip_zero_click) VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      " federation_url, skip_zero_click, generation_upload_status) VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   BindAddStatement(form, encrypted_password, &s);
   if (s.Run()) {
     list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
@@ -566,7 +577,8 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
                                           "display_name = ?, "
                                           "avatar_url = ?, "
                                           "federation_url = ?, "
-                                          "skip_zero_click = ? "
+                                          "skip_zero_click = ?, "
+                                          "generation_upload_status = ? "
                                           "WHERE origin_url = ? AND "
                                           "username_element = ? AND "
                                           "username_value = ? AND "
@@ -590,13 +602,14 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindString(13, form.avatar_url.spec());
   s.BindString(14, form.federation_url.spec());
   s.BindInt(15, form.skip_zero_click);
+  s.BindInt(16, form.generation_upload_status);
 
   // WHERE starts here.
-  s.BindString(16, form.origin.spec());
-  s.BindString16(17, form.username_element);
-  s.BindString16(18, form.username_value);
-  s.BindString16(19, form.password_element);
-  s.BindString(20, form.signon_realm);
+  s.BindString(17, form.origin.spec());
+  s.BindString16(18, form.username_element);
+  s.BindString16(19, form.username_value);
+  s.BindString16(20, form.password_element);
+  s.BindString(21, form.signon_realm);
 
   if (!s.Run())
     return PasswordStoreChangeList();
@@ -711,6 +724,13 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->avatar_url = GURL(s.ColumnString(COLUMN_AVATAR_URL));
   form->federation_url = GURL(s.ColumnString(COLUMN_FEDERATION_URL));
   form->skip_zero_click = (s.ColumnInt(COLUMN_SKIP_ZERO_CLICK) > 0);
+  int generation_upload_status_int =
+      s.ColumnInt(COLUMN_GENERATION_UPLOAD_STATUS);
+  DCHECK(generation_upload_status_int >= 0 &&
+         generation_upload_status_int <= PasswordForm::UNKNOWN_STATUS);
+  form->generation_upload_status =
+      static_cast<PasswordForm::GenerationUploadStatus>(
+          generation_upload_status_int);
   return ENCRYPTION_RESULT_SUCCESS;
 }
 
@@ -726,7 +746,7 @@ bool LoginDatabase::GetLogins(
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used, form_data, "
       "date_synced, display_name, avatar_url, "
-      "federation_url, skip_zero_click "
+      "federation_url, skip_zero_click, generation_upload_status "
       "FROM logins WHERE signon_realm == ? ";
   sql::Statement s;
   const GURL signon_realm(form.signon_realm);
@@ -824,7 +844,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used, form_data, "
       "date_synced, display_name, avatar_url, "
-      "federation_url, skip_zero_click FROM logins "
+      "federation_url, skip_zero_click, generation_upload_status FROM logins "
       "WHERE date_created >= ? AND date_created < ?"
       "ORDER BY origin_url"));
   s.BindInt64(0, begin.ToInternalValue());
@@ -856,7 +876,7 @@ bool LoginDatabase::GetLoginsSyncedBetween(
       "ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used, form_data, "
       "date_synced, display_name, avatar_url, "
-      "federation_url, skip_zero_click FROM logins "
+      "federation_url, skip_zero_click, generation_upload_status FROM logins "
       "WHERE date_synced >= ? AND date_synced < ?"
       "ORDER BY origin_url"));
   s.BindInt64(0, begin.ToInternalValue());
@@ -900,7 +920,7 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used, form_data, "
       "date_synced, display_name, avatar_url, "
-      "federation_url, skip_zero_click FROM logins "
+      "federation_url, skip_zero_click, generation_upload_status FROM logins "
       "WHERE blacklisted_by_user == ? ORDER BY origin_url"));
   s.BindInt(0, blacklisted ? 1 : 0);
 

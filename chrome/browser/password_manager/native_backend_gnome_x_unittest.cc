@@ -308,6 +308,8 @@ void CheckPasswordChanges(const PasswordStoreChangeList& expected_list,
     EXPECT_EQ(expected.avatar_url, actual.avatar_url);
     EXPECT_EQ(expected.federation_url, actual.federation_url);
     EXPECT_EQ(expected.skip_zero_click, actual.skip_zero_click);
+    EXPECT_EQ(expected.generation_upload_status,
+              actual.generation_upload_status);
   }
 }
 
@@ -356,6 +358,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.avatar_url = GURL("http://www.google.com/avatar");
     form_google_.federation_url = GURL("http://www.google.com/federation_url");
     form_google_.skip_zero_click = true;
+    form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
 
     form_facebook_.origin = GURL("http://www.facebook.com/");
     form_facebook_.action = GURL("http://www.facebook.com/login");
@@ -371,6 +374,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_facebook_.avatar_url = GURL("http://www.facebook.com/avatar");
     form_facebook_.federation_url = GURL("http://www.facebook.com/federation");
     form_facebook_.skip_zero_click = true;
+    form_facebook_.generation_upload_status = PasswordForm::NO_SIGNAL_SENT;
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -444,7 +448,7 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ("login", item->keyring);
     EXPECT_EQ(form.origin.spec(), item->display_name);
     EXPECT_EQ(UTF16ToUTF8(form.password_value), item->password);
-    EXPECT_EQ(20u, item->attributes.size());
+    EXPECT_EQ(21u, item->attributes.size());
     CheckStringAttribute(item, "origin_url", form.origin.spec());
     CheckStringAttribute(item, "action_url", form.action.spec());
     CheckStringAttribute(item, "username_element",
@@ -469,6 +473,8 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckStringAttribute(item, "avatar_url", form.avatar_url.spec());
     CheckStringAttribute(item, "federation_url", form.federation_url.spec());
     CheckUint32Attribute(item, "skip_zero_click", form.skip_zero_click);
+    CheckUint32Attribute(item, "generation_upload_status",
+                         form.generation_upload_status);
     CheckStringAttribute(item, "application", app_string);
   }
 

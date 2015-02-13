@@ -20,6 +20,7 @@ PasswordForm::PasswordForm()
       blacklisted_by_user(false),
       type(TYPE_MANUAL),
       times_used(0),
+      generation_upload_status(NO_SIGNAL_SENT),
       skip_zero_click(false) {
 }
 
@@ -52,6 +53,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       type == form.type &&
       times_used == form.times_used &&
       form_data.SameFormAs(form.form_data) &&
+      generation_upload_status == form.generation_upload_status &&
       display_name == form.display_name &&
       avatar_url == form.avatar_url &&
       federation_url == form.federation_url &&
@@ -88,6 +90,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << " type: " << form.type
             << " times_used: " << form.times_used
             << " form_data: " << form.form_data
+            << " generation_upload_status: " << form.generation_upload_status
             << " display_name: " << base::UTF16ToUTF8(form.display_name)
             << " avatar_url: " << form.avatar_url
             << " federation_url: " << form.federation_url

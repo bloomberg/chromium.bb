@@ -136,10 +136,14 @@ enum ServerFieldType {
   ADDRESS_HOME_LINE3 = 83,
   ADDRESS_BILLING_LINE3 = 84,
 
+  // Inverse of ACCOUNT_CREATION_PASSWORD. Sent when there is data that
+  // a previous upload of ACCOUNT_CREATION_PASSWORD was incorrect.
+  NOT_ACCOUNT_CREATION_PASSWORD = 85,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
 
-  MAX_VALID_FIELD_TYPE = 85,
+  MAX_VALID_FIELD_TYPE = 86,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.

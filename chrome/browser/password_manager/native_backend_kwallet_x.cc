@@ -731,6 +731,7 @@ void NativeBackendKWallet::SerializeValue(
     pickle->WriteString(form->avatar_url.spec());
     pickle->WriteString(form->federation_url.spec());
     pickle->WriteBool(form->skip_zero_click);
+    pickle->WriteInt(form->generation_upload_status);
   }
 }
 
@@ -783,6 +784,7 @@ bool NativeBackendKWallet::DeserializeValueSize(
     int scheme = 0;
     int64 date_created = 0;
     int type = 0;
+    int generation_upload_status = 0;
     // Note that these will be read back in the order listed due to
     // short-circuit evaluation. This is important.
     if (!iter.ReadInt(&scheme) ||
@@ -835,6 +837,15 @@ bool NativeBackendKWallet::DeserializeValueSize(
       form->date_created = base::Time::FromInternalValue(date_created);
     } else {
       form->date_created = base::Time::FromTimeT(date_created);
+    }
+
+    if (version > 5) {
+      if (!iter.ReadInt(&generation_upload_status)) {
+        LogDeserializationWarning(version, signon_realm, false);
+      }
+      form->generation_upload_status =
+          static_cast<PasswordForm::GenerationUploadStatus>(
+              generation_upload_status);
     }
 
     forms->push_back(form.release());

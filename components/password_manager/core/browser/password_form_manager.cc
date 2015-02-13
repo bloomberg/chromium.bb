@@ -610,7 +610,7 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
     if (pending_credentials_.times_used == 0) {
       UploadPasswordForm(pending_credentials_.form_data, autofill::PASSWORD);
     } else {
-      CheckForAccountCreationForm(pending_credentials_, observed_form_);
+      CheckForAccountCreationForm(observed_form_, &pending_credentials_);
     }
   }
 
@@ -681,7 +681,7 @@ void PasswordFormManager::UpdateLogin() {
   }
 
   // Check to see if this form is a candidate for password generation.
-  CheckForAccountCreationForm(pending_credentials_, observed_form_);
+  CheckForAccountCreationForm(observed_form_, &pending_credentials_);
 
   UpdatePreferredLoginState(password_store);
 
@@ -761,42 +761,56 @@ bool PasswordFormManager::UpdatePendingCredentialsIfOtherPossibleUsername(
 }
 
 void PasswordFormManager::CheckForAccountCreationForm(
-    const PasswordForm& pending,
-    const PasswordForm& observed) {
-  // We check to see if the saved form_data is the same as the observed
-  // form_data, which should never be true for passwords saved on account
-  // creation forms. This check is only made the first time a password is used
-  // to cut down on false positives. Specifically a site may have multiple login
-  // forms with different markup, which might look similar to a signup form.
-  if (pending.times_used == 1) {
-    FormStructure pending_structure(pending.form_data);
-    FormStructure observed_structure(observed.form_data);
-    // Ignore |pending_structure| if its FormData has no fields. This is to
-    // weed out those credentials that were saved before FormData was added
-    // to PasswordForm. Even without this check, these FormStructure's won't
-    // be uploaded, but it makes it hard to see if we are encountering
-    // unexpected errors.
-    if (!pending.form_data.fields.empty() &&
-        pending_structure.FormSignature() !=
-            observed_structure.FormSignature()) {
-      UploadPasswordForm(pending.form_data,
-                         autofill::ACCOUNT_CREATION_PASSWORD);
+    const PasswordForm& observed,
+    PasswordForm* pending) {
+  if (pending->form_data.fields.empty())
+    return;
+
+  FormStructure pending_structure(pending->form_data);
+  FormStructure observed_structure(observed.form_data);
+
+  // Ignore |pending_structure| if its FormData has no fields. This is to
+  // weed out those credentials that were saved before FormData was added
+  // to PasswordForm. Even without this check, these FormStructure's won't
+  // be uploaded, but it makes it hard to see if we are encountering
+  // unexpected errors.
+  if (pending_structure.FormSignature() != observed_structure.FormSignature()) {
+    // Only upload if this is the first time the password has been used.
+    // Otherwise the credentials have been used on the same field before so
+    // they aren't from an account creation form.
+    if (pending->times_used == 1) {
+      if (UploadPasswordForm(pending->form_data,
+                             autofill::ACCOUNT_CREATION_PASSWORD)) {
+        pending->generation_upload_status =
+            autofill::PasswordForm::POSITIVE_SIGNAL_SENT;
+      }
+    }
+  } else if (pending->generation_upload_status ==
+             autofill::PasswordForm::POSITIVE_SIGNAL_SENT) {
+    // A signal was sent that this was an account creation form, but the
+    // credential is now being used on the same form again. This cancels out
+    // the previous vote.
+    if (UploadPasswordForm(pending->form_data,
+                           autofill::NOT_ACCOUNT_CREATION_PASSWORD)) {
+      pending->generation_upload_status =
+          autofill::PasswordForm::NEGATIVE_SIGNAL_SENT;
     }
   }
 }
 
-void PasswordFormManager::UploadPasswordForm(
+bool PasswordFormManager::UploadPasswordForm(
     const autofill::FormData& form_data,
     const autofill::ServerFieldType& password_type) {
   autofill::AutofillManager* autofill_manager =
       client_->GetAutofillManagerForMainFrame();
   if (!autofill_manager)
-    return;
+    return false;
 
   // Note that this doesn't guarantee that the upload succeeded, only that
   // |form_data| is considered uploadable.
   bool success = autofill_manager->UploadPasswordForm(form_data, password_type);
   UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
+  return success;
 }
 
 int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {

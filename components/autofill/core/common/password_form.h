@@ -38,6 +38,16 @@ namespace autofill {
 // entry to the database and how they can affect the matching process.
 
 struct PasswordForm {
+  // Enum to keep track of what information has been sent to the server about
+  // this form regarding password generation.
+  enum GenerationUploadStatus {
+    NO_SIGNAL_SENT,
+    POSITIVE_SIGNAL_SENT,
+    NEGATIVE_SIGNAL_SENT,
+    // Reserve a few values for future use.
+    UNKNOWN_STATUS = 10
+  };
+
   // Enum to differentiate between HTML form based authentication, and dialogs
   // using basic or digest schemes. Default is SCHEME_HTML. Only PasswordForms
   // of the same Scheme will be matched/autofilled against each other.
@@ -206,6 +216,9 @@ struct PasswordForm {
   //
   // When parsing an HTML form, this is normally set.
   FormData form_data;
+
+  // What information has been sent to the Autofill server about this form.
+  GenerationUploadStatus generation_upload_status;
 
   // These following fields are set by a website using the Credential Manager
   // API. They will be empty and remain unused for sites which do not use that
