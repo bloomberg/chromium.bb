@@ -1342,8 +1342,6 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
     if (!parent())
         return;
 
-    AllowPaintInvalidationScope scoper(frameView());
-
     if ((style()->borderImage().image() && style()->borderImage().image()->data() == image) ||
         (style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image)) {
         setShouldDoFullPaintInvalidation();

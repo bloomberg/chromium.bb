@@ -216,10 +216,13 @@ void LayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const In
 
     IntRect intRect = pixelSnappedIntRect(paintInvalidationRect);
 
-    if (box().frameView()->isInPerformLayout())
+    if (box().frameView()->isInPerformLayout()) {
         addScrollbarDamage(scrollbar, intRect);
-    else
+    } else {
+        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+        DisablePaintInvalidationStateAsserts disabler;
         box().invalidatePaintRectangle(intRect);
+    }
 }
 
 void LayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)

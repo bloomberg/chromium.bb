@@ -494,6 +494,8 @@ void LayerCompositor::paintInvalidationOnCompositingChange(Layer* layer)
     // Eager invalidation here is correct, since we are invalidating with respect to the previous frame's
     // compositing state when changing the compositing backing of the layer.
     DisableCompositingQueryAsserts disabler;
+    // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+    DisablePaintInvalidationStateAsserts paintInvalidationAssertisabler;
 
     layer->renderer()->invalidatePaintIncludingNonCompositingDescendants();
 }

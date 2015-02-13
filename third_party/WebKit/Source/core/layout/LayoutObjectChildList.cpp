@@ -61,9 +61,6 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
         toRenderBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
 
     {
-        // FIXME: We should not be allowing paint invalidation during layout. crbug.com/336250
-        AllowPaintInvalidationScope scoper(owner->frameView());
-
         // So that we'll get the appropriate dirty bit set (either that a normal flow child got yanked or
         // that a positioned child got yanked). We also issue paint invalidations, so that the area exposed when the child
         // disappears gets paint invalidated properly.
@@ -176,7 +173,10 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(const LayoutObject& oldChil
         oldChild.view()->setShouldDoFullPaintInvalidation();
         return;
     }
+
     DisableCompositingQueryAsserts disabler;
+    // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
     oldChild.invalidatePaintUsingContainer(oldChild.containerForPaintInvalidation(), oldChild.previousPaintInvalidationRect(), PaintInvalidationRendererRemoval);
 }
 

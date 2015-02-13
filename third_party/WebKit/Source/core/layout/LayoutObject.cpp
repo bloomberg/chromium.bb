@@ -100,6 +100,8 @@ namespace {
 
 static bool gModifyRenderTreeStructureAnyState = false;
 
+static bool gDisablePaintInvalidationStateAsserts = false;
+
 } // namespace
 
 using namespace HTMLNames;
@@ -1099,6 +1101,8 @@ LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutLayerModelObje
 
 void LayoutObject::invalidatePaintUsingContainer(const LayoutLayerModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
+    ASSERT(gDisablePaintInvalidationStateAsserts || document().lifecycle().state() == DocumentLifecycle::InPaintInvalidation);
+
     if (r.isEmpty())
         return;
 
@@ -3131,6 +3135,11 @@ DeprecatedDisableModifyRenderTreeStructureAsserts::DeprecatedDisableModifyRender
 bool DeprecatedDisableModifyRenderTreeStructureAsserts::canModifyRenderTreeStateInAnyState()
 {
     return gModifyRenderTreeStructureAnyState;
+}
+
+DisablePaintInvalidationStateAsserts::DisablePaintInvalidationStateAsserts()
+    : m_disabler(gDisablePaintInvalidationStateAsserts, true)
+{
 }
 
 // Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.

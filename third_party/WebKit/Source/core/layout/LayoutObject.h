@@ -1422,6 +1422,16 @@ private:
     TemporaryChange<bool> m_disabler;
 };
 
+// FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+// Remove this once we fix the bug.
+class DisablePaintInvalidationStateAsserts {
+    WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);
+public:
+    DisablePaintInvalidationStateAsserts();
+private:
+    TemporaryChange<bool> m_disabler;
+};
+
 // Allow equality comparisons of LayoutObjects by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(LayoutObject)
 

@@ -183,9 +183,9 @@ void RenderImage::repaintOrMarkForLayout(const IntRect* rect)
     }
 
     {
-        // FIXME: We should not be allowing paint invalidations during layout. crbug.com/339584
-        AllowPaintInvalidationScope scoper(frameView());
         DisableCompositingQueryAsserts disabler;
+        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+        DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
         invalidatePaintRectangle(paintInvalidationRect);
     }
 

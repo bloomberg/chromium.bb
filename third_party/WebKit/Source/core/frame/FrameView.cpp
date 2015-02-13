@@ -231,7 +231,6 @@ void FrameView::reset()
     m_doFullPaintInvalidation = false;
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
-    m_canInvalidatePaintDuringPerformLayout = false;
     m_inSynchronousPostLayout = false;
     m_layoutCount = 0;
     m_nestedLayoutCount = 0;
@@ -401,6 +400,8 @@ void FrameView::invalidateRect(const IntRect& rect)
     IntRect paintInvalidationRect = rect;
     paintInvalidationRect.move(renderer->borderLeft() + renderer->paddingLeft(),
                      renderer->borderTop() + renderer->paddingTop());
+    // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
     renderer->invalidatePaintRectangle(paintInvalidationRect);
 }
 
@@ -1392,6 +1393,8 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
         ASSERT(renderView());
+        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+        DisablePaintInvalidationStateAsserts disabler;
         renderView()->invalidatePaintRectangle(updateRect);
     }
     if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
@@ -1407,6 +1410,8 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
             LayoutRect rect(frameRenderer->borderLeft() + frameRenderer->paddingLeft(),
                             frameRenderer->borderTop() + frameRenderer->paddingTop(),
                             visibleWidth(), visibleHeight());
+            // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+            DisablePaintInvalidationStateAsserts disabler;
             frameRenderer->invalidatePaintRectangle(rect);
             return;
         }
@@ -1739,7 +1744,6 @@ HostWindow* FrameView::hostWindow() const
 
 void FrameView::contentRectangleForPaintInvalidation(const IntRect& rect)
 {
-    ASSERT(paintInvalidationIsAllowed());
     ASSERT(!m_frame->ownerRenderer());
 
     if (m_isTrackingPaintInvalidations) {
@@ -2649,7 +2653,6 @@ void FrameView::invalidateTreeIfNeededRecursive()
     // FIXME: We should be more aggressive at cutting tree traversals.
     lifecycle().advanceTo(DocumentLifecycle::InPaintInvalidation);
     invalidateTreeIfNeeded();
-    lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
 
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
@@ -2659,6 +2662,7 @@ void FrameView::invalidateTreeIfNeededRecursive()
     }
 
     m_doFullPaintInvalidation = false;
+    lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
 }
 
 void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)

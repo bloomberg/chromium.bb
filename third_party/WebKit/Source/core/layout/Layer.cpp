@@ -2243,8 +2243,11 @@ void Layer::clearBlockSelectionGapsBounds()
 
 void Layer::invalidatePaintForBlockSelectionGaps()
 {
-    for (Layer* child = firstChild(); child; child = child->nextSibling())
+    for (Layer* child = firstChild(); child; child = child->nextSibling()) {
+        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+        DisablePaintInvalidationStateAsserts disabler;
         child->invalidatePaintForBlockSelectionGaps();
+    }
 
     if (m_blockSelectionGapsBounds.isEmpty())
         return;
@@ -2258,8 +2261,11 @@ void Layer::invalidatePaintForBlockSelectionGaps()
     }
     if (renderer()->hasClip())
         rect.intersect(toRenderBox(renderer())->clipRect(LayoutPoint()));
-    if (!rect.isEmpty())
+    if (!rect.isEmpty()) {
+        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+        DisablePaintInvalidationStateAsserts disabler;
         renderer()->invalidatePaintRectangle(rect);
+    }
 }
 
 IntRect Layer::blockSelectionGapsBounds() const

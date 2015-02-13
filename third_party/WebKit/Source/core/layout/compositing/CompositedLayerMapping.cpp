@@ -635,6 +635,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         LayoutSize subpixelAccumulation = offsetFromSquashLayerOrigin + newOffsetFromRenderer;
         if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer) {
             // It is ok to issue paint invalidation here, because all of the geometry needed to correctly invalidate paint is computed by this point.
+            DisablePaintInvalidationStateAsserts disabler;
             layers[i].renderLayer->renderer()->invalidatePaintIncludingNonCompositingDescendants();
 
             TRACE_LAYER_INVALIDATION(layers[i].renderLayer, InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated);

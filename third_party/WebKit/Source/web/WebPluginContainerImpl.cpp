@@ -147,6 +147,8 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     // For querying Layer::compositingState().
     // This code should be correct.
     DisableCompositingQueryAsserts disabler;
+    // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
     renderer->invalidatePaintRectangle(dirtyRect);
 }
 

@@ -217,6 +217,8 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
     // FIXME: We should use mapLocalToContainer() since we know we're not un-rooted.
     mapCaretRectToCaretPainter(node->renderer(), caretPainter, inflatedRect);
 
+    // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+    DisablePaintInvalidationStateAsserts disabler;
     caretPainter->invalidatePaintRectangle(inflatedRect);
 }
 
