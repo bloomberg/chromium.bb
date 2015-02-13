@@ -19,7 +19,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,6 +27,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/browser_process.h"
@@ -483,6 +484,10 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     Profile* last_used_profile,
     const Profiles& last_opened_profiles,
     StartupBrowserCreator* browser_creator) {
+  TRACE_EVENT0("startup", "StartupBrowserCreator::ProcessCmdLineImpl");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Startup.StartupBrowserCreator_ProcessCmdLineImplTime");
+
   VLOG(2) << "ProcessCmdLineImpl : BEGIN";
   DCHECK(last_used_profile);
   if (process_startup) {

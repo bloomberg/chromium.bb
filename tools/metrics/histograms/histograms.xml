@@ -36881,6 +36881,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.BrowserProcessImpl_PreMainMessageLoopRunTime"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during
+    BrowserProcessImpl::PreMainMessageLoopRun.
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserWindowDisplay" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
   <summary>
@@ -37096,6 +37105,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.PreMainMessageLoopRunImplTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during
+    ChromeBrowserMainParts::PreMainMessageLoopRunImpl.
+  </summary>
+</histogram>
+
 <histogram name="Startup.ShowAppListColdStart" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
@@ -37197,6 +37214,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Time it takes for session restore to finish initiating creation of restored
     tabs and windows. This measurement is only sent for startups that take
     &gt;10 seconds after an uptime of 7 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.StartupBrowserCreator_ProcessCmdLineImplTime"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during
+    StartupBrowserCreator::ProcessCmdLineImpl.
   </summary>
 </histogram>
 

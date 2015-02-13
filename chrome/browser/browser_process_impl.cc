@@ -16,6 +16,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -24,6 +25,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -996,6 +998,10 @@ void BrowserProcessImpl::PreCreateThreads() {
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {
+  TRACE_EVENT0("startup", "BrowserProcessImpl::PreMainMessageLoopRun");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Startup.BrowserProcessImpl_PreMainMessageLoopRunTime");
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // browser_policy_connector() is created very early because local_state()
   // needs policy to be initialized with the managed preference values.
