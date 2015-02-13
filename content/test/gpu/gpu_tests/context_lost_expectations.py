@@ -13,4 +13,4 @@ class ContextLostExpectations(GpuTestExpectations):
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
     self.Fail('GpuCrash.GPUProcessCrashesExactlyOnce',
-              ['win'], bug=392891)
+              ['win', 'mac', 'linux'], bug=457217)
