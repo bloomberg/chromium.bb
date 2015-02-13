@@ -67,7 +67,8 @@ void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
   controller_->OnUnmaskResponse(
       base::android::ConvertJavaStringToUTF16(env, cvc),
       base::android::ConvertJavaStringToUTF16(env, month),
-      base::android::ConvertJavaStringToUTF16(env, year));
+      base::android::ConvertJavaStringToUTF16(env, year),
+      false);
 }
 
 void CardUnmaskPromptViewAndroid::PromptDismissed(JNIEnv* env, jobject obj) {

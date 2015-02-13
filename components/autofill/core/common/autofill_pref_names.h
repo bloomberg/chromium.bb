@@ -18,6 +18,7 @@ extern const char kAutofillNegativeUploadRate[];
 extern const char kAutofillPositiveUploadRate[];
 extern const char kAutofillUseMacAddressBook[];
 extern const char kAutofillWalletImportEnabled[];
+extern const char kAutofillWalletImportStorageCheckboxState[];
 extern const char kAutofillWalletSyncExperimentEnabled[];
 
 }  // namespace prefs

@@ -30,13 +30,15 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   void OnUnmaskDialogClosed() override;
   void OnUnmaskResponse(const base::string16& cvc,
                         const base::string16& exp_month,
-                        const base::string16& exp_year) override;
+                        const base::string16& exp_year,
+                        bool should_store_pan) override;
 
   content::WebContents* GetWebContents() override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;
   int GetCvcImageRid() const override;
   bool ShouldRequestExpirationDate() const override;
+  bool GetStoreLocallyStartState() const override;
   bool InputTextIsValid(const base::string16& input_text) const override;
 
  private:

@@ -6,7 +6,8 @@
 
 namespace autofill {
 
-CardUnmaskDelegate::UnmaskResponse::UnmaskResponse() {}
+CardUnmaskDelegate::UnmaskResponse::UnmaskResponse()
+    : should_store_pan(false) {}
 CardUnmaskDelegate::UnmaskResponse::~UnmaskResponse() {}
 
 }  // namespace autofill

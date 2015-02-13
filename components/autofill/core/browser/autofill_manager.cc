@@ -187,6 +187,11 @@ void AutofillManager::RegisterProfilePrefs(
       prefs::kAutofillWalletImportEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // This choice is made on a per-device basis, so it's not syncable.
+  registry->RegisterBooleanPref(
+      prefs::kAutofillWalletImportStorageCheckboxState,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if defined(OS_MACOSX)
   registry->RegisterBooleanPref(
       prefs::kAutofillAuxiliaryProfilesEnabled,
@@ -716,7 +721,7 @@ void AutofillManager::OnLoadedServerPredictions(
 }
 
 void AutofillManager::OnUnmaskResponse(const UnmaskResponse& response) {
-  unmasking_cvc_ = response.cvc;
+  unmask_response_ = response;
   // TODO(estade): use month/year.
   real_pan_client_.UnmaskCard(unmasking_card_, base::UTF16ToASCII(response.cvc),
                               response.risk_data);
@@ -726,7 +731,7 @@ void AutofillManager::OnUnmaskPromptClosed() {
   real_pan_client_.CancelRequest();
   driver_->RendererShouldClearPreviewedForm();
   unmasking_card_ = CreditCard();
-  unmasking_cvc_.clear();
+  unmask_response_ = UnmaskResponse();
 }
 
 IdentityProvider* AutofillManager::GetIdentityProvider() {
@@ -737,7 +742,9 @@ void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
   if (!real_pan.empty()) {
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
     unmasking_card_.SetNumber(base::UTF8ToUTF16(real_pan));
-    personal_data_->UpdateServerCreditCard(unmasking_card_);
+    if (unmask_response_.should_store_pan)
+      personal_data_->UpdateServerCreditCard(unmasking_card_);
+
     FillCreditCardForm(unmasking_query_id_, unmasking_form_, unmasking_field_,
                        unmasking_card_);
   }
@@ -1068,10 +1075,10 @@ void AutofillManager::FillOrPreviewDataModelForm(
     if (is_credit_card &&
         cached_field->Type().GetStorableType() ==
             CREDIT_CARD_VERIFICATION_CODE) {
-      // If this is |unmasking_card_|, |unmasking_cvc_| should be non-empty
-      // and vice versa.
-      DCHECK_EQ(&unmasking_card_ == data_model, !unmasking_cvc_.empty());
-      value = unmasking_cvc_;
+      // If this is |unmasking_card_|, |unmask_response_,cvc| should be
+      // non-empty and vice versa.
+      value = unmask_response_.cvc;
+      DCHECK_EQ(&unmasking_card_ == data_model, value.empty());
     }
 
     // Must match ForEachMatchingFormField() in form_autofill_util.cc.

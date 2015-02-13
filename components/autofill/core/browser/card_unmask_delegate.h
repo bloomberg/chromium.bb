@@ -21,6 +21,7 @@ class CardUnmaskDelegate {
     base::string16 cvc;
     base::string16 exp_month;
     base::string16 exp_year;
+    bool should_store_pan;
 
     // Risk fingerprint.
     std::string risk_data;

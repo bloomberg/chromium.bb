@@ -13,6 +13,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/image_view.h"
@@ -37,7 +38,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
         cvc_input_(nullptr),
         month_input_(nullptr),
         year_input_(nullptr),
-        message_label_(nullptr) {}
+        message_label_(nullptr),
+        storage_checkbox_(nullptr) {}
 
   ~CardUnmaskPromptViews() override {
     if (controller_)
@@ -158,7 +160,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
             : base::string16(),
         year_input_
             ? year_combobox_model_.GetItemAt(year_input_->selected_index())
-            : base::string16());
+            : base::string16(),
+        storage_checkbox_ ? storage_checkbox_->checked() : false);
     return false;
   }
 
@@ -218,6 +221,11 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     message_label_ = new views::Label();
     input_row->AddChildView(message_label_);
     message_label_->SetVisible(false);
+
+    storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
+    storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
+    AddChildView(storage_checkbox_);
   }
 
   void ClosePrompt() { GetWidget()->Close(); }
@@ -236,6 +244,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // TODO(estade): this is a temporary standin in place of some spinner UI
   // as well as a better error message.
   views::Label* message_label_;
+
+  views::Checkbox* storage_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViews);
 };

@@ -43,6 +43,11 @@ const char kAutofillUseMacAddressBook[] = "autofill.use_mac_address_book";
 // enabled.
 const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
 
+// Boolean that allows the "Don't ask again for this card" checkbox to be
+// sticky.
+const char kAutofillWalletImportStorageCheckboxState[] =
+    "autofill.wallet_import_storage_checkbox_state";
+
 // Enables/disables the Wallet card and address feature. Set via sync
 // experiment. Even if this is false, the feature can still be enabled via the
 // command line flag flags::kEnableWalletCardImport.
