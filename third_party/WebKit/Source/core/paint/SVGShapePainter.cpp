@@ -62,8 +62,15 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
             RenderDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGShape, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 const SVGLayoutStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
-                if (svgStyle.shapeRendering() == SR_CRISPEDGES)
-                    paintContext.paintInfo().context->setShouldAntialias(false);
+
+                bool shouldAntiAlias = svgStyle.shapeRendering() != SR_CRISPEDGES;
+                // We're munging GC paint attributes without saving first (and so does
+                // updateGraphicsContext below). This is in line with making GC less stateful,
+                // but we should keep an eye out for unintended side effects.
+                //
+                // FIXME: the mutation avoidance check should be in (all) the GC setters.
+                if (shouldAntiAlias != paintContext.paintInfo().context->shouldAntialias())
+                    paintContext.paintInfo().context->setShouldAntialias(shouldAntiAlias);
 
                 for (int i = 0; i < 3; i++) {
                     switch (svgStyle.paintOrderType(i)) {
