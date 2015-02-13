@@ -9,7 +9,6 @@ noinst_LTLIBRARIES =
 BUILT_SOURCES =
 
 AM_DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
-DISTCHECK_CONFIGURE_FLAGS = --with-xserver-path='@XSERVER_PATH@'
 
 EXTRA_DIST = weston.ini.in ivi-shell/weston.ini.in
 

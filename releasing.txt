@@ -15,7 +15,14 @@ To make a release of Weston and/or Wayland, follow these steps.
       $ git commit configure.ac -m "configure.ac: bump to version x.y.z for the xxx release"
       $ git push
 
-  2.  Run the release.sh script to generate the tarballs, sign and
+  2.  Install Xwayland, either from your distro or manually (see
+      http://wayland.freedesktop.org/building.html).  If you install it
+      to a location other than /usr/bin/Xwayland, specify this in the
+      following env var:
+
+      export DISTCHECK_CONFIGURE_FLAGS="--with-xserver-path=<your-Xwayland-path>"
+
+  3.  Run the release.sh script to generate the tarballs, sign and
       upload them, and generate a release announcement template.
       This script can be obtained from X.org's modular package:
 
@@ -27,26 +34,26 @@ To make a release of Weston and/or Wayland, follow these steps.
       skip testsuite by specifying the --dist argument.  Pass --help to
       see other supported options.
 
-  3.  Compose the release announcements.  The script will generate
+  4.  Compose the release announcements.  The script will generate
       *.x.y.0.announce files with a list of changes and tags, one for
       wayland, one for weston.  Prepend these with a human-readable
       listing of the most notable changes.  For x.y.0 releases, indicate
       the schedule for the x.y+1.0 release.
 
-  4.  Send the release announcements to
+  5.  Send the release announcements to
       wayland-devel@lists.freedesktop.org
 
-  5.  Get your freshly posted release email URL from
+  6.  Get your freshly posted release email URL from
       http://lists.freedesktop.org/archives/wayland-devel/
 
-  6.  Update releases.html in wayland-web with links to tarballs and
+  7.  Update releases.html in wayland-web with links to tarballs and
       the release email URL.
 
       $ git commit releases.html -m "Add x.y.z release"
       $ git push
       $ rsync -avz * wayland.freedesktop.org:/srv/wayland.freedesktop.org/www/
 
-  7.  Update topic in #wayland to point to the release announcement URL
+  8.  Update topic in #wayland to point to the release announcement URL
 
 
 For x.y.0 releases, also create the x.y branch.  The x.y branch is for
