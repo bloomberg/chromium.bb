@@ -694,8 +694,8 @@ class AndroidCommands(object):
         assert os.path.exists(run_pie_dist_path), 'Please build run_pie'
         # The PIE loader must be pushed manually (i.e. no PushIfNeeded) because
         # PushIfNeeded requires md5sum and md5sum requires the wrapper as well.
-        command = 'push %s %s' % (run_pie_dist_path, PIE_WRAPPER_PATH)
-        assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
+        adb_command = 'push %s %s' % (run_pie_dist_path, PIE_WRAPPER_PATH)
+        assert _HasAdbPushSucceeded(self._adb.SendCommand(adb_command))
         self._pie_wrapper = PIE_WRAPPER_PATH
 
     if self._pie_wrapper:
