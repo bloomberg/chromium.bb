@@ -250,8 +250,6 @@ MANIFEST_INT_URL = '%s/%s' % (INTERNAL_GERRIT_URL, MANIFEST_INT_PROJECT)
 DEFAULT_MANIFEST = 'default.xml'
 OFFICIAL_MANIFEST = 'official.xml'
 PROJECT_SDK_MANIFEST = 'project_sdk.xml'
-LKGM_MANIFEST = 'LKGM/lkgm.xml'
-
 SHARED_CACHE_ENVVAR = 'CROS_CACHEDIR'
 
 # CrOS remotes specified in the manifests.
