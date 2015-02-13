@@ -35,9 +35,9 @@ function FileBrowserBackground() {
 
   /**
    * File operation manager.
-   * @type {!FileOperationManager}
+   * @type {FileOperationManager}
    */
-  this.fileOperationManager = new FileOperationManager();
+  this.fileOperationManager = null;
 
   /**
    * Class providing loading of import history, used in
@@ -49,9 +49,9 @@ function FileBrowserBackground() {
 
   /**
    * Event handler for progress center.
-   * @private {!FileOperationHandler}
+   * @private {FileOperationHandler}
    */
-  this.fileOperationHandler_ = new FileOperationHandler(this);
+  this.fileOperationHandler_ = null;
 
   /**
    * Event handler for C++ sides notifications.
@@ -95,25 +95,15 @@ function FileBrowserBackground() {
 
   /**
    * Promise of string data.
-   * @type {!Promise}
+   * @private {!Promise}
    */
-  this.stringDataPromise = new Promise(function(fulfill) {
-    chrome.fileManagerPrivate.getStrings(fulfill);
-  });
+  this.initializationPromise_ = this.startInitialization_();
 
   /**
    * String assets.
    * @type {Object<string, string>}
    */
   this.stringData = null;
-
-  /**
-   * Callback list to be invoked after initialization.
-   * It turns to null after initialization.
-   *
-   * @private {!Array<function()>}
-   */
-  this.initializeCallbacks_ = [];
 
   /**
    * Last time when the background page can close.
@@ -135,19 +125,7 @@ function FileBrowserBackground() {
       this.onMountCompleted_.bind(this));
 
   this.queue.run(function(callback) {
-    this.stringDataPromise.then(function(strings) {
-      // Init string data.
-      this.stringData = strings;
-      loadTimeData.data = strings;
-
-      // Init context menu.
-      this.initContextMenu_();
-
-      callback();
-    }.bind(this)).catch(function(error) {
-      console.error(error.stack || error);
-      callback();
-    });
+    this.initializationPromise_.then(callback);
   }.bind(this));
 }
 
@@ -162,13 +140,38 @@ FileBrowserBackground.CLOSE_DELAY_MS_ = 5000;
 FileBrowserBackground.prototype.__proto__ = BackgroundBase.prototype;
 
 /**
+ * @return {!Promise}
+ * @private
+ */
+FileBrowserBackground.prototype.startInitialization_ = function() {
+  var stringsPromise = new Promise(function(fulfill) {
+    chrome.fileManagerPrivate.getStrings(fulfill);
+  }).then(function(strings) {
+    loadTimeData.data = strings;
+    this.stringData = strings;
+    this.initContextMenu_();
+  }.bind(this));
+
+  // Volume Manager should be initialized after strings because volume name is
+  // localized.
+  var volumeManagerPromise = stringsPromise.then(function() {
+    return VolumeManager.getInstance();
+  }).then(function(volumeManager) {
+    this.fileOperationManager = new FileOperationManager(volumeManager);
+    this.fileOperationHandler_ = new FileOperationHandler(this);
+  }.bind(this));
+
+  return volumeManagerPromise;
+};
+
+/**
  * Register callback to be invoked after initialization.
  * If the initialization is already done, the callback is invoked immediately.
  *
  * @param {function()} callback Initialize callback to be registered.
  */
 FileBrowserBackground.prototype.ready = function(callback) {
-  this.stringDataPromise.then(callback);
+  this.initializationPromise_.then(callback);
 };
 
 /**
@@ -177,7 +180,8 @@ FileBrowserBackground.prototype.ready = function(callback) {
  */
 FileBrowserBackground.prototype.canClose = function() {
   // If the file operation is going, the background page cannot close.
-  if (this.fileOperationManager.hasQueuedTasks() ||
+  if ((this.fileOperationManager &&
+       this.fileOperationManager.hasQueuedTasks()) ||
       this.driveSyncHandler.syncing) {
     this.lastTimeCanClose_ = null;
     return false;

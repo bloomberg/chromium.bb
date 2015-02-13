@@ -3,15 +3,38 @@
 // found in the LICENSE file.
 
 /**
+ * @param {!VolumeManager} volumeManager
  * @constructor
  * @struct
  * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
-function FileOperationManager() {
+function FileOperationManager(volumeManager) {
+  /**
+   * @private {!VolumeManager}
+   * @const
+   */
+  this.volumeManager_ = volumeManager;
+
+  /**
+   * @private {!Array<!fileOperationUtil.Task>}
+   */
   this.copyTasks_ = [];
+
+  /**
+   * @private {!Array<!fileOperationUtil.Task>}
+   */
   this.deleteTasks_ = [];
+
+  /**
+   * @private {number}
+   */
   this.taskIdCounter_ = 0;
+
+  /**
+   * @private {!fileOperationUtil.EventRouter}
+   * @const
+   */
   this.eventRouter_ = new fileOperationUtil.EventRouter();
 }
 
