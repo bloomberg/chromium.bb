@@ -4,9 +4,9 @@
 
 source_set("dynamic_annotations") {
   sources = [
+    "../valgrind/valgrind.h",
     "dynamic_annotations.c",
     "dynamic_annotations.h",
-    "../valgrind/valgrind.h",
   ]
   if (is_android && !is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]

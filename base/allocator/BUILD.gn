@@ -176,10 +176,10 @@ if (use_allocator == "tcmalloc") {
         # cpuprofiler
         "$tcmalloc_dir/src/base/thread_lister.c",
         "$tcmalloc_dir/src/base/thread_lister.h",
-        "$tcmalloc_dir/src/profiledata.cc",
-        "$tcmalloc_dir/src/profiledata.h",
         "$tcmalloc_dir/src/profile-handler.cc",
         "$tcmalloc_dir/src/profile-handler.h",
+        "$tcmalloc_dir/src/profiledata.cc",
+        "$tcmalloc_dir/src/profiledata.h",
         "$tcmalloc_dir/src/profiler.cc",
       ]
       defines += [ "PERFTOOLS_DLL_DECL=" ]
