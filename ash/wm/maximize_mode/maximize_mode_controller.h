@@ -97,6 +97,13 @@ class ASH_EXPORT MaximizeModeController :
   friend class test::MultiUserWindowManagerChromeOSTest;
   friend class test::VirtualKeyboardControllerTest;
 
+  // Used for recording metrics for intervals of time spent in
+  // and out of TouchView.
+  enum TouchViewIntervalType {
+    TOUCH_VIEW_INTERVAL_INACTIVE,
+    TOUCH_VIEW_INTERVAL_ACTIVE
+  };
+
   // Set the TickClock. This is only to be used by tests that need to
   // artificially and deterministically control the current time.
   void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
@@ -118,8 +125,16 @@ class ASH_EXPORT MaximizeModeController :
   // is no rotation lock.
   void LeaveMaximizeMode();
 
-  // Record UMA stats tracking touchview usage.
-  void RecordTouchViewStateTransition();
+  // Record UMA stats tracking TouchView usage. If |type| is
+  // TOUCH_VIEW_INTERVAL_INACTIVE, then record that TouchView has been
+  // inactive from |touchview_usage_interval_start_time_| until now.
+  // Similarly, record that TouchView has been active if |type| is
+  // TOUCH_VIEW_INTERVAL_ACTIVE.
+  void RecordTouchViewUsageInterval(TouchViewIntervalType type);
+
+  // Returns TOUCH_VIEW_INTERVAL_ACTIVE if TouchView is currently active,
+  // otherwise returns TOUCH_VIEW_INTERNAL_INACTIVE.
+  TouchViewIntervalType CurrentTouchViewIntervalType();
 
   // The maximized window manager (if enabled).
   scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
@@ -135,7 +150,7 @@ class ASH_EXPORT MaximizeModeController :
   bool lid_open_past_180_;
 
   // Tracks time spent in (and out of) touchview mode.
-  base::Time last_touchview_transition_time_;
+  base::Time touchview_usage_interval_start_time_;
   base::TimeDelta total_touchview_time_;
   base::TimeDelta total_non_touchview_time_;
 

@@ -94,7 +94,7 @@ bool IsAngleBetweenAccelerometerReadingsStable(
 MaximizeModeController::MaximizeModeController()
     : have_seen_accelerometer_data_(false),
       lid_open_past_180_(false),
-      last_touchview_transition_time_(base::Time::Now()),
+      touchview_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
       lid_is_closed_(false) {
   Shell::GetInstance()->AddShellObserver(this);
@@ -185,12 +185,15 @@ void MaximizeModeController::LidEventReceived(bool open,
 }
 
 void MaximizeModeController::SuspendImminent() {
-  RecordTouchViewStateTransition();
+  // The system is about to suspend, so record TouchView usage interval metrics
+  // based on whether TouchView mode is currently active.
+  RecordTouchViewUsageInterval(CurrentTouchViewIntervalType());
 }
 
 void MaximizeModeController::SuspendDone(
     const base::TimeDelta& sleep_duration) {
-  last_touchview_transition_time_ = base::Time::Now();
+  // We do not want TouchView usage metrics to include time spent in suspend.
+  touchview_usage_interval_start_time_ = base::Time::Now();
 }
 
 void MaximizeModeController::HandleHingeRotation(
@@ -268,33 +271,49 @@ void MaximizeModeController::LeaveMaximizeMode() {
 
 // Called after maximize mode has started, windows might still animate though.
 void MaximizeModeController::OnMaximizeModeStarted() {
-  RecordTouchViewStateTransition();
+  RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_INACTIVE);
 }
 
 // Called after maximize mode has ended, windows might still be returning to
 // their original position.
 void MaximizeModeController::OnMaximizeModeEnded() {
-  RecordTouchViewStateTransition();
+  RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_ACTIVE);
 }
 
-void MaximizeModeController::RecordTouchViewStateTransition() {
-  if (CanEnterMaximizeMode()) {
-    base::Time current_time = base::Time::Now();
-    base::TimeDelta delta = current_time - last_touchview_transition_time_;
-    if (IsMaximizeModeWindowManagerEnabled()) {
+void MaximizeModeController::RecordTouchViewUsageInterval(
+    TouchViewIntervalType type) {
+  if (!CanEnterMaximizeMode())
+    return;
+
+  base::Time current_time = base::Time::Now();
+  base::TimeDelta delta = current_time - touchview_usage_interval_start_time_;
+  switch (type) {
+    case TOUCH_VIEW_INTERVAL_INACTIVE:
       UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewInactive", delta);
       total_non_touchview_time_ += delta;
-    } else {
+      break;
+    case TOUCH_VIEW_INTERVAL_ACTIVE:
       UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewActive", delta);
       total_touchview_time_ += delta;
-    }
-    last_touchview_transition_time_ = current_time;
+      break;
   }
+
+  touchview_usage_interval_start_time_ = current_time;
+}
+
+MaximizeModeController::TouchViewIntervalType
+MaximizeModeController::CurrentTouchViewIntervalType() {
+  if (IsMaximizeModeWindowManagerEnabled())
+    return TOUCH_VIEW_INTERVAL_ACTIVE;
+  return TOUCH_VIEW_INTERVAL_INACTIVE;
 }
 
 void MaximizeModeController::OnAppTerminating() {
+  // The system is about to shut down, so record TouchView usage interval
+  // metrics based on whether TouchView mode is currently active.
+  RecordTouchViewUsageInterval(CurrentTouchViewIntervalType());
+
   if (CanEnterMaximizeMode()) {
-    RecordTouchViewStateTransition();
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
         total_touchview_time_.InMinutes(),
         1, base::TimeDelta::FromDays(7).InMinutes(), 50);
