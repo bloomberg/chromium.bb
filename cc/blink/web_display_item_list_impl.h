@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/geometry/point_f.h"
 
 class SkImageFilter;
 class SkMatrix44;
@@ -31,7 +32,8 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   scoped_refptr<cc::DisplayItemList> ToDisplayItemList();
 
   // blink::WebDisplayItemList implementation.
-  virtual void appendDrawingItem(SkPicture* picture,
+  virtual void appendDrawingItem(const SkPicture*);
+  virtual void appendDrawingItem(SkPicture*,
                                  const blink::WebFloatPoint& location);
   virtual void appendClipItem(
       const blink::WebRect& clip_rect,
