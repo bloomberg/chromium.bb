@@ -156,6 +156,11 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   # Skip local patches when using HEAD: they probably don't apply anymore.
   with_patches=
 
+  if ! [[ "$GYP_DEFINES" =~ .*OS=android.* ]]; then
+    # Only build the Android ASan rt when targetting Android.
+    with_android=
+  fi
+
   echo "LLVM_FORCE_HEAD_REVISION was set; using r${CLANG_REVISION}"
 fi
 
