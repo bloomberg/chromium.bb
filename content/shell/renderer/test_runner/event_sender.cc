@@ -347,6 +347,9 @@ bool IsSystemKeyEvent(const WebKeyboardEvent& event) {
 #endif
 }
 
+const char* kSourceDeviceStringTouchpad = "touchpad";
+const char* kSourceDeviceStringTouchscreen = "touchscreen";
+
 }  // namespace
 
 class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
@@ -384,7 +387,11 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void SetTouchCancelable(bool cancelable);
   void DumpFilenameBeingDragged();
   void GestureFlingCancel();
-  void GestureFlingStart(float x, float y, float velocity_x, float velocity_y);
+  void GestureFlingStart(float x,
+                         float y,
+                         float velocity_x,
+                         float velocity_y,
+                         gin::Arguments* args);
   void GestureScrollFirstPoint(int x, int y);
   void TouchStart();
   void TouchMove();
@@ -722,9 +729,10 @@ void EventSenderBindings::GestureFlingCancel() {
 void EventSenderBindings::GestureFlingStart(float x,
                                             float y,
                                             float velocity_x,
-                                            float velocity_y) {
+                                            float velocity_y,
+                                            gin::Arguments* args) {
   if (sender_)
-    sender_->GestureFlingStart(x, y, velocity_x, velocity_y);
+    sender_->GestureFlingStart(x, y, velocity_x, velocity_y, args);
 }
 
 void EventSenderBindings::GestureScrollFirstPoint(int x, int y) {
@@ -1646,11 +1654,32 @@ void EventSender::GestureFlingCancel() {
 }
 
 void EventSender::GestureFlingStart(float x,
-                                     float y,
-                                     float velocity_x,
-                                     float velocity_y) {
+                                    float y,
+                                    float velocity_x,
+                                    float velocity_y,
+                                    gin::Arguments* args) {
   WebGestureEvent event;
   event.type = WebInputEvent::GestureFlingStart;
+
+  // TODO(tdresser): Once we've migrated all calls to GestureFlingStart
+  // to pass the device string, throw an error if args is empty. See
+  // crbug.com/456136 for details.
+  std::string device_string = kSourceDeviceStringTouchpad;
+  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
+    if (!args->GetNext(&device_string)) {
+      args->ThrowError();
+      return;
+    }
+  }
+
+  if (device_string == kSourceDeviceStringTouchpad) {
+    event.sourceDevice = blink::WebGestureDeviceTouchpad;
+  } else if (device_string == kSourceDeviceStringTouchscreen) {
+    event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+  } else {
+    args->ThrowError();
+    return;
+  }
 
   event.x = x;
   event.y = y;
@@ -2037,9 +2066,9 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       args->ThrowError();
       return;
     }
-    if (device_string == "touchpad") {
+    if (device_string == kSourceDeviceStringTouchpad) {
       event.sourceDevice = blink::WebGestureDeviceTouchpad;
-    } else if (device_string == "touchscreen") {
+    } else if (device_string == kSourceDeviceStringTouchscreen) {
       event.sourceDevice = blink::WebGestureDeviceTouchscreen;
     } else {
       args->ThrowError();

@@ -115,7 +115,11 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void DumpFilenameBeingDragged();
 
   void GestureFlingCancel();
-  void GestureFlingStart(float x, float y, float velocity_x, float velocity_y);
+  void GestureFlingStart(float x,
+                         float y,
+                         float velocity_x,
+                         float velocity_y,
+                         gin::Arguments* args);
   void GestureScrollFirstPoint(int x, int y);
 
   void TouchStart();
