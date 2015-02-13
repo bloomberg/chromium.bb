@@ -161,9 +161,7 @@ bool ExternalMountPoints::CrackVirtualPath(
   std::vector<base::FilePath::StringType>::iterator component_iter =
       components.begin();
   std::string maybe_mount_name =
-      base::FilePath(*component_iter++).MaybeAsASCII();
-  if (maybe_mount_name.empty())
-    return false;
+      base::FilePath(*component_iter++).AsUTF8Unsafe();
 
   base::FilePath cracked_path;
   {
@@ -231,7 +229,7 @@ bool ExternalMountPoints::GetVirtualPath(const base::FilePath& path_in,
 
 base::FilePath ExternalMountPoints::CreateVirtualRootPath(
     const std::string& mount_name) const {
-  return base::FilePath().AppendASCII(mount_name);
+  return base::FilePath().Append(base::FilePath::FromUTF8Unsafe(mount_name));
 }
 
 FileSystemURL ExternalMountPoints::CreateExternalFileSystemURL(
