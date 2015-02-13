@@ -37,7 +37,7 @@ ExtensionViewAttribute.prototype.setValue = function(value) {
 // Changes the attribute's value without triggering its mutation handler.
 ExtensionViewAttribute.prototype.setValueIgnoreMutation = function(value) {
   this.ignoreMutation = true;
-  this.extensionViewImpl.element.setAttribute(this.name, value || '');
+  this.setValue(value);
   this.ignoreMutation = false;
 }
 
@@ -80,9 +80,7 @@ SrcAttribute.prototype.__proto__ = ExtensionViewAttribute.prototype;
 
 SrcAttribute.prototype.setValueIgnoreMutation = function(value) {
   this.observer.takeRecords();
-  this.ignoreMutation = true;
-  this.extensionViewImpl.element.setAttribute(this.name, value || '');
-  this.ignoreMutation = false;
+  ExtensionViewAttribute.prototype.setValueIgnoreMutation.call(this, value);
 }
 
 SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {

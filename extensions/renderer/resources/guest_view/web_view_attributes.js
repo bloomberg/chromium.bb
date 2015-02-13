@@ -35,7 +35,7 @@ WebViewAttribute.prototype.setValue = function(value) {
 // Changes the attribute's value without triggering its mutation handler.
 WebViewAttribute.prototype.setValueIgnoreMutation = function(value) {
   this.ignoreMutation = true;
-  this.webViewImpl.element.setAttribute(this.name, value || '');
+  this.setValue(value);
   this.ignoreMutation = false;
 }
 
@@ -229,9 +229,7 @@ SrcAttribute.prototype.setValueIgnoreMutation = function(value) {
   // observer |observer|, and then get handled even though we do not want to
   // handle this mutation.
   this.observer.takeRecords();
-  this.ignoreMutation = true;
-  this.webViewImpl.element.setAttribute(this.name, value || '');
-  this.ignoreMutation = false;
+  WebViewAttribute.prototype.setValueIgnoreMutation.call(this, value);
 }
 
 SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
