@@ -13,13 +13,13 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
 class GURL;
+class InjectionHost;
 
 namespace blink {
 class WebFrame;
 }
 
 namespace extensions {
-class Extension;
 struct ScriptsRunInfo;
 
 // The pseudo-delegate class for a ScriptInjection that provides all necessary
@@ -61,7 +61,7 @@ class ScriptInjector {
 
   // Returns true if the script should execute on the given |frame|.
   virtual PermissionsData::AccessType CanExecuteOnFrame(
-      const Extension* extension,
+      const InjectionHost* injection_host,
       blink::WebFrame* web_frame,
       int tab_id,
       const GURL& top_url) const = 0;

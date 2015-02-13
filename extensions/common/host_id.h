@@ -12,17 +12,13 @@
 struct HostID {
   enum HostType { EXTENSIONS, WEBUI };
 
-  HostID() {}
-  HostID(HostType type, const std::string& id)
-      : type_(type), id_(id) {}
+  HostID();
+  HostID(HostType type, const std::string& id);
+  HostID(const HostID& host_id);
+  ~HostID();
 
-  bool operator<(const HostID& host_id) const {
-    if (type_ != host_id.type())
-      return type_ < host_id.type();
-    else if (id_ != host_id.id())
-      return id_ < host_id.id();
-    return false;
-  }
+  bool operator<(const HostID& host_id) const;
+  bool operator==(const HostID& host_id) const;
 
   HostType type() const { return type_; }
   const std::string& id() const { return id_; }

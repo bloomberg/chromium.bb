@@ -56,7 +56,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   static const char Type[];
 
-  // Return the stored rules registry ID of the given webview. Will generate
+  // Returns the stored rules registry ID of the given webview. Will generate
   // an ID for the first query.
   static int GetOrGenerateRulesRegistryID(
       int embedder_process_id,

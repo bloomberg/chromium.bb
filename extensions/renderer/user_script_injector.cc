@@ -10,6 +10,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/scripts_run_info.h"
 #include "grit/extensions_renderer_resources.h"
@@ -122,7 +123,7 @@ bool UserScriptInjector::ShouldInjectCss(
 }
 
 PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
-    const Extension* extension,
+    const InjectionHost* injection_host,
     blink::WebFrame* web_frame,
     int tab_id,
     const GURL& top_url) const {
@@ -133,27 +134,8 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
 
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, web_frame->document().url(), script_->match_about_blank());
-
-  // Declarative user scripts use "page access" (from "permissions" section in
-  // manifest) whereas non-declarative user scripts use custom
-  // "content script access" logic.
-  if (is_declarative_) {
-    return extension->permissions_data()->GetPageAccess(
-        extension,
-        effective_document_url,
-        top_url,
-        tab_id,
-        -1,  // no process id
-        NULL /* ignore error */);
-  } else {
-    return extension->permissions_data()->GetContentScriptAccess(
-        extension,
-        effective_document_url,
-        top_url,
-        tab_id,
-        -1,  // no process id
-        NULL /* ignore error */);
-  }
+  return injection_host->CanExecuteOnFrame(
+      effective_document_url, top_url, tab_id, is_declarative_);
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(

@@ -4,11 +4,13 @@
 
 #include "extensions/renderer/user_script_set.h"
 
+#include "base/memory/ref_counted.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_injection.h"
@@ -194,8 +196,11 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   scoped_ptr<ScriptInjector> injector(new UserScriptInjector(script,
                                                              this,
                                                              is_declarative));
+  HostID host_id(HostID::EXTENSIONS, extension->id());
+  ExtensionInjectionHost extension_injection_host(
+      make_scoped_refptr<const Extension>(extension));
   if (injector->CanExecuteOnFrame(
-          extension,
+          &extension_injection_host,
           web_frame,
           -1,  // Content scripts are not tab-specific.
           web_frame->top()->document().url()) ==
@@ -211,7 +216,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     injection.reset(new ScriptInjection(
         injector.Pass(),
         web_frame->toWebLocalFrame(),
-        extension->id(),
+        host_id,
         run_location,
         tab_id));
   }

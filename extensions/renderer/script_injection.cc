@@ -12,12 +12,13 @@
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/host_id.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_groups.h"
+#include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -31,7 +32,7 @@ namespace extensions {
 
 namespace {
 
-typedef std::map<std::string, int> IsolatedWorldMap;
+using IsolatedWorldMap = std::map<std::string, int>;
 base::LazyInstance<IsolatedWorldMap> g_isolated_worlds =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -55,38 +56,38 @@ void AppendAllChildFrames(blink::WebFrame* parent_frame,
   }
 }
 
-// Gets the isolated world ID to use for the given |extension| in the given
-// |frame|. If no isolated world has been created for that extension,
-// one will be created and initialized.
-int GetIsolatedWorldIdForExtension(const Extension* extension,
-                                   blink::WebLocalFrame* frame) {
+// Gets the isolated world ID to use for the given |injection_host|
+// in the given |frame|. If no isolated world has been created for that
+// |injection_host| one will be created and initialized.
+int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
+                                  blink::WebLocalFrame* frame) {
   static int g_next_isolated_world_id =
       ExtensionsRendererClient::Get()->GetLowestIsolatedWorldId();
 
   IsolatedWorldMap& isolated_worlds = g_isolated_worlds.Get();
 
   int id = 0;
-  IsolatedWorldMap::iterator iter = isolated_worlds.find(extension->id());
+  const std::string& key = injection_host->id().id();
+  IsolatedWorldMap::iterator iter = isolated_worlds.find(key);
   if (iter != isolated_worlds.end()) {
     id = iter->second;
   } else {
     id = g_next_isolated_world_id++;
     // This map will tend to pile up over time, but realistically, you're never
-    // going to have enough extensions for it to matter.
-    isolated_worlds[extension->id()] = id;
+    // going to have enough injection hosts for it to matter.
+    isolated_worlds[key] = id;
   }
 
   // We need to set the isolated world origin and CSP even if it's not a new
   // world since these are stored per frame, and we might not have used this
   // isolated world in this frame before.
   frame->setIsolatedWorldSecurityOrigin(
-      id, blink::WebSecurityOrigin::create(extension->url()));
+      id, blink::WebSecurityOrigin::create(injection_host->url()));
   frame->setIsolatedWorldContentSecurityPolicy(
-      id,
-      blink::WebString::fromUTF8(CSPInfo::GetContentSecurityPolicy(extension)));
+      id, blink::WebString::fromUTF8(
+          injection_host->GetContentSecurityPolicy()));
   frame->setIsolatedWorldHumanReadableName(
-      id,
-      blink::WebString::fromUTF8(extension->name()));
+      id, blink::WebString::fromUTF8(injection_host->name()));
 
   return id;
 }
@@ -94,33 +95,30 @@ int GetIsolatedWorldIdForExtension(const Extension* extension,
 }  // namespace
 
 // static
-std::string ScriptInjection::GetExtensionIdForIsolatedWorld(
-    int isolated_world_id) {
-  IsolatedWorldMap& isolated_worlds = g_isolated_worlds.Get();
+std::string ScriptInjection::GetHostIdForIsolatedWorld(int isolated_world_id) {
+  const IsolatedWorldMap& isolated_worlds = g_isolated_worlds.Get();
 
-  for (IsolatedWorldMap::iterator iter = isolated_worlds.begin();
-       iter != isolated_worlds.end();
-       ++iter) {
-    if (iter->second == isolated_world_id)
-      return iter->first;
+  for (const auto& iter : isolated_worlds) {
+    if (iter.second == isolated_world_id)
+      return iter.first;
   }
   return std::string();
 }
 
 // static
-void ScriptInjection::RemoveIsolatedWorld(const std::string& extension_id) {
-  g_isolated_worlds.Get().erase(extension_id);
+void ScriptInjection::RemoveIsolatedWorld(const std::string& host_id) {
+  g_isolated_worlds.Get().erase(host_id);
 }
 
 ScriptInjection::ScriptInjection(
     scoped_ptr<ScriptInjector> injector,
     blink::WebLocalFrame* web_frame,
-    const std::string& extension_id,
+    const HostID& host_id,
     UserScript::RunLocation run_location,
     int tab_id)
     : injector_(injector.Pass()),
       web_frame_(web_frame),
-      extension_id_(extension_id),
+      host_id_(host_id),
       run_location_(run_location),
       tab_id_(tab_id),
       request_id_(kInvalidRequestId),
@@ -133,7 +131,7 @@ ScriptInjection::~ScriptInjection() {
 }
 
 bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
-                                  const Extension* extension,
+                                  const InjectionHost* injection_host,
                                   ScriptsRunInfo* scripts_run_info) {
   if (current_location < run_location_)
     return false;  // Wait for the right location.
@@ -141,13 +139,13 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
   if (request_id_ != kInvalidRequestId)
     return false;  // We're waiting for permission right now, try again later.
 
-  if (!extension) {
+  if (!injection_host) {
     NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
     return true;  // We're done.
   }
 
-  switch (injector_->CanExecuteOnFrame(
-      extension, web_frame_, tab_id_, web_frame_->top()->document().url())) {
+  switch (injector_->CanExecuteOnFrame(injection_host, web_frame_, tab_id_,
+                                       web_frame_->top()->document().url())) {
     case PermissionsData::ACCESS_DENIED:
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return true;  // We're done.
@@ -155,7 +153,7 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
       RequestPermission();
       return false;  // Wait around for permission.
     case PermissionsData::ACCESS_ALLOWED:
-      Inject(extension, scripts_run_info);
+      Inject(injection_host, scripts_run_info);
       return true;  // We're done!
   }
 
@@ -164,14 +162,14 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
   return false;
 }
 
-bool ScriptInjection::OnPermissionGranted(const Extension* extension,
+bool ScriptInjection::OnPermissionGranted(const InjectionHost* injection_host,
                                           ScriptsRunInfo* scripts_run_info) {
-  if (!extension) {
+  if (!injection_host) {
     NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
     return false;
   }
 
-  Inject(extension, scripts_run_info);
+  Inject(injection_host, scripts_run_info);
   return true;
 }
 
@@ -185,7 +183,7 @@ void ScriptInjection::RequestPermission() {
                                                   : g_next_pending_id++;
   render_view->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
       render_view->GetRoutingID(),
-      extension_id_,
+      host_id_.id(),
       injector_->script_type(),
       request_id_));
 }
@@ -196,13 +194,14 @@ void ScriptInjection::NotifyWillNotInject(
   injector_->OnWillNotInject(reason);
 }
 
-void ScriptInjection::Inject(const Extension* extension,
+void ScriptInjection::Inject(const InjectionHost* injection_host,
                              ScriptsRunInfo* scripts_run_info) {
-  DCHECK(extension);
+  DCHECK(injection_host);
   DCHECK(scripts_run_info);
   DCHECK(!complete_);
 
-  if (ShouldNotifyBrowserOfInjections())
+  if (ShouldNotifyBrowserOfInjections() &&
+      injection_host->id().type() == HostID::EXTENSIONS)
     RequestPermission();
 
   std::vector<blink::WebFrame*> frame_vector;
@@ -229,30 +228,32 @@ void ScriptInjection::Inject(const Extension* extension,
 
     // We recheck access here in the renderer for extra safety against races
     // with navigation, but different frames can have different URLs, and the
-    // extension might only have access to a subset of them.
-    // For child frames, we just skip ones the extension doesn't have access
-    // to and carry on.
+    // injection host might only have access to a subset of them.
+    // For child frames, we just skip ones the injection host doesn't have
+    // access to and carry on.
     // Note: we don't consider ACCESS_WITHHELD because there is nowhere to
     // surface a request for a child frame.
     // TODO(rdevlin.cronin): We should ask for permission somehow.
-    if (injector_->CanExecuteOnFrame(extension, frame, tab_id_, top_url) ==
+    if (injector_->CanExecuteOnFrame(injection_host, frame, tab_id_, top_url) ==
         PermissionsData::ACCESS_DENIED) {
       DCHECK(frame->parent());
       continue;
     }
     if (inject_js)
-      InjectJs(extension, frame, execution_results.get());
+      InjectJs(injection_host, frame, execution_results.get());
     if (inject_css)
       InjectCss(frame);
   }
 
   complete_ = true;
+
+  // TODO(hanxi): don't log these metrics for webUIs' injections.
   injector_->OnInjectionComplete(execution_results.Pass(),
                                  scripts_run_info,
                                  run_location_);
 }
 
-void ScriptInjection::InjectJs(const Extension* extension,
+void ScriptInjection::InjectJs(const InjectionHost* injection_host,
                                blink::WebLocalFrame* frame,
                                base::ListValue* execution_results) {
   std::vector<blink::WebScriptSource> sources =
@@ -260,11 +261,12 @@ void ScriptInjection::InjectJs(const Extension* extension,
   bool in_main_world = injector_->ShouldExecuteInMainWorld();
   int world_id = in_main_world
                      ? DOMActivityLogger::kMainWorldId
-                     : GetIsolatedWorldIdForExtension(extension, frame);
+                     : GetIsolatedWorldIdForInstance(injection_host, frame);
   bool expects_results = injector_->ExpectsResults();
 
   base::ElapsedTimer exec_timer;
-  DOMActivityLogger::AttachToWorld(world_id, extension->id());
+  if (injection_host->id().type() == HostID::EXTENSIONS)
+    DOMActivityLogger::AttachToWorld(world_id, injection_host->id().id());
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> script_value;
   if (in_main_world) {
@@ -289,7 +291,8 @@ void ScriptInjection::InjectJs(const Extension* extension,
       script_value = (*results)[0];
   }
 
-  UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
+  if (injection_host->id().type() == HostID::EXTENSIONS)
+    UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
 
   if (expects_results) {
     // Right now, we only support returning single results (per frame).

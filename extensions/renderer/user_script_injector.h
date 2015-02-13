@@ -13,12 +13,13 @@
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/user_script_set.h"
 
+class InjectionHost;
+
 namespace blink {
 class WebFrame;
 }
 
 namespace extensions {
-class Extension;
 
 // A ScriptInjector for UserScripts.
 class UserScriptInjector : public ScriptInjector,
@@ -43,7 +44,7 @@ class UserScriptInjector : public ScriptInjector,
   bool ShouldInjectJs(UserScript::RunLocation run_location) const override;
   bool ShouldInjectCss(UserScript::RunLocation run_location) const override;
   PermissionsData::AccessType CanExecuteOnFrame(
-      const Extension* extension,
+      const InjectionHost* injection_host,
       blink::WebFrame* web_frame,
       int tab_id,
       const GURL& top_url) const override;

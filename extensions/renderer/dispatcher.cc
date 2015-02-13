@@ -235,7 +235,7 @@ const Extension* Dispatcher::GetExtensionFromFrameAndWorld(
   std::string extension_id;
   if (world_id != 0) {
     // Isolated worlds (content script).
-    extension_id = ScriptInjection::GetExtensionIdForIsolatedWorld(world_id);
+    extension_id = ScriptInjection::GetHostIdForIsolatedWorld(world_id);
   } else if (!frame->document().securityOrigin().isUnique()) {
     // TODO(kalman): Delete the above check.
 
