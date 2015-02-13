@@ -64,7 +64,7 @@ static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
     }
 
     if (renderer->isRenderInline()) {
-        // We're given a LayoutSVGInline or objects that derive from it (RenderSVGTSpan / LayoutSVGTextPath)
+        // We're given a LayoutSVGInline or objects that derive from it (LayoutSVGTSpan / LayoutSVGTextPath)
         RenderInline* renderInline = toRenderInline(renderer);
 
         // LayoutSVGInline only ever contains a single line box.

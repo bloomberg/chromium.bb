@@ -4,10 +4,10 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (20,10) size 440x290 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,-60.00)}]
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-        RenderSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#00FFFF]}] [data="M 0 0 L 150 0 L 150 150 Z"]
-        RenderSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#FF00FF]}] [data="M 0 0 L 0 150 L 150 0 Z"]
-        RenderSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#00FFFF] [opacity=0.50]}] [data="M 0 0 L 150 0 L 150 150 Z"]
-        RenderSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#FF00FF] [opacity=0.50]}] [data="M 0 0 L 0 150 L 150 0 Z"]
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#00FFFF]}] [data="M 0 0 L 150 0 L 150 150 Z"]
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#FF00FF]}] [data="M 0 0 L 0 150 L 150 0 Z"]
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#00FFFF] [opacity=0.50]}] [data="M 0 0 L 150 0 L 150 150 Z"]
+        LayoutSVGPath {path} at (15,0) size 150x90 [fill={[type=SOLID] [color=#FF00FF] [opacity=0.50]}] [data="M 0 0 L 0 150 L 150 0 Z"]
         LayoutSVGResourceFilter {filter} [id="over"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feComposite operation="OVER"]
             [feImage image-size="150x150"]

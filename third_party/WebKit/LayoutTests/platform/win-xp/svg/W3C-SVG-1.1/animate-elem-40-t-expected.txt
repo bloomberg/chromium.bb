@@ -18,9 +18,9 @@ layer at (0,0) size 480x360
               LayoutSVGRect {rect} at (71,101) size 8x8 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-3.00] [y=-3.00] [width=6.00] [height=6.00]
             LayoutSVGContainer {use} at (41,101) size 8x8 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-15.00,15.00)}]
               LayoutSVGRect {rect} at (41,101) size 8x8 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-3.00] [y=-3.00] [width=6.00] [height=6.00]
-          RenderSVGPath {path} at (39,69) size 42x42 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [data="M 0 0 C 13.3333 0 20 -6.66667 20 -20 C 6.66667 -20 0 -13.3333 0 0 C 0 -13.3333 -6.66667 -20 -20 -20 C -20 -6.66667 -13.3333 0 0 0 C -13.3333 0 -20 6.66667 -20 20 C -6.66667 20 0 13.3333 0 0 C 0 13.3333 6.66667 20 20 20 C 20 6.66667 13.3333 0 0 0 Z"]
+          LayoutSVGPath {path} at (39,69) size 42x42 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [data="M 0 0 C 13.3333 0 20 -6.66667 20 -20 C 6.66667 -20 0 -13.3333 0 0 C 0 -13.3333 -6.66667 -20 -20 -20 C -20 -6.66667 -13.3333 0 0 0 C -13.3333 0 -20 6.66667 -20 20 C -6.66667 20 0 13.3333 0 0 C 0 13.3333 6.66667 20 20 20 C 20 6.66667 13.3333 0 0 0 Z"]
         LayoutSVGContainer {use} at (24,54) size 42x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-15.00,-15.00)}]
-          RenderSVGPath {path} at (24,54) size 42x42 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [data="M 0 0 C 13.3333 0 20 -6.66667 20 -20 C 6.66667 -20 0 -13.3333 0 0 C 0 -13.3333 -6.66667 -20 -20 -20 C -20 -6.66667 -13.3333 0 0 0 C -13.3333 0 -20 6.66667 -20 20 C -6.66667 20 0 13.3333 0 0 C 0 13.3333 6.66667 20 20 20 C 20 6.66667 13.3333 0 0 0 Z"]
+          LayoutSVGPath {path} at (24,54) size 42x42 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [data="M 0 0 C 13.3333 0 20 -6.66667 20 -20 C 6.66667 -20 0 -13.3333 0 0 C 0 -13.3333 -6.66667 -20 -20 -20 C -20 -6.66667 -13.3333 0 0 0 C -13.3333 0 -20 6.66667 -20 20 C -6.66667 20 0 13.3333 0 0 C 0 13.3333 6.66667 20 20 20 C 20 6.66667 13.3333 0 0 0 Z"]
         LayoutSVGContainer {use} at (41,71) size 38x38
           LayoutSVGContainer {g} at (41,71) size 38x38
             LayoutSVGContainer {g} at (41,71) size 8x8 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-15.00,-15.00)}]
@@ -35,7 +35,7 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 79x19
             chunk 1 (middle anchor) text run 1 at (-39.50,60.00) startOffset 0 endOffset 12 width 79.00: "x/y on <use>"
       LayoutSVGContainer {g} at (133,71) size 94x83 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,90.00)}]
-        RenderSVGImage {image} at (165,75) size 50x50
+        LayoutSVGImage {image} at (165,75) size 50x50
         LayoutSVGContainer {use} at (161,71) size 38x38
           LayoutSVGContainer {g} at (161,71) size 38x38
             LayoutSVGContainer {g} at (161,71) size 8x8 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-15.00,-15.00)}]
@@ -136,7 +136,7 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 99x19
             chunk 1 (middle anchor) text run 1 at (-49.50,60.00) startOffset 0 endOffset 16 width 99.00: "x/y on <text>(2)"
       LayoutSVGContainer {g} at (138,168) size 83x121 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,210.00)}]
-        RenderSVGImage {image} at (140,170) size 50x50
+        LayoutSVGImage {image} at (140,170) size 50x50
         LayoutSVGRect {rect} at (138,168) size 54x54 [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-40.00] [y=-40.00] [width=50.00] [height=50.00]
         LayoutSVGRect {rect} at (139,169) size 82x22 [stroke={[type=SOLID] [color=#FFB400]}] [x=-40.00] [y=-40.00] [width=80.00] [height=20.00]
         LayoutSVGRect {rect} at (139,169) size 22x82 [stroke={[type=SOLID] [color=#FFB400]}] [x=-40.00] [y=-40.00] [width=20.00] [height=80.00]

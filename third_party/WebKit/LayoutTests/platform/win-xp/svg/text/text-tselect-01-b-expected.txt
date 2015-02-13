@@ -20,22 +20,22 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (0,0) size 311x19
             chunk 1 text run 1 at (25.00,140.00) startOffset 0 endOffset 47 width 310.20: "text selection should not go across lines here."
         LayoutSVGText {text} at (25,175) size 347x94 contains 1 chunk(s)
-          RenderSVGTSpan {tspan} at (0,0) size 342x19
+          LayoutSVGTSpan {tspan} at (0,0) size 342x19
             LayoutSVGInlineText {#text} at (0,0) size 342x19
               chunk 1 text run 1 at (25.00,190.00) startOffset 0 endOffset 50 width 342.00: "However, these lines of text are achieved by using"
           LayoutSVGInlineText {#text} at (341,0) size 5x19
             chunk 1 text run 1 at (367.00,190.00) startOffset 0 endOffset 1 width 4.20: " "
-          RenderSVGTSpan {tspan} at (0,0) size 335x19
+          LayoutSVGTSpan {tspan} at (0,0) size 335x19
             LayoutSVGInlineText {#text} at (0,25) size 335x19
               chunk 1 text run 1 at (25.00,215.00) startOffset 0 endOffset 51 width 334.20: "one 'tspan' per line, all contained within the same"
           LayoutSVGInlineText {#text} at (334,25) size 5x19
             chunk 1 text run 1 at (359.20,215.00) startOffset 0 endOffset 1 width 4.20: " "
-          RenderSVGTSpan {tspan} at (0,0) size 328x19
+          LayoutSVGTSpan {tspan} at (0,0) size 328x19
             LayoutSVGInlineText {#text} at (0,50) size 328x19
               chunk 1 text run 1 at (25.00,240.00) startOffset 0 endOffset 51 width 327.60: "'text' element, so you should be able to select all"
           LayoutSVGInlineText {#text} at (327,50) size 5x19
             chunk 1 text run 1 at (352.60,240.00) startOffset 0 endOffset 1 width 4.20: " "
-          RenderSVGTSpan {tspan} at (0,0) size 185x19
+          LayoutSVGTSpan {tspan} at (0,0) size 185x19
             LayoutSVGInlineText {#text} at (0,75) size 185x19
               chunk 1 text run 1 at (25.00,265.00) startOffset 0 endOffset 28 width 184.20: "four lines at the same time."
           LayoutSVGInlineText {#text} at (0,0) size 0x0

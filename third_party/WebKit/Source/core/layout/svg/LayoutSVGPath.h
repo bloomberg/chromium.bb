@@ -23,17 +23,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGPath_h
-#define RenderSVGPath_h
+#ifndef LayoutSVGPath_h
+#define LayoutSVGPath_h
 
-#include "core/rendering/svg/RenderSVGShape.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 
 namespace blink {
 
-class RenderSVGPath final : public RenderSVGShape {
+class LayoutSVGPath final : public LayoutSVGShape {
 public:
-    explicit RenderSVGPath(SVGGraphicsElement*);
-    virtual ~RenderSVGPath();
+    explicit LayoutSVGPath(SVGGraphicsElement*);
+    virtual ~LayoutSVGPath();
 
     virtual const Vector<MarkerPosition>* markerPositions() const override { return &m_markerPositions; }
 
@@ -41,7 +41,7 @@ public:
     static FloatRect zeroLengthSubpathRect(const FloatPoint&, float);
 
 private:
-    virtual const char* renderName() const override { return "RenderSVGPath"; }
+    virtual const char* renderName() const override { return "LayoutSVGPath"; }
 
     virtual void updateShapeFromElement() override;
     FloatRect calculateUpdatedStrokeBoundingBox() const;

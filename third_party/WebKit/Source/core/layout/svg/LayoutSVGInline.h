@@ -63,4 +63,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInline, isSVGInline());
 
 }
 
-#endif // !RenderSVGTSpan_H
+#endif // LayoutSVGInline_H

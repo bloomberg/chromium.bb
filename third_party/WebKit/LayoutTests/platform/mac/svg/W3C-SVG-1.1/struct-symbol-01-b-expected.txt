@@ -4,7 +4,7 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (0,0) size 480x300
       RenderSVGHiddenContainer {symbol} at (0,0) size 0x0
-        RenderSVGImage {image} at (0,0) size 480x360
+        LayoutSVGImage {image} at (0,0) size 480x360
       RenderSVGHiddenContainer {symbol} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 480x360 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=1000.00] [height=1000.00]
       RenderSVGHiddenContainer {symbol} at (0,0) size 0x0
@@ -15,7 +15,7 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (0,0) size 480x300
         LayoutSVGContainer {use} at (0,0) size 240x150
           RenderSVGViewportContainer {svg} at (0,0) size 240x150
-            RenderSVGImage {image} at (0,0) size 240x150
+            LayoutSVGImage {image} at (0,0) size 240x150
         LayoutSVGContainer {use} at (240,150) size 240x150 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,150.00)}]
           RenderSVGViewportContainer {svg} at (240,150) size 240x150
             LayoutSVGRect {rect} at (240,150) size 120x75 [fill={[type=SOLID] [color=#FFFF00]}] [x=0.00] [y=0.00] [width=500.00] [height=500.00]

@@ -19,20 +19,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGTSpan_h
-#define RenderSVGTSpan_h
+#ifndef LayoutSVGTSpan_h
+#define LayoutSVGTSpan_h
 
 #include "core/layout/svg/LayoutSVGInline.h"
 
 namespace blink {
-class RenderSVGTSpan final : public LayoutSVGInline {
+class LayoutSVGTSpan final : public LayoutSVGInline {
 public:
-    explicit RenderSVGTSpan(Element*);
+    explicit LayoutSVGTSpan(Element*);
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
-    virtual const char* renderName() const override { return "RenderSVGTSpan"; }
+    virtual const char* renderName() const override { return "LayoutSVGTSpan"; }
 };
 }
 
-#endif // !RenderSVGTSpan_h
+#endif // LayoutSVGTSpan_h

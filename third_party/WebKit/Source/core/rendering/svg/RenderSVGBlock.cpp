@@ -55,7 +55,7 @@ void RenderSVGBlock::updateFromStyle()
     // Render(SVGText|ForeignObject) return 'NoLayer' on 'layerTypeRequired'. Fine for LayoutSVGText.
     //
     // If we want to support overflow rules for <foreignObject> we can choose between two solutions:
-    // a) make RenderSVGForeignObject require layers and SVG layer aware
+    // a) make LayoutSVGForeignObject require layers and SVG layer aware
     // b) reactor overflow logic out of Layer (as suggested by dhyatt), which is a large task
     //
     // Until this is resolved, disable overflow support. Opera/FF don't support it as well at the moment (Feb 2010).

@@ -51,11 +51,11 @@ layer at (0,0) size 480x360
           LayoutSVGRect {rect} at (90,50) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,50) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (320,50) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=320.00] [y=30.00] [width=50.00] [height=30.00]
-        RenderSVGImage {image} at (90,50) size 50x30
+        LayoutSVGImage {image} at (90,50) size 50x30
           [filter="surfaceScaleA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30
-        RenderSVGImage {image} at (205,50) size 50x30
+        LayoutSVGImage {image} at (205,50) size 50x30
           [filter="surfaceScaleB"] LayoutSVGResourceFilter {filter} at (205,30) size 50x30
-        RenderSVGImage {image} at (320,50) size 50x30
+        LayoutSVGImage {image} at (320,50) size 50x30
           [filter="surfaceScaleC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
       LayoutSVGContainer {g} at (90,101) size 311x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,90.00)}]
         LayoutSVGText {text} at (90,11) size 311x17 contains 1 chunk(s)
@@ -65,11 +65,11 @@ layer at (0,0) size 480x360
           LayoutSVGRect {rect} at (90,120) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,120) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (320,120) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=320.00] [y=30.00] [width=50.00] [height=30.00]
-        RenderSVGImage {image} at (90,120) size 50x30
+        LayoutSVGImage {image} at (90,120) size 50x30
           [filter="specularConstantA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30
-        RenderSVGImage {image} at (205,120) size 50x30
+        LayoutSVGImage {image} at (205,120) size 50x30
           [filter="specularConstantB"] LayoutSVGResourceFilter {filter} at (205,30) size 50x30
-        RenderSVGImage {image} at (320,120) size 50x30
+        LayoutSVGImage {image} at (320,120) size 50x30
           [filter="specularConstantC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
       LayoutSVGContainer {g} at (90,171) size 315x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
         LayoutSVGText {text} at (90,11) size 315x17 contains 1 chunk(s)
@@ -79,11 +79,11 @@ layer at (0,0) size 480x360
           LayoutSVGRect {rect} at (90,190) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,190) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (320,190) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=320.00] [y=30.00] [width=50.00] [height=30.00]
-        RenderSVGImage {image} at (90,190) size 50x30
+        LayoutSVGImage {image} at (90,190) size 50x30
           [filter="specularExponentA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30
-        RenderSVGImage {image} at (205,190) size 50x30
+        LayoutSVGImage {image} at (205,190) size 50x30
           [filter="specularExponentB"] LayoutSVGResourceFilter {filter} at (205,30) size 50x30
-        RenderSVGImage {image} at (320,190) size 50x30
+        LayoutSVGImage {image} at (320,190) size 50x30
           [filter="specularExponentC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
       LayoutSVGContainer {g} at (90,241) size 348x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,230.00)}]
         LayoutSVGText {text} at (90,11) size 348x17 contains 1 chunk(s)
@@ -93,11 +93,11 @@ layer at (0,0) size 480x360
           LayoutSVGRect {rect} at (90,260) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,260) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (320,260) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=320.00] [y=30.00] [width=50.00] [height=30.00]
-        RenderSVGImage {image} at (90,260) size 50x30
+        LayoutSVGImage {image} at (90,260) size 50x30
           [filter="lightingColorA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30
-        RenderSVGImage {image} at (205,260) size 50x30
+        LayoutSVGImage {image} at (205,260) size 50x30
           [filter="lightingColorB"] LayoutSVGResourceFilter {filter} at (205,30) size 50x30
-        RenderSVGImage {image} at (320,260) size 50x30
+        LayoutSVGImage {image} at (320,260) size 50x30
           [filter="lightingColorC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
     LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x45

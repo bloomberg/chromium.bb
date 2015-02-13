@@ -41,7 +41,7 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (302,120) size 116x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 116x12
           chunk 1 text run 1 at (302.00,130.00) startOffset 0 endOffset 29 width 116.00: "No view attributes except id."
-      RenderSVGEllipse {ellipse} at (298,219) size 144x64 [fill={[type=SOLID] [color=#0000FF]}] [cx=370.00] [cy=251.00] [rx=72.00] [ry=32.00]
+      LayoutSVGEllipse {ellipse} at (298,219) size 144x64 [fill={[type=SOLID] [color=#0000FF]}] [cx=370.00] [cy=251.00] [rx=72.00] [ry=32.00]
       LayoutSVGText {text} at (355,281) size 45x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 45x17
           chunk 1 text run 1 at (355.00,295.00) startOffset 0 endOffset 7 width 44.44: "Ellipse"
@@ -49,7 +49,7 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (315,204) size 110x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 110x12
           chunk 1 text run 1 at (315.00,214.00) startOffset 0 endOffset 27 width 110.00: "viewBox, should fill frame."
-      RenderSVGEllipse {circle} at (49,32) size 72x72 [fill={[type=SOLID] [color=#FFFF00]}] [cx=85.00] [cy=68.00] [r=36.00]
+      LayoutSVGEllipse {circle} at (49,32) size 72x72 [fill={[type=SOLID] [color=#FFFF00]}] [cx=85.00] [cy=68.00] [r=36.00]
       LayoutSVGText {text} at (70,102) size 40x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 40x17
           chunk 1 text run 1 at (70.00,116.00) startOffset 0 endOffset 6 width 39.09: "Circle"
@@ -60,7 +60,7 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (36,127) size 81x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 81x12
           chunk 1 text run 1 at (36.00,137.00) startOffset 0 endOffset 19 width 81.00: "preserveAspectRatio"
-      RenderSVGPath {polygon} at (39,211) size 95x72 [fill={[type=SOLID] [color=#008000]}] [points="87 211 134 238 116 283 57 283 39 238 87 211"]
+      LayoutSVGPath {polygon} at (39,211) size 95x72 [fill={[type=SOLID] [color=#008000]}] [points="87 211 134 238 116 283 57 283 39 238 87 211"]
       LayoutSVGText {text} at (65,281) size 54x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 54x17
           chunk 1 text run 1 at (65.00,295.00) startOffset 0 endOffset 7 width 53.34: "Polygon"

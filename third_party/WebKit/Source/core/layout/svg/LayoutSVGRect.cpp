@@ -33,7 +33,7 @@
 namespace blink {
 
 LayoutSVGRect::LayoutSVGRect(SVGRectElement* node)
-    : RenderSVGShape(node)
+    : LayoutSVGShape(node)
     , m_usePathFallback(false)
 {
 }
@@ -62,13 +62,13 @@ void LayoutSVGRect::updateShapeFromElement()
 
     // Spec: "A value of zero disables rendering of the element."
     if (!boundingBoxSize.isEmpty()) {
-        // Fallback to RenderSVGShape and path-based hit detection if the rect
+        // Fallback to LayoutSVGShape and path-based hit detection if the rect
         // has rounded corners or a non-scaling or non-simple stroke.
         if (rect->rx()->currentValue()->value(lengthContext) > 0
             || rect->ry()->currentValue()->value(lengthContext) > 0
             || hasNonScalingStroke()
             || !definitelyHasSimpleStroke()) {
-            RenderSVGShape::updateShapeFromElement();
+            LayoutSVGShape::updateShapeFromElement();
             m_usePathFallback = true;
             return;
         }
@@ -93,11 +93,11 @@ void LayoutSVGRect::updateShapeFromElement()
 bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
 {
     // The optimized code below does not support non-simple strokes so we need
-    // to fall back to RenderSVGShape::shapeDependentStrokeContains in these cases.
+    // to fall back to LayoutSVGShape::shapeDependentStrokeContains in these cases.
     if (m_usePathFallback || !definitelyHasSimpleStroke()) {
         if (!hasPath())
-            RenderSVGShape::updateShapeFromElement();
-        return RenderSVGShape::shapeDependentStrokeContains(point);
+            LayoutSVGShape::updateShapeFromElement();
+        return LayoutSVGShape::shapeDependentStrokeContains(point);
     }
 
     return m_outerStrokeRect.contains(point, FloatRect::InsideOrOnStroke) && !m_innerStrokeRect.contains(point, FloatRect::InsideButNotOnStroke);
@@ -106,7 +106,7 @@ bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
 bool LayoutSVGRect::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
 {
     if (m_usePathFallback)
-        return RenderSVGShape::shapeDependentFillContains(point, fillRule);
+        return LayoutSVGShape::shapeDependentFillContains(point, fillRule);
     return m_fillBoundingBox.contains(point.x(), point.y());
 }
 

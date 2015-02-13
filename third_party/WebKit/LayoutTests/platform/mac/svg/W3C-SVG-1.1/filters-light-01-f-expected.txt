@@ -59,13 +59,13 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (355,11) size 51x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 51x18
             chunk 1 text run 1 at (355.00,25.00) startOffset 0 endOffset 8 width 50.66: "(45, 45)"
-        RenderSVGImage {image} at (70,70) size 50x30
+        LayoutSVGImage {image} at (70,70) size 50x30
           [filter="distantLightA"] LayoutSVGResourceFilter {filter} at (70,30) size 50x30
-        RenderSVGImage {image} at (165,70) size 50x30
+        LayoutSVGImage {image} at (165,70) size 50x30
           [filter="distantLightB"] LayoutSVGResourceFilter {filter} at (165,30) size 50x30
-        RenderSVGImage {image} at (260,70) size 50x30
+        LayoutSVGImage {image} at (260,70) size 50x30
           [filter="distantLightC"] LayoutSVGResourceFilter {filter} at (260,30) size 50x30
-        RenderSVGImage {image} at (355,70) size 50x30
+        LayoutSVGImage {image} at (355,70) size 50x30
           [filter="distantLightD"] LayoutSVGResourceFilter {filter} at (355,30) size 50x30
       LayoutSVGContainer {g} at (70,116) size 360x33 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
         LayoutSVGText {text} at (70,-4) size 279x18 contains 1 chunk(s)
@@ -84,13 +84,13 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 75x18
             chunk 1 text run 1 at (355.00,25.00) startOffset 0 endOffset 12 width 74.66: "(50, 30, 10)"
       LayoutSVGContainer {g} at (70,150) size 335x30
-        RenderSVGImage {image} at (70,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,150.00)}]
+        LayoutSVGImage {image} at (70,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,150.00)}]
           [filter="pointLightA"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
-        RenderSVGImage {image} at (165,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,150.00)}]
+        LayoutSVGImage {image} at (165,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,150.00)}]
           [filter="pointLightB"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
-        RenderSVGImage {image} at (260,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(260.00,150.00)}]
+        LayoutSVGImage {image} at (260,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(260.00,150.00)}]
           [filter="pointLightC"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
-        RenderSVGImage {image} at (355,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,150.00)}]
+        LayoutSVGImage {image} at (355,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,150.00)}]
           [filter="pointLightD"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
       LayoutSVGContainer {g} at (70,196) size 410x48 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
         LayoutSVGText {text} at (70,-14) size 474x18 contains 1 chunk(s)

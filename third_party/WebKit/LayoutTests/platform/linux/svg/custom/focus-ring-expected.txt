@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (10,10) size 437x527
-    RenderSVGEllipse {circle} at (10,5) size 110x110 [fill={[type=SOLID] [color=#FFA500]}] [cx=65.00] [cy=60.00] [r=50.00]
-    RenderSVGPath {path} at (135,5) size 110x110 [fill={[type=SOLID] [color=#FFA500]}] [data="M 140 10 L 190 110 L 240 60 L 220 60 L 200 30 Z"]
+    LayoutSVGEllipse {circle} at (10,5) size 110x110 [fill={[type=SOLID] [color=#FFA500]}] [cx=65.00] [cy=60.00] [r=50.00]
+    LayoutSVGPath {path} at (135,5) size 110x110 [fill={[type=SOLID] [color=#FFA500]}] [data="M 140 10 L 190 110 L 240 60 L 220 60 L 200 30 Z"]
     LayoutSVGContainer {g} at (265,5) size 110x110
       LayoutSVGRect {rect} at (270,10) size 100x100 [fill={[type=SOLID] [color=#FFA500]}] [x=270.00] [y=10.00] [width=100.00] [height=100.00]
     LayoutSVGContainer {g} at (10,140) size 137x137 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(60.00,140.00)}]
@@ -23,10 +23,10 @@ layer at (0,0) size 800x600
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 12 width 73.00: "focused text"
     LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
       LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-    RenderSVGImage {image} at (0,0) size 5x5
+    LayoutSVGImage {image} at (0,0) size 5x5
       [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 100x100
-    RenderSVGImage {image} at (143,393) size 151x151 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(200.00,400.00)}]
+    LayoutSVGImage {image} at (143,393) size 151x151 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(200.00,400.00)}]
       [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 100x100
     LayoutSVGContainer {g} at (303,393) size 151x151 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(360.00,400.00)}]
-      RenderSVGImage {image} at (310,400) size 137x137
+      LayoutSVGImage {image} at (310,400) size 137x137
         [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (0,0) size 100x100

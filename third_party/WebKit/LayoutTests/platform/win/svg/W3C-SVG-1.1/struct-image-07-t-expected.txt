@@ -10,7 +10,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (6,-21) size 88x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 87x26
             chunk 1 (middle anchor) text run 1 at (6.68,0.00) startOffset 0 endOffset 8 width 86.65: "xml:base"
-        RenderSVGImage {image} at (50,120) size 100x100
+        LayoutSVGImage {image} at (50,120) size 100x100
       LayoutSVGContainer {g} at (190,49) size 100x171 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,100.00)}]
         LayoutSVGText {text} at (6,-51) size 88x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 87x26
@@ -18,7 +18,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (5,-21) size 90x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 89x26
             chunk 1 (middle anchor) text run 1 at (5.68,0.00) startOffset 0 endOffset 8 width 88.64: "on image"
-        RenderSVGImage {image} at (190,120) size 100x100
+        LayoutSVGImage {image} at (190,120) size 100x100
       LayoutSVGContainer {g} at (330,49) size 100x171 [transform={m=((1.00,0.00)(0.00,1.00)) t=(320.00,100.00)}]
         LayoutSVGText {text} at (6,-51) size 88x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 87x26
@@ -26,7 +26,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (5,-21) size 90x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 90x26
             chunk 1 (middle anchor) text run 1 at (5.02,0.00) startOffset 0 endOffset 9 width 89.96: "on parent"
-        RenderSVGImage {image} at (330,120) size 100x100
+        LayoutSVGImage {image} at (330,120) size 100x100
     LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.9 $"

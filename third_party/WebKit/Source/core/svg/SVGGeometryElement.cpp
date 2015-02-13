@@ -34,7 +34,7 @@
 #include "core/SVGNames.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/PointerEventsHitRules.h"
-#include "core/rendering/svg/RenderSVGShape.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 #include "core/svg/SVGPointTearOff.h"
 
 namespace blink {
@@ -55,7 +55,7 @@ bool SVGGeometryElement::isPointInFill(PassRefPtrWillBeRawPtr<SVGPointTearOff> p
     HitTestRequest request(HitTestRequest::ReadOnly);
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, renderer()->style()->pointerEvents());
     hitRules.canHitStroke = false;
-    return toRenderSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
+    return toLayoutSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
 bool SVGGeometryElement::isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff> point) const
@@ -69,7 +69,7 @@ bool SVGGeometryElement::isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff>
     HitTestRequest request(HitTestRequest::ReadOnly);
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, renderer()->style()->pointerEvents());
     hitRules.canHitFill = false;
-    return toRenderSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
+    return toLayoutSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
 }

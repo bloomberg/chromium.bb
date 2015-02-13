@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
               [feFlood flood-color="#000000" flood-opacity="1.00"]
               [feFlood flood-color="#000000" flood-opacity="1.00"]
           [SourceGraphic]
-    RenderSVGImage {image} at (10,10) size 100x100
+    LayoutSVGImage {image} at (10,10) size 100x100
       [filter="f1"] LayoutSVGResourceFilter {filter} at (10,10) size 100x100
-    RenderSVGImage {image} at (130,10) size 100x100
+    LayoutSVGImage {image} at (130,10) size 100x100
       [filter="f1"] LayoutSVGResourceFilter {filter} at (130,10) size 100x100

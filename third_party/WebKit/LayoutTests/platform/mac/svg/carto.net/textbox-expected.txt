@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
         RenderSVGViewportContainer {svg} at (77,84) size 2x14
           LayoutSVGContainer {g} at (77,84) size 2x14
             LayoutSVGText {text}
-            RenderSVGPath {line} at (77,84) size 2x14 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=125.00] [x2=100.00] [y2=108.50]
+            LayoutSVGPath {line} at (77,84) size 2x14 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=125.00] [x2=100.00] [y2=108.50]
     LayoutSVGContainer {g} at (77,22) size 49x26
       LayoutSVGContainer {g} at (77,22) size 49x26
         LayoutSVGRect {rect} at (77,22) size 49x26 [stroke={[type=SOLID] [color=#696969] [stroke width=1.50]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=100.00] [y=30.00] [width=60.00] [height=30.00]
@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
             LayoutSVGText {text} at (105,37) size 17x18 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 17x17
                 chunk 1 text run 1 at (105.00,52.00) startOffset 0 endOffset 2 width 16.67: "50"
-            RenderSVGPath {line} at (77,30) size 2x13 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=55.00] [x2=100.00] [y2=38.50]
+            LayoutSVGPath {line} at (77,30) size 2x13 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=55.00] [x2=100.00] [y2=38.50]
     LayoutSVGContainer {g} at (77,233) size 339x26 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,300.00)}]
       LayoutSVGContainer {g} at (77,233) size 339x26
         LayoutSVGRect {rect} at (77,233) size 182x26 [stroke={[type=SOLID] [color=#696969] [stroke width=1.50]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=230.00] [height=30.00]
@@ -27,7 +27,7 @@ layer at (0,0) size 800x600
             LayoutSVGText {text} at (5,7) size 428x18 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 428x17
                 chunk 1 text run 1 at (5.00,22.00) startOffset 0 endOffset 66 width 427.36: "This is a transformed textbox with a very, very, very long content"
-            RenderSVGPath {line} at (77,241) size 2x13 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=25.00] [x2=0.00] [y2=8.50]
+            LayoutSVGPath {line} at (77,241) size 2x13 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=25.00] [x2=0.00] [y2=8.50]
     LayoutSVGContainer {g} at (78,28) size 656x258
       LayoutSVGText {text} at (100,215) size 66x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 66x18
@@ -41,7 +41,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (350,300) size 236x42 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 236x18
           chunk 1 text run 1 at (350.00,315.00) startOffset 0 endOffset 39 width 235.20: "This textbox (textbox 3) is transformed"
-        RenderSVGTSpan {tspan} at (0,0) size 224x18
+        LayoutSVGTSpan {tspan} at (0,0) size 224x18
           LayoutSVGInlineText {#text} at (0,23) size 224x18
             chunk 1 text run 1 at (350.00,338.00) startOffset 0 endOffset 38 width 223.06: "and accepts all characters (up to 300)"
       LayoutSVGText {text} at (620,300) size 291x19 contains 1 chunk(s)

@@ -13,11 +13,11 @@ class FloatPoint;
 class GraphicsContext;
 class Path;
 class LayoutSVGResourceMarker;
-class RenderSVGShape;
+class LayoutSVGShape;
 
 class SVGShapePainter {
 public:
-    SVGShapePainter(RenderSVGShape& renderSVGShape) : m_renderSVGShape(renderSVGShape) { }
+    SVGShapePainter(LayoutSVGShape& renderSVGShape) : m_renderSVGShape(renderSVGShape) { }
 
     void paint(const PaintInfo&);
 
@@ -30,7 +30,7 @@ private:
     void strokeZeroLengthLineCaps(GraphicsContext*);
     Path* zeroLengthLinecapPath(const FloatPoint&) const;
 
-    RenderSVGShape& m_renderSVGShape;
+    LayoutSVGShape& m_renderSVGShape;
 };
 
 } // namespace blink

@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGPolyElement.h"
 
-#include "core/rendering/svg/RenderSVGShape.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 #include "core/svg/SVGAnimatedPointList.h"
 #include "core/svg/SVGParserUtilities.h"
 
@@ -54,7 +54,7 @@ void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
     if (!renderer)
         return;
 

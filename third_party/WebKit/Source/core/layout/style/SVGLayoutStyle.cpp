@@ -135,7 +135,7 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
     if (resources != other->resources)
         return true;
 
-    // If markers change, we need a relayout, as marker boundaries are cached in RenderSVGPath.
+    // If markers change, we need a relayout, as marker boundaries are cached in LayoutSVGPath.
     if (inheritedResources != other->inheritedResources)
         return true;
 
@@ -193,7 +193,7 @@ bool SVGLayoutStyle::diffNeedsPaintInvalidation(const SVGLayoutStyle* other) con
             return true;
     }
 
-    // If fill changes, we just need to issue paint invalidations. Fill boundaries are not influenced by this, only by the Path, that RenderSVGPath contains.
+    // If fill changes, we just need to issue paint invalidations. Fill boundaries are not influenced by this, only by the Path, that LayoutSVGPath contains.
     if (fill.get() != other->fill.get()) {
         if (fill->paintType != other->fill->paintType
             || fill->paintColor != other->fill->paintColor

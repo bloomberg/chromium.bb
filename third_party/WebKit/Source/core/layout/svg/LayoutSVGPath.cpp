@@ -27,7 +27,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGPath.h"
+#include "core/layout/svg/LayoutSVGPath.h"
 
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 #include "core/layout/svg/SVGResources.h"
@@ -37,24 +37,24 @@
 
 namespace blink {
 
-RenderSVGPath::RenderSVGPath(SVGGraphicsElement* node)
-    : RenderSVGShape(node)
+LayoutSVGPath::LayoutSVGPath(SVGGraphicsElement* node)
+    : LayoutSVGShape(node)
 {
 }
 
-RenderSVGPath::~RenderSVGPath()
+LayoutSVGPath::~LayoutSVGPath()
 {
 }
 
-void RenderSVGPath::updateShapeFromElement()
+void LayoutSVGPath::updateShapeFromElement()
 {
-    RenderSVGShape::updateShapeFromElement();
+    LayoutSVGShape::updateShapeFromElement();
     updateZeroLengthSubpaths();
 
     m_strokeBoundingBox = calculateUpdatedStrokeBoundingBox();
 }
 
-FloatRect RenderSVGPath::calculateUpdatedStrokeBoundingBox() const
+FloatRect LayoutSVGPath::calculateUpdatedStrokeBoundingBox() const
 {
     FloatRect strokeBoundingBox = m_strokeBoundingBox;
 
@@ -71,9 +71,9 @@ FloatRect RenderSVGPath::calculateUpdatedStrokeBoundingBox() const
     return strokeBoundingBox;
 }
 
-bool RenderSVGPath::shapeDependentStrokeContains(const FloatPoint& point)
+bool LayoutSVGPath::shapeDependentStrokeContains(const FloatPoint& point)
 {
-    if (RenderSVGShape::shapeDependentStrokeContains(point))
+    if (LayoutSVGShape::shapeDependentStrokeContains(point))
         return true;
 
     const SVGLayoutStyle& svgStyle = style()->svgStyle();
@@ -93,19 +93,19 @@ bool RenderSVGPath::shapeDependentStrokeContains(const FloatPoint& point)
     return false;
 }
 
-bool RenderSVGPath::shouldStrokeZeroLengthSubpath() const
+bool LayoutSVGPath::shouldStrokeZeroLengthSubpath() const
 {
     // Spec(11.4): Any zero length subpath shall not be stroked if the "stroke-linecap" property has a value of butt
     // but shall be stroked if the "stroke-linecap" property has a value of round or square
     return style()->svgStyle().hasStroke() && style()->svgStyle().capStyle() != ButtCap;
 }
 
-FloatRect RenderSVGPath::zeroLengthSubpathRect(const FloatPoint& linecapPosition, float strokeWidth)
+FloatRect LayoutSVGPath::zeroLengthSubpathRect(const FloatPoint& linecapPosition, float strokeWidth)
 {
     return FloatRect(linecapPosition.x() - strokeWidth / 2, linecapPosition.y() - strokeWidth / 2, strokeWidth, strokeWidth);
 }
 
-void RenderSVGPath::updateZeroLengthSubpaths()
+void LayoutSVGPath::updateZeroLengthSubpaths()
 {
     m_zeroLengthLinecapLocations.clear();
 
@@ -117,7 +117,7 @@ void RenderSVGPath::updateZeroLengthSubpaths()
     subpathData.pathIsDone();
 }
 
-FloatRect RenderSVGPath::markerRect(float strokeWidth) const
+FloatRect LayoutSVGPath::markerRect(float strokeWidth) const
 {
     ASSERT(!m_markerPositions.isEmpty());
 
@@ -138,7 +138,7 @@ FloatRect RenderSVGPath::markerRect(float strokeWidth) const
     return boundaries;
 }
 
-bool RenderSVGPath::shouldGenerateMarkerPositions() const
+bool LayoutSVGPath::shouldGenerateMarkerPositions() const
 {
     if (!style()->svgStyle().hasMarkers())
         return false;
@@ -153,7 +153,7 @@ bool RenderSVGPath::shouldGenerateMarkerPositions() const
     return resources->markerStart() || resources->markerMid() || resources->markerEnd();
 }
 
-void RenderSVGPath::processMarkerPositions()
+void LayoutSVGPath::processMarkerPositions()
 {
     m_markerPositions.clear();
 

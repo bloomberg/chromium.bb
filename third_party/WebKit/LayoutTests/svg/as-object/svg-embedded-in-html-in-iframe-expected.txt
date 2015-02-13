@@ -12,4 +12,4 @@ layer at (8,8) size 784x150
       RenderBlock {HTML} at (0,0) size 784x120
         RenderBody {BODY} at (8,8) size 768x104
           RenderSVGRoot {svg} at (8,8) size 100x100
-            RenderSVGEllipse {circle} at (8,8) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=50.00] [cy=50.00] [r=50.00]
+            LayoutSVGEllipse {circle} at (8,8) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=50.00] [cy=50.00] [r=50.00]

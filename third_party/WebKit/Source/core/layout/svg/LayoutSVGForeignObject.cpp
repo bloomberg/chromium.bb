@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGForeignObject.h"
+#include "core/layout/svg/LayoutSVGForeignObject.h"
 
 #include "core/layout/HitTestResult.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -32,42 +32,42 @@
 
 namespace blink {
 
-RenderSVGForeignObject::RenderSVGForeignObject(SVGForeignObjectElement* node)
+LayoutSVGForeignObject::LayoutSVGForeignObject(SVGForeignObjectElement* node)
     : RenderSVGBlock(node)
     , m_needsTransformUpdate(true)
 {
 }
 
-RenderSVGForeignObject::~RenderSVGForeignObject()
+LayoutSVGForeignObject::~LayoutSVGForeignObject()
 {
 }
 
-bool RenderSVGForeignObject::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
+bool LayoutSVGForeignObject::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
 {
     // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS"> subdocuments.
     return !child->isSVG() || child->isSVGRoot();
 }
 
-void RenderSVGForeignObject::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGForeignObject::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGForeignObjectPainter(*this).paint(paintInfo);
 }
 
-const AffineTransform& RenderSVGForeignObject::localToParentTransform() const
+const AffineTransform& LayoutSVGForeignObject::localToParentTransform() const
 {
     m_localToParentTransform = localTransform();
     m_localToParentTransform.translate(m_viewport.x(), m_viewport.y());
     return m_localToParentTransform;
 }
 
-void RenderSVGForeignObject::updateLogicalWidth()
+void LayoutSVGForeignObject::updateLogicalWidth()
 {
     // FIXME: Investigate in size rounding issues
     // FIXME: Remove unnecessary rounding when layout is off ints: webkit.org/b/63656
     setWidth(static_cast<int>(roundf(m_viewport.width())));
 }
 
-void RenderSVGForeignObject::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutSVGForeignObject::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     // FIXME: Investigate in size rounding issues
     // FIXME: Remove unnecessary rounding when layout is off ints: webkit.org/b/63656
@@ -76,7 +76,7 @@ void RenderSVGForeignObject::computeLogicalHeight(LayoutUnit, LayoutUnit logical
     computedValues.m_position = logicalTop;
 }
 
-void RenderSVGForeignObject::layout()
+void LayoutSVGForeignObject::layout()
 {
     ASSERT(needsLayout());
 
@@ -102,7 +102,7 @@ void RenderSVGForeignObject::layout()
     // positions. A regular RenderBoxModelObject would pull this information from LayoutStyle - in SVG those
     // properties are ignored for non <svg> elements, so we mimic what happens when specifying them through CSS.
 
-    // FIXME: Investigate in location rounding issues - only affects RenderSVGForeignObject & LayoutSVGText
+    // FIXME: Investigate in location rounding issues - only affects LayoutSVGForeignObject & LayoutSVGText
     setLocation(roundedIntPoint(viewportLocation));
 
     bool layoutChanged = everHadLayout() && selfNeedsLayout();
@@ -118,7 +118,7 @@ void RenderSVGForeignObject::layout()
         SVGResourcesCache::clientLayoutChanged(this);
 }
 
-bool RenderSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // Embedded content is drawn in the foreground phase.
     if (hitTestAction != HitTestForeground)

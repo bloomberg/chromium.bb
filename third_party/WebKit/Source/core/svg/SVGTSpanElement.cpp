@@ -23,7 +23,7 @@
 #include "core/svg/SVGTSpanElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/svg/RenderSVGTSpan.h"
+#include "core/layout/svg/LayoutSVGTSpan.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ DEFINE_NODE_FACTORY(SVGTSpanElement)
 
 LayoutObject* SVGTSpanElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGTSpan(this);
+    return new LayoutSVGTSpan(this);
 }
 
 bool SVGTSpanElement::rendererIsNeeded(const LayoutStyle& style)

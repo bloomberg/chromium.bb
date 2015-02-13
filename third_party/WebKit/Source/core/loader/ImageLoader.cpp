@@ -37,7 +37,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/rendering/svg/RenderSVGImage.h"
+#include "core/layout/svg/LayoutSVGImage.h"
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
@@ -451,7 +451,7 @@ LayoutImageResource* ImageLoader::layoutImageResource()
         return toLayoutImage(renderer)->imageResource();
 
     if (renderer->isSVGImage())
-        return toRenderSVGImage(renderer)->imageResource();
+        return toLayoutSVGImage(renderer)->imageResource();
 
     if (renderer->isVideo())
         return toLayoutVideo(renderer)->imageResource();

@@ -26,7 +26,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/XLinkNames.h"
 #include "core/layout/LayoutImageResource.h"
-#include "core/rendering/svg/RenderSVGImage.h"
+#include "core/layout/svg/LayoutSVGImage.h"
 
 namespace blink {
 
@@ -65,7 +65,7 @@ void SVGImageElement::trace(Visitor* visitor)
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const
 {
-    if (RenderSVGImage* renderSVGImage = toRenderSVGImage(renderer())) {
+    if (LayoutSVGImage* renderSVGImage = toLayoutSVGImage(renderer())) {
         if (renderSVGImage->imageResource()->hasImage()) {
             if (Image* image = renderSVGImage->imageResource()->cachedImage()->image())
                 return image->currentFrameHasSingleSecurityOrigin();
@@ -141,7 +141,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
 
     if (isLengthAttribute) {
-        if (toRenderSVGImage(renderer)->updateImageViewport())
+        if (toLayoutSVGImage(renderer)->updateImageViewport())
             markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
@@ -164,7 +164,7 @@ bool SVGImageElement::selfHasRelativeLengths() const
 
 LayoutObject* SVGImageElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGImage(this);
+    return new LayoutSVGImage(this);
 }
 
 bool SVGImageElement::haveLoadedRequiredResources()
@@ -176,7 +176,7 @@ void SVGImageElement::attach(const AttachContext& context)
 {
     SVGGraphicsElement::attach(context);
 
-    if (RenderSVGImage* imageObj = toRenderSVGImage(renderer())) {
+    if (LayoutSVGImage* imageObj = toLayoutSVGImage(renderer())) {
         if (imageObj->imageResource()->hasImage())
             return;
 

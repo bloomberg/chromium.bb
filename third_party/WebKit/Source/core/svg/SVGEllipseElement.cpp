@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGEllipseElement.h"
 
-#include "core/rendering/svg/RenderSVGEllipse.h"
+#include "core/layout/svg/LayoutSVGEllipse.h"
 #include "core/svg/SVGLength.h"
 
 namespace blink {
@@ -84,7 +84,7 @@ void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
     if (isLengthAttribute)
         updateRelativeLengthsInformation();
 
-    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
     if (!renderer)
         return;
 
@@ -107,7 +107,7 @@ bool SVGEllipseElement::selfHasRelativeLengths() const
 
 LayoutObject* SVGEllipseElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGEllipse(this);
+    return new LayoutSVGEllipse(this);
 }
 
 } // namespace blink

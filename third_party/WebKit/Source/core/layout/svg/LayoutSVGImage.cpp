@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGImage.h"
+#include "core/layout/svg/LayoutSVGImage.h"
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutImageResource.h"
@@ -41,7 +41,7 @@
 
 namespace blink {
 
-RenderSVGImage::RenderSVGImage(SVGImageElement* impl)
+LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
     : RenderSVGModelObject(impl)
     , m_needsBoundariesUpdate(true)
     , m_needsTransformUpdate(true)
@@ -50,18 +50,18 @@ RenderSVGImage::RenderSVGImage(SVGImageElement* impl)
     m_imageResource->initialize(this);
 }
 
-RenderSVGImage::~RenderSVGImage()
+LayoutSVGImage::~LayoutSVGImage()
 {
 }
 
-void RenderSVGImage::destroy()
+void LayoutSVGImage::destroy()
 {
     ImageQualityController::remove(this);
     m_imageResource->shutdown();
     RenderSVGModelObject::destroy();
 }
 
-FloatSize RenderSVGImage::computeImageViewportSize(ImageResource& cachedImage) const
+FloatSize LayoutSVGImage::computeImageViewportSize(ImageResource& cachedImage) const
 {
     if (toSVGImageElement(element())->preserveAspectRatio()->currentValue()->align() != SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
         return m_objectBoundingBox.size();
@@ -86,7 +86,7 @@ static bool containerSizeIsSetForRenderer(ImageResource& cachedImage, const Layo
     return !image->isSVGImage() || image != cachedImage.imageForRenderer(renderer);
 }
 
-bool RenderSVGImage::updateImageViewport()
+bool LayoutSVGImage::updateImageViewport()
 {
     SVGImageElement* image = toSVGImageElement(element());
     FloatRect oldBoundaries = m_objectBoundingBox;
@@ -110,7 +110,7 @@ bool RenderSVGImage::updateImageViewport()
     return updatedViewport || boundsChanged;
 }
 
-void RenderSVGImage::layout()
+void LayoutSVGImage::layout()
 {
     ASSERT(needsLayout());
 
@@ -142,12 +142,12 @@ void RenderSVGImage::layout()
     clearNeedsLayout();
 }
 
-void RenderSVGImage::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGImage::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGImagePainter(*this).paint(paintInfo);
 }
 
-bool RenderSVGImage::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGImage::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // We only draw in the forground phase, so we only hit-test then.
     if (hitTestAction != HitTestForeground)
@@ -171,7 +171,7 @@ bool RenderSVGImage::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
     return false;
 }
 
-void RenderSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
+void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // The image resource defaults to nullImage until the resource arrives.
     // This empty image may be cached by SVG resources which must be invalidated.
@@ -191,7 +191,7 @@ void RenderSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
     setShouldDoFullPaintInvalidation();
 }
 
-void RenderSVGImage::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
+void LayoutSVGImage::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
 {
     // this is called from paint() after the localTransform has already been applied
     LayoutRect contentRect = LayoutRect(paintInvalidationRectInLocalCoordinates());

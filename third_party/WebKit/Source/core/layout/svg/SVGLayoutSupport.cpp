@@ -34,11 +34,11 @@
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
@@ -177,7 +177,7 @@ void SVGLayoutSupport::computeContainerBoundingBoxes(const LayoutObject* contain
             continue;
 
         // Don't include elements in the union that do not render.
-        if (current->isSVGShape() && toRenderSVGShape(current)->isShapeEmpty())
+        if (current->isSVGShape() && toLayoutSVGShape(current)->isShapeEmpty())
             continue;
 
         const AffineTransform& transform = current->localToParentTransform();
@@ -248,9 +248,9 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
             if (SVGElement* element = child->node()->isSVGElement() ? toSVGElement(child->node()) : 0) {
                 if (element->hasRelativeLengths()) {
                     // FIXME: this should be done on invalidation, not during layout.
-                    // When the layout size changed and when using relative values tell the RenderSVGShape to update its shape object
+                    // When the layout size changed and when using relative values tell the LayoutSVGShape to update its shape object
                     if (child->isSVGShape()) {
-                        toRenderSVGShape(child)->setNeedsShapeUpdate();
+                        toLayoutSVGShape(child)->setNeedsShapeUpdate();
                     } else if (child->isSVGText()) {
                         toLayoutSVGText(child)->setNeedsTextMetricsUpdate();
                         toLayoutSVGText(child)->setNeedsPositioningValuesUpdate();

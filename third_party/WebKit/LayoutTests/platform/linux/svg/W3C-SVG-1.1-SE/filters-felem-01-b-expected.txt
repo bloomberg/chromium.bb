@@ -8,27 +8,27 @@ layer at (0,0) size 480x360
         LayoutSVGResourceFilter {filter} [id="null"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         LayoutSVGResourceFilter {filter} [id="nullreg"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
       LayoutSVGContainer {g} at (90,20) size 80x114
-        RenderSVGEllipse {circle} at (100,30) size 60x60 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=60.00] [r=30.00]
-        RenderSVGEllipse {circle} at (90,20) size 80x80 [fill={[type=SOLID] [color=#00FF00]}] [cx=130.00] [cy=60.00] [r=40.00]
+        LayoutSVGEllipse {circle} at (100,30) size 60x60 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=60.00] [r=30.00]
+        LayoutSVGEllipse {circle} at (90,20) size 80x80 [fill={[type=SOLID] [color=#00FF00]}] [cx=130.00] [cy=60.00] [r=40.00]
         LayoutSVGText {text} at (96,111) size 68x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 68x23
             chunk 1 (middle anchor) text run 1 at (96.00,130.00) startOffset 0 endOffset 9 width 68.00: "No filter"
       LayoutSVGContainer {g} at (82,162) size 96x122
-        RenderSVGEllipse {circle} at (100,180) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=130.00] [cy=210.00] [r=30.00]
-        RenderSVGEllipse {circle} at (82,162) size 96x96 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=210.00] [r=40.00]
+        LayoutSVGEllipse {circle} at (100,180) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=130.00] [cy=210.00] [r=30.00]
+        LayoutSVGEllipse {circle} at (82,162) size 96x96 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=210.00] [r=40.00]
           [filter="null"] LayoutSVGResourceFilter {filter} at (82,162) size 96x96
         LayoutSVGText {text} at (92,261) size 76x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 75x23
             chunk 1 (middle anchor) text run 1 at (92.50,280.00) startOffset 0 endOffset 11 width 75.00: "Null filter"
       LayoutSVGContainer {g} at (254,20) size 152x114
-        RenderSVGEllipse {circle} at (300,30) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=330.00] [cy=60.00] [r=30.00]
-        RenderSVGEllipse {circle} at (290,20) size 80x80 [fill={[type=SOLID] [color=#FF0000]}] [cx=330.00] [cy=60.00] [r=40.00]
+        LayoutSVGEllipse {circle} at (300,30) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=330.00] [cy=60.00] [r=30.00]
+        LayoutSVGEllipse {circle} at (290,20) size 80x80 [fill={[type=SOLID] [color=#FF0000]}] [cx=330.00] [cy=60.00] [r=40.00]
         LayoutSVGText {text} at (254,111) size 152x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 152x23
             chunk 1 (middle anchor) text run 1 at (254.00,130.00) startOffset 0 endOffset 19 width 152.00: "Non-existent filter"
       LayoutSVGContainer {g} at (216,180) size 228x104
-        RenderSVGEllipse {circle} at (300,180) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=330.00] [cy=210.00] [r=30.00]
-        RenderSVGEllipse {circle} at (322,202) size 16x16 [fill={[type=SOLID] [color=#FF0000]}] [cx=330.00] [cy=210.00] [r=40.00]
+        LayoutSVGEllipse {circle} at (300,180) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=330.00] [cy=210.00] [r=30.00]
+        LayoutSVGEllipse {circle} at (322,202) size 16x16 [fill={[type=SOLID] [color=#FF0000]}] [cx=330.00] [cy=210.00] [r=40.00]
           [filter="nullreg"] LayoutSVGResourceFilter {filter} at (322,202) size 16x16
         LayoutSVGText {text} at (216,261) size 228x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 227x23

@@ -21,4 +21,4 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (0,0) size 5x5 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
       LayoutSVGResourceMarker {marker} [id="marker3"] [markerUnits=strokeWidth] [ref at (5,5)] [angle=0.00]
         LayoutSVGRect {rect} at (0,0) size 5x5 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
-      RenderSVGPath {path} at (196,180) size 124x124 [start marker=marker1] [middle marker=marker2] [end marker=marker3] [data="M 130 120 L 180 120 L 180 170"]
+      LayoutSVGPath {path} at (196,180) size 124x124 [start marker=marker1] [middle marker=marker2] [end marker=marker3] [data="M 130 120 L 180 120 L 180 170"]

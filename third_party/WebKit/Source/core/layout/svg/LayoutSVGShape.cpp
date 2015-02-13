@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGShape.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/PointerEventsHitRules.h"
@@ -42,7 +42,7 @@
 
 namespace blink {
 
-RenderSVGShape::RenderSVGShape(SVGGraphicsElement* node)
+LayoutSVGShape::LayoutSVGShape(SVGGraphicsElement* node)
     : RenderSVGModelObject(node)
     , m_needsBoundariesUpdate(false) // Default is false, the cached rects are empty from the beginning.
     , m_needsShapeUpdate(true) // Default is true, so we grab a Path object once from SVGGraphicsElement.
@@ -50,21 +50,21 @@ RenderSVGShape::RenderSVGShape(SVGGraphicsElement* node)
 {
 }
 
-RenderSVGShape::~RenderSVGShape()
+LayoutSVGShape::~LayoutSVGShape()
 {
 }
 
-void RenderSVGShape::createPath()
+void LayoutSVGShape::createPath()
 {
     clearPath();
     m_path = adoptPtr(new Path);
-    ASSERT(RenderSVGShape::isShapeEmpty());
+    ASSERT(LayoutSVGShape::isShapeEmpty());
 
     updatePathFromGraphicsElement(toSVGGraphicsElement(element()), path());
     processMarkerPositions();
 }
 
-void RenderSVGShape::updateShapeFromElement()
+void LayoutSVGShape::updateShapeFromElement()
 {
     createPath();
 
@@ -72,7 +72,7 @@ void RenderSVGShape::updateShapeFromElement()
     m_strokeBoundingBox = calculateStrokeBoundingBox();
 }
 
-bool RenderSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
+bool LayoutSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
 {
     ASSERT(m_path);
     StrokeData strokeData;
@@ -88,12 +88,12 @@ bool RenderSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
     return m_path->strokeContains(point, strokeData);
 }
 
-bool RenderSVGShape::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
+bool LayoutSVGShape::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
 {
     return path().contains(point, fillRule);
 }
 
-bool RenderSVGShape::fillContains(const FloatPoint& point, bool requiresFill, const WindRule fillRule)
+bool LayoutSVGShape::fillContains(const FloatPoint& point, bool requiresFill, const WindRule fillRule)
 {
     if (!m_fillBoundingBox.contains(point))
         return false;
@@ -104,7 +104,7 @@ bool RenderSVGShape::fillContains(const FloatPoint& point, bool requiresFill, co
     return shapeDependentFillContains(point, fillRule);
 }
 
-bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke)
+bool LayoutSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke)
 {
     if (!strokeBoundingBox().contains(point))
         return false;
@@ -115,7 +115,7 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
     return shapeDependentStrokeContains(point);
 }
 
-void RenderSVGShape::updateLocalTransform()
+void LayoutSVGShape::updateLocalTransform()
 {
     SVGGraphicsElement* graphicsElement = toSVGGraphicsElement(element());
     if (graphicsElement->hasAnimatedLocalTransform()) {
@@ -128,7 +128,7 @@ void RenderSVGShape::updateLocalTransform()
     }
 }
 
-void RenderSVGShape::layout()
+void LayoutSVGShape::layout()
 {
     bool updateCachedBoundariesInParents = false;
 
@@ -157,7 +157,7 @@ void RenderSVGShape::layout()
     clearNeedsLayout();
 }
 
-Path* RenderSVGShape::nonScalingStrokePath(const Path* path, const AffineTransform& strokeTransform) const
+Path* LayoutSVGShape::nonScalingStrokePath(const Path* path, const AffineTransform& strokeTransform) const
 {
     DEFINE_STATIC_LOCAL(Path, tempPath, ());
 
@@ -167,26 +167,26 @@ Path* RenderSVGShape::nonScalingStrokePath(const Path* path, const AffineTransfo
     return &tempPath;
 }
 
-AffineTransform RenderSVGShape::nonScalingStrokeTransform() const
+AffineTransform LayoutSVGShape::nonScalingStrokeTransform() const
 {
     return toSVGGraphicsElement(element())->getScreenCTM(SVGGraphicsElement::DisallowStyleUpdate);
 }
 
-void RenderSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGShapePainter(*this).paint(paintInfo);
 }
 
 // This method is called from inside paintOutline() since we call paintOutline()
 // while transformed to our coord system, return local coords
-void RenderSVGShape::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
+void LayoutSVGShape::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
 {
     LayoutRect rect = LayoutRect(paintInvalidationRectInLocalCoordinates());
     if (!rect.isEmpty())
         rects.append(rect);
 }
 
-bool RenderSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // We only draw in the foreground phase, so we only hit-test then.
     if (hitTestAction != HitTestForeground)
@@ -205,7 +205,7 @@ bool RenderSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
     return false;
 }
 
-bool RenderSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, const FloatPoint& localPoint, PointerEventsHitRules hitRules)
+bool LayoutSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, const FloatPoint& localPoint, PointerEventsHitRules hitRules)
 {
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
@@ -221,12 +221,12 @@ bool RenderSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, con
     return false;
 }
 
-FloatRect RenderSVGShape::calculateObjectBoundingBox() const
+FloatRect LayoutSVGShape::calculateObjectBoundingBox() const
 {
     return path().boundingRect();
 }
 
-FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
+FloatRect LayoutSVGShape::calculateStrokeBoundingBox() const
 {
     ASSERT(m_path);
     FloatRect strokeBoundingBox = m_fillBoundingBox;
@@ -250,7 +250,7 @@ FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
     return strokeBoundingBox;
 }
 
-void RenderSVGShape::updatePaintInvalidationBoundingBox()
+void LayoutSVGShape::updatePaintInvalidationBoundingBox()
 {
     m_paintInvalidationBoundingBox = strokeBoundingBox();
     if (strokeWidth() < 1.0f && !m_paintInvalidationBoundingBox.isEmpty())
@@ -258,7 +258,7 @@ void RenderSVGShape::updatePaintInvalidationBoundingBox()
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
-float RenderSVGShape::strokeWidth() const
+float LayoutSVGShape::strokeWidth() const
 {
     SVGLengthContext lengthContext(element());
     return style()->svgStyle().strokeWidth()->value(lengthContext);

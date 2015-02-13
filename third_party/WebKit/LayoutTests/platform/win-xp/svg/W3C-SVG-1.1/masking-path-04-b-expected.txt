@@ -9,12 +9,12 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 353x122
               chunk 1 text run 1 at (45.00,270.00) startOffset 0 endOffset 9 width 353.00: "Clip Test"
       LayoutSVGContainer {g} at (30,20) size 410x140
-        RenderSVGImage {image} at (30,20) size 410x140
+        LayoutSVGImage {image} at (30,20) size 410x140
         LayoutSVGText {text} at (55,29) size 353x122 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 353x122
             chunk 1 text run 1 at (55.00,130.00) startOffset 0 endOffset 9 width 353.00: "Clip Test"
       LayoutSVGContainer {g} at (45,170) size 350x121
-        RenderSVGImage {image} at (45,170) size 350x121
+        LayoutSVGImage {image} at (45,170) size 350x121
           [clipPath="sample"] LayoutSVGResourceClipper {clipPath} at (45,169.86) size 349.94x120.80
     LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 261x46

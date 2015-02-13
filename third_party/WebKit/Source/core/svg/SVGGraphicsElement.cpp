@@ -25,8 +25,8 @@
 
 #include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/layout/svg/LayoutSVGPath.h"
 #include "core/layout/svg/SVGPathData.h"
-#include "core/rendering/svg/RenderSVGPath.h"
 #include "core/svg/SVGElementRareData.h"
 #include "platform/transforms/AffineTransform.h"
 
@@ -270,7 +270,7 @@ PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript
 LayoutObject* SVGGraphicsElement::createRenderer(const LayoutStyle&)
 {
     // By default, any subclass is expected to do path-based drawing
-    return new RenderSVGPath(this);
+    return new LayoutSVGPath(this);
 }
 
 void SVGGraphicsElement::toClipPath(Path& path)

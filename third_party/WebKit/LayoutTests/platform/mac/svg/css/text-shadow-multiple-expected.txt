@@ -9,17 +9,17 @@ layer at (0,0) size 800x408
       RenderBlock (anonymous) at (0,34) size 800x154
         RenderSVGRoot {svg} at (20,121) size 717x56
           LayoutSVGText {text} at (20,21) size 717x56 contains 1 chunk(s)
-            RenderSVGTSpan {tspan} at (0,0) size 95x56
+            LayoutSVGTSpan {tspan} at (0,0) size 95x56
               LayoutSVGInlineText {#text} at (0,0) size 95x56
                 chunk 1 text run 1 at (20.00,66.00) startOffset 0 endOffset 4 width 94.46: "This"
             LayoutSVGInlineText {#text} at (94,0) size 14x56
               chunk 1 text run 1 at (114.46,66.00) startOffset 0 endOffset 1 width 13.89: " "
-            RenderSVGTSpan {tspan} at (0,0) size 81x56
+            LayoutSVGTSpan {tspan} at (0,0) size 81x56
               LayoutSVGInlineText {#text} at (108,0) size 81x56
                 chunk 1 text run 1 at (128.35,66.00) startOffset 0 endOffset 4 width 80.59: "text"
             LayoutSVGInlineText {#text} at (188,0) size 14x56
               chunk 1 text run 1 at (208.94,66.00) startOffset 0 endOffset 1 width 13.89: " "
-            RenderSVGTSpan {tspan} at (0,0) size 304x56
+            LayoutSVGTSpan {tspan} at (0,0) size 304x56
               LayoutSVGInlineText {#text} at (202,0) size 303x56
                 chunk 1 text run 1 at (222.83,66.00) startOffset 0 endOffset 14 width 302.88: "casts multiple"
             LayoutSVGInlineText {#text} at (505,0) size 212x56
@@ -32,17 +32,17 @@ layer at (0,0) size 800x408
       RenderBlock (anonymous) at (0,238) size 800x154
         RenderSVGRoot {svg} at (0,308) size 744x89
           LayoutSVGText {text} at (20,21) size 717x56 contains 1 chunk(s)
-            RenderSVGTSpan {tspan} at (0,0) size 95x56
+            LayoutSVGTSpan {tspan} at (0,0) size 95x56
               LayoutSVGInlineText {#text} at (0,0) size 95x56
                 chunk 1 text run 1 at (20.00,66.00) startOffset 0 endOffset 4 width 94.46: "This"
             LayoutSVGInlineText {#text} at (94,0) size 14x56
               chunk 1 text run 1 at (114.46,66.00) startOffset 0 endOffset 1 width 13.89: " "
-            RenderSVGTSpan {tspan} at (0,0) size 81x56
+            LayoutSVGTSpan {tspan} at (0,0) size 81x56
               LayoutSVGInlineText {#text} at (108,0) size 81x56
                 chunk 1 text run 1 at (128.35,66.00) startOffset 0 endOffset 4 width 80.59: "text"
             LayoutSVGInlineText {#text} at (188,0) size 14x56
               chunk 1 text run 1 at (208.94,66.00) startOffset 0 endOffset 1 width 13.89: " "
-            RenderSVGTSpan {tspan} at (0,0) size 304x56
+            LayoutSVGTSpan {tspan} at (0,0) size 304x56
               LayoutSVGInlineText {#text} at (202,0) size 303x56
                 chunk 1 text run 1 at (222.83,66.00) startOffset 0 endOffset 14 width 302.88: "casts multiple"
             LayoutSVGInlineText {#text} at (505,0) size 212x56

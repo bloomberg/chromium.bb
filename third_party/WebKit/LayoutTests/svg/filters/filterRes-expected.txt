@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
       LayoutSVGResourceFilter {filter} [id="dilate2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feMorphology operator="DILATE" radius="3.00, 1.00"]
           [SourceGraphic]
-    RenderSVGImage {image} at (10,10) size 100x100
+    LayoutSVGImage {image} at (10,10) size 100x100
       [filter="f1"] LayoutSVGResourceFilter {filter} at (10,10) size 100x100
     LayoutSVGRect {rect} at (130,10) size 100x100 [fill={[type=SOLID] [color=#000000]}] [x=130.00] [y=10.00] [width=100.00] [height=100.00]
       [filter="over"] LayoutSVGResourceFilter {filter} at (130,10) size 100x100

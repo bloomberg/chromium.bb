@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGPathElement.h"
 
-#include "core/rendering/svg/RenderSVGPath.h"
+#include "core/layout/svg/LayoutSVGPath.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGPathSegArcAbs.h"
@@ -218,7 +218,7 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
 
     if (attrName == SVGNames::dAttr) {
         if (renderer)
@@ -262,7 +262,7 @@ void SVGPathElement::pathSegListChanged(ListModification listModification)
 
     invalidateSVGAttributes();
 
-    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
     if (!renderer)
         return;
 
@@ -281,7 +281,7 @@ FloatRect SVGPathElement::getBBox()
     if (!renderer())
         return FloatRect();
 
-    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
     return renderer->path().boundingRect();
 }
 

@@ -19,8 +19,8 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (30,40) size 50x20 [fill={[type=LINEAR-GRADIENT] [id="linearBoundingBoxPercentage"]}] [x=0.00] [y=0.00] [width=50.00] [height=20.00]
         LayoutSVGRect {rect} at (30,60) size 50x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,20.00)}] [fill={[type=LINEAR-GRADIENT] [id="linearBoundingBoxFraction"]}] [x=0.00] [y=0.00] [width=50.00] [height=20.00]
         LayoutSVGRect {rect} at (30,80) size 50x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}] [fill={[type=LINEAR-GRADIENT] [id="linearUserSpace"]}] [x=0.00] [y=0.00] [width=50.00] [height=20.00]
-        RenderSVGPath {line} at (30,59) size 50x2 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=20.00] [x2=50.00] [y2=20.00]
-        RenderSVGPath {line} at (30,79) size 50x2 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=40.00] [x2=50.00] [y2=40.00]
+        LayoutSVGPath {line} at (30,59) size 50x2 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=20.00] [x2=50.00] [y2=20.00]
+        LayoutSVGPath {line} at (30,79) size 50x2 [stroke={[type=SOLID] [color=#CCCCCC]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=40.00] [x2=50.00] [y2=40.00]
         LayoutSVGText {text} at (60,0) size 67x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 67x19
             chunk 1 text run 1 at (60.00,15.00) startOffset 0 endOffset 10 width 67.00: "Percentage"
@@ -56,13 +56,13 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 71x19
             chunk 1 text run 1 at (122.00,70.00) startOffset 0 endOffset 10 width 71.00: "User Space"
       LayoutSVGResourcePattern {pattern} [id="patternBoundingBoxPercentage"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]
-        RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.50] [cy=0.50] [r=0.25]
+        LayoutSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.50] [cy=0.50] [r=0.25]
         LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#0000FF]}] [x=0.40] [y=0.40] [width=0.20] [height=0.20]
       LayoutSVGResourcePattern {pattern} [id="patternBoundingBoxFraction"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]
-        RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.50] [cy=0.50] [r=0.25]
+        LayoutSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.50] [cy=0.50] [r=0.25]
         LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#0000FF]}] [x=0.40] [y=0.40] [width=0.20] [height=0.20]
       LayoutSVGResourcePattern {pattern} [id="patternUserSpace"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
-        RenderSVGEllipse {circle} at (15,5) size 20x20 [fill={[type=SOLID] [color=#FF0000]}] [cx=25.00] [cy=15.00] [r=10.00]
+        LayoutSVGEllipse {circle} at (15,5) size 20x20 [fill={[type=SOLID] [color=#FF0000]}] [cx=25.00] [cy=15.00] [r=10.00]
         LayoutSVGRect {rect} at (20,12) size 10x6 [fill={[type=SOLID] [color=#0000FF]}] [x=20.00] [y=12.00] [width=10.00] [height=6.00]
       LayoutSVGText {text} at (30,225) size 362x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 362x19

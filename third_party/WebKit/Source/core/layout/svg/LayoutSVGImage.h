@@ -21,8 +21,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGImage_h
-#define RenderSVGImage_h
+#ifndef LayoutSVGImage_h
+#define LayoutSVGImage_h
 
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
@@ -33,10 +33,10 @@ namespace blink {
 class LayoutImageResource;
 class SVGImageElement;
 
-class RenderSVGImage final : public RenderSVGModelObject {
+class LayoutSVGImage final : public RenderSVGModelObject {
 public:
-    explicit RenderSVGImage(SVGImageElement*);
-    virtual ~RenderSVGImage();
+    explicit LayoutSVGImage(SVGImageElement*);
+    virtual ~LayoutSVGImage();
     virtual void destroy() override;
 
     bool updateImageViewport();
@@ -52,7 +52,7 @@ public:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || RenderSVGModelObject::isOfType(type); }
 
 private:
-    virtual const char* renderName() const override { return "RenderSVGImage"; }
+    virtual const char* renderName() const override { return "LayoutSVGImage"; }
 
     virtual FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
 
@@ -78,8 +78,8 @@ private:
     RefPtr<const SkPicture> m_bufferedForeground;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGImage, isSVGImage());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGImage, isSVGImage());
 
 } // namespace blink
 
-#endif // RenderSVGImage_h
+#endif // LayoutSVGImage_h

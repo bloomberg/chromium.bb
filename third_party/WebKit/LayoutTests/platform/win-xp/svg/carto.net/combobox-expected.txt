@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (240,51) size 185x34 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 26x13
           chunk 1 text run 1 at (240.00,62.00) startOffset 0 endOffset 6 width 25.60: "Fruits"
-        RenderSVGTSpan {tspan} at (0,0) size 185x13
+        LayoutSVGTSpan {tspan} at (0,0) size 185x13
           LayoutSVGInlineText {#text} at (0,20) size 185x13
             chunk 1 text run 1 at (240.00,82.00) startOffset 0 endOffset 42 width 184.32: "This comboBox allows only single selection"
       LayoutSVGText {text} at (240,301) size 29x14 contains 1 chunk(s)
@@ -23,16 +23,16 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (240,322) size 91x44 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 91x13
           chunk 1 text run 1 at (240.00,333.00) startOffset 0 endOffset 19 width 90.88: "This comboBox gives"
-        RenderSVGTSpan {tspan} at (0,0) size 90x13
+        LayoutSVGTSpan {tspan} at (0,0) size 90x13
           LayoutSVGInlineText {#text} at (0,15) size 90x13
             chunk 1 text run 1 at (240.00,348.00) startOffset 0 endOffset 19 width 89.60: "feedback on changes"
-        RenderSVGTSpan {tspan} at (0,0) size 64x13
+        LayoutSVGTSpan {tspan} at (0,0) size 64x13
           LayoutSVGInlineText {#text} at (0,30) size 64x13
             chunk 1 text run 1 at (240.00,363.00) startOffset 0 endOffset 16 width 64.00: "in the selection"
       LayoutSVGText {text} at (50,389) size 150x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 150x13
           chunk 1 text run 1 at (50.00,400.00) startOffset 0 endOffset 33 width 149.76: "The Following Roses are selected:"
-        RenderSVGTSpan {tspan} at (0,0) size 0x1
+        LayoutSVGTSpan {tspan} at (0,0) size 0x1
           LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGText {text} at (240,551) size 35x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 35x13
@@ -99,14 +99,14 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (283,169) size 155x163 [stroke={[type=SOLID] [color=#696969]}] [x=50.00] [y=200.00] [width=134.00] [height=160.00]
         LayoutSVGRect {rect} at (380,233) size 63x95 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=184.00] [y=216.00] [width=16.00] [height=128.00]
         LayoutSVGRect {rect} at (430,222) size 19x19 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=184.00] [y=200.00] [width=16.00] [height=16.00]
-        RenderSVGPath {path} at (435,227) size 9x9 [fill={[type=SOLID] [color=#696969]}] [data="M 188 212 L 196 212 L 192 204 Z"]
+        LayoutSVGPath {path} at (435,227) size 9x9 [fill={[type=SOLID] [color=#696969]}] [data="M 188 212 L 196 212 L 192 204 Z"]
         LayoutSVGRect {rect} at (373,319) size 20x19 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=184.00] [y=344.00] [width=16.00] [height=16.00]
-        RenderSVGPath {path} at (378,324) size 10x10 [fill={[type=SOLID] [color=#696969]}] [data="M 188 348 L 196 348 L 192 356 Z"]
+        LayoutSVGPath {path} at (378,324) size 10x10 [fill={[type=SOLID] [color=#696969]}] [data="M 188 348 L 196 348 L 192 356 Z"]
         LayoutSVGRect {rect} at (421,242) size 16x13 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=184.00] [y=229.51] [width=16.00] [height=8.00]
       LayoutSVGText {text} at (220,201) size 292x34 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 176x13
           chunk 1 text run 1 at (220.00,212.00) startOffset 0 endOffset 39 width 175.36: "Communities of Kt. Aargau (Switzerland)"
-        RenderSVGTSpan {tspan} at (0,0) size 292x13
+        LayoutSVGTSpan {tspan} at (0,0) size 292x13
           LayoutSVGInlineText {#text} at (0,20) size 292x13
             chunk 1 text run 1 at (220.00,232.00) startOffset 0 endOffset 67 width 291.84: "Note that one can also transform the group containing the combo box"
     LayoutSVGContainer {g} at (38,429) size 135x102
@@ -147,9 +147,9 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (38,429) size 122x102 [stroke={[type=SOLID] [color=#696969]}] [x=50.00] [y=550.00] [width=154.00] [height=128.00]
       LayoutSVGRect {rect} at (158,441) size 15x77 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=204.00] [y=566.00] [width=16.00] [height=96.00]
       LayoutSVGRect {rect} at (158,429) size 15x14 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=550.00] [width=16.00] [height=16.00]
-      RenderSVGPath {path} at (162,432) size 7x8 [fill={[type=SOLID] [color=#696969]}] [data="M 208 562 L 216 562 L 212 554 Z"]
+      LayoutSVGPath {path} at (162,432) size 7x8 [fill={[type=SOLID] [color=#696969]}] [data="M 208 562 L 216 562 L 212 554 Z"]
       LayoutSVGRect {rect} at (158,516) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=662.00] [width=16.00] [height=16.00]
-      RenderSVGPath {path} at (162,520) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 666 L 216 666 L 212 674 Z"]
+      LayoutSVGPath {path} at (162,520) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 666 L 216 666 L 212 674 Z"]
       LayoutSVGRect {rect} at (158,449) size 15x34 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=576.11] [width=16.00] [height=40.42]
     LayoutSVGContainer {g} at (38,233) size 135x65
       LayoutSVGRect {rect} at (39,234) size 121x63 [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=300.00] [width=154.00] [height=80.00]
@@ -177,9 +177,9 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (38,233) size 122x65 [stroke={[type=SOLID] [color=#696969]}] [x=50.00] [y=300.00] [width=154.00] [height=80.00]
       LayoutSVGRect {rect} at (158,246) size 15x39 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#F5F5F5]}] [x=204.00] [y=316.00] [width=16.00] [height=48.00]
       LayoutSVGRect {rect} at (158,233) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=300.00] [width=16.00] [height=16.00]
-      RenderSVGPath {path} at (162,237) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 312 L 216 312 L 212 304 Z"]
+      LayoutSVGPath {path} at (162,237) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 312 L 216 312 L 212 304 Z"]
       LayoutSVGRect {rect} at (158,283) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=364.00] [width=16.00] [height=16.00]
-      RenderSVGPath {path} at (162,287) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 368 L 216 368 L 212 376 Z"]
+      LayoutSVGPath {path} at (162,287) size 7x7 [fill={[type=SOLID] [color=#696969]}] [data="M 208 368 L 216 368 L 212 376 Z"]
       LayoutSVGRect {rect} at (158,266) size 15x19 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=204.00] [y=342.18] [width=16.00] [height=21.82]
     LayoutSVGContainer {g} at (38,38) size 122x52
       LayoutSVGRect {rect} at (39,39) size 121x51 [fill={[type=SOLID] [color=#FFFFFF]}] [x=50.00] [y=50.00] [width=154.00] [height=64.00]

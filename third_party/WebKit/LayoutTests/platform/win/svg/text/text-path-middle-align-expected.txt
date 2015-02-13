@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (149,129) size 202x222
-    RenderSVGPath {path} at (149,149) size 202x202 [stroke={[type=SOLID] [color=#000000]}] [data="M 250 150 C 305.228 150 350 194.772 350 250 C 350 305.228 305.228 350 250 350 C 194.772 350 150 305.228 150 250 C 150 194.772 194.772 150 250 150"]
+    LayoutSVGPath {path} at (149,149) size 202x202 [stroke={[type=SOLID] [color=#000000]}] [data="M 250 150 C 305.228 150 350 194.772 350 250 C 350 305.228 305.228 350 250 350 C 194.772 350 150 305.228 150 250 C 150 194.772 194.772 150 250 150"]
     LayoutSVGText {text} at (239,129) size 22x26 contains 1 chunk(s)
       LayoutSVGTextPath {textPath} at (0,0) size 22x26
         LayoutSVGInlineText {#text} at (0,0) size 22x26

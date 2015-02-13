@@ -28,11 +28,11 @@
 #ifndef LayoutSVGRect_h
 #define LayoutSVGRect_h
 
-#include "core/rendering/svg/RenderSVGShape.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 
 namespace blink {
 
-class LayoutSVGRect final : public RenderSVGShape {
+class LayoutSVGRect final : public LayoutSVGShape {
 public:
     explicit LayoutSVGRect(SVGRectElement*);
     virtual ~LayoutSVGRect();
@@ -43,7 +43,7 @@ private:
     virtual const char* renderName() const override { return "LayoutSVGRect"; }
 
     virtual void updateShapeFromElement() override;
-    virtual bool isShapeEmpty() const override { return m_usePathFallback ? RenderSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
+    virtual bool isShapeEmpty() const override { return m_usePathFallback ? LayoutSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const override;
     bool definitelyHasSimpleStroke() const;

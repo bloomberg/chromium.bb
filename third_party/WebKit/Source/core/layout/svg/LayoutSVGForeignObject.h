@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGForeignObject_h
-#define RenderSVGForeignObject_h
+#ifndef LayoutSVGForeignObject_h
+#define LayoutSVGForeignObject_h
 
 #include "core/rendering/svg/RenderSVGBlock.h"
 
@@ -27,12 +27,12 @@ namespace blink {
 
 class SVGForeignObjectElement;
 
-class RenderSVGForeignObject final : public RenderSVGBlock {
+class LayoutSVGForeignObject final : public RenderSVGBlock {
 public:
-    explicit RenderSVGForeignObject(SVGForeignObjectElement*);
-    virtual ~RenderSVGForeignObject();
+    explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
+    virtual ~LayoutSVGForeignObject();
 
-    virtual const char* renderName() const override { return "RenderSVGForeignObject"; }
+    virtual const char* renderName() const override { return "LayoutSVGForeignObject"; }
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 

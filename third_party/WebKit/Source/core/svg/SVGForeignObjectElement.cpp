@@ -23,7 +23,7 @@
 
 #include "core/XLinkNames.h"
 #include "core/frame/UseCounter.h"
-#include "core/rendering/svg/RenderSVGForeignObject.h"
+#include "core/layout/svg/LayoutSVGForeignObject.h"
 #include "core/svg/SVGLength.h"
 #include "wtf/Assertions.h"
 
@@ -124,7 +124,7 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
 
 LayoutObject* SVGForeignObjectElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGForeignObject(this);
+    return new LayoutSVGForeignObject(this);
 }
 
 bool SVGForeignObjectElement::rendererIsNeeded(const LayoutStyle& style)

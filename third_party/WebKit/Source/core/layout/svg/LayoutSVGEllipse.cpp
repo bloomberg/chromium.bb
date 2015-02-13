@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGEllipse.h"
+#include "core/layout/svg/LayoutSVGEllipse.h"
 
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
@@ -35,17 +35,17 @@
 
 namespace blink {
 
-RenderSVGEllipse::RenderSVGEllipse(SVGGraphicsElement* node)
-    : RenderSVGShape(node)
+LayoutSVGEllipse::LayoutSVGEllipse(SVGGraphicsElement* node)
+    : LayoutSVGShape(node)
     , m_usePathFallback(false)
 {
 }
 
-RenderSVGEllipse::~RenderSVGEllipse()
+LayoutSVGEllipse::~LayoutSVGEllipse()
 {
 }
 
-void RenderSVGEllipse::updateShapeFromElement()
+void LayoutSVGEllipse::updateShapeFromElement()
 {
     // Before creating a new object we need to clear the cached bounding box
     // to avoid using garbage.
@@ -62,10 +62,10 @@ void RenderSVGEllipse::updateShapeFromElement()
         return;
 
     if (!m_radii.isEmpty()) {
-        // Fall back to RenderSVGShape and path-based hit detection if the ellipse
+        // Fall back to LayoutSVGShape and path-based hit detection if the ellipse
         // has a non-scaling or discontinuous stroke.
         if (hasNonScalingStroke() || !hasContinuousStroke()) {
-            RenderSVGShape::updateShapeFromElement();
+            LayoutSVGShape::updateShapeFromElement();
             m_usePathFallback = true;
             return;
         }
@@ -79,7 +79,7 @@ void RenderSVGEllipse::updateShapeFromElement()
         m_strokeBoundingBox.inflate(strokeWidth() / 2);
 }
 
-void RenderSVGEllipse::calculateRadiiAndCenter()
+void LayoutSVGEllipse::calculateRadiiAndCenter()
 {
     ASSERT(element());
     if (isSVGCircleElement(*element())) {
@@ -99,7 +99,7 @@ void RenderSVGEllipse::calculateRadiiAndCenter()
     m_center = FloatPoint(ellipse.cx()->currentValue()->value(lengthContext), ellipse.cy()->currentValue()->value(lengthContext));
 }
 
-bool RenderSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)
+bool LayoutSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)
 {
     // The optimized check below for circles does not support non-scaling or
     // discontinuous strokes.
@@ -108,7 +108,7 @@ bool RenderSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)
         || m_radii.width() != m_radii.height()) {
         if (!hasPath())
             createPath();
-        return RenderSVGShape::shapeDependentStrokeContains(point);
+        return LayoutSVGShape::shapeDependentStrokeContains(point);
     }
 
     const FloatPoint center = FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
@@ -117,7 +117,7 @@ bool RenderSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)
     return std::abs(center.length() - r) <= halfStrokeWidth;
 }
 
-bool RenderSVGEllipse::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
+bool LayoutSVGEllipse::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
 {
     const FloatPoint center = FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
 
@@ -128,7 +128,7 @@ bool RenderSVGEllipse::shapeDependentFillContains(const FloatPoint& point, const
     return xrX * xrX + yrY * yrY <= 1.0;
 }
 
-bool RenderSVGEllipse::hasContinuousStroke() const
+bool LayoutSVGEllipse::hasContinuousStroke() const
 {
     const SVGLayoutStyle& svgStyle = style()->svgStyle();
     return svgStyle.strokeDashArray()->isEmpty();

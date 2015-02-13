@@ -35,7 +35,7 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (-209.00,20.00) startOffset 0 endOffset 23 width 157.00: "CDATA section in <text>"
           LayoutSVGInlineText {#text} at (187,0) size 8x19
             chunk 1 (middle anchor) text run 1 at (-52.00,20.00) startOffset 0 endOffset 2 width 8.00: ", "
-          RenderSVGTSpan {tspan} at (0,0) size 218x19
+          LayoutSVGTSpan {tspan} at (0,0) size 218x19
             LayoutSVGInlineText {#text} at (195,0) size 51x19
               chunk 1 (middle anchor) text run 1 at (-44.00,20.00) startOffset 0 endOffset 8 width 51.00: "tspan w/"
             LayoutSVGInlineText {#cdata-section} at (246,0) size 167x19

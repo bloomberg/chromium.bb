@@ -6,7 +6,9 @@
 #include "core/paint/SVGShapePainter.h"
 
 #include "core/layout/PaintInfo.h"
+#include "core/layout/svg/LayoutSVGPath.h"
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGMarkerData.h"
 #include "core/layout/svg/SVGResources.h"
@@ -17,8 +19,6 @@
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/svg/RenderSVGPath.h"
-#include "core/rendering/svg/RenderSVGShape.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -239,9 +239,9 @@ Path* SVGShapePainter::zeroLengthLinecapPath(const FloatPoint& linecapPosition) 
 
     tempPath.clear();
     if (m_renderSVGShape.style()->svgStyle().capStyle() == SquareCap)
-        tempPath.addRect(RenderSVGPath::zeroLengthSubpathRect(linecapPosition, m_renderSVGShape.strokeWidth()));
+        tempPath.addRect(LayoutSVGPath::zeroLengthSubpathRect(linecapPosition, m_renderSVGShape.strokeWidth()));
     else
-        tempPath.addEllipse(RenderSVGPath::zeroLengthSubpathRect(linecapPosition, m_renderSVGShape.strokeWidth()));
+        tempPath.addEllipse(LayoutSVGPath::zeroLengthSubpathRect(linecapPosition, m_renderSVGShape.strokeWidth()));
 
     return &tempPath;
 }

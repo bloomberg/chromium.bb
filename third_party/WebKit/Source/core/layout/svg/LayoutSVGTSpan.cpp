@@ -21,18 +21,18 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGTSpan.h"
+#include "core/layout/svg/LayoutSVGTSpan.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
 
 namespace blink {
 
-RenderSVGTSpan::RenderSVGTSpan(Element* element)
+LayoutSVGTSpan::LayoutSVGTSpan(Element* element)
     : LayoutSVGInline(element)
 {
 }
 
-bool RenderSVGTSpan::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGTSpan::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     // Always allow text (except empty textnodes and <br>).
     if (child->isText())

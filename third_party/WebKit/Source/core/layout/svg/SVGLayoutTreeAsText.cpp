@@ -32,6 +32,7 @@
 
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
@@ -40,13 +41,12 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGResourcePattern.h"
 #include "core/layout/svg/LayoutSVGResourceRadialGradient.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
-#include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/rendering/svg/RenderSVGShape.h"
 #include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/RadialGradientAttributes.h"
@@ -278,7 +278,7 @@ static void writeStyle(TextStream& ts, const LayoutObject& object)
     writeIfNotDefault(ts, "image rendering", style.imageRendering(), LayoutStyle::initialImageRendering());
     writeIfNotDefault(ts, "opacity", style.opacity(), LayoutStyle::initialOpacity());
     if (object.isSVGShape()) {
-        const RenderSVGShape& shape = static_cast<const RenderSVGShape&>(object);
+        const LayoutSVGShape& shape = static_cast<const LayoutSVGShape&>(object);
         ASSERT(shape.element());
 
         SVGPaintDescription strokePaintDescription = LayoutSVGResourcePaintServer::requestPaintDescription(shape, shape.styleRef(), ApplyToStrokeMode);
@@ -335,7 +335,7 @@ static TextStream& writePositionAndStyle(TextStream& ts, const LayoutObject& obj
     return ts;
 }
 
-static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
+static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape)
 {
     writePositionAndStyle(ts, shape);
 
@@ -615,7 +615,7 @@ void writeSVGInlineText(TextStream& ts, const LayoutSVGInlineText& text, int ind
     writeSVGInlineTextBoxes(ts, text, indent);
 }
 
-void writeSVGImage(TextStream& ts, const RenderSVGImage& image, int indent)
+void writeSVGImage(TextStream& ts, const LayoutSVGImage& image, int indent)
 {
     writeStandardPrefix(ts, image, indent);
     writePositionAndStyle(ts, image);
@@ -623,7 +623,7 @@ void writeSVGImage(TextStream& ts, const RenderSVGImage& image, int indent)
     writeResources(ts, image, indent);
 }
 
-void write(TextStream& ts, const RenderSVGShape& shape, int indent)
+void write(TextStream& ts, const LayoutSVGShape& shape, int indent)
 {
     writeStandardPrefix(ts, shape, indent);
     ts << shape << "\n";

@@ -23,8 +23,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGShape_h
-#define RenderSVGShape_h
+#ifndef LayoutSVGShape_h
+#define LayoutSVGShape_h
 
 #include "core/layout/svg/SVGMarkerData.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
@@ -45,10 +45,10 @@ enum ShapeGeometryCodePath {
     EllipseGeometryFastPath
 };
 
-class RenderSVGShape : public RenderSVGModelObject {
+class LayoutSVGShape : public RenderSVGModelObject {
 public:
-    explicit RenderSVGShape(SVGGraphicsElement*);
-    virtual ~RenderSVGShape();
+    explicit LayoutSVGShape(SVGGraphicsElement*);
+    virtual ~LayoutSVGShape();
 
     void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }
     virtual void setNeedsBoundariesUpdate() override final { m_needsBoundariesUpdate = true; }
@@ -87,7 +87,7 @@ protected:
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
 
-    // Give RenderSVGPath a hook for updating markers in updateShapeFromElement.
+    // Give LayoutSVGPath a hook for updating markers in updateShapeFromElement.
     virtual void processMarkerPositions() { };
 
     FloatRect m_fillBoundingBox;
@@ -101,7 +101,7 @@ private:
     virtual const AffineTransform& localToParentTransform() const override final { return m_localTransform ? *m_localTransform : RenderSVGModelObject::localToParentTransform(); }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGShape || RenderSVGModelObject::isOfType(type); }
-    virtual const char* renderName() const override { return "RenderSVGShape"; }
+    virtual const char* renderName() const override { return "LayoutSVGShape"; }
 
     virtual void layout() override final;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
@@ -124,7 +124,7 @@ private:
     bool m_needsTransformUpdate : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGShape, isSVGShape());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGShape, isSVGShape());
 
 }
 

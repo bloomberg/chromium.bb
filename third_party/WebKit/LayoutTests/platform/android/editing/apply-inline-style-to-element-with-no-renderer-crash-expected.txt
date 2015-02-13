@@ -5,5 +5,5 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderSVGRoot {svg} at (8,8) size 0x0
         LayoutSVGText {text}
-          RenderSVGTSpan {tspan} at (0,0) size 0x0
-            RenderSVGTSpan {tspan} at (0,0) size 0x0
+          LayoutSVGTSpan {tspan} at (0,0) size 0x0
+            LayoutSVGTSpan {tspan} at (0,0) size 0x0

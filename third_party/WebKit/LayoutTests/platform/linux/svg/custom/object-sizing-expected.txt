@@ -40,4 +40,4 @@ layer at (8,8) size 208x208
       RenderView at (0,0) size 208x208
     layer at (0,0) size 208x208
       RenderSVGRoot {svg} at (20,20) size 168x168
-        RenderSVGEllipse {circle} at (20,20) size 168x168 [fill={[type=SOLID] [color=#FF0000]}] [cx=25.00] [cy=25.00] [r=20.00]
+        LayoutSVGEllipse {circle} at (20,20) size 168x168 [fill={[type=SOLID] [color=#FF0000]}] [cx=25.00] [cy=25.00] [r=20.00]

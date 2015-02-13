@@ -24,25 +24,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderSVGEllipse_h
-#define RenderSVGEllipse_h
+#ifndef LayoutSVGEllipse_h
+#define LayoutSVGEllipse_h
 
-#include "core/rendering/svg/RenderSVGShape.h"
+#include "core/layout/svg/LayoutSVGShape.h"
 
 namespace blink {
 
-class RenderSVGEllipse final : public RenderSVGShape {
+class LayoutSVGEllipse final : public LayoutSVGShape {
 public:
-    explicit RenderSVGEllipse(SVGGraphicsElement*);
-    virtual ~RenderSVGEllipse();
+    explicit LayoutSVGEllipse(SVGGraphicsElement*);
+    virtual ~LayoutSVGEllipse();
 
     virtual ShapeGeometryCodePath geometryCodePath() const override { return m_usePathFallback ? PathGeometry : EllipseGeometryFastPath; }
 
 private:
-    virtual const char* renderName() const override { return "RenderSVGEllipse"; }
+    virtual const char* renderName() const override { return "LayoutSVGEllipse"; }
 
     virtual void updateShapeFromElement() override;
-    virtual bool isShapeEmpty() const override { return m_usePathFallback ? RenderSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
+    virtual bool isShapeEmpty() const override { return m_usePathFallback ? LayoutSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const override;
     void calculateRadiiAndCenter();
