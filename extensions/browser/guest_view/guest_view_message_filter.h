@@ -49,8 +49,7 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers on the UI thread.
-  void OnAttachGuest(int routing_id,
-                     int element_instance_id,
+  void OnAttachGuest(int element_instance_id,
                      int guest_instance_id,
                      const base::DictionaryValue& attach_params);
   void OnCreateMimeHandlerViewGuest(int render_frame_id,

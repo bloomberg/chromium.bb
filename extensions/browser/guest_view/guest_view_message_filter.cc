@@ -65,7 +65,6 @@ bool GuestViewMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GuestViewMessageFilter::OnAttachGuest(
-    int routing_id,
     int element_instance_id,
     int guest_instance_id,
     const base::DictionaryValue& params) {
@@ -75,7 +74,6 @@ void GuestViewMessageFilter::OnAttachGuest(
     return;
 
   manager->AttachGuest(render_process_id_,
-                       routing_id,
                        element_instance_id,
                        guest_instance_id,
                        params);
@@ -138,7 +136,6 @@ void GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   attach_params.SetInteger(guestview::kElementWidth, element_size.width());
   attach_params.SetInteger(guestview::kElementHeight, element_size.height());
   manager->AttachGuest(embedder_render_process_id,
-                       rfh->GetRenderViewHost()->GetRoutingID(),
                        element_instance_id,
                        guest_instance_id,
                        attach_params);

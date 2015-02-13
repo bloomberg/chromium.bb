@@ -395,8 +395,7 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
 }
 
 void GuestViewBase::DidDetach() {
-  GuestViewManager::FromBrowserContext(browser_context_)->DetachGuest(
-      this, element_instance_id_);
+  GuestViewManager::FromBrowserContext(browser_context_)->DetachGuest(this);
   StopTrackingEmbedderZoomLevel();
   owner_web_contents()->Send(new GuestViewMsg_GuestDetached(
       element_instance_id_));

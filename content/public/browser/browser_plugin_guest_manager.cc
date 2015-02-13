@@ -7,7 +7,7 @@
 namespace content {
 
 WebContents* BrowserPluginGuestManager::GetGuestByInstanceID(
-    WebContents* embedder_web_contents,
+    int owner_process_id,
     int browser_plugin_instance_id) {
   return nullptr;
 }

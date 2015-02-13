@@ -51,6 +51,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   // WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         RenderFrameHost* render_frame_host) override;
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
@@ -96,7 +98,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   static bool StopFindingInGuest(StopFindAction action, WebContents* guest);
 
   // Message handlers.
-  void OnAttach(int instance_id,
+  void OnAttach(RenderFrameHost* render_frame_host,
+                int instance_id,
                 const BrowserPluginHostMsg_Attach_Params& params);
   void OnPluginAtPositionResponse(int instance_id,
                                   int request_id,

@@ -39,7 +39,6 @@ void GuestViewContainer::RenderFrameLifetimeObserver::OnDestruct() {
 
 GuestViewContainer::GuestViewContainer(content::RenderFrame* render_frame)
     : element_instance_id_(guestview::kInstanceIDNone),
-      render_view_routing_id_(render_frame->GetRenderView()->GetRoutingID()),
       render_frame_(render_frame) {
   render_frame_lifetime_observer_.reset(
       new RenderFrameLifetimeObserver(this, render_frame_));

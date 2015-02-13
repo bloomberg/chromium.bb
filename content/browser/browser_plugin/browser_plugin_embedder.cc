@@ -98,8 +98,15 @@ void BrowserPluginEmbedder::DidSendScreenRects() {
 }
 
 bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
+  return OnMessageReceived(message, nullptr);
+}
+
+bool BrowserPluginEmbedder::OnMessageReceived(
+    const IPC::Message& message,
+    RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedder, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BrowserPluginEmbedder, message,
+                                   render_frame_host)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Attach, OnAttach)
     IPC_MESSAGE_HANDLER_GENERIC(DragHostMsg_UpdateDragCursor,
                                 OnUpdateDragCursor(&handled));
@@ -135,11 +142,16 @@ void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
 }
 
 void BrowserPluginEmbedder::OnAttach(
+    RenderFrameHost* render_frame_host,
     int browser_plugin_instance_id,
     const BrowserPluginHostMsg_Attach_Params& params) {
+  // TODO(fsamuel): Change message routing to use the process ID of the
+  // |render_frame_host| once BrowserPlugin IPCs get routed using the RFH
+  // routing ID. See http://crbug.com/436339.
   WebContents* guest_web_contents =
       GetBrowserPluginGuestManager()->GetGuestByInstanceID(
-          GetWebContents(), browser_plugin_instance_id);
+          GetWebContents()->GetRenderProcessHost()->GetID(),
+          browser_plugin_instance_id);
   if (!guest_web_contents)
     return;
   BrowserPluginGuest* guest = static_cast<WebContentsImpl*>(guest_web_contents)

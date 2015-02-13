@@ -148,8 +148,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
 
-  // Find a guest RenderFrameHost by its browser plugin instance id.
+  // Find a guest RenderFrameHost by its parent |render_frame_host| and
+  // |browser_plugin_instance_id|.
   virtual RenderFrameHost* GetGuestByInstanceID(
+      RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id);
 
   // Gets the GeolocationServiceContext associated with this delegate.

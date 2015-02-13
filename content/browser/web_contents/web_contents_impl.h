@@ -395,6 +395,7 @@ class CONTENT_EXPORT WebContentsImpl
   void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) override;
   RenderFrameHost* GetGuestByInstanceID(
+      RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
   GeolocationServiceContext* GetGeolocationServiceContext() override;
   void EnterFullscreenMode(const GURL& origin) override;
@@ -818,7 +819,8 @@ class CONTENT_EXPORT WebContentsImpl
   // |result| is true if permission was granted.
   void OnPpapiBrokerPermissionResult(int routing_id, bool result);
 
-  void OnBrowserPluginMessage(const IPC::Message& message);
+  void OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
+                              const IPC::Message& message);
 #endif  // defined(ENABLE_PLUGINS)
   void OnDidDownloadImage(int id,
                           int http_status_code,

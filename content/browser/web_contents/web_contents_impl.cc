@@ -566,7 +566,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_Attach,
-                                OnBrowserPluginMessage(message))
+                                OnBrowserPluginMessage(render_frame_host,
+                                                       message))
 #endif
     IPC_MESSAGE_HANDLER(ImageHostMsg_DidDownloadImage, OnDidDownloadImage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
@@ -1869,11 +1870,15 @@ void WebContentsImpl::AccessibilityEventReceived(
 }
 
 RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
+    RenderFrameHost* render_frame_host,
     int browser_plugin_instance_id) {
   BrowserPluginGuestManager* guest_manager =
       GetBrowserContext()->GetGuestManager();
+  // TODO(fsamuel): Change message routing to use the process ID of the
+  // |render_frame_host| once BrowserPlugin IPCs get routed using the RFH
+  // routing ID. See http://crbug.com/436339.
   WebContents* guest = guest_manager->GetGuestByInstanceID(
-      this, browser_plugin_instance_id);
+      GetRenderProcessHost()->GetID(), browser_plugin_instance_id);
   if (!guest)
     return NULL;
   return guest->GetMainFrame();
@@ -3115,7 +3120,8 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int routing_id,
   Send(new ViewMsg_PpapiBrokerPermissionResult(routing_id, result));
 }
 
-void WebContentsImpl::OnBrowserPluginMessage(const IPC::Message& message) {
+void WebContentsImpl::OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
+                                             const IPC::Message& message) {
   // This creates a BrowserPluginEmbedder, which handles all the BrowserPlugin
   // specific messages for this WebContents. This means that any message from
   // a BrowserPlugin prior to this will be ignored.
@@ -3123,7 +3129,7 @@ void WebContentsImpl::OnBrowserPluginMessage(const IPC::Message& message) {
   // BrowserPluginGuest.
   CHECK(!browser_plugin_embedder_.get());
   browser_plugin_embedder_.reset(BrowserPluginEmbedder::Create(this));
-  browser_plugin_embedder_->OnMessageReceived(message);
+  browser_plugin_embedder_->OnMessageReceived(message, render_frame_host);
 }
 #endif  // defined(ENABLE_PLUGINS)
 

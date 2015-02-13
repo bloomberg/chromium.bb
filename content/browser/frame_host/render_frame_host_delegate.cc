@@ -59,6 +59,7 @@ AccessibilityMode RenderFrameHostDelegate::GetAccessibilityMode() const {
 }
 
 RenderFrameHost* RenderFrameHostDelegate::GetGuestByInstanceID(
+    RenderFrameHost* render_frame_host,
     int browser_plugin_instance_id) {
   return NULL;
 }

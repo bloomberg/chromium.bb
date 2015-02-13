@@ -11,6 +11,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
@@ -70,48 +71,25 @@ content::WebContents* GuestViewManager::GetGuestByInstanceIDSafely(
   return GetGuestByInstanceID(guest_instance_id);
 }
 
-void GuestViewManager::AttachGuest(
-    int embedder_render_process_id,
-    int embedder_routing_id,
-    int element_instance_id,
-    int guest_instance_id,
-    const base::DictionaryValue& attach_params) {
-  content::WebContents* guest_web_contents =
-      GetGuestByInstanceIDSafely(guest_instance_id, embedder_render_process_id);
-  if (!guest_web_contents)
+void GuestViewManager::AttachGuest(int embedder_process_id,
+                                   int element_instance_id,
+                                   int guest_instance_id,
+                                   const base::DictionaryValue& attach_params) {
+  auto guest_view = GuestViewBase::From(embedder_process_id, guest_instance_id);
+  if (!guest_view)
     return;
 
-  auto guest_view = GuestViewBase::FromWebContents(guest_web_contents);
-  DCHECK(guest_view);
-
-  auto rvh = content::RenderViewHost::FromID(embedder_render_process_id,
-                                             embedder_routing_id);
-  // We need to check that rvh is not nullptr because there may be a race
-  // between AttachGuest and destroying the embedder (i.e. when the embedder is
-  // destroyed immediately after the guest is created).
-  if (!rvh)
-    return;
-  auto owner_web_contents = content::WebContents::FromRenderViewHost(rvh);
-  if (!owner_web_contents)
-    return;
-  ElementInstanceKey key(owner_web_contents, element_instance_id);
-
+  ElementInstanceKey key(embedder_process_id, element_instance_id);
   auto it = instance_id_map_.find(key);
+  // If there is an existing guest attached to the element, then destroy the
+  // existing guest.
   if (it != instance_id_map_.end()) {
     int old_guest_instance_id = it->second;
-    // Reattachment to the same guest is not currently supported.
     if (old_guest_instance_id == guest_instance_id)
       return;
 
-    auto old_guest_web_contents =
-        GetGuestByInstanceIDSafely(old_guest_instance_id,
-                                   embedder_render_process_id);
-    if (!old_guest_web_contents)
-      return;
-
-    auto old_guest_view =
-        GuestViewBase::FromWebContents(old_guest_web_contents);
-
+    auto old_guest_view = GuestViewBase::From(embedder_process_id,
+                                              old_guest_instance_id);
     old_guest_view->Destroy();
   }
   instance_id_map_[key] = guest_instance_id;
@@ -119,24 +97,21 @@ void GuestViewManager::AttachGuest(
   guest_view->SetAttachParams(attach_params);
 }
 
-void GuestViewManager::DetachGuest(GuestViewBase* guest,
-                                   int element_instance_id) {
+void GuestViewManager::DetachGuest(GuestViewBase* guest) {
   if (!guest->attached())
     return;
 
-  ElementInstanceKey key(guest->owner_web_contents(), element_instance_id);
-  auto it = instance_id_map_.find(key);
-  // There's nothing to do if this key does not exist in the map.
-  if (it == instance_id_map_.end())
+  auto reverse_it = reverse_instance_id_map_.find(guest->guest_instance_id());
+  if (reverse_it == reverse_instance_id_map_.end())
     return;
 
-  int guest_instance_id = it->second;
-  instance_id_map_.erase(key);
+  const ElementInstanceKey& key = reverse_it->second;
 
-  auto reverse_it = reverse_instance_id_map_.find(guest->guest_instance_id());
-  DCHECK(reverse_it != reverse_instance_id_map_.end());
-  DCHECK(reverse_it->second == key);
-  reverse_instance_id_map_.erase(guest_instance_id);
+  auto it = instance_id_map_.find(key);
+  DCHECK(it != instance_id_map_.end());
+
+  reverse_instance_id_map_.erase(reverse_it);
+  instance_id_map_.erase(it);
 }
 
 int GuestViewManager::GetNextInstanceID() {
@@ -170,9 +145,9 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(
-    content::WebContents* owner_web_contents,
+    int owner_process_id,
     int element_instance_id) {
-  int guest_instance_id = GetGuestInstanceIDForElementID(owner_web_contents,
+  int guest_instance_id = GetGuestInstanceIDForElementID(owner_process_id,
                                                          element_instance_id);
   if (guest_instance_id == guestview::kInstanceIDNone)
     return nullptr;
@@ -180,11 +155,10 @@ content::WebContents* GuestViewManager::GetGuestByInstanceID(
   return GetGuestByInstanceID(guest_instance_id);
 }
 
-int GuestViewManager::GetGuestInstanceIDForElementID(
-    content::WebContents* owner_web_contents,
-    int element_instance_id) {
+int GuestViewManager::GetGuestInstanceIDForElementID(int owner_process_id,
+                                                     int element_instance_id) {
   auto iter = instance_id_map_.find(
-      ElementInstanceKey(owner_web_contents, element_instance_id));
+      ElementInstanceKey(owner_process_id, element_instance_id));
   if (iter == instance_id_map_.end())
     return guestview::kInstanceIDNone;
   return iter->second;
@@ -311,6 +285,32 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
 
   return embedder_render_process_id ==
       guest_view->owner_web_contents()->GetRenderProcessHost()->GetID();
+}
+
+GuestViewManager::ElementInstanceKey::ElementInstanceKey()
+    : embedder_process_id(content::ChildProcessHost::kInvalidUniqueID),
+      element_instance_id(content::ChildProcessHost::kInvalidUniqueID) {
+}
+
+GuestViewManager::ElementInstanceKey::ElementInstanceKey(
+    int embedder_process_id,
+    int element_instance_id)
+    : embedder_process_id(embedder_process_id),
+      element_instance_id(element_instance_id) {
+}
+
+bool GuestViewManager::ElementInstanceKey::operator<(
+    const GuestViewManager::ElementInstanceKey& other) const {
+  if (embedder_process_id != other.embedder_process_id)
+    return embedder_process_id < other.embedder_process_id;
+
+  return element_instance_id < other.element_instance_id;
+}
+
+bool GuestViewManager::ElementInstanceKey::operator==(
+    const GuestViewManager::ElementInstanceKey& other) const {
+  return (embedder_process_id == other.embedder_process_id) &&
+    (element_instance_id == other.element_instance_id);
 }
 
 }  // namespace extensions

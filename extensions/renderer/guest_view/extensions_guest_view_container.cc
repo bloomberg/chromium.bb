@@ -62,8 +62,7 @@ void ExtensionsGuestViewContainer::AttachRequest::PerformRequest() {
 
   // Step 1, send the attach params to extensions/.
   container()->render_frame()->Send(
-      new GuestViewHostMsg_AttachGuest(container()->render_view_routing_id(),
-                                       container()->element_instance_id(),
+      new GuestViewHostMsg_AttachGuest(container()->element_instance_id(),
                                        guest_instance_id_,
                                        *params_));
 

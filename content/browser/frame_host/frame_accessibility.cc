@@ -112,6 +112,7 @@ RenderFrameHostImpl* FrameAccessibility::GetChild(
     if (iter->browser_plugin_instance_id) {
       RenderFrameHost* guest =
           parent_frame_host->delegate()->GetGuestByInstanceID(
+              iter->parent_frame_host,
               iter->browser_plugin_instance_id);
       if (guest)
         return static_cast<RenderFrameHostImpl*>(guest);
@@ -142,6 +143,7 @@ void FrameAccessibility::GetAllChildFrames(
     if (iter->browser_plugin_instance_id) {
       RenderFrameHost* guest =
           parent_frame_host->delegate()->GetGuestByInstanceID(
+              iter->parent_frame_host,
               iter->browser_plugin_instance_id);
       if (guest)
         child_frame_hosts->push_back(static_cast<RenderFrameHostImpl*>(guest));
@@ -185,6 +187,7 @@ bool FrameAccessibility::GetParent(
     if (iter->browser_plugin_instance_id) {
       RenderFrameHost* guest =
           iter->parent_frame_host->delegate()->GetGuestByInstanceID(
+              iter->parent_frame_host,
               iter->browser_plugin_instance_id);
       if (guest == child_frame_host) {
         if (out_parent_frame_host)

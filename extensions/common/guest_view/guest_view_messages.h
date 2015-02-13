@@ -42,8 +42,7 @@ IPC_MESSAGE_CONTROL1(GuestViewMsg_GuestDetached,
 
 // Sent by the renderer to set initialization parameters of a Browser Plugin
 // that is identified by |element_instance_id|.
-IPC_MESSAGE_CONTROL4(GuestViewHostMsg_AttachGuest,
-                     int /* routing_id */,
+IPC_MESSAGE_CONTROL3(GuestViewHostMsg_AttachGuest,
                      int /* element_instance_id */,
                      int /* guest_instance_id */,
                      base::DictionaryValue /* attach_params */)

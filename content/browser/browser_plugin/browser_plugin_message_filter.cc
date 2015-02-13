@@ -54,21 +54,19 @@ void BrowserPluginMessageFilter::OverrideThreadForMessage(
 void BrowserPluginMessageFilter::ForwardMessageToGuest(
     const IPC::Message& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  auto rvh = RenderViewHost::FromID(render_process_id_, message.routing_id());
-  if (!rvh)
+  auto rph = RenderProcessHost::FromID(render_process_id_);
+  if (!rph)
     return;
-
-  auto embedder_web_contents = WebContents::FromRenderViewHost(rvh);
 
   int browser_plugin_instance_id = browser_plugin::kInstanceIDNone;
   // All allowed messages must have instance_id as their first parameter.
   PickleIterator iter(message);
   bool success = iter.ReadInt(&browser_plugin_instance_id);
   DCHECK(success);
+
   WebContents* guest_web_contents =
-      embedder_web_contents->GetBrowserContext()
-          ->GetGuestManager()
-          ->GetGuestByInstanceID(embedder_web_contents,
+      rph->GetBrowserContext()->GetGuestManager()
+          ->GetGuestByInstanceID(render_process_id_,
                                  browser_plugin_instance_id);
   if (!guest_web_contents)
     return;
