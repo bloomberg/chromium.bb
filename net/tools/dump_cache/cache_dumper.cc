@@ -69,7 +69,7 @@ bool SafeCreateDirectory(const base::FilePath& path) {
 }
 
 DiskDumper::DiskDumper(const base::FilePath& path)
-    : path_(path), entry_(NULL) {
+    : path_(path.AsEndingWithSeparator()), entry_(NULL) {
   base::CreateDirectory(path);
 }
 
