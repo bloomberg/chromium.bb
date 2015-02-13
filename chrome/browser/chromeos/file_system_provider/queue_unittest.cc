@@ -113,6 +113,30 @@ TEST_F(FileSystemProviderQueueTest, Enqueue_OneAtOnce) {
   EXPECT_EQ(0, third_abort_counter);
 }
 
+TEST_F(FileSystemProviderQueueTest, Enqueue_WhilePreviousNotRemoved) {
+  Queue queue(1);
+  const size_t first_token = queue.NewToken();
+  int first_counter = 0;
+  int first_abort_counter = 0;
+  queue.Enqueue(first_token,
+                base::Bind(&OnRun, &first_counter, &first_abort_counter));
+
+  base::RunLoop().RunUntilIdle();
+  queue.Complete(first_token);
+
+  // Enqueuing a new task must not start it, once the queue is filled with a
+  // completed task.
+  const size_t second_token = queue.NewToken();
+  int second_counter = 0;
+  int second_abort_counter = 0;
+  queue.Enqueue(second_token,
+                base::Bind(&OnRun, &second_counter, &second_abort_counter));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, second_counter);
+  EXPECT_EQ(0, second_abort_counter);
+}
+
 TEST_F(FileSystemProviderQueueTest, Enqueue_MultipleAtOnce) {
   Queue queue(2);
   const size_t first_token = queue.NewToken();

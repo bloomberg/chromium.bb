@@ -75,11 +75,12 @@ void Queue::Remove(size_t token) {
 }
 
 void Queue::MaybeRun() {
-  if (executed_.size() == max_in_parallel_ || !pending_.size()) {
+  if (executed_.size() + completed_.size() == max_in_parallel_ ||
+      !pending_.size()) {
     return;
   }
 
-  DCHECK_GT(max_in_parallel_, executed_.size());
+  DCHECK_GT(max_in_parallel_, executed_.size() + completed_.size());
   Task task = pending_.front();
   pending_.pop_front();
 
