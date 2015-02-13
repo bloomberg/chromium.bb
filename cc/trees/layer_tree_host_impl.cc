@@ -1217,9 +1217,12 @@ void LayerTreeHostImpl::GetPictureLayerImplPairs(
     for (auto& layer : pending_tree_->picture_layers()) {
       if (need_valid_tile_priorities && !layer->HasValidTilePriorities())
         continue;
-      if (layer->GetPendingOrActiveTwinLayer()) {
-        // Already captured from the active tree.
-        continue;
+      if (PictureLayerImpl* twin_layer = layer->GetPendingOrActiveTwinLayer()) {
+        if (!need_valid_tile_priorities ||
+            twin_layer->HasValidTilePriorities()) {
+          // Already captured from the active tree.
+          continue;
+        }
       }
       layer_pairs->push_back(PictureLayerImpl::Pair(nullptr, layer));
     }
