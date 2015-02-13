@@ -76,7 +76,7 @@
     </style>
 
     <style name="ThemeWithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowBackground">@drawable/action_bar_activity_bg</item>
         <!-- Action bar color -->
         <item name="colorPrimary">#263238</item>
         <!-- Status bar color -->
