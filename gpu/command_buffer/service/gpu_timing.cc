@@ -22,8 +22,8 @@ GPUTimer::~GPUTimer() {
 
 void GPUTimer::Start() {
   // GL_TIMESTAMP and GL_TIMESTAMP_EXT both have the same value.
-  offset_ = gpu_timing_->CalculateTimerOffset();
   glQueryCounter(queries_[0], GL_TIMESTAMP);
+  offset_ = gpu_timing_->CalculateTimerOffset();
 }
 
 void GPUTimer::End() {
