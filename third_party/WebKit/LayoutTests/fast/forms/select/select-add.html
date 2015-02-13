@@ -78,6 +78,30 @@ function test(multiple) {
     shouldBeEqualToString('addOption("foo")', 'X,0,1,2');
 
     resetSelect(multiple);
+    shouldBeEqualToString('addOption("0")', 'X,0,1,2');
+
+    resetSelect(multiple);
+    shouldBeEqualToString('addOption("1")', '0,X,1,2');
+
+    resetSelect(multiple);
+    shouldBeEqualToString('addOption(false)', 'X,0,1,2');
+
+    resetSelect(multiple);
+    shouldBeEqualToString('addOption(true)', '0,X,1,2');
+
+    resetSelect(multiple);
+    shouldBeEqualToString('addOption(2147483647)', '0,1,2,X');
+
+    resetSelect(multiple);
+    shouldBeEqualToString('addOption(-2147483647)', '0,1,2,X');
+
+    resetSelect(multiple);
+    shouldBeEqualToString('addOption(2147483648)', '0,1,2,X');
+
+    resetSelect(multiple);
+    shouldBeEqualToString('addOption(-2147483648)', '0,1,2,X');
+
+    resetSelect(multiple);
     shouldThrow('select.add()');
     shouldThrow('select.add("foo")');
     shouldThrow('select.add("foo", 0)');
@@ -85,6 +109,8 @@ function test(multiple) {
     shouldThrow('select.add(undefined, 0)');
     shouldThrow('select.add(null)');
     shouldThrow('select.add(null, 0)');
+    shouldBeUndefined('select.add(new Option("X", "X", false, false), 0, 1)');
+    shouldBeUndefined('select.add(new Option("X", "X", false, false), select.options[0], 2)');
 
     resetSelect(multiple);
     var group = document.createElement('optgroup');
