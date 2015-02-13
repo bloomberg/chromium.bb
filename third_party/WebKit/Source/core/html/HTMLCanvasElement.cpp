@@ -699,11 +699,20 @@ void HTMLCanvasElement::trace(Visitor* visitor)
 void HTMLCanvasElement::updateExternallyAllocatedMemory() const
 {
     int bufferCount = 0;
-    if (m_imageBuffer)
+    if (m_imageBuffer) {
         bufferCount++;
+        if (m_imageBuffer->isAccelerated()) {
+            // The number of internal GPU buffers vary between one (stable
+            // non-displayed state) and three (triple-buffered animations).
+            // Adding 2 is a pessimistic but relevant estimate.
+            // Note: These buffers might be allocated in GPU memory.
+            bufferCount += 2;
+        }
+    }
     if (m_copiedImage)
         bufferCount++;
 
+    // Four bytes per pixel per buffer.
     Checked<intptr_t, RecordOverflow> checkedExternallyAllocatedMemory = 4 * bufferCount;
     if (is3D())
         checkedExternallyAllocatedMemory += toWebGLRenderingContext(m_context.get())->externallyAllocatedBytesPerPixel();
