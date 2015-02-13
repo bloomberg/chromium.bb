@@ -40,6 +40,8 @@ namespace blink {
 class PeriodicWave : public GarbageCollectedFinalized<PeriodicWave>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    // Maximum array size allowed for creating PeriodicWave's.
+    static const unsigned kMaxPeriodicWaveArraySize;
     static PeriodicWave* createSine(float sampleRate);
     static PeriodicWave* createSquare(float sampleRate);
     static PeriodicWave* createSawtooth(float sampleRate);

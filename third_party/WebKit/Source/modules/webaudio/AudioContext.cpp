@@ -679,28 +679,38 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
         return 0;
     }
 
+    if (real->length() > PeriodicWave::kMaxPeriodicWaveArraySize) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange(
+                "length of the real part array",
+                real->length(),
+                1u,
+                ExceptionMessages::InclusiveBound,
+                PeriodicWave::kMaxPeriodicWaveArraySize,
+                ExceptionMessages::InclusiveBound));
+        return 0;
+    }
+
+    if (imag->length() > PeriodicWave::kMaxPeriodicWaveArraySize) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange(
+                "length of the imaginary part array",
+                imag->length(),
+                1u,
+                ExceptionMessages::InclusiveBound,
+                PeriodicWave::kMaxPeriodicWaveArraySize,
+                ExceptionMessages::InclusiveBound));
+        return 0;
+    }
+
     if (real->length() != imag->length()) {
         exceptionState.throwDOMException(
             IndexSizeError,
             "length of real array (" + String::number(real->length())
             + ") and length of imaginary array (" +  String::number(imag->length())
             + ") must match.");
-        return 0;
-    }
-
-    if (real->length() > 4096) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            "length of real array (" + String::number(real->length())
-            + ") exceeds allowed maximum of 4096");
-        return 0;
-    }
-
-    if (imag->length() > 4096) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            "length of imaginary array (" + String::number(imag->length())
-            + ") exceeds allowed maximum of 4096");
         return 0;
     }
 

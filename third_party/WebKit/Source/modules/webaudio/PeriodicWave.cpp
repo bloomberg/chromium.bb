@@ -37,11 +37,13 @@
 #include "modules/webaudio/OscillatorNode.h"
 #include <algorithm>
 
+namespace blink {
+
 const unsigned PeriodicWaveSize = 4096; // This must be a power of two.
 const unsigned NumberOfRanges = 36; // There should be 3 * log2(PeriodicWaveSize) 1/3 octave ranges.
 const float CentsPerRange = 1200 / 3; // 1/3 Octave.
 
-namespace blink {
+const unsigned PeriodicWave::kMaxPeriodicWaveArraySize = PeriodicWaveSize / 2;
 
 using namespace VectorMath;
 
