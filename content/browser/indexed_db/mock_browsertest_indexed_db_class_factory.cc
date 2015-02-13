@@ -39,9 +39,9 @@ class FunctionTracer {
 
 namespace content {
 
-class LevelDBTestTansaction : public LevelDBTransaction {
+class LevelDBTestTransaction : public LevelDBTransaction {
  public:
-  LevelDBTestTansaction(LevelDBDatabase* db,
+  LevelDBTestTransaction(LevelDBDatabase* db,
                         FailMethod fail_method,
                         int fail_on_call_num)
       : LevelDBTransaction(db),
@@ -72,16 +72,16 @@ class LevelDBTestTansaction : public LevelDBTransaction {
   }
 
  private:
-  ~LevelDBTestTansaction() override {}
+  ~LevelDBTestTransaction() override {}
 
   FailMethod fail_method_;
   int fail_on_call_num_;
   int current_call_num_;
 };
 
-class LevelDBTraceTansaction : public LevelDBTransaction {
+class LevelDBTraceTransaction : public LevelDBTransaction {
  public:
-  LevelDBTraceTansaction(LevelDBDatabase* db, int tx_num)
+  LevelDBTraceTransaction(LevelDBDatabase* db, int tx_num)
       : LevelDBTransaction(db),
         commit_tracer_(s_class_name, "Commit", tx_num),
         get_tracer_(s_class_name, "Get", tx_num) {}
@@ -101,13 +101,13 @@ class LevelDBTraceTansaction : public LevelDBTransaction {
  private:
   static const std::string s_class_name;
 
-  ~LevelDBTraceTansaction() override {}
+  ~LevelDBTraceTransaction() override {}
 
   FunctionTracer commit_tracer_;
   FunctionTracer get_tracer_;
 };
 
-const std::string LevelDBTraceTansaction::s_class_name = "LevelDBTransaction";
+const std::string LevelDBTraceTransaction::s_class_name = "LevelDBTransaction";
 
 class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
  public:
@@ -204,13 +204,13 @@ MockBrowserTestIndexedDBClassFactory::CreateLevelDBTransaction(
   instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION] =
       instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION] + 1;
   if (only_trace_calls_) {
-    return new LevelDBTraceTansaction(
+    return new LevelDBTraceTransaction(
         db, instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION]);
   } else {
     if (failure_class_ == FAIL_CLASS_LEVELDB_TRANSACTION &&
         instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION] ==
             fail_on_instance_num_[FAIL_CLASS_LEVELDB_TRANSACTION]) {
-      return new LevelDBTestTansaction(
+      return new LevelDBTestTransaction(
           db,
           failure_method_,
           fail_on_call_num_[FAIL_CLASS_LEVELDB_TRANSACTION]);
