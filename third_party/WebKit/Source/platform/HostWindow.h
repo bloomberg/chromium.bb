@@ -27,6 +27,7 @@
 #define HostWindow_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
@@ -42,6 +43,12 @@ public:
 
     // Requests the host invalidate the contents.
     virtual void invalidateRect(const IntRect& updateRect) = 0;
+
+    // Requests the host to invalidate display items, if owned by the host
+    // window. At present Chrome does not (display items are owned by the
+    // GraphicsLayer instead), but PopupContainerClient does.
+    virtual void invalidateDisplayItemClient(DisplayItemClient) { }
+    virtual void invalidateAllDisplayItems() { }
 
     // Methods for doing coordinate conversions to screen coordinates.
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;

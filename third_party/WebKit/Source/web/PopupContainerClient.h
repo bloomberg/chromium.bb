@@ -40,11 +40,6 @@ namespace blink {
 class PopupContainerClient : public HostWindow {
 public:
     virtual void popupClosed(PopupContainer*) = 0;
-
-    // Mark display items within the popup as invalid.
-    // FIXME: Consider whether these should be moved to HostWindow.
-    virtual void invalidateDisplayItemClient(DisplayItemClient) = 0;
-    virtual void invalidateAllDisplayItems() = 0;
 };
 
 } // namespace blink

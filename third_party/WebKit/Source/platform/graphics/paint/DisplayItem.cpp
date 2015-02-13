@@ -50,6 +50,8 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::PageOverlay: return "PageOverlay";
     case DisplayItem::PageWidgetDelegateBackgroundFallback: return "DrawingPageWidgetDelegateBackgroundFallback";
     case DisplayItem::PopupContainerBorder: return "DrawingPopupContainerBorder";
+    case DisplayItem::PopupListBoxBackground: return "DrawingPopupListBoxBackground";
+    case DisplayItem::PopupListBoxRow: return "DrawingPopupListBoxRow";
     case DisplayItem::Resizer: return "DrawingResizer";
     case DisplayItem::SVGFilter: return "DrawingSVGFilter";
     case DisplayItem::ScrollbarCorner: return "DrawingScrollbarCorner";
@@ -82,6 +84,7 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ClipLayerParent: return "ClipLayerParent";
     case DisplayItem::ClipLayerOverflowControls: return "ClipLayerOverflowControls";
     case DisplayItem::ClipNodeImage: return "ClipNodeImage";
+    case DisplayItem::ClipPopupListBoxFrame: return "ClipPopupListBoxFrame";
     case DisplayItem::ClipSelectionImage: return "ClipSelectionImage";
     case DisplayItem::PageWidgetDelegateClip: return "PageWidgetDelegateClip";
     case DisplayItem::TransparencyClip: return "TransparencyClip";

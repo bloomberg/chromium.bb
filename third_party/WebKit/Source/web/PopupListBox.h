@@ -76,6 +76,9 @@ struct PopupItem {
         , yOffset(0)
     {
     }
+
+    DisplayItemClient displayItemClient() { return toDisplayItemClient(this); }
+
     String label;
     Type type;
     int yOffset; // y offset of this item, relative to the top of the popup.
@@ -174,6 +177,8 @@ public:
     static const int defaultMaxHeight;
 
     void trace(Visitor*) override;
+
+    DisplayItemClient displayItemClient() { return toDisplayItemClient(this); }
 
 protected:
     virtual void invalidateScrollCornerRect(const IntRect&) override { }
