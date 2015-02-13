@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -141,7 +142,9 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
     return;
   }
   DCHECK(status_ == STOPPED);
+  start_timing_ = base::TimeTicks::Now();
   status_ = STARTING;
+  network_accessed_for_script_ = false;
   scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
       new EmbeddedWorkerMsg_StartWorker_Params());
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
@@ -212,6 +215,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       process_id_(-1),
       thread_id_(kInvalidEmbeddedWorkerThreadId),
       devtools_attached_(false),
+      network_accessed_for_script_(false),
       weak_factory_(this) {
 }
 
@@ -287,6 +291,18 @@ void EmbeddedWorkerInstance::SendStartWorker(
   }
   params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
   params->wait_for_debugger = wait_for_debugger;
+  if (params->pause_after_download || params->wait_for_debugger) {
+    // We don't measure the start time when pause_after_download or
+    // wait_for_debugger flag is set. So we set the NULL time here.
+    start_timing_ = base::TimeTicks();
+  } else {
+    DCHECK(!start_timing_.is_null());
+    UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ProcessAllocation",
+                        base::TimeTicks::Now() - start_timing_);
+    // Reset |start_timing_| to measure the time excluding the process
+    // allocation time.
+    start_timing_ = base::TimeTicks::Now();
+  }
   ServiceWorkerStatusCode status =
       registry_->SendStartWorker(params.Pass(), process_id_);
   if (status != SERVICE_WORKER_OK) {
@@ -303,6 +319,19 @@ void EmbeddedWorkerInstance::OnReadyForInspection() {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoaded(int thread_id) {
+  if (!start_timing_.is_null()) {
+    if (network_accessed_for_script_) {
+      UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess",
+                          base::TimeTicks::Now() - start_timing_);
+    } else {
+      UMA_HISTOGRAM_TIMES(
+          "EmbeddedWorkerInstance.ScriptLoadWithoutNetworkAccess",
+          base::TimeTicks::Now() - start_timing_);
+    }
+    // Reset |start_timing_| to measure the time excluding the process
+    // allocation time and the script loading time.
+    start_timing_ = base::TimeTicks::Now();
+  }
   thread_id_ = thread_id;
 }
 
@@ -310,6 +339,10 @@ void EmbeddedWorkerInstance::OnScriptLoadFailed() {
 }
 
 void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
+  if (success && !start_timing_.is_null()) {
+    UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ScriptEvaluate",
+                        base::TimeTicks::Now() - start_timing_);
+  }
   DCHECK(!start_callback_.is_null());
   start_callback_.Run(success ? SERVICE_WORKER_OK
                               : SERVICE_WORKER_ERROR_START_WORKER_FAILED);
@@ -395,6 +428,10 @@ void EmbeddedWorkerInstance::AddListener(Listener* listener) {
 
 void EmbeddedWorkerInstance::RemoveListener(Listener* listener) {
   listener_list_.RemoveObserver(listener);
+}
+
+void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
+  network_accessed_for_script_ = true;
 }
 
 }  // namespace content

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
@@ -114,6 +115,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   void set_devtools_attached(bool attached) { devtools_attached_ = attached; }
 
+  // Called when the script load request accessed the network.
+  void OnNetworkAccessedForScriptLoad();
+
  private:
   typedef ObserverList<Listener> ListenerList;
   class DevToolsProxy;
@@ -204,9 +208,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Whether devtools is attached or not.
   bool devtools_attached_;
 
+  // True if the script load request accessed the network. If the script was
+  // served from HTTPCache or ServiceWorkerDatabase this value is false.
+  bool network_accessed_for_script_;
+
   StatusCallback start_callback_;
   ListenerList listener_list_;
   scoped_ptr<DevToolsProxy> devtools_proxy_;
+
+  base::TimeTicks start_timing_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_;
 

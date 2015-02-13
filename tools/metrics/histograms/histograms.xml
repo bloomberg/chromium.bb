@@ -6468,6 +6468,38 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Screen unlock events detected while EasyUnlock was enabled.</summary>
 </histogram>
 
+<histogram name="EmbeddedWorkerInstance.ProcessAllocation" units="millisecond">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time taken to allocate a process to start the EmbeddedWorkerInstance.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.ScriptEvaluate" units="millisecond">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time taken to evaluate the script to start the EmbeddedWorkerInstance.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess"
+    units="millisecond">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time taken to load the script file for the EmbeddedWorkerInstance with
+    network access.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.ScriptLoadWithoutNetworkAccess"
+    units="millisecond">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time taken to load the script file for the EmbeddedWorkerInstance
+    without network access.
+  </summary>
+</histogram>
+
 <histogram name="EnhancedBookmarks.SyncExperimentState"
     enum="BookmarksExperimentState">
   <owner>noyau@chromium.org</owner>

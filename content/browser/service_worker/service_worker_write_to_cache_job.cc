@@ -427,6 +427,9 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
     version_->SetMainScriptHttpResponseInfo(net_request_->response_info());
   }
 
+  if (net_request_->response_info().network_accessed)
+    version_->embedded_worker()->OnNetworkAccessedForScriptLoad();
+
   WriteHeadersToCache();
 }
 
