@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/input/scrollbar.h"
-#include "cc/layers/contents_scaling_layer.h"
+#include "cc/layers/layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/layers/scrollbar_theme_painter.h"
 #include "cc/resources/layer_updater.h"
@@ -17,7 +17,7 @@ namespace cc {
 class ScrollbarThemeComposite;
 
 class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
-                                        public ContentsScalingLayer {
+                                        public Layer {
  public:
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
@@ -41,10 +41,10 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void PushScrollClipPropertiesTo(LayerImpl* layer) override;
-  void CalculateContentsScale(float ideal_contents_scale,
-                              float* contents_scale_x,
-                              float* contents_scale_y,
-                              gfx::Size* content_bounds) override;
+
+  const gfx::Size& internal_content_bounds() const {
+    return internal_content_bounds_;
+  }
 
  protected:
   PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);
@@ -57,17 +57,20 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   UIResourceId thumb_resource_id() {
     return thumb_resource_.get() ? thumb_resource_->id() : 0;
   }
+  void UpdateInternalContentScale();
   void UpdateThumbAndTrackGeometry();
 
  private:
   gfx::Rect ScrollbarLayerRectToContentRect(const gfx::Rect& layer_rect) const;
   gfx::Rect OriginThumbRect() const;
 
-  template<typename T> void UpdateProperty(T value, T* prop) {
+  template <typename T>
+  bool UpdateProperty(T value, T* prop) {
     if (*prop == value)
-      return;
+      return false;
     *prop = value;
     SetNeedsPushProperties();
+    return true;
   }
 
   int MaxTextureSize();
@@ -80,6 +83,9 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   scoped_ptr<Scrollbar> scrollbar_;
   int scroll_layer_id_;
   int clip_layer_id_;
+
+  float internal_contents_scale_;
+  gfx::Size internal_content_bounds_;
 
   // Snapshot of properties taken in UpdateThumbAndTrackGeometry and used in
   // PushPropertiesTo.

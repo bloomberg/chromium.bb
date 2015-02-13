@@ -32,6 +32,7 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
     : ScrollbarLayerImplBase(tree_impl, id, orientation, false, false),
       track_ui_resource_id_(0),
       thumb_ui_resource_id_(0),
+      internal_contents_scale_(1.f),
       thumb_thickness_(0),
       thumb_length_(0),
       track_start_(0),
@@ -50,6 +51,9 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   PaintedScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(layer);
+
+  scrollbar_layer->set_internal_contents_scale_and_bounds(
+      internal_contents_scale_, internal_content_bounds_);
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
@@ -75,19 +79,21 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   bool nearest_neighbor = false;
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);
-  gfx::Rect bounds_rect(bounds());
-  gfx::Rect content_bounds_rect(content_bounds());
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateSharedQuadState(shared_quad_state);
+  PopulateScaledSharedQuadState(shared_quad_state, internal_contents_scale_);
 
-  AppendDebugBorderQuad(
-      render_pass, content_bounds(), shared_quad_state, append_quads_data);
+  AppendDebugBorderQuad(render_pass, internal_content_bounds_,
+                        shared_quad_state, append_quads_data);
 
   gfx::Rect thumb_quad_rect = ComputeThumbQuadRect();
+  gfx::Rect scaled_thumb_quad_rect =
+      gfx::ScaleToEnclosingRect(thumb_quad_rect, internal_contents_scale_);
   gfx::Rect visible_thumb_quad_rect =
       occlusion_in_content_space.GetUnoccludedContentRect(thumb_quad_rect);
+  gfx::Rect scaled_visible_thumb_quad_rect = gfx::ScaleToEnclosingRect(
+      visible_thumb_quad_rect, internal_contents_scale_);
 
   ResourceProvider::ResourceId thumb_resource_id =
       layer_tree_impl()->ResourceIdForUIResource(thumb_ui_resource_id_);
@@ -99,40 +105,28 @@ void PaintedScrollbarLayerImpl::AppendQuads(
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 thumb_quad_rect,
-                 opaque_rect,
-                 visible_thumb_quad_rect,
-                 thumb_resource_id,
-                 premultipled_alpha,
-                 uv_top_left,
-                 uv_bottom_right,
-                 SK_ColorTRANSPARENT,
-                 opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, scaled_thumb_quad_rect, opaque_rect,
+                 scaled_visible_thumb_quad_rect, thumb_resource_id,
+                 premultipled_alpha, uv_top_left, uv_bottom_right,
+                 SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor);
   }
 
-  gfx::Rect track_quad_rect = content_bounds_rect;
+  gfx::Rect track_quad_rect(bounds());
+  gfx::Rect scaled_track_quad_rect(internal_content_bounds_);
   gfx::Rect visible_track_quad_rect =
       occlusion_in_content_space.GetUnoccludedContentRect(track_quad_rect);
+  gfx::Rect scaled_visible_track_quad_rect = gfx::ScaleToEnclosingRect(
+      visible_track_quad_rect, internal_contents_scale_);
   if (track_resource_id && !visible_track_quad_rect.IsEmpty()) {
-    gfx::Rect opaque_rect(contents_opaque() ? track_quad_rect : gfx::Rect());
+    gfx::Rect opaque_rect(contents_opaque() ? scaled_track_quad_rect
+                                            : gfx::Rect());
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 track_quad_rect,
-                 opaque_rect,
-                 visible_track_quad_rect,
-                 track_resource_id,
-                 premultipled_alpha,
-                 uv_top_left,
-                 uv_bottom_right,
-                 SK_ColorTRANSPARENT,
-                 opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, scaled_track_quad_rect, opaque_rect,
+                 scaled_visible_track_quad_rect, track_resource_id,
+                 premultipled_alpha, uv_top_left, uv_bottom_right,
+                 SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor);
   }
 }
 

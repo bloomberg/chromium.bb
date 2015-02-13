@@ -75,9 +75,17 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
 
   // Quads that are fully occluded on one axis only should be shrunken.
   for (const auto& quad : quads) {
-    DCHECK(quad->quadTransform().IsIdentityOrIntegerTranslation());
     gfx::Rect target_rect =
         MathUtil::MapEnclosingClippedRect(quad->quadTransform(), quad->rect);
+    if (!quad->quadTransform().IsIdentityOrIntegerTranslation()) {
+      DCHECK(quad->quadTransform().IsPositiveScaleOrTranslation())
+          << quad->quadTransform().ToString();
+      gfx::RectF target_rectf =
+          MathUtil::MapClippedRect(quad->quadTransform(), quad->rect);
+      // Scale transforms allowed, as long as the final transformed rect
+      // ends up on integer boundaries for ease of testing.
+      DCHECK_EQ(target_rectf.ToString(), gfx::RectF(target_rect).ToString());
+    }
     gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
         quad->quadTransform(), quad->visible_rect);
 

@@ -4,6 +4,7 @@
 
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 
+#include "cc/quads/draw_quad.h"
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,6 +13,8 @@ namespace {
 
 TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   gfx::Size layer_size(10, 1000);
+  float scale = 2.f;
+  gfx::Size scaled_layer_size(20, 2000);
   gfx::Size viewport_size(1000, 1000);
 
   LayerTestCommon::LayerImplTest impl;
@@ -36,6 +39,9 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
       impl.AddChildToRoot<PaintedScrollbarLayerImpl>(orientation);
   scrollbar_layer_impl->SetBounds(layer_size);
   scrollbar_layer_impl->SetContentBounds(layer_size);
+  scrollbar_layer_impl->SetContentsOpaque(true);
+  scrollbar_layer_impl->set_internal_contents_scale_and_bounds(
+      scale, scaled_layer_size);
   scrollbar_layer_impl->SetDrawsContent(true);
   scrollbar_layer_impl->SetThumbThickness(layer_size.width());
   scrollbar_layer_impl->SetThumbLength(500);
@@ -62,6 +68,23 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
         impl.quad_list(), occluded, &partially_occluded_count);
     EXPECT_EQ(2u, impl.quad_list().size());
     EXPECT_EQ(0u, partially_occluded_count);
+
+    // Note: this is also testing that the thumb and track are both
+    // scaled by the internal contents scale.  It's not occlusion-related
+    // but is easy to verify here.
+    const DrawQuad* thumb_quad = impl.quad_list().ElementAt(0);
+    const DrawQuad* track_quad = impl.quad_list().ElementAt(1);
+
+    gfx::Rect scaled_thumb_rect = gfx::ScaleToEnclosingRect(thumb_rect, scale);
+    EXPECT_EQ(track_quad->rect.ToString(),
+              gfx::Rect(scaled_layer_size).ToString());
+    EXPECT_EQ(track_quad->opaque_rect.ToString(),
+              gfx::Rect(scaled_layer_size).ToString());
+    EXPECT_EQ(track_quad->visible_rect.ToString(),
+              gfx::Rect(scaled_layer_size).ToString());
+    EXPECT_EQ(thumb_quad->rect.ToString(), scaled_thumb_rect.ToString());
+    EXPECT_EQ(thumb_quad->visible_rect.ToString(),
+              scaled_thumb_rect.ToString());
   }
 
   {
