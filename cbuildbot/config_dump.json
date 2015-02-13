@@ -55,6 +55,7 @@
         "important": false,
         "internal": false,
         "latest_toolchain": false,
+        "lkgm_manifest": "LKGM/lkgm.xml",
         "manifest": "default.xml",
         "manifest_repo_url": "https://chromium.googlesource.com/chromiumos/manifest",
         "manifest_version": false,

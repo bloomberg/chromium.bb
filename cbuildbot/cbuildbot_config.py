@@ -578,6 +578,9 @@ _settings = dict(
 # use_lkgm -- Use the Last Known Good Manifest blessed by Paladin.
   use_lkgm=False,
 
+# If we use_lkgm -- What is the name of the manifest to look for?
+  lkgm_manifest=constants.LKGM_MANIFEST,
+
 # use_chrome_lkgm -- LKGM for Chrome OS generated for Chrome builds that are
 # blessed from canary runs.
   use_chrome_lkgm=False,

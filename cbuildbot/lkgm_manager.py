@@ -118,12 +118,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   COMMIT_QUEUE_SUBDIR = 'paladin'
   PROJECT_SDK_SUBDIR = 'project-sdk'
 
-  # Set path in repository to keep latest approved LKGM manifest.
-  LKGM_PATH = 'LKGM/lkgm.xml'
-
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
-               dry_run=True, master=False):
+               dry_run=True, master=False,
+               lkgm_path_rel=constants.LKGM_MANIFEST):
     """Initialize an LKGM Manager.
 
     Args:
@@ -139,13 +137,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       manifest: Manifest to use for checkout. E.g. 'full' or 'buildtools'.
       dry_run: Whether we actually commit changes we make or not.
       master: Whether we are the master builder.
+      lkgm_path_rel: Path to the LKGM symlink, relative to manifest dir.
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
         manifest=manifest, build_names=build_names, incr_type=incr_type,
         force=force, branch=branch, dry_run=dry_run, master=master)
 
-    self.lkgm_path = os.path.join(self.manifest_dir, self.LKGM_PATH)
+    self.lkgm_path = os.path.join(self.manifest_dir, lkgm_path_rel)
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
     self.build_type = build_type
     # Chrome PFQ and PFQ's exist at the same time and version separately so they
@@ -444,7 +443,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         git.CreatePushBranch(manifest_version.PUSH_BRANCH,
                              self.manifest_dir, sync=False)
         manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
-        git.RunGit(self.manifest_dir, ['add', self.LKGM_PATH])
+        git.RunGit(self.manifest_dir, ['add', self.lkgm_path])
         self.PushSpecChanges(
             'Automatic: %s promoting %s to LKGM' % (self.build_names[0],
                                                     self.current_version))

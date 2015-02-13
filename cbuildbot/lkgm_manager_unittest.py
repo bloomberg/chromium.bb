@@ -138,8 +138,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
         repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE, 'branch',
         force=False, branch=self.branch, dry_run=True)
     self.manager.manifest_dir = self.tmpmandir
-    self.manager.lkgm_path = os.path.join(self.tmpmandir,
-                                          self.manager.LKGM_PATH)
+    self.manager.lkgm_path = os.path.join(
+        self.tmpmandir, constants.LKGM_MANIFEST)
 
     self.manager.all_specs_dir = '/LKGM/path'
     manifest_dir = self.manager.manifest_dir
