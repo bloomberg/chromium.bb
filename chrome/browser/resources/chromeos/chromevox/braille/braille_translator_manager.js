@@ -62,7 +62,8 @@ cvox.BrailleTranslatorManager = function(opt_liblouisForTest) {
   this.uncontractedTableId_ = null;
 
   this.fetchTables_();
-  this.loadLiblouis_(0);
+  document.addEventListener('DOMContentLoaded', this.loadLiblouis_.bind(this),
+                            false);
 };
 
 cvox.BrailleTranslatorManager.prototype = {
@@ -203,22 +204,13 @@ cvox.BrailleTranslatorManager.prototype = {
 
   /**
    * Loads the liblouis instance by attaching it to the document.
-   * Retries a few times if the document doesn't yet have a body.
-   * @param {number} tries Number of attempts made so far.
    * @private
    */
-  loadLiblouis_: function(tries) {
-    if (!document.body) {
-      if (tries <= 5) {
-        window.setTimeout(this.loadLiblouis_.bind(this, tries + 1), 500);
-      } else {
-        console.error(
-            'Timeout waiting for document.body; not initializing braille.');
-      }
-      return;
-    }
-
-    this.liblouis_.attachToElement(document.body);
+  loadLiblouis_: function() {
+    // Cast away nullability.  When the document is loaded, it will always
+    // have a body.
+    this.liblouis_.attachToElement(
+        /** @type {!HTMLBodyElement} */ (document.body));
   },
 
   /**
