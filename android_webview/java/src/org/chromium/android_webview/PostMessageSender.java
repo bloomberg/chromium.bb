@@ -20,23 +20,21 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
          * Posts a message to the destination frame for real. The unique message port
          * id of any transferred port should be known at this time.
          */
-        void postMessageToWeb(String frameName, String message, String sourceOrigin,
-                String targetOrigin, int[] sentPortIds);
+        void postMessageToWeb(String frameName, String message, String targetOrigin,
+                int[] sentPortIds);
     };
 
     // A struct to store Message parameters that are sent from App to Web.
     private static class PostMessageParams {
         public String frameName;
         public String message;
-        public String sourceOrigin;
         public String targetOrigin;
         public MessagePort[] sentPorts;
 
-        public PostMessageParams(String frameName, String message, String sourceOrigin,
-                String targetOrigin, MessagePort[] sentPorts) {
+        public PostMessageParams(String frameName, String message, String targetOrigin,
+                MessagePort[] sentPorts) {
             this.frameName = frameName;
             this.message = message;
-            this.sourceOrigin = sourceOrigin;
             this.targetOrigin = targetOrigin;
             this.sentPorts = sentPorts;
         }
@@ -91,8 +89,8 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
         return false;
     }
 
-    private void postMessageToWeb(String frameName, String message, String sourceOrigin,
-            String targetOrigin, MessagePort[] sentPorts) {
+    private void postMessageToWeb(String frameName, String message, String targetOrigin,
+            MessagePort[] sentPorts) {
         int[] portIds = null;
         if (sentPorts != null) {
             portIds = new int[sentPorts.length];
@@ -101,15 +99,15 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
             }
             mService.removeSentPorts(portIds);
         }
-        mDelegate.postMessageToWeb(frameName, message, sourceOrigin, targetOrigin, portIds);
+        mDelegate.postMessageToWeb(frameName, message, targetOrigin, portIds);
     }
 
     /*
      * Sanity checks the message and queues it if necessary. Posts the message to delegate
      * when message can be sent.
      */
-    public void postMessage(String frameName, String message, String sourceOrigin,
-            String targetOrigin, MessagePort[] sentPorts) throws IllegalStateException {
+    public void postMessage(String frameName, String message, String targetOrigin,
+            MessagePort[] sentPorts) throws IllegalStateException {
         // Sanity check all the ports that are being transferred.
         if (sentPorts != null) {
             for (MessagePort p : sentPorts) {
@@ -120,10 +118,10 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
             }
         }
         if (shouldQueueMessage(sentPorts)) {
-            mMessageQueue.add(new PostMessageParams(frameName, message, sourceOrigin,
-                    targetOrigin, sentPorts));
+            mMessageQueue.add(new PostMessageParams(frameName, message, targetOrigin,
+                    sentPorts));
         } else {
-            postMessageToWeb(frameName, message, sourceOrigin, targetOrigin, sentPorts);
+            postMessageToWeb(frameName, message, targetOrigin, sentPorts);
         }
     }
 
@@ -143,8 +141,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
                 return;
             }
             mMessageQueue.remove();
-            postMessageToWeb(msg.frameName, msg.message, msg.sourceOrigin, msg.targetOrigin,
-                    msg.sentPorts);
+            postMessageToWeb(msg.frameName, msg.message, msg.targetOrigin, msg.sentPorts);
         }
     }
 }

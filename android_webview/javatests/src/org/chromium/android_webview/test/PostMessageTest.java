@@ -31,7 +31,7 @@ import java.util.concurrent.CountDownLatch;
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class PostMessageTest extends AwTestBase {
 
-    private static final String SOURCE_ORIGIN = "android_webview";
+    private static final String SOURCE_ORIGIN = "";
     // Timeout to failure, in milliseconds
     private static final long TIMEOUT = scaleTimeout(5000);
 
@@ -138,8 +138,8 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), null);
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                        null);
             }
         });
         mMessageObject.waitForMessage();
@@ -156,12 +156,12 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 MessagePort[] channel = mAwContents.createMessageChannel();
-                mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
                 // Retransfer the port. This should fail with an exception.
                 try {
-                    mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
-                            mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                    mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(),
+                            new MessagePort[]{channel[1]});
                 } catch (IllegalStateException ex) {
                     latch.countDown();
                     return;
@@ -212,8 +212,8 @@ public class PostMessageTest extends AwTestBase {
                 MessagePort[] channel = mAwContents.createMessageChannel();
                 channel[1].close();
                 try {
-                    mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
-                            mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                    mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                            new MessagePort[]{channel[1]});
                 } catch (IllegalStateException ex) {
                     latch.countDown();
                     return;
@@ -328,8 +328,8 @@ public class PostMessageTest extends AwTestBase {
                         channelContainer.setMessage(message);
                     }
                 });
-                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
             }
         });
         mMessageObject.waitForMessage();
@@ -410,8 +410,8 @@ public class PostMessageTest extends AwTestBase {
                         channelContainer.setMessage(message);
                     }
                 });
-                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
                 channel[0].postMessage(HELLO, null);
             }
         });
@@ -440,8 +440,8 @@ public class PostMessageTest extends AwTestBase {
                         channelContainer.setMessage(message);
                     }
                 });
-                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
                 channel[0].postMessage(HELLO, null);
             }
         });
@@ -515,12 +515,10 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 MessagePort[] channel = mAwContents.createMessageChannel();
-                mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
-                mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), null);
-                mAwContents.postMessageToFrame(null, "3", SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), null);
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(), null);
+                mAwContents.postMessageToFrame(null, "3", mWebServer.getBaseUrl(), null);
             }
         });
         expectTitle("123");
@@ -595,15 +593,14 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 MessagePort[] channel = mAwContents.createMessageChannel();
-                mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
-                mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), null);
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(), null);
                 MessagePort[] channel2 = mAwContents.createMessageChannel();
                 // Test port is in a pending state so it should not be transferred.
                 testPort.setMessagePort(channel2[0]);
-                mAwContents.postMessageToFrame(null, "3", SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{testPort});
+                mAwContents.postMessageToFrame(null, "3", mWebServer.getBaseUrl(),
+                        new MessagePort[]{testPort});
             }
         });
         expectTitle("12");
@@ -653,8 +650,8 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 MessagePort[] channel = mAwContents.createMessageChannel();
-                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                        mWebServer.getBaseUrl(), new MessagePort[]{channel[0], channel[1]});
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[0], channel[1]});
             }
         });
         mMessageObject.waitForMessage();

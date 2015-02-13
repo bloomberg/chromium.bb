@@ -1789,26 +1789,23 @@ public class AwContents implements SmartClipProvider,
 
     /**
      * Post a message to a frame.
-     * TODO(sgurun) investigate if we should hardcode the source origin to some
-     * value instead.
      *
      * @param frameName The name of the frame. If the name is null the message is posted
      *                  to the main frame.
      * @param message   The message
-     * @param sourceOrigin  The source origin
      * @param targetOrigin  The target origin
      * @param sentPorts The sent message ports, if any. Pass null if there is no
      *                  message ports to pass.
      */
-    public void postMessageToFrame(String frameName, String message,
-            String sourceOrigin, String targetOrigin, MessagePort[] sentPorts) {
+    public void postMessageToFrame(String frameName, String message, String targetOrigin,
+            MessagePort[] sentPorts) {
         if (isDestroyed()) return;
         if (mPostMessageSender == null) {
             AwMessagePortService service = mBrowserContext.getMessagePortService();
             mPostMessageSender = new PostMessageSender(this, service);
             service.addObserver(mPostMessageSender);
         }
-        mPostMessageSender.postMessage(frameName, message, sourceOrigin, targetOrigin,
+        mPostMessageSender.postMessage(frameName, message, targetOrigin,
                 sentPorts);
     }
 
@@ -1817,11 +1814,11 @@ public class AwContents implements SmartClipProvider,
      * ids of any transferred port should be known at this time.
      */
     @Override
-    public void postMessageToWeb(String frameName, String message,
-            String sourceOrigin, String targetOrigin, int[] sentPortIds) {
+    public void postMessageToWeb(String frameName, String message, String targetOrigin,
+            int[] sentPortIds) {
         if (isDestroyed()) return;
-        nativePostMessageToFrame(mNativeAwContents, frameName, message, sourceOrigin,
-                targetOrigin, sentPortIds);
+        nativePostMessageToFrame(mNativeAwContents, frameName, message, targetOrigin,
+                sentPortIds);
     }
 
     /**
@@ -2770,7 +2767,7 @@ public class AwContents implements SmartClipProvider,
             long resources);
 
     private native void nativePostMessageToFrame(long nativeAwContents, String frameId,
-            String message, String sourceOrigin, String targetOrigin, int[] msgPorts);
+            String message, String targetOrigin, int[] msgPorts);
 
     private native void nativeCreateMessageChannel(long nativeAwContents, MessagePort[] ports);
 }

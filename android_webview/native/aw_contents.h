@@ -222,8 +222,7 @@ class AwContents : public FindHelper::Listener,
 
   scoped_refptr<AwMessagePortMessageFilter> GetMessagePortMessageFilter();
   void PostMessageToFrame(JNIEnv* env, jobject obj, jstring frame_id,
-      jstring message, jstring source_origin, jstring target_origin,
-      jintArray sent_ports);
+      jstring message, jstring target_origin, jintArray sent_ports);
   void CreateMessageChannel(JNIEnv* env, jobject obj, jobjectArray ports);
 
  private:

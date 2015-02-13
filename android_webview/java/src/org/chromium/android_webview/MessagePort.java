@@ -135,12 +135,12 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
                 }
             }
         }
-        mPostMessageSender.postMessage(null, message, null, null, msgPorts);
+        mPostMessageSender.postMessage(null, message, null, msgPorts);
     }
 
     @Override
-    public void postMessageToWeb(String frameName, String message,
-            String sourceOrigin, String targetOrigin, int[] sentPortIds) {
+    public void postMessageToWeb(String frameName, String message, String targetOrigin,
+            int[] sentPortIds) {
         mMessagePortService.postMessage(mPortId, message, sentPortIds);
     }
 }
