@@ -7,24 +7,13 @@ var importer = importer || {};
 
 /** @enum {string} */
 importer.ResponseId = {
-  EXECUTABLE: 'executable',
+  READY: 'ready',
   HIDDEN: 'hidden',
-  ACTIVE_IMPORT: 'active_import',
-  INSUFFICIENT_SPACE: 'insufficient_space',
-  NO_MEDIA: 'no_media',
+  IMPORTING: 'importing',
+  INSUFFICIENT_SPACE: 'insufficient-space',
+  NO_MEDIA: 'no-media',
   SCANNING: 'scanning'
 };
-
-/**
- * @typedef {{
- *   id: !importer.ResponseId,
- *   label: string,
- *   visible: boolean,
- *   executable: boolean,
- *   coreIcon: string
- * }}
- */
-importer.CommandUpdate;
 
 /**
  * Class that orchestrates background activity and UI changes on
@@ -60,9 +49,12 @@ importer.ImportController =
 
   /**
    * The active import task, if any.
-   * @private {importer.MediaImportHandler.ImportTask}
+   * @private {?{
+   *   scan: !importer.ScanResult,
+   *   task: !importer.MediaImportHandler.ImportTask
+   * }}
    */
-  this.activeImportTask_ = null;
+  this.activeImport_ = null;
 
   var listener = this.onScanEvent_.bind(this);
   this.scanner_.addObserver(listener);
@@ -84,6 +76,9 @@ importer.ImportController =
 
   this.commandWidget_.addImportClickedListener(
       this.execute.bind(this));
+
+  this.commandWidget_.addDestinationClickedListener(
+      this.showDestination.bind(this));
 };
 
 /**
@@ -150,7 +145,7 @@ importer.ImportController.prototype.onSelectionChanged_ = function() {
  * @private
  */
 importer.ImportController.prototype.onImportFinished_ = function(task) {
-  this.activeImportTask_ = null;
+  this.activeImport_ = null;
   this.scanManager_.reset();
   this.checkState_();
 };
@@ -161,7 +156,7 @@ importer.ImportController.prototype.onImportFinished_ = function(task) {
  * by calling "update" on this class.
  */
 importer.ImportController.prototype.execute = function() {
-  console.assert(!this.activeImportTask_,
+  console.assert(!this.activeImport_,
       'Cannot execute while an import task is already active.');
   metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
 
@@ -172,10 +167,20 @@ importer.ImportController.prototype.execute = function() {
       scan,
       importer.Destination.GOOGLE_DRIVE);
 
-  this.activeImportTask_ = importTask;
+  this.activeImport_ = {
+    scan: scan,
+    task: importTask
+  };
   var taskFinished = this.onImportFinished_.bind(this, importTask);
   importTask.whenFinished.then(taskFinished).catch(taskFinished);
   this.checkState_();
+};
+
+/**
+ * Shows the import destination folder.
+ */
+importer.ImportController.prototype.showDestination = function() {
+  console.log('SET THE CURRENT DIRECTORY TO THE DESTINATION');
 };
 
 /**
@@ -191,8 +196,8 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
     return;
   }
 
-  if (!!this.activeImportTask_) {
-    this.updateUi_(importer.ResponseId.ACTIVE_IMPORT);
+  if (!!this.activeImport_) {
+    this.updateUi_(importer.ResponseId.IMPORTING, this.activeImport_.scan);
     return;
   }
 
@@ -243,7 +248,7 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
           }
 
         this.updateUi_(
-            importer.ResponseId.EXECUTABLE,
+            importer.ResponseId.READY,  // to import...
             opt_scan);
       }.bind(this));
 };
@@ -251,82 +256,11 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
 /**
  * @param {importer.ResponseId} responseId
  * @param {importer.ScanResult=} opt_scan
- *
- * @return {!importer.CommandUpdate}
  * @private
  */
 importer.ImportController.prototype.updateUi_ =
     function(responseId, opt_scan) {
-  switch(responseId) {
-    case importer.ResponseId.EXECUTABLE:
-      this.commandWidget_.update({
-        id: responseId,
-        label: strf(
-            'CLOUD_IMPORT_BUTTON_LABEL',
-            opt_scan.getFileEntries().length),
-        visible: true,
-        executable: true,
-        coreIcon: 'cloud-upload'
-      });
-      this.commandWidget_.updateDetails(opt_scan);
-      break;
-    case importer.ResponseId.HIDDEN:
-      this.commandWidget_.update({
-        id: responseId,
-        visible: false,
-        executable: false,
-        label: '** SHOULD NOT BE VISIBLE **',
-        coreIcon: 'cloud-off'
-      });
-      this.commandWidget_.setDetailsVisible(false);
-      break;
-    case importer.ResponseId.ACTIVE_IMPORT:
-      this.commandWidget_.update({
-        id: responseId,
-        visible: true,
-        executable: false,
-        label: str('CLOUD_IMPORT_ACTIVE_IMPORT_BUTTON_LABEL'),
-        coreIcon: 'swap-vert'
-      });
-      this.commandWidget_.setDetailsVisible(false);
-      break;
-    case importer.ResponseId.INSUFFICIENT_SPACE:
-      this.commandWidget_.update({
-        id: responseId,
-        visible: true,
-        executable: false,
-        label: strf(
-            'CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL',
-            util.bytesToString(opt_scan.getTotalBytes())),
-        coreIcon: 'report-problem'
-      });
-      this.commandWidget_.updateDetails(opt_scan);
-      break;
-    case importer.ResponseId.NO_MEDIA:
-      this.commandWidget_.update({
-        id: responseId,
-        visible: true,
-        executable: false,
-        label: str('CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL'),
-        coreIcon: 'cloud-done'
-      });
-      this.commandWidget_.updateDetails(
-          /** @type {!importer.ScanResult} */ (opt_scan));
-      break;
-    case importer.ResponseId.SCANNING:
-      this.commandWidget_.update({
-        id: responseId,
-        visible: true,
-        executable: false,
-        label: str('CLOUD_IMPORT_SCANNING_BUTTON_LABEL'),
-        coreIcon: 'autorenew'
-      });
-      this.commandWidget_.updateDetails(
-          /** @type {!importer.ScanResult} */ (opt_scan));
-      break;
-    default:
-      assertNotReached('Unrecognized response id: ' + responseId);
-  }
+  this.commandWidget_.update(responseId, opt_scan);
 };
 
 /**
@@ -566,14 +500,19 @@ importer.CommandWidget = function() {};
  */
 importer.CommandWidget.prototype.addImportClickedListener;
 
-/** @param {!importer.CommandUpdate} update */
+/**
+ * Install a listener that get's called when the user wants to initiate
+ * import.
+ *
+ * @param {function()} listener
+ */
+importer.CommandWidget.prototype.addDestinationClickedListener;
+
+/**
+ * @param {importer.ResponseId} responseId
+ * @param {importer.ScanResult=} opt_scan
+ */
 importer.CommandWidget.prototype.update;
-
-/** @param {!importer.ScanResult} scan */
-importer.CommandWidget.prototype.updateDetails;
-
-/** Resets details to default. */
-importer.CommandWidget.prototype.resetDetails;
 
 /**
  * Runtime implementation of CommandWidget.
@@ -594,25 +533,36 @@ importer.RuntimeCommandWidget = function() {
 
   /** @private {Element} */
   this.detailsImportButton_ =
-      document.querySelector('#cloud-import-details .import');
+      document.querySelector('#cloud-import-details paper-button.import');
   this.detailsImportButton_.onclick = this.onImportClicked_.bind(this);
 
   /** @private {Element} */
   this.detailsPanel_ = document.getElementById('cloud-import-details');
+  this.detailsPanel_.addEventListener(
+      'transitionend',
+      this.onDetailsTransitionEnd_.bind(this),
+      false);
 
   /** @private {Element} */
-  this.photoCount_ =
-      document.querySelector('#cloud-import-details .photo-count');
+  this.detailsPanelBody_ =
+      document.querySelector('#cloud-import-details .main');
 
   /** @private {Element} */
-  this.spaceRequired_ =
-      document.querySelector('#cloud-import-details .space-required');
+  this.statusContent_ =
+      document.querySelector('#cloud-import-details .status .content');
+  this.statusContent_.onclick = this.onStatusClicked_.bind(this);
 
   /** @private {Element} */
-  this.icon_ = document.querySelector('#cloud-import-button core-icon');
+  this.toolbarIcon_ =
+      document.querySelector('#cloud-import-button core-icon');
+  this.statusIcon_ =
+      document.querySelector('#cloud-import-details .status core-icon');
 
   /** @private {function()} */
   this.importListener_;
+
+  /** @private {function()} */
+  this.destinationListener_;
 };
 
 /** @override */
@@ -622,49 +572,191 @@ importer.RuntimeCommandWidget.prototype.addImportClickedListener =
   this.importListener_ = listener;
 };
 
-/** @private */
-importer.RuntimeCommandWidget.prototype.onImportClicked_ = function() {
-  console.assert(!!this.importListener_);
+/** @override */
+importer.RuntimeCommandWidget.prototype.addDestinationClickedListener =
+    function(listener) {
+  console.assert(!this.destinationListener_);
+  this.destinationListener_ = listener;
+};
+
+/**
+ * @param {Event} event Click event.
+ * @private
+ */
+importer.RuntimeCommandWidget.prototype.onImportClicked_ = function(event) {
+  console.assert(!!this.importListener_, 'Listener not set.');
   this.importListener_();
+};
+
+/**
+ * @param {Event} event Click event.
+ * @private
+ */
+importer.RuntimeCommandWidget.prototype.onStatusClicked_ = function(event) {
+  console.assert(!!this.destinationListener_, 'Listener not set.');
+  // TODO(smckay): Only if the element is "destination-link".
+  this.destinationListener_();
 };
 
 /** @private */
 importer.RuntimeCommandWidget.prototype.toggleDetails_ = function() {
-  this.setDetailsVisible(this.detailsPanel_.className === 'offscreen');
+    this.setDetailsVisible(this.detailsPanel_.className === 'hidden');
 };
 
 importer.RuntimeCommandWidget.prototype.setDetailsVisible = function(visible) {
   if (visible) {
+    this.detailsPanel_.hidden = false;
     this.detailsPanel_.className = '';
   } else {
-    this.detailsPanel_.className = 'offscreen';
+    this.detailsPanel_.className = 'hidden';
+  }
+};
+
+/** @private */
+importer.RuntimeCommandWidget.prototype.onDetailsTransitionEnd_ =
+    function() {
+  if (this.detailsPanel_.className === 'hidden') {
+    // if we simply make the panel invisible (via opacity)
+    // it'll still be sitting there grabing mouse events
+    // and so-on. So we *hide* hide it.
+    this.detailsPanel_.hidden = true;
   }
 };
 
 /** @override */
-importer.RuntimeCommandWidget.prototype.update = function(update) {
-    this.importButton_.setAttribute('title', update.label);
-    this.importButton_.disabled = !update.executable;
-    this.importButton_.style.display =
-        update.visible ? 'block' : 'none';
+importer.RuntimeCommandWidget.prototype.update =
+    function(responseId, opt_scan) {
+  switch(responseId) {
+    case importer.ResponseId.HIDDEN:
+      this.setDetailsVisible(false);
 
-    this.icon_.setAttribute('icon', update.coreIcon);
+      this.importButton_.disabled = true;
+      this.detailsButton_.disabled = true;
 
-    this.detailsButton_.disabled = !update.executable;
-    this.detailsButton_.style.display =
-        update.visible ? 'block' : 'none';
-};
+      this.importButton_.hidden = true;
+      this.detailsButton_.hidden = true;
 
-/** @override */
-importer.RuntimeCommandWidget.prototype.updateDetails = function(scan) {
-  this.photoCount_.textContent = scan.getFileEntries().length.toLocaleString();
-  this.spaceRequired_.textContent = util.bytesToString(scan.getTotalBytes());
-};
+      this.importButton_.setAttribute(
+          'title',
+          '** SHOULD NOT BE VISIBLE **');
+      this.statusContent_.innerHTML =
+          '** SHOULD NOT BE VISIBLE **';
 
-/** @override */
-importer.RuntimeCommandWidget.prototype.resetDetails = function() {
-  this.photoCount_.textContent = 0;
-  this.spaceRequired_.textContent = 0;
+      this.toolbarIcon_.setAttribute('icon', 'cloud-off');
+      this.statusIcon_.setAttribute('icon', 'cloud-off');
+
+      break;
+
+    case importer.ResponseId.IMPORTING:
+      console.assert(!!opt_scan, 'Scan not defined, but is required.');
+      this.setDetailsVisible(false);
+
+      this.importButton_.setAttribute('title', strf(
+          'CLOUD_IMPORT_TOOLTIP_IMPORTING',
+          opt_scan.getFileEntries().length));
+      this.statusContent_.innerHTML = strf(
+          'CLOUD_IMPORT_STATUS_IMPORTING',
+          opt_scan.getFileEntries().length);
+
+      this.importButton_.disabled = true;
+      this.detailsButton_.disabled = true;
+      this.detailsImportButton_.disabled = true;
+
+      this.importButton_.hidden = false;
+      this.detailsButton_.hidden = false;
+      this.detailsImportButton_.hidden = false;
+
+      this.toolbarIcon_.setAttribute('icon', 'autorenew');
+      this.statusIcon_.setAttribute('icon', 'autorenew');
+
+      break;
+
+    case importer.ResponseId.INSUFFICIENT_SPACE:
+      console.assert(!!opt_scan, 'Scan not defined, but is required.');
+
+      this.importButton_.setAttribute('title', strf(
+          'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE'));
+      this.statusContent_.innerHTML = strf(
+          'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE',
+          opt_scan.getFileEntries().length);
+
+      this.importButton_.disabled = true;
+      this.detailsButton_.disabled = false;
+      this.detailsImportButton_.disabled = true;
+
+      this.importButton_.hidden = false;
+      this.detailsButton_.hidden = false;
+      this.detailsImportButton_.hidden = false;
+
+      this.toolbarIcon_.setAttribute('icon', 'image:photo');
+      this.statusIcon_.setAttribute('icon', 'cloud-off');
+      break;
+
+    case importer.ResponseId.NO_MEDIA:
+      this.importButton_.setAttribute('title', str(
+          'CLOUD_IMPORT_STATUS_NO_MEDIA'));
+      this.statusContent_.innerHTML = str(
+          'CLOUD_IMPORT_STATUS_NO_MEDIA');
+
+      this.importButton_.disabled = true;
+      this.detailsButton_.disabled = true;
+      this.detailsImportButton_.disabled = true;
+
+      this.importButton_.hidden = false;
+      this.detailsButton_.hidden = false;
+      // Hidden for now, since this is also the "done" importing case.
+      this.detailsImportButton_.hidden = true;
+
+      this.toolbarIcon_.setAttribute('icon', 'cloud-done');
+      this.statusIcon_.setAttribute('icon', 'cloud-done');
+      break;
+
+    case importer.ResponseId.READY:
+      console.assert(!!opt_scan, 'Scan not defined, but is required.');
+
+      this.importButton_.setAttribute('title', strf(
+          'CLOUD_IMPORT_TOOLTIP_READY',
+          opt_scan.getFileEntries().length));
+      this.statusContent_.innerHTML = strf(
+          'CLOUD_IMPORT_STATUS_READY',
+          opt_scan.getFileEntries().length);
+
+      this.importButton_.disabled = false;
+      this.detailsButton_.disabled = false;
+      this.detailsImportButton_.disabled = false;
+
+      this.importButton_.hidden = false;
+      this.detailsButton_.hidden = false;
+      this.detailsImportButton_.hidden = false;
+
+      this.toolbarIcon_.setAttribute('icon', 'cloud-upload');
+      this.statusIcon_.setAttribute('icon', 'image:photo');
+      break;
+
+    case importer.ResponseId.SCANNING:
+      console.assert(!!opt_scan, 'Scan not defined, but is required.');
+
+      this.importButton_.setAttribute('title', str(
+          'CLOUD_IMPORT_TOOLTIP_SCANNING'));
+      this.statusContent_.innerHTML = strf(
+          'CLOUD_IMPORT_STATUS_SCANNING',
+          opt_scan.getFileEntries().length);
+
+      this.importButton_.disabled = true;
+      this.detailsButton_.disabled = true;
+      this.detailsImportButton_.disabled = true;
+
+      this.importButton_.hidden = false;
+      this.detailsButton_.hidden = false;
+      this.detailsImportButton_.hidden = true;
+
+      this.toolbarIcon_.setAttribute('icon', 'autorenew');
+      this.statusIcon_.setAttribute('icon', 'autorenew');
+      break;
+
+    default:
+      assertNotReached('Unrecognized response id: ' + responseId);
+  }
 };
 
 /**

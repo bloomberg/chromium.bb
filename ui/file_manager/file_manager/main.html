@@ -28,6 +28,7 @@
 
     <link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
     <link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
+    <link rel="import" href="chrome://resources/polymer/core-icons/image-icons.html">
     <link rel="import" href="chrome://resources/polymer/core-icons/social-icons.html">
     <link rel="import" href="chrome://resources/polymer/core-input/core-input.html">
     <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
@@ -347,15 +348,16 @@
       <button id="cloud-import-button"
               class="icon-button manual-display"
               tabindex="11"
-              i18n-values="aria-label:CLOUD_IMPORT_BUTTON_LABEL"
-              style='display: none;'>
+              i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
+              hidden>
         <core-icon icon="cloud-queue"></core-icon>
         <paper-ripple fit></paper-ripple>
       </button>
       <button id="cloud-import-details-button"
               class="icon-button manual-display"
               tabindex="12"
-              style='display: none;'>
+              i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
+              hidden>
         <core-icon icon="arrow-drop-down"></core-icon>
         <paper-ripple fit></paper-ripple>
       </button>
@@ -371,26 +373,20 @@
       </button>
     </div>
 
-    <div id="cloud-import-details" class="offscreen">
-      <h1>Backup to Drive</h1>
-
-      <div id='#open-destination'>
-        <core-icon class="icon volume-icon" volume-type-icon="drive">
-        </core-icon> My Photos
+    <div id="cloud-import-details" class="hidden">
+      <div class="banner">
+        <div class="title" i18n-content="CLOUD_IMPORT_TITLE"></div>
+        <div class="description" i18n-content="CLOUD_IMPORT_DESCRIPTION"></div>
       </div>
-
-      <div class="detail">
-        New photos: <span class="photo-count">0</span>
+      <div class="main">
+        <div class="status">
+          <core-icon icon="cloud-queue"></core-icon>
+          <div class="content"></div>
+        </div>
+        <paper-button class="import" tabindex="-1">
+          <span i18n-content="CLOUD_IMPORT_COMMAND"></span>
+        </paper-button>
       </div>
-      <div class="detail">
-        Space required: <span class="space-required">0</span>
-      </div>
-
-      <div class="media-strip">
-        <tt>// TODO(smckay)</tt>
-      </div>
-
-      <div class="import">Import!</div>
     </div>
 
     <div class="dialog-container">

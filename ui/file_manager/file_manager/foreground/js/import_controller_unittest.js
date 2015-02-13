@@ -483,6 +483,9 @@ importer.TestCommandWidget = function() {
   /** @public {function()} */
   this.executeListener;
 
+  /** @public {function()} */
+  this.destinationListener;
+
   /** @private {!importer.Resolver.<!importer.CommandUpdate>} */
   this.updateResolver_ = new importer.Resolver();
 
@@ -503,6 +506,12 @@ importer.TestCommandWidget.prototype.addImportClickedListener =
 };
 
 /** @override */
+importer.TestCommandWidget.prototype.addDestinationClickedListener =
+    function(listener) {
+  this.destinationListener = listener;
+};
+
+/** @override */
 importer.TestCommandWidget.prototype.update = function(update) {
   assertFalse(this.updateResolver_.settled, 'Should not have been settled.');
   this.updateResolver_.resolve(update);
@@ -510,11 +519,6 @@ importer.TestCommandWidget.prototype.update = function(update) {
 
 /** @override */
 importer.TestCommandWidget.prototype.updateDetails = function(scan) {
-  // TODO(smckay)
-};
-
-/** @override */
-importer.TestCommandWidget.prototype.resetDetails = function() {
   // TODO(smckay)
 };
 

@@ -347,27 +347,75 @@ body.selecting button:hover {
 
 #cloud-import-details {
   background-color: white;
-  box-sizing: border-box;
-  height: 320px;
-  opacity: .85;
-  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 2px 2px 6px #555555;
+  line-height: 1.5em;
   position: absolute;
-  right: 0px;
-  top: 49px;
-  transform: translateX(0);
-  transition: transform 0.2s ease;
-  width: 270px;
+  right: 75px;  /* Positioned in relation to the cloud-import toolbar button */
+  top: 38px;  /* Positioned just overlapping the top of the toolbar */
+  transition: all 0.2s ease;
+  width: 250px;
   z-index: 5;
 }
 
-#cloud-import-details.offscreen {
+#cloud-import-details.hidden {
+  -webkit-transform: translateX(25px);
   opacity: 0;
-  transform: translateX(270px);  /* Keep in sync with width. */
 }
 
-#cloud-import-details div {
-  border: 0px 0px 1px 0px solid gray;
-  padding: 10px;
+#cloud-import-details .banner {
+  background-color: #37474F;
+  border-radius: 4px 4px 0px 0px;
+  color: white;
+  padding: 20px;
+}
+
+#cloud-import-details .banner .title {
+  font-size: 122%;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+#cloud-import-details .main {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+#cloud-import-details .status {
+  display: flex;
+  flex-direction: row;
+  margin-top: .2em;
+}
+
+#cloud-import-details .status core-icon {
+  display: block;
+  height: 16px;
+  opacity: .6;
+  width: 16px;
+}
+
+#cloud-import-details .status .content {
+  flex: 1;
+  color: #646464;
+  padding-left: 10px;
+}
+
+#cloud-import-details .status .content::first-line {
+  font-size: 110%;
+  color: #333333;
+}
+
+#cloud-import-details .status .destination-link {
+  color: #1BA8F3;
+  cursor: pointer;
+}
+
+#cloud-import-details paper-button.import {
+  align-self: flex-end;
+  background-color: #1BA8F3;
+  color: white;
+  margin-top: 20px;
 }
 
 #files-selected-label {
