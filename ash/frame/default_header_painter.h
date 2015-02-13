@@ -85,6 +85,9 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Returns the bounds for the title.
   gfx::Rect GetTitleBounds() const;
 
+  // Returns whether the frame uses custom frame coloring.
+  bool UsesCustomFrameColors() const;
+
   // Returns the frame color to use when |frame_| is inactive.
   SkColor GetInactiveFrameColor() const;
 

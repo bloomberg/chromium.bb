@@ -170,16 +170,16 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
 
   TileRoundRect(canvas, paint, GetLocalBounds(), corner_radius);
 
-  if (!frame_->IsMaximized() &&
-      !frame_->IsFullscreen() &&
-      mode_ == MODE_INACTIVE) {
+  if (!frame_->IsMaximized() && !frame_->IsFullscreen() &&
+      mode_ == MODE_INACTIVE && !UsesCustomFrameColors()) {
     PaintHighlightForInactiveRestoredWindow(canvas);
   }
   if (frame_->widget_delegate() &&
       frame_->widget_delegate()->ShouldShowWindowTitle()) {
     PaintTitleBar(canvas);
   }
-  PaintHeaderContentSeparator(canvas);
+  if (!UsesCustomFrameColors())
+    PaintHeaderContentSeparator(canvas);
 }
 
 void DefaultHeaderPainter::LayoutHeader() {
@@ -338,6 +338,11 @@ gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {
 gfx::Rect DefaultHeaderPainter::GetTitleBounds() const {
   return HeaderPainterUtil::GetTitleBounds(
       left_header_view_, caption_button_container_, GetTitleFontList());
+}
+
+bool DefaultHeaderPainter::UsesCustomFrameColors() const {
+  return active_frame_color_ != kDefaultFrameColor ||
+         inactive_frame_color_ != kDefaultFrameColor;
 }
 
 SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
