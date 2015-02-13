@@ -1865,6 +1865,9 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-1x-both.html [ Pass Failu
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 
 crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash ]
+crbug.com/451759 fast/images/drag-image.html [ Failure ]
+crbug.com/451759 virtual/deferred/fast/images/drag-image.html [ Failure ]
+crbug.com/451759 virtual/slimmingpaint/fast/images/drag-image.html [ Failure ]
 
 # These baselines need to be reviewed and perhaps updated after the mass-rebaselining
 # on 2015-02-06 (after the change in r189636).
