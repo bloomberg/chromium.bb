@@ -141,6 +141,12 @@ void WorkerScriptLoader::didReceiveData(const char* data, unsigned len)
     m_script.append(m_decoder->decode(data, len));
 }
 
+void WorkerScriptLoader::didReceiveCachedMetadata(const char* data, int size)
+{
+    m_cachedMetadata = adoptPtr(new Vector<char>(size));
+    memcpy(m_cachedMetadata->data(), data, size);
+}
+
 void WorkerScriptLoader::didFinishLoading(unsigned long identifier, double)
 {
     if (m_failed) {

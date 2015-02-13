@@ -48,9 +48,9 @@ class WorkerThreadStartupData final : public NoBaseWillBeGarbageCollectedFinaliz
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
+    static PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
     {
-        return adoptPtrWillBeNoop(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, startMode, contentSecurityPolicy, contentSecurityPolicyType, starterOrigin, workerClients, v8CacheOptions));
+        return adoptPtrWillBeNoop(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, cachedMetaData, startMode, contentSecurityPolicy, contentSecurityPolicyType, starterOrigin, workerClients, v8CacheOptions));
     }
 
     ~WorkerThreadStartupData();
@@ -58,6 +58,7 @@ public:
     KURL m_scriptURL;
     String m_userAgent;
     String m_sourceCode;
+    OwnPtr<Vector<char>> m_cachedMetaData;
     WorkerThreadStartMode m_startMode;
     String m_contentSecurityPolicy;
     ContentSecurityPolicyHeaderType m_contentSecurityPolicyType;
@@ -83,7 +84,7 @@ public:
     void trace(Visitor*);
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>, V8CacheOptions);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>, V8CacheOptions);
 };
 
 } // namespace blink

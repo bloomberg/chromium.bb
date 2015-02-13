@@ -443,6 +443,13 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     m_client->didReceiveResponse(identifier, response, handle);
 }
 
+void DocumentThreadableLoader::setSerializedCachedMetadata(Resource*, const char* data, size_t size)
+{
+    if (m_actualRequest)
+        return;
+    m_client->didReceiveCachedMetadata(data, size);
+}
+
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, unsigned dataLength)
 {
     ASSERT_UNUSED(resource, resource == this->resource());

@@ -76,6 +76,7 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
         // RawResourceClient
         void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
         void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+        void setSerializedCachedMetadata(Resource*, const char*, size_t) override;
         void dataReceived(Resource*, const char* data, unsigned dataLength) override;
         void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
         void dataDownloaded(Resource*, int) override;

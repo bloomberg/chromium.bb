@@ -196,7 +196,7 @@ public:
     const ResourceResponse& response() const { return m_response; }
 
     // Sets the serialized metadata retrieved from the platform's cache.
-    void setSerializedCachedMetadata(const char*, size_t);
+    virtual void setSerializedCachedMetadata(const char*, size_t);
 
     // Caches the given metadata in association with this resource and suggests
     // that the platform persist it. The dataTypeID is a pseudo-randomly chosen

@@ -107,6 +107,15 @@ void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<
     }
 }
 
+void RawResource::setSerializedCachedMetadata(const char* data, size_t size)
+{
+    ResourcePtr<RawResource> protect(this);
+    Resource::setSerializedCachedMetadata(data, size);
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
+        c->setSerializedCachedMetadata(this, data, size);
+}
+
 void RawResource::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
     ResourceClientWalker<RawResourceClient> w(m_clients);

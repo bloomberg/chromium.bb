@@ -112,6 +112,7 @@ public:
     bool failed() const { return m_scriptLoader->failed(); }
     const KURL& url() const { return m_scriptLoader->responseURL(); }
     String script() const { return m_scriptLoader->script(); }
+    PassOwnPtr<Vector<char>> releaseCachedMetadata() const { return m_scriptLoader->releaseCachedMetadata(); }
     PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
 private:
@@ -417,6 +418,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
             scriptURL,
             m_workerStartData.userAgent,
             m_mainScriptLoader->script(),
+            m_mainScriptLoader->releaseCachedMetadata(),
             startMode,
             document->contentSecurityPolicy()->deprecatedHeader(),
             document->contentSecurityPolicy()->deprecatedHeaderType(),
