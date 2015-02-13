@@ -1908,6 +1908,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   AutoThreadLocalBoolean thread_is_in_trace_event(&thread_is_in_trace_event_);
 
   DCHECK(name);
+  DCHECK(!timestamp.is_null());
 
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
     id ^= process_id_hash_;
