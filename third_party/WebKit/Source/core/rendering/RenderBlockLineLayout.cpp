@@ -1508,8 +1508,8 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     if (styleToUse.collapseWhiteSpace())
         stripTrailingSpace(inlineMax, inlineMin, trailingSpaceChild);
 
-    minLogicalWidth = std::max(minLogicalWidth, inlineMin.toLayoutUnit());
-    maxLogicalWidth = std::max(maxLogicalWidth, inlineMax.toLayoutUnit());
+    minLogicalWidth = std::max(minLogicalWidth, LayoutUnit::fromFloatCeil(inlineMin.toFloat()));
+    maxLogicalWidth = std::max(maxLogicalWidth, LayoutUnit::fromFloatCeil(inlineMax.toFloat()));
 }
 
 void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
