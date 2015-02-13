@@ -180,7 +180,7 @@ public class ChromeShellToolbar extends LinearLayout {
             public void onFocusChange(View v, boolean hasFocus) {
                 setKeyboardVisibilityForUrl(hasFocus);
                 mFocus = hasFocus;
-                updateToolBarButtonState();
+                updateToolbarState();
                 if (!hasFocus && mTab != null) {
                     mUrlTextView.setText(mTab.getWebContents().getUrl());
                     mSuggestionPopup.dismissPopup();
@@ -258,12 +258,13 @@ public class ChromeShellToolbar extends LinearLayout {
     }
 
     /**
-     * Shows or hides the add and the stop/reload button.
+     * Shows or hides the add button, the stop/reload button and the URL bar.
      */
-    public void updateToolBarButtonState() {
+    public void updateToolbarState() {
         boolean tabSwitcherState = mTabManager.isTabSwitcherVisible();
         mAddButton.setVisibility(tabSwitcherState ? VISIBLE : GONE);
         mStopReloadButton.setVisibility(tabSwitcherState || mFocus ? GONE : VISIBLE);
+        mUrlTextView.setVisibility(tabSwitcherState ? INVISIBLE : VISIBLE);
     }
 
     /**
