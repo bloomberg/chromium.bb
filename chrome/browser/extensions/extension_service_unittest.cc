@@ -167,6 +167,7 @@ using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::ExtensionResource;
+using extensions::ExtensionSyncData;
 using extensions::ExtensionSystem;
 using extensions::FakeSafeBrowsingDatabaseManager;
 using extensions::FeatureSwitch;
@@ -5861,7 +5862,7 @@ TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
   ASSERT_TRUE(extension);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
   extensions::ExtensionSyncData disable_good_crx(
-      *extension, false, false, false);
+      *extension, false, false, false, ExtensionSyncData::BOOLEAN_UNSET);
 
   // Then sync data arrives telling us to disable |good0|.
   syncer::SyncDataList sync_data;
@@ -5908,7 +5909,7 @@ TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
   // Now sync data comes in that says to disable good0. This should be
   // ignored.
   extensions::ExtensionSyncData disable_good_crx(
-      *extension, false, false, false);
+      *extension, false, false, false, ExtensionSyncData::BOOLEAN_FALSE);
   syncer::SyncDataList sync_data;
   sync_data.push_back(disable_good_crx.GetSyncData());
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -5946,6 +5947,7 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
   EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data.enabled());
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
             data.incognito_enabled());
+  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
   EXPECT_TRUE(data.version().Equals(*extension->version()));
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
             data.update_url());
@@ -5977,6 +5979,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
   EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data.enabled());
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
             data.incognito_enabled());
+  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
   EXPECT_TRUE(data.version().Equals(*extension->version()));
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
             data.update_url());
@@ -6025,6 +6028,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     extensions::ExtensionSyncData data(list[0]);
     EXPECT_TRUE(data.enabled());
     EXPECT_FALSE(data.incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
   }
 
   service()->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
@@ -6035,9 +6039,12 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     extensions::ExtensionSyncData data(list[0]);
     EXPECT_FALSE(data.enabled());
     EXPECT_FALSE(data.incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
   }
 
   extensions::util::SetIsIncognitoEnabled(good_crx, profile(), true);
+  extensions::util::SetAllowedScriptingOnAllUrls(
+      good_crx, profile(), false);
   {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
@@ -6045,9 +6052,12 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     extensions::ExtensionSyncData data(list[0]);
     EXPECT_FALSE(data.enabled());
     EXPECT_TRUE(data.incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_FALSE, data.all_urls_enabled());
   }
 
   service()->EnableExtension(good_crx);
+  extensions::util::SetAllowedScriptingOnAllUrls(
+      good_crx, profile(), true);
   {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
@@ -6055,6 +6065,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     extensions::ExtensionSyncData data(list[0]);
     EXPECT_TRUE(data.enabled());
     EXPECT_TRUE(data.incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_TRUE, data.all_urls_enabled());
   }
 }
 
@@ -6338,6 +6349,12 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile()));
+  EXPECT_FALSE(extensions::util::HasSetAllowedScriptingOnAllUrls(
+      good_crx, profile()));
+  const bool kDefaultAllowedScripting =
+      extensions::util::DefaultAllowedScriptingOnAllUrls();
+  EXPECT_EQ(kDefaultAllowedScripting,
+            extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -6357,6 +6374,10 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_FALSE(service()->IsExtensionEnabled(good_crx));
     EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile()));
+    EXPECT_FALSE(extensions::util::HasSetAllowedScriptingOnAllUrls(
+        good_crx, profile()));
+    EXPECT_EQ(kDefaultAllowedScripting,
+              extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
   }
 
   {
@@ -6387,6 +6408,41 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_FALSE(service()->IsExtensionEnabled(good_crx));
     EXPECT_TRUE(extensions::util::IsIncognitoEnabled(good_crx, profile()));
+  }
+
+  {
+    ext_specifics->set_enabled(true);
+    ext_specifics->set_all_urls_enabled(!kDefaultAllowedScripting);
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
+    syncer::SyncChangeList list(1);
+    list[0] = sync_change;
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+    EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
+    EXPECT_TRUE(extensions::util::HasSetAllowedScriptingOnAllUrls(
+        good_crx, profile()));
+    EXPECT_EQ(!kDefaultAllowedScripting,
+              extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
+  }
+
+  {
+    ext_specifics->set_all_urls_enabled(kDefaultAllowedScripting);
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
+    syncer::SyncChangeList list(1);
+    list[0] = sync_change;
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+    EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
+    EXPECT_TRUE(extensions::util::HasSetAllowedScriptingOnAllUrls(
+        good_crx, profile()));
+    EXPECT_EQ(kDefaultAllowedScripting,
+              extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
   }
 
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));

@@ -99,6 +99,11 @@ void SetAllowedScriptingOnAllUrlsHelper(
         updater.GrantWithheldImpliedAllHosts(extension);
       else
         updater.WithholdImpliedAllHosts(extension);
+
+      // If this was an update to permissions, we also need to sync the change.
+      ExtensionSyncService* sync_service = ExtensionSyncService::Get(context);
+      if (sync_service)  // sync_service can be null in unittests.
+        sync_service->SyncExtensionChangeIfNeeded(*extension);
     }
   }
 }

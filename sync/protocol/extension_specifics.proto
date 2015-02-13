@@ -42,5 +42,11 @@ message ExtensionSpecifics {
 
   // Whether this extension was installed by the custodian of a supervised user.
   optional bool installed_by_custodian = 8;
+
+  // Whether this extension has explicit user consent access to all urls.
+  // This is a tri-state boolean, so, unlike most fields here, it really *is*
+  // optional and may be absent. We need this for the time being because we need
+  // to know if a user has not set an explicit preference.
+  optional bool all_urls_enabled = 9;
 }
 

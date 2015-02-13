@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/extension_sync_service_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -30,6 +31,11 @@ namespace extensions {
 namespace {
 
 const char kAllHostsPermission[] = "*://*/*";
+
+// We skip syncing for testing purposes.
+KeyedService* BuildSyncService(content::BrowserContext* context) {
+  return nullptr;
+}
 
 }  // namespace
 
@@ -162,6 +168,9 @@ void ActiveScriptControllerUnitTest::IncrementExecutionCount(
 
 void ActiveScriptControllerUnitTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
+
+  ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), &BuildSyncService);
 
   TabHelper::CreateForWebContents(web_contents());
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents());

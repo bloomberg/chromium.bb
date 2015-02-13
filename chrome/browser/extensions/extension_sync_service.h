@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/extension_sync_bundle.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/pending_enables.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -19,7 +20,6 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
-class ExtensionSyncData;
 class Profile;
 
 namespace base {
@@ -28,8 +28,6 @@ class SequencedTaskRunner;
 
 namespace extensions {
 class AppSyncData;
-class ExtensionPrefs;
-class ExtensionSyncData;
 }  // namespace extensions
 
 namespace syncer {

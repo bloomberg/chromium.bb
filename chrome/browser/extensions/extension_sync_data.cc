@@ -21,6 +21,7 @@ ExtensionSyncData::ExtensionSyncData()
       enabled_(false),
       incognito_enabled_(false),
       remote_install_(false),
+      all_urls_enabled_(BOOLEAN_UNSET),
       installed_by_custodian_(false) {
 }
 
@@ -29,6 +30,7 @@ ExtensionSyncData::ExtensionSyncData(const syncer::SyncData& sync_data)
       enabled_(false),
       incognito_enabled_(false),
       remote_install_(false),
+      all_urls_enabled_(BOOLEAN_UNSET),
       installed_by_custodian_(false) {
   PopulateFromSyncData(sync_data);
 }
@@ -39,6 +41,7 @@ ExtensionSyncData::ExtensionSyncData(const syncer::SyncChange& sync_change)
       enabled_(false),
       incognito_enabled_(false),
       remote_install_(false),
+      all_urls_enabled_(BOOLEAN_UNSET),
       installed_by_custodian_(false) {
   PopulateFromSyncData(sync_change.sync_data());
 }
@@ -46,12 +49,14 @@ ExtensionSyncData::ExtensionSyncData(const syncer::SyncChange& sync_change)
 ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      bool enabled,
                                      bool incognito_enabled,
-                                     bool remote_install)
+                                     bool remote_install,
+                                     OptionalBoolean all_urls_enabled)
     : id_(extension.id()),
       uninstalled_(false),
       enabled_(enabled),
       incognito_enabled_(incognito_enabled),
       remote_install_(remote_install),
+      all_urls_enabled_(all_urls_enabled),
       installed_by_custodian_(extension.was_installed_by_custodian()),
       version_(extension.from_bookmark() ? base::Version("0")
                                          : *extension.version()),
@@ -82,6 +87,8 @@ void ExtensionSyncData::PopulateExtensionSpecifics(
   specifics->set_enabled(enabled_);
   specifics->set_incognito_enabled(incognito_enabled_);
   specifics->set_remote_install(remote_install_);
+  if (all_urls_enabled_ != BOOLEAN_UNSET)
+    specifics->set_all_urls_enabled(all_urls_enabled_ == BOOLEAN_TRUE);
   specifics->set_installed_by_custodian(installed_by_custodian_);
   specifics->set_name(name_);
 }
@@ -107,6 +114,14 @@ void ExtensionSyncData::PopulateFromExtensionSpecifics(
   version_ = specifics_version;
   enabled_ = specifics.enabled();
   incognito_enabled_ = specifics.incognito_enabled();
+  if (specifics.has_all_urls_enabled()) {
+    all_urls_enabled_ =
+        specifics.all_urls_enabled() ? BOOLEAN_TRUE : BOOLEAN_FALSE;
+  } else {
+    // Set this explicitly (even though it's the default) on the offchance
+    // that someone is re-using an ExtensionSyncData object.
+    all_urls_enabled_ = BOOLEAN_UNSET;
+  }
   remote_install_ = specifics.remote_install();
   installed_by_custodian_ = specifics.installed_by_custodian();
   name_ = specifics.name();

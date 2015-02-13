@@ -34,6 +34,7 @@ class AppSyncData {
               bool enabled,
               bool incognito_enabled,
               bool remote_install,
+              ExtensionSyncData::OptionalBoolean all_urls_enabled,
               const syncer::StringOrdinal& app_launch_ordinal,
               const syncer::StringOrdinal& page_ordinal,
               extensions::LaunchType launch_type);

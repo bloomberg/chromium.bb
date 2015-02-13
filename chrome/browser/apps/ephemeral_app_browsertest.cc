@@ -490,6 +490,7 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
                               enable_from_sync,
                               false /* incognito enabled */,
                               false /* remote install */,
+                              extensions::ExtensionSyncData::BOOLEAN_UNSET,
                               kAppLaunchOrdinal,
                               kPageOrdinal,
                               extensions::LAUNCH_TYPE_REGULAR);

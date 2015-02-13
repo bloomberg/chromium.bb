@@ -411,6 +411,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
       original_data.extension_sync_data().enabled(),
       original_data.extension_sync_data().incognito_enabled(),
       original_data.extension_sync_data().remote_install(),
+      original_data.extension_sync_data().all_urls_enabled(),
       original_data.app_launch_ordinal(),
       original_data.page_ordinal(),
       extensions::NUM_LAUNCH_TYPES);

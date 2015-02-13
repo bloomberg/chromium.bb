@@ -26,13 +26,20 @@ class Extension;
 // A class that encapsulates the synced properties of an Extension.
 class ExtensionSyncData {
  public:
+  enum OptionalBoolean {
+    BOOLEAN_UNSET,
+    BOOLEAN_TRUE,
+    BOOLEAN_FALSE
+  };
+
   ExtensionSyncData();
   explicit ExtensionSyncData(const syncer::SyncData& sync_data);
   explicit ExtensionSyncData(const syncer::SyncChange& sync_change);
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
                     bool incognito_enabled,
-                    bool remote_install);
+                    bool remote_install,
+                    OptionalBoolean all_urls_enabled);
   ~ExtensionSyncData();
 
   // Retrieve sync data from this class.
@@ -58,6 +65,7 @@ class ExtensionSyncData {
   bool enabled() const { return enabled_; }
   bool incognito_enabled() const { return incognito_enabled_; }
   bool remote_install() const { return remote_install_; }
+  OptionalBoolean all_urls_enabled() const { return all_urls_enabled_; }
   bool installed_by_custodian() const { return installed_by_custodian_; }
 
   // Version-dependent properties (i.e., should be used only when the
@@ -76,6 +84,7 @@ class ExtensionSyncData {
   bool enabled_;
   bool incognito_enabled_;
   bool remote_install_;
+  OptionalBoolean all_urls_enabled_;
   bool installed_by_custodian_;
   Version version_;
   GURL update_url_;
