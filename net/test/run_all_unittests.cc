@@ -27,6 +27,10 @@
 #include "gin/public/isolate_holder.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
+#endif
+
 using net::internal::ClientSocketPoolBaseHelper;
 using net::SpdySession;
 
@@ -67,6 +71,10 @@ int main(int argc, char** argv) {
 
 #if !defined(OS_IOS)
   net::ProxyResolverV8::EnsureIsolateCreated();
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  mojo::embedder::test::InitWithSimplePlatformSupport();
 #endif
 
   return base::LaunchUnitTests(

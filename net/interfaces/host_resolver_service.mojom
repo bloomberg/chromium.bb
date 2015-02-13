@@ -40,7 +40,7 @@ struct AddressList {
   array<IPEndPoint> addresses;
 };
 
-interface HostResolverService {
+interface HostResolver {
   // Use a HostResolverRequestClient instead of returning a result so we can
   // cancel in-flight requests by destroying the client.  IPC requests in Mojo
   // cannot be cancelled directly.

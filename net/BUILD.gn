@@ -790,6 +790,35 @@ if (use_v8_in_net) {
   }
 }
 
+if (use_v8_in_net && !is_android) {
+  source_set("net_browser_services") {
+    sources = [
+      "dns/mojo_host_resolver_impl.cc",
+      "dns/mojo_host_resolver_impl.h",
+    ]
+
+    public_deps = [
+      ":mojo_type_converters",
+      ":net",
+      "//net/interfaces",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+    ]
+  }
+
+  source_set("mojo_type_converters") {
+    sources = [
+      "dns/mojo_type_converters.cc",
+      "dns/mojo_type_converters.h",
+    ]
+
+    public_deps = [
+      ":net",
+      "//net/interfaces",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+    ]
+  }
+}
+
 if (!is_ios && !is_android) {
   executable("crash_cache") {
     testonly = true
@@ -1317,6 +1346,16 @@ if (!is_android && !is_win && !is_mac) {
         "proxy/proxy_resolver_v8_unittest.cc",
         "proxy/proxy_resolver_v8_tracing_unittest.cc",
       ]
+    }
+
+    if (use_v8_in_net && !is_android) {
+      deps += [
+        ":net_browser_services",
+        "//mojo/environment:chromium",
+        "//third_party/mojo/src/mojo/edk/system",
+      ]
+    } else {
+      sources -= [ "dns/mojo_host_resolver_impl_unittest.cc" ]
     }
 
     if (!enable_mdns) {

@@ -27,7 +27,7 @@ struct ProxyServer {
   uint16 port;
 };
 
-interface ProxyResolverService {
+interface ProxyResolver {
   SetPacScript(string data) => (int32 result);
 
   // Use a ProxyResolverRequestClient instead of returning a result so we can
@@ -43,6 +43,6 @@ interface ProxyResolverRequestClient {
 
 interface ProxyResolverFactory {
   // TODO(amistry): Add NetLog and ProxyResolverErrorObserver.
-  CreateResolver(ProxyResolverService& resolver,
-                 HostResolverService host_resolver);
+  CreateResolver(ProxyResolver& resolver,
+                 HostResolver host_resolver);
 };

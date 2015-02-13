@@ -708,6 +708,19 @@
           },
         ],
 
+        [ 'use_v8_in_net==1 and OS != "android"', {
+            'dependencies': [
+              'net_with_v8',
+              'net_browser_services',
+              '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+            ],
+          }, {  # else
+            'sources!': [
+              'dns/mojo_host_resolver_impl_unittest.cc',
+            ],
+          },
+        ],
+
         [ 'enable_mdns != 1', {
             'sources!' : [
               'dns/mdns_cache_unittest.cc',
@@ -1216,6 +1229,36 @@
           ],
           'includes': [
             '../third_party/mojo/mojom_bindings_generator.gypi',
+          ],
+        },
+        {
+          # GN version: //net:net_browser_services
+          'target_name': 'net_browser_services',
+          'type': 'static_library',
+          'sources': [
+            'dns/mojo_host_resolver_impl.cc',
+            'dns/mojo_host_resolver_impl.h',
+          ],
+          'dependencies': [
+            'mojo_type_converters',
+            'net',
+            'net_interfaces',
+            '../mojo/mojo_base.gyp:mojo_environment_chromium',
+            '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+          ],
+        },
+        {
+          # GN version: //net:mojo_type_converters
+          'target_name': 'mojo_type_converters',
+          'type': 'static_library',
+          'sources': [
+            'dns/mojo_type_converters.cc',
+            'dns/mojo_type_converters.h',
+          ],
+          'dependencies': [
+            'net',
+            'net_interfaces',
+            '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
           ],
         },
       ],

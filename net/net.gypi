@@ -1361,6 +1361,7 @@
       'dns/mapped_host_resolver_unittest.cc',
       'dns/mdns_cache_unittest.cc',
       'dns/mdns_client_unittest.cc',
+      'dns/mojo_host_resolver_impl_unittest.cc',
       'dns/record_parsed_unittest.cc',
       'dns/record_rdata_unittest.cc',
       'dns/serial_worker_unittest.cc',

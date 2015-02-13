@@ -4,6 +4,7 @@ include_rules = [
   "+jni",
   "+third_party/apple_apsl",
   "+third_party/libevent",
+  "+third_party/mojo/src/mojo/public",
   "+third_party/nss",
   "+third_party/zlib",
   "+sdch/open-vcdiff",
@@ -49,6 +50,10 @@ specific_include_rules = {
   ],
   "ftp_directory_listing_parser\.cc": [
     "+base/i18n",
+  ],
+
+  "run_all_unittests\.cc": [
+    "+third_party/mojo/src/mojo/edk",
   ],
 }
 
