@@ -177,7 +177,7 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
     H(Node)                                 \
     H(CSSValue)
 
-#define TypedHeapEnumName(Type) Type##Heap,
+#define TypedHeapEnumName(Type) Type##HeapIndex,
 
 enum HeapIndices {
     NormalPageHeapIndex = 0,

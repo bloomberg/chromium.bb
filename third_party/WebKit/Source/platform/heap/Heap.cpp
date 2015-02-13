@@ -547,11 +547,6 @@ BaseHeap::BaseHeap(ThreadState* state, int index)
     , m_firstUnsweptPage(nullptr)
     , m_threadState(state)
     , m_index(index)
-#if ENABLE(GC_PROFILING)
-    , m_cumulativeAllocationSize(0)
-    , m_allocationCount(0)
-    , m_inlineAllocationCount(0)
-#endif
 {
 }
 
@@ -561,6 +556,11 @@ NormalPageHeap::NormalPageHeap(ThreadState* state, int index)
     , m_remainingAllocationSize(0)
     , m_lastRemainingAllocationSize(0)
     , m_promptlyFreedSize(0)
+#if ENABLE(GC_PROFILING)
+    , m_cumulativeAllocationSize(0)
+    , m_allocationCount(0)
+    , m_inlineAllocationCount(0)
+#endif
 {
     clearFreeLists();
 }
@@ -622,7 +622,7 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
     ASSERT(allocationSize >= allocationGranularity);
 
 #if ENABLE(GC_PROFILING)
-    m_threadState->snapshotFreeListIfNecessary();
+    threadState()->snapshotFreeListIfNecessary();
 #endif
 
     // 1. If this allocation is big enough, allocate a large object.
@@ -819,7 +819,7 @@ void BaseHeap::completeSweep()
         ScriptForbiddenScope::exit();
 }
 
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
 BasePage* BaseHeap::findPageFromAddress(Address address)
 {
     for (BasePage* page = m_firstPage; page; page = page->next()) {
@@ -850,7 +850,7 @@ void BaseHeap::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
             page->snapshot(json, info);
             json->endArray();
         } else {
-            page->snapshot(0, info);
+            page->snapshot(nullptr, info);
         }
     }
     json->endArray();
@@ -860,10 +860,8 @@ void BaseHeap::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 
 void BaseHeap::incrementMarkedObjectsAge()
 {
-    for (NormalPage* page = m_firstPage; page; page = page->next())
+    for (BasePage* page = m_firstPage; page; page = page->next())
         page->incrementMarkedObjectsAge();
-    for (LargeObjectPage* largeObject = m_firstLargeObjectPage; largeObject; largeObject = largeObject->next())
-        largeObject->incrementMarkedObjectsAge();
 }
 #endif
 
@@ -1421,7 +1419,7 @@ void NormalPageHeap::clearFreeLists()
 }
 
 #if ENABLE(GC_PROFILING)
-void BaseHeap::snapshotFreeList(TracedValue& json)
+void NormalPageHeap::snapshotFreeList(TracedValue& json)
 {
     json.setInteger("cumulativeAllocationSize", m_cumulativeAllocationSize);
     json.setDouble("inlineAllocationRate", static_cast<double>(m_inlineAllocationCount) / m_allocationCount);
@@ -1429,7 +1427,7 @@ void BaseHeap::snapshotFreeList(TracedValue& json)
     json.setInteger("allocationCount", m_allocationCount);
     size_t pageCount = 0;
     size_t totalPageSize = 0;
-    for (NormalPage* page = m_firstPage; page; page = page->next()) {
+    for (NormalPage* page = static_cast<NormalPage*>(m_firstPage); page; page = static_cast<NormalPage*>(page->next())) {
         ++pageCount;
         totalPageSize += page->payloadSize();
     }
@@ -1454,18 +1452,14 @@ void BaseHeap::snapshotFreeList(TracedValue& json)
 
 void BaseHeap::countMarkedObjects(ClassAgeCountsMap& classAgeCounts) const
 {
-    for (NormalPage* page = m_firstPage; page; page = page->next())
+    for (BasePage* page = m_firstPage; page; page = page->next())
         page->countMarkedObjects(classAgeCounts);
-    for (LargeObjectPage* largeObject = m_firstLargeObjectPage; largeObject; largeObject = largeObject->next())
-        largeObject->countMarkedObjects(classAgeCounts);
 }
 
 void BaseHeap::countObjectsToSweep(ClassAgeCountsMap& classAgeCounts) const
 {
-    for (NormalPage* page = m_firstPage; page; page = page->next())
+    for (BasePage* page = m_firstPage; page; page = page->next())
         page->countObjectsToSweep(classAgeCounts);
-    for (LargeObjectPage* largeObject = m_firstLargeObjectPage; largeObject; largeObject = largeObject->next())
-        largeObject->countObjectsToSweep(classAgeCounts);
 }
 #endif
 

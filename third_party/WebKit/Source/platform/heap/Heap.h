@@ -388,6 +388,9 @@ public:
 #if ENABLE(GC_PROFILING)
     virtual const GCInfo* findGCInfo(Address) = 0;
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
+    virtual void incrementMarkedObjectsAge() = 0;
+    virtual void countMarkedObjects(ClassAgeCountsMap&) = 0;
+    virtual void countObjectsToSweep(ClassAgeCountsMap&) = 0;
 #endif
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     virtual bool contains(Address) = 0;
@@ -468,10 +471,10 @@ public:
     }
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
-    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
-    void incrementMarkedObjectsAge();
-    void countMarkedObjects(ClassAgeCountsMap&);
-    void countObjectsToSweep(ClassAgeCountsMap&);
+    void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
+    void incrementMarkedObjectsAge() override;
+    void countMarkedObjects(ClassAgeCountsMap&) override;
+    void countObjectsToSweep(ClassAgeCountsMap&) override;
 #endif
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Returns true for the whole blinkPageSize page that the page is on, even
@@ -543,11 +546,11 @@ public:
     }
 
 #if ENABLE(GC_PROFILING)
-    virtual const GCInfo* findGCInfo(Address) override;
-    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
-    void incrementMarkedObjectsAge();
-    void countMarkedObjects(ClassAgeCountsMap&);
-    void countObjectsToSweep(ClassAgeCountsMap&);
+    const GCInfo* findGCInfo(Address) override;
+    void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
+    void incrementMarkedObjectsAge() override;
+    void countMarkedObjects(ClassAgeCountsMap&) override;
+    void countObjectsToSweep(ClassAgeCountsMap&) override;
 #endif
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
@@ -733,6 +736,10 @@ public:
 #endif
 #if ENABLE(GC_PROFILING)
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
+    virtual void snapshotFreeList(TracedValue&) { };
+
+    void countMarkedObjects(ClassAgeCountsMap&) const;
+    void countObjectsToSweep(ClassAgeCountsMap&) const;
     void incrementMarkedObjectsAge();
 #endif
 
@@ -783,6 +790,9 @@ public:
     virtual bool isConsistentForSweeping() override;
     bool pagesToBeSweptContains(Address);
 #endif
+#if ENABLE(GC_PROFILING)
+    void snapshotFreeList(TracedValue&) override;
+#endif
 
     inline Address allocate(size_t payloadSize, size_t gcInfoIndex);
     inline Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
@@ -794,13 +804,6 @@ public:
     bool expandObject(HeapObjectHeader*, size_t);
     void shrinkObject(HeapObjectHeader*, size_t);
     void decreasePromptlyFreedSize(size_t size) { m_promptlyFreedSize -= size; }
-
-#if ENABLE(GC_PROFILING)
-    void snapshotFreeList(TracedValue&);
-
-    void countMarkedObjects(ClassAgeCountsMap&) const;
-    void countObjectsToSweep(ClassAgeCountsMap&) const;
-#endif
 
 private:
     void allocatePage();
@@ -1395,11 +1398,10 @@ struct HeapIndexTrait {
 };
 
 // FIXME: The forward declaration is layering violation.
-#define DEFINE_TYPED_HEAP_TRAIT(Type)                \
-    class Type;                                      \
-    template<>                                       \
-    struct HeapIndexTrait<class Type> {              \
-    static int index() { return Type##Heap; }; \
+#define DEFINE_TYPED_HEAP_TRAIT(Type)                   \
+    class Type;                                         \
+    template <> struct HeapIndexTrait<class Type> {     \
+        static int index() { return Type##HeapIndex; }; \
     };
 FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
 #undef DEFINE_TYPED_HEAP_TRAIT

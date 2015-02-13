@@ -546,18 +546,19 @@ void ThreadState::snapshot()
     SnapshotInfo info(this);
     RefPtr<TracedValue> json = TracedValue::create();
 
-#define SNAPSHOT_HEAP(HeapType)                                           \
-    {                                                                     \
-        json->beginDictionary();                                          \
-        json->setString("name", #HeapType);                               \
-        m_heaps[HeapType##Heap]->snapshot(json.get(), &info);             \
-        json->endDictionary();                                            \
+#define SNAPSHOT_HEAP(HeapType)                                    \
+    {                                                              \
+        json->beginDictionary();                                   \
+        json->setString("name", #HeapType);                        \
+        m_heaps[HeapType##HeapIndex]->snapshot(json.get(), &info); \
+        json->endDictionary();                                     \
     }
     json->beginArray("heaps");
-    SNAPSHOT_HEAP(General);
-    SNAPSHOT_HEAP(VectorBacking);
-    SNAPSHOT_HEAP(InlineVectorBacking);
-    SNAPSHOT_HEAP(HashTableBacking);
+    SNAPSHOT_HEAP(NormalPage);
+    SNAPSHOT_HEAP(Vector);
+    SNAPSHOT_HEAP(InlineVector);
+    SNAPSHOT_HEAP(HashTable);
+    SNAPSHOT_HEAP(LargeObject);
     FOR_EACH_TYPED_HEAP(SNAPSHOT_HEAP);
     json->endArray();
 #undef SNAPSHOT_HEAP
@@ -1221,19 +1222,20 @@ void ThreadState::snapshotFreeList()
 {
     RefPtr<TracedValue> json = TracedValue::create();
 
-#define SNAPSHOT_FREE_LIST(HeapType)                            \
-    {                                                           \
-        json->beginDictionary();                                \
-        json->setString("name", #HeapType);                     \
-        m_heaps[HeapType##Heap]->snapshotFreeList(*json);       \
-        json->endDictionary();                                  \
+#define SNAPSHOT_FREE_LIST(HeapType)                           \
+    {                                                          \
+        json->beginDictionary();                               \
+        json->setString("name", #HeapType);                    \
+        m_heaps[HeapType##HeapIndex]->snapshotFreeList(*json); \
+        json->endDictionary();                                 \
     }
 
     json->beginArray("heaps");
-    SNAPSHOT_FREE_LIST(General);
-    SNAPSHOT_FREE_LIST(VectorBacking);
-    SNAPSHOT_FREE_LIST(InlineVectorBacking);
-    SNAPSHOT_FREE_LIST(HashTableBacking);
+    SNAPSHOT_FREE_LIST(NormalPage);
+    SNAPSHOT_FREE_LIST(Vector);
+    SNAPSHOT_FREE_LIST(InlineVector);
+    SNAPSHOT_FREE_LIST(HashTable);
+    SNAPSHOT_FREE_LIST(LargeObject);
     FOR_EACH_TYPED_HEAP(SNAPSHOT_FREE_LIST);
     json->endArray();
 
