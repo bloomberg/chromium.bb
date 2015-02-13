@@ -52,7 +52,7 @@ ExtensionViewImpl.prototype.handleAttributeMutation = function(
     return;
 
   // Let the changed attribute handle its own mutation;
-  this.attributes[attributeName].handleMutation(oldValue, newValue);
+  this.attributes[attributeName].maybeHandleMutation(oldValue, newValue);
 };
 
 ExtensionViewImpl.prototype.onElementDetached = function() {

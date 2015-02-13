@@ -107,13 +107,12 @@ WebViewImpl.prototype.setupElementProperties = function() {
 // This observer monitors mutations to attributes of the <webview>.
 WebViewImpl.prototype.handleAttributeMutation = function(
     attributeName, oldValue, newValue) {
-  if (!this.attributes[attributeName] ||
-      this.attributes[attributeName].ignoreMutation) {
+  if (!this.attributes[attributeName]) {
     return;
   }
 
   // Let the changed attribute handle its own mutation;
-  this.attributes[attributeName].handleMutation(oldValue, newValue);
+  this.attributes[attributeName].maybeHandleMutation(oldValue, newValue);
 };
 
 WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {

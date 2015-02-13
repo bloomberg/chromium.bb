@@ -53,6 +53,15 @@ WebViewAttribute.prototype.defineProperty = function() {
 };
 
 // Called when the attribute's value changes.
+WebViewAttribute.prototype.maybeHandleMutation = function(oldValue, newValue) {
+  if (this.ignoreMutation) {
+    return;
+  }
+
+  this.handleMutation(oldValue, newValue);
+};
+
+// Called when a change that isn't ignored occurs to the attribute's value.
 WebViewAttribute.prototype.handleMutation = function(oldValue, newValue) {};
 
 // An attribute that is treated as a Boolean.

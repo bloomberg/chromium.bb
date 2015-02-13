@@ -55,6 +55,16 @@ ExtensionViewAttribute.prototype.defineProperty = function() {
 };
 
 // Called when the attribute's value changes.
+ExtensionViewAttribute.prototype.maybeHandleMutation =
+    function(oldValue, newValue) {
+  if (this.ignoreMutation) {
+    return;
+  }
+
+  this.handleMutation(oldValue, newValue);
+}
+
+// Called when a change that isn't ignored occurs to the attribute's value.
 ExtensionViewAttribute.prototype.handleMutation =
     function(oldValue, newValue) {};
 
@@ -76,9 +86,6 @@ SrcAttribute.prototype.setValueIgnoreMutation = function(value) {
 }
 
 SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
-  if (this.attributes[attributeName].ignoreMutation)
-    return;
-
   if (!newValue && oldValue) {
     this.setValueIgnoreMutation(oldValue);
     return;
