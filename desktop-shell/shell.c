@@ -3985,6 +3985,13 @@ static const struct weston_shell_client xdg_client = {
 };
 
 static void
+xdg_shell_destroy(struct wl_client *client,
+		  struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
 xdg_use_unstable_version(struct wl_client *client,
 			 struct wl_resource *resource,
 			 int32_t version)
@@ -4194,6 +4201,7 @@ shell_surface_is_xdg_popup(struct shell_surface *shsurf)
 }
 
 static const struct xdg_shell_interface xdg_implementation = {
+	xdg_shell_destroy,
 	xdg_use_unstable_version,
 	xdg_get_xdg_surface,
 	xdg_get_xdg_popup,
@@ -4209,7 +4217,7 @@ xdg_shell_unversioned_dispatch(const void *implementation,
 	struct wl_resource *resource = _target;
 	struct shell_client *sc = wl_resource_get_user_data(resource);
 
-	if (opcode != 0) {
+	if (opcode != 1 /* XDG_SHELL_USE_UNSTABLE_VERSION */) {
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "must call use_unstable_version first");

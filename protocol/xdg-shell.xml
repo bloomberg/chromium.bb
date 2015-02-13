@@ -52,6 +52,11 @@
       <entry name="role" value="0" summary="given wl_surface has another role"/>
     </enum>
 
+    <request name="destroy" type="destructor">
+      <description summary="destroy xdg_shell">
+      </description>
+    </request>
+
     <request name="use_unstable_version">
       <description summary="enable use of this unstable version">
 	Negotiate the unstable version of the interface.  This
