@@ -12,6 +12,7 @@
 #include "modules/EventModulesNames.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/IndexedDBNames.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/webdatabase/DatabaseManager.h"
 
 namespace blink {
@@ -26,6 +27,7 @@ void ModulesInitializer::init()
     Document::registerEventFactory(EventModulesFactory::create());
     ModuleBindingsInitializer::init();
     IndexedDBNames::init();
+    AXObjectCache::init(AXObjectCacheImpl::create);
 
     CoreInitializer::init();
 

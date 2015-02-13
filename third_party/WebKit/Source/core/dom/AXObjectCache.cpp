@@ -32,6 +32,20 @@
 
 namespace blink {
 
+AXObjectCache::AXObjectCacheCreateFunction AXObjectCache::m_createFunction = nullptr;
+
+void AXObjectCache::init(AXObjectCacheCreateFunction function)
+{
+    ASSERT(!m_createFunction);
+    m_createFunction = function;
+}
+
+AXObjectCache* AXObjectCache::create(Document& document)
+{
+    ASSERT(m_createFunction);
+    return (m_createFunction)(document);
+}
+
 AXObjectCache::AXObjectCache()
 {
 }

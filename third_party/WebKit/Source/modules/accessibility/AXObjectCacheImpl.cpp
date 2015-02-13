@@ -83,7 +83,7 @@ namespace blink {
 using namespace HTMLNames;
 
 // static
-AXObjectCache* AXObjectCache::create(Document& document)
+AXObjectCache* AXObjectCacheImpl::create(Document& document)
 {
     return new AXObjectCacheImpl(document);
 }

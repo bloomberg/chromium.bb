@@ -56,6 +56,8 @@ struct TextMarkerData {
 class AXObjectCacheImpl : public AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl); WTF_MAKE_FAST_ALLOCATED;
 public:
+    static AXObjectCache* create(Document&);
+
     explicit AXObjectCacheImpl(Document&);
     ~AXObjectCacheImpl();
 

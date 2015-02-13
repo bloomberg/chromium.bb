@@ -122,8 +122,14 @@ public:
     virtual const AtomicString& computedRoleForNode(Node*) = 0;
     virtual String computedNameForNode(Node*) = 0;
 
+    typedef AXObjectCache* (*AXObjectCacheCreateFunction)(Document&);
+    static void init(AXObjectCacheCreateFunction);
+
 protected:
     AXObjectCache();
+
+private:
+    static AXObjectCacheCreateFunction m_createFunction;
 };
 
 class ScopedAXObjectCache {
