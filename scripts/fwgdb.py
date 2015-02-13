@@ -17,6 +17,7 @@ import time
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 # pylint: disable=W0622
@@ -46,6 +47,9 @@ class TerminalFreezer(object):
   def __init__(self, tty):
     self._tty = tty
     self._processes = None
+    if 'cros_sdk' in osutils.ReadFile('/proc/1/cmdline'):
+      raise OSError('You must run this tool in a chroot that was entered with '
+                    '"cros_sdk --no-ns-pid" (see crbug.com/444931 for details)')
 
   def __enter__(self):
     lsof = cros_build_lib.RunCommand(
@@ -70,7 +74,7 @@ class TerminalFreezer(object):
       try:
         os.kill(int(p), signal.SIGCONT)
       except OSError as e:
-        Error("Error when trying to unfreeze process %s: %s" % (p, str(e)))
+        Error('Error when trying to unfreeze process %s: %s' % (p, str(e)))
 
 
 def ParsePortage(board):
