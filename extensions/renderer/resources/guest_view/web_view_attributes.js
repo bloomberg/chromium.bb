@@ -64,6 +64,9 @@ WebViewAttribute.prototype.maybeHandleMutation = function(oldValue, newValue) {
 // Called when a change that isn't ignored occurs to the attribute's value.
 WebViewAttribute.prototype.handleMutation = function(oldValue, newValue) {};
 
+// Called when the <webview> element is detached from the DOM tree.
+WebViewAttribute.prototype.reset = function() {};
+
 // An attribute that is treated as a Boolean.
 function BooleanAttribute(name, webViewImpl) {
   WebViewAttribute.call(this, name, webViewImpl);
@@ -176,7 +179,8 @@ PartitionAttribute.prototype.handleMutation = function(oldValue, newValue) {
   newValue = newValue || '';
 
   // The partition cannot change if the webview has already navigated.
-  if (!this.webViewImpl.beforeFirstNavigation) {
+  if (!this.webViewImpl.attributes[
+        WebViewConstants.ATTRIBUTE_SRC].beforeFirstNavigation) {
     window.console.error(WebViewConstants.ERROR_MSG_ALREADY_NAVIGATED);
     this.setValueIgnoreMutation(oldValue);
     return;
@@ -188,10 +192,15 @@ PartitionAttribute.prototype.handleMutation = function(oldValue, newValue) {
   }
 };
 
+PartitionAttribute.prototype.reset = function() {
+  this.validPartitionId = true;
+};
+
 // Attribute that handles the location and navigation of the webview.
 function SrcAttribute(webViewImpl) {
   WebViewAttribute.call(this, WebViewConstants.ATTRIBUTE_SRC, webViewImpl);
   this.setupMutationObserver();
+  this.beforeFirstNavigation = true;
 }
 
 SrcAttribute.prototype.__proto__ = WebViewAttribute.prototype;
@@ -219,6 +228,10 @@ SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
     return;
   }
   this.parse();
+};
+
+SrcAttribute.prototype.reset = function() {
+  this.beforeFirstNavigation = true;
 };
 
 // The purpose of this mutation observer is to catch assignment to the src
@@ -254,8 +267,8 @@ SrcAttribute.prototype.parse = function() {
   }
 
   if (!this.webViewImpl.guest.getId()) {
-    if (this.webViewImpl.beforeFirstNavigation) {
-      this.webViewImpl.beforeFirstNavigation = false;
+    if (this.beforeFirstNavigation) {
+      this.beforeFirstNavigation = false;
       this.webViewImpl.createGuest();
     }
     return;

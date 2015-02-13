@@ -17,8 +17,6 @@ var WebViewInternal = require('webViewInternal').WebViewInternal;
 function WebViewImpl(webviewElement) {
   GuestViewContainer.call(this, webviewElement, 'webview');
 
-  this.beforeFirstNavigation = true;
-
   this.setupWebViewAttributes();
   this.setupElementProperties();
 
@@ -71,9 +69,9 @@ WebViewImpl.prototype.onElementAttached = function() {
 // Resets some state upon detaching <webview> element from the DOM.
 WebViewImpl.prototype.onElementDetached = function() {
   this.guest.destroy();
-  this.beforeFirstNavigation = true;
-  this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId =
-      true;
+  for (var i in this.attributes) {
+    this.attributes[i].reset();
+  }
 };
 
 // Sets the <webview>.request property.
