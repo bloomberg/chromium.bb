@@ -24,13 +24,13 @@ TEST_F(NullEncrypterTest, Encrypt) {
     'b',  'y',  'e',  '!',
   };
   NullEncrypter encrypter;
-  scoped_ptr<QuicData> encrypted(
-      encrypter.EncryptPacket(0, "hello world!", "goodbye!"));
-  ASSERT_TRUE(encrypted.get());
+  char encrypted[256];
+  size_t encrypted_len = 0;
+  ASSERT_TRUE(encrypter.EncryptPacket(0, "hello world!", "goodbye!", encrypted,
+                                      &encrypted_len, 256));
   test::CompareCharArraysWithHexError(
-      "encrypted data", encrypted->data(), encrypted->length(),
-      reinterpret_cast<const char*>(expected),
-      arraysize(expected));
+      "encrypted data", encrypted, encrypted_len,
+      reinterpret_cast<const char*>(expected), arraysize(expected));
 }
 
 TEST_F(NullEncrypterTest, GetMaxPlaintextSize) {

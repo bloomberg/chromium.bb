@@ -545,16 +545,19 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     }
 
     const QuicData& cetv_plaintext = cetv.GetSerialized();
-    scoped_ptr<QuicData> cetv_ciphertext(crypters.encrypter->EncryptPacket(
-        0 /* sequence number */,
-        StringPiece() /* associated data */,
-        cetv_plaintext.AsStringPiece()));
-    if (!cetv_ciphertext.get()) {
+    const size_t encrypted_len =
+        crypters.encrypter->GetCiphertextSize(cetv_plaintext.length());
+    scoped_ptr<char[]> output(new char[encrypted_len]);
+    size_t output_size = 0;
+    if (!crypters.encrypter->EncryptPacket(
+            0 /* sequence number */, StringPiece() /* associated data */,
+            cetv_plaintext.AsStringPiece(), output.get(), &output_size,
+            encrypted_len)) {
       *error_details = "Packet encryption failed";
       return QUIC_ENCRYPTION_FAILURE;
     }
 
-    out->SetStringPiece(kCETV, cetv_ciphertext->AsStringPiece());
+    out->SetStringPiece(kCETV, StringPiece(output.get(), output_size));
     out->MarkDirty();
 
     out->set_minimum_size(orig_min_size);

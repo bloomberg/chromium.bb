@@ -1625,19 +1625,27 @@ QuicEncryptedPacket* QuicFramer::EncryptPacket(
     const QuicPacket& packet) {
   DCHECK(encrypter_[level].get() != nullptr);
 
-  scoped_ptr<QuicData> out(encrypter_[level]->EncryptPacket(
-      packet_sequence_number, packet.AssociatedData(), packet.Plaintext()));
-  if (out.get() == nullptr) {
+  // Allocate a large enough buffer for the header and the encrypted data.
+  const size_t encrypted_len =
+      encrypter_[level]->GetCiphertextSize(packet.Plaintext().length());
+  StringPiece header_data = packet.BeforePlaintext();
+  const size_t len = header_data.length() + encrypted_len;
+  // TODO(ianswett): Consider allocating this on the stack in the typical case.
+  char* buffer = new char[len];
+  // Copy in the header, because the encrypter only populates the encrypted
+  // plaintext content.
+  memcpy(buffer, header_data.data(), header_data.length());
+  // Encrypt the plaintext into the buffer.
+  size_t output_length = 0;
+  if (!encrypter_[level]->EncryptPacket(
+          packet_sequence_number, packet.AssociatedData(), packet.Plaintext(),
+          buffer + header_data.length(), &output_length, encrypted_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
     return nullptr;
   }
-  StringPiece header_data = packet.BeforePlaintext();
-  size_t len =  header_data.length() + out->length();
-  char* buffer = new char[len];
-  // TODO(rch): eliminate this buffer copy by passing in a buffer to Encrypt().
-  memcpy(buffer, header_data.data(), header_data.length());
-  memcpy(buffer + header_data.length(), out->data(), out->length());
-  return new QuicEncryptedPacket(buffer, len, true);
+
+  return new QuicEncryptedPacket(buffer, header_data.length() + output_length,
+                                 true);
 }
 
 size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {

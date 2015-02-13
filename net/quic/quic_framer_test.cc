@@ -113,13 +113,18 @@ class TestEncrypter : public QuicEncrypter {
     CHECK(false) << "Not implemented";
     return false;
   }
-  QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
-                          StringPiece associated_data,
-                          StringPiece plaintext) override {
+  bool EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                     StringPiece associated_data,
+                     StringPiece plaintext,
+                     char* output,
+                     size_t* output_length,
+                     size_t max_output_length) override {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     plaintext_ = plaintext.as_string();
-    return new QuicData(plaintext.data(), plaintext.length());
+    memcpy(output, plaintext.data(), plaintext.length());
+    *output_length = plaintext.length();
+    return true;
   }
   size_t GetKeySize() const override { return 0; }
   size_t GetNoncePrefixSize() const override { return 0; }

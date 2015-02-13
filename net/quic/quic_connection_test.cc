@@ -87,13 +87,20 @@ class TaggingEncrypter : public QuicEncrypter {
     return true;
   }
 
-  QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
-                          StringPiece associated_data,
-                          StringPiece plaintext) override {
+  bool EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                     StringPiece associated_data,
+                     StringPiece plaintext,
+                     char* output,
+                     size_t* output_length,
+                     size_t max_output_length) override {
     const size_t len = plaintext.size() + kTagSize;
-    uint8* buffer = new uint8[len];
-    Encrypt(StringPiece(), associated_data, plaintext, buffer);
-    return new QuicData(reinterpret_cast<char*>(buffer), len, true);
+    if (max_output_length < len) {
+      return false;
+    }
+    Encrypt(StringPiece(), associated_data, plaintext,
+            reinterpret_cast<unsigned char*>(output));
+    *output_length = len;
+    return true;
   }
 
   size_t GetKeySize() const override { return 0; }
