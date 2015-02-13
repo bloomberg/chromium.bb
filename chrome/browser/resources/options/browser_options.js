@@ -834,6 +834,10 @@ cr.define('options', function() {
      * @private
      */
     showSection_: function(section, container, animate) {
+      if (section == $('advanced-settings') &&
+          !loadTimeData.getBoolean('allowAdvancedSettings')) {
+        return;
+      }
       // Delay starting the transition if animating so that hidden change will
       // be processed.
       if (animate) {
