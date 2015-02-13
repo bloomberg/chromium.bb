@@ -46,6 +46,7 @@ class Blob;
 class DOMArrayBuffer;
 class ExceptionState;
 class ExecutionContext;
+class StringOrArrayBuffer;
 
 class FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
@@ -73,9 +74,7 @@ public:
 
     ReadyState readyState() const { return m_state; }
     FileError* error() { return m_error; }
-    FileReaderLoader::ReadType readType() const { return m_readType; }
-    PassRefPtr<DOMArrayBuffer> arrayBufferResult() const;
-    String stringResult();
+    void result(StringOrArrayBuffer& resultAttribute) const;
 
     // ActiveDOMObject
     virtual void stop() override;

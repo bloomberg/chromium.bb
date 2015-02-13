@@ -32,6 +32,7 @@
 #include "core/fileapi/FileReader.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
@@ -364,6 +365,17 @@ void FileReader::doAbort()
     ThrottlingController::finishReader(executionContext(), this, finalStep);
 }
 
+void FileReader::result(StringOrArrayBuffer& resultAttribute) const
+{
+    if (!m_loader || m_error)
+        return;
+
+    if (m_readType == FileReaderLoader::ReadAsArrayBuffer)
+        resultAttribute.setArrayBuffer(m_loader->arrayBufferResult());
+    else
+        resultAttribute.setString(m_loader->stringResult());
+}
+
 void FileReader::terminate()
 {
     if (m_loader) {
@@ -454,20 +466,6 @@ void FileReader::fireEvent(const AtomicString& type)
         dispatchEvent(ProgressEvent::create(type, false, m_loader->bytesLoaded(), 0));
 
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
-}
-
-PassRefPtr<DOMArrayBuffer> FileReader::arrayBufferResult() const
-{
-    if (!m_loader || m_error)
-        return nullptr;
-    return m_loader->arrayBufferResult();
-}
-
-String FileReader::stringResult()
-{
-    if (!m_loader || m_error)
-        return String();
-    return m_loader->stringResult();
 }
 
 void FileReader::trace(Visitor* visitor)
