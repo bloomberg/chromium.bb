@@ -203,7 +203,7 @@ def NinjaBuild(targets, out_dir):
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = dict(os.environ)
   gyp_env['GYP_GENERATORS'] = 'ninja'
-  gyp_defines = []
+  gyp_defines = ['nacl_allow_thin_archives=0']
   if options.mac_sdk:
     gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
   if arch:
