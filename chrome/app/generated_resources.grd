@@ -8183,13 +8183,13 @@ I don't think this site should be blocked!
         Notifications exceptions
       </message>
       <message name="IDS_NOTIFICATIONS_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to show notifications.">
-        Allow all sites to show desktop notifications
+        Allow all sites to show notifications
       </message>
       <message name="IDS_NOTIFICATIONS_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to show notifications.">
-        Do not allow any site to show desktop notifications
+        Do not allow any site to show notifications
       </message>
       <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
-        Ask when a site wants to show desktop notifications (recommended)
+        Ask when a site wants to show notifications (recommended)
       </message>
       <message name="IDS_FULLSCREEN_TAB_LABEL" desc="Label for Fullscreen tab on Content Settings dialog">
         Fullscreen
@@ -12838,7 +12838,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
-      <!-- Desktop notifications -->
+      <!-- Web and message center notifications -->
       <if expr="enable_notifications">
         <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for Web Notifications.">
           <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
