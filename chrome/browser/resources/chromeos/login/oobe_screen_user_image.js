@@ -309,13 +309,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      *   An array of default images data, including URL, author and website.
      */
     setDefaultImages: function(imagesData) {
-      var imageGrid = $('user-image-grid');
-      for (var i = 0, data; data = imagesData[i]; i++) {
-        var item = imageGrid.addItem(data.url, data.title);
-        item.type = 'default';
-        item.author = data.author || '';
-        item.website = data.website || '';
-      }
+      $('user-image-grid').setDefaultImages(imagesData);
       this.setSelectedImage_(
           this.context.get(CONTEXT_KEY_SELECTED_IMAGE_URL, ''));
       chrome.send('screenReady');

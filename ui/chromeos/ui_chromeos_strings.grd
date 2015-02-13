@@ -197,6 +197,9 @@
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_32" desc="Description of the default user icon with a picture of a butterfly upside-down on a flower; the name of the photo is Upside-Down.">
         Upside Down
       </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_33" desc="Description of the default user icon with a picture of a cat">
+        Cat
+      </message>
 
       <!-- Attribution strings for stock user images, not translateable. -->
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR">
@@ -279,6 +282,9 @@
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_32">
         Magdalena Wasiczek
       </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_33">
+        Ivan Podogov
+      </message>
 
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE">
       </message>
@@ -359,6 +365,9 @@
       </message>
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_32">
         http://www.magdawasiczek.pl
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_33">
+        http://www.flickr.com/photos/ginkage
       </message>
 
       <message name="IDS_CHROMEOS_IME_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">

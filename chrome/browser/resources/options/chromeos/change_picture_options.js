@@ -309,13 +309,7 @@ cr.define('options', function() {
      * @private
      */
     setDefaultImages_: function(imagesData) {
-      var imageGrid = $('user-image-grid');
-      for (var i = 0, data; data = imagesData[i]; i++) {
-        var item = imageGrid.addItem(data.url, data.title);
-        item.type = 'default';
-        item.author = data.author || '';
-        item.website = data.website || '';
-      }
+      $('user-image-grid').setDefaultImages(imagesData);
     },
   };
 

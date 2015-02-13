@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Supervised user creation flow screen.
+ * @fileoverview Legacy supervised user creation flow screen.
  */
 
 login.createScreen('SupervisedUserCreationScreen',
@@ -1450,12 +1450,7 @@ login.createScreen('SupervisedUserCreationScreen',
 
     setDefaultImages: function(imagesData) {
       var imageGrid = this.getScreenElement('image-grid');
-      for (var i = 0, data; data = imagesData[i]; i++) {
-        var item = imageGrid.addItem(data.url, data.title);
-        item.type = 'default';
-        item.author = data.author || '';
-        item.website = data.website || '';
-      }
+      imageGrid.setDefaultImages(imagesData);
       this.imagesData_ = imagesData;
     },
 

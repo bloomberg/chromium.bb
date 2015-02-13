@@ -635,6 +635,22 @@ cr.define('options', function() {
       this.columns = 0;
       this.redraw();
       this.focus();
+    },
+
+    /**
+     * Appends default images to the image grid. Should only be called once.
+     * @param {Array.<{url: string, author: string,
+     *                website: string, title: string}>} imagesData
+     *   An array of default images data, including URL, author, title and
+     *   website.
+     */
+    setDefaultImages: function(imagesData) {
+      for (var i = 0, data; data = imagesData[i]; i++) {
+        var item = this.addItem(data.url, data.title);
+        item.type = 'default';
+        item.author = data.author || '';
+        item.website = data.website || '';
+      }
     }
   };
 
