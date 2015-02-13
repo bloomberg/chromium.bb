@@ -724,7 +724,7 @@ void PopupListBox::updateFromElement()
         m_items[i]->displayNone = style.isDisplayNone();
     }
 
-    if (m_originalIndex != m_popupClient->selectedIndex())
+    if (m_originalIndex != m_popupClient->selectedIndex() || m_selectedIndex >= static_cast<int>(m_items.size()))
         setOriginalIndex(m_popupClient->selectedIndex());
 
     layout();
