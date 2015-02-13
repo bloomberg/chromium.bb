@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (100,100) size 100x100
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceMasker {mask} [id="mask"] [maskUnits=objectBoundingBox] [maskContentUnits=userSpaceOnUse]
         LayoutSVGContainer {g} at (100,100) size 150x150 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,100.00)}]
           LayoutSVGRect {rect} at (100,100) size 150x150 [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]

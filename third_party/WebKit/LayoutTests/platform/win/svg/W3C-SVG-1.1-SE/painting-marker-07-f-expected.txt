@@ -2,12 +2,12 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (0,0) size 325x225
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceMarker {marker} [id="testMarker"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=0.00]
           LayoutSVGPath {path} at (0,0) size 200x200 [fill={[type=SOLID] [color=#008000]}] [data="M 0 0 L 200 200 L 0 150 Z"]
-        RenderSVGHiddenContainer {g} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {g} at (0,0) size 0x0
           LayoutSVGResourceMarker {marker} [id="testMarker2"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=0.00]
             LayoutSVGPath {path} at (0,0) size 200x200 [fill={[type=SOLID] [color=#008000]}] [data="M 0 0 L 200 200 L 0 150 Z"]
       LayoutSVGPath {path} at (0,0) size 225x225 [fill={[type=SOLID] [color=#000000]}] [end marker=testMarker] [data="M 0 0 L 25 25"]

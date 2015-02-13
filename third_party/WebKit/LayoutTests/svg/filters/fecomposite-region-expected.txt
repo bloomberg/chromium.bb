@@ -48,7 +48,7 @@ layer at (0,0) size 600x250
         LayoutSVGContainer {g} at (355,125) size 100x100
           LayoutSVGRect {rect} at (355,125) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
           LayoutSVGRect {rect} at (365,135) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (0,0) size 100x100
         LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
         LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]

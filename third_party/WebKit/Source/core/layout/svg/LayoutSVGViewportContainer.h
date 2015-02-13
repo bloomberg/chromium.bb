@@ -20,18 +20,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGViewportContainer_h
-#define RenderSVGViewportContainer_h
+#ifndef LayoutSVGViewportContainer_h
+#define LayoutSVGViewportContainer_h
 
 #include "core/layout/svg/LayoutSVGContainer.h"
 
 namespace blink {
 
 // This is used for non-root <svg> elements and <marker> elements, neither of which are SVGTransformable
-// thus we inherit from LayoutSVGContainer instead of RenderSVGTransformableContainer
-class RenderSVGViewportContainer final : public LayoutSVGContainer {
+// thus we inherit from LayoutSVGContainer instead of LayoutSVGTransformableContainer
+class LayoutSVGViewportContainer final : public LayoutSVGContainer {
 public:
-    explicit RenderSVGViewportContainer(SVGElement*);
+    explicit LayoutSVGViewportContainer(SVGElement*);
     FloatRect viewport() const { return m_viewport; }
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
@@ -44,7 +44,7 @@ public:
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || LayoutSVGContainer::isOfType(type); }
-    virtual const char* renderName() const override { return "RenderSVGViewportContainer"; }
+    virtual const char* renderName() const override { return "LayoutSVGViewportContainer"; }
 
     AffineTransform viewportTransform() const;
     virtual const AffineTransform& localToParentTransform() const override { return m_localToParentTransform; }
@@ -61,7 +61,7 @@ private:
     bool m_needsTransformUpdate : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGViewportContainer, isSVGViewportContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGViewportContainer, isSVGViewportContainer());
 
 } // namespace blink
 

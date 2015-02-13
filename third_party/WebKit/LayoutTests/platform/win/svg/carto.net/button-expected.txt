@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGHiddenContainer {symbol} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
         LayoutSVGContainer {g} at (0,0) size 6x8 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,0.00)}]
           LayoutSVGPath {line} at (0,0) size 4x8 [stroke={[type=SOLID] [color=#000000] [stroke width=1.75]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=3.00] [y2=7.00]
           LayoutSVGPath {path} at (0,0) size 6x5 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF] [fill rule=EVEN-ODD]}] [data="M -3 -7 L -3 3 L 0 0 L 4.25 -0.5 Z"]
@@ -77,7 +77,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (235,117) size 16x17 [fill={[type=SOLID] [color=#000080]}] [x=301.00] [y=151.00] [width=20.00] [height=20.00]
         LayoutSVGRect {rect} at (234,117) size 16x16 [fill={[type=SOLID] [color=#B0C4DE]}] [x=300.00] [y=150.00] [width=20.00] [height=20.00]
         LayoutSVGContainer {use} at (238,117) size 10x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(310.00,160.00)}]
-          RenderSVGViewportContainer {svg} at (238,117) size 10x16
+          LayoutSVGViewportContainer {svg} at (238,117) size 10x16
             LayoutSVGContainer {g} at (238,117) size 10x16 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,0.00)}]
               LayoutSVGPath {line} at (241,124) size 5x9 [stroke={[type=SOLID] [color=#000000] [stroke width=1.75]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=3.00] [y2=7.00]
               LayoutSVGPath {path} at (238,117) size 10x13 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF] [fill rule=EVEN-ODD]}] [data="M -3 -7 L -3 3 L 0 0 L 4.25 -0.5 Z"]
@@ -86,7 +86,7 @@ layer at (0,0) size 800x600
         LayoutSVGEllipse {ellipse} at (274,114) size 20x20 [fill={[type=SOLID] [color=#000080]}] [cx=363.50] [cy=158.50] [rx=12.50] [ry=12.50]
         LayoutSVGEllipse {ellipse} at (273,113) size 20x20 [fill={[type=SOLID] [color=#B0C4DE]}] [cx=362.50] [cy=157.50] [rx=12.50] [ry=12.50]
         LayoutSVGContainer {use} at (279,115) size 10x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(362.50,157.50)}]
-          RenderSVGViewportContainer {svg} at (279,115) size 10x16
+          LayoutSVGViewportContainer {svg} at (279,115) size 10x16
             LayoutSVGContainer {g} at (279,115) size 10x16 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,0.00)}]
               LayoutSVGPath {line} at (282,122) size 5x9 [stroke={[type=SOLID] [color=#000000] [stroke width=1.75]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=3.00] [y2=7.00]
               LayoutSVGPath {path} at (279,115) size 10x13 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF] [fill rule=EVEN-ODD]}] [data="M -3 -7 L -3 3 L 0 0 L 4.25 -0.5 Z"]

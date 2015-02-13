@@ -3,13 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,83) size 430x460
     LayoutSVGContainer {g} at (0,83) size 430x460 [transform={m=((0.43,0.25)(-0.25,0.43)) t=(50.00,50.00)}]
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (10,6) size 128x18 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 128x17
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 127.20: "Test for mask support"
       LayoutSVGRect {rect} at (0,109) size 151x230 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=30.00] [width=100.00] [height=260.00]
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="Grad1"] [gradientUnits=userSpaceOnUse] [start=(60,50)] [end=(60,120)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFFFFF80]

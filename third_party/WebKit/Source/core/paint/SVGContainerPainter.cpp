@@ -7,13 +7,13 @@
 
 #include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
+#include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGSVGElement.h"
 
 namespace blink {
@@ -36,7 +36,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     {
         OwnPtr<FloatClipRecorder> clipRecorder;
         if (m_renderSVGContainer.isSVGViewportContainer() && SVGLayoutSupport::isOverflowHidden(&m_renderSVGContainer)) {
-            FloatRect viewport = m_renderSVGContainer.localToParentTransform().inverse().mapRect(toRenderSVGViewportContainer(m_renderSVGContainer).viewport());
+            FloatRect viewport = m_renderSVGContainer.localToParentTransform().inverse().mapRect(toLayoutSVGViewportContainer(m_renderSVGContainer).viewport());
             clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer.displayItemClient(), paintInfoBeforeFiltering.phase, viewport));
         }
 

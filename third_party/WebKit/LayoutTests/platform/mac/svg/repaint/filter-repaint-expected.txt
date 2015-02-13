@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 400x400
   RenderSVGRoot {svg} at (10,10) size 185x184
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="over"] [filterUnits=objectBoundingBox] [primitiveUnits=objectBoundingBox]
         [feComposite operation="OVER"]
           [feFlood flood-color="#0000FF" flood-opacity="0.50"]

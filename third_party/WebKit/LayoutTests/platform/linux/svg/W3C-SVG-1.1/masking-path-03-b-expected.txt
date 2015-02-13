@@ -28,7 +28,7 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 215x55
               chunk 1 text run 1 at (15.00,45.00) startOffset 0 endOffset 10 width 215.00: "Outer Clip"
       LayoutSVGRect {rect} at (112,97) size 256x166 [stroke={[type=SOLID] [color=#006600] [stroke width=5.00]}] [x=115.00] [y=100.00] [width=250.00] [height=160.00]
-      RenderSVGViewportContainer {svg} at (64,82) size 352x194
+      LayoutSVGViewportContainer {svg} at (64,82) size 352x194
         LayoutSVGContainer {g} at (64,82) size 352x194
           LayoutSVGContainer {g} at (164,82) size 152x39 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,-15.00)}]
             LayoutSVGRect {rect} at (164,84) size 152x37 [stroke={[type=SOLID] [color=#6666FF] [stroke width=2.00]}] [fill={[type=SOLID] [color=#FFAAAA]}] [x=0.00] [y=0.00] [width=150.00] [height=35.00]

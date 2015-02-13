@@ -35,7 +35,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/layout/svg/LayoutSVGTransformableContainer.h"
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGSVGElement.h"
@@ -414,7 +414,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
 LayoutObject* SVGUseElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGTransformableContainer(this);
+    return new LayoutSVGTransformableContainer(this);
 }
 
 static bool isDirectReference(const SVGElement& element)

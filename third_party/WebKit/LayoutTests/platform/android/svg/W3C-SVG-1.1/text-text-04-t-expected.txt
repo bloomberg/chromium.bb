@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (39,20) size 415x290
       LayoutSVGContainer {g} at (39,20) size 151x25 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,40.00)}]
         LayoutSVGText {text} at (-91,-15) size 61x19 contains 1 chunk(s)
@@ -20,7 +20,7 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (0,-20) size 60x25 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 60x25
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 4 width 60.00: "1234"
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 4x4 [fill={[type=SOLID] [color=#000000]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]
       LayoutSVGContainer {g} at (76,60) size 149x25 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,80.00)}]
         LayoutSVGText {text} at (-54,-15) size 24x19 contains 1 chunk(s)

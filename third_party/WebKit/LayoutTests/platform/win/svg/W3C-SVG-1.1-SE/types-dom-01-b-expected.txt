@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (10,7) size 365x296
       LayoutSVGContainer {g} at (10,7) size 365x296
         LayoutSVGContainer {g} at (16,7) size 359x158 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
@@ -12,7 +12,7 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (100,111) size 303x24 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 303x23
               chunk 1 text run 1 at (100.00,130.00) startOffset 0 endOffset 35 width 302.86: "Some other text with id 'otherText'"
-          RenderSVGViewportContainer {svg} at (275,45) size 100x100
+          LayoutSVGViewportContainer {svg} at (275,45) size 100x100
             LayoutSVGEllipse {circle} at (275,45) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=0.00] [cy=0.00] [r=50.00]
         LayoutSVGText {text} at (10,188) size 279x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 279x15

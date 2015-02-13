@@ -38,9 +38,9 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGNumberTearOff.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
@@ -523,7 +523,7 @@ LayoutObject* SVGSVGElement::createRenderer(const LayoutStyle&)
     if (isOutermostSVGSVGElement())
         return new RenderSVGRoot(this);
 
-    return new RenderSVGViewportContainer(this);
+    return new LayoutSVGViewportContainer(this);
 }
 
 Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* rootParent)
@@ -621,7 +621,7 @@ FloatSize SVGSVGElement::currentViewportSize() const
         return FloatSize(contentBoxRect.width() / renderer()->style()->effectiveZoom(), contentBoxRect.height() / renderer()->style()->effectiveZoom());
     }
 
-    FloatRect viewportRect = toRenderSVGViewportContainer(renderer())->viewport();
+    FloatRect viewportRect = toLayoutSVGViewportContainer(renderer())->viewport();
     return FloatSize(viewportRect.width(), viewportRect.height());
 }
 

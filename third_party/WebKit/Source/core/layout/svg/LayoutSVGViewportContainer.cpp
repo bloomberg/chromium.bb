@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGViewportContainer.h"
+#include "core/layout/svg/LayoutSVGViewportContainer.h"
 
 #include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -32,7 +32,7 @@
 
 namespace blink {
 
-RenderSVGViewportContainer::RenderSVGViewportContainer(SVGElement* node)
+LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGElement* node)
     : LayoutSVGContainer(node)
     , m_didTransformToRootUpdate(false)
     , m_isLayoutSizeChanged(false)
@@ -40,7 +40,7 @@ RenderSVGViewportContainer::RenderSVGViewportContainer(SVGElement* node)
 {
 }
 
-void RenderSVGViewportContainer::determineIfLayoutSizeChanged()
+void LayoutSVGViewportContainer::determineIfLayoutSizeChanged()
 {
     ASSERT(element());
     if (!isSVGSVGElement(*element()))
@@ -49,7 +49,7 @@ void RenderSVGViewportContainer::determineIfLayoutSizeChanged()
     m_isLayoutSizeChanged = toSVGSVGElement(element())->hasRelativeLengths() && selfNeedsLayout();
 }
 
-void RenderSVGViewportContainer::calcViewport()
+void LayoutSVGViewportContainer::calcViewport()
 {
     SVGElement* element = this->element();
     ASSERT(element);
@@ -67,7 +67,7 @@ void RenderSVGViewportContainer::calcViewport()
     }
 }
 
-bool RenderSVGViewportContainer::calculateLocalTransform()
+bool LayoutSVGViewportContainer::calculateLocalTransform()
 {
     m_didTransformToRootUpdate = m_needsTransformUpdate || SVGLayoutSupport::transformToRootChanged(parent());
     if (!m_needsTransformUpdate)
@@ -78,7 +78,7 @@ bool RenderSVGViewportContainer::calculateLocalTransform()
     return true;
 }
 
-AffineTransform RenderSVGViewportContainer::viewportTransform() const
+AffineTransform LayoutSVGViewportContainer::viewportTransform() const
 {
     ASSERT(element());
     if (isSVGSVGElement(*element())) {
@@ -89,7 +89,7 @@ AffineTransform RenderSVGViewportContainer::viewportTransform() const
     return AffineTransform();
 }
 
-bool RenderSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& pointInParent)
+bool LayoutSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& pointInParent)
 {
     // Respect the viewport clip (which is in parent coords)
     if (!SVGLayoutSupport::isOverflowHidden(this))
@@ -98,7 +98,7 @@ bool RenderSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& poi
     return m_viewport.contains(pointInParent);
 }
 
-void RenderSVGViewportContainer::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutSVGViewportContainer::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     SVGContainerPainter(*this).paint(paintInfo);
 }

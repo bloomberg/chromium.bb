@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (59,26) size 362x270
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="turbneg1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feTurbulence type="TURBULENCE" baseFrequency="0.01, 0.01" seed="-0.20" numOctaves="1" stitchTiles="0"]
         LayoutSVGResourceFilter {filter} [id="turbneg2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]

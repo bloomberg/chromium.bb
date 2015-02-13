@@ -53,7 +53,7 @@ layer at (47,95) size 295x295
       RenderView at (0,0) size 295x295
     layer at (0,0) size 295x295
       RenderSVGRoot {svg} at (0,0) size 295x295
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 295x295 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
         LayoutSVGEllipse {circle} at (0,0) size 295x295 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         LayoutSVGContainer {g} at (44,107) size 207x104
@@ -66,7 +66,7 @@ layer at (347,242) size 147x148
       RenderView at (0,0) size 148x148
     layer at (0,0) size 148x148
       RenderSVGRoot {svg} at (0,0) size 148x148
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 148x148 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
         LayoutSVGEllipse {circle} at (0,0) size 148x148 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         LayoutSVGContainer {g} at (22,53) size 104x53
@@ -79,7 +79,7 @@ layer at (499,316) size 73x74
       RenderView at (0,0) size 74x74
     layer at (0,0) size 74x74
       RenderSVGRoot {svg} at (0,0) size 74x74
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 74x74 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
         LayoutSVGEllipse {circle} at (0,0) size 74x74 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         LayoutSVGContainer {g} at (11,27) size 52x26
@@ -92,7 +92,7 @@ layer at (577,353) size 37x37
       RenderView at (0,0) size 37x37
     layer at (0,0) size 37x37
       RenderSVGRoot {svg} at (0,0) size 37x37
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 37x37 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
         LayoutSVGEllipse {circle} at (0,0) size 37x37 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
         LayoutSVGContainer {g} at (5,13) size 27x14

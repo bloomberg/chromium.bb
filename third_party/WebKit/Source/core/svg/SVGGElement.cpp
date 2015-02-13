@@ -22,8 +22,8 @@
 #include "core/svg/SVGGElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/svg/RenderSVGHiddenContainer.h"
-#include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/layout/svg/LayoutSVGHiddenContainer.h"
+#include "core/layout/svg/LayoutSVGTransformableContainer.h"
 
 namespace blink {
 
@@ -41,9 +41,9 @@ LayoutObject* SVGGElement::createRenderer(const LayoutStyle& style)
     // subtree may be hidden - we only want the resource renderers to exist so they can be
     // referenced from somewhere else.
     if (style.display() == NONE)
-        return new RenderSVGHiddenContainer(this);
+        return new LayoutSVGHiddenContainer(this);
 
-    return new RenderSVGTransformableContainer(this);
+    return new LayoutSVGTransformableContainer(this);
 }
 
 bool SVGGElement::rendererIsNeeded(const LayoutStyle&)

@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (38,38) size 417x245
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceMarker {marker} [id="marker1"] [markerUnits=strokeWidth] [ref at (7.50,7.50)] [angle=0.00]
           LayoutSVGRect {rect} at (0,0) size 3x3 [fill={[type=SOLID] [color=#800080]}] [x=0.00] [y=0.00] [width=15.00] [height=15.00]
         LayoutSVGResourceMarker {marker} [id="marker2"] [markerUnits=strokeWidth] [ref at (10,10)] [angle=auto]

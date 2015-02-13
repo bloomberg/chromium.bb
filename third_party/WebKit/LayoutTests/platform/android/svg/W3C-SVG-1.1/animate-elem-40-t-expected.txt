@@ -7,7 +7,7 @@ layer at (0,0) size 480x360
         chunk 1 (middle anchor) text run 1 at (151.00,25.00) startOffset 0 endOffset 29 width 178.00: "<animate> of x/y/width/height"
     LayoutSVGContainer {g} at (10,42) size 464x247
       LayoutSVGContainer {g} at (20,54) size 80x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,90.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGRect {rect} at (57,87) size 6x6 [fill={[type=SOLID] [color=#000000]}] [x=-3.00] [y=-3.00] [width=6.00] [height=6.00]
           LayoutSVGContainer {g} at (41,71) size 38x38
             LayoutSVGContainer {use} at (41,71) size 8x8 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-15.00,-15.00)}]
@@ -80,7 +80,7 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 82x19
             chunk 1 (middle anchor) text run 1 at (-41.00,60.00) startOffset 0 endOffset 13 width 82.00: "x/y on <rect>"
       LayoutSVGContainer {g} at (379,42) size 95x112 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGText {text} at (-15,-47) size 68x40 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 68x40
             chunk 1 text run 1 at (-15.00,-15.00) startOffset 0 endOffset 3 width 67.40: "123"
@@ -98,7 +98,7 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 82x19
             chunk 1 (middle anchor) text run 1 at (-41.00,60.00) startOffset 0 endOffset 13 width 82.00: "x/y on <rect>"
       LayoutSVGContainer {g} at (10,162) size 100x112 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,210.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGContainer {g} at (41,191) size 38x38
             LayoutSVGContainer {use} at (41,191) size 8x8 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-15.00,-15.00)}]
               LayoutSVGRect {rect} at (41,191) size 8x8 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#FFB400]}] [x=-3.00] [y=-3.00] [width=6.00] [height=6.00]

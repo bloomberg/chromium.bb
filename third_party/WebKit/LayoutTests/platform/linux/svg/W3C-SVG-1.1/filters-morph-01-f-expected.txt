@@ -7,7 +7,7 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 163x19
           chunk 1 (middle anchor) text run 1 at (158.50,16.00) startOffset 0 endOffset 27 width 163.00: "Filter Effect: feMorphology"
       LayoutSVGContainer {g} at (38,22) size 394x272 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,-6.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="erode1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feMorphology operator="ERODE" radius="1.00, 1.00"]
               [SourceGraphic]

@@ -6,7 +6,7 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (145,19) size 142x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 142x14
           chunk 1 text run 1 at (145.00,30.00) startOffset 0 endOffset 26 width 142.00: "Filters: feDiffuseLighting"
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="surfaceScaleA"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feDiffuseLighting surfaceScale="1.00" diffuseConstant="1.00" kernelUnitLength="0.00, 0.00"]
             [SourceGraphic]

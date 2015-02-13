@@ -23,7 +23,7 @@
 #include "core/svg/SVGDefsElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/svg/RenderSVGHiddenContainer.h"
+#include "core/layout/svg/LayoutSVGHiddenContainer.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ DEFINE_NODE_FACTORY(SVGDefsElement)
 
 LayoutObject* SVGDefsElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGHiddenContainer(this);
+    return new LayoutSVGHiddenContainer(this);
 }
 
 }

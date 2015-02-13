@@ -6,14 +6,14 @@ layer at (0,0) size 800x600
     LayoutSVGContainer {g} at (77,77) size 158x26
       LayoutSVGContainer {g} at (77,77) size 158x26
         LayoutSVGRect {rect} at (77,77) size 158x26 [stroke={[type=SOLID] [color=#696969] [stroke width=1.50]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=100.00] [y=100.00] [width=200.00] [height=30.00]
-        RenderSVGViewportContainer {svg} at (77,84) size 2x14
+        LayoutSVGViewportContainer {svg} at (77,84) size 2x14
           LayoutSVGContainer {g} at (77,84) size 2x14
             LayoutSVGText {text}
             LayoutSVGPath {line} at (77,84) size 2x14 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=125.00] [x2=100.00] [y2=108.50]
     LayoutSVGContainer {g} at (77,22) size 49x26
       LayoutSVGContainer {g} at (77,22) size 49x26
         LayoutSVGRect {rect} at (77,22) size 49x26 [stroke={[type=SOLID] [color=#696969] [stroke width=1.50]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=100.00] [y=30.00] [width=60.00] [height=30.00]
-        RenderSVGViewportContainer {svg} at (77,29) size 19x14
+        LayoutSVGViewportContainer {svg} at (77,29) size 19x14
           LayoutSVGContainer {g} at (77,29) size 19x14
             LayoutSVGText {text} at (105,37) size 17x18 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 17x17
@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
     LayoutSVGContainer {g} at (77,233) size 339x26 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,300.00)}]
       LayoutSVGContainer {g} at (77,233) size 339x26
         LayoutSVGRect {rect} at (77,233) size 182x26 [stroke={[type=SOLID] [color=#696969] [stroke width=1.50]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=230.00] [height=30.00]
-        RenderSVGViewportContainer {svg} at (77,240) size 339x14
+        LayoutSVGViewportContainer {svg} at (77,240) size 339x14
           LayoutSVGContainer {g} at (77,240) size 339x14
             LayoutSVGText {text} at (5,7) size 428x18 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 428x17

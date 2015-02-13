@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (25,0) size 300x303
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="clipPath_0"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (50,0) size 50x50 [x=50.00] [y=0.00] [width=50.00] [height=50.00]
           [clipPath="clipPath_0"] LayoutSVGResourceClipper {clipPath} at (50,0) size 50x50

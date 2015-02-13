@@ -4,7 +4,7 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (55,39) size 376x217
       LayoutSVGContainer {g} at (55,44) size 376x212 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(70.00,150.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGRect {rect} at (55,44) size 24x112 [stroke={[type=SOLID] [color=#000000]}] [x=-5.00] [y=-14.00] [width=110.00] [height=22.00]
           LayoutSVGRect {rect} at (55,104) size 24x52 [stroke={[type=SOLID] [color=#000000]}] [x=-5.00] [y=-14.00] [width=50.00] [height=22.00]
         LayoutSVGContainer {use} at (55,44) size 24x112
@@ -166,7 +166,7 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (59,160) size 368x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(56.00,155.00)}]
         LayoutSVGContainer {g} at (59,165) size 16x32
           LayoutSVGRect {rect} at (59,165) size 16x32 [fill={[type=SOLID] [color=#00FF00]}] [x=3.00] [y=10.00] [width=16.00] [height=32.00]
-        RenderSVGHiddenContainer {g} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {g} at (0,0) size 0x0
         LayoutSVGContainer {g} at (103,165) size 16x32 [transform={m=((1.00,0.00)(0.00,1.00)) t=(44.00,0.00)}]
           LayoutSVGRect {rect} at (103,165) size 16x32 [fill={[type=SOLID] [color=#00FF00]}] [x=3.00] [y=10.00] [width=16.00] [height=32.00]
         LayoutSVGContainer {g} at (125,170) size 15x15 [transform={m=((1.00,0.00)(0.00,1.00)) t=(66.00,0.00)}]

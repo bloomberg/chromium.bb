@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (30,20) size 410x271
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceClipper {clipPath} [id="sample"] [clipPathUnits=userSpaceOnUse]
           LayoutSVGText {text} at (45,169) size 355x122 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 355x122

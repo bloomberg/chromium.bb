@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (2,2) size 384x296
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGEllipse {circle} at (2,2) size 96x96 [fill={[type=SOLID] [color=#0000FF]}] [cx=50.00] [cy=50.00] [r=48.00]
         LayoutSVGEllipse {circle} at (2,2) size 96x96 [fill={[type=SOLID] [color=#0000FF]}] [cx=50.00] [cy=50.00] [r=48.00]
         LayoutSVGEllipse {circle} at (2,2) size 96x96 [fill={[type=SOLID] [color=#0000FF]}] [cx=50.00] [cy=50.00] [r=48.00]

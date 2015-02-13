@@ -38,7 +38,7 @@ static inline SVGDocumentExtensions& svgExtensionsFromElement(SVGElement* elemen
 }
 
 LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
-    : RenderSVGHiddenContainer(node)
+    : LayoutSVGHiddenContainer(node)
     , m_isInLayout(false)
     , m_id(node->getIdAttribute())
     , m_invalidationMask(0)
@@ -54,14 +54,14 @@ LayoutSVGResourceContainer::~LayoutSVGResourceContainer()
 void LayoutSVGResourceContainer::layout()
 {
     // FIXME: Investigate a way to detect and break resource layout dependency cycles early.
-    // Then we can remove this method altogether, and fall back onto RenderSVGHiddenContainer::layout().
+    // Then we can remove this method altogether, and fall back onto LayoutSVGHiddenContainer::layout().
     ASSERT(needsLayout());
     if (m_isInLayout)
         return;
 
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
-    RenderSVGHiddenContainer::layout();
+    LayoutSVGHiddenContainer::layout();
 
     clearInvalidationMask();
 }
@@ -69,14 +69,14 @@ void LayoutSVGResourceContainer::layout()
 void LayoutSVGResourceContainer::willBeDestroyed()
 {
     SVGResourcesCache::resourceDestroyed(this);
-    RenderSVGHiddenContainer::willBeDestroyed();
+    LayoutSVGHiddenContainer::willBeDestroyed();
     if (m_registered)
         svgExtensionsFromElement(element()).removeResource(m_id);
 }
 
 void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderSVGHiddenContainer::styleDidChange(diff, oldStyle);
+    LayoutSVGHiddenContainer::styleDidChange(diff, oldStyle);
 
     if (!m_registered) {
         m_registered = true;

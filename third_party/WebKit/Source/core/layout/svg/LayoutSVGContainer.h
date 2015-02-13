@@ -68,10 +68,10 @@ protected:
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
-    // Allow RenderSVGTransformableContainer to hook in at the right time in layout().
+    // Allow LayoutSVGTransformableContainer to hook in at the right time in layout().
     virtual bool calculateLocalTransform() { return false; }
 
-    // Allow RenderSVGViewportContainer to hook in at the right times in layout() and nodeAtFloatPoint().
+    // Allow LayoutSVGViewportContainer to hook in at the right times in layout() and nodeAtFloatPoint().
     virtual void calcViewport() { }
     virtual bool pointIsInsideViewportClip(const FloatPoint& /*pointInParent*/) { return true; }
 

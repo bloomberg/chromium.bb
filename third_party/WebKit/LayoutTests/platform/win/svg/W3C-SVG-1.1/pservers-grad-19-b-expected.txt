@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (50,50) size 250x250
-      RenderSVGHiddenContainer {g} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {g} at (0,0) size 0x0
         LayoutSVGContainer {g} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="MyGradient1"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#008000]

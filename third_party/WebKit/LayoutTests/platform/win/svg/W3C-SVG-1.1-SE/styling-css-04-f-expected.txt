@@ -2,13 +2,13 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (15,17) size 433x261
       LayoutSVGContainer {g} at (15,17) size 433x261
         LayoutSVGText {text} at (162,17) size 156x22 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 155x22
             chunk 1 (middle anchor) text run 1 at (162.75,35.00) startOffset 0 endOffset 17 width 154.50: "CSS selector test"
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (29,69) size 209x69
           LayoutSVGRect {rect} at (29,69) size 69x69 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#0000FF]}] [x=30.00] [y=70.00] [width=67.50] [height=67.50]
           LayoutSVGContainer {g} at (99,69) size 69x69

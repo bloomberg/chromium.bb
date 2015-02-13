@@ -4,7 +4,7 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (15,15) size 435x294
       LayoutSVGImage {image} at (120,15) size 300x294
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="BlendNormal"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feBlend mode="normal"]
             [SourceGraphic]

@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (82,20) size 361x264
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="null"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         LayoutSVGResourceFilter {filter} [id="nullreg"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
       LayoutSVGContainer {g} at (90,20) size 80x114

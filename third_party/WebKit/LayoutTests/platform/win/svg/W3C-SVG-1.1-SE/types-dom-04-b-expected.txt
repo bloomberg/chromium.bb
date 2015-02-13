@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (10,14) size 430x277
       LayoutSVGText {text} at (10,14) size 302x20 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 302x20
@@ -56,7 +56,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (70,392) size 137x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 137x16
             chunk 1 text run 1 at (70.00,405.00) startOffset 0 endOffset 17 width 137.00: "SVGAnimatedNumber"
-      RenderSVGHiddenContainer {g} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {g} at (0,0) size 0x0
         LayoutSVGText {text} at (10,-16) size 34x24 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 34x24
             chunk 1 text run 1 at (10.00,0.00) startOffset 0 endOffset 1 width 10.01: "a"
@@ -64,7 +64,7 @@ layer at (0,0) size 480x360
             chunk 1 text run 3 at (30.02,0.00) startOffset 2 endOffset 3 width 9.00: "c"
         LayoutSVGEllipse {circle} at (0,0) size 100x100 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=100.00]
         LayoutSVGResourceMarker {marker} [id="marker"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=60.00]
-        RenderSVGViewportContainer {svg} at (0,0) size 0x0
+        LayoutSVGViewportContainer {svg} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id=""] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00]" divisor="9.00" bias="0.00" target="(1,1)" edgeMode="DUPLICATE" kernelUnitLength="(1,1)" preserveAlpha="1"]
             [feTurbulence type="TURBULENCE" baseFrequency="4.00, 5.00" seed="0.00" numOctaves="1" stitchTiles="0"]

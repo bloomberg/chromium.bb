@@ -33,7 +33,7 @@ namespace blink {
 
 void LayoutSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderSVGHiddenContainer::styleDidChange(diff, oldStyle);
+    LayoutSVGHiddenContainer::styleDidChange(diff, oldStyle);
 
     LayoutObject* filter = parent();
     if (!filter)

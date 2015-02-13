@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/layout/svg/LayoutSVGTransformableContainer.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/svg/SVGGElement.h"
@@ -30,7 +30,7 @@
 
 namespace blink {
 
-RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGGraphicsElement* node)
+LayoutSVGTransformableContainer::LayoutSVGTransformableContainer(SVGGraphicsElement* node)
     : LayoutSVGContainer(node)
     , m_needsTransformUpdate(true)
     , m_didTransformToRootUpdate(false)
@@ -47,7 +47,7 @@ static bool hasValidPredecessor(const Node* node)
     return false;
 }
 
-bool RenderSVGTransformableContainer::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
+bool LayoutSVGTransformableContainer::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
 {
     ASSERT(element());
     if (isSVGSwitchElement(*element())) {
@@ -69,7 +69,7 @@ bool RenderSVGTransformableContainer::isChildAllowed(LayoutObject* child, const 
     return LayoutSVGContainer::isChildAllowed(child, style);
 }
 
-bool RenderSVGTransformableContainer::calculateLocalTransform()
+bool LayoutSVGTransformableContainer::calculateLocalTransform()
 {
     SVGGraphicsElement* element = toSVGGraphicsElement(this->element());
     ASSERT(element);

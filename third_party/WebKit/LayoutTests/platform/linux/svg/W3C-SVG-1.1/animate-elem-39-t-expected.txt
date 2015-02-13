@@ -29,7 +29,7 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 53x19
             chunk 1 (middle anchor) text run 1 at (-26.50,60.00) startOffset 0 endOffset 7 width 53.00: "<image>"
       LayoutSVGContainer {g} at (381,61) size 78x93 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGText {text} at (0,-15) size 39x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 39x19
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 5 width 39.00: "Use A"

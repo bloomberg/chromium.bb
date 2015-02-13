@@ -4,7 +4,7 @@ layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (30,45) size 410x181
       LayoutSVGContainer {g} at (30,45) size 410x181 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,40.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="convolve1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feConvolveMatrix order="width=3 height=3" kernelMatrix="[0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11]" divisor="1.00" bias="0.00" target="(1,1)" edgeMode="NONE" kernelUnitLength="(1,1)" preserveAlpha="0"]
               [SourceGraphic]

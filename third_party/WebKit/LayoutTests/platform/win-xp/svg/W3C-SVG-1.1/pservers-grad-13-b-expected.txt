@@ -5,7 +5,7 @@ layer at (0,0) size 480x360
     LayoutSVGText {text} at (134,13) size 212x22 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 212x22
         chunk 1 (middle anchor) text run 1 at (134.00,30.00) startOffset 0 endOffset 27 width 212.00: "Radial gradient focal point"
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (0,0) size 100x60
         LayoutSVGRect {rect} at (0,0) size 100x60 [fill={[type=SOLID] [color=#FFFF00]}] [x=0.00] [y=0.00] [width=100.00] [height=60.00]
         LayoutSVGRect {rect} at (0,0) size 10x60 [fill={[type=SOLID] [color=#FFD700]}] [x=0.00] [y=0.00] [width=10.00] [height=60.00]
@@ -16,7 +16,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (75,0) size 10x60 [fill={[type=SOLID] [color=#FFA500]}] [x=75.00] [y=0.00] [width=10.00] [height=60.00]
         LayoutSVGRect {rect} at (90,0) size 10x60 [fill={[type=SOLID] [color=#FFD700]}] [x=90.00] [y=0.00] [width=10.00] [height=60.00]
         LayoutSVGRect {rect} at (0,0) size 100x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=60.00]
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceRadialGradient {radialGradient} [id="grad1a"] [gradientUnits=objectBoundingBox] [center=(0.10,0.10)] [focal=(0,0)] [radius=0.75] [focalRadius=0.00]
         RenderSVGGradientStop {stop} [offset=0.00] [color=#00000000]
         RenderSVGGradientStop {stop} [offset=0.50] [color=#00008B]

@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (20,0) size 481x128
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (0,-26) size 70x46 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 70x45
           chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 4 width 69.50: "Test"

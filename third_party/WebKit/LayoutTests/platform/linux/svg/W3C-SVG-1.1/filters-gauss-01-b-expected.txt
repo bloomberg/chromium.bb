@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (0,0) size 460x350
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (0,0) size 135x135
           LayoutSVGRect {rect} at (0,0) size 90x90 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=90.00] [height=90.00]
           LayoutSVGRect {rect} at (45,45) size 90x90 [fill={[type=SOLID] [color=#FFFF00]}] [x=45.00] [y=45.00] [width=90.00] [height=90.00]

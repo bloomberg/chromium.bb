@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (30,4) size 412x302
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (30,4) size 412x44 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 412x44
           chunk 1 text run 1 at (30.00,40.00) startOffset 0 endOffset 25 width 411.11: "'onload' event attribute."
@@ -25,7 +25,7 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 114x44
               chunk 1 text run 1 at (-30.00,120.00) startOffset 0 endOffset 6 width 113.40: "3: Yes"
         LayoutSVGContainer {g} at (47,178) size 114x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(77.50,178.00)}]
-          RenderSVGViewportContainer {svg} at (77,178) size 81x80
+          LayoutSVGViewportContainer {svg} at (77,178) size 81x80
             LayoutSVGRect {rect} at (77,178) size 81x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
           LayoutSVGText {text} at (-30,84) size 114x44 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 114x44

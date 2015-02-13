@@ -45,7 +45,7 @@ void LayoutSVGResourceMarker::layout()
 
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
-    // RenderSVGHiddenContainer overwrites layout(). We need the
+    // LayoutSVGHiddenContainer overwrites layout(). We need the
     // layouting of LayoutSVGContainer for calculating  local
     // transformations and paint invalidation.
     LayoutSVGContainer::layout();

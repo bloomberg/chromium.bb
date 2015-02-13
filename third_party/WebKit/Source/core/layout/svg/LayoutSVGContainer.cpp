@@ -48,13 +48,13 @@ void LayoutSVGContainer::layout()
 {
     ASSERT(needsLayout());
 
-    // Allow RenderSVGViewportContainer to update its viewport.
+    // Allow LayoutSVGViewportContainer to update its viewport.
     calcViewport();
 
-    // Allow RenderSVGTransformableContainer to update its transform.
+    // Allow LayoutSVGTransformableContainer to update its transform.
     bool updatedTransform = calculateLocalTransform();
 
-    // RenderSVGViewportContainer needs to set the 'layout size changed' flag.
+    // LayoutSVGViewportContainer needs to set the 'layout size changed' flag.
     determineIfLayoutSizeChanged();
 
     SVGLayoutSupport::layoutChildren(this, selfNeedsLayout() || SVGLayoutSupport::filtersForceContainerLayout(this));
@@ -162,7 +162,7 @@ void LayoutSVGContainer::updateCachedBoundaries()
 
 bool LayoutSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
-    // Give RenderSVGViewportContainer a chance to apply its viewport clip
+    // Give LayoutSVGViewportContainer a chance to apply its viewport clip
     if (!pointIsInsideViewportClip(pointInParent))
         return false;
 

@@ -15,7 +15,7 @@ layer at (0,0) size 400x200
         LayoutSVGRect {rect} at (250,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
         LayoutSVGRect {rect} at (250,10) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [x=40.00] [y=40.00] [width=20.00] [height=20.00]
           [filter="ar"] LayoutSVGResourceFilter {filter} at (0,0) size 100x100
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="ct"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
         [feComponentTransfer 
             {red: type="LINEAR" slope="0.00" intercept="0.00" amplitude="1.00" exponent="1.00" offset="0.00"}

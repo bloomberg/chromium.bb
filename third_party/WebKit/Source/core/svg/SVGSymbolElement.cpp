@@ -23,7 +23,7 @@
 #include "core/svg/SVGSymbolElement.h"
 
 #include "core/SVGNames.h"
-#include "core/rendering/svg/RenderSVGHiddenContainer.h"
+#include "core/layout/svg/LayoutSVGHiddenContainer.h"
 
 namespace blink {
 
@@ -54,7 +54,7 @@ void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName)
 
 LayoutObject* SVGSymbolElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGHiddenContainer(this);
+    return new LayoutSVGHiddenContainer(this);
 }
 
 }

@@ -36,10 +36,10 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
+#include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
 
@@ -207,7 +207,7 @@ inline bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObj
     ASSERT(start);
     ASSERT(start->isSVGRoot() || start->isSVGViewportContainer());
     if (start->isSVGViewportContainer())
-        return toRenderSVGViewportContainer(start)->isLayoutSizeChanged();
+        return toLayoutSVGViewportContainer(start)->isLayoutSizeChanged();
 
     return toRenderSVGRoot(start)->isLayoutSizeChanged();
 }
@@ -218,7 +218,7 @@ bool SVGLayoutSupport::transformToRootChanged(LayoutObject* ancestor)
         if (ancestor->isSVGTransformableContainer())
             return toLayoutSVGContainer(ancestor)->didTransformToRootUpdate();
         if (ancestor->isSVGViewportContainer())
-            return toRenderSVGViewportContainer(ancestor)->didTransformToRootUpdate();
+            return toLayoutSVGViewportContainer(ancestor)->didTransformToRootUpdate();
         ancestor = ancestor->parent();
     }
 

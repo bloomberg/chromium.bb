@@ -20,7 +20,7 @@
 #ifndef LayoutSVGResourceContainer_h
 #define LayoutSVGResourceContainer_h
 
-#include "core/rendering/svg/RenderSVGHiddenContainer.h"
+#include "core/layout/svg/LayoutSVGHiddenContainer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {
@@ -37,7 +37,7 @@ enum LayoutSVGResourceType {
 
 class Layer;
 
-class LayoutSVGResourceContainer : public RenderSVGHiddenContainer {
+class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 public:
     explicit LayoutSVGResourceContainer(SVGElement*);
     virtual ~LayoutSVGResourceContainer();
@@ -47,7 +47,7 @@ public:
 
     virtual void layout() override;
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || RenderSVGHiddenContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || LayoutSVGHiddenContainer::isOfType(type); }
 
     virtual LayoutSVGResourceType resourceType() const = 0;
 

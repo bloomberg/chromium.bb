@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (39,59) size 402x202
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourcePattern {pattern} [id="invisible1"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
           LayoutSVGRect {rect} at (0,0) size 480x360 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=480.00] [height=360.00]
         LayoutSVGResourcePattern {pattern} [id="invisible2"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]

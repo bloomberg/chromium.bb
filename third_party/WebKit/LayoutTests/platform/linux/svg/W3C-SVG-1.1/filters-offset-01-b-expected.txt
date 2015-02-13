@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (109,10) size 211x320
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="FOMTest"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feMerge mergeNodes="4"]
             [feComposite operation="IN"]

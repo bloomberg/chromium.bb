@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 192x224
     LayoutSVGContainer {use} at (0,0) size 192x64
-      RenderSVGViewportContainer {svg} at (0,0) size 192x64
+      LayoutSVGViewportContainer {svg} at (0,0) size 192x64
         LayoutSVGContainer {g} at (0,0) size 192x64
           LayoutSVGRect {rect} at (0,0) size 64x64 [fill={[type=SOLID] [color=#CC0000]}] [x=0.00] [y=0.00] [width=64.00] [height=64.00]
           LayoutSVGRect {rect} at (64,0) size 64x64 [fill={[type=SOLID] [color=#009900]}] [x=64.00] [y=0.00] [width=64.00] [height=64.00]

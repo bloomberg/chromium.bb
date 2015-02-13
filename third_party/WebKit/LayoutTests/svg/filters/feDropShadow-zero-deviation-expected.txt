@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (49,19) size 12x32
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="f1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feDropShadow stdDeviation="0.00, 1.00" dx="2.00" dy="2.00" flood-color="#000000" flood-opacity="1.00]
           [SourceGraphic]

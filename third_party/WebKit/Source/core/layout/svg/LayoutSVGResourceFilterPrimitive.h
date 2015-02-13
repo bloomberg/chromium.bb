@@ -31,10 +31,10 @@
 
 namespace blink {
 
-class LayoutSVGResourceFilterPrimitive final : public RenderSVGHiddenContainer {
+class LayoutSVGResourceFilterPrimitive final : public LayoutSVGHiddenContainer {
 public:
     explicit LayoutSVGResourceFilterPrimitive(SVGElement* filterPrimitiveElement)
-        : RenderSVGHiddenContainer(filterPrimitiveElement)
+        : LayoutSVGHiddenContainer(filterPrimitiveElement)
     {
     }
 
@@ -43,7 +43,7 @@ public:
     virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
 
     virtual const char* renderName() const override { return "LayoutSVGResourceFilterPrimitive"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || RenderSVGHiddenContainer::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || LayoutSVGHiddenContainer::isOfType(type); }
 
     inline void primitiveAttributeChanged(const QualifiedName& attribute)
     {

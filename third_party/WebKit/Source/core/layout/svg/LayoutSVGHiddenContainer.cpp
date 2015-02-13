@@ -18,18 +18,18 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGHiddenContainer.h"
+#include "core/layout/svg/LayoutSVGHiddenContainer.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
 
 namespace blink {
 
-RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
+LayoutSVGHiddenContainer::LayoutSVGHiddenContainer(SVGElement* element)
     : LayoutSVGContainer(element)
 {
 }
 
-void RenderSVGHiddenContainer::layout()
+void LayoutSVGHiddenContainer::layout()
 {
     ASSERT(needsLayout());
     SVGLayoutSupport::layoutChildren(this, selfNeedsLayout());
@@ -37,17 +37,17 @@ void RenderSVGHiddenContainer::layout()
     clearNeedsLayout();
 }
 
-void RenderSVGHiddenContainer::paint(const PaintInfo&, const LayoutPoint&)
+void LayoutSVGHiddenContainer::paint(const PaintInfo&, const LayoutPoint&)
 {
     // This subtree does not paint.
 }
 
-void RenderSVGHiddenContainer::absoluteQuads(Vector<FloatQuad>&, bool*) const
+void LayoutSVGHiddenContainer::absoluteQuads(Vector<FloatQuad>&, bool*) const
 {
     // This subtree does not take up space or paint
 }
 
-bool RenderSVGHiddenContainer::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint&, HitTestAction)
+bool LayoutSVGHiddenContainer::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint&, HitTestAction)
 {
     return false;
 }

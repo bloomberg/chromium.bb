@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (10,49) size 410x230
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=1.00] [height=1.00]
         RenderSVGGradientStop {stop} [offset=0.00] [color=#000000]
         LayoutSVGImage {image} at (0,0) size 1x1
@@ -17,7 +17,7 @@ layer at (0,0) size 480x360
             chunk 1 text run 3 at (48.58,0.00) startOffset 5 endOffset 6 width 10.01: "e"
             chunk 1 text run 4 at (58.10,0.00) startOffset 6 endOffset 8 width 14.00: "xt"
         LayoutSVGResourceMarker {marker} [id="m"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=0.00]
-        RenderSVGViewportContainer {svg} at (0,0) size 0x0
+        LayoutSVGViewportContainer {svg} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="f"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         LayoutSVGPath {polygon} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [points=""]
       LayoutSVGContainer {g} at (10,49) size 140x10 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,50.00)}]

@@ -42,7 +42,7 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 24x17
               chunk 1 (middle anchor) text run 1 at (68.08,0.00) startOffset 0 endOffset 4 width 23.84: "> 0s"
       LayoutSVGContainer {g} at (243,113) size 94x144 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,20.00)}]
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGRect {rect} at (243,113) size 14x14 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]
         LayoutSVGContainer {g} at (243,113) size 94x14
           LayoutSVGContainer {use} at (243,113) size 14x14

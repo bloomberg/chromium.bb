@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (9,4) size 466x282
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (60,4) size 321x44 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 321x44
           chunk 1 text run 1 at (60.00,40.00) startOffset 0 endOffset 18 width 320.20: "Event bubbling - c"

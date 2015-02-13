@@ -17,8 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGHiddenContainer_h
-#define RenderSVGHiddenContainer_h
+#ifndef LayoutSVGHiddenContainer_h
+#define LayoutSVGHiddenContainer_h
 
 #include "core/layout/svg/LayoutSVGContainer.h"
 
@@ -28,11 +28,11 @@ class SVGElement;
 
 // This class is for containers which are never drawn, but do need to support style
 // <defs>, <linearGradient>, <radialGradient> are all good examples
-class RenderSVGHiddenContainer : public LayoutSVGContainer {
+class LayoutSVGHiddenContainer : public LayoutSVGContainer {
 public:
-    explicit RenderSVGHiddenContainer(SVGElement*);
+    explicit LayoutSVGHiddenContainer(SVGElement*);
 
-    virtual const char* renderName() const override { return "RenderSVGHiddenContainer"; }
+    virtual const char* renderName() const override { return "LayoutSVGHiddenContainer"; }
 
 protected:
     virtual void layout() override;
@@ -48,4 +48,4 @@ private:
 };
 }
 
-#endif // RenderSVGHiddenContainer_h
+#endif // LayoutSVGHiddenContainer_h

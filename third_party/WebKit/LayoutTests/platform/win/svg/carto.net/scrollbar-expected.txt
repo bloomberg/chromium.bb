@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (542,15) size 408x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 408x19
         chunk 1 (end anchor) text run 1 at (542.50,30.00) startOffset 0 endOffset 59 width 407.50: "One can also drag the images and the scrollbars will adopt."
-    RenderSVGViewportContainer {svg} at (40,60) size 760x337
+    LayoutSVGViewportContainer {svg} at (40,60) size 760x337
       LayoutSVGContainer {g} at (40,60) size 760x337
         LayoutSVGImage {image} at (40,60) size 760x337
         LayoutSVGContainer {g} at (368,111) size 432x262
@@ -58,7 +58,7 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (392,267) size 558x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 558x17
         chunk 1 (end anchor) text run 1 at (392.50,280.00) startOffset 0 endOffset 89 width 557.50: "Panorama Zervreilastausee, Vals, Graub\x{FC}nden, Switzerland, taken 2006-02-04 (\x{A9} A. Neumann)"
-    RenderSVGViewportContainer {svg} at (40,300) size 760x300
+    LayoutSVGViewportContainer {svg} at (40,300) size 760x300
       LayoutSVGContainer {g} at (40,300) size 760x300
         LayoutSVGImage {image} at (40,300) size 760x300
     LayoutSVGContainer {g} at (40,300) size 729x169

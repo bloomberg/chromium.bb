@@ -60,7 +60,7 @@ layer at (8,129) size 385x128
       RenderView at (0,0) size 385x128
     layer at (0,0) size 385x128
       RenderSVGRoot {svg} at (0,0) size 385x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -74,7 +74,7 @@ layer at (393,129) size 384x128
       RenderView at (0,0) size 385x128
     layer at (0,0) size 385x128
       RenderSVGRoot {svg} at (0,0) size 385x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -88,7 +88,7 @@ layer at (8,257) size 256x449
       RenderView at (0,0) size 256x449
     layer at (0,0) size 256x449
       RenderSVGRoot {svg} at (0,0) size 256x449
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -122,7 +122,7 @@ layer at (264,257) size 256x256
       RenderView at (0,0) size 256x256
     layer at (0,0) size 256x256
       RenderSVGRoot {svg} at (0,0) size 256x256
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -136,7 +136,7 @@ layer at (264,513) size 256x192
       RenderView at (0,0) size 256x192
     layer at (0,0) size 256x192
       RenderSVGRoot {svg} at (0,0) size 256x192
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -150,7 +150,7 @@ layer at (521,257) size 256x256
       RenderView at (0,0) size 256x256
     layer at (0,0) size 256x256
       RenderSVGRoot {svg} at (0,0) size 256x256
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -180,7 +180,7 @@ layer at (521,513) size 256x192
       RenderView at (0,0) size 256x192
     layer at (0,0) size 256x192
       RenderSVGRoot {svg} at (0,0) size 256x192
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -194,7 +194,7 @@ layer at (264,705) size 385x128
       RenderView at (0,0) size 385x128
     layer at (0,0) size 385x128
       RenderSVGRoot {svg} at (0,0) size 385x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -208,7 +208,7 @@ layer at (8,833) size 385x128
       RenderView at (0,0) size 385x128
     layer at (0,0) size 385x128
       RenderSVGRoot {svg} at (0,0) size 385x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -222,7 +222,7 @@ layer at (393,833) size 96x192
       RenderView at (0,0) size 96x192
     layer at (0,0) size 96x192
       RenderSVGRoot {svg} at (0,0) size 96x192
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -233,7 +233,7 @@ layer at (489,833) size 289x192
       RenderView at (0,0) size 288x192
     layer at (0,0) size 288x192
       RenderSVGRoot {svg} at (0,0) size 288x192
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -247,7 +247,7 @@ layer at (8,1025) size 192x192
       RenderView at (0,0) size 192x192
     layer at (0,0) size 192x192
       RenderSVGRoot {svg} at (0,0) size 192x192
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -261,7 +261,7 @@ layer at (200,1025) size 193x192
       RenderView at (0,0) size 192x192
     layer at (0,0) size 192x192
       RenderSVGRoot {svg} at (0,0) size 192x192
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -275,7 +275,7 @@ layer at (393,1025) size 192x128
       RenderView at (0,0) size 192x128
     layer at (0,0) size 192x128
       RenderSVGRoot {svg} at (0,0) size 192x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -286,7 +286,7 @@ layer at (585,1025) size 192x128
       RenderView at (0,0) size 192x128
     layer at (0,0) size 192x128
       RenderSVGRoot {svg} at (0,0) size 192x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -297,7 +297,7 @@ layer at (393,1153) size 288x128
       RenderView at (0,0) size 288x128
     layer at (0,0) size 288x128
       RenderSVGRoot {svg} at (0,0) size 288x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
@@ -311,7 +311,7 @@ layer at (681,1153) size 97x128
       RenderView at (0,0) size 96x128
     layer at (0,0) size 96x128
       RenderSVGRoot {svg} at (0,0) size 96x128
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="surface"] [gradientUnits=objectBoundingBox] [start=(1,0)] [end=(1,1)]
             RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
             RenderSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]

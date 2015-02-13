@@ -30,4 +30,4 @@ layer at (0,0) size 800x600
               chunk 1 text run 1 at (0.00,56.00) startOffset 0 endOffset 5 width 42.67: "[SVG]"
       RenderText {#text} at (0,0) size 0x0
     LayoutSVGRect {rect} at (373,0) size 363x289 [stroke={[type=SOLID] [color=#008000]}] [x=260.00] [y=0.00] [width=250.00] [height=200.00]
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0

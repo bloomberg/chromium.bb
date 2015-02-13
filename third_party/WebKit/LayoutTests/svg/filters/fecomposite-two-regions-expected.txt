@@ -39,7 +39,7 @@ layer at (0,0) size 600x250
         [filter="arithmetic_k4"] LayoutSVGResourceFilter {filter} at (0,0) size 100x100
         LayoutSVGContainer {g} at (365,135) size 60x60
           LayoutSVGRect {rect} at (365,135) size 60x60 [fill={[type=SOLID] [color=#000080]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (10,10) size 60x60
         LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#000080]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
       LayoutSVGResourceFilter {filter} [id="in"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]

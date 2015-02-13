@@ -18,17 +18,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGTransformableContainer_h
-#define RenderSVGTransformableContainer_h
+#ifndef LayoutSVGTransformableContainer_h
+#define LayoutSVGTransformableContainer_h
 
 #include "core/layout/svg/LayoutSVGContainer.h"
 
 namespace blink {
 
 class SVGGraphicsElement;
-class RenderSVGTransformableContainer final : public LayoutSVGContainer {
+class LayoutSVGTransformableContainer final : public LayoutSVGContainer {
 public:
-    explicit RenderSVGTransformableContainer(SVGGraphicsElement*);
+    explicit LayoutSVGTransformableContainer(SVGGraphicsElement*);
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
@@ -49,4 +49,4 @@ private:
 
 }
 
-#endif // RenderSVGTransformableContainer_h
+#endif // LayoutSVGTransformableContainer_h

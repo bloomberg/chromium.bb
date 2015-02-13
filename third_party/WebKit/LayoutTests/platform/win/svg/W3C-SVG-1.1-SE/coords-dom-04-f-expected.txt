@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (19,34) size 180x260
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (19,34) size 180x260 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,-10.00)}]
         LayoutSVGContainer {g} at (19,34) size 180x260 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
           LayoutSVGRect {rect} at (19,34) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=5.00] [width=15.00] [height=15.00]

@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (25,25) size 250x100
     LayoutSVGContainer {g} at (25,25) size 250x100
       LayoutSVGContainer {g} at (25,25) size 250x100
-        RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="Turb1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
           LayoutSVGResourceFilter {filter} [id="Turb2"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]

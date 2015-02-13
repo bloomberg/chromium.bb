@@ -3,7 +3,7 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (0,0) size 480x360
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="image"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feImage image-size="503x503"]
       LayoutSVGText {text} at (145,8) size 190x15 contains 1 chunk(s)

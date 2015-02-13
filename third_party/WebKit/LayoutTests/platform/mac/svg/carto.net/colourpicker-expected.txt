@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGHiddenContainer {symbol} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
         LayoutSVGPath {line} at (0,0) size 2x8 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
       LayoutSVGResourceLinearGradient {linearGradient} [id="colourPicker1_hueGradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
         RenderSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
@@ -74,7 +74,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (159,318) size 168x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=212.00] [y1=415.60] [x2=410.00] [y2=415.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=212.00] [y1=415.60] [x2=410.00] [y2=415.60]
         LayoutSVGContainer {use} at (215,316) size 5x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(278.00,415.60)}]
-          RenderSVGViewportContainer {svg} at (215,316) size 5x17
+          LayoutSVGViewportContainer {svg} at (215,316) size 5x17
             LayoutSVGPath {line} at (215,316) size 5x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (416,409) size 74x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 74x13
@@ -85,7 +85,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (230,337) size 97x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=302.00] [y1=439.60] [x2=410.00] [y2=439.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=302.00] [y1=439.60] [x2=410.00] [y2=439.60]
         LayoutSVGContainer {use} at (318,335) size 5x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(410.00,439.60)}]
-          RenderSVGViewportContainer {svg} at (318,335) size 5x17
+          LayoutSVGViewportContainer {svg} at (318,335) size 5x17
             LayoutSVGPath {line} at (318,335) size 5x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (416,433) size 77x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x13
@@ -94,7 +94,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (230,356) size 97x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=302.00] [y1=463.60] [x2=410.00] [y2=463.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=302.00] [y1=463.60] [x2=410.00] [y2=463.60]
         LayoutSVGContainer {use} at (318,354) size 5x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(410.00,463.60)}]
-          RenderSVGViewportContainer {svg} at (318,354) size 5x16
+          LayoutSVGViewportContainer {svg} at (318,354) size 5x16
             LayoutSVGPath {line} at (318,354) size 5x16 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (416,457) size 53x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 53x13
@@ -103,7 +103,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (230,375) size 97x12 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=302.00] [y1=487.60] [x2=410.00] [y2=487.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=302.00] [y1=487.60] [x2=410.00] [y2=487.60]
         LayoutSVGContainer {use} at (318,373) size 5x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(410.00,487.60)}]
-          RenderSVGViewportContainer {svg} at (318,373) size 5x16
+          LayoutSVGViewportContainer {svg} at (318,373) size 5x16
             LayoutSVGPath {line} at (318,373) size 5x16 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (416,481) size 63x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 63x13
@@ -117,7 +117,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (394,160) size 167x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=512.00] [y1=213.00] [x2=710.00] [y2=213.00]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=512.00] [y1=213.00] [x2=710.00] [y2=213.00]
         LayoutSVGContainer {use} at (398,158) size 4x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(512.00,213.00)}]
-          RenderSVGViewportContainer {svg} at (398,158) size 4x17
+          LayoutSVGViewportContainer {svg} at (398,158) size 4x17
             LayoutSVGPath {line} at (398,158) size 4x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (716,207) size 74x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 74x13
@@ -128,7 +128,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (464,181) size 97x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=602.00] [y1=239.67] [x2=710.00] [y2=239.67]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=602.00] [y1=239.67] [x2=710.00] [y2=239.67]
         LayoutSVGContainer {use} at (552,179) size 5x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(710.00,239.67)}]
-          RenderSVGViewportContainer {svg} at (552,179) size 5x17
+          LayoutSVGViewportContainer {svg} at (552,179) size 5x17
             LayoutSVGPath {line} at (552,179) size 5x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (716,233) size 77x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x13
@@ -137,7 +137,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (464,202) size 97x12 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=602.00] [y1=266.33] [x2=710.00] [y2=266.33]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=602.00] [y1=266.33] [x2=710.00] [y2=266.33]
         LayoutSVGContainer {use} at (552,200) size 5x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(710.00,266.33)}]
-          RenderSVGViewportContainer {svg} at (552,200) size 5x16
+          LayoutSVGViewportContainer {svg} at (552,200) size 5x16
             LayoutSVGPath {line} at (552,200) size 5x16 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (716,260) size 53x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 53x13
@@ -151,7 +151,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (550,396) size 167x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=712.00] [y1=515.60] [x2=910.00] [y2=515.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=712.00] [y1=515.60] [x2=910.00] [y2=515.60]
         LayoutSVGContainer {use} at (554,394) size 5x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(712.00,515.60)}]
-          RenderSVGViewportContainer {svg} at (554,394) size 5x17
+          LayoutSVGViewportContainer {svg} at (554,394) size 5x17
             LayoutSVGPath {line} at (554,394) size 5x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (916,509) size 74x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 74x13
@@ -161,7 +161,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (597,415) size 120x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=772.00] [y1=539.60] [x2=910.00] [y2=539.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=772.00] [y1=539.60] [x2=910.00] [y2=539.60]
         LayoutSVGContainer {use} at (601,413) size 5x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(772.00,539.60)}]
-          RenderSVGViewportContainer {svg} at (601,413) size 5x17
+          LayoutSVGViewportContainer {svg} at (601,413) size 5x17
             LayoutSVGPath {line} at (601,413) size 5x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (916,533) size 77x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x13
@@ -170,7 +170,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (597,434) size 120x13 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=772.00] [y1=563.60] [x2=910.00] [y2=563.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=772.00] [y1=563.60] [x2=910.00] [y2=563.60]
         LayoutSVGContainer {use} at (651,432) size 5x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(836.86,563.60)}]
-          RenderSVGViewportContainer {svg} at (651,432) size 5x17
+          LayoutSVGViewportContainer {svg} at (651,432) size 5x17
             LayoutSVGPath {line} at (651,432) size 5x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (916,557) size 53x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 53x13
@@ -179,7 +179,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (597,453) size 120x12 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=772.00] [y1=587.60] [x2=910.00] [y2=587.60]
         LayoutSVGPath {line} at (0,0) size 0x0 [x1=772.00] [y1=587.60] [x2=910.00] [y2=587.60]
         LayoutSVGContainer {use} at (708,451) size 5x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(910.00,587.60)}]
-          RenderSVGViewportContainer {svg} at (708,451) size 5x16
+          LayoutSVGViewportContainer {svg} at (708,451) size 5x16
             LayoutSVGPath {line} at (708,451) size 5x16 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (916,581) size 63x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 63x13
@@ -201,7 +201,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (157,79) size 127x126 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=512.00] [y1=211.70] [x2=710.00] [y2=211.70]
         LayoutSVGPath {line} at (165,87) size 111x110 [x1=512.00] [y1=211.70] [x2=710.00] [y2=211.70]
         LayoutSVGContainer {use} at (224,146) size 15x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(630.80,211.70)}]
-          RenderSVGViewportContainer {svg} at (224,146) size 15x14
+          LayoutSVGViewportContainer {svg} at (224,146) size 15x14
             LayoutSVGPath {line} at (224,146) size 15x14 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (716,205) size 81x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 81x13
@@ -211,7 +211,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (177,125) size 94x94 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=572.00] [y1=235.70] [x2=710.00] [y2=235.70]
         LayoutSVGPath {line} at (185,133) size 78x77 [x1=572.00] [y1=235.70] [x2=710.00] [y2=235.70]
         LayoutSVGContainer {use} at (255,203) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(710.00,235.70)}]
-          RenderSVGViewportContainer {svg} at (255,203) size 14x14
+          LayoutSVGViewportContainer {svg} at (255,203) size 14x14
             LayoutSVGPath {line} at (255,203) size 14x14 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (716,229) size 77x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 77x13
@@ -220,7 +220,7 @@ layer at (0,0) size 800x600
         LayoutSVGPath {line} at (164,138) size 94x94 [stroke={[type=SOLID] [color=#000000] [opacity=0.00] [stroke width=15.00] [line cap=SQUARE]}] [fill={[type=SOLID] [color=#000000] [opacity=0.00]}] [x1=572.00] [y1=259.70] [x2=710.00] [y2=259.70]
         LayoutSVGPath {line} at (172,146) size 77x78 [x1=572.00] [y1=259.70] [x2=710.00] [y2=259.70]
         LayoutSVGContainer {use} at (203,178) size 15x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(641.00,259.70)}]
-          RenderSVGViewportContainer {svg} at (203,178) size 15x14
+          LayoutSVGViewportContainer {svg} at (203,178) size 15x14
             LayoutSVGPath {line} at (203,178) size 15x14 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
         LayoutSVGText {text} at (716,253) size 63x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 63x13

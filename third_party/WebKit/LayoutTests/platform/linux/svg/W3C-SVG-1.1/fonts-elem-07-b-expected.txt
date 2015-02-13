@@ -3,8 +3,8 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (30,3) size 364x240
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (56,3) size 338x40 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 338x40
           chunk 1 text run 1 at (56.00,35.00) startOffset 0 endOffset 22 width 338.00: "Basic SVG font element"

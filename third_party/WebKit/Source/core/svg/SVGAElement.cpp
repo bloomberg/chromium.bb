@@ -38,13 +38,13 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGText.h"
+#include "core/layout/svg/LayoutSVGTransformableContainer.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/rendering/svg/RenderSVGTransformableContainer.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/network/ResourceRequest.h"
@@ -112,7 +112,7 @@ LayoutObject* SVGAElement::createRenderer(const LayoutStyle&)
     if (parentNode() && parentNode()->isSVGElement() && toSVGElement(parentNode())->isTextContent())
         return new LayoutSVGInline(this);
 
-    return new RenderSVGTransformableContainer(this);
+    return new LayoutSVGTransformableContainer(this);
 }
 
 void SVGAElement::defaultEventHandler(Event* event)

@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (100,25) size 290x40
     LayoutSVGContainer {g} at (100,25) size 290x40
-      RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (0,0) size 42x42
           LayoutSVGRect {rect} at (0,0) size 42x42 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=40.00] [height=40.00]
       LayoutSVGContainer {g} at (100,28) size 230x29

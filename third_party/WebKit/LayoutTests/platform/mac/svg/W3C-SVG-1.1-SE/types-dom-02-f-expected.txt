@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (49,38) size 391x253
       LayoutSVGText {text} at (49,38) size 161x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 161x21
@@ -36,7 +36,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (70,242) size 221x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 221x16
             chunk 1 text run 1 at (70.00,255.00) startOffset 0 endOffset 30 width 220.21: "SVGAnimatedPreserveAspectRatio"
-      RenderSVGHiddenContainer {g} at (0,0) size 0x0
+      LayoutSVGHiddenContainer {g} at (0,0) size 0x0
         LayoutSVGText {text} at (0,-17) size 38x26 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 38x26
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 10.01: "a"
@@ -44,7 +44,7 @@ layer at (0,0) size 480x360
             chunk 1 text run 3 at (20.02,0.00) startOffset 2 endOffset 3 width 9.00: "c"
         LayoutSVGEllipse {circle} at (0,0) size 50x50 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=50.00]
         LayoutSVGResourceMarker {marker} [id="marker"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=90.00]
-        RenderSVGViewportContainer {svg} at (0,0) size 0x0
+        LayoutSVGViewportContainer {svg} at (0,0) size 0x0
     LayoutSVGContainer {g} at (10,310) size 230x37
       LayoutSVGText {text} at (10,310) size 230x37 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 230x37
