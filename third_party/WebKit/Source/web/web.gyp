@@ -131,6 +131,8 @@
                         ['link_core_modules_separately==1', {
                             'dependencies': [
                                 '../core/core.gyp:webcore_shared',
+                                '../core/core.gyp:webcore_testing',
+                                '../modules/modules.gyp:modules_testing',
                                 '../platform/blink_platform.gyp:blink_common',
                                 '../platform/blink_platform.gyp:blink_platform',
                                 '../wtf/wtf.gyp:wtf',

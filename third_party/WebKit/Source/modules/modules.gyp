@@ -81,7 +81,6 @@
     'type': 'static_library',
     'dependencies': [
       '../config.gyp:config',
-      '../core/core.gyp:webcore',
     ],
     'defines': [
       'BLINK_IMPLEMENTATION=1',
@@ -92,6 +91,16 @@
       '<(bindings_modules_v8_output_dir)/V8InternalsPartial.cpp',
       '<(bindings_modules_v8_output_dir)/V8InternalsPartial.h',
     ],
-
+    'conditions': [
+      ['component=="shared_library" and link_core_modules_separately==1', {
+        'dependencies': [
+          '../core/core.gyp:webcore_shared',
+        ],
+      }, {
+        'dependencies': [
+          '../core/core.gyp:webcore',
+        ],
+      }],
+    ],
   }],
 }
