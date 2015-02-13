@@ -75,7 +75,7 @@ class MockUptimeProvider {
   }
 
   base::TimeDelta uptime() const {
-    return mock_time_task_runner_->GetCurrentMockTime() - base::TimeTicks() +
+    return mock_time_task_runner_->NowTicks() - base::TimeTicks() +
            uptime_offset_;
   }
 
@@ -249,8 +249,8 @@ void MockUptimeProvider::WriteUptimeToFile() {
 }
 
 void MockUptimeProvider::SetUptime(const base::TimeDelta& uptime) {
-  uptime_offset_ = uptime - (mock_time_task_runner_->GetCurrentMockTime() -
-                             base::TimeTicks());
+  uptime_offset_ =
+      uptime - (mock_time_task_runner_->NowTicks() - base::TimeTicks());
   WriteUptimeToFile();
 }
 

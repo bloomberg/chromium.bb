@@ -6,18 +6,21 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 
 namespace base {
 
 namespace {
 
-// TickClock that always returns the then-current mock time of |task_runner| as
-// the current time.
+// MockTickClock --------------------------------------------------------------
+
+// TickClock that always returns the then-current mock time ticks of
+// |task_runner| as the current time ticks.
 class MockTickClock : public TickClock {
  public:
   explicit MockTickClock(
       scoped_refptr<const TestMockTimeTaskRunner> task_runner);
-  ~MockTickClock() override;
 
   // TickClock:
   TimeTicks NowTicks() override;
@@ -33,14 +36,38 @@ MockTickClock::MockTickClock(
     : task_runner_(task_runner) {
 }
 
-MockTickClock::~MockTickClock() {
+TimeTicks MockTickClock::NowTicks() {
+  return task_runner_->NowTicks();
 }
 
-TimeTicks MockTickClock::NowTicks() {
-  return task_runner_->GetCurrentMockTime();
+// MockClock ------------------------------------------------------------------
+
+// Clock that always returns the then-current mock time of |task_runner| as the
+// current time.
+class MockClock : public Clock {
+ public:
+  explicit MockClock(scoped_refptr<const TestMockTimeTaskRunner> task_runner);
+
+  // Clock:
+  Time Now() override;
+
+ private:
+  scoped_refptr<const TestMockTimeTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockClock);
+};
+
+MockClock::MockClock(scoped_refptr<const TestMockTimeTaskRunner> task_runner)
+    : task_runner_(task_runner) {
+}
+
+Time MockClock::Now() {
+  return task_runner_->Now();
 }
 
 }  // namespace
+
+// TestMockTimeTaskRunner -----------------------------------------------------
 
 bool TestMockTimeTaskRunner::TemporalOrder::operator()(
     const TestPendingTask& first_task,
@@ -48,7 +75,8 @@ bool TestMockTimeTaskRunner::TemporalOrder::operator()(
   return first_task.GetTimeToRun() > second_task.GetTimeToRun();
 }
 
-TestMockTimeTaskRunner::TestMockTimeTaskRunner() {
+TestMockTimeTaskRunner::TestMockTimeTaskRunner()
+    : now_(Time::UnixEpoch()) {
 }
 
 TestMockTimeTaskRunner::~TestMockTimeTaskRunner() {
@@ -56,40 +84,36 @@ TestMockTimeTaskRunner::~TestMockTimeTaskRunner() {
 
 void TestMockTimeTaskRunner::FastForwardBy(TimeDelta delta) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GE(delta, TimeDelta());
 
-  OnBeforeSelectingTask();
-
-  const base::TimeTicks original_now = now_;
-  TestPendingTask task_info;
-  while (DequeueNextTask(original_now, delta, &task_info)) {
-    if (task_info.GetTimeToRun() - now_ > base::TimeDelta()) {
-      now_ = task_info.GetTimeToRun();
-      OnAfterTimePassed();
-    }
-
-    task_info.task.Run();
-
-    OnAfterTaskRun();
-    OnBeforeSelectingTask();
-  }
-
-  if (!delta.is_max() && now_ - original_now < delta) {
-    now_ = original_now + delta;
-    OnAfterTimePassed();
-  }
+  const TimeTicks original_now_ticks = now_ticks_;
+  ProcessAllTasksNoLaterThan(delta);
+  ForwardClocksUntilTickTime(original_now_ticks + delta);
 }
 
 void TestMockTimeTaskRunner::RunUntilIdle() {
-  FastForwardBy(TimeDelta());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ProcessAllTasksNoLaterThan(TimeDelta());
 }
 
 void TestMockTimeTaskRunner::FastForwardUntilNoTasksRemain() {
-  FastForwardBy(TimeDelta::Max());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ProcessAllTasksNoLaterThan(TimeDelta::Max());
 }
 
-TimeTicks TestMockTimeTaskRunner::GetCurrentMockTime() const {
+Time TestMockTimeTaskRunner::Now() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return now_;
+}
+
+TimeTicks TestMockTimeTaskRunner::NowTicks() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return now_ticks_;
+}
+
+scoped_ptr<Clock> TestMockTimeTaskRunner::GetMockClock() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return make_scoped_ptr(new MockClock(this));
 }
 
 scoped_ptr<TickClock> TestMockTimeTaskRunner::GetMockTickClock() const {
@@ -109,7 +133,8 @@ size_t TestMockTimeTaskRunner::GetPendingTaskCount() const {
 
 TimeDelta TestMockTimeTaskRunner::NextPendingTaskDelay() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return tasks_.empty() ? TimeDelta::Max() : tasks_.top().GetTimeToRun() - now_;
+  return tasks_.empty() ? TimeDelta::Max()
+                        : tasks_.top().GetTimeToRun() - now_ticks_;
 }
 
 bool TestMockTimeTaskRunner::RunsTasksOnCurrentThread() const {
@@ -120,9 +145,9 @@ bool TestMockTimeTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const Closure& task,
     TimeDelta delay) {
-  base::AutoLock scoped_lock(tasks_lock_);
-  tasks_.push(
-      TestPendingTask(from_here, task, now_, delay, TestPendingTask::NESTABLE));
+  AutoLock scoped_lock(tasks_lock_);
+  tasks_.push(TestPendingTask(from_here, task, now_ticks_, delay,
+                              TestPendingTask::NESTABLE));
   return true;
 }
 
@@ -146,10 +171,36 @@ void TestMockTimeTaskRunner::OnAfterTaskRun() {
   // Empty default implementation.
 }
 
-bool TestMockTimeTaskRunner::DequeueNextTask(const base::TimeTicks& reference,
-                                             const base::TimeDelta& max_delta,
+void TestMockTimeTaskRunner::ProcessAllTasksNoLaterThan(TimeDelta max_delta) {
+  DCHECK_GE(max_delta, TimeDelta());
+  const TimeTicks original_now_ticks = now_ticks_;
+  while (true) {
+    OnBeforeSelectingTask();
+    TestPendingTask task_info;
+    if (!DequeueNextTask(original_now_ticks, max_delta, &task_info))
+      break;
+    // If tasks were posted with a negative delay, task_info.GetTimeToRun() will
+    // be less than |now_ticks_|. ForwardClocksUntilTickTime() takes care of not
+    // moving the clock backwards in this case.
+    ForwardClocksUntilTickTime(task_info.GetTimeToRun());
+    task_info.task.Run();
+    OnAfterTaskRun();
+  }
+}
+
+void TestMockTimeTaskRunner::ForwardClocksUntilTickTime(TimeTicks later_ticks) {
+  if (later_ticks <= now_ticks_)
+    return;
+
+  now_ += later_ticks - now_ticks_;
+  now_ticks_ = later_ticks;
+  OnAfterTimePassed();
+}
+
+bool TestMockTimeTaskRunner::DequeueNextTask(const TimeTicks& reference,
+                                             const TimeDelta& max_delta,
                                              TestPendingTask* next_task) {
-  base::AutoLock scoped_lock(tasks_lock_);
+  AutoLock scoped_lock(tasks_lock_);
   if (!tasks_.empty() &&
       (tasks_.top().GetTimeToRun() - reference) <= max_delta) {
     *next_task = tasks_.top();

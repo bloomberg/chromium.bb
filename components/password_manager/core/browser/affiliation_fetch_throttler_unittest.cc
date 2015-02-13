@@ -89,7 +89,7 @@ class AffiliationFetchThrottlerTest : public testing::Test {
                               double min_delay_ms,
                               double max_delay_ms) {
     ASSERT_EQ(0u, mock_delegate_.can_send_count());
-    base::TimeTicks ticks_at_start = task_runner_->GetCurrentMockTime();
+    base::TimeTicks ticks_at_start = task_runner_->NowTicks();
     mock_delegate_.set_emulated_return_value(emulated_return_value);
     task_runner_->FastForwardUntilNoTasksRemain();
     ASSERT_EQ(1u, mock_delegate_.can_send_count());

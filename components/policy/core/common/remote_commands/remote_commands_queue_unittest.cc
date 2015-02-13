@@ -56,26 +56,6 @@ class MockRemoteCommandsQueueObserver : public RemoteCommandsQueue::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockRemoteCommandsQueueObserver);
 };
 
-// Clock which converts the current time represented by a base::TimeTick from
-// base::TestMockTimeTaskRunner to a base::Time.
-class TestingClock : public base::Clock {
- public:
-  explicit TestingClock(scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
-      : task_runner_(task_runner) {}
-  ~TestingClock() override {}
-
-  // base::Clock:
-  base::Time Now() override {
-    return (task_runner_->GetCurrentMockTime() - base::TimeTicks::UnixEpoch()) +
-           base::Time::UnixEpoch();
-  }
-
- private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingClock);
-};
-
 }  // namespace
 
 using ::testing::InSequence;
@@ -122,11 +102,12 @@ class RemoteCommandsQueueTest : public testing::Test {
 
 RemoteCommandsQueueTest::RemoteCommandsQueueTest()
     : task_runner_(new base::TestMockTimeTaskRunner()),
+      clock_(nullptr),
       runner_handle_(task_runner_) {
 }
 
 void RemoteCommandsQueueTest::SetUp() {
-  scoped_ptr<base::Clock> clock(new TestingClock(task_runner_));
+  scoped_ptr<base::Clock> clock(task_runner_->GetMockClock());
   test_start_time_ = clock->Now();
 
   clock_ = clock.get();

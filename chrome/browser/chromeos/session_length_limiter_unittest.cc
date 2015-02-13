@@ -172,7 +172,7 @@ void SessionLengthLimiterTest::
     UpdateSessionStartTimeIfWaitingForUserActivity() {
   if (!user_activity_seen_ &&
       local_state_.GetBoolean(prefs::kSessionWaitForInitialUserActivity)) {
-    session_start_time_ = runner_->GetCurrentMockTime();
+    session_start_time_ = runner_->NowTicks();
   }
 }
 
@@ -184,19 +184,19 @@ void SessionLengthLimiterTest::ExpectStopSession() {
 }
 
 void SessionLengthLimiterTest::SaveSessionStopTime() {
-  session_stop_time_ = runner_->GetCurrentMockTime();
+  session_stop_time_ = runner_->NowTicks();
 }
 
 void SessionLengthLimiterTest::CreateSessionLengthLimiter(
     bool browser_restarted) {
   user_activity_seen_ = false;
-  session_start_time_ = runner_->GetCurrentMockTime();
+  session_start_time_ = runner_->NowTicks();
 
   EXPECT_FALSE(delegate_);
   delegate_ = new NiceMock<MockSessionLengthLimiterDelegate>;
   ON_CALL(*delegate_, GetCurrentTime())
-      .WillByDefault(Invoke(
-          runner_.get(), &base::TestMockTimeTaskRunner::GetCurrentMockTime));
+      .WillByDefault(
+          Invoke(runner_.get(), &base::TestMockTimeTaskRunner::NowTicks));
   EXPECT_CALL(*delegate_, StopSession()).Times(0);
   session_length_limiter_.reset(
       new SessionLengthLimiter(delegate_, browser_restarted));
@@ -284,8 +284,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time in the future.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -293,8 +292,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time in the future.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -302,8 +300,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time valid.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() - base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() - base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -311,8 +308,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time valid.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() - base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() - base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -344,8 +340,7 @@ TEST_F(SessionLengthLimiterTest, RestartDoNotWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time in the future.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_EQ(session_start_time_, GetSessionStartTimePref());
@@ -353,15 +348,14 @@ TEST_F(SessionLengthLimiterTest, RestartDoNotWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time in the future.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_EQ(session_start_time_, GetSessionStartTimePref());
   DestroySessionLengthLimiter();
 
   const base::TimeTicks stored_session_start_time =
-      runner_->GetCurrentMockTime() - base::TimeDelta::FromHours(2);
+      runner_->NowTicks() - base::TimeDelta::FromHours(2);
 
   // Pref indicating user activity not set. Session start time valid.
   ClearSessionUserActivitySeenPref();
@@ -408,8 +402,7 @@ TEST_F(SessionLengthLimiterTest, RestartWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time in the future.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -417,15 +410,14 @@ TEST_F(SessionLengthLimiterTest, RestartWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time in the future.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(
-      runner_->GetCurrentMockTime() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
   DestroySessionLengthLimiter();
 
   const base::TimeTicks stored_session_start_time =
-      runner_->GetCurrentMockTime() - base::TimeDelta::FromHours(2);
+      runner_->NowTicks() - base::TimeDelta::FromHours(2);
 
   // Pref indicating user activity not set. Session start time valid.
   ClearSessionUserActivitySeenPref();

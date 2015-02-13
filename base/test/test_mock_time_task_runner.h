@@ -14,10 +14,12 @@
 #include "base/synchronization/lock.h"
 #include "base/test/test_pending_task.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 
 namespace base {
+
+class Clock;
+class TickClock;
 
 // Runs pending tasks in the order of the tasks' post time + delay, and keeps
 // track of a mock (virtual) tick clock time that can be fast-forwarded.
@@ -31,18 +33,26 @@ namespace base {
 //     turn call back into it (e.g., to post more tasks).
 //   - Tasks are stored in a priority queue, and executed in the increasing
 //     order of post time + delay.
+//   - It does not check for overflow when doing time arithmetic``. A sufficient
+//     condition for preventing overflows is to make sure that the sum of all
+//     posted task delays and fast-forward increments is still representable by
+//     a TimeDelta, and that adding this delta to the starting values of Time
+//     and TickTime is still within their respective range.
 //   - Non-nestable tasks are not supported.
 //   - Tasks aren't guaranteed to be destroyed immediately after they're run.
 //
 // This is a slightly more sophisticated version of TestSimpleTaskRunner, in
 // that it supports running delayed tasks in the correct temporal order.
-class TestMockTimeTaskRunner : public base::SingleThreadTaskRunner {
+class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
  public:
+  // Constructs an instance whose virtual time will start at the Unix epoch, and
+  // whose time ticks will start at zero.
   TestMockTimeTaskRunner();
 
   // Fast-forwards virtual time by |delta|, causing all tasks with a remaining
-  // delay less than or equal to |delta| to be executed.
-  void FastForwardBy(base::TimeDelta delta);
+  // delay less than or equal to |delta| to be executed. |delta| must be
+  // non-negative.
+  void FastForwardBy(TimeDelta delta);
 
   // Fast-forwards virtual time just until all tasks are executed.
   void FastForwardUntilNoTasksRemain();
@@ -52,11 +62,18 @@ class TestMockTimeTaskRunner : public base::SingleThreadTaskRunner {
   // elapse.
   void RunUntilIdle();
 
-  // Returns the current virtual time.
-  TimeTicks GetCurrentMockTime() const;
+  // Returns the current virtual time (initially starting at the Unix epoch).
+  Time Now() const;
 
-  // Returns a TickClock that uses the mock time of |this| as its time source.
-  // The returned TickClock will hold a reference to |this|.
+  // Returns the current virtual tick time (initially starting at 0).
+  TimeTicks NowTicks() const;
+
+  // Returns a Clock that uses the virtual time of |this| as its time source.
+  // The returned Clock will hold a reference to |this|.
+  scoped_ptr<Clock> GetMockClock() const;
+
+  // Returns a TickClock that uses the virtual time ticks of |this| as its tick
+  // source. The returned TickClock will hold a reference to |this|.
   scoped_ptr<TickClock> GetMockTickClock() const;
 
   bool HasPendingTask() const;
@@ -66,12 +83,11 @@ class TestMockTimeTaskRunner : public base::SingleThreadTaskRunner {
   // SingleThreadTaskRunner:
   bool RunsTasksOnCurrentThread() const override;
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      TimeDelta delay) override;
+                       const Closure& task,
+                       TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const Closure& task,
+                                  TimeDelta delay) override;
 
  protected:
   ~TestMockTimeTaskRunner() override;
@@ -100,20 +116,32 @@ class TestMockTimeTaskRunner : public base::SingleThreadTaskRunner {
                               std::vector<TestPendingTask>,
                               TemporalOrder> TaskPriorityQueue;
 
+  // Core of the implementation for all flavors of fast-forward methods. Given a
+  // non-negative |max_delta|, runs all tasks with a remaining delay less than
+  // or equal to |max_delta|, and moves virtual time forward as needed for each
+  // processed task. Pass in TimeDelta::Max() as |max_delta| to run all tasks.
+  void ProcessAllTasksNoLaterThan(TimeDelta max_delta);
+
+  // Forwards |now_ticks_| until it equals |later_ticks|, and forwards |now_| by
+  // the same amount. Calls OnAfterTimePassed() if |later_ticks| > |now_ticks_|.
+  // Does nothing if |later_ticks| <= |now_ticks_|.
+  void ForwardClocksUntilTickTime(TimeTicks later_ticks);
+
   // Returns the |next_task| to run if there is any with a running time that is
   // at most |reference| + |max_delta|. This additional complexity is required
   // so that |max_delta| == TimeDelta::Max() can be supported.
-  bool DequeueNextTask(const base::TimeTicks& reference,
-                       const base::TimeDelta& max_delta,
+  bool DequeueNextTask(const TimeTicks& reference,
+                       const TimeDelta& max_delta,
                        TestPendingTask* next_task);
 
-  base::ThreadChecker thread_checker_;
-  base::TimeTicks now_;
+  ThreadChecker thread_checker_;
+  Time now_;
+  TimeTicks now_ticks_;
 
   // Temporally ordered heap of pending tasks. Must only be accessed while the
   // |tasks_lock_| is held.
   TaskPriorityQueue tasks_;
-  base::Lock tasks_lock_;
+  Lock tasks_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMockTimeTaskRunner);
 };
