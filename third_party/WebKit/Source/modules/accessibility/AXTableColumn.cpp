@@ -101,9 +101,9 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
             if (!layoutCell)
                 continue;
 
-            // Whenever cell's col is less then current column index, we've found the cell with colspan.
+            // Whenever cell's effective col is less then current column index, we've found the cell with colspan.
             // We do not need to add this cell, it's already been added.
-            if (layoutCell->col() < m_columnIndex)
+            if (layoutCell->table()->colToEffCol(layoutCell->col()) < m_columnIndex)
                 continue;
 
             AXObject* cell = axObjectCache()->getOrCreate(layoutCell->node());
@@ -181,7 +181,7 @@ AXObject* AXTableColumn::headerObjectForSection(LayoutTableSection* section, boo
 
         // we've reached a cell that doesn't even overlap our column
         // it can't be our header
-        if ((testCell->col() + (testCell->colSpan()-1)) < m_columnIndex)
+        if (testCell->table()->colToEffCol(testCell->col() + (testCell->colSpan()-1)) < m_columnIndex)
             break;
 
         Node* node = testCell->node();

@@ -196,8 +196,8 @@ void AXTableCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
         return;
 
     LayoutTableCell* cell = toLayoutTableCell(m_renderer);
-    columnRange.first = cell->col();
-    columnRange.second = cell->colSpan();
+    columnRange.first = cell->table()->colToEffCol(cell->col());
+    columnRange.second = cell->table()->colToEffCol(cell->col() + cell->colSpan()) - columnRange.first;
 }
 
 SortDirection AXTableCell::sortDirection() const
