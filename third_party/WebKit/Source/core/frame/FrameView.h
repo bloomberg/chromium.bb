@@ -664,6 +664,9 @@ private:
     // the element or frame which owns the scrollbar with the other set to null.
     bool shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame) const;
 
+    // Returns true if a scrollbar needs to go from native -> custom or vice versa.
+    bool needsScrollbarReconstruction() const;
+
     void updateScrollCorner();
 
     AXObjectCache* axObjectCache() const;

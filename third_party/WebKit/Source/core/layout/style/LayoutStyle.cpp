@@ -584,6 +584,9 @@ bool LayoutStyle::diffNeedsFullLayoutAndPaintInvalidation(const LayoutStyle& oth
         return true;
     }
 
+    if (hasPseudoStyle(SCROLLBAR) != other.hasPseudoStyle(SCROLLBAR))
+        return true;
+
     // Movement of non-static-positioned object is special cased in LayoutStyle::visualInvalidationDiff().
 
     return false;

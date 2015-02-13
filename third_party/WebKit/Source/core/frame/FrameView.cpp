@@ -994,6 +994,9 @@ void FrameView::layout()
                 setScrollbarModes(hMode, vMode);
             }
 
+            if (needsScrollbarReconstruction())
+                updateScrollbars(scrollOffsetDouble());
+
             LayoutSize oldSize = m_size;
 
             m_size = LayoutSize(layoutSize().width(), layoutSize().height());
@@ -3488,6 +3491,19 @@ bool FrameView::adjustScrollbarExistence(ComputeScrollbarExistenceOption option)
     return true;
 }
 
+bool FrameView::needsScrollbarReconstruction() const
+{
+    Element* customScrollbarElement = nullptr;
+    LocalFrame* customScrollbarFrame = nullptr;
+    bool shouldUseCustom = shouldUseCustomScrollbars(customScrollbarElement, customScrollbarFrame);
+
+    bool hasAnyScrollbar = m_horizontalScrollbar || m_verticalScrollbar;
+    bool hasCustom = (m_horizontalScrollbar && m_horizontalScrollbar->isCustomScrollbar())
+        || (m_verticalScrollbar && m_verticalScrollbar->isCustomScrollbar());
+
+    return hasAnyScrollbar && (shouldUseCustom != hasCustom);
+}
+
 void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
 {
     if (scrollbarsDisabled()) {
@@ -3502,6 +3518,13 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
     IntSize oldVisibleSize = visibleSize();
 
     bool scrollbarExistenceChanged = false;
+
+    if (needsScrollbarReconstruction()) {
+        setHasHorizontalScrollbar(false);
+        setHasVerticalScrollbar(false);
+        scrollbarExistenceChanged = true;
+    }
+
     int maxUpdateScrollbarsPass = hasOverlayScrollbars() || m_scrollbarsSuppressed ? 1 : 3;
     for (int updateScrollbarsPass = 0; updateScrollbarsPass < maxUpdateScrollbarsPass; updateScrollbarsPass++) {
         if (!adjustScrollbarExistence(updateScrollbarsPass ? Incremental : FirstPass))
