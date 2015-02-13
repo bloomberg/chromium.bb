@@ -10,13 +10,13 @@
   </Type>
   <Type Name="WTF::StringImpl">
     <DisplayString
-        Condition="m_is8Bit">[{m_length}] {(this+1),sb}</DisplayString>
-    <DisplayString>[{m_length}] {(this+1),su}</DisplayString>
+        Condition="m_is8Bit">[{m_length}] {(this+1),[m_length]sb}</DisplayString>
+    <DisplayString>[{m_length}] {(this+1),[m_length]su}</DisplayString>
     <Expand>
       <Item Name="Length">m_length</Item>
       <Item Name="Hash">m_hash</Item>
-      <Item Name="AsciiText" Condition="m_is8Bit">(this+1),sb</Item>
-      <Item Name="UnicodeText" Condition="!m_is8Bit">(this+1),su</Item>
+      <Item Name="AsciiText" Condition="m_is8Bit">(this+1),[m_length]sb</Item>
+      <Item Name="UnicodeText" Condition="!m_is8Bit">(this+1),[m_length]su</Item>
     </Expand>
   </Type>
   <Type Name="WTF::Vector&lt;*&gt;">
