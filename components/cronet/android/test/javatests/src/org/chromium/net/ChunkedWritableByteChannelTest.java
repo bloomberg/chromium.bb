@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_test_apk;
+package org.chromium.net;
 
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.ChunkedWritableByteChannel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

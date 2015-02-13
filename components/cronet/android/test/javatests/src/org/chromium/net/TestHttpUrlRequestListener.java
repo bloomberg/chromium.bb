@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_test_apk;
+package org.chromium.net;
 
 import android.os.ConditionVariable;
 import android.util.Log;
-
-import org.chromium.net.HttpUrlRequest;
-import org.chromium.net.HttpUrlRequestListener;
 
 import java.util.List;
 import java.util.Map;

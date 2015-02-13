@@ -36,7 +36,7 @@ def debug(extra_options):
   return run ('build/android/adb_gdb --start ' + \
               '--activity=.CronetTestActivity ' + \
               '--program-name=CronetTest ' + \
-              '--package-name=org.chromium.cronet_test_apk ' + \
+              '--package-name=org.chromium.net ' + \
               ' '.join(extra_options))
 
 

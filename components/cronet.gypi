@@ -302,10 +302,10 @@
           'target_name': 'cronet_tests_jni_headers',
           'type': 'none',
           'sources': [
-            'cronet/android/test/src/org/chromium/cronet_test_apk/CronetTestUtil.java',
-            'cronet/android/test/src/org/chromium/cronet_test_apk/MockUrlRequestJobFactory.java',
-            'cronet/android/test/src/org/chromium/cronet_test_apk/NativeTestServer.java',
-            'cronet/android/test/src/org/chromium/cronet_test_apk/NetworkChangeNotifierUtil.java',
+            'cronet/android/test/src/org/chromium/net/CronetTestUtil.java',
+            'cronet/android/test/src/org/chromium/net/MockUrlRequestJobFactory.java',
+            'cronet/android/test/src/org/chromium/net/NativeTestServer.java',
+            'cronet/android/test/src/org/chromium/net/NetworkChangeNotifierUtil.java',
           ],
           'variables': {
             'jni_gen_package': 'cronet_tests',

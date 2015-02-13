@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_test_apk;
+package org.chromium.net;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -14,7 +14,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.PathUtils;
 
-import org.chromium.cronet_test_apk.urlconnection.CronetHttpURLConnectionTest;
+import org.chromium.net.urlconnection.CronetHttpURLConnectionTest;
 
 import java.io.File;
 import java.lang.annotation.ElementType;

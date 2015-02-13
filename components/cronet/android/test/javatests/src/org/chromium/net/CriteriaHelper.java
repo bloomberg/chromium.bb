@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_test_apk;
+package org.chromium.net;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
@@ -42,8 +42,8 @@ public class CriteriaHelper {
             long checkIntervalMs) throws InterruptedException {
         boolean isSatisfied = criteria.isSatisfied();
         long startTime = SystemClock.uptimeMillis();
-        while (!isSatisfied &&
-               SystemClock.uptimeMillis() - startTime < maxTimeoutMs) {
+        while (!isSatisfied
+               && SystemClock.uptimeMillis() - startTime < maxTimeoutMs) {
             Thread.sleep(checkIntervalMs);
             isSatisfied = criteria.isSatisfied();
         }

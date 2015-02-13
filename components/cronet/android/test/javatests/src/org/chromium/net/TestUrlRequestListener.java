@@ -2,18 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_test_apk;
+package org.chromium.net;
 
 import android.os.ConditionVariable;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-
-import org.chromium.net.ExtendedResponseInfo;
-import org.chromium.net.ResponseInfo;
-import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestException;
-import org.chromium.net.UrlRequestListener;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

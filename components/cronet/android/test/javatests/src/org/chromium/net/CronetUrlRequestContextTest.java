@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_test_apk;
+package org.chromium.net;
 
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -11,14 +11,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.cronet_test_apk.TestUrlRequestListener.FailureType;
-import org.chromium.cronet_test_apk.TestUrlRequestListener.ResponseStep;
-import org.chromium.net.ExtendedResponseInfo;
-import org.chromium.net.ResponseInfo;
-import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestContext;
-import org.chromium.net.UrlRequestContextConfig;
-import org.chromium.net.UrlRequestException;
+import org.chromium.net.TestUrlRequestListener.FailureType;
+import org.chromium.net.TestUrlRequestListener.ResponseStep;
 
 import java.io.File;
 import java.nio.ByteBuffer;

@@ -13,7 +13,7 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  * A MessageLoop class for use in {@link CronetHttpURLConnection}.
  */
-public final class MessageLoop implements Executor {
+class MessageLoop implements Executor {
     private final BlockingQueue<Runnable> mQueue;
 
     // A reusable runnable to quit the message loop.
@@ -28,7 +28,7 @@ public final class MessageLoop implements Executor {
     // task enqueued.
     private boolean mLoopFailed = false;
 
-    public MessageLoop() {
+    MessageLoop() {
         mQueue = new LinkedBlockingQueue<Runnable>();
         mQuitTask = new Runnable() {
             @Override

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_test_apk.urlconnection;
+package org.chromium.net.urlconnection;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.cronet_test_apk.CronetTestActivity;
-import org.chromium.cronet_test_apk.CronetTestBase;
-import org.chromium.cronet_test_apk.NativeTestServer;
-import org.chromium.net.urlconnection.CronetHttpURLStreamHandler;
+import org.chromium.net.CronetTestActivity;
+import org.chromium.net.CronetTestBase;
+import org.chromium.net.NativeTestServer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

@@ -7,7 +7,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chromium.cronet_test_apk">
+    package="org.chromium.net">
 
     <application android:name="CronetTestApplication"
             android:label="Cronet Test">
