@@ -1285,13 +1285,13 @@ const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 // behavior is to also quit all hosted apps.
 const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
 
+// Disables app shim creation for hosted apps on Mac.
+const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
+
 // Forcibly disables Lion-style on newer OSes, to allow developers to test the
 // older, SnowLeopard-style fullscreen.
 const char kDisableSystemFullscreenForTesting[] =
     "disable-system-fullscreen-for-testing";
-
-// Enables app shim creation for hosted apps on Mac.
-const char kEnableHostedAppShimCreation[] = "enable-hosted-app-shim-creation";
 
 // A process type (switches::kProcessType) that relaunches the browser. See
 // chrome/browser/mac/relauncher.h.

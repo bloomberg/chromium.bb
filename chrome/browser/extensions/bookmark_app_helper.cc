@@ -452,8 +452,8 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     AppListService::Get(desktop)
         ->ShowForAppInstall(current_profile, extension->id(), false);
 #if defined(OS_MACOSX)
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableHostedAppShimCreation)) {
+  } else if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kDisableHostedAppShimCreation)) {
     web_app::RevealAppShimInFinderForApp(profile_, extension);
 #endif
   } else {

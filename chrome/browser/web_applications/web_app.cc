@@ -290,8 +290,8 @@ bool ShouldCreateShortcutFor(Profile* profile,
 // An additional check here for OS X. We need app shims to be
 // able to show them in the dock.
 #if defined(OS_MACOSX)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHostedAppShimCreation)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHostedAppShimCreation)) {
     app_type_requires_shortcut =
         app_type_requires_shortcut || extension->is_hosted_app();
   }

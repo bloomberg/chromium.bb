@@ -1560,11 +1560,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_MACOSX)
   {
-    "enable-hosted-app-shim-creation",
-    IDS_FLAGS_ENABLE_HOSTED_APP_SHIM_CREATION_NAME,
-    IDS_FLAGS_ENABLE_HOSTED_APP_SHIM_CREATION_DESCRIPTION,
+    "disable-hosted-app-shim-creation",
+    IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_NAME,
+    IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_DESCRIPTION,
     kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableHostedAppShimCreation)
+    SINGLE_VALUE_TYPE(switches::kDisableHostedAppShimCreation)
   },
   {
     "enable-hosted-app-quit-notification",
