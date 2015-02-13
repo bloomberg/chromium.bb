@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef RenderImageResource_h
-#define RenderImageResource_h
+#ifndef LayoutImageResource_h
+#define LayoutImageResource_h
 
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
@@ -34,14 +34,14 @@ namespace blink {
 
 class LayoutObject;
 
-class RenderImageResource {
-    WTF_MAKE_NONCOPYABLE(RenderImageResource); WTF_MAKE_FAST_ALLOCATED;
+class LayoutImageResource {
+    WTF_MAKE_NONCOPYABLE(LayoutImageResource); WTF_MAKE_FAST_ALLOCATED;
 public:
-    virtual ~RenderImageResource();
+    virtual ~LayoutImageResource();
 
-    static PassOwnPtr<RenderImageResource> create()
+    static PassOwnPtr<LayoutImageResource> create()
     {
-        return adoptPtr(new RenderImageResource);
+        return adoptPtr(new LayoutImageResource);
     }
 
     virtual void initialize(LayoutObject*);
@@ -69,7 +69,7 @@ public:
     virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
 
 protected:
-    RenderImageResource();
+    LayoutImageResource();
     LayoutObject* m_renderer;
     ResourcePtr<ImageResource> m_cachedImage;
 
@@ -79,4 +79,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderImage_h
+#endif // LayoutImage_h

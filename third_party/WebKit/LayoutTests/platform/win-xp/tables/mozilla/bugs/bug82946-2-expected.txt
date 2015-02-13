@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 506x141
                   LayoutTableRow {TR} at (0,2) size 506x137
                     LayoutTableCell {TD} at (2,2) size 502x137 [r=0 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (1,1) size 220x135
+                      LayoutImage {IMG} at (1,1) size 220x135
                       RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (763,87) size 3x22 [r=0 c=1 rs=2 cs=1]
               RenderBR {BR} at (1,1) size 0x19

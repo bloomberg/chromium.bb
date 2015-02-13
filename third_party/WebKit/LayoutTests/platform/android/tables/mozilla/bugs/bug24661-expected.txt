@@ -16,4 +16,4 @@ layer at (0,0) size 800x600
                         text run at (1,21) width 34: "resize"
                   LayoutTableRow {TR} at (0,42) size 222x10
                     LayoutTableCell {TD} at (0,42) size 222x10 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (1,1) size 1x8
+                      LayoutImage {IMG} at (1,1) size 1x8

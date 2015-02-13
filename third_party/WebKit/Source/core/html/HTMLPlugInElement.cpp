@@ -38,6 +38,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
+#include "core/layout/LayoutImage.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/EventHandler.h"
@@ -47,7 +48,6 @@
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderPart.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
@@ -272,8 +272,8 @@ LayoutObject* HTMLPlugInElement::createRenderer(const LayoutStyle& style)
         return LayoutObject::createObject(this, style);
 
     if (isImageType()) {
-        RenderImage* image = new RenderImage(this);
-        image->setImageResource(RenderImageResource::create());
+        LayoutImage* image = new LayoutImage(this);
+        image->setImageResource(LayoutImageResource::create());
         return image;
     }
 

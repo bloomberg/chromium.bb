@@ -72,7 +72,7 @@ layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (24,0) size 731x18
           text run at (24,0) width 731: " following image is also an anchor which points to a target on this page, but it should not have a border around it: "
         RenderInline {A} at (0,0) size 15x18 [color=#0000FF]
-          RenderImage {IMG} at (0,18) size 15x15
+          LayoutImage {IMG} at (0,18) size 15x15
         RenderText {#text} at (15,19) size 4x18
           text run at (15,19) width 4: "."
       LayoutTable {TABLE} at (0,633) size 769x113 [border: (1px outset #808080)]
@@ -158,7 +158,7 @@ layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (24,0) width 709: " following image is also an anchor which points to a target on this page, but it should not have a border around"
                   text run at (0,19) width 18: "it: "
                 RenderInline {A} at (0,0) size 16x18 [color=#0000FF]
-                  RenderImage {IMG} at (17.33,18) size 15x15
+                  LayoutImage {IMG} at (17.33,18) size 15x15
                 RenderText {#text} at (32,19) size 5x18
                   text run at (32,19) width 5: "."
               LayoutTable {TABLE} at (5,438) size 743x113 [border: (1px outset #808080)]

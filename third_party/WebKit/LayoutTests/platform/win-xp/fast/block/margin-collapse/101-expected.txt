@@ -8,4 +8,4 @@ layer at (0,0) size 800x600
           RenderText {#text} at (2,2) size 348x39
             text run at (2,2) width 348: "There should be only 2em between this paragraph and the"
             text run at (2,22) width 80: "image below."
-        RenderImage {IMG} at (0,76) size 395x275
+        LayoutImage {IMG} at (0,76) size 395x275

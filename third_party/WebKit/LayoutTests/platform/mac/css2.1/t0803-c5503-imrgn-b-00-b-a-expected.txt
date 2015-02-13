@@ -23,8 +23,8 @@ layer at (0,0) size 800x238
         RenderText {#text} at (0,32) size 112x16
           text run at (0,32) width 112: "xxx xxx"
       RenderBlock {DIV} at (0,162) size 784x52
-        RenderImage {IMG} at (0,0) size 48x48
-        RenderImage {IMG} at (48,0) size 16x48 [border: (16px solid #FFFF00) none (16px solid #FFFF00) none]
-        RenderImage {IMG} at (64,0) size 48x48
-        RenderImage {IMG} at (112,0) size 48x48
+        LayoutImage {IMG} at (0,0) size 48x48
+        LayoutImage {IMG} at (48,0) size 16x48 [border: (16px solid #FFFF00) none (16px solid #FFFF00) none]
+        LayoutImage {IMG} at (64,0) size 48x48
+        LayoutImage {IMG} at (112,0) size 48x48
         RenderText {#text} at (0,0) size 0x0

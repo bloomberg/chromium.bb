@@ -18,19 +18,19 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 798x39
           LayoutTableRow {TR} at (0,0) size 798x17
             LayoutTableCell {TD} at (0,7) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
             LayoutTableCell {TD} at (17,0) size 764x17 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 110x15
+              LayoutImage {IMG} at (1,1) size 110x15
             LayoutTableCell {TD} at (781,7) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
           LayoutTableRow {TR} at (0,17) size 798x22
             LayoutTableCell {TD} at (0,26) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
             LayoutTableCell {TD} at (17,17) size 764x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 22x19
                 text run at (1,1) width 22: "that"
             LayoutTableCell {TD} at (781,26) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
       RenderBlock {P} at (0,133) size 800x20
         RenderText {#text} at (20,0) size 734x19
           text run at (20,0) width 247: "Here's the first row in a table on its own. "
@@ -39,11 +39,11 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 798x17
           LayoutTableRow {TR} at (0,0) size 798x17
             LayoutTableCell {TD} at (0,7) size 84x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
             LayoutTableCell {TD} at (84,0) size 629x17 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 110x15
+              LayoutImage {IMG} at (1,1) size 110x15
             LayoutTableCell {TD} at (713,7) size 85x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
       RenderBlock {P} at (0,204) size 800x40
         RenderText {#text} at (20,0) size 748x39
           text run at (20,0) width 268: "Here's the second row in a table on its own. "
@@ -53,12 +53,12 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 798x22
           LayoutTableRow {TR} at (0,0) size 798x22
             LayoutTableCell {TD} at (0,9) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
             LayoutTableCell {TD} at (17,0) size 764x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 22x19
                 text run at (1,1) width 22: "that"
             LayoutTableCell {TD} at (781,9) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 15x1
+              LayoutImage {IMG} at (1,1) size 15x1
       RenderBlock {P} at (0,300) size 800x40
         RenderText {#text} at (20,0) size 759x39
           text run at (20,0) width 575: "Note that in Nav4.x, the middle column gets the width of the maximum width cell in the column; "

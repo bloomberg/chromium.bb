@@ -14,10 +14,10 @@ layer at (0,0) size 800x614 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
 layer at (8,9) size 335x296
-  RenderImage {IMG} at (0,0) size 335x296
+  LayoutImage {IMG} at (0,0) size 335x296
 layer at (344,305) size 335x296 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderImage {IMG} at (336,296) size 335x296
+  LayoutImage {IMG} at (336,296) size 335x296
 layer at (683,305) size 335x296 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderImage {IMG} at (0,297) size 335x296
+  LayoutImage {IMG} at (0,297) size 335x296
 layer at (1022,8) size 335x296 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderImage {IMG} at (339,0) size 335x296
+  LayoutImage {IMG} at (339,0) size 335x296

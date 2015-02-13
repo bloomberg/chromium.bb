@@ -22,10 +22,10 @@
  *
  */
 
-#ifndef RenderImage_h
-#define RenderImage_h
+#ifndef LayoutImage_h
+#define LayoutImage_h
 
-#include "core/rendering/RenderImageResource.h"
+#include "core/layout/LayoutImageResource.h"
 #include "core/rendering/RenderReplaced.h"
 
 namespace blink {
@@ -33,22 +33,22 @@ namespace blink {
 class HTMLAreaElement;
 class HTMLMapElement;
 
-class RenderImage : public RenderReplaced {
+class LayoutImage : public RenderReplaced {
 public:
     // These are the paddings to use when displaying either alt text or an image.
     static const unsigned short paddingWidth = 4;
     static const unsigned short paddingHeight = 4;
 
-    RenderImage(Element*);
-    virtual ~RenderImage();
+    LayoutImage(Element*);
+    virtual ~LayoutImage();
     virtual void destroy() override;
 
-    static RenderImage* createAnonymous(Document*);
+    static LayoutImage* createAnonymous(Document*);
 
-    void setImageResource(PassOwnPtr<RenderImageResource>);
+    void setImageResource(PassOwnPtr<LayoutImageResource>);
 
-    RenderImageResource* imageResource() { return m_imageResource.get(); }
-    const RenderImageResource* imageResource() const { return m_imageResource.get(); }
+    LayoutImageResource* imageResource() { return m_imageResource.get(); }
+    const LayoutImageResource* imageResource() const { return m_imageResource.get(); }
     ImageResource* cachedImage() const { return m_imageResource ? m_imageResource->cachedImage() : 0; }
 
     HTMLMapElement* imageMap() const;
@@ -79,10 +79,10 @@ protected:
     virtual void layout() override;
     virtual bool updateImageLoadingPriorities() override final;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderImage || RenderReplaced::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || RenderReplaced::isOfType(type); }
 
 private:
-    virtual const char* renderName() const override { return "RenderImage"; }
+    virtual const char* renderName() const override { return "LayoutImage"; }
 
     virtual bool isImage() const override { return true; }
 
@@ -106,16 +106,14 @@ private:
     void updateInnerContentRect();
 
     // Text to display as long as the image isn't available.
-    OwnPtr<RenderImageResource> m_imageResource;
+    OwnPtr<LayoutImageResource> m_imageResource;
     bool m_didIncrementVisuallyNonEmptyPixelCount;
     bool m_isGeneratedContent;
     float m_imageDevicePixelRatio;
-
-    friend class RenderImageScaleObserver;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderImage, isRenderImage());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutImage, isLayoutImage());
 
 } // namespace blink
 
-#endif // RenderImage_h
+#endif // LayoutImage_h

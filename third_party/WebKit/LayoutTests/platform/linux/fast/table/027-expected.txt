@@ -69,5 +69,5 @@ layer at (0,0) size 800x600
                                 text run at (2,302) width 36: "work."
                             LayoutTableCell {TD} at (199,162) size 127x4 [border: (1px solid #008000)] [r=0 c=2 rs=1 cs=1]
             LayoutTableCell {TD} at (564,187) size 220x26 [border: (1px solid #008000)] [r=1 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (4,4) size 212x18
+              LayoutImage {IMG} at (4,4) size 212x18
               RenderText {#text} at (0,0) size 0x0

@@ -36,6 +36,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutImage.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -43,7 +44,6 @@
 #include "core/loader/PingLoader.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/network/NetworkHints.h"
 #include "platform/network/ResourceRequest.h"
@@ -131,9 +131,9 @@ static void appendServerMapMousePosition(StringBuilder& url, Event* event)
     if (!imageElement.isServerMap())
         return;
 
-    if (!imageElement.renderer() || !imageElement.renderer()->isRenderImage())
+    if (!imageElement.renderer() || !imageElement.renderer()->isLayoutImage())
         return;
-    RenderImage* renderer = toRenderImage(imageElement.renderer());
+    LayoutImage* renderer = toLayoutImage(imageElement.renderer());
 
     // FIXME: This should probably pass true for useTransforms.
     FloatPoint absolutePosition = renderer->absoluteToLocal(FloatPoint(toMouseEvent(event)->pageX(), toMouseEvent(event)->pageY()));

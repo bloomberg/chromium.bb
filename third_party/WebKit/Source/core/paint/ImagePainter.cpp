@@ -11,12 +11,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderReplaced.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
@@ -25,7 +25,7 @@ namespace blink {
 
 void ImagePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    m_renderImage.RenderReplaced::paint(paintInfo, paintOffset);
+    m_layoutImage.RenderReplaced::paint(paintInfo, paintOffset);
 
     if (paintInfo.phase == PaintPhaseOutline)
         paintAreaElementFocusRing(paintInfo);
@@ -33,7 +33,7 @@ void ImagePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
 
 void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
 {
-    Document& document = m_renderImage.document();
+    Document& document = m_layoutImage.document();
 
     if (document.printing() || !document.frame()->selection().isFocusedAndActive())
         return;
@@ -43,13 +43,13 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
         return;
 
     HTMLAreaElement& areaElement = toHTMLAreaElement(*focusedElement);
-    if (areaElement.imageElement() != m_renderImage.node())
+    if (areaElement.imageElement() != m_layoutImage.node())
         return;
 
     // Even if the theme handles focus ring drawing for entire elements, it won't do it for
     // an area within an image, so we don't call LayoutTheme::supportsFocusRing here.
 
-    Path path = areaElement.computePath(&m_renderImage);
+    Path path = areaElement.computePath(&m_layoutImage);
     if (path.isEmpty())
         return;
 
@@ -58,9 +58,9 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
     if (!outlineWidth)
         return;
 
-    IntRect focusRect = m_renderImage.absoluteContentBox();
+    IntRect focusRect = m_layoutImage.absoluteContentBox();
 
-    RenderDrawingRecorder drawingRecorder(paintInfo.context, m_renderImage, paintInfo.phase, focusRect);
+    RenderDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 
@@ -71,24 +71,24 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
     paintInfo.context->clip(focusRect);
     paintInfo.context->drawFocusRing(path, outlineWidth,
         areaElementStyle.outlineOffset(),
-        m_renderImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
+        m_layoutImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
     paintInfo.context->restore();
 }
 
 void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutUnit cWidth = m_renderImage.contentWidth();
-    LayoutUnit cHeight = m_renderImage.contentHeight();
+    LayoutUnit cWidth = m_layoutImage.contentWidth();
+    LayoutUnit cHeight = m_layoutImage.contentHeight();
 
     GraphicsContext* context = paintInfo.context;
 
-    if (!m_renderImage.imageResource()->hasImage()) {
+    if (!m_layoutImage.imageResource()->hasImage()) {
         if (paintInfo.phase == PaintPhaseSelection)
             return;
 
         if (cWidth > 2 && cHeight > 2) {
             // Draw an outline rect where the image should be.
-            IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + m_renderImage.borderLeft() + m_renderImage.paddingLeft(), paintOffset.y() + m_renderImage.borderTop() + m_renderImage.paddingTop(), cWidth, cHeight));
+            IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + m_layoutImage.borderLeft() + m_layoutImage.paddingLeft(), paintOffset.y() + m_layoutImage.borderTop() + m_layoutImage.paddingTop(), cWidth, cHeight));
 
 
             context->setStrokeStyle(SolidStroke);
@@ -97,9 +97,9 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
             context->drawRect(paintRect);
         }
     } else if (cWidth > 0 && cHeight > 0) {
-        LayoutRect contentRect = m_renderImage.contentBoxRect();
+        LayoutRect contentRect = m_layoutImage.contentBoxRect();
         contentRect.moveBy(paintOffset);
-        LayoutRect paintRect = m_renderImage.replacedContentRect();
+        LayoutRect paintRect = m_layoutImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
 
         bool clip = !contentRect.contains(paintRect);
@@ -117,25 +117,25 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
 
 void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rect)
 {
-    if (!m_renderImage.imageResource()->hasImage() || m_renderImage.imageResource()->errorOccurred())
+    if (!m_layoutImage.imageResource()->hasImage() || m_layoutImage.imageResource()->errorOccurred())
         return; // FIXME: should we just ASSERT these conditions? (audit all callers).
 
     IntRect alignedRect = pixelSnappedIntRect(rect);
     if (alignedRect.width() <= 0 || alignedRect.height() <= 0)
         return;
 
-    RefPtr<Image> image = m_renderImage.imageResource()->image(alignedRect.width(), alignedRect.height());
+    RefPtr<Image> image = m_layoutImage.imageResource()->image(alignedRect.width(), alignedRect.height());
     if (!image || image->isNull())
         return;
 
     // FIXME: why is interpolation quality selection not included in the Instrumentation reported cost of drawing an image?
-    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_renderImage, context, image.get(), image.get(), LayoutSize(alignedRect.size()));
+    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutImage, context, image.get(), image.get(), LayoutSize(alignedRect.size()));
 
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(m_renderImage));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(m_layoutImage));
 
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
-    context->drawImage(image.get(), alignedRect, SkXfermode::kSrcOver_Mode, m_renderImage.shouldRespectImageOrientation());
+    context->drawImage(image.get(), alignedRect, SkXfermode::kSrcOver_Mode, m_layoutImage.shouldRespectImageOrientation());
     context->setImageInterpolationQuality(previousInterpolationQuality);
 }
 

@@ -33,9 +33,9 @@
 namespace blink {
 
 RenderMedia::RenderMedia(HTMLMediaElement* video)
-    : RenderImage(video)
+    : LayoutImage(video)
 {
-    setImageResource(RenderImageResource::create());
+    setImageResource(LayoutImageResource::create());
 }
 
 RenderMedia::~RenderMedia()
@@ -51,7 +51,7 @@ void RenderMedia::layout()
 {
     LayoutSize oldSize = contentBoxRect().size();
 
-    RenderImage::layout();
+    LayoutImage::layout();
 
     RenderBox* controlsRenderer = toRenderBox(m_children.firstChild());
     if (!controlsRenderer)

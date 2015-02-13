@@ -11,7 +11,7 @@ layer at (0,0) size 800x546
           RenderText {#text} at (0,0) size 138x16
             text run at (0,0) width 138: "WICD Core 1.0 #20-1"
         RenderBlock {div} at (0,64.14) size 176x62 [bgcolor=#FF0000]
-          RenderImage {object} at (0,0) size 176x62
+          LayoutImage {object} at (0,0) size 176x62
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (anonymous) at (0,126.14) size 752x18
           RenderBR {br} at (0,0) size 0x17
@@ -22,7 +22,7 @@ layer at (0,0) size 800x546
             text run at (0,0) width 675: "Above there must be a GIF- and a SVG-image visible. Both are referenced by an object element (width:100%,"
             text run at (0,17) width 506: "no defined height) and each nested into a div element (width:176px, height:62px)."
         RenderBlock {div} at (0,248.77) size 176x62 [bgcolor=#FF0000]
-          RenderImage {object} at (0,0) size 176x62
+          LayoutImage {object} at (0,0) size 176x62
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (anonymous) at (0,310.77) size 752x18
           RenderBR {br} at (0,0) size 0x17

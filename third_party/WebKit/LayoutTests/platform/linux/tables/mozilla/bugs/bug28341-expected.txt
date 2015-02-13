@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (312,15) size 0x0
       LayoutTable {TABLE} at (0,20) size 182x55
         RenderBlock {CAPTION} at (0,0) size 182x29
-          RenderImage {IMG} at (0,0) size 182x29
+          LayoutImage {IMG} at (0,0) size 182x29
           RenderText {#text} at (0,0) size 0x0
         LayoutTableSection {TBODY} at (0,29) size 182x26
           LayoutTableRow {TR} at (0,2) size 182x22

@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               RenderBR {BR} at (1,1) size 0x17
           LayoutTableRow {TR} at (0,37) size 781x5
             LayoutTableCell {TD} at (0,37) size 781x5 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 779x3
+              LayoutImage {IMG} at (1,1) size 779x3
           LayoutTableRow {TR} at (0,42) size 781x38
             LayoutTableCell {TD} at (0,51) size 781x20 [bgcolor=#CC0000] [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
               RenderBR {BR} at (1,1) size 0x17

@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
 layer at (8,8) size 154x100 clip at (18,18) size 134x80
   RenderBlock (floating) {DIV} at (0,0) size 154x100 [border: (10px solid #FF0000)]
-    RenderImage {IMG} at (10,10) size 86x66
+    LayoutImage {IMG} at (10,10) size 86x66
     RenderBlock {DIV} at (10,10) size 134x14
       RenderText {#text} at (92,0) size 6x14
         text run at (92,0) width 6: "x"

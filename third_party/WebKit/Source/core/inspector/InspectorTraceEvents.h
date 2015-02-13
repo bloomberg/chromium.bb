@@ -30,7 +30,7 @@ class LocalFrame;
 class Node;
 class QualifiedName;
 class Page;
-class RenderImage;
+class LayoutImage;
 class LayoutObject;
 class ResourceRequest;
 class ResourceResponse;
@@ -212,7 +212,7 @@ public:
 
 class InspectorPaintImageEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderImage&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutImage&);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&, const StyleImage&);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const ImageResource&);
 };

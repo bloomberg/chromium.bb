@@ -9,6 +9,6 @@ layer at (8,8) size 335x296 transparent
   RenderBlock {DIV} at (0,0) size 335x296
     RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 335x296 transparent
-  RenderImage {IMG} at (0,0) size 335x296
+  LayoutImage {IMG} at (0,0) size 335x296
 layer at (347,8) size 335x296 transparent
-  RenderImage {IMG} at (339,0) size 335x296
+  LayoutImage {IMG} at (339,0) size 335x296

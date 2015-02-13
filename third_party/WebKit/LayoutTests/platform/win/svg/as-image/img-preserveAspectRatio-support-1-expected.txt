@@ -24,7 +24,7 @@ layer at (0,0) size 800x504
                 text run at (1,1) width 91: "No viewBox"
             LayoutTableCell {TH} at (97,51) size 163x2 [bgcolor=#DDDD99] [r=1 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (262,24) size 202x56 [r=1 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,24) size 202x56 [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
@@ -33,7 +33,7 @@ layer at (0,0) size 800x504
               RenderText {#text} at (62,1) size 39x17
                 text run at (62,1) width 39: "none"
             LayoutTableCell {TD} at (262,82) size 202x56 [r=2 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,82) size 202x56 [r=2 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
@@ -42,7 +42,7 @@ layer at (0,0) size 800x504
               RenderText {#text} at (62,1) size 39x17
                 text run at (62,1) width 39: "meet"
             LayoutTableCell {TD} at (262,140) size 202x56 [r=3 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,140) size 202x56 [r=3 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
@@ -51,7 +51,7 @@ layer at (0,0) size 800x504
               RenderText {#text} at (63,1) size 37x17
                 text run at (63,1) width 37: "slice"
             LayoutTableCell {TD} at (262,198) size 202x56 [r=4 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,198) size 202x56 [r=4 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
@@ -61,7 +61,7 @@ layer at (0,0) size 800x504
                 text run at (14,1) width 65: "viewBox"
             LayoutTableCell {TH} at (97,283) size 163x2 [bgcolor=#DDDD99] [r=5 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (262,256) size 202x56 [r=5 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,256) size 202x56 [r=5 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
@@ -70,7 +70,7 @@ layer at (0,0) size 800x504
               RenderText {#text} at (62,1) size 39x17
                 text run at (62,1) width 39: "none"
             LayoutTableCell {TD} at (262,314) size 202x56 [r=6 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,314) size 202x56 [r=6 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
@@ -79,7 +79,7 @@ layer at (0,0) size 800x504
               RenderText {#text} at (62,1) size 39x17
                 text run at (62,1) width 39: "meet"
             LayoutTableCell {TD} at (262,372) size 202x56 [r=7 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,372) size 202x56 [r=7 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
@@ -88,7 +88,7 @@ layer at (0,0) size 800x504
               RenderText {#text} at (63,1) size 37x17
                 text run at (63,1) width 37: "slice"
             LayoutTableCell {TD} at (262,430) size 202x56 [r=8 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
+              LayoutImage {IMG} at (1,1) size 200x50 [border: (2px dashed #800000)]
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (466,430) size 202x56 [r=8 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0

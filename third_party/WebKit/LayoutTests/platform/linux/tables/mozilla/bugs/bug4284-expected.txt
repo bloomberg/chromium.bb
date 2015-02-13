@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (432,15) size 0x0
       RenderBlock {DIV} at (0,70) size 784x80
         RenderBlock (anonymous) at (0,0) size 784x50
-          RenderImage {IMG} at (367,0) size 50x50
+          LayoutImage {IMG} at (367,0) size 50x50
           RenderText {#text} at (0,0) size 0x0
         LayoutTable {TABLE} at (92,50) size 600x30 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 598x28

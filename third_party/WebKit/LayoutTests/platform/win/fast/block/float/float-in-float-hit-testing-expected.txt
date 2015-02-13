@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
           text run at (159,18) width 401: ". Click on the word TEST below and it should turn into PASS."
       RenderBlock {DIV} at (0,100) size 784x200
         RenderBlock (floating) {DIV} at (0,0) size 244.53x200
-          RenderImage {IMG} at (0,0) size 100x100
+          LayoutImage {IMG} at (0,0) size 100x100
           RenderText {#text} at (100,86) size 4x17
             text run at (100,86) width 4: " "
           RenderBR {BR} at (0,0) size 0x0

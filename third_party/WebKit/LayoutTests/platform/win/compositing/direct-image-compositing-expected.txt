@@ -56,14 +56,14 @@ layer at (0,0) size 785x750 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (150,54) width 49: "directly"
           text run at (150,72) width 74: "composited"
 layer at (8,150) size 150x150
-  RenderImage {IMG} at (0,0) size 150x150
+  LayoutImage {IMG} at (0,0) size 150x150
 layer at (268,150) size 160x160
-  RenderImage {IMG} at (0,0) size 160x160 [border: (5px solid #0000FF)]
+  LayoutImage {IMG} at (0,0) size 160x160 [border: (5px solid #0000FF)]
 layer at (13,355) size 150x150
-  RenderImage {IMG} at (5,5) size 150x150
+  LayoutImage {IMG} at (5,5) size 150x150
 layer at (268,350) size 150x150
-  RenderImage {IMG} at (0,0) size 150x150 [bgcolor=#808080]
+  LayoutImage {IMG} at (0,0) size 150x150 [bgcolor=#808080]
 layer at (8,550) size 150x150 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderImage {IMG} at (0,0) size 150x150 [bgcolor=#FFA500]
+  LayoutImage {IMG} at (0,0) size 150x150 [bgcolor=#FFA500]
 layer at (268,550) size 150x150 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderImage {IMG} at (0,0) size 150x150
+  LayoutImage {IMG} at (0,0) size 150x150

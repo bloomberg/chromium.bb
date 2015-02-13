@@ -9,7 +9,7 @@ layer at (0,0) size 800x328
       RenderBlock {p} at (50,60) size 750x34
         RenderText {#text} at (0,16) size 135x17
           text run at (0,16) width 135: "SVG in an IMG tag: "
-        RenderImage {img} at (134.66,0) size 30x30
+        LayoutImage {img} at (134.66,0) size 30x30
       RenderBlock {p} at (50,110) size 750x18
         RenderText {#text} at (0,0) size 188x17
           text run at (0,0) width 188: "SVG in a background-image:"

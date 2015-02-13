@@ -44,9 +44,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutImage.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/ContentType.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/MIMETypeRegistry.h"
@@ -251,7 +251,7 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
         UseCounter::count(document(), UseCounter::SrcsetXDescriptor);
     }
     if (renderer() && renderer()->isImage())
-        toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+        toLayoutImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
 }
 
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -341,8 +341,8 @@ LayoutObject* HTMLImageElement::createRenderer(const LayoutStyle& style)
     if (m_useFallbackContent)
         return new RenderBlockFlow(this);
 
-    RenderImage* image = new RenderImage(this);
-    image->setImageResource(RenderImageResource::create());
+    LayoutImage* image = new LayoutImage(this);
+    image->setImageResource(LayoutImageResource::create());
     image->setImageDevicePixelRatio(m_imageDevicePixelRatio);
     return image;
 }
@@ -352,20 +352,20 @@ void HTMLImageElement::attach(const AttachContext& context)
     HTMLElement::attach(context);
 
     if (renderer() && renderer()->isImage()) {
-        RenderImage* renderImage = toRenderImage(renderer());
-        RenderImageResource* renderImageResource = renderImage->imageResource();
+        LayoutImage* layoutImage = toLayoutImage(renderer());
+        LayoutImageResource* layoutImageResource = layoutImage->imageResource();
         if (m_isFallbackImage) {
-            float deviceScaleFactor = blink::deviceScaleFactor(renderImage->frame());
+            float deviceScaleFactor = blink::deviceScaleFactor(layoutImage->frame());
             pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
             ImageResource* newImageResource = new ImageResource(brokenImageAndImageScaleFactor.first);
-            renderImage->imageResource()->setImageResource(newImageResource);
+            layoutImage->imageResource()->setImageResource(newImageResource);
         }
-        if (renderImageResource->hasImage())
+        if (layoutImageResource->hasImage())
             return;
 
-        if (!imageLoader().image() && !renderImageResource->cachedImage())
+        if (!imageLoader().image() && !layoutImageResource->cachedImage())
             return;
-        renderImageResource->setImageResource(imageLoader().image());
+        layoutImageResource->setImageResource(imageLoader().image());
     }
 }
 
@@ -630,8 +630,8 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
         return FloatSize();
     LayoutSize size;
     size = image->imageSizeForRenderer(renderer(), 1.0f);
-    if (renderer() && renderer()->isRenderImage() && image->image() && !image->image()->hasRelativeWidth())
-        size.scale(toRenderImage(renderer())->imageDevicePixelRatio());
+    if (renderer() && renderer()->isLayoutImage() && image->image() && !image->image()->hasRelativeWidth())
+        size.scale(toLayoutImage(renderer())->imageDevicePixelRatio());
     return FloatSize(size);
 }
 

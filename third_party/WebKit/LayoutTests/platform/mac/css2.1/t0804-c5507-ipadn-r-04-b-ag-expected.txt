@@ -15,14 +15,14 @@ layer at (0,0) size 800x116
         RenderText {#text} at (75,0) size 15x15
           text run at (75,0) width 15: "x"
       RenderBlock {P} at (0,65) size 784x19 [color=#000080]
-        RenderImage {IMG} at (0,0) size 15x15
-        RenderImage {IMG} at (15,0) size 15x15
-        RenderImage {IMG} at (30,0) size 15x15
-        RenderImage {IMG} at (45,0) size 15x15
-        RenderImage {IMG} at (60,0) size 15x15
-        RenderImage {IMG} at (75,0) size 15x15
-        RenderImage {IMG} at (90,0) size 15x15
-        RenderImage {IMG} at (105,0) size 15x15
-        RenderImage {IMG} at (120,0) size 15x15
-        RenderImage {IMG} at (135,0) size 15x15
+        LayoutImage {IMG} at (0,0) size 15x15
+        LayoutImage {IMG} at (15,0) size 15x15
+        LayoutImage {IMG} at (30,0) size 15x15
+        LayoutImage {IMG} at (45,0) size 15x15
+        LayoutImage {IMG} at (60,0) size 15x15
+        LayoutImage {IMG} at (75,0) size 15x15
+        LayoutImage {IMG} at (90,0) size 15x15
+        LayoutImage {IMG} at (105,0) size 15x15
+        LayoutImage {IMG} at (120,0) size 15x15
+        LayoutImage {IMG} at (135,0) size 15x15
         RenderText {#text} at (0,0) size 0x0

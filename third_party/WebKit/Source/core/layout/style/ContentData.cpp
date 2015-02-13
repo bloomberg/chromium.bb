@@ -23,10 +23,10 @@
 #include "core/layout/style/ContentData.h"
 
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutImageResource.h"
+#include "core/layout/LayoutImageResourceStyleImage.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderImageResource.h"
-#include "core/rendering/RenderImageResourceStyleImage.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderTextFragment.h"
 
@@ -68,12 +68,12 @@ PassOwnPtr<ContentData> ContentData::clone() const
 
 LayoutObject* ImageContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
 {
-    RenderImage* image = RenderImage::createAnonymous(&doc);
+    LayoutImage* image = LayoutImage::createAnonymous(&doc);
     image->setPseudoStyle(&pseudoStyle);
     if (m_image)
-        image->setImageResource(RenderImageResourceStyleImage::create(m_image.get()));
+        image->setImageResource(LayoutImageResourceStyleImage::create(m_image.get()));
     else
-        image->setImageResource(RenderImageResource::create());
+        image->setImageResource(LayoutImageResource::create());
     return image;
 }
 

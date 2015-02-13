@@ -26,31 +26,30 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderImageResource.h"
+#include "core/layout/LayoutImageResource.h"
 
-#include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderImage.h"
+#include "core/layout/LayoutImage.h"
 
 namespace blink {
 
-RenderImageResource::RenderImageResource()
+LayoutImageResource::LayoutImageResource()
     : m_renderer(0)
     , m_cachedImage(0)
 {
 }
 
-RenderImageResource::~RenderImageResource()
+LayoutImageResource::~LayoutImageResource()
 {
 }
 
-void RenderImageResource::initialize(LayoutObject* renderer)
+void LayoutImageResource::initialize(LayoutObject* renderer)
 {
     ASSERT(!m_renderer);
     ASSERT(renderer);
     m_renderer = renderer;
 }
 
-void RenderImageResource::shutdown()
+void LayoutImageResource::shutdown()
 {
     ASSERT(m_renderer);
 
@@ -58,7 +57,7 @@ void RenderImageResource::shutdown()
         m_cachedImage->removeClient(m_renderer);
 }
 
-void RenderImageResource::setImageResource(ImageResource* newImage)
+void LayoutImageResource::setImageResource(ImageResource* newImage)
 {
     ASSERT(m_renderer);
 
@@ -77,7 +76,7 @@ void RenderImageResource::setImageResource(ImageResource* newImage)
     }
 }
 
-void RenderImageResource::resetAnimation()
+void LayoutImageResource::resetAnimation()
 {
     ASSERT(m_renderer);
 
@@ -89,20 +88,20 @@ void RenderImageResource::resetAnimation()
     m_renderer->setShouldDoFullPaintInvalidation();
 }
 
-void RenderImageResource::setContainerSizeForRenderer(const IntSize& imageContainerSize)
+void LayoutImageResource::setContainerSizeForRenderer(const IntSize& imageContainerSize)
 {
     ASSERT(m_renderer);
     if (m_cachedImage)
         m_cachedImage->setContainerSizeForRenderer(m_renderer, imageContainerSize, m_renderer->style()->effectiveZoom());
 }
 
-LayoutSize RenderImageResource::getImageSize(float multiplier, ImageResource::SizeType type) const
+LayoutSize LayoutImageResource::getImageSize(float multiplier, ImageResource::SizeType type) const
 {
     if (!m_cachedImage)
         return LayoutSize();
     LayoutSize size = m_cachedImage->imageSizeForRenderer(m_renderer, multiplier, type);
-    if (m_renderer && m_renderer->isRenderImage())
-        size.scale(toRenderImage(m_renderer)->imageDevicePixelRatio());
+    if (m_renderer && m_renderer->isLayoutImage())
+        size.scale(toLayoutImage(m_renderer)->imageDevicePixelRatio());
     return size;
 }
 

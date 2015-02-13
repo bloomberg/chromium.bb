@@ -47,7 +47,7 @@ layer at (48,276) size 740x10 scrollHeight 276
       LayoutTableSection {TBODY} at (0,0) size 64x276
         LayoutTableRow {TR} at (0,0) size 64x276
           LayoutTableCell {TD} at (0,0) size 64x276 [r=0 c=0 rs=1 cs=1]
-            RenderImage {IMG} at (0,155) size 64x64
+            LayoutImage {IMG} at (0,155) size 64x64
 layer at (132,108) size 48x18
   RenderBlock (positioned) {P} at (132,108) size 48x18 [bgcolor=#000000] [border: none (6px solid #FFFF00) none]
 layer at (132,144) size 48x15
@@ -60,7 +60,7 @@ layer at (84,144) size 144x24
     RenderBlock {DIV} at (0,0) size 144x0
       RenderInline {OBJECT} at (0,0) size 131x15
         RenderInline {OBJECT} at (0,0) size 131x15
-          RenderImage {OBJECT} at (13,0) size 131x24 [border: none (12px solid #000000) none]
+          LayoutImage {OBJECT} at (13,0) size 131x24 [border: none (12px solid #000000) none]
     RenderBlock (floating) {DIV} at (0,0) size 144x24 [border: none (12px solid #FF0000) none (12px solid #000000)]
     RenderBlock {DIV} at (0,0) size 144x24 [border: none (24px solid #FFFF00)]
 layer at (84,216) size 144x24

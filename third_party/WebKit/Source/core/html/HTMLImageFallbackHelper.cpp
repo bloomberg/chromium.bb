@@ -104,7 +104,7 @@ PassRefPtr<LayoutStyle> HTMLImageFallbackHelper::customStyleForAltText(Element& 
     if (noImageSourceSpecified(element) && !newStyle->width().isSpecifiedOrIntrinsic() && !newStyle->height().isSpecifiedOrIntrinsic() && toHTMLElement(element).altText().isEmpty())
         newStyle->setDisplay(NONE);
 
-    // This preserves legacy behaviour originally defined when alt-text was managed by RenderImage.
+    // This preserves legacy behaviour originally defined when alt-text was managed by LayoutImage.
     if (noImageSourceSpecified(element))
         brokenImage->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
     else

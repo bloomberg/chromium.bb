@@ -77,7 +77,7 @@ layer at (0,0) size 785x1289 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (0,132) size 577x190
       RenderBlock {DIV} at (0,1211.78) size 769x35
         RenderInline {A} at (0,0) size 88x16 [color=#FFFF00]
-          RenderImage {IMG} at (0,0) size 88x31
+          LayoutImage {IMG} at (0,0) size 88x31
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {ADDRESS} at (0,1246.78) size 769x17
         RenderText {#text} at (0,0) size 704x17

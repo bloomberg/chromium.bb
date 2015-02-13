@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,52) size 784x107
         RenderText {#text} at (0,89) size 23x18
           text run at (0,89) width 23: "abc"
-        RenderImage {IMG} at (22.20,0) size 76x103
+        LayoutImage {IMG} at (22.20,0) size 76x103
         RenderText {#text} at (98,89) size 21x18
           text run at (98,89) width 21: "def"
 selection start: position 0 of child 2 {#text} of child 3 {DIV} of body

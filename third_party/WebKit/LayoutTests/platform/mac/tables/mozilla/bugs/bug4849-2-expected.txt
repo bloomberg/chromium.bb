@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
                     RenderBR {BR} at (75,0) size 0x18
                     RenderBR {BR} at (75,18) size 0x18
               LayoutTableCell {TD} at (150,0) size 1x1 [bgcolor=#FFFFFF] [r=0 c=1 rs=1 cs=1]
-                RenderImage {IMG} at (0,0) size 1x1
+                LayoutImage {IMG} at (0,0) size 1x1
                 RenderText {#text} at (0,0) size 0x0
               LayoutTableCell {TD} at (151,0) size 449x90 [r=0 c=2 rs=1 cs=1]
                 LayoutTable {TABLE} at (0,0) size 449x62
@@ -36,11 +36,11 @@ layer at (0,0) size 800x600
                         RenderInline {A} at (0,0) size 97x18 [color=#0000EE]
                           RenderText {#text} at (347,5) size 47x18
                             text run at (347,5) width 47: "MORE"
-                          RenderImage {IMG} at (394,1) size 50x18
+                          LayoutImage {IMG} at (394,1) size 50x18
                         RenderText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,90) size 600x35
               LayoutTableCell {TD} at (0,90) size 600x35 [r=1 c=0 rs=1 cs=3]
                 RenderBlock (anonymous) at (0,0) size 600x1
-                  RenderImage {IMG} at (0,0) size 600x1
+                  LayoutImage {IMG} at (0,0) size 600x1
                 RenderBlock {P} at (0,17) size 600x18
                   RenderBR {BR} at (300,0) size 0x18

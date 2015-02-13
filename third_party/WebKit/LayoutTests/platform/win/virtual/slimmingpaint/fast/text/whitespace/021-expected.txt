@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
                 text run at (1,19) width 39: "edge. "
                 text run at (39,19) width 329: "No way should it be off the edge of the damn table."
               RenderInline {SPAN} at (0,0) size 206x17
-                RenderImage {IMG} at (1,51) size 50x0
+                LayoutImage {IMG} at (1,51) size 50x0
                 RenderText {#text} at (51,37) size 156x17
                   text run at (51,37) width 156: "oh, no I fell off the edge"
               RenderText {#text} at (0,0) size 0x0

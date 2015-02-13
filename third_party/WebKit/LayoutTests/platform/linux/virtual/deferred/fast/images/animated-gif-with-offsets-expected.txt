@@ -12,5 +12,5 @@ layer at (0,0) size 800x600
         RenderText {#text} at (132,85) size 195x19
           text run at (132,85) width 8: ". "
           text run at (140,85) width 187: "If it doesn't crash, we're good. "
-        RenderImage {IMG} at (327,0) size 100x100
+        LayoutImage {IMG} at (327,0) size 100x100
         RenderText {#text} at (0,0) size 0x0

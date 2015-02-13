@@ -14,16 +14,16 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,0) size 600x89
             LayoutTableCell {TD} at (0,0) size 128x89 [bgcolor=#336699] [r=0 c=0 rs=1 cs=1]
               RenderInline {A} at (0,0) size 128x17 [color=#0000EE]
-                RenderImage {IMG} at (0,0) size 128x89
+                LayoutImage {IMG} at (0,0) size 128x89
             LayoutTableCell {TD} at (128,44) size 472x0 [r=0 c=1 rs=1 cs=1]
       LayoutTable {TABLE} at (0,129.72) size 600x18
         LayoutTableSection {TBODY} at (0,0) size 600x18
           LayoutTableRow {TR} at (0,0) size 600x18
             LayoutTableCell {TD} at (0,0) size 600x18 [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (0,0) size 348x18
+              LayoutImage {IMG} at (0,0) size 348x18
               RenderInline {MAP} at (0,0) size 0x17
-              RenderImage {IMG} at (348,0) size 88x18
-              RenderImage {IMG} at (436,0) size 55x18
+              LayoutImage {IMG} at (348,0) size 88x18
+              LayoutImage {IMG} at (436,0) size 55x18
       RenderBlock {P} at (0,163.72) size 784x161
         RenderBlock (anonymous) at (0,0) size 784x54
           RenderText {#text} at (0,0) size 476x17
@@ -37,17 +37,17 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (0,0) size 600x89
             LayoutTableRow {TR} at (0,0) size 600x89
               LayoutTableCell {TD} at (0,0) size 128x89 [bgcolor=#336699] [r=0 c=0 rs=1 cs=1]
-                RenderImage {IMG} at (0,0) size 128x89
+                LayoutImage {IMG} at (0,0) size 128x89
               LayoutTableCell {TD} at (128,44) size 472x0 [r=0 c=1 rs=1 cs=1]
         LayoutTable {TABLE} at (0,143) size 600x18
           LayoutTableSection {TBODY} at (0,0) size 600x18
             LayoutTableRow {TR} at (0,0) size 600x18
               LayoutTableCell {TD} at (0,0) size 600x18 [r=0 c=0 rs=1 cs=1]
-                RenderImage {IMG} at (0,0) size 348x18
-                RenderImage {IMG} at (348,0) size 88x18
+                LayoutImage {IMG} at (0,0) size 348x18
+                LayoutImage {IMG} at (348,0) size 88x18
                 RenderBlock {IMG} at (436,0) size 55x18
 layer at (444,315) size 55x18 clip at (445,316) size 53x16 scrollHeight 18
   RenderBlock {DIV} at (0,0) size 55x18 [border: (1px solid #C0C0C0)]
-    RenderImage {IMG} at (2,2) size 16x16
+    LayoutImage {IMG} at (2,2) size 16x16
 layer at (462,317) size 35x0
   RenderBlock {DIV} at (18,2) size 35x0

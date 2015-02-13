@@ -11,10 +11,10 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,52) size 784x54
         RenderText {#text} at (0,36) size 55x17
           text run at (0,36) width 55: "border:0"
-        RenderImage {IMG} at (54.20,0) size 338x50
+        LayoutImage {IMG} at (54.20,0) size 338x50
       RenderBlock {HR} at (0,114) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,124) size 784x56
         RenderText {#text} at (0,38) size 55x17
           text run at (0,38) width 55: "border:1"
-        RenderImage {IMG} at (54.20,0) size 340x52 [border: (1px solid #000000)]
+        LayoutImage {IMG} at (54.20,0) size 340x52 [border: (1px solid #000000)]
         RenderText {#text} at (0,0) size 0x0

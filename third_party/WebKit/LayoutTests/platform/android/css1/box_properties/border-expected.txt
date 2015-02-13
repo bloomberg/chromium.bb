@@ -70,7 +70,7 @@ layer at (0,0) size 785x1395
         RenderText {#text} at (23,0) size 677x19
           text run at (23,0) width 677: " following image is also an anchor which points to a target on this page, but it should not have a border around it: "
         RenderInline {A} at (0,0) size 15x19 [color=#0000FF]
-          RenderImage {IMG} at (700,0) size 15x15
+          LayoutImage {IMG} at (700,0) size 15x15
         RenderText {#text} at (715,0) size 4x19
           text run at (715,0) width 4: "."
       LayoutTable {TABLE} at (0,609) size 769x121 [border: (1px outset #808080)]
@@ -153,7 +153,7 @@ layer at (0,0) size 785x1395
                 RenderText {#text} at (23,0) size 677x19
                   text run at (23,0) width 677: " following image is also an anchor which points to a target on this page, but it should not have a border around it: "
                 RenderInline {A} at (0,0) size 15x19 [color=#0000FF]
-                  RenderImage {IMG} at (700,0) size 15x15
+                  LayoutImage {IMG} at (700,0) size 15x15
                 RenderText {#text} at (715,0) size 4x19
                   text run at (715,0) width 4: "."
               LayoutTable {TABLE} at (5,403) size 743x121 [border: (1px outset #808080)]

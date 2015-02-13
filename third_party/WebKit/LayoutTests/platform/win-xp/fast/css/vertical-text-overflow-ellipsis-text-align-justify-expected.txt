@@ -49,14 +49,14 @@ layer at (8,787) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size
   RenderBlock {DIV} at (0,779.16) size 32x310 [border: (1px solid #000000)]
     RenderText {#text} at (11,1) size 19x173
       text run at (11,1) width 173: "Lorem ipsum dolor sit amet, "
-    RenderImage {IMG} at (1,174) size 25x25
+    LayoutImage {IMG} at (1,174) size 25x25
     RenderText {#text} at (11,199) size 19x514
       text run at (11,199) width 514: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
 layer at (8,1157) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 708
   RenderBlock {DIV} at (0,1148.88) size 32x310 [border: (1px solid #000000)]
     RenderText {#text} at (11,1) size 19x261
       text run at (11,1) width 261: "Lorem ipsum dolor sit amet, consectetur ad"
-    RenderImage {IMG} at (1,262) size 25x25
+    LayoutImage {IMG} at (1,262) size 25x25
     RenderText {#text} at (11,287) size 19x422
       text run at (11,287) width 422: "ipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
 layer at (8,1527) size 22x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollY 375.00 scrollHeight 683
@@ -81,13 +81,13 @@ layer at (8,2266) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
   RenderBlock {DIV} at (0,2258.03) size 32x310 [border: (1px solid #000000)]
     RenderText {#text} at (11,136) size 19x173
       text run at (11,136) width 173 RTL override: "Lorem ipsum dolor sit amet, "
-    RenderImage {IMG} at (1,111) size 25x25
+    LayoutImage {IMG} at (1,111) size 25x25
     RenderText {#text} at (11,-403) size 19x514
       text run at (11,-403) width 514 RTL override: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
 layer at (8,2636) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollY 400.00 scrollHeight 708
   RenderBlock {DIV} at (0,2627.75) size 32x310 [border: (1px solid #000000)]
     RenderText {#text} at (11,48) size 19x261
       text run at (11,48) width 261 RTL override: "Lorem ipsum dolor sit amet, consectetur ad"
-    RenderImage {IMG} at (1,23) size 25x25
+    LayoutImage {IMG} at (1,23) size 25x25
     RenderText {#text} at (11,-399) size 19x422
       text run at (11,-399) width 422 RTL override: "ipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."

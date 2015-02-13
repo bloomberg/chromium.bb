@@ -29,7 +29,7 @@ layer at (0,0) size 800x1008 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 857x608
           LayoutTableRow {TR} at (0,2) size 857x604
             LayoutTableCell {TD} at (2,2) size 804x604 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (2,2) size 800x600
+              LayoutImage {IMG} at (2,2) size 800x600
             LayoutTableCell {TD} at (808,257) size 47x94 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 43x90
                 text run at (2,2) width 30: "can't"
@@ -61,7 +61,7 @@ layer at (0,0) size 800x1008 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 175x18
                 text run at (2,2) width 175: "<../images/pikajumpr.gif\">"
             LayoutTableCell {TD} at (331,30) size 410x146 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (2,2) size 142x142
+              LayoutImage {IMG} at (2,2) size 142x142
             LayoutTableCell {TD} at (743,2) size 37x202 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 33x198
                 text run at (2,2) width 29: "This"

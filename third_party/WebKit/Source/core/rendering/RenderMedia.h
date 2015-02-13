@@ -26,13 +26,13 @@
 #ifndef RenderMedia_h
 #define RenderMedia_h
 
-#include "core/rendering/RenderImage.h"
+#include "core/layout/LayoutImage.h"
 
 namespace blink {
 
 class HTMLMediaElement;
 
-class RenderMedia : public RenderImage {
+class RenderMedia : public LayoutImage {
 public:
     explicit RenderMedia(HTMLMediaElement*);
     virtual ~RenderMedia();
@@ -52,7 +52,7 @@ public:
 protected:
     virtual void layout() override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMedia || RenderImage::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMedia || LayoutImage::isOfType(type); }
 
 private:
     virtual LayoutObjectChildList* virtualChildren() override final { return children(); }

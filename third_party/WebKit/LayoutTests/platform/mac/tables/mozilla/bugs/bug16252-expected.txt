@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,0) size 600x477
             LayoutTableCell {TD} at (0,0) size 600x477 [r=0 c=0 rs=1 cs=1]
               RenderBlock (anonymous) at (0,0) size 600x1
-                RenderImage {IMG} at (0,0) size 600x1
+                LayoutImage {IMG} at (0,0) size 600x1
                 RenderText {#text} at (0,0) size 0x0
               RenderBlock {BLOCKQUOTE} at (40,17) size 520x444
                 RenderBlock {BLOCKQUOTE} at (40,0) size 440x444

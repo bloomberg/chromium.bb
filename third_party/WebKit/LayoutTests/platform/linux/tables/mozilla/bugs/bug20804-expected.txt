@@ -19,19 +19,19 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x86
           LayoutTableRow {TR} at (0,0) size 782x22
             LayoutTableCell {TD} at (0,0) size 306x62 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
-              RenderImage {IMG} at (1,1) size 250x60
+              LayoutImage {IMG} at (1,1) size 250x60
             LayoutTableCell {TD} at (306,0) size 21x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (2,1) size 18x20
+              LayoutImage {IMG} at (2,1) size 18x20
             LayoutTableCell {TD} at (327,0) size 455x22 [bgcolor=#000000] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=2]
               RenderText {#text} at (84,1) size 370x19
                 text run at (84,1) width 166: "  All Products  |  Support  | "
                 text run at (250,1) width 204: "  Search  |  microsoft.com Home  "
           LayoutTableRow {TR} at (0,22) size 782x42
             LayoutTableCell {TD} at (306,22) size 21x42 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 19x40
+              LayoutImage {IMG} at (1,1) size 19x40
             LayoutTableCell {TD} at (327,22) size 455x42 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=2]
-              RenderImage {IMG} at (142,1) size 200x40
-              RenderImage {IMG} at (342,1) size 112x40
+              LayoutImage {IMG} at (142,1) size 200x40
+              LayoutImage {IMG} at (342,1) size 112x40
               RenderText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,64) size 782x22
             LayoutTableCell {TD} at (0,64) size 782x22 [bgcolor=#6699CC] [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=4]
@@ -53,19 +53,19 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x86
           LayoutTableRow {TR} at (0,0) size 782x22
             LayoutTableCell {TD} at (0,0) size 306x62 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
-              RenderImage {IMG} at (1,1) size 250x60
+              LayoutImage {IMG} at (1,1) size 250x60
             LayoutTableCell {TD} at (306,0) size 21x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (2,1) size 18x20
+              LayoutImage {IMG} at (2,1) size 18x20
             LayoutTableCell {TD} at (327,0) size 455x22 [bgcolor=#000000] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (84,1) size 370x19
                 text run at (84,1) width 166: "  All Products  |  Support  | "
                 text run at (250,1) width 204: "  Search  |  microsoft.com Home  "
           LayoutTableRow {TR} at (0,22) size 782x42
             LayoutTableCell {TD} at (306,22) size 21x42 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 19x40
+              LayoutImage {IMG} at (1,1) size 19x40
             LayoutTableCell {TD} at (327,22) size 455x42 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderImage {IMG} at (142,1) size 200x40
-              RenderImage {IMG} at (342,1) size 112x40
+              LayoutImage {IMG} at (142,1) size 200x40
+              LayoutImage {IMG} at (342,1) size 112x40
               RenderText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,64) size 782x22
             LayoutTableCell {TD} at (0,64) size 782x22 [bgcolor=#6699CC] [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=3]

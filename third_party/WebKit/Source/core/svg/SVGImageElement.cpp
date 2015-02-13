@@ -25,7 +25,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/XLinkNames.h"
-#include "core/rendering/RenderImageResource.h"
+#include "core/layout/LayoutImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 
 namespace blink {

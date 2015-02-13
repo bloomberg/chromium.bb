@@ -16,4 +16,4 @@ layer at (0,0) size 800x195
           RenderText {#text} at (75,0) size 30x15
             text run at (75,0) width 30: " x"
       RenderBlock {DIV} at (0,97) size 784x50
-        RenderImage {IMG} at (0,0) size 105x45
+        LayoutImage {IMG} at (0,0) size 105x45

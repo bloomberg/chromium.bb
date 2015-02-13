@@ -29,7 +29,7 @@ layer at (8,110) size 100x200 clip at (8,110) size 85x200 scrollY 40.00 scrollHe
       text run at (0,40) width 33: "amet,"
       text run at (0,60) width 76: "consectetuer"
       text run at (0,80) width 84: "adipiscing elit."
-    RenderImage {IMG} at (0,105) size 10x10
+    LayoutImage {IMG} at (0,105) size 10x10
     RenderText {#text} at (10,100) size 80x199
       text run at (10,100) width 4: " "
       text run at (14,100) width 49: "Etiam et"

@@ -7,4 +7,4 @@ layer at (0,0) size 800x266
         RenderText {#text} at (0,0) size 386x19
           text run at (0,0) width 386: "The square below should be exactly 100 pixels high on the ruler."
       RenderBlock {DIV} at (0,36) size 784x206
-        RenderImage {IMG} at (45,0) size 100x100
+        LayoutImage {IMG} at (45,0) size 100x100

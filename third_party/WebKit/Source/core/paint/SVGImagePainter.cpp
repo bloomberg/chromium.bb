@@ -6,6 +6,7 @@
 #include "core/paint/SVGImagePainter.h"
 
 #include "core/layout/ImageQualityController.h"
+#include "core/layout/LayoutImageResource.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/GraphicsContextAnnotator.h"
@@ -13,7 +14,6 @@
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/graphics/GraphicsContext.h"

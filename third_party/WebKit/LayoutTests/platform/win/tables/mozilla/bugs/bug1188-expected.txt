@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (0,0) size 600x183
             LayoutTableRow {TR} at (0,2) size 600x44
               LayoutTableCell {TD} at (2,2) size 594x44 [r=0 c=0 rs=1 cs=3]
-                RenderImage {IMG} at (7.50,1) size 579x42
+                LayoutImage {IMG} at (7.50,1) size 579x42
                 RenderText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,48) size 600x55
               LayoutTableCell {TD} at (2,55) size 594x40 [bgcolor=#99CCCC] [r=1 c=0 rs=1 cs=3]
@@ -78,7 +78,7 @@ layer at (0,0) size 800x600
                       text run at (26,17) width 107: "Communicator 4.5"
               LayoutTableCell {TD} at (163,105) size 270x49 [r=2 c=1 rs=1 cs=1]
                 RenderInline {A} at (0,0) size 232x27 [color=#0000EE]
-                  RenderImage {IMG} at (19,1) size 232x35 [border: (1px solid #0000EE)]
+                  LayoutImage {IMG} at (19,1) size 232x35 [border: (1px solid #0000EE)]
                   RenderBR {BR} at (251,36) size 0x0
                   RenderInline {FONT} at (0,0) size 46x12
                     RenderText {#text} at (112,36) size 46x12

@@ -19,8 +19,8 @@ layer at (0,0) size 800x600
               [SourceGraphic]
         RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 160x90
-  RenderImage {IMG} at (0,0) size 160x90
+  LayoutImage {IMG} at (0,0) size 160x90
 layer at (8,98) size 160x90
-  RenderImage {IMG} at (0,0) size 160x90
+  LayoutImage {IMG} at (0,0) size 160x90
 layer at (8,188) size 160x90
-  RenderImage {IMG} at (0,0) size 160x90
+  LayoutImage {IMG} at (0,0) size 160x90

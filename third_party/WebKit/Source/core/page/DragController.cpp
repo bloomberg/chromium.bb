@@ -66,7 +66,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
-#include "core/rendering/RenderImage.h"
+#include "core/layout/LayoutImage.h"
 #include "core/rendering/RenderView.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntRect.h"
@@ -700,7 +700,7 @@ static ImageResource* getImageResource(Element* element)
     LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isImage())
         return nullptr;
-    RenderImage* image = toRenderImage(renderer);
+    LayoutImage* image = toLayoutImage(renderer);
     return image->cachedImage();
 }
 

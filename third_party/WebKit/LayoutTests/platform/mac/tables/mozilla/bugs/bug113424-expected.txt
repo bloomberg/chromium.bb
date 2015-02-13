@@ -37,7 +37,7 @@ layer at (0,0) size 800x600
                                 RenderText {#text} at (3,3) size 20x11
                                   text run at (3,3) width 20: "4,75"
                             LayoutTableCell {TD} at (146,37) size 24x17 [r=2 c=2 rs=1 cs=1]
-                              RenderImage {IMG} at (6.50,3) size 11x11
+                              LayoutImage {IMG} at (6.50,3) size 11x11
                             LayoutTableCell {TD} at (171,37) size 41x17 [r=2 c=3 rs=1 cs=1]
                               RenderInline {FONT} at (0,0) size 23x11
                                 RenderText {#text} at (3,3) size 23x11
@@ -49,7 +49,7 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (263,37) size 33x16 [r=2 c=5 rs=1 cs=1]
                               RenderInline {FONT} at (0,0) size 17x11
                                 RenderInline {A} at (0,0) size 17x11 [color=#0000EE]
-                                  RenderImage {IMG} at (8.50,3) size 16x10
+                                  LayoutImage {IMG} at (8.50,3) size 16x10
                     LayoutTableCell {TD} at (299,0) size 299x57 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                       LayoutTable {TABLE} at (1,1) size 297x55
                         LayoutTableSection {TBODY} at (0,0) size 297x55
@@ -60,15 +60,15 @@ layer at (0,0) size 800x600
                                   text run at (3,3) width 43: "Rohstoffe"
                           LayoutTableRow {TR} at (0,19) size 297x17 [bgcolor=#E7E7AD]
                             LayoutTableCell {TD} at (1,19) size 202x17 [r=1 c=0 rs=1 cs=1]
-                              RenderImage {IMG} at (95.50,3) size 11x11
+                              LayoutImage {IMG} at (95.50,3) size 11x11
                             LayoutTableCell {TD} at (204,19) size 92x16 [r=1 c=1 rs=1 cs=1]
                               RenderInline {FONT} at (0,0) size 16x11
                                 RenderInline {A} at (0,0) size 16x11 [color=#0000EE]
-                                  RenderImage {IMG} at (38,3) size 16x10
+                                  LayoutImage {IMG} at (38,3) size 16x10
                           LayoutTableRow {TR} at (0,37) size 297x17 [bgcolor=#E7DEA5]
                             LayoutTableCell {TD} at (1,37) size 202x17 [r=2 c=0 rs=1 cs=1]
-                              RenderImage {IMG} at (95.50,3) size 11x11
+                              LayoutImage {IMG} at (95.50,3) size 11x11
                             LayoutTableCell {TD} at (204,37) size 92x16 [r=2 c=1 rs=1 cs=1]
                               RenderInline {FONT} at (0,0) size 16x11
                                 RenderInline {A} at (0,0) size 16x11 [color=#0000EE]
-                                  RenderImage {IMG} at (38,3) size 16x10
+                                  LayoutImage {IMG} at (38,3) size 16x10

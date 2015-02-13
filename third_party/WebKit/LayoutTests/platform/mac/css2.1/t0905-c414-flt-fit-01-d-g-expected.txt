@@ -9,13 +9,13 @@ layer at (0,0) size 800x294
           text run at (0,24) width 28: "box."
       RenderBlock {DIV} at (10,58) size 260x210 [border: (5px solid #0000FF)]
         RenderBlock (floating) {P} at (5,5) size 100x100 [color=#000080]
-          RenderImage {IMG} at (0,0) size 100x100
+          LayoutImage {IMG} at (0,0) size 100x100
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (floating) {P} at (105,5) size 100x100 [color=#000080]
-          RenderImage {IMG} at (0,0) size 100x100
+          LayoutImage {IMG} at (0,0) size 100x100
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (floating) {P} at (5,105) size 100x100 [color=#000080]
-          RenderImage {IMG} at (0,0) size 100x100
+          LayoutImage {IMG} at (0,0) size 100x100
           RenderText {#text} at (0,0) size 0x0
-        RenderImage {IMG} at (105,105) size 100x100
+        LayoutImage {IMG} at (105,105) size 100x100
         RenderText {#text} at (0,0) size 0x0

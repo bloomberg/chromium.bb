@@ -31,11 +31,11 @@ layer at (0,0) size 800x600
         RenderInline {SPAN} at (0,0) size 180x137
           RenderText {#text} at (14,95) size 11x28
             text run at (14,95) width 11: "a"
-          RenderImage {IMG} at (24.64,14) size 76x103
+          LayoutImage {IMG} at (24.64,14) size 76x103
           RenderText {#text} at (100,95) size 47x28
             text run at (100,95) width 47: "new "
           RenderBR {BR} at (0,0) size 0x0
-          RenderImage {IMG} at (14,123) size 76x103
+          LayoutImage {IMG} at (14,123) size 76x103
           RenderText {#text} at (90,204) size 104x28
             text run at (90,204) width 104: " conceived"
         RenderText {#text} at (0,0) size 0x0

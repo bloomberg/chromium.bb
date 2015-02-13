@@ -23,24 +23,24 @@
  *
  */
 
-#ifndef RenderImageResourceStyleImage_h
-#define RenderImageResourceStyleImage_h
+#ifndef LayoutImageResourceStyleImage_h
+#define LayoutImageResourceStyleImage_h
 
+#include "core/layout/LayoutImageResource.h"
 #include "core/layout/style/StyleImage.h"
-#include "core/rendering/RenderImageResource.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class LayoutObject;
 
-class RenderImageResourceStyleImage final : public RenderImageResource {
+class LayoutImageResourceStyleImage final : public LayoutImageResource {
 public:
-    virtual ~RenderImageResourceStyleImage();
+    virtual ~LayoutImageResourceStyleImage();
 
-    static PassOwnPtr<RenderImageResource> create(StyleImage* styleImage)
+    static PassOwnPtr<LayoutImageResource> create(StyleImage* styleImage)
     {
-        return adoptPtr(new RenderImageResourceStyleImage(styleImage));
+        return adoptPtr(new LayoutImageResourceStyleImage(styleImage));
     }
     virtual void initialize(LayoutObject*) override;
     virtual void shutdown() override;
@@ -59,10 +59,10 @@ public:
     virtual WrappedImagePtr imagePtr() const override { return m_styleImage->data(); }
 
 private:
-    RenderImageResourceStyleImage(StyleImage*);
+    LayoutImageResourceStyleImage(StyleImage*);
     RefPtr<StyleImage> m_styleImage;
 };
 
 } // namespace blink
 
-#endif // RenderImageStyleImage_h
+#endif // LayoutImageStyleImage_h

@@ -450,9 +450,9 @@ layer at (0,0) size 785x878
                 LayoutTableSection {TBODY} at (0,0) size 207x20
                   LayoutTableRow {TR} at (0,0) size 207x20
                     LayoutTableCell {TD} at (0,0) size 13x16 [r=0 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (0,0) size 13x16
+                      LayoutImage {IMG} at (0,0) size 13x16
                     LayoutTableCell {TD} at (13,0) size 190x20 [r=0 c=1 rs=1 cs=1]
                       RenderText {#text} at (0,0) size 148x19
                         text run at (0,0) width 148: "AlphaLinux Distributions"
                     LayoutTableCell {TD} at (203,0) size 4x4 [r=0 c=2 rs=1 cs=1]
-                      RenderImage {IMG} at (0,0) size 4x4
+                      LayoutImage {IMG} at (0,0) size 4x4

@@ -60,7 +60,6 @@
 #include "core/html/canvas/Path2D.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/DrawLooperBuilder.h"

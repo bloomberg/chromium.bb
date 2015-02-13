@@ -18,7 +18,7 @@ layer at (0,0) size 800x327
         LayoutTableSection {tfoot} at (1,55) size 589x211
           LayoutTableRow {tr} at (0,0) size 589x209
             LayoutTableCell {td} at (2,0) size 204x209 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderImage {img} at (2,2) size 200x200
+              LayoutImage {img} at (2,2) size 200x200
             LayoutTableCell {td} at (208,92) size 379x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 375x19
                 text run at (2,2) width 340: "This text should be vertically aligned to the middle of the "

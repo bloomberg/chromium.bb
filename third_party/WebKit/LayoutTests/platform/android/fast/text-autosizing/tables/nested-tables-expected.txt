@@ -35,4 +35,4 @@ layer at (0,0) size 800x325
                         text run at (2,34) width 27: "itself."
                   LayoutTableRow {TR} at (0,51) size 93x19
                     LayoutTableCell {TD} at (0,51) size 93x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (2,9) size 5x5
+                      LayoutImage {IMG} at (2,9) size 5x5

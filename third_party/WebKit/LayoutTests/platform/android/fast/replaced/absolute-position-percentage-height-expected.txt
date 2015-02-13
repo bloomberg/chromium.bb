@@ -22,9 +22,9 @@ layer at (18,64) size 100x100
   RenderBlock (relative positioned) {DIV} at (0,0) size 100x100 [bgcolor=#808080]
     RenderBlock {DIV} at (0,0) size 100x100
 layer at (18,64) size 50x100
-  RenderImage {IMG} at (0,0) size 50x100 [bgcolor=#0000FF]
+  LayoutImage {IMG} at (0,0) size 50x100 [bgcolor=#0000FF]
 layer at (18,274) size 764x200
   RenderBlock (relative positioned) {DIV} at (10,266) size 764x200
     RenderText {#text} at (0,0) size 0x0
 layer at (18,274) size 50x99
-  RenderImage {IMG} at (0,0) size 50x99 [bgcolor=#0000FF]
+  LayoutImage {IMG} at (0,0) size 50x99 [bgcolor=#0000FF]

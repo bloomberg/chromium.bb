@@ -49,12 +49,12 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutImage.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderFieldset.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderHTMLCanvas.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMenuList.h"
@@ -702,7 +702,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 
         if (isNativeImage() && m_renderer->isImage()) {
             // check for one-dimensional image
-            RenderImage* image = toRenderImage(m_renderer);
+            LayoutImage* image = toLayoutImage(m_renderer);
             if (image->size().height() <= 1 || image->size().width() <= 1)
                 return true;
 
@@ -2224,10 +2224,10 @@ void AXRenderObject::addTextFieldChildren()
 void AXRenderObject::addImageMapChildren()
 {
     RenderBoxModelObject* cssBox = renderBoxModelObject();
-    if (!cssBox || !cssBox->isRenderImage())
+    if (!cssBox || !cssBox->isLayoutImage())
         return;
 
-    HTMLMapElement* map = toRenderImage(cssBox)->imageMap();
+    HTMLMapElement* map = toLayoutImage(cssBox)->imageMap();
     if (!map)
         return;
 

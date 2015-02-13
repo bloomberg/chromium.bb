@@ -49,10 +49,10 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,21) width 367: "by six pixels, three of which are part of the line-box of each line. "
           text run at (366,21) width 402: "Any images within the paragraph should increase the height of the line-"
           text run at (0,223) width 266: "box so that they fit within the line box, such as "
-        RenderImage {IMG} at (265.17,40) size 200x200
+        LayoutImage {IMG} at (265.17,40) size 200x200
         RenderText {#text} at (465,223) size 28x17
           text run at (465,223) width 28: " and "
-        RenderImage {IMG} at (492.39,223) size 200x200
+        LayoutImage {IMG} at (492.39,223) size 200x200
         RenderText {#text} at (692,223) size 769x218
           text run at (692,223) width 8: ". "
           text run at (699,223) width 39: "This is"
@@ -64,10 +64,10 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,21) width 78: "by six pixels. "
           text run at (77,21) width 682: "Any images within the paragraph should increase the height of the line-box so that they fit, including their padding (5px),"
           text run at (0,183) width 351: "border (10px) and margins (15px) within the line box, such as "
-        RenderImage {IMG} at (365.70,55) size 130x130 [border: (10px solid #000000)]
+        LayoutImage {IMG} at (365.70,55) size 130x130 [border: (10px solid #000000)]
         RenderText {#text} at (510,183) size 28x17
           text run at (510,183) width 28: " and "
-        RenderImage {IMG} at (552.91,198) size 130x130 [border: (10px solid #000000)]
+        LayoutImage {IMG} at (552.91,198) size 130x130 [border: (10px solid #000000)]
         RenderText {#text} at (697,183) size 769x257
           text run at (697,183) width 8: ". "
           text run at (704,183) width 39: "This is"
@@ -75,7 +75,7 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,364) width 735: "It is the outer edge of the margin that should be text-bottom and text-top aligned in this paragraph, so for the first image the bottom"
           text run at (0,384) width 753: "border of the image should begin 15px above the bottom of the text, and for the second image the top border should begin 15px below"
           text run at (0,423) width 103: "the top of the text "
-        RenderImage {IMG} at (92.25,393) size 80x80 [border: (10px solid #000000)]
+        LayoutImage {IMG} at (92.25,393) size 80x80 [border: (10px solid #000000)]
         RenderText {#text} at (162,423) size 737x58
           text run at (162,423) width 8: ". "
           text run at (169,423) width 568: "The last image in this paragraph has -10px margins set on it, so that should pull the text in toward the"
@@ -99,10 +99,10 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,21) width 423: "separated by six pixels, three of which are part of the line-box of each line. "
                   text run at (422,21) width 298: "Any images within the paragraph should increase the"
                   text run at (0,223) width 366: "height of the line-box so that they fit within the line box, such as "
-                RenderImage {IMG} at (365.09,40) size 200x200
+                LayoutImage {IMG} at (365.09,40) size 200x200
                 RenderText {#text} at (565,223) size 28x17
                   text run at (565,223) width 28: " and "
-                RenderImage {IMG} at (0,243) size 200x200
+                LayoutImage {IMG} at (0,243) size 200x200
                 RenderText {#text} at (200,243) size 733x218
                   text run at (200,243) width 7: ". "
                   text run at (207,243) width 526: "This is additional text to make sure that there is enough room left below the image so that this"
@@ -114,10 +114,10 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,21) width 135: "separated by six pixels. "
                   text run at (134,21) width 595: "Any images within the paragraph should increase the height of the line-box so that they fit, including their"
                   text run at (0,183) width 437: "padding (5px), border (10px) and margins (15px) within the line box, such as "
-                RenderImage {IMG} at (451.63,55) size 130x130 [border: (10px solid #000000)]
+                LayoutImage {IMG} at (451.63,55) size 130x130 [border: (10px solid #000000)]
                 RenderText {#text} at (596,183) size 28x17
                   text run at (596,183) width 28: " and "
-                RenderImage {IMG} at (15,218) size 130x130 [border: (10px solid #000000)]
+                LayoutImage {IMG} at (15,218) size 130x130 [border: (10px solid #000000)]
                 RenderText {#text} at (160,203) size 747x237
                   text run at (160,203) width 7: ". "
                   text run at (167,203) width 580: "This is additional text to make sure that there is enough room left below the image so that this line does"
@@ -125,7 +125,7 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (230,364) width 489: "It is the outer edge of the margin that should be text-bottom and text-top aligned in this"
                   text run at (0,384) width 735: "paragraph, so for the first image the bottom border of the image should begin 15px above the bottom of the text, and for the second"
                   text run at (0,423) width 367: "image the top border should begin 15px below the top of the text "
-                RenderImage {IMG} at (356.64,393) size 80x80 [border: (10px solid #000000)]
+                LayoutImage {IMG} at (356.64,393) size 80x80 [border: (10px solid #000000)]
                 RenderText {#text} at (426,423) size 740x58
                   text run at (426,423) width 8: ". "
                   text run at (433,423) width 307: "The last image in this paragraph has -10px margins set"

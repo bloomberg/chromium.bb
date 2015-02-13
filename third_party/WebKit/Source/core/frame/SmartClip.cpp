@@ -180,7 +180,7 @@ Node* SmartClip::findBestOverlappingNode(Node* rootNode, const IntRect& cropRect
         LayoutObject* renderer = node->renderer();
         if (renderer && !nodeRect.isEmpty()) {
             if (renderer->isText()
-                || renderer->isRenderImage()
+                || renderer->isLayoutImage()
                 || node->isFrameOwnerElement()
                 || (renderer->style()->hasBackgroundImage() && !shouldSkipBackgroundImage(node))) {
                 if (resizedCropRect.intersects(nodeRect)) {

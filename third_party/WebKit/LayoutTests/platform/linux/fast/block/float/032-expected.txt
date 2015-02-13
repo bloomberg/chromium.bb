@@ -5,23 +5,23 @@ layer at (0,0) size 785x1036 backgroundClip at (0,0) size 785x600 clip at (0,0) 
     RenderBody {BODY} at (8,8) size 769x1020
       RenderBlock {DIV} at (0,0) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
-        RenderImage {IMG} at (205,5) size 100x100 [bgcolor=#800080]
+        LayoutImage {IMG} at (205,5) size 100x100 [bgcolor=#800080]
       RenderBlock (anonymous) at (0,110) size 769x20
         RenderBR {BR} at (0,0) size 0x19
       RenderBlock {DIV} at (0,130) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
-        RenderImage {IMG} at (305,5) size 100x100 [bgcolor=#800080]
+        LayoutImage {IMG} at (305,5) size 100x100 [bgcolor=#800080]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,240) size 769x20
         RenderBR {BR} at (0,0) size 0x19
       RenderBlock {DIV} at (0,260) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
-        RenderImage {IMG} at (105,5) size 100x100 [bgcolor=#800080]
+        LayoutImage {IMG} at (105,5) size 100x100 [bgcolor=#800080]
       RenderBlock (anonymous) at (0,370) size 769x20
         RenderBR {BR} at (0,0) size 0x19
       RenderBlock {DIV} at (0,390) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
-        RenderImage {IMG} at (55,5) size 100x100 [bgcolor=#800080]
+        LayoutImage {IMG} at (55,5) size 100x100 [bgcolor=#800080]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,500) size 769x20
         RenderBR {BR} at (0,0) size 0x19

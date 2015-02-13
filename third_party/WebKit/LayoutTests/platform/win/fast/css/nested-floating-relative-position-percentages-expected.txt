@@ -14,19 +14,19 @@ layer at (400,26) size 630x420 backgroundClip at (0,0) size 800x600 clip at (0,0
     RenderText {#text} at (0,0) size 0x0
 layer at (90,31) size 200x200
   RenderBlock (floating) {DIV} at (5,5) size 200x200 [bgcolor=#000000]
-    RenderImage {IMG} at (0,0) size 200x200
+    LayoutImage {IMG} at (0,0) size 200x200
 layer at (300,31) size 200x200
   RenderBlock (floating) {DIV} at (215,5) size 200x200 [bgcolor=#000000]
-    RenderImage {IMG} at (0,0) size 200x200
+    LayoutImage {IMG} at (0,0) size 200x200
 layer at (510,31) size 200x200
   RenderBlock (floating) {DIV} at (425,5) size 200x200 [bgcolor=#000000]
-    RenderImage {IMG} at (0,0) size 200x200
+    LayoutImage {IMG} at (0,0) size 200x200
 layer at (90,241) size 200x200
   RenderBlock (floating) {DIV} at (5,215) size 200x200 [bgcolor=#000000]
-    RenderImage {IMG} at (0,0) size 200x200
+    LayoutImage {IMG} at (0,0) size 200x200
 layer at (300,241) size 200x200
   RenderBlock (floating) {DIV} at (215,215) size 200x200 [bgcolor=#000000]
-    RenderImage {IMG} at (0,0) size 200x200
+    LayoutImage {IMG} at (0,0) size 200x200
 layer at (510,241) size 200x200
   RenderBlock (floating) {DIV} at (425,215) size 200x200 [bgcolor=#000000]
-    RenderImage {IMG} at (0,0) size 200x200
+    LayoutImage {IMG} at (0,0) size 200x200

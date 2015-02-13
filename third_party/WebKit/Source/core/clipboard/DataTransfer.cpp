@@ -36,8 +36,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/DragImage.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
@@ -268,7 +268,7 @@ static ImageResource* getImageResource(Element* element)
     if (!renderer || !renderer->isImage())
         return 0;
 
-    RenderImage* image = toRenderImage(renderer);
+    LayoutImage* image = toLayoutImage(renderer);
     if (image->cachedImage() && !image->cachedImage()->errorOccurred())
         return image->cachedImage();
 

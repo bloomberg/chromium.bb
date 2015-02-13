@@ -36,8 +36,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutImage.h"
 #include "core/page/FrameTree.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/svg/SVGElement.h"
 #include "platform/scroll/Scrollbar.h"
@@ -259,7 +259,7 @@ Image* HitTestResult::image() const
 
     LayoutObject* renderer = m_innerNonSharedNode->renderer();
     if (renderer && renderer->isImage()) {
-        RenderImage* image = toRenderImage(renderer);
+        LayoutImage* image = toLayoutImage(renderer);
         if (image->cachedImage() && !image->cachedImage()->errorOccurred())
             return image->cachedImage()->imageForRenderer(image);
     }

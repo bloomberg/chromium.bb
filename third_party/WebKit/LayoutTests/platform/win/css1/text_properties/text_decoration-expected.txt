@@ -67,7 +67,7 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (647,0) width 21: "not"
         RenderText {#text} at (667,0) size 93x17
           text run at (667,0) width 93: " be overlined: "
-        RenderImage {IMG} at (0,18) size 15x15
+        LayoutImage {IMG} at (0,18) size 15x15
         RenderText {#text} at (15,19) size 767x35
           text run at (15,19) width 8: ". "
           text run at (23,19) width 744: "The underline of the parent element should hold true beneath the image, however, since text-decoration 'spans' child"
@@ -160,7 +160,7 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 RenderText {#text} at (667,0) size 687x36
                   text run at (667,0) width 20: " be"
                   text run at (0,19) width 69: "overlined: "
-                RenderImage {IMG} at (68.86,18) size 15x15
+                LayoutImage {IMG} at (68.86,18) size 15x15
                 RenderText {#text} at (83,19) size 687x35
                   text run at (83,19) width 9: ". "
                   text run at (91,19) width 596: "The underline of the parent element should hold true beneath the image, however, since text-"

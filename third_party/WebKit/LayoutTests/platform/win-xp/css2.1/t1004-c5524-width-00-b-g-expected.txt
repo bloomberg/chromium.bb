@@ -10,4 +10,4 @@ layer at (0,0) size 800x565
           text run at (738,0) width 25: "blue"
           text run at (0,20) width 156: "box, with no red present)."
       RenderBlock {DIV} at (0,56) size 784x485
-        RenderImage {IMG} at (40,40) size 120x200
+        LayoutImage {IMG} at (40,40) size 120x200

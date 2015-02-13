@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
                             LayoutTableSection {TBODY} at (0,0) size 97x180
                               LayoutTableRow {TR} at (0,0) size 97x180
                                 LayoutTableCell {TD} at (0,0) size 97x180 [r=0 c=0 rs=1 cs=1]
-                                  RenderImage {IMG} at (0,0) size 97x180
+                                  LayoutImage {IMG} at (0,0) size 97x180
       RenderBlock {P} at (0,74) size 800x0
       RenderBlock (floating) {DIV} at (0,74) size 104x54 [border: (2px solid #FF0000)]
         RenderText {#text} at (2,2) size 84x54

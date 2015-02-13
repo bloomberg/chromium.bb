@@ -7,5 +7,5 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 700x19
           text run at (0,0) width 700: "This test passes if the broken image icon appears high-resolution in HiDPI and if the outline is of the appropriate size."
       RenderBlock (anonymous) at (0,20) size 784x20
-        RenderImage {IMG} at (0,0) size 20x20
+        LayoutImage {IMG} at (0,0) size 20x20
         RenderText {#text} at (0,0) size 0x0

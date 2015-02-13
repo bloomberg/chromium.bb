@@ -74,12 +74,12 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutImage.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderImage.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/KillRing.h"
 #include "platform/weborigin/KURL.h"
@@ -427,14 +427,14 @@ static PassRefPtr<Image> imageFromNode(const Node& node)
         return toHTMLCanvasElement(node).copiedImage(FrontBuffer);
 
     if (renderer->isImage()) {
-        RenderImage* renderImage = toRenderImage(renderer);
-        if (!renderImage)
+        LayoutImage* layoutImage = toLayoutImage(renderer);
+        if (!layoutImage)
             return nullptr;
 
-        ImageResource* cachedImage = renderImage->cachedImage();
+        ImageResource* cachedImage = layoutImage->cachedImage();
         if (!cachedImage || cachedImage->errorOccurred())
             return nullptr;
-        return cachedImage->imageForRenderer(renderImage);
+        return cachedImage->imageForRenderer(layoutImage);
     }
 
     return nullptr;

@@ -10,7 +10,7 @@ layer at (0,0) size 800x152
         RenderBlock {P} at (0,0) size 200x10 [bgcolor=#A52A2A]
           RenderText {#text} at (142,0) size 10x10
             text run at (142,0) width 10: "x"
-          RenderImage {IMG} at (152,0) size 48x10
+          LayoutImage {IMG} at (152,0) size 48x10
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,20) size 152x10 [bgcolor=#A52A2A]
           RenderText {#text} at (142,0) size 10x10

@@ -32,9 +32,9 @@
 
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/FloatingObjects.h"
+#include "core/layout/LayoutImage.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/LengthFunctions.h"
 #include "public/platform/Platform.h"
 
@@ -120,12 +120,12 @@ static bool isValidRasterShapeRect(const LayoutRect& rect)
 
 PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
 {
-    const IntSize& imageSize = m_renderer.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), RenderImage::ScaleByEffectiveZoom);
+    const IntSize& imageSize = m_renderer.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), LayoutImage::ScaleByEffectiveZoom);
     styleImage->setContainerSizeForRenderer(&m_renderer, imageSize, m_renderer.style()->effectiveZoom());
 
     const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
-    const LayoutRect& imageRect = (m_renderer.isRenderImage())
-        ? toRenderImage(m_renderer).replacedContentRect()
+    const LayoutRect& imageRect = (m_renderer.isLayoutImage())
+        ? toLayoutImage(m_renderer).replacedContentRect()
         : LayoutRect(LayoutPoint(), LayoutSize(imageSize));
 
     if (!isValidRasterShapeRect(marginRect) || !isValidRasterShapeRect(imageRect)) {

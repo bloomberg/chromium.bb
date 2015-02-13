@@ -12,7 +12,7 @@ layer at (0,0) size 785x852 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (0,0) size 606x306
           LayoutTableRow {TR} at (0,2) size 606x302
             LayoutTableCell {TD} at (2,2) size 602x302 [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 600x300
+              LayoutImage {IMG} at (1,1) size 600x300
               RenderText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,616) size 310x156
         LayoutTableSection {TBODY} at (0,0) size 310x156
@@ -23,7 +23,7 @@ layer at (0,0) size 785x852 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (0,0) size 606x64
           LayoutTableRow {TR} at (0,2) size 606x60
             LayoutTableCell {TD} at (2,2) size 602x60 [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 600x58
+              LayoutImage {IMG} at (1,1) size 600x58
               RenderText {#text} at (0,0) size 0x0
 layer at (11,11) size 308x304
   RenderPartObject {IFRAME} at (1,1) size 308x304 [border: (2px inset #EEEEEE)]

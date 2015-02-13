@@ -11,4 +11,4 @@ layer at (18,272) size 252x252 clip at (19,273) size 235x235 scrollWidth 302 scr
 layer at (19,11) size 250x250 backgroundClip at (19,11) size 235x235 clip at (19,11) size 235x235 outlineClip at (19,11) size 235x235
   RenderBlock {DIV} at (1,1) size 250x250 [bgcolor=#C0C0C0]
 layer at (19,273) size 250x250 backgroundClip at (19,273) size 235x235 clip at (19,273) size 235x235 outlineClip at (19,273) size 235x235
-  RenderImage {IMG} at (1,1) size 250x250 [bgcolor=#C0C0C0]
+  LayoutImage {IMG} at (1,1) size 250x250 [bgcolor=#C0C0C0]

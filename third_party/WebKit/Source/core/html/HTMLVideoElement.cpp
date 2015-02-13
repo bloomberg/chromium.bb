@@ -37,8 +37,8 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -91,7 +91,7 @@ void HTMLVideoElement::attach(const AttachContext& context)
             m_imageLoader = HTMLImageLoader::create(this);
         m_imageLoader->updateFromElement();
         if (renderer())
-            toRenderImage(renderer())->imageResource()->setImageResource(m_imageLoader->image());
+            toLayoutImage(renderer())->imageResource()->setImageResource(m_imageLoader->image());
     }
 }
 
@@ -124,7 +124,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
             m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         } else {
             if (renderer())
-                toRenderImage(renderer())->imageResource()->setImageResource(0);
+                toLayoutImage(renderer())->imageResource()->setImageResource(0);
         }
         // Notify the player when the poster image URL changes.
         if (webMediaPlayer())

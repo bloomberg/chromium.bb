@@ -23,7 +23,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,40) width 769: "square image should be seen AFTER the paragraph, not next to it. A yellow background has been added to this paragraph for"
           text run at (0,60) width 123: "diagnostic purposes."
       RenderBlock (anonymous) at (0,118) size 769x100
-        RenderImage {IMG} at (0,80) size 15x15
+        LayoutImage {IMG} at (0,80) size 15x15
         RenderText {#text} at (15,80) size 4x19
           text run at (15,80) width 4: " "
         RenderBR {BR} at (19,95) size 0x0
@@ -36,7 +36,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,60) width 384: "right edge of this yellow box should be horizontally aligned with"
           text run at (0,80) width 260: "the left edge of the yellow box undernearth."
       RenderBlock (anonymous) at (0,236) size 769x100
-        RenderImage {IMG} at (384.50,0) size 15x15
+        LayoutImage {IMG} at (384.50,0) size 15x15
         RenderText {#text} at (399,0) size 5x19
           text run at (399,0) width 5: " "
         RenderBR {BR} at (403,15) size 1x0
@@ -50,7 +50,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,80) width 384: "should be horizonally aligned with the right edge of the yellow"
           text run at (0,100) width 68: "box above."
       RenderBlock (anonymous) at (0,354) size 769x120
-        RenderImage {IMG} at (0,0) size 15x15
+        LayoutImage {IMG} at (0,0) size 15x15
         RenderText {#text} at (15,0) size 4x19
           text run at (15,0) width 4: " "
         RenderBR {BR} at (19,15) size 0x0
@@ -199,7 +199,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,40) width 747: "orange square image should be seen AFTER the paragraph, not next to it. A yellow background has been added to this"
                   text run at (0,60) width 209: "paragraph for diagnostic purposes."
               RenderBlock (anonymous) at (4,122) size 747x100
-                RenderImage {IMG} at (0,80) size 15x15
+                LayoutImage {IMG} at (0,80) size 15x15
                 RenderText {#text} at (15,80) size 4x19
                   text run at (15,80) width 4: " "
                 RenderBR {BR} at (19,95) size 0x0
@@ -213,7 +213,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,80) width 373: "horizontally aligned with the left edge of the yellow box"
                   text run at (0,100) width 75: "undernearth."
               RenderBlock (anonymous) at (4,240) size 747x120
-                RenderImage {IMG} at (373.50,0) size 15x15
+                LayoutImage {IMG} at (373.50,0) size 15x15
                 RenderText {#text} at (388,0) size 5x19
                   text run at (388,0) width 5: " "
                 RenderBR {BR} at (392,15) size 1x0
@@ -227,7 +227,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,80) width 373: "box should be horizonally aligned with the right edge of the"
                   text run at (0,100) width 111: "yellow box above."
               RenderBlock (anonymous) at (4,378) size 747x120
-                RenderImage {IMG} at (0,0) size 15x15
+                LayoutImage {IMG} at (0,0) size 15x15
                 RenderText {#text} at (15,0) size 4x19
                   text run at (15,0) width 4: " "
                 RenderBR {BR} at (19,15) size 0x0

@@ -11,5 +11,5 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 800x90
           LayoutTableRow {TR} at (0,0) size 800x90
             LayoutTableCell {TD} at (0,0) size 800x90 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (0,0) size 194x90
-              RenderImage {IMG} at (667,0) size 133x90
+              LayoutImage {IMG} at (0,0) size 194x90
+              LayoutImage {IMG} at (667,0) size 133x90

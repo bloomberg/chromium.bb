@@ -21,6 +21,6 @@ layer at (0,0) size 800x214
           text run at (0,0) width 319: "The blue square below should be 100\x{D7}100 pixels."
       RenderBlock {DIV} at (0,86) size 200x104
         RenderBlock {DIV} at (0,0) size 100x104
-          RenderImage {IMG} at (0,0) size 100x100
+          LayoutImage {IMG} at (0,0) size 100x100
           RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0

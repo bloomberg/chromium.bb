@@ -30,7 +30,7 @@ class SkPicture;
 
 namespace blink {
 
-class RenderImageResource;
+class LayoutImageResource;
 class SVGImageElement;
 
 class RenderSVGImage final : public RenderSVGModelObject {
@@ -43,7 +43,7 @@ public:
     virtual void setNeedsBoundariesUpdate() override { m_needsBoundariesUpdate = true; }
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-    RenderImageResource* imageResource() { return m_imageResource.get(); }
+    LayoutImageResource* imageResource() { return m_imageResource.get(); }
 
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
     RefPtr<const SkPicture>& bufferedForeground() { return m_bufferedForeground; }
@@ -73,7 +73,7 @@ private:
     bool m_needsTransformUpdate : 1;
     AffineTransform m_localTransform;
     FloatRect m_objectBoundingBox;
-    OwnPtr<RenderImageResource> m_imageResource;
+    OwnPtr<LayoutImageResource> m_imageResource;
 
     RefPtr<const SkPicture> m_bufferedForeground;
 };

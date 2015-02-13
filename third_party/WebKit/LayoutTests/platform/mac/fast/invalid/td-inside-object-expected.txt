@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (1,1) size 299x18
                 text run at (1,1) width 299: "This text should be to the left of the cat image."
             LayoutTableCell {TD} at (305,2) size 100x101 [r=0 c=1 rs=1 cs=1]
-              RenderImage {OBJECT} at (1,1) size 98x99
+              LayoutImage {OBJECT} at (1,1) size 98x99
             LayoutTableCell {TD} at (407,42) size 310x20 [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 308x18
                 text run at (1,1) width 308: "This text should be to the right of the cat image."

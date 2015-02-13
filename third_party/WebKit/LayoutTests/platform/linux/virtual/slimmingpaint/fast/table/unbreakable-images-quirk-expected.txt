@@ -10,10 +10,10 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 115x61
           LayoutTableRow {TR} at (0,2) size 115x57
             LayoutTableCell {TD} at (2,2) size 111x57 [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (1,1) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (21,36) size 69x19
                 text run at (21,36) width 69: "loremipsum"
-              RenderImage {IMG} at (90,1) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (90,1) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {HR} at (0,89) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,99) size 784x20
@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,2) size 91x57 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,36) size 69x19
                 text run at (1,36) width 69: "loremipsum"
-              RenderImage {IMG} at (70,1) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (70,1) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {HR} at (0,188) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,198) size 784x20
@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (1,1) size 69x74
                 text run at (1,1) width 7: "a"
                 text run at (1,56) width 69: "loremipsum"
-              RenderImage {IMG} at (70,21) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (70,21) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {HR} at (0,307) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,317) size 784x20
@@ -50,10 +50,10 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,2) size 111x77 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 7x19
                 text run at (1,1) width 7: "a"
-              RenderImage {IMG} at (1,21) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (1,21) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (21,56) size 69x19
                 text run at (21,56) width 69: "loremipsum"
-              RenderImage {IMG} at (90,21) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (90,21) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {HR} at (0,426) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,436) size 784x20
@@ -65,8 +65,8 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,2) size 111x77 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 61x19
                 text run at (1,1) width 61: "wideword"
-              RenderImage {IMG} at (1,21) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (1,21) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (21,56) size 69x19
                 text run at (21,56) width 69: "loremipsum"
-              RenderImage {IMG} at (90,21) size 20x50 [bgcolor=#ADD8E6]
+              LayoutImage {IMG} at (90,21) size 20x50 [bgcolor=#ADD8E6]
               RenderText {#text} at (0,0) size 0x0

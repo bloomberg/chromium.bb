@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,34) size 784x107
         RenderText {#text} at (0,89) size 25x17
           text run at (0,89) width 25: "The"
-        RenderImage {IMG} at (24.88,0) size 76x103
+        LayoutImage {IMG} at (24.88,0) size 76x103
         RenderText {#text} at (100,89) size 374x17
           text run at (100,89) width 374: "caret should be just after the second word in this sentence."
 caret: position 5 of child 2 {#text} of child 2 {DIV} of body

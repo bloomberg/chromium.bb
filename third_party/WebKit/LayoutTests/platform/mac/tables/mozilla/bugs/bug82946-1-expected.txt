@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 47: "sidebar"
             LayoutTableCell {TD} at (55,2) size 725x152 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderBlock (anonymous) at (2,2) size 721x120
-                RenderImage {IMG} at (0,0) size 459x120
+                LayoutImage {IMG} at (0,0) size 459x120
                 RenderText {#text} at (0,0) size 0x0
               LayoutTable {TABLE} at (2,122) size 459x28 [border: (1px outset #808080)]
                 LayoutTableSection {TBODY} at (1,1) size 457x26

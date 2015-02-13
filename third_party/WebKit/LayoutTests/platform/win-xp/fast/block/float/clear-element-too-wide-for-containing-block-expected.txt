@@ -8,4 +8,4 @@ layer at (0,0) size 800x411
           RenderText {#text} at (0,0) size 308x19
             text run at (0,0) width 308: "The yellow block should be below the green block."
         RenderBlock (floating) {DIV} at (0,20) size 100x100 [bgcolor=#008000]
-        RenderImage {IMG} at (0,120) size 395x275 [bgcolor=#FFFF00]
+        LayoutImage {IMG} at (0,120) size 395x275 [bgcolor=#FFFF00]

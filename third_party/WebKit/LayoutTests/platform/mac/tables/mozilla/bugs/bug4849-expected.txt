@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (0,0) size 102x18
                 text run at (0,0) width 102: "150 pixels wide"
             LayoutTableCell {TD} at (150,8) size 1x1 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (0,0) size 1x1
+              LayoutImage {IMG} at (0,0) size 1x1
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (151,0) size 449x18 [bgcolor=#EEEE00] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (0,0) size 102x18
@@ -19,5 +19,5 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,18) size 600x28 [bgcolor=#00FF00] [r=1 c=0 rs=1 cs=3]
               RenderText {#text} at (0,0) size 185x18
                 text run at (0,0) width 185: "Bottom cell, 600 pixels wide"
-              RenderImage {IMG} at (0,18) size 600x10
+              LayoutImage {IMG} at (0,18) size 600x10
               RenderText {#text} at (0,0) size 0x0

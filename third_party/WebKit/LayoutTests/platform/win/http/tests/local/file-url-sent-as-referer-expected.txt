@@ -20,4 +20,4 @@ layer at (8,44) size 304x154
     layer at (0,0) size 300x150
       RenderBlock {HTML} at (0,0) size 300x150
         RenderBody {BODY} at (8,8) size 284x134
-          RenderImage {IMG} at (0,0) size 250x50
+          LayoutImage {IMG} at (0,0) size 250x50

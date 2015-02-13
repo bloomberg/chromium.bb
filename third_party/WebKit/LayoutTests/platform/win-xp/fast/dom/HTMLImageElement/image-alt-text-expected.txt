@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (53,24) size 0x0
         RenderBlock {IMG} at (0,24) size 102x52 [border: (1px solid #000000)]
         RenderBR {BR} at (102,75) size 0x0
-        RenderImage {IMG} at (0,76) size 75x25
+        LayoutImage {IMG} at (0,76) size 75x25
         RenderBR {BR} at (75,101) size 0x0
 layer at (8,64) size 53x24 clip at (9,65) size 51x22
   RenderBlock {DIV} at (0,0) size 53x24 [border: (1px solid #C0C0C0)]

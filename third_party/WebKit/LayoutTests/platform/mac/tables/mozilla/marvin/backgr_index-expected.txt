@@ -31,15 +31,15 @@ layer at (0,0) size 800x1715 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       RenderBlock {UL} at (0,245.58) size 784x745
         RenderListItem {LI} at (40,0) size 744x33
           RenderListMarker at (-16,18) size 6x15: bullet
-          RenderImage {IMG} at (0,0) size 80x30
+          LayoutImage {IMG} at (0,0) size 80x30
           RenderText {#text} at (0,0) size 0x0
         RenderListItem {LI} at (40,33) size 744x83
           RenderListMarker at (-16,68) size 6x15: bullet
-          RenderImage {IMG} at (0,0) size 30x80
+          LayoutImage {IMG} at (0,0) size 30x80
           RenderText {#text} at (0,0) size 0x0
         RenderListItem {LI} at (40,116) size 744x629
           RenderListMarker at (-16,0) size 6x15: bullet
-          RenderImage {IMG} at (0,15) size 779x611
+          LayoutImage {IMG} at (0,15) size 779x611
           RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,1003.58) size 784x15
         RenderText {#text} at (0,0) size 328x15
@@ -242,7 +242,7 @@ layer at (0,0) size 800x1715 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   RenderText {#text} at (0,0) size 0x0
           RenderBlock {DIV} at (0,150) size 744x34
             RenderInline {A} at (0,0) size 88x15 [color=#FFFF00]
-              RenderImage {IMG} at (0,0) size 88x31
+              LayoutImage {IMG} at (0,0) size 88x31
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {ADDRESS} at (0,184) size 744x15
             RenderText {#text} at (0,0) size 687x15

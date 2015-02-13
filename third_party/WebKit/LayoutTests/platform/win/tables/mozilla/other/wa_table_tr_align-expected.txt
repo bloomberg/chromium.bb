@@ -311,7 +311,7 @@ layer at (0,0) size 785x1314 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       RenderBlock {P} at (0,1227.88) size 769x0
       RenderBlock {HR} at (0,1227.88) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,1237.88) size 769x18
-        RenderImage {IMG} at (0,1) size 13x13
+        LayoutImage {IMG} at (0,1) size 13x13
         RenderText {#text} at (13,0) size 123x17
           text run at (13,0) width 123: " Created 9/9/96 by "
         RenderInline {A} at (0,0) size 84x17 [color=#0000EE]

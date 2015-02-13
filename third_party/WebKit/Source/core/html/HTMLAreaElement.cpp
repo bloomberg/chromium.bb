@@ -26,7 +26,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/rendering/RenderImage.h"
+#include "core/layout/LayoutImage.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/Path.h"
@@ -213,7 +213,7 @@ void HTMLAreaElement::setFocus(bool shouldBeFocused)
     if (!renderer || !renderer->isImage())
         return;
 
-    toRenderImage(renderer)->areaElementFocusChanged(this);
+    toLayoutImage(renderer)->areaElementFocusChanged(this);
 }
 
 void HTMLAreaElement::updateFocusAppearance(bool restorePreviousSelection)

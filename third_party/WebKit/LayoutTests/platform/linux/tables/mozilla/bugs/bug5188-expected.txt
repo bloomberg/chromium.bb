@@ -7,16 +7,16 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 624x141
           LayoutTableRow {TR} at (0,2) size 624x60
             LayoutTableCell {TD} at (2,2) size 150x1 [r=0 c=0 rs=2 cs=1]
-              RenderImage {IMG} at (0,0) size 150x1
+              LayoutImage {IMG} at (0,0) size 150x1
             LayoutTableCell {TD} at (154,2) size 468x60 [r=0 c=1 rs=1 cs=2]
-              RenderImage {IMG} at (0,0) size 468x60
+              LayoutImage {IMG} at (0,0) size 468x60
           LayoutTableRow {TR} at (0,64) size 624x75
             LayoutTableCell {TD} at (154,64) size 297x75 [r=1 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (0,0) size 297x75
                 LayoutTableSection {TBODY} at (0,0) size 297x75
                   LayoutTableRow {TR} at (0,0) size 297x9
                     LayoutTableCell {TD} at (0,0) size 297x9 [r=0 c=0 rs=1 cs=2]
-                      RenderImage {IMG} at (3,3) size 126x3
+                      LayoutImage {IMG} at (3,3) size 126x3
                       RenderText {#text} at (0,0) size 0x0
                   LayoutTableRow {TR} at (0,9) size 297x66
                     LayoutTableCell {TD} at (0,9) size 149x46 [r=1 c=0 rs=1 cs=1]

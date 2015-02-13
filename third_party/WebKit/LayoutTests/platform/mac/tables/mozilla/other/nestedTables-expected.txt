@@ -450,9 +450,9 @@ layer at (0,0) size 785x812 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutTableSection {TBODY} at (0,0) size 207x18
                   LayoutTableRow {TR} at (0,0) size 207x18
                     LayoutTableCell {TD} at (0,0) size 13x16 [r=0 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (0,0) size 13x16
+                      LayoutImage {IMG} at (0,0) size 13x16
                     LayoutTableCell {TD} at (13,0) size 190x18 [r=0 c=1 rs=1 cs=1]
                       RenderText {#text} at (0,0) size 165x18
                         text run at (0,0) width 165: "AlphaLinux Distributions"
                     LayoutTableCell {TD} at (203,0) size 4x4 [r=0 c=2 rs=1 cs=1]
-                      RenderImage {IMG} at (0,0) size 4x4
+                      LayoutImage {IMG} at (0,0) size 4x4

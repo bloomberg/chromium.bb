@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderImageResourceStyleImage.h"
+#include "core/layout/LayoutImageResourceStyleImage.h"
 
 #include "core/fetch/ImageResource.h"
 #include "core/layout/LayoutObject.h"
@@ -34,19 +34,19 @@
 
 namespace blink {
 
-RenderImageResourceStyleImage::RenderImageResourceStyleImage(StyleImage* styleImage)
+LayoutImageResourceStyleImage::LayoutImageResourceStyleImage(StyleImage* styleImage)
     : m_styleImage(styleImage)
 {
     ASSERT(m_styleImage);
 }
 
-RenderImageResourceStyleImage::~RenderImageResourceStyleImage()
+LayoutImageResourceStyleImage::~LayoutImageResourceStyleImage()
 {
 }
 
-void RenderImageResourceStyleImage::initialize(LayoutObject* renderer)
+void LayoutImageResourceStyleImage::initialize(LayoutObject* renderer)
 {
-    RenderImageResource::initialize(renderer);
+    LayoutImageResource::initialize(renderer);
 
     if (m_styleImage->isImageResource())
         m_cachedImage = toStyleFetchedImage(m_styleImage)->cachedImage();
@@ -54,14 +54,14 @@ void RenderImageResourceStyleImage::initialize(LayoutObject* renderer)
     m_styleImage->addClient(m_renderer);
 }
 
-void RenderImageResourceStyleImage::shutdown()
+void LayoutImageResourceStyleImage::shutdown()
 {
     ASSERT(m_renderer);
     m_styleImage->removeClient(m_renderer);
     m_cachedImage = 0;
 }
 
-PassRefPtr<Image> RenderImageResourceStyleImage::image(int width, int height) const
+PassRefPtr<Image> LayoutImageResourceStyleImage::image(int width, int height) const
 {
     // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
     if (m_styleImage->isPendingImage())
@@ -69,7 +69,7 @@ PassRefPtr<Image> RenderImageResourceStyleImage::image(int width, int height) co
     return m_styleImage->image(m_renderer, IntSize(width, height));
 }
 
-void RenderImageResourceStyleImage::setContainerSizeForRenderer(const IntSize& size)
+void LayoutImageResourceStyleImage::setContainerSizeForRenderer(const IntSize& size)
 {
     ASSERT(m_renderer);
     m_styleImage->setContainerSizeForRenderer(m_renderer, size, m_renderer->style()->effectiveZoom());

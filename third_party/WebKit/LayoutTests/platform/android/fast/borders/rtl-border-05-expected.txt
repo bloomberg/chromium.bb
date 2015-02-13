@@ -17,7 +17,7 @@ layer at (0,0) size 800x502
           RenderInline {SPAN} at (0,0) size 185x53 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             RenderText {#text} at (121,39) size 42x19
               text run at (121,39) width 42: " dgnjk "
-            RenderImage {IMG} at (163,32) size 22x22 [border: (1px solid #0000FF)]
+            LayoutImage {IMG} at (163,32) size 22x22 [border: (1px solid #0000FF)]
             RenderText {#text} at (0,71) size 37x19
               text run at (0,71) width 37: "njkng "
           RenderText {#text} at (82,71) size 199x51
@@ -27,7 +27,7 @@ layer at (0,0) size 800x502
           RenderInline {SPAN} at (0,0) size 153x21 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             RenderText {#text} at (45,6) size 78x19
               text run at (45,6) width 78: "Some fill text"
-            RenderImage {IMG} at (123,1) size 20x20
+            LayoutImage {IMG} at (123,1) size 20x20
       RenderBlock {DIV} at (0,257) size 212x221 [border: (1px solid #000000)]
         RenderBlock {P} at (6,22) size 200x129
           RenderText {#text} at (30,6) size 185x52
@@ -38,7 +38,7 @@ layer at (0,0) size 800x502
           RenderInline {SPAN} at (0,0) size 171x53 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             RenderText {#text} at (29,39) size 42x19
               text run at (29,39) width 42: " dgnjk "
-            RenderImage {IMG} at (71,32) size 22x22 [border: (1px solid #0000FF)]
+            LayoutImage {IMG} at (71,32) size 22x22 [border: (1px solid #0000FF)]
             RenderText {#text} at (163,71) size 37x19
               text run at (163,71) width 4 RTL: " "
               text run at (167,71) width 33: "njkng"
@@ -49,4 +49,4 @@ layer at (0,0) size 800x502
           RenderInline {SPAN} at (0,0) size 153x21 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             RenderText {#text} at (77,6) size 78x19
               text run at (77,6) width 78: "Some fill text"
-            RenderImage {IMG} at (57,1) size 20x20
+            LayoutImage {IMG} at (57,1) size 20x20

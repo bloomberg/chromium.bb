@@ -19,14 +19,14 @@ layer at (0,0) size 800x600
                   RenderText {#text} at (0,0) size 199x17
                     text run at (0,0) width 199: "The XML Files Resources List"
                   RenderText {#text} at (0,0) size 0x0
-                  RenderImage {IMG} at (0,18) size 468x60
+                  LayoutImage {IMG} at (0,18) size 468x60
                   RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (510,21) size 132x57 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (1,1) size 130x55 [border: (1px outset #808080)]
                 LayoutTableSection {TBODY} at (1,1) size 128x53
                   LayoutTableRow {TR} at (0,2) size 128x49
                     LayoutTableCell {TD} at (2,2) size 124x49 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (3,3) size 118x25
+                      LayoutImage {IMG} at (3,3) size 118x25
                       RenderBR {BR} at (121,28) size 0x0
                       RenderText {#text} at (24,28) size 6x17
                         text run at (24,28) width 6: "["
@@ -50,14 +50,14 @@ layer at (0,0) size 800x600
                   RenderListMarker at (-17,0) size 7x17: bullet
                   RenderText {#text} at (0,0) size 199x17
                     text run at (0,0) width 199: "The XML Files Resources List"
-                  RenderImage {IMG} at (0,18) size 468x60
+                  LayoutImage {IMG} at (0,18) size 468x60
                   RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (510,21) size 132x57 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (1,1) size 130x55 [border: (1px outset #808080)]
                 LayoutTableSection {TBODY} at (1,1) size 128x53
                   LayoutTableRow {TR} at (0,2) size 128x49
                     LayoutTableCell {TD} at (2,2) size 124x49 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (3,3) size 118x25
+                      LayoutImage {IMG} at (3,3) size 118x25
                       RenderBR {BR} at (121,28) size 0x0
                       RenderText {#text} at (24,28) size 6x17
                         text run at (24,28) width 6: "["

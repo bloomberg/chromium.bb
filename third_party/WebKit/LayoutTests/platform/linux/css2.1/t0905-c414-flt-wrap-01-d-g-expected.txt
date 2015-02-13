@@ -7,8 +7,8 @@ layer at (0,0) size 800x165
         RenderText {#text} at (0,0) size 362x19
           text run at (0,0) width 362: "The word \"fail\" should not appear below, just a green block."
       RenderBlock {DIV} at (16,36) size 240x83 [color=#FFFFFF] [bgcolor=#FFFFFF]
-        RenderImage {IMG} at (0,0) size 1x1
-        RenderImage {IMG} at (0,1) size 240x112
+        LayoutImage {IMG} at (0,0) size 1x1
+        LayoutImage {IMG} at (0,1) size 240x112
         RenderInline {SPAN} at (0,0) size 188x83
           RenderText {#text} at (1,0) size 188x83
             text run at (1,0) width 188: "FAIL"

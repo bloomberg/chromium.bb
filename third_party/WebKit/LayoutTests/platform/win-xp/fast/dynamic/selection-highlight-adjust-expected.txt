@@ -18,7 +18,7 @@ layer at (0,0) size 800x165
           text run at (140,20) width 4: "."
       RenderBlock {HR} at (0,56) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,66) size 784x75
-        RenderImage {IMG} at (0,0) size 0x30
+        LayoutImage {IMG} at (0,0) size 0x30
         RenderBR {BR} at (0,15) size 0x19
         RenderBR {BR} at (0,35) size 0x19
         RenderInline {SPAN} at (0,0) size 287x19

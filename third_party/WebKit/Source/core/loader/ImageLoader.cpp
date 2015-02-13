@@ -35,8 +35,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -192,7 +192,7 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newI
             oldImage->removeClient(this);
     }
 
-    if (RenderImageResource* imageResource = renderImageResource())
+    if (LayoutImageResource* imageResource = layoutImageResource())
         imageResource->resetAnimation();
 }
 
@@ -326,10 +326,10 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         if (oldImage)
             oldImage->removeClient(this);
     } else if (updateBehavior == UpdateSizeChanged && m_element->renderer() && m_element->renderer()->isImage()) {
-        toRenderImage(m_element->renderer())->intrinsicSizeChanged();
+        toLayoutImage(m_element->renderer())->intrinsicSizeChanged();
     }
 
-    if (RenderImageResource* imageResource = renderImageResource())
+    if (LayoutImageResource* imageResource = layoutImageResource())
         imageResource->resetAnimation();
 
     // Only consider updating the protection ref-count of the Element immediately before returning
@@ -438,7 +438,7 @@ void ImageLoader::notifyFinished(Resource* resource)
     loadEventSender().dispatchEventSoon(this);
 }
 
-RenderImageResource* ImageLoader::renderImageResource()
+LayoutImageResource* ImageLoader::layoutImageResource()
 {
     LayoutObject* renderer = m_element->renderer();
 
@@ -447,8 +447,8 @@ RenderImageResource* ImageLoader::renderImageResource()
 
     // We don't return style generated image because it doesn't belong to the ImageLoader.
     // See <https://bugs.webkit.org/show_bug.cgi?id=42840>
-    if (renderer->isImage() && !static_cast<RenderImage*>(renderer)->isGeneratedContent())
-        return toRenderImage(renderer)->imageResource();
+    if (renderer->isImage() && !static_cast<LayoutImage*>(renderer)->isGeneratedContent())
+        return toLayoutImage(renderer)->imageResource();
 
     if (renderer->isSVGImage())
         return toRenderSVGImage(renderer)->imageResource();
@@ -461,7 +461,7 @@ RenderImageResource* ImageLoader::renderImageResource()
 
 void ImageLoader::updateRenderer()
 {
-    RenderImageResource* imageResource = renderImageResource();
+    LayoutImageResource* imageResource = layoutImageResource();
 
     if (!imageResource)
         return;

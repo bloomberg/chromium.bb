@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
 layer at (8,44) size 784x125 transparent
   RenderBlock {DIV} at (0,36) size 784x125
     RenderBlock (floating) {DIV} at (0,0) size 104x125
-      RenderImage {IMG} at (0,0) size 100x100
+      LayoutImage {IMG} at (0,0) size 100x100
       RenderText {#text} at (100,86) size 4x18
         text run at (100,86) width 4: " "
       RenderBR {BR} at (0,0) size 0x0

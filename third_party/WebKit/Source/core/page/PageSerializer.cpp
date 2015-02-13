@@ -60,7 +60,6 @@
 #include "core/layout/style/StyleFetchedImage.h"
 #include "core/layout/style/StyleImage.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/SerializedResource.h"
 #include "platform/graphics/Image.h"
 #include "wtf/text/CString.h"

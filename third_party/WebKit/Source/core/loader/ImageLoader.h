@@ -52,7 +52,7 @@ protected:
 
 class Element;
 class ImageLoader;
-class RenderImageResource;
+class LayoutImageResource;
 
 template<typename T> class EventSender;
 typedef EventSender<ImageLoader> ImageEventSender;
@@ -125,7 +125,7 @@ private:
     void dispatchPendingLoadEvent();
     void dispatchPendingErrorEvent();
 
-    RenderImageResource* renderImageResource();
+    LayoutImageResource* layoutImageResource();
     void updateRenderer();
 
     void setImageWithoutConsideringPendingLoadEvent(ImageResource*);

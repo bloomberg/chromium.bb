@@ -26,9 +26,9 @@
 
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutImage.h"
 #include "core/paint/ReplacedPainter.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
@@ -180,8 +180,8 @@ void RenderReplaced::computeAspectRatioInformationForRenderBox(RenderBox* conten
 
         // Handle zoom & vertical writing modes here, as the embedded document doesn't know about them.
         intrinsicSize.scale(style()->effectiveZoom());
-        if (isRenderImage())
-            intrinsicSize.scale(toRenderImage(this)->imageDevicePixelRatio());
+        if (isLayoutImage())
+            intrinsicSize.scale(toLayoutImage(this)->imageDevicePixelRatio());
 
         // Update our intrinsic size to match what the content renderer has computed, so that when we
         // constrain the size below, the correct intrinsic size will be obtained for comparison against

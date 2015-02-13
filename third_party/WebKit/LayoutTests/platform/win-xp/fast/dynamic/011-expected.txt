@@ -22,10 +22,10 @@ layer at (0,0) size 800x600
               text run at (0,0) width 8: "2"
           RenderText {#text} at (8,0) size 4x19
             text run at (8,0) width 4: " "
-          RenderImage {IMG} at (12,15) size 0x0
+          LayoutImage {IMG} at (12,15) size 0x0
           RenderText {#text} at (12,0) size 4x19
             text run at (12,0) width 4: " "
         RenderText {#text} at (0,0) size 0x0
-        RenderImage {IMG} at (16,15) size 0x0
+        LayoutImage {IMG} at (16,15) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0

@@ -28,13 +28,13 @@
 #include "core/rendering/svg/RenderSVGImage.h"
 
 #include "core/layout/ImageQualityController.h"
+#include "core/layout/LayoutImageResource.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGImagePainter.h"
-#include "core/rendering/RenderImageResource.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/LengthFunctions.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -45,7 +45,7 @@ RenderSVGImage::RenderSVGImage(SVGImageElement* impl)
     : RenderSVGModelObject(impl)
     , m_needsBoundariesUpdate(true)
     , m_needsTransformUpdate(true)
-    , m_imageResource(RenderImageResource::create())
+    , m_imageResource(LayoutImageResource::create())
 {
     m_imageResource->initialize(this);
 }

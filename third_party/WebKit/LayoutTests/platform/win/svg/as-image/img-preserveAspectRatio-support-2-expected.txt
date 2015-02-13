@@ -7,7 +7,7 @@ layer at (0,0) size 800x322
         RenderText {#text} at (0,0) size 224x36
           text run at (0,0) width 224: "No size specified"
       RenderBlock (anonymous) at (0,58.44) size 784x234
-        RenderImage {IMG} at (0,0) size 230x230 [border: (2px dashed #800000)]
+        LayoutImage {IMG} at (0,0) size 230x230 [border: (2px dashed #800000)]
         RenderText {#text} at (230,216) size 4x17
           text run at (230,216) width 4: " "
         RenderText {#text} at (0,0) size 0x0

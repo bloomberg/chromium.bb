@@ -42,7 +42,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/layout/HitTestResult.h"
-#include "core/rendering/RenderImage.h"
+#include "core/layout/LayoutImage.h"
 #include "core/storage/StorageArea.h"
 #include "platform/network/FormData.h"
 #include "platform/network/WebSocketHandshakeRequest.h"

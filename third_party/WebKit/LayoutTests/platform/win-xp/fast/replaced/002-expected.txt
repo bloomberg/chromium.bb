@@ -8,6 +8,6 @@ layer at (0,0) size 800x260
           text run at (0,0) width 185: "There should be no red below."
       RenderBlock {DIV} at (0,36) size 600x200 [bgcolor=#FF0000]
         RenderBlock {P} at (0,0) size 600x100 [bgcolor=#008000]
-          RenderImage {IMG} at (0,0) size 100x100
-          RenderImage {IMG} at (0,100) size 600x100
+          LayoutImage {IMG} at (0,0) size 100x100
+          LayoutImage {IMG} at (0,100) size 600x100
           RenderText {#text} at (0,0) size 0x0

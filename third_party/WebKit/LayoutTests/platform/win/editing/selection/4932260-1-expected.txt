@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,34) size 784x107
         RenderText {#text} at (0,89) size 130x17
           text run at (0,89) width 130: "The caret should be "
-        RenderImage {IMG} at (129.72,0) size 76x103
+        LayoutImage {IMG} at (129.72,0) size 76x103
         RenderText {#text} at (205,89) size 212x17
           text run at (205,89) width 212: "at the beginning of this sentence."
 caret: position 0 of child 0 {#text} of child 2 {DIV} of body

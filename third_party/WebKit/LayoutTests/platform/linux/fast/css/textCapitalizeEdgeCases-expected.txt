@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
                 text run at (30,10) width 13: "or"
             RenderText {#text} at (43,10) size 41x19
               text run at (43,10) width 41: "d With"
-            RenderImage {IMG} at (84,0) size 25x25
+            LayoutImage {IMG} at (84,0) size 25x25
             RenderText {#text} at (109,10) size 59x19
               text run at (109,10) width 59: "An Image"
           RenderBlock {DIV} at (0,30) size 694x0

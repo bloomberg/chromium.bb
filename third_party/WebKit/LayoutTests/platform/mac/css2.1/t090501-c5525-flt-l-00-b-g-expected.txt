@@ -4,7 +4,7 @@ layer at (0,0) size 800x290
   RenderBlock {HTML} at (0,0) size 800x290
     RenderBody {BODY} at (8,16) size 784x258
       RenderBlock {P} at (0,0) size 784x258 [color=#000080]
-        RenderImage {IMG} at (0,0) size 50x50
+        LayoutImage {IMG} at (0,0) size 50x50
         RenderText {#text} at (50,4) size 334x18
           text run at (50,4) width 334: "\x{21E6} This text should flow around the box on the left. "
         RenderInline {SPAN} at (0,0) size 784x254 [color=#C0C0C0]

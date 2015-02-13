@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderImage.h"
+#include "core/layout/LayoutImage.h"
 
 #include "core/HTMLNames.h"
 #include "core/editing/FrameSelection.h"
@@ -53,7 +53,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderImage::RenderImage(Element* element)
+LayoutImage::LayoutImage(Element* element)
     : RenderReplaced(element, LayoutSize())
     , m_didIncrementVisuallyNonEmptyPixelCount(false)
     , m_isGeneratedContent(false)
@@ -62,32 +62,32 @@ RenderImage::RenderImage(Element* element)
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addLayoutObject(this);
 }
 
-RenderImage* RenderImage::createAnonymous(Document* document)
+LayoutImage* LayoutImage::createAnonymous(Document* document)
 {
-    RenderImage* image = new RenderImage(0);
+    LayoutImage* image = new LayoutImage(0);
     image->setDocumentForAnonymous(document);
     return image;
 }
 
-RenderImage::~RenderImage()
+LayoutImage::~LayoutImage()
 {
 }
 
-void RenderImage::destroy()
+void LayoutImage::destroy()
 {
     ASSERT(m_imageResource);
     m_imageResource->shutdown();
     RenderReplaced::destroy();
 }
 
-void RenderImage::setImageResource(PassOwnPtr<RenderImageResource> imageResource)
+void LayoutImage::setImageResource(PassOwnPtr<LayoutImageResource> imageResource)
 {
     ASSERT(!m_imageResource);
     m_imageResource = imageResource;
     m_imageResource->initialize(this);
 }
 
-void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
+void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 {
     if (documentBeingDestroyed())
         return;
@@ -115,14 +115,14 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     repaintOrMarkForLayout(rect);
 }
 
-void RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize)
+void LayoutImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize)
 {
     if (m_imageResource->errorOccurred() || !m_imageResource->hasImage())
         return;
     setIntrinsicSize(newSize);
 }
 
-void RenderImage::updateInnerContentRect()
+void LayoutImage::updateInnerContentRect()
 {
     // Propagate container size to the image resource.
     LayoutRect containerRect = replacedContentRect();
@@ -131,7 +131,7 @@ void RenderImage::updateInnerContentRect()
         m_imageResource->setContainerSizeForRenderer(containerSize);
 }
 
-void RenderImage::repaintOrMarkForLayout(const IntRect* rect)
+void LayoutImage::repaintOrMarkForLayout(const IntRect* rect)
 {
     LayoutSize oldIntrinsicSize = intrinsicSize();
     LayoutSize newIntrinsicSize = m_imageResource->intrinsicSize(style()->effectiveZoom());
@@ -193,7 +193,7 @@ void RenderImage::repaintOrMarkForLayout(const IntRect* rect)
     contentChanged(ImageChanged);
 }
 
-void RenderImage::notifyFinished(Resource* newImage)
+void LayoutImage::notifyFinished(Resource* newImage)
 {
     if (!m_imageResource)
         return;
@@ -210,17 +210,17 @@ void RenderImage::notifyFinished(Resource* newImage)
     }
 }
 
-void RenderImage::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutImage::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ImagePainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-void RenderImage::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutImage::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ImagePainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
+void LayoutImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
 {
     ASSERT(areaElement->imageElement() == node());
 
@@ -238,15 +238,15 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     repaintOrMarkForLayout(&paintInvalidationRect);
 }
 
-bool RenderImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox*) const
+bool LayoutImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox*) const
 {
     if (!RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(bleedAvoidance))
         return false;
 
-    return !const_cast<RenderImage*>(this)->boxDecorationBackgroundIsKnownToBeObscured();
+    return !const_cast<LayoutImage*>(this)->boxDecorationBackgroundIsKnownToBeObscured();
 }
 
-bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned) const
+bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned) const
 {
     if (!m_imageResource->hasImage() || m_imageResource->errorOccurred())
         return false;
@@ -272,7 +272,7 @@ bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     return m_imageResource->cachedImage() && m_imageResource->cachedImage()->currentFrameKnownToBeOpaque(this);
 }
 
-bool RenderImage::computeBackgroundIsKnownToBeObscured()
+bool LayoutImage::computeBackgroundIsKnownToBeObscured()
 {
     if (!hasBackground())
         return false;
@@ -283,18 +283,18 @@ bool RenderImage::computeBackgroundIsKnownToBeObscured()
     return foregroundIsKnownToBeOpaqueInRect(paintedExtent, 0);
 }
 
-LayoutUnit RenderImage::minimumReplacedHeight() const
+LayoutUnit LayoutImage::minimumReplacedHeight() const
 {
     return m_imageResource->errorOccurred() ? intrinsicSize().height() : LayoutUnit();
 }
 
-HTMLMapElement* RenderImage::imageMap() const
+HTMLMapElement* LayoutImage::imageMap() const
 {
     HTMLImageElement* i = isHTMLImageElement(node()) ? toHTMLImageElement(node()) : 0;
     return i ? i->treeScope().getImageMap(i->fastGetAttribute(usemapAttr)) : 0;
 }
 
-bool RenderImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     HitTestResult tempResult(result.hitTestLocation());
     bool inside = RenderReplaced::nodeAtPoint(request, tempResult, locationInContainer, accumulatedOffset, hitTestAction);
@@ -318,13 +318,13 @@ bool RenderImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     return inside;
 }
 
-void RenderImage::layout()
+void LayoutImage::layout()
 {
     RenderReplaced::layout();
     updateInnerContentRect();
 }
 
-bool RenderImage::updateImageLoadingPriorities()
+bool LayoutImage::updateImageLoadingPriorities()
 {
     if (!m_imageResource || !m_imageResource->cachedImage() || m_imageResource->cachedImage()->isLoaded())
         return false;
@@ -354,7 +354,7 @@ bool RenderImage::updateImageLoadingPriorities()
     return true;
 }
 
-void RenderImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
+void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
 {
     RenderReplaced::computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
 
@@ -375,14 +375,14 @@ void RenderImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, dou
     }
 }
 
-bool RenderImage::needsPreferredWidthsRecalculation() const
+bool LayoutImage::needsPreferredWidthsRecalculation() const
 {
     if (RenderReplaced::needsPreferredWidthsRecalculation())
         return true;
     return embeddedContentBox();
 }
 
-RenderBox* RenderImage::embeddedContentBox() const
+RenderBox* LayoutImage::embeddedContentBox() const
 {
     if (!m_imageResource)
         return 0;

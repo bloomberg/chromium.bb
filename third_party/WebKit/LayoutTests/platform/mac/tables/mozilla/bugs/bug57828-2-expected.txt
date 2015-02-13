@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 38x55
                   LayoutTableRow {TR} at (0,0) size 38x55
                     LayoutTableCell {TD} at (0,0) size 38x55 [bgcolor=#CCCCFF] [r=0 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (3,3) size 16x16
+                      LayoutImage {IMG} at (3,3) size 16x16
                       RenderInline {FONT} at (0,0) size 32x33
                         RenderInline {A} at (0,0) size 32x33 [color=#0000EE]
                           RenderText {#text} at (3,19) size 32x33
@@ -53,7 +53,7 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 105x22
                   LayoutTableRow {TR} at (0,0) size 105x22
                     LayoutTableCell {TD} at (0,0) size 105x22 [bgcolor=#CCCCFF] [r=0 c=0 rs=1 cs=1]
-                      RenderImage {IMG} at (3,3) size 16x16
+                      LayoutImage {IMG} at (3,3) size 16x16
                       RenderInline {FONT} at (0,0) size 80x11
                         RenderInline {A} at (0,0) size 80x11 [color=#0000EE]
                           RenderText {#text} at (22,3) size 80x11

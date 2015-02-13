@@ -38,7 +38,7 @@ layer at (0,0) size 785x1092 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 6: "f"
           LayoutTableRow {TR} at (0,50) size 606x329
             LayoutTableCell {TD} at (2,50) size 602x329 [border: (1px solid #008000)] [r=2 c=0 rs=1 cs=4]
-              RenderImage {IMG} at (2,2) size 593x325
+              LayoutImage {IMG} at (2,2) size 593x325
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,469) size 610x2 [border: (1px solid #FF0000)]
       RenderBlock {P} at (0,487) size 769x18
@@ -71,7 +71,7 @@ layer at (0,0) size 785x1092 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 6: "f"
           LayoutTableRow {TR} at (0,50) size 607x329
             LayoutTableCell {TD} at (2,50) size 603x329 [border: (1px solid #008000)] [r=2 c=0 rs=1 cs=4]
-              RenderImage {IMG} at (2,2) size 593x325
+              LayoutImage {IMG} at (2,2) size 593x325
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,954) size 769x36
         RenderText {#text} at (0,0) size 743x35

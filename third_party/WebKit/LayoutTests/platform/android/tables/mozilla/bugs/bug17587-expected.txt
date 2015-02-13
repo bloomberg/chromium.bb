@@ -7,9 +7,9 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 604x246
           LayoutTableRow {TR} at (0,0) size 604x62
             LayoutTableCell {TD} at (0,0) size 114x136 [border: (1px inset #808080)] [r=0 c=0 rs=3 cs=1]
-              RenderImage {IMG} at (1,1) size 112x134
+              LayoutImage {IMG} at (1,1) size 112x134
             LayoutTableCell {TD} at (114,0) size 490x62 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=2]
-              RenderImage {IMG} at (21,1) size 468x60
+              LayoutImage {IMG} at (21,1) size 468x60
           LayoutTableRow {TR} at (0,62) size 604x22
             LayoutTableCell {TD} at (114,62) size 490x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=2]
               LayoutTable {TABLE} at (1,1) size 488x20

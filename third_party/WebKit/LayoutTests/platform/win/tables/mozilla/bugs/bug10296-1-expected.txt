@@ -1016,7 +1016,7 @@ layer at (0,0) size 785x5955 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       RenderBlock {HR} at (0,5796.44) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,5814.44) size 769x35
         RenderInline {A} at (0,0) size 88x17 [color=#0000EE]
-          RenderImage {IMG} at (0,0) size 88x31
+          LayoutImage {IMG} at (0,0) size 88x31
       RenderBlock {P} at (0,5865.44) size 769x18
         RenderText {#text} at (0,0) size 59x17
           text run at (0,0) width 59: "(Back to "

@@ -37,7 +37,7 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (266,71) size 1x0
         RenderText {#text} at (0,76) size 44x18
           text run at (0,76) width 44: "image "
-        RenderImage {INPUT} at (43.09,89) size 10x1
+        LayoutImage {INPUT} at (43.09,89) size 10x1
         RenderText {#text} at (53,76) size 5x18
           text run at (53,76) width 5: " "
         RenderBR {BR} at (57,90) size 1x0

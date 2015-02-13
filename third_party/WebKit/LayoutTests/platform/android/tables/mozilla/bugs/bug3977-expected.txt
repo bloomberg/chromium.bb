@@ -7,7 +7,7 @@ layer at (0,0) size 785x965
         LayoutTableSection {TBODY} at (1,1) size 598x263
           LayoutTableRow {TR} at (0,2) size 598x77
             LayoutTableCell {TD} at (2,2) size 594x77 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=3]
-              RenderImage {IMG} at (2,2) size 590x73
+              LayoutImage {IMG} at (2,2) size 590x73
               RenderText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,81) size 598x96
             LayoutTableCell {TD} at (2,81) size 114x24 [bgcolor=#94BD73] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
@@ -28,11 +28,11 @@ layer at (0,0) size 785x965
                   text run at (0,0) width 68: "etc., etc. ..."
           LayoutTableRow {TR} at (0,179) size 598x37
             LayoutTableCell {TD} at (2,179) size 594x37 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=3]
-              RenderImage {IMG} at (2,2) size 589x33
+              LayoutImage {IMG} at (2,2) size 589x33
               RenderText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,218) size 598x43
             LayoutTableCell {TD} at (2,218) size 114x43 [border: (1px inset #808080)] [r=3 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (2,2) size 110x39
+              LayoutImage {IMG} at (2,2) size 110x39
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TH} at (118,227) size 478x24 [border: (1px inset #808080)] [r=3 c=1 rs=1 cs=2]
               RenderText {#text} at (208,2) size 62x19
@@ -86,7 +86,7 @@ layer at (0,0) size 785x965
         LayoutTableSection {TBODY} at (1,1) size 598x179
           LayoutTableRow {TR} at (0,2) size 598x77
             LayoutTableCell {TD} at (2,2) size 594x77 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=3]
-              RenderImage {IMG} at (2,2) size 590x73
+              LayoutImage {IMG} at (2,2) size 590x73
               RenderText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,81) size 598x96
             LayoutTableCell {TD} at (2,81) size 111x24 [bgcolor=#94BD73] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]

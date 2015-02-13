@@ -82,7 +82,7 @@ layer at (0,0) size 800x270
       RenderBlock {HR} at (0,95) size 648x1
       RenderBlock {P} at (0,108) size 648x37
         RenderInline {A} at (0,0) size 88x19 [color=#3333FF] [bgcolor=#FFFFF5]
-          RenderImage {IMG} at (0,0) size 88x31
+          LayoutImage {IMG} at (0,0) size 88x31
       RenderBlock {P} at (0,157) size 648x25
         RenderText {#text} at (0,3) size 73x19
           text run at (0,3) width 73: "(Back to "

@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderImage {IMG} at (0,0) size 479x150
+      LayoutImage {IMG} at (0,0) size 479x150
       RenderText {#text} at (479,136) size 4x17
         text run at (479,136) width 4: " "
       RenderInline {MAP} at (0,0) size 224x17

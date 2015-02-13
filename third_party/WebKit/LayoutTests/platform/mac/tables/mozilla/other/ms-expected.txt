@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
             LayoutTableRow {TR} at (0,0) size 800x20
               LayoutTableCell {TD} at (0,0) size 324x60 [r=0 c=0 rs=2 cs=1]
                 RenderInline {A} at (0,0) size 250x18 [color=#003399]
-                  RenderImage {IMG} at (0,0) size 250x60
+                  LayoutImage {IMG} at (0,0) size 250x60
               LayoutTableCell {TD} at (324,0) size 23x20 [r=0 c=1 rs=1 cs=1]
-                RenderImage {IMG} at (5,0) size 18x20
+                LayoutImage {IMG} at (5,0) size 18x20
               LayoutTableCell {TD} at (347,4) size 453x12 [bgcolor=#000000] [r=0 c=2 rs=1 cs=2]
                 RenderInline {FONT} at (0,0) size 349x12 [color=#FFFFFF]
                   RenderText {#text} at (0,0) size 0x0
@@ -69,7 +69,7 @@ layer at (0,0) size 800x600
             LayoutTableRow {TR} at (0,20) size 800x40
               LayoutTableCell {TD} at (324,20) size 476x40 [r=1 c=1 rs=1 cs=2]
                 RenderInline {A} at (0,0) size 112x18 [color=#003399]
-                  RenderImage {IMG} at (364,0) size 112x40
+                  LayoutImage {IMG} at (364,0) size 112x40
             LayoutTableRow {TR} at (0,60) size 800x20
               LayoutTableCell {TD} at (0,64) size 800x12 [bgcolor=#6699CC] [r=2 c=0 rs=1 cs=4]
                 RenderInline {FONT} at (0,0) size 596x12 [color=#FFFFFF]

@@ -53,6 +53,8 @@
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutImageResourceStyleImage.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutTableCaption.h"
@@ -71,8 +73,6 @@
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderGrid.h"
-#include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderImageResourceStyleImage.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderPart.h"
@@ -161,16 +161,16 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
     // Otherwise acts as if we didn't support this feature.
     const ContentData* contentData = style.contentData();
     if (contentData && !contentData->next() && contentData->isImage() && !element->isPseudoElement()) {
-        RenderImage* image = new RenderImage(element);
-        // RenderImageResourceStyleImage requires a style being present on the image but we don't want to
+        LayoutImage* image = new LayoutImage(element);
+        // LayoutImageResourceStyleImage requires a style being present on the image but we don't want to
         // trigger a style change now as the node is not fully attached. Moving this code to style change
         // doesn't make sense as it should be run once at renderer creation.
         image->setStyleInternal(const_cast<LayoutStyle*>(&style));
         if (const StyleImage* styleImage = toImageContentData(contentData)->image()) {
-            image->setImageResource(RenderImageResourceStyleImage::create(const_cast<StyleImage*>(styleImage)));
+            image->setImageResource(LayoutImageResourceStyleImage::create(const_cast<StyleImage*>(styleImage)));
             image->setIsGeneratedContent();
         } else {
-            image->setImageResource(RenderImageResource::create());
+            image->setImageResource(LayoutImageResource::create());
         }
         image->setStyleInternal(nullptr);
         return image;

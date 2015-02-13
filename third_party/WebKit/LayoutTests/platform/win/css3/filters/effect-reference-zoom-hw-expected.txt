@@ -57,20 +57,20 @@ layer at (0,0) size 800x600
         text run at (736,45) width 2: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (11,9) size 80x45
-  RenderImage {IMG} at (7,5) size 80x45
+  LayoutImage {IMG} at (7,5) size 80x45
 layer at (103,9) size 80x45
-  RenderImage {IMG} at (99,5) size 80x45
+  LayoutImage {IMG} at (99,5) size 80x45
 layer at (195,9) size 80x45
-  RenderImage {IMG} at (191,5) size 80x45
+  LayoutImage {IMG} at (191,5) size 80x45
 layer at (287,9) size 80x45
-  RenderImage {IMG} at (283,5) size 80x45
+  LayoutImage {IMG} at (283,5) size 80x45
 layer at (379,9) size 80x45
-  RenderImage {IMG} at (375,5) size 80x45
+  LayoutImage {IMG} at (375,5) size 80x45
 layer at (471,9) size 80x45
-  RenderImage {IMG} at (467,5) size 80x45
+  LayoutImage {IMG} at (467,5) size 80x45
 layer at (563,9) size 80x45
-  RenderImage {IMG} at (559,5) size 80x45
+  LayoutImage {IMG} at (559,5) size 80x45
 layer at (655,9) size 80x45
-  RenderImage {IMG} at (651,5) size 80x45
+  LayoutImage {IMG} at (651,5) size 80x45
 layer at (9,66) size 80x45
-  RenderImage {IMG} at (5,62) size 80x45
+  LayoutImage {IMG} at (5,62) size 80x45

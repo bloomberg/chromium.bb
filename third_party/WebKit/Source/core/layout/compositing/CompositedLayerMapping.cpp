@@ -40,6 +40,7 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/LayerStackingNodeIterator.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/KeyframeList.h"
@@ -52,7 +53,6 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
@@ -1857,7 +1857,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
     if (m_owningLayer.hasBoxDecorationsOrBackground() || layoutObject->hasClip() || layoutObject->hasClipPath())
         return false;
 
-    RenderImage* imageRenderer = toRenderImage(layoutObject);
+    LayoutImage* imageRenderer = toLayoutImage(layoutObject);
     if (ImageResource* cachedImage = imageRenderer->cachedImage()) {
         if (!cachedImage->hasImage())
             return false;
@@ -1885,7 +1885,7 @@ void CompositedLayerMapping::contentChanged(ContentChangeType changeType)
 void CompositedLayerMapping::updateImageContents()
 {
     ASSERT(renderer()->isImage());
-    RenderImage* imageRenderer = toRenderImage(renderer());
+    LayoutImage* imageRenderer = toLayoutImage(renderer());
 
     ImageResource* cachedImage = imageRenderer->cachedImage();
     if (!cachedImage)

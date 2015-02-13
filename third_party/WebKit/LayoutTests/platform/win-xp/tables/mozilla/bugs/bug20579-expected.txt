@@ -27,6 +27,6 @@ layer at (0,0) size 800x600
                     text run at (0,20) width 23: "Poll"
                 RenderBlock {P} at (0,56) size 47x0
             LayoutTableCell {TD} at (47,3) size 1x50 [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (0,0) size 1x50
+              LayoutImage {IMG} at (0,0) size 1x50
             LayoutTableCell {TD} at (48,18) size 736x20 [r=0 c=2 rs=1 cs=1]
               RenderBR {BR} at (0,0) size 0x19

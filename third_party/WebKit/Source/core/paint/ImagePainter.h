@@ -11,11 +11,11 @@ class GraphicsContext;
 struct PaintInfo;
 class LayoutPoint;
 class LayoutRect;
-class RenderImage;
+class LayoutImage;
 
 class ImagePainter {
 public:
-    ImagePainter(RenderImage& renderImage) : m_renderImage(renderImage) { }
+    ImagePainter(LayoutImage& layoutImage) : m_layoutImage(layoutImage) { }
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintReplaced(const PaintInfo&, const LayoutPoint& paintOffset);
@@ -24,7 +24,7 @@ public:
 private:
     void paintAreaElementFocusRing(const PaintInfo&);
 
-    RenderImage& m_renderImage;
+    LayoutImage& m_layoutImage;
 };
 
 } // namespace blink

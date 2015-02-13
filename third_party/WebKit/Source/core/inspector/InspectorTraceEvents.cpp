@@ -20,9 +20,9 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderImage.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
@@ -593,11 +593,11 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::dat
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderImage& renderImage)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const LayoutImage& layoutImage)
 {
     RefPtr<TracedValue> value = TracedValue::create();
-    setGeneratingNodeInfo(value.get(), &renderImage, "nodeId");
-    if (const ImageResource* resource = renderImage.cachedImage())
+    setGeneratingNodeInfo(value.get(), &layoutImage, "nodeId");
+    if (const ImageResource* resource = layoutImage.cachedImage())
         value->setString("url", resource->url().string());
     return value.release();
 }

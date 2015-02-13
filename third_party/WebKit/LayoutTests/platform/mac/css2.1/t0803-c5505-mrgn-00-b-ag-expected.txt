@@ -13,11 +13,11 @@ layer at (0,0) size 800x238
           text run at (425,0) width 5: "."
       RenderBlock {DIV} at (0,34) size 200x180 [color=#FFA500]
         RenderBlock {P} at (0,0) size 200x10 [bgcolor=#A52A2A]
-          RenderImage {IMG} at (0,0) size 24x10
+          LayoutImage {IMG} at (0,0) size 24x10
           RenderText {#text} at (24,0) size 10x10
             text run at (24,0) width 10: "x"
-          RenderImage {IMG} at (34,0) size 142x10
-          RenderImage {IMG} at (176,0) size 24x10
+          LayoutImage {IMG} at (34,0) size 142x10
+          LayoutImage {IMG} at (176,0) size 24x10
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (24,34) size 152x10 [bgcolor=#A52A2A]
           RenderText {#text} at (0,0) size 10x10
@@ -32,9 +32,9 @@ layer at (0,0) size 800x238
           RenderText {#text} at (0,0) size 10x10
             text run at (0,0) width 10: "x"
         RenderBlock {P} at (0,170) size 200x10 [bgcolor=#A52A2A]
-          RenderImage {IMG} at (0,0) size 24x10
+          LayoutImage {IMG} at (0,0) size 24x10
           RenderText {#text} at (24,0) size 10x10
             text run at (24,0) width 10: "x"
-          RenderImage {IMG} at (34,0) size 142x10
-          RenderImage {IMG} at (176,0) size 24x10
+          LayoutImage {IMG} at (34,0) size 142x10
+          LayoutImage {IMG} at (176,0) size 24x10
           RenderText {#text} at (0,0) size 0x0

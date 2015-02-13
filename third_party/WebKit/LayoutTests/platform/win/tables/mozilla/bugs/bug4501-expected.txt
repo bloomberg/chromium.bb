@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x219
           LayoutTableRow {TR} at (0,0) size 782x199
             LayoutTableCell {TD} at (0,0) size 113x199 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 111x197
+              LayoutImage {IMG} at (1,1) size 111x197
               RenderText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (113,0) size 669x100 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderImage {IMG} at (1,1) size 381x98
+              LayoutImage {IMG} at (1,1) size 381x98
               RenderText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,199) size 782x20
             LayoutTableCell {TD} at (0,199) size 113x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]

@@ -18,7 +18,7 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 20: "bar"
           LayoutTableRow {TR} at (0,28) size 618x64
             LayoutTableCell {TD} at (2,28) size 614x64 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              RenderImage {IMG} at (2,2) size 468x60
+              LayoutImage {IMG} at (2,2) size 468x60
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,148) size 769x20
         RenderText {#text} at (0,0) size 607x19
@@ -54,7 +54,7 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 20: "bar"
           LayoutTableRow {TR} at (0,28) size 618x64
             LayoutTableCell {TD} at (2,28) size 614x64 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              RenderImage {IMG} at (2,2) size 600x60
+              LayoutImage {IMG} at (2,2) size 600x60
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,454) size 769x20
         RenderText {#text} at (0,0) size 299x19
@@ -79,7 +79,7 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 20: "bar"
           LayoutTableRow {TR} at (0,28) size 618x64
             LayoutTableCell {TD} at (2,28) size 614x64 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              RenderImage {IMG} at (2,2) size 400x60
+              LayoutImage {IMG} at (2,2) size 400x60
               RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,632) size 769x60
         RenderText {#text} at (0,0) size 764x59

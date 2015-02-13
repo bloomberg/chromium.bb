@@ -9,4 +9,4 @@ layer at (0,0) size 800x427
             text run at (0,0) width 370: "There should be no vertical space between the two blocks"
             text run at (0,18) width 44: "below."
         RenderBlock (floating) {DIV} at (0,36) size 100x100 [bgcolor=#008000]
-        RenderImage {IMG} at (0,136) size 395x275 [bgcolor=#FFFF00]
+        LayoutImage {IMG} at (0,136) size 395x275 [bgcolor=#FFFF00]

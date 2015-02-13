@@ -8,7 +8,7 @@ layer at (0,0) size 785x637 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,0) size 600x621
             LayoutTableCell {TD} at (0,0) size 600x621 [r=0 c=0 rs=1 cs=1]
               RenderBlock (anonymous) at (0,0) size 600x1
-                RenderImage {IMG} at (0,0) size 600x1
+                LayoutImage {IMG} at (0,0) size 600x1
                 RenderText {#text} at (0,0) size 0x0
               RenderBlock {BLOCKQUOTE} at (40,17) size 520x588
                 RenderBlock {BLOCKQUOTE} at (40,0) size 440x588

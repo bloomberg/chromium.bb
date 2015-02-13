@@ -15,19 +15,19 @@ layer at (0,0) size 785x977 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,32) width 0: " "
       RenderBlock {HR} at (0,95) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,105) size 769x50
-        RenderImage {IMG} at (0,0) size 50x50
+        LayoutImage {IMG} at (0,0) size 50x50
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,171) size 769x18
         RenderText {#text} at (0,0) size 281x17
           text run at (0,0) width 281: "The square above should be fifty pixels tall."
       RenderBlock (anonymous) at (0,205) size 769x100
-        RenderImage {IMG} at (0,0) size 100x100
+        LayoutImage {IMG} at (0,0) size 100x100
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,321) size 769x18
         RenderText {#text} at (0,0) size 340x17
           text run at (0,0) width 340: "The square above should be 100 pixels tall and wide."
       RenderBlock (anonymous) at (0,355) size 769x100
-        RenderImage {IMG} at (0,0) size 30x100
+        LayoutImage {IMG} at (0,0) size 30x100
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,471) size 769x36
         RenderText {#text} at (0,0) size 765x35
@@ -51,19 +51,19 @@ layer at (0,0) size 785x977 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 755x410 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock (anonymous) at (4,4) size 747x50
-                RenderImage {IMG} at (0,0) size 50x50
+                LayoutImage {IMG} at (0,0) size 50x50
                 RenderText {#text} at (0,0) size 0x0
               RenderBlock {P} at (4,70) size 747x18
                 RenderText {#text} at (0,0) size 281x17
                   text run at (0,0) width 281: "The square above should be fifty pixels tall."
               RenderBlock (anonymous) at (4,104) size 747x100
-                RenderImage {IMG} at (0,0) size 100x100
+                LayoutImage {IMG} at (0,0) size 100x100
                 RenderText {#text} at (0,0) size 0x0
               RenderBlock {P} at (4,220) size 747x18
                 RenderText {#text} at (0,0) size 340x17
                   text run at (0,0) width 340: "The square above should be 100 pixels tall and wide."
               RenderBlock (anonymous) at (4,254) size 747x100
-                RenderImage {IMG} at (0,0) size 30x100
+                LayoutImage {IMG} at (0,0) size 30x100
                 RenderText {#text} at (0,0) size 0x0
               RenderBlock {P} at (4,370) size 747x36
                 RenderText {#text} at (0,0) size 739x35

@@ -34,8 +34,8 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutImage.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderImage.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -125,8 +125,8 @@ LayoutObject* ImageInputType::createRenderer(const LayoutStyle& style) const
 {
     if (m_useFallbackContent)
         return new RenderBlockFlow(&element());
-    RenderImage* image = new RenderImage(&element());
-    image->setImageResource(RenderImageResource::create());
+    LayoutImage* image = new LayoutImage(&element());
+    image->setImageResource(LayoutImageResource::create());
     return image;
 }
 
@@ -162,10 +162,10 @@ void ImageInputType::startResourceLoading()
     imageLoader.updateFromElement();
 
     LayoutObject* renderer = element().renderer();
-    if (!renderer || !renderer->isRenderImage())
+    if (!renderer || !renderer->isLayoutImage())
         return;
 
-    RenderImageResource* imageResource = toRenderImage(renderer)->imageResource();
+    LayoutImageResource* imageResource = toLayoutImage(renderer)->imageResource();
     imageResource->setImageResource(imageLoader.image());
 }
 
