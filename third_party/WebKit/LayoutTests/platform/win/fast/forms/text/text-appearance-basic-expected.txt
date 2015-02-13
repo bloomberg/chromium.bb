@@ -3,39 +3,39 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x239
   RenderBlock {HTML} at (0,0) size 800x239
     RenderBody {BODY} at (8,8) size 784x223
-      RenderTextControl {INPUT} at (4,4) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (4,4) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (181,6) size 4x17
         text run at (181,6) width 4: " "
       RenderBR {BR} at (185,6) size 0x17
-      RenderTextControl {INPUT} at (4,34) size 175x24 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
+      LayoutTextControl {INPUT} at (4,34) size 175x24 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
       RenderText {#text} at (183,37) size 4x17
         text run at (183,37) width 4: " "
-      RenderTextControl {INPUT} at (191,35) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (191,35) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (368,37) size 4x17
         text run at (368,37) width 4: " "
       RenderBR {BR} at (372,37) size 0x17
-      RenderTextControl {INPUT} at (4,66) size 173x22 [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (4,66) size 173x22 [border: (2px inset #EEEEEE)]
       RenderText {#text} at (181,68) size 4x17
         text run at (181,68) width 4: " "
       RenderBR {BR} at (185,68) size 0x17
-      RenderTextControl {INPUT} at (4,96) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (4,96) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (181,98) size 4x17
         text run at (181,98) width 4: " "
       RenderBR {BR} at (185,98) size 0x17
-      RenderTextControl {INPUT} at (4,134) size 199x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (4,134) size 199x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (207,137) size 4x17
         text run at (207,137) width 4: " "
-      RenderTextControl {INPUT} at (215,130) size 247x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (215,130) size 247x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (466,137) size 4x17
         text run at (466,137) width 4: " "
-      RenderTextControl {INPUT} at (474,126) size 296x34 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (474,126) size 296x34 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (774,137) size 4x17
         text run at (774,137) width 4: " "
       RenderBR {BR} at (778,137) size 0x17
-      RenderTextControl {INPUT} at (6,180) size 249x32 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (6,180) size 249x32 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
       RenderText {#text} at (261,188) size 4x17
         text run at (261,188) width 4: " "
-      RenderTextControl {INPUT} at (273,172) size 326x43 [bgcolor=#FFFFFF] [border: (4px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (273,172) size 326x43 [bgcolor=#FFFFFF] [border: (4px inset #EEEEEE)]
       RenderText {#text} at (607,188) size 4x17
         text run at (607,188) width 4: " "
       RenderBR {BR} at (611,188) size 0x17

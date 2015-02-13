@@ -5,7 +5,7 @@ layer at (0,0) size 800x38
     RenderBody {BODY} at (8,8) size 784x22
       RenderText {#text} at (0,2) size 324x17
         text run at (0,2) width 324: "This tests if the caret position is aligned correctly. "
-      RenderTextControl {INPUT} at (323.47,0) size 205x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (323.47,0) size 205x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
 layer at (334,11) size 200x16

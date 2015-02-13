@@ -39,7 +39,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/rendering/RenderTextControl.h"
+#include "core/layout/LayoutTextControl.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"

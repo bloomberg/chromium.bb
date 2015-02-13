@@ -36,8 +36,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
 #include "platform/UserGestureIndicator.h"
 
@@ -59,7 +59,7 @@ PassRefPtrWillBeRawPtr<TextControlInnerContainer> TextControlInnerContainer::cre
 
 LayoutObject* TextControlInnerContainer::createRenderer(const LayoutStyle&)
 {
-    return new RenderTextControlInnerContainer(this);
+    return new LayoutTextControlInnerContainer(this);
 }
 
 // ---------------------------
@@ -132,7 +132,7 @@ void TextControlInnerEditorElement::defaultEventHandler(Event* event)
 
 LayoutObject* TextControlInnerEditorElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderTextControlInnerBlock(this);
+    return new LayoutTextControlInnerBlock(this);
 }
 
 PassRefPtr<LayoutStyle> TextControlInnerEditorElement::customStyleForRenderer()
@@ -140,7 +140,7 @@ PassRefPtr<LayoutStyle> TextControlInnerEditorElement::customStyleForRenderer()
     LayoutObject* parentRenderer = shadowHost()->renderer();
     if (!parentRenderer || !parentRenderer->isTextControl())
         return originalStyleForRenderer();
-    RenderTextControl* textControlRenderer = toRenderTextControl(parentRenderer);
+    LayoutTextControl* textControlRenderer = toLayoutTextControl(parentRenderer);
     return textControlRenderer->createInnerEditorStyle(textControlRenderer->styleRef());
 }
 

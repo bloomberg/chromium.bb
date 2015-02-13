@@ -100,47 +100,47 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (20,2) size 742x40 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (764,20) size 16x4 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
 layer at (20,26) size 760x36 clip at (21,27) size 758x34
-  RenderTextControl {TEXTAREA} at (0,0) size 760x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 760x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 756x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (20,80) size 760x36 clip at (21,81) size 758x34
-  RenderTextControl {TEXTAREA} at (0,0) size 760x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 760x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 756x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (24,136) size 752x36 clip at (25,137) size 750x34
-  RenderTextControl {TEXTAREA} at (0,0) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 748x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (24,194) size 752x36 clip at (25,195) size 750x34
-  RenderTextControl {TEXTAREA} at (0,0) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 748x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (27,253) size 746x36 clip at (28,254) size 744x34
-  RenderTextControl {TEXTAREA} at (1,1) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (1,1) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 742x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (27,313) size 746x36 clip at (28,314) size 744x34
-  RenderTextControl {TEXTAREA} at (1,1) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (1,1) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 742x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (24,372) size 752x36 clip at (25,373) size 750x34
-  RenderTextControl {TEXTAREA} at (1,1) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (1,1) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 748x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (27,431) size 746x36 clip at (28,432) size 744x34
-  RenderTextControl {TEXTAREA} at (2,2) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (2,2) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 742x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"
 layer at (31,493) size 738x36 clip at (32,494) size 736x34
-  RenderTextControl {TEXTAREA} at (2,2) size 738x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (2,2) size 738x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 734x16
       RenderText {#text} at (0,0) size 32x16
         text run at (0,0) width 32: "test"

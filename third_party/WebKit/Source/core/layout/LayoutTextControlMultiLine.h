@@ -19,22 +19,22 @@
  *
  */
 
-#ifndef RenderTextControlMultiLine_h
-#define RenderTextControlMultiLine_h
+#ifndef LayoutTextControlMultiLine_h
+#define LayoutTextControlMultiLine_h
 
-#include "core/rendering/RenderTextControl.h"
+#include "core/layout/LayoutTextControl.h"
 
 namespace blink {
 
 class HTMLTextAreaElement;
 
-class RenderTextControlMultiLine final : public RenderTextControl {
+class LayoutTextControlMultiLine final : public LayoutTextControl {
 public:
-    RenderTextControlMultiLine(HTMLTextAreaElement*);
-    virtual ~RenderTextControlMultiLine();
+    LayoutTextControlMultiLine(HTMLTextAreaElement*);
+    virtual ~LayoutTextControlMultiLine();
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextArea || RenderTextControl::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextArea || LayoutTextControl::isOfType(type); }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
@@ -49,7 +49,7 @@ private:
     virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderTextControlMultiLine, isTextArea());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlMultiLine, isTextArea());
 
 }
 

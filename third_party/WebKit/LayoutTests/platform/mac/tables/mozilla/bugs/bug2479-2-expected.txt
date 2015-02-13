@@ -50,7 +50,7 @@ layer at (0,0) size 800x553
                       text run at (0,6) width 137: "First Name (required)"
                 LayoutTableRow (anonymous) at (0,28) size 137x32
                   LayoutTableCell (anonymous) at (0,28) size 137x32 [r=1 c=0 rs=1 cs=1]
-                    RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                    LayoutTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (137,6) size 6x19
               text run at (137,6) width 6: " "
             LayoutTable {SPAN} at (142.63,3) size 137x60
@@ -61,7 +61,7 @@ layer at (0,0) size 800x553
                       text run at (0,6) width 137: "Last Name (required)"
                 LayoutTableRow (anonymous) at (0,28) size 137x32
                   LayoutTableCell (anonymous) at (0,28) size 137x32 [r=1 c=0 rs=1 cs=1]
-                    RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                    LayoutTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {P} at (0,127) size 568x63
             LayoutTable {SPAN} at (0,3) size 223x60
@@ -72,7 +72,7 @@ layer at (0,0) size 800x553
                       text run at (0,6) width 93: "Email Address"
                 LayoutTableRow (anonymous) at (0,28) size 223x32
                   LayoutTableCell (anonymous) at (0,28) size 223x32 [r=1 c=0 rs=1 cs=1]
-                    RenderTextControl {INPUT} at (0,8) size 223x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                    LayoutTextControl {INPUT} at (0,8) size 223x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {P} at (0,190) size 568x63
             LayoutTable {SPAN} at (0,3) size 105x60
@@ -83,7 +83,7 @@ layer at (0,0) size 800x553
                       text run at (0,6) width 105: "Company Name"
                 LayoutTableRow (anonymous) at (0,28) size 105x32
                   LayoutTableCell (anonymous) at (0,28) size 105x32 [r=1 c=0 rs=1 cs=1]
-                    RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                    LayoutTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (105,6) size 6x19
               text run at (105,6) width 6: " "
             LayoutTable {SPAN} at (110.63,3) size 103x60
@@ -94,7 +94,7 @@ layer at (0,0) size 800x553
                       text run at (0,6) width 28: "Title"
                 LayoutTableRow (anonymous) at (0,28) size 103x32
                   LayoutTableCell (anonymous) at (0,28) size 103x32 [r=1 c=0 rs=1 cs=1]
-                    RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                    LayoutTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {P} at (0,253) size 568x32
             RenderButton {INPUT} at (0,9) size 56.70x18 [bgcolor=#C0C0C0]

@@ -4,7 +4,7 @@ layer at (0,0) size 800x300
   RenderBlock {html} at (0,0) size 800x300
     RenderBody {body} at (8,16) size 784x276
       RenderBlock {p} at (0,0) size 784x22
-        RenderTextControl {input} at (0,0) size 383x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {input} at (0,0) size 383x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBlock {p} at (0,38) size 784x18
         RenderText {#text} at (0,0) size 467x17
           text run at (0,0) width 467: "It should say \"PASSED\" above and there should be a green circle below."

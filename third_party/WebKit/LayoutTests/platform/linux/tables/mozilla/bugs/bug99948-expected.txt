@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 296x45
           LayoutTableRow {TR} at (0,2) size 296x41
             LayoutTableCell {TD} at (2,2) size 292x41 [bgcolor=#CCDDFF] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (3,16) size 156x22 [bgcolor=#CCAAFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (3,16) size 156x22 [bgcolor=#CCAAFF] [border: (2px inset #EEEEEE)]
               LayoutImage {IMG} at (162,4) size 126x26 [bgcolor=#C0C0C0] [border: (1px solid #000000)]
 layer at (16,49) size 150x16
   RenderBlock {DIV} at (3,3) size 150x16

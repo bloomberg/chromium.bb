@@ -79,7 +79,7 @@ layer at (0,0) size 800x600
                   RenderText {#text} at (0,0) size 4x18
                     text run at (0,0) width 4: " "
                 LayoutTableCell {TD} at (149,1) size 298x37 [r=0 c=1 rs=1 cs=1]
-                  RenderTextControl {INPUT} at (0,0) size 298x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                  LayoutTextControl {INPUT} at (0,0) size 298x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                   RenderBR {BR} at (298,14) size 0x0
                   RenderButton {INPUT} at (49.09,19) size 92.19x18 [bgcolor=#C0C0C0]
                     RenderBlock (anonymous) at (8,2) size 76.19x13

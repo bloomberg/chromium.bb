@@ -63,6 +63,7 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -78,7 +79,6 @@
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
@@ -3475,7 +3475,7 @@ void EventHandler::capsLockStateMayHaveChanged()
     if (Element* element = m_frame->document()->focusedElement()) {
         if (LayoutObject* r = element->renderer()) {
             if (r->isTextField())
-                toRenderTextControlSingleLine(r)->capsLockStateMayHaveChanged();
+                toLayoutTextControlSingleLine(r)->capsLockStateMayHaveChanged();
         }
     }
 }

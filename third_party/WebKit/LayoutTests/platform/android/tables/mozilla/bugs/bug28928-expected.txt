@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,2) size 187x60
             LayoutTableCell {TD} at (2,2) size 183x60 [r=0 c=0 rs=1 cs=1]
               RenderBlock {FORM} at (1,1) size 181x42
-                RenderTextControl {INPUT} at (0,0) size 111x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (0,0) size 111x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (111,1) size 4x19
                   text run at (111,1) width 4: " "
                 RenderButton {INPUT} at (115,0) size 41x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,2) size 187x60
             LayoutTableCell {TD} at (2,2) size 183x60 [r=0 c=0 rs=1 cs=1]
               RenderBlock {FORM} at (1,1) size 181x42
-                RenderTextControl {INPUT} at (0,0) size 111x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (0,0) size 111x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (111,1) size 4x19
                   text run at (111,1) width 4: " "
                 RenderButton {INPUT} at (115,0) size 41x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]

@@ -20,20 +20,20 @@
  *
  */
 
-#ifndef RenderTextControlSingleLine_h
-#define RenderTextControlSingleLine_h
+#ifndef LayoutTextControlSingleLine_h
+#define LayoutTextControlSingleLine_h
 
 #include "core/html/HTMLInputElement.h"
-#include "core/rendering/RenderTextControl.h"
+#include "core/layout/LayoutTextControl.h"
 
 namespace blink {
 
 class HTMLInputElement;
 
-class RenderTextControlSingleLine : public RenderTextControl {
+class LayoutTextControlSingleLine : public LayoutTextControl {
 public:
-    RenderTextControlSingleLine(HTMLInputElement*);
-    virtual ~RenderTextControlSingleLine();
+    LayoutTextControlSingleLine(HTMLInputElement*);
+    virtual ~LayoutTextControlSingleLine();
     // FIXME: Move createInnerEditorStyle() to TextControlInnerEditorElement.
     virtual PassRefPtr<LayoutStyle> createInnerEditorStyle(const LayoutStyle& startStyle) const override final;
 
@@ -49,7 +49,7 @@ protected:
 private:
     virtual bool hasControlClip() const override final;
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override final;
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextField || RenderTextControl::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextField || LayoutTextControl::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;
@@ -81,13 +81,13 @@ private:
     LayoutUnit m_desiredInnerEditorLogicalHeight;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderTextControlSingleLine, isTextField());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlSingleLine, isTextField());
 
 // ----------------------------
 
-class RenderTextControlInnerBlock : public RenderBlockFlow {
+class LayoutTextControlInnerBlock : public RenderBlockFlow {
 public:
-    RenderTextControlInnerBlock(Element* element) : RenderBlockFlow(element) { }
+    LayoutTextControlInnerBlock(Element* element) : RenderBlockFlow(element) { }
     virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
 private:

@@ -2140,7 +2140,7 @@ void Node::defaultEventHandler(Event* event)
             // structure.
             // FIXME: We should avoid synchronous layout if possible. We can
             // remove this synchronous layout if we avoid synchronous layout in
-            // RenderTextControlSingleLine::scrollHeight
+            // LayoutTextControlSingleLine::scrollHeight
             document().updateLayoutIgnorePendingStylesheets();
             LayoutObject* renderer = this->renderer();
             while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea()))

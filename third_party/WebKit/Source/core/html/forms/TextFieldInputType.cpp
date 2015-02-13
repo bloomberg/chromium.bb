@@ -48,11 +48,11 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderDetailsMarker.h"
-#include "core/rendering/RenderTextControlSingleLine.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/text/WTFString.h"
 
@@ -228,7 +228,7 @@ void TextFieldInputType::forwardEvent(Event* event)
     }
 
     if (element().renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
-        RenderTextControlSingleLine* renderTextControl = toRenderTextControlSingleLine(element().renderer());
+        LayoutTextControlSingleLine* renderTextControl = toLayoutTextControlSingleLine(element().renderer());
         if (event->type() == EventTypeNames::blur) {
             if (RenderBox* innerEditorRenderer = element().innerEditorElement()->renderBox()) {
                 // FIXME: This class has no need to know about Layer!
@@ -270,7 +270,7 @@ bool TextFieldInputType::shouldSubmitImplicitly(Event* event)
 
 LayoutObject* TextFieldInputType::createRenderer(const LayoutStyle&) const
 {
-    return new RenderTextControlSingleLine(&element());
+    return new LayoutTextControlSingleLine(&element());
 }
 
 bool TextFieldInputType::shouldHaveSpinButton() const
@@ -306,7 +306,7 @@ void TextFieldInputType::createShadowSubtree()
     if (shouldHaveDataListIndicator)
         container->appendChild(DataListIndicatorElement::create(document));
     // FIXME: Because of a special handling for a spin button in
-    // RenderTextControlSingleLine, we need to put it to the last position. It's
+    // LayoutTextControlSingleLine, we need to put it to the last position. It's
     // inconsistent with multiple-fields date/time types.
     if (shouldHaveSpinButton)
         container->appendChild(SpinButtonElement::create(document, *this));

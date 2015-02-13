@@ -144,7 +144,7 @@ layer at (8,8) size 769x1421 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 RenderInline {LABEL} at (0,0) size 220x19
                   RenderText {#text} at (0,41) size 66x19
                     text run at (0,41) width 66: "Comment: "
-                  RenderTextControl {INPUT} at (66,40) size 154x22 [color=#000000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                  LayoutTextControl {INPUT} at (66,40) size 154x22 [color=#000000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (220,41) size 4x19
                   text run at (220,41) width 4: " "
                 RenderButton {INPUT} at (224,40) size 57x22 [color=#000000] [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]

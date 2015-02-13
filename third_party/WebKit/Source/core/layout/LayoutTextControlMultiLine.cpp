@@ -20,26 +20,26 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTextControlMultiLine.h"
+#include "core/layout/LayoutTextControlMultiLine.h"
 
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/HitTestResult.h"
 
 namespace blink {
 
-RenderTextControlMultiLine::RenderTextControlMultiLine(HTMLTextAreaElement* element)
-    : RenderTextControl(element)
+LayoutTextControlMultiLine::LayoutTextControlMultiLine(HTMLTextAreaElement* element)
+    : LayoutTextControl(element)
 {
     ASSERT(element);
 }
 
-RenderTextControlMultiLine::~RenderTextControlMultiLine()
+LayoutTextControlMultiLine::~LayoutTextControlMultiLine()
 {
 }
 
-bool RenderTextControlMultiLine::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutTextControlMultiLine::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    if (!RenderTextControl::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
+    if (!LayoutTextControl::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
         return false;
 
     if (result.innerNode() == node() || result.innerNode() == innerEditorElement())
@@ -48,7 +48,7 @@ bool RenderTextControlMultiLine::nodeAtPoint(const HitTestRequest& request, HitT
     return true;
 }
 
-float RenderTextControlMultiLine::getAvgCharWidth(AtomicString family)
+float LayoutTextControlMultiLine::getAvgCharWidth(AtomicString family)
 {
     // Since Lucida Grande is the default font, we want this to match the width
     // of Courier New, the default font for textareas in IE, Firefox and Safari Win.
@@ -56,26 +56,26 @@ float RenderTextControlMultiLine::getAvgCharWidth(AtomicString family)
     if (family == "Lucida Grande")
         return scaleEmToUnits(1229);
 
-    return RenderTextControl::getAvgCharWidth(family);
+    return LayoutTextControl::getAvgCharWidth(family);
 }
 
-LayoutUnit RenderTextControlMultiLine::preferredContentLogicalWidth(float charWidth) const
+LayoutUnit LayoutTextControlMultiLine::preferredContentLogicalWidth(float charWidth) const
 {
     int factor = toHTMLTextAreaElement(node())->cols();
     return static_cast<LayoutUnit>(ceilf(charWidth * factor)) + scrollbarThickness();
 }
 
-LayoutUnit RenderTextControlMultiLine::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
+LayoutUnit LayoutTextControlMultiLine::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
 {
     return lineHeight * toHTMLTextAreaElement(node())->rows() + nonContentHeight;
 }
 
-int RenderTextControlMultiLine::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
+int LayoutTextControlMultiLine::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
     return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
-PassRefPtr<LayoutStyle> RenderTextControlMultiLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
+PassRefPtr<LayoutStyle> LayoutTextControlMultiLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
 {
     RefPtr<LayoutStyle> textBlockStyle = LayoutStyle::create();
     textBlockStyle->inheritFrom(startStyle);
@@ -86,9 +86,9 @@ PassRefPtr<LayoutStyle> RenderTextControlMultiLine::createInnerEditorStyle(const
     return textBlockStyle.release();
 }
 
-LayoutObject* RenderTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+LayoutObject* LayoutTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    LayoutObject* placeholderRenderer = RenderTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
+    LayoutObject* placeholderRenderer = LayoutTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
     if (!placeholderRenderer)
         return 0;
     if (!placeholderRenderer->isBox())

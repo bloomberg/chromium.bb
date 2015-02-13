@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (0,0) size 122x25
             LayoutTableRow {TR} at (0,2) size 122x21
               LayoutTableCell {TD} at (2,2) size 118x21 [r=0 c=0 rs=1 cs=1]
-                RenderTextControl {INPUT} at (1,1) size 116x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 116x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (0,0) size 0x0
 layer at (14,14) size 110x13 scrollWidth 116
   RenderBlock {DIV} at (3,3) size 110x13

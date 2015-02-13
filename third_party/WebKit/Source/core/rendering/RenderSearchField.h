@@ -23,13 +23,13 @@
 #ifndef RenderSearchField_h
 #define RenderSearchField_h
 
-#include "core/rendering/RenderTextControlSingleLine.h"
+#include "core/layout/LayoutTextControlSingleLine.h"
 
 namespace blink {
 
 class HTMLInputElement;
 
-class RenderSearchField final : public RenderTextControlSingleLine {
+class RenderSearchField final : public LayoutTextControlSingleLine {
 public:
     RenderSearchField(HTMLInputElement*);
     virtual ~RenderSearchField();

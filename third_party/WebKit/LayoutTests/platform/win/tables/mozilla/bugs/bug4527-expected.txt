@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (126,82) size 232x25 [bgcolor=#CCCCCC] [r=1 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 232x25
             LayoutTableCell {TD} at (358,75) size 125x40 [bgcolor=#CCCCCC] [r=1 c=2 rs=1 cs=1]
-              RenderTextControl {INPUT} at (11,0) size 103x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (11,0) size 103x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutImage {INPUT} at (50,22) size 25x18
             LayoutTableCell {TD} at (483,70) size 130x50 [bgcolor=#CCCCCC] [r=1 c=3 rs=1 cs=1]
               RenderBlock {INPUT} at (5,3) size 13x13

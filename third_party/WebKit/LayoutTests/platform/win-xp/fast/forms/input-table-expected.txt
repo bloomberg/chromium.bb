@@ -13,7 +13,7 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (3,3) size 112x34
           LayoutTableRow {TR} at (0,2) size 112x30
             LayoutTableCell {TD} at (2,2) size 108x30 [border: (3px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (4,4) size 100x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (4,4) size 100x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBlock {P} at (0,128) size 769x20
         RenderText {#text} at (0,0) size 69x19
           text run at (0,0) width 69: "Test case 2"
@@ -24,13 +24,13 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               RenderText {#text} at (1,1) size 22x19
                 text run at (1,1) width 22: "first"
             LayoutTableCell {TD} at (49,2) size 108x30 [border: (3px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
-              RenderTextControl {INPUT} at (4,4) size 100x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (4,4) size 100x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,34) size 159x30
             LayoutTableCell {TD} at (2,38) size 45x22 [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 43x19
                 text run at (1,1) width 43: "second"
             LayoutTableCell {TD} at (49,34) size 108x30 [border: (3px solid #FF0000)] [r=1 c=1 rs=1 cs=1]
-              RenderTextControl {INPUT} at (4,4) size 100x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (4,4) size 100x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBlock {P} at (0,252) size 769x20
         RenderText {#text} at (0,0) size 69x19
           text run at (0,0) width 69: "Test case 3"
@@ -41,7 +41,7 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               RenderText {#text} at (4,4) size 33x39
                 text run at (4,4) width 33: "width"
                 text run at (4,24) width 31: "30px"
-              RenderTextControl {INPUT} at (4,44) size 30x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (4,44) size 30x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBlock {P} at (0,384) size 769x20
         RenderText {#text} at (0,0) size 69x19
           text run at (0,0) width 69: "Test case 4"
@@ -49,7 +49,7 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (3,3) size 212x64
           LayoutTableRow {TR} at (0,2) size 212x30
             LayoutTableCell {TD} at (2,2) size 208x30 [border: (3px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (4,4) size 200x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (4,4) size 200x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,34) size 212x28
             LayoutTableCell {TD} at (2,34) size 208x28 [border: (3px solid #FF0000)] [r=1 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (4,4) size 200x20
@@ -62,7 +62,7 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (3,3) size 82x34
           LayoutTableRow {TR} at (0,2) size 82x30
             LayoutTableCell {TD} at (2,2) size 78x30 [border: (3px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (4,4) size 70x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (4,4) size 70x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBlock {P} at (0,598) size 769x20
         RenderText {#text} at (0,0) size 69x19
           text run at (0,0) width 69: "Test case 6"
@@ -70,7 +70,7 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (3,3) size 165x64
           LayoutTableRow {TR} at (0,2) size 165x30
             LayoutTableCell {TD} at (2,2) size 161x30 [border: (3px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (4,4) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (4,4) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,34) size 165x28
             LayoutTableCell {TD} at (2,34) size 161x28 [border: (3px solid #FF0000)] [r=1 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (4,4) size 70x20

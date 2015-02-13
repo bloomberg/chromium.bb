@@ -43,8 +43,8 @@
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutTextControl.h"
 #include "core/page/SpellCheckerClient.h"
-#include "core/rendering/RenderTextControl.h"
 #include "platform/text/TextCheckerClient.h"
 
 namespace blink {
@@ -881,7 +881,7 @@ static Node* findFirstMarkable(Node* node)
         if (node->renderer()->isText())
             return node;
         if (node->renderer()->isTextControl())
-            node = toRenderTextControl(node->renderer())->textFormControlElement()->visiblePositionForIndex(1).deepEquivalent().deprecatedNode();
+            node = toLayoutTextControl(node->renderer())->textFormControlElement()->visiblePositionForIndex(1).deepEquivalent().deprecatedNode();
         else if (node->hasChildren())
             node = node->firstChild();
         else

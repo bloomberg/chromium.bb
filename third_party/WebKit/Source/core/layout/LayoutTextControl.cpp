@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTextControl.h"
+#include "core/layout/LayoutTextControl.h"
 
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/HitTestResult.h"
@@ -31,27 +31,27 @@
 
 namespace blink {
 
-RenderTextControl::RenderTextControl(HTMLTextFormControlElement* element)
+LayoutTextControl::LayoutTextControl(HTMLTextFormControlElement* element)
     : RenderBlockFlow(element)
 {
     ASSERT(element);
 }
 
-RenderTextControl::~RenderTextControl()
+LayoutTextControl::~LayoutTextControl()
 {
 }
 
-HTMLTextFormControlElement* RenderTextControl::textFormControlElement() const
+HTMLTextFormControlElement* LayoutTextControl::textFormControlElement() const
 {
     return toHTMLTextFormControlElement(node());
 }
 
-HTMLElement* RenderTextControl::innerEditorElement() const
+HTMLElement* LayoutTextControl::innerEditorElement() const
 {
     return textFormControlElement()->innerEditorElement();
 }
 
-void RenderTextControl::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
+void LayoutTextControl::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     // FIXME: This is a terrible hack to get the caret over the placeholder text since it'll
     // make us paint the placeholder first. (See https://trac.webkit.org/changeset/118733)
@@ -62,7 +62,7 @@ void RenderTextControl::addChild(LayoutObject* newChild, LayoutObject* beforeChi
         RenderBlockFlow::addChild(newChild, beforeChild);
 }
 
-void RenderTextControl::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTextControl::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlockFlow::styleDidChange(diff, oldStyle);
     Element* innerEditor = innerEditorElement();
@@ -85,7 +85,7 @@ static inline void updateUserModifyProperty(HTMLTextFormControlElement& node, La
     style.setUserModify(node.isDisabledOrReadOnly() ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
 }
 
-void RenderTextControl::adjustInnerEditorStyle(LayoutStyle& textBlockStyle) const
+void LayoutTextControl::adjustInnerEditorStyle(LayoutStyle& textBlockStyle) const
 {
     // The inner block, if present, always has its direction set to LTR,
     // so we need to inherit the direction and unicode-bidi style from the element.
@@ -95,12 +95,12 @@ void RenderTextControl::adjustInnerEditorStyle(LayoutStyle& textBlockStyle) cons
     updateUserModifyProperty(*textFormControlElement(), textBlockStyle);
 }
 
-int RenderTextControl::textBlockLogicalHeight() const
+int LayoutTextControl::textBlockLogicalHeight() const
 {
     return logicalHeight() - borderAndPaddingLogicalHeight();
 }
 
-int RenderTextControl::textBlockLogicalWidth() const
+int LayoutTextControl::textBlockLogicalWidth() const
 {
     Element* innerEditor = innerEditorElement();
     ASSERT(innerEditor);
@@ -112,20 +112,20 @@ int RenderTextControl::textBlockLogicalWidth() const
     return unitWidth;
 }
 
-void RenderTextControl::updateFromElement()
+void LayoutTextControl::updateFromElement()
 {
     Element* innerEditor = innerEditorElement();
     if (innerEditor && innerEditor->renderer())
         updateUserModifyProperty(*textFormControlElement(), innerEditor->renderer()->mutableStyleRef());
 }
 
-int RenderTextControl::scrollbarThickness() const
+int LayoutTextControl::scrollbarThickness() const
 {
     // FIXME: We should get the size of the scrollbar from the LayoutTheme instead.
     return ScrollbarTheme::theme()->scrollbarThickness();
 }
 
-void RenderTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     HTMLElement* innerEditor = innerEditorElement();
     ASSERT(innerEditor);
@@ -148,7 +148,7 @@ void RenderTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
     RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }
 
-void RenderTextControl::hitInnerEditorElement(HitTestResult& result, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset)
+void LayoutTextControl::hitInnerEditorElement(HitTestResult& result, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset)
 {
     HTMLElement* innerEditor = innerEditorElement();
     if (!innerEditor->renderer())
@@ -205,7 +205,7 @@ static const char* const fontFamiliesWithInvalidCharWidth[] = {
 // from the width of a '0'. This only seems to apply to a fixed number of Mac fonts,
 // but, in order to get similar rendering across platforms, we do this check for
 // all platforms.
-bool RenderTextControl::hasValidAvgCharWidth(AtomicString family)
+bool LayoutTextControl::hasValidAvgCharWidth(AtomicString family)
 {
     static HashSet<AtomicString>* fontFamiliesWithInvalidCharWidthMap = 0;
 
@@ -222,7 +222,7 @@ bool RenderTextControl::hasValidAvgCharWidth(AtomicString family)
     return !fontFamiliesWithInvalidCharWidthMap->contains(family);
 }
 
-float RenderTextControl::getAvgCharWidth(AtomicString family)
+float LayoutTextControl::getAvgCharWidth(AtomicString family)
 {
     if (hasValidAvgCharWidth(family))
         return roundf(style()->font().primaryFont()->avgCharWidth());
@@ -234,25 +234,25 @@ float RenderTextControl::getAvgCharWidth(AtomicString family)
     return font.width(textRun);
 }
 
-float RenderTextControl::scaleEmToUnits(int x) const
+float LayoutTextControl::scaleEmToUnits(int x) const
 {
     // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the "head" font table.
     float unitsPerEm = 2048.0f;
     return roundf(style()->font().fontDescription().computedSize() * x / unitsPerEm);
 }
 
-void RenderTextControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+void LayoutTextControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     // Use average character width. Matches IE.
     AtomicString family = style()->font().fontDescription().family().family();
-    maxLogicalWidth = preferredContentLogicalWidth(const_cast<RenderTextControl*>(this)->getAvgCharWidth(family));
+    maxLogicalWidth = preferredContentLogicalWidth(const_cast<LayoutTextControl*>(this)->getAvgCharWidth(family));
     if (RenderBox* innerEditorRenderBox = innerEditorElement()->renderBox())
         maxLogicalWidth += innerEditorRenderBox->paddingStart() + innerEditorRenderBox->paddingEnd();
     if (!style()->logicalWidth().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }
 
-void RenderTextControl::computePreferredLogicalWidths()
+void LayoutTextControl::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
 
@@ -283,13 +283,13 @@ void RenderTextControl::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void RenderTextControl::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutTextControl::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     if (!size().isEmpty())
         rects.append(LayoutRect(additionalOffset, size()));
 }
 
-LayoutObject* RenderTextControl::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+LayoutObject* LayoutTextControl::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     HTMLElement* placeholder = toHTMLTextFormControlElement(node())->placeholderElement();
     LayoutObject* placeholderRenderer = placeholder ? placeholder->renderer() : 0;

@@ -11,13 +11,13 @@ layer at (0,0) size 800x546
         LayoutTableSection {TBODY} at (0,0) size 167x244
           LayoutTableRow {TR} at (0,2) size 167x240
             LayoutTableCell {TD} at (2,92) size 163x59 [bgcolor=#90EE90] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (20,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (20,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               RenderText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,278) size 167x244
         LayoutTableSection {TBODY} at (0,0) size 167x244
           LayoutTableRow {TR} at (0,2) size 167x240
             LayoutTableCell {TD} at (2,92) size 163x59 [bgcolor=#90EE90] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (20,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+              LayoutTextControl {INPUT} at (20,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               RenderText {#text} at (0,0) size 0x0
 layer at (33,165) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13

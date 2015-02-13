@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
           text run at (487,0) width 181: "no text is currently selected."
       RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,96) size 784x19
-        RenderTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (123,0) size 4x18
           text run at (123,0) width 4: " "
         RenderInline {A} at (0,0) size 167x18 [color=#0000EE]

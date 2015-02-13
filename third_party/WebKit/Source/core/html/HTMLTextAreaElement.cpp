@@ -46,9 +46,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/layout/LayoutTextControlMultiLine.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/rendering/RenderTextControlMultiLine.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -200,7 +200,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
 
 LayoutObject* HTMLTextAreaElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderTextControlMultiLine(this);
+    return new LayoutTextControlMultiLine(this);
 }
 
 bool HTMLTextAreaElement::appendFormData(FormDataList& encoding, bool)

@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
                   RenderBlock (anonymous) at (1,1) size 78x18
                     RenderText at (4,1) size 55x16
                       text run at (4,1) width 55: "Netscape"
-                RenderTextControl {INPUT} at (268.50,1) size 213x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (268.50,1) size 213x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (481,2) size 5x19
                   text run at (481,2) width 5: " "
                 RenderButton {INPUT} at (485.50,1) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]

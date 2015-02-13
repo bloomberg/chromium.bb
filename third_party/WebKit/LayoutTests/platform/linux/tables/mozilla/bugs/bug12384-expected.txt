@@ -9,13 +9,13 @@ layer at (0,0) size 800x600
             LayoutTableRow {TR} at (0,0) size 672x24
               LayoutTableCell {TD} at (0,0) size 672x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderInline {NOBR} at (0,0) size 670x19
-                  RenderTextControl {INPUT} at (1,1) size 214x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                  LayoutTextControl {INPUT} at (1,1) size 214x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                   RenderText {#text} at (215,2) size 14x19
                     text run at (215,2) width 14: " - "
-                  RenderTextControl {INPUT} at (229,1) size 214x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                  LayoutTextControl {INPUT} at (229,1) size 214x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                   RenderText {#text} at (443,2) size 14x19
                     text run at (443,2) width 14: " - "
-                  RenderTextControl {INPUT} at (457,1) size 214x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                  LayoutTextControl {INPUT} at (457,1) size 214x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,24) size 672x0
 layer at (12,13) size 210x16

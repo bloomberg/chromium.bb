@@ -50,6 +50,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderFieldset.h"
@@ -59,7 +60,6 @@
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -1665,7 +1665,7 @@ AXObject::PlainTextRange AXRenderObject::selectedTextRange() const
 
     AccessibilityRole ariaRole = ariaRoleAttribute();
     if (isNativeTextControl() && ariaRole == UnknownRole && m_renderer->isTextControl()) {
-        HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
+        HTMLTextFormControlElement* textControl = toLayoutTextControl(m_renderer)->textFormControlElement();
         return PlainTextRange(textControl->selectionStart(), textControl->selectionEnd() - textControl->selectionStart());
     }
 
@@ -1687,7 +1687,7 @@ VisibleSelection AXRenderObject::selection() const
 void AXRenderObject::setSelectedTextRange(const PlainTextRange& range)
 {
     if (isNativeTextControl() && m_renderer->isTextControl()) {
-        HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
+        HTMLTextFormControlElement* textControl = toLayoutTextControl(m_renderer)->textFormControlElement();
         textControl->setSelectionRange(range.start, range.start + range.length, SelectionHasNoDirection, NotDispatchSelectEvent);
         return;
     }
@@ -1824,7 +1824,7 @@ VisiblePosition AXRenderObject::visiblePositionForIndex(int index) const
         return VisiblePosition();
 
     if (isNativeTextControl() && m_renderer->isTextControl())
-        return toRenderTextControl(m_renderer)->textFormControlElement()->visiblePositionForIndex(index);
+        return toLayoutTextControl(m_renderer)->textFormControlElement()->visiblePositionForIndex(index);
 
     if (!allowsTextRanges() && !m_renderer->isText())
         return VisiblePosition();
@@ -1849,7 +1849,7 @@ VisiblePosition AXRenderObject::visiblePositionForIndex(int index) const
 int AXRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const
 {
     if (isNativeTextControl() && m_renderer->isTextControl()) {
-        HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
+        HTMLTextFormControlElement* textControl = toLayoutTextControl(m_renderer)->textFormControlElement();
         return textControl->indexForVisiblePosition(pos);
     }
 

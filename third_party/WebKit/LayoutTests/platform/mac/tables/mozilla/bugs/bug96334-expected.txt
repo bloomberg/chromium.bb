@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (2,2) size 131x27
                           LayoutTableRow {TR} at (0,2) size 131x23
                             LayoutTableCell {TD} at (2,2) size 127x23 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-                              RenderTextControl {INPUT} at (2,2) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                              LayoutTextControl {INPUT} at (2,2) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                               RenderText {#text} at (0,0) size 0x0
                       LayoutTable {TABLE} at (2,33) size 187x48 [border: (2px solid #FF0000)]
                         LayoutTableSection {TBODY} at (2,2) size 183x44

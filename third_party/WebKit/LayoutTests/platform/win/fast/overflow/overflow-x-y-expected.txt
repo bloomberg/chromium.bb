@@ -73,12 +73,12 @@ layer at (8,126) size 300x100 clip at (8,126) size 300x85 scrollWidth 1208
       text run at (495,0) width 332: "X scroll X scroll X scroll X scroll X scroll X scroll "
       text run at (826,0) width 383: "X scroll X scroll X scroll X scroll X scroll X scroll X scroll"
 layer at (8,241) size 179x36 clip at (9,242) size 162x34
-  RenderTextControl {TEXTAREA} at (0,15) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,15) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 160x16
       RenderText {#text} at (0,0) size 136x16
         text run at (0,0) width 136: "Textarea y-scroll"
 layer at (191,226) size 179x51 clip at (192,227) size 177x34
-  RenderTextControl {TEXTAREA} at (183,0) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (183,0) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 175x16
       RenderText {#text} at (0,0) size 136x16
         text run at (0,0) width 136: "Textarea x-scroll"

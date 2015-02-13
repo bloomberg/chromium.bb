@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
           text run at (31,18) width 742: "To run manually, make another window active and then make this window active. Only the subframe should appear"
           text run at (0,36) width 43: "active."
       RenderBlock (anonymous) at (0,70) size 784x173
-        RenderTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderBR {BR} at (123,14) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0

@@ -7,12 +7,12 @@ layer at (0,0) size 800x600
         text run at (0,0) width 303: "This tests that text fields get the right baseline. "
       RenderBR {BR} at (302,14) size 1x0
       RenderBR {BR} at (0,18) size 0x18
-      RenderTextControl {INPUT} at (0,36) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (0,36) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (123,36) size 435x18
         text run at (123,36) width 435: "This text should line up with the bottom of the text in the text field. "
       RenderBR {BR} at (557,50) size 1x0
       RenderBR {BR} at (0,55) size 0x18
-      RenderTextControl {INPUT} at (0,73) size 123x131 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {INPUT} at (0,73) size 123x131 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (123,165) size 431x18
         text run at (123,165) width 431: "This text should line up with the bottom of the text in the text field."
 layer at (11,47) size 117x13

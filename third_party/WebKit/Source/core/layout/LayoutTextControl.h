@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef RenderTextControl_h
-#define RenderTextControl_h
+#ifndef LayoutTextControl_h
+#define LayoutTextControl_h
 
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderFlexibleBox.h"
@@ -29,15 +29,15 @@ namespace blink {
 
 class HTMLTextFormControlElement;
 
-class RenderTextControl : public RenderBlockFlow {
+class LayoutTextControl : public RenderBlockFlow {
 public:
-    virtual ~RenderTextControl();
+    virtual ~LayoutTextControl();
 
     HTMLTextFormControlElement* textFormControlElement() const;
     virtual PassRefPtr<LayoutStyle> createInnerEditorStyle(const LayoutStyle& startStyle) const = 0;
 
 protected:
-    RenderTextControl(HTMLTextFormControlElement*);
+    LayoutTextControl(HTMLTextFormControlElement*);
 
     // This convenience function should not be made public because
     // innerEditorElement may outlive the render tree.
@@ -72,7 +72,7 @@ protected:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextControl || RenderBlockFlow::isOfType(type); }
 
 private:
-    virtual const char* renderName() const override { return "RenderTextControl"; }
+    virtual const char* renderName() const override { return "LayoutTextControl"; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
     virtual void computePreferredLogicalWidths() override final;
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override final { }
@@ -86,18 +86,18 @@ private:
     virtual bool canBeProgramaticallyScrolled() const override final { return true; }
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderTextControl, isTextControl());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControl, isTextControl());
 
 // Renderer for our inner container, for <search> and others.
 // We can't use RenderFlexibleBox directly, because flexboxes have a different
 // baseline definition, and then inputs of different types wouldn't line up
 // anymore.
-class RenderTextControlInnerContainer final : public RenderFlexibleBox {
+class LayoutTextControlInnerContainer final : public RenderFlexibleBox {
 public:
-    explicit RenderTextControlInnerContainer(Element* element)
+    explicit LayoutTextControlInnerContainer(Element* element)
         : RenderFlexibleBox(element)
     { }
-    virtual ~RenderTextControlInnerContainer() { }
+    virtual ~LayoutTextControlInnerContainer() { }
 
     virtual int baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const override
     {
@@ -110,4 +110,4 @@ public:
 
 } // namespace blink
 
-#endif // RenderTextControl_h
+#endif // LayoutTextControl_h

@@ -36,7 +36,7 @@ using namespace HTMLNames;
 // ----------------------------
 
 RenderSearchField::RenderSearchField(HTMLInputElement* element)
-    : RenderTextControlSingleLine(element)
+    : LayoutTextControlSingleLine(element)
 {
     ASSERT(element->type() == InputTypeNames::search);
 }

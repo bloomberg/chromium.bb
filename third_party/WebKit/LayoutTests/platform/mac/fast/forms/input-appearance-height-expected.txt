@@ -9,13 +9,13 @@ layer at (0,0) size 800x600
       RenderBlock {FORM} at (0,18) size 784x229
         RenderText {#text} at (0,0) size 37x18
           text run at (0,0) width 37: "input "
-        RenderTextControl {INPUT} at (36.89,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (36.89,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (159,0) size 5x18
           text run at (159,0) width 5: " "
         RenderBR {BR} at (163,14) size 1x0
         RenderText {#text} at (0,19) size 28x18
           text run at (0,19) width 28: "text "
-        RenderTextControl {INPUT} at (27.98,19) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (27.98,19) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (150,19) size 5x18
           text run at (150,19) width 5: " "
         RenderBR {BR} at (154,33) size 1x0
@@ -76,19 +76,19 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (104,167) size 1x0
         RenderText {#text} at (0,172) size 51x18
           text run at (0,172) width 51: "isindex "
-        RenderTextControl {INPUT} at (50.22,172) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (50.22,172) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (173,172) size 5x18
           text run at (173,172) width 5: " "
         RenderBR {BR} at (177,186) size 1x0
         RenderText {#text} at (0,191) size 65x18
           text run at (0,191) width 65: "password "
-        RenderTextControl {INPUT} at (64.44,191) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (64.44,191) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (187,191) size 5x18
           text run at (187,191) width 5: " "
         RenderBR {BR} at (191,205) size 1x0
         RenderText {#text} at (0,210) size 45x18
           text run at (0,210) width 45: "search "
-        RenderTextControl {INPUT} at (44.86,210) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (44.86,210) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13

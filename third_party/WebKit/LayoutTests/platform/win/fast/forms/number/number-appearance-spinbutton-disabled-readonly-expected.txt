@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
           text run at (0,18) width 34: "state."
       RenderBlock {DIV} at (0,52) size 784x29
         RenderInline {LABEL} at (0,0) size 334x17
-          RenderTextControl {INPUT} at (0,0) size 247x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutTextControl {INPUT} at (0,0) size 247x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (2,3) size 243x23
               RenderBlock {DIV} at (0,0) size 228x23
               RenderBlock {DIV} at (228,0) size 15x23
@@ -17,14 +17,14 @@ layer at (0,0) size 800x600
             text run at (247,7) width 87: " Normal state"
       RenderBlock {DIV} at (0,81) size 784x29
         RenderInline {LABEL} at (0,0) size 342x17
-          RenderTextControl {INPUT} at (0,0) size 247x29 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
+          LayoutTextControl {INPUT} at (0,0) size 247x29 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (2,3) size 243x23
               RenderBlock {DIV} at (0,0) size 228x23
           RenderText {#text} at (247,7) size 95x17
             text run at (247,7) width 95: " Disabled state"
       RenderBlock {DIV} at (0,110) size 784x29
         RenderInline {LABEL} at (0,0) size 351x17
-          RenderTextControl {INPUT} at (0,0) size 247x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutTextControl {INPUT} at (0,0) size 247x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (2,3) size 243x23
               RenderBlock {DIV} at (0,0) size 228x23
           RenderText {#text} at (247,7) size 104x17

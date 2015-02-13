@@ -162,7 +162,7 @@ static CompositingReasons subtreeReasonsForCompositing(Layer* layer, bool hasCom
         }
 
         // FIXME: This should move into CompositingReasonFinder::potentialCompositingReasonsFromStyle, but
-        // theres a poor interaction with RenderTextControlSingleLine, which sets this hasOverflowClip directly.
+        // theres a poor interaction with LayoutTextControlSingleLine, which sets this hasOverflowClip directly.
         if (layer->renderer()->hasClipOrOverflowClip())
             subtreeReasons |= CompositingReasonClipsCompositingDescendants;
     }

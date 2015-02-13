@@ -20,27 +20,27 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,195) size 784x36
 layer at (8,44) size 419x36 clip at (9,45) size 417x34
-  RenderTextControl {TEXTAREA} at (0,0) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 415x16
       RenderText {#text} at (0,0) size 304x16
         text run at (0,0) width 304: "This is should be aligned to the left."
 layer at (8,85) size 419x36 clip at (9,86) size 417x34
-  RenderTextControl {TEXTAREA} at (0,41) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,41) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 415x16
       RenderText {#text} at (0,0) size 304x16
         text run at (0,0) width 304: "This is should be aligned to the left."
 layer at (8,126) size 419x36 clip at (9,127) size 417x34
-  RenderTextControl {TEXTAREA} at (0,82) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,82) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 415x16
       RenderText {#text} at (0,0) size 304x16
         text run at (0,0) width 304: "This is should be aligned to the left."
 layer at (8,167) size 419x36 clip at (9,168) size 417x34
-  RenderTextControl {TEXTAREA} at (0,123) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,123) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 415x16
       RenderText {#text} at (0,0) size 304x16
         text run at (0,0) width 304: "This is should be aligned to the left."
 layer at (8,203) size 419x36 clip at (9,204) size 417x34
-  RenderTextControl {TEXTAREA} at (0,0) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 419x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 415x16
       RenderText {#text} at (0,0) size 304x16
         text run at (0,0) width 304: "This is should be aligned to the left."

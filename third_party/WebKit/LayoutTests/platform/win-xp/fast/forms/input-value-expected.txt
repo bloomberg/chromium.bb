@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 196x19
                   text run at (1,1) width 196: "text with value property changed"
               LayoutTableCell {TD} at (370,0) size 240x24 [r=0 c=1 rs=1 cs=1]
-                RenderTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (612,1) size 59x22 [r=0 c=2 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 27x19
                   text run at (1,1) width 27: "after"
@@ -45,7 +45,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 233x19
                   text run at (1,1) width 233: "password with value property changed"
               LayoutTableCell {TD} at (370,26) size 240x24 [r=1 c=1 rs=1 cs=1]
-                RenderTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (612,27) size 59x22 [r=1 c=2 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 27x19
                   text run at (1,1) width 27: "after"
@@ -119,7 +119,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 193x19
                   text run at (1,1) width 193: "text with value attribute changed"
               LayoutTableCell {TD} at (370,174) size 240x24 [r=7 c=1 rs=1 cs=1]
-                RenderTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (612,175) size 59x22 [r=7 c=2 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 27x19
                   text run at (1,1) width 27: "after"
@@ -155,7 +155,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 364x19
                   text run at (1,1) width 364: "check box with value property changed, then turned into text"
               LayoutTableCell {TD} at (370,248) size 240x24 [r=10 c=1 rs=1 cs=1]
-                RenderTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (612,249) size 59x22 [r=10 c=2 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 27x19
                   text run at (1,1) width 27: "after"
@@ -179,7 +179,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 361x19
                   text run at (1,1) width 361: "check box with value attribute changed, then turned into text"
               LayoutTableCell {TD} at (370,298) size 240x24 [r=12 c=1 rs=1 cs=1]
-                RenderTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (1,1) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (612,299) size 59x22 [r=12 c=2 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 27x19
                   text run at (1,1) width 27: "after"

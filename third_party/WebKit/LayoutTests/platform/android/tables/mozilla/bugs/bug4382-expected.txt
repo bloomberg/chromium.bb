@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
             text run at (0,1) width 46: "Search"
         RenderText {#text} at (46,1) size 4x19
           text run at (46,1) width 4: " "
-        RenderTextControl {INPUT} at (50,0) size 141x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (50,0) size 141x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (191,1) size 4x19
           text run at (191,1) width 4: " "
         RenderMenuList {SELECT} at (195,1) size 73x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]

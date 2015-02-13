@@ -52,10 +52,10 @@
 #include "core/html/RadioNodeList.h"
 #include "core/html/forms/FormController.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutTextControl.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
-#include "core/rendering/RenderTextControl.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/text/AtomicString.h"
 #include <limits>

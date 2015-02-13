@@ -53,14 +53,14 @@ layer at (0,0) size 785x1199 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,1191.33) size 769x0
 layer at (8,60) size 406x206 clip at (9,61) size 404x204
-  RenderTextControl {TEXTAREA} at (0,18) size 406x206 [bgcolor=#FFFFFF] [border: (1px dotted #C0C0C0)]
+  LayoutTextControl {TEXTAREA} at (0,18) size 406x206 [bgcolor=#FFFFFF] [border: (1px dotted #C0C0C0)]
     RenderBlock {DIV} at (3,3) size 400x106
       RenderText {#text} at (0,18) size 388x69
         text run at (0,18) width 384: "Demo text here that wraps a bit and should demonstrate"
         text run at (383,18) width 5: " "
         text run at (0,71) width 184: "the goodness of line-height"
 layer at (8,829) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 56
-  RenderTextControl {TEXTAREA} at (0,54) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,54) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 140x52
       RenderText {#text} at (0,0) size 129x52
         text run at (0,0) width 108: "Demo text here that"
@@ -71,8 +71,8 @@ layer at (8,829) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size
         text run at (87,26) width 5: " "
         text run at (0,39) width 129: "goodness of line-height"
 layer at (8,901) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderTextControl {TEXTAREA} at (0,126) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,126) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 155x13
 layer at (8,973) size 406x206 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderTextControl {TEXTAREA} at (0,198) size 406x206 [bgcolor=#FFFFFF] [border: (1px dotted #C0C0C0)]
+  LayoutTextControl {TEXTAREA} at (0,198) size 406x206 [bgcolor=#FFFFFF] [border: (1px dotted #C0C0C0)]
     RenderBlock {DIV} at (3,3) size 400x53

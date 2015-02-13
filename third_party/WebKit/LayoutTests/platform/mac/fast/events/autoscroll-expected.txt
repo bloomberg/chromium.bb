@@ -17,7 +17,7 @@ layer at (0,0) size 785x3163 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 119: "back up to the top."
       RenderBlock {DIV} at (0,86) size 769x3000
       RenderBlock (anonymous) at (0,3086) size 769x19
-        RenderTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,3121) size 769x18
         RenderText {#text} at (0,0) size 412x18

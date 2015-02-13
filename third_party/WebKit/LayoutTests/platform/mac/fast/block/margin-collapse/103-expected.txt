@@ -29,11 +29,11 @@ layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderBlock (floating) {SPAN} at (0,26) size 325x20 [color=#333333]
               RenderText {#text} at (0,2) size 70x16
                 text run at (0,2) width 70: "Your Name*"
-            RenderTextControl {INPUT} at (325,26) size 186x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            LayoutTextControl {INPUT} at (325,26) size 186x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderBlock (floating) {SPAN} at (0,46) size 325x20 [color=#333333]
               RenderText {#text} at (0,2) size 124x16
                 text run at (0,2) width 124: "Your e-mail address*"
-            RenderTextControl {INPUT} at (325,45) size 186x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            LayoutTextControl {INPUT} at (325,45) size 186x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderBlock (floating) {SPAN} at (0,66) size 325x20 [color=#333333]
               RenderText {#text} at (0,2) size 131x16
                 text run at (0,2) width 131: "Your degree program*"
@@ -167,17 +167,17 @@ layer at (441,302) size 180x13
 layer at (441,321) size 180x13
   RenderBlock {DIV} at (3,3) size 180x13
 layer at (113,750) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderTextControl {TEXTAREA} at (0,476.98) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,476.98) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
 layer at (113,1037) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderTextControl {TEXTAREA} at (0,763.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,763.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
 layer at (113,1168) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderTextControl {TEXTAREA} at (0,894.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,894.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
 layer at (113,1299) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderTextControl {TEXTAREA} at (0,1025.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,1025.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
 layer at (113,1476) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderTextControl {TEXTAREA} at (0,1202.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,1202.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13

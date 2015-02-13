@@ -28,10 +28,10 @@ layer at (0,0) size 800x600
 layer at (8,70) size 173x125 clip at (10,72) size 169x121
   RenderBlock {DIV} at (0,62) size 173x125 [border: (2px solid #0000FF)]
 layer at (8,195) size 169x121 clip at (10,197) size 165x117
-  RenderTextControl {TEXTAREA} at (0,0) size 169x121 [bgcolor=#FFFFFF] [border: (2px solid #0000FF)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 169x121 [bgcolor=#FFFFFF] [border: (2px solid #0000FF)]
     RenderBlock {DIV} at (4,4) size 161x13
 layer at (8,320) size 180x53 clip at (9,321) size 178x51
-  RenderTextControl {TEXTAREA} at (0,125) size 180x53 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+  LayoutTextControl {TEXTAREA} at (0,125) size 180x53 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 174x13
 layer at (8,377) size 323x175
   RenderPartObject {IFRAME} at (0,182) size 323x175 [border: (2px inset #EEEEEE)]

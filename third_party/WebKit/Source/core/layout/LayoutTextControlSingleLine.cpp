@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTextControlSingleLine.h"
+#include "core/layout/LayoutTextControlSingleLine.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
@@ -40,35 +40,35 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderTextControlSingleLine::RenderTextControlSingleLine(HTMLInputElement* element)
-    : RenderTextControl(element)
+LayoutTextControlSingleLine::LayoutTextControlSingleLine(HTMLInputElement* element)
+    : LayoutTextControl(element)
     , m_shouldDrawCapsLockIndicator(false)
     , m_desiredInnerEditorLogicalHeight(-1)
 {
 }
 
-RenderTextControlSingleLine::~RenderTextControlSingleLine()
+LayoutTextControlSingleLine::~LayoutTextControlSingleLine()
 {
 }
 
-inline Element* RenderTextControlSingleLine::containerElement() const
+inline Element* LayoutTextControlSingleLine::containerElement() const
 {
     return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::textFieldContainer());
 }
 
-inline Element* RenderTextControlSingleLine::editingViewPortElement() const
+inline Element* LayoutTextControlSingleLine::editingViewPortElement() const
 {
     return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
 }
 
-inline HTMLElement* RenderTextControlSingleLine::innerSpinButtonElement() const
+inline HTMLElement* LayoutTextControlSingleLine::innerSpinButtonElement() const
 {
     return toHTMLElement(inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
-void RenderTextControlSingleLine::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    RenderTextControl::paint(paintInfo, paintOffset);
+    LayoutTextControl::paint(paintInfo, paintOffset);
 
     if (paintInfo.phase == PaintPhaseBlockBackground && m_shouldDrawCapsLockIndicator) {
         LayoutRect contentsRect = contentBoxRect();
@@ -85,12 +85,12 @@ void RenderTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
     }
 }
 
-LayoutUnit RenderTextControlSingleLine::computeLogicalHeightLimit() const
+LayoutUnit LayoutTextControlSingleLine::computeLogicalHeightLimit() const
 {
     return containerElement() ? contentLogicalHeight() : logicalHeight();
 }
 
-void RenderTextControlSingleLine::layout()
+void LayoutTextControlSingleLine::layout()
 {
     SubtreeLayoutScope layoutScope(*this);
 
@@ -152,8 +152,9 @@ void RenderTextControlSingleLine::layout()
         } else if (containerRenderer->logicalHeight() < contentLogicalHeight()) {
             containerRenderer->style()->setLogicalHeight(Length(contentLogicalHeight(), Fixed));
             layoutScope.setNeedsLayout(this);
-        } else
+        } else {
             containerRenderer->style()->setLogicalHeight(Length(containerLogicalHeight, Fixed));
+        }
     }
 
     // If we need another layout pass, we have changed one of children's height so we need to relayout them.
@@ -164,8 +165,9 @@ void RenderTextControlSingleLine::layout()
     if (!container && innerEditorRenderer && innerEditorRenderer->size().height() != contentLogicalHeight()) {
         LayoutUnit logicalHeightDiff = innerEditorRenderer->logicalHeight() - contentLogicalHeight();
         innerEditorRenderer->setLogicalTop(innerEditorRenderer->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
-    } else
+    } else {
         centerContainerIfNeeded(containerRenderer);
+    }
 
     HTMLElement* placeholderElement = inputElement()->placeholderElement();
     if (RenderBox* placeholderBox = placeholderElement ? placeholderElement->renderBox() : 0) {
@@ -193,9 +195,9 @@ void RenderTextControlSingleLine::layout()
     }
 }
 
-bool RenderTextControlSingleLine::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutTextControlSingleLine::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    if (!RenderTextControl::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
+    if (!LayoutTextControl::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
         return false;
 
     // Say that we hit the inner text element if
@@ -216,10 +218,10 @@ bool RenderTextControlSingleLine::nodeAtPoint(const HitTestRequest& request, Hit
     return true;
 }
 
-void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     m_desiredInnerEditorLogicalHeight = -1;
-    RenderTextControl::styleDidChange(diff, oldStyle);
+    LayoutTextControl::styleDidChange(diff, oldStyle);
 
     // We may have set the width and the height in the old style in layout().
     // Reset them now to avoid getting a spurious layout hint.
@@ -241,7 +243,7 @@ void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const Lay
     setHasOverflowClip(false);
 }
 
-void RenderTextControlSingleLine::capsLockStateMayHaveChanged()
+void LayoutTextControlSingleLine::capsLockStateMayHaveChanged()
 {
     if (!node())
         return;
@@ -262,13 +264,13 @@ void RenderTextControlSingleLine::capsLockStateMayHaveChanged()
     }
 }
 
-bool RenderTextControlSingleLine::hasControlClip() const
+bool LayoutTextControlSingleLine::hasControlClip() const
 {
     // Apply control clip for text fields with decorations.
     return !!containerElement();
 }
 
-LayoutRect RenderTextControlSingleLine::controlClipRect(const LayoutPoint& additionalOffset) const
+LayoutRect LayoutTextControlSingleLine::controlClipRect(const LayoutPoint& additionalOffset) const
 {
     ASSERT(hasControlClip());
     LayoutRect clipRect = contentBoxRect();
@@ -278,7 +280,7 @@ LayoutRect RenderTextControlSingleLine::controlClipRect(const LayoutPoint& addit
     return clipRect;
 }
 
-float RenderTextControlSingleLine::getAvgCharWidth(AtomicString family)
+float LayoutTextControlSingleLine::getAvgCharWidth(AtomicString family)
 {
     // Since Lucida Grande is the default font, we want this to match the width
     // of MS Shell Dlg, the default font for textareas in Firefox, Safari Win and
@@ -287,10 +289,10 @@ float RenderTextControlSingleLine::getAvgCharWidth(AtomicString family)
     if (family == "Lucida Grande")
         return scaleEmToUnits(901);
 
-    return RenderTextControl::getAvgCharWidth(family);
+    return LayoutTextControl::getAvgCharWidth(family);
 }
 
-LayoutUnit RenderTextControlSingleLine::preferredContentLogicalWidth(float charWidth) const
+LayoutUnit LayoutTextControlSingleLine::preferredContentLogicalWidth(float charWidth) const
 {
     int factor;
     bool includesDecoration = inputElement()->sizeShouldIncludeDecoration(factor);
@@ -327,12 +329,12 @@ LayoutUnit RenderTextControlSingleLine::preferredContentLogicalWidth(float charW
     return result;
 }
 
-LayoutUnit RenderTextControlSingleLine::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
+LayoutUnit LayoutTextControlSingleLine::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
 {
     return lineHeight + nonContentHeight;
 }
 
-PassRefPtr<LayoutStyle> RenderTextControlSingleLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
+PassRefPtr<LayoutStyle> LayoutTextControlSingleLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
 {
     RefPtr<LayoutStyle> textBlockStyle = LayoutStyle::create();
     textBlockStyle->inheritFrom(startStyle);
@@ -359,12 +361,12 @@ PassRefPtr<LayoutStyle> RenderTextControlSingleLine::createInnerEditorStyle(cons
     return textBlockStyle.release();
 }
 
-bool RenderTextControlSingleLine::textShouldBeTruncated() const
+bool LayoutTextControlSingleLine::textShouldBeTruncated() const
 {
     return document().focusedElement() != node() && style()->textOverflow() == TextOverflowEllipsis;
 }
 
-void RenderTextControlSingleLine::autoscroll(const IntPoint& position)
+void LayoutTextControlSingleLine::autoscroll(const IntPoint& position)
 {
     RenderBox* renderer = innerEditorElement()->renderBox();
     if (!renderer)
@@ -373,7 +375,7 @@ void RenderTextControlSingleLine::autoscroll(const IntPoint& position)
     renderer->autoscroll(position);
 }
 
-LayoutUnit RenderTextControlSingleLine::scrollWidth() const
+LayoutUnit LayoutTextControlSingleLine::scrollWidth() const
 {
     if (RenderBox* inner = innerEditorElement() ? innerEditorElement()->renderBox() : 0) {
         // Adjust scrollWidth to inculde input element horizontal paddings and
@@ -384,7 +386,7 @@ LayoutUnit RenderTextControlSingleLine::scrollWidth() const
     return RenderBlockFlow::scrollWidth();
 }
 
-LayoutUnit RenderTextControlSingleLine::scrollHeight() const
+LayoutUnit LayoutTextControlSingleLine::scrollHeight() const
 {
     if (RenderBox* inner = innerEditorElement() ? innerEditorElement()->renderBox() : 0) {
         // Adjust scrollHeight to include input element vertical paddings and
@@ -395,33 +397,33 @@ LayoutUnit RenderTextControlSingleLine::scrollHeight() const
     return RenderBlockFlow::scrollHeight();
 }
 
-LayoutUnit RenderTextControlSingleLine::scrollLeft() const
+LayoutUnit LayoutTextControlSingleLine::scrollLeft() const
 {
     if (innerEditorElement())
         return innerEditorElement()->scrollLeft();
     return RenderBlockFlow::scrollLeft();
 }
 
-LayoutUnit RenderTextControlSingleLine::scrollTop() const
+LayoutUnit LayoutTextControlSingleLine::scrollTop() const
 {
     if (innerEditorElement())
         return innerEditorElement()->scrollTop();
     return RenderBlockFlow::scrollTop();
 }
 
-void RenderTextControlSingleLine::setScrollLeft(LayoutUnit newLeft)
+void LayoutTextControlSingleLine::setScrollLeft(LayoutUnit newLeft)
 {
     if (innerEditorElement())
         innerEditorElement()->setScrollLeft(newLeft);
 }
 
-void RenderTextControlSingleLine::setScrollTop(LayoutUnit newTop)
+void LayoutTextControlSingleLine::setScrollTop(LayoutUnit newTop)
 {
     if (innerEditorElement())
         innerEditorElement()->setScrollTop(newTop);
 }
 
-HTMLInputElement* RenderTextControlSingleLine::inputElement() const
+HTMLInputElement* LayoutTextControlSingleLine::inputElement() const
 {
     return toHTMLInputElement(node());
 }

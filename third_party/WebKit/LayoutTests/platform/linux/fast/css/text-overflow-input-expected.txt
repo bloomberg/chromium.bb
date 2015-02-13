@@ -10,85 +10,85 @@ layer at (0,0) size 800x380
         RenderText {#text} at (0,0) size 446x19
           text run at (0,0) width 446: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
         RenderBR {BR} at (446,0) size 0x19
-        RenderTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,21) size 4x19
           text run at (154,21) width 4: " "
-        RenderTextControl {INPUT} at (158,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (158,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (314,21) size 4x19
           text run at (314,21) width 4: " "
-        RenderTextControl {INPUT} at (318,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (318,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (472,21) size 4x19
           text run at (472,21) width 4: " "
-        RenderTextControl {INPUT} at (476,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (476,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (0,0) size 0x0
-        RenderTextControl {INPUT} at (0,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderBR {BR} at (154,43) size 0x19
-        RenderTextControl {INPUT} at (0,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,65) size 4x19
           text run at (154,65) width 4: " "
-        RenderTextControl {INPUT} at (158,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (158,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (314,65) size 4x19
           text run at (314,65) width 4: " "
-        RenderTextControl {INPUT} at (318,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (318,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (472,65) size 4x19
           text run at (472,65) width 4: " "
-        RenderTextControl {INPUT} at (476,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (476,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (0,0) size 0x0
-        RenderTextControl {INPUT} at (0,86) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,86) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,160) size 784x108
         RenderText {#text} at (0,0) size 494x19
           text run at (0,0) width 494: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
         RenderBR {BR} at (494,0) size 0x19
-        RenderTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,21) size 4x19
           text run at (154,21) width 4: " "
-        RenderTextControl {INPUT} at (158,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (158,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (314,21) size 4x19
           text run at (314,21) width 4: " "
-        RenderTextControl {INPUT} at (318,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (318,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (472,21) size 4x19
           text run at (472,21) width 4: " "
-        RenderTextControl {INPUT} at (476,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (476,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (0,0) size 0x0
-        RenderTextControl {INPUT} at (0,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderBR {BR} at (154,43) size 0x19
-        RenderTextControl {INPUT} at (0,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,65) size 4x19
           text run at (154,65) width 4: " "
-        RenderTextControl {INPUT} at (158,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (158,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (314,65) size 4x19
           text run at (314,65) width 4: " "
-        RenderTextControl {INPUT} at (318,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (318,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (472,65) size 4x19
           text run at (472,65) width 4: " "
-        RenderTextControl {INPUT} at (476,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (476,64) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 150x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (0,0) size 0x0
-        RenderTextControl {INPUT} at (0,86) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,86) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,284) size 784x64
         RenderText {#text} at (0,0) size 218x19
@@ -96,19 +96,19 @@ layer at (0,0) size 800x380
         RenderBR {BR} at (218,0) size 0x19
         RenderText {#text} at (0,21) size 223x19
           text run at (0,21) width 223: "Clip to ellipsis (should show ellipsis): "
-        RenderTextControl {INPUT} at (223,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (223,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (377,21) size 4x19
           text run at (377,21) width 4: " "
-        RenderTextControl {INPUT} at (381,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (381,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (535,21) size 4x19
           text run at (535,21) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
         RenderText {#text} at (0,43) size 244x19
           text run at (0,43) width 244: "Ellipsis to clip (should not show ellipsis): "
-        RenderTextControl {INPUT} at (244,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (244,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (398,43) size 4x19
           text run at (398,43) width 4: " "
-        RenderTextControl {INPUT} at (402,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (402,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (556,43) size 4x19
           text run at (556,43) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
