@@ -27,8 +27,6 @@ public:
     // Ownership of the WebMessagePortChannel and WebNavigatorConnectCallbacks
     // objects are both transferred to the provider.
     virtual void connect(const WebURL&, const WebString& origin, WebNavigatorConnectPortCallbacks*) { }
-    // FIXME: remove this old signature once content side has been updated.
-    virtual void connect(const WebURL&, const WebString& origin, WebMessagePortChannel*, WebNavigatorConnectCallbacks*) { }
 };
 
 } // namespace blink

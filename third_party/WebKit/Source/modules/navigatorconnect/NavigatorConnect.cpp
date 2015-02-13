@@ -17,38 +17,6 @@ namespace blink {
 
 namespace {
 
-// FIXME: remove this class when content side changes have landed.
-class OldConnectCallbacks : public WebNavigatorConnectCallbacks {
-public:
-    OldConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, PassRefPtrWillBeRawPtr<MessagePort> port)
-        : m_resolver(resolver), m_port(port)
-    {
-        ASSERT(m_resolver);
-    }
-    ~OldConnectCallbacks() override { }
-
-    void onSuccess() override
-    {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            return;
-        }
-        m_resolver->resolve(m_port);
-    }
-
-    void onError() override
-    {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            return;
-        }
-        m_resolver->reject(DOMException::create(AbortError));
-    }
-
-private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
-    RefPtrWillBePersistent<MessagePort> m_port;
-    WTF_MAKE_NONCOPYABLE(OldConnectCallbacks);
-};
-
 class ConnectCallbacks : public WebNavigatorConnectPortCallbacks {
 public:
     ConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
@@ -96,14 +64,6 @@ ScriptPromise NavigatorConnect::connect(ScriptState* scriptState, const String& 
         scriptState->executionContext()->completeURL(url),
         scriptState->executionContext()->securityOrigin()->toString(),
         new ConnectCallbacks(resolver));
-    // FIXME: remove this old codepath once the content side has been updated.
-    RefPtrWillBeRawPtr<MessageChannel> channel(MessageChannel::create(scriptState->executionContext()));
-    OwnPtr<WebMessagePortChannel> webchannel = channel->port2()->disentangle();
-    provider->connect(
-        scriptState->executionContext()->completeURL(url),
-        scriptState->executionContext()->securityOrigin()->toString(),
-        webchannel.leakPtr(),
-        new OldConnectCallbacks(resolver, channel->port1()));
     return promise;
 }
 
