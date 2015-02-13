@@ -412,8 +412,6 @@ PDFViewer.prototype = {
       // Document load complete.
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
-      if (!this.isMaterial_)
-        this.pageIndicator_.style.visibility = 'visible';
       this.handleURLParams_();
       this.loaded_ = true;
       this.sendScriptingMessage_({
@@ -615,12 +613,10 @@ PDFViewer.prototype = {
 
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();
-    if (this.isMaterial_)
+    if (this.isMaterial_) {
       this.materialToolbar_.pageIndex = visiblePage;
-    else
+    } else {
       this.pageIndicator_.index = visiblePage;
-
-    if (!this.isMaterial_) {
       if (this.documentDimensions_.pageDimensions.length > 1 &&
           hasScrollbars.vertical) {
         this.pageIndicator_.style.visibility = 'visible';
