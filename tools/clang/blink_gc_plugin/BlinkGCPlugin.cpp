@@ -384,6 +384,8 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       CXXRecordDecl* decl = base->getPointeeType()->getAsCXXRecordDecl();
       if (decl)
         CheckTraceFieldCall(expr->getMemberName().getAsString(), decl, arg);
+      if (expr->getMemberName().getAsString() == kTraceImplName)
+        delegates_to_traceimpl_ = true;
       return true;
     }
 
