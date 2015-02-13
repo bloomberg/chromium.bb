@@ -12,7 +12,6 @@ import static org.chromium.third_party.android.datausagechart.ChartDataUsageView
 import android.content.Context;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
-import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
@@ -101,9 +100,9 @@ public class BandwidthStatisticsPreferenceCategory extends PreferenceCategory {
         super.onBindView(view);
         if (mOriginalTotalPhrase == null) updateDetailData();
         mOriginalSizeTextView = (TextView) view.findViewById(R.id.data_reduction_original_size);
-        mOriginalSizeTextView.setText(Html.fromHtml(mOriginalTotalPhrase));
+        mOriginalSizeTextView.setText(mOriginalTotalPhrase);
         mReceivedSizeTextView = (TextView) view.findViewById(R.id.data_reduction_compressed_size);
-        mReceivedSizeTextView.setText(Html.fromHtml(mReceivedTotalPhrase));
+        mReceivedSizeTextView.setText(mReceivedTotalPhrase);
         mPercentReductionTextView = (TextView) view.findViewById(R.id.data_reduction_percent);
         mPercentReductionTextView.setText(mPercentReductionPhrase);
         mStartDateTextView = (TextView) view.findViewById(R.id.data_reduction_start_date);
@@ -145,21 +144,13 @@ public class BandwidthStatisticsPreferenceCategory extends PreferenceCategory {
                 mOriginalNetworkStatsHistory.getValues(start, end, now, null);
         // Only received bytes are tracked.
         final long originalTotalBytes = originalEntry.rxBytes;
-        String originalTotalPhrase = getContext().getString(
-                R.string.data_reduction_statistics_original_size_suffix,
-                String.format("<b>%s</b>",
-                        Formatter.formatFileSize(context, originalTotalBytes)));
-        mOriginalTotalPhrase = originalTotalPhrase;
+        mOriginalTotalPhrase = Formatter.formatFileSize(context, originalTotalBytes);
 
         NetworkStatsHistory.Entry compressedEntry =
                 mReceivedNetworkStatsHistory.getValues(start, end, now, null);
         // Only received bytes are tracked.
         final long compressedTotalBytes = compressedEntry.rxBytes;
-        String compressedTotalPhrase = getContext().getString(
-                R.string.data_reduction_statistics_compressed_size_suffix,
-                String.format("<b>%s</b>",
-                        Formatter.formatFileSize(context, compressedTotalBytes)));
-        mReceivedTotalPhrase = compressedTotalPhrase;
+        mReceivedTotalPhrase = Formatter.formatFileSize(context, compressedTotalBytes);
 
         float percentage = 0.0f;
         if (originalTotalBytes > 0L && originalTotalBytes > compressedTotalBytes) {

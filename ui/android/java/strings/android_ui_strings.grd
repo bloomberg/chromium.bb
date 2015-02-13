@@ -93,150 +93,134 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
-      <!-- Generic strings -->
-      <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        OK
-      </message>
-      <message name="IDS_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Cancel
-      </message>
-      <message name="IDS_SAVE" desc="Label for a button to save a change. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Save
-      </message>
-      <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Delete
-      </message>
-      <message name="IDS_TEXT_ON" desc="Text indicating that an option is turned on. [CHAR-LIMIT=20]">
-        On
-      </message>
-      <message name="IDS_TEXT_OFF" desc="Text indicating that an option is turned off. [CHAR-LIMIT=20]">
-        Off
-      </message>
-      <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
-        Learn more
-      </message>
-
-      <message desc="Error shown when the browser is restarted due to low memory during a file picker operation. [CHAR-LIMIT=NONE]" name="IDS_LOW_MEMORY_ERROR">
+      <!-- Select file dialog -->
+      <message name="IDS_LOW_MEMORY_ERROR" desc="Error shown when the browser is restarted due to low memory during a file picker operation. [CHAR-LIMIT=NONE]">
         Unable to complete previous operation due to low memory
       </message>
-      <message desc="Toast when the browser is unable to open a file for upload. [CHAR-LIMIT=32]" name="IDS_OPENING_FILE_ERROR">
+      <message name="IDS_OPENING_FILE_ERROR" desc="Toast when the browser is unable to open a file for upload. [CHAR-LIMIT=32]">
         Failed to open selected file
       </message>
-      <message desc="Text for ColorPicker button to go to advanced view. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_BUTTON_MORE">
+
+      <!-- Color picker -->
+      <message name="IDS_COLOR_PICKER_BUTTON_MORE" desc="Text for ColorPicker button to go to advanced view. [CHAR-LIMIT=20]">
         More
       </message>
-      <message desc="Label for hue slider in ColorPicker." name="IDS_COLOR_PICKER_HUE">
+      <message name="IDS_COLOR_PICKER_HUE" desc="Label for hue slider in ColorPicker.">
         Hue
       </message>
-      <message desc="Label for saturation slider in ColorPicker." name="IDS_COLOR_PICKER_SATURATION">
+      <message name="IDS_COLOR_PICKER_SATURATION" desc="Label for saturation slider in ColorPicker.">
         Saturation
       </message>
-      <message desc="Label for value slider in ColorPicker." name="IDS_COLOR_PICKER_VALUE">
+      <message name="IDS_COLOR_PICKER_VALUE" desc="Label for value slider in ColorPicker.">
         Value
       </message>
-      <message desc="Label for button in ColorPicker dialog for user to accept the currently chosen color. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_BUTTON_SET">       
+      <message name="IDS_COLOR_PICKER_BUTTON_SET" desc="Label for button in ColorPicker dialog for user to accept the currently chosen color. [CHAR-LIMIT=20]">       
         Set
       </message>
-      <message desc="Label for button in ColorPicker dialog for user to cancel picking a color. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_BUTTON_CANCEL">
+      <message name="IDS_COLOR_PICKER_BUTTON_CANCEL" desc="Label for button in ColorPicker dialog for user to cancel picking a color. [CHAR-LIMIT=20]">
         Cancel
       </message>
-      <message desc="Title of ColorPicker dialog. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_DIALOG_TITLE">
+      <message name="IDS_COLOR_PICKER_DIALOG_TITLE" desc="Title of ColorPicker dialog. [CHAR-LIMIT=20]">
         Select color
       </message>
-      <message desc="Accessibility label for button to select the red color." name="IDS_COLOR_PICKER_BUTTON_RED">
+      <message name="IDS_COLOR_PICKER_BUTTON_RED" desc="Accessibility label for button to select the red color.">
         Red
       </message>
-      <message desc="Accessibility label for button to select the cyan color." name="IDS_COLOR_PICKER_BUTTON_CYAN">
+      <message name="IDS_COLOR_PICKER_BUTTON_CYAN" desc="Accessibility label for button to select the cyan color.">
         Cyan
       </message>
-      <message desc="Accessibility label for button to select the blue color." name="IDS_COLOR_PICKER_BUTTON_BLUE">
+      <message name="IDS_COLOR_PICKER_BUTTON_BLUE" desc="Accessibility label for button to select the blue color.">
         Blue
       </message>
-      <message desc="Accessibility label for button to select the green color." name="IDS_COLOR_PICKER_BUTTON_GREEN">
+      <message name="IDS_COLOR_PICKER_BUTTON_GREEN" desc="Accessibility label for button to select the green color.">
         Green
       </message>
-      <message desc="Accessibility label for button to select the magenta color." name="IDS_COLOR_PICKER_BUTTON_MAGENTA">
+      <message name="IDS_COLOR_PICKER_BUTTON_MAGENTA" desc="Accessibility label for button to select the magenta color.">
         Magenta
       </message>
-      <message desc="Accessibility label for button to select the yellow color." name="IDS_COLOR_PICKER_BUTTON_YELLOW">
+      <message name="IDS_COLOR_PICKER_BUTTON_YELLOW" desc="Accessibility label for button to select the yellow color.">
         Yellow
       </message>
-      <message desc="Accessibility label for button to select the black color." name="IDS_COLOR_PICKER_BUTTON_BLACK">
+      <message name="IDS_COLOR_PICKER_BUTTON_BLACK" desc="Accessibility label for button to select the black color.">
         Black
       </message>
-      <message desc="Accessibility label for button to select the white color." name="IDS_COLOR_PICKER_BUTTON_WHITE">
+      <message name="IDS_COLOR_PICKER_BUTTON_WHITE" desc="Accessibility label for button to select the white color.">
         White
       </message>
-      <message desc="Notification for when copying to the clipboard fails. [CHAR-LIMIT=64]" name="IDS_COPY_TO_CLIPBOARD_FAILURE_MESSAGE">
+
+      <!-- Clipboard -->
+      <message name="IDS_COPY_TO_CLIPBOARD_FAILURE_MESSAGE" desc="Notification for when copying to the clipboard fails. [CHAR-LIMIT=64]">
         Failed to copy to the clipboard
       </message>
-      <message desc="Content description for the date time picker month component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_DATE_PICKER_MONTH">
+
+      <!-- Date/time pickers -->
+      <message name="IDS_ACCESSIBILITY_DATE_PICKER_MONTH" desc="Content description for the date time picker month component. [CHAR-LIMIT=32]">
         Month
       </message>
-      <message desc="Content description for the date time picker year component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_DATE_PICKER_YEAR">
+      <message name="IDS_ACCESSIBILITY_DATE_PICKER_YEAR" desc="Content description for the date time picker year component. [CHAR-LIMIT=32]">
         Year
       </message>
-      <message desc="Label for 'set' button in date picker dialog and time picker dialog, used to replace the contents of a field with the chosen date or time [CHAR-LIMIT=12]" name="IDS_DATE_PICKER_DIALOG_SET">
+      <message name="IDS_DATE_PICKER_DIALOG_SET" desc="Label for 'set' button in date picker dialog and time picker dialog, used to replace the contents of a field with the chosen date or time [CHAR-LIMIT=12]">
         Set
       </message>
-      <message desc="Title for the month picker dialog, which can be used to choose a month. [CHAR-LIMIT=32]" name="IDS_MONTH_PICKER_DIALOG_TITLE">
+      <message name="IDS_MONTH_PICKER_DIALOG_TITLE" desc="Title for the month picker dialog, which can be used to choose a month. [CHAR-LIMIT=32]">
         Set month
       </message>
-      <message desc="Content description for the date time picker week component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_DATE_PICKER_WEEK">
+      <message name="IDS_ACCESSIBILITY_DATE_PICKER_WEEK" desc="Content description for the date time picker week component. [CHAR-LIMIT=32]">
         Week
       </message>
-      <message desc="Title for the week picker dialog, which can be used to choose a week. [CHAR-LIMIT=32]" name="IDS_WEEK_PICKER_DIALOG_TITLE">
+      <message name="IDS_WEEK_PICKER_DIALOG_TITLE" desc="Title for the week picker dialog, which can be used to choose a week. [CHAR-LIMIT=32]">
         Set week
       </message>
-      <message desc="Value for AM in AM/PM in the time picker dialog. AM represents the morning (ante-meridiem). [CHAR-LIMIT=12]" name="IDS_TIME_PICKER_DIALOG_AM">
+      <message name="IDS_TIME_PICKER_DIALOG_AM" desc="Value for AM in AM/PM in the time picker dialog. AM represents the morning (ante-meridiem). [CHAR-LIMIT=12]">
         AM
       </message>
-      <message desc="Value for PM in AM/PM in the time picker dialog. PM represents the afternoon (post-meridiem). [CHAR-LIMIT=12]" name="IDS_TIME_PICKER_DIALOG_PM">
+      <message name="IDS_TIME_PICKER_DIALOG_PM" desc="Value for PM in AM/PM in the time picker dialog. PM represents the afternoon (post-meridiem). [CHAR-LIMIT=12]">
         PM
       </message>
-      <message desc="Title for the time picker dialog, which can be used to choose a time. [CHAR-LIMIT=32]" name="IDS_TIME_PICKER_DIALOG_TITLE">
+      <message name="IDS_TIME_PICKER_DIALOG_TITLE" desc="Title for the time picker dialog, which can be used to choose a time. [CHAR-LIMIT=32]">
         Set time
       </message>
-      <message desc="Content description for the time picker hour component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_TIME_PICKER_HOUR">
+      <message name="IDS_ACCESSIBILITY_TIME_PICKER_HOUR" desc="Content description for the time picker hour component. [CHAR-LIMIT=32]">
         Hour
       </message>
-      <message desc="Content description for the time picker minute component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_TIME_PICKER_MINUTE">
+      <message name="IDS_ACCESSIBILITY_TIME_PICKER_MINUTE" desc="Content description for the time picker minute component. [CHAR-LIMIT=32]">
         Minute
       </message>
-      <message desc="Content description for the time picker second component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_TIME_PICKER_SECOND">
+      <message name="IDS_ACCESSIBILITY_TIME_PICKER_SECOND" desc="Content description for the time picker second component. [CHAR-LIMIT=32]">
         Second
       </message>
-      <message desc="Content description for the time picker milli component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_TIME_PICKER_MILLI">
+      <message name="IDS_ACCESSIBILITY_TIME_PICKER_MILLI" desc="Content description for the time picker milli component. [CHAR-LIMIT=32]">
         Millisecond
       </message>
-      <message desc="Content description for the time picker AM/PM component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_TIME_PICKER_AMPM">
+      <message name="IDS_ACCESSIBILITY_TIME_PICKER_AMPM" desc="Content description for the time picker AM/PM component. [CHAR-LIMIT=32]">
         AM/PM
       </message>
-      <message desc="Separator used between hours and minutes in the time pickerr dialog (hh:mm) [CHAR-LIMIT=1]" name="IDS_TIME_PICKER_DIALOG_HOUR_MINUTE_SEPARATOR">
+      <message name="IDS_TIME_PICKER_DIALOG_HOUR_MINUTE_SEPARATOR" desc="Separator used between hours and minutes in the time picker dialog (hh:mm) [CHAR-LIMIT=1]">
         :
       </message>
-      <message desc="Separator used between minutes and seconds in the time picker dialog (hh:mm:ss) [CHAR-LIMIT=1]" name="IDS_TIME_PICKER_DIALOG_MINUTE_SECOND_SEPARATOR">
+      <message name="IDS_TIME_PICKER_DIALOG_MINUTE_SECOND_SEPARATOR" desc="Separator used between minutes and seconds in the time picker dialog (hh:mm:ss) [CHAR-LIMIT=1]">
         :
       </message>
-      <message desc="Separator used between seconds and subseconds in the time picker dialog (hh:mm:ss.sss) [CHAR-LIMIT=1]" name="IDS_TIME_PICKER_DIALOG_SECOND_SUBSECOND_SEPARATOR">
+      <message name="IDS_TIME_PICKER_DIALOG_SECOND_SUBSECOND_SEPARATOR" desc="Separator used between seconds and subseconds in the time picker dialog (hh:mm:ss.sss) [CHAR-LIMIT=1]">
         .
       </message>
-      <message desc="Title for the date/time picker dialog, which can be used to choose a date and time. [CHAR-LIMIT=32]" name="IDS_DATE_TIME_PICKER_DIALOG_TITLE">
+      <message name="IDS_DATE_TIME_PICKER_DIALOG_TITLE" desc="Title for the date/time picker dialog, which can be used to choose a date and time. [CHAR-LIMIT=32]">
         Set date and time
       </message>
-      <message desc="Content description for the date time picker date component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_DATETIME_PICKER_DATE">
+      <message name="IDS_ACCESSIBILITY_DATETIME_PICKER_DATE" desc="Content description for the date time picker date component. [CHAR-LIMIT=32]">
         Date
       </message>
-      <message desc="Content description for the date time picker time component. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_DATETIME_PICKER_TIME">
+      <message name="IDS_ACCESSIBILITY_DATETIME_PICKER_TIME" desc="Content description for the date time picker time component. [CHAR-LIMIT=32]">
         Time
       </message>
-      <message desc="Label for 'other' button in date picker dialog and time picker dialog, used to close the list of suggestions and open the the full date/time picker [CHAR-LIMIT=32]" name="IDS_DATE_PICKER_DIALOG_OTHER_BUTTON_LABEL">
+      <message name="IDS_DATE_PICKER_DIALOG_OTHER_BUTTON_LABEL" desc="Label for 'other' button in date picker dialog and time picker dialog, used to close the list of suggestions and open the the full date/time picker [CHAR-LIMIT=32]">
         Other
       </message>
-      <message desc="Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32]" name="IDS_DATE_PICKER_DIALOG_TITLE">
+      <message name="IDS_DATE_PICKER_DIALOG_TITLE" desc="Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32]">
         Set date
       </message>
-      <message desc="Label for 'clear' button in date picker dialog and time picker dialog, used to replace the contents of a field with the empty string [CHAR-LIMIT=12]" name="IDS_DATE_PICKER_DIALOG_CLEAR">
+      <message name="IDS_DATE_PICKER_DIALOG_CLEAR" desc="Label for 'clear' button in date picker dialog and time picker dialog, used to replace the contents of a field with the empty string [CHAR-LIMIT=12]">
         Clear
       </message>
 

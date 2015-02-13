@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.preference.Preference;
+import android.text.format.Formatter;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,9 +23,6 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 /**
  * A preference that displays a website's URL and, optionally, some extra permission-related data
@@ -149,7 +147,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
         long totalUsage = mSite.getTotalUsage();
         if (mFilter.showStorageSites(mCategoryFilter)) {
             if (totalUsage > 0) {
-                usageText.setText(sizeValueToString(getContext(), totalUsage));
+                usageText.setText(Formatter.formatShortFileSize(getContext(), totalUsage));
                 usageText.setTextSize(TEXT_SIZE_SP);
                 usageText.setVisibility(View.VISIBLE);
             }
@@ -216,30 +214,5 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
             default:
                 return 0;
         }
-    }
-
-    static String sizeValueToString(Context context, long bytes) {
-        final String label[] = {
-            context.getString(R.string.origin_settings_storage_bytes),
-            context.getString(R.string.origin_settings_storage_kbytes),
-            context.getString(R.string.origin_settings_storage_mbytes),
-            context.getString(R.string.origin_settings_storage_gbytes),
-            context.getString(R.string.origin_settings_storage_tbytes),
-        };
-
-        if (bytes <= 0) {
-            return NumberFormat.getIntegerInstance().format(0) + " " + label[0];
-        }
-
-        int i = 0;
-        float size = bytes;
-        for (i = 0; i < label.length; ++i) {
-            if (size < 1024 || i == label.length - 1)
-                break;
-            size /= 1024.0F;
-        }
-
-        DecimalFormat formatter = new DecimalFormat("#.## ");
-        return formatter.format(size) + label[i];
     }
 }

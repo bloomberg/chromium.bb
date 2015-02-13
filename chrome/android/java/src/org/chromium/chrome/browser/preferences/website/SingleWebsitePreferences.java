@@ -14,6 +14,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.text.format.Formatter;
 import android.widget.ListAdapter;
 
 import org.chromium.chrome.R;
@@ -72,7 +73,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     Context context = preference.getContext();
                     preference.setTitle(String.format(
                             context.getString(R.string.origin_settings_storage_usage_brief),
-                            WebsitePreference.sizeValueToString(context, usage)));
+                            Formatter.formatShortFileSize(context, usage)));
                     ((ClearWebsiteStorage) preference).setConfirmationListener(this);
                 } else {
                     getPreferenceScreen().removePreference(preference);
