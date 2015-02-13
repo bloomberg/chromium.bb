@@ -407,6 +407,11 @@ void GLES2InterfaceStub::GetUniformiv(GLuint /* program */,
                                       GLint /* location */,
                                       GLint* /* params */) {
 }
+void GLES2InterfaceStub::GetUniformIndices(GLuint /* program */,
+                                           GLsizei /* count */,
+                                           const char* const* /* names */,
+                                           GLuint* /* indices */) {
+}
 GLint GLES2InterfaceStub::GetUniformLocation(GLuint /* program */,
                                              const char* /* name */) {
   return 0;

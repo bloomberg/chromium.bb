@@ -1066,6 +1066,52 @@ GLint GLES2Implementation::GetUniformLocation(
   return loc;
 }
 
+bool GLES2Implementation::GetUniformIndicesHelper(
+    GLuint program, GLsizei count, const char* const* names, GLuint* indices) {
+  typedef cmds::GetUniformIndices::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return false;
+  }
+  result->SetNumResults(0);
+  if (!PackStringsToBucket(count, names, NULL, "glGetUniformIndices")) {
+    return false;
+  }
+  helper_->GetUniformIndices(program, kResultBucketId,
+                             GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  if (result->GetNumResults() != count) {
+    return false;
+  }
+  result->CopyResult(indices);
+  return true;
+}
+
+void GLES2Implementation::GetUniformIndices(
+    GLuint program, GLsizei count, const char* const* names, GLuint* indices) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetUniformIndices(" << program
+      << ", " << count << ", " << names << ", " << indices << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetUniformIndices");
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetUniformIndices", "count < 0");
+    return;
+  }
+  if (count == 0) {
+    return;
+  }
+  bool success = share_group_->program_info_manager()->GetUniformIndices(
+      this, program, count, names, indices);
+  if (success) {
+    GPU_CLIENT_LOG_CODE_BLOCK({
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        GPU_CLIENT_LOG("  " << ii << ": " << indices[ii]);
+      }
+    });
+  }
+  CheckGLError();
+}
+
 bool GLES2Implementation::GetProgramivHelper(
     GLuint program, GLenum pname, GLint* params) {
   bool got_value = share_group_->program_info_manager()->GetProgramiv(

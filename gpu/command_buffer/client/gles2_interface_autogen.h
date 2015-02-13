@@ -259,6 +259,10 @@ virtual void GetTransformFeedbackVarying(GLuint program,
 virtual GLuint GetUniformBlockIndex(GLuint program, const char* name) = 0;
 virtual void GetUniformfv(GLuint program, GLint location, GLfloat* params) = 0;
 virtual void GetUniformiv(GLuint program, GLint location, GLint* params) = 0;
+virtual void GetUniformIndices(GLuint program,
+                               GLsizei count,
+                               const char* const* names,
+                               GLuint* indices) = 0;
 virtual GLint GetUniformLocation(GLuint program, const char* name) = 0;
 virtual void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) = 0;
 virtual void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) = 0;

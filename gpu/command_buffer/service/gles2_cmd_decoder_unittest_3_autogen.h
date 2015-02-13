@@ -12,6 +12,20 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest3, VertexAttrib3fvImmediateValidArgs) {
+  cmds::VertexAttrib3fvImmediate& cmd =
+      *GetImmediateAs<cmds::VertexAttrib3fvImmediate>();
+  SpecializedSetup<cmds::VertexAttrib3fvImmediate, 0>(true);
+  GLfloat temp[3] = {
+      0,
+  };
+  cmd.Init(1, &temp[0]);
+  EXPECT_CALL(*gl_, VertexAttrib3fv(1, reinterpret_cast<GLfloat*>(
+                                           ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest3, VertexAttrib4fValidArgs) {
   EXPECT_CALL(*gl_, VertexAttrib4f(1, 2, 3, 4, 5));
   SpecializedSetup<cmds::VertexAttrib4f, 0>(true);

@@ -115,6 +115,7 @@
 #define glGetUniformBlockIndex GLES2_GET_FUN(GetUniformBlockIndex)
 #define glGetUniformfv GLES2_GET_FUN(GetUniformfv)
 #define glGetUniformiv GLES2_GET_FUN(GetUniformiv)
+#define glGetUniformIndices GLES2_GET_FUN(GetUniformIndices)
 #define glGetUniformLocation GLES2_GET_FUN(GetUniformLocation)
 #define glGetVertexAttribfv GLES2_GET_FUN(GetVertexAttribfv)
 #define glGetVertexAttribiv GLES2_GET_FUN(GetVertexAttribiv)

@@ -254,6 +254,10 @@ void GetTransformFeedbackVarying(GLuint program,
 GLuint GetUniformBlockIndex(GLuint program, const char* name) override;
 void GetUniformfv(GLuint program, GLint location, GLfloat* params) override;
 void GetUniformiv(GLuint program, GLint location, GLint* params) override;
+void GetUniformIndices(GLuint program,
+                       GLsizei count,
+                       const char* const* names,
+                       GLuint* indices) override;
 GLint GetUniformLocation(GLuint program, const char* name) override;
 void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) override;
 void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) override;

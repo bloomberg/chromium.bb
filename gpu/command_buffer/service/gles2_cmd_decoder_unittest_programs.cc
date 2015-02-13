@@ -996,6 +996,158 @@ TEST_P(GLES2DecoderWithShaderTest, GetActiveAttribBadSharedMemoryFails) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_P(GLES2DecoderWithShaderTest, GetUniformIndicesSucceeds) {
+  const uint32 kBucketId = 123;
+  const char kName0[] = "Cow";
+  const char kName1[] = "Chicken";
+  const char* kNames[] = { kName0, kName1 };
+  const size_t kCount = arraysize(kNames);
+  const char kValidStrEnd = 0;
+  const GLuint kIndices[] = { 1, 2 };
+  SetBucketAsCStrings(kBucketId, kCount, kNames, kCount, kValidStrEnd);
+  GetUniformIndices::Result* result =
+      static_cast<GetUniformIndices::Result*>(shared_memory_address_);
+  GetUniformIndices cmd;
+  cmd.Init(client_program_id_,
+           kBucketId,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_CALL(*gl_, GetUniformIndices(kServiceProgramId, kCount, _, _))
+      .WillOnce(SetArrayArgument<3>(kIndices, kIndices + kCount))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(kCount, static_cast<size_t>(result->GetNumResults()));
+  for (size_t ii = 0; ii < kCount; ++ii) {
+    EXPECT_EQ(kIndices[ii], result->GetData()[ii]);
+  }
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformIndicesBadProgramFails) {
+  const uint32 kBucketId = 123;
+  const char kName0[] = "Cow";
+  const char kName1[] = "Chicken";
+  const char* kNames[] = { kName0, kName1 };
+  const size_t kCount = arraysize(kNames);
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kBucketId, kCount, kNames, kCount, kValidStrEnd);
+  GetUniformIndices::Result* result =
+      static_cast<GetUniformIndices::Result*>(shared_memory_address_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  GetUniformIndices cmd;
+  // None-existant program
+  cmd.Init(kInvalidClientId,
+           kBucketId,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->GetNumResults());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  // Unlinked program.
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_FALSE))
+      .RetiresOnSaturation();
+  cmd.Init(client_program_id_,
+           kBucketId,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->GetNumResults());
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformIndicesBadParamsFails) {
+  const uint32 kBucketId = 123;
+  const char kName0[] = "Cow";
+  const char kName1[] = "Chicken";
+  const char* kNames[] = { kName0, kName1 };
+  const size_t kCount = arraysize(kNames);
+  const char kValidStrEnd = 0;
+  const GLuint kIndices[] = { 1, 2 };
+  SetBucketAsCStrings(kBucketId, kCount, kNames, kCount, kValidStrEnd);
+  GetUniformIndices::Result* result =
+      static_cast<GetUniformIndices::Result*>(shared_memory_address_);
+  GetUniformIndices cmd;
+  cmd.Init(client_program_id_,
+           kBucketId,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_CALL(*gl_, GetUniformIndices(kServiceProgramId, kCount, _, _))
+      .WillOnce(SetArrayArgument<3>(kIndices, kIndices + kCount))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_INVALID_VALUE))
+      .RetiresOnSaturation();
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->GetNumResults());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformIndicesResultNotInitFails) {
+  const uint32 kBucketId = 123;
+  const char kName0[] = "Cow";
+  const char kName1[] = "Chicken";
+  const char* kNames[] = { kName0, kName1 };
+  const size_t kCount = arraysize(kNames);
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kBucketId, kCount, kNames, kCount, kValidStrEnd);
+  GetUniformIndices::Result* result =
+      static_cast<GetUniformIndices::Result*>(shared_memory_address_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  GetUniformIndices cmd;
+  result->size = 1976;  // Any value other than 0.
+  cmd.Init(kInvalidClientId,
+           kBucketId,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformIndicesBadSharedMemoryFails) {
+  const uint32 kBucketId = 123;
+  const char kName0[] = "Cow";
+  const char kName1[] = "Chicken";
+  const char* kNames[] = { kName0, kName1 };
+  const size_t kCount = arraysize(kNames);
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kBucketId, kCount, kNames, kCount, kValidStrEnd);
+  GetUniformIndices::Result* result =
+      static_cast<GetUniformIndices::Result*>(shared_memory_address_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  GetUniformIndices cmd;
+  cmd.Init(client_program_id_,
+           kBucketId,
+           kInvalidSharedMemoryId,
+           kSharedMemoryOffset);
+  result->size = 0;
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(client_program_id_,
+           kBucketId,
+           kSharedMemoryId,
+           kInvalidSharedMemoryOffset);
+  result->size = 0;
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderWithShaderTest, GetShaderInfoLogValidArgs) {
   const char* kInfo = "hello";
   const uint32 kBucketId = 123;

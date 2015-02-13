@@ -989,6 +989,7 @@ TEST_F(GLES2ImplementationTest, GetTexParameteriv) {
 // TODO(zmo): Implement unit test for GetUniformBlockIndex
 // TODO(zmo): Implement unit test for GetUniformfv
 // TODO(zmo): Implement unit test for GetUniformiv
+// TODO(zmo): Implement unit test for GetUniformIndices
 // TODO(zmo): Implement unit test for GetUniformLocation
 
 TEST_F(GLES2ImplementationTest, GetVertexAttribfv) {

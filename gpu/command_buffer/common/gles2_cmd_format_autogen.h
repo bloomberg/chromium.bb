@@ -4881,6 +4881,61 @@ static_assert(offsetof(GetUniformiv, params_shm_id) == 12,
 static_assert(offsetof(GetUniformiv, params_shm_offset) == 16,
               "offset of GetUniformiv params_shm_offset should be 16");
 
+struct GetUniformIndices {
+  typedef GetUniformIndices ValueType;
+  static const CommandId kCmdId = kGetUniformIndices;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLuint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            uint32_t _names_bucket_id,
+            uint32_t _indices_shm_id,
+            uint32_t _indices_shm_offset) {
+    SetHeader();
+    program = _program;
+    names_bucket_id = _names_bucket_id;
+    indices_shm_id = _indices_shm_id;
+    indices_shm_offset = _indices_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32_t _names_bucket_id,
+            uint32_t _indices_shm_id,
+            uint32_t _indices_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_program, _names_bucket_id,
+                                       _indices_shm_id, _indices_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t names_bucket_id;
+  uint32_t indices_shm_id;
+  uint32_t indices_shm_offset;
+};
+
+static_assert(sizeof(GetUniformIndices) == 20,
+              "size of GetUniformIndices should be 20");
+static_assert(offsetof(GetUniformIndices, header) == 0,
+              "offset of GetUniformIndices header should be 0");
+static_assert(offsetof(GetUniformIndices, program) == 4,
+              "offset of GetUniformIndices program should be 4");
+static_assert(offsetof(GetUniformIndices, names_bucket_id) == 8,
+              "offset of GetUniformIndices names_bucket_id should be 8");
+static_assert(offsetof(GetUniformIndices, indices_shm_id) == 12,
+              "offset of GetUniformIndices indices_shm_id should be 12");
+static_assert(offsetof(GetUniformIndices, indices_shm_offset) == 16,
+              "offset of GetUniformIndices indices_shm_offset should be 16");
+
 struct GetUniformLocation {
   typedef GetUniformLocation ValueType;
   static const CommandId kCmdId = kGetUniformLocation;

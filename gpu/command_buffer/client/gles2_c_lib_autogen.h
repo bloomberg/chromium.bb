@@ -464,6 +464,12 @@ void GLES2GetUniformfv(GLuint program, GLint location, GLfloat* params) {
 void GLES2GetUniformiv(GLuint program, GLint location, GLint* params) {
   gles2::GetGLContext()->GetUniformiv(program, location, params);
 }
+void GLES2GetUniformIndices(GLuint program,
+                            GLsizei count,
+                            const char* const* names,
+                            GLuint* indices) {
+  gles2::GetGLContext()->GetUniformIndices(program, count, names, indices);
+}
 GLint GLES2GetUniformLocation(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetUniformLocation(program, name);
 }
@@ -1696,6 +1702,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetUniformiv",
      reinterpret_cast<GLES2FunctionPointer>(glGetUniformiv),
+    },
+    {
+     "glGetUniformIndices",
+     reinterpret_cast<GLES2FunctionPointer>(glGetUniformIndices),
     },
     {
      "glGetUniformLocation",

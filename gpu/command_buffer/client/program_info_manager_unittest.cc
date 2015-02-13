@@ -27,6 +27,16 @@ class ProgramInfoManagerTest : public testing::Test {
  protected:
   typedef ProgramInfoManager::Program Program;
 
+  struct ProgramES2Data {
+    // TODO(zmo): Also add attrib data.
+    ProgramInfoHeader header;
+    ProgramInput uniforms[2];
+    int32_t uniform_loc0[1];
+    int32_t uniform_loc1[2];
+    char uniform_name0[4];
+    char uniform_name1[8];
+  };
+
   struct UniformBlocksData {
     UniformBlocksHeader header;
     UniformBlockInfo entry[2];
@@ -55,6 +65,34 @@ class ProgramInfoManagerTest : public testing::Test {
   }
 
   void TearDown() override {}
+
+  void SetupProgramES2Data(ProgramES2Data* data) {
+    // The names needs to be of size 4*k-1 to avoid padding in the struct Data.
+    // This is a testing only problem.
+    const char* kName[] = { "cow", "bull[0]" };
+    data->header.link_status = 1;
+    data->header.num_attribs = 0;
+    data->header.num_uniforms = 2;
+    data->uniforms[0].type = GL_FLOAT;
+    data->uniforms[0].size = 1;
+    data->uniforms[0].location_offset =
+        ComputeOffset(data, &data->uniform_loc0);
+    data->uniforms[0].name_offset =
+        ComputeOffset(data, &data->uniform_name0);
+    data->uniforms[0].name_length = strlen(kName[0]);
+    data->uniforms[1].type = GL_FLOAT_VEC4;
+    data->uniforms[1].size = 2;
+    data->uniforms[1].location_offset =
+        ComputeOffset(data, &data->uniform_loc1);
+    data->uniforms[1].name_offset =
+        ComputeOffset(data, &data->uniform_name1);
+    data->uniforms[1].name_length = strlen(kName[1]);
+    data->uniform_loc0[0] = 1;
+    data->uniform_loc1[0] = 2;
+    data->uniform_loc1[1] = 3;
+    memcpy(data->uniform_name0, kName[0], arraysize(data->uniform_name0));
+    memcpy(data->uniform_name1, kName[1], arraysize(data->uniform_name1));
+  }
 
   void SetupUniformBlocksData(UniformBlocksData* data) {
     // The names needs to be of size 4*k-1 to avoid padding in the struct Data.
@@ -107,6 +145,52 @@ class ProgramInfoManagerTest : public testing::Test {
   scoped_ptr<ProgramInfoManager> program_info_manager_;
   Program* program_;
 };
+
+TEST_F(ProgramInfoManagerTest, UpdateES2) {
+  ProgramES2Data data;
+  SetupProgramES2Data(&data);
+  const std::string kNames[] = { data.uniform_name0, data.uniform_name1 };
+  const int32_t* kLocs[] = { data.uniform_loc0, data.uniform_loc1 };
+  std::vector<int8> result(sizeof(data));
+  memcpy(&result[0], &data, sizeof(data));
+  EXPECT_FALSE(program_->IsCached(ProgramInfoManager::kES2));
+  program_->UpdateES2(result);
+  EXPECT_TRUE(program_->IsCached(ProgramInfoManager::kES2));
+
+  GLint params = 0;
+  EXPECT_TRUE(program_->GetProgramiv(GL_LINK_STATUS, &params));
+  EXPECT_TRUE(params);
+
+  params = 0;
+  EXPECT_TRUE(program_->GetProgramiv(GL_ACTIVE_ATTRIBUTES, &params));
+  EXPECT_EQ(data.header.num_attribs, static_cast<uint32_t>(params));
+  params = 0;
+  EXPECT_TRUE(program_->GetProgramiv(GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &params));
+  EXPECT_EQ(0, params);
+
+  params = 0;
+  EXPECT_TRUE(program_->GetProgramiv(GL_ACTIVE_UNIFORMS, &params));
+  EXPECT_EQ(data.header.num_uniforms, static_cast<uint32_t>(params));
+  GLint active_uniform_max_length = 0;
+  EXPECT_TRUE(program_->GetProgramiv(
+      GL_ACTIVE_UNIFORM_MAX_LENGTH, &active_uniform_max_length));
+
+  for (uint32_t ii = 0; ii < data.header.num_uniforms; ++ii) {
+    const Program::UniformInfo* info = program_->GetUniformInfo(ii);
+    EXPECT_TRUE(info != NULL);
+    EXPECT_EQ(data.uniforms[ii].type, info->type);
+    EXPECT_EQ(data.uniforms[ii].size, info->size);
+    EXPECT_LT(kNames[0].length(),
+              static_cast<size_t>(active_uniform_max_length));
+    EXPECT_EQ(kNames[ii], info->name);
+    EXPECT_EQ(kNames[ii][kNames[ii].length() - 1] == ']', info->is_array);
+    EXPECT_EQ(data.uniforms[ii].size,
+              static_cast<int32_t>(info->element_locations.size()));
+    for (int32_t uu = 0; uu < data.uniforms[ii].size; ++uu) {
+      EXPECT_EQ(kLocs[ii][uu], info->element_locations[uu]);
+    }
+  }
+}
 
 TEST_F(ProgramInfoManagerTest, UpdateES3UniformBlocks) {
   UniformBlocksData data;
@@ -307,6 +391,63 @@ TEST_F(ProgramInfoManagerTest, GetTransformFeedbackVaryingCached) {
     EXPECT_EQ(data.entry[ii].type, static_cast<uint32_t>(type));
     EXPECT_STREQ(kName[ii], &buffer[0]);
     EXPECT_EQ(strlen(kName[ii]), static_cast<size_t>(length));
+  }
+}
+
+TEST_F(ProgramInfoManagerTest, GetUniformIndices) {
+  ProgramES2Data data;
+  SetupProgramES2Data(&data);
+  std::vector<int8> result(sizeof(data));
+  memcpy(&result[0], &data, sizeof(data));
+  program_->UpdateES2(result);
+
+  {  // Original order.
+    const char* kNames[] = { data.uniform_name0, data.uniform_name1 };
+    const GLuint kIndices[] = { 0, 1 };
+    const GLsizei kCount = 2;
+    GLuint indices[kCount];
+    EXPECT_TRUE(program_info_manager_->GetUniformIndices(
+        NULL, kClientProgramId, kCount, kNames, indices));
+    for (GLsizei ii = 0; ii < kCount; ++ii) {
+      EXPECT_EQ(kIndices[ii], indices[ii]);
+    }
+  }
+
+  {  // Switched order.
+    const char* kNames[] = { data.uniform_name1, data.uniform_name0 };
+    const GLuint kIndices[] = { 1, 0 };
+    const GLsizei kCount = 2;
+    GLuint indices[kCount];
+    EXPECT_TRUE(program_info_manager_->GetUniformIndices(
+        NULL, kClientProgramId, kCount, kNames, indices));
+    for (GLsizei ii = 0; ii < kCount; ++ii) {
+      EXPECT_EQ(kIndices[ii], indices[ii]);
+    }
+  }
+
+  {  // With bad names.
+    const char* kNames[] = { data.uniform_name1, "BadName" };
+    const GLuint kIndices[] = { 1, GL_INVALID_INDEX };
+    const GLsizei kCount = 2;
+    GLuint indices[kCount];
+    EXPECT_TRUE(program_info_manager_->GetUniformIndices(
+        NULL, kClientProgramId, kCount, kNames, indices));
+    for (GLsizei ii = 0; ii < kCount; ++ii) {
+      EXPECT_EQ(kIndices[ii], indices[ii]);
+    }
+  }
+
+  {  // Both "foo" and "foo[0]" are considered valid names for an array,
+     // but not "foo[1]".
+    const char* kNames[] = { "bull", "bull[0]", "bull[1]" };
+    const GLuint kIndices[] = { 1, 1, GL_INVALID_INDEX };
+    const GLsizei kCount = 3;
+    GLuint indices[kCount];
+    EXPECT_TRUE(program_info_manager_->GetUniformIndices(
+        NULL, kClientProgramId, kCount, kNames, indices));
+    for (GLsizei ii = 0; ii < kCount; ++ii) {
+      EXPECT_EQ(kIndices[ii], indices[ii]);
+    }
   }
 }
 

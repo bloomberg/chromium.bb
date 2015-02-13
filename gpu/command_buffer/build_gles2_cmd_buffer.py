@@ -2289,6 +2289,14 @@ _FUNCTION_INFO = {
     'data_transfer_methods': ['shm'],
     'result': ['SizedResult<GLint>'],
   },
+  'GetUniformIndices': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'result': ['SizedResult<GLuint>'],
+    'cmd_args': 'GLidProgram program, uint32_t names_bucket_id, '
+                'GLuint* indices',
+    'unsafe': True,
+  },
   'GetUniformLocation': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],

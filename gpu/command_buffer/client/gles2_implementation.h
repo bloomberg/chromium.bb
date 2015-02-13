@@ -233,6 +233,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool GetTransformFeedbackVaryingHelper(
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
       GLint* size, GLenum* type, char* name);
+  bool GetUniformIndicesHelper(
+      GLuint program, GLsizei count, const char* const* names, GLuint* indices);
 
   void FreeUnusedSharedMemory();
   void FreeEverything();

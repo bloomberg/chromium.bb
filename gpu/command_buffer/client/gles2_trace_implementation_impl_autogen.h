@@ -703,6 +703,14 @@ void GLES2TraceImplementation::GetUniformiv(GLuint program,
   gl_->GetUniformiv(program, location, params);
 }
 
+void GLES2TraceImplementation::GetUniformIndices(GLuint program,
+                                                 GLsizei count,
+                                                 const char* const* names,
+                                                 GLuint* indices) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetUniformIndices");
+  gl_->GetUniformIndices(program, count, names, indices);
+}
+
 GLint GLES2TraceImplementation::GetUniformLocation(GLuint program,
                                                    const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetUniformLocation");

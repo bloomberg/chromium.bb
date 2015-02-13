@@ -136,6 +136,22 @@ GLint ProgramInfoManager::Program::GetUniformLocation(
   return -1;
 }
 
+GLuint ProgramInfoManager::Program::GetUniformIndex(
+    const std::string& name) const {
+  // TODO(zmo): Maybe build a hashed_map for faster lookup.
+  for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
+    const UniformInfo& info = uniform_infos_[ii];
+    // For an array, either "var" or "var[0]" is considered as a match.
+    // See "OpenGL ES 3.0.0, Section 2.11.3 Program Objects."
+    if (info.name == name ||
+        (info.is_array &&
+         info.name.compare(0, info.name.size() - 3, name) == 0)) {
+      return ii;
+    }
+  }
+  return GL_INVALID_INDEX;
+}
+
 GLint ProgramInfoManager::Program::GetFragDataLocation(
     const std::string& name) const {
   base::hash_map<std::string, GLint>::const_iterator iter =
@@ -789,6 +805,23 @@ bool ProgramInfoManager::GetTransformFeedbackVarying(
   }
   return gl->GetTransformFeedbackVaryingHelper(
       program, index, bufsize, length, size, type, name);
+}
+
+bool ProgramInfoManager::GetUniformIndices(GLES2Implementation* gl,
+    GLuint program, GLsizei count, const char* const* names, GLuint* indices) {
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program, kES2);
+    if (info) {
+      DCHECK_LT(0, count);
+      DCHECK(names && indices);
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        indices[ii] = info->GetUniformIndex(names[ii]);
+      }
+      return true;
+    }
+  }
+  return gl->GetUniformIndicesHelper(program, count, names, indices);
 }
 
 }  // namespace gles2

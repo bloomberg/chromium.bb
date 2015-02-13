@@ -1514,6 +1514,21 @@ TEST_F(GLES2FormatTest, GetUniformiv) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, GetUniformIndices) {
+  cmds::GetUniformIndices& cmd = *GetBufferAs<cmds::GetUniformIndices>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetUniformIndices::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.names_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.indices_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.indices_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetUniformLocation) {
   cmds::GetUniformLocation& cmd = *GetBufferAs<cmds::GetUniformLocation>();
   void* next_cmd =

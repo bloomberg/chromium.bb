@@ -988,6 +988,17 @@ void GetUniformiv(GLuint program,
   }
 }
 
+void GetUniformIndices(GLuint program,
+                       uint32_t names_bucket_id,
+                       uint32_t indices_shm_id,
+                       uint32_t indices_shm_offset) {
+  gles2::cmds::GetUniformIndices* c =
+      GetCmdSpace<gles2::cmds::GetUniformIndices>();
+  if (c) {
+    c->Init(program, names_bucket_id, indices_shm_id, indices_shm_offset);
+  }
+}
+
 void GetUniformLocation(GLuint program,
                         uint32_t name_bucket_id,
                         uint32_t location_shm_id,

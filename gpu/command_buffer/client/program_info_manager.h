@@ -70,9 +70,14 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
       GLES2Implementation* gl, GLuint program, GLuint index, GLsizei bufsize,
       GLsizei* length, GLsizei* size, GLenum* type, char* name);
 
+  bool GetUniformIndices(
+      GLES2Implementation* gl, GLuint program, GLsizei count,
+      const char* const* names, GLuint* indices);
+
  private:
   friend class ProgramInfoManagerTest;
 
+  FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest, UpdateES2);
   FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest, UpdateES3UniformBlocks);
   FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest,
                            UpdateES3TransformFeedbackVaryings);
@@ -138,6 +143,8 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
 
     // Gets the location of a uniform by name.
     GLint GetUniformLocation(const std::string& name) const;
+    // Gets the index of a uniform by name. Return INVALID_INDEX in failure.
+    GLuint GetUniformIndex(const std::string& name) const;
 
     GLint GetFragDataLocation(const std::string& name) const;
     void CacheFragDataLocation(const std::string& name, GLint loc);
