@@ -219,7 +219,7 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
 
   v8::Handle<v8::Array> result = v8::Array::New(isolate, canvas.getSize());
   for (int i = 0; i < canvas.getSize(); ++i) {
-    DrawType cmd_type = canvas.getDrawCommandAt(i)->getType();
+    SkDrawCommand::OpType cmd_type = canvas.getDrawCommandAt(i)->getType();
     v8::Handle<v8::Object> cmd = v8::Object::New(isolate);
     cmd->Set(v8::String::NewFromUtf8(isolate, "cmd_type"),
              v8::Integer::New(isolate, cmd_type));
