@@ -83,7 +83,8 @@ import java.util.concurrent.Callable;
  * continuous build & test in the open source SDK-based tree).
  */
 @JNINamespace("android_webview")
-public class AwContents implements SmartClipProvider {
+public class AwContents implements SmartClipProvider,
+        PostMessageSender.PostMessageSenderDelegate {
     private static final String TAG = "AwContents";
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
@@ -256,6 +257,8 @@ public class AwContents implements SmartClipProvider {
 
     private AwViewMethods mAwViewMethods;
     private final FullScreenTransitionsState mFullScreenTransitionsState;
+
+    private PostMessageSender mPostMessageSender;
 
     // This flag indicates that ShouldOverrideUrlNavigation should be posted
     // through the resourcethrottle. This is only used for popup windows.
@@ -921,6 +924,12 @@ public class AwContents implements SmartClipProvider {
      */
     public void destroy() {
         if (isDestroyed()) return;
+
+        if  (mPostMessageSender != null) {
+            mBrowserContext.getMessagePortService().removeObserver(mPostMessageSender);
+            mPostMessageSender = null;
+        }
+
         // If we are attached, we have to call native detach to clean up
         // hardware resources.
         if (mIsAttachedToWindow) {
@@ -1788,35 +1797,41 @@ public class AwContents implements SmartClipProvider {
      * @param message   The message
      * @param sourceOrigin  The source origin
      * @param targetOrigin  The target origin
-     * @param msgPorts The sent message ports, if any. Pass null if there is no
-     *                 message ports to pass.
+     * @param sentPorts The sent message ports, if any. Pass null if there is no
+     *                  message ports to pass.
      */
     public void postMessageToFrame(String frameName, String message,
             String sourceOrigin, String targetOrigin, MessagePort[] sentPorts) {
         if (isDestroyed()) return;
-        int[] portIds = null;
-        if (sentPorts != null) {
-            portIds = new int[sentPorts.length];
-            for (int i = 0; i < sentPorts.length; i++) {
-                portIds[i] = sentPorts[i].portId();
-            }
-            mBrowserContext.getMessagePortService().removeSentPorts(portIds);
+        if (mPostMessageSender == null) {
+            AwMessagePortService service = mBrowserContext.getMessagePortService();
+            mPostMessageSender = new PostMessageSender(this, service);
+            service.addObserver(mPostMessageSender);
         }
-        nativePostMessageToFrame(mNativeAwContents, frameName, message, sourceOrigin,
-                targetOrigin, portIds);
+        mPostMessageSender.postMessage(frameName, message, sourceOrigin, targetOrigin,
+                sentPorts);
     }
 
     /**
-     * Creates a message channel and asynchronously returns the ports that
-     * forms the ports for each end of the channel.
-     *
-     * @param callback The message channel created.
+     * Posts a message to the destination frame for real. The unique message port
+     * ids of any transferred port should be known at this time.
      */
-    public void createMessageChannel(ValueCallback<MessagePort[]> callback) {
+    @Override
+    public void postMessageToWeb(String frameName, String message,
+            String sourceOrigin, String targetOrigin, int[] sentPortIds) {
         if (isDestroyed()) return;
-        // Make sure the message port service is created.
-        mBrowserContext.createMessagePortServiceIfNecessary();
-        nativeCreateMessageChannel(mNativeAwContents, callback);
+        nativePostMessageToFrame(mNativeAwContents, frameName, message, sourceOrigin,
+                targetOrigin, sentPortIds);
+    }
+
+    /**
+     * Creates a message channel and returns the ports for each end of the channel.
+     */
+    public MessagePort[] createMessageChannel() {
+        if (isDestroyed()) return null;
+        MessagePort[] ports = mBrowserContext.getMessagePortService().createMessageChannel();
+        nativeCreateMessageChannel(mNativeAwContents, ports);
+        return ports;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -2757,6 +2772,5 @@ public class AwContents implements SmartClipProvider {
     private native void nativePostMessageToFrame(long nativeAwContents, String frameId,
             String message, String sourceOrigin, String targetOrigin, int[] msgPorts);
 
-    private native void nativeCreateMessageChannel(long nativeAwContents,
-            ValueCallback<MessagePort[]> callback);
+    private native void nativeCreateMessageChannel(long nativeAwContents, MessagePort[] ports);
 }

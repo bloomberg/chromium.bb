@@ -1110,7 +1110,6 @@ void AwContents::PostMessageToFrame(JNIEnv* env, jobject obj,
                    base::Unretained(AwMessagePortServiceImpl::GetInstance()),
                    j_ports));
   }
-
   content::MessagePortProvider::PostMessageToFrame(web_contents_.get(),
                                                    j_source_origin,
                                                    j_target_origin,
@@ -1132,9 +1131,9 @@ AwContents::GetMessagePortMessageFilter() {
 }
 
 void AwContents::CreateMessageChannel(JNIEnv* env, jobject obj,
-    jobject callback) {
+    jobjectArray ports) {
 
-  AwMessagePortServiceImpl::GetInstance()->CreateMessageChannel(env, callback,
+  AwMessagePortServiceImpl::GetInstance()->CreateMessageChannel(env, ports,
       GetMessagePortMessageFilter());
 }
 

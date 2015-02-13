@@ -326,6 +326,10 @@ public class AwTestBase
     private AwBrowserContext mBrowserContext =
             new AwBrowserContext(new InMemorySharedPreferences());
 
+    public AwBrowserContext getAwBrowserContext() {
+        return mBrowserContext;
+    }
+
     public AwTestContainerView createDetachedAwTestContainerView(
             final AwContentsClient awContentsClient) {
         return createDetachedAwTestContainerView(awContentsClient, false);

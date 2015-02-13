@@ -8,10 +8,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.SparseArray;
-import android.webkit.ValueCallback;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 
 /**
  * Provides the Message Channel functionality for Android Webview. Specifically
@@ -40,12 +41,18 @@ public class AwMessagePortService {
 
     private static final int POST_MESSAGE = 1;
 
-    // TODO(sgurun) implement transferring ports from JS to Java using message channels.
-    private static class PostMessage {
+    /**
+     * Observer for MessageChannel events.
+     */
+    public static interface MessageChannelObserver {
+        void onMessageChannelCreated();
+    }
+
+    private static class PostMessageFromWeb {
         public MessagePort port;
         public String message;
 
-        public PostMessage(MessagePort port, String message) {
+        public PostMessageFromWeb(MessagePort port, String message) {
             this.port = port;
             this.message = message;
         }
@@ -59,7 +66,7 @@ public class AwMessagePortService {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == POST_MESSAGE) {
-                    PostMessage m = (PostMessage) msg.obj;
+                    PostMessageFromWeb m = (PostMessageFromWeb) msg.obj;
                     m.port.onMessage(m.message);
                     return;
                 }
@@ -100,10 +107,20 @@ public class AwMessagePortService {
     private long mNativeMessagePortService;
     private MessagePortStorage mPortStorage = new MessagePortStorage();
     private MessageHandlerThread mMessageHandlerThread = new MessageHandlerThread();
+    private ObserverList<MessageChannelObserver> mObserverList =
+            new ObserverList<MessageChannelObserver>();
 
     AwMessagePortService() {
         mNativeMessagePortService = nativeInitAwMessagePortService();
         mMessageHandlerThread.start();
+    }
+
+    public void addObserver(MessageChannelObserver observer) {
+        mObserverList.addObserver(observer);
+    }
+
+    public void removeObserver(MessageChannelObserver observer) {
+        mObserverList.removeObserver(observer);
     }
 
     public void postMessage(int senderId, String message, int[] sentPorts) {
@@ -124,33 +141,43 @@ public class AwMessagePortService {
                 if (p == null) {
                     throw new IllegalStateException("Cannot transfer unknown port " + port);
                 }
-                p.close();
-                // close the port so users can get feedback if they use in future.
                 mPortStorage.put(port, null);
             }
         }
     }
 
-    private MessagePort addPort(int portId) {
+    public MessagePort[] createMessageChannel() {
+        return new MessagePort[]{new MessagePort(this), new MessagePort(this)};
+    }
+
+    private MessagePort addPort(MessagePort m, int portId) {
         if (mPortStorage.get(portId) != null) {
             throw new IllegalStateException("Port already exists");
         }
-        MessagePort m = new MessagePort(portId, this);
+        m.setPortId(portId);
         mPortStorage.put(portId, m);
         return m;
     }
 
     @CalledByNative
     private void onMessageChannelCreated(int portId1, int portId2,
-            ValueCallback<MessagePort[]> callback) {
-        callback.onReceiveValue(new MessagePort[]{addPort(portId1), addPort(portId2)});
+            MessagePort[] ports) {
+        ThreadUtils.assertOnUiThread();
+        addPort(ports[0], portId1);
+        addPort(ports[1], portId2);
+        for (MessageChannelObserver observer : mObserverList) {
+            observer.onMessageChannelCreated();
+        }
     }
 
-    // Called on IO thread.
     @CalledByNative
     private void onPostMessage(int portId, String message, int[] ports) {
-        PostMessage m = new PostMessage(mPortStorage.get(portId), message);
+        PostMessageFromWeb m = new PostMessageFromWeb(mPortStorage.get(portId), message);
         Handler handler = mMessageHandlerThread.getHandler();
+        if (handler == null) {
+            // TODO(sgurun) handler could be null. But this logic will be removed.
+            return;
+        }
         Message msg = handler.obtainMessage(POST_MESSAGE, m);
         handler.sendMessage(msg);
     }

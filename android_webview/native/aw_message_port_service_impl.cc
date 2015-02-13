@@ -49,12 +49,13 @@ void AwMessagePortServiceImpl::Init(JNIEnv* env, jobject obj) {
 
 void AwMessagePortServiceImpl::CreateMessageChannel(
     JNIEnv* env,
-    jobject callback,
+    jobjectArray ports,
     scoped_refptr<AwMessagePortMessageFilter> filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
-  j_callback->Reset(env, callback);
+  ScopedJavaGlobalRef<jobjectArray>* j_ports =
+      new ScopedJavaGlobalRef<jobjectArray>();
+  j_ports->Reset(env, ports);
 
   int* portId1 = new int;
   int* portId2 = new int;
@@ -68,7 +69,7 @@ void AwMessagePortServiceImpl::CreateMessageChannel(
                  portId2),
       base::Bind(&AwMessagePortServiceImpl::OnMessageChannelCreated,
                  base::Unretained(this),
-                 base::Owned(j_callback),
+                 base::Owned(j_ports),
                  base::Owned(portId1),
                  base::Owned(portId2)));
 }
@@ -161,7 +162,7 @@ void AwMessagePortServiceImpl::CreateMessageChannelOnIOThread(
 }
 
 void AwMessagePortServiceImpl::OnMessageChannelCreated(
-    ScopedJavaGlobalRef<jobject>* callback,
+    ScopedJavaGlobalRef<jobjectArray>* ports,
     int* port1,
     int* port2) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -170,7 +171,7 @@ void AwMessagePortServiceImpl::OnMessageChannelCreated(
   if (obj.is_null())
     return;
   Java_AwMessagePortService_onMessageChannelCreated(env, obj.obj(), *port1,
-      *port2, callback->obj());
+      *port2, ports->obj());
 }
 
 void AwMessagePortServiceImpl::AddPort(int message_port_id,

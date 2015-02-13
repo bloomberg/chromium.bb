@@ -6,19 +6,23 @@ package org.chromium.android_webview.test;
 
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.webkit.ValueCallback;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwMessagePortService;
 import org.chromium.android_webview.MessagePort;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.util.TestWebServer;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -151,25 +155,18 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
-                    @Override
-                    public void onReceiveValue(MessagePort[] channel) {
-                        mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
-                                mWebServer.getBaseUrl(),
-                                new MessagePort[]{channel[1]});
-                        // retransfer the port. This should fail with an exception
-                        try {
-                            mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
-                                    mWebServer.getBaseUrl(),
-                                    new MessagePort[]{channel[1]});
-                        } catch (IllegalStateException ex) {
-                            latch.countDown();
-                            return;
-                        }
-                        fail();
-                    }
-                };
-                mAwContents.createMessageChannel(callback);
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                // Retransfer the port. This should fail with an exception.
+                try {
+                    mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
+                            mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
@@ -190,19 +187,85 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
-                    @Override
-                    public void onReceiveValue(MessagePort[] channel) {
-                        try {
-                            channel[0].postMessage("1", new MessagePort[]{channel[0]});
-                        } catch (IllegalStateException ex) {
-                            latch.countDown();
-                            return;
-                        }
-                        fail();
-                    }
-                };
-                mAwContents.createMessageChannel(callback);
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                try {
+                    channel[0].postMessage("1", new MessagePort[]{channel[0]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // Verify a closed port cannot be transferred to a frame.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testSendClosedPortToFrameNotAllowed() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                channel[1].close();
+                try {
+                    mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
+                            mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // Verify a closed port cannot be transferred to a port.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testSendClosedPortToPortNotAllowed() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel1 = mAwContents.createMessageChannel();
+                MessagePort[] channel2 = mAwContents.createMessageChannel();
+                channel2[1].close();
+                try {
+                    channel1[0].postMessage("1", new MessagePort[]{channel2[1]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // Verify messages cannot be posted to closed ports.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPostMessageToClosedPortNotAllowed() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                channel[0].close();
+                try {
+                    channel[0].postMessage("1", null);
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
@@ -241,8 +304,7 @@ public class PostMessageTest extends AwTestBase {
     }
 
     // Verify that messages from JS can be waited on a UI thread.
-    @SmallTest
-    // TODO this test turned out to be flaky. When it fails, it always fails in IPC.
+    // TODO(sgurun) this test turned out to be flaky. When it fails, it always fails in IPC.
     // When a postmessage is received, an IPC message is sent from browser to renderer
     // to convert the postmessage from WebSerializedScriptValue to a string. The IPC is sent
     // and seems to be received by IPC in renderer, but then nothing else seems to happen.
@@ -257,22 +319,17 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                // verify communication from JS to Java.
+                channelContainer.set(channel);
+                channel[0].setMessageHandler(new MessagePort.MessageHandler() {
                     @Override
-                    public void onReceiveValue(MessagePort[] channel) {
-                        // verify communication from JS to Java.
-                        channelContainer.set(channel);
-                        channel[0].setMessageHandler(new MessagePort.MessageHandler() {
-                            @Override
-                            public void onMessage(String message) {
-                                channelContainer.setMessage(message);
-                            }
-                        });
-                        mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                                mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                    public void onMessage(String message) {
+                        channelContainer.setMessage(message);
                     }
-                };
-                mAwContents.createMessageChannel(callback);
+                });
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
             }
         });
         mMessageObject.waitForMessage();
@@ -305,38 +362,251 @@ public class PostMessageTest extends AwTestBase {
             + "   </script>"
             + "</body></html>";
 
-    // Verify that a channel can be created and basic full duplex communication
-    // can happen on it. Do this by sending a message to JS and let it echo'ing
-    // the message with some text prepended to it.
+
+    // Call on non-UI thread.
+    private void waitUntilPortReady(final MessagePort port) throws Throwable {
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return ThreadUtils.runOnUiThreadBlockingNoException(
+                        new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() throws Exception {
+                                return port.isReady();
+                            }
+                        });
+            }
+        });
+    }
+
+    private static final String HELLO = "HELLO";
+
+    // Message channels are created on UI thread in a pending state. They are
+    // initialized at a later stage. Verify that a message port that is initialized
+    // can be transferred to JS and full communication can happen on it.
+    // Do this by sending a message to JS and let it echo'ing the message with
+    // some text prepended to it.
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
-    public void testMessageChannel() throws Throwable {
-        final String hello = "HELLO";
+    public void testMessageChannelUsingInitializedPort() throws Throwable {
+        final ChannelContainer channelContainer = new ChannelContainer();
+        loadPage(ECHO_PAGE);
+        final MessagePort[] channel = ThreadUtils.runOnUiThreadBlocking(
+                new Callable<MessagePort[]>() {
+                    @Override
+                    public MessagePort[] call() {
+                        return mAwContents.createMessageChannel();
+                    }
+                });
+
+        waitUntilPortReady(channel[0]);
+        waitUntilPortReady(channel[1]);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                channel[0].setMessageHandler(new MessagePort.MessageHandler() {
+                    @Override
+                    public void onMessage(String message) {
+                        channelContainer.setMessage(message);
+                    }
+                });
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                channel[0].postMessage(HELLO, null);
+            }
+        });
+        // wait for the asynchronous response from JS
+        channelContainer.waitForMessage();
+        assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
+    }
+
+    // Verify that a message port can be used immediately (even if it is in
+    // pending state) after creation. In particular make sure the message port can be
+    // transferred to JS and full communication can happen on it.
+    // Do this by sending a message to JS and let it echo'ing the message with
+    // some text prepended to it.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testMessageChannelUsingPendingPort() throws Throwable {
         final ChannelContainer channelContainer = new ChannelContainer();
         loadPage(ECHO_PAGE);
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                channel[0].setMessageHandler(new MessagePort.MessageHandler() {
                     @Override
-                    public void onReceiveValue(MessagePort[] channel) {
-                        channel[0].setMessageHandler(new MessagePort.MessageHandler() {
-                            @Override
-                            public void onMessage(String message) {
-                                channelContainer.setMessage(message);
-                            }
-                        });
-                        mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                                mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
-                        channel[0].postMessage(hello, null);
+                    public void onMessage(String message) {
+                        channelContainer.setMessage(message);
                     }
-                };
-                mAwContents.createMessageChannel(callback);
+                });
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                channel[0].postMessage(HELLO, null);
             }
         });
-        // wait for the asynchronous response from JS
+        // Wait for the asynchronous response from JS.
         channelContainer.waitForMessage();
-        assertEquals(hello + JS_MESSAGE, channelContainer.getMessage());
+        assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
+    }
+
+    // Verify that a message port can be used for message transfer when both
+    // ports are owned by same Webview.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testMessageChannelCommunicationWithinWebView() throws Throwable {
+        final ChannelContainer channelContainer = new ChannelContainer();
+        loadPage(ECHO_PAGE);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                channel[1].setMessageHandler(new MessagePort.MessageHandler() {
+                    @Override
+                    public void onMessage(String message) {
+                        channelContainer.setMessage(message);
+                    }
+                });
+                channel[0].postMessage(HELLO, null);
+            }
+        });
+        // Wait for the asynchronous response from JS.
+        channelContainer.waitForMessage();
+        assertEquals(HELLO, channelContainer.getMessage());
+    }
+
+    // concats all the data fields of the received messages and makes it
+    // available as page title.
+    private static final String TITLE_PAGE =
+            "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        var received = \"\";"
+            + "        onmessage = function (e) {"
+            + "            received = received + e.data;"
+            + "            document.title = received;"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    // Call on non-UI thread.
+    private void expectTitle(final String title) throws Throwable {
+        assertTrue("Received title " + mAwContents.getTitle() + " while expecting " + title,
+                CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return ThreadUtils.runOnUiThreadBlockingNoException(
+                                new Callable<Boolean>() {
+                                    @Override
+                                    public Boolean call() throws Exception {
+                                        return mAwContents.getTitle().equals(title);
+                                    }
+                                });
+                    }
+                }));
+    }
+
+    // Post a message with a pending port to a frame and then post a bunch of messages
+    // after that. Make sure that they are not ordered at the receiver side.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPostMessageToFrameNotReordersMessages() throws Throwable {
+        loadPage(TITLE_PAGE);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), null);
+                mAwContents.postMessageToFrame(null, "3", SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), null);
+            }
+        });
+        expectTitle("123");
+    }
+
+    private static class TestMessagePort extends MessagePort {
+
+        private boolean mReady;
+        private MessagePort mPort;
+        private Object mLock = new Object();
+
+        public TestMessagePort(AwMessagePortService service) {
+            super(service);
+        }
+
+        public void setMessagePort(MessagePort port) {
+            mPort = port;
+        }
+
+        public void setReady(boolean ready) {
+            synchronized (mLock) {
+                mReady = ready;
+            }
+        }
+        @Override
+        public boolean isReady() {
+            synchronized (mLock) {
+                return mReady;
+            }
+        }
+        @Override
+        public int portId() {
+            return mPort.portId();
+        }
+        @Override
+        public void setPortId(int id) {
+            mPort.setPortId(id);
+        }
+        @Override
+        public void close() {
+            mPort.close();
+        }
+        @Override
+        public boolean isClosed() {
+            return mPort.isClosed();
+        }
+        @Override
+        public void setMessageHandler(MessageHandler handler) {
+            mPort.setMessageHandler(handler);
+        }
+        @Override
+        public void onMessage(String message) {
+            mPort.onMessage(message);
+        }
+        @Override
+        public void postMessage(String message, MessagePort[] msgPorts) throws
+                IllegalStateException {
+            mPort.postMessage(message, msgPorts);
+        }
+    }
+
+    // Post a message with a pending port to a frame and then post a message that
+    // is pending after that. Make sure that when first message becomes ready,
+    // the subsequent not-ready message is not sent.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPostMessageToFrameNotSendsPendingMessages() throws Throwable {
+        loadPage(TITLE_PAGE);
+        final TestMessagePort testPort =
+                new TestMessagePort(getAwBrowserContext().getMessagePortService());
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{channel[1]});
+                mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), null);
+                MessagePort[] channel2 = mAwContents.createMessageChannel();
+                // Test port is in a pending state so it should not be transferred.
+                testPort.setMessagePort(channel2[0]);
+                mAwContents.postMessageToFrame(null, "3", SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{testPort});
+            }
+        });
+        expectTitle("12");
     }
 
     private static final String WORKER_MESSAGE = "from_worker";
@@ -371,6 +641,8 @@ public class PostMessageTest extends AwTestBase {
             + "    }"
             + "}";
 
+    // Test if message ports created at the native side can be transferred
+    // to JS side, to establish a communication channel between a worker and a frame.
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testTransferPortsToWorker() throws Throwable {
@@ -380,15 +652,9 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ValueCallback<MessagePort[]> callback = new ValueCallback<MessagePort[]>() {
-                    @Override
-                    public void onReceiveValue(MessagePort[] channel) {
-                        mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                                mWebServer.getBaseUrl(),
-                                new MessagePort[]{channel[0], channel[1]});
-                    }
-                };
-                mAwContents.createMessageChannel(callback);
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), new MessagePort[]{channel[0], channel[1]});
             }
         });
         mMessageObject.waitForMessage();

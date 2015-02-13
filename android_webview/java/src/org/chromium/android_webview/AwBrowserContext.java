@@ -70,13 +70,10 @@ public class AwBrowserContext {
     }
 
     public AwMessagePortService getMessagePortService() {
-        return mMessagePortService;
-    }
-
-    public void createMessagePortServiceIfNecessary() {
         if (mMessagePortService == null) {
             mMessagePortService = new AwMessagePortService();
         }
+        return mMessagePortService;
     }
 
     /**

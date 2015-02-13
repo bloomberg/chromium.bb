@@ -29,7 +29,7 @@ class AwMessagePortServiceImpl : public AwMessagePortService {
   ~AwMessagePortServiceImpl() override;
   void Init(JNIEnv* env, jobject object);
 
-  void CreateMessageChannel(JNIEnv* env, jobject callback,
+  void CreateMessageChannel(JNIEnv* env, jobjectArray ports,
       scoped_refptr<AwMessagePortMessageFilter> filter);
 
   // AwMessagePortService implementation
@@ -56,7 +56,7 @@ private:
       int* port1,
       int* port2);
   void OnMessageChannelCreated(
-      base::android::ScopedJavaGlobalRef<jobject>* callback,
+      base::android::ScopedJavaGlobalRef<jobjectArray>* ports,
       int* port1,
       int* port2);
   void AddPort(int message_port_id, AwMessagePortMessageFilter* filter);
