@@ -2032,11 +2032,9 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
   int child_routing_id = MSG_ROUTING_NONE;
-  CHECK(Send(new FrameHostMsg_CreateChildFrame(
-      routing_id_,
-      base::UTF16ToUTF8(name),
-      WebToContentSandboxFlags(sandbox_flags),
-      &child_routing_id)));
+  Send(new FrameHostMsg_CreateChildFrame(
+      routing_id_, base::UTF16ToUTF8(name),
+      WebToContentSandboxFlags(sandbox_flags), &child_routing_id));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
