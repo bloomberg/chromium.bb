@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
-                       SwitchingAllTextInputTest) {
+                       DISABLED_SwitchingAllTextInputTest) {
   TextInputTestHelper helper;
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
