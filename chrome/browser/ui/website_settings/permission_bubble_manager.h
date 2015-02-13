@@ -66,9 +66,6 @@ class PermissionBubbleManager
 
  private:
   friend class DownloadRequestLimiterTest;
-  friend class GeolocationBrowserTest;
-  friend class GeolocationPermissionContextTests;
-  friend class GeolocationPermissionContextParamTests;
   friend class PermissionBubbleManagerTest;
   friend class PermissionContextBaseTests;
   friend class content::WebContentsUserData<PermissionBubbleManager>;
