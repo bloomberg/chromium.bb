@@ -505,6 +505,23 @@ static int drmGetMinorBase(int type)
     };
 }
 
+static int drmGetMinorType(int minor)
+{
+    int type = minor >> 6;
+
+    if (minor < 0)
+        return -1;
+
+    switch (type) {
+    case DRM_NODE_PRIMARY:
+    case DRM_NODE_CONTROL:
+    case DRM_NODE_RENDER:
+        return type;
+    default:
+        return -1;
+    }
+}
+
 /**
  * Open the device by bus ID.
  *
@@ -2665,6 +2682,28 @@ char *drmGetDeviceNameFromFd(int fd)
 		return NULL;
 
 	return strdup(name);
+}
+
+int drmGetNodeTypeFromFd(int fd)
+{
+	struct stat sbuf;
+	int maj, min, type;
+
+	if (fstat(fd, &sbuf))
+		return -1;
+
+	maj = major(sbuf.st_rdev);
+	min = minor(sbuf.st_rdev);
+
+	if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode)) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	type = drmGetMinorType(min);
+	if (type == -1)
+		errno = ENODEV;
+	return type;
 }
 
 int drmPrimeHandleToFD(int fd, uint32_t handle, uint32_t flags, int *prime_fd)
