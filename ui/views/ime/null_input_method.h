@@ -39,7 +39,6 @@ class NullInputMethod : public InputMethod {
   ui::TextInputType GetTextInputType() const override;
   bool IsCandidatePopupOpen() const override;
   void ShowImeIfNeeded() override;
-  bool IsMock() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullInputMethod);

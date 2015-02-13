@@ -55,8 +55,4 @@ bool NullInputMethod::IsCandidatePopupOpen() const {
 
 void NullInputMethod::ShowImeIfNeeded() {}
 
-bool NullInputMethod::IsMock() const {
-  return false;
-}
-
 }  // namespace views

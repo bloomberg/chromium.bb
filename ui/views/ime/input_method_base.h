@@ -34,7 +34,6 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
   void OnTextInputTypeChanged(View* view) override;
   ui::TextInputClient* GetTextInputClient() const override;
   ui::TextInputType GetTextInputType() const override;
-  bool IsMock() const override;
 
   // Overridden from FocusChangeListener.
   void OnWillChangeFocus(View* focused_before, View* focused) override;

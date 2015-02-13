@@ -117,9 +117,6 @@ class VIEWS_EXPORT InputMethod {
   // Displays an on screen keyboard if enabled.
   virtual void ShowImeIfNeeded() = 0;
 
-  // Returns true if the input method is a mock instance used for testing.
-  virtual bool IsMock() const = 0;
-
   // TODO(suzhe): Support mouse/touch event.
 };
 

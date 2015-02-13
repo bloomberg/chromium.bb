@@ -52,10 +52,6 @@ ui::TextInputType InputMethodBase::GetTextInputType() const {
   return client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 }
 
-bool InputMethodBase::IsMock() const {
-  return false;
-}
-
 void InputMethodBase::OnWillChangeFocus(View* focused_before, View* focused) {}
 
 void InputMethodBase::OnDidChangeFocus(View* focused_before, View* focused) {}

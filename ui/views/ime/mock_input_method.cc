@@ -14,35 +14,19 @@
 namespace views {
 
 MockInputMethod::MockInputMethod()
-    : composition_changed_(false),
-      focus_changed_(false),
-      untranslated_ime_message_called_(false),
+    : untranslated_ime_message_called_(false),
       text_input_type_changed_(false),
-      caret_bounds_changed_(false),
-      cancel_composition_called_(false),
-      input_locale_changed_(false),
-      locale_("en-US"),
-      active_(true) {
+      cancel_composition_called_(false) {
 }
 
 MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
-    : composition_changed_(false),
-      focus_changed_(false),
-      untranslated_ime_message_called_(false),
+    : untranslated_ime_message_called_(false),
       text_input_type_changed_(false),
-      caret_bounds_changed_(false),
-      cancel_composition_called_(false),
-      input_locale_changed_(false),
-      locale_("en-US"),
-      active_(true) {
+      cancel_composition_called_(false) {
   SetDelegate(delegate);
 }
 
 MockInputMethod::~MockInputMethod() {
-}
-
-void MockInputMethod::Init(Widget* widget) {
-  InputMethodBase::Init(widget);
 }
 
 void MockInputMethod::OnFocus() {}
@@ -59,8 +43,7 @@ bool MockInputMethod::OnUntranslatedIMEMessage(
 }
 
 void MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
-  bool handled = (composition_changed_ || result_text_.length()) &&
-      !IsTextInputTypeNone();
+  bool handled = !IsTextInputTypeNone() && HasComposition();
 
   ClearStates();
   if (handled) {
@@ -73,27 +56,22 @@ void MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
     DispatchKeyEventPostIME(key);
   }
 
-  if (focus_changed_)
-    return;
-
   ui::TextInputClient* client = GetTextInputClient();
   if (client) {
     if (handled) {
       if (result_text_.length())
         client->InsertText(result_text_);
-      if (composition_changed_) {
-        if (composition_.text.length())
-          client->SetCompositionText(composition_);
-        else
-          client->ClearCompositionText();
-      }
+      if (composition_.text.length())
+        client->SetCompositionText(composition_);
+      else
+        client->ClearCompositionText();
     } else if (key.type() == ui::ET_KEY_PRESSED) {
       base::char16 ch = key.GetCharacter();
       client->InsertChar(ch, key.flags());
     }
   }
 
-  ClearResult();
+  ClearComposition();
 }
 
 void MockInputMethod::OnTextInputTypeChanged(View* view) {
@@ -103,27 +81,24 @@ void MockInputMethod::OnTextInputTypeChanged(View* view) {
 }
 
 void MockInputMethod::OnCaretBoundsChanged(View* view) {
-  if (IsViewFocused(view))
-    caret_bounds_changed_ = true;
 }
 
 void MockInputMethod::CancelComposition(View* view) {
   if (IsViewFocused(view)) {
     cancel_composition_called_ = true;
-    ClearResult();
+    ClearComposition();
   }
 }
 
 void MockInputMethod::OnInputLocaleChanged() {
-  input_locale_changed_ = true;
 }
 
 std::string MockInputMethod::GetInputLocale() {
-  return locale_;
+  return "en-US";
 }
 
 bool MockInputMethod::IsActive() {
-  return active_;
+  return true;
 }
 
 bool MockInputMethod::IsCandidatePopupOpen() const {
@@ -133,26 +108,20 @@ bool MockInputMethod::IsCandidatePopupOpen() const {
 void MockInputMethod::ShowImeIfNeeded() {
 }
 
-bool MockInputMethod::IsMock() const {
-  return true;
-}
-
 void MockInputMethod::OnWillChangeFocus(View* focused_before, View* focused)  {
   ui::TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
     client->ConfirmCompositionText();
-  focus_changed_ = true;
-  ClearResult();
+  ClearComposition();
 }
 
 void MockInputMethod::Clear() {
   ClearStates();
-  ClearResult();
+  ClearComposition();
 }
 
 void MockInputMethod::SetCompositionTextForNextKey(
     const ui::CompositionText& composition) {
-  composition_changed_ = true;
   composition_ = composition;
 }
 
@@ -160,32 +129,18 @@ void MockInputMethod::SetResultTextForNextKey(const base::string16& result) {
   result_text_ = result;
 }
 
-void MockInputMethod::SetInputLocale(const std::string& locale) {
-  if (locale_ != locale) {
-    locale_ = locale;
-    OnInputMethodChanged();
-  }
-}
-
-void MockInputMethod::SetActive(bool active) {
-  if (active_ != active) {
-    active_ = active;
-    OnInputMethodChanged();
-  }
-}
-
 void MockInputMethod::ClearStates() {
-  focus_changed_ = false;
   untranslated_ime_message_called_ = false;
   text_input_type_changed_ = false;
-  caret_bounds_changed_ = false;
   cancel_composition_called_ = false;
-  input_locale_changed_ = false;
 }
 
-void MockInputMethod::ClearResult() {
+bool MockInputMethod::HasComposition() {
+  return composition_.text.length() || result_text_.length();
+}
+
+void MockInputMethod::ClearComposition() {
   composition_.Clear();
-  composition_changed_ = false;
   result_text_.clear();
 }
 
