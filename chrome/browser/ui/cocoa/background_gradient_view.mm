@@ -115,8 +115,9 @@
   [super viewDidMoveToWindow];
   if ([self window]) {
     // The new window for the view may have a different focus state than the
-    // last window this view was part of. Force a re-draw to ensure that the
-    // view draws the right state.
+    // last window this view was part of.
+    // This happens when the view is moved into a TabWindowOverlayWindow for
+    // tab dragging.
     [self windowDidChangeActive];
   }
 }

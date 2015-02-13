@@ -485,6 +485,11 @@ const CGFloat kRapidCloseDist = 2.5;
   [super viewDidMoveToWindow];
   if ([self window]) {
     [controller_ updateTitleColor];
+
+    // The new window may have different main window status.
+    // This happens when the view is moved into a TabWindowOverlayWindow for
+    // tab dragging.
+    [self windowDidChangeActive];
   }
 }
 

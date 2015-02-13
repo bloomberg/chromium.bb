@@ -416,6 +416,16 @@ BookmarkButton* gDraggedButton = nil; // Weak
   [super drawRect:rect];
 }
 
+- (void)viewDidMoveToWindow {
+  [super viewDidMoveToWindow];
+  if ([self window]) {
+    // The new window may have different main window status.
+    // This happens when the view is moved into a TabWindowOverlayWindow for
+    // tab dragging.
+    [self windowDidChangeActive];
+  }
+}
+
 // ThemedWindowDrawing implementation.
 
 - (void)windowDidChangeTheme {
