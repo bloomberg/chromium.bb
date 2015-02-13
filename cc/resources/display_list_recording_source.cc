@@ -60,10 +60,9 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   }
 
   gfx::Rect old_recorded_viewport = recorded_viewport_;
-  // TODO(wangxianzhu): Blink slimming paint doesn't support incremental
-  // painting for now so we must record for the whole layer. Should measure
-  // performance and determine the best choice. Consider display item caching.
-  recorded_viewport_ = gfx::Rect(GetSize());
+  recorded_viewport_ = visible_layer_rect;
+  recorded_viewport_.Inset(-pixel_record_distance_, -pixel_record_distance_);
+  recorded_viewport_.Intersect(gfx::Rect(GetSize()));
 
   if (recorded_viewport_ != old_recorded_viewport) {
     // Invalidate newly-exposed and no-longer-exposed areas.
