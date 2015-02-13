@@ -13,7 +13,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
-class ExtensionLoadedNotificationObserver;
+class ExtensionInstalledBubble;
+class ExtensionInstalledBubbleBridge;
 @class HyperlinkTextView;
 @class HoverCloseButton;
 @class InfoBubbleView;
@@ -69,10 +70,11 @@ typedef enum {
   // doesn't overlap browser destruction.
   BOOL pageActionPreviewShowing_;
 
-  // Lets us register for EXTENSION_LOADED notifications.  The actual
-  // notifications are sent to the observer object, which proxies them
-  // back to the controller.
-  scoped_ptr<ExtensionLoadedNotificationObserver> extensionObserver_;
+  // The bridge to the C++ object that performs shared logic across platforms,
+  // like listening for the notification that the extension is loaded. This
+  // tells us when to show the bubble.
+  scoped_ptr<ExtensionInstalledBubbleBridge> installedBubbleBridge_;
+  scoped_ptr<ExtensionInstalledBubble> installedBubble_;
 
   // References below are weak, being obtained from the nib.
   IBOutlet HoverCloseButton* closeButton_;
@@ -99,7 +101,6 @@ typedef enum {
   IBOutlet NSTextField* failedItemsMsg_;
 }
 
-@property(nonatomic, readonly) const extensions::Extension* extension;
 @property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
 @property(nonatomic) BOOL pageActionPreviewShowing;
 
@@ -122,10 +123,6 @@ typedef enum {
 // Displays the extension installed bubble. This callback is triggered by
 // the extensionObserver when the extension has completed loading.
 - (void)showWindow:(id)sender;
-
-// Clears our weak pointer to the Extension. This callback is triggered by
-// the extensionObserver when the extension is unloaded.
-- (void)extensionUnloaded:(id)sender;
 
 // Opens the shortcut configuration UI.
 - (IBAction)onManageShortcutClicked:(id)sender;
