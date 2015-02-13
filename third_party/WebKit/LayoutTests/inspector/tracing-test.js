@@ -15,16 +15,12 @@ InspectorTest.tracingManager = function()
 
 InspectorTest.tracingModel = function()
 {
-    if (!InspectorTest._tracingModel)
-        InspectorTest._tracingModel = new WebInspector.TracingModel();
-    return InspectorTest._tracingModel;
+    return WebInspector.panels.timeline._tracingModel;
 }
 
 InspectorTest.tracingTimelineModel = function()
 {
-    if (!InspectorTest._tracingTimelineModel)
-        InspectorTest._tracingTimelineModel = new WebInspector.TimelineModel(InspectorTest.tracingManager(), InspectorTest.tracingModel(), new WebInspector.TimelineRecordHiddenTypeFilter([]));
-    return InspectorTest._tracingTimelineModel;
+    return WebInspector.panels.timeline._model;
 }
 
 InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories, enableJSSampling)

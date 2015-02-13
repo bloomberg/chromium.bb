@@ -39,7 +39,7 @@ function startSecondWorker(onActionComplete)
 
 function test()
 {
-    InspectorTest.invokeWithTracing("startSecondWorker", processTracingEvents);
+    InspectorTest.invokeWithTracing("startSecondWorker", InspectorTest.safeWrap(processTracingEvents));
 
     var workerMetadataEventCount = 0;
     function processTracingEvents()

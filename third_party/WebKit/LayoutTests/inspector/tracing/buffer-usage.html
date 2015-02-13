@@ -7,11 +7,11 @@
 
 function test()
 {
-    InspectorTest.tracingManager().addEventListener(WebInspector.TracingManager.Events.BufferUsage, onBufferUsage, this);
+    InspectorTest.tracingTimelineModel().addEventListener(WebInspector.TimelineModel.Events.BufferUsage, onBufferUsage, this);
     InspectorTest.tracingTimelineModel().startRecording();
     function onBufferUsage(event)
     {
-        InspectorTest.tracingManager().removeEventListener(WebInspector.TracingManager.Events.BufferUsage, onBufferUsage, this);
+        InspectorTest.tracingTimelineModel().removeEventListener(WebInspector.TimelineModel.Events.BufferUsage, onBufferUsage, this);
         InspectorTest.tracingTimelineModel().stopRecording();
         InspectorTest.addResult("SUCCESS: Received buffer usage update.");
         InspectorTest.completeTest();
