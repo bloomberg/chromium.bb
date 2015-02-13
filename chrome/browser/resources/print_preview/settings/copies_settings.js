@@ -216,7 +216,11 @@ cr.define('print_preview', function() {
      */
     onTextfieldBlur_: function() {
       if (this.getChildElement('input.copies').value == '') {
-        this.copiesTicketItem_.updateValue('1');
+        // Do it asynchronously to avoid moving focus to Print button in
+        // PrintHeader.onTicketChange_.
+        setTimeout((function() {
+          this.copiesTicketItem_.updateValue('1');
+        }).bind(this), 0);
       }
     },
 
