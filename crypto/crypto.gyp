@@ -297,5 +297,22 @@
           'sources': [],
         }
     ]}],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'crypto_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'crypto_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+                      ],
+          'sources': [
+            'crypto_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }

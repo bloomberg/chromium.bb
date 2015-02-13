@@ -32,7 +32,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "crypto_unittests",
+      {
+        "test": "crypto_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "device_unittests",
       "display_unittests",
       "extensions_unittests",
@@ -128,7 +133,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "crypto_unittests",
+      {
+        "test": "crypto_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "gcm_unit_tests",
       "gpu_unittests",
       {
@@ -188,7 +198,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "crypto_unittests",
+      {
+        "test": "crypto_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "gcm_unit_tests",
       "gpu_unittests",
       {
@@ -264,7 +279,12 @@
         }
       },
       "components_unittests",
-      "crypto_unittests",
+      {
+        "test": "crypto_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "device_unittests",
       "display_unittests",
       "events_unittests",

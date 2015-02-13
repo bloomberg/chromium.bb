@@ -30,7 +30,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "crypto_unittests",
+      {
+        "test": "crypto_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "dbus_unittests",
       "display_unittests",
       "extensions_unittests",
@@ -110,7 +115,12 @@
       "cacheinvalidation_unittests",
       "chromeos_unittests",
       "components_unittests",
-      "crypto_unittests",
+      {
+        "test": "crypto_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "dbus_unittests",
       "extensions_unittests",
       "google_apis_unittests",

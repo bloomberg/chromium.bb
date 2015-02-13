@@ -45,7 +45,12 @@
         "can_use_on_swarming_builders": true
       }
     },
-    "crypto_unittests",
+    {
+      "test": "crypto_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
     "device_unittests",
     {
       "test": "display_unittests",
