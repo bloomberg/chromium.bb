@@ -6,32 +6,40 @@ window.metrics = {
   recordEnum: function() {}
 };
 
+function MockFileSystemMetadata(properties) {
+  this.properties_ = properties;
+}
+
+MockFileSystemMetadata.prototype.get = function() {
+  return Promise.resolve([this.properties_]);
+};
+
 function setUp() {
   // Behavior of window.chrome depends on each test case. window.chrome should
   // be initialized properly inside each test function.
-  window.chrome = {};
+  window.chrome = {
+    runtime: {
+      id: 'test-extension-id',
+      lastError: null
+    }
+  };
 
   cr.ui.decorate('command', cr.ui.Command);
 }
 
 function testDoEntryAction(callback) {
-  window.chrome = {
-    fileManagerPrivate: {
-      getFileTasks: function(entries, callback) {
-        setTimeout(callback.bind(null, [
-          {taskId:'handler-extension-id|file|open', isDefault: false},
-          {taskId:'handler-extension-id|file|play', isDefault: true}
-        ]), 0);
-      }
-    },
-    runtime: {id: 'test-extension-id'}
+  window.chrome.fileManagerPrivate = {
+    getFileTasks: function(entries, callback) {
+      setTimeout(callback.bind(null, [
+        {taskId:'handler-extension-id|file|open', isDefault: false},
+        {taskId:'handler-extension-id|file|play', isDefault: true}
+      ]), 0);
+    }
   };
 
   var fileSystem = new MockFileSystem('volumeId');
   fileSystem.entries['/test.png'] =
       new MockFileEntry(fileSystem, '/test.png', {});
-  var metadataCache = new MockMetadataCache();
-  metadataCache.setForTest(fileSystem.entries['/test.png'], 'external', {});
   var controller = new TaskController(
       DialogType.FULL_PAGE,
       {
@@ -40,7 +48,7 @@ function testDoEntryAction(callback) {
           defaultActionMenuItem: document.createElement('div')
         }
       },
-      metadataCache,
+      new MockFileSystemMetadata({}),
       new cr.EventTarget(),
       null,
       function() {
@@ -90,14 +98,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
             }
           }
         },
-        {
-          getOne: function(entry, type, callback) {
-            assertEquals('external', type);
-            callback({
-              contentMimeType: 'application/rtf'
-            });
-          }
-        },
+        new MockFileSystemMetadata({contentMimeType: 'application/rtf'}),
         new cr.EventTarget(),
         null,
         null);
@@ -114,16 +115,13 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
  * type of metadata.
  */
 function testOpenSuggestAppsDialogWithoutMetadata(callback) {
-  window.chrome = {
-    fileManagerPrivate: {
-      getMimeType: function(url, callback) {
-        callback('application/rtf');
-      }
+  window.chrome.fileManagerPrivate = {
+    getMimeType: function(url, callback) {
+      callback('application/rtf');
     }
   };
 
   var showByExtensionAndMimeIsCalled = new Promise(function(resolve, reject) {
-    var isGetOneCalled = false;
     var fileSystem = new MockFileSystem('volumeId');
     var entry = new MockFileEntry(fileSystem, '/test.rtf');
 
@@ -137,19 +135,13 @@ function testOpenSuggestAppsDialogWithoutMetadata(callback) {
           suggestAppsDialog: {
             showByExtensionAndMime: function(
                 extension, mimeType, onDialogClosed) {
-              assertTrue(isGetOneCalled);
               assertEquals('.rtf', extension);
               assertEquals('application/rtf', mimeType);
               resolve();
             }
           }
         },
-        {
-          getOne: function(entry, type, callback) {
-            isGetOneCalled = true;
-            callback({});
-          }
-        },
+        new MockFileSystemMetadata({}),
         new cr.EventTarget(),
         null,
         null);
@@ -179,14 +171,7 @@ function testOpenSuggestAppsDialogFailure(callback) {
             defaultActionMenuItem: document.createElement('div')
           }
         },
-        {
-          getOne: function(entry, type, callback) {
-            assertEquals('external', type);
-            callback({
-              contentMimeType: 'image/png'
-            });
-          }
-        },
+        new MockFileSystemMetadata({contentMimeType: 'image/png'}),
         new cr.EventTarget(),
         null,
         null);

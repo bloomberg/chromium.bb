@@ -775,7 +775,7 @@ FileManager.prototype = /** @struct */ {
         assertInstanceof(grid, FileGrid),
         new LocationLine(
             queryRequiredElement(dom, '#location-breadcrumbs'),
-            this.metadataCache_,
+            this.fileSystemMetadata_,
             this.volumeManager_));
 
     // Handle UI events.
@@ -903,7 +903,7 @@ FileManager.prototype = /** @struct */ {
     this.taskController_ = new TaskController(
         this.dialogType,
         this.ui_,
-        this.metadataCache_,
+        this.fileSystemMetadata_,
         this.selectionHandler_,
         this.metadataUpdateController_,
         function() { return new FileTasks(this); }.bind(this));
@@ -955,9 +955,9 @@ FileManager.prototype = /** @struct */ {
     var fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
     DirectoryTree.decorate(directoryTree,
-                           this.directoryModel_,
-                           this.volumeManager_,
-                           this.metadataCache_,
+                           assert(this.directoryModel_),
+                           assert(this.volumeManager_),
+                           assert(this.fileSystemMetadata_),
                            fakeEntriesVisible);
     directoryTree.dataModel = new NavigationListModel(
         this.volumeManager_, this.folderShortcutsModel_);

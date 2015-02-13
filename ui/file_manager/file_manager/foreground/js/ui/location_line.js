@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 /**
- * TODO(hirono): Remove metadataCache and volumeManager dependencies from the UI
- * class.
+ * TODO(hirono): Remove fileSystemMetadata and volumeManager dependencies from
+ * the UI class.
  * @extends {cr.EventTarget}
  * @param {!Element} breadcrumbs Container element for breadcrumbs.
- * @param {!MetadataCache} metadataCache To retrieve metadata.
+ * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor
  */
-function LocationLine(breadcrumbs, metadataCache, volumeManager) {
+function LocationLine(breadcrumbs, fileSystemMetadata, volumeManager) {
   this.breadcrumbs_ = breadcrumbs;
-  this.metadataCache_ = metadataCache;
+  this.fileSystemMetadata_ = fileSystemMetadata;
   this.volumeManager_ = volumeManager;
   this.entry_ = null;
 
@@ -61,23 +61,24 @@ LocationLine.prototype.show = function(entry) {
     if (entryLocationInfo.isRootEntry &&
         entryLocationInfo.rootType ===
             VolumeManagerCommon.RootType.DRIVE_OTHER) {
-      this.metadataCache_.getOne(previousEntry, 'external', function(result) {
-        if (result && result.sharedWithMe) {
-          // Adds the shared-with-me entry instead.
-          var driveVolumeInfo = entryLocationInfo.volumeInfo;
-          var sharedWithMeEntry =
-              driveVolumeInfo.fakeEntries[
-                  VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
-          if (sharedWithMeEntry)
-            entries.unshift(sharedWithMeEntry);
-          else
-            error = true;
-        } else {
-          entries.unshift(currentEntry);
-        }
-        // Finishes traversal since the current is root.
-        callback();
-      });
+      this.fileSystemMetadata_.get([previousEntry], ['sharedWithMe']).then(
+          function(results) {
+            if (results[0].sharedWithMe) {
+              // Adds the shared-with-me entry instead.
+              var driveVolumeInfo = entryLocationInfo.volumeInfo;
+              var sharedWithMeEntry =
+                  driveVolumeInfo.fakeEntries[
+                      VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
+              if (sharedWithMeEntry)
+                entries.unshift(sharedWithMeEntry);
+              else
+                error = true;
+            } else {
+              entries.unshift(currentEntry);
+            }
+            // Finishes traversal since the current is root.
+            callback();
+          });
       return;
     }
 

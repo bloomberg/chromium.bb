@@ -5,7 +5,7 @@
 /**
  * @param {DialogType} dialogType
  * @param {!FileManagerUI} ui
- * @param {!MetadataCache} metadataCache
+ * @param {!FileSystemMetadata} fileSystemMetadata
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!MetadataUpdateController} metadataUpdateController
  * @param {function():!FileTasks} createTask
@@ -13,8 +13,8 @@
  * @struct
  */
 function TaskController(
-    dialogType, ui, metadataCache, selectionHandler, metadataUpdateController,
-    createTask) {
+    dialogType, ui, fileSystemMetadata, selectionHandler,
+    metadataUpdateController, createTask) {
   /**
    * @type {DialogType}
    * @const
@@ -30,11 +30,11 @@ function TaskController(
   this.ui_ = ui;
 
   /**
-   * @type {!MetadataCache}
+   * @type {!FileSystemMetadata}
    * @const
    * @private
    */
-  this.metadataCache_ = metadataCache;
+  this.fileSystemMetadata_ = fileSystemMetadata;
 
   /**
    * @type {!FileSelectionHandler}
@@ -256,15 +256,21 @@ TaskController.prototype.openSuggestAppsDialog =
  * @private
  */
 TaskController.prototype.getMimeType_ = function(entry) {
-  return new Promise(function(resolve, reject) {
-    this.metadataCache_.getOne(entry, 'external', function(prop) {
-      if (prop && prop.contentMimeType)
-        resolve(prop.contentMimeType);
-      else
-        chrome.fileManagerPrivate.getMimeType(entry.toURL(), resolve);
-    });
-  }.bind(this));
-}
+  return this.fileSystemMetadata_.get([entry], ['contentMimeType']).then(
+      function(properties) {
+        if (properties[0].contentMimeType)
+          return properties[0].contentMimeType;
+        return new Promise(function(fulfill, reject) {
+          chrome.fileManagerPrivate.getMimeType(
+              entry.toURL(), function(mimeType) {
+                if (!chrome.runtime.lastError)
+                  fulfill(mimeType);
+                else
+                  reject(chrome.runtime.lastError);
+              });
+        });
+      });
+};
 
 /**
  * Handles change of selection and clears context menu.
@@ -354,11 +360,12 @@ TaskController.prototype.updateContextMenuActionItems_ = function(items) {
  */
 TaskController.prototype.doEntryAction = function(entry) {
   if (this.dialogType_ == DialogType.FULL_PAGE) {
-    this.metadataCache_.get([entry], 'external', function(props) {
-      var tasks = this.createTask_();
-      tasks.init([entry], [props[0].contentMimeType || '']);
-      tasks.executeDefault();
-    }.bind(this));
+    this.fileSystemMetadata_.get([entry], ['contentMimeType']).then(
+        function(props) {
+          var tasks = this.createTask_();
+          tasks.init([entry], [props[0].contentMimeType || '']);
+          tasks.executeDefault();
+        }.bind(this));
   } else {
     var selection = this.selectionHandler_.selection;
     if (selection.entries.length === 1 &&

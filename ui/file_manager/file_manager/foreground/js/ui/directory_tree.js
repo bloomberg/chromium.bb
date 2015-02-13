@@ -397,15 +397,14 @@ SubDirectoryItem.prototype.setContextMenu = function(menu) {
  * @override
  */
 SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
-  var icon = this.querySelector('.icon');
-  this.parentTree_.metadataCache.getLatest(
-      [this.dirEntry_],
-      'external',
+  var iconElement = this.querySelector('.icon');
+  this.parentTree_.fileSystemMetadata.notifyEntriesChanged([this.dirEntry_]);
+  this.parentTree_.fileSystemMetadata.get([this.dirEntry_], ['shared']).then(
       function(metadata) {
-        if (metadata[0] && metadata[0].shared)
-          icon.icon = 'folder-shared';
+        if (metadata[0].shared)
+          iconElement.icon = 'folder-shared';
         else
-          icon.icon = 'folder';
+          iconElement.icon = 'folder';
       });
 };
 
@@ -787,16 +786,17 @@ function DirectoryTree() {}
 /**
  * Decorates an element.
  * @param {HTMLElement} el Element to be DirectoryTree.
- * @param {DirectoryModel} directoryModel Current DirectoryModel.
- * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
- * @param {MetadataCache} metadataCache Shared MetadataCache instance.
+ * @param {!DirectoryModel} directoryModel Current DirectoryModel.
+ * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
+ * @param {!FileSystemMetadata} fileSystemMetadata Shared MetadataCache
+ *     instance.
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.decorate = function(
-    el, directoryModel, volumeManager, metadataCache, fakeEntriesVisible) {
+    el, directoryModel, volumeManager, fileSystemMetadata, fakeEntriesVisible) {
   el.__proto__ = DirectoryTree.prototype;
   /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
-      directoryModel, volumeManager, metadataCache, fakeEntriesVisible);
+      directoryModel, volumeManager, fileSystemMetadata, fakeEntriesVisible);
 };
 
 DirectoryTree.prototype = {
@@ -835,11 +835,11 @@ DirectoryTree.prototype = {
   },
 
   /**
-   * The reference to shared MetadataCache instance.
-   * @type {MetadataCache}
+   * The reference to shared FileSystemMetadata instance.
+   * @type {!FileSystemMetadata}
    */
-  get metadataCache() {
-    return this.metadataCache_;
+  get fileSystemMetadata() {
+    return this.fileSystemMetadata_;
   },
 
   set dataModel(dataModel) {
@@ -953,19 +953,20 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
 
 /**
  * Decorates an element.
- * @param {DirectoryModel} directoryModel Current DirectoryModel.
- * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
- * @param {MetadataCache} metadataCache Shared MetadataCache instance.
+ * @param {!DirectoryModel} directoryModel Current DirectoryModel.
+ * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
+ * @param {!FileSystemMetadata} fileSystemMetadata Shared MetadataCache
+ *     instance.
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.prototype.decorateDirectoryTree = function(
-    directoryModel, volumeManager, metadataCache, fakeEntriesVisible) {
+    directoryModel, volumeManager, fileSystemMetadata, fakeEntriesVisible) {
   cr.ui.Tree.prototype.decorate.call(this);
 
   this.sequence_ = 0;
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
-  this.metadataCache_ = metadataCache;
+  this.fileSystemMetadata_ = fileSystemMetadata;
   this.models_ = [];
 
   this.fileFilter_ = this.directoryModel_.getFileFilter();
