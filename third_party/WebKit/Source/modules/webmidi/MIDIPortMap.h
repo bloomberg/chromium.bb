@@ -6,8 +6,8 @@
 #define MIDIPortMap_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/Maplike.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/dom/Maplike.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"

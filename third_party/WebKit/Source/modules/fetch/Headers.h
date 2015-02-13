@@ -5,9 +5,9 @@
 #ifndef Headers_h
 #define Headers_h
 
+#include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/Iterable.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"

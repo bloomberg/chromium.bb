@@ -5,10 +5,10 @@
 #ifndef MediaKeyStatusMap_h
 #define MediaKeyStatusMap_h
 
+#include "bindings/core/v8/Maplike.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/DOMArrayPiece.h"
-#include "core/dom/Maplike.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {

@@ -36,6 +36,8 @@
             'ExceptionState.h',
             'ExceptionStatePlaceholder.cpp',
             'ExceptionStatePlaceholder.h',
+            'Iterable.h',
+            'Maplike.h',
             'ModuleProxy.cpp',
             'ModuleProxy.h',
             'NPV8Object.cpp',

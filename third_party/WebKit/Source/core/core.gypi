@@ -2221,7 +2221,6 @@
             'dom/IgnoreDestructiveWriteCountIncrementer.h',
             'dom/IncrementLoadEventDelayCount.cpp',
             'dom/IncrementLoadEventDelayCount.h',
-            'dom/Iterable.h',
             'dom/Iterator.h',
             'dom/LiveNodeList.cpp',
             'dom/LiveNodeList.h',
