@@ -999,16 +999,18 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     outside the time range.
 
     Args:
-      start_date: The first date on which you want action history.
-      end_date: The last date on which you want action history.
+      start_date: (Type: datetime.date) The first date on which you want action
+          history.
+      end_date: (Type: datetime.date) The last date on which you want action
+          history.
     """
-    values = {'start_date': str(start_date),
-              'end_date': str(end_date)}
+    values = {'start_date': start_date.strftime(self._DATE_FORMAT),
+              'end_date': end_date.strftime(self._DATE_FORMAT)}
 
     # Enforce start and end date.
-    conds = 'timestamp >= %(start_date)s'
+    conds = 'DATE(timestamp) >= %(start_date)s'
     if end_date:
-      conds += ' AND timestamp <= %(end_date)s'
+      conds += ' AND DATE(timestamp) <= %(end_date)s'
 
     changes = ('SELECT DISTINCT change_number, patch_number, change_source '
                'FROM clActionTable WHERE %s' % conds)
