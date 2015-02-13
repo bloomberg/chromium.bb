@@ -334,7 +334,6 @@ source_set("unittests") {
     "pipeline_unittest.cc",
     "ranges_unittest.cc",
     "run_all_unittests.cc",
-    "scoped_histogram_timer_unittest.cc",
     "serial_runner_unittest.cc",
     "seekable_buffer_unittest.cc",
     "sinc_resampler_unittest.cc",

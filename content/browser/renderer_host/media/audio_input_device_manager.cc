@@ -6,13 +6,13 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
-#include "media/base/scoped_histogram_timer.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"

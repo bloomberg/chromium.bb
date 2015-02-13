@@ -549,6 +549,7 @@
         'metrics/field_trial_unittest.cc',
         'metrics/histogram_base_unittest.cc',
         'metrics/histogram_delta_serialization_unittest.cc',
+        'metrics/histogram_macros_unittest.cc',
         'metrics/histogram_snapshot_manager_unittest.cc',
         'metrics/histogram_unittest.cc',
         'metrics/sample_map_unittest.cc',

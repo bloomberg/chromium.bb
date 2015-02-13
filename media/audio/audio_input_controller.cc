@@ -5,12 +5,12 @@
 #include "media/audio/audio_input_controller.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/scoped_histogram_timer.h"
 #include "media/base/user_input_monitor.h"
 
 using base::TimeDelta;

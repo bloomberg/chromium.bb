@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -23,7 +24,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/scoped_histogram_timer.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_device_factory.h"
 

@@ -12,7 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
@@ -373,7 +373,9 @@ Profile* ProfileManager::GetActiveUserProfile() {
 }
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
-  TRACE_EVENT0("browser", "ProfileManager::GetProfile")
+  TRACE_EVENT0("browser", "ProfileManager::GetProfile");
+  SCOPED_UMA_HISTOGRAM_TIMER("Profile.GetProfile");
+
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
