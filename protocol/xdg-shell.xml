@@ -94,7 +94,6 @@
       <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
-      <arg name="flags" type="uint"/>
     </request>
 
     <event name="ping">

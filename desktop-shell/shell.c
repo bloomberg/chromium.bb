@@ -4073,7 +4073,7 @@ xdg_get_xdg_popup(struct wl_client *client,
 		  struct wl_resource *parent_resource,
 		  struct wl_resource *seat_resource,
 		  uint32_t serial,
-		  int32_t x, int32_t y, uint32_t flags)
+		  int32_t x, int32_t y)
 {
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);

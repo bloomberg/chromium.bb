@@ -4840,8 +4840,7 @@ window_show_menu(struct display *display,
 						    input->seat,
 						    display_get_serial(window->display),
 						    window->x - ix,
-						    window->y - iy,
-						    0);
+						    window->y - iy);
 	fail_on_null(window->xdg_popup);
 
 	xdg_popup_set_user_data(window->xdg_popup, window);
