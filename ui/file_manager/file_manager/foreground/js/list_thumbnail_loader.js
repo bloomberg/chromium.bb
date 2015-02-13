@@ -12,7 +12,6 @@
  *
  * @param {!FileListModel} dataModel A file list model.
  * @param {!MetadataCache} metadataCache Metadata cache.
- * @param {!Document} document Document.
  * @param {Function=} opt_thumbnailLoaderConstructor A constructor of thumbnail
  *     loader. This argument is used for testing.
  * @struct
@@ -21,7 +20,7 @@
  * @suppress {checkStructDictInheritance}
  */
 function ListThumbnailLoader(
-    dataModel, metadataCache, document, opt_thumbnailLoaderConstructor) {
+    dataModel, metadataCache, opt_thumbnailLoaderConstructor) {
   /**
    * @type {!FileListModel}
    * @private
@@ -33,12 +32,6 @@ function ListThumbnailLoader(
    * @private
    */
   this.metadataCache_ = metadataCache;
-
-  /**
-   * @type {!Document}
-   * @private
-   */
-  this.document_ = document;
 
   /**
    * Constructor of thumbnail loader.
@@ -91,20 +84,20 @@ ListThumbnailLoader.prototype.__proto__ = cr.EventTarget.prototype;
  * Number of maximum active tasks.
  * @const {number}
  */
-ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS = 5;
+ListThumbnailLoader.NUM_OF_MAX_ACTIVE_TASKS = 10;
 
 /**
  * Number of prefetch requests.
  * @const {number}
  */
-ListThumbnailLoader.NUM_OF_PREFETCH = 10;
+ListThumbnailLoader.NUM_OF_PREFETCH = 20;
 
 /**
  * Cache size. Cache size must be larger than sum of high priority range size
  * and number of prefetch tasks.
  * @const {number}
  */
-ListThumbnailLoader.CACHE_SIZE = 100;
+ListThumbnailLoader.CACHE_SIZE = 500;
 
 /**
  * An event handler for splice event of data model. When list is changed, start
@@ -159,6 +152,9 @@ ListThumbnailLoader.prototype.getThumbnailFromCache = function(entry) {
 
 /**
  * Enqueues tasks if available.
+ *
+ * TODO(yawano): Make queueing for low priority thumbnail fetches more moderate
+ * and smart.
  */
 ListThumbnailLoader.prototype.continue_ = function() {
   // If tasks are running full or all items are scanned, do nothing.
@@ -169,29 +165,31 @@ ListThumbnailLoader.prototype.continue_ = function() {
     return;
   }
 
-  var entry = /** @type {Entry} */ (this.dataModel_.item(this.cursor_++));
+  var entry = /** @type {Entry} */ (this.dataModel_.item(this.cursor_));
 
   // If the entry is a directory, already in cache or fetching, skip it.
   if (entry.isDirectory ||
       this.cache_.get(entry.toURL()) ||
       this.active_[entry.toURL()]) {
+    this.cursor_++;
     this.continue_();
     return;
   }
 
-  this.enqueue_(entry);
+  this.enqueue_(this.cursor_, entry);
+  this.cursor_++;
   this.continue_();
 }
 
 /**
  * Enqueues a thumbnail fetch task for an entry.
  *
+ * @param {number} index Index of an entry in current data model.
  * @param {!Entry} entry An entry.
  */
-ListThumbnailLoader.prototype.enqueue_ = function(entry) {
+ListThumbnailLoader.prototype.enqueue_ = function(index, entry) {
   var task = new ListThumbnailLoader.Task(
-      entry, this.metadataCache_, this.document_,
-      this.thumbnailLoaderConstructor_);
+      entry, this.metadataCache_, this.thumbnailLoaderConstructor_);
 
   var url = entry.toURL();
   this.active_[url] = task;
@@ -199,7 +197,7 @@ ListThumbnailLoader.prototype.enqueue_ = function(entry) {
   task.fetch().then(function(thumbnail) {
     delete this.active_[url];
     this.cache_.put(url, thumbnail);
-    this.dispatchThumbnailLoaded_(thumbnail);
+    this.dispatchThumbnailLoaded_(index, thumbnail);
     this.continue_();
   }.bind(this), function() {
     delete this.active_[url];
@@ -210,16 +208,58 @@ ListThumbnailLoader.prototype.enqueue_ = function(entry) {
 /**
  * Dispatches thumbnail loaded event.
  *
- * @param {Object} thumbnail Thumbnail.
+ * @param {number} index Index of an original image in the data model.
+ * @param {!ListThumbnailLoader.ThumbnailData} thumbnail Thumbnail.
  */
-ListThumbnailLoader.prototype.dispatchThumbnailLoaded_ = function(thumbnail) {
-  // TODO(yawano): Create ThumbnailLoadedEvent class.
+ListThumbnailLoader.prototype.dispatchThumbnailLoaded_ = function(
+    index, thumbnail) {
+  // Update index if it's already invalid, i.e. index may be invalid if some
+  // change had happened in the data model during thumbnail fetch.
+  var item = this.dataModel_.item(index);
+  if (item && item.toURL() !== thumbnail.fileUrl) {
+    index = -1;;
+    for (var i = 0; i < this.dataModel_.length; i++) {
+      if (this.dataModel_.item(i).toURL() === thumbnail.fileUrl) {
+        index = i;
+        break;
+      }
+    }
+  }
+
+  if (index > -1) {
+    this.dispatchEvent(
+        new ListThumbnailLoader.ThumbnailLoadedEvent(index, thumbnail));
+  }
+};
+
+/**
+ * Thumbnail loaded event.
+ * @param {number} index Index of an original image in the current data model.
+ * @param {!ListThumbnailLoader.ThumbnailData} thumbnail Thumbnail.
+ * @extends {Event}
+ * @suppress {checkStructDictInheritance}
+ * @constructor
+ * @struct
+ */
+ListThumbnailLoader.ThumbnailLoadedEvent = function(index, thumbnail) {
   var event = new Event('thumbnailLoaded');
+
+  /** @type {number} */
+  event.index = index;
+
+  /** @type {string}*/
   event.fileUrl = thumbnail.fileUrl;
+
+  /** @type {string} */
   event.dataUrl = thumbnail.dataUrl;
+
+  /** @type {number} */
   event.width = thumbnail.width;
+
+  /** @type {number}*/
   event.height = thumbnail.height;
-  this.dispatchEvent(event);
+
+  return event;
 };
 
 /**
@@ -258,17 +298,15 @@ ListThumbnailLoader.ThumbnailData = function(fileUrl, dataUrl, width, height) {
  *
  * @param {!Entry} entry An entry.
  * @param {!MetadataCache} metadataCache Metadata cache.
- * @param {!Document} document Document.
  * @param {!Function} thumbnailLoaderConstructor A constructor of thumbnail
  *     loader.
  * @constructor
  * @struct
  */
 ListThumbnailLoader.Task = function(
-    entry, metadataCache, document, thumbnailLoaderConstructor) {
+    entry, metadataCache, thumbnailLoaderConstructor) {
   this.entry_ = entry;
   this.metadataCache_ = metadataCache;
-  this.document_ = document;
   this.thumbnailLoaderConstructor_ = thumbnailLoaderConstructor;
 }
 

@@ -76,6 +76,11 @@ function ListContainer(element, table, grid) {
   this.dataModel = null;
 
   /**
+   * @type {ListThumbnailLoader}
+   */
+  this.listThumbnailLoader = null;
+
+  /**
    * @type {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel}
    */
   this.selectionModel = null;
@@ -88,7 +93,7 @@ function ListContainer(element, table, grid) {
    */
   this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
 
- /**
+  /**
    * Selection model which is used as a placefolder in inactive file list.
    * @type {!cr.ui.ListSelectionModel}
    * @const
@@ -208,19 +213,23 @@ ListContainer.prototype.setCurrentListType = function(listType) {
   switch (listType) {
     case ListContainer.ListType.DETAIL:
       this.table.dataModel = this.dataModel;
+      this.table.setListThumbnailLoader(this.listThumbnailLoader);
       this.table.selectionModel = this.selectionModel;
       this.table.hidden = false;
       this.grid.hidden = true;
       this.grid.selectionModel = this.emptySelectionModel_;
+      this.grid.setListThumbnailLoader(null);
       this.grid.dataModel = this.emptyDataModel_;
       break;
 
     case ListContainer.ListType.THUMBNAIL:
       this.grid.dataModel = this.dataModel;
+      this.grid.setListThumbnailLoader(this.listThumbnailLoader);
       this.grid.selectionModel = this.selectionModel;
       this.grid.hidden = false;
       this.table.hidden = true;
       this.table.selectionModel = this.emptySelectionModel_;
+      this.table.setListThumbnailLoader(null);
       this.table.dataModel = this.emptyDataModel_;
       break;
 

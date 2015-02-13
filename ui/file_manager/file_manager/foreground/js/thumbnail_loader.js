@@ -252,7 +252,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
  *     which is resolved when data url is fetched.
  */
 ThumbnailLoader.prototype.loadAsDataUrl = function() {
-  return new Promise(function(resolve) {
+  return new Promise(function(resolve, reject) {
     // Load by using ImageLoaderClient.
     var modificationTime = this.metadata_ &&
                            this.metadata_.filesystem &&
@@ -260,7 +260,12 @@ ThumbnailLoader.prototype.loadAsDataUrl = function() {
                            this.metadata_.filesystem.modificationTime.getTime();
     ImageLoaderClient.getInstance().load(
         this.thumbnailUrl_,
-        resolve,
+        function(result) {
+          if (result.status === 'success')
+            resolve(result);
+          else
+            reject(result);
+        },
         {
           maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
           maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,

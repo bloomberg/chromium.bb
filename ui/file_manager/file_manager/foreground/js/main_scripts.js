@@ -120,6 +120,7 @@
 //<include src="task_controller.js">
 //<include src="toolbar_controller.js">
 //<include src="thumbnail_loader.js">
+//<include src="list_thumbnail_loader.js">
 //<include src="ui/banners.js" >
 //<include src="ui/conflict_dialog.js">
 //<include src="ui/default_action_dialog.js">
@@ -130,6 +131,7 @@
 //<include src="ui/file_grid.js">
 //<include src="ui/file_manager_ui.js">
 //<include src="ui/file_table.js">
+//<include src="ui/file_table_list.js">
 //<include src="ui/gear_menu.js">
 //<include src="ui/list_container.js">
 //<include src="ui/location_line.js">

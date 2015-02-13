@@ -73,7 +73,7 @@ function setUp() {
   fileListModel = new FileListModel(metadataCache);
 
   listThumbnailLoader = new ListThumbnailLoader(fileListModel, metadataCache,
-      document, MockThumbnailLoader);
+      MockThumbnailLoader);
 
   thumbnailLoadedEvents = [];
   listThumbnailLoader.addEventListener('thumbnailLoaded', function(event) {

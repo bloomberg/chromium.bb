@@ -115,6 +115,7 @@
           './ui/file_grid.js',
           './ui/file_manager_ui.js',
           './ui/file_table.js',
+          './ui/file_table_list.js',
           './ui/gear_menu.js',
           './ui/list_container.js',
           './ui/location_line.js',

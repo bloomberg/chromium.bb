@@ -79,7 +79,7 @@ DirectoryModel.prototype.dispose = function() {
 };
 
 /**
- * @return {cr.ui.ArrayDataModel} Files in the current directory.
+ * @return {FileListModel} Files in the current directory.
  */
 DirectoryModel.prototype.getFileList = function() {
   return this.currentFileListContext_.fileList;

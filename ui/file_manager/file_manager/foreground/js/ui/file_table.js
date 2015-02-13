@@ -251,11 +251,24 @@ FileTable.decorate = function(
     self, metadataCache, fileSystemMetadata, volumeManager, historyLoader,
     fullPage) {
   cr.ui.Table.decorate(self);
+  FileTableList.decorate(self.list);
   self.__proto__ = FileTable.prototype;
   self.metadataCache_ = metadataCache;
   self.fileSystemMetadata_ = fileSystemMetadata;
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
+
+  /** @private {ListThumbnailLoader} */
+  self.listThumbnailLoader_ = null;
+
+  /** @private {number} */
+  self.beginIndex_ = 0;
+
+  /** @private {number} */
+  self.endIndex_ = 0;
+
+  /** @private {function(!Event)} */
+  self.onThumbnailLoadedBound_ = self.onThumbnailLoaded_.bind(self);
 
   var nameColumn = new cr.ui.table.TableColumn(
       'name', str('NAME_COLUMN_LABEL'), fullPage ? 386 : 324);
@@ -299,6 +312,7 @@ FileTable.decorate = function(
 
   self.scrollBar_ = new ScrollBar();
   self.scrollBar_.initialize(self, self.list);
+
   // Keep focus on the file list when clicking on the header.
   self.header.addEventListener('mousedown', function(e) {
     self.list.focus();
@@ -349,6 +363,58 @@ FileTable.decorate = function(
     }
     return currentSelection;
   };
+};
+
+/**
+ * Updates high priority range of list thumbnail loader based on current
+ * viewport.
+ *
+ * @param {number} beginIndex Begin index.
+ * @param {number} endIndex End index.
+ */
+FileTable.prototype.updateHighPriorityRange = function(beginIndex, endIndex) {
+  // Keep these values to set range when a new list thumbnail loader is set.
+  this.beginIndex_ = beginIndex;
+  this.endIndex_ = endIndex;
+
+  if (this.listThumbnailLoader_ !== null)
+    this.listThumbnailLoader_.setHighPriorityRange(beginIndex, endIndex);
+};
+
+/**
+ * Sets list thumbnail loader.
+ * @param {ListThumbnailLoader} listThumbnailLoader A list thumbnail loader.
+ */
+FileTable.prototype.setListThumbnailLoader = function(listThumbnailLoader) {
+  if (this.listThumbnailLoader_) {
+    this.listThumbnailLoader_.removeEventListener(
+        'thumbnailLoaded', this.onThumbnailLoadedBound_);
+  }
+
+  this.listThumbnailLoader_ = listThumbnailLoader;
+
+  if (this.listThumbnailLoader_) {
+    this.listThumbnailLoader_.addEventListener(
+        'thumbnailLoaded', this.onThumbnailLoadedBound_);
+    this.listThumbnailLoader_.setHighPriorityRange(
+        this.beginIndex_, this.endIndex_);
+  }
+};
+
+/**
+ * Handles thumbnail loaded event.
+ * @param {!Event} event An event.
+ * @private
+ */
+FileTable.prototype.onThumbnailLoaded_ = function(event) {
+  var listItem = this.getListItemByIndex(event.index);
+  if (listItem) {
+    var box = listItem.querySelector('.detail-thumbnail');
+    if (box) {
+      this.setThumbnailImage_(
+          assertInstanceof(box, HTMLDivElement), event.dataUrl);
+    }
+  }
 };
 
 /**
@@ -780,20 +846,25 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
       (this.ownerDocument.createElement('div'));
   box.className = 'detail-thumbnail';
 
-  if (entry) {
-    this.metadataCache_.getOne(
-        entry, 'thumbnail|filesystem|external|media',
-        function(metadata) {
-          var loader = new ThumbnailLoader(
-              entry, ThumbnailLoader.LoaderType.IMAGE, metadata);
-          loader.load(box, ThumbnailLoader.FillMode.OVER_FILL,
-                      ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
-                      function(image, transform) {
-                        box.classList.add('loaded');
-                      });
-        });
+  // Set thumbnail if it's already in cache.
+  if (this.listThumbnailLoader_ &&
+      this.listThumbnailLoader_.getThumbnailFromCache(entry)) {
+    this.setThumbnailImage_(
+        box, this.listThumbnailLoader_.getThumbnailFromCache(entry).dataUrl);
   }
+
   return box;
+};
+
+/**
+ * Sets thumbnail image to the box.
+ * @param {!HTMLDivElement} box Detail thumbnail div element.
+ * @param {string} dataUrl Data url of thumbnail.
+ * @private
+ */
+FileTable.prototype.setThumbnailImage_ = function(box, dataUrl) {
+  box.style.backgroundImage = 'url(' + dataUrl + ')';
+  box.classList.add('loaded');
 };
 
 /**

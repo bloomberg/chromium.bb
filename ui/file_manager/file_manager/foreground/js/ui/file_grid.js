@@ -45,6 +45,18 @@ FileGrid.decorate = function(
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
 
+  /** @private {ListThumbnailLoader} */
+  self.listThumbnailLoader_ = null;
+
+  /** @private {number} */
+  self.beginIndex_ = 0;
+
+  /** @private {number} */
+  self.endIndex_ = 0;
+
+  /** @private {function(!Event)} */
+  self.onThumbnailLoadedBound_ = self.onThumbnailLoaded_.bind(self);
+
   self.scrollBar_ = new ScrollBar();
   self.scrollBar_.initialize(self.parentElement, self);
 
@@ -58,7 +70,7 @@ FileGrid.decorate = function(
   self.previousItems_ = {};
 
   self.itemConstructor = function(entry) {
-    var item = self.ownerDocument.createElement('LI');
+    var item = self.ownerDocument.createElement('li');
     FileGrid.Item.decorate(
         item,
         entry,
@@ -73,10 +85,53 @@ FileGrid.decorate = function(
 };
 
 /**
+ * Sets list thumbnail loader.
+ * @param {ListThumbnailLoader} listThumbnailLoader A list thumbnail loader.
+ * @private
+ */
+FileGrid.prototype.setListThumbnailLoader = function(listThumbnailLoader) {
+  if (this.listThumbnailLoader_) {
+    this.listThumbnailLoader_.removeEventListener(
+        'thumbnailLoaded', this.onThumbnailLoadedBound_);
+  }
+
+  this.listThumbnailLoader_ = listThumbnailLoader;
+
+  if (this.listThumbnailLoader_) {
+    this.listThumbnailLoader_.addEventListener(
+        'thumbnailLoaded', this.onThumbnailLoadedBound_);
+    this.listThumbnailLoader_.setHighPriorityRange(
+        this.beginIndex_, this.endIndex_);
+  }
+};
+
+/**
+ * Handles thumbnail loaded event.
+ * @param {!Event} event An event.
+ * @private
+ */
+FileGrid.prototype.onThumbnailLoaded_ = function(event) {
+  var listItem = this.getListItemByIndex(event.index);
+  if (listItem) {
+    var thumbnail = listItem.querySelector('.img-container > .thumbnail');
+    if (thumbnail) {
+      FileGrid.setThumbnailImage_(
+          assertInstanceof(thumbnail, HTMLDivElement), event.dataUrl);
+    }
+  }
+};
+
+/**
  * @override
  */
-FileGrid.prototype.mergeItems = function() {
-  cr.ui.Grid.prototype.mergeItems.apply(this, arguments);
+FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
+  cr.ui.Grid.prototype.mergeItems.call(this, beginIndex, endIndex);
+
+  // Keep these values to set range when a new list thumbnail loader is set.
+  this.beginIndex_ = beginIndex;
+  this.endIndex_ = endIndex;
+  if (this.listThumbnailLoader_ !== null)
+    this.listThumbnailLoader_.setHighPriorityRange(beginIndex, endIndex);
 
   // Update item cache.
   for (var url in this.previousItems_) {
@@ -100,16 +155,12 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
     if (!entry || urls.indexOf(entry.toURL()) === -1)
       continue;
 
-    FileGrid.decorateThumbnailBox_(
-        box,
-        entry,
-        this.metadataCache_,
-        this.fileSystemMetadata_,
-        this.volumeManager_,
-        this.historyLoader_,
-        ThumbnailLoader.FillMode.OVER_FILL,
-        FileGrid.ThumbnailQuality.LOW,
-        /* animation */ false);
+    FileGrid.decorateThumbnailBox_(box,
+                                   entry,
+                                   this.fileSystemMetadata_,
+                                   this.volumeManager_,
+                                   this.historyLoader_,
+                                   this.listThumbnailLoader_);
   }
 };
 
@@ -153,6 +204,7 @@ FileGrid.decorateThumbnail_ = function(
     fileSystemMetadata,
     volumeManager,
     historyLoader,
+    listThumbnailLoader,
     previousItem) {
   li.className = 'thumbnail-item';
   if (entry)
@@ -162,6 +214,8 @@ FileGrid.decorateThumbnail_ = function(
   frame.className = 'thumbnail-frame';
   li.appendChild(frame);
 
+  // TODO(yawano) Most of following codes seems to be unnecessary anymore.
+  // Investigate it, and make this simple.
   var previousBox =
       previousItem ? previousItem.querySelector('.img-container') : null;
   var box;
@@ -183,13 +237,10 @@ FileGrid.decorateThumbnail_ = function(
     FileGrid.decorateThumbnailBox_(
         box,
         entry,
-        metadataCache,
         fileSystemMetadata,
         volumeManager,
         historyLoader,
-        ThumbnailLoader.FillMode.OVER_FILL,
-        FileGrid.ThumbnailQuality.LOW,
-        /* animation */ !previousBox);
+        listThumbnailLoader);
   }
   frame.appendChild(box);
 
@@ -215,20 +266,16 @@ FileGrid.decorateThumbnail_ = function(
  *
  * @param {Element} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
- * @param {MetadataCache} metadataCache To retrieve thumbnail.
  * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
- * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
- * @param {FileGrid.ThumbnailQuality} quality Thumbnail quality.
- * @param {boolean} animation Whther to use fadein animation or not.
  * @param {function(HTMLImageElement)=} opt_imageLoadCallback Callback called
  *     when the image has been loaded before inserting it into the DOM.
  * @private
  */
 FileGrid.decorateThumbnailBox_ = function(
-    box, entry, metadataCache, fileSystemMetadata, volumeManager, historyLoader,
-    fillMode, quality, animation, opt_imageLoadCallback) {
+    box, entry, fileSystemMetadata, volumeManager, historyLoader,
+    listThumbnailLoader, opt_imageLoadCallback) {
   box.className = 'img-container';
 
   if (importer.isEligibleEntry(volumeManager, entry)) {
@@ -250,43 +297,33 @@ FileGrid.decorateThumbnailBox_ = function(
     return;
   }
 
-  var metadataTypes = 'thumbnail|filesystem|external|media';
+  // Create a box for thumbnail here to perform transition correctly.
+  var thumbnail = box.ownerDocument.createElement('div');
+  thumbnail.classList.add('thumbnail');
+  box.appendChild(thumbnail);
 
-  // CONTENT_METADATA contains usually very tiny thumbnails. So use it only for
-  // ThumbnailQuality.LOW.
-  var loadTargets;
-  switch (quality) {
-    case FileGrid.ThumbnailQuality.LOW:
-      loadTargets = [
-        ThumbnailLoader.LoadTarget.CONTENT_METADATA,
-        ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
-        ThumbnailLoader.LoadTarget.FILE_ENTRY
-      ];
-      break;
-    case FileGrid.ThumbnailQuality.HIGH:
-      loadTargets = [
-        ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
-        ThumbnailLoader.LoadTarget.FILE_ENTRY
-      ];
-      break;
+  // Set thumbnail if it's already in cache.
+  if (listThumbnailLoader &&
+      listThumbnailLoader.getThumbnailFromCache(entry)) {
+    FileGrid.setThumbnailImage_(
+        assertInstanceof(thumbnail, HTMLDivElement),
+        listThumbnailLoader.getThumbnailFromCache(entry).dataUrl);
+  } else {
+    var mediaType = FileType.getMediaType(entry);
+    box.setAttribute('generic-thumbnail', mediaType);
   }
+};
 
-  metadataCache.getOne(entry, metadataTypes,
-      function(metadata) {
-        new ThumbnailLoader(entry,
-                            ThumbnailLoader.LoaderType.IMAGE,
-                            metadata,
-                            undefined,  // opt_mediaType
-                            loadTargets).
-            load(box,
-                fillMode,
-                ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
-                function(image, transform) {
-                  image.classList.toggle('cached', !animation);
-                  if (opt_imageLoadCallback)
-                    opt_imageLoadCallback(image);
-                });
-      });
+/**
+ * Sets thumbnail image to the box.
+ * @param {!HTMLDivElement} thumbnail A div element to be filled with thumbnail.
+ * @param {string} dataUrl Data url of thumbnail.
+ * @private
+ */
+FileGrid.setThumbnailImage_ = function(thumbnail, dataUrl) {
+  thumbnail.classList.add('thumbnail');
+  thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
+  thumbnail.classList.add('loaded');
 };
 
 /**
@@ -371,6 +408,7 @@ FileGrid.Item.decorate = function(li, entry, grid, previousItem) {
       grid.fileSystemMetadata_,
       grid.volumeManager_,
       grid.historyLoader_,
+      grid.listThumbnailLoader_,
       previousItem);
 
   // Override the default role 'listitem' to 'option' to match the parent's

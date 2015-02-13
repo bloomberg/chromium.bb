@@ -787,15 +787,6 @@ body[type='full-page'] .detail-name .detail-icon {
   cursor: pointer;
 }
 
-.img-container > img {
-  -webkit-user-drag: none;
-  position: absolute;
-}
-
-.img-container > img:not(.cached) {
-  -webkit-animation: fadeIn 250ms linear;
-}
-
 .thumbnail-bottom {
   align-items: center;
   bottom: 0;
@@ -864,6 +855,20 @@ body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
 .thumbnail-grid .img-container {
   height: 100%;
   width: 100%;
+}
+
+.thumbnail-grid .img-container > .thumbnail {
+  -webkit-user-drag: none;
+  background-position: center;
+  background-size: cover;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 250ms linear;
+  width: 100%;
+}
+
+.thumbnail-grid .img-container > .thumbnail.loaded {
+  opacity: 1;
 }
 
 .thumbnail-grid .thumbnail-bottom {
@@ -1147,6 +1152,9 @@ li[renaming=''] .filename-label {
 }
 
 #list-container list li .detail-thumbnail {
+  -webkit-user-drag: none;
+  background-position: center;
+  background-size: cover;
   border-radius: 14px;
   height: 28px;
   opacity: 0;
@@ -1154,11 +1162,6 @@ li[renaming=''] .filename-label {
   position: absolute;
   transition: opacity 220ms ease;
   width: 28px;
-}
-
-#list-container list li .detail-thumbnail > img {
-  -webkit-user-drag: none;
-  position: absolute;
 }
 
 #list-container list li:not([selected]) .detail-thumbnail.loaded {
