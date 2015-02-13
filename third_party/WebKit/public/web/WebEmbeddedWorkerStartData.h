@@ -34,6 +34,7 @@
 #include "WebContentSecurityPolicy.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebSettings.h"
 
 namespace blink {
 
@@ -51,10 +52,12 @@ struct WebEmbeddedWorkerStartData {
     WebString userAgent;
     PauseAfterDownloadMode pauseAfterDownloadMode;
     WaitForDebuggerMode waitForDebuggerMode;
+    WebSettings::V8CacheOptions v8CacheOptions;
 
     WebEmbeddedWorkerStartData()
         : pauseAfterDownloadMode(DontPauseAfterDownload)
-        , waitForDebuggerMode(DontWaitForDebugger) { }
+        , waitForDebuggerMode(DontWaitForDebugger)
+        , v8CacheOptions(WebSettings::V8CacheOptionsDefault) { }
 };
 
 } // namespace blink
