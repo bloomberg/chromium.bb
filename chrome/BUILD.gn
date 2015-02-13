@@ -170,6 +170,7 @@ if (!is_win || link_chrome_on_windows) {
       output_name = "chrome"
 
       sources = [
+        "//base/win/dllmain.cc",
         "app/chrome_command_ids.h",
         "app/chrome_dll.rc",
         "app/chrome_dll_resource.h",
@@ -180,7 +181,6 @@ if (!is_win || link_chrome_on_windows) {
         "app/close_handle_hook_win.h",
         "app/delay_load_hook_win.cc",
         "app/delay_load_hook_win.h",
-        "//base/win/dllmain.cc",
       ]
 
       deps += [

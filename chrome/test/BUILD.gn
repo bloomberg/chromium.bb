@@ -54,8 +54,8 @@ source_set("test_support") {
     "base/test_switches.h",
     "base/testing_browser_process.cc",
     "base/testing_browser_process.h",
-    "base/testing_browser_process_platform_part.h",
     "base/testing_browser_process_platform_part.cc",
+    "base/testing_browser_process_platform_part.h",
     "base/testing_io_thread_state.cc",
     "base/testing_io_thread_state.h",
     "base/testing_pref_service_syncable.cc",
@@ -1447,8 +1447,8 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       } else if (is_android) {
         sources -= [
           # Android doesn't support download feedbacks.
-          "../browser/safe_browsing/download_feedback_unittest.cc",
           "../browser/safe_browsing/download_feedback_service_unittest.cc",
+          "../browser/safe_browsing/download_feedback_unittest.cc",
           "../browser/safe_browsing/download_protection_service_unittest.cc",
           "../browser/safe_browsing/two_phase_uploader_unittest.cc",
         ]
@@ -1546,8 +1546,8 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
                              "//chrome")
       sources -= [
         "../browser/ui/tests/ui_gfx_image_unittest.cc",
-        "../tools/convert_dict/convert_dict_unittest.cc",
         "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
+        "../tools/convert_dict/convert_dict_unittest.cc",
       ]
 
       # The test fetches resources which means Mac need the app bundle to exist
