@@ -149,6 +149,8 @@ def AddRemoteDeviceOptions(parser):
   group.add_argument('--remote-device-file',
                      help=('File with JSON to select remote device. '
                            'Overrides all other flags.'))
+  group.add_argument('--remote-device-timeout', type=int,
+                     help='Times to retry finding remote device')
 
   device_os_group = group.add_mutually_exclusive_group()
   device_os_group.add_argument('--remote-device-minimum-os',

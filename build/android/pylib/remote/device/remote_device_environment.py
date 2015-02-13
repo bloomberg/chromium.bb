@@ -15,12 +15,15 @@ from pylib import constants
 from pylib.base import environment
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
+from pylib.utils import timeout_retry
+from pylib.utils import reraiser_thread
 
 class RemoteDeviceEnvironment(environment.Environment):
   """An environment for running on remote devices."""
 
   _ENV_KEY = 'env'
   _DEVICE_KEY = 'device'
+  _DEFAULT_RETRIES = 0
 
   def __init__(self, args, error_func):
     """Constructor.
@@ -74,6 +77,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     self._remote_device_minimum_os = device_json.get(
         'remote_device_minimum_os', None)
     self._remote_device_os = device_json.get('remote_device_os', None)
+    self._remote_device_timeout = device_json.get('remote_device_timeout', None)
     self._results_path = device_json.get('results_path', None)
     self._runner_package = device_json.get('runner_package', None)
     self._runner_type = device_json.get('runner_type', None)
@@ -110,6 +114,9 @@ class RemoteDeviceEnvironment(environment.Environment):
         'remote_device_minimum_os')
     self._remote_device_os = command_line_override(
         self._remote_device_os, args.remote_device_os, 'remote_device_os')
+    self._remote_device_timeout = command_line_override(
+        self._remote_device_timeout, args.remote_device_timeout,
+        'remote_device_timeout')
     self._results_path = command_line_override(
         self._results_path, args.results_path, 'results_path')
     self._runner_package = command_line_override(
@@ -158,6 +165,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     logging.info('Remote device OS: %s', self._remote_device_os)
     logging.info('Remote device OEM: %s', self._device_oem)
     logging.info('Remote device type: %s', self._device_type)
+    logging.info('Remote device timout: %s', self._remote_device_timeout)
     logging.info('Results Path: %s', self._results_path)
     logging.info('Runner package: %s', self._runner_package)
     logging.info('Runner type: %s', self._runner_type)
@@ -177,7 +185,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     os.environ['APPURIFY_API_PORT'] = self._api_port
     self._GetAccessToken()
     if self._trigger:
-      self._device = self._SelectDevice()
+      self._SelectDevice()
 
   def TearDown(self):
     """Teardown the test environment."""
@@ -228,14 +236,20 @@ class RemoteDeviceEnvironment(environment.Environment):
                                           'Unable to revoke access token.')
 
   def _SelectDevice(self):
-    """Select which device to use."""
+    if self._remote_device_timeout:
+      try:
+        timeout_retry.Run(self._FindDeviceWithTimeout,
+                          self._remote_device_timeout, self._DEFAULT_RETRIES)
+      except reraiser_thread.TimeoutError:
+        self._NoDeviceFound()
+    else:
+      if not self._FindDevice():
+        self._NoDeviceFound()
+
+  def _FindDevice(self):
+    """Find which device to use."""
     logging.info('Finding device to run tests on.')
-    with appurify_sanitized.SanitizeLogging(self._verbose_count,
-                                            logging.WARNING):
-      dev_list_res = appurify_sanitized.api.devices_list(self._access_token)
-    remote_device_helper.TestHttpResponse(dev_list_res,
-                                          'Unable to generate access token.')
-    device_list = dev_list_res.json()['response']
+    device_list = self._GetDeviceList()
     random.shuffle(device_list)
     for device in device_list:
       if device['os_name'] != self._device_type:
@@ -251,12 +265,16 @@ class RemoteDeviceEnvironment(environment.Environment):
           and distutils.version.LooseVersion(device['os_version'])
           < distutils.version.LooseVersion(self._remote_device_minimum_os)):
         continue
-      if ((self._remote_device and self._remote_device_os)
-          or device['available_devices_count']):
+      if device['has_available_device']:
         logging.info('Found device: %s %s',
                      device['name'], device['os_version'])
-        return device
-    self._NoDeviceFound(device_list)
+        self._device = device
+        return True
+    return False
+
+  def _FindDeviceWithTimeout(self):
+    """Find which device to use with timeout."""
+    timeout_retry.WaitFor(self._FindDevice, wait_period=1)
 
   def _PrintAvailableDevices(self, device_list):
     def compare_devices(a,b):
@@ -267,12 +285,23 @@ class RemoteDeviceEnvironment(environment.Environment):
       return 0
 
     logging.critical('Available %s Devices:', self._device_type)
+    logging.critical('  %s %s %s', 'OS'.ljust(7),
+                     'Device Name'.ljust(20), '# Available')
     devices = (d for d in device_list if d['os_name'] == self._device_type)
     for d in sorted(devices, compare_devices):
-      logging.critical('  %s %s', d['os_version'].ljust(7), d['name'])
+      logging.critical('  %s %s %s', d['os_version'].ljust(7),
+                       d['name'].ljust(20), d['available_devices_count'])
 
-  def _NoDeviceFound(self, device_list):
-    self._PrintAvailableDevices(device_list)
+  def _GetDeviceList(self):
+    with appurify_sanitized.SanitizeLogging(self._verbose_count,
+                                            logging.WARNING):
+      dev_list_res = appurify_sanitized.api.devices_list(self._access_token)
+    remote_device_helper.TestHttpResponse(dev_list_res,
+                                         'Unable to generate access token.')
+    return dev_list_res.json()['response']
+
+  def _NoDeviceFound(self):
+    self._PrintAvailableDevices(self._GetDeviceList())
     raise remote_device_helper.RemoteDeviceError('No device found.')
 
   @property
