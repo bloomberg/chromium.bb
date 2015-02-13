@@ -167,7 +167,7 @@ public:
     void detachFromCurrentThread();
 
     const String& contentType() const { return m_contentType; }
-    void setContentType(const String& contentType) { m_contentType = contentType; }
+    void setContentType(const String&);
 
     const BlobDataItemList& items() const { return m_items; }
 

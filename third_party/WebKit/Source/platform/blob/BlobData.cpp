@@ -43,6 +43,21 @@
 
 namespace blink {
 
+namespace {
+
+// http://dev.w3.org/2006/webapi/FileAPI/#constructorBlob
+bool isValidBlobType(const String& type)
+{
+    for (unsigned i = 0; i < type.length(); ++i) {
+        UChar c = type[i];
+        if (c < 0x20 || c > 0x7E)
+            return false;
+    }
+    return true;
+}
+
+}
+
 const long long BlobDataItem::toEndOfFile = -1;
 
 RawData::RawData()
@@ -70,6 +85,14 @@ void BlobData::detachFromCurrentThread()
     m_contentType = m_contentType.isolatedCopy();
     for (size_t i = 0; i < m_items.size(); ++i)
         m_items.at(i).detachFromCurrentThread();
+}
+
+void BlobData::setContentType(const String& contentType)
+{
+    if (isValidBlobType(contentType))
+        m_contentType = contentType;
+    else
+        m_contentType = "";
 }
 
 void BlobData::appendData(PassRefPtr<RawData> data, long long offset, long long length)
@@ -163,7 +186,7 @@ BlobDataHandle::BlobDataHandle(PassOwnPtr<BlobData> data, long long size)
 
 BlobDataHandle::BlobDataHandle(const String& uuid, const String& type, long long size)
     : m_uuid(uuid.isolatedCopy())
-    , m_type(type.isolatedCopy())
+    , m_type(isValidBlobType(type) ? type.isolatedCopy() : "")
     , m_size(size)
 {
     BlobRegistry::addBlobDataRef(m_uuid);
