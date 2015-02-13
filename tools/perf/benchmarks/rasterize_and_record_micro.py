@@ -70,11 +70,13 @@ class RasterizeAndRecordMicroKeySilkCases(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the silk sites.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  page_set = page_sets.KeySilkCasesPageSet
 
   @classmethod
   def Name(cls):
     return 'rasterize_and_record_micro.key_silk_cases'
+
+  def CreatePageSet(self, options):
+    return page_sets.KeySilkCasesPageSet(run_no_page_interactions=True)
 
 
 @benchmark.Enabled('android')
