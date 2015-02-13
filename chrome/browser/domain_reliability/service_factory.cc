@@ -14,6 +14,10 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace domain_reliability {
 
 namespace {
@@ -28,6 +32,21 @@ bool IsDomainReliabilityMonitoringEnabled() {
   if (command_line->HasSwitch(switches::kEnableDomainReliability))
     return true;
   return base::FieldTrialList::FindFullName("DomRel-Enable") == "enable";
+}
+
+bool IsMetricsReportingEnabled() {
+#if defined(OS_CHROMEOS)
+  bool enabled;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &enabled);
+  return enabled;
+#elif defined(OS_ANDROID)
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kCrashReportingEnabled);
+#else
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kMetricsReportingEnabled);
+#endif
 }
 
 }  // namespace
@@ -59,10 +78,8 @@ KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
   if (!IsDomainReliabilityMonitoringEnabled())
     return NULL;
 
-  if (!g_browser_process->local_state()->GetBoolean(
-          prefs::kMetricsReportingEnabled)) {
+  if (!IsMetricsReportingEnabled())
     return NULL;
-  }
 
   return DomainReliabilityService::Create(
       kDomainReliabilityUploadReporterString);
