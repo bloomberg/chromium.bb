@@ -5429,6 +5429,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DomainReliability.UploadCollectorRetryDelay" units="ms">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    After an upload to a collector finishes (successfully or not), the delay
+    before the scheduler can send another upload to that collector. (If recent
+    uploads were successful, this will be 0; if not, it will be based on the
+    BackoffEntry and any Retry-After header received.)
+  </summary>
+</histogram>
+
 <histogram name="DomainReliability.UploadDuration" units="ms">
   <owner>ttuttle@chromium.org</owner>
   <summary>

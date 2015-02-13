@@ -260,6 +260,8 @@ void DomainReliabilityContext::OnUploadComplete(
   DCHECK(!upload_time_.is_null());
   UMA_HISTOGRAM_MEDIUM_TIMES("DomainReliability.UploadDuration",
                              now - upload_time_);
+  UMA_HISTOGRAM_LONG_TIMES("DomainReliability.UploadCollectorRetryDelay",
+                           scheduler_.last_collector_retry_delay());
   last_upload_time_ = upload_time_;
   upload_time_ = base::TimeTicks();
 }
