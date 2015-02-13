@@ -93,10 +93,6 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    // Timeout before a service worker that was given window interaction
-    // permission loses them. The unit is seconds.
-    static const int kWindowInteractionTimeout = 10;
-
 private:
     class SkipWaitingCallback;
 

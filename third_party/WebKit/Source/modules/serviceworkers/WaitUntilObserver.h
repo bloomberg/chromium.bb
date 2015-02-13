@@ -42,6 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class InternalsServiceWorker;
     class ThenFunction;
 
     WaitUntilObserver(ExecutionContext*, EventType, int eventID);
