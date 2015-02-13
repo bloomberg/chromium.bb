@@ -96,6 +96,7 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
 public:
     CanvasRenderingContext2DAutoRestoreSkCanvas(CanvasRenderingContext2D* context)
         : m_context(context)
+        , m_saveCount(0)
     {
         ASSERT(m_context);
         SkCanvas* c = m_context->drawingCanvas();
