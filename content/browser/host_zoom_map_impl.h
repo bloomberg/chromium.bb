@@ -79,6 +79,14 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
   double GetTemporaryZoomLevel(int render_process_id,
                                int render_view_id) const;
 
+  // Returns the zoom level regardless of whether it's temporary, host-keyed or
+  // scheme+host-keyed.
+  //
+  // This may be called on any thread.
+  double GetZoomLevelForView(const GURL& url,
+                             int render_process_id,
+                             int render_view_id) const;
+
   // NotificationObserver implementation.
   void Observe(int type,
                const NotificationSource& source,
@@ -106,6 +114,12 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
   typedef std::map<RenderViewKey, double> TemporaryZoomLevels;
 
   double GetZoomLevelForHost(const std::string& host) const;
+
+  // Non-locked versions for internal use. These should only be called within
+  // a scope where a lock has been acquired.
+  double GetZoomLevelForHostInternal(const std::string& host) const;
+  double GetZoomLevelForHostAndSchemeInternal(const std::string& scheme,
+                                              const std::string& host) const;
 
   // Notifies the renderers from this browser context to change the zoom level
   // for the specified host and scheme.

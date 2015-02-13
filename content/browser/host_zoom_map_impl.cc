@@ -136,6 +136,11 @@ void HostZoomMapImpl::CopyFrom(HostZoomMap* copy_interface) {
 
 double HostZoomMapImpl::GetZoomLevelForHost(const std::string& host) const {
   base::AutoLock auto_lock(lock_);
+  return GetZoomLevelForHostInternal(host);
+}
+
+double HostZoomMapImpl::GetZoomLevelForHostInternal(
+    const std::string& host) const {
   HostZoomLevels::const_iterator i(host_zoom_levels_.find(host));
   return (i == host_zoom_levels_.end()) ? default_zoom_level_ : i->second;
 }
@@ -156,20 +161,25 @@ bool HostZoomMapImpl::HasZoomLevel(const std::string& scheme,
   return i != zoom_levels.end();
 }
 
+double HostZoomMapImpl::GetZoomLevelForHostAndSchemeInternal(
+    const std::string& scheme,
+    const std::string& host) const {
+  SchemeHostZoomLevels::const_iterator scheme_iterator(
+      scheme_host_zoom_levels_.find(scheme));
+  if (scheme_iterator != scheme_host_zoom_levels_.end()) {
+    HostZoomLevels::const_iterator i(scheme_iterator->second.find(host));
+    if (i != scheme_iterator->second.end())
+      return i->second;
+  }
+
+  return GetZoomLevelForHostInternal(host);
+}
+
 double HostZoomMapImpl::GetZoomLevelForHostAndScheme(
     const std::string& scheme,
     const std::string& host) const {
-  {
-    base::AutoLock auto_lock(lock_);
-    SchemeHostZoomLevels::const_iterator scheme_iterator(
-        scheme_host_zoom_levels_.find(scheme));
-    if (scheme_iterator != scheme_host_zoom_levels_.end()) {
-      HostZoomLevels::const_iterator i(scheme_iterator->second.find(host));
-      if (i != scheme_iterator->second.end())
-        return i->second;
-    }
-  }
-  return GetZoomLevelForHost(host);
+  base::AutoLock auto_lock(lock_);
+  return GetZoomLevelForHostAndSchemeInternal(scheme, host);
 }
 
 HostZoomMap::ZoomLevelVector HostZoomMapImpl::GetAllZoomLevels() const {
@@ -363,6 +373,19 @@ void HostZoomMapImpl::SetTemporaryZoomLevel(int render_process_id,
   change.zoom_level = level;
 
   zoom_level_changed_callbacks_.Notify(change);
+}
+
+double HostZoomMapImpl::GetZoomLevelForView(const GURL& url,
+                                            int render_process_id,
+                                            int render_view_id) const {
+  RenderViewKey key(render_process_id, render_view_id);
+  base::AutoLock auto_lock(lock_);
+
+  if (ContainsKey(temporary_zoom_levels_, key))
+    return temporary_zoom_levels_.find(key)->second;
+
+  return GetZoomLevelForHostAndSchemeInternal(url.scheme(),
+                                              net::GetHostOrSpecFromURL(url));
 }
 
 void HostZoomMapImpl::Observe(int type,
