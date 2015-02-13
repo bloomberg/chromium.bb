@@ -176,6 +176,9 @@ class PDFEngine {
 
     // Get the background color of the PDF.
     virtual uint32 GetBackgroundColor() = 0;
+
+    // Sets selection status.
+    virtual void IsSelectingChanged(bool is_selecting){};
   };
 
   // Factory method to create an instance of the PDF Engine.

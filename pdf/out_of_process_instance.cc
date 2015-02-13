@@ -144,6 +144,10 @@ const char kJSSelectedText[] = "selectedText";
 const char kJSSetNamedDestinationsType[] = "setNamedDestinations";
 const char kJSNamedDestinations[] = "namedDestinations";
 
+// Selecting text in document (Plugin -> Page)
+const char kJSSetIsSelectingType[] = "setIsSelecting";
+const char kJSIsSelecting[] = "isSelecting";
+
 const int kFindResultCooldownMs = 100;
 
 const double kMinZoom = 0.01;
@@ -1349,6 +1353,13 @@ bool OutOfProcessInstance::IsPrintPreview() {
 
 uint32 OutOfProcessInstance::GetBackgroundColor() {
   return background_color_;
+}
+
+void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
+  pp::VarDictionary message;
+  message.Set(kType, kJSSetIsSelectingType);
+  message.Set(kJSIsSelecting, pp::Var(is_selecting));
+  PostMessage(message);
 }
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,

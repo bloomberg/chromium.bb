@@ -1731,7 +1731,7 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 }
 
 void PDFiumEngine::OnSingleClick(int page_index, int char_index) {
-  selecting_ = true;
+  SetSelecting(true);
   selection_.push_back(PDFiumRange(pages_[page_index], char_index, 0));
 }
 
@@ -1794,7 +1794,7 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   if (!selecting_)
     return false;
 
-  selecting_ = false;
+  SetSelecting(false);
   return true;
 }
 
@@ -3469,6 +3469,13 @@ void PDFiumEngine::RotateInternal() {
     client_->NotifyNumberOfFindResultsChanged(0, false);
     StartFind(current_find_text.c_str(), false);
   }
+}
+
+void PDFiumEngine::SetSelecting(bool selecting) {
+  bool was_selecting = selecting_;
+  selecting_ = selecting;
+  if (selecting_ != was_selecting)
+    client_->IsSelectingChanged(selecting);
 }
 
 void PDFiumEngine::Form_Invalidate(FPDF_FORMFILLINFO* param,

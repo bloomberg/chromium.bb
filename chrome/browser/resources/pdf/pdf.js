@@ -194,6 +194,8 @@ function PDFViewer(streamDetails) {
   this.navigator_ = new Navigator(this.streamDetails_.originalUrl,
       this.viewport_, this.paramsParser_, onNavigateInCurrentTab,
       onNavigateInNewTab);
+  this.viewportScroller_ =
+      new ViewportScroller(this.viewport_, this.plugin_, window);
 }
 
 PDFViewer.prototype = {
@@ -348,21 +350,13 @@ PDFViewer.prototype = {
    * @private
    * Notify the plugin to print.
    */
-  print_: function() {
-    this.plugin_.postMessage({
-      type: 'print'
-    });
-  },
+  print_: function() { this.plugin_.postMessage({type: 'print'}); },
 
   /**
    * @private
    * Notify the plugin to save.
    */
-  save_: function() {
-    this.plugin_.postMessage({
-      type: 'save'
-    });
-  },
+  save_: function() { this.plugin_.postMessage({type: 'save'}); },
 
   /**
    * @private
@@ -521,6 +515,9 @@ PDFViewer.prototype = {
           $('bookmarks-container').bookmarks = this.bookmarks;
           this.materialToolbar_.hasBookmarks = true;
         }
+        break;
+      case 'setIsSelecting':
+        this.viewportScroller_.setEnableScrolling(message.data.isSelecting);
         break;
     }
   },

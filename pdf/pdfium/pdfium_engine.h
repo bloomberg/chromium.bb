@@ -423,6 +423,9 @@ class PDFiumEngine : public PDFEngine,
   // Common code shared by RotateClockwise() and RotateCounterclockwise().
   void RotateInternal();
 
+  // Setting selection status of document.
+  void SetSelecting(bool selecting);
+
   // FPDF_FORMFILLINFO callbacks.
   static void Form_Invalidate(FPDF_FORMFILLINFO* param,
                               FPDF_PAGE page,
