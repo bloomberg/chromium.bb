@@ -477,6 +477,9 @@ dictionary DeviceEvent {
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
+// |result| Boolean result returned by the invoked function.
+callback BooleanCallback = void(boolean result);
+
 // |result| Result of the task execution.
 callback ExecuteTaskCallback = void(TaskResult result);
 
@@ -832,6 +835,9 @@ interface Functions {
   // |callback|
   static void computeChecksum(DOMString fileURL,
                               ComputeChecksumCallback callback);
+
+  // Is UMA enabled?
+  static void isUMAEnabled(BooleanCallback callback);
 };
 
 interface Events {

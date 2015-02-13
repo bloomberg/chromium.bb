@@ -276,6 +276,21 @@ class FileManagerPrivateSearchFilesByHashesFunction
                         const std::vector<drive::HashAndFilePath>& results);
 };
 
+// Implements the chrome.fileManagerPrivate.isUMAEnabled method.
+class FileManagerPrivateIsUMAEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  FileManagerPrivateIsUMAEnabledFunction() {}
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.isUMAEnabled",
+                             FILEMANAGERPRIVATE_ISUMAENABLED)
+ protected:
+  ~FileManagerPrivateIsUMAEnabledFunction() override {}
+
+ private:
+  ExtensionFunction::ResponseAction Run() override;
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateIsUMAEnabledFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_

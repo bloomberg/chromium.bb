@@ -560,6 +560,12 @@ chrome.fileManagerPrivate.computeChecksum = function(fileUrl, callback) {};
  */
 chrome.fileManagerPrivate.getMimeType = function(fileUrl, callback) {};
 
+/**
+ * Gets a flag indicating whether user metrics reporting is enabled.
+ * @param {function(boolean)} callback
+ */
+chrome.fileManagerPrivate.isUMAEnabled = function(callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 

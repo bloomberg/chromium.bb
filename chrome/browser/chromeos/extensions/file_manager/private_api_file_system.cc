@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/event_logger.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -836,6 +837,12 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
   }
   SetResult(result.release());
   SendResponse(true);
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateIsUMAEnabledFunction::Run() {
+  return RespondNow(OneArgument(new base::FundamentalValue(
+      ChromeMetricsServiceAccessor::IsMetricsReportingEnabled())));
 }
 
 }  // namespace extensions
