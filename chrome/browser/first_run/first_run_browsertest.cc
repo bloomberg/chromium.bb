@@ -168,7 +168,7 @@ extern const char kImportDefault[] =
 typedef FirstRunMasterPrefsBrowserTestT<kImportDefault>
     FirstRunMasterPrefsImportDefault;
 // http://crbug.com/314221
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_MACOSX) || defined(OS_LINUX))
+#if defined(OS_MACOSX) || (defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX))
 #define MAYBE_ImportDefault DISABLED_ImportDefault
 #else
 #define MAYBE_ImportDefault ImportDefault
