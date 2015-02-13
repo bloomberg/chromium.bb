@@ -103,7 +103,6 @@
 <translation id="3775432569830822555">SSL 服务器证书</translation>
 <translation id="1829192082282182671">缩小(&amp;O)</translation>
 <translation id="8946359700442089734">此<ph name="IDS_SHORT_PRODUCT_NAME"/>设备上未完全启用调试功能。</translation>
-<translation id="5042319201438341383">(UTC)</translation>
 <translation id="8564827370391515078">128</translation>
 <translation id="6390799748543157332">当您关闭以访客身份打开的所有窗口后，您在此窗口中浏览的网页将不会显示在浏览器历史记录中，也不会在计算机上留下其他痕迹（例如Cookie）。不过，您下载的所有文件均会保留下来。</translation>
 <translation id="816055135686411707">设置证书信任时出错</translation>
@@ -560,13 +559,11 @@
 <translation id="8713570323158206935">发送<ph name="BEGIN_LINK1"/>系统信息<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">下载错误</translation>
 <translation id="5941343993301164315">请登录 <ph name="TOKEN_NAME"/>。</translation>
-<translation id="684095112754891891">启用 QP 输入视图键盘。</translation>
 <translation id="1916935104118658523">隐藏此插件</translation>
 <translation id="1046059554679513793">糟糕，此名称已有人使用！</translation>
 <translation id="5868571107634815419">停用Google文档、表格和幻灯片的Office编辑扩展程序</translation>
 <translation id="2587922270115112871">创建受监管用户不会随之创建 Google 帐户，因此这些受监管用户无法借助 Chrome 同步功能将其设置和数据同步到其他设备。受监管用户的设置只能应用于此设备。</translation>
 <translation id="4470564870223067757">韩语(2 Set)</translation>
-<translation id="7342729285348293164">使用您的Google帐户登录<ph name="PRODUCT_NAME"/>，可将您的个性化浏览器功能保存至网络，进而将这些设置应用到任意一台计算机上的<ph name="PRODUCT_NAME"/>中。您登录后，以后还会自动登录至您喜爱的Google服务。</translation>
 <translation id="2542049655219295786">Google 表格</translation>
 <translation id="3899879303189199559">离线超过 1 年</translation>
 <translation id="3016641847947582299">组件已更新</translation>
@@ -697,7 +694,6 @@
 <translation id="7760004034676677601">这是您想要的启动页吗？</translation>
 <translation id="3504135463003295723">群组名称：</translation>
 <translation id="3314070176311241517">允许所有网站运行 JavaScript（推荐）</translation>
-<translation id="4857983212546818394">允许用户将内容轻松备份到云端。</translation>
 <translation id="7419631653042041064">加泰罗尼亚语键盘</translation>
 <translation id="4663254525753315077">尽可能将溢出的滚动元素的滚动内容放置在合成层上，以加快滚动速度。</translation>
 <translation id="3280431534455935878">正在准备</translation>
@@ -947,12 +943,10 @@
 <translation id="2384596874640104496">僧伽罗语键盘</translation>
 <translation id="3511528412952710609">短暂</translation>
 <translation id="3353984535370177728">选择要上传的文件夹</translation>
-<translation id="7339888009669464587">async-touchmove</translation>
 <translation id="8258405095852912294">此网站不接受发现卡。</translation>
 <translation id="8061298200659260393">禁止任何网站发送推送消息</translation>
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
 <translation id="3528498924003805721">快捷方式目标</translation>
-<translation id="5117427536932535467">主题背景和壁纸</translation>
 <translation id="6780439250949340171">管理其他设置</translation>
 <translation id="204622017488417136">您的设备将还原到之前安装的 Chrome 版本。所有用户帐户和本地数据都将移除。此操作无法撤消。</translation>
 <translation id="8912793549644936705">拉伸</translation>
@@ -1079,6 +1073,7 @@
 <translation id="1422780722984745882">我们收到了多个截然不同的“Location”标头。我们不允许此行为，以防遭到 HTTP 响应拆分攻击。</translation>
 <translation id="7787129790495067395">您当前正在使用密码。如果您忘记了密码，可以使用“Google 信息中心”重置同步，将您的数据从 Google 服务器中清除。</translation>
 <translation id="2098305189700762159">未找到</translation>
+<translation id="3420155476022430555">停用用于创建书签应用的新系统。</translation>
 <translation id="2260654768907572711">浏览器插件</translation>
 <translation id="2663384537032943132">拼写检查工具选项(&amp;O)</translation>
 <translation id="242184683889529951">禁止对与滚动相关的输入事件进行线程式处理，迫使所有此类滚动事件均在主线程中处理。请注意，这可能会严重影响大多数网站的滚动效果，因此仅用于测试目的。</translation>
@@ -1328,9 +1323,6 @@
 <translation id="1195447618553298278">未知错误。</translation>
 <translation id="2617653079636271958">缩放：<ph name="VALUE"/>%</translation>
 <translation id="8222121761382682759">卸载…</translation>
-<translation id="7427916543828159271">Wi-Fi 和移动数据已关闭。
-          <ph name="LINE_BREAK"/>
-          您可在连接到网络后加载该网页。</translation>
 <translation id="1718685839849651010">来自未知日志</translation>
 <translation id="8811462119186190367">同步设置后，Chrome 浏览器的语言已由“<ph name="FROM_LOCALE"/>”更改为“<ph name="TO_LOCALE"/>”。</translation>
 <translation id="1087119889335281750">无拼写建议(&amp;N)</translation>
@@ -1346,7 +1338,6 @@
 <translation id="8442065444327205563">您可以查看文档了。</translation>
 <translation id="236141728043665931">始终禁止使用麦克风</translation>
 <translation id="2307462900900812319">配置网络</translation>
-<translation id="7624674027161923493">启用 Material Design 样式的输入视图键盘。</translation>
 <translation id="3324301154597925148">这是您想要的搜索页面吗？</translation>
 <translation id="3555812735919707620">卸载扩展程序</translation>
 <translation id="7018275672629230621">读取和更改您的浏览记录</translation>
@@ -1631,7 +1622,6 @@
 <translation id="9048724894000447955">要继续，请选中所有复选框。</translation>
 <translation id="1553538517812678578">无限制</translation>
 <translation id="4773696473262035477">您可以通过任意浏览器获取此密码以及您所有的<ph name="SAVED_PASSWORDS_LINK"/>。</translation>
-<translation id="6449393701131879078">sync-touchmove</translation>
 <translation id="6602956230557165253">使用左右箭头键进行导航。</translation>
 <translation id="3612070600336666959">停用</translation>
 <translation id="5178612934849781517">启用此项后，将在“首次运行/NTP/扳手菜单/设置”页面中使用完全基于网络的登录流程。否则，将使用具有嵌入式网页视图的本地流程。</translation>
@@ -2147,7 +2137,6 @@
 <translation id="302620147503052030">显示按钮</translation>
 <translation id="1895658205118569222">关闭</translation>
 <translation id="4432480718657344517">读取的字节</translation>
-<translation id="1549379864224375810">启用云端备份功能。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN"/>；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="8358685469073206162">要恢复页面吗？</translation>
 <translation id="8708000541097332489">退出时清除</translation>
@@ -2313,7 +2302,6 @@
 <translation id="3774278775728862009">泰语输入法（TIS-820.2538 键盘）</translation>
 <translation id="9115675100829699941">书签(&amp;B)</translation>
 <translation id="7191877888075697060">您与 <ph name="DOMAIN"/> 之间的连接采用了过时的加密技术。</translation>
-<translation id="2485422356828889247">卸载</translation>
 <translation id="1731589410171062430">总计：<ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> （<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>）</translation>
 <translation id="7461924472993315131">固定</translation>
 <translation id="5298363578196989456">“<ph name="IMPORT_NAME"/>”扩展程序不是共享模块，因此无法导入。</translation>
@@ -2621,7 +2609,6 @@
 <translation id="2382694417386844779">隐藏多功能框中的网址，改为在可点击的亮片中显示主机名。</translation>
 <translation id="2950186680359523359">服务器已断开连接，且未发送任何数据。</translation>
 <translation id="4269099019648381197">启用设置菜单中的请求平板电脑网站选项。</translation>
-<translation id="9142623379911037913">允许 <ph name="SITE"/> 显示桌面通知吗？</translation>
 <translation id="3564708465992574908">缩放级别</translation>
 <translation id="6546686722964485737">加入 WiMAX 网络</translation>
 <translation id="266983583785200437">与 <ph name="SHORT_PRODUCT_NAME"/>崩溃或故障相关的事件</translation>
@@ -2709,7 +2696,6 @@
 <translation id="2756798847867733934">SIM 卡已停用</translation>
 <translation id="8054921503121346576">USB键盘已连接</translation>
 <translation id="3846833722648675493">初次渲染后即显示应用窗口。对于需要同步加载大量资源的应用来说，这些窗口的显示时间可能会大幅延迟；而对于需要以异步方式加载大多数资源的应用来说，这些窗口的显示速度则相对较快。</translation>
-<translation id="8863489667196658337">启用用于创建书签应用的新系统。</translation>
 <translation id="5464632865477611176">运行一次</translation>
 <translation id="4268025649754414643">密钥加密</translation>
 <translation id="916745092148443205">手势点按突出显示</translation>
@@ -2826,6 +2812,7 @@
 <translation id="1467432559032391204">向左</translation>
 <translation id="6395423953133416962">发送<ph name="BEGIN_LINK1"/>系统信息<ph name="END_LINK1"/>和<ph name="BEGIN_LINK2"/>指标<ph name="END_LINK2"/></translation>
 <translation id="1769104665586091481">在新窗口中打开链接(&amp;W)</translation>
+<translation id="5722863401730329657">停用新的书签应用系统。</translation>
 <translation id="5319782540886810524">拉脱维亚语键盘</translation>
 <translation id="6718297397366847234">呈现器崩溃</translation>
 <translation id="9186729806195986201">同时还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME"/> 版本。</translation>
@@ -3136,7 +3123,6 @@
 <translation id="499165176004408815">使用高反差模式</translation>
 <translation id="2928940441164925372">启用与效果相关的指标和事件的被动收集功能，并提供以图表方式查看此数据的选项。要查看数据，请访问 chrome://performance。</translation>
 <translation id="3289856944988573801">要检查是否有更新，请使用以太网或 WLAN。</translation>
-<translation id="6371865199884571412">添加指向此网站的快捷方式…</translation>
 <translation id="247500748408468353">请联系您的管理员或重试。</translation>
 <translation id="450070808725753129">如果它已被列为允许访问网络的程序，请尝试将其从列表中删除，然后再重新添加。</translation>
 <translation id="778627899913883287">对于您认为该扩展程序需要执行的操作，请确保这些权限能够满足其需求。否则，请点击“取消”。</translation>
@@ -3251,7 +3237,6 @@
 <translation id="4910673011243110136">专用网络</translation>
 <translation id="2527167509808613699">各种连接</translation>
 <translation id="653019979737152879">正在同步<ph name="FILE_NAME"/>…</translation>
-<translation id="5783114277171319892">用来呈现界面文字的跨平台HarfBuzz引擎。不会影响网页内容。</translation>
 <translation id="8662795692588422978">其他人</translation>
 <translation id="8072988827236813198">固定标签页</translation>
 <translation id="2673589024369449924">为此用户创建桌面快捷方式</translation>
@@ -3464,7 +3449,6 @@
 <translation id="2453021845418314664">高级同步设置</translation>
 <translation id="14720830734893704">启用虚拟键盘支持。</translation>
 <translation id="5458214261780477893">Dvorak</translation>
-<translation id="8949414596999345979">用来呈现界面文字的HarfBuzz。</translation>
 <translation id="1185924365081634987">您也可以尝试<ph name="GUEST_SIGNIN_LINK_START"/>以访客身份浏览<ph name="GUEST_SIGNIN_LINK_END"/>，以便修复该网络错误。</translation>
 <translation id="3960121209995357026">启用自动拼写更正</translation>
 <translation id="2214283295778284209">无法访问 <ph name="SITE"/></translation>
@@ -3640,11 +3624,11 @@
 <translation id="8030169304546394654">连接已断开</translation>
 <translation id="3733533226834394996">SHA-224</translation>
 <translation id="7295019613773647480">启用受监管用户</translation>
-<translation id="2419414843209660528">添加指向此网站的快捷方式…</translation>
 <translation id="3529423920239848704"><ph name="SHORT_PRODUCT_NAME"/>未正确关闭时出现</translation>
 <translation id="7022562585984256452">您的主页已设置。</translation>
 <translation id="267285457822962309">更改您的设备和外围设备专用的设置。</translation>
 <translation id="1154228249304313899">打开此页：</translation>
+<translation id="1454223536435069390">屏幕截图(&amp;A)</translation>
 <translation id="6976108581241006975">JavaScript 控制台</translation>
 <translation id="60357267506638014">捷克语(QWERTY)</translation>
 <translation id="2478176599153288112">“<ph name="EXTENSION"/>”的媒体文件权限</translation>
@@ -3671,7 +3655,6 @@
 <translation id="8211868401977897190">电子钱包无法处理此交易。</translation>
 <translation id="8240697550402899963">使用经典主题背景</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME"/> 将立即重新启动并重置</translation>
-<translation id="5085414586179562346">更改滚动时的触摸事件行为。“touchcancel”是 Chrome 过去使用的模式，“async-touchmove”是新的首选模式。</translation>
 <translation id="2890624088306605051">只检索同步的设置和数据</translation>
 <translation id="4779083564647765204">缩放</translation>
 <translation id="6397363302884558537">停止讲话</translation>
@@ -4473,7 +4456,6 @@
 <translation id="7763146744708046348">请勿汇总数据 - 这可能会使速度变慢！</translation>
 <translation id="203165784383062719">拼写检查工具选项(&amp;O)</translation>
 <translation id="5626134646977739690">名字：</translation>
-<translation id="4899837262951879307">触摸滚动模式。</translation>
 <translation id="5854409662653665676">如果您经常遇到问题，可以试着用以下方法解决此模块存在的问题：</translation>
 <translation id="3776796446459804932">此扩展程序违反了 Chrome 网上应用店政策。</translation>
 <translation id="3681007416295224113">证书信息</translation>
@@ -4525,7 +4507,6 @@
 <translation id="1371806038977523515">这些设置的控制方为：</translation>
 <translation id="2020262498093941982">Answers in Suggest</translation>
 <translation id="6462082050341971451">您还在吗？</translation>
-<translation id="3173002765127962599">touchcancel</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="6020431688553761150">服务器未授予您访问此资源的权限。</translation>
 <translation id="2587203970400270934">运算符代码：</translation>
@@ -4737,6 +4718,7 @@
 <translation id="8148264977957212129">拼音输入法</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="2871813825302180988">已有人在此设备上使用该帐户。</translation>
+<translation id="6277518330158259200">屏幕截图(&amp;A)</translation>
 <translation id="1642505962779453775">上个季度</translation>
 <translation id="3323235640813116393">将网页保存为MHTML（即包含HTML和所有子资源的单个文本文件）。</translation>
 <translation id="6509122719576673235">挪威语</translation>
@@ -5317,7 +5299,6 @@
 <translation id="8938356204940892126">放弃</translation>
 <translation id="2670965183549957348">酷音输入法</translation>
 <translation id="7839804798877833423">抓取这些文件将使用约 <ph name="FILE_SIZE"/> 移动数据。</translation>
-<translation id="3268451620468152448">打开的标签页</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="5167131699331641907">荷兰语键盘</translation>
 <translation id="7401762151840183030">您的设置将恢复为原始默认设置。这不仅会重置您的主页、“打开新的标签页”页面和搜索引擎，而且还会禁用您的扩展程序并取消固定所有标签页。此外，其他临时数据和缓存的数据（例如Cookie、内容和网站数据）也将一并清除。</translation>
@@ -5358,7 +5339,6 @@
 <translation id="3184560914950696195">无法保存到 $1。经过修改的图片将保存在“下载内容”文件夹中。</translation>
 <translation id="8366396658833131068">您的网络连接已恢复。要启动信息亭模式下的应用，请选择其他网络或按下方的“继续”按钮。</translation>
 <translation id="4664482161435122549">PKCS #12 导出错误</translation>
-<translation id="3811328435734979057">启用新的书签应用系统。</translation>
 <translation id="2445081178310039857">必须指定扩展程序根目录。</translation>
 <translation id="146187176629751223">本次环聊的某个参与者已主动提出为您提供帮助，不过其需要获得您计算机的控制权。如果您接受，那么：
 

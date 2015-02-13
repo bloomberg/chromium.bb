@@ -47,7 +47,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="8556340503434111824">Galima nauja „Google Chrome“ versija, kuri greitesnė nei bet kada.</translation>
 <translation id="8987477933582888019">Žiniatinklio naršyklė</translation>
-<translation id="3749644715096758981">Nepavyko atnaujinti „Chrome“ į naujausią versiją, todėl negalėsite naudoti naujų funkcijų ir nebus išspręstos problemos dėl saugumo. Turite atnaujinti „Chrome“.</translation>
 <translation id="4728575227883772061">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Google Chrome“, uždarykite ir pabandykite iš naujo.</translation>
 <translation id="3080151273017101988">Uždarius „Google Chrome“ toliau leisti fono programas</translation>
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
@@ -72,7 +71,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="7098166902387133879">„Google Chrome“ naudoja jūsų mikrofoną.</translation>
 <translation id="2596415276201385844">Jei norite užmegzti saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikalaujama todėl, kad svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikrą laikotarpį. Kadangi įrenginio laikrodis nustatytas netinkamai, „Chrome“ negali tinkamai patvirtinti sertifikatų.</translation>
 <translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
-<translation id="5298539825145851748">Pašalinti iš „Chrome“</translation>
 <translation id="3197823471738295152">Įrenginyje naudojate naujausią programinės įrangos versiją.</translation>
 <translation id="8286862437124483331">„Google Chrome“ bando rodyti slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
@@ -147,6 +145,10 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
         kad pagerėtų našumas.</translation>
 <translation id="2290014774651636340">Trūksta „Google“ API raktų. Bus išjungtos kai kurios „Google Chrome“ funkcijos.</translation>
 <translation id="2397416548179033562">Rodyti „Chrome“ meniu</translation>
+<translation id="5423788048750135178">Eikite į „Chrome“ meniu &gt; Nustatymai &gt; (Išplėstiniai) Privatumas
+          ir išjunkite parinktį „Iš anksto iškviesti puslapio išteklius“.
+          Jei tai atlikus problema išlieka, rekomenduojame iš naujo įgalinti šią parinktį,
+          kad pagerėtų našumas.</translation>
 <translation id="4794050651896644714">Išsaugoti išsamią informaciją „Chrome“</translation>
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="5855036575689098185">Jūsų kompiuteryje veikianti programinė įranga nesuderinama su „Google Chrome“.</translation>
@@ -186,7 +188,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="5028489144783860647">„Google Chrome“ negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="9026991721384951619">„Chrome“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="8547799825197623713">„Chrome“ programų paleidimo priemonė („Canary“)</translation>
-<translation id="6326175484149238433">Pašalinti iš „Chrome“</translation>
 <translation id="2871893339301912279">Esate prisijungę prie „Chrome“.</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="7161904924553537242">Sveiki! Tai - „Google Chrome“</translation>

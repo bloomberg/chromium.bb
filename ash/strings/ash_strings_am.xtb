@@ -59,6 +59,7 @@
 <translation id="8676770494376880701">አነስተኛ ኃይል ያለው ባትሪ መሙያ ተገናኝቷል</translation>
 <translation id="5238774010593222950">ወደሌላ መለያ በመለያ መግባት አይቻልም።</translation>
 <translation id="1723752762323179280">ከክፍለ ጊዜ በመውጣት ላይ</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">አዎ</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
@@ -198,9 +199,11 @@
 <translation id="4918086044614829423">ይቀበሉ</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ቀርቷል</translation>
 <translation id="3009178788565917040">ውጽዓት</translation>
+<translation id="3147142846278915599">ማስጀመሪያ (መተግበሪያዎችን በማመሳሰል ላይ...)</translation>
 <translation id="6911468394164995108">ሌላ ይቀላቀሉ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>፦ <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">ሙሉ እስኪሆን ድረስ <ph name="HOUR"/>ሰ <ph name="MINUTE"/>ደ</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">ኤስ ኤም ኤስ ከ<ph name="PHONE_NUMBER"/></translation>
+<translation id="4053612967614057854">የማያ ገጽ ላይ ቁልፍ ሰሌዳን አሰናክል</translation>
 </translationbundle>

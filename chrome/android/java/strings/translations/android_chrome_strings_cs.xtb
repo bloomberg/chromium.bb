@@ -117,7 +117,6 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="907015151729920253">Čipová karta</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="5016205925109358554">Patková</translation>
-<translation id="2600241144430299006">Měsíc vypršení platnosti karty</translation>
 <translation id="3063601790762993062">Uložit video</translation>
 <translation id="8106211421800660735">Číslo platební karty</translation>
 <translation id="6042308850641462728">Více</translation>
@@ -125,7 +124,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="7358682983403815415">Otevřené karty, záložky, historie a další údaje se synchronizují s vaším účtem Google.</translation>
 <translation id="1943432128510653496">Ukládání hesel</translation>
 <translation id="4113030288477039509">Spravováno vaším administrátorem</translation>
-<translation id="9100610230175265781">Je vyžadováno heslo</translation>
+<translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="4148957013307229264">Instalace...</translation>
 <translation id="3992315671621218278">Uložit odkaz</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
@@ -136,7 +135,6 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="651048280540227067">Zavřít nabídku</translation>
 <translation id="748127970106343339">Potvrdit vymazání identifikačních údajů zařízení</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
-<translation id="1583256385106514953">Rok vypršení platnosti karty</translation>
 <translation id="1082482054625560856">Spravovat uložená hesla v <ph name="BEGIN_LINK"/>účtu Google<ph name="END_LINK"/></translation>
 <translation id="2699916814609764774">Cesta k profilu</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
@@ -172,7 +170,6 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="5626134646977739690">Název:</translation>
 <translation id="5565871407246142825">Platební karty</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
-<translation id="2612676031748830579">Číslo karty</translation>
 <translation id="6333140779060797560">Sdílet prostřednictvím aplikace <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="2888126860611144412">O aplikaci Chrome</translation>

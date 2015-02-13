@@ -47,7 +47,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="568643307450491754">Pata alamisho zako katika menyu ya Chrome au kwenye upau wa alamisho.</translation>
 <translation id="8556340503434111824">Kuna toleo jipya linalopatikana la Google Chrome, na ni la kasi kuliko la awali.</translation>
 <translation id="8987477933582888019">Kivinjari cha Wavuti</translation>
-<translation id="3749644715096758981">Chrome haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya na kurekebishwa kwa usalama. Unahitaji kusasisha Chrome.</translation>
 <translation id="4728575227883772061">Usanidi umeshindwa kwa sababu ya hitilafu isiyojulikana. Ikiwa Google Chrome haitumiki kwa sasa, tafadhali ifunge na ujaribu tena.</translation>
 <translation id="3080151273017101988">Endelea kuendesha programu zinazofanya kazi chini chini wakati Google Chrome imefungwa</translation>
 <translation id="4149882025268051530">Kisanidi kimeshindwa kufungua saraka. Tafadhali pakua Google Chrome tena.</translation>
@@ -72,7 +71,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="7098166902387133879">Google Chrome inatumia maikrofoni yako.</translation>
 <translation id="2596415276201385844">Ili kutambua muunganisho salama, saa yako inahitaji kuwekwa sahihi. Hii ni kwa sababu vyeti ambavyo tovuti hutumia kujitambua ni sahihi kwa vipindi mahususi pekee. Kwa kuwa saa ya kifaa chako si sahihi, Chrome haiwezi kuthibitisha vyeti hivi.</translation>
 <translation id="4053720452172726777">Dhibiti  na ugeuze Google Chrome ikufae</translation>
-<translation id="5298539825145851748">Ondoa Kwenye Chrome</translation>
 <translation id="3197823471738295152">Kifaa chako kimesasishwa.</translation>
 <translation id="8286862437124483331">Google Chrome inajaribu kuonyesha manenosiri. Chapa nenosiri lako la Windows ili uruhusu hili.</translation>
 <translation id="3889417619312448367">Ondoa Google Chrome</translation>
@@ -143,6 +141,10 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
         Ikiwa hili halitatatua tatizo, tunapendekeza uchague tena chaguo hili kwa utendaji ulioboreshwa.</translation>
 <translation id="2290014774651636340">Funguo za API za Google zinakosekana. Baadhi ya utendaji wa Google Chrome utazimwa.</translation>
 <translation id="2397416548179033562">Onyesha Menyu ya Chrome</translation>
+<translation id="5423788048750135178">Nenda kwenye menyu ya Chrome &gt; Mipangilio &gt; Faragha (Iliyoboreshwa)
+          na uzime &quot;Leta mapema rasilimali za kurasa.&quot;
+          Ikiwa hili halitatui tatizo, tunapendekeza uwashe chaguo hili
+          tena kwa utendaji ulioimarishwa.</translation>
 <translation id="4794050651896644714">Hifadhi maelezo katika Chrome</translation>
 <translation id="911206726377975832">Futa historia yako ya kuvinjari pia?</translation>
 <translation id="5855036575689098185">Programu unayotumia kwenye kompyuta yako haioani na Google Chrome.</translation>
@@ -182,7 +184,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="5028489144783860647">Google Chrome haikuweza kusawazisha data yako. Tafadhali sasisha kauli siri yako ya Usawazishaji.</translation>
 <translation id="9026991721384951619">Mfumo wa Uendeshaji wa Chrome haukuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="8547799825197623713">Canary ya Kizinduzi cha Programu ya Chrome</translation>
-<translation id="6326175484149238433">Ondoa kwenye Chrome</translation>
 <translation id="2871893339301912279">Umeingia kwenye Chrome!</translation>
 <translation id="7890208801193284374">Kama unatumia kompyuta pamoja na wengine, marafiki na familia wanaweza kuvinjari tofauti na kusanidi Chrome jinsi wapendavyo.</translation>
 <translation id="7161904924553537242">Karibu Google Chrome</translation>

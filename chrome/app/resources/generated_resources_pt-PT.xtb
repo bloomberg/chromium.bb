@@ -104,7 +104,6 @@
 <translation id="3775432569830822555">Certificado de servidor SSL</translation>
 <translation id="1829192082282182671">Re&amp;duzir</translation>
 <translation id="8946359700442089734">As funcionalidades de depuração não foram totalmente ativadas neste dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
-<translation id="5042319201438341383">(UTC)</translation>
 <translation id="8564827370391515078">128</translation>
 <translation id="6390799748543157332">As páginas visualizadas nesta janela não serão apresentadas no histórico do navegador e não deixarão outros vestígios, como cookies, no computador depois de fechar todas as janelas de Convidado abertas. No entanto, todos os ficheiros transferidos serão preservados.</translation>
 <translation id="816055135686411707">Erro ao definir a confiança do certificado</translation>
@@ -578,14 +577,12 @@
 <translation id="8713570323158206935">Enviar <ph name="BEGIN_LINK1"/>informações do sistema<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Erro de transferência</translation>
 <translation id="5941343993301164315">Inicie sessão em <ph name="TOKEN_NAME"/>.</translation>
-<translation id="684095112754891891">Ativar o teclado de vista de introdução QP.</translation>
 <translation id="1916935104118658523">Ocultar Este Plug-in</translation>
 <translation id="1046059554679513793">Ups, esse nome já está a ser utilizado!</translation>
 <translation id="5868571107634815419">Desativar a Edição do Office para Documentos, Folhas de cálculo e Apresentações</translation>
 <translation id="2587922270115112871">Criar utilizadores supervisionados não cria Contas Google e as definições
     e os dados desses utilizadores não serão transmitidos a outros dispositivos com a Sincronização do Google Chrome. Atualmente, os utilizadores supervisionados aplicam-se apenas a esta instalação do Chrome, neste dispositivo.</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
-<translation id="7342729285348293164">Inicie sessão no <ph name="PRODUCT_NAME"/> com a sua Conta Google para guardar as funcionalidades personalizadas do seu navegador para a web e aceder-lhes a partir de <ph name="PRODUCT_NAME"/> em qualquer computador. Iniciará também automaticamente sessão nos seus serviços Google favoritos.</translation>
 <translation id="2542049655219295786">Tabela do Google</translation>
 <translation id="3899879303189199559">Offline durante mais de um ano</translation>
 <translation id="3016641847947582299">Componente atualizado</translation>
@@ -716,7 +713,6 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="7760004034676677601">É esta a página inicial de que estava à espera?</translation>
 <translation id="3504135463003295723">Nome do grupo:</translation>
 <translation id="3314070176311241517">Permitir que todos os sites executem JavaScript (recomendado)</translation>
-<translation id="4857983212546818394">Permite que o utilizador efetue facilmente uma cópia de segurança do conteúdo para a nuvem.</translation>
 <translation id="7419631653042041064">Teclado catalão</translation>
 <translation id="4663254525753315077">Sempre que possível, coloca os conteúdos de deslocamento de um elemento de deslocamento de conteúdo excedido numa camada composta para obter um deslocamento mais rápido.</translation>
 <translation id="3280431534455935878">A preparar</translation>
@@ -966,12 +962,10 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="2384596874640104496">Teclado sinhala</translation>
 <translation id="3511528412952710609">Curto</translation>
 <translation id="3353984535370177728">Selecionar uma pasta a carregar</translation>
-<translation id="7339888009669464587">async-touchmove</translation>
 <translation id="8258405095852912294">Este site não aceita o cartão Discover.</translation>
 <translation id="8061298200659260393">Não permitir que os sites enviem mensagens push</translation>
 <translation id="6328639280570009161">Tente desativar a previsão de rede</translation>
 <translation id="3528498924003805721">Destinos dos atalhos</translation>
-<translation id="5117427536932535467">Temas e imagens de fundo</translation>
 <translation id="6780439250949340171">gerir outras definições</translation>
 <translation id="204622017488417136">O dispositivo regressa à versão do Chrome instalada anteriormente. Todos os dados locais e as contas de utilizador são removidos. Não é possível anular esta ação.</translation>
 <translation id="8912793549644936705">Esticar</translation>
@@ -1098,6 +1092,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY"/> pode ser útil da próx
 <translation id="1422780722984745882">Foram recebidos vários cabeçalhos de Localização. Isto não é permitido como proteção contra ataques de divisão de resposta HTTP.</translation>
 <translation id="7787129790495067395">Atualmente, está a utilizar uma frase de acesso. Se se tiver esquecido da sua frase de acesso, pode repor a sincronização para limpar os dados dos servidores da Google utilizando o Painel de controlo do Google.</translation>
 <translation id="2098305189700762159">Não encontrada</translation>
+<translation id="3420155476022430555">Desativa o sistema novo para criar aplicações favoritas.</translation>
 <translation id="2260654768907572711">PLUG-IN DO NAVEGADOR</translation>
 <translation id="2663384537032943132">&amp;Opções do corretor ortográfico</translation>
 <translation id="242184683889529951">O processamento de threads dos eventos de entrada relacionados com deslocamento foi desativado; por conseguinte, todos os eventos de deslocamento serão processados no thread principal. Tenha em atenção que esta ação pode afetar significativamente o desempenho de deslocamento da maioria dos Websites e destina-se apenas a fins de teste.</translation>
@@ -1349,9 +1344,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY"/> pode ser útil da próx
 <translation id="1195447618553298278">Erro desconhecido.</translation>
 <translation id="2617653079636271958">Zoom: <ph name="VALUE"/>%</translation>
 <translation id="8222121761382682759">Desinstalar...</translation>
-<translation id="7427916543828159271">A ligação Wi-Fi e os dados móveis estão desligados.
-          <ph name="LINE_BREAK"/>
-          A página pode ser carregada assim que estiver ligado a uma rede.</translation>
 <translation id="1718685839849651010">A partir de um registo desconhecido</translation>
 <translation id="8811462119186190367">O idioma do Chrome foi alterado de &quot;<ph name="FROM_LOCALE"/>&quot; para &quot;<ph name="TO_LOCALE"/>&quot; depois de sincronizar as suas definições.</translation>
 <translation id="1087119889335281750">&amp;Não existem sugestões de ortografia</translation>
@@ -1367,7 +1359,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY"/> pode ser útil da próx
 <translation id="8442065444327205563">O seu documento está pronto para visualização.</translation>
 <translation id="236141728043665931">Bloquear sempre o acesso ao microfone</translation>
 <translation id="2307462900900812319">Configurar rede</translation>
-<translation id="7624674027161923493">Ativar teclados de vistas de introdução em estilo de design material.</translation>
 <translation id="3324301154597925148">É Esta a Página de Pesquisa de Que Estava à Espera?</translation>
 <translation id="3555812735919707620">Remover extensão</translation>
 <translation id="7018275672629230621">Ler e alterar o histórico de navegação</translation>
@@ -1654,7 +1645,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="9048724894000447955">Marque todas as caixas para prosseguir.</translation>
 <translation id="1553538517812678578">ilimitado</translation>
 <translation id="4773696473262035477">Pode aceder à mesma e a todas as suas <ph name="SAVED_PASSWORDS_LINK"/> a partir de qualquer navegador.</translation>
-<translation id="6449393701131879078">sync-touchmove</translation>
 <translation id="6602956230557165253">Utilize as teclas de seta para a esquerda e direita para navegar.</translation>
 <translation id="3612070600336666959">A desactivar</translation>
 <translation id="5178612934849781517">Quando ativado, utilizará um fluxo de início de sessão puro baseado na Web na primeira execução/NTP/menu de ferramentas/página de definições. Caso contrário, utilize um fluxo nativo com visualização na Web incorporada.</translation>
@@ -2179,7 +2169,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="302620147503052030">Mostrar botão</translation>
 <translation id="1895658205118569222">Encerrar</translation>
 <translation id="4432480718657344517">Leitura de Bytes</translation>
-<translation id="1549379864224375810">Ativar a cópia de segurança na nuvem.</translation>
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="8358685469073206162">Restaurar páginas?</translation>
 <translation id="8708000541097332489">Limpar à saída</translation>
@@ -2344,7 +2333,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="3774278775728862009">Método de introdução tailandês (teclado TIS-820.2538)</translation>
 <translation id="9115675100829699941">&amp;Marcadores</translation>
 <translation id="7191877888075697060">A sua ligação a <ph name="DOMAIN"/> está encriptada com criptografia obsoleta.</translation>
-<translation id="2485422356828889247">Desinstalar</translation>
 <translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> ( <ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/> )</translation>
 <translation id="7461924472993315131">Fixar</translation>
 <translation id="5298363578196989456">Não é possível importar a extensão &quot;<ph name="IMPORT_NAME"/>&quot;, porque não é um módulo partilhado.</translation>
@@ -2650,7 +2638,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2382694417386844779">Oculta o URL na Caixa geral e, em alternativa, mostra o nome de anfitrião num chip clicável.</translation>
 <translation id="2950186680359523359">O servidor fechou a ligação sem enviar quaisquer dados.</translation>
 <translation id="4269099019648381197">Ativa a opção de solicitar Websites para tablets no menu de definições.</translation>
-<translation id="9142623379911037913">Permitir que <ph name="SITE"/> mostre as notificações do ambiente de trabalho? </translation>
 <translation id="3564708465992574908">Níveis de zoom</translation>
 <translation id="6546686722964485737">Aderir à rede WiMAX</translation>
 <translation id="266983583785200437">Eventos relacionados com bloqueios e falhas do <ph name="SHORT_PRODUCT_NAME"/></translation>
@@ -2738,7 +2725,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2756798847867733934">Cartão SIM desativado</translation>
 <translation id="8054921503121346576">Teclado USB ligado</translation>
 <translation id="3846833722648675493">Mostrar janelas de aplicações após a primeira execução. Serão apresentadas janelas bastante tempo depois para aplicações exigentes que carreguem recursos sincronicamente, mas não será significativo para aplicações que carreguem a maior parte dos seus recursos de forma assíncrona.</translation>
-<translation id="8863489667196658337">Permite que o novo sistema crie aplicações de marcadores.</translation>
 <translation id="5464632865477611176">Executar desta vez</translation>
 <translation id="4268025649754414643">Cifragem de chaves</translation>
 <translation id="916745092148443205">Realce Através de Toque de Gesto</translation>
@@ -2855,6 +2841,7 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1"/>informações do sistema<ph name="END_LINK1"/> e <ph name="BEGIN_LINK2"/>métricas<ph name="END_LINK2"/></translation>
 <translation id="1769104665586091481">Abrir Link Numa Nova &amp;Janela</translation>
+<translation id="5722863401730329657">Desativar o novo sistema de aplicações favoritas.</translation>
 <translation id="5319782540886810524">Teclado letão</translation>
 <translation id="6718297397366847234">O Renderizador Falha</translation>
 <translation id="9186729806195986201">Regressar também à versão anteriormente instalada do <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
@@ -3164,7 +3151,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="499165176004408815">Utilizar modo de alto contraste</translation>
 <translation id="2928940441164925372">Ative a recolha passiva de métricas e eventos relacionados com o desempenho e forneça a opção de ver estes dados num modo gráfico. Para ver os dados, aceda a chrome://performance.</translation>
 <translation id="3289856944988573801">Para verificar se existem atualizações, utilize Ethernet ou Wi-Fi.</translation>
-<translation id="6371865199884571412">Adicionar atalho para este Website…</translation>
 <translation id="247500748408468353">Contacte o seu administrador ou tente novamente.</translation>
 <translation id="450070808725753129">Se já estiver indicado na lista como sendo um programa com permissão para aceder à rede, tente
         removê-lo da lista e adicioná-lo novamente.</translation>
@@ -3280,7 +3266,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="4910673011243110136">Redes privadas</translation>
 <translation id="2527167509808613699">Qualquer tipo de ligação</translation>
 <translation id="653019979737152879">A sincronizar <ph name="FILE_NAME"/>…</translation>
-<translation id="5783114277171319892">Motor HarfBuzz de plataforma cruzada para o texto da interface de utilizador. Não afeta o conteúdo Web.</translation>
 <translation id="8662795692588422978">Pessoas</translation>
 <translation id="8072988827236813198">Fixar Separadores</translation>
 <translation id="2673589024369449924">Criar atalho no ambiente de trabalho para este perfil</translation>
@@ -3493,7 +3478,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2453021845418314664">Definições de sincronização avançadas</translation>
 <translation id="14720830734893704">Ativa o suporte para o teclado virtual.</translation>
 <translation id="5458214261780477893">Dvorak</translation>
-<translation id="8949414596999345979">HarfBuzz para o texto da interface de utilizador.</translation>
 <translation id="1185924365081634987">Também pode experimentar <ph name="GUEST_SIGNIN_LINK_START"/>navegar como convidado<ph name="GUEST_SIGNIN_LINK_END"/> para corrigir este erro de rede.</translation>
 <translation id="3960121209995357026">Ativar Correção Ortográfica Automática</translation>
 <translation id="2214283295778284209"><ph name="SITE"/> não está disponível</translation>
@@ -3673,11 +3657,11 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="8030169304546394654">Desligado</translation>
 <translation id="3733533226834394996">SHA-224</translation>
 <translation id="7295019613773647480">Ativar utilizadores supervisionados</translation>
-<translation id="2419414843209660528">Adicionar atalho para este Website...</translation>
 <translation id="3529423920239848704">Ocorrências em que o <ph name="SHORT_PRODUCT_NAME"/> não encerrou corretamente</translation>
 <translation id="7022562585984256452">A sua página inicial foi definida.</translation>
 <translation id="267285457822962309">Alterar as definições específicas para o seu dispositivo e periféricos.</translation>
 <translation id="1154228249304313899">Abrir esta página:</translation>
+<translation id="1454223536435069390">C&amp;riar captura de ecrã</translation>
 <translation id="6976108581241006975">Consola de JavaScript</translation>
 <translation id="60357267506638014">Checo QWERTY</translation>
 <translation id="2478176599153288112">Autorizações de ficheiros multimédia para &quot;<ph name="EXTENSION"/>&quot;</translation>
@@ -3704,7 +3688,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="8211868401977897190">O Google Wallet não consegue processar esta transação.</translation>
 <translation id="8240697550402899963">Utilizar o tema Clássico</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME"/> é reiniciado e reposto momentaneamente</translation>
-<translation id="5085414586179562346">Altere o comportamento dos eventos de toque ao deslocar. &quot;touchcancel&quot; é o que o Chrome tem utilizado historicamente e &quot;async-touchmove&quot; é o novo modo preferencial.</translation>
 <translation id="2890624088306605051">Recuperar apenas as definições e os dados sincronizados</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="6397363302884558537">Pare de Falar</translation>
@@ -4509,7 +4492,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="7763146744708046348">Não agregar os dados - esta ação pode ser lenta!</translation>
 <translation id="203165784383062719">&amp;Opções do corretor ortográfico</translation>
 <translation id="5626134646977739690">Nome:</translation>
-<translation id="4899837262951879307">Modo de deslocamento de toque.</translation>
 <translation id="5854409662653665676">Se estiverem a ocorrer problemas frequentes, pode tentar o seguinte procedimento para resolver o problema com este módulo:</translation>
 <translation id="3776796446459804932">Esta extensão viola a política da Chrome Web Store.</translation>
 <translation id="3681007416295224113">Informações do certificado</translation>
@@ -4561,7 +4543,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="1371806038977523515">Estas definições são controladas por:</translation>
 <translation id="2020262498093941982">Respostas em sugestões</translation>
 <translation id="6462082050341971451">Ainda está aí?</translation>
-<translation id="3173002765127962599">touchcancel</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
 <translation id="6020431688553761150">O servidor não lhe deu autorização para aceder a este recurso.</translation>
 <translation id="2587203970400270934">Código do operador:</translation>
@@ -4773,6 +4754,7 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="8148264977957212129">Método de introdução Pinyin</translation>
 <translation id="7772032839648071052">Confirmar frase de acesso</translation>
 <translation id="2871813825302180988">Esta conta já está a ser utilizada neste dispositivo móvel.</translation>
+<translation id="6277518330158259200">C&amp;riar captura de ecrã</translation>
 <translation id="1642505962779453775">Último Trimestre</translation>
 <translation id="3323235640813116393">Permite guardar páginas como MHTML: um ficheiro de texto único que contém HTML e todos os recursos secundários.</translation>
 <translation id="6509122719576673235">Norueguês</translation>
@@ -5356,7 +5338,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="8938356204940892126">Desisto</translation>
 <translation id="2670965183549957348">Método de introdução Chewing</translation>
 <translation id="7839804798877833423">A obtenção destes ficheiros utilizará aproximadamente <ph name="FILE_SIZE"/> de dados móveis.</translation>
-<translation id="3268451620468152448">Abrir Separadores</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="5167131699331641907">Teclado holandês</translation>
 <translation id="7401762151840183030">As definições serão restauradas para as predefinições originais. Isto irá repor a sua página inicial, a sua página novo separador e o seu motor de pesquisa, desativar as suas extensões e soltar todos os separadores. Irá também limpar outros dados em cache e temporários, como cookies, conteúdos e dados de sites.</translation>
@@ -5397,7 +5378,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="3184560914950696195">Não é possível guardar em $1. As imagens editadas serão guardadas na pasta Transferências.</translation>
 <translation id="8366396658833131068">A conetividade de rede foi restaurada. Selecione uma rede diferente ou prima &quot;Continuar&quot; abaixo para iniciar a aplicação de quiosque.</translation>
 <translation id="4664482161435122549">Erro ao exportar PKCS #12</translation>
-<translation id="3811328435734979057">Ativar o novo sistema de aplicação de marcador.</translation>
 <translation id="2445081178310039857">É necessário o directório de raiz da extensão.</translation>
 <translation id="146187176629751223">Um participante neste Hangout ofereceu-se para o ajudar, sugerindo controlar o seu computador. Se aceitar:
 

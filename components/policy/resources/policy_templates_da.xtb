@@ -287,9 +287,9 @@
 <translation id="2067011586099792101">Bloker adgangen til websites uden for indholdspakker</translation>
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="3096595567015595053">Liste over aktiverede plugins</translation>
-<translation id="3048744057455266684">Hvis denne politik er indstillet, og en søgewebadresse foreslået af omnifeltet indeholder denne parameter i forespørgselsstrengen eller i fragment-id'et, vil forslaget vise søgeudtrykkene og søgemaskinen i stedet for kun søgewebadressen.
+<translation id="3048744057455266684">Hvis denne politik er indstillet, og en søgewebadresse foreslået af omnifeltet indeholder denne parameter i forespørgselsstrengen eller i fragment-id'et, vil forslaget vise søgetermerkene og søgemaskinen i stedet for kun søgewebadressen.
 
-          Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgeudtryk.
+          Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
 
           Denne politik respekteres kun, hvis politikken 'DefaultSearchProviderEnabled' aktiveres.</translation>
 <translation id="5912364507361265851">Tillad brugerne at vise adgangskoder i Adgangskodemanager</translation>
@@ -741,7 +741,7 @@
       lydoptagelsesenheder, uden at du behøver at give tilladelse til det.
 
       BEMÆRK! Denne politik understøttes i øjeblikket kun i terminaltilstand.</translation>
-<translation id="489803897780524242">Parameter, der styrer placeringen af søgeudtryk i standardsøgemaskinen</translation>
+<translation id="489803897780524242">Parameter, der styrer placeringen af søgeterm i standardsøgemaskinen</translation>
 <translation id="316778957754360075">Denne indstilling er blevet trukket tilbage fra og med <ph name="PRODUCT_NAME"/> version 29. Den anbefalede metode til konfiguration af organisationshostede udvidelse-/app-samlinger er at medtage det website, der hoster CRX-pakkerne, i ExtensionInstallSources og placere direkte downloadlinks til pakkerne på en webside. Du kan oprette en applikationsliste for denne webside vha. politikken ExtensionInstallForcelist.</translation>
 <translation id="6401669939808766804">Log brugeren ud</translation>
 <translation id="4826326557828204741">Handling, der igangsættes ved inaktive forsinkelser på batteristrøm</translation>
@@ -1249,9 +1249,9 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade br
 <translation id="4482640907922304445">Viser knappen Start på værktøjslinjen i <ph name="PRODUCT_NAME"/>. Hvis du aktiverer denne indstilling, vises knappen Start altid. Hvis du deaktiverer denne indstilling, vises knappen Start aldrig. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME"/>. Hvis denne politik ikke angives, kan brugeren vælge, om knappen Start skal vises.</translation>
 <translation id="2518231489509538392">Tillad afspilning af lyd</translation>
 <translation id="8146727383888924340">Tillad, at brugerne indløser kampagnetilbud via Chrome OS-registrering</translation>
-<translation id="7301543427086558500">Angiver en liste over alternative webadresser, som kan bruges til at udlede søgeudtryk fra søgemaskinen. Webadresserne bør indeholde strengen <ph name="SEARCH_TERM_MARKER"/>, som bruges til at udlede søgeudtryk.
+<translation id="7301543427086558500">Angiver en liste over alternative webadresser, som kan bruges til at udlede søgetermer fra søgemaskinen. Webadresserne bør indeholde strengen <ph name="SEARCH_TERM_MARKER"/>, som bruges til at udlede søgetermer.
 
-          Politikken er valgfri. Hvis den ikke angives, bruges ingen alternative webadresser til at udlede søgeudtryk.
+          Politikken er valgfri. Hvis den ikke angives, bruges ingen alternative webadresser til at udlede søgetermer.
 
            Denne politik respekteres kun, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
 <translation id="436581050240847513">Rapportér enhedens netværksgrænseflader</translation>

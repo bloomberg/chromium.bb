@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Cari bookmark Anda dalam menu Chrome atau di bilah bookmark.</translation>
 <translation id="8556340503434111824">Tersedia versi Google Chrome yang baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="8987477933582888019">Browser Web</translation>
-<translation id="3749644715096758981">Chrome tidak dapat diperbarui ke versi terkini, sehingga Anda tidak memiliki fitur dan perbaikan keamanan paling mutakhir. Anda perlu memperbarui Chrome.</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena kesalahan yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="3080151273017101988">Terus jalankan apl latar belakang saat Google Chrome ditutup</translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
 <translation id="2596415276201385844">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kontrol Google Chrome</translation>
-<translation id="5298539825145851748">Buang Dari Chrome</translation>
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
 <translation id="8286862437124483331">Google Chrome mencoba menampilkan sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
@@ -137,6 +135,10 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
           untuk meningkatkan kinerja.</translation>
 <translation id="2290014774651636340">Kunci API Google tidak ada. Beberapa fungsi Google Chrome tidak akan berfungsi.</translation>
 <translation id="2397416548179033562">Tampilkan Menu Chrome</translation>
+<translation id="5423788048750135178">Buka menu Chrome &gt; Setelan &gt; (Lanjutan) Privasi
+          dan nonaktifkan &quot;Ambil sumber daya laman lebih dahulu&quot;.
+          Jika hal ini tidak menyelesaikan masalah, sebaiknya aktifkan opsi ini
+          lagi untuk kinerja yang ditingkatkan.</translation>
 <translation id="4794050651896644714">Simpan detail di Chrome</translation>
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
@@ -176,7 +178,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="5028489144783860647">Google Chrome tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="9026991721384951619">Chrome OS tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
 <translation id="8547799825197623713">Peluncur Aplikasi Chrome Canary</translation>
-<translation id="6326175484149238433">Hapus dari Chrome</translation>
 <translation id="2871893339301912279">Anda sudah masuk ke Chrome!</translation>
 <translation id="7890208801193284374">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chrome sesuai keinginannya.</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>

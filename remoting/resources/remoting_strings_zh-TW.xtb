@@ -89,7 +89,6 @@
 <translation id="2013996867038862849">已刪除所有配對的用戶端。</translation>
 <translation id="6985691951107243942">您是否確定要停用與 <ph name="HOSTNAME"/> 之間的遠端連線？如果之後改變心意的話，您必須親身前往該電腦所在位置並修改設定後，才能重新啟用連線。</translation>
 <translation id="6944854424004126054">還原視窗</translation>
-<translation id="1436054138039008644"><ph name="HOSTNAME"/> (最近上線日期：<ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">如要開始共用您的電腦，請將下方的存取碼告知要協助您的人員。</translation>
 <translation id="409800995205263688">注意：政策設定僅允許您網路中的電腦相互連線。</translation>
 <translation id="8513093439376855948">用於遠端處理主機管理的內建訊息傳遞主機</translation>

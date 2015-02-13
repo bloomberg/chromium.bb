@@ -73,7 +73,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
 <translation id="8654520615680304441">Kablosuz'u aç...</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME"/> ile paylaşılıyor.</translation>
-<translation id="6650933572246256093">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parola anahtarını girin: <ph name="PASSKEY"/></translation>
+<translation id="6650933572246256093">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/> olarak değiştirildi.
 Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
@@ -155,7 +155,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="7029814467594812963">Oturumdan çık</translation>
 <translation id="479989351350248267">ara</translation>
 <translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
-<translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parola anahtarının gösterildiğini onaylayın: <ph name="PASSKEY"/></translation>
+<translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Pil %<ph name="PERCENTAGE"/> dolu.</translation>
 <translation id="2983818520079887040">Ayarlar...</translation>
 <translation id="6452181791372256707">Reddet</translation>

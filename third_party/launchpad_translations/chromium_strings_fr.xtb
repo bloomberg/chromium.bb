@@ -71,7 +71,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="8897323336392112261">Elle contrôle également la page qui s'affiche au démarrage de Chromium ou lorsque vous cliquez sur le bouton &quot;Accueil&quot;.</translation>
 <translation id="4330585738697551178">Ce module n'est pas compatible avec Chromium.</translation>
 <translation id="3190315855212034486">Chromium est bloqué. Voulez-vous le relancer maintenant ?</translation>
-<translation id="8843170958047978824">Supprimer de Chromium</translation>
 <translation id="3068515742935458733">Aidez-nous à améliorer Chromium en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK"/>.</translation>
 <translation id="734373864078049451">Votre contenu Web, vos favoris et toutes vos données Chromium sont conservés ici.</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
@@ -104,7 +103,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="6055895534982063517">Une nouvelle version de Chromium encore plus rapide est disponible.</translation>
 <translation id="8821041990367117597">Impossible de synchroniser vos données dans Chromium, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="4677944499843243528">Le profil semble être utilisé dans le cadre d'un autre processus Chromium (<ph name="PROCESS_ID"/>) sur un autre ordinateur (<ph name="HOST_NAME"/>). Ce profil a été verrouillé de sorte qu'il ne soit pas endommagé. Si vous êtes sûr que le profil n'est utilisé dans le cadre d'aucun autre processus, vous pouvez le déverrouiller et relancer Chromium.</translation>
-<translation id="5405650547142096840">Supprimer de Chromium</translation>
 <translation id="4994636714258228724">Ajouter un utilisateur à Chromium</translation>
 <translation id="7066436765290594559">Impossible de synchroniser vos données dans Chromium OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
@@ -163,7 +161,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2648074677641340862">Une erreur du système d'exploitation s'est produite pendant l'installation. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="5942520288919337908">L'extension &quot;<ph name="EXTENSION_NAME"/>&quot; a été ajoutée à Chromium.</translation>
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour du système.</translation>
-<translation id="1240763998429950591">Chromium n'a pas pu être mis à jour. Vous ne disposez donc pas des nouvelles fonctionnalités et des correctifs de sécurité. Vous devez mettre à jour Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos, des résultats de recherche et d'autres détails.</translation>
 <translation id="4559775032954821361">Accédez au

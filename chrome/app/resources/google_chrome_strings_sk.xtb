@@ -47,7 +47,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="568643307450491754">Záložky nájdete v ponuke Chrome alebo na paneli so záložkami.</translation>
 <translation id="8556340503434111824">K dispozícii je nová verzia prehliadača Google Chrome, ktorá je rýchlejšia ako kedykoľvek predtým.</translation>
 <translation id="8987477933582888019">Webový prehliadač</translation>
-<translation id="3749644715096758981">Prehliadaču Chrome sa nepodarilo aktualizovať na najnovšiu verziu. Nemáte preto k dispozícii nové funkcie a opravy zabezpečenia. Chrome je potrebné aktualizovať.</translation>
 <translation id="4728575227883772061">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Google Chrome momentálne spustený, zatvorte ho a skúste znova.</translation>
 <translation id="3080151273017101988">Ponechať aplikácie na pozadí spustené po zatvorení prehliadača Google Chrome</translation>
 <translation id="4149882025268051530">Inštalátor pri dekomprimovaní archívu zlyhal. Stiahnite prehliadač Google Chrome znova.</translation>
@@ -70,7 +69,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="7098166902387133879">Google Chrome používa váš mikrofón.</translation>
 <translation id="2596415276201385844">Ak chcete nadviazať zabezpečené pripojenie, vaše hodiny musia byť nastavené správne. Je to preto, že certifikáty, ktoré webové stránky používajú na vlastnú identifikáciu, sú platné iba určitý čas. Keďže nie sú hodiny vášho zariadenia nastavené správne, Chrome nemôže tieto certifikáty overiť.</translation>
 <translation id="4053720452172726777">Prispôsobiť a ovládať prehliadač Google Chrome</translation>
-<translation id="5298539825145851748">Odstrániť z prehliadača Chrome</translation>
 <translation id="3197823471738295152">Zariadenie bolo aktualizované.</translation>
 <translation id="8286862437124483331">Prehliadač Google Chrome sa pokúša zobraziť heslá. Ak to chcete povoliť, zadajte svoje heslo systému Windows.</translation>
 <translation id="3889417619312448367">Odinštalovanie prehliadača Google Chrome</translation>
@@ -142,6 +140,10 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
         aby ste získali lepšiu výkonnosť.</translation>
 <translation id="2290014774651636340">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chrome budú zakázané.</translation>
 <translation id="2397416548179033562">Zobraziť Ponuku Chrome</translation>
+<translation id="5423788048750135178">Prejdite do Ponuky Chrome &gt; Nastavenia &gt; (Rozšírené) Ochrana osobných údajov
+          a zakážte možnosť Predbežne vyvolať zdroje stránky.
+          Ak týmto postupom daný problém nevyriešite, odporúčame vám túto možnosť
+          znova povoliť, aby ste získali lepšiu výkonnosť.</translation>
 <translation id="4794050651896644714">Uložiť podrobnosti v prehliadači Chrome</translation>
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="5855036575689098185">Softvér spustený vo vašom počítači nie je kompatibilný s prehliadačom Google Chrome.</translation>
@@ -181,7 +183,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="5028489144783860647">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="9026991721384951619">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="8547799825197623713">Spúšťač aplikácií Chrome Canary</translation>
-<translation id="6326175484149238433">Odstrániť z prehliadača</translation>
 <translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
 <translation id="7890208801193284374">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chrome prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
 <translation id="7161904924553537242">Víta vás prehľadávač Google Chrome</translation>

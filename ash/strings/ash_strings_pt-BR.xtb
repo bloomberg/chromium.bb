@@ -59,6 +59,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="8676770494376880701">Carregador de baixa potência conectado</translation>
 <translation id="5238774010593222950">Não é possível fazer login em outra conta.</translation>
 <translation id="1723752762323179280">Saindo da sessão</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Sair</translation>
@@ -197,9 +198,11 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> restantes</translation>
 <translation id="3009178788565917040">Saída</translation>
+<translation id="3147142846278915599">Tela de início (sincronizando aplicativos...)</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h<ph name="MINUTE"/>m até a carga total</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
+<translation id="4053612967614057854">Desativar o teclado na tela</translation>
 </translationbundle>

@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Finn bokmerkene dine i Chrome-menyen eller på bokmerkeraden.</translation>
 <translation id="8556340503434111824">En ny versjon av Google Chrome er tilgjengelig, og den er nå raskere en noen sinne.</translation>
 <translation id="8987477933582888019">Nettleser</translation>
-<translation id="3749644715096758981">Chrome kunne ikke oppdatere til den nyeste versjonen, så du går glipp av nye funksjoner og sikkerhetsfikser. Du må oppdatere Chrome.</translation>
 <translation id="4728575227883772061">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Google Chrome hvis det kjører, og prøv på nytt.</translation>
 <translation id="3080151273017101988">Fortsett kjøringen av bakgrunnsprogrammer når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">Google Chrome bruker mikrofonen din.</translation>
 <translation id="2596415276201385844">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chrome kontrollere disse sertifikatene.</translation>
 <translation id="4053720452172726777">Tilpass og kontrollér Google Chrome</translation>
-<translation id="5298539825145851748">Fjern fra Chrome</translation>
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
 <translation id="8286862437124483331">Google Chrome forsøker å vise passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="3889417619312448367">Avinstaller Google Chrome</translation>
@@ -175,7 +173,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="8547799825197623713">Chrome-appvelger – Canary</translation>
-<translation id="6326175484149238433">Fjern fra Chrome</translation>
 <translation id="2871893339301912279">Du er nå logget på Chrome.</translation>
 <translation id="7890208801193284374">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>

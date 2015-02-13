@@ -46,7 +46,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="568643307450491754">Retrouvez vos favoris dans le menu Chrome ou dans la barre de favoris.</translation>
 <translation id="8556340503434111824">Une nouvelle version de Google Chrome encore plus rapide est disponible.</translation>
 <translation id="8987477933582888019">Navigateur Web</translation>
-<translation id="3749644715096758981">Chrome n'a pas pu être mis à jour. Vous ne disposez donc pas des nouvelles fonctionnalités et des correctifs de sécurité. Vous devez mettre à jour Chrome.</translation>
 <translation id="4728575227883772061">Échec de l'installation suite à une erreur non spécifiée. Si Google Chrome est en cours d'exécution, fermez-le puis réessayez.</translation>
 <translation id="3080151273017101988">Poursuivre l'exécution d'applications en arrière-plan après la fermeture de Google Chrome</translation>
 <translation id="4149882025268051530">Échec de la décompression de l'archive par le programme d'installation. Veuillez télécharger de nouveau Google Chrome.</translation>
@@ -71,7 +70,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="2596415276201385844">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chrome n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
-<translation id="5298539825145851748">Supprimer de Chrome</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
@@ -184,7 +182,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="5028489144783860647">Impossible de synchroniser vos données dans Google Chrome. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="9026991721384951619">Impossible de synchroniser vos données dans Chrome OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="8547799825197623713">Lanceur d'applications Chrome – Canary</translation>
-<translation id="6326175484149238433">Supprimer de Google Chrome</translation>
 <translation id="2871893339301912279">Vous êtes connecté à Google Chrome.</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>

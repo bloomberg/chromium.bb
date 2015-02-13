@@ -117,7 +117,6 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="907015151729920253">Carte à puce</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="2600241144430299006">Mois d'expiration de la carte</translation>
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>
 <translation id="8106211421800660735">N° de carte</translation>
 <translation id="6042308850641462728">Plus</translation>
@@ -136,7 +135,6 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="651048280540227067">Fermer le menu</translation>
 <translation id="748127970106343339">Confirmer la suppression de l'identifiant de l'appareil</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de navigation privée</translation>
-<translation id="1583256385106514953">Année d'expiration de la carte</translation>
 <translation id="1082482054625560856">Gérer les mots de passe enregistrés dans votre <ph name="BEGIN_LINK"/>compte Google<ph name="END_LINK"/></translation>
 <translation id="2699916814609764774">Chemin d'accès au profil</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
@@ -172,7 +170,6 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="5626134646977739690">Nom :</translation>
 <translation id="5565871407246142825">Cartes de paiement</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
-<translation id="2612676031748830579">Numéro de carte</translation>
 <translation id="6333140779060797560">Partager via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="2888126860611144412">À propos de Chrome</translation>

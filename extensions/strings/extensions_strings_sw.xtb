@@ -38,10 +38,11 @@
 <translation id="5127881134400491887">Dhibiti miunganisho ya mtandao</translation>
 <translation id="6344170822609224263">Pata orodha ya miunganisho ya mtandao</translation>
 <translation id="7039326228527141150">Fikia vifaa vya USB kutoka kwa <ph name="VENDOR_NAME"/></translation>
-<translation id="2616366145935564096">Soma na ubadilishe data yako kwenye <ph name="WEBSITE_1"/></translation>
+<translation id="2616366145935564096">Kusoma na kubadilisha data yako kwenye <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Badilisha data kwa kompyuta ziitwazo: <ph name="HOSTNAMES"/></translation>
+<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Fikia vichunguzi vya hati vilivyoambatishwa kupitia USB au kwenye mtandao wa karibu</translation>
-<translation id="6408118934673775994">Soma na ubadilishe data yako kwenye <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, na <ph name="WEBSITE_3"/></translation>
+<translation id="6408118934673775994">Kusoma na kubadilisha data yako kwenye <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> na <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Badilisha data kwa kompyuta yoyote kwenye kikoa <ph name="DOMAIN"/></translation>
 <translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME"/>) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Kiendelezi hiki kilijipakia chenyewe upya kila mara.</translation>
@@ -53,7 +54,7 @@
 <translation id="8284279544186306258">tovuti zote <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Badilisha ukurasa wako wa mwanzo uwe: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Kiendelezi hiki kimeshindwa kurekebisha ombi la mtandao kwa sababu ya ukizano wa urekebishaji na kirefusho kingine.</translation>
-<translation id="2241053333139545397">Soma na ubadilishe data yako kwenye tovuti kadhaa</translation>
+<translation id="2241053333139545397">Kusoma na kubadilisha data yako kwenye tovuti kadhaa</translation>
 <translation id="8602184400052594090">Faili ya ratiba haipatikani au haisomeki.</translation>
 <translation id="4883436287898674711">Tovuti zote <ph name="WEBSITE_1"/></translation>
 <translation id="9111791539553342076">Kiendelezi hiki kimeshindwa kuboresha kichwa cha jibu &quot;<ph name="HEADER_NAME"/>&quot; cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME"/>).</translation>
@@ -71,7 +72,7 @@
 <translation id="7154130902455071009">Badilisha ukurasa wako uwe: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Fikia chochote kati ya vifaa hivi vya USB</translation>
 <translation id="2677911863018634147">Programu &quot;<ph name="APP_NAME"/>&quot; inaomba uwezo wa kufikia kifaa chako kimoja au zaidi.</translation>
-<translation id="6698810901424468597">Soma na ubadilishe data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">Kusoma na kubadilisha data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Isingeweza kusimbua picha: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="5544884907028850012">Mchuuzi <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Fikia trafiki ya mtandao wako</translation>

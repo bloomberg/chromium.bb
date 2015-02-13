@@ -43,7 +43,6 @@
 <translation id="568643307450491754">在 Chrome 菜单或书签栏中查找您的书签。</translation>
 <translation id="8556340503434111824">Google Chrome 浏览器现已推出速度更快的新版本。</translation>
 <translation id="8987477933582888019">网络浏览器</translation>
-<translation id="3749644715096758981">Chrome 无法更新到最新版本，因此其中缺少一些新功能并且未更正某些安全性问题。您需要更新 Chrome。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="3080151273017101988">关闭 Google Chrome 后继续运行后台应用</translation>
 <translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载 Google Chrome。</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
 <translation id="2596415276201385844">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chrome 无法验证这些证书。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
-<translation id="5298539825145851748">从Chrome中移除</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
 <translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
@@ -162,7 +160,6 @@
 <translation id="5028489144783860647">Google Chrome无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="9026991721384951619">您的帐户登录详细信息已过期，Chrome操作系统无法同步您的数据。</translation>
 <translation id="8547799825197623713">Chrome 应用启动器 Canary</translation>
-<translation id="6326175484149238433">从Chrome中移除</translation>
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
 <translation id="7890208801193284374">如果您与亲朋好友共用计算机，他们将能够使用单独的帐户进行浏览，并可随心所欲地设置Chrome。</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome</translation>

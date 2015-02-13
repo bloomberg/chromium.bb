@@ -105,7 +105,6 @@
 <translation id="3775432569830822555">SSL-Serverzertifikat</translation>
 <translation id="1829192082282182671">Ver&amp;kleinern</translation>
 <translation id="8946359700442089734">Die Debugging-Funktionen wurden auf diesem <ph name="IDS_SHORT_PRODUCT_NAME"/>-Gerät nicht vollständig aktiviert.</translation>
-<translation id="5042319201438341383">(UTC)</translation>
 <translation id="8564827370391515078">128</translation>
 <translation id="6390799748543157332">In diesem Fenster aufgerufene Seiten erscheinen nicht im Browserverlauf und hinterlassen auch keine anderweitigen Spuren wie Cookies auf dem Computer, nachdem Sie alle geöffneten Gastmodus-Fenster geschlossen haben. Heruntergeladene Dateien bleiben jedoch erhalten.</translation>
 <translation id="816055135686411707">Fehler beim Festlegen der Vertrauenswürdigkeit des Zertifikats</translation>
@@ -579,13 +578,11 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>Systeminformation<ph name="END_LINK1"/> senden</translation>
 <translation id="727952162645687754">Fehler beim Herunterladen</translation>
 <translation id="5941343993301164315">Melden Sie sich in <ph name="TOKEN_NAME"/> an.</translation>
-<translation id="684095112754891891">QP-Eingabeansicht-Tastatur aktivieren</translation>
 <translation id="1916935104118658523">Dieses Plug-in ausblenden</translation>
 <translation id="1046059554679513793">Dieser Name wird bereits verwendet.</translation>
 <translation id="5868571107634815419">Bearbeitung von Office-Dateien in Google Docs, Tabellen und Präsentationen deaktivieren</translation>
 <translation id="2587922270115112871">Beim Erstellen eines betreuten Nutzers wird kein Google-Konto erstellt und seine Einstellungen und Daten werden nicht über die Chrome-Synchronisierung auf anderen Geräten übernommen. Betreute Nutzer werden nur auf diesem Gerät eingerichtet.</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
-<translation id="7342729285348293164">Melden Sie sich mit Ihrem Google-Konto in <ph name="PRODUCT_NAME"/> an, um Ihre personalisierten Browserfunktionen online zu speichern und über <ph name="PRODUCT_NAME"/> auf jedem Computer darauf zuzugreifen. Sie werden dann auch automatisch in Ihren Lieblingsdiensten von Google angemeldet.</translation>
 <translation id="2542049655219295786">Google-Tabelle</translation>
 <translation id="3899879303189199559">Seit über einem Jahr offline</translation>
 <translation id="3016641847947582299">Komponente aktualisiert</translation>
@@ -712,7 +709,6 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="7760004034676677601">Ist das Ihre erwartete Startseite?</translation>
 <translation id="3504135463003295723">Gruppenname:</translation>
 <translation id="3314070176311241517">Ausführung von JavaScript für alle Websites zulassen (empfohlen)</translation>
-<translation id="4857983212546818394">Ermöglicht es dem Nutzer, ganz einfach Inhalte in der Cloud zu sichern</translation>
 <translation id="7419631653042041064">Katalanische Tastatur</translation>
 <translation id="4663254525753315077">Fügt die Inhalte eines scrollbaren Überlaufelements falls möglich in eine zusammengesetzte Ebene ein, um schnelleres Scrollen zu ermöglichen</translation>
 <translation id="3280431534455935878">In Vorbereitung</translation>
@@ -962,12 +958,10 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="2384596874640104496">Singhalesische Tastatur</translation>
 <translation id="3511528412952710609">Kurz</translation>
 <translation id="3353984535370177728">Ordner zum Hochladen auswählen</translation>
-<translation id="7339888009669464587">async-touchmove</translation>
 <translation id="8258405095852912294">Discover wird von dieser Website nicht akzeptiert.</translation>
 <translation id="8061298200659260393">Websites das Senden von Push-Nachrichten nicht gestatten</translation>
 <translation id="6328639280570009161">Deaktivieren Sie die Netzwerkvervollständigung.</translation>
 <translation id="3528498924003805721">Verknüpfungsziele</translation>
-<translation id="5117427536932535467">Designs &amp; Hintergründe</translation>
 <translation id="6780439250949340171">andere Einstellungen verwalten</translation>
 <translation id="204622017488417136">Ihr Gerät wird auf die zuvor installierte Chrome-Version zurückgesetzt und alle Nutzerkonten und lokalen Daten werden gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.</translation>
 <translation id="8912793549644936705">Strecken</translation>
@@ -1094,6 +1088,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="1422780722984745882">Es wurden mehrere unterschiedliche &quot;Location&quot;-Header empfangen. Dies ist zum Schutz vor HTTP Response Splitting-Angriffen unzulässig.</translation>
 <translation id="7787129790495067395">Sie verwenden zurzeit eine Passphrase. Wenn Sie sie vergessen haben, können Sie die Synchronisierung mithilfe des Google Dashboards zurücksetzen, um Ihre Daten von den Google-Servern zu löschen.</translation>
 <translation id="2098305189700762159">Nicht gefunden</translation>
+<translation id="3420155476022430555">Hiermit wird das neue System zum Erstellen von Lesezeichen-Apps deaktiviert.</translation>
 <translation id="2260654768907572711">Browser-Plug-in</translation>
 <translation id="2663384537032943132">&amp;Optionen der Rechtschreibprüfung</translation>
 <translation id="242184683889529951">Damit wird die threadbasierte Verarbeitung von Scrolling-Eingabeereignissen deaktiviert. Alle Scrolling-Ereignisse werden dann im Hauptthread verarbeitet. Diese Funktion kann die Scrolling-Leistung der meisten Websites deutlich vermindern. Sie ist nur zu Testzwecken gedacht.</translation>
@@ -1345,9 +1340,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="1195447618553298278">Unbekannter Fehler.</translation>
 <translation id="2617653079636271958">Zoom: <ph name="VALUE"/> %</translation>
 <translation id="8222121761382682759">Deinstallieren...</translation>
-<translation id="7427916543828159271">WLAN und mobile Datennutzung sind deaktiviert.
-          <ph name="LINE_BREAK"/>
-          Die Seite kann geladen werden, sobald eine Netzwerkverbindung besteht.</translation>
 <translation id="1718685839849651010">Von einem unbekannten Protokoll</translation>
 <translation id="8811462119186190367">Nach Synchronisierung Ihrer Einstellungen wurde die Sprache in Chrome von &quot;<ph name="FROM_LOCALE"/>&quot; auf &quot;<ph name="TO_LOCALE"/>&quot; geändert.</translation>
 <translation id="1087119889335281750">&amp;Keine Rechtschreibvorschläge</translation>
@@ -1363,7 +1355,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="8442065444327205563">Ihr Dokument ist bereit.</translation>
 <translation id="236141728043665931">Zugriff auf das Mikrofon immer blockieren</translation>
 <translation id="2307462900900812319">Netzwerk konfigurieren</translation>
-<translation id="7624674027161923493">Hiermit werden die Eingabeansicht-Tastaturen im Materia-Design aktiviert.</translation>
 <translation id="3324301154597925148">Ist das Ihre erwartete Seite für die Suche?</translation>
 <translation id="3555812735919707620">Erweiterung entfernen</translation>
 <translation id="7018275672629230621">Ihren Browserverlauf lesen und ändern</translation>
@@ -1646,7 +1637,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="9048724894000447955">Aktivieren Sie alle Kontrollkästchen, um fortzufahren.</translation>
 <translation id="1553538517812678578">unbegrenzt</translation>
 <translation id="4773696473262035477"><ph name="SAVED_PASSWORDS_LINK"/> können Sie von jedem Browser aus aufrufen.</translation>
-<translation id="6449393701131879078">sync-touchmove</translation>
 <translation id="6602956230557165253">Verwenden Sie zum Navigieren den Rechts- und Linkspfeil.</translation>
 <translation id="3612070600336666959">Deaktivieren</translation>
 <translation id="5178612934849781517">Wenn diese Option aktiviert ist, wird ein vollständig webbasierter Anmeldevorgang für die erste Ausführung/die &quot;Neuer Tab&quot;-Seite/das Schraubenschlüssel-Menü/die Seite &quot;Einstellungen&quot; verwendet. Andernfalls wird ein systemeigener Prozess mit eingebetteter Webansicht ausgeführt.</translation>
@@ -2169,7 +2159,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="302620147503052030">Schaltfläche anzeigen</translation>
 <translation id="1895658205118569222">Herunterfahren</translation>
 <translation id="4432480718657344517">Byte gelesen</translation>
-<translation id="1549379864224375810">Cloud-Sicherung aktivieren</translation>
 <translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN"/> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="8358685469073206162">Seiten wiederherstellen?</translation>
 <translation id="8708000541097332489">Beim Beenden löschen</translation>
@@ -2332,7 +2321,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3774278775728862009">Thai-Eingabemethode (TIS-820.2538-Tastatur)</translation>
 <translation id="9115675100829699941">&amp;Lesezeichen</translation>
 <translation id="7191877888075697060">Ihre Verbindung zu <ph name="DOMAIN"/> ist durch veraltete Kryptografie verschlüsselt.</translation>
-<translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="1731589410171062430">Gesamt: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Anheften</translation>
 <translation id="5298363578196989456">Die Erweiterung &quot;<ph name="IMPORT_NAME"/>&quot; konnte nicht importiert werden, da es sich nicht um ein freigegebenes Modul handelt.</translation>
@@ -2637,7 +2625,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="2382694417386844779">Blendet die URL in der Omnibox aus und zeigt stattdessen den Hostnamen in einem anklickbaren Chip an</translation>
 <translation id="2950186680359523359">Server hat die Verbindung geschlossen. Es wurden keine Daten gesendet.</translation>
 <translation id="4269099019648381197">Aktiviert die Option zur Anforderung der Tablet-Website im Einstellungsmenü</translation>
-<translation id="9142623379911037913">Anzeige von Desktop-Benachrichtigungen auf <ph name="SITE"/> zulassen?</translation>
 <translation id="3564708465992574908">Zoomstufen</translation>
 <translation id="6546686722964485737">Mit WiMAX-Netzwerk verbinden</translation>
 <translation id="266983583785200437">Ereignisse im Zusammenhang mit Abstürzen und Fehlern von <ph name="SHORT_PRODUCT_NAME"/></translation>
@@ -2725,7 +2712,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="2756798847867733934">SIM-Karte deaktiviert</translation>
 <translation id="8054921503121346576">USB-Tastatur angeschlossen</translation>
 <translation id="3846833722648675493">Zeigt App-Fenster nach der Erstverwendung an. Bei umfangreichen Apps, deren Ressourcen gleichzeitig geladen werden, werden Fenster erst wesentlich später angezeigt. Bei Apps, deren Ressourcen in der Regel nicht gleichzeitig geladen werden, ist diese Verzögerung jedoch unerheblich.</translation>
-<translation id="8863489667196658337">Aktiviert das neue System zum Erstellen von Lesezeichen-Apps</translation>
 <translation id="5464632865477611176">Dieses Mal ausführen</translation>
 <translation id="4268025649754414643">Schlüsselverschlüsselung</translation>
 <translation id="916745092148443205">Markierung durch Berührung und Tippen</translation>
@@ -2833,6 +2819,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="1467432559032391204">Links</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1"/>Systeminformationen<ph name="END_LINK1"/> und <ph name="BEGIN_LINK2"/>Messwerte<ph name="END_LINK2"/> senden</translation>
 <translation id="1769104665586091481">Link in neuem &amp;Fenster öffnen</translation>
+<translation id="5722863401730329657">Neues System für Lesezeichen-Apps deaktivieren</translation>
 <translation id="5319782540886810524">Lettische Tastatur</translation>
 <translation id="6718297397366847234">Renderer stürzt ab.</translation>
 <translation id="9186729806195986201">Auch die zuvor installierte Version von <ph name="IDS_SHORT_PRODUCT_NAME"/> wiederherstellen</translation>
@@ -3141,7 +3128,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="499165176004408815">Modus mit hohem Kontrast verwenden</translation>
 <translation id="2928940441164925372">Aktiviert die passive Erhebung von leistungsbezogenen Messwerten und Ereignissen und ermöglicht die Ansicht dieser Daten in einer Grafik. Um Ihre Daten einzusehen, rufen Sie chrome://performance auf.</translation>
 <translation id="3289856944988573801">Verwenden Sie Ethernet oder WLAN zur Suche nach Updates.</translation>
-<translation id="6371865199884571412">Verknüpfung zu dieser Website hinzufügen...</translation>
 <translation id="247500748408468353">Bitte wenden Sie sich an Ihren Administrator oder versuchen Sie es erneut.</translation>
 <translation id="450070808725753129">Falls das Programm schon in der Liste mit erlaubtem Netzwerkzugriff eingetragen ist, entfernen Sie es aus der Liste und fügen Sie es erneut hinzu.</translation>
 <translation id="778627899913883287">Überprüfen Sie, ob die Erweiterung diese Berechtigungen zur Erfüllung ihrer Aufgaben benötigt. Sollte dies nicht der Fall sein, klicken Sie auf &quot;Abbrechen&quot;.</translation>
@@ -3256,7 +3242,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="4910673011243110136">Private Netzwerke</translation>
 <translation id="2527167509808613699">Jede Verbindungsart</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME"/> wird synchronisiert...</translation>
-<translation id="5783114277171319892">Plattformübergreifende HarfBuzz-Engine für Benutzeroberflächen-Text. Dies wirkt sich nicht auf Webinhalte aus.</translation>
 <translation id="8662795692588422978">Personen</translation>
 <translation id="8072988827236813198">Tabs anheften</translation>
 <translation id="2673589024369449924">Desktopverknüpfung für diesen Nutzer erstellen</translation>
@@ -3469,7 +3454,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="2453021845418314664">Erweiterte Synchronisierungseinstellungen</translation>
 <translation id="14720830734893704">Aktiviert die Unterstützung für die Bildschirmtastatur.</translation>
 <translation id="5458214261780477893">Dvorak</translation>
-<translation id="8949414596999345979">HarfBuzz für Benutzeroberflächen-Text</translation>
 <translation id="1185924365081634987">Sie können auch <ph name="GUEST_SIGNIN_LINK_START"/>als Gast surfen<ph name="GUEST_SIGNIN_LINK_END"/>, um den Netzwerkfehler zu beheben.</translation>
 <translation id="3960121209995357026">Automatische Rechtschreibprüfung aktivieren</translation>
 <translation id="2214283295778284209">Nicht verfügbar: <ph name="SITE"/></translation>
@@ -3645,11 +3629,11 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="8030169304546394654">Verbindung getrennt</translation>
 <translation id="3733533226834394996">SHA-224</translation>
 <translation id="7295019613773647480">Betreute Nutzer aktivieren</translation>
-<translation id="2419414843209660528">Verknüpfung zu dieser Website hinzufügen...</translation>
 <translation id="3529423920239848704">Vorkommen, wenn <ph name="SHORT_PRODUCT_NAME"/> nicht ordnungsgemäß heruntergefahren wurde</translation>
 <translation id="7022562585984256452">Ihre Startseite wurde eingerichtet.</translation>
 <translation id="267285457822962309">Einstellungen für Ihr Gerät und Peripheriegeräte ändern</translation>
 <translation id="1154228249304313899">Diese Seite öffnen:</translation>
+<translation id="1454223536435069390">Screenshot &amp;erstellen</translation>
 <translation id="6976108581241006975">JavaScript-Konsole</translation>
 <translation id="60357267506638014">Tschechisch – QWERTY</translation>
 <translation id="2478176599153288112">Mediendatei-Berechtigungen für &quot;<ph name="EXTENSION"/>&quot;</translation>
@@ -3676,7 +3660,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="8211868401977897190">Google Wallet kann diese Transaktion nicht ausführen.</translation>
 <translation id="8240697550402899963">Klassisches Design verwenden</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME"/> wird in wenigen Augenblicken neu gestartet und zurückgesetzt.</translation>
-<translation id="5085414586179562346">Ändert das Verhalten beim Touch-Event (Berührung) während des Scrollens. Bisher wurde der Modus &quot;touchcancel&quot; in Chrome verwendet; der neue bevorzugte Modus ist &quot;async-touchmove&quot;.</translation>
 <translation id="2890624088306605051">Nur synchronisierte Einstellungen und Daten abrufen</translation>
 <translation id="4779083564647765204">Zoomen</translation>
 <translation id="6397363302884558537">Sprachausgabe stoppen</translation>
@@ -4481,7 +4464,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="7763146744708046348">Daten nicht aggregieren – dies könnte langsam sein!</translation>
 <translation id="203165784383062719">&amp;Optionen der Rechtschreibprüfung</translation>
 <translation id="5626134646977739690">Name:</translation>
-<translation id="4899837262951879307">Modus für das Scrollen durch Berühren</translation>
 <translation id="5854409662653665676">Wenn Sie häufig Schwierigkeiten haben, können Sie versuchen, das Problem mit diesem Modul zu beheben:</translation>
 <translation id="3776796446459804932">Diese Erweiterung verletzt die Chrome Web Store-Richtlinien.</translation>
 <translation id="3681007416295224113">Zertifikatinformationen</translation>
@@ -4533,7 +4515,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="1371806038977523515">Diese Einstellungen werden festgelegt von:</translation>
 <translation id="2020262498093941982">Answers in Suggest</translation>
 <translation id="6462082050341971451">Sind Sie noch da?</translation>
-<translation id="3173002765127962599">touchcancel</translation>
 <translation id="5565871407246142825">Kreditkarten</translation>
 <translation id="6020431688553761150">Sie wurden vom Server nicht für den Zugriff auf diese Ressource autorisiert.</translation>
 <translation id="2587203970400270934">Betreibercode:</translation>
@@ -4746,6 +4727,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="8148264977957212129">Pinyin-Eingabemethode</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
 <translation id="2871813825302180988">Dieses Konto wird bereits auf diesem Gerät verwendet.</translation>
+<translation id="6277518330158259200">Screenshot &amp;erstellen</translation>
 <translation id="1642505962779453775">Letztes Quartal</translation>
 <translation id="3323235640813116393">Bei Aktivierung werden Seiten als MHTML gespeichert: eine einzelne Textdatei mit HTML und allen Unterressourcen.</translation>
 <translation id="6509122719576673235">Norwegisch</translation>
@@ -5326,7 +5308,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="8938356204940892126">Abbrechen</translation>
 <translation id="2670965183549957348">Chewing-Eingabemethode</translation>
 <translation id="7839804798877833423">Zum Abrufen dieser Dateien werden etwa <ph name="FILE_SIZE"/> mobile Daten benötigt.</translation>
-<translation id="3268451620468152448">Geöffnete Tabs</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="5167131699331641907">Niederländische Tastatur</translation>
 <translation id="7401762151840183030">Ihre Einstellungen werden auf ihre ursprünglichen Standardwerte zurückgesetzt. Hierdurch werden Ihre Startseite, die &quot;Neuer Tab&quot;-Seite und die Suchmaschine zurückgesetzt, Ihre Erweiterungen deaktiviert und sämtliche Tabs losgelöst. Außerdem werden sonstige temporäre und im Cache gespeicherte Daten gelöscht, wie etwa Cookies, Inhalte und Websitedaten.</translation>
@@ -5367,7 +5348,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="3184560914950696195">Fehler beim Speichern unter $1. Bearbeitete Bilder werden im Ordner &quot;Downloads&quot; gespeichert.</translation>
 <translation id="8366396658833131068">Ihre Netzwerkverbindung wurde wiederhergestellt. Wählen Sie ein anderes Netzwerk aus oder klicken Sie unten auf &quot;Weiter&quot;, um Ihre Kiosk-App zu starten.</translation>
 <translation id="4664482161435122549">PKCS #12 - Fehler beim Export</translation>
-<translation id="3811328435734979057">Neues System für Lesezeichen-Apps aktivieren</translation>
 <translation id="2445081178310039857">Stammverzeichnis der Erweiterung ist erforderlich.</translation>
 <translation id="146187176629751223">Ein Teilnehmer in diesem Hangout möchte Ihnen helfen und hierfür die Kontrolle über Ihren Computer übernehmen. Dabei gilt Folgendes:
 

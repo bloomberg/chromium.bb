@@ -72,7 +72,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="8897323336392112261">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium o na-click ang button ng Home.</translation>
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
 <translation id="3190315855212034486">Whoa! Nag-crash ang Chromium. Muling ilunsad ngayon?</translation>
-<translation id="8843170958047978824">Alisin Sa Chromium</translation>
 <translation id="3068515742935458733">Tumulong na gawing mas mahusay ang Chromium sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK"/> sa Google</translation>
 <translation id="734373864078049451">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chromium.</translation>
 <translation id="3197823471738295152">Napapanahon ang iyong device.</translation>
@@ -105,7 +104,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="6055895534982063517">May available na bagong bersyon ng Chromium, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="8821041990367117597">Hindi mai-sync ng Chromium ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in ng iyong account.</translation>
 <translation id="4677944499843243528">Mukhang ginagamit ang profile ng iba pang proseso ng Chromium (<ph name="PROCESS_ID"/>) sa iba pang computer (<ph name="HOST_NAME"/>).  Ni-lock ng Chromium ang profile upang hindi ito ma-corrupt.  Kung nakakatiyak ka na walang ibang mga proseso ang gumagamit sa profile na ito, maaari mong i-unlock ang profile at ilunsad muli ang Chromium.</translation>
-<translation id="5405650547142096840">Alisin mula sa Chromium</translation>
 <translation id="4994636714258228724">Idagdag ang iyong sarili sa Chromium</translation>
 <translation id="7066436765290594559">Hindi ma-sync ng Chromium OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
@@ -165,7 +163,6 @@ at maling kredensyal. Maaaring sinusubukan ng isang umaatake na magpanggap na <p
 <translation id="2648074677641340862">May naganap na error sa operating system sa panahon ng pag-install. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="5942520288919337908">Naidagdag na sa Chromium ang <ph name="EXTENSION_NAME"/>.</translation>
 <translation id="549669000822060376">Mangyaring maghintay habang ini-install ng Chromium ang mga pinakabagong update sa system.</translation>
-<translation id="1240763998429950591">Hindi makapag-update ang Chromium sa pinakabagong bersyon, kaya hindi mo magagamit ang mga bagong feature at pag-aayos sa seguridad. Kailangan mong i-update ang Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">ipinapadala ang isang salita at ang kontekstong nakapalibot dito sa Google Search, na nagbabalik ng mga kahulugan, larawan, resulta ng paghahanap at iba pang mga detalye.</translation>
 <translation id="4559775032954821361">Pumunta sa

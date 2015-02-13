@@ -47,7 +47,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="568643307450491754">Find your bookmarks in the Chrome menu or on the bookmarks bar.</translation>
 <translation id="8556340503434111824">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="8987477933582888019">Web Browser</translation>
-<translation id="3749644715096758981">Chrome could not update to the latest version, so you are missing out on new features and security fixes. You need to update Chrome.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
@@ -72,7 +71,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
 <translation id="2596415276201385844">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chrome cannot verify these certificates.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
-<translation id="5298539825145851748">Remove from Chrome</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
@@ -144,6 +142,10 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
           again for improved performance.</translation>
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="2397416548179033562">Show Chrome menu</translation>
+<translation id="5423788048750135178">Go to the Chrome menu &gt; Settings &gt; (Advanced) Privacy
+          and disable &quot;Prefetch page resources&quot;.
+          If this does not resolve the issue, we recommend re-enabling this option
+          again for improved performance.</translation>
 <translation id="4794050651896644714">Save details in Chrome</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
@@ -183,7 +185,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="5028489144783860647">Google Chrome could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="9026991721384951619">Chrome OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
-<translation id="6326175484149238433">Remove from Chrome</translation>
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>

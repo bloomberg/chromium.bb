@@ -70,7 +70,6 @@
 <translation id="8897323336392112261">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromiuma ili kada se klikne gumb Početna.</translation>
 <translation id="4330585738697551178">Za taj se modul već zna da je u konfliktu s Chromiumom.</translation>
 <translation id="3190315855212034486">Hopa! Chromium je pao. Pokrenuti ponovo sada?</translation>
-<translation id="8843170958047978824">Ukloni iz Chromiuma</translation>
 <translation id="3068515742935458733">Pomognite nam poboljšati Chromium šaljući izvješća o rušenju programa i <ph name="UMA_LINK"/> Googleu</translation>
 <translation id="734373864078049451">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromiumu.</translation>
 <translation id="3197823471738295152">Uređaj je ažuran.</translation>
@@ -103,7 +102,6 @@
 <translation id="6055895534982063517">Dostupna je nova verzija preglednika Chromium, brža no ikad.</translation>
 <translation id="8821041990367117597">Chromium nije mogao sinkronizirati podatke vašeg računa jer su pojedinosti prijave na račun zastarjele.</translation>
 <translation id="4677944499843243528">Izgleda da neki drugi proces Chromiuma (<ph name="PROCESS_ID"/>) na nekom drugom računalu (<ph name="HOST_NAME"/>) upotrebljava taj profil. Chromium je zaključao profil da se profil ne bi promijenio. Ako ste sigurni da nijedan drugi proces ne upotrebljava taj profil, možete ga otključati i ponovo pokrenuti Chromium.</translation>
-<translation id="5405650547142096840">Uklanjanje iz Chromiuma</translation>
 <translation id="4994636714258228724">Dodajte sebe kao korisnika Chromiuma</translation>
 <translation id="7066436765290594559">OS Chromium nije mogao sinkronizirati vaše podatke. Ažurirajte svoju zaporku za sinkronizaciju.</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
@@ -162,7 +160,6 @@
 <translation id="2648074677641340862">Došlo je do pogreške operativnog sustava tijekom instalacije. Ponovo preuzmite Chromium.</translation>
 <translation id="5942520288919337908">Proširenje <ph name="EXTENSION_NAME"/> dodano je u Chromium.</translation>
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>
-<translation id="1240763998429950591">Chromium se nije mogao ažurirati na najnoviju verziju, pa propuštate nove značajke i sigurnosne popravke. Morate ažurirati Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">šalje riječ i njezin okolni kontekst na Google pretraživanje te vraća definicije, slike, rezultate pretraživanja i ostale pojedinosti.</translation>
 <translation id="4559775032954821361">Idite na

@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Trobareu les adreces d'interès al menú de Chrome o a la barra d'adreces d'interès.</translation>
 <translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
 <translation id="8987477933582888019">Navegador web</translation>
-<translation id="3749644715096758981">Chrome no ha pogut actualitzar-se a la darrera versió, així que no podeu gaudir de les funcions noves ni de les correccions de seguretat. Heu d'actualitzar Chrome.</translation>
 <translation id="4728575227883772061">S'ha produït un error no especificat durant la instal·lació. Si Google Chrome s'està executant en aquests moments, tanca'l i torna-ho a provar.</translation>
 <translation id="3080151273017101988">Continua executant aplicacions de segon pla en tancar Google Chrome</translation>
 <translation id="4149882025268051530">L'instal·lador no ha pogut descomprimir el fitxer. Torna a baixar Google Chrome.</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">Google Chrome està utilitzant el micròfon.</translation>
 <translation id="2596415276201385844">Per establir una connexió segura, el rellotge ha d'estar ben ajustat, perquè els certificats que els llocs web fan servir per identificar-se només són vàlids per a períodes de temps concrets. Com que el rellotge del dispositiu no està ben ajustat, Chrome no pot verificar aquests certificats.</translation>
 <translation id="4053720452172726777">Personalitza i controla Google Chrome</translation>
-<translation id="5298539825145851748">Suprimeix de Chrome</translation>
 <translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
 <translation id="8286862437124483331">Google Chrome està provant de mostrar contrasenyes. Escriviu la vostra contrasenya de Windows per permetre-ho.</translation>
 <translation id="3889417619312448367">Desinstal·la Google Chrome</translation>
@@ -136,6 +134,10 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
         aquesta opció per obtenir un rendiment millorat.</translation>
 <translation id="2290014774651636340">Falten les claus de l'API de Google. Es desactivaran algunes de les funcionalitats de Google Chrome.</translation>
 <translation id="2397416548179033562">Mostra el Menú de Chrome</translation>
+<translation id="5423788048750135178">Aneu al Menú de Chrome &gt; Configuració &gt; (Avançada) Privadesa
+          i desmarqueu &quot;Baixa prèviament els recursos de la pàgina&quot;.
+          Si el problema no es resol, us recomanem que torneu a activar
+          aquesta opció per obtenir un millor rendiment.</translation>
 <translation id="4794050651896644714">Desa els detalls a Chrome</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="5855036575689098185">El programari que s'executa al vostre ordinador no és compatible amb Google Chrome.</translation>
@@ -175,7 +177,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5028489144783860647">Google Chrome no ha pogut sincronitzar les dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="9026991721384951619">Chrome OS no ha pogut sincronitzar les vostres dades perquè les dades d'inici de sessió del compte no estan actualitzades.</translation>
 <translation id="8547799825197623713">Menú d'aplicacions de Chrome per a Canary</translation>
-<translation id="6326175484149238433">Elimina de Chrome</translation>
 <translation id="2871893339301912279">Teniu la sessió iniciada a Chrome.</translation>
 <translation id="7890208801193284374">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chrome com vulguin.</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>

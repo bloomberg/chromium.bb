@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es-419">
 <translation id="8588878054171169263">Guardar imagen</translation>
+<translation id="3303414029551471755">¿Deseas descargar el contenido?</translation>
 <translation id="7998918019931843664">Volver a abrir la pestaña cerrada</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="4996978546172906250">Compartir mediante</translation>
@@ -10,67 +11,95 @@
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Agregar dirección</translation>
+<translation id="6085885345161726829">Luego de que autenticas una tarjeta, Chrome la guarda en la caché de forma local.</translation>
 <translation id="8237438615979997762">Los datos que almacenaste en este dispositivo o en tu cuenta de Google no se perderán. Sin embargo, los datos que agregues o los cambios que realices no se sincronizarán entre ellos.</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6504836143156866575">Versión de JavaScript</translation>
 <translation id="869891660844655955">Fecha de vencimiento</translation>
 <translation id="7644305409888602715">Traduciendo página al <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="326254929494722411">No configuraste ninguna cuenta de Google en el dispositivo.</translation>
+<translation id="1446450296470737166">Control de dispositivos MIDI</translation>
+<translation id="1404122904123200417">Incorporado en <ph name="WEBSITE_URL"/></translation>
 <translation id="3895926599014793903">Forzar habilitación de zoom</translation>
+<translation id="2440823041667407902">Acceso a la ubicación</translation>
+<translation id="6600253697437303777">Preguntar antes de acceder a la cámara y al micrófono (recomendado)</translation>
 <translation id="7015922086425404465">Descargar aplicación de Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Volver a cargar esta página</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6317634962183824346">Sincronización de Android inhabilitada. Habilítala y vuelve a intentarlo.</translation>
 <translation id="5763382633136178763">Pestañas en modo de incógnito</translation>
+<translation id="1647391597548383849">Acceso a la cámara</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
+<translation id="5902828464777634901">Se eliminarán todos los datos almacenados en este sitio web, incluidas las cookies.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="9189669987942139609">TB</translation>
+<translation id="2351097562818989364">Se restableció la configuración de traducción.</translation>
 <translation id="119944043368869598">Borrar todo</translation>
 <translation id="6458785801851713928">Tu dominio no admite la sincronización.</translation>
 <translation id="2731700343119398978">Espera...</translation>
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="7378627244592794276">No</translation>
+<translation id="7999064672810608036">¿Quieres eliminar todos los datos locales de este sitio web, incluidas las cookies, y restablecer todos los permisos?</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9133515669113036225">Restablecer credenciales de dispositivo</translation>
+<translation id="2381756643783702095">Preguntar antes de enviar (recomendado)</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="3358663646935160692">Esta cuenta está administrada por <ph name="DOMAIN_NAME"/>.
 
 Vas a acceder con una cuenta administrada, lo que significa que proporcionarás control sobre tu perfil de Chrome al administrador. Los datos de Chrome que tengas se vincularán de forma permanente a esta cuenta. Si la desconectas, se eliminarán los datos locales de Chrome.</translation>
+<translation id="563535393368633106">Preguntar antes de acceder (recomendado)</translation>
 <translation id="666981079809192359">Aviso de privacidad de Chrome</translation>
 <translation id="1966710179511230534">Actualiza los datos de acceso.</translation>
 <translation id="3410346880900521918">Si el mensaje aparece con frecuencia, intenta seguir estas <ph name="BEGIN_LINK"/>sugerencias<ph name="END_LINK"/>.</translation>
+<translation id="5618939757577581490">Importar datos de Wallet</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
 <translation id="7375125077091615385">Tipo:</translation>
+<translation id="1086169178231554178">Tarjeta SD no disponible</translation>
 <translation id="2498359688066513246">Ayuda y comentarios</translation>
+<translation id="1091134514807961917">Accediste a la cuenta de Google que se indica a continuación.</translation>
+<translation id="7019652137705190998">Usa el modo de navegación de incógnito para navegar en forma privada o acceder de forma temporal.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="8218346974737627104">Confirmar acceso</translation>
+<translation id="3350687908700087792">Cerrar todas las pestañas de incógnito</translation>
+<translation id="5017989644593831205">¿No eres <ph name="NOT_YOU_USER_NAME"/>?</translation>
+<translation id="8997842057643556822">No se puede crear un directorio de descarga en el almacenamiento USB.</translation>
+<translation id="6948694623901096205">Cámara o micrófono</translation>
 <translation id="8853345339104747198">Pestaña <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">Idioma de traducción: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Seleccionar certificado para autenticación</translation>
+<translation id="6140912465461743537">País o región</translation>
 <translation id="7791543448312431591">Agregar</translation>
 <translation id="8719023831149562936">Esta pestaña no se puede transmitir.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
+<translation id="988938288723502454">No se puede crear un directorio de descarga en la tarjeta SD.</translation>
 <translation id="3896036286668839683">Visualizador de certificados</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer esto cómodamente. El texto debería verse, al menos, de este tamaño al tocar dos veces un párrafo.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Todos los derechos reservados.</translation>
 <translation id="4250680216510889253">No</translation>
+<translation id="6388207532828177975">Borrar y restablecer</translation>
+<translation id="3198916472715691905">Datos almacenados: <ph name="STORAGE_AMOUNT"/></translation>
+<translation id="3656115297268584622">Activar ubicación en <ph name="BEGIN_LINK"/>Configuración de Android<ph name="END_LINK"/></translation>
+<translation id="7423098979219808738">Preguntar primero</translation>
 <translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
 <translation id="552553974213252141">¿Se extrajo el texto correctamente?</translation>
 <translation id="1151972924205500581">Contraseña obligatoria</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2718352093833049315">Solo en Wi-Fi</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
+<translation id="5487729733663684359">Las actualizaciones de Chrome ya no son compatibles con esta versión de Android.</translation>
 <translation id="2414886740292270097">Oscuro</translation>
+<translation id="5911030830365207728">Google Traductor</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="4645575059429386691">Administrado por tus padres</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
+<translation id="238909021488141516">Se produjo un error al descargar el contenido.</translation>
 <translation id="8730621377337864115">Listo</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="473775607612524610">Actualizar</translation>
@@ -79,6 +108,7 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="8374821112118309944">Debes actualizar a una versión más reciente de TalkBack</translation>
 <translation id="6406506848690869874">Sincronización</translation>
+<translation id="6026160407467558998">Permitir que los sitios ejecuten JavaScript</translation>
 <translation id="8481940801237642152">Tu conexión con este sitio es privada, pero alguien en la red podría cambiar el aspecto de la página.</translation>
 <translation id="2593272815202181319">Monoespaciada</translation>
 <translation id="4807098396393229769">Nombre en la tarjeta</translation>
@@ -101,6 +131,8 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="6064211167623632605">Ruta ejecutable</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="2903493209154104877">Direcciones</translation>
+<translation id="3661699943263275414">Los sitios web de terceros pueden guardar y leer datos de cookies.</translation>
+<translation id="1173289567081511873">Accediste a las siguientes cuentas de Google. Puedes agregar o eliminar cuentas en la configuración de Android.</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="4827948050554950725">Agregar tarjeta de crédito</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -109,53 +141,67 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="6571070086367343653">Editar tarjeta de crédito</translation>
 <translation id="7080851568148064063">Agregar a pantalla ppal.</translation>
 <translation id="6192792657125177640">Excepciones</translation>
+<translation id="1984937141057606926">Permitidas, salvo de terceros</translation>
 <translation id="4619298195800598081">Abrir original en pest. nueva</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
+<translation id="5308603654685598744">Cuando esta función esté activada, Chrome te ofrecerá traducir páginas escritas en otros idiomas con Google Traductor.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="3254409185687681395">Agregar esta página a Marcadores</translation>
 <translation id="907015151729920253">Tarjeta inteligente</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
+<translation id="4412992751769744546">Permitir cookies de terceros</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="2600241144430299006">Mes de vencimiento de la tarjeta de crédito</translation>
 <translation id="3063601790762993062">Guardar video</translation>
 <translation id="8106211421800660735">Número de tarjeta de crédito</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="7267430310003164111">Mensaje para descargar la aplicación desde Google Play Store  Nombre de la aplicación: <ph name="APP_NAME"/>  Clasificación promedio de la aplicación: <ph name="APP_RATING"/></translation>
+<translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="7358682983403815415">Tus marcadores, tu historial, tus pestañas abiertas y otros datos se están sincronizando con tu cuenta de Google.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="4148957013307229264">Instalando...</translation>
+<translation id="5271967389191913893">El dispositivo no puede abrir el contenido que se descargará.</translation>
 <translation id="3992315671621218278">Guardar vínculo</translation>
+<translation id="5324858694974489420">Configuración parental</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="4065916988127915326">Bloquear todos los sitios</translation>
+<translation id="8168435359814927499">Contenido</translation>
 <translation id="5424715742813396254">Editar el nombre, la contraseña o la excepción guardados</translation>
+<translation id="6978479750597523876">Restablecer la configuración de traducción</translation>
 <translation id="2476578072172137802">Configuración del sitio</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="651048280540227067">Descartar el menú</translation>
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
-<translation id="1583256385106514953">Año de vencimiento de la tarjeta de crédito</translation>
 <translation id="1082482054625560856">Administrar contraseñas guardadas en la <ph name="BEGIN_LINK"/>cuenta de Google<ph name="END_LINK"/></translation>
+<translation id="2360035970720276770">Solo se pueden descargar URL &quot;http&quot; o &quot;https&quot;.</translation>
+<translation id="4376501731284077108">Sin controlar</translation>
 <translation id="2699916814609764774">Ruta del perfil</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
+<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Compartir…</translation>
+<translation id="3338301885994755905">Bloquear (recomendado)</translation>
 <translation id="6575643671698722332">Error al restablecer. Comprueba la conexión y vuelve a intentarlo.</translation>
 <translation id="654446541061731451">Elige una pestaña para transmitir.</translation>
 <translation id="4269820728363426813">Copiar dirección del vínculo</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Autocompletar formularios</translation>
+<translation id="8515416241041728525">Agregar cuenta para <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="1080790410959514870">Saldrás de una cuenta administrada por <ph name="DOMAIN_NAME"/>. Esta acción eliminará los datos de Chrome almacenados en este dispositivo, aunque estos se mantendrán en la cuenta de Google.</translation>
 <translation id="4510973599275542560">No volver a cargar</translation>
 <translation id="1206892813135768548">Copiar texto del vínculo</translation>
 <translation id="9154176715500758432">Permanecer en esta página</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
+<translation id="5420752959853967987">bytes</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
 <translation id="4271185234001491831">Nunca traducir <ph name="LANGUAGE"/></translation>
+<translation id="7981795308302452224">No se pudo iniciar la descarga.</translation>
 <translation id="6671495933530132209">Copiar imagen</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
@@ -163,37 +209,53 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="8941248009481596111">Tu conexión con este sitio es privada.</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
+<translation id="2956410042958133412"><ph name="PARENT_NAME_1"/> y <ph name="PARENT_NAME_2"/> administran esta cuenta.</translation>
+<translation id="7048229856657573547">Administrar datos de Wallet</translation>
 <translation id="5164482624172255778">¿Quieres que Google Chrome te ofrezca traducir las páginas de este sitio que estén en <ph name="LANGUAGE"/> la próxima vez?</translation>
 <translation id="4062305924942672200">Información legal</translation>
+<translation id="515227803646670480">Borrar datos almacenados</translation>
 <translation id="8528538445849828817">Idioma de la página: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="7963646190083259054">Proveedor:</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
+<translation id="945632385593298557">Acceso al micrófono</translation>
 <translation id="5626134646977739690">Nombre:</translation>
+<translation id="8617240290563765734">¿Quieres abrir la URL sugerida en el contenido descargado?</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
-<translation id="2612676031748830579">Número de tarjeta</translation>
 <translation id="6333140779060797560">Compartir mediante <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
 <translation id="5138299137310274655">Esta página está en <ph name="SOURCE_LANGUAGE"/>. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="2913331724188855103">Permitir que todos los sitios guarden y lean datos de cookies (recomendado)</translation>
+<translation id="5512137114520586844"><ph name="PARENT_NAME"/> administra esta cuenta.</translation>
 <translation id="7649070708921625228">Ayuda</translation>
+<translation id="1373696734384179344">Memoria insuficiente para descargar el contenido seleccionado</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>
+<translation id="5085880389019676122">Almac. USB no disponible</translation>
 <translation id="1614564776292091138">Si se activa la protección de contenido, los sitios web podrán autenticar el dispositivo para asegurarse de que pueda reproducir videos de calidad superior protegidos.
 
 Si se desactiva, tal vez no puedas reproducir videos de calidad superior en este dispositivo.</translation>
 <translation id="8928220460877261598">Accediste a Chrome.</translation>
 <translation id="5032574515228824816">Solicitud</translation>
+<translation id="8920114477895755567">Esperando los detalles parentales</translation>
+<translation id="3003595280608617736">No hay tarjeta SD</translation>
 <translation id="862875433388403934">Tal vez no puedas reproducir el contenido descargado (películas, música, etc.) en otras aplicaciones hasta que dichas aplicaciones vuelvan a adquirir licencias basadas en una nueva credencial de dispositivo.
 
 Conéctate a Internet y reproduce el contenido descargado para obtener licencias nuevas.</translation>
 <translation id="2913733558842973836">Este sitio se encuentra en modo pantalla completa.
 Arrástralo desde arriba para salir.</translation>
+<translation id="1692118695553449118">La sincronización está activada.</translation>
 <translation id="7961015016161918242">Nunca</translation>
+<translation id="6820607729870073286">No tienes configuraciones de sitio web guardadas.</translation>
+<translation id="1159783623621444829">Esta cuenta pertenece a un niño.</translation>
 <translation id="8109148095642131923">No se pudo agregar un elemento descargado al Administrador de descargas.</translation>
+<translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Pestañas estándar</translation>
+<translation id="8396312449826231789">Solo sitios aprobados</translation>
 <translation id="411254640334432676">Se produjo un error durante la descarga.</translation>
 <translation id="6277522088822131679">Se produjo un error al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="7634554953375732414">Tu conexión con este sitio no es privada.</translation>
@@ -201,8 +263,13 @@ Arrástralo desde arriba para salir.</translation>
 <translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="1742134235943978220">Traducido al <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="6738867403308150051">Descargando…</translation>
 <translation id="6965382102122355670">Aceptar</translation>
+<translation id="6375900123462779979">Acceso a micrófono y cámara</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>
+<translation id="8773248244177230992">Borrar la memoria caché</translation>
+<translation id="5127805178023152808">La sincronización está desactivada.</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5645050752379834274">Al activar esta función, Chrome te permitirá completar formularios con las direcciones y las tarjetas de crédito de tu cuenta de Wallet.</translation>
 <translation id="7561196759112975576">Siempre</translation>
 </translationbundle>

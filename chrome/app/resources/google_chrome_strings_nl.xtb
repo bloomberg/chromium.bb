@@ -45,7 +45,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="568643307450491754">Je vindt je bladwijzers in het menu 'Chrome' of in de bladwijzerbalk.</translation>
 <translation id="8556340503434111824">Er is een nieuwe versie van Google Chrome en deze is sneller dan ooit.</translation>
 <translation id="8987477933582888019">Webbrowser</translation>
-<translation id="3749644715096758981">Chrome kan niet worden geüpdatet naar de nieuwste versie, dus je loopt nieuwe functies en beveiligingsoplossingen mis. Je moet Chrome updaten.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit je het programma af en probeer je het opnieuw.</translation>
 <translation id="3080151273017101988">Achtergrondapps blijven uitvoeren wanneer Google Chrome is gesloten</translation>
 <translation id="4149882025268051530">Het installatieprogramma kan het archief niet uitpakken. Download Google Chrome opnieuw.</translation>
@@ -70,7 +69,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
 <translation id="2596415276201385844">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok juist zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chrome deze certificaten niet verifiëren.</translation>
 <translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
-<translation id="5298539825145851748">Verwijderen uit Chrome</translation>
 <translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
 <translation id="8286862437124483331">Google Chrome probeert wachtwoorden weer te geven. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
@@ -181,7 +179,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="5028489144783860647">Google Chrome kan je gegevens niet synchroniseren. Update je synchronisatiewachtwoord.</translation>
 <translation id="9026991721384951619">Chrome OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
-<translation id="6326175484149238433">Verwijderen uit Chrome</translation>
 <translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
 <translation id="7890208801193284374">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chrome configureren zoals zij dat willen.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>

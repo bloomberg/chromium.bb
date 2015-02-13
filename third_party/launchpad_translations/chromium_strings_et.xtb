@@ -70,7 +70,6 @@
 <translation id="8897323336392112261">Lisaks juhib see seda, mis leht kuvatakse Chromiumi käivitamisel või avalehe nupul klõpsamisel.</translation>
 <translation id="4330585738697551178">See moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="3190315855212034486">Chromium jooksis kokku. Kas soovite kohe taaskäivitada?</translation>
-<translation id="8843170958047978824">Chromiumist eemaldamine</translation>
 <translation id="3068515742935458733">Aidake Chromiumi täiustada, saates Google'ile krahhiaruandeid ja lingi <ph name="UMA_LINK"/></translation>
 <translation id="734373864078049451">Siin asuvad teie veeb, järjehoidjad ja ülejäänud Chromiumi kraam.</translation>
 <translation id="3197823471738295152">Teie seade on ajakohane.</translation>
@@ -103,7 +102,6 @@
 <translation id="6055895534982063517">Saadaval on Chromiumi uus versioon ja see on kiirem kui kunagi varem.</translation>
 <translation id="8821041990367117597">Chromium ei saa andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="4677944499843243528">Näib, et profiili kasutab Chromiumi muu protsess (<ph name="PROCESS_ID"/>) mingis muus arvutis (<ph name="HOST_NAME"/>). Chromium on profiili lukustanud, et seda ei saaks rikkuda. Kui olete kindel, et ükski muu protsess seda profiili ei kasuta, saate profiili avada ja Chromiumi taaskäivitada.</translation>
-<translation id="5405650547142096840">Eemalda Chromiumist</translation>
 <translation id="4994636714258228724">Lisa Chromiumi</translation>
 <translation id="7066436765290594559">Chromium OS ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
@@ -163,7 +161,6 @@ ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE"/>, või
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> on Chromiumi lisatud.</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
-<translation id="1240763998429950591">Chromiumit ei õnnestunud uusimale versioonile värskendada, nii et te ei saa kasutada uusi funktsioone ja turvaparandusi. Peate Chromiumi värskendama.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">saadab sõna ja ümbritseva konteksti Google'i otsingule, tagastades mõisted, kujutised, otsingutulemused ja muud detailid.</translation>
 <translation id="4559775032954821361">Valige

@@ -89,7 +89,6 @@
 <translation id="2013996867038862849">페어링된 클라이언트가 모두 삭제되었습니다.</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/>와(과)의 원격 연결을 사용중지하시겠습니까? 생각이 바뀌면 해당 컴퓨터에서 연결을 다시 사용하도록 설정해야 합니다.</translation>
 <translation id="6944854424004126054">복원 창</translation>
-<translation id="1436054138039008644"><ph name="HOSTNAME"/>(최근 연결일: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">데스크톱 공유를 시작하려면 내 데스크톱에 액세스하려는 사용자에게 아래 액세스 코드를 알려주세요.</translation>
 <translation id="409800995205263688">참고: 정책 설정에 따라 네트워크 내에 있는 컴퓨터 간의 연결만 허용됩니다.</translation>
 <translation id="8513093439376855948">원격 호스트 관리를 위한 기본 메시징 호스트</translation>

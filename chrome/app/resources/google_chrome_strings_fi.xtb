@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Etsi kirjanmerkit Chrome-valikosta tai kirjanmerkkipalkista.</translation>
 <translation id="8556340503434111824">Chromesta on saatavissa uusi versio, joka on entistäkin nopeampi.</translation>
 <translation id="8987477933582888019">Selain</translation>
-<translation id="3749644715096758981">Chromea ei voitu päivittää uusimpaan versioon, joten sinulta puuttuu joitain uusia ominaisuuksia ja tietoturvapäivityksiä. Sinun on päivitettävä Chrome.</translation>
 <translation id="4728575227883772061">Asennus epäonnistui tuntemattoman virheen takia. Jos Google Chrome on tällä hetkellä käynnissä, sulje ohjelma ja yritä uudelleen.</translation>
 <translation id="3080151273017101988">Jätä taustaohjelmat käyntiin, kun Google Chrome suljetaan</translation>
 <translation id="4149882025268051530">Asennusohjelma ei pystynyt purkamaan arkistotiedostoa. Lataa Google Chrome uudelleen.</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">Google Chrome käyttää mikrofoniasi.</translation>
 <translation id="2596415276201385844">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä ajanjaksoina. Chrome ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="4053720452172726777">Google Chromen muokkaaminen ja hallinta</translation>
-<translation id="5298539825145851748">Poista Chromesta</translation>
 <translation id="3197823471738295152">Laite on ajan tasalla.</translation>
 <translation id="8286862437124483331">Google Chrome yrittää näyttää salasanoja. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="3889417619312448367">Poista Google Chromen asennus</translation>
@@ -176,7 +174,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="5028489144783860647">Google Chrome ei voinut synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="9026991721384951619">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="8547799825197623713">Chrome Canary -sovellusten käynnistysohjelma</translation>
-<translation id="6326175484149238433">Poista Chromesta</translation>
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="7890208801193284374">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromesta juuri itselleen sopivan.</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>

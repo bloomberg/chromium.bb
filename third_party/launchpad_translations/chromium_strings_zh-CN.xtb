@@ -56,7 +56,6 @@
 <translation id="8897323336392112261">它还能够控制您启动Chromium或点击“主页”按钮后系统显示的页面。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
-<translation id="8843170958047978824">从Chromium中移除</translation>
 <translation id="3068515742935458733">将崩溃报告和<ph name="UMA_LINK"/>发送给Google，帮助我们完善Chromium。</translation>
 <translation id="734373864078049451">您的上网记录、书签和其他Chromium内容都保存在此处。</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
@@ -89,7 +88,6 @@
 <translation id="6055895534982063517">Chromium 现已推出速度更快的新版本。</translation>
 <translation id="8821041990367117597">由于您的帐户登录详细信息已过期，Chromium无法同步您的数据。</translation>
 <translation id="4677944499843243528">其他计算机 (<ph name="HOST_NAME"/>) 的另一个 Chromium 进程 (<ph name="PROCESS_ID"/>) 好像正在使用此个人资料。Chromium 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chromium。</translation>
-<translation id="5405650547142096840">从Chromium中移除</translation>
 <translation id="4994636714258228724">将您自己添加到Chromium</translation>
 <translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
@@ -148,7 +146,6 @@
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME"/>”已添加到 Chromium。</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
-<translation id="1240763998429950591">Chromium 无法更新到最新版本，因此其中缺少一些新功能并且未更正某些安全性问题。您需要更新 Chromium。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">向 Google 搜索发送某个字词及其相关上下文，系统将返回相应的定义、图片、搜索结果和其他详细信息。</translation>
 <translation id="4559775032954821361">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”复选框。</translation>

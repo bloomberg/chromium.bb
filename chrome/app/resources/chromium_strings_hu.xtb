@@ -69,7 +69,6 @@
 <translation id="8897323336392112261">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor vagy a Kezdőlap gombra történő kattintáskor.</translation>
 <translation id="4330585738697551178">Ismereteink szerint ez a modul ütközik a Chromiummal.</translation>
 <translation id="3190315855212034486">Ó! A Chromium összeomlott. Újraindítja most?</translation>
-<translation id="8843170958047978824">Eltávolítás a Chromiumból</translation>
 <translation id="3068515742935458733">Segítse a Chromium fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK"/></translation>
 <translation id="734373864078049451">Az Ön könyvjelzői, valamint az internetezéssel és a Chromiummal kapcsolatos egyéb dolgai vannak itt.</translation>
 <translation id="3197823471738295152">Eszköze naprakész.</translation>
@@ -102,7 +101,6 @@
 <translation id="6055895534982063517">Elérhető a Chromium új verziója, amely minden korábbinál sokkal gyorsabb.</translation>
 <translation id="8821041990367117597">A Chromium nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="4677944499843243528">Úgy tűnik, a profilt egy másik Chromium-folyamat (<ph name="PROCESS_ID"/>) használja egy másik számítógépen (<ph name="HOST_NAME"/>). A Chromium zárolta a profilt, hogy az ne sérülhessen. Ha biztos benne, hogy nem használja másik folyamat a profilt, feloldhatja azt, és újraindíthatja a Chromiumot.</translation>
-<translation id="5405650547142096840">Eltávolítás a Chromiumból</translation>
 <translation id="4994636714258228724">Adja hozzá magát a Chromiumban</translation>
 <translation id="7066436765290594559">A Chromium OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
@@ -161,7 +159,6 @@
 <translation id="2648074677641340862">Az operációs rendszer hibát jelzett a telepítés során. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="5942520288919337908">A(z) <ph name="EXTENSION_NAME"/> hozzá lett adva a Chromiumhoz.</translation>
 <translation id="549669000822060376">Kérjük, várjon, amíg a Chromium telepíti a legutóbbi rendszerfrissítéseket.</translation>
-<translation id="1240763998429950591">A Chromium nem tudott frissülni a legújabb verzióra, így Ön lemarad az új szolgáltatásokról és biztonsági javításokról. Frissítenie kell a Chromiumot.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">a szót és annak szövegkörnyezetét elküldi a Google Keresésbe, amely definíciókat, képeket, keresési eredményeket és egyéb részleteket küld vissza.</translation>
 <translation id="4559775032954821361">Lépjen ide:

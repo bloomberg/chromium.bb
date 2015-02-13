@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Encontre seus favoritos no menu do Google Chrome ou na barra de favoritos.</translation>
 <translation id="8556340503434111824">Há uma nova versão ainda mais rápida do Google Chrome disponível.</translation>
 <translation id="8987477933582888019">Navegador da Web</translation>
-<translation id="3749644715096758981">Não foi possível atualizar o Google Chrome para a versão mais recente, por isso você está perdendo novos recursos e correções de segurança. Você precisa atualizar o Chrome.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
 <translation id="3080151273017101988">Executar aplicativos em segundo plano quando o Google Chrome estiver fechado</translation>
 <translation id="4149882025268051530">Houve uma falha no instalador ao descompactar o arquivo. Baixe o Google Chrome novamente.</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">O Google Chrome está usando seu microfone.</translation>
 <translation id="2596415276201385844">Para estabelecer uma conexão segura, o relógio precisa ser ajustado corretamente. Isso ocorre porque os certificados que os websites usam para se identificar são válidos apenas por períodos específicos. Como o relógio do seu dispositivo está incorreto, o Chrome não pode verificar esses certificados.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
-<translation id="5298539825145851748">Remover do Chrome</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8286862437124483331">O Google Chrome está tentando mostrar senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
@@ -138,6 +136,10 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
         novamente para melhorar o desempenho.</translation>
 <translation id="2290014774651636340">As chaves da API do Google não foram encontradas. Algumas funcionalidades do Google Chrome serão desativadas.</translation>
 <translation id="2397416548179033562">Exibir o menu do Google Chrome</translation>
+<translation id="5423788048750135178">Vá até o menu do Chrome &gt; Configurações &gt; (Avançadas) Privacidade
+          e desative &quot;Recursos de página de pré-chamada&quot;.
+          Se isso não resolver o problema, recomendamos que você reative essa opção
+          novamente para melhorar o desempenho.</translation>
 <translation id="4794050651896644714">Salvar detalhes no Google Chrome</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>
@@ -177,7 +179,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="5028489144783860647">O Google Chrome não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="9026991721384951619">O Chrome OS não pôde sincronizar seus dados porque os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="8547799825197623713">Iniciador de aplicativos do Google Chrome no Canary</translation>
-<translation id="6326175484149238433">Remover do Google Chrome</translation>
 <translation id="2871893339301912279">Você fez login no Google Chrome.</translation>
 <translation id="7890208801193284374">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Google Chrome da maneira que desejarem.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
@@ -231,7 +232,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN"/>. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
-<translation id="5489213858994471184">O Google Chrome detectou que as configurações do navegador podem ter sido alteradas por um programa no seu computador sem seu conhecimento. Use a Software Removal Tool do Google para remover o programa.</translation>
+<translation id="5489213858994471184">O Google Chrome detectou que as configurações do navegador podem ter sido alteradas por um programa no seu computador sem seu conhecimento. Use a Ferramenta de Remoção de Software do Google para remover o programa.</translation>
 <translation id="8679801911857917785">Controla também qual página deve ser exibida quando você inicia o Chrome.</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>

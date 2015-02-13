@@ -3,7 +3,7 @@
 <translation id="8000275528373650868">Google Chrome vyžaduje operační systém Windows Vista nebo Windows XP SP2 nebo vyšší.</translation>
 <translation id="1302523850133262269">Počkejte prosím, než Chrome nainstaluje nejnovější aktualizace systému.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
-<translation id="123620459398936149">Chrome OS vaše data nemohl synchronizovat. Aktualizujte prosím přístupové heslo pro Synchronizaci.</translation>
+<translation id="123620459398936149">Chrome OS vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="5430073640787465221">Soubor nastavení je poškozený nebo neplatný.
 
 Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
@@ -47,7 +47,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="568643307450491754">Záložky naleznete v nabídce Chromium nebo na liště záložek.</translation>
 <translation id="8556340503434111824">Je k dispozici nová verze prohlížeče Google Chrome, ještě rychlejší než ty předchozí.</translation>
 <translation id="8987477933582888019">Webový prohlížeč</translation>
-<translation id="3749644715096758981">Chrome nebylo možné aktualizovat na nejnovější verzi. Nemáte proto k dispozici nové funkce a opravy zabezpečení. Chrome je potřeba aktualizovat.</translation>
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="3080151273017101988">Po ukončení prohlížeče Google Chrome nechat aplikace na pozadí spuštěné</translation>
 <translation id="4149882025268051530">Instalačnímu programu se nepodařilo rozbalit archiv. Stáhněte prosím Google Chrome ještě jednou.</translation>
@@ -72,7 +71,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="7098166902387133879">Google Chrome používá váš mikrofon.</translation>
 <translation id="2596415276201385844">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chrome tyto certifikáty nemůže ověřit.</translation>
 <translation id="4053720452172726777">Přizpůsobit a ovládat Google Chrome</translation>
-<translation id="5298539825145851748">Odstranit z Chromu</translation>
 <translation id="3197823471738295152">Zařízení bylo aktualizováno.</translation>
 <translation id="8286862437124483331">Aplikace Google Chrome se pokouší zobrazit hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
@@ -173,10 +171,9 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">odesílá slovo a jeho okolní kontext do Vyhledávání Google a vrací definice, obrázky, výsledky vyhledávání a další podrobnosti.</translation>
 <translation id="61852838583753520">Aktualizace operačního systému &amp;Chrome</translation>
-<translation id="5028489144783860647">Google Chrome vaše data nemohl synchronizovat.  Aktualizujte prosím přístupové heslo pro Synchronizaci.</translation>
+<translation id="5028489144783860647">Google Chrome vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="9026991721384951619">Chrome OS vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
 <translation id="8547799825197623713">Spouštěč aplikací Chrome Canary</translation>
-<translation id="6326175484149238433">Odstranit z Chromu</translation>
 <translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
 <translation id="7890208801193284374">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chrome podle svých požadavků.</translation>
 <translation id="7161904924553537242">Vítá vás Google Chrome</translation>

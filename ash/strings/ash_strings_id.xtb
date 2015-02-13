@@ -59,6 +59,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>
 <translation id="5238774010593222950">Tidak dapat masuk ke akun lain.</translation>
 <translation id="1723752762323179280">Keluar dari Sesi</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Keluar</translation>
@@ -198,9 +199,11 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="5102001756192215136">Sisa <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Keluaran</translation>
+<translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>j <ph name="MINUTE"/>m sampai penuh</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS dari <ph name="PHONE_NUMBER"/></translation>
+<translation id="4053612967614057854">Nonaktifkan keyboard di layar</translation>
 </translationbundle>

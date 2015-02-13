@@ -43,7 +43,6 @@
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
 <translation id="8556340503434111824">Google クロームブラウザがバージョンアップ！是非お試しください。</translation>
 <translation id="8987477933582888019">ウェブブラウザ</translation>
-<translation id="3749644715096758981">Chrome を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。Chrome を更新する必要があります。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
 <translation id="2596415276201385844">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chrome ではこれらの証明書を確認できません。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
-<translation id="5298539825145851748">Chrome から削除</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
@@ -174,7 +172,6 @@
 <translation id="5028489144783860647">Google Chrome はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="8547799825197623713">Chrome アプリ ランチャー（Canary 向け）</translation>
-<translation id="6326175484149238433">Chrome から削除</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>

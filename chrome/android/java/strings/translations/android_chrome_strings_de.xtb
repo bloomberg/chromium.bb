@@ -117,7 +117,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="907015151729920253">Smartcard</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="5016205925109358554">Serifenschrift</translation>
-<translation id="2600241144430299006">Ablaufmonat der Karte</translation>
 <translation id="3063601790762993062">Video speichern</translation>
 <translation id="8106211421800660735">Kreditkartennummer</translation>
 <translation id="6042308850641462728">Mehr</translation>
@@ -136,7 +135,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="651048280540227067">Menü schließen</translation>
 <translation id="748127970106343339">Löschen der Anmeldedaten des Geräts bestätigen</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
-<translation id="1583256385106514953">Ablaufjahr der Karte</translation>
 <translation id="1082482054625560856">Gespeicherte Passwörter in Ihrem <ph name="BEGIN_LINK"/>Google-Konto<ph name="END_LINK"/> verwalten</translation>
 <translation id="2699916814609764774">Profilpfad</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
@@ -172,7 +170,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5565871407246142825">Kreditkarten</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
-<translation id="2612676031748830579">Kartennummer</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION"/> teilen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="2888126860611144412">Info zu Chrome</translation>

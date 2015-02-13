@@ -43,7 +43,6 @@
 <translation id="568643307450491754">‏מצא את הסימניות שלך בתפריט Chrome או בסרגל הסימניות.</translation>
 <translation id="8556340503434111824">‏גרסה חדשה של Google Chrome זמינה, והיא מהירה יותר מאי פעם.</translation>
 <translation id="8987477933582888019">דפדפן אינטרנט</translation>
-<translation id="3749644715096758981">‏Chrome לא הצליח להתעדכן לגרסה האחרונה, ולכן אתה מחמיץ תכונות ותיקוני אבטחה חדשים. עליך לעדכן את Chrome.</translation>
 <translation id="4728575227883772061">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="3080151273017101988">‏המשך הפעלת יישומים ברקע כאשר Google Chrome סגור</translation>
 <translation id="4149882025268051530">‏המתקין נכשל בביצוע דחיסה לארכיון. הורד שוב את Google Chrome.</translation>
@@ -66,7 +65,6 @@
 <translation id="7098166902387133879">‏Google Chrome משתמש במיקרופון שלך.</translation>
 <translation id="2596415276201385844">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבהם אתרים משתמשים כדי לזהות את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Chrome לא יכול לאמת את האישורים האלו.</translation>
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
-<translation id="5298539825145851748">‏הסר מ-Chrome</translation>
 <translation id="3197823471738295152">המכשיר שלך מעודכן.</translation>
 <translation id="8286862437124483331">‏Google Chrome מנסה להציג סיסמאות. הקלד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
@@ -137,6 +135,10 @@
         לקבלת ביצועים משופרים.</translation>
 <translation id="2290014774651636340">‏המפתחות של Google API חסרים. פונקציונליות מסוימת של Google Chrome תהיה מושבתת.</translation>
 <translation id="2397416548179033562">‏הצג את תפריט Chrome</translation>
+<translation id="5423788048750135178">‏עבור אל תפריט Chrome &gt; הגדרות &gt; (מתקדם) פרטיות
+          והשבת את 'בצע אחזור מוקדם למשאבי דף'.
+          אם פעולה זו אינה פותרת את הבעיה, מומלץ להפעיל שוב את האפשרות הזו
+          כדי לשפר את הביצועים.</translation>
 <translation id="4794050651896644714">‏שמור פרטים ב-Chrome</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="5855036575689098185">‏תוכנה שפועלת במחשב שלך אינה תואמת ל-Google Chrome.</translation>
@@ -176,7 +178,6 @@
 <translation id="5028489144783860647">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה שלך עבור סנכרון.</translation>
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="8547799825197623713">‏מפעיל היישומים של Chrome - קאנארי</translation>
-<translation id="6326175484149238433">‏הסר מ-Chrome</translation>
 <translation id="2871893339301912279">‏נכנסת ל-Chrome!</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7161904924553537242">‏ברוך הבא ל-Google Chrome</translation>

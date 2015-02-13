@@ -70,7 +70,6 @@
 <translation id="8897323336392112261">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chromium atau mengeklik tombol Beranda.</translation>
 <translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
 <translation id="3190315855212034486">Aduh! Chromium ngadat. Luncurkan ulang sekarang?</translation>
-<translation id="8843170958047978824">Buang Dari Chromium</translation>
 <translation id="3068515742935458733">Bantu Chromium menjadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK"/> ke Google</translation>
 <translation id="734373864078049451">Web, bookmark, dan barang Chromium Anda lainnya tersedia di sini.</translation>
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
@@ -103,7 +102,6 @@
 <translation id="6055895534982063517">Tersedia Chromium versi baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="8821041990367117597">Chromium tidak dapat menyinkronkan data karena detail proses masuk Anda sebelum diperbarui.</translation>
 <translation id="4677944499843243528">Profil tersebut mungkin digunakan pada proses Chromium lainnya (<ph name="PROCESS_ID"/>) pada komputer lain (<ph name="HOST_NAME"/>). Chromium telah mengunci profil tersebut agar tidak rusak. Jika yakin tidak ada proses lain yang menggunakan profil tersebut, Anda dapat membuka profil dan meluncurkan Chromium kembali.</translation>
-<translation id="5405650547142096840">Hapus dari Chromium</translation>
 <translation id="4994636714258228724">Tambahkan diri Anda ke Chromium</translation>
 <translation id="7066436765290594559">Chromium OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
@@ -163,7 +161,6 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="2648074677641340862">Terjadi kesalahan pada sistem operasi saat pemasangan berlangsung. Unduh Chromium lagi.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> telah ditambahkan ke Chromium.</translation>
 <translation id="549669000822060376">Harap tunggu selagi Chromium memasang pembaruan sistem terkini.</translation>
-<translation id="1240763998429950591">Chromium tidak dapat diperbarui ke versi terkini, sehingga Anda tidak memiliki fitur dan perbaikan keamanan paling mutakhir. Anda perlu memperbarui Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">mengirim kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, dan detail lain.</translation>
 <translation id="4559775032954821361">Buka
@@ -181,6 +178,10 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 
 Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chromium yang lebih baru.</translation>
 <translation id="8907580949721785412">Chromium mencoba menampilkan sandi. Ketik sandi Windows untuk mengizinkannya.</translation>
+<translation id="4404275227760602850">Buka menu Chromium &gt; Setelan &gt; (Lanjutan) Privasi
+          dan nonaktifkan &quot;Ambil sumber daya laman lebih dahulu&quot;.
+          Jika hal ini tidak menyelesaikan masalah, sebaiknya aktifkan opsi ini
+          lagi untuk kinerja yang ditingkatkan.</translation>
 <translation id="1174473354587728743">Berbagi komputer? Kini Anda dapat menyiapkan Chromium seperti yang Anda inginkan.</translation>
 <translation id="9013087743919948559">Tambahkan ke Chromium</translation>
 <translation id="2525993619214772747">Chromium Berperilaku Aneh?</translation>

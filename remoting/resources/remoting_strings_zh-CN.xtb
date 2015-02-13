@@ -89,7 +89,6 @@
 <translation id="2013996867038862849">已删除所有配对的客户端。</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME"/>”的远程连接吗？如果您日后想要重新启用连接，需要访问该计算机。</translation>
 <translation id="6944854424004126054">恢复窗口</translation>
-<translation id="1436054138039008644"><ph name="HOSTNAME"/>（上次在线日期：<ph name="DATE"/>）</translation>
 <translation id="9149992051684092333">要开始共享您的桌面，请将下面的访问代码提供给协助您的人员。</translation>
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
 <translation id="8513093439376855948">用于远程主机管理的本地消息传递主机</translation>

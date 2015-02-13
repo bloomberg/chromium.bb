@@ -47,7 +47,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="568643307450491754">Пронађите обележиваче у Chrome менију или на траци са обележивачима.</translation>
 <translation id="8556340503434111824">Доступна је нова верзија Google Chrome прегледача, бржа него икад пре.</translation>
 <translation id="8987477933582888019">Веб-прегледач</translation>
-<translation id="3749644715096758981">Chrome није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке. Треба да ажурирате Chrome.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="3080151273017101988">Настави са покретањем апликација у позадини када се Google Chrome затвори</translation>
 <translation id="4149882025268051530">Програм за инсталацију није успео да декомпримује архиву. Преузмите Google Chrome поново.</translation>
@@ -72,7 +71,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7098166902387133879">Google Chrome користи микрофон.</translation>
 <translation id="2596415276201385844">Да бисте успоставили безбедну везу, сат на уређају мора да буде тачан. То је зато што сертификати које веб-сајтови користе за идентификацију важе само одређени временски период. Пошто сат на вашем уређају није тачан, Chrome не може да верификује ове сертификате.</translation>
 <translation id="4053720452172726777">Прилагодите и контролишите Google Chrome</translation>
-<translation id="5298539825145851748">Уклони из Chrome-а</translation>
 <translation id="3197823471738295152">Уређај је ажуриран.</translation>
 <translation id="8286862437124483331">Google Chrome покушава да прикаже лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
@@ -184,7 +182,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5028489144783860647">Google Chrome не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
 <translation id="9026991721384951619">Chrome ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="8547799825197623713">Покретач Chrome апликација Canary</translation>
-<translation id="6326175484149238433">Уклони из Chrome-а</translation>
 <translation id="2871893339301912279">Пријављени сте у Chrome!</translation>
 <translation id="7890208801193284374">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chrome баш онако како желе.</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
