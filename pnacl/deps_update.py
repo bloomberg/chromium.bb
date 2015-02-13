@@ -169,7 +169,7 @@ def Main(args):
   subprocess.check_call(['git', 'commit', '-a', '-m', msg])
 
   branch_name = '%s-deps-%s' % (options.component, new_rev[:8])
-  subprocess.check_call(['git', 'checkout', '-b', branch_name])
+  subprocess.check_call(['git', 'checkout', '-b', branch_name, 'origin/master'])
 
   if options.no_upload:
     return
