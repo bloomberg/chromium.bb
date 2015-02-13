@@ -332,13 +332,13 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
     // m_renderLayer may be the "root", and then we should avoid looking at its parent.
     Layer* parentLayer = m_renderLayer.parent();
 
-    ClipRect clipRect(LayoutRect::infiniteRect());
+    ClipRect ancestorBackgroundClipRect;
     if (parentLayer) {
         // Calculate the clip rectangle that the ancestors establish.
         ClipRectsContext clipRectsContext(paintingInfo.rootLayer, (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize);
         if (shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer()) == IgnoreOverflowClip)
             clipRectsContext.setIgnoreOverflowClip();
-        clipRect = m_renderLayer.clipper().backgroundClipRect(clipRectsContext);
+        ancestorBackgroundClipRect = m_renderLayer.clipper().backgroundClipRect(clipRectsContext);
     }
 
     Layer* paginationLayer = m_renderLayer.enclosingPaginationLayer();
@@ -368,7 +368,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
         ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
         OwnPtr<LayerClipRecorder> clipRecorder;
         if (parentLayer) {
-            ClipRect clipRectForFragment(clipRect);
+            ClipRect clipRectForFragment(ancestorBackgroundClipRect);
             clipRectForFragment.moveBy(fragment.paginationOffset);
             clipRectForFragment.intersect(fragment.backgroundRect);
             if (clipRectForFragment.isEmpty())
