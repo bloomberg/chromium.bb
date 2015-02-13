@@ -47,14 +47,6 @@ enum OptInState {
   INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT,
 };
 
-enum DisplaySearchButtonConditions {
-  DISPLAY_SEARCH_BUTTON_NEVER,
-  DISPLAY_SEARCH_BUTTON_FOR_STR,         // STR = Search Term Replacement
-  DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP,  // IIP = Input In Progress
-  DISPLAY_SEARCH_BUTTON_ALWAYS,
-  DISPLAY_SEARCH_BUTTON_NUM_VALUES,
-};
-
 // Use this value for "start margin" to prevent the "es_sm" parameter from
 // being used.
 extern const int kDisableStartMargin;
@@ -177,12 +169,6 @@ bool ShouldReuseInstantSearchBasePage();
 // Returns the Local Instant URL of the New Tab Page.
 // TODO(kmadhusu): Remove this function and update the call sites.
 GURL GetLocalInstantURL(Profile* profile);
-
-// Returns when we should show a search button in the omnibox.  This may be any
-// of several values, some of which depend on whether the underlying state of
-// the page would normally be to perform search term replacement; see also
-// ToolbarModel::WouldPerformSearchTermReplacement().
-DisplaySearchButtonConditions GetDisplaySearchButtonConditions();
 
 // Returns true if the local new tab page should show a Google logo and search
 // box for users whose default search provider is Google, or false if not.

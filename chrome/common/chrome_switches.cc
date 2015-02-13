@@ -322,10 +322,6 @@ const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 // Prevents the save password bubble from being enabled.
 const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";
 
-// Disables the "search button in omnibox" experiment.
-const char kDisableSearchButtonInOmnibox[]  =
-    "disable-search-button-in-omnibox";
-
 // Disables using bubbles for session restore request.
 const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 
@@ -535,21 +531,6 @@ const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 
 // Enables SDCH for https schemes.
 const char kEnableSdchOverHttps[] = "enable-sdch-over-https";
-
-// Controls which branch of the "search button in omnibox" experiment is
-// enabled.
-//
-// We're using independent flags here (as opposed to a common flag with
-// different values) to be able to enable/disable the entire experience
-// associated with this feature server-side from the FieldTrial (the complete
-// experience includes other flag changes as well). It is not currently possible
-// to do that with "flag=value" flags.
-const char kEnableSearchButtonInOmniboxAlways[] =
-    "enable-search-button-in-omnibox-always";
-const char kEnableSearchButtonInOmniboxForStr[] =
-    "enable-search-button-in-omnibox-for-str";
-const char kEnableSearchButtonInOmniboxForStrOrIip[] =
-    "enable-search-button-in-omnibox-for-str-or-iip";
 
 // Enables using bubbles for session restore request instead of infobars.
 const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";

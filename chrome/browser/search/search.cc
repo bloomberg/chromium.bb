@@ -65,7 +65,6 @@ const char kUseSearchPathForInstant[] = "use_search_path_for_instant";
 const char kAltInstantURLPath[] = "search";
 const char kAltInstantURLQueryParams[] = "&qbp=1";
 
-const char kDisplaySearchButtonFlagName[] = "display_search_button";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 const char kEnableQueryExtractionFlagName[] = "query_extraction";
 #endif
@@ -579,27 +578,6 @@ bool ShouldReuseInstantSearchBasePage() {
 
 GURL GetLocalInstantURL(Profile* profile) {
   return GURL(chrome::kChromeSearchLocalNtpUrl);
-}
-
-DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
-  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kDisableSearchButtonInOmnibox))
-    return DISPLAY_SEARCH_BUTTON_NEVER;
-  if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxForStr))
-    return DISPLAY_SEARCH_BUTTON_FOR_STR;
-  if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxForStrOrIip))
-    return DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP;
-  if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxAlways))
-    return DISPLAY_SEARCH_BUTTON_ALWAYS;
-
-  FieldTrialFlags flags;
-  if (!GetFieldTrialInfo(&flags))
-    return DISPLAY_SEARCH_BUTTON_NEVER;
-  uint64 value =
-      GetUInt64ValueForFlagWithDefault(kDisplaySearchButtonFlagName, 0, flags);
-  return (value < DISPLAY_SEARCH_BUTTON_NUM_VALUES) ?
-      static_cast<DisplaySearchButtonConditions>(value) :
-      DISPLAY_SEARCH_BUTTON_NEVER;
 }
 
 bool ShouldShowGoogleLocalNTP() {

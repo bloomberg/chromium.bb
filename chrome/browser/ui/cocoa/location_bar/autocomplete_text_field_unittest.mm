@@ -41,13 +41,15 @@ class MockDecoration : public LocationBarDecoration {
 
 class MockButtonDecoration : public ButtonDecoration {
  public:
+  // Note: It does not matter which images are used here - but ButtonDecoration
+  // needs _some_ images to work properly.
   MockButtonDecoration()
-      : ButtonDecoration(IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON),
-                         IDR_OMNIBOX_SEARCH_BUTTON_LOUPE,
-                         IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON_HOVER),
-                         IDR_OMNIBOX_SEARCH_BUTTON_LOUPE,
-                         IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON_PRESSED),
-                         IDR_OMNIBOX_SEARCH_BUTTON_LOUPE,
+      : ButtonDecoration(IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE),
+                         IDR_OMNIBOX_EV_BUBBLE_CENTER,
+                         IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE),
+                         IDR_OMNIBOX_EV_BUBBLE_CENTER,
+                         IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE),
+                         IDR_OMNIBOX_EV_BUBBLE_CENTER,
                          3) {}
   void Hide() { SetVisible(false); }
   MOCK_METHOD2(OnMousePressed, bool(NSRect frame, NSPoint location));

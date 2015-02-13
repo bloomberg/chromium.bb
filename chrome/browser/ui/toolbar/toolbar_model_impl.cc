@@ -257,13 +257,8 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 }
 
 int ToolbarModelImpl::GetIcon() const {
-  if (WouldPerformSearchTermReplacement(false)) {
-    // The secured version of the search icon is necessary if the search button
-    // is not present to indicate the security state.
-    return (chrome::GetDisplaySearchButtonConditions() ==
-        chrome::DISPLAY_SEARCH_BUTTON_NEVER) ?
-            IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
-  }
+  if (WouldPerformSearchTermReplacement(false))
+    return IDR_OMNIBOX_SEARCH_SECURED;
 
   return GetIconForSecurityLevel(GetSecurityLevel(false));
 }

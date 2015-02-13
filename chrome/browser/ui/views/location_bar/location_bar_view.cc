@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
-#include "chrome/browser/ui/views/location_bar/search_button.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
@@ -101,11 +100,6 @@ using content::WebContents;
 using views::View;
 
 namespace {
-
-// The search button images are made to look as if they overlay the normal edge
-// images, but to align things, the search button needs to be inset horizontally
-// by 1 px.
-const int kSearchButtonInset = 1;
 
 int GetEditLeadingInternalSpace() {
   // The textfield has 1 px of whitespace before the text in the RTL case only.
@@ -170,7 +164,6 @@ LocationBarView::LocationBarView(Browser* browser,
       manage_passwords_icon_view_(NULL),
       translate_icon_view_(NULL),
       star_view_(NULL),
-      search_button_(NULL),
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -329,10 +322,6 @@ void LocationBarView::Init() {
   star_view_ = new StarView(command_updater(), browser_);
   star_view_->SetVisible(false);
   AddChildView(star_view_);
-
-  search_button_ = new SearchButton(this);
-  search_button_->SetVisible(false);
-  AddChildView(search_button_);
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
@@ -559,8 +548,6 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   gfx::Size min_size(border_painter_->GetMinimumSize());
   if (!IsInitialized())
     return min_size;
-  gfx::Size search_button_min_size(search_button_->GetMinimumSize());
-  min_size.SetToMax(search_button_min_size);
 
   // Compute width of omnibox-leading content.
   const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
@@ -577,9 +564,7 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   }
 
   // Compute width of omnibox-trailing content.
-  int trailing_width = search_button_->visible() ?
-      (search_button_->GetMinimumSize().width() + kSearchButtonInset) :
-      horizontal_edge_thickness;
+  int trailing_width = horizontal_edge_thickness;
   trailing_width += IncrementalMinimumWidth(star_view_) +
       IncrementalMinimumWidth(translate_icon_view_) +
       IncrementalMinimumWidth(open_pdf_in_reader_view_) +
@@ -719,11 +704,7 @@ void LocationBarView::Layout() {
   const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
   int full_width = width() - horizontal_edge_thickness;
 
-  const gfx::Size search_button_size(search_button_->GetPreferredSize());
-  const int search_button_reserved_width =
-      search_button_size.width() + kSearchButtonInset;
-  full_width -= search_button_->visible() ?
-      search_button_reserved_width : horizontal_edge_thickness;
+  full_width -= horizontal_edge_thickness;
   int entry_width = full_width;
   leading_decorations.LayoutPass1(&entry_width);
   trailing_decorations.LayoutPass1(&entry_width);
@@ -817,10 +798,6 @@ void LocationBarView::Layout() {
   }
 
   omnibox_view_->SetBoundsRect(location_bounds);
-
-  search_button_->SetBoundsRect(gfx::Rect(
-      gfx::Point(width() - search_button_reserved_width, 0),
-      search_button_size));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1273,12 +1250,10 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 void LocationBarView::PaintChildren(gfx::Canvas* canvas,
                                     const views::CullSet& cull_set) {
   // Paint all the children except for the omnibox itself, which may need to be
-  // clipped if it's animating in, and the search button, which will be painted
-  // after the border.
+  // clipped if it's animating in.
   for (int i = 0, count = child_count(); i < count; ++i) {
     views::View* child = child_at(i);
-    if (!child->layer() && (child != omnibox_view_) &&
-        (child != search_button_))
+    if (!child->layer() && (child != omnibox_view_))
       child->Paint(canvas, cull_set);
   }
 
@@ -1300,10 +1275,6 @@ void LocationBarView::PaintChildren(gfx::Canvas* canvas,
   if (is_popup_mode_ && (GetHorizontalEdgeThickness() == 0))
     border_rect.Inset(-kPopupEdgeThickness, 0);
   views::Painter::PaintPainterAt(canvas, border_painter_.get(), border_rect);
-
-  // The search button must be painted after the border so that the border
-  // shadow is not drawn over them.
-  search_button_->Paint(canvas, cull_set);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1311,15 +1282,8 @@ void LocationBarView::PaintChildren(gfx::Canvas* canvas,
 
 void LocationBarView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  if (sender == mic_search_view_) {
-    command_updater()->ExecuteCommand(IDC_TOGGLE_SPEECH_INPUT);
-    return;
-  }
-
-  DCHECK_EQ(search_button_, sender);
-  // TODO(pkasting): When macourteau adds UMA stats for this, wire them up here.
-  omnibox_view_->model()->AcceptInput(
-      ui::DispositionFromEventFlags(event.flags()), false);
+  DCHECK_EQ(mic_search_view_, sender);
+  command_updater()->ExecuteCommand(IDC_TOGGLE_SPEECH_INPUT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1366,18 +1330,6 @@ void LocationBarView::OnChanged() {
   int icon_id = omnibox_view_->GetIcon();
   location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon_id));
   location_icon_view_->ShowTooltip(!GetOmniboxView()->IsEditingOrEmpty());
-
-  ToolbarModel* toolbar_model = GetToolbarModel();
-  chrome::DisplaySearchButtonConditions conditions =
-      chrome::GetDisplaySearchButtonConditions();
-  bool meets_conditions =
-      (conditions == chrome::DISPLAY_SEARCH_BUTTON_ALWAYS) ||
-      ((conditions != chrome::DISPLAY_SEARCH_BUTTON_NEVER) &&
-       (toolbar_model->WouldPerformSearchTermReplacement(true) ||
-        ((conditions == chrome::DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP) &&
-         toolbar_model->input_in_progress())));
-  search_button_->SetVisible(!is_popup_mode_ && meets_conditions);
-  search_button_->UpdateIcon(icon_id == IDR_OMNIBOX_SEARCH);
 
   Layout();
   SchedulePaint();

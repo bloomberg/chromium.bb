@@ -43,7 +43,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/mic_search_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/search_button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
@@ -113,7 +112,6 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       mic_search_decoration_(new MicSearchDecoration(command_updater)),
       generated_credit_card_decoration_(
           new GeneratedCreditCardDecoration(this)),
-      search_button_decoration_(new SearchButtonDecoration(this)),
       manage_passwords_decoration_(
           new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
@@ -397,7 +395,6 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:location_icon_decoration_.get()];
   [cell addLeftDecoration:selected_keyword_decoration_.get()];
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
-  [cell addRightDecoration:search_button_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
   [cell addRightDecoration:translate_decoration_.get()];
   [cell addRightDecoration:zoom_decoration_.get()];
@@ -542,22 +539,6 @@ void LocationBarViewMac::OnChanged() {
   NSImage* image = OmniboxViewMac::ImageForResource(resource_id);
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
-
-  ToolbarModel* toolbar_model = GetToolbarModel();
-  const chrome::DisplaySearchButtonConditions conditions =
-      chrome::GetDisplaySearchButtonConditions();
-  const bool meets_conditions =
-      (conditions == chrome::DISPLAY_SEARCH_BUTTON_ALWAYS) ||
-      ((conditions != chrome::DISPLAY_SEARCH_BUTTON_NEVER) &&
-       (toolbar_model->WouldPerformSearchTermReplacement(true) ||
-        ((conditions == chrome::DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP) &&
-         toolbar_model->input_in_progress())));
-  search_button_decoration_->SetVisible(
-      ![[field_ cell] isPopupMode] && meets_conditions);
-  search_button_decoration_->SetIcon(
-      (resource_id == IDR_OMNIBOX_SEARCH) ?
-          IDR_OMNIBOX_SEARCH_BUTTON_LOUPE : IDR_OMNIBOX_SEARCH_BUTTON_ARROW);
-
   Layout();
 
   InstantService* instant_service =

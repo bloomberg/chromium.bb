@@ -43,7 +43,6 @@ class ManagePasswordsIconView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
-class SearchButton;
 class SelectedKeywordView;
 class StarView;
 class TemplateURLService;
@@ -468,9 +467,6 @@ class LocationBarView : public LocationBar,
 
   // The star.
   StarView* star_view_;
-
-  // The search/go button.
-  SearchButton* search_button_;
 
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.

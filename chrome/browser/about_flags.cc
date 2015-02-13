@@ -324,23 +324,6 @@ const Experiment::Choice kMemoryPressureThresholdChoices[] = {
 };
 #endif
 
-// We're using independent flags here (as opposed to a common flag with
-// different values) to be able to enable/disable the entire experience
-// associated with this feature server-side from the FieldTrial (the complete
-// experience includes other flag changes as well). It is not currently possible
-// to do that with "flag=value" flags.
-const Experiment::Choice kSearchButtonInOmniboxChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kDisableSearchButtonInOmnibox, ""},
-  { IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLE_FOR_STR,
-    switches::kEnableSearchButtonInOmniboxForStr, ""},
-  { IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLE_FOR_STR_OR_IIP,
-    switches::kEnableSearchButtonInOmniboxForStrOrIip, ""},
-  { IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLED,
-    switches::kEnableSearchButtonInOmniboxAlways, ""}
-};
-
 const Experiment::Choice kExtensionContentVerificationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_BOOTSTRAP,
@@ -1690,13 +1673,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_NUM_RASTER_THREADS_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kNumRasterThreadsChoices)
-  },
-  {
-    "search-button-in-omnibox",
-    IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_NAME,
-    IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_DESCRIPTION,
-    kOsCrOS | kOsMac | kOsWin | kOsLinux,
-    MULTI_VALUE_TYPE(kSearchButtonInOmniboxChoices)
   },
   {
     "ignore-autocomplete-off-autofill",
