@@ -30,46 +30,35 @@ namespace content {
 
 namespace {
 
-void GetClientInfoOnUIThread(
+ServiceWorkerClientInfo GetClientInfoOnUIThread(
     int render_process_id,
-    int render_frame_id,
-    const ServiceWorkerProviderHost::GetClientInfoCallback& callback) {
+    int render_frame_id) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, ServiceWorkerClientInfo()));
-    return;
-  }
+  if (!render_frame_host)
+    return ServiceWorkerClientInfo();
 
   // TODO(mlamouri,michaeln): it is possible to end up collecting information
   // for a frame that is actually being navigated and isn't exactly what we are
   // expecting.
-  ServiceWorkerClientInfo client_info(
+  return ServiceWorkerClientInfo(
       render_frame_host->GetVisibilityState(),
       render_frame_host->IsFocused(),
       render_frame_host->GetLastCommittedURL(),
       render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
                                      : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, client_info));
 }
 
-void FocusOnUIThread(
+ServiceWorkerClientInfo FocusOnUIThread(
     int render_process_id,
-    int render_frame_id,
-    const ServiceWorkerProviderHost::GetClientInfoCallback& callback) {
+    int render_frame_id) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(render_frame_host));
 
-  if (!render_frame_host || !web_contents) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, ServiceWorkerClientInfo()));
-    return;
-  }
+  if (!render_frame_host || !web_contents)
+    return ServiceWorkerClientInfo();
 
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
 
@@ -82,7 +71,7 @@ void FocusOnUIThread(
   // Move the web contents to the foreground.
   web_contents->Activate();
 
-  GetClientInfoOnUIThread(render_process_id, render_frame_id, callback);
+  return GetClientInfoOnUIThread(render_process_id, render_frame_id);
 }
 
 }  // anonymous namespace
@@ -304,21 +293,22 @@ void ServiceWorkerProviderHost::PostMessage(
 }
 
 void ServiceWorkerProviderHost::Focus(const GetClientInfoCallback& callback) {
-  BrowserThread::PostTask(
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&FocusOnUIThread,
                  render_process_id_,
-                 render_frame_id_,
-                 callback));
+                 render_frame_id_),
+      callback);
 }
 
 void ServiceWorkerProviderHost::GetClientInfo(
     const GetClientInfoCallback& callback) const {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&GetClientInfoOnUIThread,
-                                     render_process_id_,
-                                     render_frame_id_,
-                                     callback));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetClientInfoOnUIThread,
+                render_process_id_,
+                render_frame_id_),
+      callback);
 }
 
 void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
