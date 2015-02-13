@@ -22,8 +22,15 @@ namespace domain_reliability {
 
 namespace {
 
+// If Domain Reliability is enabled in the absence of a flag or field trial.
+const bool kDefaultEnabled = true;
+
+// The name and value of the field trial to turn Domain Reliability on.
+const char kFieldTrialName[] = "DomRel-Enable";
+const char kFieldTrialValueEnable[] = "enable";
+
 // Identifies Chrome as the source of Domain Reliability uploads it sends.
-const char* kDomainReliabilityUploadReporterString = "chrome";
+const char kUploadReporterString[] = "chrome";
 
 bool IsDomainReliabilityMonitoringEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -31,7 +38,13 @@ bool IsDomainReliabilityMonitoringEnabled() {
     return false;
   if (command_line->HasSwitch(switches::kEnableDomainReliability))
     return true;
-  return base::FieldTrialList::FindFullName("DomRel-Enable") == "enable";
+
+  if (base::FieldTrialList::TrialExists(kFieldTrialName)) {
+    std::string value = base::FieldTrialList::FindFullName(kFieldTrialName);
+    return value == kFieldTrialValueEnable;
+  }
+
+  return kDefaultEnabled;
 }
 
 bool IsMetricsReportingEnabled() {
@@ -81,8 +94,7 @@ KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
   if (!IsMetricsReportingEnabled())
     return NULL;
 
-  return DomainReliabilityService::Create(
-      kDomainReliabilityUploadReporterString);
+  return DomainReliabilityService::Create(kUploadReporterString);
 }
 
 }  // namespace domain_reliability
