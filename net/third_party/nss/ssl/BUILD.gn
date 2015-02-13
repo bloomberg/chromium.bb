@@ -14,7 +14,9 @@ component("libssl") {
   output_name = "crssl"
 
   sources = [
+    "SSLerrs.h",
     "authcert.c",
+    "bodge/secitem_array.c",
     "cmpcert.c",
     "derive.c",
     "dtlscon.c",
@@ -32,7 +34,6 @@ component("libssl") {
     "sslenum.c",
     "sslerr.c",
     "sslerr.h",
-    "SSLerrs.h",
     "sslerrstrs.c",
     "sslgathr.c",
     "sslimpl.h",
@@ -54,7 +55,6 @@ component("libssl") {
     "unix_err.h",
     "win32err.c",
     "win32err.h",
-    "bodge/secitem_array.c",
   ]
 
   public_configs = [ ":ssl_config" ]

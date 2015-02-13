@@ -113,8 +113,8 @@ component("net") {
     sources -= [
       "http/http_auth_gssapi_posix.cc",
       "http/http_auth_gssapi_posix.h",
-      "http/http_auth_handler_negotiate.h",
       "http/http_auth_handler_negotiate.cc",
+      "http/http_auth_handler_negotiate.h",
     ]
   }
 
@@ -130,12 +130,12 @@ component("net") {
     sources -= [
       "base/directory_lister.cc",
       "base/directory_lister.h",
+      "url_request/file_protocol_handler.cc",
+      "url_request/file_protocol_handler.h",
       "url_request/url_request_file_dir_job.cc",
       "url_request/url_request_file_dir_job.h",
       "url_request/url_request_file_job.cc",
       "url_request/url_request_file_job.h",
-      "url_request/file_protocol_handler.cc",
-      "url_request/file_protocol_handler.h",
     ]
   }
 
@@ -398,10 +398,10 @@ component("net") {
       "websockets/websocket_frame.h",
       "websockets/websocket_frame_parser.cc",
       "websockets/websocket_frame_parser.h",
-      "websockets/websocket_handshake_constants.cc",
-      "websockets/websocket_handshake_constants.h",
       "websockets/websocket_handshake_challenge.cc",
       "websockets/websocket_handshake_challenge.h",
+      "websockets/websocket_handshake_constants.cc",
+      "websockets/websocket_handshake_constants.h",
       "websockets/websocket_handshake_request_info.cc",
       "websockets/websocket_handshake_request_info.h",
       "websockets/websocket_handshake_response_info.cc",
@@ -477,10 +477,10 @@ component("net") {
       "cert/test_root_certs_nss.cc",
       "cert/x509_util_nss.cc",
       "cert/x509_util_nss.h",
-      "proxy/proxy_resolver_mac.cc",
-      "proxy/proxy_server_mac.cc",
       "ocsp/nss_ocsp.cc",
       "ocsp/nss_ocsp.h",
+      "proxy/proxy_resolver_mac.cc",
+      "proxy/proxy_server_mac.cc",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
@@ -503,11 +503,11 @@ component("net") {
     # are needed.
     set_sources_assignment_filter([])
     sources += [
-      "base/platform_mime_util_linux.cc",
       "base/address_tracker_linux.cc",
       "base/address_tracker_linux.h",
       "base/net_util_linux.cc",
       "base/net_util_linux.h",
+      "base/platform_mime_util_linux.cc",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
@@ -589,8 +589,8 @@ executable("dump_cache") {
     "tools/dump_cache/simple_cache_dumper.h",
     "tools/dump_cache/url_to_filename_encoder.cc",
     "tools/dump_cache/url_to_filename_encoder.h",
-    "tools/dump_cache/url_utilities.h",
     "tools/dump_cache/url_utilities.cc",
+    "tools/dump_cache/url_utilities.h",
   ]
 
   configs += [ ":net_win_size_truncation" ]
@@ -666,10 +666,10 @@ source_set("test_support") {
     "test/python_utils.h",
     "test/spawned_test_server/base_test_server.cc",
     "test/spawned_test_server/base_test_server.h",
-    "test/spawned_test_server/local_test_server_posix.cc",
-    "test/spawned_test_server/local_test_server_win.cc",
     "test/spawned_test_server/local_test_server.cc",
     "test/spawned_test_server/local_test_server.h",
+    "test/spawned_test_server/local_test_server_posix.cc",
+    "test/spawned_test_server/local_test_server_win.cc",
     "test/spawned_test_server/remote_test_server.cc",
     "test/spawned_test_server/remote_test_server.h",
     "test/spawned_test_server/spawned_test_server.h",
@@ -963,20 +963,20 @@ if (is_linux) {
     sources = [
       "tools/dump_cache/url_to_filename_encoder.cc",
       "tools/dump_cache/url_to_filename_encoder.h",
-      "tools/dump_cache/url_utilities.h",
       "tools/dump_cache/url_utilities.cc",
-      "tools/flip_server/acceptor_thread.h",
+      "tools/dump_cache/url_utilities.h",
       "tools/flip_server/acceptor_thread.cc",
+      "tools/flip_server/acceptor_thread.h",
+      "tools/flip_server/constants.h",
       "tools/flip_server/create_listener.cc",
       "tools/flip_server/create_listener.h",
-      "tools/flip_server/constants.h",
       "tools/flip_server/flip_config.cc",
       "tools/flip_server/flip_config.h",
       "tools/flip_server/http_interface.cc",
       "tools/flip_server/http_interface.h",
       "tools/flip_server/loadtime_measurement.h",
-      "tools/flip_server/mem_cache.h",
       "tools/flip_server/mem_cache.cc",
+      "tools/flip_server/mem_cache.h",
       "tools/flip_server/output_ordering.cc",
       "tools/flip_server/output_ordering.h",
       "tools/flip_server/ring_buffer.cc",
@@ -984,10 +984,10 @@ if (is_linux) {
       "tools/flip_server/sm_connection.cc",
       "tools/flip_server/sm_connection.h",
       "tools/flip_server/sm_interface.h",
-      "tools/flip_server/spdy_ssl.cc",
-      "tools/flip_server/spdy_ssl.h",
       "tools/flip_server/spdy_interface.cc",
       "tools/flip_server/spdy_interface.h",
+      "tools/flip_server/spdy_ssl.cc",
+      "tools/flip_server/spdy_ssl.h",
       "tools/flip_server/spdy_util.cc",
       "tools/flip_server/spdy_util.h",
       "tools/flip_server/streamer_interface.cc",
@@ -1042,8 +1042,8 @@ if (is_linux) {
       "tools/quic/quic_client_session.h",
       "tools/quic/quic_default_packet_writer.cc",
       "tools/quic/quic_default_packet_writer.h",
-      "tools/quic/quic_dispatcher.h",
       "tools/quic/quic_dispatcher.cc",
+      "tools/quic/quic_dispatcher.h",
       "tools/quic/quic_epoll_clock.cc",
       "tools/quic/quic_epoll_clock.h",
       "tools/quic/quic_epoll_connection_helper.cc",
@@ -1064,8 +1064,8 @@ if (is_linux) {
       "tools/quic/quic_spdy_client_stream.h",
       "tools/quic/quic_spdy_server_stream.cc",
       "tools/quic/quic_spdy_server_stream.h",
-      "tools/quic/quic_time_wait_list_manager.h",
       "tools/quic/quic_time_wait_list_manager.cc",
+      "tools/quic/quic_time_wait_list_manager.h",
     ]
     deps = [
       ":balsa",
@@ -1290,8 +1290,8 @@ if (!is_android && !is_win && !is_mac) {
         "websockets/websocket_deflate_predictor_impl_test.cc",
         "websockets/websocket_deflate_stream_test.cc",
         "websockets/websocket_deflater_test.cc",
-        "websockets/websocket_errors_test.cc",
         "websockets/websocket_end_to_end_test.cc",
+        "websockets/websocket_errors_test.cc",
         "websockets/websocket_extension_parser_test.cc",
         "websockets/websocket_frame_parser_test.cc",
         "websockets/websocket_frame_test.cc",
@@ -1343,8 +1343,8 @@ if (!is_android && !is_win && !is_mac) {
       deps += [ ":net_with_v8" ]
     } else {
       sources -= [
-        "proxy/proxy_resolver_v8_unittest.cc",
         "proxy/proxy_resolver_v8_tracing_unittest.cc",
+        "proxy/proxy_resolver_v8_unittest.cc",
       ]
     }
 
