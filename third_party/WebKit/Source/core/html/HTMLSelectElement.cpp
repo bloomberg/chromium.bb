@@ -198,13 +198,6 @@ bool HTMLSelectElement::usesMenuList() const
     return !m_multiple && m_size <= 1;
 }
 
-int HTMLSelectElement::activeSelectionStartListIndex() const
-{
-    if (m_activeSelectionAnchorIndex >= 0)
-        return m_activeSelectionAnchorIndex;
-    return optionToListIndex(selectedIndex());
-}
-
 int HTMLSelectElement::activeSelectionEndListIndex() const
 {
     if (m_activeSelectionEndIndex >= 0)

@@ -138,7 +138,6 @@ public:
     bool is3D() const;
 
     bool hasImageBuffer() const { return m_imageBuffer; }
-    bool hasValidImageBuffer() const;
     void discardImageBuffer();
 
     bool shouldAccelerate(const IntSize&) const;

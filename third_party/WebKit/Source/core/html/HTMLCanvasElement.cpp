@@ -796,11 +796,6 @@ void HTMLCanvasElement::discardImageBuffer()
     updateExternallyAllocatedMemory();
 }
 
-bool HTMLCanvasElement::hasValidImageBuffer() const
-{
-    return m_imageBuffer && m_imageBuffer->isSurfaceValid();
-}
-
 void HTMLCanvasElement::clearCopiedImage()
 {
     if (m_copiedImage) {
