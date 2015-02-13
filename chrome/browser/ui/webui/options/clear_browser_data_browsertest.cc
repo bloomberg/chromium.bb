@@ -41,8 +41,17 @@ class ClearBrowserDataBrowserTest : public OptionsUIBrowserTest {
   }
 };
 
+// http://crbug.com/458684
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_CommitButtonDisabledWhileDeletionInProgress \
+    DISABLED_CommitButtonDisabledWhileDeletionInProgress
+#else
+#define MAYBE_CommitButtonDisabledWhileDeletionInProgress \
+    CommitButtonDisabledWhileDeletionInProgress
+#endif
+
 IN_PROC_BROWSER_TEST_F(ClearBrowserDataBrowserTest,
-                       CommitButtonDisabledWhileDeletionInProgress) {
+                       MAYBE_CommitButtonDisabledWhileDeletionInProgress) {
   const char kCommitButtonId[] = "#clear-browser-data-commit";
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
 
