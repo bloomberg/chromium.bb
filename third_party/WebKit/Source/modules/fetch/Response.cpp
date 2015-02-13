@@ -201,8 +201,12 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
         // "3. If |Content-Type| is non-null and |r|'s response's header list
         // contains no header named `Content-Type`, append `Content-Type`/
         // |Content-Type| to |r|'s response's header list."
+        // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
+        // Step 3, Blob:
+        // "If object's type attribute is not the empty byte sequence, set
+        // Content-Type to its value."
         r->m_response->setBlobDataHandle(body->blobDataHandle());
-        if (!body->type().isNull() && !r->m_response->headerList()->has("Content-Type"))
+        if (!body->type().isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", body->type());
     }
 

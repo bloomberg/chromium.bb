@@ -182,6 +182,16 @@ test(function() {
     assert_equals(response.headers.get('Content-Type'),
                   'text/html; charset=UTF-8',
                   'Content-Type of Response.headers should be overridden');
+
+    response = new Response(new Blob(['dummy']));
+    assert_equals(size(response.headers), 0,
+                  'Response.headers must not have Content-Type ' +
+                  'for Blob with type = empty string (1)');
+
+    response = new Response(new Blob(['dummy'], {type: ''}));
+    assert_equals(size(response.headers), 0,
+                  'Response.headers must not have Content-Type ' +
+                  'for Blob with type = empty string (2)');
   }, 'Response content type test');
 
 test(function() {
