@@ -35,6 +35,7 @@
 #include "content/shell/renderer/layout_test/gc_controller.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/layout_test/leak_detector.h"
+#include "content/shell/renderer/test_runner/mock_presentation_service.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/web_task.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
@@ -246,6 +247,14 @@ void WebKitTestRunner::ResetScreenOrientation() {
 void WebKitTestRunner::DidChangeBatteryStatus(
     const blink::WebBatteryStatus& status) {
   MockBatteryStatusChanged(status);
+}
+
+void WebKitTestRunner::SetScreenAvailability(bool available) {
+  proxy()->GetPresentationServiceMock()->SetScreenAvailability(available);
+}
+
+void WebKitTestRunner::ResetPresentationService() {
+  proxy()->GetPresentationServiceMock()->Reset();
 }
 
 void WebKitTestRunner::PrintMessage(const std::string& message) {

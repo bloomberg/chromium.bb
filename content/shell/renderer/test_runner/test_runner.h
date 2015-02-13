@@ -310,6 +310,9 @@ class TestRunner : public WebTestRunner,
                               double level);
   void ResetBatteryStatus();
 
+  // Presentation API related functions.
+  void SetMockScreenAvailability(bool available);
+
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();
