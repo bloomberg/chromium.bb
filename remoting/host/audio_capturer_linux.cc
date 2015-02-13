@@ -37,6 +37,7 @@ AudioCapturerLinux::AudioCapturerLinux(
 }
 
 AudioCapturerLinux::~AudioCapturerLinux() {
+  pipe_reader_->RemoveObserver(this);
 }
 
 bool AudioCapturerLinux::Start(const PacketCapturedCallback& callback) {
@@ -45,15 +46,6 @@ bool AudioCapturerLinux::Start(const PacketCapturedCallback& callback) {
                           AudioPipeReader::kChannels);
   pipe_reader_->AddObserver(this);
   return true;
-}
-
-void AudioCapturerLinux::Stop() {
-  pipe_reader_->RemoveObserver(this);
-  callback_.Reset();
-}
-
-bool AudioCapturerLinux::IsStarted() {
-  return !callback_.is_null();
 }
 
 void AudioCapturerLinux::OnDataRead(

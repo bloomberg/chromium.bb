@@ -34,8 +34,6 @@ class AudioCapturerLinux : public AudioCapturer,
 
   // AudioCapturer interface.
   bool Start(const PacketCapturedCallback& callback) override;
-  void Stop() override;
-  bool IsStarted() override;
 
   // AudioPipeReader::StreamObserver interface.
   void OnDataRead(scoped_refptr<base::RefCountedString> data) override;

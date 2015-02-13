@@ -35,14 +35,12 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class AudioEncoder;
-class AudioScheduler;
+class AudioPump;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class InputInjector;
 class MouseShapePump;
 class ScreenControls;
-class VideoEncoder;
 class VideoFramePump;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
@@ -153,14 +151,6 @@ class ClientSession
   // Creates a proxy for sending clipboard events to the client.
   scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
-  // Creates an audio encoder for the specified configuration.
-  static scoped_ptr<AudioEncoder> CreateAudioEncoder(
-      const protocol::SessionConfig& config);
-
-  // Creates a video encoder for the specified configuration.
-  static scoped_ptr<VideoEncoder> CreateVideoEncoder(
-      const protocol::SessionConfig& config);
-
   EventHandler* event_handler_;
 
   // The connection to the client.
@@ -219,10 +209,10 @@ class ClientSession
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // Schedulers for audio and video capture.
-  // |video_frame_pump_| may be nullptr if the video channel is not required -
-  // see ResetVideoPipeline().
-  scoped_refptr<AudioScheduler> audio_scheduler_;
+  // Pumps for audio, video and mouse shape.
+  // |video_frame_pump_| and |mouse_shape_pump_| may be nullptr if the video
+  // stream is handled by an extension, see ResetVideoPipeline().
+  scoped_ptr<AudioPump> audio_pump_;
   scoped_ptr<VideoFramePump> video_frame_pump_;
   scoped_ptr<MouseShapePump> mouse_shape_pump_;
 

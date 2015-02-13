@@ -24,8 +24,6 @@ class IpcAudioCapturer : public AudioCapturer {
 
   // AudioCapturer interface.
   bool Start(const PacketCapturedCallback& callback) override;
-  void Stop() override;
-  bool IsStarted() override;
 
   // Called by DesktopSessionProxy when an audio packet is received.
   void OnAudioPacket(scoped_ptr<AudioPacket> packet);

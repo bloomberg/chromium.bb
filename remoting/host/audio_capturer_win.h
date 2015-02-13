@@ -27,8 +27,6 @@ class AudioCapturerWin : public AudioCapturer {
 
   // AudioCapturer interface.
   virtual bool Start(const PacketCapturedCallback& callback) override;
-  virtual void Stop() override;
-  virtual bool IsStarted() override;
 
  private:
   // Receives all packets from the audio capture endpoint buffer and pushes them

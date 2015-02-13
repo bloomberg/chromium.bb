@@ -45,6 +45,7 @@ AudioCapturerWin::AudioCapturerWin()
 }
 
 AudioCapturerWin::~AudioCapturerWin() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
@@ -200,28 +201,9 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   return true;
 }
 
-void AudioCapturerWin::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsStarted());
-
-  capture_timer_.reset();
-  mm_device_.Release();
-  audio_client_.Release();
-  audio_capture_client_.Release();
-  wave_format_ex_.Reset(nullptr);
-
-  thread_checker_.DetachFromThread();
-}
-
-bool AudioCapturerWin::IsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return capture_timer_.get() != nullptr;
-}
-
 void AudioCapturerWin::DoCapture() {
   DCHECK(AudioCapturer::IsValidSampleRate(sampling_rate_));
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsStarted());
 
   // Fetch all packets from the audio capture endpoint buffer.
   HRESULT hr = S_OK;

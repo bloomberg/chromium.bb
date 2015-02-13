@@ -28,11 +28,6 @@ class AudioCapturer {
   // PCM stereo format. Capturers may choose the number of frames per packet.
   // Returns true on success.
   virtual bool Start(const PacketCapturedCallback& callback) = 0;
-  // Stops the audio capturer, and frees the OS-specific audio capture
-  // resources.
-  virtual void Stop() = 0;
-  // Returns true if the audio capturer is running.
-  virtual bool IsStarted() = 0;
 
   static bool IsValidSampleRate(int sample_rate);
 };

@@ -16,7 +16,7 @@
 #include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/codec/video_encoder_vpx.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/audio_scheduler.h"
+#include "remoting/host/audio_pump.h"
 #include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_extension_session.h"
@@ -37,6 +37,40 @@
 const int kDefaultDPI = 96;
 
 namespace remoting {
+
+namespace {
+
+scoped_ptr<VideoEncoder> CreateVideoEncoder(
+    const protocol::SessionConfig& config) {
+  const protocol::ChannelConfig& video_config = config.video_config();
+
+  if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
+    return VideoEncoderVpx::CreateForVP8().Pass();
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
+    return VideoEncoderVpx::CreateForVP9().Pass();
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
+    return make_scoped_ptr(new VideoEncoderVerbatim());
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+scoped_ptr<AudioEncoder> CreateAudioEncoder(
+    const protocol::SessionConfig& config) {
+  const protocol::ChannelConfig& audio_config = config.audio_config();
+
+  if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
+    return make_scoped_ptr(new AudioEncoderVerbatim());
+  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
+    return make_scoped_ptr(new AudioEncoderOpus());
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+}  // namespace
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
@@ -100,11 +134,11 @@ ClientSession::ClientSession(
 
 ClientSession::~ClientSession() {
   DCHECK(CalledOnValidThread());
-  DCHECK(!audio_scheduler_.get());
+  DCHECK(!audio_pump_);
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
-  DCHECK(!video_frame_pump_.get());
+  DCHECK(!video_frame_pump_);
 
   connection_.reset();
 }
@@ -170,8 +204,8 @@ void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
   if (audio_control.has_enable()) {
     VLOG(1) << "Received AudioControl (enable="
             << audio_control.enable() << ")";
-    if (audio_scheduler_.get())
-      audio_scheduler_->Pause(!audio_control.enable());
+    if (audio_pump_)
+      audio_pump_->Pause(!audio_control.enable());
   }
 }
 
@@ -249,11 +283,11 @@ void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
-  DCHECK(!audio_scheduler_.get());
+  DCHECK(!audio_pump_);
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
-  DCHECK(!video_frame_pump_.get());
+  DCHECK(!video_frame_pump_);
 
   auth_input_filter_.set_enabled(true);
   auth_clipboard_filter_.set_enabled(true);
@@ -299,18 +333,6 @@ void ClientSession::OnConnectionAuthenticated(
   host_input_filter_.set_input_stub(input_injector_.get());
   clipboard_echo_filter_.set_host_stub(input_injector_.get());
 
-  // Create an AudioScheduler if audio is enabled, to pump audio samples.
-  if (connection_->session()->config().is_audio_enabled()) {
-    scoped_ptr<AudioEncoder> audio_encoder =
-        CreateAudioEncoder(connection_->session()->config());
-    audio_scheduler_ = new AudioScheduler(
-        audio_task_runner_,
-        network_task_runner_,
-        desktop_environment_->CreateAudioCapturer(),
-        audio_encoder.Pass(),
-        connection_->audio_stub());
-  }
-
   // Create a GnubbyAuthHandler to proxy gnubbyd messages.
   gnubby_auth_handler_ = desktop_environment_->CreateGnubbyAuthHandler(
       connection_->client_stub());
@@ -335,9 +357,14 @@ void ClientSession::OnConnectionChannelsConnected(
   // Start recording video.
   ResetVideoPipeline();
 
-  // Start recording audio.
-  if (connection_->session()->config().is_audio_enabled())
-    audio_scheduler_->Start();
+  // Create an AudioPump if audio is enabled, to pump audio samples.
+  if (connection_->session()->config().is_audio_enabled()) {
+    scoped_ptr<AudioEncoder> audio_encoder =
+        CreateAudioEncoder(connection_->session()->config());
+    audio_pump_.reset(new AudioPump(
+        audio_task_runner_, desktop_environment_->CreateAudioCapturer(),
+        audio_encoder.Pass(), connection_->audio_stub()));
+  }
 
   // Notify the event handler that all our channels are now connected.
   event_handler_->OnSessionChannelsConnected(this);
@@ -367,14 +394,9 @@ void ClientSession::OnConnectionClosed(
 
   // Stop components access the client, audio or video stubs, which are no
   // longer valid once ConnectionToClient calls OnConnectionClosed().
-  if (audio_scheduler_.get()) {
-    audio_scheduler_->Stop();
-    audio_scheduler_ = nullptr;
-  }
-
+  audio_pump_.reset();
   video_frame_pump_.reset();
   mouse_shape_pump_.reset();
-
   client_clipboard_factory_.InvalidateWeakPtrs();
   input_injector_.reset();
   screen_controls_.reset();
@@ -488,39 +510,6 @@ scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   return make_scoped_ptr(
       new protocol::ClipboardThreadProxy(client_clipboard_factory_.GetWeakPtr(),
                                          base::MessageLoopProxy::current()));
-}
-
-// TODO(sergeyu): Move this to SessionManager?
-// static
-scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
-    const protocol::SessionConfig& config) {
-  const protocol::ChannelConfig& video_config = config.video_config();
-
-  if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
-    return remoting::VideoEncoderVpx::CreateForVP8().Pass();
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
-    return remoting::VideoEncoderVpx::CreateForVP9().Pass();
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return make_scoped_ptr(new remoting::VideoEncoderVerbatim());
-  }
-
-  NOTREACHED();
-  return nullptr;
-}
-
-// static
-scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
-    const protocol::SessionConfig& config) {
-  const protocol::ChannelConfig& audio_config = config.audio_config();
-
-  if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return make_scoped_ptr(new AudioEncoderVerbatim());
-  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return make_scoped_ptr(new AudioEncoderOpus());
-  }
-
-  NOTREACHED();
-  return nullptr;
 }
 
 }  // namespace remoting

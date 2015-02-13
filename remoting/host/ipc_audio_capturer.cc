@@ -27,15 +27,6 @@ bool IpcAudioCapturer::Start(const PacketCapturedCallback& callback) {
   return true;
 }
 
-void IpcAudioCapturer::Stop() {
-  callback_.Reset();
-  weak_factory_.InvalidateWeakPtrs();
-}
-
-bool IpcAudioCapturer::IsStarted() {
-  return !callback_.is_null();
-}
-
 void IpcAudioCapturer::OnAudioPacket(scoped_ptr<AudioPacket> packet) {
   callback_.Run(packet.Pass());
 }
