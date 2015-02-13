@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #import "media/base/mac/avfoundation_glue.h"
@@ -44,6 +45,12 @@ static bool IsDeviceBlacklisted(const VideoCaptureDevice::Name& name) {
 
 static scoped_ptr<media::VideoCaptureDevice::Names>
 EnumerateDevicesUsingQTKit() {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458397 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "458397 media::EnumerateDevicesUsingQTKit"));
+
   scoped_ptr<VideoCaptureDevice::Names> device_names(
         new VideoCaptureDevice::Names());
   NSMutableDictionary* capture_devices =
@@ -64,6 +71,11 @@ static void RunDevicesEnumeratedCallback(
     const base::Callback<void(scoped_ptr<media::VideoCaptureDevice::Names>)>&
         callback,
     scoped_ptr<media::VideoCaptureDevice::Names> device_names) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458397 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "458397 media::RunDevicesEnumeratedCallback"));
   callback.Run(device_names.Pass());
 }
 
@@ -102,6 +114,11 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
 
 void VideoCaptureDeviceFactoryMac::GetDeviceNames(
     VideoCaptureDevice::Names* device_names) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458397 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "458397 VideoCaptureDeviceFactoryMac::GetDeviceNames"));
   DCHECK(thread_checker_.CalledOnValidThread());
   // Loop through all available devices and add to |device_names|.
   NSDictionary* capture_devices;
