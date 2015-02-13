@@ -119,7 +119,6 @@ class TestRunner : public WebTestRunner,
   void RequestPointerUnlock();
   bool isPointerLocked();
   void setToolTipText(const blink::WebString&);
-  bool shouldDumpDragImage();
 
   bool midiAccessorResult();
 
@@ -470,12 +469,6 @@ class TestRunner : public WebTestRunner,
   // WebFrameClient receives a loadURLExternally() call.
   void WaitUntilExternalURLLoad();
 
-  // This function sets a flag which tells the WebTestProxy to dump the drag
-  // image when the next drag-and-drop is initiated. It is equivalent to
-  // DumpAsTextWithPixelResults but the pixel results will be the drag image
-  // instead of a snapshot of the page.
-  void DumpDragImage();
-
   ///////////////////////////////////////////////////////////////////////////
   // Methods interacting with the WebTestProxy
 
@@ -745,9 +738,6 @@ class TestRunner : public WebTestRunner,
   // If true, the test_shell will draw the bounds of the current selection rect
   // taking possible transforms of the selection rect into account.
   bool dump_selection_rect_;
-
-  // If true, the test_shell will dump the drag image as pixel results.
-  bool dump_drag_image_;
 
   // If true, pixel dump will be produced as a series of 1px-tall, view-wide
   // individual paints over the height of the view.

@@ -565,11 +565,6 @@ void WebTestProxyBase::CapturePixelsAsync(
   TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
   DCHECK(!callback.is_null());
 
-  if (!drag_image_.isNull()) {
-    callback.Run(drag_image_.getSkBitmap());
-    return;
-  }
-
   if (test_interfaces_->GetTestRunner()->isPrinting()) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -811,10 +806,6 @@ void WebTestProxyBase::StartDragging(blink::WebLocalFrame* frame,
                                      blink::WebDragOperationsMask mask,
                                      const blink::WebImage& image,
                                      const blink::WebPoint& point) {
-  if (test_interfaces_->GetTestRunner()->shouldDumpDragImage()) {
-    if (drag_image_.isNull())
-      drag_image_ = image;
-  }
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
   test_interfaces_->GetEventSender()->DoDragDrop(data, mask);
