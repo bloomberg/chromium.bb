@@ -156,7 +156,8 @@ std::string TestUDPSocket::ReadSocket(pp::UDPSocket* socket,
   TestCompletionCallbackWithOutput<pp::NetAddress> callback(
       instance_->pp_instance(), callback_type());
   callback.WaitForResult(
-      socket->RecvFrom(&buffer[0], size, callback.GetCallback()));
+      socket->RecvFrom(&buffer[0], static_cast<int32_t>(size),
+      callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_FALSE(callback.result() < 0);
   ASSERT_EQ(size, static_cast<size_t>(callback.result()));
@@ -171,7 +172,8 @@ std::string TestUDPSocket::PassMessage(pp::UDPSocket* target,
                                        const std::string& message,
                                        pp::NetAddress* recvfrom_address) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  int32_t rv = source->SendTo(message.c_str(), message.size(),
+  int32_t rv = source->SendTo(message.c_str(),
+                              static_cast<int32_t>(message.size()),
                               target_address,
                               callback.GetCallback());
   std::string str;
@@ -341,7 +343,7 @@ std::string TestUDPSocket::TestParallelSend() {
         new TestCompletionCallback(instance_->pp_instance(), callback_type());
     sendto_results[i] =
         client_socket.SendTo(message.c_str(),
-                             message.size(),
+                             static_cast<int32_t>(message.size()),
                              server_address,
                              sendto_callbacks[i]->GetCallback());
 
@@ -356,7 +358,7 @@ std::string TestUDPSocket::TestParallelSend() {
       // Try to send the message again.
       sendto_results[i] =
           client_socket.SendTo(message.c_str(),
-                               message.size(),
+                               static_cast<int32_t>(message.size()),
                                server_address,
                                sendto_callbacks[i]->GetCallback());
       ASSERT_NE(PP_ERROR_INPROGRESS, sendto_results[i]);

@@ -67,7 +67,7 @@ class MyInstance : public pp::Instance, public pp::Printing_Dev {
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count) {
     size_t pdf_len = strlen(pdf_data);
-    pp::Buffer_Dev buffer(this, pdf_len);
+    pp::Buffer_Dev buffer(this, static_cast<uint32_t>(pdf_len));
 
     memcpy(buffer.data(), pdf_data, pdf_len);
     return buffer;

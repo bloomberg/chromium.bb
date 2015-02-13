@@ -30,7 +30,7 @@ void TestMemory::RunTests(const std::string& filter) {
 
 std::string TestMemory::TestMemAlloc() {
   char* buffer = static_cast<char*>(
-      memory_dev_interface_->MemAlloc(kTestBufferSize));
+      memory_dev_interface_->MemAlloc(static_cast<uint32_t>(kTestBufferSize)));
   // Touch a couple of locations.  Failure will crash the test.
   buffer[0] = '1';
   buffer[kTestBufferSize - 1] = '1';

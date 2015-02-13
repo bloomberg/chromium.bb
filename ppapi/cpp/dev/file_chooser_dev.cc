@@ -82,7 +82,7 @@ void FileChooser_Dev::CallbackConverter(void* user_data, int32_t result) {
   // number of items is 0.
   void* output_buf = data->output.GetDataBuffer(
       data->output.user_data,
-      selected_files.size(), sizeof(PP_Resource));
+      static_cast<uint32_t>(selected_files.size()), sizeof(PP_Resource));
   if (output_buf) {
     if (!selected_files.empty()) {
       memcpy(output_buf, &selected_files[0],

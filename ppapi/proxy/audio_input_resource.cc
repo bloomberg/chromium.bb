@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -249,7 +250,8 @@ void AudioInputResource::Run() {
   media::AudioInputBuffer* buffer =
       static_cast<media::AudioInputBuffer*>(shared_memory_->memory());
   const uint32_t audio_bus_size_bytes =
-      shared_memory_size_ - sizeof(media::AudioInputBufferParameters);
+      base::checked_cast<uint32_t>(shared_memory_size_ -
+                                   sizeof(media::AudioInputBufferParameters));
 
   while (true) {
     int pending_data = 0;

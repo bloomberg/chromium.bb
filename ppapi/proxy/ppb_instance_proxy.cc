@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"
@@ -1302,7 +1303,8 @@ void PPB_Instance_Proxy::OnHostMsgSessionKeysChange(
                                StringVar::StringToPPVar(session_id));
     enter.functions()->SessionKeysChange(
         instance, session_id_var.get(), has_additional_usable_key,
-        key_information.size(), vector_as_array(&key_information));
+        base::checked_cast<uint32_t>(key_information.size()),
+        vector_as_array(&key_information));
   }
 }
 

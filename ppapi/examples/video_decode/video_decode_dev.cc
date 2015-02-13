@@ -341,11 +341,12 @@ void VideoDecodeDemoInstance::DecoderClient::DecodeNextNALU() {
   size_t start_pos = encoded_data_next_pos_to_decode_;
   size_t end_pos;
   GetNextNALUBoundary(start_pos, &end_pos);
-  pp::Buffer_Dev* buffer = new pp::Buffer_Dev(gles2_, end_pos - start_pos);
+  pp::Buffer_Dev* buffer = new pp::Buffer_Dev(
+      gles2_, static_cast<uint32_t>(end_pos - start_pos));
   PP_VideoBitstreamBuffer_Dev bitstream_buffer;
   int id = ++next_bitstream_buffer_id_;
   bitstream_buffer.id = id;
-  bitstream_buffer.size = end_pos - start_pos;
+  bitstream_buffer.size = static_cast<uint32_t>(end_pos - start_pos);
   bitstream_buffer.data = buffer->pp_resource();
   memcpy(buffer->data(), kData + start_pos, end_pos - start_pos);
   assert(bitstream_buffers_by_id_.insert(std::make_pair(id, buffer)).second);
@@ -637,9 +638,9 @@ Shader VideoDecodeDemoInstance::CreateProgram(const char* vertex_shader,
   // Create shader program.
   shader.program = gles2_if_->CreateProgram(context_->pp_resource());
   CreateShader(shader.program, GL_VERTEX_SHADER, vertex_shader,
-               strlen(vertex_shader));
+               static_cast<int>(strlen(vertex_shader)));
   CreateShader(shader.program, GL_FRAGMENT_SHADER, fragment_shader,
-               strlen(fragment_shader));
+               static_cast<int>(strlen(fragment_shader)));
   gles2_if_->LinkProgram(context_->pp_resource(), shader.program);
   gles2_if_->UseProgram(context_->pp_resource(), shader.program);
   gles2_if_->Uniform1i(

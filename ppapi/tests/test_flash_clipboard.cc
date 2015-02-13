@@ -151,7 +151,7 @@ std::string TestFlashClipboard::TestReadWriteRTF() {
         "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard\n"
         "This is some {\\b bold} text.\\par\n"
         "}";
-  pp::VarArrayBuffer array_buffer(rtf_string.size());
+  pp::VarArrayBuffer array_buffer(static_cast<uint32_t>(rtf_string.size()));
   char* bytes = static_cast<char*>(array_buffer.Map());
   std::copy(rtf_string.data(), rtf_string.data() + rtf_string.size(), bytes);
   std::vector<uint32_t> formats_vector(1, PP_FLASH_CLIPBOARD_FORMAT_RTF);
@@ -182,7 +182,7 @@ std::string TestFlashClipboard::TestReadWriteRTF() {
 
 std::string TestFlashClipboard::TestReadWriteCustomData() {
   std::string custom_data = "custom_data";
-  pp::VarArrayBuffer array_buffer(custom_data.size());
+  pp::VarArrayBuffer array_buffer(static_cast<uint32_t>(custom_data.size()));
   char* bytes = static_cast<char*>(array_buffer.Map());
   std::copy(custom_data.begin(), custom_data.end(), bytes);
   uint32_t format_id =
@@ -311,7 +311,7 @@ std::string TestFlashClipboard::TestGetSequenceNumber() {
 
   // Test the sequence number changes after writing some custom data.
   std::string custom_data = "custom_data";
-  pp::VarArrayBuffer array_buffer(custom_data.size());
+  pp::VarArrayBuffer array_buffer(static_cast<uint32_t>(custom_data.size()));
   char* bytes = static_cast<char*>(array_buffer.Map());
   std::copy(custom_data.begin(), custom_data.end(), bytes);
   uint32_t format_id =

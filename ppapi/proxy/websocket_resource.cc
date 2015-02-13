@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -424,7 +425,7 @@ void WebSocketResource::OnPluginMsgReceiveBinaryReply(
   // Append received data to queue.
   scoped_refptr<Var> message_var(
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
-          message.size(),
+          base::checked_cast<uint32_t>(message.size()),
           &message.front()));
   received_messages_.push(message_var);
 

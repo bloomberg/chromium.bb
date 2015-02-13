@@ -5,6 +5,7 @@
 #include "ppapi/proxy/url_loader_resource.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_loader.h"
@@ -374,7 +375,7 @@ void URLLoaderResource::SaveResponseInfo(const URLResponseInfoData& data) {
       connection(), pp_instance(), data, body_as_file_ref);
 }
 
-size_t URLLoaderResource::FillUserBuffer() {
+int32_t URLLoaderResource::FillUserBuffer() {
   DCHECK(user_buffer_);
   DCHECK(user_buffer_size_);
 
@@ -393,7 +394,7 @@ size_t URLLoaderResource::FillUserBuffer() {
   // Reset for next time.
   user_buffer_ = NULL;
   user_buffer_size_ = 0;
-  return bytes_to_copy;
+  return base::checked_cast<int32_t>(bytes_to_copy);
 }
 
 }  // namespace proxy

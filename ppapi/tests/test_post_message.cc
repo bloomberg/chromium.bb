@@ -294,7 +294,7 @@ int TestPostMessage::WaitForMessages() {
   // Now that the FINISHED_WAITING_MESSAGE has been echoed back to us, we know
   // that all pending messages have been slurped up. Return the number we
   // received (which may be zero).
-  return message_data_.size() - message_size_before;
+  return static_cast<int>(message_data_.size() - message_size_before);
 }
 
 std::string TestPostMessage::CheckMessageProperties(
@@ -594,7 +594,7 @@ std::string TestPostMessage::TestSendingResource() {
 
   std::string file_path("/");
   file_path += kTestFilename;
-  int content_length = strlen(kTestString);
+  int content_length = static_cast<int>(strlen(kTestString));
 
   // Create a file in the HTML5 temporary file system, in the Pepper plugin.
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());

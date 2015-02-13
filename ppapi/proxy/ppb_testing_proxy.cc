@@ -112,7 +112,7 @@ uint32_t GetLiveVars(PP_Var live_vars[], uint32_t array_size) {
        i < std::min(static_cast<size_t>(array_size), vars.size());
        ++i)
     live_vars[i] = vars[i];
-  return vars.size();
+  return static_cast<uint32_t>(vars.size());
 }
 
 void SetMinimumArrayBufferSizeForShmem(PP_Instance instance,

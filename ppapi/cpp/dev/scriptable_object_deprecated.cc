@@ -73,8 +73,8 @@ void GetAllPropertyNames(void* object,
 
   const PPB_Memory_Dev* memory_if = static_cast<const PPB_Memory_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
-  *properties = static_cast<PP_Var*>(
-      memory_if->MemAlloc(sizeof(PP_Var) * props.size()));
+  *properties = static_cast<PP_Var*>(memory_if->MemAlloc(
+      static_cast<uint32_t>(sizeof(PP_Var) * props.size())));
 
   for (size_t i = 0; i < props.size(); ++i)
     (*properties)[i] = props[i].Detach();

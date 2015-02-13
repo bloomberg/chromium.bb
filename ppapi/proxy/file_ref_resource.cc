@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/file_ref_resource.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_directory_entry.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -29,7 +30,7 @@ FileRefResource::FileRefResource(
   if (uses_internal_paths()) {
     // If path ends with a slash, then normalize it away unless path is
     // the root path.
-    int path_size = create_info_.internal_path.size();
+    int path_size = base::checked_cast<int>(create_info_.internal_path.size());
     if (path_size > 1 && create_info_.internal_path.at(path_size - 1) == '/')
       create_info_.internal_path.erase(path_size - 1, 1);
 

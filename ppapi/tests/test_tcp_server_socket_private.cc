@@ -77,7 +77,8 @@ std::string TestTCPServerSocketPrivate::SyncRead(TCPSocketPrivate* socket,
   while (num_bytes > 0) {
     TestCompletionCallback callback(instance_->pp_instance(), callback_type());
     callback.WaitForResult(
-        socket->Read(buffer, num_bytes, callback.GetCallback()));
+        socket->Read(buffer, static_cast<int32_t>(num_bytes),
+                     callback.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(callback);
     ASSERT_TRUE(callback.result() >= 0);
     buffer += callback.result();
@@ -92,7 +93,8 @@ std::string TestTCPServerSocketPrivate::SyncWrite(TCPSocketPrivate* socket,
   while (num_bytes > 0) {
     TestCompletionCallback callback(instance_->pp_instance(), callback_type());
     callback.WaitForResult(
-        socket->Write(buffer, num_bytes, callback.GetCallback()));
+        socket->Write(buffer, static_cast<int32_t>(num_bytes),
+                      callback.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(callback);
     ASSERT_TRUE(callback.result() >= 0);
     buffer += callback.result();
@@ -236,7 +238,7 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
   }
 
   for (size_t i = 0; i < kBacklog; ++i) {
-    const char byte = 'a' + i;
+    const char byte = static_cast<char>('a' + i);
     ASSERT_SUBTEST_SUCCESS(SyncWrite(client_sockets[i], &byte, sizeof(byte)));
   }
 

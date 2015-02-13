@@ -36,26 +36,6 @@
       'sources': [
         '<@(cpp_source_files)',
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'AdditionalOptions': ['/we4244'],  # implicit conversion, possible loss of data
-            },
-          },
-          'msvs_disabled_warnings': [
-            4267,
-          ],
-        }],
-        ['OS=="linux"', {
-          'cflags': ['-Wextra', '-pedantic'],
-        }],
-        ['OS=="mac"', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': ['-Wextra', '-pedantic'],
-           },
-        }],
-      ],
     },
     {
       # GN version: //ppapi:ppapi_cpp
@@ -71,16 +51,6 @@
       'sources': [
         'cpp/module_embedder.h',
         'cpp/ppp_entrypoints.cc',
-      ],
-      'conditions': [
-        ['OS=="linux"', {
-          'cflags': ['-Wextra', '-pedantic'],
-        }],
-        ['OS=="mac"', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': ['-Wextra', '-pedantic'],
-           },
-        }]
       ],
     },
     {

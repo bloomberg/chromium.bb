@@ -64,7 +64,7 @@ std::string TestNetworkMonitor::VerifyNetworkList(
   for (size_t iface = 0; iface < count; ++iface) {
     // Verify that the first interface has at least one address.
     std::vector<pp::NetAddress> addresses;
-    network_list.GetIpAddresses(iface, &addresses);
+    network_list.GetIpAddresses(static_cast<uint32_t>(iface), &addresses);
     ASSERT_TRUE(addresses.size() >= 1U);
     // Verify that the addresses are valid.
     for (size_t i = 0; i < addresses.size(); ++i) {
@@ -115,14 +115,17 @@ std::string TestNetworkMonitor::VerifyNetworkList(
     }
 
     // Verify that each interface has a unique name and a display name.
-    ASSERT_FALSE(network_list.GetName(iface).empty());
-    ASSERT_FALSE(network_list.GetDisplayName(iface).empty());
+    ASSERT_FALSE(network_list.GetName(static_cast<uint32_t>(iface)).empty());
+    ASSERT_FALSE(network_list.GetDisplayName(
+        static_cast<uint32_t>(iface)).empty());
 
-    PP_NetworkList_Type type = network_list.GetType(iface);
+    PP_NetworkList_Type type =
+        network_list.GetType(static_cast<uint32_t>(iface));
     ASSERT_TRUE(type >= PP_NETWORKLIST_TYPE_UNKNOWN);
     ASSERT_TRUE(type <= PP_NETWORKLIST_TYPE_CELLULAR);
 
-    PP_NetworkList_State state = network_list.GetState(iface);
+    PP_NetworkList_State state =
+        network_list.GetState(static_cast<uint32_t>(iface));
     ASSERT_TRUE(state >= PP_NETWORKLIST_STATE_DOWN);
     ASSERT_TRUE(state <= PP_NETWORKLIST_STATE_UP);
   }

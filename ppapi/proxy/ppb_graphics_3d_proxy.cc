@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/c/pp_errors.h"
@@ -315,7 +316,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreateTransferBuffer(
     DCHECK(backing && backing->shared_memory());
     transfer_buffer->set_shmem(
         TransportSHMHandle(dispatcher(), backing->shared_memory()->handle()),
-        buffer->size());
+        base::checked_cast<uint32_t>(buffer->size()));
   } else {
     *id = -1;
   }

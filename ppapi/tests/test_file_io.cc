@@ -150,7 +150,7 @@ int32_t WriteEntireBuffer(PP_Instance instance,
   TestCompletionCallback callback(instance, callback_type);
   int32_t write_offset = offset;
   const char* buf = data.c_str();
-  int32_t size = data.size();
+  int32_t size = static_cast<int32_t>(data.size());
 
   while (write_offset < offset + size) {
     callback.WaitForResult(file_io->Write(write_offset,
@@ -781,7 +781,7 @@ std::string TestFileIO::TestParallelReads() {
 
   // Parallel read operations.
   const char* border = "__border__";
-  const int32_t border_size = strlen(border);
+  const int32_t border_size = static_cast<int32_t>(strlen(border));
 
   TestCompletionCallback callback_1(instance_->pp_instance(), callback_type());
   int32_t read_offset_1 = 0;
@@ -865,12 +865,12 @@ std::string TestFileIO::TestParallelWrites() {
   TestCompletionCallback callback_1(instance_->pp_instance(), callback_type());
   int32_t write_offset_1 = 0;
   const char* buf_1 = "abc";
-  int32_t size_1 = strlen(buf_1);
+  int32_t size_1 = static_cast<int32_t>(strlen(buf_1));
 
   TestCompletionCallback callback_2(instance_->pp_instance(), callback_type());
   int32_t write_offset_2 = size_1;
   const char* buf_2 = "defghijkl";
-  int32_t size_2 = strlen(buf_2);
+  int32_t size_2 = static_cast<int32_t>(strlen(buf_2));
 
   int32_t rv_1 = PP_OK;
   int32_t rv_2 = PP_OK;
@@ -879,7 +879,8 @@ std::string TestFileIO::TestParallelWrites() {
       // Copy the buffer so we can erase it below.
       std::string str_1(buf_1);
       rv_1 = file_io.Write(
-          write_offset_1, &str_1[0], str_1.size(), callback_1.GetCallback());
+          write_offset_1, &str_1[0], static_cast<int32_t>(str_1.size()),
+          callback_1.GetCallback());
       // Erase the buffer to test that async writes copy it.
       std::fill(str_1.begin(), str_1.end(), 0);
     }
@@ -887,7 +888,8 @@ std::string TestFileIO::TestParallelWrites() {
       // Copy the buffer so we can erase it below.
       std::string str_2(buf_2);
       rv_2 = file_io.Write(
-          write_offset_2, &str_2[0], str_2.size(), callback_2.GetCallback());
+          write_offset_2, &str_2[0], static_cast<int32_t>(str_2.size()),
+          callback_2.GetCallback());
       // Erase the buffer to test that async writes copy it.
       std::fill(str_2.begin(), str_2.end(), 0);
     }
@@ -951,7 +953,8 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
   TestCompletionCallback callback_1(instance_->pp_instance(), PP_REQUIRED);
   int32_t write_offset_1 = 0;
   const char* buf_1 = "mnopqrstuvw";
-  int32_t rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1),
+  int32_t rv_1 = file_io.Write(write_offset_1, buf_1,
+                               static_cast<int32_t>(strlen(buf_1)),
                                callback_1.GetCallback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, rv_1);
 
@@ -966,7 +969,8 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
   CHECK_CALLBACK_BEHAVIOR(callback_1);
 
   // Cannot query while a write is pending.
-  rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1),
+  rv_1 = file_io.Write(write_offset_1, buf_1,
+                       static_cast<int32_t>(strlen(buf_1)),
                        callback_1.GetCallback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, rv_1);
   PP_FileInfo info;
@@ -977,7 +981,8 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
   CHECK_CALLBACK_BEHAVIOR(callback_1);
 
   // Cannot touch while a write is pending.
-  rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1),
+  rv_1 = file_io.Write(write_offset_1, buf_1,
+                       static_cast<int32_t>(strlen(buf_1)),
                        callback_1.GetCallback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, rv_1);
   callback_2.WaitForResult(file_io.Touch(1234.0, 5678.0,
@@ -988,7 +993,8 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
   CHECK_CALLBACK_BEHAVIOR(callback_1);
 
   // Cannot set length while a write is pending.
-  rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1),
+  rv_1 = file_io.Write(write_offset_1, buf_1,
+                       static_cast<int32_t>(strlen(buf_1)),
                        callback_1.GetCallback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, rv_1);
   callback_2.WaitForResult(file_io.SetLength(123, callback_2.GetCallback()));
@@ -1038,7 +1044,7 @@ std::string TestFileIO::TestRequestOSFileHandle() {
 
   // Check write(2) for the native FD.
   const std::string msg = "foobar";
-  ssize_t cnt = write(fd, msg.data(), msg.size());
+  ssize_t cnt = write(fd, msg.data(), static_cast<unsigned>(msg.size()));
   if (cnt < 0)
     return ReportError("write for native FD returned error", errno);
   if (cnt != static_cast<ssize_t>(msg.size()))
@@ -1059,7 +1065,7 @@ std::string TestFileIO::TestRequestOSFileHandle() {
 
   // Check read(2) for the native FD.
   std::string buf(msg.size(), '\0');
-  cnt = read(fd, &buf[0], msg.size());
+  cnt = read(fd, &buf[0], static_cast<unsigned>(msg.size()));
   if (cnt < 0)
     return ReportError("read for native FD returned error", errno);
   if (cnt != static_cast<ssize_t>(msg.size()))
@@ -1274,8 +1280,8 @@ std::string TestFileIO::TestMmap() {
 }
 
 std::string TestFileIO::MatchOpenExpectations(pp::FileSystem* file_system,
-                                              size_t open_flags,
-                                              size_t expectations) {
+                                              int32_t open_flags,
+                                              int32_t expectations) {
   std::string bad_argument =
       "TestFileIO::MatchOpenExpectations has invalid input arguments.";
   bool invalid_combination = !!(expectations & INVALID_FLAG_COMBINATION);

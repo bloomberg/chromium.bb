@@ -36,7 +36,8 @@ void CloseFileHandle(PP_FileHandle file_handle) {
 bool WriteFile(PP_FileHandle file_handle, const std::string& contents) {
 #if defined(PPAPI_OS_WIN)
   DWORD bytes_written = 0;
-  BOOL result = ::WriteFile(file_handle, contents.c_str(), contents.size(),
+  BOOL result = ::WriteFile(file_handle, contents.c_str(),
+                            static_cast<DWORD>(contents.size()),
                             &bytes_written, NULL);
   return result && bytes_written == static_cast<DWORD>(contents.size());
 #else

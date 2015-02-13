@@ -37,7 +37,7 @@ int32_t WriteEntireBuffer(PP_Instance instance,
   TestCompletionCallback callback(instance, callback_type);
   int32_t write_offset = offset;
   const char* buf = data.c_str();
-  int32_t size = data.size();
+  int32_t size = static_cast<int32_t>(data.size());
 
   while (write_offset < offset + size) {
     callback.WaitForResult(file_io->Write(write_offset,
@@ -343,7 +343,8 @@ std::string TestURLLoader::TestBasicPOST() {
   request.SetURL("/echo");
   request.SetMethod("POST");
   std::string postdata("postdata");
-  request.AppendDataToBody(postdata.data(), postdata.length());
+  request.AppendDataToBody(postdata.data(),
+                           static_cast<uint32_t>(postdata.length()));
   return LoadAndCompareBody(request, postdata);
 }
 
@@ -394,9 +395,11 @@ std::string TestURLLoader::TestCompoundBodyPOST() {
   request.SetURL("/echo");
   request.SetMethod("POST");
   std::string postdata1("post");
-  request.AppendDataToBody(postdata1.data(), postdata1.length());
+  request.AppendDataToBody(postdata1.data(),
+                           static_cast<uint32_t>(postdata1.length()));
   std::string postdata2("data");
-  request.AppendDataToBody(postdata2.data(), postdata2.length());
+  request.AppendDataToBody(postdata2.data(),
+                           static_cast<uint32_t>(postdata2.length()));
   return LoadAndCompareBody(request, postdata1 + postdata2);
 }
 
@@ -416,7 +419,8 @@ std::string TestURLLoader::TestBinaryDataPOST() {
       "\x00\x01\x02\x03\x04\x05postdata\xfa\xfb\xfc\xfd\xfe\xff";
   std::string postdata(postdata_chars,
                        sizeof(postdata_chars) / sizeof(postdata_chars[0]));
-  request.AppendDataToBody(postdata.data(), postdata.length());
+  request.AppendDataToBody(postdata.data(),
+                           static_cast<uint32_t>(postdata.length()));
   return LoadAndCompareBody(request, postdata);
 }
 
@@ -433,7 +437,8 @@ std::string TestURLLoader::TestFailsBogusContentLength() {
   request.SetMethod("POST");
   request.SetHeaders("Content-Length: 400");
   std::string postdata("postdata");
-  request.AppendDataToBody(postdata.data(), postdata.length());
+  request.AppendDataToBody(postdata.data(),
+                           static_cast<uint32_t>(postdata.length()));
 
   int32_t rv;
   rv = OpenUntrusted(request);

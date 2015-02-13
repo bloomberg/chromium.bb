@@ -55,7 +55,7 @@ int32_t WriteEntireBuffer(PP_Instance instance,
   TestCompletionCallback callback(instance, callback_type);
   int32_t write_offset = offset;
   const char* buf = data.c_str();
-  int32_t size = data.size();
+  int32_t size = static_cast<int32_t>(data.size());
 
   while (write_offset < offset + size) {
     callback.WaitForResult(file_io->Write(write_offset,

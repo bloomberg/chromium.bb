@@ -259,11 +259,13 @@ std::string TestWebSocket::GetFullURL(const char* url) {
 }
 
 PP_Var TestWebSocket::CreateVarString(const std::string& string) {
-  return var_interface_->VarFromUtf8(string.c_str(), string.size());
+  return var_interface_->VarFromUtf8(string.c_str(),
+                                     static_cast<uint32_t>(string.size()));
 }
 
 PP_Var TestWebSocket::CreateVarBinary(const std::vector<uint8_t>& binary) {
-  PP_Var var = arraybuffer_interface_->Create(binary.size());
+  PP_Var var =
+      arraybuffer_interface_->Create(static_cast<uint32_t>(binary.size()));
   uint8_t* var_data = static_cast<uint8_t*>(arraybuffer_interface_->Map(var));
   std::copy(binary.begin(), binary.end(), var_data);
   return var;

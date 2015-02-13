@@ -138,7 +138,8 @@ std::string TestUDPSocketPrivate::ReadSocket(pp::UDPSocketPrivate* socket,
   std::vector<char> buffer(size);
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(
-      socket->RecvFrom(&buffer[0], size, callback.GetCallback()));
+      socket->RecvFrom(&buffer[0], static_cast<int32_t>(size),
+      callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_FALSE(callback.result() < 0);
   ASSERT_EQ(size, static_cast<size_t>(callback.result()));
@@ -151,7 +152,8 @@ std::string TestUDPSocketPrivate::PassMessage(pp::UDPSocketPrivate* target,
                                               PP_NetAddress_Private* address,
                                               const std::string& message) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  int32_t rv = source->SendTo(message.c_str(), message.size(), address,
+  int32_t rv = source->SendTo(message.c_str(),
+                              static_cast<int32_t>(message.size()), address,
                               callback.GetCallback());
   std::string str;
   ASSERT_SUBTEST_SUCCESS(ReadSocket(target, address, message.size(), &str));

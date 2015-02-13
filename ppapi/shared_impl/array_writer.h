@@ -74,7 +74,8 @@ class PPAPI_SHARED_EXPORT ArrayWriter {
   // comment of StoreArray() for detail.
   template <typename T>
   bool StoreVector(const std::vector<T>& input) {
-    return StoreArray(input.size() ? &input[0] : NULL, input.size());
+    return StoreArray(input.size() ? &input[0] : NULL,
+                      static_cast<uint32_t>(input.size()));
   }
 
   // Stores the given vector of resources as PP_Resources to the output vector,

@@ -246,7 +246,8 @@ int32_t TestTCPSocketPrivate::WriteStringToSocket(pp::TCPSocketPrivate* socket,
   size_t written = 0;
   while (written < s.size()) {
     TestCompletionCallback cb(instance_->pp_instance(), callback_type());
-    int32_t rv = socket->Write(buffer + written, s.size() - written,
+    int32_t rv = socket->Write(buffer + written,
+                               static_cast<int32_t>(s.size() - written),
                                cb.GetCallback());
     if (callback_type() == PP_REQUIRED && rv != PP_OK_COMPLETIONPENDING)
       return PP_ERROR_FAILED;

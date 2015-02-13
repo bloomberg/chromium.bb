@@ -108,7 +108,7 @@ class MyInstance : public pp::Instance {
       for (size_t i = 0; i < gamepad_data.items[0].buttons_length; ++i) {
         float button_val = gamepad_data.items[0].buttons[i];
         uint32_t colour = static_cast<uint32_t>((button_val * 192) + 63) << 24;
-        int x = i * 8 + 10;
+        int x = static_cast<int>(i) * 8 + 10;
         int y = 10;
         FillRect(&image, x - 3, y - 3, 7, 7, colour);
       }

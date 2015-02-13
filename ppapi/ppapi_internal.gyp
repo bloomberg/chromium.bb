@@ -85,8 +85,6 @@
           ],
         }],
       ],
-      # Disable c4267 warnings until we fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
   'conditions': [
@@ -144,8 +142,6 @@
                 '..',
             ],
           },
-          # Disable c4267 warnings until we fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
           'conditions': [
             ['chrome_multiple_dll==1', {
               'dependencies': [
@@ -195,8 +191,6 @@
                 '..',
             ],
           },
-          # Disable c4267 warnings until we fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
           'conditions': [
             ['chrome_multiple_dll==1', {
               'dependencies': [

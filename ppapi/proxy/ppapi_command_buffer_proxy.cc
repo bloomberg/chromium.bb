@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppapi_command_buffer_proxy.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/shared_impl/api_id.h"
@@ -122,7 +123,8 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
   ppapi::proxy::SerializedHandle handle(
       ppapi::proxy::SerializedHandle::SHARED_MEMORY);
   if (!Send(new PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
-            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, size, id, &handle))) {
+            ppapi::API_ID_PPB_GRAPHICS_3D, resource_,
+            base::checked_cast<uint32_t>(size), id, &handle))) {
     return NULL;
   }
 

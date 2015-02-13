@@ -47,7 +47,8 @@ PP_CompletionCallback MakeCallback() {
 PP_Var MakeStringVar(const std::string& string) {
   if (!ppb_var_)
     ppb_var_ = ppapi::PPB_Var_Shared::GetVarInterface1_2();
-  return ppb_var_->VarFromUtf8(string.c_str(), string.length());
+  return ppb_var_->VarFromUtf8(string.c_str(),
+                               static_cast<uint32_t>(string.length()));
 }
 
 }  // namespace

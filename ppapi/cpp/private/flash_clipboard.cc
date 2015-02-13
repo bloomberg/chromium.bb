@@ -133,7 +133,7 @@ bool Clipboard::WriteData(
     rv = (get_interface<PPB_Flash_Clipboard_5_1>()->WriteData(
         instance.pp_instance(),
         clipboard_type,
-        data_items.size(),
+        static_cast<uint32_t>(data_items.size()),
         formats_ptr,
             data_items_ptr) == PP_OK);
   } else if (has_interface<PPB_Flash_Clipboard_5_0>()) {
@@ -155,7 +155,7 @@ bool Clipboard::WriteData(
     rv = (get_interface<PPB_Flash_Clipboard_5_0>()->WriteData(
         instance.pp_instance(),
         clipboard_type,
-        data_items.size(),
+        static_cast<uint32_t>(data_items.size()),
         formats_ptr,
         data_items_ptr) == PP_OK);
   } else if (has_interface<PPB_Flash_Clipboard_4_0>()) {
@@ -180,7 +180,7 @@ bool Clipboard::WriteData(
     rv = (get_interface<PPB_Flash_Clipboard_4_0>()->WriteData(
         instance.pp_instance(),
         clipboard_type,
-        data_items.size(),
+        static_cast<uint32_t>(data_items.size()),
         formats_ptr,
         data_items_ptr) == PP_OK);
   }

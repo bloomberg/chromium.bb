@@ -329,7 +329,8 @@ void ContentDecryptor_Private::SessionKeysChange(
     pp::Var session_id_var(session_id);
     get_interface<PPB_ContentDecryptor_Private>()->SessionKeysChange(
         associated_instance_.pp_instance(), session_id_var.pp_var(),
-        PP_FromBool(has_additional_usable_key), key_information.size(),
+        PP_FromBool(has_additional_usable_key),
+        static_cast<uint32_t>(key_information.size()),
         key_information.empty() ? NULL : &key_information[0]);
   }
 }

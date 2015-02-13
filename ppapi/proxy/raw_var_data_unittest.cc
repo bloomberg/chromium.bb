@@ -96,7 +96,7 @@ TEST_F(RawVarDataTest, StringTest) {
 TEST_F(RawVarDataTest, ArrayBufferTest) {
   std::string data = "hello world!";
   PP_Var var = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-      data.size(), data.data());
+      static_cast<uint32_t>(data.size()), data.data());
   EXPECT_TRUE(WriteReadAndCompare(var));
   var = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
       0, static_cast<void*>(NULL));
@@ -113,25 +113,25 @@ TEST_F(RawVarDataTest, DictionaryArrayTest) {
   size_t index = 0;
 
   // Array with primitives.
-  array->Set(index++, PP_MakeUndefined());
-  array->Set(index++, PP_MakeNull());
-  array->Set(index++, PP_MakeInt32(100));
-  array->Set(index++, PP_MakeBool(PP_FALSE));
-  array->Set(index++, PP_MakeDouble(0.123));
+  array->Set(static_cast<uint32_t>(index++), PP_MakeUndefined());
+  array->Set(static_cast<uint32_t>(index++), PP_MakeNull());
+  array->Set(static_cast<uint32_t>(index++), PP_MakeInt32(100));
+  array->Set(static_cast<uint32_t>(index++), PP_MakeBool(PP_FALSE));
+  array->Set(static_cast<uint32_t>(index++), PP_MakeDouble(0.123));
   EXPECT_TRUE(WriteReadAndCompare(array->GetPPVar()));
 
   // Array with 2 references to the same string.
   ScopedPPVar release_string(
       ScopedPPVar::PassRef(), StringVar::StringToPPVar("abc"));
-  array->Set(index++, release_string.get());
-  array->Set(index++, release_string.get());
+  array->Set(static_cast<uint32_t>(index++), release_string.get());
+  array->Set(static_cast<uint32_t>(index++), release_string.get());
   EXPECT_TRUE(WriteReadAndCompare(array->GetPPVar()));
 
   // Array with nested array that references the same string.
   scoped_refptr<ArrayVar> array2(new ArrayVar);
   ScopedPPVar release_array2(ScopedPPVar::PassRef(), array2->GetPPVar());
   array2->Set(0, release_string.get());
-  array->Set(index++, release_array2.get());
+  array->Set(static_cast<uint32_t>(index++), release_array2.get());
   EXPECT_TRUE(WriteReadAndCompare(array->GetPPVar()));
 
   // Empty dictionary.
@@ -162,7 +162,7 @@ TEST_F(RawVarDataTest, DictionaryArrayTest) {
   EXPECT_TRUE(WriteReadAndCompare(dictionary->GetPPVar()));
 
   // Array with dictionary.
-  array->Set(index++, release_dictionary.get());
+  array->Set(static_cast<uint32_t>(index++), release_dictionary.get());
   EXPECT_TRUE(WriteReadAndCompare(array->GetPPVar()));
 
   // Array with dictionary with array.
@@ -180,10 +180,10 @@ TEST_F(RawVarDataTest, DictionaryArrayTest) {
   dictionary->DeleteWithStringKey("10");
 
   // Array with self references.
-  array->Set(index, release_array.get());
+  array->Set(static_cast<uint32_t>(index), release_array.get());
   ASSERT_FALSE(WriteAndRead(release_array.get(), &result));
   // Break the self reference.
-  array->Set(index, PP_MakeUndefined());
+  array->Set(static_cast<uint32_t>(index), PP_MakeUndefined());
 }
 
 TEST_F(RawVarDataTest, ResourceTest) {

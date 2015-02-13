@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/numerics/safe_conversions.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -180,7 +181,7 @@ void PPP_Printing_Proxy::OnPluginMsgPrintPages(
 
   PP_Resource plugin_resource = CallWhileUnlocked(
       ppp_printing_impl_->PrintPages,
-      instance, &pages[0], pages.size());
+      instance, &pages[0], base::checked_cast<uint32_t>(pages.size()));
   ResourceTracker* resource_tracker = PpapiGlobals::Get()->GetResourceTracker();
   Resource* resource_object = resource_tracker->GetResource(plugin_resource);
   if (!resource_object)

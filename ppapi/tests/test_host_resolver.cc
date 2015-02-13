@@ -85,10 +85,12 @@ std::string TestHostResolver::CheckHTTPResponse(pp::TCPSocket* socket,
                                                 const std::string& response) {
   int32_t rv = 0;
   ASSERT_SUBTEST_SUCCESS(
-      SyncWrite(socket, request.c_str(), request.size(), &rv));
+      SyncWrite(socket, request.c_str(), static_cast<int32_t>(request.size()),
+                &rv));
   std::vector<char> response_buffer(response.size());
   ASSERT_SUBTEST_SUCCESS(
-      SyncRead(socket, &response_buffer[0], response.size(), &rv));
+      SyncRead(socket, &response_buffer[0],
+               static_cast<int32_t>(response.size()), &rv));
   std::string actual_response(&response_buffer[0], rv);
   if (response != actual_response) {
     return "CheckHTTPResponse failed, expected: " + response +
@@ -121,7 +123,7 @@ std::string TestHostResolver::ParameterizedTestResolve(
 
   pp::NetAddress address;
   for (size_t i = 0; i < size; ++i) {
-    address = host_resolver.GetNetAddress(i);
+    address = host_resolver.GetNetAddress(static_cast<uint32_t>(i));
     ASSERT_NE(0, address.pp_resource());
 
     pp::TCPSocket socket(instance_);
@@ -132,7 +134,7 @@ std::string TestHostResolver::ParameterizedTestResolve(
     socket.Close();
   }
 
-  address = host_resolver.GetNetAddress(size);
+  address = host_resolver.GetNetAddress(static_cast<uint32_t>(size));
   ASSERT_EQ(0, address.pp_resource());
   pp::Var canonical_name = host_resolver.GetCanonicalName();
   ASSERT_TRUE(canonical_name.is_string());

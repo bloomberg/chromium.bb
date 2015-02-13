@@ -140,7 +140,7 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
     argn_to_pass.push_back(expected_argn[i].c_str());
     argv_to_pass.push_back(expected_argv[i].c_str());
   }
-  uint32_t expected_argc = expected_argn.size();
+  uint32_t expected_argc = static_cast<uint32_t>(expected_argn.size());
   bool_to_return = PP_TRUE;
   ResetReceived();
   // Tell the host resource tracker about the instance.

@@ -89,7 +89,7 @@ void PDFResource::SearchString(const unsigned short* input_string,
 
   std::vector<PP_PrivateFindResult> pp_results;
   while (match_start != USEARCH_DONE) {
-    size_t matched_length = usearch_getMatchedLength(searcher);
+    int32_t matched_length = usearch_getMatchedLength(searcher);
     PP_PrivateFindResult result;
     result.start_index = match_start;
     result.length = matched_length;
@@ -98,7 +98,7 @@ void PDFResource::SearchString(const unsigned short* input_string,
     DCHECK(status == U_ZERO_ERROR);
   }
 
-  *count = pp_results.size();
+  *count = static_cast<uint32_t>(pp_results.size());
   if (*count) {
     *results = reinterpret_cast<PP_PrivateFindResult*>(malloc(
         *count * sizeof(PP_PrivateFindResult)));

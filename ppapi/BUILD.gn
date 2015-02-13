@@ -29,15 +29,6 @@ source_set("ppapi_macros") {
 
 source_set("ppapi_cpp_objects") {
   sources = gypi_values.cpp_source_files
-
-  if (is_win) {
-    cflags = [ "/we4244" ]  # Implicit conversion, possible loss of data.
-  } else {
-    cflags = [
-      "-Wextra",
-      "-pedantic",
-    ]
-  }
 }
 
 source_set("ppapi_cpp") {
@@ -45,13 +36,6 @@ source_set("ppapi_cpp") {
     "cpp/module_embedder.h",
     "cpp/ppp_entrypoints.cc",
   ]
-
-  if (is_posix) {
-    cflags = [
-      "-Wextra",
-      "-pedantic",
-    ]
-  }
 
   deps = [
     ":ppapi_c",
@@ -433,8 +417,6 @@ component("ppapi_shared") {
 
   if (is_mac) {
     libs = [ "QuartzCore.framework" ]
-  } else if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
   }
 }
 
@@ -750,10 +732,6 @@ component("ppapi_proxy") {
     "//ui/surface",
     blink_target,
   ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
-  }
 }
 
 component("ppapi_host") {

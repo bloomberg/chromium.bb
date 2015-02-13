@@ -61,7 +61,8 @@ IMEInputEvent_Dev::IMEInputEvent_Dev(
   uint32_t dummy = 0;
   PassRefFromConstructor(get_interface<PPB_IMEInputEvent_Dev_0_2>()->Create(
       instance.pp_instance(), type, time_stamp, text.pp_var(),
-      segment_offsets.empty() ? 0 : segment_offsets.size() - 1,
+      segment_offsets.empty() ? 0u :
+          static_cast<uint32_t>(segment_offsets.size() - 1),
       segment_offsets.empty() ? &dummy : &segment_offsets[0],
       target_segment, selection.first, selection.second));
 }

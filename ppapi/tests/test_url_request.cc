@@ -77,7 +77,7 @@ void TestURLRequest::RunTests(const std::string& filter) {
 }
 
 PP_Var TestURLRequest::PP_MakeString(const char* s) {
-  return ppb_var_interface_->VarFromUtf8(s, strlen(s));
+  return ppb_var_interface_->VarFromUtf8(s, static_cast<int32_t>(strlen(s)));
 }
 
 // Tests
@@ -357,7 +357,8 @@ std::string TestURLRequest::TestAppendDataToBody() {
 
   // Invalid resource should fail.
   ASSERT_EQ(PP_FALSE, ppb_url_request_interface_->AppendDataToBody(
-      kInvalidResource, postdata.data(), postdata.length()));
+      kInvalidResource, postdata.data(),
+      static_cast<uint32_t>(postdata.length())));
 
   // Append data and POST to echoing web server.
   ASSERT_EQ(PP_TRUE, ppb_url_request_interface_->SetProperty(
@@ -367,7 +368,8 @@ std::string TestURLRequest::TestAppendDataToBody() {
 
   // Append data to body and verify the body is what we expect.
   ASSERT_EQ(PP_TRUE, ppb_url_request_interface_->AppendDataToBody(
-      url_request, postdata.data(), postdata.length()));
+      url_request, postdata.data(),
+      static_cast<uint32_t>(postdata.length())));
   std::string error = LoadAndCompareBody(url_request, postdata);
 
   ppb_var_interface_->Release(post_string_var);
@@ -399,7 +401,7 @@ std::string TestURLRequest::TestAppendFileToBody() {
   std::string append_data = "hello\n";
   callback.WaitForResult(io.Write(0,
                                   append_data.c_str(),
-                                  append_data.size(),
+                                  static_cast<int32_t>(append_data.size()),
                                   callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(static_cast<int32_t>(append_data.size()), callback.result());

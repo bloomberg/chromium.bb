@@ -544,8 +544,9 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgSetServerCertificate(
         ScopedPPVar::PassRef(),
         PpapiGlobals::Get()
             ->GetVarTracker()
-            ->MakeArrayBufferPPVar(server_certificate.size(),
-                                   &server_certificate[0]));
+            ->MakeArrayBufferPPVar(
+                static_cast<uint32_t>(server_certificate.size()),
+                &server_certificate[0]));
     CallWhileUnlocked(ppp_decryptor_impl_->SetServerCertificate,
                       instance,
                       promise_id,

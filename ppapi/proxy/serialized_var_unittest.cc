@@ -258,7 +258,7 @@ TEST_F(SerializedVarTest, PluginVectorReceiveInput) {
 
     // Take a reference to a string and then release it. Make sure no messages
     // are sent.
-    uint32_t old_message_count = sink().message_count();
+    uint32_t old_message_count = static_cast<uint32_t>(sink().message_count());
     var_tracker().AddRefVar(plugin_objects[1]);
     EXPECT_EQ(2, var_tracker().GetRefCountForObject(plugin_objects[1]));
     var_tracker().ReleaseVar(plugin_objects[1]);

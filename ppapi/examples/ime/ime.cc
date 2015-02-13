@@ -112,7 +112,8 @@ class TextFieldStatusNotifyingHandler : public TextFieldStatusHandler {
     textinput_control_.SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
   }
   virtual void UpdateSelection(const std::string& text) {
-    textinput_control_.UpdateSurroundingText(text, 0, text.size());
+    textinput_control_.UpdateSurroundingText(
+        text, 0, static_cast<uint32_t>(text.size()));
   }
 
  private:

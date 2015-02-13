@@ -6,6 +6,8 @@
 
 #include <cctype>
 
+#include "base/numerics/safe_conversions.h"
+
 namespace ppapi {
 
 namespace {
@@ -43,7 +45,8 @@ uint32_t FlashClipboardFormatRegistry::RegisterFormat(
       custom_formats_.size() > kMaxNumFormats) {
     return PP_FLASH_CLIPBOARD_FORMAT_INVALID;
   }
-  uint32_t key = kFirstCustomFormat + custom_formats_.size();
+  uint32_t key = kFirstCustomFormat +
+                 base::checked_cast<uint32_t>(custom_formats_.size());
   custom_formats_[key] = format_name;
   return key;
 }

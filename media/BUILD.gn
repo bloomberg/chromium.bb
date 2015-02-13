@@ -650,8 +650,8 @@ test("media_unittests") {
   }
 
   if (is_win && cpu_arch == "x64") {
-    cflags += [ "/wd4267" ]  # TODO(wolenetz): Fix size_t to int trunctaion in win64. See
-                             # http://crbug.com/171009
+    cflags = [ "/wd4267" ]  # TODO(wolenetz): Fix size_t to int trunctaion in win64. See
+                            # http://crbug.com/171009
   }
 
   if (is_mac || is_ios) {

@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -247,7 +248,8 @@ void PPB_VideoDecoder_Proxy::OnMsgAssignPictureBuffers(
   EnterHostFromHostResource<PPB_VideoDecoder_Dev_API> enter(decoder);
   if (enter.succeeded() && !buffers.empty()) {
     const PP_PictureBuffer_Dev* buffer_array = &buffers.front();
-    enter.object()->AssignPictureBuffers(buffers.size(), buffer_array);
+    enter.object()->AssignPictureBuffers(
+        base::checked_cast<uint32_t>(buffers.size()), buffer_array);
   }
 }
 

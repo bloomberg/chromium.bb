@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/flash_clipboard_resource.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -53,7 +54,7 @@ PP_Var ClipboardStringToPPVar(int32_t format,
   } else {
     // All other formats are expected to be array buffers.
     return PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-        string.size(), string.data());
+        base::checked_cast<uint32_t>(string.size()), string.data());
   }
 }
 }  // namespace

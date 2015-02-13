@@ -114,7 +114,7 @@ class PPAPI_PROXY_EXPORT URLLoaderResource
   // necessary. This does not issue any callbacks.
   void SaveResponseInfo(const URLResponseInfoData& data);
 
-  size_t FillUserBuffer();
+  int32_t FillUserBuffer();
 
   Mode mode_;
   URLRequestInfoData request_data_;

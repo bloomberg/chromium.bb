@@ -33,7 +33,7 @@ class PPB_VarTest : public PluginProxyTest {
         ppb_var_(ppapi::PPB_Var_Shared::GetVarInterface1_2()) {
     // Set the value of test_strings_[i] to "i".
     for (size_t i = 0; i < kNumStrings; ++i)
-      test_strings_[i] = base::IntToString(i);
+      test_strings_[i] = base::IntToString(static_cast<int>(i));
   }
  protected:
   std::vector<std::string> test_strings_;
@@ -44,8 +44,9 @@ class PPB_VarTest : public PluginProxyTest {
 // Test basic String operations.
 TEST_F(PPB_VarTest, Strings) {
   for (size_t i = 0; i < kNumStrings; ++i) {
-    vars_[i] = ppb_var_->VarFromUtf8(test_strings_[i].c_str(),
-                                     test_strings_[i].length());
+    vars_[i] = ppb_var_->VarFromUtf8(
+        test_strings_[i].c_str(),
+        static_cast<uint32_t>(test_strings_[i].length()));
     EXPECT_EQ(test_strings_[i], VarToString(vars_[i], ppb_var_));
   }
   // At this point, they should each have a ref count of 1. Add some more.
@@ -104,8 +105,9 @@ class CreateVarThreadDelegate : public base::PlatformThread::Delegate {
   virtual void ThreadMain() {
     const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_2();
     for (size_t i = 0; i < size_; ++i) {
-      vars_out_[i] = ppb_var->VarFromUtf8(strings_in_[i].c_str(),
-                                          strings_in_[i].length());
+      vars_out_[i] = ppb_var->VarFromUtf8(
+          strings_in_[i].c_str(),
+          static_cast<uint32_t>(strings_in_[i].length()));
       strings_out_[i] = VarToString(vars_out_[i], ppb_var);
     }
   }

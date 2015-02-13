@@ -57,8 +57,8 @@ class TestFileIO : public TestCase {
   // 2) (DONT_)?CREATE_IF_DOESNT_EXIST | (DONT_)?OPEN_IF_EXISTS |
   //    (DONT_)?TRUNCATE_IF_EXISTS
   std::string MatchOpenExpectations(pp::FileSystem* file_system,
-                                    size_t open_flags,
-                                    size_t expectations);
+                                    int32_t open_flags,
+                                    int32_t expectations);
 };
 
 #endif  // PAPPI_TESTS_TEST_FILE_IO_H_

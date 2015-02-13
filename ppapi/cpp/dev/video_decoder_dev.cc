@@ -42,7 +42,7 @@ void VideoDecoder_Dev::AssignPictureBuffers(
   if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
     return;
   get_interface<PPB_VideoDecoder_Dev>()->AssignPictureBuffers(
-      pp_resource(), buffers.size(), &buffers[0]);
+      pp_resource(), static_cast<uint32_t>(buffers.size()), &buffers[0]);
 }
 
 int32_t VideoDecoder_Dev::Decode(

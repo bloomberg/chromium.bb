@@ -88,10 +88,11 @@ void PlatformVerificationPrivateResource::OnChallengePlatformReply(
   if (params.result() == PP_OK) {
     *(output_params.signed_data) =
         (PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
-            raw_signed_data.size(), &raw_signed_data.front()))->GetPPVar();
+            static_cast<uint32_t>(raw_signed_data.size()),
+            &raw_signed_data.front()))->GetPPVar();
     *(output_params.signed_data_signature) =
         (PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
-            raw_signed_data_signature.size(),
+            static_cast<uint32_t>(raw_signed_data_signature.size()),
             &raw_signed_data_signature.front()))->GetPPVar();
     *(output_params.platform_key_certificate) =
         (new StringVar(raw_platform_key_certificate))->GetPPVar();
