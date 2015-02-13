@@ -112,7 +112,6 @@ public:
     ApplicationCache* applicationCache() const override;
     int orientation() const override;
     Console* console() const override;
-    Performance* performance() const override;
     DOMWindowCSS* css() const override;
     DOMSelection* getSelection() override;
     void focus(ExecutionContext*) override;
@@ -294,8 +293,6 @@ private:
     String m_defaultStatus;
 
     mutable RefPtrWillBeMember<ApplicationCache> m_applicationCache;
-
-    mutable RefPtrWillBeMember<Performance> m_performance;
 
     mutable RefPtrWillBeMember<DOMWindowCSS> m_css;
 

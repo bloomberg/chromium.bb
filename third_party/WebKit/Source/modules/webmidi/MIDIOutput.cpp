@@ -35,6 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/webmidi/MIDIAccess.h"
 
@@ -44,8 +45,8 @@ namespace {
 
 double now(ExecutionContext* context)
 {
-    LocalDOMWindow* window = context ? context->executingWindow() : 0;
-    Performance* performance = window ? window->performance() : 0;
+    LocalDOMWindow* window = context ? context->executingWindow() : nullptr;
+    Performance* performance = window ? DOMWindowPerformance::performance(*window) : nullptr;
     return performance ? performance->now() : 0.0;
 }
 

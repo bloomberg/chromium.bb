@@ -147,6 +147,7 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderFrame.h"
 #include "core/rendering/RenderView.h"
+#include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
@@ -686,7 +687,7 @@ WebPerformance WebLocalFrameImpl::performance() const
 {
     if (!frame())
         return WebPerformance();
-    return WebPerformance(frame()->domWindow()->performance());
+    return WebPerformance(DOMWindowPerformance::performance(*(frame()->domWindow())));
 }
 
 bool WebLocalFrameImpl::dispatchBeforeUnloadEvent()

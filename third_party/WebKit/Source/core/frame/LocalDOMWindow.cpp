@@ -96,7 +96,6 @@
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
-#include "core/timing/Performance.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/PlatformScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -642,7 +641,6 @@ void LocalDOMWindow::reset()
     m_toolbar = nullptr;
     m_console = nullptr;
     m_navigator = nullptr;
-    m_performance = nullptr;
     m_media = nullptr;
     m_applicationCache = nullptr;
 #if ENABLE(ASSERT)
@@ -775,13 +773,6 @@ Navigator* LocalDOMWindow::navigator() const
     if (!m_navigator)
         m_navigator = Navigator::create(frame());
     return m_navigator.get();
-}
-
-Performance* LocalDOMWindow::performance() const
-{
-    if (!m_performance)
-        m_performance = Performance::create(frame());
-    return m_performance.get();
 }
 
 void LocalDOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, LocalDOMWindow* source, ExceptionState& exceptionState)
@@ -1828,7 +1819,6 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_navigator);
     visitor->trace(m_media);
     visitor->trace(m_applicationCache);
-    visitor->trace(m_performance);
     visitor->trace(m_css);
     visitor->trace(m_eventQueue);
     visitor->trace(m_postMessageTimers);

@@ -55,7 +55,6 @@ public:
     ApplicationCache* applicationCache() const override;
     int orientation() const override;
     Console* console() const override;
-    Performance* performance() const override;
     DOMWindowCSS* css() const override;
     DOMSelection* getSelection() override;
     void focus(ExecutionContext* = 0) override;

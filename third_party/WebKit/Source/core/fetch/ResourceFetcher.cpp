@@ -60,6 +60,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "core/timing/ResourceTimingInfo.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
@@ -201,7 +202,7 @@ static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDo
     if (!initiatorDocument || !initiatorDocument->loader())
         return;
     if (LocalDOMWindow* initiatorWindow = initiatorDocument->domWindow())
-        initiatorWindow->performance()->addResourceTiming(*info, initiatorDocument);
+        DOMWindowPerformance::performance(*initiatorWindow)->addResourceTiming(*info, initiatorDocument);
 }
 
 static WebURLRequest::RequestContext requestContextFromType(const ResourceFetcher* fetcher, Resource::Type type)

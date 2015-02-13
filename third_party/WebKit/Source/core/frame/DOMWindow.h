@@ -29,7 +29,6 @@ class History;
 class LocalDOMWindow;
 class MediaQueryList;
 class Navigator;
-class Performance;
 class RequestAnimationFrameCallback;
 class Screen;
 class ScrollToOptions;
@@ -121,8 +120,6 @@ public:
     virtual int orientation() const = 0;
 
     virtual Console* console() const  = 0;
-
-    virtual Performance* performance() const = 0;
 
     virtual DOMWindowCSS* css() const = 0;
 

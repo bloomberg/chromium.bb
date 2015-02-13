@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 
 namespace blink {
@@ -51,7 +52,7 @@ VideoPlaybackQuality::VideoPlaybackQuality(
     , m_corruptedVideoFrames(corruptedVideoFrames)
 {
     if (document.domWindow())
-        m_creationTime = document.domWindow()->performance()->now();
+        m_creationTime = DOMWindowPerformance::performance(*(document.domWindow()))->now();
 }
 
 }
