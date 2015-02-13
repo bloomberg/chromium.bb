@@ -1402,8 +1402,6 @@ crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
-crbug.com/457795 svg/W3C-SVG-1.1/filters-composite-02-b.svg [ NeedsRebaseline ]
-
 crbug.com/389594 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 crbug.com/389594 virtual/slimmingpaint/svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 
