@@ -133,8 +133,8 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 
   signin_metrics::Source source = signin::GetSourceForPromoURL(current_url_);
 
-  std::string primary_email =
-      SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  std::string primary_email = signin_manager->GetAuthenticatedUsername();
   if (gaia::AreEmailsSame(email_, primary_email) &&
       source == signin_metrics::SOURCE_REAUTH &&
       switches::IsNewProfileManagement() &&
@@ -157,6 +157,9 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
           handler_,
           signin::ShouldShowAccountManagement(current_url_)));
     }
+
+    if (source == signin_metrics::SOURCE_REAUTH)
+      signin_manager->MergeSigninCredentialIntoCookieJar();
   } else {
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile_);

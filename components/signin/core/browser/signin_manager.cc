@@ -356,24 +356,35 @@ void SigninManager::DisableOneClickSignIn(PrefService* prefs) {
   prefs->SetBoolean(prefs::kReverseAutologinEnabled, false);
 }
 
+void SigninManager::MergeSigninCredentialIntoCookieJar() {
+  if (!client_->ShouldMergeSigninCredentialsIntoCookieJar())
+    return;
+
+  if (!IsAuthenticated())
+    return;
+
+  // Don't execute 2 MergeSessionHelpers. New account takes priority.
+  if (merge_session_helper_.get() && merge_session_helper_->is_running())
+    merge_session_helper_->CancelAll();
+
+  merge_session_helper_.reset(new MergeSessionHelper(
+      token_service_, GaiaConstants::kChromeSource,
+      client_->GetURLRequestContext(), NULL));
+
+  merge_session_helper_->LogIn(GetAuthenticatedAccountId());
+}
+
 void SigninManager::CompletePendingSignin() {
   DCHECK(!possibly_invalid_username_.empty());
   OnSignedIn(possibly_invalid_username_);
 
-  if (client_->ShouldMergeSigninCredentialsIntoCookieJar()) {
-    merge_session_helper_.reset(new MergeSessionHelper(
-        token_service_, GaiaConstants::kChromeSource,
-        client_->GetURLRequestContext(), NULL));
-  }
-
   DCHECK(!temp_refresh_token_.empty());
   DCHECK(IsAuthenticated());
-  std::string account_id = GetAuthenticatedAccountId();
-  token_service_->UpdateCredentials(account_id, temp_refresh_token_);
+  token_service_->UpdateCredentials(GetAuthenticatedAccountId(),
+                                    temp_refresh_token_);
   temp_refresh_token_.clear();
 
-  if (client_->ShouldMergeSigninCredentialsIntoCookieJar())
-    merge_session_helper_->LogIn(account_id);
+  MergeSigninCredentialIntoCookieJar();
 }
 
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {

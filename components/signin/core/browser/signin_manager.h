@@ -100,6 +100,9 @@ class SigninManager : public SigninManagerBase,
   void Initialize(PrefService* local_state) override;
   void Shutdown() override;
 
+  // If applicable, merge the signed in account into the cookie jar.
+  void MergeSigninCredentialIntoCookieJar();
+
   // Invoked from an OAuthTokenFetchedCallback to complete user signin.
   virtual void CompletePendingSignin();
 
