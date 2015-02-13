@@ -145,7 +145,7 @@ void RenderSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintI
 
 void RenderSVGBlock::updatePaintInfoRect(IntRect& rect)
 {
-    if (rect != LayoutRect::infiniteRect()) {
+    if (rect != LayoutRect::infiniteIntRect()) {
         AffineTransform transformToRoot = m_cachedPaintInvalidationTransform * localTransform();
         rect = enclosingIntRect(transformToRoot.inverse().mapRect(FloatRect(rect)));
     }
