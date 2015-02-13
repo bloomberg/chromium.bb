@@ -74,7 +74,7 @@ source_set("test_support") {
   deps = [
     ":extensions_resources",
     "//base",
-    "//content/public/browser",
+    "//base:prefs_test_support",
     "//content/public/common",
     "//content/test:test_support",
     "//extensions/browser",
@@ -87,6 +87,7 @@ source_set("test_support") {
   ]
 
   public_deps = [
+    "//content/public/browser",
     "//extensions/common/api/cast_channel:cast_channel_proto",
   ]
 
