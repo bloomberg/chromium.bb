@@ -1900,8 +1900,6 @@ crbug.com/451759 fast/images/drag-image.html [ Failure ]
 crbug.com/451759 virtual/deferred/fast/images/drag-image.html [ Failure ]
 crbug.com/451759 virtual/slimmingpaint/fast/images/drag-image.html [ Failure ]
 crbug.com/458417 [ XP ] http/tests/fetch/workers/fetch.html [ Pass Timeout ]
-Bug(tkent) [ Mac ] tables/mozilla/bugs/bug1261.html [ NeedsRebaseline ]
-Bug(tkent) [ Mac ] tables/mozilla/bugs/bug3037-1.html [ NeedsRebaseline ]
 
 # These baselines need to be reviewed and perhaps updated after the mass-rebaselining
 # on 2015-02-06 (after the change in r189636).
