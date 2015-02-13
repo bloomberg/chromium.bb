@@ -46,17 +46,19 @@ const CGFloat kRapidCloseDist = 2.5;
 
 namespace {
 
-ui::ThreePartImage* GetMaskImage() {
-  static ui::ThreePartImage* mask =
-      new ui::ThreePartImage(IDR_TAB_ALPHA_LEFT, 0, IDR_TAB_ALPHA_RIGHT);
+ui::ThreePartImage& GetMaskImage() {
+  CR_DEFINE_STATIC_LOCAL(ui::ThreePartImage, mask,
+                         (IDR_TAB_ALPHA_LEFT, 0, IDR_TAB_ALPHA_RIGHT));
   return mask;
 }
 
-ui::ThreePartImage* GetStrokeImage(bool active) {
-  static ui::ThreePartImage* activeStroke = new ui::ThreePartImage(
-      IDR_TAB_ACTIVE_LEFT, IDR_TAB_ACTIVE_CENTER, IDR_TAB_ACTIVE_RIGHT);
-  static ui::ThreePartImage* inactiveStroke = new ui::ThreePartImage(
-      IDR_TAB_INACTIVE_LEFT, IDR_TAB_INACTIVE_CENTER, IDR_TAB_INACTIVE_RIGHT);
+ui::ThreePartImage& GetStrokeImage(bool active) {
+  CR_DEFINE_STATIC_LOCAL(
+      ui::ThreePartImage, activeStroke,
+      (IDR_TAB_ACTIVE_LEFT, IDR_TAB_ACTIVE_CENTER, IDR_TAB_ACTIVE_RIGHT));
+  CR_DEFINE_STATIC_LOCAL(
+      ui::ThreePartImage, inactiveStroke,
+      (IDR_TAB_INACTIVE_LEFT, IDR_TAB_INACTIVE_CENTER, IDR_TAB_INACTIVE_RIGHT));
 
   return active ? activeStroke : inactiveStroke;
 }
@@ -179,7 +181,7 @@ ui::ThreePartImage* GetStrokeImage(bool active) {
   NSPoint viewPoint = [self convertPoint:aPoint fromView:[self superview]];
   NSRect maskRect = [self bounds];
   maskRect.size.height = kFillHeight;
-  return GetMaskImage()->HitTest(viewPoint, maskRect) ? self : nil;
+  return GetMaskImage().HitTest(viewPoint, maskRect) ? self : nil;
 }
 
 // Returns |YES| if this tab can be torn away into a new window.
@@ -335,9 +337,9 @@ ui::ThreePartImage* GetStrokeImage(bool active) {
   // If we filled outside the middle rect, we need to erase what we filled
   // outside the tab's shape.
   // This only works if we are drawing to our own backing layer.
-  if (!NSContainsRect(GetMaskImage()->GetMiddleRect(bounds), dirtyRect)) {
+  if (!NSContainsRect(GetMaskImage().GetMiddleRect(bounds), dirtyRect)) {
     DCHECK([self layer]);
-    GetMaskImage()->DrawInRect(bounds, NSCompositeDestinationIn, 1.0);
+    GetMaskImage().DrawInRect(bounds, NSCompositeDestinationIn, 1.0);
   }
 }
 
@@ -395,7 +397,7 @@ ui::ThreePartImage* GetStrokeImage(bool active) {
 - (void)drawStroke:(NSRect)dirtyRect {
   CGFloat alpha = [[self window] isMainWindow] ? 1.0 : tabs::kImageNoFocusAlpha;
   GetStrokeImage(state_ == NSOnState)
-      ->DrawInRect([self bounds], NSCompositeSourceOver, alpha);
+      .DrawInRect([self bounds], NSCompositeSourceOver, alpha);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
