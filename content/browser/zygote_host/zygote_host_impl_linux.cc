@@ -585,7 +585,7 @@ bool ZygoteHostImpl::ShouldUseNamespaceSandbox() {
     return false;
   }
 
-  if (!command_line.HasSwitch(switches::kEnableNamespaceSandbox)) {
+  if (command_line.HasSwitch(switches::kDisableNamespaceSandbox)) {
     return false;
   }
 

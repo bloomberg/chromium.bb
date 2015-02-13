@@ -191,6 +191,9 @@ const char kDisableLogging[]                = "disable-logging";
 // Disables Media Source API (i.e., the MediaSource object).
 const char kDisableMediaSource[]            = "disable-media-source";
 
+// Disables usage of the namespace sandbox.
+const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
+
 // Disable rasterizer that writes directly to GPU memory.
 // Overrides the kEnableOneCopy flag.
 const char kDisableOneCopy[]                = "disable-one-copy";
@@ -356,9 +359,6 @@ const char kEnableLogging[]                 = "enable-logging";
 
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
-
-// Prefer the namespace sandbox over the setuid sandbox when possible.
-const char kEnableNamespaceSandbox[]        = "enable-namespace-sandbox";
 
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
