@@ -55,7 +55,7 @@ class PageCyclerIntlArFaHe(_PageCycler):
     return 'page_cycler.intl_ar_fa_he'
 
 
-@benchmark.Disabled('win')  # crbug.com/388337
+@benchmark.Disabled('win')  # crbug.com/366715
 class PageCyclerIntlEsFrPtBr(_PageCycler):
   """Page load time for a pages in Spanish, French and Brazilian Portuguese.
 
@@ -80,7 +80,7 @@ class PageCyclerIntlHiRu(_PageCycler):
     return 'page_cycler.intl_hi_ru'
 
 
-@benchmark.Disabled('android', 'win')  # crbug.com/379564, crbug.com/330909
+@benchmark.Disabled('android', 'win')  # crbug.com/379564, crbug.com/434366
 class PageCyclerIntlJaZh(_PageCycler):
   """Page load time benchmark for a variety of pages in Japanese and Chinese.
 

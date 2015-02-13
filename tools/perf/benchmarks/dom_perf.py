@@ -71,7 +71,7 @@ class _DomPerfMeasurement(page_test.PageTest):
                            total))
 
 
-@benchmark.Disabled('android', 'linux')
+@benchmark.Disabled('android', 'linux')  # http://crbug.com/458540
 class DomPerf(benchmark.Benchmark):
   """A suite of JavaScript benchmarks for exercising the browser's DOM.
 

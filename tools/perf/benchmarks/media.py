@@ -33,7 +33,7 @@ class _MSEMeasurement(page_test.PageTest):
                 value=float(metrics[m]), important=True))
 
 
-@benchmark.Disabled('android')
+@benchmark.Disabled('android')  # See media.android.tough_video_cases below
 class Media(benchmark.Benchmark):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
