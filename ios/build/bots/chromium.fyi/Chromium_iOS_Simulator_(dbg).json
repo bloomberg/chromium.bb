@@ -7,6 +7,7 @@
   ],
   "xcode version": "5.1.1",
   "GYP_DEFINES": {
+    "chromium_ios_signing": "0",
     "target_subarch": "arm32"
   },
   "compiler": "xcodebuild",
