@@ -55,12 +55,15 @@ class PrinterHandler {
                                   const GetCapabilityCallback& callback) = 0;
 
   // Starts a print request.
-  // |print_job_settings|: The print job settings, including the printer ID and
-  //     its capability.
+  // |destination_id|: The printer to which print job should be sent.
+  // |capability|: Capability reported by the printer.
+  // |ticket_json|: The print job ticket as JSON string.
   // |print_data|: The document bytes to print.
   // |callback| should be called in the response to the request.
   virtual void StartPrint(
-      const base::DictionaryValue& print_job_settings,
+      const std::string& destination_id,
+      const std::string& capability,
+      const std::string& ticket_json,
       const scoped_refptr<base::RefCountedMemory>& print_data,
       const PrintCallback& callback) = 0;
 };

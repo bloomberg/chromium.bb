@@ -886,6 +886,17 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   if (print_with_extension) {
     // TODO(tbarzic): Record UMA stats.
 
+    std::string destination_id;
+    std::string print_ticket;
+    std::string capabilities;
+    if (!settings->GetString(printing::kSettingDeviceName, &destination_id) ||
+        !settings->GetString(printing::kSettingTicket, &print_ticket) ||
+        !settings->GetString(printing::kSettingCapabilities, &capabilities)) {
+      NOTREACHED();
+      OnExtensionPrintResult(false, "FAILED");
+      return;
+    }
+
     base::string16 title;
     scoped_refptr<base::RefCountedBytes> data;
     if (!GetPreviewDataAndTitle(&data, &title)) {
@@ -896,7 +907,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
     EnsureExtensionPrinterHandlerSet();
     extension_printer_handler_->StartPrint(
-        *settings, data,
+        destination_id, capabilities, print_ticket, data,
         base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
                    base::Unretained(this)));
     return;

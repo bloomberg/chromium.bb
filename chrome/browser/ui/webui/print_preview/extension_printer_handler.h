@@ -37,7 +37,10 @@ class ExtensionPrinterHandler : public PrinterHandler {
   void StartGetCapability(
       const std::string& destination_id,
       const PrinterHandler::GetCapabilityCallback& calback) override;
-  void StartPrint(const base::DictionaryValue& print_job_settings,
+  // TODO(tbarzic): It might make sense to have the strings in a single struct.
+  void StartPrint(const std::string& destination_id,
+                  const std::string& capability,
+                  const std::string& ticket_json,
                   const scoped_refptr<base::RefCountedMemory>& print_data,
                   const PrinterHandler::PrintCallback& callback) override;
 

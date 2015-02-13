@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -38,14 +39,6 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
                            public PrinterProviderInternalAPIObserver,
                            public ExtensionRegistryObserver {
  public:
-  // Status returned by chrome.printerProvider.onPrintRequested event.
-  enum PrintError {
-    PRINT_ERROR_NONE,
-    PRINT_ERROR_FAILED,
-    PRINT_ERROR_INVALID_TICKET,
-    PRINT_ERROR_INVALID_DATA
-  };
-
   // Struct describing print job that should be forwarded to an extension via
   // chrome.printerProvider.onPrintRequested event.
   struct PrintJob {
@@ -66,17 +59,20 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
     std::string content_type;
 
     // The document data that should be printed.
-    std::string document_bytes;
+    scoped_refptr<base::RefCountedMemory> document_bytes;
   };
 
   using GetPrintersCallback =
       base::Callback<void(const base::ListValue& printers, bool done)>;
   using GetCapabilityCallback =
-      base::Callback<void(const base::DictionaryValue&)>;
-  using PrintCallback = base::Callback<void(PrintError)>;
+      base::Callback<void(const base::DictionaryValue& capability)>;
+  using PrintCallback =
+      base::Callback<void(bool success, const std::string& error)>;
 
   static BrowserContextKeyedAPIFactory<PrinterProviderAPI>*
   GetFactoryInstance();
+
+  static std::string GetDefaultPrintError();
 
   explicit PrinterProviderAPI(content::BrowserContext* browser_context);
   ~PrinterProviderAPI() override;
@@ -111,6 +107,11 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
   // must not be null.
   void DispatchPrintRequested(const PrintJob& job,
                               const PrintCallback& callback);
+
+  // The API currently cannot handle very large files, so the document size that
+  // may be sent to an extension is restricted.
+  // TODO(tbarzic): Fix the API to support huge documents.
+  static const int kMaxDocumentSize = 50 * 1000 * 1000;
 
  private:
   friend class BrowserContextKeyedAPIFactory<PrinterProviderAPI>;
@@ -215,7 +216,7 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
 
     // Completes the request with the provided request id. It runs the request
     // callback and removes the request from the set.
-    bool Complete(int request_id, PrintError result);
+    bool Complete(int request_id, bool success, const std::string& result);
 
     // Runs all pending callbacks with ERROR_FAILED and clears the set of
     // pending requests.

@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
@@ -38,10 +39,13 @@ void AppendPrintersAndRunCallbackIfDone(base::ListValue* printers_out,
 
 // Callback for PrinterProviderAPI::DispatchPrintRequested calls.
 // It copies |value| to |*result| and runs |callback|.
-void RecordPrintErrorAndRunCallback(PrinterProviderAPI::PrintError* result,
-                                    const base::Closure& callback,
-                                    PrinterProviderAPI::PrintError value) {
-  *result = value;
+void RecordPrintResultAndRunCallback(bool* result_success,
+                                     std::string* result_status,
+                                     const base::Closure& callback,
+                                     bool success,
+                                     const std::string& status) {
+  *result_success = success;
+  *result_status = status;
   if (!callback.is_null())
     callback.Run();
 }
@@ -76,7 +80,9 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     job.printer_id = extension_id + ":printer_id";
     job.ticket_json = "{}";
     job.content_type = "content_type";
-    job.document_bytes = "bytes";
+    const unsigned char kDocumentBytes[] = {'b', 'y', 't', 'e', 's', 0};
+    job.document_bytes =
+        new base::RefCountedBytes(kDocumentBytes, arraysize(kDocumentBytes));
 
     PrinterProviderAPI::GetFactoryInstance()
         ->Get(browser_context())
@@ -127,7 +133,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   // |test_param|: The test that should be run.
   // |expected_result|: The print result the app is expected to report.
   void RunPrintRequestTestApp(const std::string& test_param,
-                              PrinterProviderAPI::PrintError expected_result) {
+                              const std::string& expected_result) {
     extensions::ResultCatcher catcher;
 
     std::string extension_id;
@@ -137,15 +143,17 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
       return;
 
     base::RunLoop run_loop;
-    PrinterProviderAPI::PrintError print_result;
+    bool success;
+    std::string print_status;
     StartPrintRequest(extension_id,
-                      base::Bind(&RecordPrintErrorAndRunCallback, &print_result,
-                                 run_loop.QuitClosure()));
+                      base::Bind(&RecordPrintResultAndRunCallback, &success,
+                                 &print_status, run_loop.QuitClosure()));
 
     ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
     run_loop.Run();
-    EXPECT_EQ(expected_result, print_result);
+    EXPECT_EQ(expected_result, print_status);
+    EXPECT_EQ(expected_result == "OK", success);
   }
 
   // Runs a test for chrome.printerProvider.onGetCapabilityRequested
@@ -218,27 +226,24 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobSuccess) {
-  RunPrintRequestTestApp("OK", PrinterProviderAPI::PRINT_ERROR_NONE);
+  RunPrintRequestTestApp("OK", "OK");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobAsyncSuccess) {
-  RunPrintRequestTestApp("ASYNC_RESPONSE",
-                         PrinterProviderAPI::PRINT_ERROR_NONE);
+  RunPrintRequestTestApp("ASYNC_RESPONSE", "OK");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobFailed) {
-  RunPrintRequestTestApp("INVALID_TICKET",
-                         PrinterProviderAPI::PRINT_ERROR_INVALID_TICKET);
+  RunPrintRequestTestApp("INVALID_TICKET", "INVALID_TICKET");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, NoPrintEventListener) {
-  RunPrintRequestTestApp("NO_LISTENER", PrinterProviderAPI::PRINT_ERROR_FAILED);
+  RunPrintRequestTestApp("NO_LISTENER", "FAILED");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                        PrintRequestInvalidCallbackParam) {
-  RunPrintRequestTestApp("INVALID_VALUE",
-                         PrinterProviderAPI::PRINT_ERROR_FAILED);
+  RunPrintRequestTestApp("INVALID_VALUE", "FAILED");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestAppUnloaded) {
@@ -250,17 +255,19 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestAppUnloaded) {
   ASSERT_FALSE(extension_id.empty());
 
   base::RunLoop run_loop;
-  PrinterProviderAPI::PrintError print_result;
+  bool success = false;
+  std::string status;
   StartPrintRequest(extension_id,
-                    base::Bind(&RecordPrintErrorAndRunCallback, &print_result,
-                               run_loop.QuitClosure()));
+                    base::Bind(&RecordPrintResultAndRunCallback, &success,
+                               &status, run_loop.QuitClosure()));
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   ASSERT_TRUE(SimulateExtensionUnload(extension_id));
 
   run_loop.Run();
-  EXPECT_EQ(PrinterProviderAPI::PRINT_ERROR_FAILED, print_result);
+  EXPECT_FALSE(success);
+  EXPECT_EQ("FAILED", status);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilitySuccess) {

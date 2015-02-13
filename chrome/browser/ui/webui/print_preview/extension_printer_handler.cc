@@ -7,7 +7,19 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/values.h"
+#include "components/cloud_devices/common/cloud_device_description.h"
+#include "components/cloud_devices/common/printer_description.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
+#include "printing/print_job_constants.h"
+
+namespace {
+
+const char kContentTypePdf[] = "application/pdf";
+const char kContentTypeAll[] = "*/*";
+
+const char kInvalidDataPrintError[] = "INVALID_DATA";
+
+}  // namespace
 
 ExtensionPrinterHandler::ExtensionPrinterHandler(
     content::BrowserContext* browser_context)
@@ -44,11 +56,38 @@ void ExtensionPrinterHandler::StartGetCapability(
 }
 
 void ExtensionPrinterHandler::StartPrint(
-    const base::DictionaryValue& print_job_settings,
+    const std::string& destination_id,
+    const std::string& capability,
+    const std::string& ticket_json,
     const scoped_refptr<base::RefCountedMemory>& print_data,
     const PrinterHandler::PrintCallback& callback) {
-  // TODO(tbarzic): Implement this.
-  WrapPrintCallback(callback, false, "NOT_IMPLEMENTED");
+  extensions::PrinterProviderAPI::PrintJob print_job;
+  print_job.printer_id = destination_id;
+  print_job.ticket_json = ticket_json;
+
+  cloud_devices::CloudDeviceDescription printer_description;
+  printer_description.InitFromString(capability);
+
+  cloud_devices::printer::ContentTypesCapability content_types;
+  content_types.LoadFrom(printer_description);
+
+  const bool kUsePdf = content_types.Contains(kContentTypePdf) ||
+                       content_types.Contains(kContentTypeAll);
+
+  if (!kUsePdf) {
+    // TODO(tbarzic): Convert data to PWG raster if the printer does not support
+    // PDF.
+    WrapPrintCallback(callback, false, kInvalidDataPrintError);
+    return;
+  }
+
+  print_job.content_type = kContentTypePdf;
+  print_job.document_bytes = print_data;
+  extensions::PrinterProviderAPI::GetFactoryInstance()
+      ->Get(browser_context_)
+      ->DispatchPrintRequested(
+          print_job, base::Bind(&ExtensionPrinterHandler::WrapPrintCallback,
+                                weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ExtensionPrinterHandler::WrapGetPrintersCallback(

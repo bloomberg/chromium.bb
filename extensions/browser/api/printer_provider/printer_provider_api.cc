@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
@@ -54,24 +55,6 @@ bool ParsePrinterId(const std::string& printer_id,
   return true;
 }
 
-PrinterProviderAPI::PrintError APIPrintErrorToInternalType(
-    core_api::printer_provider_internal::PrintError error) {
-  switch (error) {
-    case core_api::printer_provider_internal::PRINT_ERROR_NONE:
-      // The PrintError parameter is not set, which implies an error.
-      return PrinterProviderAPI::PRINT_ERROR_FAILED;
-    case core_api::printer_provider_internal::PRINT_ERROR_OK:
-      return PrinterProviderAPI::PRINT_ERROR_NONE;
-    case core_api::printer_provider_internal::PRINT_ERROR_FAILED:
-      return PrinterProviderAPI::PRINT_ERROR_FAILED;
-    case core_api::printer_provider_internal::PRINT_ERROR_INVALID_TICKET:
-      return PrinterProviderAPI::PRINT_ERROR_INVALID_TICKET;
-    case core_api::printer_provider_internal::PRINT_ERROR_INVALID_DATA:
-      return PrinterProviderAPI::PRINT_ERROR_INVALID_DATA;
-  }
-  return PrinterProviderAPI::PRINT_ERROR_FAILED;
-}
-
 }  // namespace
 
 PrinterProviderAPI::PrintJob::PrintJob() {
@@ -84,6 +67,12 @@ PrinterProviderAPI::PrintJob::~PrintJob() {
 BrowserContextKeyedAPIFactory<PrinterProviderAPI>*
 PrinterProviderAPI::GetFactoryInstance() {
   return g_api_factory.Pointer();
+}
+
+// static
+std::string PrinterProviderAPI::GetDefaultPrintError() {
+  return core_api::printer_provider_internal::ToString(
+      core_api::printer_provider_internal::PRINT_ERROR_FAILED);
 }
 
 PrinterProviderAPI::PrinterProviderAPI(content::BrowserContext* browser_context)
@@ -169,7 +158,7 @@ void PrinterProviderAPI::DispatchPrintRequested(
   std::string extension_id;
   std::string internal_printer_id;
   if (!ParsePrinterId(job.printer_id, &extension_id, &internal_printer_id)) {
-    callback.Run(PRINT_ERROR_FAILED);
+    callback.Run(false, GetDefaultPrintError());
     return;
   }
 
@@ -177,15 +166,36 @@ void PrinterProviderAPI::DispatchPrintRequested(
   if (!event_router->ExtensionHasEventListener(
           extension_id,
           core_api::printer_provider::OnPrintRequested::kEventName)) {
-    callback.Run(PRINT_ERROR_FAILED);
+    callback.Run(false, GetDefaultPrintError());
     return;
   }
 
   core_api::printer_provider::PrintJob print_job;
   print_job.printer_id = internal_printer_id;
+
+  JSONStringValueSerializer serializer(job.ticket_json);
+  scoped_ptr<base::Value> ticket_value(serializer.Deserialize(NULL, NULL));
+  if (!ticket_value ||
+      !core_api::printer_provider::PrintJob::Ticket::Populate(
+          *ticket_value, &print_job.ticket)) {
+    callback.Run(false,
+                 core_api::printer_provider::ToString(
+                     core_api::printer_provider::PRINT_ERROR_INVALID_TICKET));
+    return;
+  }
+
+  // TODO(tbarzic): Figure out how to support huge documents.
+  if (job.document_bytes->size() > PrinterProviderAPI::kMaxDocumentSize) {
+    callback.Run(false,
+                 core_api::printer_provider::ToString(
+                     core_api::printer_provider::PRINT_ERROR_INVALID_DATA));
+    return;
+  }
+
   print_job.content_type = job.content_type;
-  print_job.document =
-      std::vector<char>(job.document_bytes.begin(), job.document_bytes.end());
+  print_job.document = std::vector<char>(
+      job.document_bytes->front(),
+      job.document_bytes->front() + job.document_bytes->size());
 
   int request_id = pending_print_requests_[extension_id].Add(callback);
 
@@ -324,8 +334,10 @@ int PrinterProviderAPI::PendingPrintRequests::Add(
   return last_request_id_;
 }
 
-bool PrinterProviderAPI::PendingPrintRequests::Complete(int request_id,
-                                                        PrintError response) {
+bool PrinterProviderAPI::PendingPrintRequests::Complete(
+    int request_id,
+    bool success,
+    const std::string& response) {
   auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return false;
@@ -333,13 +345,13 @@ bool PrinterProviderAPI::PendingPrintRequests::Complete(int request_id,
   PrintCallback callback = it->second;
   pending_requests_.erase(it);
 
-  callback.Run(response);
+  callback.Run(success, response);
   return true;
 }
 
 void PrinterProviderAPI::PendingPrintRequests::FailAll() {
   for (auto& request : pending_requests_)
-    request.second.Run(PRINT_ERROR_FAILED);
+    request.second.Run(false, GetDefaultPrintError());
   pending_requests_.clear();
 }
 
@@ -376,8 +388,13 @@ void PrinterProviderAPI::OnPrintResult(
     const Extension* extension,
     int request_id,
     core_api::printer_provider_internal::PrintError error) {
+  const std::string error_str =
+      error == core_api::printer_provider_internal::PRINT_ERROR_NONE
+          ? GetDefaultPrintError()
+          : core_api::printer_provider_internal::ToString(error);
   pending_print_requests_[extension->id()].Complete(
-      request_id, APIPrintErrorToInternalType(error));
+      request_id, error == core_api::printer_provider_internal::PRINT_ERROR_OK,
+      error_str);
 }
 
 void PrinterProviderAPI::OnExtensionUnloaded(
