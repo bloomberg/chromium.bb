@@ -62,7 +62,8 @@
       containerPinchCoordsX,
       containerPinchCoordsY + container.offsetHeight*scale,
       0,
-      10000);
+      10000,
+      "touchpad");
   }
 
   var horizontalFlingOverContainer = function() {
@@ -74,7 +75,8 @@
       containerPinchCoordsX + container.offsetWidth*scale,
       containerPinchCoordsY,
       10000,
-      0);
+      0,
+      "touchpad");
   }
 
   var verticalFlingNotOverContainer = function() {
@@ -86,7 +88,8 @@
       containerPinchCoordsX + container.offsetWidth*scale,
       0,
       0,
-      -10000);
+      -10000,
+      "touchpad");
   }
 
   var horizontalFlingNotOverContainer = function() {
@@ -98,7 +101,8 @@
       0,
       containerPinchCoordsY + container.offsetHeight*scale,
       -10000,
-      0);
+      0,
+      "touchpad");
   }
 
   var scrollHandler = function() {

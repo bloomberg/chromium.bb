@@ -41,9 +41,8 @@ function recordWheelEvent(event)
 document.addEventListener("mousewheel", recordWheelEvent);
 
 if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
-    eventSender.gestureFlingStart(positionX, positionY, velocityX, velocityY);
+    eventSender.gestureFlingStart(positionX, positionY, velocityX, velocityY, "touchpad");
 }
 
 if (window.testRunner)
     testRunner.waitUntilDone();
-

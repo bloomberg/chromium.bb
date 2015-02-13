@@ -23,7 +23,7 @@
     document.addEventListener("mousewheel", recordWheelEvent);
 
     if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
-        eventSender.gestureFlingStart(10, 11, 1000, 1000);
+        eventSender.gestureFlingStart(10, 11, 1000, 1000, "touchpad");
         eventSender.gestureFlingCancel();
         testRunner.waitUntilDone();
     }
@@ -41,4 +41,3 @@
 <span id="f"></span>
 </body>
 </html>
-
