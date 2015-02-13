@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_DRAG_DROP_CLIENT_WIN_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_DRAG_DROP_CLIENT_WIN_H_
 
+#include <wrl/client.h>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -46,7 +48,7 @@ class VIEWS_EXPORT DesktopDragDropClientWin
 
   int drag_operation_;
 
-  scoped_refptr<ui::DragSourceWin> drag_source_;
+  Microsoft::WRL::ComPtr<ui::DragSourceWin> drag_source_;
 
   scoped_refptr<DesktopDropTargetWin> drop_target_;
 

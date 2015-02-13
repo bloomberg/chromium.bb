@@ -269,7 +269,7 @@ class SynchronousDrag : public ui::DragSourceWin {
 
     // Prevent the synchronous dragger being destroyed while the drag is
     // running.
-    scoped_refptr<SynchronousDrag> this_ref = this;
+    Microsoft::WRL::ComPtr<SynchronousDrag> this_ref = this;
     running_ = true;
 
     ui::OSExchangeData data;
@@ -530,7 +530,8 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
   if (IsDraggingForReparentInRootLevelGridView())
     return;
 
-  synchronous_drag_ = new SynchronousDrag(this, drag_view_, drag_view_offset_);
+  synchronous_drag_ = Microsoft::WRL::Make<SynchronousDrag>(this, drag_view_,
+                                                            drag_view_offset_);
   delegate_->GetShortcutPathForApp(drag_view_->item()->id(),
                                    base::Bind(&AppsGridView::OnGotShortcutPath,
                                               base::Unretained(this),
@@ -540,14 +541,14 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
 
 bool AppsGridView::RunSynchronousDrag() {
 #if defined(OS_WIN)
-  if (!synchronous_drag_.get())
+  if (!synchronous_drag_.Get())
     return false;
 
   if (synchronous_drag_->CanRun()) {
     if (IsDraggingForReparentInHiddenGridView())
       folder_delegate_->SetRootLevelDragViewVisible(false);
     synchronous_drag_->Run();
-    synchronous_drag_ = NULL;
+    synchronous_drag_ = nullptr;
     return true;
   } else if (!synchronous_drag_->running()) {
     // The OS drag is not ready yet. If the root grid has a drag view because
@@ -561,16 +562,16 @@ bool AppsGridView::RunSynchronousDrag() {
 
 void AppsGridView::CleanUpSynchronousDrag() {
 #if defined(OS_WIN)
-  if (synchronous_drag_.get())
+  if (synchronous_drag_.Get())
     synchronous_drag_->EndDragExternally();
 
-  synchronous_drag_ = NULL;
+  synchronous_drag_ = nullptr;
 #endif
 }
 
 #if defined(OS_WIN)
 void AppsGridView::OnGotShortcutPath(
-    scoped_refptr<SynchronousDrag> synchronous_drag,
+    Microsoft::WRL::ComPtr<SynchronousDrag> synchronous_drag,
     const base::FilePath& path) {
   // Drag may have ended before we get the shortcut path or a new drag may have
   // begun.
@@ -1466,7 +1467,7 @@ void AppsGridView::OnFolderItemReparentTimer() {
   if (drag_out_of_folder_container_ && drag_view_) {
     bool has_native_drag = drag_and_drop_host_ != nullptr;
 #if defined(OS_WIN)
-    has_native_drag = has_native_drag || synchronous_drag_.get();
+    has_native_drag = has_native_drag || synchronous_drag_.Get();
 #endif
     folder_delegate_->ReparentItem(
         drag_view_, last_drag_point_, has_native_drag);

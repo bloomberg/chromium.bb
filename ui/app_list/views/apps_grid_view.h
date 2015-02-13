@@ -27,6 +27,7 @@
 #include "ui/views/view_model.h"
 
 #if defined(OS_WIN)
+#include <wrl/client.h>
 #include "ui/base/dragdrop/drag_source_win.h"
 #endif
 
@@ -461,7 +462,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool RunSynchronousDrag();
   void CleanUpSynchronousDrag();
 #if defined(OS_WIN)
-  void OnGotShortcutPath(scoped_refptr<SynchronousDrag> drag,
+  void OnGotShortcutPath(Microsoft::WRL::ComPtr<SynchronousDrag> drag,
                          const base::FilePath& path);
 #endif
 
@@ -508,7 +509,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 #if defined(OS_WIN)
   // Created when a drag is started (ie: drag exceeds the drag threshold), but
   // not Run() until supplied with a shortcut path.
-  scoped_refptr<SynchronousDrag> synchronous_drag_;
+  Microsoft::WRL::ComPtr<SynchronousDrag> synchronous_drag_;
 
   // Whether to use SynchronousDrag to support dropping to task bar etc.
   bool use_synchronous_drag_;

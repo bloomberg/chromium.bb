@@ -33,27 +33,6 @@ HRESULT DragSourceWin::GiveFeedback(DWORD effect) {
   return DRAGDROP_S_USEDEFAULTCURSORS;
 }
 
-HRESULT DragSourceWin::QueryInterface(const IID& iid, void** object) {
-  *object = NULL;
-  if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDropSource)) {
-    *object = this;
-  } else {
-    return E_NOINTERFACE;
-  }
-  AddRef();
-  return S_OK;
-}
-
-ULONG DragSourceWin::AddRef() {
-  base::RefCountedThreadSafe<DragSourceWin>::AddRef();
-  return 0;
-}
-
-ULONG DragSourceWin::Release() {
-  base::RefCountedThreadSafe<DragSourceWin>::Release();
-  return 0;
-}
-
 void DragSourceWin::OnDragSourceDrop() {
   DCHECK(data_);
   ui::OSExchangeDataProviderWin::GetDataObjectImpl(*data_)
