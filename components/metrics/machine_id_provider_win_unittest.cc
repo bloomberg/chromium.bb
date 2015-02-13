@@ -5,6 +5,7 @@
 #include "components/metrics/machine_id_provider.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -13,6 +14,10 @@ TEST(MachineIdProviderTest, GetId) {
   scoped_refptr<MachineIdProvider> provider(
       MachineIdProvider::CreateInstance());
   std::string id1 = provider->GetMachineId();
+
+  // TODO(rpaquay): See crbug/458230
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
 
   EXPECT_NE(std::string(), id1);
 
