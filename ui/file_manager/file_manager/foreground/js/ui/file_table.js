@@ -19,14 +19,6 @@ function FileTableColumnModel(tableColumns) {
 }
 
 /**
- * The columns whose index is less than the constant are resizable.
- * @const
- * @type {number}
- * @private
- */
-FileTableColumnModel.RESIZABLE_LENGTH_ = 4;
-
-/**
  * Inherits from cr.ui.TableColumnModel.
  */
 FileTableColumnModel.prototype.__proto__ =
@@ -61,7 +53,7 @@ FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
     }
   }
   // Set the new width of columns
-  for (var i = 0; i < FileTableColumnModel.RESIZABLE_LENGTH_; i++) {
+  for (var i = 0; i < this.columns_.length; i++) {
     this.columns_[i].width = newPos[i + 1] - newPos[i];
   }
 };
@@ -75,22 +67,17 @@ FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
  */
 FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
   var totalWidth = 0;
-  var fixedWidth = 0;
   // Some columns have fixed width.
   for (var i = 0; i < this.columns_.length; i++) {
-    if (i < FileTableColumnModel.RESIZABLE_LENGTH_)
-      totalWidth += this.columns_[i].width;
-    else
-      fixedWidth += this.columns_[i].width;
+    totalWidth += this.columns_[i].width;
   }
-  var newTotalWidth = Math.max(contentWidth - fixedWidth, 0);
   var positions = [0];
   var sum = 0;
-  for (var i = 0; i < FileTableColumnModel.RESIZABLE_LENGTH_; i++) {
+  for (var i = 0; i < this.columns_.length; i++) {
     var column = this.columns_[i];
     sum += column.width;
     // Faster alternative to Math.floor for non-negative numbers.
-    positions[i + 1] = ~~(newTotalWidth * sum / totalWidth);
+    positions[i + 1] = ~~(contentWidth * sum / totalWidth);
   }
   this.applyColumnPositions_(positions);
 };
@@ -137,7 +124,7 @@ FileTableColumnModel.prototype.setWidthAndKeepTotal = function(
     columnIndex, columnWidth) {
   // Skip to resize 'selection' column
   if (columnIndex < 0 ||
-      columnIndex >= FileTableColumnModel.RESIZABLE_LENGTH_ ||
+      columnIndex >= this.columns_.length ||
       !this.columnPos_) {
     return;
   }
@@ -147,13 +134,11 @@ FileTableColumnModel.prototype.setWidthAndKeepTotal = function(
       this.columnPos_[columnIndex] + Math.max(columnWidth,
                                               FileTableColumnModel.MIN_WIDTH_);
   var newPos = [];
-  var posEnd = this.columnPos_[FileTableColumnModel.RESIZABLE_LENGTH_];
+  var posEnd = this.columnPos_[this.columns_.length];
   for (var i = 0; i < columnIndex + 1; i++) {
     newPos[i] = this.columnPos_[i];
   }
-  for (var i = columnIndex + 1;
-       i < FileTableColumnModel.RESIZABLE_LENGTH_;
-       i++) {
+  for (var i = columnIndex + 1; i < this.columns_.length; i++) {
     var posStart = this.columnPos_[columnIndex + 1];
     newPos[i] = (posEnd - newPosStart) *
                 (this.columnPos_[i] - posStart) /
@@ -163,7 +148,7 @@ FileTableColumnModel.prototype.setWidthAndKeepTotal = function(
     newPos[i] = ~~newPos[i];
   }
   newPos[columnIndex] = this.columnPos_[columnIndex];
-  newPos[FileTableColumnModel.RESIZABLE_LENGTH_] = posEnd;
+  newPos[this.columns_.length] = posEnd;
   this.applyColumnPositions_(newPos);
 
   // Notifiy about resizing
