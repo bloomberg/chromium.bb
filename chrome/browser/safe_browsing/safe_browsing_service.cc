@@ -38,8 +38,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/metrics/metrics_service.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -594,6 +594,11 @@ void SafeBrowsingService::RefreshState() {
       break;
     }
   }
+
+  // TODO(asvitkine): Experimental code for measuring start up impact of SB.
+  // Remove when experimentation is complete. http://crbug.com/450037
+  if (!variations::GetVariationParamValue("LightSpeed", "DisableSB").empty())
+    enable = false;
 
   if (enable)
     Start();
