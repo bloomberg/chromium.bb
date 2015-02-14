@@ -120,7 +120,10 @@ void GpuRasterizer::RasterizeSource(
     write_lock->InitSkSurface(use_worker_context, use_distance_field_text,
                               raster_source->CanUseLCDText(),
                               msaa_sample_count_);
-    picture->playback(write_lock->sk_surface()->getCanvas(), nullptr);
+    SkMultiPictureDraw multi_picture_draw;
+    multi_picture_draw.add(write_lock->sk_surface()->getCanvas(),
+                           picture.get());
+    multi_picture_draw.draw(false);
     write_lock->ReleaseSkSurface();
   }
 }
