@@ -29,8 +29,10 @@ namespace cc {
 DisplayListRecordingSource::DisplayListRecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
       can_use_lcd_text_(true),
+      requires_clear_(false),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
+      background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
       is_suitable_for_gpu_rasterization_(true) {
 }
@@ -132,6 +134,14 @@ void DisplayListRecordingSource::SetEmptyBounds() {
 
 void DisplayListRecordingSource::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
+}
+
+void DisplayListRecordingSource::SetBackgroundColor(SkColor background_color) {
+  background_color_ = background_color;
+}
+
+void DisplayListRecordingSource::SetRequiresClear(bool requires_clear) {
+  requires_clear_ = requires_clear;
 }
 
 void DisplayListRecordingSource::SetUnsuitableForGpuRasterizationForTesting() {

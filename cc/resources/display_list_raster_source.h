@@ -46,8 +46,6 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
                   float contents_scale) const override;
   bool HasRecordings() const override;
   void SetShouldAttemptToUseDistanceFieldText() override;
-  void SetBackgoundColor(SkColor background_color) override;
-  void SetRequiresClear(bool requires_clear) override;
   bool ShouldAttemptToUseDistanceFieldText() const override;
   void DidBeginTracing() override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
@@ -60,16 +58,21 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
   explicit DisplayListRasterSource(const DisplayListRecordingSource* other);
   ~DisplayListRasterSource() override;
 
-  scoped_refptr<DisplayItemList> display_list_;
-  SkColor background_color_;
-  bool requires_clear_;
-  bool can_use_lcd_text_;
-  bool is_solid_color_;
-  SkColor solid_color_;
-  gfx::Rect recorded_viewport_;
-  gfx::Size size_;
-  bool clear_canvas_with_debug_color_;
-  int slow_down_raster_scale_factor_for_debug_;
+  // These members are const as this raster source may be in use on another
+  // thread and so should not be touched after construction.
+  const scoped_refptr<DisplayItemList> display_list_;
+  const SkColor background_color_;
+  const bool requires_clear_;
+  const bool can_use_lcd_text_;
+  const bool is_solid_color_;
+  const SkColor solid_color_;
+  const gfx::Rect recorded_viewport_;
+  const gfx::Size size_;
+  const bool clear_canvas_with_debug_color_;
+  const int slow_down_raster_scale_factor_for_debug_;
+  // TODO(enne/vmiura): this has a read/write race between raster and compositor
+  // threads with multi-threaded Ganesh.  Make this const or remove it.
+  bool should_attempt_to_use_distance_field_text_;
 
  private:
   // Called when analyzing a tile. We can use AnalysisCanvas as
@@ -83,8 +86,6 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
                     const gfx::Rect& canvas_rect,
                     float contents_scale,
                     bool is_analysis) const;
-
-  bool should_attempt_to_use_distance_field_text_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayListRasterSource);
 };

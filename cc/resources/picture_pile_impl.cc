@@ -16,16 +16,6 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace {
-
-#ifdef NDEBUG
-const bool kDefaultClearCanvasSetting = false;
-#else
-const bool kDefaultClearCanvasSetting = true;
-#endif
-
-}  // namespace
-
 namespace cc {
 
 scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromPicturePile(
@@ -40,7 +30,7 @@ PicturePileImpl::PicturePileImpl()
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
       has_any_recordings_(false),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
+      clear_canvas_with_debug_color_(false),
       min_contents_scale_(0.f),
       slow_down_raster_scale_factor_for_debug_(0),
       should_attempt_to_use_distance_field_text_(false) {
@@ -49,14 +39,14 @@ PicturePileImpl::PicturePileImpl()
 PicturePileImpl::PicturePileImpl(const PicturePile* other)
     : picture_map_(other->picture_map_),
       tiling_(other->tiling_),
-      background_color_(SK_ColorTRANSPARENT),
-      requires_clear_(true),
+      background_color_(other->background_color_),
+      requires_clear_(other->requires_clear_),
       can_use_lcd_text_(other->can_use_lcd_text_),
       is_solid_color_(other->is_solid_color_),
       solid_color_(other->solid_color_),
       recorded_viewport_(other->recorded_viewport_),
       has_any_recordings_(other->has_any_recordings_),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       min_contents_scale_(other->min_contents_scale_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
@@ -88,7 +78,6 @@ void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
   RasterSourceHelper::PrepareForPlaybackToCanvas(
       canvas, canvas_rect, gfx::Rect(tiling_.tiling_size()), contents_scale,
       background_color_, clear_canvas_with_debug_color_, requires_clear_);
-
   RasterCommon(canvas,
                NULL,
                canvas_rect,
@@ -367,14 +356,6 @@ void PicturePileImpl::SetShouldAttemptToUseDistanceFieldText() {
   should_attempt_to_use_distance_field_text_ = true;
 }
 
-void PicturePileImpl::SetBackgoundColor(SkColor background_color) {
-  background_color_ = background_color;
-}
-
-void PicturePileImpl::SetRequiresClear(bool requires_clear) {
-  requires_clear_ = requires_clear;
-}
-
 bool PicturePileImpl::ShouldAttemptToUseDistanceFieldText() const {
   return should_attempt_to_use_distance_field_text_;
 }
@@ -454,10 +435,8 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
 
 void PicturePileImpl::DidBeginTracing() {
   std::set<const void*> processed_pictures;
-  for (PictureMap::iterator it = picture_map_.begin();
-       it != picture_map_.end();
-       ++it) {
-    const Picture* picture = it->second.GetPicture();
+  for (const auto& map_pair : picture_map_) {
+    const Picture* picture = map_pair.second.GetPicture();
     if (picture && (processed_pictures.count(picture) == 0)) {
       picture->EmitTraceSnapshot();
       processed_pictures.insert(picture);

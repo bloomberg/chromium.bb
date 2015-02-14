@@ -29,6 +29,8 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
   void SetSlowdownRasterScaleFactor(int factor) override;
+  void SetBackgroundColor(SkColor background_color) override;
+  void SetRequiresClear(bool requires_clear) override;
   bool IsSuitableForGpuRasterization() const override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
   gfx::Size GetTileGridSizeForTesting() const override;
@@ -40,8 +42,10 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   gfx::Size size_;
   int slow_down_raster_scale_factor_for_debug_;
   bool can_use_lcd_text_;
+  bool requires_clear_;
   bool is_solid_color_;
   SkColor solid_color_;
+  SkColor background_color_;
   int pixel_record_distance_;
 
   scoped_refptr<DisplayItemList> display_list_;

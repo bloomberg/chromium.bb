@@ -86,9 +86,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // during rasterization.
   virtual void SetShouldAttemptToUseDistanceFieldText() = 0;
 
-  virtual void SetBackgoundColor(SkColor background_color) = 0;
-  virtual void SetRequiresClear(bool requires_clear) = 0;
-
   // Return true iff this raster source would benefit from using distance
   // field text.
   virtual bool ShouldAttemptToUseDistanceFieldText() const = 0;

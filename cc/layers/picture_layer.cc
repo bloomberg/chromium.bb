@@ -71,9 +71,6 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
   scoped_refptr<RasterSource> raster_source =
       recording_source_->CreateRasterSource();
-  raster_source->SetBackgoundColor(SafeOpaqueBackgroundColor());
-  raster_source->SetRequiresClear(!contents_opaque() &&
-                                  !client_->FillsBoundsCompletely());
   layer_impl->UpdateRasterSource(raster_source, &recording_invalidation_,
                                  nullptr);
   DCHECK(recording_invalidation_.IsEmpty());
@@ -122,6 +119,10 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
     // Only early out if the visible content rect of this layer hasn't changed.
     return updated;
   }
+
+  recording_source_->SetBackgroundColor(SafeOpaqueBackgroundColor());
+  recording_source_->SetRequiresClear(!contents_opaque() &&
+                                      !client_->FillsBoundsCompletely());
 
   TRACE_EVENT1("cc", "PictureLayer::Update",
                "source_frame_number",

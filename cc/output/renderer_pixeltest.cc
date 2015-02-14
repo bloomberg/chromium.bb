@@ -1843,15 +1843,19 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
   // is red, which should not appear.
   gfx::Rect blue_rect(gfx::Size(100, 100));
   gfx::Rect blue_clip_rect(gfx::Point(50, 50), gfx::Size(50, 50));
-  scoped_refptr<FakePicturePileImpl> blue_pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, blue_rect.size());
+
+  scoped_ptr<FakePicturePile> blue_recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, blue_rect.size());
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
-  blue_pile->add_draw_rect_with_paint(blue_rect, red_paint);
+  blue_recording->add_draw_rect_with_paint(blue_rect, red_paint);
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
-  blue_pile->add_draw_rect_with_paint(blue_clip_rect, blue_paint);
-  blue_pile->RerecordPile();
+  blue_recording->add_draw_rect_with_paint(blue_clip_rect, blue_paint);
+  blue_recording->RerecordPile();
+
+  scoped_refptr<FakePicturePileImpl> blue_pile =
+      FakePicturePileImpl::CreateFromPile(blue_recording.get(), nullptr);
 
   gfx::Transform blue_content_to_target_transform;
   gfx::Vector2d offset(viewport.bottom_right() - blue_rect.bottom_right());
@@ -1873,12 +1877,14 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
                     1.f, blue_pile.get());
 
   // One viewport-filling green quad.
-  scoped_refptr<FakePicturePileImpl> green_pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  scoped_ptr<FakePicturePile> green_recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
-  green_pile->add_draw_rect_with_paint(viewport, green_paint);
-  green_pile->RerecordPile();
+  green_recording->add_draw_rect_with_paint(viewport, green_paint);
+  green_recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> green_pile =
+      FakePicturePileImpl::CreateFromPile(green_recording.get(), nullptr);
 
   gfx::Transform green_content_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(
@@ -1913,12 +1919,14 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
       CreateTestRenderPass(id, viewport, transform_to_root);
 
   // One viewport-filling 0.5-opacity green quad.
-  scoped_refptr<FakePicturePileImpl> green_pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  scoped_ptr<FakePicturePile> green_recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
-  green_pile->add_draw_rect_with_paint(viewport, green_paint);
-  green_pile->RerecordPile();
+  green_recording->add_draw_rect_with_paint(viewport, green_paint);
+  green_recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> green_pile =
+      FakePicturePileImpl::CreateFromPile(green_recording.get(), nullptr);
 
   gfx::Transform green_content_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(
@@ -1932,12 +1940,14 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
                      texture_format, viewport, 1.f, green_pile.get());
 
   // One viewport-filling white quad.
-  scoped_refptr<FakePicturePileImpl> white_pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  scoped_ptr<FakePicturePile> white_recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint white_paint;
   white_paint.setColor(SK_ColorWHITE);
-  white_pile->add_draw_rect_with_paint(viewport, white_paint);
-  white_pile->RerecordPile();
+  white_recording->add_draw_rect_with_paint(viewport, white_paint);
+  white_recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> white_pile =
+      FakePicturePileImpl::CreateFromPile(white_recording.get(), nullptr);
 
   gfx::Transform white_content_to_target_transform;
   SharedQuadState* white_shared_state = CreateTestSharedQuadState(
@@ -2001,12 +2011,14 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
     canvas.drawPoint(1, 1, SK_ColorGREEN);
   }
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  scoped_ptr<FakePicturePile> recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint paint;
   paint.setFilterLevel(SkPaint::kLow_FilterLevel);
-  pile->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
-  pile->RerecordPile();
+  recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
+  recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);
 
   gfx::Transform content_to_target_transform;
   SharedQuadState* shared_state = CreateTestSharedQuadState(
@@ -2051,12 +2063,14 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNearestNeighbor) {
     canvas.drawPoint(1, 1, SK_ColorGREEN);
   }
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  scoped_ptr<FakePicturePile> recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint paint;
   paint.setFilterLevel(SkPaint::kLow_FilterLevel);
-  pile->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
-  pile->RerecordPile();
+  recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
+  recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);
 
   gfx::Transform content_to_target_transform;
   SharedQuadState* shared_state = CreateTestSharedQuadState(
@@ -2153,16 +2167,20 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Transform green_content_to_target_transform;
   gfx::Rect green_rect1(gfx::Point(80, 0), gfx::Size(20, 100));
   gfx::Rect green_rect2(gfx::Point(0, 80), gfx::Size(100, 20));
-  scoped_refptr<FakePicturePileImpl> green_pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+
+  scoped_ptr<FakePicturePile> green_recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
+
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
-  green_pile->add_draw_rect_with_paint(viewport, red_paint);
+  green_recording->add_draw_rect_with_paint(viewport, red_paint);
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
-  green_pile->add_draw_rect_with_paint(green_rect1, green_paint);
-  green_pile->add_draw_rect_with_paint(green_rect2, green_paint);
-  green_pile->RerecordPile();
+  green_recording->add_draw_rect_with_paint(green_rect1, green_paint);
+  green_recording->add_draw_rect_with_paint(green_rect2, green_paint);
+  green_recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> green_pile =
+      FakePicturePileImpl::CreateFromPile(green_recording.get(), nullptr);
 
   SharedQuadState* top_right_green_shared_quad_state =
       CreateTestSharedQuadState(
@@ -2217,20 +2235,22 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   blue_layer_rect1.Inset(inset, inset, inset, inset);
   blue_layer_rect2.Inset(inset, inset, inset, inset);
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, layer_rect.size());
+  scoped_ptr<FakePicturePile> recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, layer_rect.size());
 
   Region outside(layer_rect);
   outside.Subtract(gfx::ToEnclosingRect(union_layer_rect));
   for (Region::Iterator iter(outside); iter.has_rect(); iter.next()) {
-    pile->add_draw_rect_with_paint(iter.rect(), red_paint);
+    recording->add_draw_rect_with_paint(iter.rect(), red_paint);
   }
 
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
-  pile->add_draw_rect_with_paint(blue_layer_rect1, blue_paint);
-  pile->add_draw_rect_with_paint(blue_layer_rect2, blue_paint);
-  pile->RerecordPile();
+  recording->add_draw_rect_with_paint(blue_layer_rect1, blue_paint);
+  recording->add_draw_rect_with_paint(blue_layer_rect2, blue_paint);
+  recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);
 
   gfx::Rect content_rect(
       gfx::ScaleToEnclosingRect(layer_rect, contents_scale));
@@ -2441,12 +2461,14 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
       CreateTestRenderPass(id, viewport, transform_to_root);
 
   // One viewport-filling blue quad
-  scoped_refptr<FakePicturePileImpl> blue_pile =
-      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  scoped_ptr<FakePicturePile> blue_recording =
+      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
-  blue_pile->add_draw_rect_with_paint(viewport, blue_paint);
-  blue_pile->RerecordPile();
+  blue_recording->add_draw_rect_with_paint(viewport, blue_paint);
+  blue_recording->RerecordPile();
+  scoped_refptr<FakePicturePileImpl> blue_pile =
+      FakePicturePileImpl::CreateFromPile(blue_recording.get(), nullptr);
 
   gfx::Transform blue_content_to_target_transform;
   SharedQuadState* blue_shared_state = CreateTestSharedQuadState(

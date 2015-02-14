@@ -6,6 +6,8 @@
 #define CC_TEST_FAKE_PICTURE_PILE_H_
 
 #include "cc/resources/picture_pile.h"
+#include "cc/test/fake_content_layer_client.h"
+#include "cc/test/impl_side_painting_settings.h"
 
 namespace base {
 class WaitableEvent;
@@ -23,6 +25,13 @@ class FakePicturePile : public PicturePile {
       : PicturePile(min_contents_scale, tile_grid_size),
         playback_allowed_event_(nullptr) {}
   ~FakePicturePile() override {}
+
+  static scoped_ptr<FakePicturePile> CreateFilledPile(
+      const gfx::Size& tile_size,
+      const gfx::Size& layer_bounds);
+  static scoped_ptr<FakePicturePile> CreateEmptyPile(
+      const gfx::Size& tile_size,
+      const gfx::Size& layer_bounds);
 
   // PicturePile overrides.
   scoped_refptr<RasterSource> CreateRasterSource() const override;
@@ -53,6 +62,10 @@ class FakePicturePile : public PicturePile {
     has_any_recordings_ = has_recordings;
   }
 
+  void SetClearCanvasWithDebugColor(bool clear) {
+    clear_canvas_with_debug_color_ = clear;
+  }
+
   void SetPlaybackAllowedEvent(base::WaitableEvent* event) {
     playback_allowed_event_ = event;
   }
@@ -61,11 +74,42 @@ class FakePicturePile : public PicturePile {
 
   bool is_solid_color() const { return is_solid_color_; }
   SkColor solid_color() const { return solid_color_; }
+  void SetIsSolidColor(bool is_solid) { is_solid_color_ = is_solid; }
 
   void SetPixelRecordDistance(int d) { pixel_record_distance_ = d; }
 
+  void add_draw_rect(const gfx::RectF& rect) {
+    client_.add_draw_rect(rect, default_paint_);
+  }
+
+  void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
+    client_.add_draw_bitmap(bitmap, point, default_paint_);
+  }
+
+  void add_draw_rect_with_paint(const gfx::RectF& rect, const SkPaint& paint) {
+    client_.add_draw_rect(rect, paint);
+  }
+
+  void add_draw_bitmap_with_paint(const SkBitmap& bitmap,
+                                  const gfx::Point& point,
+                                  const SkPaint& paint) {
+    client_.add_draw_bitmap(bitmap, point, paint);
+  }
+
+  void set_default_paint(const SkPaint& paint) { default_paint_ = paint; }
+
+  void AddRecordingAt(int x, int y);
+  void RemoveRecordingAt(int x, int y);
+  bool HasRecordingAt(int x, int y) const;
+  int num_tiles_x() const { return tiling_.num_tiles_x(); }
+  int num_tiles_y() const { return tiling_.num_tiles_y(); }
+  void RerecordPile();
+
  private:
   base::WaitableEvent* playback_allowed_event_;
+
+  FakeContentLayerClient client_;
+  SkPaint default_paint_;
 };
 
 }  // namespace cc

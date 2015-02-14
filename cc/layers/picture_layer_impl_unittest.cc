@@ -332,8 +332,11 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(layer_size, layer_size);
+
+  scoped_ptr<FakePicturePile> active_recording =
+      FakePicturePile::CreateFilledPile(layer_size, layer_size);
   scoped_refptr<FakePicturePileImpl> active_pile =
-      FakePicturePileImpl::CreateFilledPile(layer_size, layer_size);
+      FakePicturePileImpl::CreateFromPile(active_recording.get(), nullptr);
 
   SetupTrees(pending_pile, active_pile);
 
@@ -347,18 +350,22 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
   for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
     gfx::Point tile_center = (*tile_iter)->content_rect().CenterPoint();
     gfx::Rect rect(tile_center.x(), tile_center.y(), 1, 1);
-    active_pile->add_draw_rect(rect);
+    active_recording->add_draw_rect(rect);
     rects.push_back(SkRect::MakeXYWH(rect.x(), rect.y(), 1, 1));
   }
+
   // Force re-raster with newly injected content
-  active_pile->RemoveRecordingAt(0, 0);
-  active_pile->AddRecordingAt(0, 0);
+  active_recording->RemoveRecordingAt(0, 0);
+  active_recording->AddRecordingAt(0, 0);
+
+  scoped_refptr<FakePicturePileImpl> updated_active_pile =
+      FakePicturePileImpl::CreateFromPile(active_recording.get(), nullptr);
 
   std::vector<SkRect>::const_iterator rect_iter = rects.begin();
   for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
     MockCanvas mock_canvas(1000, 1000);
-    active_pile->PlaybackToSharedCanvas(&mock_canvas,
-                                        (*tile_iter)->content_rect(), 1.0f);
+    updated_active_pile->PlaybackToSharedCanvas(
+        &mock_canvas, (*tile_iter)->content_rect(), 1.0f);
 
     // This test verifies that when drawing the contents of a specific tile
     // at content scale 1.0, the playback canvas never receives content from
@@ -1631,13 +1638,14 @@ TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
   gfx::Size layer_bounds(1500, 1500);
   gfx::Rect visible_rect(250, 250, 1000, 1000);
 
-  scoped_refptr<FakePicturePileImpl> pending_pile =
-      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
-  scoped_refptr<FakePicturePileImpl> active_pile =
-      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  scoped_ptr<FakePicturePile> empty_recording =
+      FakePicturePile::CreateEmptyPile(tile_size, layer_bounds);
+  empty_recording->SetIsSolidColor(true);
 
-  pending_pile->set_is_solid_color(true);
-  active_pile->set_is_solid_color(true);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFromPile(empty_recording.get(), nullptr);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFromPile(empty_recording.get(), nullptr);
 
   SetupTrees(pending_pile, active_pile);
 
@@ -1663,13 +1671,11 @@ TEST_F(PictureLayerImplTest, TileScalesWithSolidColorPile) {
   gfx::Size tile_size(host_impl_.settings().default_tile_size);
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
-          tile_size, layer_bounds);
+          tile_size, layer_bounds, false);
   scoped_refptr<FakePicturePileImpl> active_pile =
       FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
-          tile_size, layer_bounds);
+          tile_size, layer_bounds, true);
 
-  pending_pile->set_is_solid_color(false);
-  active_pile->set_is_solid_color(true);
   SetupTrees(pending_pile, active_pile);
   // Solid color pile should not allow tilings at any scale.
   EXPECT_FALSE(active_layer_->CanHaveTilings());
@@ -2105,9 +2111,10 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
   // tiles.  This is attempting to simulate scrolling past the end of recorded
   // content on the active layer, where the recordings are so far away that
   // no tiles are created.
+  bool is_solid_color = false;
   scoped_refptr<FakePicturePileImpl> active_pile =
       FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
-          tile_size, layer_bounds);
+          tile_size, layer_bounds, is_solid_color);
 
   SetupTreesWithFixedTileSize(pending_pile, active_pile, tile_size, Region());
 
@@ -3030,10 +3037,13 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueueActiveTree) {
 }
 
 TEST_F(PictureLayerImplTest, TilingSetRasterQueueRequiredNoHighRes) {
+  scoped_ptr<FakePicturePile> empty_recording =
+      FakePicturePile::CreateEmptyPile(gfx::Size(256, 256),
+                                       gfx::Size(1024, 1024));
+  empty_recording->SetIsSolidColor(true);
+
   scoped_refptr<FakePicturePileImpl> pending_pile =
-      FakePicturePileImpl::CreateEmptyPile(gfx::Size(256, 256),
-                                           gfx::Size(1024, 1024));
-  pending_pile->set_is_solid_color(true);
+      FakePicturePileImpl::CreateFromPile(empty_recording.get(), nullptr);
 
   SetupPendingTree(pending_pile);
   EXPECT_FALSE(
@@ -3521,9 +3531,10 @@ TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
   // tiles.  This is attempting to simulate scrolling past the end of recorded
   // content on the active layer, where the recordings are so far away that
   // no tiles are created.
+  bool is_solid_color = false;
   scoped_refptr<FakePicturePileImpl> active_pile =
       FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
-          tile_size, layer_bounds);
+          tile_size, layer_bounds, is_solid_color);
 
   SetupTreesWithFixedTileSize(pending_pile, active_pile, tile_size, Region());
 
@@ -4819,12 +4830,15 @@ TEST_F(PictureLayerImplTest, CloneMissingRecordings) {
 
   scoped_refptr<FakePicturePileImpl> filled_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<FakePicturePileImpl> partial_pile =
-      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
-  for (int i = 1; i < partial_pile->tiling().num_tiles_x(); ++i) {
-    for (int j = 1; j < partial_pile->tiling().num_tiles_y(); ++j)
-      partial_pile->AddRecordingAt(i, j);
+
+  scoped_ptr<FakePicturePile> partial_recording =
+      FakePicturePile::CreateEmptyPile(tile_size, layer_bounds);
+  for (int i = 1; i < partial_recording->tiling().num_tiles_x(); ++i) {
+    for (int j = 1; j < partial_recording->tiling().num_tiles_y(); ++j)
+      partial_recording->AddRecordingAt(i, j);
   }
+  scoped_refptr<FakePicturePileImpl> partial_pile =
+      FakePicturePileImpl::CreateFromPile(partial_recording.get(), nullptr);
 
   SetupPendingTreeWithFixedTileSize(filled_pile, tile_size, Region());
   ActivateTree();

@@ -52,8 +52,6 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   bool CoversRect(const gfx::Rect& content_rect,
                   float contents_scale) const override;
   void SetShouldAttemptToUseDistanceFieldText() override;
-  void SetBackgoundColor(SkColor background_color) override;
-  void SetRequiresClear(bool requires_clear) override;
   bool ShouldAttemptToUseDistanceFieldText() const override;
   gfx::Size GetSize() const override;
   bool IsSolidColor() const override;
@@ -106,18 +104,23 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
 
   int buffer_pixels() const { return tiling_.border_texels(); }
 
-  PictureMap picture_map_;
-  TilingData tiling_;
-  SkColor background_color_;
-  bool requires_clear_;
-  bool can_use_lcd_text_;
-  bool is_solid_color_;
-  SkColor solid_color_;
-  gfx::Rect recorded_viewport_;
-  bool has_any_recordings_;
-  bool clear_canvas_with_debug_color_;
-  float min_contents_scale_;
-  int slow_down_raster_scale_factor_for_debug_;
+  // These members are const as this raster source may be in use on another
+  // thread and so should not be touched after construction.
+  const PictureMap picture_map_;
+  const TilingData tiling_;
+  const SkColor background_color_;
+  const bool requires_clear_;
+  const bool can_use_lcd_text_;
+  const bool is_solid_color_;
+  const SkColor solid_color_;
+  const gfx::Rect recorded_viewport_;
+  const bool has_any_recordings_;
+  const bool clear_canvas_with_debug_color_;
+  const float min_contents_scale_;
+  const int slow_down_raster_scale_factor_for_debug_;
+  // TODO(enne/vmiura): this has a read/write race between raster and compositor
+  // threads with multi-threaded Ganesh.  Make this const or remove it.
+  bool should_attempt_to_use_distance_field_text_;
 
  private:
   typedef std::map<const Picture*, Region> PictureRegionMap;
@@ -145,8 +148,6 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   bool CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const;
 
   gfx::Rect PaddedRect(const PictureMapKey& key) const;
-
-  bool should_attempt_to_use_distance_field_text_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);
 };

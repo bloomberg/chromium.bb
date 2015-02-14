@@ -152,6 +152,12 @@ void ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
   *record_rects = vertical_clustering;
 }
 
+#ifdef NDEBUG
+const bool kDefaultClearCanvasSetting = false;
+#else
+const bool kDefaultClearCanvasSetting = true;
+#endif
+
 }  // namespace
 
 namespace cc {
@@ -162,8 +168,11 @@ PicturePile::PicturePile(float min_contents_scale,
       slow_down_raster_scale_factor_for_debug_(0),
       can_use_lcd_text_(true),
       has_any_recordings_(false),
+      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
+      requires_clear_(true),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
+      background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
       is_suitable_for_gpu_rasterization_(true) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
@@ -621,6 +630,14 @@ void PicturePile::SetMinContentsScale(float min_contents_scale) {
 
 void PicturePile::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
+}
+
+void PicturePile::SetBackgroundColor(SkColor background_color) {
+  background_color_ = background_color;
+}
+
+void PicturePile::SetRequiresClear(bool requires_clear) {
+  requires_clear_ = requires_clear;
 }
 
 bool PicturePile::IsSuitableForGpuRasterization() const {
