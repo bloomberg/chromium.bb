@@ -551,6 +551,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->Set("syncData", GetSyncStateDictionary().release());
 
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
+
+  base::string16 rappor_url = base::ASCIIToUTF16(chrome::kRapporLearnMoreURL);
+  values->SetString("enableRappor",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_ENABLE_RAPPOR, rappor_url));
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
 
 #if !defined(OS_CHROMEOS)

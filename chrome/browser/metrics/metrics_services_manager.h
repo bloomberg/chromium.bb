@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/rappor/rappor_service.h"
 
 class ChromeMetricsServiceClient;
 class PrefService;
@@ -57,6 +58,12 @@ class MetricsServicesManager {
 
   // Returns true iff metrics reporting is enabled.
   bool IsMetricsReportingEnabled() const;
+
+  // Returns true iff Rappor reporting is enabled.
+  bool IsRapporEnabled(bool metrics_enabled) const;
+
+  // Returns the recording level for Rappor metrics.
+  rappor::RecordingLevel GetRapporRecordingLevel(bool metrics_enabled) const;
 
  private:
   // Returns the ChromeMetricsServiceClient, creating it if it hasn't been

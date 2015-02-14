@@ -12,12 +12,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/rappor/rappor_pref_names.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -25,12 +28,32 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
 
+namespace {
+
+// Check if the safe browsing setting is enabled for all existing profiles.
+bool CheckSafeBrowsingSettings() {
+  bool all_enabled = true;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager) {
+    std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+    for (Profile* profile : profiles) {
+      if (profile->IsOffTheRecord())
+        continue;
+      all_enabled = all_enabled && profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingEnabled);
+    }
+  }
+  return all_enabled;
+}
+
 // Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
 // because it needs access to IO and cannot work from UI thread.
 void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
   content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
       base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo, client_info));
 }
+
+}  // namespace
 
 MetricsServicesManager::MetricsServicesManager(PrefService* local_state)
     : local_state_(local_state) {
@@ -94,6 +117,36 @@ metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {
   return metrics_state_manager_.get();
 }
 
+bool MetricsServicesManager::IsRapporEnabled(bool metrics_enabled) const {
+  if (!local_state_->HasPrefPath(rappor::prefs::kRapporEnabled)) {
+    // For upgrading users, derive an initial setting from UMA / safe browsing.
+    bool should_enable = metrics_enabled || CheckSafeBrowsingSettings();
+    local_state_->SetBoolean(rappor::prefs::kRapporEnabled, should_enable);
+  }
+  return local_state_->GetBoolean(rappor::prefs::kRapporEnabled);
+}
+
+rappor::RecordingLevel MetricsServicesManager::GetRapporRecordingLevel(
+    bool metrics_enabled) const {
+   rappor::RecordingLevel recording_level = rappor::RECORDING_DISABLED;
+#if defined(GOOGLE_CHROME_BUILD)
+// TODO(holte): Remove special casing once the UIs for iOS/Android are updated
+// to allow control of the rappor.enabled pref.
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  if (metrics_enabled) {
+    recording_level = rappor::FINE_LEVEL;
+  }
+#else  // defined(OS_IOS) || defined(OS_ANDROID)
+  if (IsRapporEnabled(metrics_enabled)) {
+    recording_level = metrics_enabled ?
+                      rappor::FINE_LEVEL :
+                      rappor::COARSE_LEVEL;
+  }
+#endif  // defined(OS_IOS) || defined(OS_ANDROID)
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  return recording_level;
+}
+
 void MetricsServicesManager::UpdatePermissions(bool may_record,
                                                bool may_upload) {
   metrics::MetricsService* metrics = GetMetricsService();
@@ -122,9 +175,7 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
     metrics->Stop();
   }
 
-  rappor::RecordingLevel recording_level = may_record ?
-      rappor::FINE_LEVEL : rappor::RECORDING_DISABLED;
-  GetRapporService()->Update(recording_level, may_upload);
+  GetRapporService()->Update(GetRapporRecordingLevel(may_record), may_upload);
 }
 
 // TODO(asvitkine): This function does not report the correct value on Android,

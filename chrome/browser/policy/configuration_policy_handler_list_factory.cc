@@ -23,6 +23,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/schema.h"
+#include "components/rappor/rappor_pref_names.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "policy/policy_constants.h"
@@ -118,6 +119,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::TYPE_BOOLEAN },
   { key::kMetricsReportingEnabled,
     prefs::kMetricsReportingEnabled,
+    base::Value::TYPE_BOOLEAN },
+  { key::kMetricsReportingEnabled,
+    rappor::prefs::kRapporEnabled,
     base::Value::TYPE_BOOLEAN },
   { key::kApplicationLocaleValue,
     prefs::kApplicationLocale,
