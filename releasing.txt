@@ -15,10 +15,10 @@ To make a release of Weston and/or Wayland, follow these steps.
       $ git commit configure.ac -m "configure.ac: bump to version x.y.z for the xxx release"
       $ git push
 
-  2.  Install Xwayland, either from your distro or manually (see
-      http://wayland.freedesktop.org/building.html).  If you install it
-      to a location other than /usr/bin/Xwayland, specify this in the
-      following env var:
+  2.  For Weston releases, install Xwayland, either from your distro or
+      manually (see http://wayland.freedesktop.org/building.html).  If
+      you install it to a location other than /usr/bin/Xwayland, specify
+      this in the following env var:
 
       export DISTCHECK_CONFIGURE_FLAGS="--with-xserver-path=<your-Xwayland-path>"
 
