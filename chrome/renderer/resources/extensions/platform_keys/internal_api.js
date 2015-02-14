@@ -8,4 +8,3 @@ var binding = require('binding')
 
 exports.selectClientCertificates = binding.selectClientCertificates;
 exports.sign = binding.sign;
-exports.getPublicKey = binding.getPublicKey;

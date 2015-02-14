@@ -49,7 +49,7 @@ class PlatformKeysService : public KeyedService {
   ~PlatformKeysService() override;
 
   // Disables the checks whether an extension is allowed to read client
-  // certificates or allowed to use the signing function of a key.
+  // certificates.
   // TODO(pneubeck): Remove this once a permissions are implemented.
   void DisablePermissionCheckForTesting();
 
@@ -61,7 +61,7 @@ class PlatformKeysService : public KeyedService {
                               const std::string& error_message)>
       GenerateKeyCallback;
 
-  // Generates an RSA key pair with |modulus_length_bits| and registers the key
+  // Generates a RSA key pair with |modulus_length_bits| and registers the key
   // to allow a single sign operation by the given extension. |token_id| is
   // currently ignored, instead the user token associated with |browser_context|
   // is always used. |callback| will be invoked with the resulting public key or
@@ -78,39 +78,22 @@ class PlatformKeysService : public KeyedService {
   typedef base::Callback<void(const std::string& signature,
                               const std::string& error_message)> SignCallback;
 
-  // Digests |data|, applies PKCS1 padding and afterwards signs the data with
-  // the private key matching |params.public_key|. If a non empty token id is
-  // provided and the key is not found in that token, the operation aborts.
-  // If the extension does not have permissions for signing with this key, the
-  // operation aborts. In case of a one time permission (granted after
-  // generating the key), this function also removes the permission to prevent
-  // future signing attempts.
-  // |callback| will be invoked with the signature or an error message.
+  // Digests |data| with |hash_algorithm| and afterwards signs the digest with
+  // the private key matching |public_key_spki_der|, if that key is stored in
+  // the given token and wasn't used for signing before.
+  // Unregisters the key so that every future attempt to sign data with this key
+  // is rejected. |token_id| is currently ignored, instead the user token
+  // associated with |browser_context| is always used. |public_key_spki_der|
+  // must be the DER encoding of a SubjectPublicKeyInfo. |callback| will be
+  // invoked with the signature or an error message. Currently supports RSA keys
+  // only.
   // Will only call back during the lifetime of this object.
-  void SignRSAPKCS1Digest(const std::string& token_id,
-                          const std::string& data,
-                          const std::string& public_key,
-                          platform_keys::HashAlgorithm hash_algorithm,
-                          const std::string& extension_id,
-                          const SignCallback& callback);
-
-  // Applies PKCS1 padding and afterwards signs the data with the private key
-  // matching |params.public_key|. |data| is not digested. If a non empty token
-  // id is provided and the key is not found in that token, the operation
-  // aborts.
-  // The size of |data| (number of octets) must be smaller than k - 11, where k
-  // is the key size in octets.
-  // If the extension does not have permissions for signing with this key, the
-  // operation aborts. In case of a one time permission (granted after
-  // generating the key), this function also removes the permission to prevent
-  // future signing attempts.
-  // |callback| will be invoked with the signature or an error message.
-  // Will only call back during the lifetime of this object.
-  void SignRSAPKCS1Raw(const std::string& token_id,
-                       const std::string& data,
-                       const std::string& public_key,
-                       const std::string& extension_id,
-                       const SignCallback& callback);
+  void Sign(const std::string& token_id,
+            const std::string& public_key_spki_der,
+            platform_keys::HashAlgorithm hash_algorithm,
+            const std::string& data,
+            const std::string& extension_id,
+            const SignCallback& callback);
 
   // If the certificate request could be processed successfully, |matches| will
   // contain the list of matching certificates (maybe empty) and |error_message|

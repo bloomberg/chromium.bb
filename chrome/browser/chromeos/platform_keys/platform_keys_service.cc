@@ -42,10 +42,9 @@ void RunGenerateKeyCallback(
 // signing operation which will call back |callback|. If not allowed, calls
 // |callback| with an error.
 void CheckValidityAndSign(const std::string& token_id,
-                          const std::string& data,
-                          const std::string& public_key,
-                          bool sign_direct_pkcs_padded,
+                          const std::string& public_key_spki_der,
                           platform_keys::HashAlgorithm hash_algorithm,
+                          const std::string& data,
                           const PlatformKeysService::SignCallback& callback,
                           content::BrowserContext* browser_context,
                           bool key_is_valid) {
@@ -54,13 +53,12 @@ void CheckValidityAndSign(const std::string& token_id,
                  kErrorKeyNotAllowedForSigning);
     return;
   }
-  if (sign_direct_pkcs_padded) {
-    platform_keys::subtle::SignRSAPKCS1Raw(token_id, data, public_key, callback,
-                                           browser_context);
-  } else {
-    platform_keys::subtle::SignRSAPKCS1Digest(
-        token_id, data, public_key, hash_algorithm, callback, browser_context);
-  }
+  platform_keys::subtle::Sign(token_id,
+                              public_key_spki_der,
+                              hash_algorithm,
+                              data,
+                              callback,
+                              browser_context);
 }
 
 }  // namespace
@@ -97,33 +95,22 @@ void PlatformKeysService::GenerateRSAKey(const std::string& token_id,
       browser_context_);
 }
 
-void PlatformKeysService::SignRSAPKCS1Digest(
-    const std::string& token_id,
-    const std::string& data,
-    const std::string& public_key,
-    platform_keys::HashAlgorithm hash_algorithm,
-    const std::string& extension_id,
-    const SignCallback& callback) {
+void PlatformKeysService::Sign(const std::string& token_id,
+                               const std::string& public_key_spki_der,
+                               platform_keys::HashAlgorithm hash_algorithm,
+                               const std::string& data,
+                               const std::string& extension_id,
+                               const SignCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ReadValidityAndInvalidateKey(
-      extension_id, public_key,
-      base::Bind(&CheckValidityAndSign, token_id, data, public_key,
-                 false /* digest before signing */, hash_algorithm, callback,
-                 browser_context_));
-}
-
-void PlatformKeysService::SignRSAPKCS1Raw(const std::string& token_id,
-                                          const std::string& data,
-                                          const std::string& public_key,
-                                          const std::string& extension_id,
-                                          const SignCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ReadValidityAndInvalidateKey(
-      extension_id, public_key,
-      base::Bind(&CheckValidityAndSign, token_id, data, public_key,
-                 true /* sign directly without hashing */,
-                 platform_keys::HASH_ALGORITHM_NONE, callback,
-                 browser_context_));
+  ReadValidityAndInvalidateKey(extension_id,
+                               public_key_spki_der,
+                               base::Bind(&CheckValidityAndSign,
+                                          token_id,
+                                          public_key_spki_der,
+                                          hash_algorithm,
+                                          data,
+                                          callback,
+                                          browser_context_));
 }
 
 void PlatformKeysService::SelectClientCertificates(
@@ -231,24 +218,14 @@ void PlatformKeysService::InvalidateKey(
       GetPublicKeyValue(public_key_spki_der));
 
   size_t index = 0;
-  // If the key is found in |platform_keys|, it's valid for the extension to use
-  // it for signing.
-  bool key_was_valid = platform_keys->Remove(*key_value, &index);
-
-  if (key_was_valid) {
-    // Persist that the key is now invalid.
-    SetPlatformKeysOfExtension(extension_id, platform_keys.Pass());
+  if (!platform_keys->Remove(*key_value, &index)) {
+    // The key is not found, so it's not valid to use it for signing.
+    callback.Run(false);
+    return;
   }
 
-  if (permission_check_enabled_) {
-    // If permission checks are enabled, pass back the key permission (before
-    // it was removed above).
-    callback.Run(key_was_valid);
-  } else {
-    // Otherwise just allow signing with the key (which is enabled for testing
-    // only).
-    callback.Run(true);
-  }
+  SetPlatformKeysOfExtension(extension_id, platform_keys.Pass());
+  callback.Run(true);
 }
 
 void PlatformKeysService::GotPlatformKeysOfExtension(
