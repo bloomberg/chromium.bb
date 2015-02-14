@@ -136,8 +136,6 @@
             [ 'icu_use_data_file_flag==1', {
               # Remove any assembly data file.
               'sources/': [['exclude', 'icudtl_dat']],
-              # Compile in the stub data symbol.
-              'sources': ['source/stubdata/stubdata.c'],
 
               # Make sure any binary depending on this gets the data file.
               'conditions': [
@@ -325,9 +323,12 @@
             [ 'use_system_icu==0 and want_separate_host_toolset==0', {
               'toolsets': ['target'],
             }],
-            [ 'OS == "win" and icu_use_data_file_flag==0', {
+            [ 'OS == "win" or icu_use_data_file_flag==1', {
               'sources': [
                 'source/stubdata/stubdata.c',
+              ],
+              'defines': [
+                'U_ICUDATAENTRY_IN_COMMON',
               ],
             }],
             [ 'OS == "win" and clang==1', {

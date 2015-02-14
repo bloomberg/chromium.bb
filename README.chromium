@@ -175,6 +175,9 @@ This directory contains the source code of ICU 54.1 for C/C++.
       Remove unnecessary resources : unames, collator rule source
   - patches/data.build.win.patch :
       Windows-only data build patch.
+  - patches/data_symb.patch :
+      Put ICU_DATA_ENTRY_POINT(icudtXX_dat) in common when we use
+      the icu data file or icudt.dll
 
 9. Pre-built data files are checked in with the following steps on Linux:
 
