@@ -130,7 +130,7 @@ BrowserAccessibility* BrowserAccessibility::InternalGetChild(
     uint32 child_index) const {
   if (!node_ || !manager_)
     return NULL;
-  return manager_->GetFromAXNode(node_->children()[child_index]);
+  return manager_->GetFromAXNode(node_->ChildAtIndex(child_index));
 }
 
 BrowserAccessibility* BrowserAccessibility::GetParent() const {
