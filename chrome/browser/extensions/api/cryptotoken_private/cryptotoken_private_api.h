@@ -15,10 +15,6 @@
 
 // Implementations for chrome.cryptotokenPrivate API functions.
 
-namespace infobars {
-class InfoBar;
-}
-
 namespace extensions {
 namespace api {
 
