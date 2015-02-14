@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -228,6 +229,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
 }
 
 void InstalledLoader::LoadAllExtensions() {
+  TRACE_EVENT0("browser,startup", "InstalledLoader::LoadAllExtensions");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::TimeTicks start_time = base::TimeTicks::Now();

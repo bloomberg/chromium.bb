@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
@@ -126,6 +127,7 @@ ComponentLoader::~ComponentLoader() {
 }
 
 void ComponentLoader::LoadAll() {
+  TRACE_EVENT0("browser,startup", "ComponentLoader::LoadAll");
   const base::TimeTicks start_time = base::TimeTicks::Now();
   for (RegisteredComponentExtensions::iterator it =
           component_extensions_.begin();

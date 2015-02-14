@@ -561,6 +561,7 @@ std::vector<Profile*> ProfileManager::GetLoadedProfiles() const {
 }
 
 Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
+  TRACE_EVENT0("browser", "ProfileManager::GetProfileByPath");
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
   return profile_info ? profile_info->profile.get() : NULL;
 }
@@ -626,6 +627,7 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
 }
 
 ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
+  TRACE_EVENT0("browser", "ProfileManager::GetProfileInfoCache");
   if (!profile_info_cache_) {
     profile_info_cache_.reset(new ProfileInfoCache(
         g_browser_process->local_state(), user_data_dir_));
@@ -764,6 +766,7 @@ void ProfileManager::AutoloadProfiles() {
 }
 
 void ProfileManager::InitProfileUserPrefs(Profile* profile) {
+  TRACE_EVENT0("browser", "ProfileManager::InitProfileUserPrefs");
   ProfileInfoCache& cache = GetProfileInfoCache();
 
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
@@ -1000,6 +1003,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
 }
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
+  TRACE_EVENT0("browser", "ProfileManager::DoFinalInit");
   DoFinalInitForServices(profile, go_off_the_record);
   AddProfileToCache(profile);
   DoFinalInitLogging(profile);
@@ -1013,6 +1017,7 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
+  TRACE_EVENT0("browser", "ProfileManager::DoFinalInitForServices");
 #if defined(ENABLE_EXTENSIONS)
   ProfileInfoCache& cache = GetProfileInfoCache();
   extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
@@ -1055,6 +1060,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
+  TRACE_EVENT0("browser", "ProfileManager::DoFinalInitLogging");
   // Count number of extensions in this profile.
   int enabled_app_count = -1;
 #if defined(ENABLE_EXTENSIONS)
@@ -1069,6 +1075,7 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
 }
 
 Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
+  TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
   return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
 }
 
@@ -1117,6 +1124,7 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
 }
 
 bool ProfileManager::AddProfile(Profile* profile) {
+  TRACE_EVENT0("browser", "ProfileManager::AddProfile");
   DCHECK(profile);
 
   // Make sure that we're not loading a profile with the same ID as a profile
@@ -1182,6 +1190,7 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
 ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
     Profile* profile,
     bool created) {
+  TRACE_EVENT0("browser", "ProfileManager::RegisterProfile");
   ProfileInfo* info = new ProfileInfo(profile, created);
   profiles_info_.insert(
       std::make_pair(profile->GetPath(), linked_ptr<ProfileInfo>(info)));
@@ -1195,6 +1204,7 @@ ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
 }
 
 void ProfileManager::AddProfileToCache(Profile* profile) {
+  TRACE_EVENT0("browser", "ProfileManager::AddProfileToCache");
   if (profile->IsGuestSession() || profile->IsSystemProfile())
     return;
   ProfileInfoCache& cache = GetProfileInfoCache();

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -294,6 +295,7 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
 }  // namespace
 
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
+  TRACE_EVENT0("browser,startup", "ExtensionSystemImpl::Shared::Init");
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
@@ -486,6 +488,7 @@ void ExtensionSystemImpl::Shutdown() {
 }
 
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
+  TRACE_EVENT0("browser,startup", "ExtensionSystemImpl::InitForRegularProfile");
   DCHECK(!profile_->IsOffTheRecord());
   if (shared_user_script_master() || extension_service())
     return;  // Already initialized.
