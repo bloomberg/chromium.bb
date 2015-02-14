@@ -74,23 +74,37 @@ void SVGForeignObjectElement::parseAttribute(const QualifiedName& name, const At
 
 bool SVGForeignObjectElement::isPresentationAttribute(const QualifiedName& name) const
 {
-    if (name == SVGNames::widthAttr || name == SVGNames::heightAttr)
+    if (name == SVGNames::xAttr || name == SVGNames::yAttr
+        || name == SVGNames::widthAttr || name == SVGNames::heightAttr)
         return true;
     return SVGGraphicsElement::isPresentationAttribute(name);
 }
 
+bool SVGForeignObjectElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::xAttr || attrName== SVGNames::yAttr
+        || attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
+        return true;
+    return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
+}
+
 void SVGForeignObjectElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == SVGNames::widthAttr || name == SVGNames::heightAttr) {
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property == m_width || property == m_height) {
         RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(LengthModeOther);
         TrackExceptionState exceptionState;
         length->setValueAsString(value, exceptionState);
         if (!exceptionState.hadException()) {
-            if (name == SVGNames::widthAttr)
+            if (property == m_width)
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
-            else if (name == SVGNames::heightAttr)
+            else if (property == m_height)
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, value);
         }
+    } else if (property == m_x) {
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
+    } else if (property == m_y) {
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
     } else {
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
     }
@@ -103,19 +117,17 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    if (attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr) {
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange));
-    }
-
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    bool isLengthAttribute = attrName == SVGNames::xAttr
-                          || attrName == SVGNames::yAttr
-                          || attrName == SVGNames::widthAttr
-                          || attrName == SVGNames::heightAttr;
+    bool isWidthHeightAttribute = attrName == SVGNames::widthAttr
+        || attrName == SVGNames::heightAttr;
+    bool isXYAttribute = attrName == SVGNames::xAttr || attrName == SVGNames::yAttr;
 
-    if (isLengthAttribute) {
+    if (isXYAttribute || isWidthHeightAttribute) {
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            isWidthHeightAttribute ? StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange) : StyleChangeReasonForTracing::fromAttribute(attrName));
+
         updateRelativeLengthsInformation();
         if (LayoutObject* renderer = this->renderer())
             markForLayoutAndParentResourceInvalidation(renderer);

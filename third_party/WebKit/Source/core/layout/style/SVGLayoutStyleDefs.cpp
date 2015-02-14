@@ -26,7 +26,6 @@
 */
 
 #include "config.h"
-
 #include "core/layout/style/SVGLayoutStyleDefs.h"
 
 #include "core/layout/style/SVGLayoutStyle.h"
@@ -199,6 +198,30 @@ bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& ot
     return markerStart == other.markerStart
         && markerMid == other.markerMid
         && markerEnd == other.markerEnd;
+}
+
+StyleLayoutData::StyleLayoutData()
+    : x(SVGLayoutStyle::initialX())
+    , y(SVGLayoutStyle::initialY())
+{
+}
+
+inline StyleLayoutData::StyleLayoutData(const StyleLayoutData& other)
+    : RefCounted<StyleLayoutData>()
+    , x(other.x)
+    , y(other.y)
+{
+}
+
+PassRefPtr<StyleLayoutData> StyleLayoutData::copy() const
+{
+    return adoptRef(new StyleLayoutData(*this));
+}
+
+bool StyleLayoutData::operator==(const StyleLayoutData& other) const
+{
+    return x == other.x
+        && y == other.y;
 }
 
 }

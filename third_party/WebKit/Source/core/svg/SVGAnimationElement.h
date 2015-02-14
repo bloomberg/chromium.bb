@@ -83,7 +83,8 @@ public:
     enum ShouldApplyAnimation {
         DontApplyAnimation,
         ApplyCSSAnimation,
-        ApplyXMLAnimation
+        ApplyXMLAnimation,
+        ApplyXMLandCSSAnimation
     };
 
     ShouldApplyAnimation shouldApplyAnimation(SVGElement* targetElement, const QualifiedName& attributeName);

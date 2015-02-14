@@ -30,6 +30,7 @@
 
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
+#include "platform/Length.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -258,6 +259,23 @@ private:
     StyleInheritedResourceData();
     StyleInheritedResourceData(const StyleInheritedResourceData&);
 };
+
+// Positioning and sizing properties.
+class StyleLayoutData : public RefCounted<StyleLayoutData> {
+    public:
+        static PassRefPtr<StyleLayoutData> create() { return adoptRef(new StyleLayoutData); }
+        PassRefPtr<StyleLayoutData> copy() const;
+        bool operator==(const StyleLayoutData&) const;
+        bool operator!=(const StyleLayoutData& other) const
+        {
+            return !(*this == other);
+        }
+        Length x;
+        Length y;
+    private:
+        StyleLayoutData();
+        StyleLayoutData(const StyleLayoutData&);
+    };
 
 } // namespace blink
 

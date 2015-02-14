@@ -44,6 +44,7 @@ class SVGDocumentExtensions;
 class SVGElement;
 class SVGElementRareData;
 class SVGFitToViewBox;
+class SVGLength;
 class SVGSVGElement;
 class SVGUseElement;
 
@@ -66,6 +67,8 @@ public:
     virtual String title() const override;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
     static bool isAnimatableCSSProperty(const QualifiedName&);
+    virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const { return false; }
+
     enum CTMScope {
         NearestViewportScope, // Used by SVGGraphicsElement::getCTM()
         ScreenScope, // Used by SVGGraphicsElement::getScreenCTM()
@@ -106,6 +109,7 @@ public:
 
     void invalidateSVGAttributes() { ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true; }
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
+    void addSVGLengthPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, SVGLength&);
 
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instancesForElement() const;
     void mapInstanceToElement(SVGElement*);
@@ -188,6 +192,8 @@ public:
 
     static const AtomicString& eventParameterName();
 
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
@@ -200,7 +206,6 @@ protected:
 
     virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) override;
 
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;

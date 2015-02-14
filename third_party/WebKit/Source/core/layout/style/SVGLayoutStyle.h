@@ -29,6 +29,7 @@
 #include "core/layout/style/LayoutStyleConstants.h"
 #include "core/layout/style/SVGLayoutStyleDefs.h"
 #include "core/layout/style/StyleDifference.h"
+#include "platform/Length.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Path.h"
 
@@ -90,6 +91,8 @@ public:
     static const AtomicString& initialMarkerEndResource() { return nullAtom; }
     static EMaskType initialMaskType() { return MT_LUMINANCE; }
     static EPaintOrder initialPaintOrder() { return PO_NORMAL; }
+    static Length initialX() { return Length(Fixed); }
+    static Length initialY() { return Length(Fixed); }
 
     static PassRefPtrWillBeRawPtr<SVGLength> initialBaselineShiftValue()
     {
@@ -132,7 +135,16 @@ public:
     void setGlyphOrientationVertical(EGlyphOrientation val) { svg_inherited_flags._glyphOrientationVertical = val; }
     void setMaskType(EMaskType val) { svg_noninherited_flags.f.maskType = val; }
     void setPaintOrder(EPaintOrder val) { svg_inherited_flags._paintOrder = (int)val; }
-
+    void setX(const Length& obj)
+    {
+        if (!(layout->x == obj))
+            layout.access()->x = obj;
+    }
+    void setY(const Length& obj)
+    {
+        if (!(layout->y == obj))
+            layout.access()->y = obj;
+    }
     void setFillOpacity(float obj)
     {
         if (!(fill->opacity == obj))
@@ -319,6 +331,8 @@ public:
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
     SVGLength* baselineShiftValue() const { return misc->baselineShiftValue.get(); }
+    const Length& x() const { return layout->x; }
+    const Length& y() const { return layout->y; }
     const AtomicString& clipperResource() const { return resources->clipper; }
     const AtomicString& filterResource() const { return resources->filter; }
     const AtomicString& maskerResource() const { return resources->masker; }
@@ -414,6 +428,7 @@ protected:
     // non-inherited attributes
     DataRef<StyleStopData> stops;
     DataRef<StyleMiscData> misc;
+    DataRef<StyleLayoutData> layout;
     DataRef<StyleResourceData> resources;
 
 private:

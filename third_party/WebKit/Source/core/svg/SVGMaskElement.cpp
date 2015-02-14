@@ -85,6 +85,31 @@ bool SVGMaskElement::isSupportedAttribute(const QualifiedName& attrName)
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
+bool SVGMaskElement::isPresentationAttribute(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+        return true;
+    return SVGElement::isPresentationAttribute(attrName);
+}
+
+bool SVGMaskElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+        return true;
+    return SVGElement::isPresentationAttributeWithSVGDOM(attrName);
+}
+
+void SVGMaskElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
+{
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property == m_x)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
+    else if (property == m_y)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+    else
+        SVGElement::collectStyleForPresentationAttribute(name, value, style);
+}
+
 void SVGMaskElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     parseAttributeNew(name, value);
@@ -98,6 +123,13 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     SVGElement::InvalidationGuard invalidationGuard(this);
+
+    if (attrName == SVGNames::xAttr
+        || attrName == SVGNames::yAttr) {
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            StyleChangeReasonForTracing::fromAttribute(attrName));
+    }
 
     if (attrName == SVGNames::xAttr
         || attrName == SVGNames::yAttr

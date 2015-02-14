@@ -8136,6 +8136,10 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
         if (id == CSSValueLuminance || id == CSSValueAlpha)
             validPrimitive = true;
         break;
+    case CSSPropertyX:
+    case CSSPropertyY:
+        validPrimitive = (!id && validUnit(value, FLength | FPercent, SVGAttributeMode));
+        break;
 
     /* shorthand properties */
     case CSSPropertyMarker: {

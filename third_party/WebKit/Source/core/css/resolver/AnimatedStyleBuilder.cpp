@@ -628,6 +628,13 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyZoom:
         style->setZoom(clampTo<float>(toAnimatableDouble(value)->toDouble(), std::numeric_limits<float>::denorm_min()));
         return;
+    case CSSPropertyX:
+        style->setX(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyY:
+        style->setY(animatableValueToLength(value, state));
+        return;
+
     default:
         ASSERT_NOT_REACHED();
     }

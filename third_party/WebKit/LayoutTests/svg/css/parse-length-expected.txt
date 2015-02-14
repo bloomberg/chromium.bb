@@ -1,0 +1,41 @@
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="auto"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="100   px"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="100px;"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="100px !important"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="{ 100px }"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute y="auto"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute y="100   px"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute y="100px;"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute y="100px !important"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute y="{ 100px }"
+Test that 'length' presentation attribute values are parsed with CSS presentation rules.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS computedStyle("x", "  100") is "100px"
+PASS computedStyle("x", "100   ") is "100px"
+PASS computedStyle("x", "100px") is "100px"
+PASS computedStyle("x", "1em") is "16px"
+PASS computedStyle("x", "20%") is "20%"
+PASS computedStyle("x", "-200px") is "-200px"
+PASS computedStyle("y", "  100") is "100px"
+PASS computedStyle("y", "100   ") is "100px"
+PASS computedStyle("y", "100px") is "100px"
+PASS computedStyle("y", "1em") is "16px"
+PASS computedStyle("y", "20%") is "20%"
+PASS computedStyle("y", "-200px") is "-200px"
+PASS computedStyle("x", "auto") is "0px"
+PASS computedStyle("x", "100   px") is "0px"
+PASS computedStyle("x", "100px;") is "0px"
+PASS computedStyle("x", "100px !important") is "0px"
+PASS computedStyle("x", "{ 100px }") is "0px"
+PASS computedStyle("y", "auto") is "0px"
+PASS computedStyle("y", "100   px") is "0px"
+PASS computedStyle("y", "100px;") is "0px"
+PASS computedStyle("y", "100px !important") is "0px"
+PASS computedStyle("y", "{ 100px }") is "0px"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

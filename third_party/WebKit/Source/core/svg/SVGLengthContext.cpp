@@ -27,6 +27,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/svg/SVGSVGElement.h"
+#include "platform/LengthFunctions.h"
 #include "platform/fonts/FontMetrics.h"
 
 namespace blink {
@@ -93,6 +94,20 @@ float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::S
 
     // FIXME: valueAsPercentage() won't be correct for eg. cm units. They need to be resolved in user space and then be considered in objectBoundingBox space.
     return x.valueAsPercentage();
+}
+
+float SVGLengthContext::valueForLength(const Length& length, SVGLengthMode mode)
+{
+    if (length.isAuto())
+        return 0;
+
+    FloatSize viewportSize;
+    determineViewport(viewportSize);
+
+    if (length.isPercent())
+        return length.value() * dimensionForLengthMode(mode, viewportSize) / 100;
+
+    return floatValueForLength(length, dimensionForLengthMode(mode, viewportSize));
 }
 
 float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode, SVGLengthType fromUnit) const

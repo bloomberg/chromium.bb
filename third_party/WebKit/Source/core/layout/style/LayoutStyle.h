@@ -1372,6 +1372,9 @@ public:
     float strokeMiterLimit() const { return svgStyle().strokeMiterLimit(); }
     void setStrokeMiterLimit(float f) { accessSVGStyle().setStrokeMiterLimit(f); }
 
+    void setX(Length x) { accessSVGStyle().setX(x); }
+    void setY(Length y) { accessSVGStyle().setY(y); }
+
     float floodOpacity() const { return svgStyle().floodOpacity(); }
     void setFloodOpacity(float f) { accessSVGStyle().setFloodOpacity(f); }
 

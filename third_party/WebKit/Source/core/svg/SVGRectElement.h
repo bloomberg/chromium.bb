@@ -43,6 +43,10 @@ public:
 
     virtual void trace(Visitor*) override;
 
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+
 private:
     explicit SVGRectElement(Document&);
 

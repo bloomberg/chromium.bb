@@ -21,6 +21,7 @@
 #define SVGLengthContext_h
 
 #include "core/svg/SVGUnitTypes.h"
+#include "platform/Length.h"
 #include "platform/geometry/FloatRect.h"
 
 namespace blink {
@@ -65,6 +66,8 @@ public:
 
     float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit) const;
     float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
+
+    float valueForLength(const Length&, SVGLengthMode = LengthModeOther);
 
     bool determineViewport(FloatSize&) const;
 

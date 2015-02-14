@@ -40,6 +40,7 @@ SVGLayoutStyle::SVGLayoutStyle()
     stops = defaultStyle->stops;
     misc = defaultStyle->misc;
     inheritedResources = defaultStyle->inheritedResources;
+    layout = defaultStyle->layout;
     resources = defaultStyle->resources;
 
     setBitDefaults();
@@ -54,6 +55,7 @@ SVGLayoutStyle::SVGLayoutStyle(CreateDefaultType)
     stops.init();
     misc.init();
     inheritedResources.init();
+    layout.init();
     resources.init();
 }
 
@@ -65,6 +67,7 @@ SVGLayoutStyle::SVGLayoutStyle(const SVGLayoutStyle& other)
     stops = other.stops;
     misc = other.misc;
     inheritedResources = other.inheritedResources;
+    layout = other.layout;
     resources = other.resources;
 
     svg_inherited_flags = other.svg_inherited_flags;
@@ -82,6 +85,7 @@ bool SVGLayoutStyle::operator==(const SVGLayoutStyle& other) const
         && stops == other.stops
         && misc == other.misc
         && inheritedResources == other.inheritedResources
+        && layout == other.layout
         && resources == other.resources
         && svg_inherited_flags == other.svg_inherited_flags
         && svg_noninherited_flags == other.svg_noninherited_flags;
@@ -112,6 +116,7 @@ void SVGLayoutStyle::copyNonInheritedFrom(const SVGLayoutStyle* other)
     svg_noninherited_flags = other->svg_noninherited_flags;
     stops = other->stops;
     misc = other->misc;
+    layout = other->layout;
     resources = other->resources;
 }
 
@@ -174,6 +179,13 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
             || stroke->visitedLinkPaintColor != other->stroke->visitedLinkPaintColor
             || stroke->visitedLinkPaintUri != other->stroke->visitedLinkPaintUri
             || stroke->visitedLinkPaintType != other->stroke->visitedLinkPaintType)
+            return true;
+    }
+
+    // The x and y properties require a re-layout.
+    if (layout.get() != other->layout.get()) {
+        if (layout->x != other->layout->x
+            || layout->y != other->layout->y)
             return true;
     }
 

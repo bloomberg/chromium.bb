@@ -188,7 +188,9 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAni
 
 void SVGAnimatedTypeAnimator::stopAnimValAnimation(const SVGElementInstances& list)
 {
-    ASSERT(isAnimatingSVGDom());
+    if (!isAnimatingSVGDom())
+        return;
+
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
 
     for (SVGElement* elementInstance : list) {

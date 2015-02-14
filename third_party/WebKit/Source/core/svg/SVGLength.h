@@ -21,13 +21,13 @@
 #ifndef SVGLength_h
 #define SVGLength_h
 
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/properties/SVGProperty.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CSSPrimitiveValue;
 class ExceptionState;
 class QualifiedName;
 
@@ -51,6 +51,12 @@ public:
     virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     SVGLengthType unitType() const { return static_cast<SVGLengthType>(m_unitType); }
+    CSSPrimitiveValue::UnitType cssUnitTypeQuirk() const
+    {
+        if (m_unitType == LengthTypeNumber)
+            return CSSPrimitiveValue::UnitType::CSS_PX;
+        return static_cast<CSSPrimitiveValue::UnitType>(m_unitType);
+    }
     void setUnitType(SVGLengthType);
     SVGLengthMode unitMode() const { return static_cast<SVGLengthMode>(m_unitMode); }
 

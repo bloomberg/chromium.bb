@@ -368,7 +368,7 @@ bool SVGAnimationElement::isTargetAttributeCSSProperty(SVGElement* targetElement
 {
     ASSERT(targetElement);
 
-    return SVGElement::isAnimatableCSSProperty(attributeName);
+    return SVGElement::isAnimatableCSSProperty(attributeName) || targetElement->isPresentationAttribute(attributeName);
 }
 
 SVGAnimationElement::ShouldApplyAnimation SVGAnimationElement::shouldApplyAnimation(SVGElement* targetElement, const QualifiedName& attributeName)
@@ -377,9 +377,12 @@ SVGAnimationElement::ShouldApplyAnimation SVGAnimationElement::shouldApplyAnimat
         return DontApplyAnimation;
 
     // Always animate CSS properties, using the ApplyCSSAnimation code path, regardless of the attributeType value.
-    if (isTargetAttributeCSSProperty(targetElement, attributeName))
-        return ApplyCSSAnimation;
+    if (isTargetAttributeCSSProperty(targetElement, attributeName)) {
+        if (targetElement->isPresentationAttributeWithSVGDOM(attributeName))
+            return ApplyXMLandCSSAnimation;
 
+        return ApplyCSSAnimation;
+    }
     // If attributeType="CSS" and attributeName doesn't point to a CSS property, ignore the animation.
     if (attributeType() == AttributeTypeCSS)
         return DontApplyAnimation;

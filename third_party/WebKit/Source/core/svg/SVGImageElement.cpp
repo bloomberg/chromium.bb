@@ -89,21 +89,36 @@ bool SVGImageElement::isSupportedAttribute(const QualifiedName& attrName)
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-bool SVGImageElement::isPresentationAttribute(const QualifiedName& name) const
+bool SVGImageElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
-    if (name == SVGNames::widthAttr || name == SVGNames::heightAttr)
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
         return true;
-    return SVGGraphicsElement::isPresentationAttribute(name);
+    return SVGGraphicsElement::isPresentationAttribute(attrName);
+}
+
+bool SVGImageElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
+        return true;
+    return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGImageElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (!isSupportedAttribute(name))
-        SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
-    else if (name == SVGNames::widthAttr)
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+
+    if (property == m_width)
         addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
-    else if (name == SVGNames::heightAttr)
+    else if (property == m_height)
         addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, value);
+    else if (property == m_x)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
+    else if (property == m_y)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+    else
+        SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
 void SVGImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -125,8 +140,12 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
                           || attrName == SVGNames::widthAttr
                           || attrName == SVGNames::heightAttr;
 
-    if (isLengthAttribute)
+    if (isLengthAttribute) {
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            StyleChangeReasonForTracing::fromAttribute(attrName));
         updateRelativeLengthsInformation();
+    }
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
         if (inDocument())

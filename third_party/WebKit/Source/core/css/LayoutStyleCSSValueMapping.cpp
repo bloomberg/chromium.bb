@@ -2560,6 +2560,10 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
     case CSSPropertyEnableBackground:
         // the above properties are not yet implemented in the engine
         return nullptr;
+    case CSSPropertyX:
+        return zoomAdjustedPixelValueForLength(svgStyle.x(), style);
+    case CSSPropertyY:
+        return zoomAdjustedPixelValueForLength(svgStyle.y(), style);
 
     case CSSPropertyAll:
         return nullptr;

@@ -21,6 +21,8 @@
 #include "core/layout/svg/SVGPathData.h"
 
 #include "core/SVGNames.h"
+#include "core/layout/LayoutObject.h"
+#include "core/layout/style/SVGLayoutStyle.h"
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
 #include "core/svg/SVGLineElement.h"
@@ -102,6 +104,7 @@ static void updatePathFromPolygonElement(SVGElement* element, Path& path)
 static void updatePathFromRectElement(SVGElement* element, Path& path)
 {
     SVGRectElement* rect = toSVGRectElement(element);
+    ASSERT(rect->renderer());
 
     SVGLengthContext lengthContext(element);
     float width = rect->width()->currentValue()->value(lengthContext);
@@ -112,8 +115,10 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
         return;
     if (!width && !height)
         return;
-    float x = rect->x()->currentValue()->value(lengthContext);
-    float y = rect->y()->currentValue()->value(lengthContext);
+
+    const SVGLayoutStyle& style = rect->renderer()->style()->svgStyle();
+    float x = lengthContext.valueForLength(style.x(), LengthModeWidth);
+    float y = lengthContext.valueForLength(style.y(), LengthModeHeight);
     float rx = rect->rx()->currentValue()->value(lengthContext);
     float ry = rect->ry()->currentValue()->value(lengthContext);
     bool hasRx = rx > 0;

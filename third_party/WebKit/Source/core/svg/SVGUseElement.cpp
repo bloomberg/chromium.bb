@@ -182,6 +182,31 @@ void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement* sha
     }
 }
 
+bool SVGUseElement::isPresentationAttribute(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+        return true;
+    return SVGGraphicsElement::isPresentationAttribute(attrName);
+}
+
+bool SVGUseElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+        return true;
+    return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
+}
+
+void SVGUseElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
+{
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property == m_x)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
+    else if (property == m_y)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+    else
+        SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
+}
+
 void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
@@ -190,6 +215,13 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     SVGElement::InvalidationGuard invalidationGuard(this);
+
+    if (attrName == SVGNames::xAttr
+        || attrName == SVGNames::yAttr) {
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            StyleChangeReasonForTracing::fromAttribute(attrName));
+    }
 
     LayoutObject* renderer = this->renderer();
     if (attrName == SVGNames::xAttr

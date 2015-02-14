@@ -341,7 +341,9 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGlyphOrientationHorizontal,
     CSSPropertyGlyphOrientationVertical,
     CSSPropertyVectorEffect,
-    CSSPropertyPaintOrder
+    CSSPropertyPaintOrder,
+    CSSPropertyX,
+    CSSPropertyY
 };
 
 static const Vector<CSSPropertyID>& computableProperties()
@@ -481,6 +483,8 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<LayoutStyle> 
     case CSSPropertyMotionRotation:
     case CSSPropertyWidth:
     case CSSPropertyWebkitFilter:
+    case CSSPropertyX:
+    case CSSPropertyY:
         return true;
     case CSSPropertyMargin:
         return renderer && renderer->isBox() && (!style || !style->marginBottom().isFixed() || !style->marginTop().isFixed() || !style->marginLeft().isFixed() || !style->marginRight().isFixed());

@@ -528,6 +528,10 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return AnimatableUnknown::create(CSSPrimitiveValue::create(style.verticalAlign()));
     case CSSPropertyVisibility:
         return AnimatableVisibility::create(style.visibility());
+    case CSSPropertyX:
+        return createFromLength(style.svgStyle().x(), style);
+    case CSSPropertyY:
+        return createFromLength(style.svgStyle().y(), style);
     case CSSPropertyZIndex:
         return createFromDouble(style.zIndex());
     case CSSPropertyZoom:

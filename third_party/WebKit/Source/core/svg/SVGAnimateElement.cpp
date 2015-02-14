@@ -162,7 +162,7 @@ void SVGAnimateElement::resetAnimatedType()
     if (shouldApply == DontApplyAnimation)
         return;
 
-    if (shouldApply == ApplyXMLAnimation) {
+    if (shouldApply == ApplyXMLAnimation || shouldApply == ApplyXMLandCSSAnimation) {
         // SVG DOM animVal animation code-path.
         SVGElementInstances animatedElements = findElementInstances(targetElement);
         ASSERT(!animatedElements.isEmpty());
@@ -282,7 +282,10 @@ void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
         return;
     }
 
-    if (ensureAnimator()->isAnimatingCSSProperty()) {
+    ShouldApplyAnimation shouldApply = shouldApplyAnimation(targetElement, attributeName());
+    if (shouldApply == ApplyXMLandCSSAnimation) {
+        removeCSSPropertyFromTargetAndInstances(targetElement, attributeName());
+    } else if (ensureAnimator()->isAnimatingCSSProperty()) {
         // CSS properties animation code-path.
         removeCSSPropertyFromTargetAndInstances(targetElement, attributeName());
         m_animatedProperty.clear();
@@ -309,7 +312,11 @@ void SVGAnimateElement::applyResultsToTarget()
     if (!m_animatedProperty)
         return;
 
-    if (m_animator->isAnimatingCSSProperty()) {
+    // We do update the style and the animation property independent of each other.
+    ShouldApplyAnimation shouldApply = shouldApplyAnimation(targetElement(), attributeName());
+    if (shouldApply == ApplyXMLandCSSAnimation) {
+        applyCSSPropertyToTargetAndInstances(targetElement(), attributeName(), m_animatedProperty->valueAsString());
+    } else if (m_animator->isAnimatingCSSProperty()) {
         // CSS properties animation code-path.
         // Convert the result of the animation to a String and apply it as CSS property on the target & all instances.
         applyCSSPropertyToTargetAndInstances(targetElement(), attributeName(), m_animatedProperty->valueAsString());

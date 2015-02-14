@@ -244,19 +244,34 @@ bool SVGSVGElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (isOutermostSVGSVGElement() && (name == SVGNames::widthAttr || name == SVGNames::heightAttr))
         return true;
+    else if (name == SVGNames::xAttr || name == SVGNames::yAttr)
+        return true;
+
     return SVGGraphicsElement::isPresentationAttribute(name);
+}
+
+bool SVGSVGElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+        return true;
+    return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGSVGElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (isOutermostSVGSVGElement() && (name == SVGNames::widthAttr || name == SVGNames::heightAttr)) {
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property == m_x) {
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
+    } else if (property == m_y) {
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+    } else if (isOutermostSVGSVGElement() && (property == m_width || property == m_height)) {
         RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(LengthModeOther);
         TrackExceptionState exceptionState;
         length->setValueAsString(value, exceptionState);
         if (!exceptionState.hadException()) {
-            if (name == SVGNames::widthAttr)
+            if (property == m_width)
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
-            else if (name == SVGNames::heightAttr)
+            else if (property == m_height)
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, value);
         }
     } else {
@@ -289,6 +304,10 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
                 invalidateSVGPresentationAttributeStyle();
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange));
             }
+        } else {
+            invalidateSVGPresentationAttributeStyle();
+            setNeedsStyleRecalc(LocalStyleChange,
+                StyleChangeReasonForTracing::fromAttribute(attrName));
         }
     }
 
