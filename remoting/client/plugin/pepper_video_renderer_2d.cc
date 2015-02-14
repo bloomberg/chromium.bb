@@ -192,12 +192,10 @@ ChromotingStats* PepperVideoRenderer2D::GetStats() {
   return software_video_renderer_->GetStats();
 }
 
-void PepperVideoRenderer2D::ProcessVideoPacket(
-    scoped_ptr<VideoPacket> video_packet,
-    const base::Closure& done) {
+protocol::VideoStub* PepperVideoRenderer2D::GetVideoStub() {
   DCHECK(CalledOnValidThread());
 
-  software_video_renderer_->ProcessVideoPacket(video_packet.Pass(), done);
+  return software_video_renderer_->GetVideoStub();
 }
 
 void PepperVideoRenderer2D::ApplyBuffer(const webrtc::DesktopSize& view_size,

@@ -177,6 +177,10 @@ ChromotingStats* PepperVideoRenderer3D::GetStats() {
   return &stats_;
 }
 
+protocol::VideoStub* PepperVideoRenderer3D::GetVideoStub() {
+  return this;
+}
+
 void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                const base::Closure& done) {
   base::ScopedClosureRunner done_runner(done);

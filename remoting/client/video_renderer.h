@@ -5,26 +5,30 @@
 #ifndef REMOTING_CLIENT_VIDEO_RENDERER_H_
 #define REMOTING_CLIENT_VIDEO_RENDERER_H_
 
-#include "remoting/protocol/video_stub.h"
-
 namespace remoting {
 
 class ChromotingStats;
 
 namespace protocol {
 class SessionConfig;
+class VideoStub;
 }  // namespace protocol;
 
 // VideoRenderer is responsible for decoding and displaying incoming video
 // stream.
-class VideoRenderer : public protocol::VideoStub {
+class VideoRenderer {
  public:
+  virtual ~VideoRenderer() {}
+
   // Configures the renderer with the supplied |config|. This must be called
   // exactly once before video data is supplied to the renderer.
   virtual void OnSessionConfig(const protocol::SessionConfig& config) = 0;
 
   // Return the statistics recorded by this client.
   virtual ChromotingStats* GetStats() = 0;
+
+  // Returns the VideoStub interface of this renderer.
+  virtual protocol::VideoStub* GetVideoStub() = 0;
 };
 
 }  // namespace remoting

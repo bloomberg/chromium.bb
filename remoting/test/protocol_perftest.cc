@@ -75,6 +75,7 @@ class ProtocolPerfTest
       public testing::WithParamInterface<NetworkPerformanceParams>,
       public ClientUserInterface,
       public VideoRenderer,
+      public protocol::VideoStub,
       public HostStatusObserver {
  public:
   ProtocolPerfTest()
@@ -119,6 +120,9 @@ class ProtocolPerfTest
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override {}
   ChromotingStats* GetStats() override { return nullptr; }
+  protocol::VideoStub* GetVideoStub() override { return this; }
+
+  // protocol::VideoStub interface.
   void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override {
     if (video_packet->data().empty()) {

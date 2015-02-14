@@ -60,7 +60,7 @@ void ChromotingClient::Start(
 
   connection_.set_client_stub(this);
   connection_.set_clipboard_stub(this);
-  connection_.set_video_stub(video_renderer_);
+  connection_.set_video_stub(video_renderer_->GetVideoStub());
   connection_.set_audio_stub(audio_decode_scheduler_.get());
 
   connection_.Connect(signal_strategy, transport_factory.Pass(),

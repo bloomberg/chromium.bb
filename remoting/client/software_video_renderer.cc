@@ -341,6 +341,10 @@ ChromotingStats* SoftwareVideoRenderer::GetStats() {
   return &stats_;
 }
 
+protocol::VideoStub* SoftwareVideoRenderer::GetVideoStub() {
+  return this;
+}
+
 void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                 const base::Closure& done) {
   DCHECK(CalledOnValidThread());

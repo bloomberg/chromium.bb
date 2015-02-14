@@ -47,10 +47,11 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
                                 const ClientContext& context,
                                 EventHandler* event_handler) override;
   void OnViewChanged(const pp::View& view) override;
+
+  // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   ChromotingStats* GetStats() override;
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
-                          const base::Closure& done) override;
+  protocol::VideoStub* GetVideoStub() override;
 
  private:
   // FrameConsumer implementation.
