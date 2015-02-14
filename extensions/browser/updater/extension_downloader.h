@@ -207,7 +207,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
 
   // Once a manifest is parsed, this starts fetches of any relevant crx files.
   // If |results| is null, it means something went wrong when parsing it.
-  void HandleManifestResults(const ManifestFetchData& fetch_data,
+  void HandleManifestResults(const ManifestFetchData* fetch_data,
                              const UpdateManifest::Results* results);
 
   // Given a list of potential updates, returns the indices of the ones that are

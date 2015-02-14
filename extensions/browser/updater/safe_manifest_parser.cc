@@ -19,9 +19,8 @@ using content::BrowserThread;
 namespace extensions {
 
 SafeManifestParser::SafeManifestParser(const std::string& xml,
-                                       ManifestFetchData* fetch_data,
-                                       const UpdateCallback& update_callback)
-    : xml_(xml), fetch_data_(fetch_data), update_callback_(update_callback) {
+                                       const ResultsCallback& results_callback)
+    : xml_(xml), results_callback_(results_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -63,17 +62,15 @@ bool SafeManifestParser::OnMessageReceived(const IPC::Message& message) {
 
 void SafeManifestParser::OnParseUpdateManifestSucceeded(
     const UpdateManifest::Results& results) {
-  VLOG(2) << "parsing manifest succeeded (" << fetch_data_->full_url() << ")";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  update_callback_.Run(*fetch_data_, &results);
+  results_callback_.Run(&results);
 }
 
 void SafeManifestParser::OnParseUpdateManifestFailed(
     const std::string& error_message) {
-  VLOG(2) << "parsing manifest failed (" << fetch_data_->full_url() << ")";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LOG(WARNING) << "Error parsing update manifest:\n" << error_message;
-  update_callback_.Run(*fetch_data_, NULL);
+  results_callback_.Run(NULL);
 }
 
 }  // namespace extensions

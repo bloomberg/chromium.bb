@@ -1780,7 +1780,7 @@ class ExtensionUpdaterTest : public testing::Test {
     UpdateManifest::Results results;
     results.daystart_elapsed_seconds = 750;
 
-    updater.downloader_->HandleManifestResults(*fetch_data, &results);
+    updater.downloader_->HandleManifestResults(fetch_data.get(), &results);
     Time last_ping_day =
         service.extension_prefs()->LastPingDay(extension->id());
     EXPECT_FALSE(last_ping_day.is_null());
