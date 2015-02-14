@@ -57,6 +57,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   size_t GetMappedMemoryLimit();
 
   bool InitializeOnCurrentThread();
+  void SetLock(base::Lock* lock);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods

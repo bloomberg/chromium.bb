@@ -66,6 +66,7 @@ class GLInProcessContextImpl
   void SetContextLostCallback(const base::Closure& callback) override;
   gles2::GLES2Implementation* GetImplementation() override;
   size_t GetMappedMemoryLimit() override;
+  void SetLock(base::Lock* lock) override;
 
 #if defined(OS_ANDROID)
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
@@ -85,6 +86,7 @@ class GLInProcessContextImpl
   const GLInProcessContextSharedMemoryLimits mem_limits_;
   bool context_lost_;
   base::Closure context_lost_callback_;
+  base::Lock* lock_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContextImpl);
 };
@@ -96,7 +98,7 @@ base::LazyInstance<std::set<GLInProcessContextImpl*> > g_all_shared_contexts =
 
 GLInProcessContextImpl::GLInProcessContextImpl(
     const GLInProcessContextSharedMemoryLimits& mem_limits)
-    : mem_limits_(mem_limits), context_lost_(false) {
+    : mem_limits_(mem_limits), context_lost_(false), lock_(nullptr) {
 }
 
 GLInProcessContextImpl::~GLInProcessContextImpl() {
@@ -115,12 +117,20 @@ size_t GLInProcessContextImpl::GetMappedMemoryLimit() {
   return mem_limits_.mapped_memory_reclaim_limit;
 }
 
+void GLInProcessContextImpl::SetLock(base::Lock* lock) {
+  command_buffer_->SetLock(lock);
+  lock_ = lock;
+}
+
 void GLInProcessContextImpl::SetContextLostCallback(
     const base::Closure& callback) {
   context_lost_callback_ = callback;
 }
 
 void GLInProcessContextImpl::OnContextLost() {
+  scoped_ptr<base::AutoLock> lock;
+  if (lock_)
+    lock.reset(new base::AutoLock(*lock_));
   context_lost_ = true;
   if (!context_lost_callback_.is_null()) {
     context_lost_callback_.Run();

@@ -80,6 +80,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   base::Lock destroyed_lock_;
   bool destroyed_;
 
+  base::Lock context_lock_;
   std::string debug_name_;
   class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;

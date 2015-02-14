@@ -904,7 +904,6 @@ uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
 }
 
 void InProcessCommandBuffer::SetLock(base::Lock*) {
-  NOTIMPLEMENTED();
 }
 
 uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(

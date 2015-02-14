@@ -161,10 +161,11 @@ class GrContext* ContextProviderInProcess::GrContext() {
 }
 
 void ContextProviderInProcess::SetupLock() {
+  context3d_->SetLock(&context_lock_);
 }
 
 base::Lock* ContextProviderInProcess::GetLock() {
-  return nullptr;
+  return &context_lock_;
 }
 
 bool ContextProviderInProcess::IsContextLost() {

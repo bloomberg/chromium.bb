@@ -153,6 +153,10 @@ WebGraphicsContext3DInProcessCommandBufferImpl::InitializeOnCurrentThread() {
   return context_ && !isContextLost();
 }
 
+void WebGraphicsContext3DInProcessCommandBufferImpl::SetLock(base::Lock* lock) {
+  context_->SetLock(lock);
+}
+
 bool WebGraphicsContext3DInProcessCommandBufferImpl::isContextLost() {
   return context_lost_reason_ != GL_NO_ERROR;
 }
