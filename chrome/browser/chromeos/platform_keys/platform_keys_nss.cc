@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 
+#include <cert.h>
 #include <cryptohi.h>
+#include <keyhi.h>
+#include <secder.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -14,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
@@ -33,6 +37,7 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/ssl/client_cert_store_chromeos.h"
 #include "net/ssl/ssl_cert_request_info.h"
 
@@ -168,13 +173,14 @@ class GenerateRSAKeyState : public NSSOperationState {
   subtle::GenerateKeyCallback callback_;
 };
 
-class SignState : public NSSOperationState {
+class SignRSAState : public NSSOperationState {
  public:
-  SignState(const std::string& public_key,
-            HashAlgorithm hash_algorithm,
-            const std::string& data,
-            const subtle::SignCallback& callback);
-  ~SignState() override {}
+  SignRSAState(const std::string& data,
+               const std::string& public_key,
+               bool sign_direct_pkcs_padded,
+               HashAlgorithm hash_algorithm,
+               const subtle::SignCallback& callback);
+  ~SignRSAState() override {}
 
   void OnError(const tracked_objects::Location& from,
                const std::string& error_message) override {
@@ -188,9 +194,20 @@ class SignState : public NSSOperationState {
         from, base::Bind(callback_, signature, error_message));
   }
 
-  const std::string public_key_;
-  HashAlgorithm hash_algorithm_;
+  // The data that will be signed.
   const std::string data_;
+
+  // Must be the DER encoding of a SubjectPublicKeyInfo.
+  const std::string public_key_;
+
+  // If true, |data_| will not be hashed before signing. Only PKCS#1 v1.5
+  // padding will be applied before signing.
+  // If false, |hash_algorithm_| must be set to a value != NONE.
+  const bool sign_direct_pkcs_padded_;
+
+  // Determines the hash algorithm that is used to digest |data| before signing.
+  // Ignored if |sign_direct_pkcs_padded_| is true.
+  const HashAlgorithm hash_algorithm_;
 
  private:
   // Must be called on origin thread, therefore use CallBack().
@@ -202,7 +219,7 @@ class SelectCertificatesState : public NSSOperationState {
   explicit SelectCertificatesState(
       const std::string& username_hash,
       const bool use_system_key_slot,
-      scoped_refptr<net::SSLCertRequestInfo> request,
+      const scoped_refptr<net::SSLCertRequestInfo>& request,
       const subtle::SelectCertificatesCallback& callback);
   ~SelectCertificatesState() override {}
 
@@ -258,7 +275,7 @@ class GetCertificatesState : public NSSOperationState {
 
 class ImportCertificateState : public NSSOperationState {
  public:
-  ImportCertificateState(scoped_refptr<net::X509Certificate> certificate,
+  ImportCertificateState(const scoped_refptr<net::X509Certificate>& certificate,
                          const ImportCertificateCallback& callback);
   ~ImportCertificateState() override {}
 
@@ -281,7 +298,7 @@ class ImportCertificateState : public NSSOperationState {
 
 class RemoveCertificateState : public NSSOperationState {
  public:
-  RemoveCertificateState(scoped_refptr<net::X509Certificate> certificate,
+  RemoveCertificateState(const scoped_refptr<net::X509Certificate>& certificate,
                          const RemoveCertificateCallback& callback);
   ~RemoveCertificateState() override {}
 
@@ -336,20 +353,22 @@ GenerateRSAKeyState::GenerateRSAKeyState(
     : modulus_length_bits_(modulus_length_bits), callback_(callback) {
 }
 
-SignState::SignState(const std::string& public_key,
-                     HashAlgorithm hash_algorithm,
-                     const std::string& data,
-                     const subtle::SignCallback& callback)
-    : public_key_(public_key),
+SignRSAState::SignRSAState(const std::string& data,
+                           const std::string& public_key,
+                           bool sign_direct_pkcs_padded,
+                           HashAlgorithm hash_algorithm,
+                           const subtle::SignCallback& callback)
+    : data_(data),
+      public_key_(public_key),
+      sign_direct_pkcs_padded_(sign_direct_pkcs_padded),
       hash_algorithm_(hash_algorithm),
-      data_(data),
       callback_(callback) {
 }
 
 SelectCertificatesState::SelectCertificatesState(
     const std::string& username_hash,
     const bool use_system_key_slot,
-    scoped_refptr<net::SSLCertRequestInfo> cert_request_info,
+    const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
     const subtle::SelectCertificatesCallback& callback)
     : username_hash_(username_hash),
       use_system_key_slot_(use_system_key_slot),
@@ -363,13 +382,13 @@ GetCertificatesState::GetCertificatesState(
 }
 
 ImportCertificateState::ImportCertificateState(
-    scoped_refptr<net::X509Certificate> certificate,
+    const scoped_refptr<net::X509Certificate>& certificate,
     const ImportCertificateCallback& callback)
     : certificate_(certificate), callback_(callback) {
 }
 
 RemoveCertificateState::RemoveCertificateState(
-    scoped_refptr<net::X509Certificate> certificate,
+    const scoped_refptr<net::X509Certificate>& certificate,
     const RemoveCertificateCallback& callback)
     : certificate_(certificate), callback_(callback) {
 }
@@ -415,8 +434,8 @@ void GenerateRSAKeyWithDB(scoped_ptr<GenerateRSAKeyState> state,
       true /*task is slow*/);
 }
 
-// Does the actual signing on a worker thread. Used by RSASignWithDB().
-void RSASignOnWorkerThread(scoped_ptr<SignState> state) {
+// Does the actual signing on a worker thread. Used by SignRSAWithDB().
+void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
   const uint8* public_key_uint8 =
       reinterpret_cast<const uint8*>(state->public_key_.data());
   std::vector<uint8> public_key_vector(
@@ -425,50 +444,83 @@ void RSASignOnWorkerThread(scoped_ptr<SignState> state) {
   // TODO(pneubeck): This searches all slots. Change to look only at |slot_|.
   scoped_ptr<crypto::RSAPrivateKey> rsa_key(
       crypto::RSAPrivateKey::FindFromPublicKeyInfo(public_key_vector));
-  if (!rsa_key || rsa_key->key()->pkcs11Slot != state->slot_) {
+
+  // Fail if the key was not found. If a specific slot was requested, also fail
+  // if the key was found in the wrong slot.
+  if (!rsa_key ||
+      (state->slot_ && rsa_key->key()->pkcs11Slot != state->slot_)) {
     state->OnError(FROM_HERE, kErrorKeyNotFound);
     return;
   }
 
-  SECOidTag sign_alg_tag = SEC_OID_UNKNOWN;
-  switch (state->hash_algorithm_) {
-    case HASH_ALGORITHM_SHA1:
-      sign_alg_tag = SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
-      break;
-    case HASH_ALGORITHM_SHA256:
-      sign_alg_tag = SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
-      break;
-    case HASH_ALGORITHM_SHA384:
-      sign_alg_tag = SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
-      break;
-    case HASH_ALGORITHM_SHA512:
-      sign_alg_tag = SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
-      break;
+  std::string signature_str;
+  if (state->sign_direct_pkcs_padded_) {
+    static_assert(
+        sizeof(*state->data_.data()) == sizeof(char),
+        "Can't reinterpret data if it's characters are not 8 bit large.");
+    SECItem input = {siBuffer,
+                     reinterpret_cast<unsigned char*>(
+                         const_cast<char*>(state->data_.data())),
+                     state->data_.size()};
+
+    // Compute signature of hash.
+    int signature_len = PK11_SignatureLen(rsa_key->key());
+    if (signature_len <= 0) {
+      state->OnError(FROM_HERE, kErrorInternal);
+      return;
+    }
+
+    std::vector<unsigned char> signature(signature_len);
+    SECItem signature_output = {
+        siBuffer, vector_as_array(&signature), signature.size()};
+    if (PK11_Sign(rsa_key->key(), &signature_output, &input) == SECSuccess)
+      signature_str.assign(signature.begin(), signature.end());
+  } else {
+    SECOidTag sign_alg_tag = SEC_OID_UNKNOWN;
+    switch (state->hash_algorithm_) {
+      case HASH_ALGORITHM_SHA1:
+        sign_alg_tag = SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
+        break;
+      case HASH_ALGORITHM_SHA256:
+        sign_alg_tag = SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+        break;
+      case HASH_ALGORITHM_SHA384:
+        sign_alg_tag = SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
+        break;
+      case HASH_ALGORITHM_SHA512:
+        sign_alg_tag = SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
+        break;
+      case HASH_ALGORITHM_NONE:
+        NOTREACHED();
+        break;
+    }
+
+    SECItem sign_result = {siBuffer, nullptr, 0};
+    if (SEC_SignData(
+            &sign_result,
+            reinterpret_cast<const unsigned char*>(state->data_.data()),
+            state->data_.size(), rsa_key->key(), sign_alg_tag) == SECSuccess) {
+      signature_str.assign(sign_result.data,
+                           sign_result.data + sign_result.len);
+    }
   }
 
-  crypto::ScopedSECItem sign_result(SECITEM_AllocItem(NULL, NULL, 0));
-  if (SEC_SignData(sign_result.get(),
-                   reinterpret_cast<const unsigned char*>(state->data_.data()),
-                   state->data_.size(),
-                   rsa_key->key(),
-                   sign_alg_tag) != SECSuccess) {
+  if (signature_str.empty()) {
     LOG(ERROR) << "Couldn't sign.";
     state->OnError(FROM_HERE, kErrorInternal);
     return;
   }
 
-  std::string signature(reinterpret_cast<const char*>(sign_result->data),
-                        sign_result->len);
-  state->CallBack(FROM_HERE, signature, std::string() /* no error */);
+  state->CallBack(FROM_HERE, signature_str, std::string() /* no error */);
 }
 
 // Continues signing with the obtained NSSCertDatabase. Used by Sign().
-void RSASignWithDB(scoped_ptr<SignState> state, net::NSSCertDatabase* cert_db) {
+void SignRSAWithDB(scoped_ptr<SignRSAState> state,
+                   net::NSSCertDatabase* cert_db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&RSASignOnWorkerThread, base::Passed(&state)),
+      FROM_HERE, base::Bind(&SignRSAOnWorkerThread, base::Passed(&state)),
       true /*task is slow*/);
 }
 
@@ -655,25 +707,43 @@ void GenerateRSAKey(const std::string& token_id,
                   state_ptr);
 }
 
-void Sign(const std::string& token_id,
-          const std::string& public_key,
-          HashAlgorithm hash_algorithm,
-          const std::string& data,
-          const SignCallback& callback,
-          BrowserContext* browser_context) {
+void SignRSAPKCS1Digest(const std::string& token_id,
+                        const std::string& data,
+                        const std::string& public_key,
+                        HashAlgorithm hash_algorithm,
+                        const SignCallback& callback,
+                        content::BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<SignState> state(
-      new SignState(public_key, hash_algorithm, data, callback));
+  scoped_ptr<SignRSAState> state(
+      new SignRSAState(data, public_key, false /* digest before signing */,
+                       hash_algorithm, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages and we can double check that
   // we use a key of the correct token.
-  GetCertDatabase(token_id,
-                  base::Bind(&RSASignWithDB, base::Passed(&state)),
-                  browser_context,
-                  state_ptr);
+  GetCertDatabase(token_id, base::Bind(&SignRSAWithDB, base::Passed(&state)),
+                  browser_context, state_ptr);
+}
+
+void SignRSAPKCS1Raw(const std::string& token_id,
+                     const std::string& data,
+                     const std::string& public_key,
+                     const SignCallback& callback,
+                     content::BrowserContext* browser_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_ptr<SignRSAState> state(new SignRSAState(
+      data, public_key, true /* sign directly without hashing */,
+      HASH_ALGORITHM_NONE, callback));
+  // Get the pointer to |state| before base::Passed releases |state|.
+  NSSOperationState* state_ptr = state.get();
+
+  // The NSSCertDatabase object is not required. But in case it's not available
+  // we would get more informative error messages and we can double check that
+  // we use a key of the correct token.
+  GetCertDatabase(token_id, base::Bind(&SignRSAWithDB, base::Passed(&state)),
+                  browser_context, state_ptr);
 }
 
 void SelectClientCertificates(const ClientCertificateRequest& request,
@@ -706,6 +776,46 @@ void SelectClientCertificates(const ClientCertificateRequest& request,
 
 }  // namespace subtle
 
+bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
+                  std::string* public_key_spki_der,
+                  net::X509Certificate::PublicKeyType* key_type,
+                  size_t* key_size_bits) {
+  const SECItem& spki_der = certificate->os_cert_handle()->derPublicKey;
+
+  net::X509Certificate::PublicKeyType key_type_tmp =
+      net::X509Certificate::kPublicKeyTypeUnknown;
+  size_t key_size_bits_tmp = 0;
+  net::X509Certificate::GetPublicKeyInfo(certificate->os_cert_handle(),
+                                         &key_size_bits_tmp, &key_type_tmp);
+
+  if (key_type_tmp == net::X509Certificate::kPublicKeyTypeUnknown) {
+    LOG(WARNING) << "Could not extract public key of certificate.";
+    return false;
+  }
+  if (key_type_tmp != net::X509Certificate::kPublicKeyTypeRSA) {
+    LOG(WARNING) << "Keys of other type than RSA are not supported.";
+    return false;
+  }
+
+  crypto::ScopedSECKEYPublicKey public_key(
+      CERT_ExtractPublicKey(certificate->os_cert_handle()));
+  if (!public_key) {
+    LOG(WARNING) << "Could not extract public key of certificate.";
+    return false;
+  }
+  long public_exponent = DER_GetInteger(&public_key->u.rsa.publicExponent);
+  if (public_exponent != 65537L) {
+    LOG(ERROR) << "Rejecting RSA public exponent that is unequal 65537.";
+    return false;
+  }
+
+  public_key_spki_der->assign(spki_der.data, spki_der.data + spki_der.len);
+  *key_type = key_type_tmp;
+  *key_size_bits = key_size_bits_tmp;
+
+  return true;
+}
+
 void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,
                      BrowserContext* browser_context) {
@@ -720,7 +830,7 @@ void GetCertificates(const std::string& token_id,
 }
 
 void ImportCertificate(const std::string& token_id,
-                       scoped_refptr<net::X509Certificate> certificate,
+                       const scoped_refptr<net::X509Certificate>& certificate,
                        const ImportCertificateCallback& callback,
                        BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -739,7 +849,7 @@ void ImportCertificate(const std::string& token_id,
 }
 
 void RemoveCertificate(const std::string& token_id,
-                       scoped_refptr<net::X509Certificate> certificate,
+                       const scoped_refptr<net::X509Certificate>& certificate,
                        const RemoveCertificateCallback& callback,
                        BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

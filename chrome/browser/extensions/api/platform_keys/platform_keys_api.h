@@ -46,6 +46,16 @@ class PlatformKeysInternalSelectClientCertificatesFunction
                              PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES);
 };
 
+class PlatformKeysInternalGetPublicKeyFunction
+    : public ChromeUIThreadExtensionFunction {
+ private:
+  ~PlatformKeysInternalGetPublicKeyFunction() override;
+  ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.getPublicKey",
+                             PLATFORMKEYSINTERNAL_GETPUBLICKEY);
+};
+
 class PlatformKeysInternalSignFunction
     : public ChromeUIThreadExtensionFunction {
  private:
