@@ -438,9 +438,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
 #endif
 }
 
-// Flakily fails and times out on Win only.  http://crbug.com/69941
 // Fails on Linux.  http://crbug.com/408634
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_LINUX)
 #define MAYBE_PopupAccelerators DISABLED_PopupAccelerators
 #else
 #define MAYBE_PopupAccelerators PopupAccelerators
@@ -800,14 +799,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
   EXPECT_EQ(old_selected_line, popup_model->selected_line());
 }
 
-// Flaky on Windows: http://crbug.com/146619
-#if defined(OS_WIN)
-#define MAYBE_BasicTextOperations DISABLED_BasicTextOperations
-#else
-#define MAYBE_BasicTextOperations BasicTextOperations
-#endif
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   chrome::FocusLocationBar(browser());
 
