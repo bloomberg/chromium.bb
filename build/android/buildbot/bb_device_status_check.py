@@ -336,6 +336,10 @@ def main():
     types, builds, batteries, reports, errors, fail_step_lst, json_data = (
         zip(*[DeviceInfo(dev, options) for dev in devices]))
 
+  # Write device info to file for buildbot info display.
+  with open('/tmp/adb_device_info', 'w') as outfile:
+    json.dump(json_data, outfile)
+
   err_msg = CheckForMissingDevices(options, devices) or []
 
   unique_types = list(set(types))
