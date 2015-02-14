@@ -654,7 +654,6 @@ bool LayerTreeImpl::UpdateDrawProperties() {
     const bool resourceless_software_draw =
         (layer_tree_host_impl_->GetDrawMode() ==
          DRAW_MODE_RESOURCELESS_SOFTWARE);
-    static const Occlusion kEmptyOcclusion;
     size_t layers_updated_count = 0;
     bool tile_priorities_updated = false;
     for (PictureLayerImpl* layer : picture_layers_) {
@@ -662,12 +661,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
       if (!layer->IsDrawnRenderSurfaceLayerListMember())
         continue;
       ++layers_updated_count;
-      const Occlusion& occlusion =
-          settings().use_occlusion_for_tile_prioritization
-              ? layer->draw_properties().occlusion_in_content_space
-              : kEmptyOcclusion;
-      tile_priorities_updated |=
-          layer->UpdateTiles(occlusion, resourceless_software_draw);
+      tile_priorities_updated |= layer->UpdateTiles(resourceless_software_draw);
     }
 
     if (tile_priorities_updated)

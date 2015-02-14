@@ -179,7 +179,7 @@ class TileManagerPerfTest : public testing::Test {
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
     bool resourceless_software_draw = false;
     for (const auto& layer : layers)
-      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
+      layer->UpdateTiles(resourceless_software_draw);
 
     timer_.Reset();
     do {
@@ -207,7 +207,7 @@ class TileManagerPerfTest : public testing::Test {
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 100);
     bool resourceless_software_draw = false;
     for (const auto& layer : layers)
-      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
+      layer->UpdateTiles(resourceless_software_draw);
 
     int priority_count = 0;
     timer_.Reset();
@@ -243,7 +243,7 @@ class TileManagerPerfTest : public testing::Test {
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
     bool resourceless_software_draw = false;
     for (const auto& layer : layers) {
-      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
+      layer->UpdateTiles(resourceless_software_draw);
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->tilings()->tiling_at(i)->AllTilesForTesting());
@@ -278,7 +278,7 @@ class TileManagerPerfTest : public testing::Test {
         CreateLayers(layer_count, tile_count);
     bool resourceless_software_draw = false;
     for (const auto& layer : layers) {
-      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
+      layer->UpdateTiles(resourceless_software_draw);
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->tilings()->tiling_at(i)->AllTilesForTesting());
@@ -387,7 +387,7 @@ class TileManagerPerfTest : public testing::Test {
           CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
       host_impl_.UpdateCurrentBeginFrameArgs(args);
       for (const auto& layer : layers)
-        layer->UpdateTiles(Occlusion(), resourceless_software_draw);
+        layer->UpdateTiles(resourceless_software_draw);
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->PrepareTiles(global_state);

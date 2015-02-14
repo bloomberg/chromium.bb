@@ -79,8 +79,7 @@ class CC_EXPORT PictureLayerImpl
   void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
                           Region* new_invalidation,
                           const PictureLayerTilingSet* pending_set);
-  bool UpdateTiles(const Occlusion& occlusion_in_content_space,
-                   bool resourceless_software_draw);
+  bool UpdateTiles(bool resourceless_software_draw);
 
   // Mask-related functions.
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
@@ -116,7 +115,6 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
-  bool UpdateTilePriorities(const Occlusion& occlusion_in_content_space);
   virtual bool ShouldAdjustRasterScale() const;
   virtual void RecalculateRasterScales();
   void CleanUpTilingsOnActiveLayer(

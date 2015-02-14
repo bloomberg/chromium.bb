@@ -408,8 +408,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   CleanUpTilingsOnActiveLayer(last_append_quads_tilings_);
 }
 
-bool PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
-                                   bool resourceless_software_draw) {
+bool PictureLayerImpl::UpdateTiles(bool resourceless_software_draw) {
   DCHECK_EQ(1.f, contents_scale_x());
   DCHECK_EQ(1.f, contents_scale_y());
 
@@ -452,12 +451,6 @@ bool PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
 
   if (draw_transform_is_animating())
     raster_source_->SetShouldAttemptToUseDistanceFieldText();
-  return UpdateTilePriorities(occlusion_in_content_space);
-}
-
-bool PictureLayerImpl::UpdateTilePriorities(
-    const Occlusion& occlusion_in_content_space) {
-  DCHECK_IMPLIES(raster_source_->IsSolidColor(), tilings_->num_tilings() == 0);
 
   double current_frame_time_in_seconds =
       (layer_tree_impl()->CurrentBeginFrameArgs().frame_time -
@@ -479,6 +472,12 @@ bool PictureLayerImpl::UpdateTilePriorities(
   bool can_require_tiles_for_activation =
       !only_used_low_res_last_append_quads_ || RequiresHighResToDraw() ||
       !layer_tree_impl()->SmoothnessTakesPriority();
+
+  static const Occlusion kEmptyOcclusion;
+  const Occlusion& occlusion_in_content_space =
+      layer_tree_impl()->settings().use_occlusion_for_tile_prioritization
+          ? draw_properties().occlusion_in_content_space
+          : kEmptyOcclusion;
 
   // Pass |occlusion_in_content_space| for |occlusion_in_layer_space| since
   // they are the same space in picture layer, as contents scale is always 1.

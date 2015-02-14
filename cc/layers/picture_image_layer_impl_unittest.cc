@@ -80,7 +80,7 @@ class PictureImageLayerImplTest : public testing::Test {
         animating_transform_to_screen;
     layer->draw_properties().visible_content_rect = viewport_rect;
     bool resourceless_software_draw = false;
-    layer->UpdateTiles(Occlusion(), resourceless_software_draw);
+    layer->UpdateTiles(resourceless_software_draw);
   }
 
  protected:

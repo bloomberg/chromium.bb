@@ -240,7 +240,7 @@ class PictureLayerImplTest : public testing::Test {
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
     bool resourceless_software_draw = false;
-    layer->UpdateTiles(Occlusion(), resourceless_software_draw);
+    layer->UpdateTiles(resourceless_software_draw);
   }
   static void VerifyAllTilesExistAndHavePile(
       const PictureLayerTiling* tiling,
@@ -516,7 +516,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  active_layer_->UpdateTiles(resourceless_software_draw);
 
   gfx::Rect visible_rect_for_tile_priority =
       active_layer_->visible_rect_for_tile_priority();
@@ -540,7 +540,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  active_layer_->UpdateTiles(resourceless_software_draw);
 
   // Transform for tile priority is updated.
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
@@ -560,7 +560,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  active_layer_->UpdateTiles(resourceless_software_draw);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
                                   active_layer_->screen_space_transform());
@@ -1707,7 +1707,7 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  pending_layer_->UpdateTiles(resourceless_software_draw);
 
   int num_visible = 0;
   int num_offscreen = 0;
@@ -1773,7 +1773,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  pending_layer_->UpdateTiles(resourceless_software_draw);
 
   // Intersect the two rects. Any tile outside should not be required for
   // activation.
@@ -2928,7 +2928,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   pending_layer_->draw_properties().visible_content_rect =
       gfx::Rect(1100, 1100, 500, 500);
   bool resourceless_software_draw = false;
-  pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  pending_layer_->UpdateTiles(resourceless_software_draw);
 
   unique_tiles.clear();
   high_res_tile_count = 0u;
@@ -2959,7 +2959,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
   pending_layer_->draw_properties().visible_content_rect =
       gfx::Rect(0, 0, 500, 500);
-  pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  pending_layer_->UpdateTiles(resourceless_software_draw);
 
   std::vector<Tile*> high_res_tiles =
       pending_layer_->HighResTiling()->AllTilesForTesting();
@@ -3576,7 +3576,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  active_layer_->UpdateTiles(resourceless_software_draw);
 
   gfx::Rect visible_rect_for_tile_priority =
       active_layer_->visible_rect_for_tile_priority();
@@ -3600,7 +3600,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  active_layer_->UpdateTiles(resourceless_software_draw);
 
   // Transform for tile priority is updated.
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
@@ -3620,7 +3620,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  active_layer_->UpdateTiles(resourceless_software_draw);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
                                   active_layer_->screen_space_transform());
