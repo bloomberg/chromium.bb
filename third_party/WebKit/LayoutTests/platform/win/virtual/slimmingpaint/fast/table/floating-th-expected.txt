@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         LayoutTableSection {THEAD} at (1,1) size 163x24
           LayoutTableRow {TR} at (0,2) size 163x20
             LayoutTableCell (anonymous) at (2,2) size 101x20 [r=0 c=0 rs=1 cs=1]
-              RenderBlock (floating) {TH} at (0,0) size 50.44x20
+              RenderBlock (floating) {TH} at (0,0) size 50.45x20
                 RenderText {#text} at (1,1) size 49x17
                   text run at (1,1) width 49: "Head 1"
-              RenderBlock (floating) {TH} at (50.44,0) size 50.44x20
+              RenderBlock (floating) {TH} at (50.45,0) size 50.45x20
                 RenderText {#text} at (1,1) size 49x17
                   text run at (1,1) width 49: "Head 2"
         LayoutTableSection {TFOOT} at (1,69) size 163x22

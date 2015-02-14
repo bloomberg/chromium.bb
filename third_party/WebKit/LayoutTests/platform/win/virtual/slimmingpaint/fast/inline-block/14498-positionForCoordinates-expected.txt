@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
               text run at (0,0) width 22: "foo"
           RenderText {#text} at (31,0) size 5x17
             text run at (31,0) width 5: " "
-          RenderBlock {DIV} at (35.33,0) size 20.42x18
+          RenderBlock {DIV} at (35.33,0) size 20.44x18
             RenderText {#text} at (0,0) size 21x17
               text run at (0,0) width 21: "bar"
           RenderText {#text} at (0,0) size 0x0

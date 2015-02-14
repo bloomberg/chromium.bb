@@ -4,12 +4,12 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
 layer at (8,8) size 168x86 clip at (18,18) size 148x66
-  RenderBlock (floating) {DIV} at (0,0) size 167.56x86 [border: (10px solid #FF0000)]
+  RenderBlock (floating) {DIV} at (0,0) size 167.58x86 [border: (10px solid #FF0000)]
     RenderBlock (floating) {IMG} at (10,10) size 86x66
-    RenderBlock {DIV} at (10,10) size 147.56x12
+    RenderBlock {DIV} at (10,10) size 147.58x12
       RenderText {#text} at (92,0) size 7x12
         text run at (92,0) width 7: "x"
-    RenderBlock {DIV} at (10,22) size 147.56x48
+    RenderBlock {DIV} at (10,22) size 147.58x48
       RenderText {#text} at (92,0) size 49x48
         text run at (92,0) width 42: "Ted and"
         text run at (92,12) width 17: "the"

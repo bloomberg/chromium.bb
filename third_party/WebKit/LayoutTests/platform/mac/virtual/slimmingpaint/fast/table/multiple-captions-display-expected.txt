@@ -50,7 +50,7 @@ layer at (8,8) size 128x36 transparent
       text run at (15,0) width 98: "PASS: Caption"
       text run at (12,18) width 104: "with opacity 0.7"
 layer at (10,196) size 336x18 transparent
-  RenderBlock (positioned) {caption} at (10,196) size 335.53x18
+  RenderBlock (positioned) {caption} at (10,196) size 335.55x18
     RenderText {#text} at (0,0) size 336x18
       text run at (0,0) width 336: "PASS: Caption with a fixed position and opacity 0.6"
 layer at (8,80) size 120x54 transparent

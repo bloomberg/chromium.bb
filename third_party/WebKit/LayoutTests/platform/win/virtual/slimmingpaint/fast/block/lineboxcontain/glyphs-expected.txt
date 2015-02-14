@@ -12,14 +12,14 @@ layer at (0,0) size 800x276
         RenderText {#text} at (1,-1) size 280x17
           text run at (1,-1) width 280: "this block should hug the lowercase glyphs."
       RenderBlock {P} at (0,198) size 784x54
-        RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 21.98x24
+        RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 22x24
           RenderTextFragment at (0,-8) size 22x40
             text run at (0,-8) width 22: "T"
-        RenderTextFragment {#text} at (23,0) size 420x17
-          text run at (23,0) width 420: "he first letter here should look nicer because it uses glyph bounds"
+        RenderTextFragment {#text} at (24,0) size 419x17
+          text run at (24,0) width 419: "he first letter here should look nicer because it uses glyph bounds"
         RenderBR {BR} at (442,0) size 1x17
-        RenderText {#text} at (23,18) size 525x17
-          text run at (23,18) width 525: "This should make the top of the T line up with the line and not look shifted down."
+        RenderText {#text} at (24,18) size 524x17
+          text run at (24,18) width 524: "This should make the top of the T line up with the line and not look shifted down."
         RenderBR {BR} at (547,18) size 1x17
         RenderText {#text} at (0,36) size 462x17
           text run at (0,36) width 462: "Maybe we should do this by default for all first letters like Firefox does."
