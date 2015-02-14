@@ -23,7 +23,7 @@ Primary Responsibilities:
     and, for suspected network bugs, a network label assigned.  A triager is
     responsible for looking at bugs reported from noon PST / 3:00 pm EST of the
     last day of the previous triager's rotation until the same time on the last
-    day of his rotation.  
+    day of their rotation.
 * Request data about recent unassigned Cr-Internals-Network bugs from reporters.
     "Recent" means issues updated in the past week or so.
 * Investigate each recent (New comment within the past week or so)

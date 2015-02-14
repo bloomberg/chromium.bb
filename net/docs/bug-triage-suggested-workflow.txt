@@ -77,11 +77,16 @@ Investigating Cr-Internals-Network bugs:
 
 Look for new crashers:
 * Go to go/chromecrash.
-* For each platform, go to the latest canary.  Click on browser -> limit 1000.
-    Search the page for "net::".  Ignore crashes that only occur once, as
+* For each platform, go to the latest canary.
+* In the "Process Type" frame, click on "browser".
+* At the bottom of the "Magic Signature" frame,  click "limit 1000".
+  Reported crashers are sorted in decreasing order of the number of reports for
+  that crash signature.
+* Search the page for "net::".  Ignore crashes that only occur once, as
     memory corruption can easily cause one-off failures when the sample size is
     large enough.
-  * Look at the stack trace to confirm it's a network bug.
+* Click on the number of reports field to see details of crash. Look at the
+    stack trace to confirm it's a network bug.
   * If it is, and there's no associated bug filed, file a new bug directly from
       chromecrash, looking at earlier canaries to determine if it's a recent
       regression.  Use the most specific label possible.
