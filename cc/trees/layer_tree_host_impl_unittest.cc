@@ -6646,8 +6646,8 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Success) {
 
   // DeferredInitialize and hardware draw.
   did_update_renderer_capabilities_ = false;
-  EXPECT_TRUE(
-      output_surface_->InitializeAndSetContext3d(onscreen_context_provider_));
+  EXPECT_TRUE(output_surface_->InitializeAndSetContext3d(
+      onscreen_context_provider_, nullptr));
   EXPECT_EQ(onscreen_context_provider_.get(),
             host_impl_->output_surface()->context_provider());
   EXPECT_TRUE(did_update_renderer_capabilities_);
@@ -6677,8 +6677,8 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails) {
 
   // DeferredInitialize fails.
   did_update_renderer_capabilities_ = false;
-  EXPECT_FALSE(
-      output_surface_->InitializeAndSetContext3d(onscreen_context_provider_));
+  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
+      onscreen_context_provider_, nullptr));
   EXPECT_FALSE(host_impl_->output_surface()->context_provider());
   EXPECT_FALSE(did_update_renderer_capabilities_);
 

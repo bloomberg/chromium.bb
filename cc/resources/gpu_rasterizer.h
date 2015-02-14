@@ -28,12 +28,22 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
       bool use_distance_field_text,
       bool threaded_gpu_rasterization_enabled,
       int msaa_sample_count);
+
+  // Overriden from Rasterizer.
   PrepareTilesMode GetPrepareTilesMode() override;
   void RasterizeTiles(
       const TileVector& tiles,
       ResourcePool* resource_pool,
       ResourceFormat resource_format,
       const UpdateTileDrawInfoCallback& update_tile_draw_info) override;
+
+  void RasterizeSource(bool use_worker_context,
+                       ResourceProvider::ScopedWriteLockGr* write_lock,
+                       const RasterSource* raster_source,
+                       const gfx::Rect& rect,
+                       float scale);
+
+  ResourceProvider* resource_provider() { return resource_provider_; }
 
  private:
   GpuRasterizer(ContextProvider* context_provider,
@@ -45,13 +55,13 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
   using ScopedResourceWriteLocks =
       ScopedPtrVector<ResourceProvider::ScopedWriteLockGr>;
 
+  ContextProvider* GetContextProvider(bool worker_context);
   void PerformSolidColorAnalysis(const Tile* tile,
                                  RasterSource::SolidColorAnalysis* analysis);
   void AddToMultiPictureDraw(const Tile* tile,
                              const ScopedResource* resource,
                              ScopedResourceWriteLocks* locks);
 
-  ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   SkMultiPictureDraw multi_picture_draw_;
 

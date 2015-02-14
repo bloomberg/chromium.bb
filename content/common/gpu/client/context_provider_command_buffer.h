@@ -38,6 +38,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
+  void DetachFromThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;

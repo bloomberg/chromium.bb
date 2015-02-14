@@ -31,6 +31,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // Once this function has been called, the class should only be accessed
   // from the same thread.
   virtual bool BindToCurrentThread() = 0;
+  virtual void DetachFromThread() {}
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual gpu::ContextSupport* ContextSupport() = 0;

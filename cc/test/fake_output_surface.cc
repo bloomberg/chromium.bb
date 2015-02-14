@@ -16,6 +16,21 @@ namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> worker_context_provider,
+    bool delegated_rendering)
+    : OutputSurface(context_provider, worker_context_provider),
+      client_(NULL),
+      num_sent_frames_(0),
+      has_external_stencil_test_(false),
+      framebuffer_(0) {
+  if (delegated_rendering) {
+    capabilities_.delegated_rendering = true;
+    capabilities_.max_frames_pending = 1;
+  }
+}
+
+FakeOutputSurface::FakeOutputSurface(
+    scoped_refptr<ContextProvider> context_provider,
     bool delegated_rendering)
     : OutputSurface(context_provider),
       client_(NULL),

@@ -136,12 +136,14 @@ void AdjustTransform(gfx::Transform* transform, gfx::Rect viewport) {
 } // namespace
 
 bool SynchronousCompositorOutputSurface::InitializeHwDraw(
-    scoped_refptr<cc::ContextProvider> onscreen_context_provider) {
+    scoped_refptr<cc::ContextProvider> onscreen_context_provider,
+    scoped_refptr<cc::ContextProvider> worker_context_provider) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(!context_provider_.get());
 
-  return InitializeAndSetContext3d(onscreen_context_provider);
+  return InitializeAndSetContext3d(onscreen_context_provider,
+                                   worker_context_provider);
 }
 
 void SynchronousCompositorOutputSurface::ReleaseHwDraw() {

@@ -112,14 +112,10 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
     if (!result)
       DVLOG(1) << "GpuChannelHost::Send failed: Channel::Send failed";
     return result;
-  } else if (base::MessageLoop::current()) {
-    bool result = sync_filter_->Send(message.release());
-    if (!result)
-      DVLOG(1) << "GpuChannelHost::Send failed: SyncMessageFilter::Send failed";
-    return result;
   }
 
-  return false;
+  bool result = sync_filter_->Send(message.release());
+  return result;
 }
 
 void GpuChannelHost::OrderingBarrier(

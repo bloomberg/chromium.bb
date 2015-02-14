@@ -134,21 +134,33 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
 }
 
 bool OutputSurface::InitializeAndSetContext3d(
-    scoped_refptr<ContextProvider> context_provider) {
+    scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> worker_context_provider) {
   DCHECK(!context_provider_.get());
   DCHECK(context_provider.get());
   DCHECK(client_);
 
-  bool success = false;
-  if (context_provider->BindToCurrentThread()) {
+  bool success = context_provider->BindToCurrentThread();
+  if (success) {
     context_provider_ = context_provider;
     SetUpContext3d();
-    client_->DeferredInitialize();
-    success = true;
+  }
+  if (success && worker_context_provider.get()) {
+    success = worker_context_provider->BindToCurrentThread();
+    if (success) {
+      worker_context_provider_ = worker_context_provider;
+      // The destructor resets the context lost callback, so base::Unretained
+      // is safe, as long as the worker threads stop using the context before
+      // the output surface is destroyed.
+      worker_context_provider_->SetLostContextCallback(base::Bind(
+          &OutputSurface::DidLoseOutputSurface, base::Unretained(this)));
+    }
   }
 
   if (!success)
     ResetContext3d();
+  else
+    client_->DeferredInitialize();
 
   return success;
 }

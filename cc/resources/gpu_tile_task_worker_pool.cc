@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/trace_event/trace_event.h"
+#include "cc/resources/gpu_rasterizer.h"
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/raster_source.h"
 #include "cc/resources/resource.h"
@@ -22,45 +23,78 @@ namespace {
 
 class RasterBufferImpl : public RasterBuffer {
  public:
-  RasterBufferImpl() {}
+  RasterBufferImpl(GpuRasterizer* rasterizer, const Resource* resource)
+      : rasterizer_(rasterizer),
+        lock_(rasterizer->resource_provider(), resource->id()),
+        resource_(resource) {}
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
                 float scale) override {
-    // Don't do anything.
+    TRACE_EVENT0("cc", "RasterBufferImpl::Playback");
+
+    ContextProvider* context_provider = rasterizer_->resource_provider()
+                                            ->output_surface()
+                                            ->worker_context_provider();
+
+    // We must hold the context lock while accessing the context on the
+    // worker thread.
+    scoped_ptr<base::AutoLock> scoped_auto_lock;
+    base::Lock* lock = context_provider->GetLock();
+    if (lock)
+      scoped_auto_lock.reset(new base::AutoLock(*lock));
+
+    // Rasterize source into resource.
+    rasterizer_->RasterizeSource(true, &lock_, raster_source, rect, scale);
+
+    // Barrier to sync worker context output to cc context.
+    context_provider->ContextGL()->OrderingBarrierCHROMIUM();
   }
 
  private:
+  GpuRasterizer* rasterizer_;
+  ResourceProvider::ScopedWriteLockGr lock_;
+  const Resource* resource_;
+
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };
 
 }  // namespace
+
 // static
 scoped_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
-    ResourceProvider* resource_provider) {
+    GpuRasterizer* rasterizer) {
   return make_scoped_ptr<TileTaskWorkerPool>(
-      new GpuTileTaskWorkerPool(
-          task_runner, task_graph_runner, resource_provider));
+      new GpuTileTaskWorkerPool(task_runner, task_graph_runner, rasterizer));
 }
 
-// TODO(hendrikw): This class should be removed.  See crbug.com/444938.
 GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
-    ResourceProvider* resource_provider)
+    GpuRasterizer* rasterizer)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
-      resource_provider_(resource_provider),
+      rasterizer_(rasterizer),
       task_set_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
+  // Allow |worker_context_provider| to bind to the worker thread.
+  rasterizer_->resource_provider()
+      ->output_surface()
+      ->worker_context_provider()
+      ->DetachFromThread();
 }
 
 GpuTileTaskWorkerPool::~GpuTileTaskWorkerPool() {
   DCHECK_EQ(0u, completed_tasks_.size());
+  // Allow |worker_context_provider| to bind to the cc thread.
+  rasterizer_->resource_provider()
+      ->output_surface()
+      ->worker_context_provider()
+      ->DetachFromThread();
 }
 
 TileTaskRunner* GpuTileTaskWorkerPool::AsTileTaskRunner() {
@@ -129,6 +163,14 @@ void GpuTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
   }
 
   ScheduleTasksOnOriginThread(this, &graph_);
+
+  // Barrier to sync any new resources to the worker context.
+  rasterizer_->resource_provider()
+      ->output_surface()
+      ->context_provider()
+      ->ContextGL()
+      ->OrderingBarrierCHROMIUM();
+
   task_graph_runner_->ScheduleTasks(namespace_token_, &graph_);
 
   std::copy(new_task_set_finished_tasks,
@@ -146,7 +188,7 @@ void GpuTileTaskWorkerPool::CheckForCompletedTasks() {
 }
 
 ResourceFormat GpuTileTaskWorkerPool::GetResourceFormat() {
-  return resource_provider_->best_texture_format();
+  return rasterizer_->resource_provider()->best_texture_format();
 }
 
 void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
@@ -164,7 +206,8 @@ void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
 
 scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
-  return make_scoped_ptr<RasterBuffer>(new RasterBufferImpl());
+  return make_scoped_ptr<RasterBuffer>(
+      new RasterBufferImpl(rasterizer_, resource));
 }
 
 void GpuTileTaskWorkerPool::ReleaseBufferForRaster(

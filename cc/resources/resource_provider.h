@@ -332,13 +332,17 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedWriteLockGr {
    public:
     ScopedWriteLockGr(ResourceProvider* resource_provider,
-                      ResourceProvider::ResourceId resource_id,
-                      bool use_distance_field_text,
-                      bool can_use_lcd_text,
-                      int msaa_sample_count);
+                      ResourceProvider::ResourceId resource_id);
     ~ScopedWriteLockGr();
 
-    SkSurface* get_sk_surface() { return sk_surface_.get(); }
+    void InitSkSurface(bool use_worker_context,
+                       bool use_distance_field_text,
+                       bool can_use_lcd_text,
+                       int msaa_sample_count);
+    void ReleaseSkSurface();
+
+    SkSurface* sk_surface() { return sk_surface_.get(); }
+    ResourceProvider::Resource* resource() { return resource_; }
 
    private:
     ResourceProvider* resource_provider_;
@@ -425,6 +429,8 @@ class CC_EXPORT ResourceProvider {
   void WaitReadLockIfNeeded(ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
+
+  OutputSurface* output_surface() { return output_surface_; }
 
  private:
   struct Resource {
@@ -560,7 +566,7 @@ class CC_EXPORT ResourceProvider {
 
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
-  class GrContext* GrContext() const;
+  class GrContext* GrContext(bool worker_context) const;
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;

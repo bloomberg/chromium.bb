@@ -29,6 +29,7 @@ class TestContextProvider : public ContextProvider {
       scoped_ptr<TestWebGraphicsContext3D> context);
 
   bool BindToCurrentThread() override;
+  void DetachFromThread() override;
   Capabilities ContextCapabilities() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;

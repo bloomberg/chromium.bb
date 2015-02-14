@@ -663,6 +663,10 @@ void RenderThreadImpl::Init() {
         base::StringToInt(string_value, &num_raster_threads);
     DCHECK(parsed_num_raster_threads) << string_value;
     DCHECK_GT(num_raster_threads, 0);
+
+    // Force maximum 1 thread for threaded GPU rasterization.
+    if (is_threaded_gpu_rasterization_enabled_)
+      num_raster_threads = 1;
     cc::TileTaskWorkerPool::SetNumWorkerThreads(num_raster_threads);
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)

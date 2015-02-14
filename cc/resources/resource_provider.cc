@@ -1087,17 +1087,25 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
 
 ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id,
-    bool use_distance_field_text,
-    bool can_use_lcd_text,
-    int msaa_sample_count)
+    ResourceProvider::ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_(resource_provider->LockForWrite(resource_id)) {
-  // Create the sk_surface.
+  DCHECK(thread_checker_.CalledOnValidThread());
+  resource_provider_->LazyAllocate(resource_);
+}
+
+ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(resource_->locked_for_write);
+  resource_provider_->UnlockForWrite(resource_);
+}
 
-  resource_provider_->LazyAllocate(resource_);
+void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
+    bool use_worker_context,
+    bool use_distance_field_text,
+    bool can_use_lcd_text,
+    int msaa_sample_count) {
+  DCHECK(resource_->locked_for_write);
 
   GrBackendTextureDesc desc;
   desc.fFlags = kRenderTarget_GrBackendTextureFlag;
@@ -1108,7 +1116,8 @@ ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
   desc.fTextureHandle = resource_->gl_id;
   desc.fSampleCnt = msaa_sample_count;
 
-  class GrContext* gr_context = resource_provider_->GrContext();
+  class GrContext* gr_context =
+      resource_provider_->GrContext(use_worker_context);
   skia::RefPtr<GrTexture> gr_texture =
       skia::AdoptRef(gr_context->wrapBackendTexture(desc));
   if (gr_texture) {
@@ -1124,12 +1133,13 @@ ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
     }
     sk_surface_ = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
         gr_texture->asRenderTarget(), &surface_props));
+    return;
   }
+  sk_surface_.clear();
 }
 
-ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  resource_provider_->UnlockForWrite(resource_);
+void ResourceProvider::ScopedWriteLockGr::ReleaseSkSurface() {
+  sk_surface_.clear();
 }
 
 ResourceProvider::SynchronousFence::SynchronousFence(
@@ -2135,8 +2145,10 @@ GLES2Interface* ResourceProvider::ContextGL() const {
   return context_provider ? context_provider->ContextGL() : NULL;
 }
 
-class GrContext* ResourceProvider::GrContext() const {
-  ContextProvider* context_provider = output_surface_->context_provider();
+class GrContext* ResourceProvider::GrContext(bool worker_context) const {
+  ContextProvider* context_provider =
+      worker_context ? output_surface_->worker_context_provider()
+                     : output_surface_->context_provider();
   return context_provider ? context_provider->GrContext() : NULL;
 }
 

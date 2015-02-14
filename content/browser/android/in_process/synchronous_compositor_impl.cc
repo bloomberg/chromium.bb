@@ -152,9 +152,13 @@ bool SynchronousCompositorImpl::InitializeHwDraw() {
   DCHECK(output_surface_);
 
   scoped_refptr<cc::ContextProvider> onscreen_context =
-      g_factory.Get().CreateOnscreenContextProviderForCompositorThread();
+      g_factory.Get().CreateContextProviderForCompositor();
 
-  bool success = output_surface_->InitializeHwDraw(onscreen_context);
+  scoped_refptr<cc::ContextProvider> worker_context =
+      g_factory.Get().CreateContextProviderForCompositor();
+
+  bool success =
+      output_surface_->InitializeHwDraw(onscreen_context, worker_context);
 
   if (success)
     g_factory.Get().CompositorInitializedHardwareDraw();

@@ -10,7 +10,7 @@
 #include "cc/resources/tile_task_worker_pool.h"
 
 namespace cc {
-class ResourceProvider;
+class GpuRasterizer;
 
 class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
                                         public TileTaskRunner,
@@ -21,7 +21,7 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
   static scoped_ptr<TileTaskWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
       TaskGraphRunner* task_graph_runner,
-      ResourceProvider* resource_provider);
+      GpuRasterizer* rasterizer);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -41,7 +41,7 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
  private:
   GpuTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
                         TaskGraphRunner* task_graph_runner,
-                        ResourceProvider* resource_provider);
+                        GpuRasterizer* rasterizer);
 
   void OnTaskSetFinished(TaskSet task_set);
   void CompleteTasks(const Task::Vector& tasks);
@@ -50,7 +50,7 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
   TileTaskRunnerClient* client_;
-  ResourceProvider* resource_provider_;
+  GpuRasterizer* rasterizer_;
 
   TaskSetCollection tasks_pending_;
 

@@ -43,19 +43,25 @@ GpuRasterizer::GpuRasterizer(ContextProvider* context_provider,
                              bool use_distance_field_text,
                              bool threaded_gpu_rasterization_enabled,
                              int msaa_sample_count)
-    : context_provider_(context_provider),
-      resource_provider_(resource_provider),
+    : resource_provider_(resource_provider),
       use_distance_field_text_(use_distance_field_text),
       threaded_gpu_rasterization_enabled_(threaded_gpu_rasterization_enabled),
       msaa_sample_count_(msaa_sample_count) {
-  DCHECK(context_provider_);
 }
 
 GpuRasterizer::~GpuRasterizer() {
 }
 
 PrepareTilesMode GpuRasterizer::GetPrepareTilesMode() {
-  return PrepareTilesMode::PREPARE_NONE;
+  return threaded_gpu_rasterization_enabled_
+             ? PrepareTilesMode::RASTERIZE_PRIORITIZED_TILES
+             : PrepareTilesMode::PREPARE_NONE;
+}
+
+ContextProvider* GpuRasterizer::GetContextProvider(bool worker_context) {
+  return worker_context
+             ? resource_provider_->output_surface()->worker_context_provider()
+             : resource_provider_->output_surface()->context_provider();
 }
 
 void GpuRasterizer::RasterizeTiles(
@@ -63,7 +69,7 @@ void GpuRasterizer::RasterizeTiles(
     ResourcePool* resource_pool,
     ResourceFormat resource_format,
     const UpdateTileDrawInfoCallback& update_tile_draw_info) {
-  ScopedGpuRaster gpu_raster(context_provider_);
+  ScopedGpuRaster gpu_raster(GetContextProvider(false));
 
   ScopedResourceWriteLocks locks;
 
@@ -84,6 +90,39 @@ void GpuRasterizer::RasterizeTiles(
 
   // If MSAA is enabled, tell Skia to resolve each render target after draw.
   multi_picture_draw_.draw(msaa_sample_count_ > 0);
+}
+
+void GpuRasterizer::RasterizeSource(
+    bool use_worker_context,
+    ResourceProvider::ScopedWriteLockGr* write_lock,
+    const RasterSource* raster_source,
+    const gfx::Rect& rect,
+    float scale) {
+  // Play back raster_source into temp SkPicture.
+  SkPictureRecorder recorder;
+  gfx::Size size = write_lock->resource()->size;
+  const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
+  skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
+      recorder.beginRecording(size.width(), size.height(), NULL, flags));
+  canvas->save();
+  raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
+  canvas->restore();
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+
+  // Turn on distance fields for layers that have ever animated.
+  bool use_distance_field_text =
+      use_distance_field_text_ ||
+      raster_source->ShouldAttemptToUseDistanceFieldText();
+
+  // Playback picture into resource.
+  {
+    ScopedGpuRaster gpu_raster(GetContextProvider(use_worker_context));
+    write_lock->InitSkSurface(use_worker_context, use_distance_field_text,
+                              raster_source->CanUseLCDText(),
+                              msaa_sample_count_);
+    picture->playback(write_lock->sk_surface()->getCanvas(), nullptr);
+    write_lock->ReleaseSkSurface();
+  }
 }
 
 void GpuRasterizer::PerformSolidColorAnalysis(
@@ -119,11 +158,14 @@ void GpuRasterizer::AddToMultiPictureDraw(const Tile* tile,
       use_distance_field_text_ ||
       tile->raster_source()->ShouldAttemptToUseDistanceFieldText();
   scoped_ptr<ResourceProvider::ScopedWriteLockGr> lock(
-      new ResourceProvider::ScopedWriteLockGr(
-          resource_provider_, resource->id(), use_distance_field_text,
-          tile->raster_source()->CanUseLCDText(), msaa_sample_count_));
+      new ResourceProvider::ScopedWriteLockGr(resource_provider_,
+                                              resource->id()));
 
-  SkSurface* sk_surface = lock->get_sk_surface();
+  lock->InitSkSurface(false, use_distance_field_text,
+                      tile->raster_source()->CanUseLCDText(),
+                      msaa_sample_count_);
+
+  SkSurface* sk_surface = lock->sk_surface();
   if (!sk_surface)
     return;
 

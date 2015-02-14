@@ -157,7 +157,8 @@ class CC_EXPORT OutputSurface {
   // Synchronously initialize context3d and enter hardware mode.
   // This can only supported in threaded compositing mode.
   bool InitializeAndSetContext3d(
-      scoped_refptr<ContextProvider> context_provider);
+      scoped_refptr<ContextProvider> context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider);
   void ReleaseGL();
 
   void PostSwapBuffersComplete();

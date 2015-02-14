@@ -2944,8 +2944,10 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
         static_cast<FakeOutputSurface*>(host_impl->output_surface());
     scoped_refptr<TestContextProvider> context_provider =
         TestContextProvider::Create();  // Not bound to thread.
-    EXPECT_TRUE(
-        fake_output_surface->InitializeAndSetContext3d(context_provider));
+    scoped_refptr<TestContextProvider> worker_context_provider =
+        TestContextProvider::Create();  // Not bound to thread.
+    EXPECT_TRUE(fake_output_surface->InitializeAndSetContext3d(
+        context_provider, worker_context_provider));
     did_initialize_gl_ = true;
   }
 
@@ -5823,14 +5825,17 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
 
 MULTI_THREAD_IMPL_TEST_F(RasterizeWithGpuRasterizationCreatesResources);
 
-class GpuRasterizationRasterizesVisibleOnly : public LayerTreeHostTest {
+class SynchronousGpuRasterizationRasterizesVisibleOnly
+    : public LayerTreeHostTest {
  protected:
-  GpuRasterizationRasterizesVisibleOnly() : viewport_size_(1024, 2048) {}
+  SynchronousGpuRasterizationRasterizesVisibleOnly()
+      : viewport_size_(1024, 2048) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
     settings->gpu_rasterization_enabled = true;
     settings->gpu_rasterization_forced = true;
+    settings->threaded_gpu_rasterization_enabled = false;
   }
 
   void SetupTree() override {
@@ -5882,7 +5887,54 @@ class GpuRasterizationRasterizesVisibleOnly : public LayerTreeHostTest {
   gfx::Size viewport_size_;
 };
 
-MULTI_THREAD_IMPL_TEST_F(GpuRasterizationRasterizesVisibleOnly);
+MULTI_THREAD_IMPL_TEST_F(SynchronousGpuRasterizationRasterizesVisibleOnly);
+
+class ThreadedGpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
+ protected:
+  ThreadedGpuRasterizationRasterizesBorderTiles()
+      : viewport_size_(1024, 2048) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->impl_side_painting = true;
+    settings->gpu_rasterization_enabled = true;
+    settings->gpu_rasterization_forced = true;
+    settings->threaded_gpu_rasterization_enabled = true;
+  }
+
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+
+    scoped_ptr<FakePicturePile> pile(
+        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
+                            ImplSidePaintingSettings().default_tile_grid_size));
+    scoped_refptr<FakePictureLayer> root =
+        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    root->SetBounds(gfx::Size(10000, 10000));
+    root->SetContentsOpaque(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+    layer_tree_host()->SetViewportSize(viewport_size_);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(10u, host_impl->resource_provider()->num_resources());
+    EndTest();
+    return draw_result;
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  gfx::Size viewport_size_;
+};
+
+MULTI_THREAD_IMPL_TEST_F(ThreadedGpuRasterizationRasterizesBorderTiles);
 
 class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     : public LayerTreeHostTest {

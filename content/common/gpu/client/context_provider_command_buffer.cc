@@ -108,6 +108,10 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   return true;
 }
 
+void ContextProviderCommandBuffer::DetachFromThread() {
+  context_thread_checker_.DetachFromThread();
+}
+
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.

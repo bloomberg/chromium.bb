@@ -183,7 +183,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
 
       *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
           task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
-          resource_provider);
+          static_cast<GpuRasterizer*>(host_impl->rasterizer()));
       break;
     case ZERO_COPY_TILE_TASK_WORKER_POOL:
       EXPECT_TRUE(context_provider);

@@ -2020,7 +2020,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
     *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
         task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
-        resource_provider_.get());
+        static_cast<GpuRasterizer*>(rasterizer_.get()));
     return;
   }
 

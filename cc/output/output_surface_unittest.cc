@@ -41,9 +41,8 @@ class TestOutputSurface : public OutputSurface {
     client_->DidSwapBuffersComplete();
   }
 
-  bool InitializeNewContext3d(
-      scoped_refptr<ContextProvider> new_context_provider) {
-    return InitializeAndSetContext3d(new_context_provider);
+  bool InitializeNewContext3d(scoped_refptr<ContextProvider> context_provider) {
+    return InitializeAndSetContext3d(context_provider, nullptr);
   }
 
   using OutputSurface::ReleaseGL;

@@ -13,6 +13,10 @@ class PixelTestOutputSurface : public OutputSurface {
  public:
   explicit PixelTestOutputSurface(
       scoped_refptr<ContextProvider> context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider,
+      bool flipped_output_surface);
+  explicit PixelTestOutputSurface(
+      scoped_refptr<ContextProvider> context_provider,
       bool flipped_output_surface);
   explicit PixelTestOutputSurface(
       scoped_ptr<SoftwareOutputDevice> software_device);

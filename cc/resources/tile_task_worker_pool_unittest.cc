@@ -10,6 +10,7 @@
 #include "base/cancelable_callback.h"
 #include "cc/base/unique_notifier.h"
 #include "cc/resources/bitmap_tile_task_worker_pool.h"
+#include "cc/resources/gpu_rasterizer.h"
 #include "cc/resources/gpu_tile_task_worker_pool.h"
 #include "cc/resources/one_copy_tile_task_worker_pool.h"
 #include "cc/resources/picture_pile.h"
@@ -126,6 +127,7 @@ class TileTaskWorkerPoolTest
 
   TileTaskWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
+        worker_context_provider_(TestContextProvider::Create()),
         all_tile_tasks_finished_(
             base::MessageLoopProxy::current().get(),
             base::Bind(&TileTaskWorkerPoolTest::AllTileTasksFinished,
@@ -160,10 +162,12 @@ class TileTaskWorkerPoolTest
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
+        rasterizer_ = GpuRasterizer::Create(
+            context_provider_.get(), resource_provider_.get(), false, false, 0);
         tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
             TileTaskWorkerPool::GetTaskGraphRunner(),
-            resource_provider_.get());
+            static_cast<GpuRasterizer*>(rasterizer_.get()));
         break;
       case TILE_TASK_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
@@ -271,7 +275,8 @@ class TileTaskWorkerPoolTest
 
  private:
   void Create3dOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
+    output_surface_ = FakeOutputSurface::Create3d(
+                          context_provider_, worker_context_provider_).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);
@@ -306,6 +311,8 @@ class TileTaskWorkerPoolTest
 
  protected:
   scoped_refptr<TestContextProvider> context_provider_;
+  scoped_refptr<TestContextProvider> worker_context_provider_;
+  scoped_ptr<Rasterizer> rasterizer_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;

@@ -69,6 +69,10 @@ bool TestContextProvider::BindToCurrentThread() {
   return true;
 }
 
+void TestContextProvider::DetachFromThread() {
+  context_thread_checker_.DetachFromThread();
+}
+
 ContextProvider::Capabilities TestContextProvider::ContextCapabilities() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());

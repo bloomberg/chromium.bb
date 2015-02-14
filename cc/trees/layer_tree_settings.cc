@@ -30,6 +30,7 @@ LayerTreeSettings::LayerTreeSettings()
       gpu_rasterization_enabled(false),
       gpu_rasterization_forced(false),
       gpu_rasterization_msaa_sample_count(0),
+      gpu_rasterization_skewport_target_time_in_seconds(0.0f),
       threaded_gpu_rasterization_enabled(false),
       create_low_res_tiling(false),
       scrollbar_animator(NoAnimator),

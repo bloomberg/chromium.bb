@@ -127,7 +127,8 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
   enable_pixel_output_.reset(new gfx::DisableNullDrawGLBindings);
 
   output_surface_.reset(new PixelTestOutputSurface(
-      new TestInProcessContextProvider, flipped_output_surface));
+      new TestInProcessContextProvider, new TestInProcessContextProvider,
+      flipped_output_surface));
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);

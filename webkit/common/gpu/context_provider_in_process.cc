@@ -109,6 +109,10 @@ bool ContextProviderInProcess::BindToCurrentThread() {
   return true;
 }
 
+void ContextProviderInProcess::DetachFromThread() {
+  context_thread_checker_.DetachFromThread();
+}
+
 void ContextProviderInProcess::InitializeCapabilities() {
   capabilities_.gpu = context3d_->GetImplementation()->capabilities();
 

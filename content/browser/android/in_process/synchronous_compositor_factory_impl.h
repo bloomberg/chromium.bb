@@ -57,8 +57,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
 
-  scoped_refptr<cc::ContextProvider>
-      CreateOnscreenContextProviderForCompositorThread();
+  scoped_refptr<cc::ContextProvider> CreateContextProviderForCompositor();
 
  private:
   bool CanCreateMainThreadContext();
