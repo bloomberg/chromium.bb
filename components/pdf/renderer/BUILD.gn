@@ -21,7 +21,7 @@ static_library("renderer") {
     "//components/strings",
     "//content/public/renderer",
     "//gin",
-    "//ppapi:ppapi_shared",
+    "//ppapi/shared_impl",
     "//third_party/icu",
     "//v8",
     "//third_party/WebKit/public:blink_minimal",

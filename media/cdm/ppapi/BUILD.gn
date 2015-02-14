@@ -57,6 +57,6 @@ group("clearkeycdmadapter") {
     ":clearkeycdm",
 
     #":clearkeycdmadapter_resources",  TODO(GYP)
-    "//ppapi:ppapi_cpp",
+    "//ppapi/cpp",
   ]
 }

@@ -25,7 +25,7 @@ source_set("ppapi_plugin") {
     "//content:export",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
-    "//ppapi:ppapi_ipc",
+    "//ppapi/proxy:ipc",
     "//skia",
     "//third_party/icu",
     "//third_party/WebKit/public:blink",

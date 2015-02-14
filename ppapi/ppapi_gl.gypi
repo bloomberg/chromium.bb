@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      # GN version: //ppapi:ppapi_gles2
+      # GN version: //ppapi/lib/gl/gles2
       'target_name': 'ppapi_gles2',
       'type': 'static_library',
       'dependencies': [

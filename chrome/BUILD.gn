@@ -252,7 +252,7 @@ group("browser_dependencies") {
     "//sync",
   ]
   if (!is_ios) {
-    deps += [ "//ppapi:ppapi_host" ]
+    deps += [ "//ppapi/host" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {

@@ -248,8 +248,8 @@ source_set("browser") {
                            ".",
                            "//content")
     deps += [
-      "//ppapi:ppapi_ipc",
-      "//ppapi:ppapi_shared",
+      "//ppapi/proxy:ipc",
+      "//ppapi/shared_impl",
     ]
     if (!use_ozone || use_pango) {
       sources -= [ "renderer_host/pepper/pepper_truetype_font_list_ozone.cc" ]

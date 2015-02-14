@@ -75,7 +75,7 @@ source_set("adapter") {
     deps = [
       ":version_h",
       ":binaries",
-      "//ppapi:ppapi_cpp",
+      "//ppapi/cpp",
 
       #'<(DEPTH)/media/media_cdm_adapter.gyp:cdmadapter',  TODO(GYP)
     ]

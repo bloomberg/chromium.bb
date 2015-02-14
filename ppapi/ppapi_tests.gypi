@@ -79,7 +79,8 @@
 #      ],
     },
     {
-      # GN version: //ppapi:ppapi_unittest_shared
+      # GN version: //ppapi/proxy:test_support
+      #             //ppapi/shared_impl:test_support
       'target_name': 'ppapi_unittest_shared',
       'type': 'static_library',
       'dependencies': [

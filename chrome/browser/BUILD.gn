@@ -407,7 +407,7 @@ static_library("browser") {
         rebase_path(gypi_values.chrome_browser_plugins_sources, ".", "//chrome")
     deps += [
       "//components/pdf/browser",
-      "//ppapi:ppapi_ipc",
+      "//ppapi/proxy:ipc",
       "//third_party/adobe/flash:flapper_version_h",
     ]
   }

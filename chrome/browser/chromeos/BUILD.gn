@@ -80,7 +80,7 @@ source_set("chromeos") {
     "//device/hid",
     "//media",
     "//net",
-    "//ppapi:ppapi_ipc",  # For PpapiMsg_LoadPlugin
+    "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
 
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//printing",

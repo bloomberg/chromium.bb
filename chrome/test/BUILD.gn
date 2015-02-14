@@ -142,7 +142,7 @@ source_set("test_support") {
       "//google_apis:test_support",
       "//ipc:test_support",
       "//media:test_support",
-      "//ppapi:ppapi_shared",
+      "//ppapi/shared_impl",
       "//sql:test_support",
       "//third_party/leveldatabase",
       "//ui/base",
@@ -1159,7 +1159,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     #if (enable_pepper_cdms) {
     #  deps += [
     #    "//media/cdm/ppapi:clearkeycdmadapter",
-    #    "//ppapi:ppapi_cpp",
+    #    "//ppapi/cpp",
     #    "//third_party/widevine/cdm:adapter",
     #  ]
     #}

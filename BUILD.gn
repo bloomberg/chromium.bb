@@ -68,7 +68,7 @@ group("root") {
     "//mojo",
     "//net",
     "//pdf",
-    "//ppapi:ppapi_c",
+    "//ppapi/examples",
     "//printing",
     "//remoting/client/plugin",
     "//sandbox",
@@ -220,7 +220,7 @@ group("root") {
       "//extensions/common/api",
       "//extensions/renderer",
       "//pdf",  # Not compiled on Android in GYP yet, either.
-      "//ppapi:ppapi_c",
+      "//ppapi/examples",
       "//third_party/libusb",
       "//ui/keyboard",  # Blocked on content.
 

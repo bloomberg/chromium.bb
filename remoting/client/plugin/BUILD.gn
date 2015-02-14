@@ -24,8 +24,8 @@ static_library("plugin") {
 
   deps = [
     "//net",
-    "//ppapi:ppapi_cpp_objects",
-    "//ppapi:ppapi_internal_module",
+    "//ppapi/cpp:objects",
+    "//ppapi/cpp/private:internal_module",
     "//remoting/base",
     "//remoting/client",
     "//remoting/protocol",

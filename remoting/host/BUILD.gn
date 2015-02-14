@@ -55,7 +55,7 @@ static_library("host") {
     deps += [
       "//cc",
       "//content",
-      "//ppapi:ppapi_host",
+      "//ppapi/host",
       "//skia",
       "//ui/aura",
       "//ui/compositor",

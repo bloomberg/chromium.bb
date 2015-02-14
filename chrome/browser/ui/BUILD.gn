@@ -175,7 +175,7 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_plugin_sources,
                            ".",
                            "//chrome")
-    deps += [ "//ppapi:ppapi_ipc" ]
+    deps += [ "//ppapi/proxy:ipc" ]
   }
   if (safe_browsing_mode == 1) {
     defines += [ "FULL_SAFE_BROWSING" ]

@@ -1,0 +1,28 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Declares a PPAPI example target of the correct type for the current platform
+# and with the right linker flags.
+template("ppapi_example") {
+  # TODO(GYP) on Mac this should be loadable_module.
+  shared_library(target_name) {
+    testonly = true
+    if (defined(invoker.output_name)) {
+      output_name = invoker.output_name
+    }
+    sources = invoker.sources
+    deps = invoker.deps
+
+    if (is_mac) {
+      # TODO(GYP) this should be a mac bundle
+      output_extension = "plugin"
+      ldflags = [
+        # Not to strip important symbols by -Wl,-dead_strip.
+        "-Wl,-exported_symbol,_PPP_GetInterface",
+        "-Wl,-exported_symbol,_PPP_InitializeModule",
+        "-Wl,-exported_symbol,_PPP_ShutdownModule",
+      ]
+    }
+  }
+}

@@ -33,7 +33,7 @@
   ],
   'targets': [
     {
-      # GN version: //ppapi:ppapi_shared
+      # GN version: //ppapi/shared_impl and //ppapi/thunk
       'target_name': 'ppapi_shared',
       'type': '<(component)',
       'variables': {
@@ -92,7 +92,7 @@
       # In a static build, build ppapi_ipc separately.
       'targets': [
         {
-          # GN version: //ppapi:ppapi_ipc
+          # GN version: //ppapi/proxy:ipc
           'target_name': 'ppapi_ipc',
           'type': 'static_library',
           'variables': {
@@ -114,7 +114,7 @@
           },
         },
         {
-          # GN version: //ppapi:ppapi_proxy
+          # GN version: //ppapi/proxy
           'target_name': 'ppapi_proxy',
           'type': 'static_library',
           'variables': {

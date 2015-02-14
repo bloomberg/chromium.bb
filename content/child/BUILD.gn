@@ -48,7 +48,7 @@ source_set("child") {
   }
 
   if (enable_plugins) {
-    deps += [ "//ppapi:ppapi_proxy" ]
+    deps += [ "//ppapi/proxy" ]
   } else {
     sources -= [
       "browser_font_resource_trusted.cc",

@@ -143,9 +143,9 @@ source_set("renderer") {
             ".",
             "//content")
     deps += [
-      "//ppapi:ppapi_host",
-      "//ppapi:ppapi_proxy",
-      "//ppapi:ppapi_shared",
+      "//ppapi/host",
+      "//ppapi/proxy",
+      "//ppapi/shared_impl",
       "//third_party/libyuv",
     ]
   } else {
